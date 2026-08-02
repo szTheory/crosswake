@@ -1,13 +1,14 @@
 ---
 phase: 159-host-reusable-proof-lane
-reviewed: 2026-08-01T23:15:14Z
+reviewed: 2026-08-02T00:02:26Z
 depth: standard
-files_reviewed: 29
+files_reviewed: 33
 files_reviewed_list:
   - examples/phoenix_host/e2e/crosswake_proof_lane/browser_online_restore.spec.ts
   - examples/phoenix_host/e2e/crosswake_proof_lane/proof_lane.spec.ts
   - examples/phoenix_host/e2e/crosswake_proof_lane/support/proof_lane.ts
   - examples/phoenix_host/e2e/support/offline_route_proof.ts
+  - examples/phoenix_host/e2e/support/offline_route_proof.typecheck.d.ts
   - examples/phoenix_host/package.json
   - examples/phoenix_host/tsconfig.offline_route_proof.json
   - lib/crosswake/proof_lane/config.ex
@@ -18,7 +19,9 @@ files_reviewed_list:
   - lib/mix/tasks/crosswake.gen.proof_lane.ex
   - priv/native/crosswake_evidence_promote.c
   - priv/native/crosswake_proof_lane_fs.c
+  - priv/templates/crosswake/proof_lane/e2e/proof_lane.spec.ts.eex
   - priv/templates/crosswake/proof_lane/e2e/support/proof_lane.ts.eex
+  - priv/templates/crosswake/proof_lane/e2e/support/proof_lane_host_adapter.ts.eex
   - priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex
   - priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/xcshareddata/xcschemes/CrosswakeProofLane.xcscheme.eex
   - priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneTests/ProofLaneContractTests.swift.eex
@@ -32,40 +35,43 @@ files_reviewed_list:
   - test/crosswake/proof_lane/evidence_test.exs
   - test/crosswake/proof_lane/ios_verifier_test.exs
   - test/crosswake/proof_lane/template_contract_test.exs
+  - test/fixtures/crosswake/proof_lane/phoenix_host/proof_lane_host_adapter.ts
   - test/mix/tasks/crosswake_gen_proof_lane_test.exs
 findings:
-  critical: 1
+  critical: 2
   warning: 0
   info: 0
-  total: 1
+  total: 2
 status: issues_found
 ---
 
 # Phase 159: Code Review Report
 
-**Reviewed:** 2026-08-01T23:15:14Z
+**Reviewed:** 2026-08-02T00:02:26Z
 **Depth:** standard
-**Files Reviewed:** 29
+**Files Reviewed:** 33
 **Status:** issues_found
 
 ## Summary
 
-The configuration, evidence, filesystem-confinement, and native-promotion paths were read in context. The targeted ExUnit suite and Phoenix-host TypeScript typecheck pass, but the generator emits a browser `*.spec.ts` file that contains no Playwright test and never invokes the offline proof helper. A newly generated host therefore has no generated browser/offline-island coverage, while the repository fixture passes separately.
-
-## Narrative Findings (AI reviewer)
+The generated Phoenix proof is executable and its browser adapter is fail-closed, but the two final filesystem publication boundaries do not verify that their staged source is still a regular owned artifact. A staging-path swap can therefore make either operation return success while publishing a symbolic link. This violates the proof lane's no-follow, provenance, and privacy-safe retention guarantees.
 
 ## Critical Issues
 
-### CR-01: Generated browser proof spec is inert
+### CR-01: Evidence promotion can successfully retain a substituted symlink
 
-**Classification:** BLOCKER
+**File:** `/Users/jon/projects/crosswake/priv/native/crosswake_evidence_promote.c:20-24`
+**Issue:** The helper uses `stat(argv[1])`, which follows symlinks, before `renameat2(..., RENAME_NOREPLACE)` / `renameatx_np(..., RENAME_EXCL)`. The stage directory is writable through the lifecycle seam until this call. If it is replaced with a symlink after `scan_stage/1` and before promotion, `stat` accepts the linked directory and rename moves the symlink itself to the destination. `Evidence.promote/3` then returns `:ok`, leaving the retained evidence destination as a symlink outside the reviewed stage. This was reproduced with a `before_promote` hook: promotion returned `:ok` and `File.lstat(destination).type` was `:symlink`.
+**Fix:** Open or inspect the source with no-follow semantics immediately before publication and reject any non-directory source. At minimum, replace `stat` with `lstat` and reject `S_ISLNK`; preferably use descriptor-relative no-follow operations and validate both source and destination parents so the check and publication share an anchored filesystem authority.
 
-**File:** `priv/templates/crosswake/proof_lane/e2e/proof_lane.spec.ts.eex:4-6` (rendered by `lib/crosswake/proof_lane/generator.ex:11`)
-**Issue:** The generator creates `e2e/crosswake_proof_lane/proof_lane.spec.ts`, but its template merely exports a small wrapper and does not import Playwright, declare a `test`, or call the generated `support/proof_lane.ts` offline sequence. Playwright therefore has no generated proof to execute. `verify_phoenix_host_proof_lane.sh` succeeds by running the hand-maintained example-host spec instead, so it cannot establish that a generated host preserves the required browser/IndexedDB/replay proof.
-**Fix:** Generate a real host-owned Playwright test scaffold which imports `test` and `runOfflineIslandProof` from the generated support module, and exposes explicit adapter callbacks for route navigation, mutation, queued-record read, reconnect, backend confirmation, outbox-empty, and duplicate-idempotency assertions. Add a generator contract test that renders the spec and verifies it contains at least one `test(...)` invocation wired to `runOfflineIslandProof`; run that rendered spec in the generated-host proof command.
+### CR-02: Manifest publication accepts a swapped staging symlink as generated output
+
+**File:** `/Users/jon/projects/crosswake/priv/native/crosswake_proof_lane_fs.c:192-206`
+**Issue:** `publish_file` hard-links the staging leaf without opening or `fstat`-checking it first. `linkat(..., 0)` will hard-link a symlink itself, so a staging-file swap between `GeneratorFS.write/4` and `GeneratorFS.publish/3` makes the manifest destination a symlink while the function returns success. That bypasses the claimed generated-file provenance boundary; a subsequent `check` may reject it, but generation has already reported a created manifest and left an unsafe host artifact. Reproduction with a symlink at `.crosswake/proof_lane.json.staging-race` returned `{:ok, :created}` and produced a symlinked `.crosswake/proof_lane.json`.
+**Fix:** Before linking, open the staging leaf with `openat(stage_parent, leaf, O_RDONLY | O_NOFOLLOW)`, require `fstat` to report a regular file, and publish only that verified source (or use a descriptor-anchored regular-file copy with exclusive destination creation). Reject and clean up staging when the source is a symlink or otherwise not regular.
 
 ---
 
-_Reviewed: 2026-08-01T23:15:14Z_
+_Reviewed: 2026-08-02T00:02:26Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
