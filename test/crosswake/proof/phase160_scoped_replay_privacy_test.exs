@@ -12,6 +12,16 @@ defmodule Crosswake.Proof.Phase160ScopedReplayPrivacyTest do
     for source <- @egress_sources, do: assert(File.read!(source) =~ "SafeObservation")
   end
 
+  test "every public safe-observation projection invokes validation" do
+    source = File.read!("lib/crosswake/offline/safe_observation.ex")
+
+    for projection <- ~w(to_telemetry to_logger to_doctor) do
+      assert source =~ "def #{projection}"
+    end
+
+    assert source =~ "validate(observation)"
+  end
+
   test "matrix cannot be made vacuous by removing an egress" do
     assert length(@egress_sources) == 4
     assert Enum.all?(@egress_sources, &File.exists?/1)
