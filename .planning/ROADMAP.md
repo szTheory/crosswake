@@ -266,7 +266,7 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 3/3 plans executed
+**Plans:** 3/8 plans executed; 5 security gap-closure plans ready
 
 Plans:
 **Wave 1**
@@ -280,6 +280,20 @@ Plans:
 **Wave 3** *(blocked on Waves 1-2 completion)*
 
 - [x] 160-03-PLAN.md — Wire privacy-safe operational/evidence egress and record one fresh complete automated gate.
+
+**Wave 4** *(gap closure; blocked on Wave 3 completion)*
+
+- [ ] 160-04-PLAN.md — Quarantine legacy IndexedDB work and recover it only under an explicit exact-scope host lease.
+- [ ] 160-06-PLAN.md — Require typed current RouteEntry/AuthContext evidence at the default Sigra replay boundary.
+- [ ] 160-07-PLAN.md — Restore legacy/global idempotency protection without inventing account ownership.
+
+**Wave 5** *(blocked on Plan 160-04)*
+
+- [ ] 160-05-PLAN.md — Own browser worker shutdown across every await and render partial halted batches as paused.
+
+**Wave 6** *(blocked on Plans 160-05 through 160-07)*
+
+- [ ] 160-08-PLAN.md — Revalidate every SafeObservation egress and run the complete post-gap automated gate.
 
 **Smallest shippable version:** Opaque scope on every envelope, scope-partitioned outbox,
 logout/account-switch replay stop, endpoint reauthorization, raw-payload redaction, and host flag
