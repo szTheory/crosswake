@@ -6,6 +6,9 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
   # into a session, route, feature, or domain allow decision.
   @max_events 20
 
+  alias Crosswake.Companions.Sigra.Contracts
+  alias Crosswake.Manifest.Types.RouteEntry
+
   @type decision :: {:allow, map()} | {:deny, atom()}
 
   @spec authorize(Plug.Conn.t(), String.t(), map(), keyword()) :: decision()
@@ -21,7 +24,7 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
          :ok <- enabled?(route, conn, opts),
          :ok <- sigra_allows?(route, session, opts),
          :ok <- domain_allows?(route, session, event, opts) do
-      {:allow, %{route: route, session: session}}
+      {:allow, %{route: route}}
     else
       {:error, reason} -> {:deny, closed_reason(reason)}
       _ -> {:deny, :authority_unavailable}
@@ -68,8 +71,8 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
 
   # Synthetic example-host fixture, deliberately server configured.  It is not a
   # customer route, account lookup, credential, or production session system.
-  defp default_resolution(:session, _conn),
-    do:
+  defp default_resolution(:session, _conn) do
+    with {:ok, auth_context} <- default_sigra_auth_context() do
       {:ok,
        %{
          scope_ref:
@@ -77,11 +80,36 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
              :crosswake_example,
              :offline_study_fixture_scope,
              "v1.scope_fixture_alpha_01"
-           )
+           ),
+         auth_context: auth_context
        }}
+    end
+  end
 
-  defp default_resolution(:route, _conn),
-    do: {:ok, %{id: "offline-study", gated_by: :offline_study_replay}}
+  defp default_resolution(:route, _conn) do
+    {:ok,
+     %RouteEntry{
+       id: "offline-study",
+       path: "/study",
+       runtime: :offline_island,
+       offline: :local_first,
+       gated_by: :offline_study_replay,
+       auth_min_level:
+         Application.get_env(:crosswake_example, :offline_study_fixture_auth_min_level),
+       requires_recent_auth:
+         Application.get_env(:crosswake_example, :offline_study_fixture_requires_recent_auth),
+       auth_posture: Application.get_env(:crosswake_example, :offline_study_fixture_auth_posture)
+     }}
+  end
+
+  defp default_sigra_auth_context do
+    Application.get_env(
+      :crosswake_example,
+      :offline_study_fixture_auth_context,
+      %{actor_id: "fixture_actor", org_id: "fixture_org", mfa_level: :mfa, auth_age: 0}
+    )
+    |> Contracts.new_auth_context()
+  end
 
   defp matching_scope(%{scope_ref: scope_ref}, scope_ref), do: :ok
   defp matching_scope(_, _), do: {:error, :scope_mismatch}
@@ -113,9 +141,12 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
           callback.(session)
 
         true ->
-          case Crosswake.Companions.Sigra.evaluate_auth(nil, nil, []) do
-            {:allow, _} -> :allow
-            _ -> {:deny, :sigra_denied}
+          case session do
+            %{auth_context: auth_context} ->
+              Crosswake.Companions.Sigra.replay_decision(route, auth_context, [])
+
+            _ ->
+              {:deny, :sigra_denied}
           end
       end
 

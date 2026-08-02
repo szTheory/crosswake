@@ -29,12 +29,29 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmissionTest do
     on_exit(fn ->
       if is_nil(previous),
         do: Application.delete_env(:crosswake_example, :offline_study_fixture_auth_min_level),
-        else: Application.put_env(:crosswake_example, :offline_study_fixture_auth_min_level, previous)
+        else:
+          Application.put_env(:crosswake_example, :offline_study_fixture_auth_min_level, previous)
     end)
 
     assert {:deny, :sigra_denied} =
              ReplayAdmission.authorize(%Plug.Conn{}, @scope, @event,
-               domain: fn _, _, _ -> send(self(), :domain_called); :allow end
+               domain: fn _, _, _ ->
+                 send(self(), :domain_called)
+                 :allow
+               end
+             )
+
+    refute_received :domain_called
+  end
+
+  test "missing host auth evidence denies before the domain callback" do
+    assert {:deny, :sigra_denied} =
+             ReplayAdmission.authorize(%Plug.Conn{}, @scope, @event,
+               session: fn _ -> {:ok, %{scope_ref: @scope}} end,
+               domain: fn _, _, _ ->
+                 send(self(), :domain_called)
+                 :allow
+               end
              )
 
     refute_received :domain_called
