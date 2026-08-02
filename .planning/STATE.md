@@ -5,8 +5,8 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: Scoped Replay and Auth Safety
 status: planning
-stopped_at: Completed 159-28-PLAN.md; Phase 160 discussion next
-last_updated: "2026-08-02T14:19:52.031Z"
+stopped_at: Phase 160 context gathered
+last_updated: "2026-08-02T14:47:42.462Z"
 last_activity: 2026-08-02
 last_activity_desc: Phase 159 complete, transitioned to Phase 160
 progress:
@@ -175,9 +175,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-02T14:20:00Z
-**Stopped at:** Completed 159-28-PLAN.md; Phase 160 discussion next
-**Resume file:** None
+**Last session:** 2026-08-02T14:47:42.438Z
+**Stopped at:** Phase 160 context gathered
+**Resume file:** .planning/phases/160-scoped-replay-and-auth-safety/160-CONTEXT.md
 
 ## Performance Metrics
 
