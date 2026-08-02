@@ -295,6 +295,37 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     end)
   end
 
+  test "native publication cannot be redirected after reservation by replacing its ancestor" do
+    with_stage(fn root ->
+      parent = Path.join(root, "parent")
+      original_parent = Path.join(root, "parent-original")
+      escape = Path.join(root, "escape")
+      destination = Path.join(parent, "final")
+      ready = Path.join(root, "ready")
+      release = Path.join(root, "release")
+      executable = Path.join(root, "evidence-promote-barrier")
+
+      File.mkdir_p!(parent)
+      File.mkdir_p!(escape)
+      compile_barrier_helper!(executable)
+
+      task =
+        Task.async(fn ->
+          run_native!(executable, [destination, ready, release], native_frame(@valid))
+        end)
+
+      assert_eventually(fn -> File.exists?(ready) end)
+      File.rename!(parent, original_parent)
+      File.ln_s!(escape, parent)
+      File.write!(release, "go")
+
+      assert 0 == Task.await(task, 5_000)
+      assert [] == File.ls!(escape)
+      refute File.exists?(Path.join(escape, "proof-lane-evidence.json"))
+      refute File.exists?(Path.join(escape, ".complete"))
+    end)
+  end
+
   test "post-scan collision preserves a concurrent destination byte-for-byte" do
     with_destination(fn destination ->
       sentinel = Path.join(destination, "winner.txt")
@@ -400,6 +431,66 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     refute inspect(error) =~ canary
     refute File.exists?(destination)
     assert [] == Path.wildcard(destination <> ".stage-*")
+  end
+
+  defp compile_barrier_helper!(executable) do
+    source = Path.join(:code.priv_dir(:crosswake), "native/crosswake_evidence_promote.c")
+
+    assert {_, 0} =
+             System.cmd(
+               "cc",
+               [
+                 "-std=c11",
+                 "-O2",
+                 "-Wall",
+                 "-Wextra",
+                 "-Werror",
+                 "-DCROSSWAKE_EVIDENCE_TEST_BARRIER",
+                 "-o",
+                 executable,
+                 source
+               ],
+               stderr_to_stdout: true
+             )
+  end
+
+  defp native_frame(candidate) do
+    assert {:ok, evidence} = Evidence.build(candidate)
+    bytes = Jason.encode!(Evidence.to_map(evidence))
+    digest = Base.encode16(:crypto.hash(:sha256, bytes), case: :lower)
+    <<byte_size(bytes)::unsigned-big-32, digest::binary-size(64), bytes::binary>>
+  end
+
+  defp run_native!(executable, args, frame) do
+    port =
+      Port.open({:spawn_executable, String.to_charlist(executable)}, [
+        :binary,
+        :exit_status,
+        :use_stdio,
+        :hide,
+        args: Enum.map(args, &String.to_charlist/1)
+      ])
+
+    assert Port.command(port, frame)
+
+    receive do
+      {^port, {:exit_status, status}} -> status
+    after
+      5_000 -> flunk("native barrier helper did not exit")
+    end
+  end
+
+  defp assert_eventually(fun, attempts \\ 100)
+
+  defp assert_eventually(fun, 0), do: assert(fun.())
+
+  defp assert_eventually(fun, attempts) do
+    if fun.() do
+      :ok
+    else
+      Process.sleep(10)
+      assert_eventually(fun, attempts - 1)
+    end
   end
 
   defp with_snapshot_replacement(stage, fun) do
