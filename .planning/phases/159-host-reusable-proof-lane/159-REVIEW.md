@@ -2,7 +2,7 @@
 phase: 159-host-reusable-proof-lane
 reviewed: 2026-08-01T00:00:00Z
 depth: standard
-files_reviewed: 33
+files_reviewed: 32
 files_reviewed_list:
   - examples/phoenix_host/e2e/crosswake_proof_lane/browser_online_restore.spec.ts
   - examples/phoenix_host/e2e/crosswake_proof_lane/proof_lane.spec.ts
@@ -38,10 +38,10 @@ files_reviewed_list:
   - test/fixtures/crosswake/proof_lane/phoenix_host/proof_lane_host_adapter.ts
   - test/mix/tasks/crosswake_gen_proof_lane_test.exs
 findings:
-  critical: 2
+  critical: 1
   warning: 1
   info: 0
-  total: 3
+  total: 2
 status: issues_found
 ---
 
@@ -49,42 +49,32 @@ status: issues_found
 
 **Reviewed:** 2026-08-01T00:00:00Z
 **Depth:** standard
-**Files Reviewed:** 33
+**Files Reviewed:** 32
 **Status:** issues_found
 
 ## Summary
 
-The browser proof and generated host-owned scaffold preserve the intended offline-island sequence, and the focused ExUnit review command passes. However, the proof publication boundary has two exploitable integrity failures: a predictable executable cache in the shared temporary directory and a time-of-check/time-of-use gap in retained-evidence validation. The native evidence writer also leaves incomplete artifacts behind after failures, contrary to the phase's atomic evidence requirement.
+The browser helper, generator provenance checks, configuration validation, and evidence allowlist were reviewed along with their tests. Targeted ExUnit coverage passed (54 tests), but the native promotion helper does not preserve the claimed contained, race-resistant filesystem boundary and does not clean up failed publications.
 
 ## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Shared temporary executable cache permits arbitrary code execution
+### CR-01: Evidence promotion can be redirected outside its requested destination
 
-**File:** `lib/crosswake/proof_lane/generator_fs.ex:160-175`
+**File:** `priv/native/crosswake_evidence_promote.c:95-118`
+**Issue:** The helper creates `argv[1]` and then subsequently opens `argv[1]/proof-lane-evidence.json`, `argv[1]/.complete.pending`, and `argv[1]` again by path. It never holds and uses a directory descriptor for these operations. A concurrent actor able to modify the destination parent can replace the freshly created empty directory with a symlink between line 95 and line 100; all later path-based operations then follow that symlink. `O_NOFOLLOW` only protects the final file component, not an ancestor. This violates the promotion containment/race-resistance boundary and permits unintended writes in the symlink target.
 
-**Issue:** The helper executable name is deterministically derived from public source bytes under `System.tmp_dir!()`. If a regular file already exists there, lines 162-163 trust it without checking ownership, origin, or even whether it is a symlink to an attacker-controlled executable; `invoke_read/3` and `run_port/4` then execute it. Another process that can write the shared temporary directory can pre-create `crosswake-proof-lane-fs-<known-digest>` and obtain code execution whenever the host runs generation, `--check`, or `--diff`.
-
-**Fix:** Do not reuse a predictable executable in a shared directory. Build into a process-private `0700` directory using an unpredictable name, execute that exact file, and remove it afterwards. If caching is retained, use a private cache directory and reject symlinks/non-owned files with `lstat` plus ownership and mode checks before execution.
-
-### CR-02: Evidence check can approve artifact bytes that were never digest-verified
-
-**File:** `lib/crosswake/proof_lane/evidence.ex:89-94`
-
-**Issue:** `check/1` first calls `scan_stage/1`, which reads and digest-verifies one copy of `proof-lane-evidence.json` (lines 111-118, 358-376), but then `read_evidence/1` reopens the pathname and decodes a second copy (lines 379-386). A concurrent writer can replace the JSON after `scan_stage/1` returns. `check/1` will then validate and return success for the replacement bytes without proving that they match `.complete`; the same gap exists in `check/2`. This defeats the claimed digest-bound retained-evidence integrity boundary.
-
-**Fix:** Read the artifact once and carry those verified bytes through marker verification, scanning, decoding, and source-hash validation. At minimum, make `scan_stage/1` return the verified bytes/evidence and have both `check` variants consume that result; preferably use descriptor-based reads and revalidate file identity to avoid a path replacement race.
+**Fix:** Open the newly created directory once with `open(..., O_DIRECTORY | O_NOFOLLOW)` and perform every file creation, verification, rename, and final `fsync` with `openat`, `renameat`/`renameatx_np`, and `unlinkat` relative to that held descriptor. Re-check the directory inode if any path-based fallback remains. Add a concurrent ancestor-replacement test that asserts no files are written outside the destination.
 
 ## Warnings
 
-### WR-01: Native promotion leaves incomplete evidence at the final destination on write failures
+### WR-01: A mid-publication failure permanently leaves an unusable evidence destination
 
-**File:** `priv/native/crosswake_evidence_promote.c:95-118`
+**File:** `priv/native/crosswake_evidence_promote.c:95-114`
+**Issue:** Once `mkdir(argv[1], 0700)` succeeds, every later error returns immediately without removing the partially created artifact, pending marker, or directory. A transient write/fsync/rename error therefore leaves the destination existing but incomplete; future `Evidence.promote/2` calls return `PL-EVIDENCE-COLLISION`, so the normal retry path is blocked. This also conflicts with the intended all-or-nothing evidence publication behavior.
 
-**Issue:** The native publisher creates the final destination before writing the artifact and completion marker. Any later failure (write, `fsync`, permission change, marker creation, rename, or directory sync) returns an error without removing the created directory or partial files. That leaves a partially promoted artifact at the advertised destination, violating the phase requirement that failed evidence generation be atomic and leave no retained artifact.
-
-**Fix:** Track ownership after successful `mkdir`, and on every later failure use directory-descriptor-relative cleanup to unlink the incomplete files and remove the directory only if it is still the publisher's directory. Preserve the existing no-clobber collision behavior.
+**Fix:** Track which entries were created and, on every failure before completion, remove only those entries via the held directory descriptor, fsync the parent, then remove the directory if it is still the helper-created empty directory. Preserve the existing collision behavior for a directory that existed before this invocation. Add fault-injection tests for artifact-write, marker-write, and rename failures followed by a successful retry.
 
 ---
 
