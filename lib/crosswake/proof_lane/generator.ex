@@ -35,11 +35,13 @@ defmodule Crosswake.ProofLane.Generator do
     root = host_root!(config)
     desired = desired(config)
 
-    with {:ok, results} <- ensure_files(root, desired),
-         :ok <- interrupt_before_manifest(),
-         {:ok, manifest_result} <- ensure_manifest(root, desired) do
-      {:ok, Enum.sort_by(results ++ [manifest_result], & &1.path)}
-    end
+    GeneratorFS.with_lifecycle(fn ->
+      with {:ok, results} <- ensure_files(root, desired),
+           :ok <- interrupt_before_manifest(),
+           {:ok, manifest_result} <- ensure_manifest(root, desired) do
+        {:ok, Enum.sort_by(results ++ [manifest_result], & &1.path)}
+      end
+    end)
   end
 
   @spec check(Config.t()) :: :ok | {:error, [finding()]}
@@ -48,13 +50,15 @@ defmodule Crosswake.ProofLane.Generator do
     root = host_root!(config)
     desired = desired(config)
 
-    findings =
-      missing_findings(root, desired) ++ manifest_findings(root, desired)
+    GeneratorFS.with_lifecycle(fn ->
+      findings =
+        missing_findings(root, desired) ++ manifest_findings(root, desired)
 
-    case findings |> Enum.uniq() |> Enum.sort_by(& &1.path) do
-      [] -> :ok
-      findings -> {:error, findings}
-    end
+      case findings |> Enum.uniq() |> Enum.sort_by(& &1.path) do
+        [] -> :ok
+        findings -> {:error, findings}
+      end
+    end)
   end
 
   @spec diff(Config.t()) :: [diff_entry()]
@@ -63,19 +67,21 @@ defmodule Crosswake.ProofLane.Generator do
     root = host_root!(config)
     desired = desired(config)
 
-    desired
-    |> Kernel.++([manifest_desired(desired)])
-    |> Enum.map(fn %{path: path, relative: relative, contents: contents} ->
-      status =
-        case GeneratorFS.read(root, relative) do
-          {:ok, ^contents} -> :current
-          {:ok, _} -> :different
-          _ -> :missing
-        end
+    GeneratorFS.with_lifecycle(fn ->
+      desired
+      |> Kernel.++([manifest_desired(desired)])
+      |> Enum.map(fn %{path: path, relative: relative, contents: contents} ->
+        status =
+          case GeneratorFS.read(root, relative) do
+            {:ok, ^contents} -> :current
+            {:ok, _} -> :different
+            _ -> :missing
+          end
 
-      %{path: path, status: status}
+        %{path: path, status: status}
+      end)
+      |> Enum.sort_by(& &1.path)
     end)
-    |> Enum.sort_by(& &1.path)
   end
 
   defp desired(config) do

@@ -148,7 +148,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
         |> Task.async_stream(fn _ -> Generator.generate(config) end,
           max_concurrency: 2,
           ordered: false,
-          timeout: 5_000
+          timeout: 30_000
         )
         |> Enum.map(fn {:ok, result} -> result end)
 
@@ -161,6 +161,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
 
   test "generator actions ignore a poisoned former shared helper cache" do
     with_root(fn root, config ->
+      existing_helpers = helper_directories()
       poison = former_helper_path()
       canary = Path.join(root, "poisoned-helper-ran")
       File.write!(poison, "#!/bin/sh\nprintf poisoned-helper > \"#{canary}\"\nexit 0\n")
@@ -178,6 +179,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
 
         refute File.exists?(canary)
         assert File.regular?(poison)
+        assert existing_helpers == helper_directories()
       after
         File.rm(poison)
       end
@@ -375,6 +377,10 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     source = File.read!("priv/native/crosswake_proof_lane_fs.c")
     digest = source |> then(&:crypto.hash(:sha256, &1)) |> Base.encode16(case: :lower)
     Path.join(System.tmp_dir!(), "crosswake-proof-lane-fs-" <> digest)
+  end
+
+  defp helper_directories do
+    Path.wildcard(Path.join(System.tmp_dir!(), "crosswake-proof-lane-helper-*"))
   end
 
   defp selected_config(config) do

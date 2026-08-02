@@ -2,7 +2,35 @@ defmodule Crosswake.ProofLane.GeneratorFS do
   @moduledoc false
 
   @max_payload_bytes 4 * 1024 * 1024
+  @helper_key {__MODULE__, :private_helper}
   @type error :: {String.t(), String.t()}
+
+  @doc false
+  def with_lifecycle(callback) when is_function(callback, 0) do
+    case Process.get(@helper_key) do
+      nil ->
+        with {:ok, compiler} <- compiler(),
+             {:ok, directory} <- private_directory(),
+             {:ok, executable} <- build(compiler, directory) do
+          Process.put(@helper_key, executable)
+
+          try do
+            result = callback.()
+
+            case cleanup(directory) do
+              :ok -> result
+              :error -> {:error, :unavailable}
+            end
+          after
+            Process.delete(@helper_key)
+            cleanup(directory)
+          end
+        end
+
+      _executable ->
+        callback.()
+    end
+  end
 
   @spec write(Path.t(), String.t(), iodata(), keyword()) ::
           {:ok, :created | :reused} | {:error, error()}
@@ -62,19 +90,17 @@ defmodule Crosswake.ProofLane.GeneratorFS do
   end
 
   defp invoke_write(root, relative, bytes, opts) do
-    with {:ok, compiler} <- compiler(),
-         {:ok, executable} <- build(compiler) do
+    with_helper(fn executable ->
       try do
         run_port(executable, ["write", root, relative, barrier_mode(opts)], bytes, opts)
       rescue
         _ -> {:error, 20}
       end
-    end
+    end)
   end
 
   defp invoke_read(action, root, relative) do
-    with {:ok, compiler} <- compiler(),
-         {:ok, executable} <- build(compiler) do
+    with_helper(fn executable ->
       try do
         {output, status} =
           System.cmd(executable, [action, root, relative], stderr_to_stdout: true)
@@ -83,7 +109,7 @@ defmodule Crosswake.ProofLane.GeneratorFS do
       rescue
         _ -> {:error, 20}
       end
-    end
+    end)
   end
 
   defp run_port(executable, args, bytes, opts) do
@@ -150,38 +176,97 @@ defmodule Crosswake.ProofLane.GeneratorFS do
     end
   end
 
-  defp build(compiler) do
-    source = Path.join(:code.priv_dir(:crosswake), "native/crosswake_proof_lane_fs.c")
+  defp with_helper(callback) when is_function(callback, 1) do
+    case Process.get(@helper_key) do
+      executable when is_binary(executable) ->
+        callback.(executable)
 
-    if File.regular?(source) do
-      digest =
-        source |> File.read!() |> then(&:crypto.hash(:sha256, &1)) |> Base.encode16(case: :lower)
+      nil ->
+        with {:ok, compiler} <- compiler(),
+             {:ok, directory} <- private_directory(),
+             {:ok, executable} <- build(compiler, directory) do
+          invoke_with_cleanup(directory, callback, executable)
+        end
+    end
+  end
 
-      executable = Path.join(System.tmp_dir!(), "crosswake-proof-lane-fs-" <> digest)
+  defp with_helper(_callback), do: {:error, :unavailable}
 
-      if File.regular?(executable) do
-        {:ok, executable}
-      else
-        candidate = executable <> "." <> Integer.to_string(System.unique_integer([:positive]))
+  defp invoke_with_cleanup(directory, callback, executable) do
+    try do
+      result = callback.(executable)
 
-        case System.cmd(
-               compiler,
-               ["-std=c11", "-O2", "-Wall", "-Wextra", "-Werror", "-o", candidate, source],
-               stderr_to_stdout: true
-             ) do
-          {_, 0} ->
-            _ = File.rename(candidate, executable)
-            File.rm(candidate)
-            if File.regular?(executable), do: {:ok, executable}, else: {:error, :unavailable}
+      case cleanup(directory) do
+        :ok -> result
+        :error -> {:error, :unavailable}
+      end
+    rescue
+      _ -> {:error, :unavailable}
+    after
+      cleanup(directory)
+    end
+  end
 
+  defp private_directory do
+    parent = System.tmp_dir!()
+    directory = Path.join(parent, "crosswake-proof-lane-helper-" <> private_suffix())
+
+    case File.mkdir(directory) do
+      :ok ->
+        with :ok <- File.chmod(directory, 0o700),
+             {:ok, %{type: :directory, mode: mode}} <- File.lstat(directory),
+             true <- restrictive?(mode) do
+          {:ok, directory}
+        else
           _ ->
-            File.rm(candidate)
+            cleanup(directory)
             {:error, :unavailable}
         end
-      end
-    else
-      {:error, :unavailable}
+
+      _ ->
+        {:error, :unavailable}
     end
+  rescue
+    _ -> {:error, :unavailable}
+  end
+
+  defp private_suffix do
+    :crypto.strong_rand_bytes(18) |> Base.url_encode64(padding: false)
+  rescue
+    _ -> Integer.to_string(System.unique_integer([:positive]))
+  end
+
+  defp build(compiler, directory) do
+    source = Path.join(:code.priv_dir(:crosswake), "native/crosswake_proof_lane_fs.c")
+    executable = Path.join(directory, "crosswake-proof-lane-fs")
+
+    with {:ok, %{type: :regular}} <- File.lstat(source),
+         {_, 0} <-
+           System.cmd(
+             compiler,
+             ["-std=c11", "-O2", "-Wall", "-Wextra", "-Werror", "-o", executable, source],
+             stderr_to_stdout: true
+           ),
+         :ok <- File.chmod(executable, 0o700),
+         {:ok, %{type: :regular, mode: mode}} <- File.lstat(executable),
+         true <- restrictive?(mode) do
+      {:ok, executable}
+    else
+      _ -> {:error, :unavailable}
+    end
+  rescue
+    _ -> {:error, :unavailable}
+  end
+
+  defp restrictive?(mode), do: Bitwise.band(mode, 0o077) == 0
+
+  defp cleanup(directory) do
+    case File.rm_rf(directory) do
+      {:ok, _} -> :ok
+      _ -> :error
+    end
+  rescue
+    _ -> :error
   end
 
   defp destination_error(relative), do: {:error, {"PL-GENERATE-DESTINATION", safe_path(relative)}}
