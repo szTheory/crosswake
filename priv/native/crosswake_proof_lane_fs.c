@@ -1,12 +1,19 @@
+#define _GNU_SOURCE
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-enum { EXISTS = 10, MISSING = 11, UNSAFE = 12, FAILURE = 20 };
+#ifdef __APPLE__
+#include <sys/clonefile.h>
+#endif
+
+enum { EXISTS = 10, MISSING = 11, UNSAFE = 12, FAILURE = 20, MAX_FRAME = 4 * 1024 * 1024 };
 
 static int safe_relative(const char *path) {
   const char *part = path;
@@ -56,10 +63,7 @@ static int parent_fd(int root, const char *relative, int create) {
     *end = '\0';
     next = openat(fd, part, O_RDONLY | O_DIRECTORY | O_NOFOLLOW);
     if (next < 0 && create && errno == ENOENT) {
-      if (mkdirat(fd, part, 0700) != 0 && errno != EEXIST) {
-        close(fd);
-        return -1;
-      }
+      if (mkdirat(fd, part, 0700) != 0 && errno != EEXIST) { close(fd); return -1; }
       next = openat(fd, part, O_RDONLY | O_DIRECTORY | O_NOFOLLOW);
     }
     close(fd);
@@ -77,82 +81,125 @@ static const char *leaf(const char *relative) {
 
 static int same_directory(int first, int second) {
   struct stat a, b;
-  return fstat(first, &a) == 0 && fstat(second, &b) == 0 &&
-         a.st_dev == b.st_dev && a.st_ino == b.st_ino;
+  return fstat(first, &a) == 0 && fstat(second, &b) == 0 && a.st_dev == b.st_dev && a.st_ino == b.st_ino;
 }
 
-static void test_hook(void) {
-  const char *hook = getenv("CROSSWAKE_PROOF_LANE_FS_TEST_BEFORE_FINAL_OPEN");
-  if (hook && *hook) {
-    int fd = open(hook, O_WRONLY | O_CREAT | O_EXCL, 0600);
-    if (fd >= 0) close(fd);
-    usleep(50000);
+static int read_exact(int fd, void *buffer, size_t length) {
+  size_t offset = 0;
+  while (offset < length) {
+    ssize_t count = read(fd, (char *)buffer + offset, length - offset);
+    if (count <= 0) return -1;
+    offset += (size_t)count;
   }
+  return 0;
 }
 
-static int test_post_create_fault(const char *expected) {
-  const char *fault = getenv("CROSSWAKE_PROOF_LANE_FS_TEST_POST_CREATE_FAULT");
-  return fault && strcmp(fault, expected) == 0;
+static int write_exact(int fd, const void *buffer, size_t length) {
+  size_t offset = 0;
+  while (offset < length) {
+    ssize_t count = write(fd, (const char *)buffer + offset, length - offset);
+    if (count <= 0) return -1;
+    offset += (size_t)count;
+  }
+  return 0;
 }
 
-static int test_collision_cleanup_failure(void) {
-  const char *fault = getenv("CROSSWAKE_PROOF_LANE_FS_TEST_COLLISION_CLEANUP_FAILURE");
-  return fault && strcmp(fault, "1") == 0;
+static int read_frame(unsigned char **bytes, size_t *length) {
+  unsigned char header[8];
+  uint64_t size = 0;
+  int index;
+  if (read_exact(STDIN_FILENO, header, sizeof(header)) != 0) return -1;
+  for (index = 0; index < 8; index++) size = (size << 8) | header[index];
+  if (size > MAX_FRAME) return -1;
+  *bytes = malloc(size ? (size_t)size : 1);
+  if (!*bytes || read_exact(STDIN_FILENO, *bytes, (size_t)size) != 0) { free(*bytes); return -1; }
+  *length = (size_t)size;
+  return 0;
 }
 
-static int write_file(const char *root_path, const char *relative, const char *input_path) {
-  char buffer[8192];
-  int root, parent, fresh, file, input, result;
-  struct stat input_stat;
-  ssize_t read_count;
-  if (!safe_relative(relative)) return UNSAFE;
+static int barrier(const char *mode, const char *point) {
+  char token[7];
+  int enabled = (strcmp(mode, "both") == 0) || (strcmp(mode, point) == 0);
+  if (!enabled) return 0;
+  if (dprintf(STDOUT_FILENO, "%s_publish\n", point) < 0) return -1;
+  if (read_exact(STDIN_FILENO, token, sizeof(token)) != 0) return -1;
+  return memcmp(token, "resume\n", sizeof(token)) == 0 ? 0 : -1;
+}
+
+#ifdef __linux__
+static int verify_proc_ref(int fd, char *reference, size_t size) {
+  struct stat held, opened;
+  int reference_fd;
+  if (snprintf(reference, size, "/proc/self/fd/%d", fd) >= (int)size) return -1;
+  reference_fd = open(reference, O_RDONLY | O_CLOEXEC);
+  if (reference_fd < 0) return -1;
+  if (fstat(fd, &held) != 0 || fstat(reference_fd, &opened) != 0 ||
+      held.st_dev != opened.st_dev || held.st_ino != opened.st_ino) {
+    close(reference_fd);
+    return -1;
+  }
+  close(reference_fd);
+  return 0;
+}
+#endif
+
+static int write_file(const char *root_path, const char *relative, const char *mode) {
+  unsigned char *bytes = NULL;
+  unsigned char *readback = NULL;
+  size_t length = 0;
+  int root = -1, parent = -1, fresh = -1, file = -1, result = FAILURE;
+#ifdef __APPLE__
+  char private_leaf[64];
+#endif
+  if (!safe_relative(relative) || read_frame(&bytes, &length) != 0) goto cleanup;
   root = root_fd(root_path);
-  if (root < 0) return UNSAFE;
+  if (root < 0) { result = UNSAFE; goto cleanup; }
   parent = parent_fd(root, relative, 1);
-  if (parent < 0) { int code = errno == ENOENT ? MISSING : UNSAFE; close(root); return code; }
-  test_hook();
+  if (parent < 0) { result = errno == ENOENT ? MISSING : UNSAFE; goto cleanup; }
   fresh = parent_fd(root, relative, 0);
-  if (fresh < 0 || !same_directory(parent, fresh)) {
-    if (fresh >= 0) close(fresh);
-    close(parent); close(root); return UNSAFE;
+  if (fresh < 0 || !same_directory(parent, fresh)) { result = UNSAFE; goto cleanup; }
+  close(fresh); fresh = -1;
+#ifdef __linux__
+  file = openat(parent, ".", O_TMPFILE | O_RDWR | O_CLOEXEC, 0600);
+  if (file < 0) goto cleanup;
+#elif defined(__APPLE__)
+  /* Darwin's private source leaf is unlinked before caller bytes or barriers. */
+  if (snprintf(private_leaf, sizeof(private_leaf), ".crosswake-proof-lane-private-%ld", (long)getpid()) >= (int)sizeof(private_leaf)) goto cleanup;
+  file = openat(parent, private_leaf, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW, 0600);
+  if (file < 0) goto cleanup;
+  if (unlinkat(parent, private_leaf, 0) != 0) goto cleanup;
+#else
+  goto cleanup;
+#endif
+  if (write_exact(file, bytes, length) != 0 || fsync(file) != 0) goto cleanup;
+  readback = malloc(length ? length : 1);
+  if (!readback || lseek(file, 0, SEEK_SET) < 0 || read_exact(file, readback, length) != 0 || memcmp(bytes, readback, length) != 0) goto cleanup;
+  if (barrier(mode, "before") != 0) goto cleanup;
+  fresh = parent_fd(root, relative, 0);
+  if (fresh < 0 || !same_directory(parent, fresh)) { result = UNSAFE; goto cleanup; }
+  close(fresh); fresh = -1;
+#ifdef __linux__
+  char reference[64];
+  if (verify_proc_ref(file, reference, sizeof(reference)) != 0) goto cleanup;
+  if (linkat(AT_FDCWD, reference, parent, leaf(relative), AT_SYMLINK_FOLLOW) != 0) {
+    result = errno == EEXIST ? EXISTS : FAILURE;
+    goto cleanup;
   }
-  close(fresh);
-  input = open(input_path, O_RDONLY | O_NOFOLLOW);
-  if (input < 0 || fstat(input, &input_stat) != 0 || !S_ISREG(input_stat.st_mode)) {
-    if (input >= 0) close(input);
-    close(parent); close(root); return FAILURE;
+#elif defined(__APPLE__)
+  if (fclonefileat(file, parent, leaf(relative), 0) != 0) {
+    result = errno == EEXIST ? EXISTS : FAILURE;
+    goto cleanup;
   }
-  file = openat(parent, leaf(relative), O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0600);
-  if (file < 0) {
-    int code = errno == EEXIST ? EXISTS : (errno == ELOOP || errno == ENOTDIR ? UNSAFE : FAILURE);
-    close(input); close(parent); close(root); return code;
-  }
-  while (1) {
-    ssize_t written = 0;
-    if (test_post_create_fault("read")) { result = FAILURE; goto cleanup_created; }
-    read_count = read(input, buffer, sizeof(buffer));
-    if (read_count <= 0) break;
-    while (written < read_count) {
-      ssize_t count = write(file, buffer + written, (size_t)(read_count - written));
-      if (test_post_create_fault("write") || count <= 0) {
-        result = FAILURE;
-        goto cleanup_created;
-      }
-      written += count;
-    }
-  }
-  if (read_count < 0 || test_post_create_fault("fsync") || fsync(file) != 0) {
-    result = FAILURE;
-    goto cleanup_created;
-  }
-  close(input); close(file); close(parent); close(root); return 0;
-
-cleanup_created:
-  close(input);
-  close(file);
-  unlinkat(parent, leaf(relative), 0);
-  close(parent);
-  close(root);
+#endif
+  if (barrier(mode, "after") != 0) goto cleanup;
+  result = 0;
+cleanup:
+  if (fresh >= 0) close(fresh);
+  if (file >= 0) close(file);
+  if (parent >= 0) close(parent);
+  if (root >= 0) close(root);
+  free(readback);
+  free(bytes);
   return result;
 }
 
@@ -170,45 +217,13 @@ static int read_file(const char *root_path, const char *relative, int emit) {
   close(parent); close(root);
   if (file < 0) return errno == ENOENT ? MISSING : UNSAFE;
   if (fstat(file, &statbuf) != 0 || !S_ISREG(statbuf.st_mode)) { close(file); return UNSAFE; }
-  if (emit) while ((count = read(file, buffer, sizeof(buffer))) > 0) {
-    if (write(STDOUT_FILENO, buffer, (size_t)count) != count) { close(file); return FAILURE; }
-  }
+  if (emit) while ((count = read(file, buffer, sizeof(buffer))) > 0) if (write_exact(STDOUT_FILENO, buffer, (size_t)count) != 0) { close(file); return FAILURE; }
   close(file);
   return count < 0 ? FAILURE : 0;
 }
 
-static int publish_file(const char *root_path, const char *staging, const char *destination) {
-  int root, stage_parent, destination_parent;
-  if (!safe_relative(staging) || !safe_relative(destination)) return UNSAFE;
-  root = root_fd(root_path);
-  if (root < 0) return UNSAFE;
-  stage_parent = parent_fd(root, staging, 0);
-  destination_parent = parent_fd(root, destination, 0);
-  if (stage_parent < 0 || destination_parent < 0) {
-    if (stage_parent >= 0) close(stage_parent);
-    if (destination_parent >= 0) close(destination_parent);
-    close(root); return UNSAFE;
-  }
-  if (linkat(stage_parent, leaf(staging), destination_parent, leaf(destination), 0) != 0) {
-    int code;
-    if (errno == EEXIST) {
-      code = test_collision_cleanup_failure() || unlinkat(stage_parent, leaf(staging), 0) != 0
-                 ? FAILURE
-                 : EXISTS;
-    } else {
-      code = errno == ELOOP || errno == ENOTDIR ? UNSAFE : FAILURE;
-    }
-    close(stage_parent); close(destination_parent); close(root); return code;
-  }
-  if (unlinkat(stage_parent, leaf(staging), 0) != 0) {
-    close(stage_parent); close(destination_parent); close(root); return FAILURE;
-  }
-  close(stage_parent); close(destination_parent); close(root); return 0;
-}
-
 int main(int argc, char **argv) {
   if (argc == 5 && strcmp(argv[1], "write") == 0) return write_file(argv[2], argv[3], argv[4]);
-  if (argc == 5 && strcmp(argv[1], "publish") == 0) return publish_file(argv[2], argv[3], argv[4]);
   if (argc != 4) return FAILURE;
   if (strcmp(argv[1], "read") == 0) return read_file(argv[2], argv[3], 1);
   if (strcmp(argv[1], "regular") == 0) return read_file(argv[2], argv[3], 0);

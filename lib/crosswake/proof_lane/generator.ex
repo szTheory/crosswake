@@ -105,22 +105,10 @@ defmodule Crosswake.ProofLane.Generator do
         {:ok, %{path: manifest.path, status: :reused}}
 
       {:error, :missing} ->
-        promote_manifest(root, manifest.relative, manifest.contents, manifest.path)
+        ensure_missing(root, manifest.relative, manifest.contents, manifest.path)
 
       {:error, :unsafe} ->
         {:error, {"PL-GENERATE-DESTINATION", manifest.path}}
-    end
-  end
-
-  defp promote_manifest(root, relative, contents, relative_path) do
-    staging = relative <> ".staging-" <> Integer.to_string(System.unique_integer([:positive]))
-
-    with {:ok, :created} <- GeneratorFS.write(root, staging, contents),
-         {:ok, status} <- GeneratorFS.publish(root, staging, relative) do
-      {:ok, %{path: relative_path, status: status}}
-    else
-      {:error, {"PL-GENERATE-DESTINATION", _}} = error -> error
-      _ -> {:error, {"PL-GENERATE-MANIFEST", "manifest"}}
     end
   end
 
