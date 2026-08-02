@@ -1,8 +1,8 @@
 ---
 phase: 160-scoped-replay-and-auth-safety
-reviewed: 2026-08-02T18:09:27Z
+reviewed: 2026-08-02T19:31:40Z
 depth: standard
-files_reviewed: 20
+files_reviewed: 24
 files_reviewed_list:
   - .github/workflows/offline-sync-e2e-gate.yml
   - examples/phoenix_host/e2e/offline_sync.spec.ts
@@ -12,75 +12,101 @@ files_reviewed_list:
   - examples/phoenix_host/lib/crosswake_example/local_first/study.ex
   - examples/phoenix_host/lib/crosswake_example/local_first/sync_controller.ex
   - examples/phoenix_host/priv/repo/migrations/20260802160000_scope_review_events.exs
+  - examples/phoenix_host/priv/repo/migrations/20260802170000_restore_review_event_idempotency_guard.exs
   - examples/phoenix_host/priv/static/offline_study.js
   - examples/phoenix_host/test/crosswake_example/local_first/replay_admission_test.exs
+  - examples/phoenix_host/test/crosswake_example/local_first/study_test.exs
   - lib/crosswake/doctor/doctor.ex
   - lib/crosswake/offline/journal.ex
   - lib/crosswake/offline/replay.ex
   - lib/crosswake/offline/runtime.ex
   - lib/crosswake/offline/safe_observation.ex
+  - lib/crosswake/offline/telemetry.ex
   - lib/crosswake/proof_lane/evidence.ex
   - lib/crosswake/telemetry.ex
   - packages/crosswake_sigra/lib/crosswake/companions/sigra.ex
+  - packages/crosswake_sigra/test/crosswake/companions/sigra/contracts_test.exs
   - test/crosswake/offline/safe_observation_test.exs
   - test/crosswake/proof/phase160_scoped_replay_privacy_test.exs
 findings:
-  critical: 4
+  critical: 2
   warning: 1
   info: 0
-  total: 5
+  total: 3
 status: issues_found
 ---
 
 # Phase 160: Code Review Report
 
-**Reviewed:** 2026-08-02T18:09:27Z
+**Reviewed:** 2026-08-02T19:31:40Z
 **Depth:** standard
-**Files Reviewed:** 20
+**Files Reviewed:** 24
 **Status:** issues_found
 
 ## Summary
 
-The phase adds useful scope and lifecycle primitives, but the submitted default host path is not safe to ship. It bypasses Sigra's actual route/session evaluation, silently strands pre-upgrade offline work, weakens persisted idempotency for legacy rows, and permits unvalidated values to enter the purportedly closed telemetry projection.
-
-## Narrative Findings (AI reviewer)
+The scoped browser outbox, Phoenix admission path, idempotency schema, SafeObservation projections, and proof/CI surfaces were reviewed. The phase has two defects that violate its privacy and durable replay guarantees. Focused safe-observation tests and Phoenix host local-first tests passed, but neither suite covers the rejected-idempotency state or the server/browser scope-validator mismatch.
 
 ## Critical Issues
 
-### CR-01: Default replay admission invokes Sigra with nil authority inputs (BLOCKER)
+### CR-01: Server accepts non-opaque scope references and persists them
 
-**File:** `examples/phoenix_host/lib/crosswake_example/local_first/replay_admission.ex:116`
-**Issue:** The no-callback production path calls `Crosswake.Companions.Sigra.evaluate_auth(nil, nil, [])`, not the resolved `route` and `session`. `Evaluator.evaluate_route_auth/3` explicitly allows a `nil` route, so this branch always produces an allow and never evaluates the replay route's predicates or the current session. A replay can therefore pass the Sigra layer even when the real route/session should be denied.
-**Fix:** Pass a real Sigra `RouteEntry` and `AuthContext` derived from the resolved host route and current session, preferably through `Crosswake.Companions.Sigra.replay_decision(route, session, opts)`. Fail closed unless those values can be built and evaluated; add an integration test for a default-path Sigra denial.
+**Classification:** BLOCKER
 
-### CR-02: SafeObservation can be forged and emits unvalidated sensitive values (BLOCKER)
+**File:** `examples/phoenix_host/lib/crosswake_example/local_first/replay_admission.ex:47`
 
-**File:** `lib/crosswake/telemetry.ex:362`
-**Issue:** `emit_safe_observation/1` accepts any `%SafeObservation{}` and immediately projects it. Elixir callers can construct that public struct directly, bypassing `SafeObservation.new/1` and its route/enum/measurement validation; for example, a sensitive scope or payload can be assigned to `route_id` and will be sent to telemetry and the default Logger. The same bypass exists in `SafeObservation.to_telemetry/1` and `Doctor.static_readiness/1`.
-**Fix:** Re-validate struct contents at every public projection/egress boundary (for example, convert `Map.from_struct(observation)` through `SafeObservation.new/1` and return an error on failure), or expose an opaque validated value with projection functions that reject forged structs. Add tests that direct struct construction containing a canary is refused and never logged.
+**Issue:** `valid_scope/1` accepts any binary beginning with `v1.` whose remaining byte length is 8–120. Unlike the browser and library validators, it permits whitespace, delimiters, and account-like values. A host callback that supplies the same value then admits it and `Study.apply_one/3` persists it in `review_events.scope_ref`. This breaks the explicit opaque-scope/privacy boundary and gives the three layers incompatible admission rules.
 
-### CR-03: IndexedDB schema upgrade silently makes existing queued mutations unrecoverable (BLOCKER)
+**Fix:** Use the same anchored opaque-reference grammar as `Crosswake.Offline.Journal` and the browser (or expose one shared validator), and add rejection tests for spaces, punctuation, and identifier-shaped values.
 
-**File:** `examples/phoenix_host/priv/static/offline_study.js:122-133`
-**Issue:** The v3 upgrade creates `scoped_mutations` but never reads, quarantines, migrates, or visibly reports records in the old `mutations` store. Every replay reader now accesses only `scoped_mutations` (line 213), so offline mutations queued by the prior shipped client are retained in IndexedDB but become permanently invisible and can never replay. This is silent loss of saved learner work during upgrade.
-**Fix:** Add an explicit legacy-record migration/recovery state. Do not assign an old record to a scope automatically; retain it in a visible blocked/quarantine state and require fresh host authority to map it safely, or provide a deterministic user-safe recovery/removal flow. Cover an upgrade from DB version 1 containing a mutation.
+```elixir
+@scope_ref_pattern ~r/^v[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}$/
 
-### CR-04: Migration removes the only legacy idempotency protection without backfilling scope (BLOCKER)
+defp valid_scope(scope_ref) when is_binary(scope_ref) do
+  if Regex.match?(@scope_ref_pattern, scope_ref), do: :ok, else: {:error, :invalid_envelope}
+end
+```
 
-**File:** `examples/phoenix_host/priv/repo/migrations/20260802160000_scope_review_events.exs:5-10`
-**Issue:** Existing `review_events` rows receive `scope_ref = NULL`; the migration then drops the global unique index and creates a nullable `(scope_ref, client_mutation_id)` index. `Study.apply_one/3` only looks up the scoped pair, so a replay of a legacy mutation id under its actual scope cannot see its pre-migration row and can apply the domain effect a second time. NULL also means the database itself does not enforce the required scope invariant.
-**Fix:** Perform a safe data migration before replacing the index: backfill each existing row from an authoritative scope mapping, make `scope_ref` `null: false`, then add the scoped unique index. If old rows cannot be mapped safely, preserve a global idempotency guard/quarantine them so they can never be replayed as new effects. Add migration fixtures proving an old id cannot create a second row.
+### CR-02: A rejected idempotency record is replayed as accepted
+
+**Classification:** BLOCKER
+
+**File:** `examples/phoenix_host/lib/crosswake_example/local_first/study.ex:18`
+
+**Issue:** Any existing row for the same scope is classified as `:duplicate` regardless of `ReviewEvent.status`; both the transaction path (line 25) and recovery path (lines 69–70) report `outcome: :accepted`. Since the schema explicitly allows `status: "rejected"`, a retry of a rejected mutation is falsely acknowledged as accepted and the browser deletes its retained outbox item. That loses the only client-side signal requiring attention and violates truthful replay outcomes.
+
+**Fix:** Branch on the persisted status and return a rejected outcome (or a closed halt that retains the record) for rejected rows; cover both the normal and race-recovery paths.
+
+```elixir
+%ReviewEvent{scope_ref: ^scope_ref, status: "accepted"} -> {:ok, :duplicate}
+%ReviewEvent{scope_ref: ^scope_ref, status: "rejected"} -> {:ok, :rejected}
+```
+
+Then translate `:rejected` to `{:ok, %{client_mutation_id: id, outcome: :rejected}}` rather than the unconditional accepted result.
 
 ## Warnings
 
-### WR-01: Stale replay callbacks can still overwrite the new scope's status (WARNING)
+### WR-01: Network changes while inactive create an unhandled rejected promise
 
-**File:** `examples/phoenix_host/priv/static/offline_study.js:307-329`
-**Issue:** The lease is checked once immediately after parsing a successful response, but several awaited operations and all non-OK handling happen afterward without another check. If `fenceScope()` and a new activation occur after line 309, the old flush can still update shared UI state at lines 319-329 (and the non-OK branch always does), falsely reporting old-scope sync/paused status in the new account.
-**Fix:** Check `leaseIsCurrent(lease)` before every status/UI side effect after an await, including the non-OK response path; return without UI mutation when it is stale. Extend the in-flight test to fence after the success check/during deletion and to exercise a delayed forbidden response.
+**Classification:** WARNING
+
+**File:** `examples/phoenix_host/priv/static/offline_study.js:448`
+
+**Issue:** The `online` listener passes `flushOutbox` directly (line 582). When no lease is active, `requireActiveLease()` at line 452 throws before `flushScopedOutbox`'s `try/finally` exists; event listeners do not await that rejected async promise. A normal reconnect after launch, logout, or a fence therefore produces an unhandled rejection instead of an inert no-op.
+
+**Fix:** Treat inactive replay as an explicit no-op before creating the invocation, and catch unexpected listener failures.
+
+```javascript
+async function flushOutbox() {
+  if (!isScopeRef(activeScopeRef) || activeEpoch < 1) return;
+  // existing invocation setup
+}
+
+window.addEventListener('online', () => { void flushOutbox().catch(renderPausedStatus); });
+```
 
 ---
 
-_Reviewed: 2026-08-02T18:09:27Z_
+_Reviewed: 2026-08-02T19:31:40Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
