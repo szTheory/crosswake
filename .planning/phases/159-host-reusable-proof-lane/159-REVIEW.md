@@ -1,8 +1,8 @@
 ---
 phase: 159-host-reusable-proof-lane
-reviewed: 2026-08-01T00:00:00Z
+reviewed: 2026-08-02T00:00:00Z
 depth: standard
-files_reviewed: 32
+files_reviewed: 33
 files_reviewed_list:
   - examples/phoenix_host/e2e/crosswake_proof_lane/browser_online_restore.spec.ts
   - examples/phoenix_host/e2e/crosswake_proof_lane/proof_lane.spec.ts
@@ -47,37 +47,39 @@ status: issues_found
 
 # Phase 159: Code Review Report
 
-**Reviewed:** 2026-08-01T00:00:00Z
+**Reviewed:** 2026-08-02T00:00:00Z
 **Depth:** standard
-**Files Reviewed:** 32
+**Files Reviewed:** 33
 **Status:** issues_found
 
 ## Summary
 
-The browser helper, generator provenance checks, configuration validation, and evidence allowlist were reviewed along with their tests. Targeted ExUnit coverage passed (54 tests), but the native promotion helper does not preserve the claimed contained, race-resistant filesystem boundary and does not clean up failed publications.
+The generator, evidence validation, browser helpers, native publication helpers, templates, and proof scripts were reviewed at standard depth. The generated iOS shell cannot satisfy the proof contract that its own verifier requires. In addition, a native-promotion failure irreversibly consumes the requested evidence destination, preventing a safe retry.
 
 ## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Evidence promotion can be redirected outside its requested destination
+### CR-01: Generated iOS proof lane can never produce the required passed outcome
 
-**File:** `priv/native/crosswake_evidence_promote.c:95-118`
-**Issue:** The helper creates `argv[1]` and then subsequently opens `argv[1]/proof-lane-evidence.json`, `argv[1]/.complete.pending`, and `argv[1]` again by path. It never holds and uses a directory descriptor for these operations. A concurrent actor able to modify the destination parent can replace the freshly created empty directory with a symlink between line 95 and line 100; all later path-based operations then follow that symlink. `O_NOFOLLOW` only protects the final file component, not an ancestor. This violates the promotion containment/race-resistance boundary and permits unintended writes in the symlink target.
+**File:** `priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex:18-21` (enforced by `ProofLaneContractTests.swift.eex:5-11`, `ProofLaneUITests.swift.eex:46-53`, and `script/verify_generated_ios_shell.sh:157-170`)
 
-**Fix:** Open the newly created directory once with `open(..., O_DIRECTORY | O_NOFOLLOW)` and perform every file creation, verification, rename, and final `fsync` with `openat`, `renameat`/`renameatx_np`, and `unlinkat` relative to that held descriptor. Re-check the directory inode if any path-based fallback remains. Add a concurrent ancestor-replacement test that asserts no files are written outside the destination.
+**Issue:** Every freshly generated app calls `ProofLaneHostAdapterFactory.make()`, whose only implementation returns `nil`. `ProofLaneView.refresh()` then leaves its initial `.unavailable` snapshot intact. The unit test unwraps the factory result and requires `.passed`; the UI test requires a `Passed:` label after each launch; and the verifier reports success only when those tests pass. Thus the exact generated project that `verify_generated_ios_shell.sh --proof-lane` creates (lines 54-65) necessarily fails its declared physical/simulator proof contract. The current verifier tests fake `xcodebuild` output rather than exercise this generated runtime behavior, so the defect is not caught.
+
+**Fix:** Generate a concrete, host-supplied adapter implementation as part of the proof target (or generate tests that explicitly assert the truthful blocked/unavailable state until a host adapter is installed). If a passed result is required, make `ProofLaneHostAdapterFactory.make()` return an adapter whose `observe()` derives the result from the required host authorization/replay state, then run the real generated XCTest/UI test lane.
 
 ## Warnings
 
-### WR-01: A mid-publication failure permanently leaves an unusable evidence destination
+### WR-01: Failed evidence promotion permanently blocks retry at the same destination
 
-**File:** `priv/native/crosswake_evidence_promote.c:95-114`
-**Issue:** Once `mkdir(argv[1], 0700)` succeeds, every later error returns immediately without removing the partially created artifact, pending marker, or directory. A transient write/fsync/rename error therefore leaves the destination existing but incomplete; future `Evidence.promote/2` calls return `PL-EVIDENCE-COLLISION`, so the normal retry path is blocked. This also conflicts with the intended all-or-nothing evidence publication behavior.
+**File:** `priv/native/crosswake_evidence_promote.c:157-161, 189-199`
 
-**Fix:** Track which entries were created and, on every failure before completion, remove only those entries via the held directory descriptor, fsync the parent, then remove the directory if it is still the helper-created empty directory. Preserve the existing collision behavior for a directory that existed before this invocation. Add fault-injection tests for artifact-write, marker-write, and rename failures followed by a successful retry.
+**Issue:** The helper reserves the destination by creating its directory. On any later failure (write/fsync/marker/verification), cleanup removes only the two files; it never removes the now-empty reserved directory. A subsequent attempt at the same requested destination fails at `mkdirat` with `EEXIST` and is surfaced as `PL-EVIDENCE-COLLISION`, even though no complete evidence artifact exists. Transient I/O failures therefore turn into a persistent, misleading failure that requires callers to change the evidence path.
+
+**Fix:** After deleting partial entries and before closing `parent_fd`, remove the empty reservation directory with `unlinkat(parent_fd, basename, AT_REMOVEDIR)` (treat a non-empty directory as a failed cleanup, never recursively remove it). Keep the existing no-replace behavior for completed destinations.
 
 ---
 
-_Reviewed: 2026-08-01T00:00:00Z_
+_Reviewed: 2026-08-02T00:00:00Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
