@@ -4,13 +4,44 @@ defmodule Crosswake.Companions.Sigra.ContractsTest do
   alias Crosswake.Companions.Sigra.Contracts
   alias Crosswake.Companions.Sigra.DenialCodes
   alias Crosswake.Companions.Sigra
+  alias Crosswake.Manifest.Types.RouteEntry
 
   describe "replay decision" do
-    test "projects backend authority into only a closed allow or denial class" do
-      assert :allow = Sigra.replay_decision(nil, nil)
+    test "denies nil, maps, malformed contexts, and predicated route evidence through a closed class" do
+      assert {:deny, :sigra_denied} = Sigra.replay_decision(nil, nil)
 
       assert {:deny, :sigra_denied} =
                Sigra.replay_decision(%{unexpected: :route}, %{token: "secret"})
+
+      assert {:deny, :sigra_denied} =
+               Sigra.replay_decision(valid_route(), %{actor_id: "actor_secret"})
+
+      assert {:deny, :sigra_denied} =
+               Sigra.replay_decision(valid_route(), %Contracts.AuthContext{
+                 actor_id: "actor_secret",
+                 org_id: "org_secret",
+                 mfa_level: :mfa,
+                 auth_age: -1
+               })
+
+      assert {:deny, :sigra_denied} =
+               Sigra.replay_decision(%RouteEntry{valid_route() | auth_min_level: :phishing_resistant}, valid_auth_context())
+    end
+
+    test "accepts only valid typed route and auth context evidence" do
+      assert :allow = Sigra.replay_decision(valid_route(), valid_auth_context())
+    end
+
+    test "collapses evaluator exceptions and incompatible arguments without authority details" do
+      result =
+        Sigra.replay_decision(
+          %RouteEntry{valid_route() | requires_recent_auth: "unexpected"},
+          valid_auth_context(),
+          :not_keyword
+        )
+
+      assert {:deny, :sigra_denied} = result
+      refute inspect(result) =~ "actor_secret"
     end
 
     test "never returns session, scope, credential, provider, device, or ceremony bytes" do
@@ -254,6 +285,21 @@ defmodule Crosswake.Companions.Sigra.ContractsTest do
       auth_age: 120
     }
     |> Map.merge(overrides)
+  end
+
+  defp valid_route do
+    %RouteEntry{
+      id: "offline-study",
+      path: "/study",
+      runtime: :offline_island,
+      offline: :local_first,
+      gated_by: :offline_study_replay
+    }
+  end
+
+  defp valid_auth_context do
+    {:ok, auth_context} = Contracts.new_auth_context(auth_context_attrs())
+    auth_context
   end
 
   defp session_authority_lane_attrs(overrides \\ %{}) do
