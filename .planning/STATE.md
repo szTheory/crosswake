@@ -2,30 +2,30 @@
 gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
-current_phase: 159
-current_phase_name: host-reusable-proof-lane
-status: gaps_found
-stopped_at: Phase 159 gap-closure Plan 28 verified and ready to execute
-last_updated: "2026-08-02T02:50:14Z"
+current_phase: 160
+current_phase_name: scoped-replay-and-auth-safety
+status: ready_for_discussion
+stopped_at: Completed 159-28-PLAN.md; Phase 160 discussion next
+last_updated: "2026-08-02T14:20:00Z"
 last_activity: 2026-08-02
-last_activity_desc: Gap-closure Plan 28 passed independent plan verification.
+last_activity_desc: Phase 159 Plan 28 complete after fresh final-tree gate
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 48
-  completed_plans: 47
-  percent: 20
-current_plan: 27
+  completed_plans: 48
+  percent: 40
+current_plan: 0
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — GAPS FOUND
-Plan: 27 of 28 executed; gap-closure Plan 28 is verified and ready to run
-Status: The descriptor-pinning repair remains open until Plan 28 executes and its fresh gate passes.
-Last activity: 2026-08-02 — Gap-closure planning passed independent verification with all requirements and decisions covered.
+Phase: 160 (scoped-replay-and-auth-safety) — READY FOR DISCUSSION
+Plan: 0 of pending plans
+Status: Phase 159 is complete; discuss Phase 160 before planning.
+Last activity: 2026-08-02 — Phase 159 Plan 28 completed after a fresh final-tree gate.
 
 ## Active Objective
 
@@ -44,17 +44,11 @@ framework launch.
 
 ## Next Action
 
-Execute Phase 159 Plan 28: pin the destination parent and reserved destination with no-follow
-directory descriptors, publish only through descriptor-relative operations, prove ancestor
-replacement cannot redirect retained evidence, then rerun the complete same-tree gate. Do not
-start Phase 160. TODO-002 remains the bounded adopter-input gate and adopter-instance completeness
-remains `unknown_blocking`.
+Start Phase 160 discussion. TODO-002 remains the bounded adopter-input gate and adopter-instance
+completeness remains `unknown_blocking`; do not infer concrete adopter routes or promote downstream
+device claims.
 
 ## Blockers
-
-- Phase 159 native evidence publication reserves a pathname and then reuses pathname-based leaf
-  operations, so an ancestor replacement can redirect retained evidence outside the requested
-  destination. Descriptor-pinned publication and an adversarial regression are required.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
@@ -152,6 +146,7 @@ remains `unknown_blocking`.
 - [Phase 159]: Phase completion required and received a fresh full same-tree gate; focused repairs and stale evidence did not advance status.
 - [Phase ?]: Generator helpers are reusable only inside one invocation-owned private lifecycle; predictable shared-temp executables are inert.
 - [Phase ?]: Evidence checks consume only the completion-digest-bound snapshot; replacement races use a test-only process-local barrier.
+- [Phase 159]: Retained-evidence publication holds no-follow parent and destination descriptors after reservation; all leaf writes, verification, no-replace handoff, owned-leaf cleanup, and synchronization remain descriptor-relative, and a deterministic ancestor replacement cannot redirect evidence.
 
 ## Deferred Items
 
@@ -180,8 +175,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-02T02:36:56.239Z
-**Stopped at:** Completed 159-27-PLAN.md; Phase 160 discussion next
+**Last session:** 2026-08-02T14:20:00Z
+**Stopped at:** Completed 159-28-PLAN.md; Phase 160 discussion next
 **Resume file:** None
 
 ## Performance Metrics
@@ -234,3 +229,4 @@ this milestone reset.
 | Phase 159 P25 | 22m | 1 tasks | 3 files |
 | Phase 159-host-reusable-proof-lane P26 | 9min | 1 tasks | 2 files |
 | Phase 159-host-reusable-proof-lane P27 | 6min | 1 task | 5 files |
+| Phase 159-host-reusable-proof-lane P28 | 15m | 2 tasks | 7 files |

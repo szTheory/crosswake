@@ -33,7 +33,7 @@ separately funded business-line mandate.
   surface-area audit, classify adopter routes, update support truth, and install privacy-safe
   context routing.
 
-- [ ] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
+- [x] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
   shell, offline-island, and physical-device proof scaffolding.
 
 - [ ] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload
@@ -147,13 +147,13 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 27/28 plans executed
-**Verification:** Gaps found (8/10 must-haves verified) — the fresh focused gate passes 54 tests,
-warning-clean native helper builds, explicit TypeScript, isolated generated Phoenix Playwright
-proof, shell syntax, and formatting, but native evidence publication remains redirectable through
-an ancestor-replacement race because reservation and leaf operations are path-based rather than
-descriptor-relative. The generated accessibility runtime remains an advisory `not_run` backstop;
-TODO-002 remains open and adopter-instance completeness remains `unknown_blocking`.
+**Plans:** 28/28 plans executed
+**Verification:** Complete — one fresh final-tree gate passed 55 focused tests, warning-clean
+native helper builds, TypeScript, the isolated generated Phoenix Playwright proof, shell syntax,
+and formatting. Retained-evidence publication pins no-follow parent and destination descriptors;
+the deterministic post-reservation ancestor-replacement regression cannot redirect evidence. The
+generated accessibility runtime remains advisory and non-promoting; TODO-002 remains open and
+adopter-instance completeness remains `unknown_blocking`.
 
 Plans:
 **Wave 1**
@@ -236,7 +236,7 @@ Plans:
 
 **Wave 18** *(gap closure; blocked on the executed Wave 17 plan)*
 
-- [ ] 159-28-PLAN.md — Pin retained-evidence publication to no-follow directory descriptors, prove ancestor replacement cannot redirect it, and reconcile Phase 159 from one fresh complete gate.
+- [x] 159-28-PLAN.md — Pin retained-evidence publication to no-follow directory descriptors, prove ancestor replacement cannot redirect it, and reconcile Phase 159 from one fresh complete gate.
 
 **Cross-cutting constraints:**
 

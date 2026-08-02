@@ -1,15 +1,15 @@
 ---
 phase: 159
 slug: host-reusable-proof-lane
-status: validated
+status: complete
 nyquist_compliant: true
-wave_17_complete: true
-validated: 2026-08-02T03:00:00Z
+wave_18_complete: true
+validated: 2026-08-02T14:20:00Z
 ---
 
 # Phase 159 — Final Same-Tree Validation
 
-> Fresh final-tree validation after the private-helper and digest-bound evidence repairs. Generated accessibility-size runtime execution remains advisory, non-promoting, and not required for this verdict.
+> Fresh final-tree validation after descriptor-pinned evidence publication. Generated accessibility-size runtime execution remains advisory, non-promoting, and not required for this verdict.
 
 ## Observed Complete Gate
 
@@ -17,7 +17,7 @@ One unchanged tree passed the complete required gate on the current Linux platfo
 
 | Check | Observed result |
 | --- | --- |
-| Focused generator/config/template/iOS/evidence ExUnit suites | PASS — 54 tests, 0 failures |
+| Focused generator/config/template/iOS/evidence ExUnit suites | PASS — 55 tests, 0 failures |
 | Repository-native evidence and filesystem C helper builds | PASS — warning-clean under the required C11 warnings-as-errors contract |
 | Explicit Phoenix-host TypeScript proof project | PASS |
 | Isolated generated Phoenix Playwright proof through the existing primary webServer and test-database lifecycle | PASS — 1 generated proof |
@@ -33,7 +33,7 @@ The generated Phoenix proof remains additive: it performs the real UI mutation a
 | Private helper provenance | PASS — poisoned former shared-cache executable remained inert across direct filesystem actions and generate/check/diff; invocation-owned helper ownership, type, mode, execution path, terminal cleanup, concurrency, and idempotent reruns are covered. |
 | Generator publication | PASS — descriptor-only publication, collision-winner preservation, callback totality, non-echoing failures, and missing-only host ownership are covered. |
 | Digest-bound evidence | PASS — both public check arities consume one captured completion-marker-verified byte snapshot through marker validation, scan, canonical decode, and approved-source validation; a later changed-path read rejects. |
-| Evidence lifecycle and privacy | PASS — exact marker shape, canonical JSON, allowlisted fields, source validation, collision/concurrency, lifecycle-hook totality, and anti-echo/privacy exclusions are covered. |
+| Evidence lifecycle and privacy | PASS — held no-follow parent/destination descriptor authority, deterministic ancestor replacement containment, exact marker shape, canonical JSON, allowlisted fields, source validation, collision/concurrency, lifecycle-hook totality, and anti-echo/privacy exclusions are covered. |
 
 ## Preserved Decision and Scope Contract
 
@@ -43,7 +43,7 @@ The following remain unchanged: Android's frozen generator/Maven/JVM/vector post
 
 ## Explicit Unresolved Spec-less Probes
 
-The following metadata remains explicit and non-promoting: PROOF-01 concurrency; PROOF-02 idempotency; PROOF-02 concurrency; PROOF-03 unclassified manual review; and PROOF-04 unclassified manual review. Their observed automated coverage supports only the declared Phase 159 requirement truths and does not create a manual approval, support, cross-host, distributed, or broader completion claim.
+The following classifications remain explicit and non-promoting: PROOF-01 concurrency, PROOF-02 idempotency, and PROOF-02 concurrency are observed only in deterministic same-host tests; PROOF-03 is automated additive browser/iOS contract evidence; PROOF-04 is automated privacy/integrity/containment evidence. They do not create a manual approval, support, cross-host, distributed, or broader completion claim.
 
 ## Privacy and Protected Artifacts
 
