@@ -19,6 +19,13 @@ defmodule CrosswakeExample.LocalFirst.ReviewEvent do
     |> validate_required([:scope_ref, :client_mutation_id, :card_id, :rating])
     |> validate_inclusion(:rating, ["good", "hard"])
     |> validate_inclusion(:status, ["accepted", "rejected"])
-    |> unique_constraint([:scope_ref, :client_mutation_id])
+    |> unique_constraint(:client_mutation_id,
+      name: :review_events_client_mutation_id_index,
+      message: "idempotency conflict"
+    )
+    |> unique_constraint([:scope_ref, :client_mutation_id],
+      name: :review_events_scope_ref_client_mutation_id_index,
+      message: "idempotency conflict"
+    )
   end
 end

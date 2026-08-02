@@ -12,15 +12,20 @@ defmodule CrosswakeExample.LocalFirst.Study do
 
     Ecto.Multi.new()
     |> Ecto.Multi.run(:idempotency, fn repo, _changes ->
-      case repo.get_by(ReviewEvent, scope_ref: scope_ref, client_mutation_id: id) do
+      case repo.get_by(ReviewEvent, client_mutation_id: id) do
         nil -> {:ok, :new}
-        %ReviewEvent{} = record -> {:ok, {:duplicate, record}}
+        %ReviewEvent{scope_ref: nil} -> {:ok, :duplicate}
+        %ReviewEvent{scope_ref: ^scope_ref} -> {:ok, :duplicate}
+        %ReviewEvent{} -> {:ok, :scope_conflict}
       end
     end)
     |> Ecto.Multi.run(:effect, fn repo, %{idempotency: state} ->
       case state do
-        {:duplicate, record} ->
-          {:ok, record}
+        :duplicate ->
+          {:ok, :duplicate}
+
+        :scope_conflict ->
+          {:ok, :scope_conflict}
 
         :new ->
           if Map.get(authority, :rollback) do
@@ -34,8 +39,11 @@ defmodule CrosswakeExample.LocalFirst.Study do
     end)
     |> Repo.transaction()
     |> case do
-      {:ok, %{effect: record}} ->
-        {:ok, %{client_mutation_id: record.client_mutation_id, outcome: :accepted}}
+      {:ok, %{effect: :scope_conflict}} ->
+        {:error, :scope_conflict}
+
+      {:ok, %{effect: _record}} ->
+        {:ok, %{client_mutation_id: id, outcome: :accepted}}
 
       {:error, _operation, _reason, _changes} ->
         {:error, :transaction_failed}
