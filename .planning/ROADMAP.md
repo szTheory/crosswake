@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 24/27 plans executed
+**Plans:** 25/27 plans executed
 **Verification:** Gaps found (21/23 must-haves verified) — the final same-tree gate passed focused
 evidence and descriptor-publication regressions, warning-clean native helper builds, explicit
 TypeScript, isolated generated Phoenix Playwright proof, shell syntax, and formatting, but did not
@@ -228,7 +228,7 @@ Plans:
 
 **Wave 16** *(gap closure; independently blocked on the executed Wave 15 plan)*
 
-- [ ] 159-25-PLAN.md — Replace shared-temp helper reuse with an invocation-owned restrictive executable boundary and poisoned-cache proof.
+- [x] 159-25-PLAN.md — Replace shared-temp helper reuse with an invocation-owned restrictive executable boundary and poisoned-cache proof.
 - [ ] 159-26-PLAN.md — Carry one completion-digest-bound evidence snapshot through scan, decode, and source validation for both check arities.
 
 **Wave 17** *(blocked on both Wave 16 repairs)*

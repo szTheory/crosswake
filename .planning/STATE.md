@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: gaps_found
-stopped_at: Phase 159 gap-closure plans 25-27 verified and ready to execute
-last_updated: "2026-08-02T02:00:00Z"
+status: executing
+stopped_at: Completed 159-25-PLAN.md
+last_updated: "2026-08-02T02:31:29.294Z"
 last_activity: 2026-08-02
-last_activity_desc: Gap-closure plans 25-27 passed independent plan verification.
+last_activity_desc: Phase 159 Plan 25 completed private helper provenance repair
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 1
   total_plans: 47
-  completed_plans: 44
-  percent: 40
-current_plan: 24
+  completed_plans: 45
+  percent: 20
+current_plan: 25
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — GAPS FOUND
-Plan: 24 of 27 executed; gap-closure Plans 25-27 are verified and ready to run
-Status: Two verified integrity gaps remain open until the new repair and reconciliation plans execute.
-Last activity: Gap-closure planning passed independent verification with 27/27 requirement and decision items covered.
+Phase: 159 (host-reusable-proof-lane) — EXECUTING
+Plan: 25 of 27 executed
+Status: Plan 25 complete; Plans 26 and 27 remain before phase reconciliation.
+Last activity: 2026-08-02 — Phase 159 Plan 25 completed private helper provenance repair.
 
 ## Active Objective
 
@@ -44,15 +44,11 @@ framework launch.
 
 ## Next Action
 
-Execute Phase 159 Plans 25 and 26 in parallel, then Plan 27's fresh same-tree reconciliation. Do not
-start Phase 160 while either integrity gap remains. TODO-002 remains the bounded adopter-input gate
+Execute Phase 159 Plan 26, then Plan 27's fresh same-tree reconciliation. Do not
+start Phase 160 while the evidence integrity gap remains. TODO-002 remains the bounded adopter-input gate
 and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
-
-- Phase 159 generator helper execution trusts a predictable executable in a shared temporary
-  directory without trustworthy provenance; a private or verified helper path and poisoned-cache
-  regression are required.
 
 - Phase 159 evidence checks can reopen the artifact after digest verification and accept replacement
   bytes; verified bytes must flow through decode/source validation with deterministic race coverage.
@@ -152,6 +148,7 @@ and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Generated proof-lane bytes publish through a bounded private frame and descriptor-only atomic destination handoff.
 - [Phase ?]: Concurrent helper builds reuse a content-addressed warning-clean executable without expanding the generator filesystem API.
 - [Phase 159]: Phase completion requires a fresh full same-tree gate; focused repairs and stale evidence cannot advance status.
+- [Phase ?]: Generator helpers are reusable only inside one invocation-owned private lifecycle; predictable shared-temp executables are inert.
 
 ## Deferred Items
 
@@ -180,8 +177,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-02T02:00:00Z
-**Stopped at:** Completed 159-24-PLAN.md
+**Last session:** 2026-08-02T02:31:29.282Z
+**Stopped at:** Completed 159-25-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -231,3 +228,4 @@ this milestone reset.
 | Phase 159 P22 | 14m | 1 tasks | 4 files |
 | Phase 159 P23 | 36m | 1 tasks | 4 files |
 | Phase 159 P24 | 4m | 1 tasks | 6 files |
+| Phase 159 P25 | 22m | 1 tasks | 3 files |
