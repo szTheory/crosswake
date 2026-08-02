@@ -266,7 +266,7 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans executed
 
 Plans:
 **Wave 1**
@@ -279,7 +279,7 @@ Plans:
 
 **Wave 3** *(blocked on Waves 1-2 completion)*
 
-- [ ] 160-03-PLAN.md — Wire privacy-safe operational/evidence egress and record one fresh complete automated gate.
+- [x] 160-03-PLAN.md — Wire privacy-safe operational/evidence egress and record one fresh complete automated gate.
 
 **Smallest shippable version:** Opaque scope on every envelope, scope-partitioned outbox,
 logout/account-switch replay stop, endpoint reauthorization, raw-payload redaction, and host flag

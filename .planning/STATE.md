@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
-status: executing
-stopped_at: Completed 160-02-PLAN.md
-last_updated: "2026-08-02T17:35:35.614Z"
+status: verifying
+stopped_at: Completed 160-03-PLAN.md
+last_updated: "2026-08-02T18:05:21.871Z"
 last_activity: 2026-08-02
 last_activity_desc: Phase 160 execution started
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 51
-  completed_plans: 50
-  percent: 40
+  completed_plans: 51
+  percent: 60
 current_plan: 0
 ---
 
@@ -24,7 +24,7 @@ current_plan: 0
 
 Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-08-02 — Phase 160 execution started
 
 ## Active Objective
@@ -152,6 +152,7 @@ device claims.
 - [Phase ?]: Each replay event resolves host session, scope, route, feature, Sigra, and domain authority in order immediately before mutation.
 - [Phase ?]: Review-event idempotency is qualified by opaque scope and commits with its domain effect in one transaction.
 - [Phase ?]: Sigra projects backend authority to only allow or the safe sigra_denied class.
+- [Phase ?]: Operational egress receives only explicit SafeObservation projections; generated iOS blocked output remains non-passing prerequisite evidence.
 
 ## Deferred Items
 
@@ -180,8 +181,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-02T17:35:35.601Z
-**Stopped at:** Completed 160-02-PLAN.md
+**Last session:** 2026-08-02T18:05:21.856Z
+**Stopped at:** Completed 160-03-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -237,3 +238,4 @@ this milestone reset.
 | Phase 159-host-reusable-proof-lane P28 | 15m | 2 tasks | 7 files |
 | Phase 160 P01 | 726s | 2 tasks | 7 files |
 | Phase 160 P02 | 31m | 3 tasks | 13 files |
+| Phase 160 P03 | 55m | 3 tasks | 22 files |
