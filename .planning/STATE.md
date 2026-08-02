@@ -5,14 +5,14 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
 status: gaps_found
-stopped_at: Phase 159 verification found two post-execution integrity gaps
+stopped_at: Phase 159 gap-closure plans 25-27 verified and ready to execute
 last_updated: "2026-08-02T02:00:00Z"
 last_activity: 2026-08-02
-last_activity_desc: Independent verification found two gaps after the final same-tree gate.
+last_activity_desc: Gap-closure plans 25-27 passed independent plan verification.
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 44
+  total_plans: 47
   completed_plans: 44
   percent: 40
 current_plan: 24
@@ -23,9 +23,9 @@ current_plan: 24
 ## Current Position
 
 Phase: 159 (host-reusable-proof-lane) — GAPS FOUND
-Plan: 24 of 24 executed; two verification gaps require new gap-closure plans
-Status: Independent verification found a shared-temp helper provenance gap and an evidence-read TOCTOU gap.
-Last activity: 2026-08-02 — independent goal verification scored 21/23 must-haves.
+Plan: 24 of 27 executed; gap-closure Plans 25-27 are verified and ready to run
+Status: Two verified integrity gaps remain open until the new repair and reconciliation plans execute.
+Last activity: Gap-closure planning passed independent verification with 27/27 requirement and decision items covered.
 
 ## Active Objective
 
@@ -44,9 +44,9 @@ framework launch.
 
 ## Next Action
 
-Plan Phase 159 gap closure for the shared-temp helper provenance boundary and the evidence-read
-TOCTOU boundary. Do not start Phase 160 while these gaps remain. TODO-002 remains the bounded
-adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
+Execute Phase 159 Plans 25 and 26 in parallel, then Plan 27's fresh same-tree reconciliation. Do not
+start Phase 160 while either integrity gap remains. TODO-002 remains the bounded adopter-input gate
+and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
 
