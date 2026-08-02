@@ -3,29 +3,22 @@ defmodule Crosswake.ProofLane.NativePromotion do
 
   alias Crosswake.ProofLane.Evidence.Error
 
-  @spec rename_noreplace(Path.t(), Path.t()) :: :ok | {:error, Error.t()}
-  def rename_noreplace(stage, destination), do: rename_noreplace(stage, destination, [])
+  @max_bytes 65_536
 
-  @spec rename_noreplace(Path.t(), Path.t(), keyword()) :: :ok | {:error, Error.t()}
-  def rename_noreplace(stage, destination, opts)
-      when is_binary(stage) and is_binary(destination) and is_list(opts) do
+  @spec publish(Path.t(), binary()) :: :ok | {:error, Error.t()}
+  def publish(destination, bytes), do: publish(destination, bytes, [])
+
+  @spec publish(Path.t(), binary(), keyword()) :: :ok | {:error, Error.t()}
+  def publish(destination, bytes, opts)
+      when is_binary(destination) and is_binary(bytes) and byte_size(bytes) <= @max_bytes and
+             is_list(opts) do
+    digest = Base.encode16(:crypto.hash(:sha256, bytes), case: :lower)
+
     with :ok <- supported_os(Keyword.get(opts, :os_type, :os.type())),
          {:ok, compiler} <- compiler(Keyword.get(opts, :compiler, System.get_env("CC"))),
          {:ok, executable} <- build(compiler) do
       try do
-        case System.cmd(executable, [stage, destination], stderr_to_stdout: true) do
-          {_, 0} ->
-            :ok
-
-          {_, 10} ->
-            error("PL-EVIDENCE-COLLISION", "artifact", "choose an unused evidence destination")
-
-          {_, 20} ->
-            unavailable()
-
-          _ ->
-            unavailable()
-        end
+        run(executable, destination, digest, bytes)
       rescue
         _ -> unavailable()
       after
@@ -34,7 +27,45 @@ defmodule Crosswake.ProofLane.NativePromotion do
     end
   end
 
-  def rename_noreplace(_, _, _), do: unavailable()
+  def publish(_, _, _), do: unavailable()
+
+  # Retained for the old private test seam while callers migrate to bytes-only publication.
+  @spec rename_noreplace(Path.t(), Path.t(), keyword()) :: :ok | {:error, Error.t()}
+  def rename_noreplace(_, _, opts), do: unavailable(opts)
+
+  defp run(executable, destination, digest, bytes) do
+    port =
+      Port.open({:spawn_executable, String.to_charlist(executable)}, [
+        :binary,
+        :exit_status,
+        :use_stdio,
+        :hide,
+        args: [String.to_charlist(destination)]
+      ])
+
+    frame = <<byte_size(bytes)::unsigned-big-32, digest::binary-size(64), bytes::binary>>
+
+    if Port.command(port, frame) do
+      await(port)
+    else
+      unavailable()
+    end
+  end
+
+  defp await(port) do
+    receive do
+      {^port, {:exit_status, 0}} ->
+        :ok
+
+      {^port, {:exit_status, 10}} ->
+        error("PL-EVIDENCE-COLLISION", "artifact", "choose an unused evidence destination")
+
+      {^port, _} ->
+        unavailable()
+    after
+      5_000 -> unavailable()
+    end
+  end
 
   defp supported_os({:unix, os}) when os in [:linux, :darwin], do: :ok
   defp supported_os(_), do: unavailable()
@@ -74,7 +105,7 @@ defmodule Crosswake.ProofLane.NativePromotion do
     end
   end
 
-  defp unavailable,
+  defp unavailable(_opts \\ []),
     do:
       error(
         "PL-EVIDENCE-PROMOTION-UNAVAILABLE",

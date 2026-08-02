@@ -119,6 +119,8 @@ defmodule Crosswake.ProofLane.EvidenceTest do
         Jason.encode!(Evidence.to_map(evidence))
       )
 
+      write_complete_marker!(stage)
+
       assert {:error, missing} = Evidence.check(stage)
       assert missing.rule_id == "PL-EVIDENCE-HASH-SOURCE"
 
@@ -141,7 +143,7 @@ defmodule Crosswake.ProofLane.EvidenceTest do
       File.write!(Path.join(stage, "nested/extra.txt"), "safe-looking but unapproved")
 
       assert {:error, error} = Evidence.scan_stage(stage)
-      assert error.rule_id == "PL-EVIDENCE-ARTIFACT"
+      assert error.rule_id == "PL-EVIDENCE-INTEGRITY"
       refute inspect(error) =~ "safe-looking"
     end)
   end
@@ -153,7 +155,7 @@ defmodule Crosswake.ProofLane.EvidenceTest do
       File.write!(path, String.replace(File.read!(path), "\"blocked\"", "\"CANARY-UNKNOWN\""))
 
       assert {:error, error} = Evidence.scan_stage(stage)
-      assert error.rule_id == "PL-EVIDENCE-SCAN"
+      assert error.rule_id == "PL-EVIDENCE-INTEGRITY"
       refute inspect(error) =~ "CANARY"
     end)
   end
@@ -179,9 +181,14 @@ defmodule Crosswake.ProofLane.EvidenceTest do
       assert :ok = Evidence.promote(@valid, destination)
       artifact = Path.join(destination, "proof-lane-evidence.json")
 
+      File.chmod!(artifact, 0o600)
       File.write!(artifact, File.read!(artifact) <> " ")
 
-      for reader <- [&Evidence.scan_stage/1, &Evidence.check/1, fn path -> Evidence.check(path, []) end] do
+      for reader <- [
+            &Evidence.scan_stage/1,
+            &Evidence.check/1,
+            fn path -> Evidence.check(path, []) end
+          ] do
         assert {:error, error} = reader.(destination)
         assert error.rule_id == "PL-EVIDENCE-INTEGRITY"
       end
@@ -193,11 +200,18 @@ defmodule Crosswake.ProofLane.EvidenceTest do
       assert :ok = Evidence.promote(@valid, destination)
       marker = Path.join(destination, ".complete")
 
-      for invalid <- ["", String.duplicate("A", 64), String.duplicate("a", 63), String.duplicate("a", 64) <> "\n"] do
+      for invalid <- [
+            "",
+            String.duplicate("A", 64),
+            String.duplicate("a", 63),
+            String.duplicate("a", 64) <> "\n"
+          ] do
+        File.chmod!(marker, 0o600)
         File.write!(marker, invalid)
         assert {:error, error} = Evidence.check(destination)
         assert error.rule_id == "PL-EVIDENCE-INTEGRITY"
-        refute inspect(error) =~ invalid
+
+        if invalid != "", do: refute(inspect(error) =~ invalid)
       end
     end)
   end
@@ -322,6 +336,17 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     File.write!(
       Path.join(stage, "proof-lane-evidence.json"),
       Jason.encode!(Evidence.to_map(evidence))
+    )
+
+    write_complete_marker!(stage)
+  end
+
+  defp write_complete_marker!(stage) do
+    artifact = File.read!(Path.join(stage, "proof-lane-evidence.json"))
+
+    File.write!(
+      Path.join(stage, ".complete"),
+      Base.encode16(:crypto.hash(:sha256, artifact), case: :lower)
     )
   end
 

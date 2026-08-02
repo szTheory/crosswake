@@ -24,6 +24,7 @@ defmodule Crosswake.ProofLane.Evidence do
   @retention_labels [:brief, :ephemeral]
   @device_classes [:ios, :simulator, :unknown]
   @artifact_name "proof-lane-evidence.json"
+  @complete_name ".complete"
   @approved_kinds [:evidence_json]
   @assertion_ids ~w(browser_offline_island shell_boot auth_continuity relaunch_persistence replay_prerequisite pack_audio_prerequisite)
 
@@ -111,7 +112,9 @@ defmodule Crosswake.ProofLane.Evidence do
   def scan_stage(stage) when is_binary(stage) do
     with {:ok, entries} <- enumerate(stage),
          :ok <- ensure_only_evidence(entries),
-         :ok <- scan_file(Path.join(stage, @artifact_name)) do
+         {:ok, bytes} <- read_artifact(stage),
+         :ok <- verify_complete_marker(stage, bytes),
+         :ok <- scan_bytes(bytes, @artifact_name) do
       :ok
     end
   end
@@ -125,28 +128,17 @@ defmodule Crosswake.ProofLane.Evidence do
   def promote(candidate, destination, opts) when is_binary(destination) and is_list(opts) do
     with {:ok, evidence} <- normalize(candidate),
          {:ok, sources} <- promotion_sources(candidate),
-         :ok <- safe_destination(destination) do
-      stage = destination <> ".stage-" <> Integer.to_string(System.unique_integer([:positive]))
-
-      try do
-        with :ok <- File.mkdir(stage),
-             :ok <- write_evidence(stage, evidence),
-             :ok <- scan_stage(stage),
-             :ok <- check(stage, sources),
-             :ok <- run_hook(Keyword.get(opts, :before_promote)),
-             :ok <- Crosswake.ProofLane.NativePromotion.rename_noreplace(stage, destination) do
-          :ok
-        else
-          {:error, %Error{} = error} ->
-            {:error, error}
-
-          {:error, _} ->
-            error("PL-EVIDENCE-PROMOTE", "artifact", "inspect the safe evidence inputs")
-        end
-      after
-        # Only our unique sibling stage is removable; a winner is never touched.
-        File.rm_rf(stage)
-      end
+         :ok <- safe_destination(destination),
+         bytes = Jason.encode!(to_map(evidence)),
+         :ok <- scan_bytes(bytes, @artifact_name),
+         :ok <- verify_sources(evidence.approved_hashes, sources),
+         :ok <- run_hook(Keyword.get(opts, :before_promote)),
+         :ok <- Crosswake.ProofLane.NativePromotion.publish(destination, bytes),
+         :ok <- check(destination, sources) do
+      :ok
+    else
+      {:error, %Error{} = error} -> {:error, error}
+      _ -> error("PL-EVIDENCE-PROMOTE", "artifact", "inspect the safe evidence inputs")
     end
   end
 
@@ -357,15 +349,30 @@ defmodule Crosswake.ProofLane.Evidence do
     end
   end
 
-  defp ensure_only_evidence([@artifact_name]), do: :ok
+  defp ensure_only_evidence(entries) do
+    if Enum.sort(entries) == Enum.sort([@artifact_name, @complete_name]),
+      do: :ok,
+      else: error("PL-EVIDENCE-INTEGRITY", "artifact", "retain only approved complete evidence")
+  end
 
-  defp ensure_only_evidence(_),
-    do: error("PL-EVIDENCE-ARTIFACT", "artifact", "retain only the approved evidence file")
+  defp read_artifact(stage) do
+    case File.read(Path.join(stage, @artifact_name)) do
+      {:ok, bytes} -> {:ok, bytes}
+      _ -> error("PL-EVIDENCE-INTEGRITY", @artifact_name, "retain readable complete evidence")
+    end
+  end
 
-  defp scan_file(path) do
-    case File.read(path) do
-      {:ok, bytes} -> scan_bytes(bytes, @artifact_name)
-      _ -> error("PL-EVIDENCE-READ", @artifact_name, "make staged evidence readable")
+  defp verify_complete_marker(stage, bytes) do
+    marker = Path.join(stage, @complete_name)
+
+    with {:ok, %{type: :regular}} <- File.lstat(marker),
+         {:ok, digest} <- File.read(marker),
+         true <- byte_size(digest) == 64 and String.match?(digest, ~r/\A[a-f0-9]{64}\z/),
+         expected <- Base.encode16(:crypto.hash(:sha256, bytes), case: :lower),
+         true <- :crypto.hash_equals(digest, expected) do
+      :ok
+    else
+      _ -> error("PL-EVIDENCE-INTEGRITY", "artifact", "retain complete digest-bound evidence")
     end
   end
 
@@ -495,9 +502,6 @@ defmodule Crosswake.ProofLane.Evidence do
         do: :ok,
         else: error("PL-EVIDENCE-PATH", "artifact", "use an absolute safe destination")
       )
-
-  defp write_evidence(stage, evidence),
-    do: File.write(Path.join(stage, @artifact_name), Jason.encode!(to_map(evidence)), [:binary])
 
   defp run_hook(nil), do: :ok
 
