@@ -33,7 +33,7 @@ separately funded business-line mandate.
   surface-area audit, classify adopter routes, update support truth, and install privacy-safe
   context routing.
 
-- [ ] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
+- [x] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
   shell, offline-island, and physical-device proof scaffolding.
 
 - [ ] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload
@@ -147,13 +147,12 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 26/27 plans executed
-**Verification:** Gaps found (21/23 must-haves verified) — the final same-tree gate passed focused
-evidence and descriptor-publication regressions, warning-clean native helper builds, explicit
-TypeScript, isolated generated Phoenix Playwright proof, shell syntax, and formatting, but did not
-exercise two adversarial paths. A predictable shared-temp helper executable lacks trustworthy
-provenance, and evidence checks can reopen replacement bytes after digest verification. The
-generated accessibility runtime remains an advisory `not_run` backstop; TODO-002 remains open and
+**Plans:** 27/27 plans executed
+**Verification:** Complete (23/23 must-haves verified) — one fresh repaired same-tree gate passed
+private-helper provenance and poisoned-cache rejection, digest-bound evidence replacement
+regressions for both check arities, warning-clean native helper builds, explicit TypeScript,
+isolated generated Phoenix Playwright proof, shell syntax, and formatting. The generated
+accessibility runtime remains an advisory `not_run` backstop; TODO-002 remains open and
 adopter-instance completeness remains `unknown_blocking`.
 
 Plans:
@@ -233,7 +232,7 @@ Plans:
 
 **Wave 17** *(blocked on both Wave 16 repairs)*
 
-- [ ] 159-27-PLAN.md — Run one fresh complete same-tree gate and reconcile Phase 159 without promoting advisory runtime or unresolved spec-less probes.
+- [x] 159-27-PLAN.md — Run one fresh complete same-tree gate and reconcile Phase 159 without promoting advisory runtime or unresolved spec-less probes.
 
 **Cross-cutting constraints:**
 

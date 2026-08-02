@@ -2,30 +2,30 @@
 gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
-current_phase: 159
-current_phase_name: host-reusable-proof-lane
-status: executing
-stopped_at: Completed 159-26-PLAN.md
-last_updated: "2026-08-02T02:36:56.251Z"
+current_phase: 160
+current_phase_name: scoped-replay-and-auth-safety
+status: discussing
+stopped_at: Completed 159-27-PLAN.md; Phase 160 discussion next
+last_updated: "2026-08-02T03:00:00Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 159 Plan 26 completed digest-bound evidence snapshot repair.
+last_activity_desc: Phase 159 Plan 27 completed fresh same-tree proof-lane reconciliation.
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 47
-  completed_plans: 46
-  percent: 20
-current_plan: 26
+  completed_plans: 47
+  percent: 40
+current_plan: 0
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 26 of 27 executed
-Status: Plan 26 complete; Plan 27 remains before phase reconciliation.
-Last activity: 2026-08-02 — Phase 159 Plan 26 completed digest-bound evidence snapshot repair.
+Phase: 160 (scoped-replay-and-auth-safety) — DISCUSSION NEXT
+Plan: Phase 159 complete (27 of 27 executed)
+Status: Fresh Phase 159 same-tree gate passed; Phase 160 discussion may begin.
+Last activity: 2026-08-02 — Phase 159 Plan 27 completed final same-tree reconciliation.
 
 ## Active Objective
 
@@ -44,14 +44,10 @@ framework launch.
 
 ## Next Action
 
-Execute Phase 159 Plan 26, then Plan 27's fresh same-tree reconciliation. Do not
-start Phase 160 while the evidence integrity gap remains. TODO-002 remains the bounded adopter-input gate
+Discuss Phase 160 scoped replay and auth safety. TODO-002 remains the bounded adopter-input gate
 and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
-
-- Phase 159 evidence checks can reopen the artifact after digest verification and accept replacement
-  bytes; verified bytes must flow through decode/source validation with deterministic race coverage.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
@@ -127,8 +123,7 @@ and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Browser proof accepts only anchored lowercase UUID-shaped opaque mutation references and emits PL-BROWSER-MUTATION-ID without echoing input.
 - [Phase ?]: Evidence lifecycle hooks permit only an absent hook or an installed zero-arity hook returning exactly :ok; every other outcome is one sanitized promotion failure.
 - [Phase ?]: Generated Xcode proof targets declare explicit product/module names and XCTest host settings so real shared-scheme tests retain unique outputs.
-- [Phase 159]: The final same-tree gate proved digest-bound evidence and descriptor-only publication but missed shared-temp helper provenance and post-verification evidence replacement races; PROOF requirements remain open.
-- [Phase ?]: Phase 159 completion requires one fresh final-tree gate with real Phoenix-host browser and shared-scheme XCTest/XCUITest execution.
+- [Phase 159]: A fresh complete same-tree gate closed private helper provenance and digest-bound evidence replacement races while preserving the real Phoenix-host browser and generated XCTest/XCUITest contract boundaries.
 - [Phase ?]: Failed exclusive proof writes remove only their newly created destination before returning the original write failure.
 - [Phase ?]: Manifest reuse is returned only after helper-owned staging cleanup succeeds; cleanup failure remains non-passing.
 - [Phase ?]: Generated iOS proof passes only after exact host-adapter XCTest and adapter-derived lifecycle/accessibility XCUITest markers.
@@ -147,7 +142,7 @@ and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Retained evidence requires a regular 64-byte SHA-256 marker matching exact canonical artifact bytes on every read.
 - [Phase ?]: Generated proof-lane bytes publish through a bounded private frame and descriptor-only atomic destination handoff.
 - [Phase ?]: Concurrent helper builds reuse a content-addressed warning-clean executable without expanding the generator filesystem API.
-- [Phase 159]: Phase completion requires a fresh full same-tree gate; focused repairs and stale evidence cannot advance status.
+- [Phase 159]: Phase completion required and received a fresh full same-tree gate; focused repairs and stale evidence did not advance status.
 - [Phase ?]: Generator helpers are reusable only inside one invocation-owned private lifecycle; predictable shared-temp executables are inert.
 - [Phase ?]: Evidence checks consume only the completion-digest-bound snapshot; replacement races use a test-only process-local barrier.
 
@@ -179,7 +174,7 @@ this milestone reset.
 ## Session
 
 **Last session:** 2026-08-02T02:36:56.239Z
-**Stopped at:** Completed 159-26-PLAN.md
+**Stopped at:** Completed 159-27-PLAN.md; Phase 160 discussion next
 **Resume file:** None
 
 ## Performance Metrics
@@ -231,3 +226,4 @@ this milestone reset.
 | Phase 159 P24 | 4m | 1 tasks | 6 files |
 | Phase 159 P25 | 22m | 1 tasks | 3 files |
 | Phase 159-host-reusable-proof-lane P26 | 9min | 1 tasks | 2 files |
+| Phase 159-host-reusable-proof-lane P27 | 6min | 1 task | 5 files |
