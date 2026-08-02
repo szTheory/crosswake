@@ -266,7 +266,7 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 10/11 plans executed
+**Plans:** 11/11 plans executed
 
 Plans:
 **Wave 1**
@@ -302,7 +302,7 @@ Plans:
 
 **Wave 8** *(blocked on Plans 160-09 and 160-10)*
 
-- [ ] 160-11-PLAN.md — Run the complete same-tree regression gate and reconcile Phase 160 validation evidence.
+- [x] 160-11-PLAN.md — Run the complete same-tree regression gate and reconcile Phase 160 validation evidence.
 
 **Smallest shippable version:** Opaque scope on every envelope, scope-partitioned outbox,
 logout/account-switch replay stop, endpoint reauthorization, raw-payload redaction, and host flag

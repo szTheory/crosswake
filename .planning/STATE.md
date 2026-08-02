@@ -5,16 +5,16 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
 status: executing
-stopped_at: Completed 160-10-PLAN.md
-last_updated: "2026-08-02T22:41:50.413Z"
+stopped_at: Completed 160-11-PLAN.md
+last_updated: "2026-08-02T22:47:15.321Z"
 last_activity: 2026-08-02
-last_activity_desc: Completed Plan 160-09 scoped replay safety closure
+last_activity_desc: Completed Plan 160-10 inactive replay safety closure
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 59
-  completed_plans: 58
-  percent: 40
+  completed_plans: 59
+  percent: 60
 current_plan: 10
 ---
 
@@ -23,9 +23,9 @@ current_plan: 10
 ## Current Position
 
 Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
-Plan: 10 of 11 complete
-Status: Ready to execute
-Last activity: 2026-08-02 — Completed Plan 160-10 inactive replay safety closure
+Plan: 11 of 11 complete
+Status: Ready for independent verification and security audit
+Last activity: 2026-08-02 — Completed Plan 160-11 final scoped replay validation
 
 ## Active Objective
 
@@ -161,6 +161,8 @@ infer concrete adopter routes or promote downstream device claims.
 - [Phase ?]: Only accepted replay outcomes advance accepted_records; rejected work remains retained and halts ordered draining.
 - [Phase ?]: Online events capture an active scope-plus-epoch lease before replay and discard caught failure details.
 - [Phase ?]: Inactive or fenced lifecycle state resolves as a silent no-op before requireActiveLease or activeFlush creation.
+- [Phase ?]: Post-160-09/10 final-tree evidence supersedes the pre-repair gate while blocked generated iOS and independent security remain non-passing.
+- [Phase ?]: The full offline-island Playwright corpus is the automated behavior gate for Plan 160-10 JavaScript and TypeScript changes.
 
 ## Deferred Items
 
@@ -189,8 +191,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-02T22:41:50.404Z
-**Stopped at:** Completed 160-10-PLAN.md
+**Last session:** 2026-08-02T22:47:15.312Z
+**Stopped at:** Completed 160-11-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -251,3 +253,4 @@ this milestone reset.
 | Phase 160-scoped-replay-and-auth-safety P06 | 15min | 2 tasks | 4 files |
 | Phase 160 P09 | 6m | 2 tasks | 8 files |
 | Phase 160 P10 | 4m | 1 tasks | 2 files |
+| Phase 160-scoped-replay-and-auth-safety P11 | 4m | 1 tasks | 2 files |
