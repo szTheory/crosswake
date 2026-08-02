@@ -182,6 +182,41 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     expect(consoleOutput).toEqual([]);
   });
 
+  test('active online replay catches unexpected failures without stale status effects', async ({ page }) => {
+    const pageErrors: string[] = [];
+    const consoleOutput: string[] = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
+    page.on('console', message => consoleOutput.push(message.text()));
+
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await page.evaluate(() => {
+      (window as any).__activeOnlineReplay = { rejections: 0 };
+      const transaction = IDBDatabase.prototype.transaction;
+      IDBDatabase.prototype.transaction = function (...args) {
+        if (args[0] === 'scoped_mutations') throw new Error('unexpected storage failure');
+        return transaction.apply(this, args as any);
+      };
+      window.addEventListener('unhandledrejection', event => {
+        (window as any).__activeOnlineReplay.rejections += 1;
+        event.preventDefault();
+      });
+    });
+
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await expect(page.locator('#status')).toContainText('Sync is paused');
+    expect(await page.evaluate(() => (window as any).__activeOnlineReplay)).toEqual({ rejections: 0 });
+    expect(pageErrors).toEqual([]);
+    expect(consoleOutput).toEqual([]);
+
+    await page.evaluate(async () => window.crosswakeOfflineStudy.fenceScope());
+    const fencedStatus = await page.locator('#status').textContent();
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await page.waitForTimeout(50);
+    expect(await page.locator('#status').textContent()).toBe(fencedStatus);
+  });
+
   test('switch before send keeps the old scope queue retained', async ({ page, context }) => {
     const betaScope = 'v1.scope_fixture_bravo_01';
     await page.goto('/offline');

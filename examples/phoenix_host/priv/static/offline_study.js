@@ -38,6 +38,14 @@ function requireActiveLease() {
   return { scopeRef: activeScopeRef, epoch: activeEpoch };
 }
 
+function activeLeaseOrNull() {
+  if (!isScopeRef(activeScopeRef) || !Number.isSafeInteger(activeEpoch) || activeEpoch < 1) {
+    return null;
+  }
+
+  return { scopeRef: activeScopeRef, epoch: activeEpoch };
+}
+
 // The host calls this only after it has independently established backend authority.
 // The scope is intentionally never rendered, logged, or copied into status text.
 async function activateScope(scopeRef) {
@@ -446,10 +454,12 @@ async function updateQueuedStatus(prefix = 'Queued for replay') {
 let activeFlush = null;
 
 async function flushOutbox() {
+  const lease = activeLeaseOrNull();
+  if (!lease) return;
   if (activeFlush) return activeFlush.promise;
 
   const invocation = {
-    lease: requireActiveLease(),
+    lease,
     controller: new AbortController(),
     storageTransaction: null,
     promise: null,
@@ -457,6 +467,15 @@ async function flushOutbox() {
   invocation.promise = flushScopedOutbox(invocation);
   activeFlush = invocation;
   return invocation.promise;
+}
+
+function replayOnOnline() {
+  const lease = activeLeaseOrNull();
+  if (!lease) return;
+
+  void flushOutbox().catch(() => {
+    if (leaseIsCurrent(lease)) renderPausedStatus();
+  });
 }
 
 async function flushScopedOutbox(invocation) {
@@ -579,7 +598,7 @@ function setupEventListeners() {
   btnGood.addEventListener('click', () => handleReview('good'));
   btnHard.addEventListener('click', () => handleReview('hard'));
 
-  window.addEventListener('online', flushOutbox);
+  window.addEventListener('online', replayOnOnline);
   window.addEventListener('offline', async () => {
     updateStatusClear();
     if (activeScopeRef) await updateQueuedStatus('Queued for replay');
