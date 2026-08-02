@@ -39,6 +39,34 @@ defmodule CrosswakeExample.LocalFirst.StudyTest do
     assert id == legacy.id
   end
 
+  test "same-scope and legacy rejected events remain closed rejected tombstones", %{event: event} do
+    for scope_ref <- [@scope, nil] do
+      event =
+        Map.put(
+          event,
+          "client_mutation_id",
+          "#{event["client_mutation_id"]}-#{scope_ref || "legacy"}"
+        )
+
+      assert {:ok, persisted} =
+               %ReviewEvent{}
+               |> Ecto.Changeset.change(%{
+                 client_mutation_id: event["client_mutation_id"],
+                 card_id: event["card_id"],
+                 rating: event["rating"],
+                 status: "rejected",
+                 scope_ref: scope_ref
+               })
+               |> Repo.insert()
+
+      assert {:ok, %{client_mutation_id: id, outcome: :rejected}} =
+               Study.apply_one(@scope, event, %{})
+
+      assert id == event["client_mutation_id"]
+      assert [^persisted] = Repo.all(ReviewEvent)
+    end
+  end
+
   test "rollback leaves neither an idempotency decision nor a domain effect", %{event: event} do
     assert {:error, :transaction_failed} = Study.apply_one(@scope, event, %{rollback: true})
     assert Repo.aggregate(ReviewEvent, :count, :id) == 0

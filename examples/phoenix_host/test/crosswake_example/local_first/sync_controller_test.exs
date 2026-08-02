@@ -37,5 +37,28 @@ defmodule CrosswakeExample.LocalFirst.SyncControllerTest do
     assert %{"error" => %{"class" => "invalid_envelope"}} = Jason.decode!(conn.resp_body)
   end
 
+  test "a persisted rejection stays out of the accepted prefix and halts later events" do
+    assert {:ok, rejected} =
+             %ReviewEvent{}
+             |> Ecto.Changeset.change(%{
+               client_mutation_id: "rejected",
+               card_id: 1,
+               rating: "good",
+               status: "rejected",
+               scope_ref: @scope
+             })
+             |> Repo.insert()
+
+    assert {:ok,
+            %{
+              accepted_records: [],
+              rejected: [%{client_mutation_id: "rejected", outcome: :rejected}],
+              halted: :rejected
+            }} =
+             SyncController.sync_events(build_conn(), @scope, [event("rejected"), event("later")])
+
+    assert [^rejected] = Repo.all(ReviewEvent)
+  end
+
   defp event(id), do: %{"client_mutation_id" => id, "card_id" => 1, "rating" => "good"}
 end
