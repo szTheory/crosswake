@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: gaps_found
-stopped_at: Phase 159 verification found final-publication symlink gaps
-last_updated: "2026-08-02T00:06:25Z"
+status: ready_to_execute
+stopped_at: Phase 159 gap-closure plans 22-24 ready to execute
+last_updated: "2026-08-02T01:24:52Z"
 last_activity: 2026-08-01
-last_activity_desc: Phase 159 verification closed the browser gap and found two publication blockers
+last_activity_desc: Phase 159 gap-closure plans passed independent plan verification
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 41
+  total_plans: 44
   completed_plans: 41
   percent: 40
-current_plan: 21
+current_plan: 22
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — GAPS FOUND
-Plan: 21 of 21 executed
-Status: 22/23 must-haves verified; PROOF-01 and PROOF-04 remain blocked by final-publication symlink swaps.
-Last activity: 2026-08-01 — verification closed the generated-browser gap and reproduced two filesystem publication blockers.
+Phase: 159 (host-reusable-proof-lane) — GAP CLOSURE READY TO EXECUTE
+Plan: 21 of 24 executed; Plans 159-22 through 159-24 are planned
+Status: Ready to execute the digest-bound evidence, anonymous-descriptor publication, and fresh reconciliation plans.
+Last activity: 2026-08-01 — independent plan verification passed all three Phase 159 gap-closure plans.
 
 ## Active Objective
 
@@ -44,17 +44,17 @@ framework launch.
 
 ## Next Action
 
-Plan Phase 159 gap closure for the two reproduced final-publication defects, then execute only those
-gap plans and rerun verification. Evidence promotion must reject a swapped stage-directory symlink,
-and manifest publication must reject a swapped staging-file symlink before reporting success. Do
-not start Phase 160 while these gaps remain. TODO-002 remains the bounded adopter-input gate and
-adopter-instance completeness remains `unknown_blocking`.
+Execute only Phase 159 Plans 159-22 through 159-24. Evidence acceptance must bind every read to the
+approved artifact SHA-256; generated files must publish from anonymous descriptors through the
+runtime-proved supported-platform primitive; the final plan must rerun the complete same-tree gate
+before status advances. Do not start Phase 160 while these gaps remain. TODO-002 remains the bounded
+adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
 
 - Phase 159 evidence and manifest publication can currently report success after their staging
-  source is swapped to a symlink; PROOF-01 and PROOF-04 remain blocked pending no-follow/type checks
-  at the final native publication boundaries.
+  source is swapped to a symlink; PROOF-01 and PROOF-04 remain blocked pending execution of the
+  digest-bound evidence and anonymous-descriptor publication plans plus fresh verification.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.

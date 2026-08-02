@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 21/21 plans executed
+**Plans:** 21/24 plans executed
 **Verification:** Gaps found (22/23 must-haves verified) — Plan 159-21 closes the generated-browser
 gap by executing isolated version-2 output through the existing Phoenix lifecycle. Independent
 review and verification reproduced two final-publication symlink swaps: evidence promotion can
@@ -217,9 +217,18 @@ Plans:
 
 - [x] 159-21-PLAN.md — Execute the generated Playwright spec through a fail-closed host adapter and prove isolated rendered output cannot be masked by the hand-maintained fixture.
 
+**Wave 14** *(gap closure; independently blocked on the executed Wave 13 plan)*
+
+- [ ] 159-22-PLAN.md — Content-bind retained evidence with an atomic SHA-256 acceptance marker and deterministic mutation barriers.
+- [ ] 159-23-PLAN.md — Publish generated files and the manifest from anonymous descriptors using ordinary-unprivileged Linux procfs linking or runtime-proved Darwin cloning.
+
+**Wave 15** *(blocked on both Wave 14 publication repairs)*
+
+- [ ] 159-24-PLAN.md — Run one fresh complete same-tree gate and reconcile Phase 159 only from observed publication and preserved-contract evidence.
+
 **Cross-cutting constraints:**
 
-- Generation and evidence promotion use collision-safe staged writes; interruption or a concurrent writer cannot overwrite host files or expose a partial retained artifact.
+- Generated files publish from exact anonymous/already-unlinked descriptor bytes, and retained evidence passes only when its regular atomic marker equals the artifact SHA-256; interruption or a concurrent writer cannot overwrite host files or create passing partial evidence.
 - Running generation twice with the same normalized configuration creates only missing scaffold and preserves every existing host-owned byte.
 - Concurrent or interrupted generation fails closed on destination collisions and leaves existing host-owned files unchanged.
 - The primary Phoenix proof command fails closed when its generated host spec or support adapter is absent and typechecks every executed proof surface.
