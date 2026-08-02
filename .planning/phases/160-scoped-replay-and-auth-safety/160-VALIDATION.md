@@ -9,68 +9,63 @@ created: 2026-08-02
 
 # Phase 160 — Validation Strategy
 
-> Per-phase validation contract for feedback sampling during execution.
-
----
+> Focused per-task feedback stays separate from the one approximately 300-second final same-tree gate.
 
 ## Test Infrastructure
 
 | Property | Value |
-|----------|-------|
+|---|---|
 | **Framework** | ExUnit; Playwright 1.60.0 |
 | **Config file** | `mix.exs`; `examples/phoenix_host/playwright.config.ts` |
-| **Quick run command** | `mix test test/crosswake/offline/journal_test.exs test/crosswake/offline/replay_test.exs test/crosswake/offline/telemetry_test.exs` |
-| **Full suite command** | `mix test && (cd examples/phoenix_host && npm test)` |
-| **Estimated runtime** | ~300 seconds |
-
----
+| **Focused core command** | `mix test test/crosswake/offline/journal_test.exs test/crosswake/offline/replay_test.exs` |
+| **Focused browser command** | `cd examples/phoenix_host && npm run proof:offline-island -- --grep "fully authorized scoped Study event"` |
+| **Focused host command** | `cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/replay_admission_test.exs test/crosswake_example/local_first/sync_controller_test.exs test/crosswake_example/local_first/study_test.exs` |
+| **Focused Sigra command** | `cd packages/crosswake_sigra && mix test test/crosswake/companions/sigra/contracts_test.exs` |
+| **Focused egress command** | `mix test test/crosswake/offline/safe_observation_test.exs test/crosswake/offline/telemetry_test.exs test/crosswake/telemetry_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs` |
+| **Full phase gate** | Plan 160-03 Task 3 command only |
+| **Estimated focused latency** | each focused command targets <30 seconds |
+| **Estimated final-gate latency** | ~300 seconds |
 
 ## Sampling Rate
 
-- **After every task commit:** Run the focused ExUnit or Playwright command for the modified seam.
-- **After every plan wave:** Run `mix test && (cd examples/phoenix_host && npm test)`.
-- **Before `$gsd-verify-work`:** Run the full suite plus the Phase 159-compatible generated proof/evidence scan; blocked native/device output is non-passing.
-- **Max feedback latency:** 300 seconds
-
----
+- **After every task commit:** Run only that task's focused core, browser, host, Sigra, egress, or evidence command; target feedback is under 30 seconds.
+- **After Plans 01 and 02:** Do not substitute the full repository/proof chain for focused feedback. Their summaries record their task commands.
+- **Plan 03 Task 3 only:** Run the approximately 300-second full current-tree gate, including generated host/iOS proof and final evidence scanning.
+- **Before `$gsd-verify-work`:** Require the recorded Plan 03 Task 3 gate to be fresh and passing; blocked native/device output remains non-passing.
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 160-01-01 | 160-01 | 1 | SCOPE-01, SCOPE-03, SCOPE-05 | T-160-01, T-160-03, T-160-05 | The first Study event requires scoped storage, the complete current host admission chain including feature and Sigra checks, and one atomic idempotency+effect transaction | core unit + Phoenix integration + Playwright tracer | `mix test test/crosswake/offline/journal_test.exs test/crosswake/offline/replay_test.exs && (cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/replay_admission_test.exs test/crosswake_example/local_first/study_test.exs && npm run proof:offline-island -- --grep "fully authorized scoped Study event")` | ❌ task creates/extends | ⬜ pending |
-| 160-01-02 | 160-01 | 1 | SCOPE-01, SCOPE-02 | T-160-01, T-160-02, T-160-06 | Relaunch is inert, logout/switch fences first, stale completions are inert, and blocked drains retain every unaccepted entry | core unit + browser integration | `mix test test/crosswake/offline/runtime_test.exs && (cd examples/phoenix_host && npm run proof:offline-island -- --grep "inactive relaunch|switch before send|switch in flight|ordered blocked drain")` | ❌ task creates/extends | ⬜ pending |
-| 160-01-03 | 160-01 | 1 | SCOPE-03, SCOPE-05 | T-160-03, T-160-05, T-160-06 | Every admission denial fails closed; rollback, duplicate, and lost-response retry never repeat or silently drop the effect | Phoenix integration | `cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/replay_admission_test.exs test/crosswake_example/local_first/sync_controller_test.exs test/crosswake_example/local_first/study_test.exs` | ❌ task creates | ⬜ pending |
-| 160-02-01 | 160-02 | 2 | SCOPE-04 | T-160-04 | Raw payload, scope, credentials, identity, reference, endpoint, flag, media, and stable-hash canaries never reach any operational egress | unit/property-style + captured bytes | `mix test test/crosswake/offline/safe_observation_test.exs test/crosswake/offline/telemetry_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/operator_inspection/json_formatter_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs` | ❌ task creates/extends | ⬜ pending |
-| 160-02-02 | 160-02 | 2 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-01..T-160-06 | Closed assertions are content-bound to real host/browser/privacy results; final retained bytes stay canary-free and missing native adapters remain non-passing | artifact inspection + existing generated proof | `mix test test/crosswake/proof_lane/evidence_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs && bash script/verify_phoenix_host_proof_lane.sh && bash script/verify_generated_ios_shell.sh` | ❌ task extends | ⬜ pending |
-| 160-02-03 | 160-02 | 2 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-01..T-160-06 | One fresh current-tree gate records all requirement, ASVS L1, and threat evidence without promoting external unknowns | full phase gate | `mix test test/crosswake/offline test/crosswake/proof/phase160_scoped_replay_privacy_test.exs test/crosswake/proof_lane/evidence_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/operator_inspection/json_formatter_test.exs && (cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first && npm run proof:offline-island) && bash script/verify_phoenix_host_proof_lane.sh && bash script/verify_generated_ios_shell.sh && mix crosswake.first_b2c_adopter.check && mix format --check-formatted` | ✅ command exists; task adds cases | ⬜ pending |
+| Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | Target | Status |
+|---|---|---|---|---|---|---|---|---|---|
+| 160-01-01 | 160-01 | 1 | SCOPE-01 | T-160-01 | Entry/Request scope is required and browser storage has exact-scope compound access only | core unit | `mix test test/crosswake/offline/journal_test.exs test/crosswake/offline/replay_test.exs` | <30s | ⬜ pending |
+| 160-01-02 | 160-01 | 1 | SCOPE-01, SCOPE-02 | T-160-01, T-160-02, T-160-06 | Relaunch is inert, switch fences first, stale completion is inert, and blocked work remains | core + focused browser | `mix test test/crosswake/offline/runtime_test.exs && (cd examples/phoenix_host && npm run proof:offline-island -- --grep "inactive relaunch\|switch before send\|switch in flight\|ordered blocked drain")` | <30s | ⬜ pending |
+| 160-02-01 | 160-02 | 2 | SCOPE-01, SCOPE-03, SCOPE-05 | T-160-01, T-160-03, T-160-05 | One Study event crosses complete current admission and one atomic transaction | focused browser tracer | `cd examples/phoenix_host && npm run proof:offline-island -- --grep "fully authorized scoped Study event"` | <30s | ⬜ pending |
+| 160-02-02 | 160-02 | 2 | SCOPE-02, SCOPE-03 | T-160-03, T-160-05, T-160-06 | Every denial, Nth-event change, rollback, duplicate, and lost response remains closed and idempotent | Phoenix integration | `cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/replay_admission_test.exs test/crosswake_example/local_first/sync_controller_test.exs test/crosswake_example/local_first/study_test.exs` | <30s | ⬜ pending |
+| 160-02-03 | 160-02 | 2 | SCOPE-05 | T-160-03, T-160-04 | Sigra projects backend evidence to closed allow/deny and leaks no authority detail | companion unit | `cd packages/crosswake_sigra && mix test test/crosswake/companions/sigra/contracts_test.exs` | <30s | ⬜ pending |
+| 160-03-01 | 160-03 | 3 | SCOPE-04 | T-160-04 | SafeObservation reaches Offline.Telemetry, root Logger, and doctor through exact surface projections; final bytes exclude every D-17 class | egress unit/property-style | `mix test test/crosswake/offline/safe_observation_test.exs test/crosswake/offline/telemetry_test.exs test/crosswake/telemetry_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs` | <30s | ⬜ pending |
+| 160-03-02 | 160-03 | 3 | SCOPE-04 | T-160-01..T-160-06 | Inspection and Evidence retain exact schemas, content-bound IDs, and forbidden-byte scanning | evidence unit/property-style | `mix test test/crosswake/operator_inspection/json_formatter_test.exs test/crosswake/proof_lane/evidence_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs` | <30s | ⬜ pending |
+| 160-03-03 | 160-03 | 3 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-01..T-160-06 | One fresh current-tree gate covers every requirement, ASVS mapping, proof seam, and final retained byte | full phase gate | `mix test test/crosswake/offline test/crosswake/telemetry_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs test/crosswake/proof_lane/evidence_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/operator_inspection/json_formatter_test.exs && (cd packages/crosswake_sigra && mix test test/crosswake/companions/sigra/contracts_test.exs) && (cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first && npm run proof:offline-island) && bash script/verify_phoenix_host_proof_lane.sh && bash script/verify_generated_ios_shell.sh && mix crosswake.first_b2c_adopter.check && mix format --check-formatted` | ~300s; final only | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
----
-
 ## Wave 0 Requirements
 
-- [ ] Plan 160-01 creates the complete tracer tests before implementation, including scope-required contracts, per-event feature/Sigra/domain admission, and atomic idempotency+effect.
-- [ ] Plan 160-01 adds lifecycle/race/retention browser cases and every host denial/rollback/lost-response edge.
-- [ ] Plan 160-02 creates the SafeObservation and every-egress property/canary matrix.
-- [ ] Plan 160-02 extends the existing Phase 159 evidence vocabulary with named closed assertion IDs while preserving the exact schema and native non-passing boundary.
-
----
+- [ ] Plan 160-01 creates scope-required core tests and exact-scope lifecycle/race/retention browser cases before implementation.
+- [ ] Plan 160-02 creates the complete host tracer, every admission/rollback/retry case, and Sigra closed-projection tests before implementation.
+- [ ] Plan 160-03 creates SafeObservation, root Logger/doctor production-wiring tests, and the every-egress D-17 byte matrix before implementation.
+- [ ] Plan 160-03 extends the existing Phase 159 evidence vocabulary with named closed IDs while preserving exact schema and native non-passing behavior.
 
 ## Manual-Only Verifications
 
-All phase behaviors have automated verification. Host-issued real scope values and adopter route inputs remain external prerequisites and must not be inferred.
-
----
+All Phase 160 behaviors have automated verification. Host-issued real scope values and adopter route inputs remain external `unknown_blocking` prerequisites and must not be inferred.
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
+- [ ] Every task has one automated focused command, except final Task 160-03-03 which owns the full gate
+- [ ] Focused core, browser, host, Sigra, egress, and evidence commands target <30-second feedback
 - [ ] No watch-mode flags
-- [ ] Feedback latency < 300 seconds
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [ ] The approximately 300-second command appears only as the final phase gate
+- [ ] Five flagged assumptions and seven prohibitions remain represented across the three plans
+- [ ] `nyquist_compliant: true` set only after all planned tests exist and pass
 
 **Approval:** pending

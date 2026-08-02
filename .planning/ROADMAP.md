@@ -266,16 +266,20 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 2 plans
+**Plans:** 3 plans
 
 Plans:
 **Wave 1**
 
-- [ ] 160-01-PLAN.md — Deliver one complete authorized Study-event tracer plus lifecycle, denial, and atomic-retry proof.
+- [ ] 160-01-PLAN.md — Establish scope-required contracts, partitioned browser storage, and lifecycle fencing.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 160-02-PLAN.md — Close every operational/evidence egress and record one fresh complete automated gate.
+- [ ] 160-02-PLAN.md — Complete the authorized Study-event tracer through host admission, Sigra, and atomic mutation.
+
+**Wave 3** *(blocked on Waves 1-2 completion)*
+
+- [ ] 160-03-PLAN.md — Wire privacy-safe operational/evidence egress and record one fresh complete automated gate.
 
 **Smallest shippable version:** Opaque scope on every envelope, scope-partitioned outbox,
 logout/account-switch replay stop, endpoint reauthorization, raw-payload redaction, and host flag
