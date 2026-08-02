@@ -23,6 +23,7 @@ defmodule Crosswake.Offline.SafeObservation do
   end
 
   @type t :: %__MODULE__{}
+  @type projection :: %{required(atom()) => atom() | non_neg_integer() | String.t()}
 
   @spec new(map()) :: {:ok, t()} | {:error, Error.t()}
   def new(attrs) when is_map(attrs) and not is_struct(attrs) do
@@ -41,27 +42,48 @@ defmodule Crosswake.Offline.SafeObservation do
 
   def new(_), do: error("CW-SAFE-OBSERVATION-INPUT", :input)
 
-  @spec to_telemetry(t()) :: %{required(atom()) => atom() | non_neg_integer() | String.t()}
-  def to_telemetry(%__MODULE__{} = observation) do
-    %{
-      route_id: observation.route_id,
-      runtime: observation.runtime,
-      lifecycle: observation.lifecycle,
-      outcome: observation.outcome,
-      denial: observation.denial
-    }
-    |> Map.merge(observation.measurements)
+  @spec validate(t()) :: {:ok, t()} | {:error, Error.t()}
+  def validate(%__MODULE__{} = observation) do
+    observation
+    |> Map.drop([:__struct__])
+    |> new()
   end
 
-  @spec to_logger(t()) :: map()
+  def validate(_), do: error("CW-SAFE-OBSERVATION-INPUT", :input)
+
+  @spec to_telemetry(t()) :: {:ok, projection()} | {:error, Error.t()}
+  def to_telemetry(%__MODULE__{} = observation) do
+    with {:ok, observation} <- validate(observation) do
+      {:ok,
+       %{
+         route_id: observation.route_id,
+         runtime: observation.runtime,
+         lifecycle: observation.lifecycle,
+         outcome: observation.outcome,
+         denial: observation.denial
+       }
+       |> Map.merge(observation.measurements)}
+    end
+  end
+
+  def to_telemetry(_), do: error("CW-SAFE-OBSERVATION-INPUT", :input)
+
+  @spec to_logger(t()) :: {:ok, projection()} | {:error, Error.t()}
   def to_logger(observation), do: to_telemetry(observation)
 
-  @spec to_doctor(t()) :: %{configuration: atom(), adapter_readiness: atom()}
-  def to_doctor(%__MODULE__{} = observation),
-    do: %{
-      configuration: observation.configuration,
-      adapter_readiness: observation.adapter_readiness
-    }
+  @spec to_doctor(t()) ::
+          {:ok, %{configuration: atom(), adapter_readiness: atom()}} | {:error, Error.t()}
+  def to_doctor(%__MODULE__{} = observation) do
+    with {:ok, observation} <- validate(observation) do
+      {:ok,
+       %{
+         configuration: observation.configuration,
+         adapter_readiness: observation.adapter_readiness
+       }}
+    end
+  end
+
+  def to_doctor(_), do: error("CW-SAFE-OBSERVATION-INPUT", :input)
 
   defp exact_atom_keys(attrs) do
     if Map.keys(attrs) |> MapSet.new() == MapSet.new(@replay_keys ++ @doctor_keys),
