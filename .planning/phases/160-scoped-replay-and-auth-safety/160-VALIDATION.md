@@ -38,11 +38,12 @@ created: 2026-08-02
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 160-W0-01 | TBD | 0 | SCOPE-01 | T-160-01 | Every envelope requires opaque scope and no query can cross partitions | unit + Playwright | `mix test test/crosswake/offline/journal_test.exs test/crosswake/offline/replay_test.exs && (cd examples/phoenix_host && npm run proof:offline-island)` | ❌ W0 | ⬜ pending |
-| 160-W0-02 | TBD | 0 | SCOPE-02 | T-160-02 | Logout/account switch fences replay; stale completions are inert and queued data remains | unit + browser integration | `mix test test/crosswake/offline/replay_test.exs && (cd examples/phoenix_host && npm run proof:offline-island)` | ❌ W0 | ⬜ pending |
-| 160-W0-03 | TBD | 0 | SCOPE-03 | T-160-03 | Backend reauthorizes every event and commits idempotency with the host mutation | Phoenix integration + Playwright | `(cd examples/phoenix_host && MIX_ENV=test mix test && npm run proof:offline-island)` | ❌ W0 | ⬜ pending |
-| 160-W0-04 | TBD | 0 | SCOPE-04 | T-160-04 | Raw payload, scope, credentials, and identity canaries never reach diagnostics or evidence | unit + artifact inspection | `mix test test/crosswake/offline/telemetry_test.exs && mix crosswake.first_b2c_adopter.check` | ❌ W0 | ⬜ pending |
-| 160-W0-05 | TBD | 0 | SCOPE-05 | T-160-05 | Sigra exposes replay-only allow/deny authority and denies missing/incompatible adapters | companion unit + host integration | `(cd packages/crosswake_sigra && mix test) && (cd examples/phoenix_host && MIX_ENV=test mix test)` | ❌ W0 | ⬜ pending |
+| 160-01-01 | 160-01 | 1 | SCOPE-01, SCOPE-03, SCOPE-05 | T-160-01, T-160-03, T-160-05 | The first Study event requires scoped storage, the complete current host admission chain including feature and Sigra checks, and one atomic idempotency+effect transaction | core unit + Phoenix integration + Playwright tracer | `mix test test/crosswake/offline/journal_test.exs test/crosswake/offline/replay_test.exs && (cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/replay_admission_test.exs test/crosswake_example/local_first/study_test.exs && npm run proof:offline-island -- --grep "fully authorized scoped Study event")` | ❌ task creates/extends | ⬜ pending |
+| 160-01-02 | 160-01 | 1 | SCOPE-01, SCOPE-02 | T-160-01, T-160-02, T-160-06 | Relaunch is inert, logout/switch fences first, stale completions are inert, and blocked drains retain every unaccepted entry | core unit + browser integration | `mix test test/crosswake/offline/runtime_test.exs && (cd examples/phoenix_host && npm run proof:offline-island -- --grep "inactive relaunch|switch before send|switch in flight|ordered blocked drain")` | ❌ task creates/extends | ⬜ pending |
+| 160-01-03 | 160-01 | 1 | SCOPE-03, SCOPE-05 | T-160-03, T-160-05, T-160-06 | Every admission denial fails closed; rollback, duplicate, and lost-response retry never repeat or silently drop the effect | Phoenix integration | `cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/replay_admission_test.exs test/crosswake_example/local_first/sync_controller_test.exs test/crosswake_example/local_first/study_test.exs` | ❌ task creates | ⬜ pending |
+| 160-02-01 | 160-02 | 2 | SCOPE-04 | T-160-04 | Raw payload, scope, credentials, identity, reference, endpoint, flag, media, and stable-hash canaries never reach any operational egress | unit/property-style + captured bytes | `mix test test/crosswake/offline/safe_observation_test.exs test/crosswake/offline/telemetry_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/operator_inspection/json_formatter_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs` | ❌ task creates/extends | ⬜ pending |
+| 160-02-02 | 160-02 | 2 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-01..T-160-06 | Closed assertions are content-bound to real host/browser/privacy results; final retained bytes stay canary-free and missing native adapters remain non-passing | artifact inspection + existing generated proof | `mix test test/crosswake/proof_lane/evidence_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs && bash script/verify_phoenix_host_proof_lane.sh && bash script/verify_generated_ios_shell.sh` | ❌ task extends | ⬜ pending |
+| 160-02-03 | 160-02 | 2 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-01..T-160-06 | One fresh current-tree gate records all requirement, ASVS L1, and threat evidence without promoting external unknowns | full phase gate | `mix test test/crosswake/offline test/crosswake/proof/phase160_scoped_replay_privacy_test.exs test/crosswake/proof_lane/evidence_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/operator_inspection/json_formatter_test.exs && (cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first && npm run proof:offline-island) && bash script/verify_phoenix_host_proof_lane.sh && bash script/verify_generated_ios_shell.sh && mix crosswake.first_b2c_adopter.check && mix format --check-formatted` | ✅ command exists; task adds cases | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -50,11 +51,10 @@ created: 2026-08-02
 
 ## Wave 0 Requirements
 
-- [ ] Extend core offline contract tests for scope-required maps, blocked outcomes, and safe-observation serialization.
-- [ ] Add host controller/context integration tests for exact scope mismatch, per-event gate changes, rollback/lost-response duplicates, and retained outcomes.
-- [ ] Extend the host Playwright proof adapter/spec for two scopes, relaunch inactive, switch-before-send, switch-in-flight, and raw-canary exclusion.
-- [ ] Extend Sigra tests for replay-only closed projection and missing/incompatible adapter denial.
-- [ ] Extend Phase 159 evidence schema/scanner assertions with named Phase 160 closed assertion IDs only.
+- [ ] Plan 160-01 creates the complete tracer tests before implementation, including scope-required contracts, per-event feature/Sigra/domain admission, and atomic idempotency+effect.
+- [ ] Plan 160-01 adds lifecycle/race/retention browser cases and every host denial/rollback/lost-response edge.
+- [ ] Plan 160-02 creates the SafeObservation and every-egress property/canary matrix.
+- [ ] Plan 160-02 extends the existing Phase 159 evidence vocabulary with named closed assertion IDs while preserving the exact schema and native non-passing boundary.
 
 ---
 

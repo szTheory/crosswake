@@ -256,17 +256,24 @@ function entriesForScope(store, scopeRef) {
 | A1 | Exact conservative `scope_ref` grammar/length and batch ceiling can be selected during implementation. | User Constraints | A too-permissive or too-small limit could affect compatibility; keep versioned and test it. |
 | A2 | The existing example host is the intended concrete migration target before a real adopter host exists. | Architecture Patterns | Planning could target an incorrect host seam; preserve `unknown_blocking` adopter inputs. |
 
-## Open Questions
+## Resolved External Inputs
+
+Both items below are **RESOLVED** for Phase 160 planning. Their disposition is intentionally
+`unknown_blocking`: they are external host/adopter inputs, not implementation questions. Phase 160
+closes on deterministic host seams and synthetic opaque fixtures without inferring either input or
+promoting adopter/device completion.
 
 1. **Host-issued scope format, rotation, and retained-data recovery policy**
+   - Disposition: **RESOLVED — external `unknown_blocking` input.**
    - What we know: Core receives only opaque scope references and must preserve blocked partitions. [VERIFIED: 160-CONTEXT.md]
    - What's unclear: Host issuance/rotation/recovery choices are intentionally host-owned. [VERIFIED: 160-CONTEXT.md]
-   - Recommendation: Expose only strict opaque transport validation and a host activation callback; do not infer semantics. [VERIFIED: 160-CONTEXT.md]
+   - Phase 160 boundary: Expose only strict opaque transport validation and a deterministic host activation seam; do not infer semantics. [VERIFIED: 160-CONTEXT.md]
 
 2. **Concrete adopter route/flag/session inputs**
+   - Disposition: **RESOLVED — external `unknown_blocking` input.**
    - What we know: TODO-002/adopter-instance completeness remains `unknown_blocking`. [VERIFIED: STATE.md]
    - What's unclear: Real route, mutation, and authorization values. [VERIFIED: STATE.md]
-   - Recommendation: Implement reusable host seams and deterministic fixtures only; do not promote physical-device/adopter claims. [VERIFIED: AGENTS.md]
+   - Phase 160 boundary: Implement deterministic host seams and synthetic fixtures only; do not promote physical-device/adopter claims. [VERIFIED: AGENTS.md]
 
 ## Environment Availability
 

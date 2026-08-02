@@ -266,29 +266,16 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 6 plans
+**Plans:** 2 plans
 
 Plans:
 **Wave 1**
 
-- [ ] 160-01-PLAN.md — Trace one authorized scope through partitioned storage, Phoenix replay, atomic effect, and safe observation.
+- [ ] 160-01-PLAN.md — Deliver one complete authorized Study-event tracer plus lifecycle, denial, and atomic-retry proof.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 160-02-PLAN.md — Complete scoped core envelopes, the lifecycle fence, and Sigra replay adapter.
-- [ ] 160-03-PLAN.md — Fence browser relaunch/switch races and retain every non-accepted scoped outcome.
-
-**Wave 3** *(blocked on Wave 2 core contracts)*
-
-- [ ] 160-04-PLAN.md — Reauthorize every event and make idempotency plus domain effect atomic.
-
-**Wave 4** *(blocked on Waves 2-3 completion)*
-
-- [ ] 160-05-PLAN.md — Close telemetry, diagnostics, inspection, logging, aggregates, and retained evidence to allowlisted output.
-
-**Wave 5** *(blocked on Wave 4 completion)*
-
-- [ ] 160-06-PLAN.md — Extend generated proof and close the phase with one fresh automated gate.
+- [ ] 160-02-PLAN.md — Close every operational/evidence egress and record one fresh complete automated gate.
 
 **Smallest shippable version:** Opaque scope on every envelope, scope-partitioned outbox,
 logout/account-switch replay stop, endpoint reauthorization, raw-payload redaction, and host flag
