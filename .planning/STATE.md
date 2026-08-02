@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
-current_phase_name: scoped-replay-and-auth-safety
-status: ready_for_discussion
+current_phase_name: Scoped Replay and Auth Safety
+status: planning
 stopped_at: Completed 159-28-PLAN.md; Phase 160 discussion next
-last_updated: "2026-08-02T14:20:00Z"
+last_updated: "2026-08-02T14:19:52.031Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 159 Plan 28 complete after fresh final-tree gate
+last_activity_desc: Phase 159 complete, transitioned to Phase 160
 progress:
   total_phases: 5
   completed_phases: 2
@@ -22,10 +22,10 @@ current_plan: 0
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — READY FOR DISCUSSION
-Plan: 0 of pending plans
-Status: Phase 159 is complete; discuss Phase 160 before planning.
-Last activity: 2026-08-02 — Phase 159 Plan 28 completed after a fresh final-tree gate.
+Phase: 160 — Scoped Replay and Auth Safety
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-02 — Phase 159 complete, transitioned to Phase 160
 
 ## Active Objective
 
