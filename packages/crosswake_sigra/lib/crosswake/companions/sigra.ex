@@ -94,6 +94,21 @@ defmodule Crosswake.Companions.Sigra do
     end
   end
 
+  @doc false
+  @spec replay_decision(term(), term(), keyword()) :: :allow | {:deny, :sigra_denied}
+  def replay_decision(route, auth_context, opts \\ []) do
+    case Evaluator.evaluate_route_auth(route, auth_context, opts) do
+      {:allow, _result} -> :allow
+      {:deny, _finding} -> {:deny, :sigra_denied}
+      _ -> {:deny, :sigra_denied}
+    end
+  rescue
+    _ -> {:deny, :sigra_denied}
+  catch
+    :exit, _ -> {:deny, :sigra_denied}
+    :throw, _ -> {:deny, :sigra_denied}
+  end
+
   @impl true
   @doc false
   def denial_codes, do: DenialCodes.codes()

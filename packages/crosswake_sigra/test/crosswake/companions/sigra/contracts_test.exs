@@ -3,6 +3,28 @@ defmodule Crosswake.Companions.Sigra.ContractsTest do
 
   alias Crosswake.Companions.Sigra.Contracts
   alias Crosswake.Companions.Sigra.DenialCodes
+  alias Crosswake.Companions.Sigra
+
+  describe "replay decision" do
+    test "projects backend authority into only a closed allow or denial class" do
+      assert :allow = Sigra.replay_decision(nil, nil)
+
+      assert {:deny, :sigra_denied} =
+               Sigra.replay_decision(%{unexpected: :route}, %{token: "secret"})
+    end
+
+    test "never returns session, scope, credential, provider, device, or ceremony bytes" do
+      result = Sigra.replay_decision(%{scope_ref: "scope-secret"}, %{token: "token-secret"})
+      rendered = inspect(result)
+
+      refute rendered =~ "scope"
+      refute rendered =~ "token"
+      refute rendered =~ "secret"
+      refute rendered =~ "provider"
+      refute rendered =~ "device"
+      refute rendered =~ "ceremony"
+    end
+  end
 
   describe "AuthContext" do
     test "constructs typed auth context with normalized auth age for route comparison" do
