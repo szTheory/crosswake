@@ -10,35 +10,41 @@ defmodule CrosswakeExample.LocalFirst.Study do
   def apply_one(scope_ref, event, authority) when is_binary(scope_ref) and is_map(event) do
     id = Map.get(event, "client_mutation_id")
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.run(:idempotency, fn repo, _changes ->
-      case repo.get_by(ReviewEvent, client_mutation_id: id) do
-        nil -> {:ok, :new}
-        %ReviewEvent{scope_ref: nil} -> {:ok, :duplicate}
-        %ReviewEvent{scope_ref: ^scope_ref} -> {:ok, :duplicate}
-        %ReviewEvent{} -> {:ok, :scope_conflict}
-      end
-    end)
-    |> Ecto.Multi.run(:effect, fn repo, %{idempotency: state} ->
-      case state do
-        :duplicate ->
-          {:ok, :duplicate}
+    transaction =
+      Ecto.Multi.new()
+      |> Ecto.Multi.run(:idempotency, fn repo, _changes ->
+        case repo.get_by(ReviewEvent, client_mutation_id: id) do
+          nil -> {:ok, :new}
+          %ReviewEvent{scope_ref: nil} -> {:ok, :duplicate}
+          %ReviewEvent{scope_ref: ^scope_ref} -> {:ok, :duplicate}
+          %ReviewEvent{} -> {:ok, :scope_conflict}
+        end
+      end)
+      |> Ecto.Multi.run(:effect, fn repo, %{idempotency: state} ->
+        case state do
+          :duplicate ->
+            {:ok, :duplicate}
 
-        :scope_conflict ->
-          {:ok, :scope_conflict}
+          :scope_conflict ->
+            {:ok, :scope_conflict}
 
-        :new ->
-          if Map.get(authority, :rollback) do
-            {:error, :forced_rollback}
-          else
-            %ReviewEvent{}
-            |> ReviewEvent.changeset(Map.put(event, "scope_ref", scope_ref))
-            |> repo.insert()
-          end
-      end
-    end)
-    |> Repo.transaction()
+          :new ->
+            if Map.get(authority, :rollback) do
+              {:error, :forced_rollback}
+            else
+              %ReviewEvent{}
+              |> ReviewEvent.changeset(Map.put(event, "scope_ref", scope_ref))
+              |> repo.insert()
+            end
+        end
+      end)
+
+    transaction
+    |> transact(scope_ref, id)
     |> case do
+      {:race, result} ->
+        result
+
       {:ok, %{effect: :scope_conflict}} ->
         {:error, :scope_conflict}
 
@@ -46,9 +52,37 @@ defmodule CrosswakeExample.LocalFirst.Study do
         {:ok, %{client_mutation_id: id, outcome: :accepted}}
 
       {:error, _operation, _reason, _changes} ->
-        {:error, :transaction_failed}
+        current_outcome(scope_ref, id)
     end
   end
 
   def apply_one(_, _, _), do: {:error, :invalid_envelope}
+
+  defp transact(transaction, scope_ref, id) do
+    Repo.transaction(transaction)
+  rescue
+    Exqlite.Error -> {:race, race_outcome(scope_ref, id)}
+  end
+
+  defp current_outcome(scope_ref, id) do
+    case Repo.get_by(ReviewEvent, client_mutation_id: id) do
+      %ReviewEvent{scope_ref: nil} -> {:ok, %{client_mutation_id: id, outcome: :accepted}}
+      %ReviewEvent{scope_ref: ^scope_ref} -> {:ok, %{client_mutation_id: id, outcome: :accepted}}
+      %ReviewEvent{} -> {:error, :scope_conflict}
+      nil -> {:error, :transaction_failed}
+    end
+  end
+
+  defp race_outcome(scope_ref, id, attempts \\ 3)
+
+  defp race_outcome(scope_ref, id, attempts) do
+    case current_outcome(scope_ref, id) do
+      {:error, :transaction_failed} when attempts > 0 ->
+        Process.sleep(10)
+        race_outcome(scope_ref, id, attempts - 1)
+
+      result ->
+        result
+    end
+  end
 end
