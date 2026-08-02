@@ -164,9 +164,41 @@ defmodule Crosswake.ProofLane.EvidenceTest do
       assert :ok = Evidence.check(destination)
       assert File.exists?(Path.join(destination, "proof-lane-evidence.json"))
 
+      marker = Path.join(destination, ".complete")
+      artifact = File.read!(Path.join(destination, "proof-lane-evidence.json"))
+      assert File.read!(marker) == Base.encode16(:crypto.hash(:sha256, artifact), case: :lower)
+
       assert {:error, error} = Evidence.promote(@valid, destination)
       assert error.rule_id == "PL-EVIDENCE-COLLISION"
       assert :ok = Evidence.check(destination)
+    end)
+  end
+
+  test "digest-bound readers reject a retained artifact changed after promotion" do
+    with_destination(fn destination ->
+      assert :ok = Evidence.promote(@valid, destination)
+      artifact = Path.join(destination, "proof-lane-evidence.json")
+
+      File.write!(artifact, File.read!(artifact) <> " ")
+
+      for reader <- [&Evidence.scan_stage/1, &Evidence.check/1, fn path -> Evidence.check(path, []) end] do
+        assert {:error, error} = reader.(destination)
+        assert error.rule_id == "PL-EVIDENCE-INTEGRITY"
+      end
+    end)
+  end
+
+  test "retained readers reject malformed digest markers without echoing marker bytes" do
+    with_destination(fn destination ->
+      assert :ok = Evidence.promote(@valid, destination)
+      marker = Path.join(destination, ".complete")
+
+      for invalid <- ["", String.duplicate("A", 64), String.duplicate("a", 63), String.duplicate("a", 64) <> "\n"] do
+        File.write!(marker, invalid)
+        assert {:error, error} = Evidence.check(destination)
+        assert error.rule_id == "PL-EVIDENCE-INTEGRITY"
+        refute inspect(error) =~ invalid
+      end
     end)
   end
 
