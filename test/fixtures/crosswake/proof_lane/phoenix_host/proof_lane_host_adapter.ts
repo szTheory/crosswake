@@ -18,6 +18,8 @@ export const proofLaneHostAdapter = {
     proofPage = page;
     await resetOfflineStudyDatabase(page);
     await page.goto('/offline');
+    await expect(page.locator('#status')).toContainText('Sync is paused');
+    await page.evaluate(() => window.crosswakeOfflineStudy.activateScope('v1.scope_fixture_alpha_01'));
     expect(await page.evaluate(() => !!window.liveSocket)).toBe(false);
   },
   performMutation: async (page) => {
@@ -43,6 +45,7 @@ export const proofLaneHostAdapter = {
     const mutation = record as OfflineMutationRecord;
     const duplicate = await request.post(config.syncPath, {
       data: {
+        scope_ref: 'v1.scope_fixture_alpha_01',
         events: [{
           client_mutation_id: mutationId,
           card_id: mutation.card_id,
@@ -53,7 +56,7 @@ export const proofLaneHostAdapter = {
 
     expect(duplicate.ok()).toBe(true);
     const body = await duplicate.json();
-    expect(body.data.accepted_count).toBe(0);
+    expect(body.data.accepted_records).toEqual([{ client_mutation_id: mutationId, outcome: 'accepted' }]);
     await expectSyncedReview(request, mutationId, 1);
     await expectOutboxEmpty(proofPage);
   },

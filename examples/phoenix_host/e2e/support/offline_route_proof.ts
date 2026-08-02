@@ -292,7 +292,11 @@ export async function readQueuedOfflineMutations(
         const tx = db.transaction('scoped_mutations', 'readonly');
         const store = tx.objectStore('scoped_mutations');
         const getAll = store.index('by_scope').getAll(expectedScope);
-        getAll.onsuccess = () => resolve(getAll.result);
+        getAll.onsuccess = () => resolve(getAll.result.map(({ client_mutation_id, card_id, rating }) => ({
+          client_mutation_id,
+          card_id,
+          rating,
+        })));
         getAll.onerror = () => reject(getAll.error);
       };
       req.onerror = () => reject(req.error);
