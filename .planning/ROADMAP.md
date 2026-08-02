@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 21/24 plans executed
+**Plans:** 22/24 plans executed
 **Verification:** Gaps found (22/23 must-haves verified) — Plan 159-21 closes the generated-browser
 gap by executing isolated version-2 output through the existing Phoenix lifecycle. Independent
 review and verification reproduced two final-publication symlink swaps: evidence promotion can
@@ -219,7 +219,7 @@ Plans:
 
 **Wave 14** *(gap closure; independently blocked on the executed Wave 13 plan)*
 
-- [ ] 159-22-PLAN.md — Content-bind retained evidence with an atomic SHA-256 acceptance marker and deterministic mutation barriers.
+- [x] 159-22-PLAN.md — Content-bind retained evidence with an atomic SHA-256 acceptance marker and deterministic mutation barriers.
 - [ ] 159-23-PLAN.md — Publish generated files and the manifest from anonymous descriptors using ordinary-unprivileged Linux procfs linking or runtime-proved Darwin cloning.
 
 **Wave 15** *(blocked on both Wave 14 publication repairs)*

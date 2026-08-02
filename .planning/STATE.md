@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: ready_to_execute
-stopped_at: Phase 159 gap-closure plans 22-24 ready to execute
-last_updated: "2026-08-02T01:24:52Z"
+status: executing
+stopped_at: Completed 159-22-PLAN.md
+last_updated: "2026-08-02T01:33:07.890Z"
 last_activity: 2026-08-01
-last_activity_desc: Phase 159 gap-closure plans passed independent plan verification
+last_activity_desc: Phase 159 execution started
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 44
-  completed_plans: 41
+  completed_plans: 42
   percent: 40
-current_plan: 22
+current_plan: 23
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — GAP CLOSURE READY TO EXECUTE
-Plan: 21 of 24 executed; Plans 159-22 through 159-24 are planned
-Status: Ready to execute the digest-bound evidence, anonymous-descriptor publication, and fresh reconciliation plans.
-Last activity: 2026-08-01 — independent plan verification passed all three Phase 159 gap-closure plans.
+Phase: 159 (host-reusable-proof-lane) — EXECUTING
+Plan: 22 of 24 executed; Plans 159-23 through 159-24 remain
+Status: Executing Phase 159 gap closure.
+Last activity: 2026-08-01 — digest-bound evidence acceptance completed.
 
 ## Active Objective
 
@@ -147,6 +147,7 @@ adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 - [Phase 159]: Executable generated-browser proof is verified, but final evidence and manifest publication must reject swapped symlink staging sources before PROOF-01/04 can close.
 - [Phase ?]: Generated browser specs use one typed host adapter that defaults to stable PL-BROWSER-HOST-ADAPTER denial.
 - [Phase ?]: Phoenix proof pre-seeds the host adapter and executes only isolated version-2 generated Playwright output.
+- [Phase ?]: Retained evidence requires a regular 64-byte SHA-256 marker matching exact canonical artifact bytes on every read.
 
 ## Deferred Items
 
@@ -175,8 +176,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-01T23:57:00.080Z
-**Stopped at:** Completed 159-21-PLAN.md
+**Last session:** 2026-08-02T01:33:07.881Z
+**Stopped at:** Completed 159-22-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -223,3 +224,4 @@ this milestone reset.
 | Phase 159 P19 | 7m | 1 tasks | 3 files |
 | Phase 159 P20 | 1m | 1 task | 6 files |
 | Phase 159 P21 | 20m | 2 tasks | 7 files |
+| Phase 159 P22 | 14m | 1 tasks | 4 files |
