@@ -266,7 +266,7 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 8/11 plans executed
+**Plans:** 9/11 plans executed
 
 Plans:
 **Wave 1**
@@ -297,7 +297,7 @@ Plans:
 
 **Wave 7** *(final gap closure; blocked on Plan 160-08)*
 
-- [ ] 160-09-PLAN.md — Tighten Phoenix scope admission and preserve persisted rejected replay outcomes.
+- [x] 160-09-PLAN.md — Tighten Phoenix scope admission and preserve persisted rejected replay outcomes.
 - [ ] 160-10-PLAN.md — Make inactive browser reconnect replay inert and catch unexpected listener failures.
 
 **Wave 8** *(blocked on Plans 160-09 and 160-10)*

@@ -4,16 +4,16 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
-status: ready_to_execute
-stopped_at: Planned Phase 160 final gap closure through 160-11-PLAN.md
-last_updated: "2026-08-02T22:28:47.000Z"
+status: executing
+stopped_at: Completed 160-09-PLAN.md
+last_updated: "2026-08-02T22:37:37.515Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 160 final gap closure planned and verified
+last_activity_desc: Phase 160 execution started
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 59
-  completed_plans: 53
+  completed_plans: 57
   percent: 40
 current_plan: 9
 ---
@@ -22,10 +22,10 @@ current_plan: 9
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — READY TO EXECUTE
-Plan: 8 of 11 complete
-Status: Ready to execute
-Last activity: 2026-08-02 — Phase 160 final gap closure planned and verified
+Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
+Plan: 9 of 11 complete
+Status: Executing Phase 160 final gap closure
+Last activity: 2026-08-02 — Completed Plan 160-09 scoped replay safety closure
 
 ## Active Objective
 
@@ -156,6 +156,9 @@ infer concrete adopter routes or promote downstream device claims.
 - [Phase ?]: Legacy IndexedDB mutations are quarantined on upgrade and can enter one scoped outbox only through a matching active host lease.
 - [Phase ?]: Replay admission requires typed RouteEntry and validated AuthContext; all other inputs project to sigra_denied.
 - [Phase ?]: The Phoenix host constructs synthetic fixture authority privately for each default replay event and never returns it to callers.
+- [Phase ?]: Opaque scope validation consumes the entire value before host authority callbacks run.
+- [Phase ?]: Persisted accepted and rejected ReviewEvent rows use one closed mapper for duplicate and recovery outcomes.
+- [Phase ?]: Only accepted replay outcomes advance accepted_records; rejected work remains retained and halts ordered draining.
 
 ## Deferred Items
 
@@ -184,8 +187,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-02T19:06:40.378Z
-**Stopped at:** Completed 160-06-PLAN.md
+**Last session:** 2026-08-02T22:37:37.506Z
+**Stopped at:** Completed 160-09-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -244,3 +247,4 @@ this milestone reset.
 | Phase 160 P03 | 55m | 3 tasks | 22 files |
 | Phase 160 P04 | 5m | 2 tasks | 3 files |
 | Phase 160-scoped-replay-and-auth-safety P06 | 15min | 2 tasks | 4 files |
+| Phase 160 P09 | 6m | 2 tasks | 8 files |
