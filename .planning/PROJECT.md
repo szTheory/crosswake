@@ -58,10 +58,15 @@ separately funded business-line mandate. Durable reasoning is in
   host-reusable proof, then closes privacy/auth, real offline pronunciation media, and
   physical-iPhone evidence. Work stops after the dated device proof except for defects that proof
   demonstrates.
+- **v21.0 Phase 159 Host-Reusable Proof Lane — COMPLETE 2026-08-02.** The configurable,
+  missing-only Phoenix proof-lane generator, additive generated browser proof, explicit non-passing
+  iOS host-adapter boundary, and privacy-safe descriptor-pinned retained evidence are verified.
+  Phase 160 scoped replay and auth safety is next; TODO-002 and adopter-instance completeness remain
+  `unknown_blocking`.
 - **v21.0 Phase 158 Adoption Reset and Route Map — COMPLETE 2026-07-31.** GET-6, the Alpha/public-v1
   split, stopped-v20 truth, route-local ownership contract, repository-wide privacy scanning, and
-  automated verification posture are durable and verified. Phase 159 host-reusable proof is next;
-  TODO-002 remains the fail-closed sanitized adopter-input gate.
+  automated verification posture are durable and verified. TODO-002 remains the fail-closed
+  sanitized adopter-input gate.
 - **v20.0 Native Controls Pack 1 — STOPPED/PARTIAL 2026-07-30.** Phases 153-155 delivered useful
   release, CI, bridge, and fallback substrate. Phases 156-157 are dropped from active scope because
   native menu breadth does not unblock the first adopter. No v20.0 shipped claim or completion tag.
@@ -191,6 +196,15 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ### Validated
 
+- [x] **PROOF-01** `mix crosswake.gen.proof_lane ios` creates missing-only host-owned ExUnit,
+  Playwright, shell, and physical-device proof scaffolding. Validated in Phase 159: Host-Reusable
+  Proof Lane.
+- [x] **PROOF-02** The scaffold accepts the closed route, IndexedDB, mutation, endpoint, router,
+  and iOS-shell configuration contract. Validated in Phase 159: Host-Reusable Proof Lane.
+- [x] **PROOF-03** The generated browser proof remains additive to the host's primary browser,
+  unit, and fixture corpus. Validated in Phase 159: Host-Reusable Proof Lane.
+- [x] **PROOF-04** Retained proof evidence excludes sensitive payload, identity, credential, media,
+  token, and stable-device data. Validated in Phase 159: Host-Reusable Proof Lane.
 - [x] **MIRROR-01** The `crosswake-shell-core-ios` SwiftPM mirror carries `v0.2.0` at the verified split SHA while preserving `v0.1.2`. Validated in Phase 153: iOS Mirror Unblock.
 - [x] **MIRROR-02** Native shell-core releases coordinate Hex, Maven, and the iOS mirror, with mirror failures surfaced as hard named CI failures. Validated in Phase 153: iOS Mirror Unblock.
 - [x] Provide a Phoenix-native route policy DSL that declares runtime mode, offline policy, required capabilities, pack needs, sync seams, and security sensitivity per route. Validated in Phase 1: Route Policy Foundation.
@@ -394,4 +408,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-31 after Phase 158 completion.*
+*Last updated: 2026-08-02 after Phase 159 completion.*
