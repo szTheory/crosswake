@@ -1,10 +1,12 @@
 import { canSatisfyJournalReserve } from './storage_logic.js';
 
 const DB_NAME = 'crosswake_offline_study';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 const STORE_CARDS = 'flashcards';
 const STORE_MUTATIONS = 'scoped_mutations';
 const STORE_LIFECYCLE = 'scope_lifecycle';
+const STORE_LEGACY_MUTATIONS = 'mutations';
+const STORE_LEGACY_QUARANTINE = 'legacy_mutations_quarantine';
 const SCOPE_REF_PATTERN = /^v[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}$/;
 
 let db;
@@ -12,6 +14,7 @@ let currentCardIndex = 0;
 let cards = [];
 let activeScopeRef = null;
 let activeEpoch = 0;
+let legacyRecoveryRequired = false;
 
 function isScopeRef(value) {
   return typeof value === 'string' && SCOPE_REF_PATTERN.test(value);
@@ -81,6 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     await initDB();
+    legacyRecoveryRequired = (await countLegacyQuarantine()) > 0;
     
     // For demo purposes, if no cards exist, we insert some dummy ones
     const existingCards = await getAllCards();
@@ -92,7 +96,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderCurrentCard();
     setupEventListeners();
     await resetLifecycleOnLaunch();
-    updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
+    updateStatus(legacyRecoveryRequired
+      ? 'Saved changes need attention and remain on this device.'
+      : 'Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
   } catch (error) {
     updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
   }
@@ -121,6 +127,7 @@ function initDB() {
     
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
+      const tx = event.target.transaction;
       if (!db.objectStoreNames.contains(STORE_CARDS)) {
         db.createObjectStore(STORE_CARDS, { keyPath: 'id' });
       }
@@ -131,7 +138,43 @@ function initDB() {
       if (!db.objectStoreNames.contains(STORE_LIFECYCLE)) {
         db.createObjectStore(STORE_LIFECYCLE, { keyPath: 'key' });
       }
+      if (!db.objectStoreNames.contains(STORE_LEGACY_QUARANTINE)) {
+        db.createObjectStore(STORE_LEGACY_QUARANTINE, { keyPath: 'migration_ref', autoIncrement: true });
+      }
+      if (db.objectStoreNames.contains(STORE_LEGACY_MUTATIONS)) {
+        quarantineLegacyMutations(tx);
+      }
     };
+  });
+}
+
+function quarantineLegacyMutations(tx) {
+  const legacyStore = tx.objectStore(STORE_LEGACY_MUTATIONS);
+  const quarantineStore = tx.objectStore(STORE_LEGACY_QUARANTINE);
+  const cursorRequest = legacyStore.openCursor();
+
+  cursorRequest.onerror = () => tx.abort();
+  cursorRequest.onsuccess = () => {
+    const cursor = cursorRequest.result;
+    if (!cursor) return;
+
+    const quarantineRequest = quarantineStore.add(cursor.value);
+    quarantineRequest.onerror = () => tx.abort();
+    quarantineRequest.onsuccess = () => {
+      const deleteRequest = cursor.delete();
+      deleteRequest.onerror = () => tx.abort();
+      deleteRequest.onsuccess = () => cursor.continue();
+    };
+  };
+}
+
+function countLegacyQuarantine() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_LEGACY_QUARANTINE, 'readonly');
+    const request = tx.objectStore(STORE_LEGACY_QUARANTINE).count();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+    tx.onabort = () => reject(tx.error);
   });
 }
 

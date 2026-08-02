@@ -250,5 +250,30 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
 
     expect(stores).toEqual([0, 1, 0]);
     await expect(page.locator('#status')).toContainText('Saved changes need attention');
+    await expect(page.locator('body')).not.toContainText('legacy-mutation');
+
+    await page.reload();
+    await expect(page.locator('#status')).toContainText('Saved changes need attention');
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), 'v1.scope_fixture_bravo_01');
+    await expect(page.locator('#status')).not.toContainText('scope_fixture_bravo_01');
+
+    const afterRelaunch = await page.evaluate(async () => {
+      const database = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open('crosswake_offline_study');
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      const tx = database.transaction(['legacy_mutations_quarantine', 'scoped_mutations'], 'readonly');
+      const counts = await Promise.all(['legacy_mutations_quarantine', 'scoped_mutations'].map(storeName =>
+        new Promise<number>((resolve, reject) => {
+          const request = tx.objectStore(storeName).count();
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        }),
+      ));
+      database.close();
+      return counts;
+    });
+    expect(afterRelaunch).toEqual([1, 0]);
   });
 });
