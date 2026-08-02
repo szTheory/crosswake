@@ -9,6 +9,15 @@ const STORE_LEGACY_MUTATIONS = 'mutations';
 const STORE_LEGACY_QUARANTINE = 'legacy_mutations_quarantine';
 const SCOPE_REF_PATTERN = /^v[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}$/;
 const CLIENT_MUTATION_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const HALTED_REPLAY_CLASSES = new Set([
+  'authority_unavailable',
+  'authorization_denied',
+  'feature_disabled',
+  'invalid_envelope',
+  'scope_mismatch',
+  'sigra_denied',
+  'transaction_failed',
+]);
 
 let db;
 let currentCardIndex = 0;
@@ -67,6 +76,37 @@ async function fenceScope() {
 
 function leaseIsCurrent(lease) {
   return activeScopeRef === lease.scopeRef && activeEpoch === lease.epoch;
+}
+
+function renderPausedStatus() {
+  updateStatusError();
+  updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
+}
+
+function classifyReplayResponse(data, records) {
+  const envelope = data && typeof data === 'object' && !Array.isArray(data) ? data.data : null;
+  if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) return { kind: 'blocked' };
+
+  const { accepted_records: acceptedRecords, rejected, halted } = envelope;
+  if (!Array.isArray(acceptedRecords) || !Array.isArray(rejected)) return { kind: 'blocked' };
+  if (!rejected.every(record => record && typeof record === 'object' && typeof record.class === 'string')) {
+    return { kind: 'blocked' };
+  }
+  if (halted != null && (typeof halted !== 'string' || !HALTED_REPLAY_CLASSES.has(halted))) {
+    return { kind: 'blocked' };
+  }
+
+  const acceptedIds = [];
+  for (let index = 0; index < acceptedRecords.length; index += 1) {
+    const accepted = acceptedRecords[index];
+    const expected = records[index];
+    if (!accepted || typeof accepted !== 'object' || !expected || accepted.client_mutation_id !== expected.client_mutation_id) {
+      return { kind: 'blocked' };
+    }
+    acceptedIds.push(accepted.client_mutation_id);
+  }
+
+  return { kind: halted == null ? 'complete' : 'halted', acceptedIds, rejected };
 }
 
 window.crosswakeOfflineStudy = Object.freeze({ activateScope, fenceScope, recoverLegacyMutations });
@@ -457,23 +497,29 @@ async function flushScopedOutbox(invocation) {
         data = await response.json();
       } catch (_parseError) {
         if (!leaseIsCurrent(lease)) return;
-        updateStatusError();
-        updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
+        renderPausedStatus();
         return;
       }
       if (!leaseIsCurrent(lease)) return;
-      const acceptedRecords = (data.data && data.data.accepted_records) || [];
-      const rejected = (data.data && data.data.rejected) || [];
+      const result = classifyReplayResponse(data, records);
+      if (result.kind === 'blocked') {
+        renderPausedStatus();
+        return;
+      }
 
-      const acceptedIds = acceptedRecords.map(r => r.client_mutation_id);
-      await deleteAcceptedMutations(scopeRef, records, acceptedIds, invocation);
+      await deleteAcceptedMutations(scopeRef, records, result.acceptedIds, invocation);
       if (!leaseIsCurrent(lease)) return;
 
       const remaining = await countScopeMutations(scopeRef);
       if (!leaseIsCurrent(lease)) return;
-      const accepted = acceptedIds.length;
+      const accepted = result.acceptedIds.length;
 
-      if (rejected.length > 0) {
+      if (result.kind === 'halted') {
+        renderPausedStatus();
+        return;
+      }
+
+      if (result.rejected.length > 0) {
         if (!leaseIsCurrent(lease)) return;
         updateStatusError();
         updateStatus('Saved changes need attention and remain on this device.');
@@ -484,8 +530,7 @@ async function flushScopedOutbox(invocation) {
       }
     } else {
       if (!leaseIsCurrent(lease)) return;
-      updateStatusError();
-      updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
+      renderPausedStatus();
     }
   } finally {
     if (activeFlush === invocation) activeFlush = null;
