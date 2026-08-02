@@ -260,6 +260,62 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await expect(page.locator('#status')).toContainText('Saved changes will sync when ready.');
   });
 
+  test('mid-batch disablement retains halted suffix', async ({ page, context }) => {
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+    await page.click('#btn-flip');
+    await page.click('#btn-hard');
+    const queued = await readQueuedOfflineMutations(page, { scopeRef: alphaScope });
+    expect(queued).toHaveLength(2);
+
+    let requests = 0;
+    await page.route('**/study/sync', async route => {
+      requests += 1;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data: {
+          accepted_records: [{ client_mutation_id: queued[0].client_mutation_id }],
+          rejected: [],
+          halted: 'feature_disabled',
+        } }),
+      });
+    });
+
+    await context.setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await expect.poll(async () => (await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).length).toBe(1);
+    expect((await readQueuedOfflineMutations(page, { scopeRef: alphaScope }))[0].client_mutation_id).toBe(queued[1].client_mutation_id);
+    await expect(page.locator('#status')).toContainText('Sync is paused');
+    expect(requests).toBe(1);
+  });
+
+  test('malformed halted response fails closed', async ({ page, context }) => {
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+
+    await page.route('**/study/sync', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data: { accepted_records: 'not-an-array', rejected: [], halted: 'feature_disabled' } }),
+      });
+    });
+
+    await context.setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await expect.poll(async () => (await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).length).toBe(1);
+    await expect(page.locator('#status')).toContainText('Sync is paused');
+  });
+
   test('legacy upgrade quarantines unscoped work', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(async () => {
