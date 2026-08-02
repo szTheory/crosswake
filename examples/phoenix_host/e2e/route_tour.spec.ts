@@ -390,6 +390,7 @@ async function proveOfflineRoute(page: Page, context: BrowserContext) {
 
   const duplicate = await page.request.post('/study/sync', {
     data: {
+      scope_ref: 'v1.scope_fixture_alpha_01',
       events: [{
         client_mutation_id: mutations[0].client_mutation_id,
         card_id: mutations[0].card_id,

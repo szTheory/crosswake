@@ -20,7 +20,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await resetOfflineStudyDatabase(page);
   });
 
-  test('offline rating queues in IndexedDB, reconnect via app flush, Ecto confirms one row, duplicate is idempotent', async ({ page, context }) => {
+  test('fully authorized scoped Study event reaches the host atomically and preserves another partition', async ({ page, context }) => {
     // Step 1: Navigate to the offline island
     await page.goto('/offline');
     await waitForInactiveLifecycle(page);
@@ -62,12 +62,11 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     // page.request.post is APIRequestContext; unaffected by context.setOffline; :api pipeline has no CSRF
     // Sequence is load-bearing: original flush must be confirmed (synced: true, Step 6) BEFORE duplicate fires
     const dupRes = await page.request.post('/study/sync', {
-      data: { events: [{ client_mutation_id: capturedId, card_id, rating }] }
+      data: { scope_ref: alphaScope, events: [{ client_mutation_id: capturedId, card_id, rating }] }
     });
     expect(dupRes.ok()).toBe(true);
     const dupBody = await dupRes.json();
-    // accepted_count is nested under .data (Phoenix JSON wrapper — not top-level)
-    expect(dupBody.data.accepted_count).toBe(0); // on_conflict: :nothing held
+    expect(dupBody.data.accepted_records).toEqual([{ client_mutation_id: capturedId, outcome: 'accepted' }]);
 
     await expect.poll(async () => {
       const res = await page.request.get(`/_e2e/sync-state/${capturedId}`);

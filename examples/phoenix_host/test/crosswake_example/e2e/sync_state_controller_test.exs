@@ -18,6 +18,7 @@ defmodule CrosswakeExample.E2E.SyncStateControllerTest do
     {:ok, _} =
       Repo.insert(
         ReviewEvent.changeset(%ReviewEvent{}, %{
+          scope_ref: "v1.scope_fixture_alpha_01",
           client_mutation_id: id_a,
           card_id: 1,
           rating: "good",
@@ -28,6 +29,7 @@ defmodule CrosswakeExample.E2E.SyncStateControllerTest do
     {:ok, _} =
       Repo.insert(
         ReviewEvent.changeset(%ReviewEvent{}, %{
+          scope_ref: "v1.scope_fixture_alpha_01",
           client_mutation_id: id_b,
           card_id: 2,
           rating: "hard",

@@ -1,61 +1,42 @@
 defmodule CrosswakeExample.LocalFirst.Study do
+  @moduledoc false
+
   alias CrosswakeExample.Repo
   alias CrosswakeExample.LocalFirst.ReviewEvent
 
-  def list_events do
-    Repo.all(ReviewEvent)
-  end
+  def list_events, do: Repo.all(ReviewEvent)
 
-  def sync_events(events_payload) when is_list(events_payload) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-
-    {valid, rejections} =
-      Enum.reduce(events_payload, {[], []}, fn payload, {valid_acc, rejections_acc} ->
-        changeset = ReviewEvent.changeset(%ReviewEvent{}, payload)
-        
-        if changeset.valid? do
-          map = 
-            Ecto.Changeset.apply_changes(changeset)
-            |> Map.from_struct()
-            |> Map.drop([:__meta__, :id])
-            |> Map.put(:inserted_at, now)
-            |> Map.put(:updated_at, now)
-            
-          {[map | valid_acc], rejections_acc}
-        else
-          id = Map.get(payload, "client_mutation_id") || Map.get(payload, :client_mutation_id)
-          errors = format_errors(changeset)
-          {valid_acc, [%{client_mutation_id: id, errors: errors} | rejections_acc]}
-        end
-      end)
+  @spec apply_one(String.t(), map(), map()) :: {:ok, map()} | {:error, atom()}
+  def apply_one(scope_ref, event, _authority) when is_binary(scope_ref) and is_map(event) do
+    id = Map.get(event, "client_mutation_id")
 
     Ecto.Multi.new()
-    |> Ecto.Multi.insert_all(:sync, ReviewEvent, Enum.reverse(valid),
-      on_conflict: :nothing,
-      conflict_target: :client_mutation_id,
-      returning: true
-    )
+    |> Ecto.Multi.run(:idempotency, fn repo, _changes ->
+      case repo.get_by(ReviewEvent, scope_ref: scope_ref, client_mutation_id: id) do
+        nil -> {:ok, :new}
+        %ReviewEvent{} = record -> {:ok, {:duplicate, record}}
+      end
+    end)
+    |> Ecto.Multi.run(:effect, fn repo, %{idempotency: state} ->
+      case state do
+        {:duplicate, record} ->
+          {:ok, record}
+
+        :new ->
+          %ReviewEvent{}
+          |> ReviewEvent.changeset(Map.put(event, "scope_ref", scope_ref))
+          |> repo.insert()
+      end
+    end)
     |> Repo.transaction()
     |> case do
-      {:ok, %{sync: {count, records}}} ->
-        # Convert Ecto structs to plain maps so Jason.Encoder can serialize the response.
-        # insert_all returning: true yields %ReviewEvent{} structs; Jason cannot encode them
-        # without @derive Jason.Encoder. Using Map.from_struct avoids coupling the schema to JSON.
-        serializable = Enum.map(records, fn r ->
-          Map.from_struct(r) |> Map.drop([:__meta__])
-        end)
-        {:ok, %{accepted_count: count, accepted_records: serializable, rejected: Enum.reverse(rejections)}}
+      {:ok, %{effect: record}} ->
+        {:ok, %{client_mutation_id: record.client_mutation_id, outcome: :accepted}}
 
-      {:error, _, reason, _} ->
-        {:error, reason}
+      {:error, _operation, _reason, _changes} ->
+        {:error, :transaction_failed}
     end
   end
 
-  defp format_errors(changeset) do
-    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-      Enum.reduce(opts, msg, fn {key, value}, acc ->
-        String.replace(acc, "%{#{key}}", to_string(value))
-      end)
-    end)
-  end
+  def apply_one(_, _, _), do: {:error, :invalid_envelope}
 end
