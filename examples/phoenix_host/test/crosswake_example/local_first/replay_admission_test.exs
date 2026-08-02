@@ -122,4 +122,56 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmissionTest do
     refute ReplayAdmission.valid_batch?(List.duplicate(@event, 21))
     assert {:deny, :invalid_envelope} = ReplayAdmission.authorize(%Plug.Conn{}, "invalid", @event)
   end
+
+  test "accepts opaque scope payloads at the exact shared grammar boundaries" do
+    for payload_size <- [16, 128] do
+      scope_ref = "v12." <> String.duplicate("A", payload_size)
+
+      assert {:allow, _} =
+               ReplayAdmission.authorize(%Plug.Conn{}, scope_ref, @event,
+                 session: fn _ -> {:ok, %{scope_ref: scope_ref}} end,
+                 route: fn _ -> {:ok, %{id: "offline-study"}} end,
+                 feature: fn _ -> :allow end,
+                 sigra: fn _ -> :allow end,
+                 domain: fn _, _, _ -> :allow end
+               )
+    end
+  end
+
+  test "hostile scope values deny before every authority callback without echoing scope bytes" do
+    hostile_scope_refs = [
+      "v1." <> String.duplicate("A", 15),
+      "v1." <> String.duplicate("A", 129),
+      "v1.opaque scope value",
+      "v1.opaque.value-123",
+      "v1.opaque/value-123",
+      "v1.opaque:value-123",
+      "v1.opaque@value-123",
+      "v1.opaque\u00E9value-123",
+      "v1.account:member@host",
+      "v0." <> String.duplicate("A", 16),
+      "v01." <> String.duplicate("A", 16),
+      String.duplicate("A", 16),
+      "v1." <> String.duplicate("A", 16) <> "\n"
+    ]
+
+    for scope_ref <- hostile_scope_refs do
+      refute scope_ref =~ "scope_fixture_alpha_01"
+
+      assert {:deny, :invalid_envelope} =
+               ReplayAdmission.authorize(%Plug.Conn{}, scope_ref, @event,
+                 session: fn _ -> send(self(), :session_called); {:ok, %{scope_ref: scope_ref}} end,
+                 route: fn _ -> send(self(), :route_called); {:ok, %{id: "offline-study"}} end,
+                 feature: fn _ -> send(self(), :feature_called); :allow end,
+                 sigra: fn _ -> send(self(), :sigra_called); :allow end,
+                 domain: fn _, _, _ -> send(self(), :domain_called); :allow end
+               )
+
+      refute_received :session_called
+      refute_received :route_called
+      refute_received :feature_called
+      refute_received :sigra_called
+      refute_received :domain_called
+    end
+  end
 end
