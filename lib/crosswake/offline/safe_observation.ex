@@ -79,7 +79,7 @@ defmodule Crosswake.Offline.SafeObservation do
   end
   defp measurements(_), do: error("CW-SAFE-OBSERVATION-MEASUREMENT", :measurements)
 
-  defp readiness(value, path) when value in [:configured, :unconfigured, :ready, :blocked, :unavailable], do: :ok
+  defp readiness(value, _path) when value in [:configured, :unconfigured, :ready, :blocked, :unavailable], do: :ok
   defp readiness(_, path), do: error("CW-SAFE-OBSERVATION-READINESS", path)
 
   defp error(rule_id, path), do: {:error, %Error{rule_id: rule_id, path: path}}
