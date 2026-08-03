@@ -33,6 +33,75 @@ final class PronunciationPackProviderTests: XCTestCase {
         XCTAssertEqual(relaunchStatus, .installed(expectedRecord(for: requirement)))
     }
 
+    func testDeletedArtifactBlocksFreshProviderAndPackStore() async throws {
+        let fixture = try fixtureBytes()
+        let requirement = requirement(for: fixture)
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let provider = PronunciationPackProvider(source: { fixture }, storageRoot: root)
+        let installResult = await provider.install(requirement)
+        XCTAssertEqual(installResult, .installed(expectedRecord(for: requirement)))
+        try FileManager.default.removeItem(at: artifactURL(in: root, for: requirement))
+
+        let relaunched = PronunciationPackProvider(source: { fixture }, storageRoot: root)
+        let status = await relaunched.status(for: requirement)
+        XCTAssertEqual(status, .notInstalled)
+        let store = PackStore(requirements: [requirement], provider: relaunched)
+        await store.reconcileAll()
+        XCTAssertEqual(store.statuses[requirement.packID]?.state, .notInstalled)
+        XCTAssertNotNil(store.blockingStatus(for: ["\(requirement.packID)@\(requirement.requiredVersion)"]))
+    }
+
+    func testSameSizeCorruptionFailsDigestVerificationAfterRelaunch() async throws {
+        let fixture = try fixtureBytes()
+        let requirement = requirement(for: fixture)
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let provider = PronunciationPackProvider(source: { fixture }, storageRoot: root)
+        _ = await provider.install(requirement)
+        var corrupted = fixture
+        corrupted[0] ^= 0xFF
+        try corrupted.write(to: artifactURL(in: root, for: requirement), options: .atomic)
+
+        let relaunched = PronunciationPackProvider(source: { fixture }, storageRoot: root)
+        let status = await relaunched.status(for: requirement)
+        XCTAssertEqual(status, .failure(.digestMismatch))
+        let store = PackStore(requirements: [requirement], provider: relaunched)
+        await store.reconcileAll()
+        XCTAssertEqual(store.statuses[requirement.packID]?.failureReason, .digestMismatch)
+    }
+
+    func testWrongSizeArtifactFailsSizeVerificationAfterRelaunch() async throws {
+        let fixture = try fixtureBytes()
+        let requirement = requirement(for: fixture)
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let provider = PronunciationPackProvider(source: { fixture }, storageRoot: root)
+        _ = await provider.install(requirement)
+        try Data(fixture.dropLast()).write(to: artifactURL(in: root, for: requirement), options: .atomic)
+
+        let relaunched = PronunciationPackProvider(source: { fixture }, storageRoot: root)
+        let status = await relaunched.status(for: requirement)
+        XCTAssertEqual(status, .failure(.sizeMismatch))
+    }
+
+    func testArtifactReadFailureReturnsClosedProviderFailure() async throws {
+        let fixture = try fixtureBytes()
+        let requirement = requirement(for: fixture)
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let provider = PronunciationPackProvider(source: { fixture }, storageRoot: root)
+        _ = await provider.install(requirement)
+
+        let relaunched = PronunciationPackProvider(
+            source: { fixture },
+            storageRoot: root,
+            artifactVerifier: { _, _ in throw CocoaError(.fileReadNoPermission) }
+        )
+        let status = await relaunched.status(for: requirement)
+        XCTAssertEqual(status, .failure(.providerFailed))
+    }
+
     func testRejectedReplacementPreservesKnownGoodArtifact() async throws {
         let fixture = try fixtureBytes()
         let oldRequirement = requirement(for: fixture, version: "1")
@@ -88,6 +157,10 @@ final class PronunciationPackProviderTests: XCTestCase {
 
     private func expectedRecord(for requirement: PackRequirement) -> PackInstalledRecord {
         PackInstalledRecord(contractVersion: .v1, packID: requirement.packID, installedVersion: requirement.requiredVersion, byteCount: requirement.expectedByteCount, integrityVerified: true, atomicPromotionCompleted: true)
+    }
+
+    private func artifactURL(in root: URL, for requirement: PackRequirement) -> URL {
+        root.appendingPathComponent("pack-\(requirement.packID)")
     }
 
     private func makeTemporaryRoot() throws -> URL {
