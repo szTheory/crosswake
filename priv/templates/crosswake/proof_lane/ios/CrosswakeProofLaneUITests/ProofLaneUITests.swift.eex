@@ -20,10 +20,10 @@ final class ProofLaneUITests: XCTestCase {
     assertAdapterDerivedPassedOutcome(in: app)
     print("PACK-INSTALL-READY")
     app.terminate()
+    app.launchEnvironment["CROSSWAKE_PROOF_LANE_NETWORK_DISABLED"] = "1"
     app.launch()
     assertAdapterDerivedPassedOutcome(in: app)
     print("PACK-RELAUNCH-READY")
-    app.launchEnvironment["CROSSWAKE_PROOF_LANE_NETWORK_DISABLED"] = "1"
     let audio = app.buttons.matching(identifier: "proof-lane-pack-audio").firstMatch
     XCTAssertTrue(audio.waitForExistence(timeout: 5))
     audio.tap()

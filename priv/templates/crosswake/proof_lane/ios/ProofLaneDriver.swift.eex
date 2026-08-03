@@ -1,4 +1,5 @@
 // crosswake-proof-lane template_version=<%= @template_version %>
+import CryptoKit
 import Foundation
 
 enum ProofLaneOutcome: String { case passed, blocked, unavailable }
@@ -25,49 +26,118 @@ enum ProofLaneHostAdapterFactory {
   }
 }
 
+internal struct ProofLanePackRequirement {
+  let version: String
+  let byteCount: Int
+  let sha256: String
+}
+
+internal struct ProofLaneInstalledRecord {
+  let location: URL
+  let requirement: ProofLanePackRequirement
+}
+
+internal struct ProofLanePackEvidence {
+  let installed: Bool
+  let networkingDisabled: Bool
+}
+
 // This reference is test-only host scaffold. Production hosts supply their own adapter.
 final class ProofLaneReferencePackAdapter: ProofLaneHostAdapter {
-  private let installedKey = "crosswake.proof-lane.reference-pack.v1.installed"
+  private let requirement = ProofLanePackRequirement(
+    version: PackProviderContract.currentVersion,
+    byteCount: 46,
+    sha256: "73a51a8229c467dae7e9ad1251daad7df4c17b6e75e7d88d44d26c7e64db3d02"
+  )
   private let requiredVersion: String
+  private let fileManager: FileManager
 
-  init(requiredVersion: String = PackProviderContract.currentVersion) {
+  init(requiredVersion: String = PackProviderContract.currentVersion, fileManager: FileManager = .default) {
     self.requiredVersion = requiredVersion
+    self.fileManager = fileManager
   }
 
   func observe() -> ProofLaneSnapshot {
-    snapshot(installed: UserDefaults.standard.bool(forKey: installedKey))
+    guard requiredVersion == requirement.version, verifiedInstalledRecord() != nil else { return blocked() }
+    return passed()
   }
 
   func installPronunciationPackForeground() async -> ProofLaneSnapshot {
-    guard fixtureBytesArePresent(), requiredVersion == PackProviderContract.currentVersion else {
+    guard requiredVersion == requirement.version,
+          let fixture = fixtureBytes(),
+          matchesRequirement(fixture) else { return blocked() }
+
+    guard let destination = installedURL() else {
       return blocked()
     }
+    let directory = destination.deletingLastPathComponent()
 
-    UserDefaults.standard.set(true, forKey: installedKey)
-    return observe()
+    do {
+      try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+      let staging = directory.appendingPathComponent(".proof-lane-\(UUID().uuidString)")
+      defer { try? fileManager.removeItem(at: staging) }
+      try fixture.write(to: staging, options: .atomic)
+      guard matchesRequirement(try Data(contentsOf: staging)) else { return blocked() }
+      if fileManager.fileExists(atPath: destination.path) {
+        _ = try fileManager.replaceItemAt(destination, withItemAt: staging)
+      } else {
+        try fileManager.moveItem(at: staging, to: destination)
+      }
+      return observe()
+    } catch {
+      return blocked()
+    }
   }
 
   func exerciseInstalledPronunciationAudioOffline() async -> ProofLaneSnapshot {
-    observe()
+    guard ProcessInfo.processInfo.environment["CROSSWAKE_PROOF_LANE_NETWORK_DISABLED"] == "1",
+          let record = verifiedInstalledRecord(),
+          let bytes = try? Data(contentsOf: record.location),
+          bytes.count == record.requirement.byteCount,
+          bytes.prefix(min(16, bytes.count)).count > 0 else { return blocked() }
+    return passed()
   }
 
   var retry: (() -> Void)? { nil }
 
   static func resetReferencePersistenceForTests() {
-    UserDefaults.standard.removeObject(forKey: "crosswake.proof-lane.reference-pack.v1.installed")
+    let adapter = ProofLaneReferencePackAdapter()
+    guard let location = adapter.installedURL() else { return }
+    try? FileManager.default.removeItem(at: location)
   }
 
-  private func fixtureBytesArePresent() -> Bool {
+  private func fixtureBytes() -> Data? {
     Bundle.allBundles
       .compactMap { $0.url(forResource: "pronunciation-pack-fixture", withExtension: "bin") }
       .compactMap { try? Data(contentsOf: $0) }
-      .contains { !$0.isEmpty }
+      .first
   }
 
-  private func snapshot(installed: Bool) -> ProofLaneSnapshot {
-    installed
-      ? ProofLaneSnapshot(outcome: .passed, prerequisite: .packAudio, shellBooted: true)
-      : blocked()
+  private func installedURL() -> URL? {
+    guard let support = try? fileManager.url(
+      for: .applicationSupportDirectory,
+      in: .userDomainMask,
+      appropriateFor: nil,
+      create: false
+    ) else { return nil }
+    // Application Support is intentionally the same-volume final storage root.
+    return support.appendingPathComponent("CrosswakeProofLane", isDirectory: true)
+      .appendingPathComponent("pronunciation-pack-v1.bin", isDirectory: false)
+  }
+
+  private func verifiedInstalledRecord() -> ProofLaneInstalledRecord? {
+    guard let location = installedURL(), let bytes = try? Data(contentsOf: location), matchesRequirement(bytes) else {
+      return nil
+    }
+    return ProofLaneInstalledRecord(location: location, requirement: requirement)
+  }
+
+  private func matchesRequirement(_ bytes: Data) -> Bool {
+    bytes.count == requirement.byteCount && SHA256.hash(data: bytes).hexString == requirement.sha256
+  }
+
+  private func passed() -> ProofLaneSnapshot {
+    ProofLaneSnapshot(outcome: .passed, prerequisite: .packAudio, shellBooted: true)
   }
 
   private func blocked() -> ProofLaneSnapshot {
@@ -75,7 +145,10 @@ final class ProofLaneReferencePackAdapter: ProofLaneHostAdapter {
   }
 }
 
+private extension SHA256Digest {
+  var hexString: String { map { String(format: "%02x", $0) }.joined() }
+}
+
 private enum PackProviderContract {
-  // The generated fixture is pinned to the Phase 161 provider contract marker.
   static let currentVersion = "v1"
 }
