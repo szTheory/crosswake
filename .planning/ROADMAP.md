@@ -348,7 +348,7 @@ checks at entry and replay.
 **Effort:** 4 Crosswake days; expect 3-5 adopter integration days outside this repo
 **Depends on:** Phase 160
 **Requirements:** PACK-01, PACK-02, PACK-03, PACK-04, PACK-05
-**Plans:** 7/9 plans executed
+**Plans:** 9/9 plans executed
 
 Plans:
 **Wave 1**
@@ -375,11 +375,11 @@ Plans:
 
 **Wave 6** *(blocked on Plan 161-06 because both plans modify PackStore)*
 
-- [ ] 161-07-PLAN.md — Fail closed on every invalid pack reference and fence stale reconciliation from revocation.
+- [x] 161-07-PLAN.md — Fail closed on every invalid pack reference and fence stale reconciliation from revocation.
 
 **Wave 7** *(blocked on Plans 161-07 and 161-08)*
 
-- [ ] 161-09-PLAN.md — Run one fresh complete post-gap gate and retain privacy-safe closed evidence only.
+- [x] 161-09-PLAN.md — Run one fresh complete post-gap gate and retain privacy-safe closed evidence only.
 
 **Smallest shippable version:** One iOS `PackProvider` protocol with foreground status, install, and
 invalidate; no provider means unavailable; availability follows verified size, SHA-256, and atomic
