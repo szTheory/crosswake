@@ -1,51 +1,60 @@
 ---
 phase: 161-ios-pronunciation-pack-seam
-verified: 2026-08-03T16:47:57Z
+verified: 2026-08-03T18:34:02Z
 status: gaps_found
-score: 9/20 must-haves verified
+score: 14/20 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
+re_verification:
+  previous_status: gaps_found
+  previous_score: 9/20
+  gaps_closed:
+    - "Bundled declarations now propagate positive exact byte count and pinned SHA-256 through PackStore.bundled."
+    - "Malformed required-pack references now block activation, and per-pack generations fence stale reconciliation from revocation."
+    - "The generated reference adapter now checks immutable fixture bytes, promotes atomically, rereads on relaunch, and emits exact structured advisory evidence."
+  gaps_remaining:
+    - "Reference-host reconciliation trusts persisted inventory rather than verifying installed artifact bytes."
+    - "Reference-host promotion can replace the live artifact before durable inventory persistence succeeds."
+    - "The reference-host XCTest target does not build for an available iPhone simulator."
+  regressions:
+    - "The post-gap reference-host implementation has two integrity/atomicity defects identified by current-source inspection and an unbuildable XCTest target."
 gaps:
-  - truth: "The reference host can install its declared pronunciation pack through the bundled production construction path."
+  - truth: "A pack is available only when the current installed bytes still exactly satisfy its declared size, SHA-256, and version."
     status: failed
-    reason: "PackStore.bundled discards required byte-count and SHA-256 metadata, passing 0 and an empty digest to the injected provider; the provider correctly rejects the nonempty fixture."
+    reason: "PronunciationPackProvider.status returns the persisted PackInstalledRecord without locating or hashing the artifact; PackStore accepts that record as available and ActivationCoordinator then mounts the route. Deleted or changed bytes can therefore activate a route."
     artifacts:
+      - path: "examples/ios_shell_host/CrosswakeShell/PronunciationPackProvider.swift"
+        issue: "status(for:) at lines 22-25 reads inventory only; it neither checks artifact existence nor recomputes byte count/SHA-256."
       - path: "packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/PackStore.swift"
-        issue: "Lines 89-93 decode only versions and manufacture invalid integrity declarations."
-      - path: "examples/ios_shell_host/CrosswakeShell/CrosswakeShellApp.swift"
-        issue: "The host computes a private valid requirement at lines 252-260 but never supplies it to PackStore."
+        issue: "status(for:requirement:) at lines 220-233 accepts provider record flags and byte count as availability authority."
     missing:
-      - "Decode and validate a requirement declaration containing positive exact byte count and pinned SHA-256 before constructing PackStore."
-      - "Exercise the actual bundled host path in an XCTest."
-  - truth: "Every corrupt, interrupted, missing, stale, unconfigured, malformed, and revoked path fails closed."
+      - "On every status/relaunch reconciliation, verify the current artifact against the supplied PackRequirement and return a closed result for absence, read failure, size mismatch, or digest mismatch."
+      - "Add executable relaunch tests that delete and corrupt an installed artifact and assert activation remains requiredPack."
+  - truth: "A failed replacement preserves the last known-good artifact and cannot leave inventory attesting to different bytes."
     status: failed
-    reason: "Malformed pack references are dropped by compactMap, allowing an all-malformed required-pack list to reach LiveView; a concurrent reconciliation can also clear a persisted invalidation fence from an old installed record."
+    reason: "The provider replaces/moves the live artifact before saveInventory. If inventory persistence fails after promotion, the method reports failure but the prior inventory can attest to the newly replaced bytes."
     artifacts:
-      - path: "packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/PackStore.swift"
-        issue: "Lines 96-101 discard malformed references; lines 147-157 clear a revocation when stale reconciliation sees available."
+      - path: "examples/ios_shell_host/CrosswakeShell/PronunciationPackProvider.swift"
+        issue: "Lines 39-56 promote the artifact before durable inventory write and have no rollback path."
     missing:
-      - "Make every malformed, empty, unknown, or incompatible required-pack reference return a blocking closed status."
-      - "Add a per-pack operation generation/fence so only the originating successful invalidation plus fresh absence can clear revocation."
-      - "Add deterministic malformed-manifest and reconcile-during-failed-invalidation tests."
-  - truth: "The generated proof lane deterministically installs verified bytes and performs offline pronunciation playback/readback before pack_audio_prerequisite can pass."
+      - "Make artifact and inventory publication recoverable as one transaction, restoring the former artifact on every post-promotion persistence failure (or withholding visible promotion until durable metadata is committed)."
+      - "Add a deterministic injected inventory-write-failure replacement test with a fresh status/relaunch assertion."
+  - truth: "The reference host supplies a runnable foreground iOS installation path with executable XCTest evidence."
     status: failed
-    reason: "The reference adapter accepts any nonempty fixture, stores only a UserDefaults Boolean, and audio exercise returns that Boolean-derived snapshot. The verifier promotes printed XCTest markers, not structured integrity/install/audio evidence."
+    reason: "The host XCTest command fails on an available iPhone simulator even with isolated DerivedData: CrosswakeShell is compiled for x86_64 while CrosswakeShellCore is emitted only as arm64 simulator module, so the module cannot be resolved."
     artifacts:
-      - path: "priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex"
-        issue: "Lines 41-52 contain no size or SHA-256 validation, atomic promotion, persisted artifact readback, networking assertion, or audio/read operation."
-      - path: "script/verify_generated_ios_shell.sh"
-        issue: "Lines 188-195 turn untrusted marker strings into a passed pack_audio_prerequisite outcome."
+      - path: "examples/ios_shell_host/CrosswakeShell.xcodeproj/project.pbxproj"
+        issue: "Current simulator build configuration does not produce a CrosswakeShellCore module usable by every architecture Xcode compiles for the target."
     missing:
-      - "Keep the generated lane blocked unless a host adapter supplies verified fixture acquisition, atomic promotion, relaunch readback, and deterministic offline audio/read evidence."
-      - "Consume structured assertions for those operations rather than print markers."
+      - "Correct the target/package architecture configuration and make the focused PronunciationPackProvider XCTest target pass on a clean available iPhone simulator."
 ---
 
 # Phase 161: iOS Pronunciation Pack Seam Verification Report
 
-**Phase Goal:** Replace simulated availability with one host-supplied foreground iOS install path that verifies exact real bytes and atomically installs them, while every corrupt/interrupted/missing/stale/unconfigured path fails closed and Crosswake does not claim generic native storage.
-**Verified:** 2026-08-03T16:47:57Z
+**Phase Goal:** Replace simulated availability with one host-supplied foreground iOS install path that verifies and atomically installs real bytes.
+**Verified:** 2026-08-03T18:34:02Z
 **Status:** gaps_found
-**Re-verification:** No — initial verification
+**Re-verification:** Yes — after gap closure
 
 ## Goal Achievement
 
@@ -53,116 +62,95 @@ gaps:
 
 | # | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Versioned requirement-bound status/install/invalidate provider has closed results. | ✓ VERIFIED | `PackProvider.swift:3-84` defines only the typed v1 contract and closed result/reason types; core tests pass. |
-| 2 | Real fixture bytes reach activation only after exact integrity, atomic promotion, persistence, and fresh reconciliation. | ✗ FAILED | Package tracer uses a test fake; the actual bundled host path supplies zero/empty integrity fields (`PackStore.swift:89-93`) and is rejected by its provider. |
-| 3 | Cold launch and route reads use current reconciled inventory, never timed or legacy availability. | ✗ FAILED | Checking-first code exists, but malformed required-pack declarations are silently discarded (`PackStore.swift:96-101`) and may let activation continue. |
-| 4 | Core/provider ownership is narrow and excludes host transport/storage/playback details. | ✓ VERIFIED | Public protocol has only three requirement/result operations; no URL, path, credentials, codec, archive, or raw Error member was found. |
-| 5 | Host installer stages, verifies, atomically promotes, and persists only after commit. | ✗ FAILED | The reference provider hashes an in-memory `Data` value and writes it atomically, but does not stream as required; more importantly its production requirement wiring is unusable. |
-| 6 | Install/invalidate are serialized and reconciliation cannot fabricate availability. | ✗ FAILED | `@MainActor` serialization exists, but the invalidation fence can be cleared by an overlapping stale reconciliation (`PackStore.swift:147-157`). |
-| 7 | Failed replacement preserves known-good bytes and a newer declaration remains stale/blocked. | ✓ VERIFIED | Provider stages before replace (`PronunciationPackProvider.swift:25-55`); focused host test asserts retained old record, and PackStore maps version mismatch to `.stale`. |
-| 8 | Revocation persists and remains blocked until the same successful invalidation/reinstall confirms it. | ✗ FAILED | Any reconciliation that sees an installed record clears the revocation, contrary to this invariant. |
-| 9 | Reference host injects a working private exact requirement/provider configuration. | ✗ FAILED | Injection is explicit (`CrosswakeShellApp.swift:206-218`), but the calculated requirement is not passed to PackStore, so foreground installation cannot work. |
-| 10 | Reference UI exposes closed state, one foreground recovery action, and stable accessibility semantics. | ✓ VERIFIED | `RequiredPackView` is wired to coordinator callbacks; the four focused UI contract tests are present and were exercised in the phase gate. |
-| 11 | Install/Update/Retry/Invalidate-then-Install are foreground-only, with no automatic retry or second runtime owner. | ✓ VERIFIED | Closed action mapping in `RequiredPackView.swift` and coordinator callbacks; no background continuation path found. |
-| 12 | Dynamic Type, text-plus-color, system colors, and accessible status/actions are implemented. | ✓ VERIFIED | Reference view and its accessibility contract tests supply this behavior. |
-| 13 | Existing generated lane proves missing-provider denial, verified install, relaunch reconciliation, and offline pronunciation use. | ✗ FAILED | Generated adapter uses a Boolean instead of verified installation/readback; its UI test only sees a passed label. |
-| 14 | Public provider has no playback/asset API and the separate host proof operation actually exercises installed offline audio. | ✗ FAILED | Public API is narrow, but `exerciseInstalledPronunciationAudioOffline()` is only `observe()` (`ProofLaneDriver.swift.eex:50-52`). |
-| 15 | `pack_audio_prerequisite` passes only from real immutable bytes and exact adapter-derived evidence; simulator remains advisory. | ✗ FAILED | The advisory boundary is retained, but the condition for passing is a nonempty fixture plus print markers, not exact evidence. |
-| 16 | Retained evidence rejects private/raw proof values and keeps closed outcomes only. | ✓ VERIFIED | Focused ExUnit evidence/template/verifier suite: 40 tests, 0 failures; evidence privacy tests cover the closed rejection path. |
-| 17 | A final tree proves the provider, atomic/reconciliation, invalid paths, revocation, UI, and generated audio lane together. | ✗ FAILED | The advertised aggregate gate passes while the production wiring, malformed-manifest denial, invalidation fence, and generated audio proof fail by source inspection. |
-| 18 | Validation/evidence retain only approved IDs, closed states, aggregate results, and closed outcomes. | ✓ VERIFIED | Evidence tests pass and validation contains aggregate/closed result claims rather than raw fixture values. |
-| 19 | Simulator proof is advisory; Phase 162 alone owns physical-iPhone/adopter promotion and TODO-002 remains blocked. | ✓ VERIFIED | Script’s passing rule is explicitly advisory (`PL-IOS-PACK-AUDIO-ADVISORY`); roadmap/state preserve Phase 162 and `unknown_blocking`. |
-| 20 | The in-process protocol is accurately declared as no external API integration. | ✓ VERIFIED | `api-coverage.verify-pre` returned `passed: true`; COVERAGE.md has the required no-external-API declaration. |
+| 1 | Versioned requirement-bound status/install/invalidate provider has closed results. | ✓ VERIFIED | `PackProvider.swift:3-84` exposes only v1, requirement-bound closed results. `swift test` passed 27/27. |
+| 2 | Real fixture bytes reach activation only after exact integrity, atomic promotion, persistence, and fresh reconciliation. | ✗ FAILED | Fresh reconciliation is not byte-backed: host `status(for:)` returns persisted inventory alone (`PronunciationPackProvider.swift:22-25`). |
+| 3 | Cold launch and route reads use current reconciled inventory, never timed or legacy availability. | ✗ FAILED | Route gating is wired, but a deleted or tampered promoted artifact retains a persisted available record and can pass `PackStore` into activation. |
+| 4 | Core/provider ownership is narrow and excludes host transport/storage/playback details. | ✓ VERIFIED | Core provider has only `status`, `install`, and `invalidate`; authority scan found no transport, CDN, codec, playback, or storage-budget API. |
+| 5 | Host installer stages, verifies, atomically promotes, and persists only after commit. | ✗ FAILED | Lines 39-56 replace the live file before inventory persistence and provide no rollback on persistence failure. |
+| 6 | Install/invalidate are serialized and reconciliation cannot fabricate availability. | ✓ VERIFIED | `PackStore.swift:127-216` captures per-pack generations and tests cover stale/overlapping invalidation; package suite passes. |
+| 7 | Failed replacement preserves known-good bytes and a newer declaration remains stale/blocked. | ✗ FAILED | A failure after file promotion can destroy the known-good artifact while old inventory remains. |
+| 8 | Revocation persists and remains blocked until the same successful invalidation/reinstall confirms it. | ✓ VERIFIED | Current `clearRevocation` is limited to same-generation `.notInstalled` invalidation or `.available` reinstall (`PackStore.swift:183-204`), covered by focused tests. |
+| 9 | Reference host injects a working private exact requirement/provider configuration. | ✗ FAILED | Source injection and bundled metadata are present, but the focused host XCTest target fails to compile on an available simulator with a CrosswakeShellCore architecture mismatch. |
+| 10 | Reference UI exposes closed state, one foreground recovery action, and stable accessibility semantics. | ✓ VERIFIED | `RequiredPackView` is connected to coordinator callbacks and focused UI-contract tests exist; no blank recovery branch found. |
+| 11 | Install/Update/Retry/Invalidate-then-Install are foreground-only, with no automatic retry or second runtime owner. | ✓ VERIFIED | Closed UI action mapping and coordinator callbacks are foreground `async` actions; no background continuation found. |
+| 12 | Dynamic Type, text-plus-color, system colors, and accessible status/actions are implemented. | ✓ VERIFIED | Reference view and generated UI contract test use semantic labels and Accessibility XXXL layout assertions. |
+| 13 | Existing generated lane proves missing-provider denial, verified install, relaunch reconciliation, and offline pronunciation use. | ✓ VERIFIED | `ProofLaneDriver.swift.eex:60-137` verifies fixture/readback; contract tests invoke install, relaunch, and networking-disabled read. |
+| 14 | Public provider has no playback/asset API and separate host proof operation exercises installed offline audio. | ✓ VERIFIED | Core remains narrow; generated host operation requires `CROSSWAKE_PROOF_LANE_NETWORK_DISABLED=1` and reads verified installed bytes. |
+| 15 | `pack_audio_prerequisite` passes only from immutable bytes and exact adapter-derived advisory evidence. | ✓ VERIFIED | Script requires exact six-ID JSON schema before emitting `PL-IOS-PACK-AUDIO-ADVISORY`; ExUnit verifier suite passes. |
+| 16 | Retained evidence rejects private/raw proof values and keeps closed outcomes only. | ✓ VERIFIED | `evidence_test.exs` exercises private/raw candidate rejection; focused ExUnit suite passes 40/40. |
+| 17 | A final tree proves provider, atomic/reconciliation, invalid paths, revocation, UI, and generated audio lane together. | ✗ FAILED | The retained gate is not sufficient evidence: current source has the two host integrity defects and the host XCTest target cannot build. |
+| 18 | Validation/evidence retain only approved IDs, closed states, aggregate results, and closed outcomes. | ✓ VERIFIED | Validation/COVERAGE artifacts contain aggregate and closed state values; focused evidence tests pass. |
+| 19 | Simulator proof is advisory; Phase 162 alone owns physical-iPhone/adopter promotion and TODO-002 remains blocked. | ✓ VERIFIED | Script emits advisory-only result and ROADMAP assigns physical-iPhone proof to Phase 162. |
+| 20 | The in-process protocol is accurately declared as no external API integration. | ✓ VERIFIED | `COVERAGE.md` declares the in-process Swift protocol/local fixture boundary; no external SDK or service was added. |
 
-**Score:** 9/20 truths verified (0 present, behavior-unverified)
-
-### Roadmap Success-Criteria Verdict
-
-| Success criterion | Status | Evidence |
-| --- | --- | --- |
-| Simulated timed transitions can no longer imply availability. | ✗ FAILED | Malformed required-pack declarations can bypass the gate; generated proof substitutes Boolean success for installation. |
-| All corrupt, interrupted, missing, stale, or unconfigured paths fail closed. | ✗ FAILED | Malformed-manifest bypass and invalidation/reconciliation race are observable fail-open paths. |
-| Host and Crosswake ownership is explicit and tested. | ✗ FAILED | Ownership types are explicit, but the real host construction path is disconnected from its integrity requirement. |
-| Generic native content-pack storage remains a non-claim. | ✓ VERIFIED | The core protocol remains narrow; host-only example storage is not surfaced as core generic storage. |
+**Score:** 14/20 truths verified (0 present, behavior-unverified)
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
-| --- | --- | --- |
-| `PackProvider.swift` | Versioned closed provider contract | ✓ VERIFIED | Exists, substantive, and imported by PackStore/host. |
-| `PackStore.swift` | Current reconciled fail-closed inventory | ✗ FAILED | Wired into activation, but bundled integrity propagation, malformed reference handling, and invalidation fence are defective. |
-| `PronunciationPackProvider.swift` | Host atomic verified installer | ⚠️ PARTIAL | Direct test path exists, but production requirement wiring rejects installation and implementation is non-streaming. |
-| `CrosswakeShellApp.swift` | Reference-host composition injection | ✗ FAILED | Provider is injected, but its private exact requirement is unused by PackStore. |
-| `ProofLaneDriver.swift.eex` | Verified install/relaunch/offline-audio adapter | ✗ HOLLOW | Uses nonempty resource + UserDefaults Boolean; no integrity/promotion/readback/audio behavior. |
-| `ProofLaneContractTests.swift.eex` / `ProofLaneUITests.swift.eex` | Deterministic contract/UI proof | ✗ HOLLOW | Tests assert adapter outcomes and labels, not the required underlying byte or audio operations. |
-| `verify_generated_ios_shell.sh` | Exact proof evidence gate | ✗ FAILED | Promotes printed markers to passed evidence. |
-| `evidence_test.exs` / `COVERAGE.md` / `161-VALIDATION.md` | Privacy and no-external-API seal | ✓ VERIFIED | Files are substantive; focused ExUnit and API-coverage checks pass. |
+| --- | --- | --- | --- |
+| `PackProvider.swift` | Closed versioned core contract | ✓ VERIFIED | Exists, substantive, and wired into `PackStore`. |
+| `PackStore.swift` | Validated required-pack gate and generation fence | ✓ VERIFIED | Bundled exact metadata, total reference resolution, and fencing are wired and tested. |
+| `PronunciationPackProvider.swift` | Host verified atomic installer/reconciler | ✗ FAILED | Installer streams and hashes staged bytes, but reconciliation does not verify installed bytes and promotion precedes durable inventory. |
+| `CrosswakeShellApp.swift` | Reference-host composition | ⚠️ PARTIAL | Provider injection is present, but the executable host XCTest target fails to build. |
+| `ProofLaneDriver.swift.eex` | Fixture-backed advisory install/readback/audio operation | ✓ VERIFIED | Artifact-backed exact checks and networking-disabled installed-byte read are implemented. |
+| `verify_generated_ios_shell.sh` | Structured advisory evidence gate | ✓ VERIFIED | Requires the exact allowlisted schema before advisory pass. |
+| `evidence_test.exs`, `COVERAGE.md`, `161-VALIDATION.md` | Privacy/no-external-API seal | ✓ VERIFIED | Substantive and exercised by the focused ExUnit suite. |
 
 ### Key Link Verification
 
-| From | To | Status | Details |
-| --- | --- | --- | --- |
-| `PackRequirement` | `PackProvider.status/install/invalidate` | ✗ PARTIAL | Methods are wired, but bundled construction destroys required integrity metadata. |
-| `PackStore.statuses` | `ActivationCoordinator.resolve` | ✗ FAILED | Activation calls the gate, but malformed references are dropped before a blocking status is produced. |
-| `PackStore.invalidatePack` | persistent revocation ledger | ✗ FAILED | Revocation is persisted first, but an overlapping reconciliation may clear it without confirmed invalidation. |
-| Host provider | reference host composition root | ✗ PARTIAL | Injection exists; exact requirement configuration is disconnected. |
-| Generated fixture | generated host install adapter | ✗ FAILED | Only nonempty-byte presence is checked. |
-| Installed pack | offline audio operation | ✗ FAILED | Operation only returns current Boolean-derived status. |
-| XCTest/XCUITest results | generated shell verifier | ✗ FAILED | Marker text, rather than structured behavioral evidence, creates a pass. |
-| closed proof result | retained Evidence | ✓ VERIFIED | Existing closed assertion/outcome pathway is exercised by ExUnit tests. |
+| From | To | Via | Status | Details |
+| --- | --- | --- | --- | --- |
+| bundled declaration | `PackStore.bundled` | validated exact requirement decoding | ✓ WIRED | `validatedRequirement()` requires positive byte count and 64-character lowercase digest. |
+| `PackStore` mutation | provider completion | captured generation before state writes | ✓ WIRED | `beginMutation`/`isCurrent` guard every awaited result path. |
+| provider status | route activation | reconciled `RequiredPackStatus` → `blockingStatus` → coordinator | ✗ FAILED | Persisted record can describe absent/tampered bytes; coordinator then accepts `.available`. |
+| provider promotion | durable inventory | promoted artifact plus inventory record | ✗ FAILED | Artifact changes before `saveInventory`, without transaction/rollback. |
+| generated adapter | advisory verifier outcome | exact structured evidence document | ✓ WIRED | Test creates the exact schema only after adapter operations; script accepts no marker-only substitute. |
 
 ### Data-Flow Trace (Level 4)
 
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 | --- | --- | --- | --- | --- |
-| `PackStore` | `requirements` / `statuses` | bundled JSON → provider → reconciled inventory | No for the reference host: byte count/digest become `0`/`""` | ✗ DISCONNECTED |
-| Host provider | installed record | fixture source → staging/destination → inventory | Yes in direct test construction, but not in injected bundled route | ⚠️ PARTIAL |
-| Generated proof adapter | installed Boolean | any nonempty bundled fixture → UserDefaults | No verified installed artifact or audio result | ✗ HOLLOW |
+| `PackStore` | `PackRequirement` | bundled JSON → validated requirement → provider | Yes | ✓ FLOWING |
+| host provider install | staged file / installed record | fixture source → stage/hash → destination/inventory | Partially | ⚠️ The staging bytes are real and verified, but a persistence failure can split file and record. |
+| host provider status | installed record | inventory JSON only | No current-byte attestation | ✗ DISCONNECTED |
+| generated proof adapter | installed artifact | immutable fixture → stage/promote → relaunch readback | Yes | ✓ FLOWING |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 | --- | --- | --- | --- |
-| Core package contract suite | `swift test --package-path packages/crosswake-shell-core-ios` | 21 tests, 0 failures | ✓ PASS — insufficient coverage for listed gaps |
-| Evidence/template/verifier suite | `mix test test/crosswake/proof_lane/evidence_test.exs test/crosswake/proof_lane/template_contract_test.exs test/crosswake/proof_lane/ios_verifier_test.exs` | 40 tests, 0 failures | ✓ PASS — does not exercise actual generated adapter semantics |
-| Reference generated simulator proof | `... verify_generated_ios_shell.sh --proof-lane --reference-pack-adapter` | exit 0 | ✗ FAIL as goal evidence — source shows Boolean/marker-only success |
-| API declaration seal | `gsd-tools check api-coverage.verify-pre ...` | `passed: true` | ✓ PASS |
+| Core provider/gate/revocation contracts | `swift test --package-path packages/crosswake-shell-core-ios` | 27 tests, 0 failures | ✓ PASS |
+| Evidence/template/generated-verifier contracts | `mix test test/crosswake/proof_lane/evidence_test.exs test/crosswake/proof_lane/template_contract_test.exs test/crosswake/proof_lane/ios_verifier_test.exs` | 40 tests, 0 failures | ✓ PASS |
+| Reference host provider XCTest | `xcodebuild test ... -only-testing:CrosswakeShellTests/PronunciationPackProviderTests` | failed in both normal and isolated DerivedData: `CrosswakeShellCore` module architecture incompatible/unresolved | ✗ FAIL |
+
+### Probe Execution
+
+Step 7c: SKIPPED — this phase declares no `scripts/*/tests/probe-*.sh` probe. The generated-iOS verifier is covered by its focused ExUnit contract suite above.
 
 ### Requirements Coverage
 
-| Requirement | Source plan(s) | Description | Status | Evidence |
-| --- | --- | --- | --- |
-| PACK-01 | 01, 03, 04, 05 | Host-supplied foreground status/install/invalidate seam | ✗ BLOCKED | Seam exists, but the actual reference-host requirement is not propagated to the store/provider path. |
-| PACK-02 | 01, 02, 03, 05 | Invalid/unconfigured paths never report available | ✗ BLOCKED | Malformed required-pack bypass and invalidation/reconciliation race violate fail-closed behavior. |
-| PACK-03 | 01, 02, 04, 05 | Immutable archive only after exact size/SHA-256 and atomic install | ✗ BLOCKED | Direct provider test is positive, but production host cannot use exact metadata and generated lane lacks verification/promotion. |
-| PACK-04 | 01-05 | Explicit core/host ownership boundary | ✓ SATISFIED | Core protocol does not expose host transport/storage/layout/playback authority. |
-| PACK-05 | 03-05 | Stop-list remains unclaimed | ✓ SATISFIED | Simulator output remains advisory; no Android/background/generic-storage/device promotion found. |
-
-### Prohibition Checks
-
-| Prohibition | Status | Evidence |
-| --- | --- | --- |
-| No unreconciled/malformed/revoked media may silently activate a route. | ✗ FAILED | Malformed declarations are compact-mapped away; revocation can be cleared by stale reconciliation. |
-| No Crosswake-owned distribution, generic storage, asset lookup, or playback authority. | ✓ VERIFIED | Contract remains requirement/result-only; host example owns source/storage. |
-| No local/simulator/generated result may be presented as device/adopter/Android/generic-storage proof. | ✓ VERIFIED | `PL-IOS-PACK-AUDIO-ADVISORY`, roadmap, and state preserve the Phase 162 physical-device boundary. |
+| Requirement | Source plans | Description | Status | Evidence |
+| --- | --- | --- | --- | --- |
+| PACK-01 | 01, 03-06, 08-09 | Host-supplied foreground status/install/invalidate seam | ✗ BLOCKED | Seam is source-wired, but its reference host XCTest target does not build in a clean simulator target. |
+| PACK-02 | 01-03, 05-07, 09 | Invalid/unconfigured paths never report available | ✗ BLOCKED | Persisted record can report available after file deletion/tampering. |
+| PACK-03 | 01-02, 04-06, 08-09 | Immutable archive only after exact size/SHA-256 and atomic installation | ✗ BLOCKED | Pre-persistence artifact promotion can leave inventory attesting to replaced bytes; status does not reverify bytes. |
+| PACK-04 | 01-09 | Explicit Crosswake/host ownership boundary | ✓ SATISFIED | Core protocol remains requirement/result-only; host owns source and local storage. |
+| PACK-05 | 03-06, 08-09 | Stop-list remains explicitly unclaimed | ✓ SATISFIED | No Android/background/delta/generic-storage claim or implementation; simulator outcome is advisory and Phase 162 retains device promotion. |
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 | --- | --- | --- | --- | --- |
-| `PackStore.swift` | 89-93 | Hardcoded empty integrity declaration | 🛑 Blocker | Makes injected reference provider reject the declared pack. |
-| `PackStore.swift` | 96-101 | `compactMap` drops malformed activation requirements | 🛑 Blocker | Required pack gate can disappear. |
-| `PackStore.swift` | 147-157 | Unfenced concurrent revocation reconciliation | 🛑 Blocker | Failed invalidation can later reactivate old bytes. |
-| `ProofLaneDriver.swift.eex` | 41-52 | Boolean-only installation/audio implementation | 🛑 Blocker | Advisory proof is a false positive for verified offline media. |
-| `ActivationCoordinator.swift` | 458-471 | Authorized origin is not bound to loaded URL | ⚠️ Warning | Review finding WR-01; security issue in phase-modified code, outside the PACK goal but requires follow-up. |
+| `PronunciationPackProvider.swift` | 22-25 | Inventory-only availability attestation | 🛑 BLOCKER | Missing or modified promoted bytes can silently activate a route. |
+| `PronunciationPackProvider.swift` | 39-56 | Promotion before durable inventory commit | 🛑 BLOCKER | Failed replacement can destroy known-good bytes and leave stale metadata. |
+| `CrosswakeShell.xcodeproj/project.pbxproj` | simulator target configuration | Cross-architecture core module mismatch | 🛑 BLOCKER | Reference-host executable proof cannot build. |
 
-## Gaps Summary
+### Gaps Summary
 
-Phase 161 does not meet its goal. The source contains four concrete blockers: disconnected integrity metadata in the actual host path, a malformed-required-pack activation bypass, revocation/reconciliation race, and a generated proof lane that reports success without installation or audio behavior. Passing Swift, ExUnit, and simulator commands are not sufficient evidence because their tests either use fakes or assert the Boolean/marker implementation itself.
+Phase 161 is still blocked. The gap-closure work correctly repaired the earlier bundled-metadata, malformed-reference, revocation-fence, and marker-only proof defects. However, the current reference host still treats inventory metadata as an attestation of immutable installed bytes, and it makes bytes visible before its matching record is durably persisted. Those paths contradict the phase goal's verified/atomic availability contract. The available simulator also cannot build the focused host XCTest target, so the reference implementation has no executable evidence in its intended host context.
 
-Phase 162 only owns physical-iPhone promotion; it does not explicitly cover these implementation defects. They are not deferred.
+Phase 162 is limited to physical-iPhone adoption proof; its stated success criteria do not cover correcting these implementation defects. No gaps are deferred.
 
----
-
-_Verified: 2026-08-03T16:47:57Z_
+_Verified: 2026-08-03T18:34:02Z_
 _Verifier: the agent (gsd-verifier)_
