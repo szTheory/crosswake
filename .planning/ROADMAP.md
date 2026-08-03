@@ -348,6 +348,25 @@ checks at entry and replay.
 **Effort:** 4 Crosswake days; expect 3-5 adopter integration days outside this repo
 **Depends on:** Phase 160
 **Requirements:** PACK-01, PACK-02, PACK-03, PACK-04, PACK-05
+**Plans:** 5 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 161-01-PLAN.md — Trace one exact requirement through real fixture bytes, fresh provider status, and route activation.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 161-02-PLAN.md — Complete host-owned atomic installation, known-good preservation, durable invalidation, and concurrency safety.
+
+**Wave 3** *(parallel after Wave 2)*
+
+- [ ] 161-03-PLAN.md — Wire explicit reference-host injection and accessible foreground recovery UI.
+- [ ] 161-04-PLAN.md — Extend the generated proof lane with real pack/audio fixtures, XCTest/XCUITest, and advisory verifier evidence.
+
+**Wave 4** *(blocked on both Wave 3 plans)*
+
+- [ ] 161-05-PLAN.md — Seal privacy-safe evidence, no-external-API coverage, and one fresh complete Phase 161 gate.
 
 **Smallest shippable version:** One iOS `PackProvider` protocol with foreground status, install, and
 invalidate; no provider means unavailable; availability follows verified size, SHA-256, and atomic
