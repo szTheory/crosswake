@@ -31,6 +31,8 @@ struct PublicationOperations: Sendable {
     let atomicWrite: @Sendable (Data, URL) throws -> Void
     let move: @Sendable (URL, URL) throws -> Void
     let remove: @Sendable (URL) throws -> Void
+    let synchronizeFile: @Sendable (URL) throws -> Void
+    let synchronizeDirectory: @Sendable (URL) throws -> Void
 }
 
 /// The example host owns byte acquisition, private storage, and inventory. Core sees only the
@@ -48,6 +50,7 @@ actor PronunciationPackProvider: PackProvider {
     private let artifactVerifier: ArtifactVerifier
     private let inventoryWriter: InventoryWriter
     private let publicationMover: PublicationMover
+    private let publicationOperations: PublicationOperations
     private let filesystemIdentity: PublicationFilesystemIdentity
     private let startupRecovery: Task<Void, Error>
 
@@ -59,7 +62,8 @@ actor PronunciationPackProvider: PackProvider {
         artifactVerifier: ArtifactVerifier? = nil,
         inventoryWriter: InventoryWriter? = nil,
         publicationMover: (@Sendable (URL, URL) throws -> Void)? = nil,
-        filesystemIdentity: PublicationFilesystemIdentity? = nil
+        filesystemIdentity: PublicationFilesystemIdentity? = nil,
+        publicationOperations: PublicationOperations? = nil
     ) {
         self.source = source
         self.storageRoot = storageRoot
@@ -75,6 +79,13 @@ actor PronunciationPackProvider: PackProvider {
         self.publicationMover = publicationMover ?? { source, destination in
             try FileManager.default.moveItem(at: source, to: destination)
         }
+        self.publicationOperations = publicationOperations ?? PublicationOperations(
+            atomicWrite: { try $0.write(to: $1, options: .atomic) },
+            move: { try FileManager.default.moveItem(at: $0, to: $1) },
+            remove: { try FileManager.default.removeItem(at: $0) },
+            synchronizeFile: { url in let handle = try FileHandle(forWritingTo: url); defer { try? handle.close() }; try handle.synchronize() },
+            synchronizeDirectory: { url in let fd = open(url.path, O_RDONLY); guard fd >= 0 else { throw POSIXError(.EIO) }; defer { _ = close(fd) }; guard fsync(fd) == 0 else { throw POSIXError(.EIO) } }
+        )
         self.filesystemIdentity = filesystemIdentity ?? { url in
             let attributes = try FileManager.default.attributesOfFileSystem(forPath: url.path)
             guard let number = attributes[.systemNumber] else { throw CocoaError(.fileReadUnknown) }
@@ -83,8 +94,9 @@ actor PronunciationPackProvider: PackProvider {
         let recoveryRoot = storageRoot
         let recoveryManager = fileManager
         let recoveryIdentity = self.filesystemIdentity
+        let recoveryOperations = self.publicationOperations
         self.startupRecovery = Task.detached(priority: .utility) {
-            try Self.recoverInterruptedPublication(storageRoot: recoveryRoot, fileManager: recoveryManager, filesystemIdentity: recoveryIdentity)
+            try Self.recoverInterruptedPublication(storageRoot: recoveryRoot, fileManager: recoveryManager, filesystemIdentity: recoveryIdentity, operations: recoveryOperations)
         }
     }
 
@@ -241,28 +253,15 @@ actor PronunciationPackProvider: PackProvider {
     private func saveInventory(_ inventory: [String: PackInstalledRecord]) throws {
         let data = try JSONEncoder().encode(inventory)
         try inventoryWriter(data, inventoryURL)
-        try synchronizeFile(at: inventoryURL)
-        try synchronizeDirectory(at: storageRoot)
+        try publicationOperations.synchronizeFile(inventoryURL)
+        try publicationOperations.synchronizeDirectory(storageRoot)
     }
 
     private func persistJournal(_ journal: ReplacementJournal) throws {
         let data = try JSONEncoder().encode(journal)
-        try data.write(to: replacementJournalURL, options: .atomic)
-        try synchronizeFile(at: replacementJournalURL)
-        try synchronizeDirectory(at: storageRoot)
-    }
-
-    private func synchronizeFile(at url: URL) throws {
-        let handle = try FileHandle(forWritingTo: url)
-        defer { try? handle.close() }
-        try handle.synchronize()
-    }
-
-    private func synchronizeDirectory(at url: URL) throws {
-        let descriptor = open(url.path, O_RDONLY)
-        guard descriptor >= 0 else { throw POSIXError(.EIO) }
-        defer { _ = close(descriptor) }
-        guard fsync(descriptor) == 0 else { throw POSIXError(.EIO) }
+        try publicationOperations.atomicWrite(data, replacementJournalURL)
+        try publicationOperations.synchronizeFile(replacementJournalURL)
+        try publicationOperations.synchronizeDirectory(storageRoot)
     }
 
     private func awaitStartupRecovery() async -> Bool {
@@ -274,7 +273,7 @@ actor PronunciationPackProvider: PackProvider {
         }
     }
 
-    nonisolated private static func recoverInterruptedPublication(storageRoot: URL, fileManager: FileManager, filesystemIdentity: PublicationFilesystemIdentity) throws {
+    nonisolated private static func recoverInterruptedPublication(storageRoot: URL, fileManager: FileManager, filesystemIdentity: PublicationFilesystemIdentity, operations: PublicationOperations) throws {
         let journalURL = storageRoot.appendingPathComponent("replacement-journal.json")
         guard fileManager.fileExists(atPath: journalURL.path) else { return }
         let journal = try JSONDecoder().decode(ReplacementJournal.self, from: Data(contentsOf: journalURL))
@@ -310,19 +309,19 @@ actor PronunciationPackProvider: PackProvider {
             guard inventory[journal.packID] == journal.currentRecord,
                   fileManager.fileExists(atPath: destination.path)
             else { throw CocoaError(.fileReadCorruptFile) }
-            if fileManager.fileExists(atPath: retained.path) { try fileManager.removeItem(at: retained) }
+            if fileManager.fileExists(atPath: retained.path) { try operations.remove(retained); try operations.synchronizeDirectory(canonicalRoot) }
         case .retentionPending, .promotionPending, .inventoryCommitPending:
-            if fileManager.fileExists(atPath: destination.path) { try fileManager.removeItem(at: destination) }
+            if fileManager.fileExists(atPath: destination.path) { try operations.remove(destination); try operations.synchronizeDirectory(canonicalRoot) }
             if let priorRecord = journal.priorRecord {
                 guard fileManager.fileExists(atPath: retained.path) else { throw CocoaError(.fileReadCorruptFile) }
-                try fileManager.moveItem(at: retained, to: destination)
+                try operations.move(retained, destination); try operations.synchronizeDirectory(canonicalRoot)
                 inventory[journal.packID] = priorRecord
             } else {
                 inventory.removeValue(forKey: journal.packID)
             }
             try writeInventory(inventory, storageRoot: storageRoot)
         }
-        if fileManager.fileExists(atPath: journalURL.path) { try fileManager.removeItem(at: journalURL) }
+        if fileManager.fileExists(atPath: journalURL.path) { try operations.remove(journalURL); try operations.synchronizeDirectory(canonicalRoot) }
     }
 
     nonisolated private static func safeLeaf(_ value: String) -> Bool {
