@@ -41,7 +41,7 @@ struct RequiredPackView: View {
         let model = Self.presentation(for: status)
 
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 24) {
                 Text("Required pronunciation audio")
                     .font(.title.weight(.semibold))
 
@@ -61,7 +61,7 @@ struct RequiredPackView: View {
                 .accessibilityFocused($statusIsFocused)
                 .accessibilityAddTraits(.updatesFrequently)
 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 8) {
                     Text("Owner: \(model.owner)")
                         .font(.footnote)
                     Text("Rule: \(model.rule)")
