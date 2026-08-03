@@ -8,8 +8,7 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
   @event_keys ["card_id", "client_mutation_id", "rating"]
   @scope_ref_pattern ~r/\Av[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}\z/
 
-  alias Crosswake.Companions.Sigra.Contracts
-  alias Crosswake.Manifest.Types.RouteEntry
+  alias CrosswakeExample.LocalFirst.ReplayAuth
 
   @type decision :: {:allow, map()} | {:deny, atom()}
 
@@ -73,7 +72,7 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
     case Keyword.get(opts, name) do
       fun when is_function(fun, 1) -> normalize_callback(fun.(conn))
       fun when is_function(fun, 0) -> normalize_callback(fun.())
-      _ -> default_resolution(name, conn)
+      _ -> host_resolution(name, conn)
     end
   rescue
     _ -> {:error, :authority_unavailable}
@@ -84,47 +83,8 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
   defp normalize_callback({:ok, value}), do: {:ok, value}
   defp normalize_callback(_), do: {:error, :authority_unavailable}
 
-  # Synthetic example-host fixture, deliberately server configured.  It is not a
-  # customer route, account lookup, credential, or production session system.
-  defp default_resolution(:session, _conn) do
-    with {:ok, auth_context} <- default_sigra_auth_context() do
-      {:ok,
-       %{
-         scope_ref:
-           Application.get_env(
-             :crosswake_example,
-             :offline_study_fixture_scope,
-             "v1.scope_fixture_alpha_01"
-           ),
-         auth_context: auth_context
-       }}
-    end
-  end
-
-  defp default_resolution(:route, _conn) do
-    {:ok,
-     %RouteEntry{
-       id: "offline-study",
-       path: "/study",
-       runtime: :offline_island,
-       offline: :local_first,
-       gated_by: :offline_study_replay,
-       auth_min_level:
-         Application.get_env(:crosswake_example, :offline_study_fixture_auth_min_level),
-       requires_recent_auth:
-         Application.get_env(:crosswake_example, :offline_study_fixture_requires_recent_auth),
-       auth_posture: Application.get_env(:crosswake_example, :offline_study_fixture_auth_posture)
-     }}
-  end
-
-  defp default_sigra_auth_context do
-    Application.get_env(
-      :crosswake_example,
-      :offline_study_fixture_auth_context,
-      %{actor_id: "fixture_actor", org_id: "fixture_org", mfa_level: :mfa, auth_age: 0}
-    )
-    |> Contracts.new_auth_context()
-  end
+  defp host_resolution(:session, conn), do: ReplayAuth.current_session(conn)
+  defp host_resolution(:route, conn), do: ReplayAuth.current_route(conn)
 
   defp matching_scope(%{scope_ref: scope_ref}, scope_ref), do: :ok
   defp matching_scope(_, _), do: {:error, :scope_mismatch}
@@ -136,10 +96,10 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
       cond do
         is_function(callback, 2) -> callback.(route, conn)
         is_function(callback, 1) -> callback.(route)
-        true -> Application.get_env(:crosswake_example, :offline_study_replay_enabled, true)
+        true -> ReplayAuth.feature_enabled?(route, conn)
       end
 
-    if result == :allow or result == true, do: :ok, else: {:error, :feature_disabled}
+    if result in [:allow, true, {:ok, :allow}], do: :ok, else: {:error, :feature_disabled}
   rescue
     _ -> {:error, :authority_unavailable}
   end
@@ -174,9 +134,11 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
     callback = Keyword.get(opts, :domain)
 
     result =
-      if is_function(callback, 3), do: callback.(route, session, event), else: :allow
+      if is_function(callback, 3),
+        do: callback.(route, session, event),
+        else: ReplayAuth.domain_allows?(route, session, event)
 
-    if result == :allow, do: :ok, else: {:error, :authorization_denied}
+    if result in [:allow, {:ok, :allow}], do: :ok, else: {:error, :authorization_denied}
   rescue
     _ -> {:error, :authority_unavailable}
   end

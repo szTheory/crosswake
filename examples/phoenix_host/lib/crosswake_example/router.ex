@@ -120,17 +120,23 @@ defmodule CrosswakeExample.Router do
     plug(:accepts, ["json"])
   end
 
+  pipeline :replay_api do
+    plug(:accepts, ["json"])
+    plug(:fetch_session)
+    plug(CrosswakeExample.LocalFirst.ReplayAuth)
+  end
+
   pipeline :e2e_session do
     plug(:fetch_session)
   end
 
   scope "/study", CrosswakeExample.LocalFirst do
-    pipe_through([:api])
+    pipe_through([:replay_api])
     post("/sync", SyncController, :sync)
   end
 
   scope "/learnloop", CrosswakeExample.LocalFirst do
-    pipe_through([:api])
+    pipe_through([:replay_api])
     post("/sync", SyncController, :sync)
   end
 

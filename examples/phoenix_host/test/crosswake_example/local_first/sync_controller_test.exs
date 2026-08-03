@@ -24,7 +24,7 @@ defmodule CrosswakeExample.LocalFirst.SyncControllerTest do
     end
 
     assert {:ok, %{accepted_records: [%{client_mutation_id: "one"}], halted: :feature_disabled}} =
-             SyncController.sync_events(build_conn(), @scope, events, feature: feature)
+             SyncController.sync_events(build_conn(), @scope, events, admission_opts(feature: feature))
 
     assert Repo.aggregate(ReviewEvent, :count, :id) == 1
   end
@@ -78,12 +78,30 @@ defmodule CrosswakeExample.LocalFirst.SyncControllerTest do
               rejected: [%{client_mutation_id: "rejected", outcome: :rejected}],
               halted: :rejected
             }} =
-             SyncController.sync_events(build_conn(), @scope, [event("rejected"), event("later")])
+             SyncController.sync_events(
+               build_conn(),
+               @scope,
+               [event("rejected"), event("later")],
+               admission_opts()
+             )
 
     assert [^rejected] = Repo.all(ReviewEvent)
   end
 
   defp event(id), do: %{"client_mutation_id" => id, "card_id" => 1, "rating" => "good"}
+
+  defp admission_opts(overrides \\ []) do
+    Keyword.merge(
+      [
+        session: fn _ -> {:ok, %{scope_ref: @scope, auth_context: %{}}} end,
+        route: fn _ -> {:ok, %{id: "offline-study"}} end,
+        feature: fn _ -> :allow end,
+        sigra: fn _ -> :allow end,
+        domain: fn _, _, _ -> :allow end
+      ],
+      overrides
+    )
+  end
 
   defp callback(label, value) do
     fn _ ->

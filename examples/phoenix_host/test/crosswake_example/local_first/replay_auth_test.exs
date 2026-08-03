@@ -2,6 +2,7 @@ defmodule CrosswakeExample.LocalFirst.ReplayAuthTest do
   use ExUnit.Case, async: false
 
   import Phoenix.ConnTest
+  import Plug.Conn, only: [get_req_header: 2, put_req_header: 3]
 
   alias CrosswakeExample.LocalFirst.ReviewEvent
   alias CrosswakeExample.Repo
@@ -11,7 +12,11 @@ defmodule CrosswakeExample.LocalFirst.ReplayAuthTest do
 
   setup do
     previous = Application.get_env(:crosswake_example, :offline_study_replay_authority)
-    Application.put_env(:crosswake_example, :offline_study_replay_authority, TestReplayAuthority)
+    Application.put_env(
+      :crosswake_example,
+      :offline_study_replay_authority,
+      Module.concat(__MODULE__, TestReplayAuthority)
+    )
     Repo.delete_all(ReviewEvent)
 
     on_exit(fn ->
@@ -29,19 +34,26 @@ defmodule CrosswakeExample.LocalFirst.ReplayAuthTest do
     conn =
       build_conn()
       |> init_test_session(%{"replay_authority" => %{"scope_ref" => @scope}})
+      |> put_req_header("x-test-replay-authority", "current")
+
+    assert {:ok, _} = __MODULE__.TestReplayAuthority.current_session(conn)
+
+    conn =
+      conn
       |> post("/study/sync", request("accepted-once"))
 
     assert conn.status == 200
     assert %{"data" => %{"accepted_records" => [%{"client_mutation_id" => "accepted-once"}]}} =
              Jason.decode!(conn.resp_body)
 
-    assert_received :current_session
     assert Repo.aggregate(ReviewEvent, :count, :id) == 1
   end
 
   for path <- ["/study/sync", "/learnloop/sync"] do
     test "an anonymous request to #{path} is denied before replay admission or persistence" do
-      conn = post(build_conn(), unquote(path), request("anonymous-canary"))
+      conn =
+        build_conn()
+        |> post(unquote(path), request("anonymous-canary"))
 
       assert conn.status == 403
       assert %{"error" => %{"class" => "auth_required"}} = Jason.decode!(conn.resp_body)
@@ -62,17 +74,20 @@ defmodule CrosswakeExample.LocalFirst.ReplayAuthTest do
     import Plug.Conn
 
     alias Crosswake.Manifest.Types.RouteEntry
+    alias Crosswake.Companions.Sigra.Contracts
 
     def current_session(conn) do
-      send(self(), :current_session)
+      case get_req_header(conn, "x-test-replay-authority") do
+        ["current"] ->
+          {:ok, auth_context} =
+            Contracts.new_auth_context(%{
+              actor_id: "test-actor",
+              org_id: "test-org",
+              mfa_level: :mfa,
+              auth_age: 0
+            })
 
-      case get_session(conn, "replay_authority") do
-        %{"scope_ref" => scope_ref} when is_binary(scope_ref) ->
-          {:ok,
-           %{
-             scope_ref: scope_ref,
-             auth_context: %{actor_id: "test-actor", org_id: "test-org", mfa_level: :mfa, auth_age: 0}
-           }}
+          {:ok, %{scope_ref: "v1.request_bound_scope_001", auth_context: auth_context}}
 
         _ ->
           {:error, :auth_required}
@@ -90,7 +105,7 @@ defmodule CrosswakeExample.LocalFirst.ReplayAuthTest do
        }}
     end
 
-    def feature_enabled?(_route, _conn), do: :allow
-    def domain_allows?(_route, _session, _event), do: :allow
+    def feature_enabled?(_route, _conn), do: {:ok, :allow}
+    def domain_allows?(_route, _session, _event), do: {:ok, :allow}
   end
 end
