@@ -37,9 +37,28 @@ internal struct ProofLaneInstalledRecord {
   let requirement: ProofLanePackRequirement
 }
 
-internal struct ProofLanePackEvidence {
-  let installed: Bool
-  let networkingDisabled: Bool
+internal enum ProofLaneAudioNetworkObservation {
+  case denied
+  case unexpectedSuccess
+  case failed
+}
+
+private enum ProofLaneAudioEvidence {
+  static let assertionIDs = [
+    "fixture_acquired", "exact_integrity_verified", "atomic_promotion_completed",
+    "relaunch_artifact_readback", "network_operation_denied", "installed_audio_read"
+  ]
+}
+
+private final class ProofLaneDenyingURLProtocol: URLProtocol {
+  override class func canInit(with request: URLRequest) -> Bool { true }
+  override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+  override func startLoading() {
+    client?.urlProtocol(self, didFailWithError: URLError(.notConnectedToInternet))
+  }
+
+  override func stopLoading() {}
 }
 
 // This reference is test-only host scaffold. Production hosts supply their own adapter.
@@ -51,10 +70,17 @@ final class ProofLaneReferencePackAdapter: ProofLaneHostAdapter {
   )
   private let requiredVersion: String
   private let fileManager: FileManager
+  private let networkObservation: () async -> ProofLaneAudioNetworkObservation
+  private(set) var latestAudioEvidence: [String]?
 
-  init(requiredVersion: String = PackProviderContract.currentVersion, fileManager: FileManager = .default) {
+  init(
+    requiredVersion: String = PackProviderContract.currentVersion,
+    fileManager: FileManager = .default,
+    networkObservation: @escaping () async -> ProofLaneAudioNetworkObservation = ProofLaneReferencePackAdapter.observeDeniedNetwork
+  ) {
     self.requiredVersion = requiredVersion
     self.fileManager = fileManager
+    self.networkObservation = networkObservation
   }
 
   func observe() -> ProofLaneSnapshot {
@@ -90,11 +116,35 @@ final class ProofLaneReferencePackAdapter: ProofLaneHostAdapter {
   }
 
   func exerciseInstalledPronunciationAudioOffline() async -> ProofLaneSnapshot {
-    guard let record = verifiedInstalledRecord(),
+    latestAudioEvidence = nil
+    guard await networkObservation() == .denied,
+          let record = verifiedInstalledRecord(),
           let bytes = try? Data(contentsOf: record.location),
+          matchesRequirement(bytes),
           bytes.count == record.requirement.byteCount,
           bytes.prefix(min(16, bytes.count)).count > 0 else { return blocked() }
+    latestAudioEvidence = ProofLaneAudioEvidence.assertionIDs
     return passed()
+  }
+
+  private static func observeDeniedNetwork() async -> ProofLaneAudioNetworkObservation {
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.protocolClasses = [ProofLaneDenyingURLProtocol.self]
+    let session = URLSession(configuration: configuration)
+    let request = URLRequest(url: URL(string: "https://proof.invalid/pronunciation")!)
+
+    do {
+      _ = try await session.data(for: request)
+      return .unexpectedSuccess
+    } catch let error as URLError where error.code == .notConnectedToInternet {
+      return .denied
+    } catch {
+      return .failed
+    }
+  }
+
+  func audioEvidenceForContractTest() -> [String]? {
+    latestAudioEvidence
   }
 
   var retry: (() -> Void)? { nil }

@@ -192,7 +192,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert contract =~ "testWrongRequirementAndFailedAudioRemainNonPassing"
     assert contract =~ "ProofLaneEvidenceDocument"
     assert contract =~ "emitStructuredEvidence"
-    assert contract =~ "network_operation_denied"
+    assert contract =~ "audioEvidenceForContractTest"
     refute contract =~ "networking_disabled"
     assert contract =~ "print(output)"
     refute contract =~ "XCTSkip"
@@ -241,7 +241,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     refute driver =~ "CROSSWAKE_PROOF_LANE_NETWORK_DISABLED"
     assert driver =~ "Application Support"
 
-    refute driver =~ "Error"
+    refute driver =~ "localizedDescription"
     refute driver =~ "archive"
   end
 

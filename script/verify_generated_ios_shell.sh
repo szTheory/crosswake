@@ -159,7 +159,7 @@ if [[ "$PROOF_LANE" == "1" ]]; then
   fi
 
   TEST_TRANSCRIPT="$(mktemp "${TMPDIR:-/tmp}/crosswake-ios-test-transcript.XXXXXX")"
-  if ! CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER="$REFERENCE_PACK_ADAPTER" CROSSWAKE_PROOF_LANE_NETWORK_DISABLED=1 "$XCODEBUILD" -project "$project" -scheme "$scheme" -destination "$destination" -derivedDataPath "$DERIVED_DATA_ROOT" -clonedSourcePackagesDirPath "$IOS_SPM_CACHE" test-without-building >"$TEST_TRANSCRIPT" 2>&1; then
+  if ! CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER="$REFERENCE_PACK_ADAPTER" "$XCODEBUILD" -project "$project" -scheme "$scheme" -destination "$destination" -derivedDataPath "$DERIVED_DATA_ROOT" -clonedSourcePackagesDirPath "$IOS_SPM_CACHE" test-without-building >"$TEST_TRANSCRIPT" 2>&1; then
     emit_proof_outcome "blocked" "PL-IOS-TEST-EXECUTION" "generated-proof-targets"
     exit 2
   fi
@@ -168,6 +168,7 @@ if [[ "$PROOF_LANE" == "1" ]]; then
     "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testMissingAdapterRemainsUnavailable]' passed"
     "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testFixtureInstallReconcilesAfterRelaunch]' passed"
     "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testWrongRequirementAndFailedAudioRemainNonPassing]' passed"
+    "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testUnexpectedNetworkObservationBlocksAudioAndEmitsNoEvidence]' passed"
     "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testMissingProviderInstallRelaunchAndOfflineAudio]' passed"
     "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAccessibilityReflowContract]' passed"
   )
@@ -184,7 +185,7 @@ if [[ "$PROOF_LANE" == "1" ]]; then
     exit 2
   fi
 
-  expected_evidence='{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","networking_disabled","installed_audio_read"],"outcome":"passed","schema_version":1}'
+  expected_evidence='{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","network_operation_denied","installed_audio_read"],"outcome":"passed","schema_version":2}'
   if ! grep -Fq "$expected_evidence" "$TEST_TRANSCRIPT"; then
     emit_proof_outcome "blocked" "PL-IOS-TEST-EVIDENCE" "pack_audio_prerequisite"
     exit 2

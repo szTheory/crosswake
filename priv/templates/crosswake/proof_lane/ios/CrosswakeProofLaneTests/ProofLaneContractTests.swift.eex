@@ -22,9 +22,10 @@ final class ProofLaneContractTests: XCTestCase {
     let relaunched = ProofLaneReferencePackAdapter().observe()
     XCTAssertEqual(relaunched.outcome, .passed, "PACK-RELAUNCH-READY")
 
-    let audio = await relaunchedAudio()
+    let audioAdapter = ProofLaneReferencePackAdapter()
+    let audio = await audioAdapter.exerciseInstalledPronunciationAudioOffline()
     XCTAssertEqual(audio.outcome, .passed)
-    emitStructuredEvidence()
+    emitStructuredEvidence(from: audioAdapter.audioEvidenceForContractTest())
   }
 
   func testWrongRequirementAndFailedAudioRemainNonPassing() async {
@@ -37,18 +38,20 @@ final class ProofLaneContractTests: XCTestCase {
     XCTAssertEqual(wrongRequirement.outcome, .blocked)
   }
 
-  private func relaunchedAudio() async -> ProofLaneSnapshot {
-    await ProofLaneReferencePackAdapter().exerciseInstalledPronunciationAudioOffline()
+  func testUnexpectedNetworkObservationBlocksAudioAndEmitsNoEvidence() async {
+    ProofLaneReferencePackAdapter.resetReferencePersistenceForTests()
+    let adapter = ProofLaneReferencePackAdapter(networkObservation: { .unexpectedSuccess })
+    XCTAssertEqual((await adapter.installPronunciationPackForeground()).outcome, .passed)
+    XCTAssertEqual((await adapter.exerciseInstalledPronunciationAudioOffline()).outcome, .blocked)
+    XCTAssertNil(adapter.audioEvidenceForContractTest())
   }
 
-  private func emitStructuredEvidence() {
+  private func emitStructuredEvidence(from assertionIDs: [String]?) {
+    guard let assertionIDs else { return }
     let document = ProofLaneEvidenceDocument(
-      schemaVersion: 1,
+      schemaVersion: 2,
       outcome: "passed",
-      assertionIDs: [
-        "fixture_acquired", "exact_integrity_verified", "atomic_promotion_completed",
-        "relaunch_artifact_readback", "networking_disabled", "installed_audio_read"
-      ]
+      assertionIDs: assertionIDs
     )
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.sortedKeys]
