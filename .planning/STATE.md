@@ -4,29 +4,29 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
-status: gaps_found
-stopped_at: Verification found request-bound backend authority and online-submit rejection gaps
-last_updated: "2026-08-03T01:10:14Z"
+status: ready_to_execute
+stopped_at: Planned 160-14 through 160-16 gap closure
+last_updated: "2026-08-03T01:30:25Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 160 verification found two remaining automated gaps
+last_activity_desc: Phase 160 gap-closure Plans 160-14 through 160-16 planned
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 61
+  total_plans: 64
   completed_plans: 61
   percent: 60
-current_plan: 13
+current_plan: 14
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — GAPS FOUND
-Plan: 13 of 13 executed
-Status: Phase remains pending at 38/39 verified must-haves
-Last activity: 2026-08-02 — Phase 160 verification found request-bound backend authority and
-immediate-online replay rejection gaps
+Phase: 160 (scoped-replay-and-auth-safety) — PLANNED
+Plan: 13 of 16 complete
+Status: Gap-closure Plans 160-14 through 160-16 are ready to execute; independent security review remains non-passing
+Last activity: 2026-08-02 — Planned request-bound replay authority, immediate-online rejection
+containment, and final warning-clean evidence reconciliation
 
 ## Active Objective
 
@@ -45,9 +45,9 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-plan-phase 160 --gaps` to replace fixture-default replay authority with a host-owned,
-request-bound authenticated boundary and to contain immediate-online worker rejection through the
-existing paused-state path. Then execute the resulting gap plan and rerun verification plus
+Run `$gsd-execute-phase 160` to execute Plans 160-14 through 160-16: establish host-owned
+request-bound replay authority, contain immediate-online worker rejection through the existing
+paused-state path, and record one warning-clean final-tree gate. Then rerun verification plus
 `$gsd-secure-phase 160`. TODO-002 remains the bounded adopter-input gate and adopter-instance
 completeness remains `unknown_blocking`; do not infer concrete adopter routes or promote downstream
 device claims.
