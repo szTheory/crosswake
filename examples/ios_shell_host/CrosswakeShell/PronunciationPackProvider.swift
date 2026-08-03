@@ -6,22 +6,48 @@ import CrosswakeShellCore
 /// requirement-bound, closed PackProvider contract.
 actor PronunciationPackProvider: PackProvider {
     typealias Source = @Sendable () throws -> Data
+    typealias ArtifactVerifier = @Sendable (URL, Int) async throws -> (byteCount: Int, sha256: String)
 
     private let source: Source
     private let storageRoot: URL
     private let fileManager: FileManager
     private let verificationChunkSize: Int
+    private let artifactVerifier: ArtifactVerifier
 
-    init(source: @escaping Source, storageRoot: URL, fileManager: FileManager = .default, verificationChunkSize: Int = 64 * 1024) {
+    init(
+        source: @escaping Source,
+        storageRoot: URL,
+        fileManager: FileManager = .default,
+        verificationChunkSize: Int = 64 * 1024,
+        artifactVerifier: ArtifactVerifier? = nil
+    ) {
         self.source = source
         self.storageRoot = storageRoot
         self.fileManager = fileManager
         self.verificationChunkSize = max(1, verificationChunkSize)
+        self.artifactVerifier = artifactVerifier ?? { url, chunkSize in
+            let verification = try await PronunciationPackProvider.verifyStagedFile(url, chunkSize: chunkSize)
+            return (verification.byteCount, verification.sha256)
+        }
     }
 
     func status(for requirement: PackRequirement) async -> PackProviderResult {
         guard let record = loadInventory()[requirement.packID] else { return .notInstalled }
-        return .installed(record)
+        guard record.contractVersion == requirement.contractVersion,
+              record.packID == requirement.packID
+        else { return .failure(.providerFailed) }
+
+        let destination = artifactURL(for: requirement)
+        guard fileManager.fileExists(atPath: destination.path) else { return .notInstalled }
+
+        do {
+            let verification = try await verifyArtifact(destination)
+            guard verification.byteCount == requirement.expectedByteCount else { return .failure(.sizeMismatch) }
+            guard verification.sha256 == requirement.expectedSHA256 else { return .failure(.digestMismatch) }
+            return .installed(record)
+        } catch {
+            return .failure(.providerFailed)
+        }
     }
 
     func install(_ requirement: PackRequirement) async -> PackProviderResult {
@@ -32,7 +58,7 @@ actor PronunciationPackProvider: PackProvider {
             try fileManager.createDirectory(at: storageRoot, withIntermediateDirectories: true)
             let bytes = try source()
             try bytes.write(to: staging, options: .atomic)
-            let verification = try await Self.verifyStagedFile(staging, chunkSize: verificationChunkSize)
+            let verification = try await verifyArtifact(staging)
             guard verification.byteCount == requirement.expectedByteCount else { return .failure(.sizeMismatch) }
             guard verification.sha256 == requirement.expectedSHA256 else { return .failure(.digestMismatch) }
 
@@ -91,6 +117,11 @@ actor PronunciationPackProvider: PackProvider {
     private func saveInventory(_ inventory: [String: PackInstalledRecord]) throws {
         let data = try JSONEncoder().encode(inventory)
         try data.write(to: inventoryURL, options: .atomic)
+    }
+
+    private func verifyArtifact(_ url: URL) async throws -> Verification {
+        let result = try await artifactVerifier(url, verificationChunkSize)
+        return Verification(byteCount: result.byteCount, sha256: result.sha256)
     }
 
     nonisolated private static func verifyStagedFile(_ url: URL, chunkSize: Int) async throws -> Verification {
