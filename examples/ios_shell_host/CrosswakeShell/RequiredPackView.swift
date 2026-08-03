@@ -1,4 +1,5 @@
 import SwiftUI
+import CrosswakeShellCore
 
 struct RequiredPackView: View {
     let routeID: String

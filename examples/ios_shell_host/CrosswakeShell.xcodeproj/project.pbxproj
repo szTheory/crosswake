@@ -20,6 +20,9 @@
 		A10000080000000000000001 /* declared_pack_requirements.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000180000000000000001 /* declared_pack_requirements.json */; };
 		A10000090000000000000001 /* installed_packs.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000190000000000000001 /* installed_packs.json */; };
 		A10000091000000000000001 /* pack_inventory.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000191000000000000001 /* pack_inventory.json */; };
+		A10000092000000000000001 /* PronunciationPackProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000192000000000000001 /* PronunciationPackProvider.swift */; };
+		A10000093000000000000001 /* pronunciation-pack-fixture.bin in Resources */ = {isa = PBXBuildFile; fileRef = A10000193000000000000001 /* pronunciation-pack-fixture.bin */; };
+		A10000094000000000000001 /* PronunciationPackProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000194000000000000001 /* PronunciationPackProviderTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,21 +48,20 @@
 		A10000180000000000000001 /* declared_pack_requirements.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = declared_pack_requirements.json; sourceTree = "<group>"; };
 		A10000190000000000000001 /* installed_packs.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = installed_packs.json; sourceTree = "<group>"; };
 		A10000191000000000000001 /* pack_inventory.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = pack_inventory.json; sourceTree = "<group>"; };
+		A10000192000000000000001 /* PronunciationPackProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PronunciationPackProvider.swift; sourceTree = "<group>"; };
+		A10000193000000000000001 /* pronunciation-pack-fixture.bin */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Resources/pronunciation-pack-fixture.bin"; sourceTree = "<group>"; };
+		A10000194000000000000001 /* PronunciationPackProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PronunciationPackProviderTests.swift; sourceTree = "<group>"; };
 		A100001B0000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A100001C0000000000000001 /* CrosswakeShell.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrosswakeShell.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A100001D0000000000000001 /* CrosswakeShellTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrosswakeShellTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		B10000010000000000000001 /* XCRemoteSwiftPackageReference "crosswake-shell-core-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/szTheory/crosswake-shell-core-ios.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.2.0; /* x-release-please-version */
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		B10000010000000000000001 /* XCLocalSwiftPackageReference "crosswake-shell-core-ios" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../packages/crosswake-shell-core-ios";
 		};
-/* End XCRemoteSwiftPackageReference section */
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin PBXShellScriptBuildPhase section */
 		C1260001000000000000000A /* Copy Dev Fixture (Debug-Dev only) */ = {
@@ -121,6 +123,8 @@
 				A10000120500000000000001 /* NativeCaptureView.swift */,
 				A10000122000000000000001 /* RequiredPackView.swift */,
 				A10000123500000000000001 /* PermissionStatusProvider.swift */,
+				A10000192000000000000001 /* PronunciationPackProvider.swift */,
+				A10000193000000000000001 /* pronunciation-pack-fixture.bin */,
 				A10000130000000000000001 /* LiveViewContainerViewController.swift */,
 				A10000140000000000000001 /* RouteUnavailableView.swift */,
 				A100001B0000000000000001 /* Info.plist */,
@@ -144,6 +148,7 @@
 		A10000310000000000000001 /* CrosswakeShellTests */ = {
 			isa = PBXGroup;
 			children = (
+				A10000194000000000000001 /* PronunciationPackProviderTests.swift */,
 			);
 			path = CrosswakeShellTests;
 			sourceTree = "<group>";
@@ -259,6 +264,7 @@
 				A10000080000000000000001 /* declared_pack_requirements.json in Resources */,
 				A10000090000000000000001 /* installed_packs.json in Resources */,
 				A10000091000000000000001 /* pack_inventory.json in Resources */,
+				A10000093000000000000001 /* pronunciation-pack-fixture.bin in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -273,6 +279,7 @@
 				A10000020500000000000001 /* NativeCaptureView.swift in Sources */,
 				A10000022000000000000001 /* RequiredPackView.swift in Sources */,
 				A10000023500000000000001 /* PermissionStatusProvider.swift in Sources */,
+				A10000092000000000000001 /* PronunciationPackProvider.swift in Sources */,
 				A10000030000000000000001 /* LiveViewContainerViewController.swift in Sources */,
 				A10000040000000000000001 /* RouteUnavailableView.swift in Sources */,
 			);
@@ -282,6 +289,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000094000000000000001 /* PronunciationPackProviderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,4 +1,5 @@
 import SwiftUI
+import CrosswakeShellCore
 import UIKit
 import UniformTypeIdentifiers
 import WebKit
