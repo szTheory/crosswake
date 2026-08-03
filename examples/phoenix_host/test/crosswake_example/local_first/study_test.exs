@@ -87,6 +87,33 @@ defmodule CrosswakeExample.LocalFirst.StudyTest do
     assert Repo.aggregate(ReviewEvent, :count, :id) == 1
   end
 
+  test "defense-in-depth persistence ignores caller-selected status and extra fields", %{
+    event: event
+  } do
+    hostile_event =
+      Map.merge(event, %{
+        "status" => "rejected",
+        "outcome" => "rejected",
+        "authority" => "allow",
+        "metadata" => %{"nested" => "value"}
+      })
+
+    assert {:ok, %{client_mutation_id: id, outcome: :accepted}} =
+             Study.apply_one(@scope, hostile_event, %{})
+
+    assert id == event["client_mutation_id"]
+
+    assert %ReviewEvent{
+             scope_ref: @scope,
+             client_mutation_id: ^id,
+             card_id: 1,
+             rating: "good",
+             status: "accepted"
+           } = Repo.get_by!(ReviewEvent, client_mutation_id: id)
+
+    assert Repo.aggregate(ReviewEvent, :count, :id) == 1
+  end
+
   test "concurrent same-scope retries commit one effect and return closed acceptance", %{
     event: event
   } do

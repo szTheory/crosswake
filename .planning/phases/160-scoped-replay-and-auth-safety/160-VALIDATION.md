@@ -52,6 +52,8 @@ created: 2026-08-02
 | 160-09-02 | 160-09 | 8 | SCOPE-03 | T-160-05 | Persisted rejected events remain rejected through normal and race recovery, and the controller retains the ordered suffix | Phoenix integration | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first)` | 18 tests | ✅ green |
 | 160-10-01 | 160-10 | 8 | SCOPE-02 | T-160-02 | Inactive and fenced online events create no replay work; active listener failures remain contained | full offline-island browser proof | `(cd examples/phoenix_host && npm run proof:offline-island)` | 18 tests | ✅ green |
 | 160-11-01 | 160-11 | 8 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-01..T-160-06 | Fresh final-tree chain jointly proves the repair regressions and preserved privacy, authority, proof, and formatting contracts | full phase gate | command recorded below | final only | ✅ green |
+| 160-12-01 | 160-12 | 9 | SCOPE-03 | T-160-07, T-160-08 | A hostile fourth replay key reaches neither authority callbacks nor persistence; the exact three-key wire still reaches the host chain | Phoenix integration | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/sync_controller_test.exs)` | 4 tests | ✅ green |
+| 160-12-02 | 160-12 | 9 | SCOPE-03 | T-160-07, T-160-08 | Exact-key admission, persistence allowlisting, server-owned accepted status, and retained duplicate/conflict semantics pass on the repaired tree | Phoenix integration and full phase gate | commands recorded below | 21 focused Phoenix tests; complete chain | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -60,7 +62,8 @@ created: 2026-08-02
 - [x] Plans 160-01 through 160-07 supplied scoped storage, lifecycle, authority, idempotency, and evidence regressions.
 - [x] Plan 160-08 supplied forged-observation projection and every-production-egress regressions.
 - [x] Plan 160-08 reran all requirements and high-threat regressions on its final tree; this historical evidence is superseded by Plan 160-11.
-- [x] Plan 160-11 reran all requirements and high-threat regressions after Plans 160-09 and 160-10 on one fresh final tree.
+- [x] Plan 160-11 reran all requirements and high-threat regressions after Plans 160-09 and 160-10 on one fresh final tree; this evidence is superseded by the post-160-12 gate below.
+- [x] Plan 160-12 reran focused hostile-key and persistence defenses plus the complete current-tree chain after closing client-controlled replay status.
 
 ## Manual-Only Verifications
 
@@ -103,7 +106,7 @@ mix test test/crosswake/offline test/crosswake/telemetry_test.exs test/crosswake
 
 **Historical note:** This gate predates the hostile-scope, rejected-row, and inactive-online regressions. It remains an auditable baseline only and cannot close those repairs.
 
-## Fresh Same-Tree Gate — 2026-08-02 (post-160-09/10)
+## Superseded Fresh Same-Tree Gate — 2026-08-02 (post-160-09/10)
 
 **Observed command:**
 
@@ -131,3 +134,32 @@ mix test test/crosswake/offline test/crosswake/telemetry_test.exs test/crosswake
 **Remaining external prerequisites:** TODO-002; real adopter scope, route, flag, and session inputs; real host adapters; and physical-iPhone evidence remain `unknown_blocking`.
 
 **Approval:** the automated final gate is complete; no manual UAT was used. The fresh code-contract evidence closes the three demonstrated defects, while independent security and external prerequisite status remain non-passing as stated above.
+
+## Fresh Same-Tree Gate — 2026-08-02 (post-160-12)
+
+**Focused observed commands:**
+
+```bash
+(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/sync_controller_test.exs)
+(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/replay_admission_test.exs test/crosswake_example/local_first/study_test.exs test/crosswake_example/local_first/sync_controller_test.exs)
+```
+
+**Focused result:** passed. The tracer controller suite ran 4 tests. The combined exact-key admission, persistence allowlist, and controller suite ran 21 tests; hostile status, outcome, authority-shaped, atom-key, and nested extras denied before session resolution, and a direct `Study.apply_one/3` probe persisted only an accepted server-owned row.
+
+**Observed complete command:**
+
+```bash
+mix test test/crosswake/offline test/crosswake/telemetry_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs test/crosswake/proof_lane/evidence_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/operator_inspection/json_formatter_test.exs && (cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/companions/sigra/contracts_test.exs) && (cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first && npm run proof:offline-island) && bash script/verify_phoenix_host_proof_lane.sh && (ios_output=$(bash script/verify_generated_ios_shell.sh --proof-lane 2>&1); ios_status=$?; test "$ios_status" -eq 2 -o "$ios_status" -eq 3; printf '%s\n' "$ios_output" | grep -Eq '"outcome":"(blocked|unavailable)"') && mix test test/crosswake/planning/first_adopter_context_test.exs test/crosswake/adoption/route_inventory_test.exs && mix format --check-formatted examples/phoenix_host/lib/crosswake_example/local_first/replay_admission.ex examples/phoenix_host/lib/crosswake_example/local_first/study.ex examples/phoenix_host/lib/crosswake_example/local_first/review_event.ex examples/phoenix_host/test/crosswake_example/local_first/replay_admission_test.exs examples/phoenix_host/test/crosswake_example/local_first/study_test.exs examples/phoenix_host/test/crosswake_example/local_first/sync_controller_test.exs
+```
+
+**Observed result:** passed. The chain completed with 118 core tests, 15 Sigra contract tests, 21 Phoenix local-first tests, 18 browser offline-island proofs, one generated-host proof, 36 planning/adoption tests, and scoped formatting.
+
+**Requirement and threat coverage:**
+
+| Requirement / Threat | Fresh observed evidence |
+| --- | --- |
+| SCOPE-03 / T-160-07 | Exact three-string-key replay admission rejects hostile extras before authority callbacks, and persistence reconstructs only approved fields with server-owned accepted status. |
+| T-160-08 | Closed denials and validation record only aggregate counts and stable identifiers; hostile replay/auth values are absent. |
+| SCOPE-01, SCOPE-02, SCOPE-04, SCOPE-05 / T-160-01..T-160-06 | The complete retained phase chain passed without changing their current contracts. |
+
+**Non-passing boundaries retained:** TODO-002 and adopter-instance completeness remain `unknown_blocking`. Generated iOS/device proof remains an asserted non-passing prerequisite (`blocked` or `unavailable` only), and independent Phase 160 security remains blocked pending `$gsd-secure-phase 160`. This evidence neither edits nor self-approves `160-SECURITY.md`.

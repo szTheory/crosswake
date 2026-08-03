@@ -123,6 +123,36 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmissionTest do
     assert {:deny, :invalid_envelope} = ReplayAdmission.authorize(%Plug.Conn{}, "invalid", @event)
   end
 
+  test "every hostile fourth replay key denies before session resolution" do
+    hostile_events = [
+      Map.put(@event, "status", "rejected"),
+      Map.put(@event, "outcome", "rejected"),
+      Map.put(@event, "authority", "allow"),
+      Map.put(@event, :status, "rejected"),
+      Map.put(@event, "metadata", %{"nested" => "value"})
+    ]
+
+    for event <- hostile_events do
+      assert {:deny, :invalid_envelope} =
+               ReplayAdmission.authorize(%Plug.Conn{}, @scope, event,
+                 session: callback(:session, {:ok, %{scope_ref: @scope}}),
+                 route: callback(:route, {:ok, %{id: "offline-study"}}),
+                 feature: callback(:feature, :allow),
+                 sigra: callback(:sigra, :allow),
+                 domain: fn _, _, _ ->
+                   send(self(), :domain)
+                   :allow
+                 end
+               )
+
+      refute_received :session
+      refute_received :route
+      refute_received :feature
+      refute_received :sigra
+      refute_received :domain
+    end
+  end
+
   test "accepts opaque scope payloads at the exact shared grammar boundaries" do
     for payload_size <- [16, 128] do
       scope_ref = "v12." <> String.duplicate("A", payload_size)
@@ -187,6 +217,13 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmissionTest do
       refute_received :feature_called
       refute_received :sigra_called
       refute_received :domain_called
+    end
+  end
+
+  defp callback(label, value) do
+    fn _ ->
+      send(self(), label)
+      value
     end
   end
 end
