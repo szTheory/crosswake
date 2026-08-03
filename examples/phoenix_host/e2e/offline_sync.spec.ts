@@ -15,7 +15,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
   }
 
   test.beforeEach(async ({ page }, testInfo) => {
-    if (testInfo.title.includes('quarantined') || testInfo.title.includes('legacy')) return;
+    if (testInfo.title.includes('quarantined') || testInfo.title.includes('legacy') || testInfo.title.includes('online activation')) return;
     // D-01: delete IndexedDB BEFORE page scripts open it (addInitScript runs first)
     // keep in sync with offline_study.js:3 (DB_NAME = 'crosswake_offline_study')
     await resetOfflineStudyDatabase(page);
@@ -145,6 +145,13 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     page.on('pageerror', error => pageErrors.push(error.message));
     page.on('console', message => consoleOutput.push(message.text()));
 
+    await page.goto('/');
+    await page.evaluate(() => new Promise<void>((resolve, reject) => {
+      const request = indexedDB.deleteDatabase('crosswake_offline_study');
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+      request.onblocked = () => reject(new Error('database reset blocked'));
+    }));
     await page.goto('/offline');
     await waitForInactiveLifecycle(page);
     await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
@@ -157,25 +164,23 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await page.reload();
     await waitForInactiveLifecycle(page);
 
-    let requests = 0;
-    await page.route('**/study/sync', async route => {
-      requests += 1;
-      const body = route.request().postDataJSON();
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ data: {
+    await page.evaluate(() => {
+      (window as any).__activationReplayRequests = 0;
+      window.fetch = async (_input, init) => {
+        (window as any).__activationReplayRequests += 1;
+        const body = JSON.parse(String(init?.body));
+        return new Response(JSON.stringify({ data: {
           accepted_records: body.events.map((event: { client_mutation_id: string }) => ({
             client_mutation_id: event.client_mutation_id,
           })),
           rejected: [],
-        } }),
-      });
+        } }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      };
     });
 
     await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
     await expect.poll(async () => (await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).length).toBe(0);
-    expect(requests).toBe(1);
+    expect(await page.evaluate(() => (window as any).__activationReplayRequests)).toBe(1);
     expect(pageErrors).toEqual([]);
     expect(consoleOutput).toEqual([]);
     await expect(page.locator('body')).not.toContainText(alphaScope);

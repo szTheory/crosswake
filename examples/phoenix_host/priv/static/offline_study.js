@@ -62,6 +62,7 @@ async function activateScope(scopeRef) {
   activeScopeRef = scopeRef;
   await writeLifecycle({ key: 'active', state: 'active', scope_ref: scopeRef, epoch: activeEpoch });
   updateStatus('Saved changes will sync when ready.');
+  if (navigator.onLine) replayOnOnline();
 }
 
 async function fenceScope() {
@@ -101,6 +102,9 @@ function classifyReplayResponse(data, records) {
     return { kind: 'blocked' };
   }
   if (halted != null && (typeof halted !== 'string' || !HALTED_REPLAY_CLASSES.has(halted))) {
+    return { kind: 'blocked' };
+  }
+  if (halted == null && (acceptedRecords.length !== records.length || rejected.length !== 0)) {
     return { kind: 'blocked' };
   }
 
