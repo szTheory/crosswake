@@ -1,16 +1,14 @@
 ---
 phase: 160-scoped-replay-and-auth-safety
-verified: 2026-08-03T02:48:58Z
+verified: 2026-08-03T03:04:53Z
 status: passed
 score: 39/39 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
-  previous_status: gaps_found
-  previous_score: 38/39
-  gaps_closed:
-    - "Unscoped legacy browser work remains quarantined across account switches; no active scope can claim or replay it."
-    - "Nil-scope persisted ReviewEvent history resolves as scope_conflict and cannot acknowledge or delete scoped work."
+  previous_status: passed
+  previous_score: 39/39
+  gaps_closed: []
   gaps_remaining: []
   regressions: []
 ---
@@ -18,9 +16,9 @@ re_verification:
 # Phase 160: Scoped Replay and Auth Safety Verification Report
 
 **Phase Goal:** Enforce account-scoped outboxes, payload redaction, backend reauthorization, auth continuity, and server-side disablement.
-**Verified:** 2026-08-03T02:48:58Z
+**Verified:** 2026-08-03T03:04:53Z
 **Status:** passed
-**Re-verification:** Yes — after gap closure
+**Re-verification:** Yes — after generated-host proof-session repair
 
 ## Goal Achievement
 
@@ -77,7 +75,8 @@ re_verification:
 
 | Behavior | Command | Result | Status |
 | --- | --- | --- | --- |
-| Complete Phase 160 core, Sigra, Phoenix, browser, proof-lane, iOS-boundary, planning, format, coverage-seal, and diff gate | Recorded command in `160-VALIDATION.md`, rerun at 2026-08-03T02:48:58Z | 119 core + 15 Sigra + 33 Phoenix-host + 23 browser tests; all checks exited 0 | ✓ PASS |
+| Complete Phase 160 core, Sigra, Phoenix, browser, proof-lane, iOS-boundary, planning, format, coverage-seal, and diff gate | Recorded command in `160-VALIDATION.md`, rerun at 2026-08-03T03:04:53Z | 119 core + 15 Sigra + 33 Phoenix-host + 23 browser tests; all checks exited 0 | ✓ PASS |
+| Generated-host session repair | `npm run proof:offline-island` plus `bash script/verify_phoenix_host_proof_lane.sh` within the complete gate | The repaired test-only request-bound session established before replay; the repository proof and isolated generated-host proof passed | ✓ PASS |
 | Generated iOS boundary remains non-promoting | `bash script/verify_generated_ios_shell.sh --proof-lane` within complete gate | Required blocked/unavailable result observed; it was not treated as success | ✓ PASS |
 
 ### Probe Execution
@@ -104,11 +103,18 @@ All five Phase 160 requirement IDs appear in plan frontmatter; none is orphaned.
 
 The full gate reported third-party dependency advisories while resolving dependencies. They are outside this phase’s scoped-replay implementation and do not contradict these five requirements; they should be handled by the project’s dependency/security workflow, not by silently changing this verdict.
 
+### Review Advisory Assessment
+
+| Advisory | Assessment | Effect on Phase 160 verdict |
+| --- | --- | --- |
+| `160-REVIEW.md` WR-01: a fence during a pending IndexedDB save can leave rating controls disabled. | Confirmed by source: the stale-lease early return bypasses the reset. It retains the queued data and prevents stale UI/domain mutation, so it does not violate scope partitioning, fail-closed replay, request authority, redaction, or Sigra ownership. It is a recoverability/UI warning that deserves a regression and `finally` cleanup. | ⚠️ Non-blocking; does not invalidate SCOPE-01..05 evidence. |
+| `160-REVIEW-REPAIR.md` WR-01: generated proof fixture stores request/page in module globals. | Confirmed by source. The current Phoenix proof configuration sets `fullyParallel: false` and `workers: 1`; the fresh current-tree generated-host proof is therefore invocation-isolated and valid. A future host that changes this runner to parallel execution could weaken the fixture’s proof attribution, so the fixture should eventually use a per-invocation factory. | ⚠️ Non-blocking for the current serial proof; does not invalidate SCOPE-01..05 or the observed repair. |
+
 ### Human Verification Required
 
 None. All Phase 160 must-haves are automated and were exercised by the current-tree gate.
 
 ---
 
-_Verified: 2026-08-03T02:48:58Z_
+_Verified: 2026-08-03T03:04:53Z_
 _Verifier: the agent (gsd-verifier)_
