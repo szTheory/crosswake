@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
-status: gaps_found
-stopped_at: Independent verification found a client-controlled replay-status gap after 160-11
-last_updated: "2026-08-02T22:56:38.000Z"
+status: ready_to_execute
+stopped_at: Phase 160 gap-closure Plan 160-12 planned and verified
+last_updated: "2026-08-03T00:18:52.284Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 160 re-verification found one remaining SCOPE-03 gap
+last_activity_desc: Planned and verified Phase 160 SCOPE-03 gap closure
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 59
+  total_plans: 60
   completed_plans: 59
   percent: 40
-current_plan: 11
+current_plan: 12
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — GAPS FOUND
-Plan: 11 of 11 complete
-Status: Independent verification found one remaining SCOPE-03 gap
-Last activity: 2026-08-02 — Re-verification scored 34/35 must-haves
+Phase: 160 (scoped-replay-and-auth-safety) — READY TO EXECUTE
+Plan: 11 of 12 complete
+Status: Plan 160-12 closes the remaining client-controlled replay-status gap
+Last activity: 2026-08-02 — Gap-closure plan created and independently verified
 
 ## Active Objective
 
@@ -44,12 +44,11 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-plan-phase 160 --gaps` to close the server-authority hole: replay admission must reject
-extra wire fields and persistence must allowlist server-owned attributes so the browser cannot set
-the stored outcome/status. Then execute the gap plan, rerun verification, and run
-`$gsd-secure-phase 160`. TODO-002 remains the bounded adopter-input gate and adopter-instance
-completeness remains `unknown_blocking`; do not infer concrete adopter routes or promote downstream
-device claims.
+Run `$gsd-execute-phase 160` to execute Plan 160-12: replay admission must reject extra wire fields
+and persistence must allowlist server-owned attributes so the browser cannot set the stored
+outcome/status. Then rerun verification and `$gsd-secure-phase 160`. TODO-002 remains the bounded
+adopter-input gate and adopter-instance completeness remains `unknown_blocking`; do not infer
+concrete adopter routes or promote downstream device claims.
 
 ## Blockers
 
