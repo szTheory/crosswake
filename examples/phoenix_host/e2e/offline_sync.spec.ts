@@ -673,7 +673,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await expect(page.evaluate(scopeRef => window.crosswakeOfflineStudy.recoverLegacyMutations(scopeRef), betaScope))
       .resolves.toBe('recovery_required');
 
-    const partitions = await page.evaluate(async scopeRef => {
+    const partitions = await page.evaluate(async ({ alphaScope, betaScope }) => {
       const database = await new Promise<IDBDatabase>((resolve, reject) => {
         const request = indexedDB.open('crosswake_offline_study');
         request.onsuccess = () => resolve(request.result);
@@ -692,7 +692,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
       })));
       database.close();
       return [quarantine, scoped];
-    }, alphaScope);
+    }, { alphaScope, betaScope });
     expect(partitions).toEqual([1, [0, 0]]);
     expect(requests).toEqual([]);
   });

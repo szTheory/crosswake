@@ -251,63 +251,9 @@ function recoverLegacyMutations(scopeRef) {
 
   if (lease.scopeRef !== scopeRef) return Promise.resolve('blocked');
 
-  return new Promise(resolve => {
-    let outcome = 'blocked';
-    let tx;
-    try {
-      tx = db.transaction([STORE_LEGACY_QUARANTINE, STORE_MUTATIONS], 'readwrite');
-    } catch (_error) {
-      resolve(outcome);
-      return;
-    }
-
-    const quarantineStore = tx.objectStore(STORE_LEGACY_QUARANTINE);
-    const mutationsStore = tx.objectStore(STORE_MUTATIONS);
-    const cursorRequest = quarantineStore.openCursor();
-
-    const abort = () => {
-      try {
-        tx.abort();
-      } catch (_error) {
-        // The transaction has already settled; its closed blocked result remains safe.
-      }
-    };
-
-    cursorRequest.onerror = abort;
-    cursorRequest.onsuccess = () => {
-      const cursor = cursorRequest.result;
-      if (!cursor) return;
-      if (!leaseIsCurrent(lease)) return abort();
-
-      const legacy = cursor.value;
-      if (!legacy || !CLIENT_MUTATION_ID_PATTERN.test(legacy.client_mutation_id)) return abort();
-
-      const { scope_ref: _legacyScope, local_ref: _legacyRef, migration_ref: _migrationRef, ...mutation } = legacy;
-      const scopedMutation = {
-        ...mutation,
-        scope_ref: lease.scopeRef,
-        local_ref: legacy.client_mutation_id,
-      };
-      const addRequest = mutationsStore.add(scopedMutation);
-      addRequest.onerror = abort;
-      addRequest.onsuccess = () => {
-        if (!leaseIsCurrent(lease)) return abort();
-        const deleteRequest = cursor.delete();
-        deleteRequest.onerror = abort;
-        deleteRequest.onsuccess = () => cursor.continue();
-      };
-    };
-
-    tx.oncomplete = () => {
-      if (leaseIsCurrent(lease)) {
-        legacyRecoveryRequired = false;
-        outcome = 'recovered';
-      }
-      resolve(outcome);
-    };
-    tx.onerror = () => resolve(outcome);
-    tx.onabort = () => resolve(outcome);
-  });
+  // The example host has no server-verifiable per-record legacy ownership binding.
+  // Keep every unowned byte quarantined rather than deriving ownership from a lease.
+  return Promise.resolve(legacyRecoveryRequired ? 'recovery_required' : 'recovered');
 }
 
 function readLifecycle() {
