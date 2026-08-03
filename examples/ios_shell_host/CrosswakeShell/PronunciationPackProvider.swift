@@ -24,6 +24,15 @@ struct ReplacementJournal: Codable, Sendable {
     let currentRecord: PackInstalledRecord
 }
 
+/// Internal filesystem identity boundary. It deliberately never escapes the example host.
+typealias PublicationFilesystemIdentity = @Sendable (URL) throws -> String
+
+struct PublicationOperations: Sendable {
+    let atomicWrite: @Sendable (Data, URL) throws -> Void
+    let move: @Sendable (URL, URL) throws -> Void
+    let remove: @Sendable (URL) throws -> Void
+}
+
 /// The example host owns byte acquisition, private storage, and inventory. Core sees only the
 /// requirement-bound, closed PackProvider contract.
 actor PronunciationPackProvider: PackProvider {
@@ -39,6 +48,7 @@ actor PronunciationPackProvider: PackProvider {
     private let artifactVerifier: ArtifactVerifier
     private let inventoryWriter: InventoryWriter
     private let publicationMover: PublicationMover
+    private let filesystemIdentity: PublicationFilesystemIdentity
     private let startupRecovery: Task<Void, Error>
 
     init(
@@ -48,7 +58,8 @@ actor PronunciationPackProvider: PackProvider {
         verificationChunkSize: Int = 64 * 1024,
         artifactVerifier: ArtifactVerifier? = nil,
         inventoryWriter: InventoryWriter? = nil,
-        publicationMover: (@Sendable (URL, URL) throws -> Void)? = nil
+        publicationMover: (@Sendable (URL, URL) throws -> Void)? = nil,
+        filesystemIdentity: PublicationFilesystemIdentity? = nil
     ) {
         self.source = source
         self.storageRoot = storageRoot
@@ -64,10 +75,16 @@ actor PronunciationPackProvider: PackProvider {
         self.publicationMover = publicationMover ?? { source, destination in
             try FileManager.default.moveItem(at: source, to: destination)
         }
+        self.filesystemIdentity = filesystemIdentity ?? { url in
+            let attributes = try FileManager.default.attributesOfFileSystem(forPath: url.path)
+            guard let number = attributes[.systemNumber] else { throw CocoaError(.fileReadUnknown) }
+            return String(describing: number)
+        }
         let recoveryRoot = storageRoot
         let recoveryManager = fileManager
+        let recoveryIdentity = self.filesystemIdentity
         self.startupRecovery = Task.detached(priority: .utility) {
-            try Self.recoverInterruptedPublication(storageRoot: recoveryRoot, fileManager: recoveryManager)
+            try Self.recoverInterruptedPublication(storageRoot: recoveryRoot, fileManager: recoveryManager, filesystemIdentity: recoveryIdentity)
         }
     }
 
@@ -257,7 +274,7 @@ actor PronunciationPackProvider: PackProvider {
         }
     }
 
-    nonisolated private static func recoverInterruptedPublication(storageRoot: URL, fileManager: FileManager) throws {
+    nonisolated private static func recoverInterruptedPublication(storageRoot: URL, fileManager: FileManager, filesystemIdentity: PublicationFilesystemIdentity) throws {
         let journalURL = storageRoot.appendingPathComponent("replacement-journal.json")
         guard fileManager.fileExists(atPath: journalURL.path) else { return }
         let journal = try JSONDecoder().decode(ReplacementJournal.self, from: Data(contentsOf: journalURL))
@@ -272,8 +289,21 @@ actor PronunciationPackProvider: PackProvider {
               journal.priorRecord?.packID == nil || journal.priorRecord?.packID == journal.packID
         else { throw CocoaError(.fileReadCorruptFile) }
 
-        let destination = storageRoot.appendingPathComponent(journal.destinationLeaf)
-        let retained = storageRoot.appendingPathComponent(journal.retainedLeaf)
+        let canonicalRoot = storageRoot.resolvingSymlinksInPath().standardizedFileURL
+        guard (try fileManager.attributesOfItem(atPath: canonicalRoot.path))[.type] as? FileAttributeType == .typeDirectory else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        let rootIdentity = try filesystemIdentity(canonicalRoot)
+        let destination = canonicalRoot.appendingPathComponent(journal.destinationLeaf)
+        let retained = canonicalRoot.appendingPathComponent(journal.retainedLeaf)
+        let staging = canonicalRoot.appendingPathComponent(journal.stagingLeaf)
+        for leaf in [destination, retained, staging] where fileManager.fileExists(atPath: leaf.path) {
+            let canonicalLeaf = leaf.resolvingSymlinksInPath().standardizedFileURL
+            guard canonicalLeaf.deletingLastPathComponent() == canonicalRoot,
+                  (try fileManager.attributesOfItem(atPath: leaf.path))[.type] as? FileAttributeType == .typeRegular,
+                  try filesystemIdentity(canonicalLeaf) == rootIdentity
+            else { throw CocoaError(.fileReadCorruptFile) }
+        }
         var inventory = loadInventory(storageRoot: storageRoot)
         switch journal.phase {
         case .committedCleanupPending:

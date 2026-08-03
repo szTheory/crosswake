@@ -281,6 +281,98 @@ final class PronunciationPackProviderTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: journalURL(in: root).path))
     }
 
+    func testRestartRecoveryRejectsMalformedSchemaAndPhase() async throws {
+        let bytes = try fixtureBytes()
+        let requirement = requirement(for: bytes)
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let record = expectedRecord(for: requirement)
+        let destination = artifactURL(in: root, for: requirement)
+        try bytes.write(to: destination)
+        try writeInventory([requirement.packID: record], in: root)
+        try writeJournal(ReplacementJournal(schemaVersion: 99, phase: .promotionPending, packID: requirement.packID, nonce: "transaction", stagingLeaf: ".staging-transaction", destinationLeaf: destination.lastPathComponent, retainedLeaf: ".previous-transaction", priorRecord: record, currentRecord: record), in: root)
+        let snapshot = try directoryEntries(root)
+
+        let provider = PronunciationPackProvider(source: { bytes }, storageRoot: root)
+        let status = await provider.status(for: requirement)
+        XCTAssertEqual(status, .failure(.providerFailed))
+        XCTAssertEqual(try directoryEntries(root), snapshot)
+    }
+
+    func testRestartRecoveryRejectsSiblingPackDestination() async throws {
+        let bytes = try fixtureBytes()
+        let requirement = requirement(for: bytes)
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let record = expectedRecord(for: requirement)
+        let sibling = root.appendingPathComponent("pack-sibling")
+        try bytes.write(to: sibling)
+        try writeInventory([requirement.packID: record], in: root)
+        try writeJournal(ReplacementJournal(schemaVersion: 1, phase: .promotionPending, packID: requirement.packID, nonce: "transaction", stagingLeaf: ".staging-transaction", destinationLeaf: sibling.lastPathComponent, retainedLeaf: ".previous-transaction", priorRecord: record, currentRecord: record), in: root)
+        let snapshot = try directorySnapshot(root)
+
+        let provider = PronunciationPackProvider(source: { bytes }, storageRoot: root)
+        let status = await provider.status(for: requirement)
+        XCTAssertEqual(status, .failure(.providerFailed))
+        XCTAssertEqual(try directorySnapshot(root), snapshot)
+    }
+
+    func testRestartRecoveryRejectsRecordIdentityOrVersionMismatch() async throws {
+        let bytes = try fixtureBytes()
+        let requirement = requirement(for: bytes)
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let record = expectedRecord(for: requirement)
+        let retained = root.appendingPathComponent(".previous-transaction")
+        try bytes.write(to: retained)
+        try writeInventory([requirement.packID: record], in: root)
+        let mismatched = PackInstalledRecord(contractVersion: .v1, packID: "sibling", installedVersion: "1", byteCount: record.byteCount, integrityVerified: true, atomicPromotionCompleted: true)
+        try writeJournal(ReplacementJournal(schemaVersion: 1, phase: .retentionPending, packID: requirement.packID, nonce: "transaction", stagingLeaf: ".staging-transaction", destinationLeaf: artifactURL(in: root, for: requirement).lastPathComponent, retainedLeaf: retained.lastPathComponent, priorRecord: mismatched, currentRecord: record), in: root)
+        let snapshot = try directorySnapshot(root)
+
+        let provider = PronunciationPackProvider(source: { bytes }, storageRoot: root)
+        let status = await provider.status(for: requirement)
+        XCTAssertEqual(status, .failure(.providerFailed))
+        XCTAssertEqual(try directorySnapshot(root), snapshot)
+    }
+
+    func testRestartRecoveryRejectsNonRegularDescendantWithoutMutation() async throws {
+        let bytes = try fixtureBytes()
+        let requirement = requirement(for: bytes)
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let record = expectedRecord(for: requirement)
+        let retained = root.appendingPathComponent(".previous-transaction")
+        try FileManager.default.createDirectory(at: retained, withIntermediateDirectories: false)
+        try writeInventory([requirement.packID: record], in: root)
+        try writeJournal(ReplacementJournal(schemaVersion: 1, phase: .retentionPending, packID: requirement.packID, nonce: "transaction", stagingLeaf: ".staging-transaction", destinationLeaf: artifactURL(in: root, for: requirement).lastPathComponent, retainedLeaf: retained.lastPathComponent, priorRecord: record, currentRecord: record), in: root)
+        let snapshot = try directoryEntries(root)
+
+        let provider = PronunciationPackProvider(source: { bytes }, storageRoot: root)
+        let status = await provider.status(for: requirement)
+        XCTAssertEqual(status, .failure(.providerFailed))
+        XCTAssertEqual(try directoryEntries(root), snapshot)
+    }
+
+    func testRestartRecoveryRejectsInjectedMismatchedVolumeExistingLeafWithoutMutation() async throws {
+        let bytes = try fixtureBytes()
+        let requirement = requirement(for: bytes)
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let record = expectedRecord(for: requirement)
+        let retained = root.appendingPathComponent(".previous-transaction")
+        try bytes.write(to: retained)
+        try writeInventory([requirement.packID: record], in: root)
+        try writeJournal(ReplacementJournal(schemaVersion: 1, phase: .retentionPending, packID: requirement.packID, nonce: "transaction", stagingLeaf: ".staging-transaction", destinationLeaf: artifactURL(in: root, for: requirement).lastPathComponent, retainedLeaf: retained.lastPathComponent, priorRecord: record, currentRecord: record), in: root)
+        let snapshot = try directorySnapshot(root)
+        let provider = PronunciationPackProvider(source: { bytes }, storageRoot: root, filesystemIdentity: { url in
+            url.lastPathComponent == retained.lastPathComponent ? "different" : "root"
+        })
+        let status = await provider.status(for: requirement)
+        XCTAssertEqual(status, .failure(.providerFailed))
+        XCTAssertEqual(try directorySnapshot(root), snapshot)
+    }
+
     func testFirstInstallInventoryFailureRemovesUncommittedArtifactAndRecord() async throws {
         let fixture = try fixtureBytes()
         let requirement = requirement(for: fixture)
@@ -376,6 +468,18 @@ final class PronunciationPackProviderTests: XCTestCase {
     private func writeJournal(_ journal: ReplacementJournal, in root: URL) throws {
         try JSONEncoder().encode(journal).write(to: journalURL(in: root), options: .atomic)
     }
+
+    private func directorySnapshot(_ root: URL) throws -> [String: Data] {
+        try FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: nil)
+            .reduce(into: [:]) { snapshot, url in
+                snapshot[url.lastPathComponent] = try Data(contentsOf: url)
+            }
+    }
+
+    private func directoryEntries(_ root: URL) throws -> [String] {
+        try FileManager.default.contentsOfDirectory(atPath: root.path).sorted()
+    }
+
 
     private func makeTemporaryRoot() throws -> URL {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
