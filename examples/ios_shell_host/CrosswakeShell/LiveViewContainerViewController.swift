@@ -269,7 +269,7 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
         userContentController.add(bridgeChannel, name: BridgeChannel.handlerName)
         
         // Inject capabilities into the window.crosswakeBridge object
-        let capabilities = shell.registeredCapabilities
+        let capabilities = shell.coordinator.registeredCapabilities
         if let capabilitiesData = try? JSONSerialization.data(withJSONObject: capabilities, options: []),
            let capabilitiesString = String(data: capabilitiesData, encoding: .utf8) {
             let scriptSource = """
@@ -341,7 +341,7 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
         self.uiActionDelegates = uiActionDelegates
         
         webView.configuration.userContentController.removeAllUserScripts()
-        let capabilities = shell.registeredCapabilities
+        let capabilities = shell.coordinator.registeredCapabilities
         if let capabilitiesData = try? JSONSerialization.data(withJSONObject: capabilities, options: []),
            let capabilitiesString = String(data: capabilitiesData, encoding: .utf8) {
             let scriptSource = """

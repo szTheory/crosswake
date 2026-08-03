@@ -111,14 +111,14 @@ public struct ShellManifest: Codable, Equatable {
     }
 
     public struct TransferSeam: Codable, Equatable {
-        let id: String
-        let intent: String
-        let direction: String
-        let source: String?
-        let destination: String?
-        let verification: String
-        let mediaTypes: [String]
-        let states: [String]
+        public let id: String
+        public let intent: String
+        public let direction: String
+        public let source: String?
+        public let destination: String?
+        public let verification: String
+        public let mediaTypes: [String]
+        public let states: [String]
 
         enum CodingKeys: String, CodingKey {
             case id
@@ -176,6 +176,15 @@ public struct RouteDenialPresentation: Equatable {
     public let hint: String?
     public let routeID: String?
     public let actions: [RouteUnavailableAction]
+
+    public init(reason: RouteDenialReason, title: String, message: String, hint: String?, routeID: String?, actions: [RouteUnavailableAction]) {
+        self.reason = reason
+        self.title = title
+        self.message = message
+        self.hint = hint
+        self.routeID = routeID
+        self.actions = actions
+    }
 }
 
 public struct LiveViewSession: Equatable {
@@ -225,6 +234,11 @@ public final class ActivationCoordinator: ObservableObject {
     private var hasBootstrapped = false
     private var lastRequest: ActivationRequest?
     private var cachedManifest: ShellManifest?
+
+    /// Existing host WebView bootstrap needs the configuration's declared bridge capabilities.
+    public var registeredCapabilities: [String] {
+        config.registeredCapabilities
+    }
 
     public init(
         manifestLoader: @escaping () throws -> ShellManifest,

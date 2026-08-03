@@ -12,9 +12,11 @@ final class PronunciationPackProviderTests: XCTestCase {
         let root = try makeTemporaryRoot()
         defer { try? FileManager.default.removeItem(at: root) }
         let provider = PronunciationPackProvider(source: { fixture }, storageRoot: root)
-        XCTAssertEqual(await provider.install(requirement), .installed(expectedRecord(for: requirement)))
+        let installResult = await provider.install(requirement)
+        XCTAssertEqual(installResult, .installed(expectedRecord(for: requirement)))
         let relaunched = PronunciationPackProvider(source: { fixture }, storageRoot: root)
-        XCTAssertEqual(await relaunched.status(for: requirement), .installed(expectedRecord(for: requirement)))
+        let relaunchStatus = await relaunched.status(for: requirement)
+        XCTAssertEqual(relaunchStatus, .installed(expectedRecord(for: requirement)))
     }
 
     func testRejectedReplacementPreservesKnownGoodArtifact() async throws {
@@ -26,12 +28,14 @@ final class PronunciationPackProviderTests: XCTestCase {
         let provider = PronunciationPackProvider(source: { fixture }, storageRoot: root)
         _ = await provider.install(oldRequirement)
         let rejected = PronunciationPackProvider(source: { Data("substituted".utf8) }, storageRoot: root)
-        XCTAssertEqual(await rejected.install(newRequirement), .failure(.sizeMismatch))
-        XCTAssertEqual(await rejected.status(for: newRequirement), .installed(expectedRecord(for: oldRequirement)))
+        let rejectedResult = await rejected.install(newRequirement)
+        XCTAssertEqual(rejectedResult, .failure(.sizeMismatch))
+        let retainedStatus = await rejected.status(for: newRequirement)
+        XCTAssertEqual(retainedStatus, .installed(expectedRecord(for: oldRequirement)))
     }
 
     private func fixtureBytes() throws -> Data {
-        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "pronunciation-pack-fixture", withExtension: "bin"))
+        let url = try XCTUnwrap(Bundle.main.url(forResource: "pronunciation-pack-fixture", withExtension: "bin"))
         return try Data(contentsOf: url)
     }
 
