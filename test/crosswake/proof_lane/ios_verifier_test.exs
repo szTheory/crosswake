@@ -51,7 +51,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
     end
   end
 
-  test "reference-pack mode passes only with every pack-specific marker and remains advisory", %{
+  test "reference-pack mode passes only with exact structured operation evidence and remains advisory", %{
     bin: bin,
     project: project
   } do
@@ -63,7 +63,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
         env: [
           {"PATH", bin <> ":" <> System.get_env("PATH")},
           {"CROSSWAKE_IOS_PROJECT_ROOT", project},
-          {"CROSSWAKE_IOS_SHIM_MODE", "pack-adapter-evidence"}
+          {"CROSSWAKE_IOS_SHIM_MODE", "structured-evidence"}
         ]
       )
 
