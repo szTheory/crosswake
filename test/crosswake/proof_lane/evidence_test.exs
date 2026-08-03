@@ -219,6 +219,17 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     end)
   end
 
+  test "keeps the digest-race barrier declaration inside test-only compilation" do
+    source =
+      __DIR__
+      |> Path.join("../../../lib/crosswake/proof_lane/evidence.ex")
+      |> Path.expand()
+      |> File.read!()
+
+    assert source =~
+             ~r/if Mix\.env\(\) == :test do\s+@after_digest_barrier \{__MODULE__, :after_digest_barrier\}\s+defp run_after_digest_barrier/m
+  end
+
   test "check/2 validates approved sources from the completion-digest-bound snapshot after replacement" do
     assert {:ok, base} = Evidence.build(@valid)
     canonical_bytes = Jason.encode!(Evidence.to_map(base))
