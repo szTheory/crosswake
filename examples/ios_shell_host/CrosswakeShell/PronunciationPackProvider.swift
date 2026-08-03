@@ -81,7 +81,7 @@ actor PronunciationPackProvider: PackProvider {
         }
         self.publicationOperations = publicationOperations ?? PublicationOperations(
             atomicWrite: { try $0.write(to: $1, options: .atomic) },
-            move: { try FileManager.default.moveItem(at: $0, to: $1) },
+            move: publicationMover ?? { try FileManager.default.moveItem(at: $0, to: $1) },
             remove: { try FileManager.default.removeItem(at: $0) },
             synchronizeFile: { url in let handle = try FileHandle(forWritingTo: url); defer { try? handle.close() }; try handle.synchronize() },
             synchronizeDirectory: { url in let fd = open(url.path, O_RDONLY); guard fd >= 0 else { throw POSIXError(.EIO) }; defer { _ = close(fd) }; guard fsync(fd) == 0 else { throw POSIXError(.EIO) } }
@@ -169,7 +169,7 @@ actor PronunciationPackProvider: PackProvider {
                 )
                 try persistJournal(journal)
                 if hadPriorArtifact {
-                    try publicationMover(destination, retainedArtifact)
+                    try publicationOperations.move(destination, retainedArtifact)
                     publicationState = .priorArtifactRetained
                     try persistJournal(ReplacementJournal(
                         schemaVersion: journal.schemaVersion, phase: .promotionPending,
@@ -178,7 +178,7 @@ actor PronunciationPackProvider: PackProvider {
                         priorRecord: journal.priorRecord, currentRecord: journal.currentRecord
                     ))
                 }
-                try publicationMover(staging, destination)
+                try publicationOperations.move(staging, destination)
                 publicationState = .replacementPromoted
                 try persistJournal(ReplacementJournal(
                     schemaVersion: journal.schemaVersion, phase: .inventoryCommitPending,

@@ -6,6 +6,19 @@ import XCTest
 
 @MainActor
 final class PronunciationPackProviderTests: XCTestCase {
+    func testDurabilityOrderingRecordsJournalSyncBeforeRetentionRename() async throws {
+        let bytes = try fixtureBytes()
+        let requirement = requirement(for: bytes)
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        _ = await PronunciationPackProvider(source: { bytes }, storageRoot: root).install(requirement)
+        let recorder = DurabilityOperationRecorder()
+        _ = await PronunciationPackProvider(source: { bytes }, storageRoot: root, publicationOperations: recorder.operations).install(self.requirement(for: bytes, version: "2"))
+        let events = recorder.events
+        let journalSync = try XCTUnwrap(events.firstIndex(of: "sync-file:replacement-journal.json"))
+        let rename = try XCTUnwrap(events.firstIndex(where: { $0.hasPrefix("move:pack-") }))
+        XCTAssertLessThan(journalSync, rename)
+    }
     func testBundledConstructionPropagatesExactRequirementThroughConcreteProvider() async throws {
         let fixture = try fixtureBytes()
         let root = try makeTemporaryRoot()
@@ -486,4 +499,18 @@ final class PronunciationPackProviderTests: XCTestCase {
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         return root
     }
+}
+
+private final class DurabilityOperationRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storage: [String] = []
+    var events: [String] { lock.lock(); defer { lock.unlock() }; return storage }
+    private func record(_ event: String) { lock.lock(); storage.append(event); lock.unlock() }
+    lazy var operations = PublicationOperations(
+        atomicWrite: { [weak self] data, url in self?.record("write:\(url.lastPathComponent)"); try data.write(to: url, options: .atomic) },
+        move: { [weak self] from, to in self?.record("move:\(from.lastPathComponent):\(to.lastPathComponent)"); try FileManager.default.moveItem(at: from, to: to) },
+        remove: { [weak self] url in self?.record("remove:\(url.lastPathComponent)"); try FileManager.default.removeItem(at: url) },
+        synchronizeFile: { [weak self] url in self?.record("sync-file:\(url.lastPathComponent)") },
+        synchronizeDirectory: { [weak self] url in self?.record("sync-directory:\(url.lastPathComponent)") }
+    )
 }
