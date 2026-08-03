@@ -25,6 +25,21 @@ created: 2026-08-03
 
 ---
 
+## Phase 160 Preservation Gates (T-161-23)
+
+These exact current, non-watch commands are mandatory parts of Plan 161-05's final same-tree gate. They preserve scoped replay, backend authorization, Sigra, privacy/egress, and browser proof while Phase 161 changes pack availability.
+
+| Contract preserved | Exact automated command |
+|---|---|
+| Scoped offline privacy and egress | `mix test test/crosswake/offline test/crosswake/telemetry_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs test/crosswake/proof_lane/evidence_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/operator_inspection/json_formatter_test.exs` |
+| Sigra closed authority projection | `(cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/companions/sigra/contracts_test.exs)` |
+| Phoenix request-bound `local_first` authorization | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first test/crosswake_example/e2e)` |
+| Complete offline-island browser proof | `(cd examples/phoenix_host && npm run proof:offline-island)` |
+
+All four must pass in the same Plan 161-05 execution before T-161-23 can be recorded green.
+
+---
+
 ## Sampling Rate
 
 - **After every task commit:** Run the focused Swift XCTest or ExUnit command named by the task, then `swift test --package-path packages/crosswake-shell-core-ios` when Swift core code changed.
@@ -45,7 +60,7 @@ created: 2026-08-03
 | 161-03-01 | 161-03 | 3 | PACK-01, PACK-02, PACK-04, PACK-05 | T-161-11, T-161-12, T-161-13, T-161-14 | Reference provider injection and accessible one-action foreground recovery expose only safe semantic facts | Example-host simulator XCTest | `xcodebuild -project examples/ios_shell_host/CrosswakeShell.xcodeproj -scheme CrosswakeShell -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:CrosswakeShellTests/RequiredPackViewTests test CODE_SIGNING_ALLOWED=NO` | ❌ task creates | ⬜ pending |
 | 161-04-01 | 161-04 | 3 | PACK-01, PACK-03, PACK-04 | T-161-16, T-161-17, T-161-19 | Generated real fixture, host install/relaunch, and separate audio operation stay inside the Phase 159 lane | ExUnit template + generated XCTest contract | `mix test test/crosswake/proof_lane/config_test.exs test/crosswake/proof_lane/template_contract_test.exs` | ⚠️ task extends | ⬜ pending |
 | 161-04-02 | 161-04 | 3 | PACK-03, PACK-04, PACK-05 | T-161-15, T-161-16, T-161-18 | Stable-ID XCUITest and exact verifier markers prove advisory install/relaunch/network-disabled audio without support promotion | ExUnit verifier/template + rendered-host simulator XCTest/XCUITest | `env -u CROSSWAKE_IOS_XCODEBUILD_BIN -u CROSSWAKE_IOS_PROJECT_ROOT -u CROSSWAKE_IOS_SHIM_MODE CROSSWAKE_IOS_USE_LOCAL_CORE=1 CROSSWAKE_IOS_LAUNCH_SIMULATOR=1 bash script/verify_generated_ios_shell.sh --proof-lane --reference-pack-adapter` | ⚠️ task extends | ⬜ pending |
-| 161-05-01 | 161-05 | 4 | PACK-01, PACK-02, PACK-03, PACK-04, PACK-05 | T-161-20, T-161-21, T-161-22, T-161-23, T-161-24 | Exact evidence allowlist, concrete host-provider matrix, complete current-tree gate, executed host UI, positive advisory reference-adapter lane, and no-external-API seal close deterministic phase truth | Swift/Xcode/ExUnit/artifact inspection | `swift test --package-path packages/crosswake-shell-core-ios && xcodebuild -project examples/ios_shell_host/CrosswakeShell.xcodeproj -scheme CrosswakeShell -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:CrosswakeShellTests/PronunciationPackProviderTests test CODE_SIGNING_ALLOWED=NO && xcodebuild -project examples/ios_shell_host/CrosswakeShell.xcodeproj -scheme CrosswakeShell -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:CrosswakeShellTests/RequiredPackViewTests test CODE_SIGNING_ALLOWED=NO && env -u CROSSWAKE_IOS_XCODEBUILD_BIN -u CROSSWAKE_IOS_PROJECT_ROOT -u CROSSWAKE_IOS_SHIM_MODE CROSSWAKE_IOS_USE_LOCAL_CORE=1 CROSSWAKE_IOS_LAUNCH_SIMULATOR=1 bash script/verify_generated_ios_shell.sh --proof-lane --reference-pack-adapter` | ⚠️ task extends | ⬜ pending |
+| 161-05-01 | 161-05 | 4 | PACK-01, PACK-02, PACK-03, PACK-04, PACK-05 | T-161-20, T-161-21, T-161-22, T-161-23, T-161-24 | Exact evidence allowlist, concrete host-provider matrix, complete current-tree gate, executed host UI, positive advisory reference-adapter lane, all four Phase 160 preservation gates above, and no-external-API seal close deterministic phase truth | Swift/Xcode/ExUnit/browser/artifact inspection | Run Plan 161-05 Task 1's complete `<verify><automated>` chain, including every command in **Phase 160 Preservation Gates (T-161-23)** above. | ⚠️ task extends | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
