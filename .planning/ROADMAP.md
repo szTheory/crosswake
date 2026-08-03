@@ -348,7 +348,7 @@ checks at entry and replay.
 **Effort:** 4 Crosswake days; expect 3-5 adopter integration days outside this repo
 **Depends on:** Phase 160
 **Requirements:** PACK-01, PACK-02, PACK-03, PACK-04, PACK-05
-**Plans:** 9/11 plans executed; 2 gap-closure plans pending
+**Plans:** 10/11 plans executed
 
 Plans:
 **Wave 1**
@@ -383,7 +383,7 @@ Plans:
 
 **Wave 8** *(verification gap closure; blocked on the executed Wave 7 plan)*
 
-- [ ] 161-10-PLAN.md — Restore clean simulator XCTest execution first, then re-attest installed bytes and make artifact/inventory publication recoverable.
+- [x] 161-10-PLAN.md — Restore clean simulator XCTest execution first, then re-attest installed bytes and make artifact/inventory publication recoverable.
 
 **Wave 9** *(blocked on Plan 161-10)*
 
