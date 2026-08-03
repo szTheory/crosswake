@@ -22,7 +22,8 @@ final class PackProviderFixtureTests: XCTestCase {
 
         await store.installRequiredPack(try XCTUnwrap(store.statuses[requirement.packID]))
 
-        XCTAssertGreaterThanOrEqual(await provider.statusCallCount, 1)
+        let statusCallCount = await provider.statusCallCount
+        XCTAssertGreaterThanOrEqual(statusCallCount, 1)
         XCTAssertEqual(store.statuses[requirement.packID]?.state, .available)
         assertLiveView(coordinator.resolve(request: request(), manifest: manifest()))
     }
@@ -51,10 +52,11 @@ final class PackProviderFixtureTests: XCTestCase {
             expectedByteCount: bytes.count,
             expectedSHA256: SHA256.hash(data: bytes).compactMap { String(format: "%02x", $0) }.joined()
         )
-        let provider = FixtureProvider(bytes: bytes, contractVersion: .v1)
+        let provider = FixtureProvider(bytes: bytes, contractVersion: .v0)
         let store = PackStore(requirements: [requirement], provider: provider)
-        await store.reconcileAll()
-        XCTAssertEqual(store.statuses[requirement.packID]?.state, .available)
+        await store.installRequiredPack(try XCTUnwrap(store.statuses[requirement.packID]))
+        XCTAssertEqual(store.statuses[requirement.packID]?.state, .failed)
+        XCTAssertEqual(store.statuses[requirement.packID]?.failureReason, .malformedProviderResult)
     }
 
     private func fixtureBytes() throws -> Data {
@@ -74,7 +76,7 @@ final class PackProviderFixtureTests: XCTestCase {
     }
 
     private func makeCoordinator(store: PackStore) -> ActivationCoordinator {
-        ActivationCoordinator(manifestLoader: { manifest() }, requestLoader: { request() }, packStore: store, config: .init())
+        ActivationCoordinator(manifestLoader: { self.manifest() }, requestLoader: { self.request() }, packStore: store, config: .init())
     }
 
     private func assertRequiredPack(_ presentation: ShellPresentation, state: PackState) {
