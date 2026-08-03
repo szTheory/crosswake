@@ -6,9 +6,9 @@ current_phase: 161
 current_phase_name: iOS Pronunciation Pack Seam
 status: planning
 stopped_at: Phase 161 context gathered
-last_updated: "2026-08-03T13:47:21.538Z"
-last_activity: 2026-08-02
-last_activity_desc: Phase 160 complete, transitioned to Phase 161
+last_updated: "2026-08-03T14:11:01.300Z"
+last_activity: 2026-08-03
+last_activity_desc: Phase 160 security reconciled, Phase 161 ready to plan
 progress:
   total_phases: 5
   completed_phases: 3
@@ -25,7 +25,7 @@ current_plan: 17
 Phase: 161 — iOS Pronunciation Pack Seam
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-08-02 — Phase 160 complete, transitioned to Phase 161
+Last activity: 2026-08-03 — Phase 160 security reconciled, Phase 161 ready to plan
 
 ## Active Objective
 
@@ -44,16 +44,12 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-secure-phase 160` to reconcile the stale pre-repair threat register before Phase 161
-advances. Then start Phase 161 with `$gsd-discuss-phase 161`. TODO-002 remains the bounded
-adopter-input gate and adopter-instance completeness remains `unknown_blocking`; do not infer
-concrete adopter routes or promote downstream device claims.
+Plan Phase 161 from the gathered context with `$gsd-plan-phase 161`. Phase 160 security is
+reconciled at 37/37 threats closed. TODO-002 remains the bounded adopter-input gate and
+adopter-instance completeness remains `unknown_blocking`; do not infer concrete adopter routes or
+promote downstream device claims.
 
 ## Blockers
-
-- Phase 160's fresh goal verification passed 39/39, but `160-SECURITY.md` still reflects the
-  pre-repair tree with six open high-severity threats. Security enforcement requires a fresh
-  `$gsd-secure-phase 160` result before Phase 161 advances.
 
 - Phase 160 code review WR-01 records a non-blocking browser lifecycle race: fencing during an
   IndexedDB save can leave rating controls owned until reload. The finding remains available for

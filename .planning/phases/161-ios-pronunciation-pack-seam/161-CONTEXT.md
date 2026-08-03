@@ -1,7 +1,7 @@
 # Phase 161: iOS Pronunciation Pack Seam - Context
 
 **Gathered:** 2026-08-03
-**Status:** Ready for planning after the Phase 160 security report is refreshed
+**Status:** Ready for planning
 
 <domain>
 ## Phase Boundary
@@ -21,7 +21,7 @@ alone promotes the same lane through a physical-iPhone run.
 This phase does not add background transfer, delta updates, generic eviction, generic asset lookup,
 generic archive storage or distribution, Android work, microphone capture, pronunciation scoring,
 a device farm, or a new support taxonomy. TODO-002 and adopter-instance completeness remain
-`unknown_blocking`. Phase 160's stale security report must be refreshed before Phase 161 advances.
+`unknown_blocking`. Phase 160's security report is reconciled with no blocking threats remaining.
 
 </domain>
 

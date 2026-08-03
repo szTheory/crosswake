@@ -268,8 +268,8 @@ copy the smallest adopter-specific test slice.
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
 **Plans:** 17/17 plans complete
 **Verification:** Complete (39/39 must-haves); the fresh final-tree gate passed 119 core,
-15 Sigra, 33 Phoenix-host, and 23 Playwright tests with no human UAT. The pre-repair security
-report remains stale and must be rerun before Phase 161 advances.
+15 Sigra, 33 Phoenix-host, and 23 Playwright tests with no human UAT. Security reconciliation is
+complete with all 37 plan-authored threats closed at ASVS L1 and no blocking threats remaining.
 
 Plans:
 **Wave 1**

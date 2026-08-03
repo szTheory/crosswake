@@ -137,6 +137,22 @@ updated: 2026-08-03
 - Referenced mitigation surfaces remain present in the current tree: scoped journal, Phoenix replay admission and Study, Sigra authority, and browser offline-study runtime.
 - With `asvs_level: 1`, `block_on: high`, and `threats_open: 0`, the secure-phase L1 short-circuit applies; no deeper L2/L3 auditor run is required.
 
+## Security Audit 2026-08-03 — Workflow Gate Reconfirmation
+
+| Metric | Count |
+|--------|-------|
+| Threats found | 37 |
+| Closed | 37 |
+| Open | 0 |
+
+### Verification Evidence
+
+- Security enforcement remains active through the `verify:post` `secure-phase` hook.
+- The 17 executed plans still contain parseable plan-time threat models that deduplicate to the same 37 registered threats.
+- All 37 register rows remain closed; the only summary threat flag reports no additional threat, and the accepted low-severity package-install risk remains documented.
+- Current-tree L1 inspection found the scoped journal, replay admission/auth/Study, Sigra authority, safe-observation, and browser lifecycle/acknowledgement mitigation surfaces.
+- With `asvs_level: 1`, `block_on: high`, and `threats_open: 0`, the required L1 short-circuit applies; no L2/L3 auditor run is required.
+
 ---
 
 ## Security Audit Trail
@@ -146,6 +162,7 @@ updated: 2026-08-03
 | 2026-08-02 | 7 | 1 | 6 | Codex (`gsd-secure-phase`) |
 | 2026-08-02 | 37 | 37 | 0 | GSD security auditor + Codex orchestrator (`gsd-secure-phase`) |
 | 2026-08-03 | 37 | 37 | 0 | Codex L1 reconciliation (`gsd-secure-phase`) |
+| 2026-08-03 | 37 | 37 | 0 | Codex L1 workflow-gate reconfirmation (`gsd-secure-phase`) |
 
 ---
 
@@ -156,4 +173,4 @@ updated: 2026-08-03
 - [x] `threats_open: 0` confirmed
 - [x] `status: verified` set in frontmatter
 
-**Approval:** verified — all 37 plan-authored threats are closed as of 2026-08-03.
+**Approval:** verified — all 37 plan-authored threats were reconfirmed closed as of 2026-08-03.
