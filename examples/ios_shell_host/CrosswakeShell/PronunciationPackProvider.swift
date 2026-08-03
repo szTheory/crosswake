@@ -1,4 +1,5 @@
 import CryptoKit
+import Darwin
 import Foundation
 import CrosswakeShellCore
 
@@ -224,14 +225,14 @@ actor PronunciationPackProvider: PackProvider {
         let data = try JSONEncoder().encode(inventory)
         try inventoryWriter(data, inventoryURL)
         try synchronizeFile(at: inventoryURL)
-        synchronizeDirectory(at: storageRoot)
+        try synchronizeDirectory(at: storageRoot)
     }
 
     private func persistJournal(_ journal: ReplacementJournal) throws {
         let data = try JSONEncoder().encode(journal)
         try data.write(to: replacementJournalURL, options: .atomic)
         try synchronizeFile(at: replacementJournalURL)
-        synchronizeDirectory(at: storageRoot)
+        try synchronizeDirectory(at: storageRoot)
     }
 
     private func synchronizeFile(at url: URL) throws {
@@ -240,10 +241,11 @@ actor PronunciationPackProvider: PackProvider {
         try handle.synchronize()
     }
 
-    private func synchronizeDirectory(at url: URL) {
-        guard let handle = try? FileHandle(forReadingFrom: url) else { return }
-        defer { try? handle.close() }
-        try? handle.synchronize()
+    private func synchronizeDirectory(at url: URL) throws {
+        let descriptor = open(url.path, O_RDONLY)
+        guard descriptor >= 0 else { throw POSIXError(.EIO) }
+        defer { _ = close(descriptor) }
+        guard fsync(descriptor) == 0 else { throw POSIXError(.EIO) }
     }
 
     private func awaitStartupRecovery() async -> Bool {
