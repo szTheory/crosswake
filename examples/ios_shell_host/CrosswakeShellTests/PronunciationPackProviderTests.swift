@@ -172,6 +172,115 @@ final class PronunciationPackProviderTests: XCTestCase {
         XCTAssertEqual(relaunchedReplacementStatus, .failure(.digestMismatch))
     }
 
+    func testConstructionBootstrapRecoversRetainedKnownGoodPublication() async throws {
+        let bytes = try fixtureBytes()
+        let requirement = requirement(for: bytes)
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let record = expectedRecord(for: requirement)
+        let destination = artifactURL(in: root, for: requirement)
+        let retained = root.appendingPathComponent(".previous-transaction-old")
+        try bytes.write(to: retained)
+        try writeInventory([requirement.packID: record], in: root)
+        try writeJournal(
+            ReplacementJournal(
+                schemaVersion: 1,
+                phase: .retentionPending,
+                packID: requirement.packID,
+                nonce: "transaction",
+                stagingLeaf: ".staging-transaction",
+                destinationLeaf: destination.lastPathComponent,
+                retainedLeaf: retained.lastPathComponent,
+                priorRecord: record,
+                currentRecord: record
+            ),
+            in: root
+        )
+
+        let relaunched = PronunciationPackProvider(source: { bytes }, storageRoot: root)
+        let status = await relaunched.status(for: requirement)
+        XCTAssertEqual(status, .installed(record))
+        XCTAssertEqual(try Data(contentsOf: destination), bytes)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: journalURL(in: root).path))
+    }
+
+    func testConstructionBootstrapRollsBackPromotedReplacementBeforeInventoryCommit() async throws {
+        let oldBytes = try fixtureBytes()
+        var replacementBytes = oldBytes
+        replacementBytes[0] ^= 0xFF
+        let oldRequirement = requirement(for: oldBytes, version: "1")
+        let replacementRequirement = requirement(for: replacementBytes, version: "2")
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let oldRecord = expectedRecord(for: oldRequirement)
+        let replacementRecord = expectedRecord(for: replacementRequirement)
+        let destination = artifactURL(in: root, for: oldRequirement)
+        let retained = root.appendingPathComponent(".previous-transaction-old")
+        try oldBytes.write(to: retained)
+        try replacementBytes.write(to: destination)
+        try writeInventory([oldRequirement.packID: oldRecord], in: root)
+        try writeJournal(
+            ReplacementJournal(
+                schemaVersion: 1,
+                phase: .inventoryCommitPending,
+                packID: oldRequirement.packID,
+                nonce: "transaction",
+                stagingLeaf: ".staging-transaction",
+                destinationLeaf: destination.lastPathComponent,
+                retainedLeaf: retained.lastPathComponent,
+                priorRecord: oldRecord,
+                currentRecord: replacementRecord
+            ),
+            in: root
+        )
+
+        let relaunched = PronunciationPackProvider(source: { oldBytes }, storageRoot: root)
+        let oldStatus = await relaunched.status(for: oldRequirement)
+        let replacementStatus = await relaunched.status(for: replacementRequirement)
+        XCTAssertEqual(oldStatus, .installed(oldRecord))
+        XCTAssertEqual(replacementStatus, .failure(.digestMismatch))
+        XCTAssertEqual(try Data(contentsOf: destination), oldBytes)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: journalURL(in: root).path))
+    }
+
+    func testConstructionBootstrapFinalizesCommittedReplacement() async throws {
+        let oldBytes = try fixtureBytes()
+        var replacementBytes = oldBytes
+        replacementBytes[0] ^= 0xFF
+        let oldRequirement = requirement(for: oldBytes, version: "1")
+        let replacementRequirement = requirement(for: replacementBytes, version: "2")
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let oldRecord = expectedRecord(for: oldRequirement)
+        let replacementRecord = expectedRecord(for: replacementRequirement)
+        let destination = artifactURL(in: root, for: oldRequirement)
+        let retained = root.appendingPathComponent(".previous-transaction-old")
+        try oldBytes.write(to: retained)
+        try replacementBytes.write(to: destination)
+        try writeInventory([oldRequirement.packID: replacementRecord], in: root)
+        try writeJournal(
+            ReplacementJournal(
+                schemaVersion: 1,
+                phase: .committedCleanupPending,
+                packID: oldRequirement.packID,
+                nonce: "transaction",
+                stagingLeaf: ".staging-transaction",
+                destinationLeaf: destination.lastPathComponent,
+                retainedLeaf: retained.lastPathComponent,
+                priorRecord: oldRecord,
+                currentRecord: replacementRecord
+            ),
+            in: root
+        )
+
+        let relaunched = PronunciationPackProvider(source: { oldBytes }, storageRoot: root)
+        let status = await relaunched.status(for: replacementRequirement)
+        XCTAssertEqual(status, .installed(replacementRecord))
+        XCTAssertEqual(try Data(contentsOf: destination), replacementBytes)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: retained.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: journalURL(in: root).path))
+    }
+
     func testFirstInstallInventoryFailureRemovesUncommittedArtifactAndRecord() async throws {
         let fixture = try fixtureBytes()
         let requirement = requirement(for: fixture)
@@ -254,6 +363,18 @@ final class PronunciationPackProviderTests: XCTestCase {
 
     private func inventoryURL(in root: URL) -> URL {
         root.appendingPathComponent("inventory.json")
+    }
+
+    private func journalURL(in root: URL) -> URL {
+        root.appendingPathComponent("replacement-journal.json")
+    }
+
+    private func writeInventory(_ inventory: [String: PackInstalledRecord], in root: URL) throws {
+        try JSONEncoder().encode(inventory).write(to: inventoryURL(in: root), options: .atomic)
+    }
+
+    private func writeJournal(_ journal: ReplacementJournal, in root: URL) throws {
+        try JSONEncoder().encode(journal).write(to: journalURL(in: root), options: .atomic)
     }
 
     private func makeTemporaryRoot() throws -> URL {
