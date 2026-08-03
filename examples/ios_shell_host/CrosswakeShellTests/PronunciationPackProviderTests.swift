@@ -19,6 +19,23 @@ final class PronunciationPackProviderTests: XCTestCase {
         let rename = try XCTUnwrap(events.firstIndex(where: { $0.hasPrefix("move:pack-") }))
         XCTAssertLessThan(journalSync, rename)
     }
+
+    func testStatusDuringInFlightBootstrapAwaitsExistingRecoveryWithoutStartingAnother() async throws {
+        let bytes = try fixtureBytes()
+        let requirement = requirement(for: bytes)
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let gate = TestStartupGate()
+        let provider = PronunciationPackProvider(source: { bytes }, storageRoot: root, startupRecoveryOverride: { try await gate.wait() })
+        await gate.waitForLaunch()
+        let statusTask = Task { await provider.status(for: requirement) }
+        try await Task.sleep(for: .milliseconds(20))
+        let launches = await gate.launches
+        XCTAssertEqual(launches, 1)
+        await gate.release()
+        let status = await statusTask.value
+        XCTAssertEqual(status, .notInstalled)
+    }
     func testBundledConstructionPropagatesExactRequirementThroughConcreteProvider() async throws {
         let fixture = try fixtureBytes()
         let root = try makeTemporaryRoot()
@@ -513,4 +530,12 @@ private final class DurabilityOperationRecorder: @unchecked Sendable {
         synchronizeFile: { [weak self] url in self?.record("sync-file:\(url.lastPathComponent)") },
         synchronizeDirectory: { [weak self] url in self?.record("sync-directory:\(url.lastPathComponent)") }
     )
+}
+
+private actor TestStartupGate {
+    private var continuation: CheckedContinuation<Void, Error>?
+    private(set) var launches = 0
+    func wait() async throws { launches += 1; try await withCheckedThrowingContinuation { continuation = $0 } }
+    func waitForLaunch() async { while launches == 0 { await Task.yield() } }
+    func release() { continuation?.resume(); continuation = nil }
 }

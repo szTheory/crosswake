@@ -41,6 +41,7 @@ actor PronunciationPackProvider: PackProvider {
     typealias Source = @Sendable () throws -> Data
     typealias ArtifactVerifier = @Sendable (URL, Int) async throws -> (byteCount: Int, sha256: String)
     typealias InventoryWriter = @Sendable (Data, URL) throws -> Void
+    typealias StartupRecovery = @Sendable () async throws -> Void
     private typealias PublicationMover = @Sendable (URL, URL) throws -> Void
 
     private let source: Source
@@ -63,7 +64,8 @@ actor PronunciationPackProvider: PackProvider {
         inventoryWriter: InventoryWriter? = nil,
         publicationMover: (@Sendable (URL, URL) throws -> Void)? = nil,
         filesystemIdentity: PublicationFilesystemIdentity? = nil,
-        publicationOperations: PublicationOperations? = nil
+        publicationOperations: PublicationOperations? = nil,
+        startupRecoveryOverride: StartupRecovery? = nil
     ) {
         self.source = source
         self.storageRoot = storageRoot
@@ -96,7 +98,8 @@ actor PronunciationPackProvider: PackProvider {
         let recoveryIdentity = self.filesystemIdentity
         let recoveryOperations = self.publicationOperations
         self.startupRecovery = Task.detached(priority: .utility) {
-            try Self.recoverInterruptedPublication(storageRoot: recoveryRoot, fileManager: recoveryManager, filesystemIdentity: recoveryIdentity, operations: recoveryOperations)
+            if let startupRecoveryOverride { try await startupRecoveryOverride() }
+            else { try Self.recoverInterruptedPublication(storageRoot: recoveryRoot, fileManager: recoveryManager, filesystemIdentity: recoveryIdentity, operations: recoveryOperations) }
         }
     }
 
