@@ -58,10 +58,15 @@ separately funded business-line mandate. Durable reasoning is in
   host-reusable proof, then closes privacy/auth, real offline pronunciation media, and
   physical-iPhone evidence. Work stops after the dated device proof except for defects that proof
   demonstrates.
+- **v21.0 Phase 160 Scoped Replay and Auth Safety — COMPLETE 2026-08-02.** Opaque scoped replay,
+  scope-partitioned browser storage, account-switch fencing, request-bound backend authority,
+  scope-safe idempotency, and privacy-safe operational evidence are verified 39/39 by a fresh
+  automated gate. The pre-repair security report must be rerun before Phase 161 advances; code
+  review WR-01 remains a non-blocking browser lifecycle finding.
 - **v21.0 Phase 159 Host-Reusable Proof Lane — COMPLETE 2026-08-02.** The configurable,
   missing-only Phoenix proof-lane generator, additive generated browser proof, explicit non-passing
   iOS host-adapter boundary, and privacy-safe descriptor-pinned retained evidence are verified.
-  Phase 160 scoped replay and auth safety is next; TODO-002 and adopter-instance completeness remain
+  Phase 160 scoped replay and auth safety followed; TODO-002 and adopter-instance completeness remain
   `unknown_blocking`.
 - **v21.0 Phase 158 Adoption Reset and Route Map — COMPLETE 2026-07-31.** GET-6, the Alpha/public-v1
   split, stopped-v20 truth, route-local ownership contract, repository-wide privacy scanning, and
@@ -408,4 +413,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-08-02 after Phase 159 completion.*
+*Last updated: 2026-08-02 after Phase 160 completion.*
