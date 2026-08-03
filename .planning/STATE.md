@@ -5,8 +5,8 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 161
 current_phase_name: ios-pronunciation-pack-seam
 status: executing
-stopped_at: Completed 161-08-PLAN.md
-last_updated: "2026-08-03T18:15:44.248Z"
+stopped_at: Completed 161-07-PLAN.md
+last_updated: "2026-08-03T18:22:11.829Z"
 last_activity: 2026-08-03
 last_activity_desc: Phase 161 execution started
 progress:
@@ -23,7 +23,7 @@ current_plan: 17
 ## Current Position
 
 Phase: 161 (ios-pronunciation-pack-seam) — EXECUTING
-Plan: 3 of 9
+Plan: 4 of 9
 Status: Ready to execute
 Last activity: 2026-08-03 — Phase 161 execution started
 
@@ -189,6 +189,8 @@ closed. TODO-002 remains the bounded adopter-input gate and adopter-instance com
 - [Phase ?]: Reference-host staged media verification streams off MainActor before atomic promotion and inventory persistence.
 - [Phase ?]: Reference fixture readiness and offline audio proof derive only from exact Application Support bytes; marker state cannot pass.
 - [Phase ?]: Advisory pack-audio proof accepts only exact process-scoped XCTest evidence with six allowlisted assertion IDs.
+- [Phase ?]: Required pack references resolve totally in route order; malformed, unknown, and incompatible entries fail closed before runtime selection.
+- [Phase ?]: Per-pack operation generations make stale provider completions inert and retain persisted revocation until same-generation absence or verified reinstall.
 
 ## Deferred Items
 
@@ -217,8 +219,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-03T18:15:44.239Z
-**Stopped at:** Completed 161-08-PLAN.md
+**Last session:** 2026-08-03T18:22:11.819Z
+**Stopped at:** Completed 161-07-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -291,3 +293,4 @@ this milestone reset.
 | Phase 161 P05 | 22m | 1 tasks | 3 files |
 | Phase 161-ios-pronunciation-pack-seam P06 | 4m | 2 tasks | 6 files |
 | Phase 161-ios-pronunciation-pack-seam P08 | 12min | 2 tasks | 6 files |
+| Phase 161 P07 | 9m | 2 tasks | 3 files |
