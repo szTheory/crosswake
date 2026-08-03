@@ -8,6 +8,8 @@ TMPDIR_ROOT=""
 DERIVED_DATA_ROOT=""
 IOS_SPM_CACHE=""
 TEST_TRANSCRIPT=""
+EVIDENCE_DIR=""
+EVIDENCE_PATH=""
 SCHEME="${CROSSWAKE_IOS_SCHEME:-CrosswakeShell}"
 XCODEBUILD="${CROSSWAKE_IOS_XCODEBUILD_BIN:-xcodebuild}"
 BUILD_FOR_TESTING="${CROSSWAKE_IOS_BUILD_FOR_TESTING:-1}"
@@ -52,6 +54,7 @@ cleanup() {
   [[ -n "${DERIVED_DATA_ROOT}" ]] && rm -rf "${DERIVED_DATA_ROOT}"
   [[ -n "${IOS_SPM_CACHE}" ]] && rm -rf "${IOS_SPM_CACHE}"
   [[ -n "${TEST_TRANSCRIPT}" ]] && rm -f "${TEST_TRANSCRIPT}"
+  [[ -n "${EVIDENCE_DIR}" ]] && rm -rf "${EVIDENCE_DIR}"
   return 0
 }
 trap cleanup EXIT
@@ -159,8 +162,11 @@ if [[ "$PROOF_LANE" == "1" ]]; then
   fi
 
   TEST_TRANSCRIPT="$(mktemp "${TMPDIR:-/tmp}/crosswake-ios-test-transcript.XXXXXX")"
+  EVIDENCE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-evidence.XXXXXX")"
+  chmod 700 "$EVIDENCE_DIR"
+  EVIDENCE_PATH="${EVIDENCE_DIR}/operations.json"
 
-  if ! CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER="$REFERENCE_PACK_ADAPTER" "$XCODEBUILD" -project "$project" -scheme "$scheme" -destination "$destination" -derivedDataPath "$DERIVED_DATA_ROOT" -clonedSourcePackagesDirPath "$IOS_SPM_CACHE" test-without-building >"$TEST_TRANSCRIPT" 2>&1; then
+  if ! CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER="$REFERENCE_PACK_ADAPTER" CROSSWAKE_PROOF_LANE_NETWORK_DISABLED=1 CROSSWAKE_PROOF_LANE_EVIDENCE_PATH="$EVIDENCE_PATH" "$XCODEBUILD" -project "$project" -scheme "$scheme" -destination "$destination" -derivedDataPath "$DERIVED_DATA_ROOT" -clonedSourcePackagesDirPath "$IOS_SPM_CACHE" test-without-building >"$TEST_TRANSCRIPT" 2>&1; then
     emit_proof_outcome "blocked" "PL-IOS-TEST-EXECUTION" "generated-proof-targets"
     exit 2
   fi
@@ -185,12 +191,11 @@ if [[ "$PROOF_LANE" == "1" ]]; then
     exit 2
   fi
 
-  for marker in PACK-INSTALL-READY PACK-RELAUNCH-READY PACK-AUDIO-OFFLINE; do
-    if ! grep -Fq "$marker" "$TEST_TRANSCRIPT"; then
-      emit_proof_outcome "blocked" "PL-IOS-TEST-EVIDENCE" "pack_audio_prerequisite"
-      exit 2
-    fi
-  done
+  expected_evidence='{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","networking_disabled","installed_audio_read"],"outcome":"passed","schema_version":1}'
+  if [[ ! -f "$EVIDENCE_PATH" || -L "$EVIDENCE_PATH" ]] || ! actual_evidence="$(cat "$EVIDENCE_PATH" 2>/dev/null)" || [[ "$actual_evidence" != "$expected_evidence" ]]; then
+    emit_proof_outcome "blocked" "PL-IOS-TEST-EVIDENCE" "pack_audio_prerequisite"
+    exit 2
+  fi
 
   emit_proof_outcome "passed" "PL-IOS-PACK-AUDIO-ADVISORY" "pack_audio_prerequisite"
   exit 0

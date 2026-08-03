@@ -169,7 +169,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
           {"HOME", home},
           {"PATH", bin <> ":" <> System.get_env("PATH")},
           {"CROSSWAKE_IOS_PROJECT_ROOT", project},
-          {"CROSSWAKE_IOS_SHIM_MODE", "pack-adapter-evidence"},
+          {"CROSSWAKE_IOS_SHIM_MODE", "structured-evidence"},
           {"CROSSWAKE_IOS_USE_LOCAL_CORE", "1"}
         ]
       )
@@ -250,7 +250,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
         fi
         exit 0
         ;;
-      pack-adapter-evidence)
+      structured-evidence)
         if [[ " $* " == *" -list "* ]]; then
           echo "CrosswakeProofLaneTests"
           echo "CrosswakeProofLaneUITests"
@@ -262,9 +262,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
           echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testWrongRequirementAndFailedAudioRemainNonPassing]' passed."
           echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testMissingProviderInstallRelaunchAndOfflineAudio]' passed."
           echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAccessibilityReflowContract]' passed."
-          echo "PACK-INSTALL-READY"
-          echo "PACK-RELAUNCH-READY"
-          echo "PACK-AUDIO-OFFLINE"
+          printf '%s' '{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","networking_disabled","installed_audio_read"],"outcome":"passed","schema_version":1}' > "$CROSSWAKE_PROOF_LANE_EVIDENCE_PATH"
         fi
         exit 0
         ;;
