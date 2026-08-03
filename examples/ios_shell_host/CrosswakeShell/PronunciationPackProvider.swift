@@ -7,19 +7,22 @@ import CrosswakeShellCore
 actor PronunciationPackProvider: PackProvider {
     typealias Source = @Sendable () throws -> Data
     typealias ArtifactVerifier = @Sendable (URL, Int) async throws -> (byteCount: Int, sha256: String)
+    typealias InventoryWriter = @Sendable (Data, URL) throws -> Void
 
     private let source: Source
     private let storageRoot: URL
     private let fileManager: FileManager
     private let verificationChunkSize: Int
     private let artifactVerifier: ArtifactVerifier
+    private let inventoryWriter: InventoryWriter
 
     init(
         source: @escaping Source,
         storageRoot: URL,
         fileManager: FileManager = .default,
         verificationChunkSize: Int = 64 * 1024,
-        artifactVerifier: ArtifactVerifier? = nil
+        artifactVerifier: ArtifactVerifier? = nil,
+        inventoryWriter: InventoryWriter? = nil
     ) {
         self.source = source
         self.storageRoot = storageRoot
@@ -28,6 +31,9 @@ actor PronunciationPackProvider: PackProvider {
         self.artifactVerifier = artifactVerifier ?? { url, chunkSize in
             let verification = try await PronunciationPackProvider.verifyStagedFile(url, chunkSize: chunkSize)
             return (verification.byteCount, verification.sha256)
+        }
+        self.inventoryWriter = inventoryWriter ?? { data, url in
+            try data.write(to: url, options: .atomic)
         }
     }
 
@@ -52,7 +58,9 @@ actor PronunciationPackProvider: PackProvider {
 
     func install(_ requirement: PackRequirement) async -> PackProviderResult {
         let staging = storageRoot.appendingPathComponent(".staging-\(UUID().uuidString)")
+        let retainedArtifact = storageRoot.appendingPathComponent(".previous-\(UUID().uuidString)")
         defer { try? fileManager.removeItem(at: staging) }
+        defer { try? fileManager.removeItem(at: retainedArtifact) }
 
         do {
             try fileManager.createDirectory(at: storageRoot, withIntermediateDirectories: true)
@@ -63,11 +71,12 @@ actor PronunciationPackProvider: PackProvider {
             guard verification.sha256 == requirement.expectedSHA256 else { return .failure(.digestMismatch) }
 
             let destination = artifactURL(for: requirement)
+            let priorInventoryData = try? Data(contentsOf: inventoryURL)
+            let hadPriorArtifact = fileManager.fileExists(atPath: destination.path)
             if fileManager.fileExists(atPath: destination.path) {
-                _ = try fileManager.replaceItemAt(destination, withItemAt: staging)
-            } else {
-                try fileManager.moveItem(at: staging, to: destination)
+                try fileManager.moveItem(at: destination, to: retainedArtifact)
             }
+            try fileManager.moveItem(at: staging, to: destination)
 
             let record = PackInstalledRecord(
                 contractVersion: requirement.contractVersion,
@@ -79,8 +88,21 @@ actor PronunciationPackProvider: PackProvider {
             )
             var inventory = loadInventory()
             inventory[requirement.packID] = record
-            try saveInventory(inventory)
-            return .installed(record)
+            do {
+                try saveInventory(inventory)
+                return .installed(record)
+            } catch {
+                do {
+                    try rollbackPublication(
+                        destination: destination,
+                        retainedArtifact: hadPriorArtifact ? retainedArtifact : nil,
+                        priorInventoryData: priorInventoryData
+                    )
+                    return .failure(.inventoryPersistenceFailed)
+                } catch {
+                    return .failure(.atomicInstallFailed)
+                }
+            }
         } catch {
             return .failure(.atomicInstallFailed)
         }
@@ -116,7 +138,21 @@ actor PronunciationPackProvider: PackProvider {
 
     private func saveInventory(_ inventory: [String: PackInstalledRecord]) throws {
         let data = try JSONEncoder().encode(inventory)
-        try data.write(to: inventoryURL, options: .atomic)
+        try inventoryWriter(data, inventoryURL)
+    }
+
+    private func rollbackPublication(destination: URL, retainedArtifact: URL?, priorInventoryData: Data?) throws {
+        if fileManager.fileExists(atPath: destination.path) {
+            try fileManager.removeItem(at: destination)
+        }
+        if let retainedArtifact {
+            try fileManager.moveItem(at: retainedArtifact, to: destination)
+        }
+        if let priorInventoryData {
+            try priorInventoryData.write(to: inventoryURL, options: .atomic)
+        } else if fileManager.fileExists(atPath: inventoryURL.path) {
+            try fileManager.removeItem(at: inventoryURL)
+        }
     }
 
     private func verifyArtifact(_ url: URL) async throws -> Verification {
