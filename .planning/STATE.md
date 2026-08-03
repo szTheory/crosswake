@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
-status: ready_to_execute
-stopped_at: Phase 160 gap-closure Plan 160-12 planned and verified
-last_updated: "2026-08-03T00:18:52.284Z"
+status: executing
+stopped_at: Completed 160-12-PLAN.md
+last_updated: "2026-08-03T00:28:55.577Z"
 last_activity: 2026-08-02
-last_activity_desc: Planned and verified Phase 160 SCOPE-03 gap closure
+last_activity_desc: Phase 160 execution started
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 60
-  completed_plans: 59
-  percent: 40
+  completed_plans: 60
+  percent: 60
 current_plan: 12
 ---
 
@@ -22,10 +22,10 @@ current_plan: 12
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — READY TO EXECUTE
-Plan: 11 of 12 complete
-Status: Plan 160-12 closes the remaining client-controlled replay-status gap
-Last activity: 2026-08-02 — Gap-closure plan created and independently verified
+Phase: 160 (scoped-replay-and-auth-safety) — EXECUTED
+Plan: 12 of 12 complete
+Status: Replay authority repair complete; independent security review remains non-passing
+Last activity: 2026-08-02 — Completed Plan 160-12 replay admission and persistence authority repair
 
 ## Active Objective
 
@@ -168,6 +168,8 @@ concrete adopter routes or promote downstream device claims.
 - [Phase ?]: Inactive or fenced lifecycle state resolves as a silent no-op before requireActiveLease or activeFlush creation.
 - [Phase ?]: Post-160-09/10 final-tree evidence supersedes the pre-repair gate while blocked generated iOS and independent security remain non-passing.
 - [Phase ?]: The full offline-island Playwright corpus is the automated behavior gate for Plan 160-10 JavaScript and TypeScript changes.
+- [Phase ?]: Replay admission now accepts exactly client_mutation_id, card_id, and rating before any authority callback.
+- [Phase ?]: Study reconstructs replay persistence attributes and ReviewEvent assigns accepted server-side, preserving internal rejected tombstones.
 
 ## Deferred Items
 
@@ -196,8 +198,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-02T22:47:15.312Z
-**Stopped at:** Completed 160-11-PLAN.md
+**Last session:** 2026-08-03T00:28:55.564Z
+**Stopped at:** Completed 160-12-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -259,3 +261,4 @@ this milestone reset.
 | Phase 160 P09 | 6m | 2 tasks | 8 files |
 | Phase 160 P10 | 4m | 1 tasks | 2 files |
 | Phase 160-scoped-replay-and-auth-safety P11 | 4m | 1 tasks | 2 files |
+| Phase 160 P12 | 2m 25s | 2 tasks | 7 files |
