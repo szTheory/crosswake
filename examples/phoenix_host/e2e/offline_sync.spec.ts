@@ -298,6 +298,42 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     expect(await page.locator('#status').textContent()).toBe(fencedStatus);
   });
 
+  test('immediate online submit failure retains queued work without an unhandled rejection', async ({ page }) => {
+    const pageErrors: string[] = [];
+    const consoleOutput: string[] = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
+    page.on('console', message => consoleOutput.push(message.text()));
+
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await page.evaluate(() => {
+      (window as any).__immediateOnlineFailure = { attempts: 0, rejections: 0 };
+      window.fetch = () => {
+        (window as any).__immediateOnlineFailure.attempts += 1;
+        return Promise.reject(new Error('worker failure'));
+      };
+      window.addEventListener('unhandledrejection', event => {
+        (window as any).__immediateOnlineFailure.rejections += 1;
+        event.preventDefault();
+      });
+    });
+
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+
+    await expect(page.locator('#status')).toContainText('Sync is paused');
+    expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
+    expect(await page.evaluate(() => (window as any).__immediateOnlineFailure)).toEqual({ attempts: 1, rejections: 0 });
+    expect(pageErrors).toEqual([]);
+    expect(consoleOutput).toEqual([]);
+
+    await page.evaluate(async () => window.crosswakeOfflineStudy.fenceScope());
+    await page.waitForTimeout(50);
+    expect(await page.evaluate(() => (window as any).__immediateOnlineFailure.attempts)).toBe(1);
+    expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
+  });
+
   test('switch before send keeps the old scope queue retained', async ({ page, context }) => {
     const betaScope = 'v1.scope_fixture_bravo_01';
     await page.goto('/offline');
