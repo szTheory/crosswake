@@ -348,7 +348,7 @@ checks at entry and replay.
 **Effort:** 4 Crosswake days; expect 3-5 adopter integration days outside this repo
 **Depends on:** Phase 160
 **Requirements:** PACK-01, PACK-02, PACK-03, PACK-04, PACK-05
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans executed
 
 Plans:
 **Wave 1**
@@ -366,7 +366,7 @@ Plans:
 
 **Wave 4** *(blocked on both Wave 3 plans)*
 
-- [ ] 161-05-PLAN.md — Seal privacy-safe evidence, no-external-API coverage, and one fresh complete Phase 161 gate.
+- [x] 161-05-PLAN.md — Seal privacy-safe evidence, no-external-API coverage, and one fresh complete Phase 161 gate.
 
 **Smallest shippable version:** One iOS `PackProvider` protocol with foreground status, install, and
 invalidate; no provider means unavailable; availability follows verified size, SHA-256, and atomic
