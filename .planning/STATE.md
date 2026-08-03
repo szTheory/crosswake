@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
-current_phase: 160
-current_phase_name: scoped-replay-and-auth-safety
-status: executing
+current_phase: 161
+current_phase_name: iOS Pronunciation Pack Seam
+status: planning
 stopped_at: Completed 160-17-PLAN.md
-last_updated: "2026-08-03T02:39:49.205Z"
+last_updated: "2026-08-03T02:50:29.462Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 160 execution started
+last_activity_desc: Phase 160 complete, transitioned to Phase 161
 progress:
   total_phases: 5
   completed_phases: 3
@@ -22,10 +22,10 @@ current_plan: 17
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
-Plan: 17 of 17
-Status: Plan 160-17 complete; Phase 160 is ready for verification
-Last activity: 2026-08-03 — Phase 160 gap-closure plan 160-17 completed with fresh same-tree evidence
+Phase: 161 — iOS Pronunciation Pack Seam
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-02 — Phase 160 complete, transitioned to Phase 161
 
 ## Active Objective
 
@@ -44,12 +44,20 @@ framework launch.
 
 ## Next Action
 
-Run Phase 160 verification and `$gsd-secure-phase 160`. TODO-002 remains
-the bounded adopter-input gate and adopter-instance
-completeness remains `unknown_blocking`; do not infer concrete adopter routes or promote
-downstream device claims.
+Run `$gsd-secure-phase 160` to reconcile the stale pre-repair threat register before Phase 161
+advances. Then start Phase 161 with `$gsd-discuss-phase 161`. TODO-002 remains the bounded
+adopter-input gate and adopter-instance completeness remains `unknown_blocking`; do not infer
+concrete adopter routes or promote downstream device claims.
 
 ## Blockers
+
+- Phase 160's fresh goal verification passed 39/39, but `160-SECURITY.md` still reflects the
+  pre-repair tree with six open high-severity threats. Security enforcement requires a fresh
+  `$gsd-secure-phase 160` result before Phase 161 advances.
+
+- Phase 160 code review WR-01 records a non-blocking browser lifecycle race: fencing during an
+  IndexedDB save can leave rating controls owned until reload. The finding remains available for
+  `$gsd-code-review 160 --fix`.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.

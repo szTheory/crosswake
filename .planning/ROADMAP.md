@@ -36,7 +36,7 @@ separately funded business-line mandate.
 - [x] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
   shell, offline-island, and physical-device proof scaffolding.
 
-- [ ] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload
+- [x] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload (completed 2026-08-02)
   redaction, backend reauthorization, auth continuity, and server-side disablement.
 
 - [ ] **Phase 161: iOS Pronunciation Pack Seam** — replace simulated availability with one
@@ -266,7 +266,10 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 17/17 plans executed
+**Plans:** 17/17 plans complete
+**Verification:** Complete (39/39 must-haves); the fresh final-tree gate passed 119 core,
+15 Sigra, 33 Phoenix-host, and 23 Playwright tests with no human UAT. The pre-repair security
+report remains stale and must be rerun before Phase 161 advances.
 
 Plans:
 **Wave 1**
