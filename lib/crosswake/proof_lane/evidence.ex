@@ -26,7 +26,6 @@ defmodule Crosswake.ProofLane.Evidence do
   @artifact_name "proof-lane-evidence.json"
   @complete_name ".complete"
   @approved_kinds [:evidence_json]
-  @after_digest_barrier {__MODULE__, :after_digest_barrier}
   @phase_160_assertion_ids ~w(scope_partition lifecycle_fence per_event_reauthorization atomic_idempotency safe_observation disablement)
   @assertion_ids ~w(browser_offline_island shell_boot auth_continuity relaunch_persistence replay_prerequisite pack_audio_prerequisite) ++
                    @phase_160_assertion_ids
@@ -508,6 +507,8 @@ defmodule Crosswake.ProofLane.Evidence do
       )
 
   if Mix.env() == :test do
+    @after_digest_barrier {__MODULE__, :after_digest_barrier}
+
     defp run_after_digest_barrier do
       case Process.get(@after_digest_barrier) do
         nil ->
