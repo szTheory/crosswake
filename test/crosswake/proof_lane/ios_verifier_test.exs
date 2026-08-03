@@ -51,6 +51,32 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
     end
   end
 
+  test "reference-pack mode passes only with every pack-specific marker and remains advisory", %{
+    bin: bin,
+    project: project
+  } do
+    write_xcodebuild(bin)
+
+    {output, status} =
+      System.cmd("bash", [@script, "--proof-lane", "--reference-pack-adapter"],
+        stderr_to_stdout: true,
+        env: [
+          {"PATH", bin <> ":" <> System.get_env("PATH")},
+          {"CROSSWAKE_IOS_PROJECT_ROOT", project},
+          {"CROSSWAKE_IOS_SHIM_MODE", "pack-adapter-evidence"}
+        ]
+      )
+
+    assert status == 0
+
+    assert {:ok,
+            %{
+              "outcome" => "passed",
+              "scope" => "pack_audio_prerequisite",
+              "rule_id" => "PL-IOS-PACK-AUDIO-ADVISORY"
+            }} = Jason.decode(String.trim(output))
+  end
+
   test "proof-lane missing xcodebuild is unavailable and non-passing", %{project: project} do
     {output, status} =
       System.cmd("bash", [@script, "--proof-lane"],

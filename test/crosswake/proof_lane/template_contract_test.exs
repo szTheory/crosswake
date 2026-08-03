@@ -204,6 +204,11 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert ui =~ "proof-lane-reconnect"
     assert ui =~ "UIContentSizeCategoryAccessibility"
     assert ui =~ "proof-lane-ready"
+    assert ui =~ "proof-lane-pack-status"
+    assert ui =~ "proof-lane-pack-install"
+    assert ui =~ "proof-lane-pack-audio"
+    assert ui =~ "testMissingProviderInstallRelaunchAndOfflineAudio"
+    assert ui =~ "CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"
     assert ui =~ "proof-lane-auth-posture"
     assert ui =~ "24"
     assert ui =~ "app.scrollViews.count, 0"
@@ -242,6 +247,11 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert verifier =~ "testInstalledHostAdapterProducesPassedOutcome"
     assert verifier =~ "testAdapterDerivedPassedLifecycle"
     assert verifier =~ "testAccessibilityReflowContract"
+    assert verifier =~ "--reference-pack-adapter"
+    assert verifier =~ "PACK-INSTALL-READY"
+    assert verifier =~ "PACK-RELAUNCH-READY"
+    assert verifier =~ "PACK-AUDIO-OFFLINE"
+    assert verifier =~ "pack_audio_prerequisite"
     assert verifier =~ "PL-IOS-TEST-EVIDENCE"
   end
 
