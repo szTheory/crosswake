@@ -1,5 +1,6 @@
 import SwiftUI
 import CrosswakeShellCore
+import CryptoKit
 
 #if canImport(UIKit)
 import UIKit
@@ -202,7 +203,9 @@ private struct RootSceneWrapper: View {
         self.notificationTokenProvider = notificationTokenProvider
         self.uiActionDelegates = uiActionDelegates
 
+        let pronunciationPackProvider = HostPronunciationPackConfiguration.provider()
         let config = CrosswakeShellConfig(
+            packProvider: pronunciationPackProvider,
             appInfoDelegate: appInfoProvider,
             hapticsDelegate: hapticsProvider,
             permissionStatusDelegate: permissionProvider,
@@ -220,6 +223,40 @@ private struct RootSceneWrapper: View {
             shell: shell,
             notificationTokenProvider: notificationTokenProvider,
             uiActionDelegates: uiActionDelegates
+        )
+    }
+}
+
+/// Reference-host configuration stays private: Core receives only its PackProvider protocol.
+private enum HostPronunciationPackConfiguration {
+    private static let fixtureName = "pronunciation-pack-fixture"
+    private static let fixtureExtension = "bin"
+
+    static func provider() -> any PackProvider {
+        let requirement = privateRequirement()
+        let storageRoot = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("CrosswakePronunciation", isDirectory: true)
+        return PronunciationPackProvider(source: {
+            guard let url = Bundle.main.url(forResource: fixtureName, withExtension: fixtureExtension) else {
+                throw CocoaError(.fileNoSuchFile)
+            }
+            let bytes = try Data(contentsOf: url)
+            let digest = SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
+            guard bytes.count == requirement.expectedByteCount, digest == requirement.expectedSHA256 else {
+                throw CocoaError(.fileReadCorruptFile)
+            }
+            return bytes
+        }, storageRoot: storageRoot)
+    }
+
+    private static func privateRequirement() -> PackRequirement {
+        let bytes = Bundle.main.url(forResource: fixtureName, withExtension: fixtureExtension)
+            .flatMap { try? Data(contentsOf: $0) } ?? Data()
+        return PackRequirement(
+            packID: "lesson_library",
+            requiredVersion: "1.2.0",
+            expectedByteCount: bytes.count,
+            expectedSHA256: SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
         )
     }
 }

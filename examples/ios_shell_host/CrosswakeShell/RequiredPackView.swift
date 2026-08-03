@@ -2,6 +2,31 @@ import SwiftUI
 import CrosswakeShellCore
 
 struct RequiredPackView: View {
+    enum ForegroundAction: Equatable {
+        case none
+        case install
+        case update
+        case retry
+        case invalidateThenInstall
+
+        var isEnabled: Bool { self != .none }
+    }
+
+    struct Presentation: Equatable {
+        let stateLabel: String
+        let learnerMessage: String
+        let developerRemediation: String
+        let rule: String
+        let owner: String
+        let primaryAction: ForegroundAction
+        let secondaryAction: ForegroundAction
+
+        let statusAccessibilityIdentifier = "required-pack-status"
+        let primaryActionAccessibilityIdentifier = "required-pack-primary-action"
+        let invalidateActionAccessibilityIdentifier = "required-pack-invalidate-action"
+        let ownerAccessibilityIdentifier = "required-pack-owner"
+    }
+
     let routeID: String
     let runtimeLabel: String
     // The view stays bound to PackStore-owned lifecycle truth.
@@ -10,63 +35,55 @@ struct RequiredPackView: View {
     let onRetry: () -> Void
     let onInvalidate: () -> Void
 
+    @AccessibilityFocusState private var statusIsFocused: Bool
+
     var body: some View {
+        let model = Self.presentation(for: status)
+
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                Text("Required pack")
-                    .font(.largeTitle.weight(.semibold))
+            VStack(alignment: .leading, spacing: 20) {
+                Text("Required pronunciation audio")
+                    .font(.title.weight(.semibold))
 
-                HStack(spacing: 8) {
-                    Text(runtimeLabel)
-                        .font(.caption.weight(.semibold))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(Color.teal.opacity(0.12))
-                        .clipShape(Capsule())
+                Text(runtimeLabel)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
 
-                    Text(status.state.rawValue)
-                        .font(.caption.monospaced())
-                        .foregroundStyle(.secondary)
-                }
-
-                Text("Crosswake blocked route activation until this declared pack verifies as available.")
-                    .font(.body)
-
-                VStack(alignment: .leading, spacing: 12) {
-                    metadataRow("Pack name", value: status.packID)
-                    metadataRow("Required version", value: status.requiredVersion)
-                    metadataRow("Installed version", value: status.installedVersion ?? "none")
-                    metadataRow("Size", value: status.bytes.map { byteFormatter.string(fromByteCount: Int64($0)) } ?? "unknown")
-                    metadataRow("Latest verification", value: verificationLabel)
-                }
-                .padding(16)
-                .background(Color(.secondarySystemGroupedBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-
-                if let stage = status.installStage {
-                    Text(stage.rawValue)
+                VStack(alignment: .leading, spacing: 8) {
+                    Label(model.stateLabel, systemImage: statusSymbol)
                         .font(.headline)
+                        .foregroundStyle(statusColor)
+                    Text(model.learnerMessage)
+                        .font(.body)
                 }
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier(model.statusAccessibilityIdentifier)
+                .accessibilityFocused($statusIsFocused)
+                .accessibilityAddTraits(.updatesFrequently)
 
-                if let failureReason = status.failureReason {
-                    Text("Failure: \(failureReason)")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                }
-
-                if let lastKnownVersion = status.lastKnownVersion {
-                    Text("Last successful version: \(lastKnownVersion)")
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Owner: \(model.owner)")
+                        .font(.footnote)
+                    Text("Rule: \(model.rule)")
+                        .font(.footnote.monospaced())
+                    Text(model.developerRemediation)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityIdentifier(model.ownerAccessibilityIdentifier)
 
-                VStack(alignment: .leading, spacing: 12) {
-                    primaryAction
+                if model.primaryAction.isEnabled {
+                    Button(actionTitle(for: model.primaryAction), action: primaryHandler(for: model.primaryAction))
+                        .buttonStyle(.borderedProminent)
+                        .frame(minHeight: 44)
+                        .accessibilityIdentifier(model.primaryActionAccessibilityIdentifier)
+                }
 
-                    if status.state == .available || status.lastKnownVersion != nil {
-                        Button("Invalidate Pack", role: .destructive, action: onInvalidate)
-                            .buttonStyle(.bordered)
-                    }
+                if model.secondaryAction == .invalidateThenInstall {
+                    Button("Invalidate downloaded audio", role: .destructive, action: onInvalidate)
+                        .buttonStyle(.bordered)
+                        .frame(minHeight: 44)
+                        .accessibilityIdentifier(model.invalidateActionAccessibilityIdentifier)
                 }
 
                 Text("Route: \(routeID)")
@@ -74,68 +91,101 @@ struct RequiredPackView: View {
                     .foregroundStyle(.secondary)
             }
             .padding(24)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color(uiColor: .systemGroupedBackground))
+        .animation(nil, value: status.state)
+        .onChange(of: status.state) { _, _ in
+            // Announce changes while leaving VoiceOver focus where the learner placed it.
+            UIAccessibility.post(notification: .announcement, argument: Self.presentation(for: status).stateLabel)
+        }
     }
 
-    private var primaryAction: some View {
-        Button(primaryTitle, action: primaryHandler)
-            .buttonStyle(.borderedProminent)
-            .disabled(status.state == .installing || status.state == .invalidating || status.state == .checking)
-    }
+    static func presentation(for status: RequiredPackStatus) -> Presentation {
+        let failure = status.failureReason
+        let requiresInvalidation = failure == .digestMismatch || failure == .sizeMismatch ||
+            failure == .invalidationFailed || failure == .malformedProviderResult
 
-    private var primaryTitle: String {
+        if requiresInvalidation {
+            return Presentation(
+                stateLabel: "Offline audio needs recovery",
+                learnerMessage: "Offline audio could not be verified. Try the download again while connected.",
+                developerRemediation: "Remove the downloaded audio, then install again.",
+                rule: rule(for: failure),
+                owner: "host pack provider",
+                primaryAction: .none,
+                secondaryAction: .invalidateThenInstall
+            )
+        }
+
         switch status.state {
-        case .notInstalled:
-            return "Install Required Pack"
-        case .stale:
-            return "Update Pack"
-        case .failed:
-            return "Retry Install"
-        case .available:
-            return "Reverify Pack"
-        case .installing:
-            return "Installing"
-        case .invalidating:
-            return "Invalidating"
         case .checking:
-            return "Checking"
-        }
-    }
-
-    private var primaryHandler: () -> Void {
-        switch status.state {
+            return unavailablePresentation("Checking offline audio", "Checking whether offline audio is ready.", rule: "PACK-CHECKING")
+        case .installing:
+            return unavailablePresentation("Installing offline audio", "Installing offline audio. Keep this screen open.", rule: "PACK-INSTALLING")
+        case .invalidating:
+            return unavailablePresentation("Removing offline audio", "Removing offline audio before it can be installed again.", rule: "PACK-INVALIDATING")
+        case .notInstalled:
+            return actionablePresentation("Offline audio is required", "Install offline audio while connected to continue.", rule: "PACK-NOT-INSTALLED", action: .install)
+        case .stale:
+            return actionablePresentation("Offline audio needs an update", "Update offline audio while connected to continue.", rule: "PACK-VERSION-MISMATCH", action: .update)
         case .failed:
-            return onRetry
-        default:
-            return onInstall
+            return actionablePresentation("Offline audio could not be installed", "Try the download again while connected.", rule: rule(for: failure), action: .retry)
+        case .available:
+            return unavailablePresentation("Offline audio is ready", "Pronunciation audio is ready for offline use.", rule: "PACK-READY")
         }
     }
 
-    private var verificationLabel: String {
-        guard let verifiedAt = status.verifiedAt else {
-            return "none"
-        }
-
-        return verifiedAt.formatted(date: .abbreviated, time: .shortened)
+    private static func unavailablePresentation(_ state: String, _ message: String, rule: String) -> Presentation {
+        Presentation(stateLabel: state, learnerMessage: message, developerRemediation: "Wait for this foreground step to finish.", rule: rule, owner: "host pack provider", primaryAction: .none, secondaryAction: .none)
     }
 
-    private let byteFormatter: ByteCountFormatter = {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useKB, .useMB]
-        formatter.countStyle = .file
-        return formatter
-    }()
+    private static func actionablePresentation(_ state: String, _ message: String, rule: String, action: ForegroundAction) -> Presentation {
+        Presentation(stateLabel: state, learnerMessage: message, developerRemediation: "Use the foreground action when connected.", rule: rule, owner: "host pack provider", primaryAction: action, secondaryAction: .none)
+    }
 
-    @ViewBuilder
-    private func metadataRow(_ label: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(label)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
+    private static func rule(for reason: PackFailureReason?) -> String {
+        switch reason {
+        case .digestMismatch: return "PACK-DIGEST-MISMATCH"
+        case .sizeMismatch: return "PACK-SIZE-MISMATCH"
+        case .invalidationFailed: return "PACK-INVALIDATION-FAILED"
+        case .malformedProviderResult: return "PACK-PROVIDER-RESULT"
+        case .providerUnavailable: return "PACK-PROVIDER-UNAVAILABLE"
+        case .transferInterrupted: return "PACK-TRANSFER-INTERRUPTED"
+        case .insufficientStorage: return "PACK-INSUFFICIENT-STORAGE"
+        case .versionMismatch: return "PACK-VERSION-MISMATCH"
+        case .atomicInstallFailed: return "PACK-ATOMIC-INSTALL"
+        case .inventoryPersistenceFailed: return "PACK-INVENTORY-PERSISTENCE"
+        case .providerFailed, .none: return "PACK-PROVIDER-FAILED"
+        }
+    }
 
-            Text(value)
-                .font(value == status.packID || value == status.requiredVersion || value == (status.installedVersion ?? "none") ? .body.monospaced() : .body)
+    private var statusColor: Color {
+        switch status.state {
+        case .available: return .green
+        case .checking, .installing, .invalidating: return .secondary
+        case .notInstalled, .stale, .failed: return .orange
+        }
+    }
+
+    private var statusSymbol: String {
+        status.state == .available ? "checkmark.circle.fill" : "exclamationmark.triangle.fill"
+    }
+
+    private func actionTitle(for action: ForegroundAction) -> String {
+        switch action {
+        case .install: return "Install offline audio"
+        case .update: return "Update offline audio"
+        case .retry: return "Retry download"
+        case .none, .invalidateThenInstall: return ""
+        }
+    }
+
+    private func primaryHandler(for action: ForegroundAction) -> () -> Void {
+        switch action {
+        case .retry: return onRetry
+        case .install, .update: return onInstall
+        case .none, .invalidateThenInstall: return {}
         }
     }
 }
