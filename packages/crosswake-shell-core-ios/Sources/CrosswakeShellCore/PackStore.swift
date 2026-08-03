@@ -1,6 +1,11 @@
 import Foundation
 import SwiftUI
 
+private enum PackReferenceResolution {
+    case requirement(PackRequirement)
+    case blocked(RequiredPackStatus)
+}
+
 public enum PackState: String, Codable, CaseIterable, Sendable {
     case checking = "checking"
     case notInstalled = "not_installed"
@@ -92,10 +97,18 @@ public final class PackStore: ObservableObject {
     }
 
     public func blockingStatus(for packReferences: [String]) -> RequiredPackStatus? {
-        packReferences
-            .compactMap(parse(packReference:))
-            .compactMap { statuses[$0.packID] ?? fallbackStatus(packID: $0.packID, requiredVersion: $0.requiredVersion) }
-            .first(where: { $0.state != .available })
+        for packReference in packReferences {
+            switch resolve(packReference: packReference) {
+            case let .blocked(status):
+                return status
+            case let .requirement(requirement):
+                guard let status = statuses[requirement.packID] else {
+                    return failedStatus(for: requirement, reason: .providerUnavailable)
+                }
+                guard status.state == .available else { return status }
+            }
+        }
+        return nil
     }
 
     public func reconcileAll() async {
@@ -216,14 +229,40 @@ public final class PackStore: ObservableObject {
         RequiredPackStatus(id: requirement.packID, packID: requirement.packID, requiredVersion: requirement.requiredVersion, state: .stale, installedVersion: record.installedVersion, bytes: record.byteCount, verifiedAt: nil, integrityStatus: "verified", installStage: nil, failureReason: nil, lastKnownVersion: record.installedVersion)
     }
 
-    private func fallbackStatus(packID: String, requiredVersion: String) -> RequiredPackStatus {
-        RequiredPackStatus(id: packID, packID: packID, requiredVersion: requiredVersion, state: .failed, installedVersion: nil, bytes: nil, verifiedAt: nil, integrityStatus: nil, installStage: nil, failureReason: .providerUnavailable, lastKnownVersion: nil)
+    private func resolve(packReference: String) -> PackReferenceResolution {
+        guard let reference = parse(packReference: packReference) else {
+            return .blocked(invalidReferenceStatus(reason: .malformedProviderResult))
+        }
+        guard let requirement = requirements[reference.packID] else {
+            return .blocked(invalidReferenceStatus(reason: .providerUnavailable))
+        }
+        guard requirement.contractVersion == PackProviderContract.currentVersion,
+              reference.requiredVersion == requirement.requiredVersion else {
+            return .blocked(invalidReferenceStatus(reason: .versionMismatch))
+        }
+        return .requirement(requirement)
     }
 
     private func parse(packReference: String) -> (packID: String, requiredVersion: String)? {
-        let components = packReference.split(separator: "@", maxSplits: 1).map(String.init)
-        guard components.count == 2 else { return nil }
-        return (components[0], components[1])
+        let components = packReference.split(separator: "@", omittingEmptySubsequences: false)
+        guard components.count == 2,
+              let packID = components.first.map(String.init),
+              let requiredVersion = components.last.map(String.init),
+              validReferenceComponent(packID),
+              validReferenceComponent(requiredVersion)
+        else { return nil }
+        return (packID, requiredVersion)
+    }
+
+    private func validReferenceComponent(_ component: String) -> Bool {
+        guard (1...128).contains(component.utf8.count) else { return false }
+        return component.unicodeScalars.allSatisfy {
+            CharacterSet.alphanumerics.contains($0) || $0 == "-" || $0 == "_" || $0 == "."
+        }
+    }
+
+    private func invalidReferenceStatus(reason: PackFailureReason) -> RequiredPackStatus {
+        RequiredPackStatus(id: "invalid-required-pack", packID: "invalid-required-pack", requiredVersion: "unknown", state: .failed, installedVersion: nil, bytes: nil, verifiedAt: nil, integrityStatus: nil, installStage: nil, failureReason: reason, lastKnownVersion: nil)
     }
 
     private func updated(_ status: RequiredPackStatus, state: PackState, stage: InstallStage?, failureReason: PackFailureReason?) -> RequiredPackStatus {
