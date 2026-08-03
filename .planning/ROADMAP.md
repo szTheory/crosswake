@@ -348,7 +348,7 @@ checks at entry and replay.
 **Effort:** 4 Crosswake days; expect 3-5 adopter integration days outside this repo
 **Depends on:** Phase 160
 **Requirements:** PACK-01, PACK-02, PACK-03, PACK-04, PACK-05
-**Plans:** 11/11 plans executed
+**Plans:** 11/14 plans executed
 
 Plans:
 **Wave 1**
@@ -388,6 +388,15 @@ Plans:
 **Wave 9** *(blocked on Plan 161-10)*
 
 - [x] 161-11-PLAN.md — Run the fresh complete post-gap gate and retain only privacy-safe closed evidence.
+
+**Wave 10** *(gap closure; independent repairs after the executed Wave 9 gate)*
+
+- [ ] 161-12-PLAN.md — Preserve the committed artifact and inventory across a staged-to-live replacement move failure.
+- [ ] 161-13-PLAN.md — Replace fabricated network-disabled evidence with an observed denied-network audio operation and exact schema.
+
+**Wave 11** *(blocked on both Wave 10 repairs)*
+
+- [ ] 161-14-PLAN.md — Run the fresh post-fix same-tree gate and retain only privacy-safe aggregate evidence.
 
 **Smallest shippable version:** One iOS `PackProvider` protocol with foreground status, install, and
 invalidate; no provider means unavailable; availability follows verified size, SHA-256, and atomic
