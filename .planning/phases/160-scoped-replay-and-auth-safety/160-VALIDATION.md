@@ -238,3 +238,35 @@ mix compile --force --warnings-as-errors && MIX_ENV=test mix compile --force --w
 **Coverage and boundaries:** SCOPE-01 through SCOPE-05 and D-01 through D-23 remain preserved by the current-tree chain. The nine unresolved spec-less probe rows remain unchanged: SCOPE-01 adjacency/empty/ordering; SCOPE-02 unclassified; SCOPE-03 adjacency/empty/ordering; SCOPE-04 unclassified; and SCOPE-05 unclassified. TODO-002 and adopter-instance completeness remain `unknown_blocking`. Generated iOS/device proof remains non-passing, and independent Phase 160 security remains pending `$gsd-secure-phase 160`; this gate neither edits nor self-approves `160-SECURITY.md`.
 
 **Supersession:** This warning-clean gate supersedes the post-160-13 evidence above while retaining all earlier gates as history.
+
+## Fresh Same-Tree Gate — 2026-08-03 (post-160-17)
+
+**Focused observed commands:**
+
+```bash
+(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/study_test.exs test/crosswake_example/local_first/sync_controller_test.exs)
+(cd examples/phoenix_host && npm run proof:offline-island -- --grep "unscoped legacy work remains recovery-required across account switch|nil-scope history grants no scoped acknowledgement")
+(cd examples/phoenix_host && npm run proof:offline-island -- --grep "rapid ratings queue one mutation for one card|immediate online submit failure retains queued work")
+```
+
+**Focused result:** passed. The request/domain suite ran 11 tests. The legacy account-switch browser regression retained one quarantined record with zero records in both scoped partitions and zero replay requests. The rapid-rating and immediate-online failure browser regressions both passed.
+
+| Task ID | Plan | Requirement | Threat Ref | Secure behavior | Evidence | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| 160-17-01 | 160-17 | SCOPE-01, SCOPE-02, SCOPE-03 | T-160-17-01, T-160-17-02 | Unscoped browser bytes remain recovery-required; nil-scope history returns closed conflict before accepted/rejected mapping. | Focused ExUnit and browser regressions | ✅ green |
+| 160-17-02 | 160-17 | SCOPE-01, SCOPE-02, SCOPE-03 | T-160-17-03 | One card submission owns both rating controls before persistence and produces at most one scoped mutation/effect. | Focused browser regressions | ✅ green |
+| 160-17-03 | 160-17 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-17-04, T-160-17-05 | Complete current-tree chain preserves closed replay, safe egress, Sigra adapter, proof, and inspection boundaries. | Complete gate below | ✅ green |
+
+**Observed complete command:**
+
+```bash
+mix compile --force --warnings-as-errors && MIX_ENV=test mix compile --force --warnings-as-errors && mix test test/crosswake/offline test/crosswake/telemetry_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs test/crosswake/proof_lane/evidence_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/operator_inspection/json_formatter_test.exs && (cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/companions/sigra/contracts_test.exs) && (cd examples/phoenix_host && MIX_ENV=test mix compile --force --warnings-as-errors && MIX_ENV=test mix test test/crosswake_example/local_first test/crosswake_example/e2e && npm run proof:offline-island) && bash script/verify_phoenix_host_proof_lane.sh && (ios_output=$(bash script/verify_generated_ios_shell.sh --proof-lane 2>&1); ios_status=$?; test "$ios_status" -eq 2 -o "$ios_status" -eq 3; printf '%s\n' "$ios_output" | grep -Eq '"outcome":"(blocked|unavailable)"') && mix test test/crosswake/planning/first_adopter_context_test.exs test/crosswake/adoption/route_inventory_test.exs && mix format --check-formatted examples/phoenix_host/lib/crosswake_example/local_first/study.ex examples/phoenix_host/test/crosswake_example/local_first/study_test.exs && test "$(tr -d '\r\n' < .planning/phases/160-scoped-replay-and-auth-safety/COVERAGE.md)" = "No external API integration: this gap-closure changes existing first-party IndexedDB, Phoenix host, and Playwright/ExUnit seams only; it adds no external API, SDK, or service." && node /Users/jon/.codex/gsd-core/bin/gsd-tools.cjs check api-coverage.verify-pre .planning/phases/160-scoped-replay-and-auth-safety | grep -Eq '"passed": true' && git diff --check -- examples/phoenix_host/priv/static/offline_study.js examples/phoenix_host/e2e/offline_sync.spec.ts examples/phoenix_host/lib/crosswake_example/local_first/study.ex examples/phoenix_host/test/crosswake_example/local_first/study_test.exs .planning/phases/160-scoped-replay-and-auth-safety/COVERAGE.md .planning/phases/160-scoped-replay-and-auth-safety/160-VALIDATION.md
+```
+
+**Observed result:** passed. The chain completed with warning-as-error root and Phoenix-host compilation, 119 core tests, 15 Sigra contract tests, 33 Phoenix host tests, 23 browser offline-island proofs, the generated Phoenix-host proof, 36 planning/adoption tests, scoped formatting, the exact no-external-API coverage declaration, a passing coverage seal gate, and whitespace validation.
+
+**Requirement and threat coverage:** SCOPE-01 and SCOPE-02 now include the closed legacy-quarantine and nil-scope-history paths; SCOPE-03 retains current per-event admission and accepted-only deletion; SCOPE-04 retains safe output and aggregate-only evidence; SCOPE-05 retains Sigra as the closed backend-authority adapter. D-01 through D-23 remain preserved. All five unresolved spec-probe rows remain unclassified; no missing semantics were inferred.
+
+**Non-passing boundaries retained:** TODO-002 and adopter-instance completeness remain `unknown_blocking`. Generated iOS/device proof remains asserted non-passing (`blocked` or `unavailable` only), and independent Phase 160 security remains pending `$gsd-secure-phase 160`; this gate neither edits nor self-approves `160-SECURITY.md`.
+
+**Supersession:** This fresh complete gate supersedes the post-160-16 gate above while retaining all earlier evidence as history.
