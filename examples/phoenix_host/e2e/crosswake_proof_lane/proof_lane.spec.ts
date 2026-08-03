@@ -12,6 +12,10 @@ import { proofLaneConfig, runOfflineIslandProof } from './support/proof_lane';
 test.describe('Crosswake generated proof lane: Phoenix host adapter', () => {
   test.beforeEach(async ({ page }) => {
     await resetOfflineStudyDatabase(page);
+    const session = await page.request.post('/_e2e/replay-session', {
+      data: { action: 'establish' },
+    });
+    expect(session.status()).toBe(201);
   });
 
   test('drives one UI mutation through IndexedDB, application reconnect, and exactly-once Phoenix replay', async ({

@@ -16,6 +16,10 @@ export const proofLaneHostAdapter = {
   navigate: async (page) => {
     request = page.request;
     proofPage = page;
+    const session = await request.post('/_e2e/replay-session', {
+      data: { action: 'establish' },
+    });
+    expect(session.status()).toBe(201);
     await resetOfflineStudyDatabase(page);
     await page.goto('/offline');
     await expect(page.locator('#status')).toContainText('Sync is paused');
