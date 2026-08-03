@@ -1,16 +1,19 @@
 ---
 phase: 160-scoped-replay-and-auth-safety
-reviewed: 2026-08-03T01:06:16Z
+reviewed: 2026-08-03T02:05:15Z
 depth: standard
-files_reviewed: 25
+files_reviewed: 30
 files_reviewed_list:
   - .github/workflows/offline-sync-e2e-gate.yml
   - examples/phoenix_host/e2e/offline_sync.spec.ts
   - examples/phoenix_host/e2e/support/offline_route_proof.ts
+  - examples/phoenix_host/lib/crosswake_example/e2e/replay_authority.ex
+  - examples/phoenix_host/lib/crosswake_example/e2e/replay_session_controller.ex
   - examples/phoenix_host/lib/crosswake_example/local_first/replay_admission.ex
   - examples/phoenix_host/lib/crosswake_example/local_first/review_event.ex
   - examples/phoenix_host/lib/crosswake_example/local_first/study.ex
   - examples/phoenix_host/lib/crosswake_example/local_first/sync_controller.ex
+  - examples/phoenix_host/lib/crosswake_example/router.ex
   - examples/phoenix_host/priv/repo/migrations/20260802160000_scope_review_events.exs
   - examples/phoenix_host/priv/repo/migrations/20260802170000_restore_review_event_idempotency_guard.exs
   - examples/phoenix_host/priv/static/offline_study.js
@@ -27,82 +30,57 @@ files_reviewed_list:
   - lib/crosswake/telemetry.ex
   - packages/crosswake_sigra/lib/crosswake/companions/sigra.ex
   - packages/crosswake_sigra/test/crosswake/companions/sigra/contracts_test.exs
+  - test/crosswake/offline/proof_lane_test.exs
   - test/crosswake/offline/safe_observation_test.exs
   - test/crosswake/proof/phase160_scoped_replay_privacy_test.exs
+  - test/crosswake/proof_lane/evidence_test.exs
 findings:
   critical: 1
-  warning: 2
+  warning: 1
   info: 0
-  total: 3
+  total: 2
 status: issues_found
 ---
 
 # Phase 160: Code Review Report
 
-**Reviewed:** 2026-08-03T01:06:16Z
+**Reviewed:** 2026-08-03T02:05:15Z
 **Depth:** standard
-**Files Reviewed:** 25
+**Files Reviewed:** 30
 **Status:** issues_found
 
 ## Summary
 
-The browser worker’s new exact-scope activation and complete-acknowledgement checks are fail-closed, but the Phoenix replay endpoints do not establish backend authority from the request. They are publicly reachable JSON endpoints and use a generated fixture identity instead. This defeats the phase’s session/replay reauthorization boundary. The host test run also emits a compilation warning from a reviewed module, which risks the configured warnings-as-errors CI gate on a clean dependency compile.
+The scoped replay and evidence paths were reviewed in full, including their Phoenix host integration and browser behavior. `MIX_ENV=test mix test test/crosswake_example/local_first --warnings-as-errors` passes, but it does not cover migration of an unowned legacy record across users. The legacy recovery API can assign unscoped work to whichever scope is currently active, defeating the account-switch boundary. The rating controls also permit concurrent submissions for the same visible card.
 
 ## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Replay endpoint authorizes an unauthenticated fixture instead of the requesting account
+### CR-01: Unscoped legacy mutations can be claimed and replayed by a different account
 
-**File:** `examples/phoenix_host/lib/crosswake_example/local_first/replay_admission.ex:89`
-**Issue:** `default_resolution(:session, _conn)` ignores the connection and constructs a permissive configured fixture session. `default_resolution(:route, _conn)` and `domain_allows?/4` likewise default to a fixed route and `:allow`. Both `/study/sync` and `/learnloop/sync` use only the `:api` pipeline, which merely accepts JSON ([router.ex](/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/router.ex:119)). Therefore any unauthenticated caller can POST the fixture scope and create/replay review events; logout, account switching, revocation, and per-account scope authority are never checked server-side. This is an authorization bypass and directly violates the required backend-authoritative replay fence.
+**Classification:** BLOCKER
 
-**Fix:** Put the sync endpoints behind a host authentication/session plug and resolve the current server-owned session, route policy, feature state, and domain authorization from `conn`. Fail closed when that authority is absent. The fixture resolver must be test-only, injected explicitly by tests, or the demo endpoint must be compiled out of production.
+**File:** `examples/phoenix_host/priv/static/offline_study.js:242`
 
-```elixir
-defp default_resolution(:session, conn) do
-  case CrosswakeExample.Auth.current_replay_session(conn) do
-    {:ok, %{scope_ref: _scope_ref, auth_context: %AuthContext{}} = session} -> {:ok, session}
-    _ -> {:error, :authority_unavailable}
-  end
-end
-```
+**Issue:** `recoverLegacyMutations/1` promotes every quarantined legacy record to any currently active scope after checking only that the caller supplied that scope. A legacy record has no reliable account/scope binding, so a person who signs into a shared/reused device can replay another account's old offline mutation into their own account. The replay layer compounds this: existing unscoped server rows are treated as successful duplicates for every scope ([`study.ex:18`](/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/local_first/study.ex:18) and [`study.ex:78`](/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/local_first/study.ex:78)), causing the new scope to delete its local mutation even though no effect was committed for that scope. This violates the required fail-closed account-switch/logout behavior and can both cross account boundaries and lose the current account's review.
 
-Add request-level tests proving anonymous, logged-out, switched-account, and revoked-session requests are rejected before persistence.
+**Fix:** Do not auto-promote unscoped records based on the active lease. Keep them quarantined unless a host-owned recovery flow supplies a server-verifiable ownership binding for each record; otherwise expose a retained blocked/recovery-required state. Treat a persisted `scope_ref: nil` idempotency tombstone as `:scope_conflict` (or a closed migration-required rejection), never as `:duplicate`/accepted for a scoped replay. Add an E2E case that creates an unscoped record under one session, switches account, and proves it cannot enter the second scope or be acknowledged as accepted.
 
 ## Warnings
 
-### WR-01: Conditional test hook attribute produces a compiler warning in the host build
+### WR-01: Rapid repeated rating clicks queue multiple reviews for one card
 
-**File:** `lib/crosswake/proof_lane/evidence.ex:29`
-**Issue:** `@after_digest_barrier` is declared unconditionally but is referenced only inside `if Mix.env() == :test`. Compiling the Crosswake dependency through `examples/phoenix_host` emits `module attribute @after_digest_barrier was set but never used`. A clean `mix compile --warnings-as-errors` can turn this into a failing required CI build.
+**Classification:** WARNING
 
-**Fix:** Declare the attribute only in the test branch, alongside the test-only helper.
+**File:** `examples/phoenix_host/priv/static/offline_study.js:614`
 
-```elixir
-if Mix.env() == :test do
-  @after_digest_barrier {__MODULE__, :after_digest_barrier}
-  defp run_after_digest_barrier, do: # existing test implementation
-else
-  defp run_after_digest_barrier, do: :ok
-end
-```
+**Issue:** `handleReview` awaits IndexedDB before advancing `currentCardIndex` or hiding/disabling the rating controls. Multiple click events can therefore run concurrently against the same `cards[currentCardIndex]`, each minting a different mutation ID. Both events can be persisted and the index can advance twice, producing duplicate/conflicting ratings for a single card. Idempotency does not prevent this because the IDs differ.
 
-### WR-02: Online submit starts an unobserved replay promise
-
-**File:** `examples/phoenix_host/priv/static/offline_study.js:635`
-**Issue:** `handleReview/1` calls the async `flushOutbox()` without awaiting it or attaching a rejection handler. If the immediate replay fails after the local write (for example, IndexedDB read/delete failure), the promise rejects as an unhandled browser rejection. Unlike the reconnect path at lines 480–482, it neither converts the failure into the visible paused state nor protects the console/error channel. This makes a recoverable replay failure look like a broken client and conflicts with the explicit blocked-state contract.
-
-**Fix:** Route this call through the existing guarded worker entry point, or attach the same lease-aware catch used by `replayOnOnline/0`.
-
-```js
-if (navigator.onLine) {
-  replayOnOnline();
-}
-```
+**Fix:** Serialize a card submission or synchronously disable both rating buttons before the first `await`, then re-enable only after a failed queue operation. Capture the card/index once and advance exactly once on successful persistence. Add a browser test that double-clicks a rating while IndexedDB is delayed and asserts one queued mutation and one card advance.
 
 ---
 
-_Reviewed: 2026-08-03T01:06:16Z_
+_Reviewed: 2026-08-03T02:05:15Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
