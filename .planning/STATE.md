@@ -5,10 +5,10 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 161
 current_phase_name: ios-pronunciation-pack-seam
 status: executing
-stopped_at: Completed 161-14-PLAN.md
-last_updated: "2026-08-03T21:18:14.254Z"
+stopped_at: Verification gaps found after 161-14-PLAN.md
+last_updated: "2026-08-03T21:25:19.000Z"
 last_activity: 2026-08-03
-last_activity_desc: Phase 161 execution started
+last_activity_desc: Phase 161 verification found one crash-atomic replacement gap
 progress:
   total_phases: 5
   completed_phases: 4
@@ -23,9 +23,9 @@ current_plan: 17
 ## Current Position
 
 Phase: 161 (ios-pronunciation-pack-seam) — EXECUTING
-Plan: 4 of 14
-Status: Ready to execute
-Last activity: 2026-08-03 — Phase 161 execution started
+Plan: 14 of 14 executed
+Status: Verification gaps found (19/20 must-haves)
+Last activity: 2026-08-03 — Phase 161 verification found one crash-atomic replacement gap
 
 ## Active Objective
 
@@ -44,11 +44,16 @@ framework launch.
 
 ## Next Action
 
-Execute Phase 161 with `$gsd-execute-phase 161`. Phase 160 security is reconciled at 37/37 threats
-closed. TODO-002 remains the bounded adopter-input gate and adopter-instance completeness remains
-`unknown_blocking`; do not infer concrete adopter routes or promote downstream device claims.
+Plan the Phase 161 crash-safe replacement recovery gap with `$gsd-plan-phase 161 --gaps`, then
+re-run gap execution and verification before Phase 162. Phase 160 security is reconciled at 37/37
+threats closed. TODO-002 remains the bounded adopter-input gate and adopter-instance completeness
+remains `unknown_blocking`; do not infer concrete adopter routes or promote downstream device claims.
 
 ## Blockers
+
+- Phase 161 verification confirms replacement publication is exception-safe but not process-crash
+  atomic. A kill between retaining the old artifact, promoting the new artifact, and committing
+  inventory has no durable transaction journal or startup recovery; PACK-03 remains blocked.
 
 - Phase 160 code review WR-01 records a non-blocking browser lifecycle race: fencing during an
   IndexedDB save can leave rating controls owned until reload. The finding remains available for
