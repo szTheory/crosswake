@@ -197,8 +197,6 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
   test('online activation replays retained exact-scope work', async ({ page, context }) => {
     const pageErrors: string[] = [];
     const consoleOutput: string[] = [];
-    page.on('pageerror', error => pageErrors.push(error.message));
-    page.on('console', message => consoleOutput.push(message.text()));
 
     await page.goto('/');
     await page.evaluate(() => new Promise<void>((resolve, reject) => {
@@ -218,6 +216,8 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await context.setOffline(false);
     await page.reload();
     await waitForInactiveLifecycle(page);
+    page.on('pageerror', error => pageErrors.push(error.message));
+    page.on('console', message => consoleOutput.push(message.text()));
 
     await page.evaluate(() => {
       (window as any).__activationReplayRequests = 0;
