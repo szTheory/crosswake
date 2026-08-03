@@ -402,19 +402,13 @@ The current coordinator already has this gate, so planning should evolve PackSto
 | # | Claim | Section | Risk if Wrong |
 |---|-------|---------|---------------|
 | A1 | A concrete reference host provider can use Foundation's replacement API as the exact promotion primitive on the project’s iOS deployment target. | Architecture Patterns | The implementation may need a small POSIX rename wrapper or a more specific Foundation promotion sequence; retain same-volume and failure tests either way. |
-| A2 | The private host inventory encoding can remain `Codable`/file-backed rather than a different host persistence mechanism. | Standard Stack | Planner must keep its schema private and test relaunch behavior regardless of backing store. |
+## Open Questions (RESOLVED)
 
-## Open Questions
+1. **Public Swift compatibility/version marker for `PackProvider` — resolved**
+   - Define a public typed `PackProviderContractVersion` marker with the initial supported case `.v1`, and expose `PackProviderContract.currentVersion: PackProviderContractVersion = .v1`. Requirements and installed records carry that typed marker so core rejects a mismatched provider record before availability. Add source-level XCTest coverage that compiles the exact symbol/type/case and asserts the current value; changing or removing that surface is therefore a deliberate compatibility migration. This is the concrete D-01 contract choice and replaces the former assumption. `[RESOLVED: planner discretion; VERIFIED constraint: 161-CONTEXT.md]`
 
-1. **Exact public Swift compatibility/version marker for `PackProvider`**
-   - What we know: D-01 locks a versioned contract and considers result-case changes compatibility-sensitive. `[VERIFIED: 161-CONTEXT.md]`
-   - What's unclear: whether versioning is a `contractVersion` field, protocol namespace, or an enum case in the checked-in package API.
-   - Recommendation: make the contract version an explicit constant/value in the requirement/result API and add source-level compatibility tests before external host adoption. `[ASSUMED]`
-
-2. **Reference host's private persistence format**
-   - What we know: it must survive relaunch, be written only after promotion, and never enter evidence. `[VERIFIED: 161-CONTEXT.md]`
-   - What's unclear: JSON file, UserDefaults index, or host-owned database is most appropriate for the example host.
-   - Recommendation: use the smallest injectable private store with deterministic failure injection; do not surface it through core or guides. `[ASSUMED]`
+2. **Reference host private persistence format — resolved**
+   - Use the smallest host-private `Codable` file-backed inventory store, injected into `PronunciationPackProvider` behind a private load/save seam. It stores only the exact non-sensitive installed-record facts needed for reconciliation, writes only after verified same-volume promotion succeeds, and never crosses into Crosswake core, guides, diagnostics, logs, or evidence. Inject the inventory file location and writer/failure seam so tests deterministically prove persistence failure remains blocked and a newly constructed store/provider reloads the committed record after relaunch. Do not use `UserDefaults`, a database, or a public generic storage abstraction for the reference host. `[RESOLVED: planner discretion; VERIFIED constraints: D-04, D-06, D-07, D-12, D-17]`
 
 ## Environment Availability
 
@@ -449,7 +443,7 @@ The current coordinator already has this gate, so planning should evolve PackSto
 | PACK-03 | real immutable fixture bytes are counted, SHA-256 verified, atomically promoted, then reconciled | XCTest integration fixture | `swift test --package-path packages/crosswake-shell-core-ios --filter PackProviderFixtureTests/testVerifiedFixturePromotesThenReconcilesAvailable` | ❌ Wave 0 |
 | PACK-04 | core/host boundary excludes URL/path/error/archive layout and activation stays gate-owned | XCTest/API-shape + Elixir template contract | `mix test test/crosswake/proof_lane/template_contract_test.exs test/crosswake/proof_lane/ios_verifier_test.exs` | Partial; extend Wave 0 |
 | PACK-05 | no background/generic/Android claims; retained proof output contains only allowlisted closed values | ExUnit source/evidence contract | `mix test test/crosswake/proof_lane/evidence_test.exs test/crosswake/proof_lane/template_contract_test.exs` | ✅ extend assertions |
-| PACK-01/03 | missing-provider denial, install-to-ready, relaunch persistence, host-owned offline audio operation | XCUITest generated-host behavior (simulator advisory) | generated Phase 159 iOS proof command after template rendering | ❌ Wave 0 |
+| PACK-01/03 | missing-provider denial, install-to-ready, relaunch persistence, host-owned offline audio operation | XCUITest generated-host behavior (simulator advisory) | `env -u CROSSWAKE_IOS_XCODEBUILD_BIN -u CROSSWAKE_IOS_PROJECT_ROOT -u CROSSWAKE_IOS_SHIM_MODE CROSSWAKE_IOS_USE_LOCAL_CORE=1 CROSSWAKE_IOS_LAUNCH_SIMULATOR=1 bash script/verify_generated_ios_shell.sh --proof-lane --reference-pack-adapter` | ❌ Wave 0 |
 
 ### Sampling Rate
 
@@ -505,7 +499,7 @@ The current coordinator already has this gate, so planning should evolve PackSto
 
 ### Tertiary (LOW confidence)
 
-- None beyond A1–A2, which are explicitly marked `[ASSUMED]`.
+- None beyond A1, which remains explicitly marked `[ASSUMED]`; both former Open Questions are resolved above.
 
 ## Metadata
 
