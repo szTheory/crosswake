@@ -21,7 +21,9 @@ defmodule CrosswakeExample.LocalFirst.StudyTest do
     assert Repo.aggregate(ReviewEvent, :count, :id) == 1
   end
 
-  test "nil-scope accepted history grants no scoped acknowledgement or deletion authority", %{event: event} do
+  test "nil-scope accepted history grants no scoped acknowledgement or deletion authority", %{
+    event: event
+  } do
     assert {:ok, legacy} =
              %ReviewEvent{}
              |> Ecto.Changeset.change(%{
@@ -40,7 +42,8 @@ defmodule CrosswakeExample.LocalFirst.StudyTest do
     assert Repo.aggregate(ReviewEvent, :count, :id) == 1
   end
 
-  test "same-scope rejected events stay rejected while nil-scope history remains a scope conflict", %{event: event} do
+  test "same-scope rejected events stay rejected while nil-scope history remains a scope conflict",
+       %{event: event} do
     for scope_ref <- [@scope, nil] do
       event =
         Map.put(
