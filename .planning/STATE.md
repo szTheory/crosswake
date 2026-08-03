@@ -4,9 +4,9 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
-status: executing
-stopped_at: Completed 160-16-PLAN.md
-last_updated: "2026-08-03T02:00:50.644Z"
+status: gaps_found
+stopped_at: Phase 160 verification found legacy cross-account replay gap
+last_updated: "2026-08-03T02:11:08Z"
 last_activity: 2026-08-02
 last_activity_desc: Phase 160 execution started
 progress:
@@ -22,10 +22,10 @@ current_plan: 16
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
+Phase: 160 (scoped-replay-and-auth-safety) — GAPS FOUND
 Plan: 16 of 16
-Status: Plan 160-16 complete; phase verification and independent security audit remain
-Last activity: 2026-08-03 — warning-clean final-tree replay evidence reconciled
+Status: 38/39 must-haves verified; legacy unscoped recovery violates fail-closed account switching
+Last activity: 2026-08-03 — Phase 160 re-verification recorded one blocking replay-scope gap
 
 ## Active Objective
 
@@ -44,11 +44,17 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-verify-work 160`, then `$gsd-secure-phase 160`. TODO-002 remains the bounded
-adopter-input gate and adopter-instance completeness remains `unknown_blocking`; do not infer
-concrete adopter routes or promote downstream device claims.
+Run `$gsd-plan-phase 160 --gaps`, execute the resulting gap plan, then rerun verification and
+`$gsd-secure-phase 160`. TODO-002 remains the bounded adopter-input gate and adopter-instance
+completeness remains `unknown_blocking`; do not infer concrete adopter routes or promote
+downstream device claims.
 
 ## Blockers
+
+- Legacy unscoped browser records can be assigned to whichever account scope is active, and a
+  nil-scope server tombstone can acknowledge scoped replay as accepted. Phase 160 remains pending
+  until recovery requires host-verifiable ownership or stays quarantined and nil-scope duplicates
+  fail closed.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
