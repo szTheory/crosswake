@@ -211,6 +211,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert ui =~ "proof-lane-pack-audio"
     assert ui =~ "testMissingProviderInstallRelaunchAndOfflineAudio"
     assert ui =~ "CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"
+    refute ui =~ "CROSSWAKE_PROOF_LANE_NETWORK_DISABLED"
     assert ui =~ "proof-lane-auth-posture"
     assert ui =~ "24"
     assert ui =~ "app.scrollViews.count, 0"

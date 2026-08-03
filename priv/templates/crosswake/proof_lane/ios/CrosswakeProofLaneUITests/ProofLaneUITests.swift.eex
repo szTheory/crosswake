@@ -20,7 +20,6 @@ final class ProofLaneUITests: XCTestCase {
     assertAdapterDerivedPassedOutcome(in: app)
     print("PACK-INSTALL-READY")
     app.terminate()
-    app.launchEnvironment["CROSSWAKE_PROOF_LANE_NETWORK_DISABLED"] = "1"
     app.launch()
     assertAdapterDerivedPassedOutcome(in: app)
     print("PACK-RELAUNCH-READY")
