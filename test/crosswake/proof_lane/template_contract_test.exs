@@ -125,6 +125,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
           "ProofLaneDriver.swift in Sources",
           "ProofLaneContractTests.swift in Sources",
           "ProofLaneUITests.swift in Sources",
+          "pronunciation-pack-fixture.bin in Resources",
           "CrosswakeProofLaneTests",
           "CrosswakeProofLaneUITests",
           "TestTargetID"
@@ -186,7 +187,12 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
 
     assert contract =~ "XCTestCase"
     assert contract =~ "ProofLaneHostAdapter"
-    assert contract =~ "testInstalledHostAdapterProducesPassedOutcome"
+    assert contract =~ "testMissingAdapterRemainsUnavailable"
+    assert contract =~ "testFixtureInstallReconcilesAfterRelaunch"
+    assert contract =~ "testWrongRequirementAndFailedAudioRemainNonPassing"
+    assert contract =~ "PACK-INSTALL-READY"
+    assert contract =~ "PACK-RELAUNCH-READY"
+    assert contract =~ "PACK-AUDIO-OFFLINE"
     refute contract =~ "testMissingAdapterRemainsUnavailable"
     refute contract =~ "XCTSkip"
     assert ui =~ "XCUIApplication"
@@ -205,6 +211,25 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert ui =~ "44"
     refute ui =~ "resetContentAndSettings"
     refute ui =~ "XCTSkip"
+  end
+
+  test "generated iOS lane owns a missing-only real-byte fixture and closed pack callbacks" do
+    generator = source("lib/crosswake/proof_lane/generator.ex")
+    driver = source("priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex")
+    fixture = source("priv/templates/crosswake/proof_lane/ios/Resources/pronunciation-pack-fixture.bin.eex")
+
+    assert generator =~ "pronunciation-pack-fixture.bin"
+    assert generator =~ "@template_version 3"
+    assert fixture != ""
+    assert driver =~ "installPronunciationPackForeground"
+    assert driver =~ "exerciseInstalledPronunciationAudioOffline"
+    assert driver =~ "ProofLaneReferencePackAdapter"
+    assert driver =~ "CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"
+
+    refute driver =~ "URL"
+    refute driver =~ "Error"
+    refute driver =~ "digest"
+    refute driver =~ "archive"
   end
 
   test "native verifier keeps package and git configuration operation-scoped" do
