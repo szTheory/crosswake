@@ -6,6 +6,20 @@ import XCTest
 
 @MainActor
 final class PronunciationPackProviderTests: XCTestCase {
+    func testBundledConstructionPropagatesExactRequirementThroughConcreteProvider() async throws {
+        let fixture = try fixtureBytes()
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let provider = PronunciationPackProvider(source: { fixture }, storageRoot: root)
+        let store = try PackStore.bundled(bundle: Bundle.main, provider: provider)
+        let initial = try XCTUnwrap(store.statuses["lesson_library"])
+        XCTAssertEqual(initial.state, .checking)
+
+        await store.installRequiredPack(initial)
+        XCTAssertEqual(store.statuses["lesson_library"]?.state, .available)
+    }
+
     func testFixtureInstallPersistsExactVerifiedRecordForNewProvider() async throws {
         let fixture = try fixtureBytes()
         let requirement = requirement(for: fixture)
