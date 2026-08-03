@@ -74,6 +74,7 @@ status: complete
 - Replaced active-lease legacy promotion with a closed recovery-required result that preserves quarantined bytes through account switches.
 - Mapped nil-scope ReviewEvent rows to scope conflict in idempotency and race recovery paths before outcome mapping.
 - Added deterministic browser proof for competing rating controls and recorded a fresh, complete Phase 160 gate.
+- Restored generated host-proof replay by establishing the existing test-only request-bound session before dispatching online.
 
 ## Task Commits
 
@@ -82,6 +83,8 @@ status: complete
 3. **Task 2 RED: rapid rating submission race** - `217c1154` (test)
 4. **Task 2 GREEN: serialize rating submission per card** - `187d5e3f` (feat)
 5. **Task 3: fresh scoped replay gate** - `0d27a488` (docs)
+6. **Follow-up: establish generated proof replay session** - `d6da6b02` (fix)
+7. **Follow-up: scope activation console capture** - `c8b9b04a` (test)
 
 ## Files Created/Modified
 
@@ -91,6 +94,7 @@ status: complete
 - `examples/phoenix_host/test/crosswake_example/local_first/study_test.exs` - Nil-scope retained-history assertions.
 - `.planning/phases/160-scoped-replay-and-auth-safety/COVERAGE.md` - Exact no-external-API declaration.
 - `.planning/phases/160-scoped-replay-and-auth-safety/160-VALIDATION.md` - Aggregate-only post-160-17 evidence.
+- `test/fixtures/crosswake/proof_lane/phoenix_host/proof_lane_host_adapter.ts` - Isolated generated-host request-bound test setup.
 
 ## Decisions Made
 
@@ -110,14 +114,31 @@ status: complete
 - **Verification:** Focused legacy browser proof passed.
 - **Committed in:** `ba8a5b33`
 
+**2. [Rule 1 - Bug] Established request-bound authority for the generated host proof**
+- **Found during:** Final Phase 160 verification
+- **Issue:** The generated host adapter dispatched online replay without the existing test-only request-bound session, causing a non-success response and a response-wait timeout.
+- **Fix:** Established the host's existing test session before running repository and isolated generated proofs.
+- **Files modified:** `examples/phoenix_host/e2e/crosswake_proof_lane/proof_lane.spec.ts`, `test/fixtures/crosswake/proof_lane/phoenix_host/proof_lane_host_adapter.ts`
+- **Verification:** Focused repository and isolated generated proofs passed.
+- **Committed in:** `d6da6b02`
+
+**3. [Rule 1 - Bug] Scoped activation replay console capture to the replay assertion**
+- **Found during:** Final Phase 160 verification
+- **Issue:** The assertion intermittently captured an unrelated LiveView teardown message from the setup reload.
+- **Fix:** Began capture after the reload, retaining replay-specific page and console assertions.
+- **Files modified:** `examples/phoenix_host/e2e/offline_sync.spec.ts`
+- **Verification:** Focused activation and full browser corpora passed.
+- **Committed in:** `c8b9b04a`
+
 ---
 
-**Total deviations:** 1 auto-fixed (Rule 1)
+**Total deviations:** 3 auto-fixed (Rule 1)
 **Impact on plan:** Test-only correction; no scope expansion.
 
 ## Issues Encountered
 
 - Existing locked dependency advisories were emitted during the established dependency check. They are deferred to the independent Phase 160 security audit; no dependency change was made.
+- The generated proof adapter omitted the existing test-only replay session after Phase 160 made replay request-bound; the bounded fix and full final gate both passed.
 
 ## User Setup Required
 

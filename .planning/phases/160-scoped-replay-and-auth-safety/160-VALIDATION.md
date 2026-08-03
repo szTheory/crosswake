@@ -270,3 +270,22 @@ mix compile --force --warnings-as-errors && MIX_ENV=test mix compile --force --w
 **Non-passing boundaries retained:** TODO-002 and adopter-instance completeness remain `unknown_blocking`. Generated iOS/device proof remains asserted non-passing (`blocked` or `unavailable` only), and independent Phase 160 security remains pending `$gsd-secure-phase 160`; this gate neither edits nor self-approves `160-SECURITY.md`.
 
 **Supersession:** This fresh complete gate supersedes the post-160-16 gate above while retaining all earlier evidence as history.
+
+## Fresh Same-Tree Gate — 2026-08-03 (post-160-17 generated-proof repair)
+
+**Focused observed commands:**
+
+```bash
+(cd examples/phoenix_host && npm run proof:offline-island -- --grep "drives one UI mutation through IndexedDB, application reconnect, and exactly-once Phoenix replay")
+bash script/verify_phoenix_host_proof_lane.sh
+```
+
+**Focused result:** passed. The repository-host generated proof and isolated generated-host proof each completed one browser proof after the host test adapter established the existing request-bound test session before replay.
+
+**Observed complete command:** the established post-160-17 complete same-tree gate (root and host warning-as-error compilation; core, Sigra, host, browser, generated-host, planning/adoption, formatting, coverage seal, whitespace, and asserted blocked-or-unavailable generated-iOS prerequisite checks).
+
+**Observed result:** passed. The complete chain ran 119 core tests, 15 Sigra contract tests, 33 Phoenix host tests, 23 browser offline-island proofs, one isolated generated Phoenix-host proof, 36 planning/adoption tests, scoped formatting, the coverage seal, and whitespace validation.
+
+**Repair and boundaries:** the generated proof adapter now uses only the existing test-only replay-session seam to obtain request-bound authority; production authority, transport shape, storage behavior, Android posture, safe output schemas, and non-passing generated-iOS/device boundaries remain unchanged. The activation replay assertion now begins capture after the unrelated page-reload teardown, preserving its replay-specific error check without accepting unrelated LiveView shutdown output.
+
+**Supersession:** This gate supersedes the earlier post-160-17 evidence above while retaining it as history. TODO-002/adopter-instance completeness remains `unknown_blocking`; generated iOS/device proof remains non-passing; independent Phase 160 security remains pending `$gsd-secure-phase 160`.

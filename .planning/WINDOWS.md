@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 9
+open_count: 11
 waived_count: 0
 fixed_count: 0
-total_count: 9
-last_updated: 2026-08-03T02:40:38.572Z
+total_count: 11
+last_updated: 2026-08-03T02:58:59.173Z
 ---
 
 # Broken Windows Ledger
@@ -24,6 +24,8 @@ last_updated: 2026-08-03T02:40:38.572Z
 | 7 | 159 | unrun-verify | script/verify_generated_ios_shell.sh |  | Fresh non-mocked native proof verifier remains unavailable until an installed concrete iPhone simulator exists. | open |  | 2026-08-01T00:46:07.479Z |  |
 | 8 | 160 | deviation | examples/phoenix_host/e2e/support/offline_route_proof.ts | 293 | Scoped browser proof reader used legacy IndexedDB store after the scoped migration | open |  | 2026-08-02T17:35:34.942Z |  |
 | 9 | 160 | deviation | examples/phoenix_host/e2e/offline_sync.spec.ts |  | Rule 1 test scope capture correction during legacy browser regression | open |  | 2026-08-03T02:40:38.572Z |  |
+| 10 | 160 | deviation | examples/phoenix_host/e2e/crosswake_proof_lane/proof_lane.spec.ts |  | Generated proof adapter now establishes the existing request-bound test session before online replay | open |  | 2026-08-03T02:58:59.105Z |  |
+| 11 | 160 | deviation | examples/phoenix_host/e2e/offline_sync.spec.ts |  | Activation replay console capture begins after unrelated setup reload teardown | open |  | 2026-08-03T02:58:59.173Z |  |
 
 ````json
 [
@@ -133,6 +135,30 @@ last_updated: 2026-08-03T02:40:38.572Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-03T02:40:38.572Z",
+    "resolved_at": null
+  },
+  {
+    "id": 10,
+    "kind": "deviation",
+    "phase": "160",
+    "file": "examples/phoenix_host/e2e/crosswake_proof_lane/proof_lane.spec.ts",
+    "line": null,
+    "description": "Generated proof adapter now establishes the existing request-bound test session before online replay",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-03T02:58:59.105Z",
+    "resolved_at": null
+  },
+  {
+    "id": 11,
+    "kind": "deviation",
+    "phase": "160",
+    "file": "examples/phoenix_host/e2e/offline_sync.spec.ts",
+    "line": null,
+    "description": "Activation replay console capture begins after unrelated setup reload teardown",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-03T02:58:59.173Z",
     "resolved_at": null
   }
 ]
