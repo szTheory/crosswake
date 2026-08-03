@@ -135,4 +135,30 @@ final class ActivationConformanceTests: XCTestCase {
         XCTAssertEqual(presentation.routeID, "dashboard",
                        "requiredPack presentation should carry the blocked route ID")
     }
+
+    func test_activation_blocks_every_invalid_required_pack_reference_before_liveView() async {
+        let requirement = PackRequirement(packID: "content-pack", requiredVersion: "1.0.0", expectedByteCount: 1, expectedSHA256: "a")
+        let cases = ["", " ", "content-pack", "content-pack@@1.0.0", "@1.0.0", "content-pack@", "unknown@1.0.0", "content-pack@2.0.0"]
+
+        for reference in cases {
+            let manifest = makeManifest(packs: [reference])
+            let request = makeRequest()
+            let packStore = PackStore(requirements: [requirement], provider: ActivationExactInstalledProvider())
+            await packStore.reconcileAll()
+            let coordinator = makeCoordinator(manifest: manifest, request: request, packStore: packStore)
+
+            guard case .requiredPack = coordinator.resolve(request: request, manifest: manifest) else {
+                return XCTFail("invalid required reference must not reach LiveView")
+            }
+        }
+    }
+}
+
+private actor ActivationExactInstalledProvider: PackProvider {
+    func status(for requirement: PackRequirement) async -> PackProviderResult {
+        .installed(PackInstalledRecord(contractVersion: requirement.contractVersion, packID: requirement.packID, installedVersion: requirement.requiredVersion, byteCount: requirement.expectedByteCount, integrityVerified: true, atomicPromotionCompleted: true))
+    }
+
+    func install(_ requirement: PackRequirement) async -> PackProviderResult { await status(for: requirement) }
+    func invalidate(_ requirement: PackRequirement) async -> PackProviderResult { .notInstalled }
 }
