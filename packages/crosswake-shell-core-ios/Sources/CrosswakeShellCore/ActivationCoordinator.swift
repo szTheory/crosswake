@@ -239,7 +239,7 @@ public final class ActivationCoordinator: ObservableObject {
     }
 
     public static func bundled(bundle: Bundle = .main, config: CrosswakeShellConfig) -> ActivationCoordinator {
-        let store = (try? PackStore.bundled(bundle: bundle)) ?? PackStore(requiredVersions: [:], inventory: [])
+        let store = (try? PackStore.bundled(bundle: bundle, provider: config.packProvider)) ?? PackStore(requirements: [], provider: config.packProvider)
 
         return ActivationCoordinator(
             manifestLoader: { try Self.decode("crosswake_manifest", bundle: bundle) },
@@ -256,6 +256,11 @@ public final class ActivationCoordinator: ObservableObject {
         do {
             let request = try loadAndFilterRequest()
             activate(request)
+            Task { [weak self] in
+                guard let self else { return }
+                await self.packStore.reconcileAll()
+                self.reactivateLastRequest()
+            }
         } catch {
             presentation = .denied(
                 RouteDenialPresentation(
@@ -664,4 +669,3 @@ extension URL {
         }
     }
 }
-

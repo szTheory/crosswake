@@ -1,6 +1,7 @@
 import Foundation
 
 public struct CrosswakeShellConfig {
+    public let packProvider: (any PackProvider)?
     public weak var appInfoDelegate: AppInfoDelegate?
     public weak var hapticsDelegate: HapticsDelegate?
     public weak var permissionStatusDelegate: PermissionStatusDelegate?
@@ -10,6 +11,7 @@ public struct CrosswakeShellConfig {
     public weak var routeDelegate: RouteDelegate?
 
     public init(
+        packProvider: (any PackProvider)? = nil,
         appInfoDelegate: AppInfoDelegate? = nil,
         hapticsDelegate: HapticsDelegate? = nil,
         permissionStatusDelegate: PermissionStatusDelegate? = nil,
@@ -18,6 +20,7 @@ public struct CrosswakeShellConfig {
         filesPickDelegate: FilesPickDelegate? = nil,
         routeDelegate: RouteDelegate? = nil
     ) {
+        self.packProvider = packProvider
         self.appInfoDelegate = appInfoDelegate
         self.hapticsDelegate = hapticsDelegate
         self.permissionStatusDelegate = permissionStatusDelegate

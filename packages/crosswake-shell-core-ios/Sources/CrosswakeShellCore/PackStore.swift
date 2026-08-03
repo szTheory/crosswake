@@ -64,7 +64,11 @@ public final class PackStore: ObservableObject {
     public init(requirements: [PackRequirement], provider: (any PackProvider)? = nil) {
         self.requirements = Dictionary(uniqueKeysWithValues: requirements.map { ($0.packID, $0) })
         self.provider = provider
-        self.statuses = Dictionary(uniqueKeysWithValues: requirements.map { ($0.packID, Self.checkingStatus(for: $0)) })
+        self.statuses = Dictionary(uniqueKeysWithValues: requirements.map {
+            ($0.packID, provider == nil
+                ? Self.closedUnavailableStatus(for: $0)
+                : Self.checkingStatus(for: $0))
+        })
     }
 
     /// Source-compatible initializer. Legacy inventory is intentionally ignored: it is not a
@@ -147,12 +151,14 @@ public final class PackStore: ObservableObject {
             guard record.contractVersion == PackProviderContract.currentVersion,
                   record.contractVersion == requirement.contractVersion,
                   record.packID == requirement.packID,
-                  record.installedVersion == requirement.requiredVersion,
                   record.byteCount == requirement.expectedByteCount,
                   record.integrityVerified,
                   record.atomicPromotionCompleted
             else {
                 return failedStatus(for: requirement, reason: .malformedProviderResult)
+            }
+            guard record.installedVersion == requirement.requiredVersion else {
+                return staleStatus(for: requirement, record: record)
             }
             return RequiredPackStatus(id: requirement.packID, packID: requirement.packID, requiredVersion: requirement.requiredVersion, state: .available, installedVersion: record.installedVersion, bytes: record.byteCount, verifiedAt: nil, integrityStatus: "verified", installStage: nil, failureReason: nil, lastKnownVersion: record.installedVersion)
         case .notInstalled:
@@ -170,12 +176,20 @@ public final class PackStore: ObservableObject {
         RequiredPackStatus(id: requirement.packID, packID: requirement.packID, requiredVersion: requirement.requiredVersion, state: .checking, installedVersion: nil, bytes: nil, verifiedAt: nil, integrityStatus: nil, installStage: nil, failureReason: nil, lastKnownVersion: nil)
     }
 
+    private static func closedUnavailableStatus(for requirement: PackRequirement) -> RequiredPackStatus {
+        RequiredPackStatus(id: requirement.packID, packID: requirement.packID, requiredVersion: requirement.requiredVersion, state: .failed, installedVersion: nil, bytes: nil, verifiedAt: nil, integrityStatus: nil, installStage: nil, failureReason: .providerUnavailable, lastKnownVersion: nil)
+    }
+
     private func unavailableStatus(for requirement: PackRequirement) -> RequiredPackStatus {
         RequiredPackStatus(id: requirement.packID, packID: requirement.packID, requiredVersion: requirement.requiredVersion, state: .notInstalled, installedVersion: nil, bytes: nil, verifiedAt: nil, integrityStatus: nil, installStage: nil, failureReason: nil, lastKnownVersion: statuses[requirement.packID]?.lastKnownVersion)
     }
 
     private func failedStatus(for requirement: PackRequirement, reason: PackFailureReason) -> RequiredPackStatus {
         RequiredPackStatus(id: requirement.packID, packID: requirement.packID, requiredVersion: requirement.requiredVersion, state: .failed, installedVersion: nil, bytes: nil, verifiedAt: nil, integrityStatus: nil, installStage: nil, failureReason: reason, lastKnownVersion: statuses[requirement.packID]?.lastKnownVersion)
+    }
+
+    private func staleStatus(for requirement: PackRequirement, record: PackInstalledRecord) -> RequiredPackStatus {
+        RequiredPackStatus(id: requirement.packID, packID: requirement.packID, requiredVersion: requirement.requiredVersion, state: .stale, installedVersion: record.installedVersion, bytes: record.byteCount, verifiedAt: nil, integrityStatus: "verified", installStage: nil, failureReason: nil, lastKnownVersion: record.installedVersion)
     }
 
     private func fallbackStatus(packID: String, requiredVersion: String) -> RequiredPackStatus {
