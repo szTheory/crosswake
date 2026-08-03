@@ -51,7 +51,7 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
   entries by scope.
 
 - [ ] **SCOPE-02:** Logout and account switching stop replay, and cross-scope replay fails closed.
-- [x] **SCOPE-03:** Replay re-checks backend session authority, route authorization, and
+- [ ] **SCOPE-03:** Replay re-checks backend session authority, route authorization, and
   server-side feature state before applying queued mutations.
 
 - [ ] **SCOPE-04:** Raw answer payloads are excluded from telemetry, doctor output, inspection,

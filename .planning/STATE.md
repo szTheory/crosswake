@@ -4,11 +4,11 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
-status: executing
-stopped_at: Completed 160-13-PLAN.md
-last_updated: "2026-08-03T01:02:14.072Z"
+status: gaps_found
+stopped_at: Verification found request-bound backend authority and online-submit rejection gaps
+last_updated: "2026-08-03T01:10:14Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 160 execution started
+last_activity_desc: Phase 160 verification found two remaining automated gaps
 progress:
   total_phases: 5
   completed_phases: 3
@@ -22,10 +22,11 @@ current_plan: 13
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
-Plan: 2 of 13
-Status: Ready to execute
-Last activity: 2026-08-02 — Phase 160 execution started
+Phase: 160 (scoped-replay-and-auth-safety) — GAPS FOUND
+Plan: 13 of 13 executed
+Status: Phase remains pending at 38/39 verified must-haves
+Last activity: 2026-08-02 — Phase 160 verification found request-bound backend authority and
+immediate-online replay rejection gaps
 
 ## Active Objective
 
@@ -44,16 +45,20 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-execute-phase 160` to execute Plan 160-13: successful online scope activation must start
-the existing lease-guarded replay worker, and incomplete non-halted acknowledgements must retain the
-full batch in a visible paused state. Then rerun verification and `$gsd-secure-phase 160`. TODO-002
-remains the bounded adopter-input gate and adopter-instance completeness remains `unknown_blocking`;
-do not infer concrete adopter routes or promote downstream device claims.
+Run `$gsd-plan-phase 160 --gaps` to replace fixture-default replay authority with a host-owned,
+request-bound authenticated boundary and to contain immediate-online worker rejection through the
+existing paused-state path. Then execute the resulting gap plan and rerun verification plus
+`$gsd-secure-phase 160`. TODO-002 remains the bounded adopter-input gate and adopter-instance
+completeness remains `unknown_blocking`; do not infer concrete adopter routes or promote downstream
+device claims.
 
 ## Blockers
 
-- Phase 160 completion remains blocked because online activation does not start replay for retained
-  exact-scope work and a truncated successful acknowledgement can be presented as complete.
+- Phase 160 completion remains blocked because the public replay routes construct fixture authority
+  instead of resolving the requesting account's current backend session and authorization.
+
+- Immediate online submit invokes the replay worker without the existing guarded rejection handler,
+  so a recoverable worker failure can escape instead of remaining in the visible paused state.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
