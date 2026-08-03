@@ -1,7 +1,7 @@
 ---
 phase: 160
 slug: scoped-replay-and-auth-safety
-status: complete
+status: validated
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-08-02
@@ -22,7 +22,7 @@ created: 2026-08-02
 | **Focused host command** | `cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/replay_admission_test.exs test/crosswake_example/local_first/sync_controller_test.exs test/crosswake_example/local_first/study_test.exs` |
 | **Focused Sigra command** | `cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/companions/sigra/contracts_test.exs` |
 | **Focused egress command** | `mix test test/crosswake/offline/safe_observation_test.exs test/crosswake/offline/telemetry_test.exs test/crosswake/telemetry_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs` |
-| **Full phase gate** | Plan 160-11 Task 1 current-tree chain after Plans 160-09 and 160-10 |
+| **Full phase gate** | Post-160-17 generated-proof-repair current-tree chain |
 | **Estimated focused latency** | each focused command targets <30 seconds |
 | **Estimated final-gate latency** | ~300 seconds |
 
@@ -31,20 +31,29 @@ created: 2026-08-02
 - **After every task commit:** Run only that task's focused core, browser, host, Sigra, egress, or evidence command; target feedback is under 30 seconds.
 - **Plans 01 through 07:** Focused task checks remain recorded in their summaries and preserve fast feedback.
 - **Plan 08 Task 3:** The original complete gate remains recorded as superseded baseline evidence.
-- **Plan 11 Task 1 only:** Run the complete fresh current-tree gate after Plans 160-09 and 160-10, including core, Sigra, Phoenix, browser, generated-host, asserted non-passing iOS, planning/adoption, and formatting checks.
-- **Before `$gsd-verify-work`:** Require the recorded Plan 08 Task 3 gate to be fresh and passing; blocked native/device output remains non-passing.
+- **After final repair:** Run the complete fresh current-tree gate, including warning-clean compilation, core, Sigra, Phoenix, browser, generated-host, asserted non-passing iOS, planning/adoption, formatting, coverage-seal, and whitespace checks.
+- **Before `$gsd-verify-work`:** Require the recorded post-160-17 generated-proof-repair gate to be fresh and passing; blocked native/device output remains non-passing.
 
 ## Per-Task Verification Map
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | Target | Status |
 |---|---|---|---|---|---|---|---|---|---|
+| 160-01-01 | 160-01 | 1 | SCOPE-01 | T-160-01 | Journal and replay contracts require one bounded opaque scope and browser storage addresses only its exact partition | core integration and browser proof | `mix test test/crosswake/offline/journal_test.exs test/crosswake/offline/replay_test.exs && npm --prefix examples/phoenix_host run proof:offline-island -- --grep "exact scope storage"` | retained in current core/browser corpora | ✅ green |
+| 160-01-02 | 160-01 | 1 | SCOPE-02 | T-160-02, T-160-06 | Inert launch, fence-first scope changes, stale completion rejection, and ordered retained drain remain closed | core integration and browser proof | `mix test test/crosswake/offline/runtime_test.exs && npm --prefix examples/phoenix_host run proof:offline-island -- --grep "inactive relaunch|switch before send|switch in flight|ordered blocked drain"` | retained in current core/browser corpora | ✅ green |
+| 160-02-01 | 160-02 | 2 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-05 | T-160-01, T-160-03, T-160-05 | One scoped browser event crosses current host authority and commits one atomic idempotent effect | browser tracer | `npm --prefix examples/phoenix_host run proof:offline-island -- --grep "fully authorized scoped Study event"` | retained in 23-proof corpus | ✅ green |
+| 160-02-02 | 160-02 | 2 | SCOPE-02, SCOPE-03 | T-160-03, T-160-05, T-160-06 | Host denials, authority changes, rollback, and retry remain explicit and effect-safe | Phoenix integration | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first)` | 33 tests | ✅ green |
+| 160-02-03 | 160-02 | 2 | SCOPE-03, SCOPE-05 | T-160-03 | Sigra projects current backend evidence only to allow or one closed denial | companion unit | `(cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/companions/sigra/contracts_test.exs)` | 15 tests | ✅ green |
+| 160-03-01 | 160-03 | 3 | SCOPE-04 | T-160-04 | Telemetry, Logger, and Doctor accept only closed safe projections | egress integration | `mix test test/crosswake/offline/safe_observation_test.exs test/crosswake/offline/telemetry_test.exs test/crosswake/telemetry_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs` | retained in 119-test core corpus | ✅ green |
+| 160-03-02 | 160-03 | 3 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-01..T-160-06 | Inspection and retained evidence preserve exact safe schemas and content-bound assertion IDs | evidence integration | `mix test test/crosswake/operator_inspection/json_formatter_test.exs test/crosswake/proof_lane/evidence_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs` | retained in 119-test core corpus | ✅ green |
+| 160-03-03 | 160-03 | 3 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-01..T-160-06 | Initial complete same-tree gate reconciled all requirements while leaving native prerequisites non-passing | full phase gate | historical command recorded below | superseded by later repair gates | ✅ green (superseded) |
 | 160-04-01 | 160-04 | 4 | SCOPE-01 | T-160-01 | Legacy IndexedDB records move to inert quarantine on upgrade | browser proof | `npm --prefix examples/phoenix_host run proof:offline-island -- --grep "legacy upgrade quarantines unscoped work\|legacy quarantine remains inert across relaunch"` | observed in final chain | ✅ green |
 | 160-04-02 | 160-04 | 4 | SCOPE-01 | T-160-01 | Recovery needs an exact active scope-plus-epoch lease and preserves other partitions | browser proof | `npm --prefix examples/phoenix_host run proof:offline-island -- --grep "explicit host recovery scopes quarantined work\|wrong scope cannot recover legacy work"` | observed in final chain | ✅ green |
 | 160-05-01 | 160-05 | 5 | SCOPE-02 | T-160-02 | Fence-first lifecycle makes stale async completions inert | browser proof | `npm --prefix examples/phoenix_host run proof:offline-island -- --grep "post-response fence blocks old success side effects\|post-response fence blocks old denial status"` | observed in final chain | ✅ green |
 | 160-05-02 | 160-05 | 5 | SCOPE-02 | T-160-06 | Halted or malformed batch envelopes retain unaccepted work in a paused state | browser proof | `npm --prefix examples/phoenix_host run proof:offline-island -- --grep "mid-batch disablement retains halted suffix\|malformed halted response fails closed"` | observed in final chain | ✅ green |
 | 160-06-01 | 160-06 | 6 | SCOPE-03, SCOPE-05 | T-160-03 | Sigra admits only typed current authority and projects a closed denial | companion unit | `(cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/companions/sigra/contracts_test.exs)` | 15 tests | ✅ green |
 | 160-06-02 | 160-06 | 6 | SCOPE-03, SCOPE-05 | T-160-03 | Default Phoenix admission privately builds current typed authority before effects | Phoenix integration | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first)` | 14 tests | ✅ green |
-| 160-07-01 | 160-07 | 7 | SCOPE-01, SCOPE-03 | T-160-05 | Legacy and scoped idempotency remain atomic and globally safe under retry | Phoenix integration | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first)` | 14 tests | ✅ green |
+| 160-07-01 | 160-07 | 7 | SCOPE-01, SCOPE-03 | T-160-05 | A legacy accepted effect remains idempotent after scope migration | Phoenix integration | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/study_test.exs)` | retained in 33-test host corpus | ✅ green |
+| 160-07-02 | 160-07 | 7 | SCOPE-01, SCOPE-03 | T-160-05 | Cross-scope and concurrent retries remain closed and atomic | Phoenix integration | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/study_test.exs test/crosswake_example/local_first/sync_controller_test.exs)` | retained in 33-test host corpus | ✅ green |
 | 160-08-01 | 160-08 | 8 | SCOPE-04 | T-160-04 | Every public SafeObservation projection reconstructs through constructor validation | egress unit | `mix test test/crosswake/offline/safe_observation_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs` | 7 tests | ✅ green |
 | 160-08-02 | 160-08 | 8 | SCOPE-04 | T-160-04 | Callback, telemetry, Logger, and Doctor run only after typed projection success | egress integration | `mix test test/crosswake/offline/safe_observation_test.exs test/crosswake/offline/telemetry_test.exs test/crosswake/telemetry_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs` | 71 tests | ✅ green |
 | 160-08-03 | 160-08 | 8 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-01..T-160-06 | Original same-tree chain covers the initial remediation and retained-evidence/proof boundaries | full phase gate | historical command recorded below | superseded by 160-11 | ✅ green (superseded) |
@@ -56,6 +65,15 @@ created: 2026-08-02
 | 160-12-02 | 160-12 | 9 | SCOPE-03 | T-160-07, T-160-08 | Exact-key admission, persistence allowlisting, server-owned accepted status, and retained duplicate/conflict semantics pass on the repaired tree | Phoenix integration and full phase gate | commands recorded below | 21 focused Phoenix tests; complete chain | ✅ green |
 | 160-13-01 | 160-13 | 10 | SCOPE-01, SCOPE-02, SCOPE-03 | T-160-09, T-160-11, T-160-12, T-160-13 | Online activation dispatches the existing exact-scope lease-guarded worker; stale/fenced work remains inert and observations remain non-echoing | browser proof | `npm --prefix examples/phoenix_host run proof:offline-island -- --grep "online activation replays retained exact-scope work"` | 1 focused browser proof; retained full corpus | ✅ green |
 | 160-13-02 | 160-13 | 10 | SCOPE-03 | T-160-10, T-160-12, T-160-13 | Incomplete non-halted acknowledgement blocks before deletion, retains the submitted batch, and uses the existing paused status without hot retry | browser proof | `npm --prefix examples/phoenix_host run proof:offline-island -- --grep "truncated successful acknowledgement fails closed"` | 1 focused browser proof; retained full corpus | ✅ green |
+| 160-14-01 | 160-14 | 11 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-05 | T-160-14-01, T-160-14-02 | Both replay aliases require current request-bound host authority before one atomic event can persist | Phoenix request integration | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/replay_auth_test.exs test/crosswake_example/local_first/sync_controller_test.exs --trace)` | retained in 33-test host corpus | ✅ green |
+| 160-14-02 | 160-14 | 11 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-14-02..T-160-14-06 | Logout, account switch, revocation, mismatch, and mid-batch authority changes deny closed before unauthorized persistence | Phoenix request integration | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first)` | 33 tests | ✅ green |
+| 160-15-01 | 160-15 | 12 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-15-01..T-160-15-05 | Browser proof obtains only compile-time-confined test authority and exercises real request-bound replay | Phoenix integration and browser proof | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first test/crosswake_example/e2e && npm run proof:offline-island)` | 33 host tests; 23 browser proofs | ✅ green |
+| 160-15-02 | 160-15 | 12 | SCOPE-02, SCOPE-04 | T-160-15-03, T-160-15-06 | Immediate-online failure retains exact-scope work, renders paused, and produces no unhandled rejection | browser proof | `npm --prefix examples/phoenix_host run proof:offline-island -- --grep "immediate online submit failure retains queued work without an unhandled rejection"` | retained in 23-proof corpus | ✅ green |
+| 160-16-01 | 160-16 | 13 | SCOPE-04 | T-160-16-06 | The test-only digest barrier remains warning-clean and preserves deterministic evidence-race coverage | compilation and ExUnit | `mix compile --force --warnings-as-errors && MIX_ENV=test mix compile --force --warnings-as-errors && mix test test/crosswake/proof_lane/evidence_test.exs` | retained in current complete gate | ✅ green |
+| 160-16-02 | 160-16 | 13 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-16-01..T-160-16-05 | One warning-clean tree preserves scoped replay, privacy, Sigra, proof, and inspection contracts | full phase gate | current complete command recorded below | superseded by post-160-17 repair gate | ✅ green (superseded) |
+| 160-17-01 | 160-17 | 14 | SCOPE-01, SCOPE-02, SCOPE-03 | T-160-17-01, T-160-17-02 | Unscoped legacy bytes remain quarantined and nil-scope history cannot grant scoped acknowledgement | Phoenix integration and browser proof | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/study_test.exs test/crosswake_example/local_first/sync_controller_test.exs && npm run proof:offline-island -- --grep "unscoped legacy work remains recovery-required across account switch")` | retained in current host/browser corpora | ✅ green |
+| 160-17-02 | 160-17 | 14 | SCOPE-01, SCOPE-02, SCOPE-03 | T-160-17-03 | One card synchronously owns rating submission across IndexedDB persistence | browser proof | `npm --prefix examples/phoenix_host run proof:offline-island -- --grep "rapid ratings queue one mutation for one card"` | retained in 23-proof corpus | ✅ green |
+| 160-17-03 | 160-17 | 14 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-17-04, T-160-17-05 | Complete repaired tree preserves all Phase 160 requirements and explicit non-passing boundaries | full phase gate | post-160-17 generated-proof-repair command recorded below | current final | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -73,11 +91,11 @@ All Phase 160 behaviors have automated verification. Host-issued real scope valu
 
 ## Validation Sign-Off
 
-- [x] Every completed gap task has automated evidence; final Task 160-11-01 owns the current full gate.
+- [x] Every completed gap task has automated evidence; final Task 160-17-03 owns the current full gate.
 - [x] Focused core, browser, host, Sigra, egress, and evidence commands remain automated.
 - [x] No watch-mode flags were used.
-- [x] The current full-chain command ran only after Plans 160-09 and 160-10 were complete.
-- [x] Five requirements and six high-threat regressions were exercised on the final same tree.
+- [x] The current full-chain command ran after all Plans 160-01 through 160-17 and the generated-proof repair were complete.
+- [x] All five requirements and the phase's retained high-threat regressions were exercised on the final same tree.
 
 ## Superseded Fresh Same-Tree Gate — 2026-08-02 (pre-160-09/10)
 
@@ -289,3 +307,13 @@ bash script/verify_phoenix_host_proof_lane.sh
 **Repair and boundaries:** the generated proof adapter now uses only the existing test-only replay-session seam to obtain request-bound authority; production authority, transport shape, storage behavior, Android posture, safe output schemas, and non-passing generated-iOS/device boundaries remain unchanged. The activation replay assertion now begins capture after the unrelated page-reload teardown, preserving its replay-specific error check without accepting unrelated LiveView shutdown output.
 
 **Supersession:** This gate supersedes the earlier post-160-17 evidence above while retaining it as history. TODO-002/adopter-instance completeness remains `unknown_blocking`; generated iOS/device proof remains non-passing; independent Phase 160 security remains pending `$gsd-secure-phase 160`.
+
+## Validation Audit 2026-08-03
+
+| Metric | Count |
+| --- | ---: |
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+The Nyquist audit mapped all 17 plans and their 36 automated tasks to existing ExUnit, Playwright, compilation, proof-lane, privacy, formatting, and coverage-seal checks. A fresh post-160-17 generated-proof-repair same-tree gate passed with 119 core tests, 15 Sigra contract tests, 33 Phoenix host tests, 23 browser proofs, one isolated generated-host proof, and 36 planning/adoption tests. No test file was generated because every Phase 160 requirement already had targeted, runnable, green coverage.
