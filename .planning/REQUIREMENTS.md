@@ -136,7 +136,7 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 | PACK-02 | Phase 161 | Complete |
 | PACK-03 | Phase 161 | Complete |
 | PACK-04 | Phase 161 | Complete |
-| PACK-05 | Phase 161 | Pending |
+| PACK-05 | Phase 161 | Complete |
 | DEVICE-01 | Phase 162 | Pending |
 | DEVICE-02 | Phase 162 | Pending |
 | DEVICE-03 | Phase 162 | Pending |
