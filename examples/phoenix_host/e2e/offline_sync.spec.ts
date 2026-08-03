@@ -15,6 +15,11 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
   }
 
   test.beforeEach(async ({ page }, testInfo) => {
+    const session = await page.request.post('/_e2e/replay-session', {
+      data: { action: 'establish' },
+    });
+    expect(session.status()).toBe(201);
+
     if (testInfo.title.includes('quarantined') || testInfo.title.includes('legacy') || testInfo.title.includes('online activation')) return;
     // D-01: delete IndexedDB BEFORE page scripts open it (addInitScript runs first)
     // keep in sync with offline_study.js:3 (DB_NAME = 'crosswake_offline_study')
