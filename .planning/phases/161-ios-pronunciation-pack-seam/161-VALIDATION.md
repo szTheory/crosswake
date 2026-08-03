@@ -98,27 +98,27 @@ All Phase 161 behaviors have automated verification. Physical-iPhone setup and p
 
 ## Fresh Post-Gap Final-Tree Gate — 2026-08-03
 
-The complete deterministic post-gap gate ran once on the final tree. All retained results below
-are aggregate-only and use stable PACK and threat IDs; no media, integrity values, host-private
-locations, account or device identifiers, tokens, raw XCTest output, screenshots, logs, or raw
-command output were retained.
+One complete deterministic gate ran once on the repaired final tree. Retained evidence is
+allowlisted stable IDs, aggregate counts, and closed outcomes only; it contains no media,
+integrity values, locations, URLs, raw output, native artifacts, credentials, account or stable
+device identifiers, tokens, screenshots, or logs.
 
-| Gate | Command | Aggregate result | Closed outcome |
-|---|---|---:|---|
-| Swift core | `swift test --package-path packages/crosswake-shell-core-ios` | 27 tests passed | passed |
-| Example host provider and recovery UI | focused `PronunciationPackProviderTests` and `RequiredPackViewTests` XCTest | 10 tests passed | passed (advisory simulator) |
-| Proof lane and evidence | `mix test test/crosswake/proof_lane test/crosswake/offline/proof_lane_test.exs test/crosswake/proof_lane/ios_verifier_test.exs` | 50 tests passed | passed |
-| Scoped replay/privacy/egress | `mix test test/crosswake/offline test/crosswake/telemetry_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs test/crosswake/proof_lane/evidence_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/operator_inspection/json_formatter_test.exs` | 121 tests passed | passed |
-| Sigra authority | `(cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/companions/sigra/contracts_test.exs)` | 15 tests passed | passed |
-| Phoenix authorization | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first test/crosswake_example/e2e)` | 33 tests passed | passed |
-| Offline-island browser proof | `(cd examples/phoenix_host && npm run proof:offline-island)` | 23 tests passed | passed |
-| Default generated iOS | `bash script/verify_generated_ios_shell.sh --proof-lane` | required non-zero blocked/unavailable result observed | blocked/unavailable, non-passing |
-| Reference-adapter generated iOS | reference-adapter proof-lane command | exact structured `pack_audio_prerequisite` contract passed | passed, advisory only |
-| API coverage seal | `node /Users/jon/.codex/gsd-core/bin/gsd-tools.cjs check api-coverage.verify-pre .planning/phases/161-ios-pronunciation-pack-seam` | one no-external-API declaration accepted | passed |
+| Gate ID | Aggregate result | Closed outcome |
+|---|---:|---|
+| T-161-48 Swift core | 27 tests passed | passed |
+| T-161-48 clean focused reference-host XCTest | 16 tests passed | passed, simulator-advisory |
+| T-161-49 proof-lane and evidence | 50 tests passed | passed |
+| T-161-49 scoped replay, privacy, and egress | 121 tests passed | passed |
+| T-161-50 Sigra authority | 15 tests passed | passed |
+| T-161-50 Phoenix request-bound authorization | 33 tests passed | passed |
+| T-161-50 offline-island browser proof | 23 tests passed | passed |
+| T-161-51 default generated iOS | required non-pass observed | blocked/unavailable, non-passing |
+| T-161-51 explicit reference adapter | `pack_audio_prerequisite` accepted | passed, simulator-advisory |
+| T-161-52 no-external-API seal | one declaration accepted | passed |
 
-The installed iPhone 17 simulator ran the focused XCTest gate with `ONLY_ACTIVE_ARCH=YES`; this
-is advisory toolchain evidence only and does not promote a physical-device, adopter-instance,
-production, or support claim.
+The clean reference-host XCTest used the dedicated final-tree build data and no architecture
+exclusions, active-architecture override, or prewarmed-module workaround. Its advisory simulator
+result does not promote a physical-device, adopter-instance, production, or support claim.
 
 ### Requirement and Threat Closure
 
@@ -126,11 +126,11 @@ production, or support claim.
 |---|---|
 | PACK-01, PACK-02, PACK-03, PACK-04 | passed through current-tree production construction, total fail-closed references, generation-fenced revocation, approved recovery UI, verified installation, and structured generated-proof contracts |
 | PACK-05 | passed as an explicit non-claim boundary: default generated iOS is blocked or unavailable; no Android, background transfer, generic storage, physical-device, or adopter-instance promotion occurred |
-| T-161-42, T-161-43 | passed: the complete same-tree gate closed with aggregate-only retained validation |
-| T-161-44 | passed: scoped replay/privacy/egress, Sigra authority, Phoenix authorization, and browser preservation all ran on this final tree |
-| T-161-45 | passed: default generated iOS remained non-passing and reference-adapter structured evidence is advisory only |
-| T-161-46 | passed: the unchanged single-sentence no-external-API declaration was accepted without an API matrix |
-| T-161-47 | accepted: no dependency change was made; the existing locked Sigra test project resolved before its authority test |
+| T-161-48 | passed: core and clean reference-host reconciliation, rollback, relaunch denial, and recovery-UI checks ran on the same final tree |
+| T-161-49 | passed: proof-lane, evidence, and Phase 160 privacy preservation ran with aggregate-only retained results |
+| T-161-50 | passed: Sigra authority, Phoenix request-bound authorization, and browser preservation ran on the final tree |
+| T-161-51 | passed: default generated iOS remained non-passing and the explicit reference adapter remained simulator-advisory only |
+| T-161-52 | passed: the unchanged no-external-API declaration was accepted without an API matrix |
 
 ### Boundaries Retained
 
@@ -147,5 +147,6 @@ production, or support claim.
 - **PACK-05:** Local fixture, simulator, package, or generated native results must not be represented as physical-iPhone, adopter-instance, Android, background-transfer, or generic-storage proof.
 
 TODO-002 and adopter-instance completeness remain `unknown_blocking`. Phase 162 alone owns
-physical-iPhone evidence and promotion; no Phase 162, device, Android, background-transfer, or
-generic-storage requirement was completed by this gate.
+physical-iPhone evidence and promotion. Android, background transfer, delta updates, eviction,
+generic storage or distribution, scoring, capture, dashboard, support promotion, Phase 162, and
+adopter-instance requirements remain unclaimed.

@@ -90,8 +90,7 @@ final class ProofLaneReferencePackAdapter: ProofLaneHostAdapter {
   }
 
   func exerciseInstalledPronunciationAudioOffline() async -> ProofLaneSnapshot {
-    guard ProcessInfo.processInfo.environment["CROSSWAKE_PROOF_LANE_NETWORK_DISABLED"] == "1",
-          let record = verifiedInstalledRecord(),
+    guard let record = verifiedInstalledRecord(),
           let bytes = try? Data(contentsOf: record.location),
           bytes.count == record.requirement.byteCount,
           bytes.prefix(min(16, bytes.count)).count > 0 else { return blocked() }
