@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 161
 current_phase_name: ios-pronunciation-pack-seam
 status: executing
-stopped_at: Completed 161-06-PLAN.md
-last_updated: "2026-08-03T18:09:27.458Z"
+stopped_at: Completed 161-08-PLAN.md
+last_updated: "2026-08-03T18:15:44.248Z"
 last_activity: 2026-08-03
 last_activity_desc: Phase 161 execution started
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 74
-  completed_plans: 71
+  completed_plans: 72
   percent: 60
 current_plan: 17
 ---
@@ -23,7 +23,7 @@ current_plan: 17
 ## Current Position
 
 Phase: 161 (ios-pronunciation-pack-seam) — EXECUTING
-Plan: 2 of 9
+Plan: 3 of 9
 Status: Ready to execute
 Last activity: 2026-08-03 — Phase 161 execution started
 
@@ -187,6 +187,8 @@ closed. TODO-002 remains the bounded adopter-input gate and adopter-instance com
 - [Phase ?]: Phase 161 simulator/reference-adapter pack proof remains advisory; Phase 162 alone owns physical-iPhone promotion.
 - [Phase ?]: Bundled iOS pack declarations now validate exact host-private integrity metadata before provider installation.
 - [Phase ?]: Reference-host staged media verification streams off MainActor before atomic promotion and inventory persistence.
+- [Phase ?]: Reference fixture readiness and offline audio proof derive only from exact Application Support bytes; marker state cannot pass.
+- [Phase ?]: Advisory pack-audio proof accepts only exact process-scoped XCTest evidence with six allowlisted assertion IDs.
 
 ## Deferred Items
 
@@ -215,8 +217,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-03T18:09:27.448Z
-**Stopped at:** Completed 161-06-PLAN.md
+**Last session:** 2026-08-03T18:15:44.239Z
+**Stopped at:** Completed 161-08-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -288,3 +290,4 @@ this milestone reset.
 | Phase 161-ios-pronunciation-pack-seam P04 | 16m | 2 tasks | 10 files |
 | Phase 161 P05 | 22m | 1 tasks | 3 files |
 | Phase 161-ios-pronunciation-pack-seam P06 | 4m | 2 tasks | 6 files |
+| Phase 161-ios-pronunciation-pack-seam P08 | 12min | 2 tasks | 6 files |

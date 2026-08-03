@@ -348,7 +348,7 @@ checks at entry and replay.
 **Effort:** 4 Crosswake days; expect 3-5 adopter integration days outside this repo
 **Depends on:** Phase 160
 **Requirements:** PACK-01, PACK-02, PACK-03, PACK-04, PACK-05
-**Plans:** 6/9 plans executed
+**Plans:** 7/9 plans executed
 
 Plans:
 **Wave 1**
@@ -371,7 +371,7 @@ Plans:
 **Wave 5** *(gap closure; production tracer and generated proof repair run in parallel after the executed gate)*
 
 - [x] 161-06-PLAN.md — Propagate exact bundled integrity through the real reference-host path and close approved UI spacing debt.
-- [ ] 161-08-PLAN.md — Replace Boolean/marker pack-audio proof with verified installation, relaunch readback, offline read, and structured evidence.
+- [x] 161-08-PLAN.md — Replace Boolean/marker pack-audio proof with verified installation, relaunch readback, offline read, and structured evidence.
 
 **Wave 6** *(blocked on Plan 161-06 because both plans modify PackStore)*
 
