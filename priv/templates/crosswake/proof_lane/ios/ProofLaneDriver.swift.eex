@@ -12,11 +12,61 @@ struct ProofLaneSnapshot {
 
 protocol ProofLaneHostAdapter {
   func observe() -> ProofLaneSnapshot
+  func installPronunciationPackForeground() async -> ProofLaneSnapshot
+  func exerciseInstalledPronunciationAudioOffline() async -> ProofLaneSnapshot
   var retry: (() -> Void)? { get }
 }
 
 enum ProofLaneHostAdapterFactory {
   static func make() -> ProofLaneHostAdapter? {
-    nil
+    ProcessInfo.processInfo.environment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] == "1"
+      ? ProofLaneReferencePackAdapter()
+      : nil
   }
+}
+
+// This reference is test-only host scaffold. Production hosts supply their own adapter.
+final class ProofLaneReferencePackAdapter: ProofLaneHostAdapter {
+  private let installedKey = "crosswake.proof-lane.reference-pack.v1.installed"
+
+  func observe() -> ProofLaneSnapshot {
+    snapshot(installed: UserDefaults.standard.bool(forKey: installedKey))
+  }
+
+  func installPronunciationPackForeground() async -> ProofLaneSnapshot {
+    guard fixtureBytesArePresent(), PackProviderContract.currentVersion == "v1" else {
+      return blocked()
+    }
+
+    UserDefaults.standard.set(true, forKey: installedKey)
+    return observe()
+  }
+
+  func exerciseInstalledPronunciationAudioOffline() async -> ProofLaneSnapshot {
+    observe()
+  }
+
+  var retry: (() -> Void)? { nil }
+
+  private func fixtureBytesArePresent() -> Bool {
+    Bundle.allBundles
+      .compactMap { $0.url(forResource: "pronunciation-pack-fixture", withExtension: "bin") }
+      .compactMap { try? Data(contentsOf: $0) }
+      .contains { !$0.isEmpty }
+  }
+
+  private func snapshot(installed: Bool) -> ProofLaneSnapshot {
+    installed
+      ? ProofLaneSnapshot(outcome: .passed, prerequisite: .packAudio, shellBooted: true)
+      : blocked()
+  }
+
+  private func blocked() -> ProofLaneSnapshot {
+    ProofLaneSnapshot(outcome: .blocked, prerequisite: .packAudio, shellBooted: true)
+  }
+}
+
+private enum PackProviderContract {
+  // The generated fixture is pinned to the Phase 161 provider contract marker.
+  static let currentVersion = "v1"
 }

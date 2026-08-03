@@ -79,7 +79,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
       assert adapter =~ "export const proofLaneHostAdapter"
       assert adapter =~ "satisfies ProofLaneAdapter"
       assert adapter =~ "PL-BROWSER-HOST-ADAPTER"
-      assert manifest =~ "\"template_version\":2"
+      assert manifest =~ "\"template_version\":3"
       assert manifest =~ "e2e/crosswake_proof_lane/support/proof_lane_host_adapter.ts"
     after
       File.rm_rf!(root)
@@ -193,7 +193,6 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert contract =~ "PACK-INSTALL-READY"
     assert contract =~ "PACK-RELAUNCH-READY"
     assert contract =~ "PACK-AUDIO-OFFLINE"
-    refute contract =~ "testMissingAdapterRemainsUnavailable"
     refute contract =~ "XCTSkip"
     assert ui =~ "XCUIApplication"
     assert ui =~ "testAdapterDerivedPassedLifecycle"

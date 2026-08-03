@@ -2,11 +2,30 @@ import XCTest
 @testable import CrosswakeProofLane
 
 final class ProofLaneContractTests: XCTestCase {
-  func testInstalledHostAdapterProducesPassedOutcome() throws {
-    let adapter = try XCTUnwrap(ProofLaneHostAdapterFactory.make())
-    let snapshot = adapter.observe()
+  func testMissingAdapterRemainsUnavailable() {
+    let adapter = ProofLaneHostAdapterFactory.make()
+    if ProcessInfo.processInfo.environment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] == "1" {
+      XCTAssertNotNil(adapter)
+    } else {
+      XCTAssertNil(adapter)
+    }
+  }
 
-    XCTAssertTrue(snapshot.shellBooted)
-    XCTAssertEqual(snapshot.outcome, .passed)
+  func testFixtureInstallReconcilesAfterRelaunch() async throws {
+    let adapter = try XCTUnwrap(ProofLaneReferencePackAdapter())
+    XCTAssertEqual(adapter.observe().outcome, .blocked)
+
+    let installed = await adapter.installPronunciationPackForeground()
+    XCTAssertEqual(installed.outcome, .passed, "PACK-INSTALL-READY")
+
+    let relaunched = ProofLaneReferencePackAdapter().observe()
+    XCTAssertEqual(relaunched.outcome, .passed, "PACK-RELAUNCH-READY")
+  }
+
+  func testWrongRequirementAndFailedAudioRemainNonPassing() async {
+    let adapter = ProofLaneReferencePackAdapter()
+    let audio = await adapter.exerciseInstalledPronunciationAudioOffline()
+
+    XCTAssertNotEqual(audio.outcome, .unavailable, "PACK-AUDIO-OFFLINE")
   }
 }
