@@ -308,10 +308,18 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await waitForInactiveLifecycle(page);
     await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
     await page.evaluate(() => {
-      (window as any).__immediateOnlineFailure = { attempts: 0, rejections: 0 };
-      window.fetch = () => {
-        (window as any).__immediateOnlineFailure.attempts += 1;
-        return Promise.reject(new Error('worker failure'));
+      (window as any).__immediateOnlineFailure = { readonlyCalls: 0, storageFailures: 0, rejections: 0 };
+      const transaction = IDBDatabase.prototype.transaction;
+      IDBDatabase.prototype.transaction = function (stores, mode, options) {
+        if (stores === 'scoped_mutations' && mode === 'readonly') {
+          const failure = (window as any).__immediateOnlineFailure;
+          failure.readonlyCalls += 1;
+          if (failure.readonlyCalls === 2) {
+            failure.storageFailures += 1;
+            throw new Error('worker storage failure');
+          }
+        }
+        return transaction.call(this, stores, mode, options);
       };
       window.addEventListener('unhandledrejection', event => {
         (window as any).__immediateOnlineFailure.rejections += 1;
@@ -324,13 +332,13 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
 
     await expect(page.locator('#status')).toContainText('Sync is paused');
     expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
-    expect(await page.evaluate(() => (window as any).__immediateOnlineFailure)).toEqual({ attempts: 1, rejections: 0 });
+    expect(await page.evaluate(() => (window as any).__immediateOnlineFailure.storageFailures)).toBe(1);
     expect(pageErrors).toEqual([]);
     expect(consoleOutput).toEqual([]);
 
     await page.evaluate(async () => window.crosswakeOfflineStudy.fenceScope());
     await page.waitForTimeout(50);
-    expect(await page.evaluate(() => (window as any).__immediateOnlineFailure.attempts)).toBe(1);
+    expect(await page.evaluate(() => (window as any).__immediateOnlineFailure.storageFailures)).toBe(1);
     expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
   });
 

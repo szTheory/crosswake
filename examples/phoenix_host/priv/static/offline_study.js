@@ -633,7 +633,7 @@ async function handleReview(rating) {
     await updateQueuedStatus('Saved locally - Queued for replay');
 
     if (navigator.onLine) {
-      flushOutbox();
+      replayOnOnline();
     }
   } catch (error) {
     if (error && error.name === 'QuotaExceededError') {
