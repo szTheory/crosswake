@@ -25,7 +25,7 @@ current_plan: 17
 Phase: 161 — iOS Pronunciation Pack Seam
 Plan: Not started
 Status: Ready to execute
-Last activity: 2026-08-03 — Phase 160 security reconciled, Phase 161 ready to plan
+Last activity: 2026-08-03 — Phase 161 planned and plan-checker verified across 5 plans in 4 waves
 
 ## Active Objective
 
@@ -44,10 +44,9 @@ framework launch.
 
 ## Next Action
 
-Plan Phase 161 from the gathered context with `$gsd-plan-phase 161`. Phase 160 security is
-reconciled at 37/37 threats closed. TODO-002 remains the bounded adopter-input gate and
-adopter-instance completeness remains `unknown_blocking`; do not infer concrete adopter routes or
-promote downstream device claims.
+Execute Phase 161 with `$gsd-execute-phase 161`. Phase 160 security is reconciled at 37/37 threats
+closed. TODO-002 remains the bounded adopter-input gate and adopter-instance completeness remains
+`unknown_blocking`; do not infer concrete adopter routes or promote downstream device claims.
 
 ## Blockers
 
