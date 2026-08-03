@@ -190,7 +190,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
 
     await expect.poll(async () => (await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).length).toBe(1);
     expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toMatchObject([{ card_id: 1, rating: 'good' }]);
-    await expect(page.locator('#status')).toContainText('Card 2 of');
+    await expect(page.locator('#flashcard-container')).toContainText('Phoenix');
     expect(pageErrors).toEqual([]);
   });
 

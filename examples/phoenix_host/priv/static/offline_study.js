@@ -25,6 +25,7 @@ let cards = [];
 let activeScopeRef = null;
 let activeEpoch = 0;
 let legacyRecoveryRequired = false;
+let reviewSubmissionOwned = false;
 
 function isScopeRef(value) {
   return typeof value === 'string' && SCOPE_REF_PATTERN.test(value);
@@ -557,8 +558,19 @@ function setupEventListeners() {
   // Retained work stays inert until the host calls activateScope with fresh authority.
 }
 
+function setReviewControlsDisabled(disabled) {
+  document.getElementById('btn-good').disabled = disabled;
+  document.getElementById('btn-hard').disabled = disabled;
+}
+
 async function handleReview(rating) {
+  if (reviewSubmissionOwned) return;
+
   const card = cards[currentCardIndex];
+  if (!card) return;
+
+  reviewSubmissionOwned = true;
+  setReviewControlsDisabled(true);
 
   const mutation = {
     client_mutation_id: crypto.randomUUID(),
@@ -576,12 +588,17 @@ async function handleReview(rating) {
 
     currentCardIndex++;
     renderCurrentCard();
+    reviewSubmissionOwned = false;
+    setReviewControlsDisabled(false);
     await updateQueuedStatus('Saved locally - Queued for replay');
 
     if (navigator.onLine) {
       replayOnOnline();
     }
   } catch (error) {
+    reviewSubmissionOwned = false;
+    setReviewControlsDisabled(false);
+
     if (error && error.name === 'QuotaExceededError') {
       const container = document.getElementById('flashcard-container');
       const errorMsg = document.createElement('div');
