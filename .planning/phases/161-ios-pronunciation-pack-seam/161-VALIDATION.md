@@ -92,43 +92,60 @@ All Phase 161 behaviors have automated verification. Physical-iPhone setup and p
 - [x] Feedback latency remains below 180 seconds for the default local loop.
 - [x] `nyquist_compliant: true` is set in frontmatter after all plan task mappings are finalized and executable.
 
-**Approval:** complete from the fresh 2026-08-03 final-tree gate.
+**Approval:** complete from the fresh 2026-08-03 post-gap final-tree gate.
 
 ---
 
-## Fresh Final-Tree Gate — 2026-08-03
+## Fresh Post-Gap Final-Tree Gate — 2026-08-03
 
-The complete deterministic gate ran on the final tree. All retained results below are aggregate-only and use stable PACK and threat IDs; no host-private proof values were retained.
+The complete deterministic post-gap gate ran once on the final tree. All retained results below
+are aggregate-only and use stable PACK and threat IDs; no media, integrity values, host-private
+locations, account or device identifiers, tokens, raw XCTest output, screenshots, logs, or raw
+command output were retained.
 
 | Gate | Command | Aggregate result | Closed outcome |
 |---|---|---:|---|
-| Swift core | `swift test --package-path packages/crosswake-shell-core-ios` | 21 tests passed | passed |
-| Example host provider | `xcodebuild -project examples/ios_shell_host/CrosswakeShell.xcodeproj -scheme CrosswakeShell -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:CrosswakeShellTests/PronunciationPackProviderTests test CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=YES` | 2 tests passed | passed (advisory simulator) |
-| Example host UI | `xcodebuild -project examples/ios_shell_host/CrosswakeShell.xcodeproj -scheme CrosswakeShell -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:CrosswakeShellTests/RequiredPackViewTests test CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=YES` | 4 tests passed | passed (advisory simulator) |
+| Swift core | `swift test --package-path packages/crosswake-shell-core-ios` | 27 tests passed | passed |
+| Example host provider and recovery UI | focused `PronunciationPackProviderTests` and `RequiredPackViewTests` XCTest | 10 tests passed | passed (advisory simulator) |
 | Proof lane and evidence | `mix test test/crosswake/proof_lane test/crosswake/offline/proof_lane_test.exs test/crosswake/proof_lane/ios_verifier_test.exs` | 50 tests passed | passed |
 | Scoped replay/privacy/egress | `mix test test/crosswake/offline test/crosswake/telemetry_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs test/crosswake/proof_lane/evidence_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/operator_inspection/json_formatter_test.exs` | 121 tests passed | passed |
 | Sigra authority | `(cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/companions/sigra/contracts_test.exs)` | 15 tests passed | passed |
 | Phoenix authorization | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first test/crosswake_example/e2e)` | 33 tests passed | passed |
 | Offline-island browser proof | `(cd examples/phoenix_host && npm run proof:offline-island)` | 23 tests passed | passed |
 | Default generated iOS | `bash script/verify_generated_ios_shell.sh --proof-lane` | required non-zero blocked/unavailable result observed | blocked/unavailable, non-passing |
-| Reference-adapter generated iOS | `env -u CROSSWAKE_IOS_XCODEBUILD_BIN -u CROSSWAKE_IOS_PROJECT_ROOT -u CROSSWAKE_IOS_SHIM_MODE CROSSWAKE_IOS_USE_LOCAL_CORE=1 CROSSWAKE_IOS_LAUNCH_SIMULATOR=1 bash script/verify_generated_ios_shell.sh --proof-lane --reference-pack-adapter` | exact install/relaunch/network-disabled audio marker contract passed | passed, advisory only |
+| Reference-adapter generated iOS | reference-adapter proof-lane command | exact structured `pack_audio_prerequisite` contract passed | passed, advisory only |
 | API coverage seal | `node /Users/jon/.codex/gsd-core/bin/gsd-tools.cjs check api-coverage.verify-pre .planning/phases/161-ios-pronunciation-pack-seam` | one no-external-API declaration accepted | passed |
 
-The unavailable iPhone 16 simulator was replaced by the installed iPhone 17 simulator with `ONLY_ACTIVE_ARCH=YES`; this is an advisory toolchain substitution only and does not promote a physical-device, adopter-instance, production, or support claim.
+The installed iPhone 17 simulator ran the focused XCTest gate with `ONLY_ACTIVE_ARCH=YES`; this
+is advisory toolchain evidence only and does not promote a physical-device, adopter-instance,
+production, or support claim.
 
 ### Requirement and Threat Closure
 
 | IDs | Final deterministic status |
 |---|---|
-| PACK-01, PACK-02, PACK-03, PACK-04 | passed through the current-tree provider, integrity, atomic promotion, persistence, reconciliation, invalidation, UI, and generated proof contracts |
-| PACK-05 | passed as an explicit non-claim boundary: no external integration, Android, background transfer, generic storage, or physical-device promotion |
-| T-161-20, T-161-21 | passed: allowlisted evidence rejects private/raw candidates and final validation is current-tree aggregate-only |
-| T-161-22 | passed: default generated iOS remains non-passing; reference-adapter simulator output is advisory only |
-| T-161-23 | passed: all four Phase 160 preservation gates ran on this final tree |
-| T-161-24 | passed: the sealed single-sentence declaration reports no external API integration |
+| PACK-01, PACK-02, PACK-03, PACK-04 | passed through current-tree production construction, total fail-closed references, generation-fenced revocation, approved recovery UI, verified installation, and structured generated-proof contracts |
+| PACK-05 | passed as an explicit non-claim boundary: default generated iOS is blocked or unavailable; no Android, background transfer, generic storage, physical-device, or adopter-instance promotion occurred |
+| T-161-42, T-161-43 | passed: the complete same-tree gate closed with aggregate-only retained validation |
+| T-161-44 | passed: scoped replay/privacy/egress, Sigra authority, Phoenix authorization, and browser preservation all ran on this final tree |
+| T-161-45 | passed: default generated iOS remained non-passing and reference-adapter structured evidence is advisory only |
+| T-161-46 | passed: the unchanged single-sentence no-external-API declaration was accepted without an API matrix |
+| T-161-47 | accepted: no dependency change was made; the existing locked Sigra test project resolved before its authority test |
 
 ### Boundaries Retained
 
-- All five flagged assumptions remain unresolved and non-promoting: PACK-01, PACK-02, PACK-03, PACK-04 concurrency, and PACK-05.
-- All three flagged prohibitions remain active: no silent invalid-media activation, no Crosswake-owned generic storage/distribution/playback authority, and no advisory result promoted as device/adopter/general support.
-- TODO-002 and adopter-instance completeness remain `unknown_blocking`; Phase 162 alone owns physical-iPhone evidence and promotion.
+- **PACK-01:** The provider seam remains exactly status/install/invalidate; no transport or storage operation is inferred.
+- **PACK-02:** Every unrecognized availability input stays non-available under the closed D-11 reasons.
+- **PACK-03:** Exact size, pinned SHA-256, atomic promotion, persistence ordering, and fresh status are all mandatory.
+- **PACK-04:** Interrupted or overlapping work is governed by per-pack serialization and current-operation authority.
+- **PACK-05:** The iOS foreground-only stop list is exhaustive and no adjacent platform or product behavior is inferred.
+
+### Prohibitions Retained
+
+- **PACK-02:** Requested, staged, acknowledged, old-version, malformed, revoked, or unreconciled media must not silently activate a route or downgrade it to another runtime behavior.
+- **PACK-04:** The provider seam must not become Crosswake-owned distribution, generic storage, asset lookup, playback policy, or host media-layout authority.
+- **PACK-05:** Local fixture, simulator, package, or generated native results must not be represented as physical-iPhone, adopter-instance, Android, background-transfer, or generic-storage proof.
+
+TODO-002 and adopter-instance completeness remain `unknown_blocking`. Phase 162 alone owns
+physical-iPhone evidence and promotion; no Phase 162, device, Android, background-transfer, or
+generic-storage requirement was completed by this gate.
