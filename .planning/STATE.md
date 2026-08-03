@@ -5,8 +5,8 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 161
 current_phase_name: iOS Pronunciation Pack Seam
 status: planning
-stopped_at: Completed 160-17-PLAN.md
-last_updated: "2026-08-03T02:50:29.462Z"
+stopped_at: Phase 161 context gathered
+last_updated: "2026-08-03T13:47:21.538Z"
 last_activity: 2026-08-02
 last_activity_desc: Phase 160 complete, transitioned to Phase 161
 progress:
@@ -211,9 +211,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-03T02:39:49.196Z
-**Stopped at:** Completed 160-17-PLAN.md
-**Resume file:** None
+**Last session:** 2026-08-03T13:47:21.520Z
+**Stopped at:** Phase 161 context gathered
+**Resume file:** .planning/phases/161-ios-pronunciation-pack-seam/161-CONTEXT.md
 
 ## Performance Metrics
 
