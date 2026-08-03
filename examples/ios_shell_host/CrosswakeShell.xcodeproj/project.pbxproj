@@ -23,6 +23,7 @@
 		A10000092000000000000001 /* PronunciationPackProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000192000000000000001 /* PronunciationPackProvider.swift */; };
 		A10000093000000000000001 /* pronunciation-pack-fixture.bin in Resources */ = {isa = PBXBuildFile; fileRef = A10000193000000000000001 /* pronunciation-pack-fixture.bin */; };
 		A10000094000000000000001 /* PronunciationPackProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000194000000000000001 /* PronunciationPackProviderTests.swift */; };
+		A10000095000000000000001 /* RequiredPackViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000195000000000000001 /* RequiredPackViewTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +52,7 @@
 		A10000192000000000000001 /* PronunciationPackProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PronunciationPackProvider.swift; sourceTree = "<group>"; };
 		A10000193000000000000001 /* pronunciation-pack-fixture.bin */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Resources/pronunciation-pack-fixture.bin"; sourceTree = "<group>"; };
 		A10000194000000000000001 /* PronunciationPackProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PronunciationPackProviderTests.swift; sourceTree = "<group>"; };
+		A10000195000000000000001 /* RequiredPackViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequiredPackViewTests.swift; sourceTree = "<group>"; };
 		A100001B0000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A100001C0000000000000001 /* CrosswakeShell.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrosswakeShell.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A100001D0000000000000001 /* CrosswakeShellTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrosswakeShellTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -149,6 +151,7 @@
 			isa = PBXGroup;
 			children = (
 				A10000194000000000000001 /* PronunciationPackProviderTests.swift */,
+				A10000195000000000000001 /* RequiredPackViewTests.swift */,
 			);
 			path = CrosswakeShellTests;
 			sourceTree = "<group>";
@@ -290,6 +293,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000094000000000000001 /* PronunciationPackProviderTests.swift in Sources */,
+				A10000095000000000000001 /* RequiredPackViewTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
