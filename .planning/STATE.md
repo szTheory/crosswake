@@ -15,7 +15,7 @@ progress:
   total_plans: 64
   completed_plans: 64
   percent: 60
-current_plan: 15
+current_plan: 16
 ---
 
 # Project State
@@ -24,9 +24,8 @@ current_plan: 15
 
 Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
 Plan: 16 of 16
-Status: Plan 160-15 complete; final warning-clean evidence reconciliation remains
-Last activity: 2026-08-02 — Phase 160 execution started
-containment, and final warning-clean evidence reconciliation
+Status: Plan 160-16 complete; phase verification and independent security audit remain
+Last activity: 2026-08-03 — warning-clean final-tree replay evidence reconciled
 
 ## Active Objective
 
@@ -45,11 +44,9 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-execute-phase 160` to execute Plan 160-16: record the warning-clean final-tree gate.
-Then rerun verification plus
-`$gsd-secure-phase 160`. TODO-002 remains the bounded adopter-input gate and adopter-instance
-completeness remains `unknown_blocking`; do not infer concrete adopter routes or promote downstream
-device claims.
+Run `$gsd-verify-work 160`, then `$gsd-secure-phase 160`. TODO-002 remains the bounded
+adopter-input gate and adopter-instance completeness remains `unknown_blocking`; do not infer
+concrete adopter routes or promote downstream device claims.
 
 ## Blockers
 
