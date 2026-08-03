@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 161
 current_phase_name: ios-pronunciation-pack-seam
-status: executing
-stopped_at: Verification gaps found after 161-14-PLAN.md
-last_updated: "2026-08-03T21:25:19.000Z"
+status: ready_to_execute
+stopped_at: Planned 161-15 and 161-16 crash-recovery gap closure
+last_updated: "2026-08-03T23:41:58.000Z"
 last_activity: 2026-08-03
 last_activity_desc: Phase 161 verification found one crash-atomic replacement gap
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 79
+  total_plans: 81
   completed_plans: 79
   percent: 80
-current_plan: 17
+current_plan: 15
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 161 (ios-pronunciation-pack-seam) — EXECUTING
-Plan: 14 of 14 executed
-Status: Verification gaps found (19/20 must-haves)
-Last activity: 2026-08-03 — Phase 161 verification found one crash-atomic replacement gap
+Phase: 161 (ios-pronunciation-pack-seam) — READY TO EXECUTE
+Plan: 14 of 16 executed
+Status: Gap-closure plans verified and ready to execute
+Last activity: 2026-08-03 — Planned and verified crash-recovery gap closure
 
 ## Active Objective
 
@@ -44,8 +44,8 @@ framework launch.
 
 ## Next Action
 
-Plan the Phase 161 crash-safe replacement recovery gap with `$gsd-plan-phase 161 --gaps`, then
-re-run gap execution and verification before Phase 162. Phase 160 security is reconciled at 37/37
+Execute the Phase 161 crash-safe replacement recovery plans with `$gsd-execute-phase 161`, then
+re-run verification before Phase 162. Phase 160 security is reconciled at 37/37
 threats closed. TODO-002 remains the bounded adopter-input gate and adopter-instance completeness
 remains `unknown_blocking`; do not infer concrete adopter routes or promote downstream device claims.
 
@@ -234,8 +234,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-03T21:18:14.238Z
-**Stopped at:** Completed 161-14-PLAN.md
+**Last session:** 2026-08-03T23:41:58.000Z
+**Stopped at:** Planned and verified 161-15-PLAN.md and 161-16-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
