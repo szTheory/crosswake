@@ -102,6 +102,53 @@ final class PronunciationPackProviderTests: XCTestCase {
         XCTAssertEqual(status, .failure(.providerFailed))
     }
 
+    func testReplacementInventoryFailureRestoresKnownGoodArtifactAndRecord() async throws {
+        let oldBytes = try fixtureBytes()
+        var replacementBytes = oldBytes
+        replacementBytes[0] ^= 0xFF
+        let oldRequirement = requirement(for: oldBytes, version: "1")
+        let replacementRequirement = requirement(for: replacementBytes, version: "2")
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let initial = PronunciationPackProvider(source: { oldBytes }, storageRoot: root)
+        let initialResult = await initial.install(oldRequirement)
+        XCTAssertEqual(initialResult, .installed(expectedRecord(for: oldRequirement)))
+
+        let failingReplacement = PronunciationPackProvider(
+            source: { replacementBytes },
+            storageRoot: root,
+            inventoryWriter: { _, _ in throw CocoaError(.fileWriteNoPermission) }
+        )
+        let result = await failingReplacement.install(replacementRequirement)
+        XCTAssertEqual(result, .failure(.inventoryPersistenceFailed))
+        XCTAssertEqual(try Data(contentsOf: artifactURL(in: root, for: oldRequirement)), oldBytes)
+
+        let relaunched = PronunciationPackProvider(source: { oldBytes }, storageRoot: root)
+        let oldStatus = await relaunched.status(for: oldRequirement)
+        let replacementStatus = await relaunched.status(for: replacementRequirement)
+        XCTAssertEqual(oldStatus, .installed(expectedRecord(for: oldRequirement)))
+        XCTAssertEqual(replacementStatus, .failure(.digestMismatch))
+    }
+
+    func testFirstInstallInventoryFailureRemovesUncommittedArtifactAndRecord() async throws {
+        let fixture = try fixtureBytes()
+        let requirement = requirement(for: fixture)
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let provider = PronunciationPackProvider(
+            source: { fixture },
+            storageRoot: root,
+            inventoryWriter: { _, _ in throw CocoaError(.fileWriteNoPermission) }
+        )
+
+        let result = await provider.install(requirement)
+        XCTAssertEqual(result, .failure(.inventoryPersistenceFailed))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: artifactURL(in: root, for: requirement).path))
+        let relaunched = PronunciationPackProvider(source: { fixture }, storageRoot: root)
+        let status = await relaunched.status(for: requirement)
+        XCTAssertEqual(status, .notInstalled)
+    }
+
     func testRejectedReplacementPreservesKnownGoodArtifact() async throws {
         let fixture = try fixtureBytes()
         let oldRequirement = requirement(for: fixture, version: "1")
