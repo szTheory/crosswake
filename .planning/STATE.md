@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
-status: ready_to_execute
-stopped_at: Planned 160-14 through 160-16 gap closure
-last_updated: "2026-08-03T01:30:25Z"
+status: executing
+stopped_at: Completed 160-15-PLAN.md
+last_updated: "2026-08-03T01:53:06.242Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 160 gap-closure Plans 160-14 through 160-16 planned
+last_activity_desc: Phase 160 execution started
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 2
   total_plans: 64
-  completed_plans: 61
-  percent: 60
-current_plan: 14
+  completed_plans: 62
+  percent: 40
+current_plan: 15
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — PLANNED
-Plan: 13 of 16 complete
-Status: Gap-closure Plans 160-14 through 160-16 are ready to execute; independent security review remains non-passing
-Last activity: 2026-08-02 — Planned request-bound replay authority, immediate-online rejection
+Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
+Plan: 15 of 16
+Status: Plan 160-15 complete; final warning-clean evidence reconciliation remains
+Last activity: 2026-08-02 — Phase 160 execution started
 containment, and final warning-clean evidence reconciliation
 
 ## Active Objective
@@ -45,20 +45,13 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-execute-phase 160` to execute Plans 160-14 through 160-16: establish host-owned
-request-bound replay authority, contain immediate-online worker rejection through the existing
-paused-state path, and record one warning-clean final-tree gate. Then rerun verification plus
+Run `$gsd-execute-phase 160` to execute Plan 160-16: record the warning-clean final-tree gate.
+Then rerun verification plus
 `$gsd-secure-phase 160`. TODO-002 remains the bounded adopter-input gate and adopter-instance
 completeness remains `unknown_blocking`; do not infer concrete adopter routes or promote downstream
 device claims.
 
 ## Blockers
-
-- Phase 160 completion remains blocked because the public replay routes construct fixture authority
-  instead of resolving the requesting account's current backend session and authorization.
-
-- Immediate online submit invokes the replay worker without the existing guarded rejection handler,
-  so a recoverable worker failure can escape instead of remaining in the visible paused state.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
@@ -177,6 +170,8 @@ device claims.
 - [Phase ?]: Study reconstructs replay persistence attributes and ReviewEvent assigns accepted server-side, preserving internal rejected tombstones.
 - [Phase ?]: Successful online activation dispatches only through the existing lease-guarded replay worker.
 - [Phase ?]: Non-halted acknowledgements require complete ordered acceptance and no rejected records before deletion.
+- [Phase ?]: Browser replay proof uses a compile-time-gated signed test session and request-bound test authority; production remains fail closed.
+- [Phase ?]: Immediate online review replay enters replayOnOnline so current-lease failures render the existing paused state without unhandled rejections.
 
 ## Deferred Items
 
@@ -205,8 +200,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-03T01:02:14.059Z
-**Stopped at:** Completed 160-13-PLAN.md
+**Last session:** 2026-08-03T01:53:06.232Z
+**Stopped at:** Completed 160-15-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -270,3 +265,4 @@ this milestone reset.
 | Phase 160-scoped-replay-and-auth-safety P11 | 4m | 1 tasks | 2 files |
 | Phase 160 P12 | 2m 25s | 2 tasks | 7 files |
 | Phase 160 P13 | 16m | 2 tasks | 3 files |
+| Phase 160-scoped-replay-and-auth-safety P15 | ~22m | 2 tasks | 7 files |

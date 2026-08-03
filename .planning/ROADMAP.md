@@ -266,7 +266,7 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 16 plans (13 executed, 3 gap closure pending)
+**Plans:** 14/16 plans executed
 
 Plans:
 **Wave 1**
@@ -314,7 +314,7 @@ Plans:
 
 **Wave 11** *(gap closure; blocked on Plan 160-13)*
 
-- [ ] 160-14-PLAN.md — Replace fixture-default replay authority with a host-owned request-bound authenticated boundary and denial-before-persistence regressions.
+- [x] 160-14-PLAN.md — Replace fixture-default replay authority with a host-owned request-bound authenticated boundary and denial-before-persistence regressions.
 
 **Wave 12** *(blocked on Plan 160-14)*
 
