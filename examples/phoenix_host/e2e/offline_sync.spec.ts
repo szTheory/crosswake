@@ -139,6 +139,48 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await expect(page.locator('#status')).toContainText('Sync is paused');
   });
 
+  test('online activation replays retained exact-scope work', async ({ page, context }) => {
+    const pageErrors: string[] = [];
+    const consoleOutput: string[] = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
+    page.on('console', message => consoleOutput.push(message.text()));
+
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+    expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
+    await page.evaluate(() => window.crosswakeOfflineStudy.fenceScope());
+    await context.setOffline(false);
+    await page.reload();
+    await waitForInactiveLifecycle(page);
+
+    let requests = 0;
+    await page.route('**/study/sync', async route => {
+      requests += 1;
+      const body = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data: {
+          accepted_records: body.events.map((event: { client_mutation_id: string }) => ({
+            client_mutation_id: event.client_mutation_id,
+          })),
+          rejected: [],
+        } }),
+      });
+    });
+
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await expect.poll(async () => (await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).length).toBe(0);
+    expect(requests).toBe(1);
+    expect(pageErrors).toEqual([]);
+    expect(consoleOutput).toEqual([]);
+    await expect(page.locator('body')).not.toContainText(alphaScope);
+  });
+
   test('inactive online replay is inert after launch and fence', async ({ page }) => {
     const pageErrors: string[] = [];
     const consoleOutput: string[] = [];
@@ -392,6 +434,38 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await expect.poll(async () => (await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).length).toBe(1);
     await expect(page.locator('#status')).toContainText('Sync is paused');
+  });
+
+  test('truncated successful acknowledgement fails closed', async ({ page, context }) => {
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+    await page.click('#btn-flip');
+    await page.click('#btn-hard');
+    const queued = await readQueuedOfflineMutations(page, { scopeRef: alphaScope });
+    expect(queued).toHaveLength(2);
+
+    let requests = 0;
+    await page.route('**/study/sync', async route => {
+      requests += 1;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data: {
+          accepted_records: [{ client_mutation_id: queued[0].client_mutation_id }],
+          rejected: [],
+        } }),
+      });
+    });
+
+    await context.setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await expect.poll(async () => (await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).length).toBe(2);
+    await expect(page.locator('#status')).toContainText('Sync is paused');
+    expect(requests).toBe(1);
   });
 
   test('legacy upgrade quarantines unscoped work', async ({ page }) => {
