@@ -15,7 +15,8 @@ defmodule CrosswakeExample.LocalFirst.ReviewEvent do
   @doc false
   def changeset(review_event, attrs) do
     review_event
-    |> cast(attrs, [:scope_ref, :client_mutation_id, :card_id, :rating, :status])
+    |> cast(attrs, [:scope_ref, :client_mutation_id, :card_id, :rating])
+    |> put_change(:status, "accepted")
     |> validate_required([:scope_ref, :client_mutation_id, :card_id, :rating])
     |> validate_inclusion(:rating, ["good", "hard"])
     |> validate_inclusion(:status, ["accepted", "rejected"])

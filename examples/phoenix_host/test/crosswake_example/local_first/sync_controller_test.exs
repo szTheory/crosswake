@@ -37,6 +37,29 @@ defmodule CrosswakeExample.LocalFirst.SyncControllerTest do
     assert %{"error" => %{"class" => "invalid_envelope"}} = Jason.decode!(conn.resp_body)
   end
 
+  test "a hostile replay status is denied before authority callbacks and persistence" do
+    hostile_event = Map.put(event("hostile-status"), "status", "rejected")
+
+    assert {:blocked, :invalid_envelope} =
+             SyncController.sync_events(build_conn(), @scope, [hostile_event],
+               session: callback(:session, {:ok, %{scope_ref: @scope}}),
+               route: callback(:route, {:ok, %{id: "offline-study"}}),
+               feature: callback(:feature, :allow),
+               sigra: callback(:sigra, :allow),
+               domain: fn _, _, _ ->
+                 send(self(), :domain)
+                 :allow
+               end
+             )
+
+    refute_received :session
+    refute_received :route
+    refute_received :feature
+    refute_received :sigra
+    refute_received :domain
+    assert Repo.aggregate(ReviewEvent, :count, :id) == 0
+  end
+
   test "a persisted rejection stays out of the accepted prefix and halts later events" do
     assert {:ok, rejected} =
              %ReviewEvent{}
@@ -61,4 +84,11 @@ defmodule CrosswakeExample.LocalFirst.SyncControllerTest do
   end
 
   defp event(id), do: %{"client_mutation_id" => id, "card_id" => 1, "rating" => "good"}
+
+  defp callback(label, value) do
+    fn _ ->
+      send(self(), label)
+      value
+    end
+  end
 end

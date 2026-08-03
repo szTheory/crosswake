@@ -33,7 +33,7 @@ defmodule CrosswakeExample.LocalFirst.Study do
               {:error, :forced_rollback}
             else
               %ReviewEvent{}
-              |> ReviewEvent.changeset(Map.put(event, "scope_ref", scope_ref))
+              |> ReviewEvent.changeset(persistence_attrs(scope_ref, event))
               |> repo.insert()
             end
         end
@@ -60,6 +60,12 @@ defmodule CrosswakeExample.LocalFirst.Study do
   end
 
   def apply_one(_, _, _), do: {:error, :invalid_envelope}
+
+  defp persistence_attrs(scope_ref, event) do
+    event
+    |> Map.take(["client_mutation_id", "card_id", "rating"])
+    |> Map.put("scope_ref", scope_ref)
+  end
 
   defp transact(transaction, scope_ref, id) do
     Repo.transaction(transaction)

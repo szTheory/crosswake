@@ -5,6 +5,7 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
   # browser supplies an opaque scope reference only; it cannot turn that reference
   # into a session, route, feature, or domain allow decision.
   @max_events 20
+  @event_keys ["card_id", "client_mutation_id", "rating"]
   @scope_ref_pattern ~r/\Av[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}\z/
 
   alias Crosswake.Companions.Sigra.Contracts
@@ -51,12 +52,22 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
 
   defp valid_scope(_), do: {:error, :invalid_envelope}
 
-  defp valid_event(%{"client_mutation_id" => id, "card_id" => card, "rating" => rating})
+  defp valid_event(event) when is_map(event) do
+    if Enum.sort(Map.keys(event)) == @event_keys do
+      valid_event_fields(event)
+    else
+      {:error, :invalid_envelope}
+    end
+  end
+
+  defp valid_event(_), do: {:error, :invalid_envelope}
+
+  defp valid_event_fields(%{"client_mutation_id" => id, "card_id" => card, "rating" => rating})
        when is_binary(id) and byte_size(id) in 1..120 and is_integer(card) and card > 0 and
               rating in ["good", "hard"],
        do: :ok
 
-  defp valid_event(_), do: {:error, :invalid_envelope}
+  defp valid_event_fields(_), do: {:error, :invalid_envelope}
 
   defp resolve(name, conn, opts) do
     case Keyword.get(opts, name) do
