@@ -46,6 +46,17 @@ final class RequiredPackViewTests: XCTestCase {
         XCTAssertTrue(source.contains("packProvider: pronunciationPackProvider"))
     }
 
+    func testRecoverySurfacePinsApprovedSpacing() throws {
+        let testDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+        let sourceURL = testDirectory
+            .deletingLastPathComponent()
+            .appendingPathComponent("CrosswakeShell/RequiredPackView.swift")
+        let source = try String(contentsOf: sourceURL)
+
+        XCTAssertTrue(source.contains("VStack(alignment: .leading, spacing: 24)"))
+        XCTAssertTrue(source.contains("VStack(alignment: .leading, spacing: 8) {\n                    Text(\"Owner:"))
+    }
+
     private func presentation(_ state: PackState, reason: PackFailureReason? = nil) -> RequiredPackView.Presentation {
         RequiredPackView.presentation(for: RequiredPackStatus(
             id: "pack",
