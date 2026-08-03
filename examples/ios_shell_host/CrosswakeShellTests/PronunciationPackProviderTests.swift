@@ -130,6 +130,48 @@ final class PronunciationPackProviderTests: XCTestCase {
         XCTAssertEqual(replacementStatus, .failure(.digestMismatch))
     }
 
+    func testReplacementPromotionMoveFailureRestoresKnownGoodArtifactAndInventoryAfterRelaunch() async throws {
+        let oldBytes = try fixtureBytes()
+        var replacementBytes = oldBytes
+        replacementBytes[0] ^= 0xFF
+        let oldRequirement = requirement(for: oldBytes, version: "1")
+        let replacementRequirement = requirement(for: replacementBytes, version: "2")
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let initial = PronunciationPackProvider(source: { oldBytes }, storageRoot: root)
+        let initialResult = await initial.install(oldRequirement)
+        XCTAssertEqual(initialResult, .installed(expectedRecord(for: oldRequirement)))
+        let priorInventoryData = try Data(contentsOf: inventoryURL(in: root))
+
+        let failingReplacement = PronunciationPackProvider(
+            source: { replacementBytes },
+            storageRoot: root,
+            publicationMover: { source, destination in
+                if source.lastPathComponent.hasPrefix(".staging-") &&
+                    destination.lastPathComponent.hasPrefix("pack-") {
+                    throw CocoaError(.fileWriteNoPermission)
+                }
+                try FileManager.default.moveItem(at: source, to: destination)
+            }
+        )
+
+        let replacementResult = await failingReplacement.install(replacementRequirement)
+        XCTAssertEqual(replacementResult, .failure(.atomicInstallFailed))
+        XCTAssertEqual(try Data(contentsOf: artifactURL(in: root, for: oldRequirement)), oldBytes)
+        XCTAssertEqual(try Data(contentsOf: inventoryURL(in: root)), priorInventoryData)
+        let immediateOldStatus = await failingReplacement.status(for: oldRequirement)
+        let immediateReplacementStatus = await failingReplacement.status(for: replacementRequirement)
+        XCTAssertEqual(immediateOldStatus, .installed(expectedRecord(for: oldRequirement)))
+        XCTAssertEqual(immediateReplacementStatus, .failure(.digestMismatch))
+
+        let relaunched = PronunciationPackProvider(source: { oldBytes }, storageRoot: root)
+        let relaunchedOldStatus = await relaunched.status(for: oldRequirement)
+        let relaunchedReplacementStatus = await relaunched.status(for: replacementRequirement)
+        XCTAssertEqual(relaunchedOldStatus, .installed(expectedRecord(for: oldRequirement)))
+        XCTAssertEqual(relaunchedReplacementStatus, .failure(.digestMismatch))
+    }
+
     func testFirstInstallInventoryFailureRemovesUncommittedArtifactAndRecord() async throws {
         let fixture = try fixtureBytes()
         let requirement = requirement(for: fixture)
@@ -208,6 +250,10 @@ final class PronunciationPackProviderTests: XCTestCase {
 
     private func artifactURL(in root: URL, for requirement: PackRequirement) -> URL {
         root.appendingPathComponent("pack-\(requirement.packID)")
+    }
+
+    private func inventoryURL(in root: URL) -> URL {
+        root.appendingPathComponent("inventory.json")
     }
 
     private func makeTemporaryRoot() throws -> URL {
