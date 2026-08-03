@@ -266,7 +266,7 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 16/17 plans executed; 1 gap-closure plan pending
+**Plans:** 17/17 plans executed
 
 Plans:
 **Wave 1**
@@ -326,7 +326,7 @@ Plans:
 
 **Wave 14** *(gap closure; blocked on Plan 160-16)*
 
-- [ ] 160-17-PLAN.md — Keep unowned legacy work quarantined, deny nil-scope deletion authority, serialize one-card rating input, and reconcile fresh evidence.
+- [x] 160-17-PLAN.md — Keep unowned legacy work quarantined, deny nil-scope deletion authority, serialize one-card rating input, and reconcile fresh evidence.
 
 **Smallest shippable version:** Opaque scope on every envelope, scope-partitioned outbox,
 logout/account-switch replay stop, endpoint reauthorization, raw-payload redaction, and host flag

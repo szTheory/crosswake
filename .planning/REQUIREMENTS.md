@@ -47,17 +47,17 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 
 ### SCOPE — Privacy-safe replay and auth safety
 
-- [ ] **SCOPE-01:** Journal and replay envelopes carry an opaque `scope_ref`; the outbox partitions
+- [x] **SCOPE-01:** Journal and replay envelopes carry an opaque `scope_ref`; the outbox partitions
   entries by scope.
 
-- [ ] **SCOPE-02:** Logout and account switching stop replay, and cross-scope replay fails closed.
-- [ ] **SCOPE-03:** Replay re-checks backend session authority, route authorization, and
+- [x] **SCOPE-02:** Logout and account switching stop replay, and cross-scope replay fails closed.
+- [x] **SCOPE-03:** Replay re-checks backend session authority, route authorization, and
   server-side feature state before applying queued mutations.
 
-- [ ] **SCOPE-04:** Raw answer payloads are excluded from telemetry, doctor output, inspection,
+- [x] **SCOPE-04:** Raw answer payloads are excluded from telemetry, doctor output, inspection,
   logs, aggregates, and evidence artifacts.
 
-- [ ] **SCOPE-05:** `crosswake_sigra` remains the adapter for backend session-authority evidence;
+- [x] **SCOPE-05:** `crosswake_sigra` remains the adapter for backend session-authority evidence;
   credentials, provider/device identity, and token authority remain outside Crosswake core.
 
 ### PACK — Foreground iOS pronunciation media
@@ -127,11 +127,11 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 | PROOF-02 | Phase 159 | Complete |
 | PROOF-03 | Phase 159 | Complete |
 | PROOF-04 | Phase 159 | Complete |
-| SCOPE-01 | Phase 160 | Gaps Found |
-| SCOPE-02 | Phase 160 | Gaps Found |
-| SCOPE-03 | Phase 160 | Gaps Found |
-| SCOPE-04 | Phase 160 | Gaps Found |
-| SCOPE-05 | Phase 160 | Gaps Found |
+| SCOPE-01 | Phase 160 | Complete |
+| SCOPE-02 | Phase 160 | Complete |
+| SCOPE-03 | Phase 160 | Complete |
+| SCOPE-04 | Phase 160 | Complete |
+| SCOPE-05 | Phase 160 | Complete |
 | PACK-01 | Phase 161 | Pending |
 | PACK-02 | Phase 161 | Pending |
 | PACK-03 | Phase 161 | Pending |

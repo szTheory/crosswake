@@ -4,16 +4,16 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
-status: ready_to_execute
-stopped_at: Phase 160 gap-closure plan 160-17 ready to execute
-last_updated: "2026-08-03T02:29:57Z"
+status: executing
+stopped_at: Completed 160-17-PLAN.md
+last_updated: "2026-08-03T02:39:49.205Z"
 last_activity: 2026-08-02
 last_activity_desc: Phase 160 execution started
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 65
-  completed_plans: 64
+  completed_plans: 65
   percent: 60
 current_plan: 17
 ---
@@ -22,10 +22,10 @@ current_plan: 17
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — READY TO EXECUTE GAP CLOSURE
+Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
 Plan: 17 of 17
-Status: Plan 160-17 is ready to close the verified legacy cross-account replay gap
-Last activity: 2026-08-03 — Phase 160 gap-closure plan 160-17 passed plan verification
+Status: Plan 160-17 complete; Phase 160 is ready for verification
+Last activity: 2026-08-03 — Phase 160 gap-closure plan 160-17 completed with fresh same-tree evidence
 
 ## Active Objective
 
@@ -44,17 +44,12 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-execute-phase 160`, then rerun verification and `$gsd-secure-phase 160`. TODO-002 remains
+Run Phase 160 verification and `$gsd-secure-phase 160`. TODO-002 remains
 the bounded adopter-input gate and adopter-instance
 completeness remains `unknown_blocking`; do not infer concrete adopter routes or promote
 downstream device claims.
 
 ## Blockers
-
-- Legacy unscoped browser records can be assigned to whichever account scope is active, and a
-  nil-scope server tombstone can acknowledge scoped replay as accepted. Phase 160 remains pending
-  until recovery requires host-verifiable ownership or stays quarantined and nil-scope duplicates
-  fail closed.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
@@ -177,6 +172,9 @@ downstream device claims.
 - [Phase ?]: Immediate online review replay enters replayOnOnline so current-lease failures render the existing paused state without unhandled rejections.
 - [Phase ?]: Private evidence digest barriers are declared only in the test compilation branch beside their sole consumer.
 - [Phase ?]: Phase 160 final validation retains only commands, aggregate counts, stable IDs, and closed outcomes.
+- [Phase ?]: Legacy recovery remains recovery-required without a host-owned per-record ownership binding.
+- [Phase ?]: Nil-scope ReviewEvent history is scope-conflict-only before persisted outcome mapping.
+- [Phase ?]: Rating controls synchronously own one card submission across IndexedDB persistence.
 
 ## Deferred Items
 
@@ -205,8 +203,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-03T02:00:50.635Z
-**Stopped at:** Completed 160-16-PLAN.md
+**Last session:** 2026-08-03T02:39:49.196Z
+**Stopped at:** Completed 160-17-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -272,3 +270,4 @@ this milestone reset.
 | Phase 160 P13 | 16m | 2 tasks | 3 files |
 | Phase 160-scoped-replay-and-auth-safety P15 | ~22m | 2 tasks | 7 files |
 | Phase 160 P16 | 15min | 2 tasks | 5 files |
+| Phase 160-scoped-replay-and-auth-safety P17 | 6min | 3 tasks | 7 files |
