@@ -77,6 +77,29 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
             }} = Jason.decode(String.trim(output))
   end
 
+  test "reference-pack mode rejects legacy, missing, extra, duplicate, and reordered denial evidence", %{
+    bin: bin,
+    project: project
+  } do
+    for mode <- ["legacy-evidence", "missing-denial", "extra-evidence", "duplicate-evidence", "reordered-evidence"] do
+      write_xcodebuild(bin)
+
+      {output, status} =
+        System.cmd("bash", [@script, "--proof-lane", "--reference-pack-adapter"],
+          stderr_to_stdout: true,
+          env: [
+            {"PATH", bin <> ":" <> System.get_env("PATH")},
+            {"CROSSWAKE_IOS_PROJECT_ROOT", project},
+            {"CROSSWAKE_IOS_SHIM_MODE", mode}
+          ]
+        )
+
+      assert status == 2
+      assert {:ok, %{"outcome" => "blocked", "rule_id" => "PL-IOS-TEST-EVIDENCE"}} =
+               Jason.decode(String.trim(output))
+    end
+  end
+
   test "proof-lane missing xcodebuild is unavailable and non-passing", %{project: project} do
     {output, status} =
       System.cmd("bash", [@script, "--proof-lane", "--reference-pack-adapter"],
@@ -262,7 +285,29 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
           echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testWrongRequirementAndFailedAudioRemainNonPassing]' passed (0.001 seconds)."
           echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testMissingProviderInstallRelaunchAndOfflineAudio]' passed (0.001 seconds)."
           echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAccessibilityReflowContract]' passed (0.001 seconds)."
-          echo '{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","networking_disabled","installed_audio_read"],"outcome":"passed","schema_version":1}'
+          echo '{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","network_operation_denied","installed_audio_read"],"outcome":"passed","schema_version":2}'
+        fi
+        exit 0
+        ;;
+      legacy-evidence|missing-denial|extra-evidence|duplicate-evidence|reordered-evidence)
+        if [[ " $* " == *" -list "* ]]; then
+          echo "CrosswakeProofLaneTests"
+          echo "CrosswakeProofLaneUITests"
+        elif [[ " $* " == *" -showdestinations "* ]]; then
+          echo "{ platform:iOS Simulator, id:FAKE-IPHONE-ID, OS:18.0, name:iPhone 16 }"
+        elif [[ " $* " == *" test-without-building "* ]]; then
+          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testMissingAdapterRemainsUnavailable]' passed (0.001 seconds)."
+          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testFixtureInstallReconcilesAfterRelaunch]' passed (0.001 seconds)."
+          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testWrongRequirementAndFailedAudioRemainNonPassing]' passed (0.001 seconds)."
+          echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testMissingProviderInstallRelaunchAndOfflineAudio]' passed (0.001 seconds)."
+          echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAccessibilityReflowContract]' passed (0.001 seconds)."
+          case "${CROSSWAKE_IOS_SHIM_MODE}" in
+            legacy-evidence) echo '{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","networking_disabled","installed_audio_read"],"outcome":"passed","schema_version":1}' ;;
+            missing-denial) echo '{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","installed_audio_read"],"outcome":"passed","schema_version":2}' ;;
+            extra-evidence) echo '{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","network_operation_denied","installed_audio_read","extra"],"outcome":"passed","schema_version":2}' ;;
+            duplicate-evidence) echo '{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","network_operation_denied","network_operation_denied","installed_audio_read"],"outcome":"passed","schema_version":2}' ;;
+            reordered-evidence) echo '{"assertion_ids":["fixture_acquired","network_operation_denied","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","installed_audio_read"],"outcome":"passed","schema_version":2}' ;;
+          esac
         fi
         exit 0
         ;;
