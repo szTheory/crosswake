@@ -5,16 +5,16 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 161
 current_phase_name: ios-pronunciation-pack-seam
 status: executing
-stopped_at: Completed 161-10-PLAN.md
-last_updated: "2026-08-03T19:29:06.817Z"
+stopped_at: Completed 161-11-PLAN.md
+last_updated: "2026-08-03T19:58:12.908Z"
 last_activity: 2026-08-03
 last_activity_desc: Phase 161 execution started
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 76
-  completed_plans: 75
-  percent: 60
+  completed_plans: 76
+  percent: 80
 current_plan: 17
 ---
 
@@ -23,7 +23,7 @@ current_plan: 17
 ## Current Position
 
 Phase: 161 (ios-pronunciation-pack-seam) — EXECUTING
-Plan: 2 of 11
+Plan: 3 of 11
 Status: Ready to execute
 Last activity: 2026-08-03 — Phase 161 execution started
 
@@ -194,6 +194,7 @@ closed. TODO-002 remains the bounded adopter-input gate and adopter-instance com
 - [Phase ?]: Phase 161 closure retains only fresh aggregate same-tree evidence; reference-adapter iOS proof remains advisory and non-promoting.
 - [Phase ?]: Use a source-built CrosswakeShellCore framework target so clean simulator app/test builds consume a dual-architecture module before compilation.
 - [Phase ?]: Provider availability re-attests current host-private artifact bytes, and publication restores the prior artifact-plus-inventory pair on persistence failure.
+- [Phase ?]: Use captured XCTest transcript evidence for the generated reference adapter; preserve default non-pass and simulator-advisory-only promotion boundary.
 
 ## Deferred Items
 
@@ -222,8 +223,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-03T19:29:06.803Z
-**Stopped at:** Completed 161-10-PLAN.md
+**Last session:** 2026-08-03T19:58:12.893Z
+**Stopped at:** Completed 161-11-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -299,3 +300,4 @@ this milestone reset.
 | Phase 161 P07 | 9m | 2 tasks | 3 files |
 | Phase 161-ios-pronunciation-pack-seam P09 | 3m | 1 tasks | 2 files |
 | Phase 161 P10 | 8m | 3 tasks | 3 files |
+| Phase 161-ios-pronunciation-pack-seam P11 | 25min | 1 tasks | 6 files |
