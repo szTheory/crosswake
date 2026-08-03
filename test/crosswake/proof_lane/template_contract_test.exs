@@ -229,10 +229,13 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert driver =~ "exerciseInstalledPronunciationAudioOffline"
     assert driver =~ "ProofLaneReferencePackAdapter"
     assert driver =~ "CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"
+    assert driver =~ "ProofLanePackRequirement"
+    assert driver =~ "ProofLaneInstalledRecord"
+    assert driver =~ "SHA256"
+    assert driver =~ "CROSSWAKE_PROOF_LANE_NETWORK_DISABLED"
+    assert driver =~ "Application Support"
 
-    refute driver =~ "URL"
     refute driver =~ "Error"
-    refute driver =~ "digest"
     refute driver =~ "archive"
   end
 
