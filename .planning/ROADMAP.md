@@ -383,7 +383,7 @@ Plans:
 
 **Wave 8** *(verification gap closure; blocked on the executed Wave 7 plan)*
 
-- [ ] 161-10-PLAN.md — Re-attest installed bytes, make artifact/inventory publication recoverable, and restore clean simulator XCTest execution.
+- [ ] 161-10-PLAN.md — Restore clean simulator XCTest execution first, then re-attest installed bytes and make artifact/inventory publication recoverable.
 
 **Wave 9** *(blocked on Plan 161-10)*
 
