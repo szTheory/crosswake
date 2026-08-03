@@ -172,12 +172,14 @@ defmodule Crosswake.ProofLane.Evidence do
     Enum.reduce_while(value, :ok, fn {key, nested}, :ok ->
       safe_key = if is_atom(key), do: Atom.to_string(key), else: "key"
 
-      if sensitive?(safe_key),
-        do: {:halt, error("PL-EVIDENCE-SENSITIVE", path, "remove sensitive evidence data")},
-        else: {
-          :cont,
-          no_sensitive_value(nested, path)
-        }
+      if sensitive?(safe_key) do
+        {:halt, error("PL-EVIDENCE-SENSITIVE", path, "remove sensitive evidence data")}
+      else
+        case no_sensitive_value(nested, path) do
+          :ok -> {:cont, :ok}
+          error -> {:halt, error}
+        end
+      end
     end)
   end
 

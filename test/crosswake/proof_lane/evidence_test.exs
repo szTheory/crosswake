@@ -77,6 +77,54 @@ defmodule Crosswake.ProofLane.EvidenceTest do
              ~w(approved_hashes assertion_ids captured_at commit_ref crosswake_version device_class outcome retention_label route_id schema_version status template_version)
   end
 
+  test "retains the closed pack-audio prerequisite assertion with closed outcomes only" do
+    for outcome <- [:passed, :blocked, :unavailable] do
+      assert {:ok, evidence} =
+               Evidence.build(%{
+                 @valid
+                 | assertion_ids: ["pack_audio_prerequisite"],
+                   outcome: outcome
+               })
+
+      assert Evidence.to_map(evidence)["assertion_ids"] == ["pack_audio_prerequisite"]
+      assert Evidence.to_map(evidence)["outcome"] == Atom.to_string(outcome)
+    end
+  end
+
+  test "rejects D-21 private and raw proof candidates without echoing candidate values" do
+    candidates = [
+      {:archive_bytes, :assertion_ids, ["CANARY-ARCHIVE-BYTES"]},
+      {:digest_value, :captured_at, String.duplicate("a", 64)},
+      {:url, :route_id, "https://CANARY-URL"},
+      {:path, :route_id, "/private/CANARY-PATH"},
+      {:media, :route_id, "CANARY-MEDIA"},
+      {:xcresult, :route_id, "CANARY-XCRESULT"},
+      {:screenshot, :route_id, "CANARY-SCREENSHOT"},
+      {:log, :route_id, "CANARY-LOG"},
+      {:credential, :route_id, "CANARY-CREDENTIAL"},
+      {:identifier, :assertion_ids, ["CANARY-IDENTIFIER"]},
+      {:raw_output, :route_id, "CANARY-RAW-OUTPUT"},
+      {:nested, :approved_hashes, [%{kind: :evidence_json, canonical_bytes: "CANARY-MEDIA"}]},
+      {:binary, :route_id, <<0, 1, 2, 3, 4>>}
+    ]
+
+    for {_category, field, candidate} <- candidates do
+      assert {:error, error} = Evidence.build(Map.put(@valid, field, candidate))
+      assert error.rule_id =~ "PL-EVIDENCE-"
+
+      assert error.path in [
+               "input",
+               "route_id",
+               "assertion_ids",
+               "captured_at",
+               "approved_hashes"
+             ]
+
+      refute inspect(error) =~ "CANARY"
+      refute inspect(error) =~ String.duplicate("a", 64)
+    end
+  end
+
   test "derives retained digests only from approved canonical bytes" do
     assert {:ok, base} = Evidence.build(@valid)
     canonical_bytes = Jason.encode!(Evidence.to_map(base))
