@@ -1,6 +1,6 @@
 ---
 phase: 160-scoped-replay-and-auth-safety
-reviewed: 2026-08-02T23:30:00Z
+reviewed: 2026-08-02T00:00:00Z
 depth: standard
 files_reviewed: 25
 files_reviewed_list:
@@ -30,59 +30,62 @@ files_reviewed_list:
   - test/crosswake/offline/safe_observation_test.exs
   - test/crosswake/proof/phase160_scoped_replay_privacy_test.exs
 findings:
-  critical: 0
-  warning: 3
-  info: 0
+  critical: 2
+  warning: 0
+  info: 1
   total: 3
 status: issues_found
 ---
 
 # Phase 160: Code Review Report
 
-**Reviewed:** 2026-08-02T23:30:00Z
+**Reviewed:** 2026-08-02T00:00:00Z
 **Depth:** standard
 **Files Reviewed:** 25
 **Status:** issues_found
 
 ## Summary
 
-The scoped replay flow has useful lifecycle fencing and server-side admission checks, but the submitted client and controller still accept untrusted state in ways that can change replay behavior or execute stored content. Focused core and host test suites passed; the host compile also reports an unused module attribute in the submitted evidence module.
+The host-side replay admission and persistence allowlist correctly reject added event fields before authority callbacks. However, the browser replay client still has two fail-open progress paths: it does not replay retained work after a successful online activation, and it accepts incomplete success envelopes. Both can leave authorized mutations stranded while presenting a non-error state.
 
 ## Narrative Findings (AI reviewer)
 
-## Warnings
+## Critical Issues
 
-### WR-01: Client controls the persisted replay outcome
+### CR-01: Online activation leaves an existing scoped outbox inert
 
-**File:** `examples/phoenix_host/lib/crosswake_example/local_first/replay_admission.ex:54-59`, `examples/phoenix_host/lib/crosswake_example/local_first/study.ex:35-37`, `examples/phoenix_host/lib/crosswake_example/local_first/review_event.ex:18-21`
+**Classification:** BLOCKER
 
-**Issue:** Admission validates only the required event keys, so an event with additional fields is allowed through. `Study.apply_one/3` forwards that original map to the changeset, which permits the client-supplied `status` field. A client can therefore persist an otherwise admitted event as `rejected`, causing the controller to halt replay and retain it forever on every idempotent retry. Replay outcome/status must be assigned by backend authority, not received from the browser.
+**File:** `examples/phoenix_host/priv/static/offline_study.js:51-65`
 
-**Fix:** Make `valid_event/1` require exactly the three wire keys, and construct the persistence attributes from an allowlist instead of passing the request map through:
+**Issue:** `activateScope` records the lease and sets a ready status but never calls `flushOutbox`. Replay is only started by a later `online` event (line 601) or by creating another review (lines 631-633). Therefore an offline mutation that survives a relaunch, followed by host authorization while the browser is already online, remains in IndexedDB indefinitely unless the user toggles connectivity or creates a new mutation. The existing tests cover an online event after activation but not this normal relaunch/reauthorization ordering.
 
-```elixir
-attrs = Map.take(event, ["client_mutation_id", "card_id", "rating"])
-ReviewEvent.changeset(%ReviewEvent{}, Map.put(attrs, "scope_ref", scope_ref))
-```
+**Fix:** After `writeLifecycle` succeeds, capture/verify the just-created lease and start a guarded replay when `navigator.onLine` is true. Preserve the current lease checks so a fence or scope switch cannot produce side effects. Add an E2E regression that queues work, reloads while online, activates the scope, and asserts one sync request plus an empty scoped outbox.
 
-### WR-02: Flashcard fields are interpolated into `innerHTML`
+### CR-02: A truncated success response is treated as a complete replay
 
-**File:** `examples/phoenix_host/priv/static/offline_study.js:573-578`
+**Classification:** BLOCKER
 
-**Issue:** Card fields are inserted into an HTML template without escaping. If cards later originate from host content, cache hydration, or any learner-controlled source, a stored markup value executes in the offline-island origin. That origin can call the globally exposed offline-study APIs and read its IndexedDB state, undermining the isolation assumptions around scoped replay.
+**File:** `examples/phoenix_host/priv/static/offline_study.js:94-118`
 
-**Fix:** Build the front/back elements with `document.createElement` and assign `textContent` (or escape every interpolated value before assigning `innerHTML`). Keep only constant markup in `innerHTML`.
+**Issue:** `classifyReplayResponse` validates only that each returned accepted record matches a prefix of the submitted records. With `halted: null`, it accepts an empty or truncated `accepted_records` array and returns `kind: 'complete'`. Lines 529-548 then leave the omitted records queued but clear the error styling and report `Synced 0 - queued N`; because no retry is scheduled, those mutations can remain stranded until another browser online event or new review occurs. A malformed 200 response must fail closed unless it accounts for the complete submitted batch.
 
-### WR-03: Evidence module emits a compiler warning
+**Fix:** Require a complete response to have `acceptedRecords.length === records.length`, no rejected records, and matching IDs in order. For a halted response, require an accepted prefix and validate the terminal rejected/halting shape against the remaining submitted record(s). Return `{ kind: 'blocked' }` for every other cardinality or outcome mismatch, and add a Playwright regression for a 200 response with an omitted accepted record and no `halted` value.
+
+## Info
+
+### IN-01: Compiler warning from unused evidence synchronization attribute
+
+**Classification:** INFO
 
 **File:** `lib/crosswake/proof_lane/evidence.ex:29`
 
-**Issue:** `@after_digest_barrier` is declared but never read. The focused host test command emits this warning while compiling Crosswake. The intended test barrier is instead accessed with a separately reconstructed tuple, so future renames can silently disconnect the declaration from its use.
+**Issue:** `@after_digest_barrier` is assigned but never read. The reviewed Core and Phoenix test commands both emit this compiler warning, so it obscures new warnings in verification output.
 
-**Fix:** Use `@after_digest_barrier` in `Process.get/1` or remove the unused attribute if no shared key is intended.
+**Fix:** Remove the attribute if the barrier is no longer needed, or consume it at the synchronization point it was intended to protect.
 
 ---
 
-_Reviewed: 2026-08-02T23:30:00Z_
+_Reviewed: 2026-08-02T00:00:00Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
