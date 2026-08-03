@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
-status: gaps_found
-stopped_at: Phase 160 verification found legacy cross-account replay gap
-last_updated: "2026-08-03T02:11:08Z"
+status: ready_to_execute
+stopped_at: Phase 160 gap-closure plan 160-17 ready to execute
+last_updated: "2026-08-03T02:29:57Z"
 last_activity: 2026-08-02
 last_activity_desc: Phase 160 execution started
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 64
+  total_plans: 65
   completed_plans: 64
   percent: 60
-current_plan: 16
+current_plan: 17
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — GAPS FOUND
-Plan: 16 of 16
-Status: 38/39 must-haves verified; legacy unscoped recovery violates fail-closed account switching
-Last activity: 2026-08-03 — Phase 160 re-verification recorded one blocking replay-scope gap
+Phase: 160 (scoped-replay-and-auth-safety) — READY TO EXECUTE GAP CLOSURE
+Plan: 17 of 17
+Status: Plan 160-17 is ready to close the verified legacy cross-account replay gap
+Last activity: 2026-08-03 — Phase 160 gap-closure plan 160-17 passed plan verification
 
 ## Active Objective
 
@@ -44,8 +44,8 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-plan-phase 160 --gaps`, execute the resulting gap plan, then rerun verification and
-`$gsd-secure-phase 160`. TODO-002 remains the bounded adopter-input gate and adopter-instance
+Run `$gsd-execute-phase 160`, then rerun verification and `$gsd-secure-phase 160`. TODO-002 remains
+the bounded adopter-input gate and adopter-instance
 completeness remains `unknown_blocking`; do not infer concrete adopter routes or promote
 downstream device claims.
 
