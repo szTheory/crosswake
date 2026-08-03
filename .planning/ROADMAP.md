@@ -266,7 +266,7 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 12/13 plans executed
+**Plans:** 13/13 plans executed
 
 Plans:
 **Wave 1**
@@ -310,7 +310,7 @@ Plans:
 
 **Wave 10** *(gap closure; blocked on Plan 160-12)*
 
-- [ ] 160-13-PLAN.md — Replay retained work on online activation, reject incomplete success acknowledgements, and reconcile fresh same-tree evidence.
+- [x] 160-13-PLAN.md — Replay retained work on online activation, reject incomplete success acknowledgements, and reconcile fresh same-tree evidence.
 
 **Smallest shippable version:** Opaque scope on every envelope, scope-partitioned outbox,
 logout/account-switch replay stop, endpoint reauthorization, raw-payload redaction, and host flag

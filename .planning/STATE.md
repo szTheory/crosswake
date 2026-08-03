@@ -4,16 +4,16 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
-status: ready_to_execute
-stopped_at: Planned 160-13-PLAN.md
-last_updated: "2026-08-03T00:52:33Z"
+status: executing
+stopped_at: Completed 160-13-PLAN.md
+last_updated: "2026-08-03T01:02:14.072Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 160 gap-closure Plan 160-13 planned
+last_activity_desc: Phase 160 execution started
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 61
-  completed_plans: 60
+  completed_plans: 61
   percent: 60
 current_plan: 13
 ---
@@ -22,10 +22,10 @@ current_plan: 13
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — PLANNED
-Plan: 12 of 13 complete
-Status: Gap-closure Plan 160-13 is ready to execute; independent security review remains non-passing
-Last activity: 2026-08-02 — Planned Plan 160-13 browser replay activation and acknowledgement closure
+Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
+Plan: 2 of 13
+Status: Ready to execute
+Last activity: 2026-08-02 — Phase 160 execution started
 
 ## Active Objective
 
@@ -170,6 +170,8 @@ do not infer concrete adopter routes or promote downstream device claims.
 - [Phase ?]: The full offline-island Playwright corpus is the automated behavior gate for Plan 160-10 JavaScript and TypeScript changes.
 - [Phase ?]: Replay admission now accepts exactly client_mutation_id, card_id, and rating before any authority callback.
 - [Phase ?]: Study reconstructs replay persistence attributes and ReviewEvent assigns accepted server-side, preserving internal rejected tombstones.
+- [Phase ?]: Successful online activation dispatches only through the existing lease-guarded replay worker.
+- [Phase ?]: Non-halted acknowledgements require complete ordered acceptance and no rejected records before deletion.
 
 ## Deferred Items
 
@@ -198,8 +200,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-03T00:28:55.564Z
-**Stopped at:** Completed 160-12-PLAN.md
+**Last session:** 2026-08-03T01:02:14.059Z
+**Stopped at:** Completed 160-13-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -262,3 +264,4 @@ this milestone reset.
 | Phase 160 P10 | 4m | 1 tasks | 2 files |
 | Phase 160-scoped-replay-and-auth-safety P11 | 4m | 1 tasks | 2 files |
 | Phase 160 P12 | 2m 25s | 2 tasks | 7 files |
+| Phase 160 P13 | 16m | 2 tasks | 3 files |
