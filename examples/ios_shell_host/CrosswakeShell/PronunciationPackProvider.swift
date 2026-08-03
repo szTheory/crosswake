@@ -8,6 +8,7 @@ actor PronunciationPackProvider: PackProvider {
     typealias Source = @Sendable () throws -> Data
     typealias ArtifactVerifier = @Sendable (URL, Int) async throws -> (byteCount: Int, sha256: String)
     typealias InventoryWriter = @Sendable (Data, URL) throws -> Void
+    private typealias PublicationMover = @Sendable (URL, URL) throws -> Void
 
     private let source: Source
     private let storageRoot: URL
@@ -15,6 +16,7 @@ actor PronunciationPackProvider: PackProvider {
     private let verificationChunkSize: Int
     private let artifactVerifier: ArtifactVerifier
     private let inventoryWriter: InventoryWriter
+    private let publicationMover: PublicationMover
 
     init(
         source: @escaping Source,
@@ -22,7 +24,8 @@ actor PronunciationPackProvider: PackProvider {
         fileManager: FileManager = .default,
         verificationChunkSize: Int = 64 * 1024,
         artifactVerifier: ArtifactVerifier? = nil,
-        inventoryWriter: InventoryWriter? = nil
+        inventoryWriter: InventoryWriter? = nil,
+        publicationMover: (@Sendable (URL, URL) throws -> Void)? = nil
     ) {
         self.source = source
         self.storageRoot = storageRoot
@@ -34,6 +37,9 @@ actor PronunciationPackProvider: PackProvider {
         }
         self.inventoryWriter = inventoryWriter ?? { data, url in
             try data.write(to: url, options: .atomic)
+        }
+        self.publicationMover = publicationMover ?? { source, destination in
+            try FileManager.default.moveItem(at: source, to: destination)
         }
     }
 
@@ -59,8 +65,13 @@ actor PronunciationPackProvider: PackProvider {
     func install(_ requirement: PackRequirement) async -> PackProviderResult {
         let staging = storageRoot.appendingPathComponent(".staging-\(UUID().uuidString)")
         let retainedArtifact = storageRoot.appendingPathComponent(".previous-\(UUID().uuidString)")
+        var publicationState = PublicationState.noPriorArtifact
         defer { try? fileManager.removeItem(at: staging) }
-        defer { try? fileManager.removeItem(at: retainedArtifact) }
+        defer {
+            if publicationState != .priorArtifactRetained {
+                try? fileManager.removeItem(at: retainedArtifact)
+            }
+        }
 
         do {
             try fileManager.createDirectory(at: storageRoot, withIntermediateDirectories: true)
@@ -73,10 +84,10 @@ actor PronunciationPackProvider: PackProvider {
             let destination = artifactURL(for: requirement)
             let priorInventoryData = try? Data(contentsOf: inventoryURL)
             let hadPriorArtifact = fileManager.fileExists(atPath: destination.path)
-            if fileManager.fileExists(atPath: destination.path) {
-                try fileManager.moveItem(at: destination, to: retainedArtifact)
+            if hadPriorArtifact {
+                try publicationMover(destination, retainedArtifact)
+                publicationState = .priorArtifactRetained
             }
-            try fileManager.moveItem(at: staging, to: destination)
 
             let record = PackInstalledRecord(
                 contractVersion: requirement.contractVersion,
@@ -89,17 +100,25 @@ actor PronunciationPackProvider: PackProvider {
             var inventory = loadInventory()
             inventory[requirement.packID] = record
             do {
+                try publicationMover(staging, destination)
+                publicationState = .replacementPromoted
                 try saveInventory(inventory)
+                publicationState = .inventoryCommitted
                 return .installed(record)
             } catch {
+                let failure: PackFailureReason = publicationState == .replacementPromoted
+                    ? .inventoryPersistenceFailed
+                    : .atomicInstallFailed
                 do {
                     try rollbackPublication(
                         destination: destination,
                         retainedArtifact: hadPriorArtifact ? retainedArtifact : nil,
                         priorInventoryData: priorInventoryData
                     )
-                    return .failure(.inventoryPersistenceFailed)
+                    publicationState = .noPriorArtifact
+                    return .failure(failure)
                 } catch {
+                    publicationState = .priorArtifactRetained
                     return .failure(.atomicInstallFailed)
                 }
             }
@@ -153,6 +172,13 @@ actor PronunciationPackProvider: PackProvider {
         } else if fileManager.fileExists(atPath: inventoryURL.path) {
             try fileManager.removeItem(at: inventoryURL)
         }
+    }
+
+    private enum PublicationState {
+        case noPriorArtifact
+        case priorArtifactRetained
+        case replacementPromoted
+        case inventoryCommitted
     }
 
     private func verifyArtifact(_ url: URL) async throws -> Verification {
