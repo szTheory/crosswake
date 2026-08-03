@@ -1,3 +1,11 @@
 {
-  "lesson_library": "1.2.0"
+  "requirements": [
+    {
+      "contract_version": "v1",
+      "pack_id": "lesson_library",
+      "required_version": "1.2.0",
+      "expected_byte_count": 123,
+      "expected_sha256": "1af27ecb413a94814a6e72f170d2dfa1aed4bd20ae8e0ad51b96c9d7889ba54f"
+    }
+  ]
 }

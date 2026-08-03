@@ -10,11 +10,13 @@ actor PronunciationPackProvider: PackProvider {
     private let source: Source
     private let storageRoot: URL
     private let fileManager: FileManager
+    private let verificationChunkSize: Int
 
-    init(source: @escaping Source, storageRoot: URL, fileManager: FileManager = .default) {
+    init(source: @escaping Source, storageRoot: URL, fileManager: FileManager = .default, verificationChunkSize: Int = 64 * 1024) {
         self.source = source
         self.storageRoot = storageRoot
         self.fileManager = fileManager
+        self.verificationChunkSize = max(1, verificationChunkSize)
     }
 
     func status(for requirement: PackRequirement) async -> PackProviderResult {
@@ -30,9 +32,9 @@ actor PronunciationPackProvider: PackProvider {
             try fileManager.createDirectory(at: storageRoot, withIntermediateDirectories: true)
             let bytes = try source()
             try bytes.write(to: staging, options: .atomic)
-            let digest = SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
-            guard bytes.count == requirement.expectedByteCount else { return .failure(.sizeMismatch) }
-            guard digest == requirement.expectedSHA256 else { return .failure(.digestMismatch) }
+            let verification = try await Self.verifyStagedFile(staging, chunkSize: verificationChunkSize)
+            guard verification.byteCount == requirement.expectedByteCount else { return .failure(.sizeMismatch) }
+            guard verification.sha256 == requirement.expectedSHA256 else { return .failure(.digestMismatch) }
 
             let destination = artifactURL(for: requirement)
             if fileManager.fileExists(atPath: destination.path) {
@@ -89,5 +91,26 @@ actor PronunciationPackProvider: PackProvider {
     private func saveInventory(_ inventory: [String: PackInstalledRecord]) throws {
         let data = try JSONEncoder().encode(inventory)
         try data.write(to: inventoryURL, options: .atomic)
+    }
+
+    nonisolated private static func verifyStagedFile(_ url: URL, chunkSize: Int) async throws -> Verification {
+        try await Task.detached(priority: .utility) {
+            let handle = try FileHandle(forReadingFrom: url)
+            defer { try? handle.close() }
+            var hasher = SHA256()
+            var byteCount = 0
+            while let chunk = try handle.read(upToCount: chunkSize), !chunk.isEmpty {
+                let (updatedCount, overflow) = byteCount.addingReportingOverflow(chunk.count)
+                guard !overflow else { throw CocoaError(.fileReadTooLarge) }
+                byteCount = updatedCount
+                hasher.update(data: chunk)
+            }
+            return Verification(byteCount: byteCount, sha256: hasher.finalize().map { String(format: "%02x", $0) }.joined())
+        }.value
+    }
+
+    private struct Verification: Sendable {
+        let byteCount: Int
+        let sha256: String
     }
 }

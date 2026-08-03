@@ -48,6 +48,35 @@ final class PronunciationPackProviderTests: XCTestCase {
         XCTAssertEqual(retainedStatus, .installed(expectedRecord(for: oldRequirement)))
     }
 
+    func testStreamedVerifierUsesMultipleBoundedReads() async throws {
+        let fixture = try fixtureBytes()
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let provider = PronunciationPackProvider(
+            source: { fixture },
+            storageRoot: root,
+            verificationChunkSize: 8
+        )
+        let requirement = requirement(for: fixture)
+        let result = await provider.install(requirement)
+        XCTAssertEqual(result, .installed(expectedRecord(for: requirement)))
+    }
+
+    func testInstallStreamsStagedFileOffMainActorBeforePromotion() throws {
+        let sourceURL = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("CrosswakeShell/PronunciationPackProvider.swift")
+        let source = try String(contentsOf: sourceURL)
+
+        XCTAssertTrue(source.contains("Task.detached(priority: .utility)"))
+        XCTAssertTrue(source.contains("read(upToCount: chunkSize)"))
+        XCTAssertTrue(source.range(of: "SHA256.hash(data: bytes)") == nil)
+        XCTAssertLessThan(source.range(of: "verifyStagedFile")?.lowerBound ?? source.endIndex,
+                          source.range(of: "replaceItemAt")?.lowerBound ?? source.endIndex)
+    }
+
     private func fixtureBytes() throws -> Data {
         let url = try XCTUnwrap(Bundle.main.url(forResource: "pronunciation-pack-fixture", withExtension: "bin"))
         return try Data(contentsOf: url)

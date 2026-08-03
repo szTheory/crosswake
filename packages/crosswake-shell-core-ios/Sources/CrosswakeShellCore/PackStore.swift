@@ -87,10 +87,8 @@ public final class PackStore: ObservableObject {
     }
 
     public static func bundled(bundle: Bundle = .main, provider: (any PackProvider)? = nil) throws -> PackStore {
-        let requiredVersions: [String: String] = try decode("declared_pack_requirements", bundle: bundle)
-        return PackStore(requirements: requiredVersions.map {
-            PackRequirement(packID: $0.key, requiredVersion: $0.value, expectedByteCount: 0, expectedSHA256: "")
-        }, provider: provider)
+        let declaration: BundledPackRequirementDeclaration = try decode("declared_pack_requirements", bundle: bundle)
+        return PackStore(requirements: try declaration.requirements.map { try $0.validatedRequirement() }, provider: provider)
     }
 
     public func blockingStatus(for packReferences: [String]) -> RequiredPackStatus? {
@@ -237,5 +235,57 @@ public final class PackStore: ObservableObject {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         return try decoder.decode(T.self, from: Data(contentsOf: url))
+    }
+}
+
+private struct BundledPackRequirementDeclaration: Decodable {
+    let requirements: [Requirement]
+
+    struct Requirement: Decodable {
+        let contractVersion: PackProviderContractVersion
+        let packID: String
+        let requiredVersion: String
+        let expectedByteCount: Int
+        let expectedSHA256: String
+
+        enum CodingKeys: String, CodingKey {
+            case contractVersion = "contract_version"
+            case packID = "pack_id"
+            case requiredVersion = "required_version"
+            case expectedByteCount = "expected_byte_count"
+            case expectedSHA256 = "expected_sha256"
+        }
+
+        func validatedRequirement() throws -> PackRequirement {
+            guard contractVersion == PackProviderContract.currentVersion,
+                  (1...128).contains(packID.count),
+                  (1...128).contains(requiredVersion.count),
+                  expectedByteCount > 0,
+                  expectedSHA256.count == 64,
+                  expectedSHA256.allSatisfy({ $0.isNumber || ("a"..."f").contains($0) })
+            else {
+                throw CocoaError(.coderInvalidValue)
+            }
+
+            return PackRequirement(
+                contractVersion: contractVersion,
+                packID: packID,
+                requiredVersion: requiredVersion,
+                expectedByteCount: expectedByteCount,
+                expectedSHA256: expectedSHA256
+            )
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey { case requirements }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        requirements = try container.decode([Requirement].self, forKey: .requirements)
+        guard !requirements.isEmpty,
+              Set(requirements.map(\.packID)).count == requirements.count
+        else {
+            throw CocoaError(.coderInvalidValue)
+        }
     }
 }
