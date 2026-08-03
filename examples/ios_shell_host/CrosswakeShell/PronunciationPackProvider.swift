@@ -2,6 +2,27 @@ import CryptoKit
 import Foundation
 import CrosswakeShellCore
 
+/// Host-private, non-sensitive transaction metadata for a replacement that was interrupted
+/// between retaining a known-good artifact and removing the transaction debris.
+struct ReplacementJournal: Codable, Sendable {
+    enum Phase: String, Codable, Sendable {
+        case retentionPending
+        case promotionPending
+        case inventoryCommitPending
+        case committedCleanupPending
+    }
+
+    let schemaVersion: Int
+    let phase: Phase
+    let packID: String
+    let nonce: String
+    let stagingLeaf: String
+    let destinationLeaf: String
+    let retainedLeaf: String
+    let priorRecord: PackInstalledRecord?
+    let currentRecord: PackInstalledRecord
+}
+
 /// The example host owns byte acquisition, private storage, and inventory. Core sees only the
 /// requirement-bound, closed PackProvider contract.
 actor PronunciationPackProvider: PackProvider {
@@ -17,6 +38,7 @@ actor PronunciationPackProvider: PackProvider {
     private let artifactVerifier: ArtifactVerifier
     private let inventoryWriter: InventoryWriter
     private let publicationMover: PublicationMover
+    private let startupRecovery: Task<Void, Error>
 
     init(
         source: @escaping Source,
@@ -41,9 +63,15 @@ actor PronunciationPackProvider: PackProvider {
         self.publicationMover = publicationMover ?? { source, destination in
             try FileManager.default.moveItem(at: source, to: destination)
         }
+        let recoveryRoot = storageRoot
+        let recoveryManager = fileManager
+        self.startupRecovery = Task.detached(priority: .utility) {
+            try Self.recoverInterruptedPublication(storageRoot: recoveryRoot, fileManager: recoveryManager)
+        }
     }
 
     func status(for requirement: PackRequirement) async -> PackProviderResult {
+        guard await awaitStartupRecovery() else { return .failure(.providerFailed) }
         guard let record = loadInventory()[requirement.packID] else { return .notInstalled }
         guard record.contractVersion == requirement.contractVersion,
               record.packID == requirement.packID
@@ -63,8 +91,10 @@ actor PronunciationPackProvider: PackProvider {
     }
 
     func install(_ requirement: PackRequirement) async -> PackProviderResult {
-        let staging = storageRoot.appendingPathComponent(".staging-\(UUID().uuidString)")
-        let retainedArtifact = storageRoot.appendingPathComponent(".previous-\(UUID().uuidString)")
+        guard await awaitStartupRecovery() else { return .failure(.atomicInstallFailed) }
+        let transactionNonce = UUID().uuidString
+        let staging = storageRoot.appendingPathComponent(".staging-\(transactionNonce)")
+        let retainedArtifact = storageRoot.appendingPathComponent(".previous-\(transactionNonce)")
         var publicationState = PublicationState.noPriorArtifact
         defer { try? fileManager.removeItem(at: staging) }
         defer {
@@ -84,11 +114,7 @@ actor PronunciationPackProvider: PackProvider {
             let destination = artifactURL(for: requirement)
             let priorInventoryData = try? Data(contentsOf: inventoryURL)
             let hadPriorArtifact = fileManager.fileExists(atPath: destination.path)
-            if hadPriorArtifact {
-                try publicationMover(destination, retainedArtifact)
-                publicationState = .priorArtifactRetained
-            }
-
+            let priorRecord = loadInventory()[requirement.packID]
             let record = PackInstalledRecord(
                 contractVersion: requirement.contractVersion,
                 packID: requirement.packID,
@@ -100,10 +126,46 @@ actor PronunciationPackProvider: PackProvider {
             var inventory = loadInventory()
             inventory[requirement.packID] = record
             do {
+                let journal = ReplacementJournal(
+                    schemaVersion: 1,
+                    phase: hadPriorArtifact ? .retentionPending : .promotionPending,
+                    packID: requirement.packID,
+                    nonce: transactionNonce,
+                    stagingLeaf: staging.lastPathComponent,
+                    destinationLeaf: destination.lastPathComponent,
+                    retainedLeaf: retainedArtifact.lastPathComponent,
+                    priorRecord: priorRecord,
+                    currentRecord: record
+                )
+                try persistJournal(journal)
+                if hadPriorArtifact {
+                    try publicationMover(destination, retainedArtifact)
+                    publicationState = .priorArtifactRetained
+                    try persistJournal(ReplacementJournal(
+                        schemaVersion: journal.schemaVersion, phase: .promotionPending,
+                        packID: journal.packID, nonce: journal.nonce, stagingLeaf: journal.stagingLeaf,
+                        destinationLeaf: journal.destinationLeaf, retainedLeaf: journal.retainedLeaf,
+                        priorRecord: journal.priorRecord, currentRecord: journal.currentRecord
+                    ))
+                }
                 try publicationMover(staging, destination)
                 publicationState = .replacementPromoted
+                try persistJournal(ReplacementJournal(
+                    schemaVersion: journal.schemaVersion, phase: .inventoryCommitPending,
+                    packID: journal.packID, nonce: journal.nonce, stagingLeaf: journal.stagingLeaf,
+                    destinationLeaf: journal.destinationLeaf, retainedLeaf: journal.retainedLeaf,
+                    priorRecord: journal.priorRecord, currentRecord: journal.currentRecord
+                ))
                 try saveInventory(inventory)
                 publicationState = .inventoryCommitted
+                try persistJournal(ReplacementJournal(
+                    schemaVersion: journal.schemaVersion, phase: .committedCleanupPending,
+                    packID: journal.packID, nonce: journal.nonce, stagingLeaf: journal.stagingLeaf,
+                    destinationLeaf: journal.destinationLeaf, retainedLeaf: journal.retainedLeaf,
+                    priorRecord: journal.priorRecord, currentRecord: journal.currentRecord
+                ))
+                try? fileManager.removeItem(at: retainedArtifact)
+                try? fileManager.removeItem(at: replacementJournalURL)
                 return .installed(record)
             } catch {
                 let failure: PackFailureReason = publicationState == .replacementPromoted
@@ -115,6 +177,7 @@ actor PronunciationPackProvider: PackProvider {
                         retainedArtifact: hadPriorArtifact ? retainedArtifact : nil,
                         priorInventoryData: priorInventoryData
                     )
+                    try? fileManager.removeItem(at: replacementJournalURL)
                     publicationState = .noPriorArtifact
                     return .failure(failure)
                 } catch {
@@ -128,6 +191,7 @@ actor PronunciationPackProvider: PackProvider {
     }
 
     func invalidate(_ requirement: PackRequirement) async -> PackProviderResult {
+        guard await awaitStartupRecovery() else { return .failure(.invalidationFailed) }
         do {
             let destination = artifactURL(for: requirement)
             if fileManager.fileExists(atPath: destination.path) {
@@ -147,6 +211,7 @@ actor PronunciationPackProvider: PackProvider {
     }
 
     private var inventoryURL: URL { storageRoot.appendingPathComponent("inventory.json") }
+    private var replacementJournalURL: URL { storageRoot.appendingPathComponent("replacement-journal.json") }
 
     private func loadInventory() -> [String: PackInstalledRecord] {
         guard let data = try? Data(contentsOf: inventoryURL),
@@ -158,6 +223,92 @@ actor PronunciationPackProvider: PackProvider {
     private func saveInventory(_ inventory: [String: PackInstalledRecord]) throws {
         let data = try JSONEncoder().encode(inventory)
         try inventoryWriter(data, inventoryURL)
+        try synchronizeFile(at: inventoryURL)
+        synchronizeDirectory(at: storageRoot)
+    }
+
+    private func persistJournal(_ journal: ReplacementJournal) throws {
+        let data = try JSONEncoder().encode(journal)
+        try data.write(to: replacementJournalURL, options: .atomic)
+        try synchronizeFile(at: replacementJournalURL)
+        synchronizeDirectory(at: storageRoot)
+    }
+
+    private func synchronizeFile(at url: URL) throws {
+        let handle = try FileHandle(forWritingTo: url)
+        defer { try? handle.close() }
+        try handle.synchronize()
+    }
+
+    private func synchronizeDirectory(at url: URL) {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return }
+        defer { try? handle.close() }
+        try? handle.synchronize()
+    }
+
+    private func awaitStartupRecovery() async -> Bool {
+        do {
+            try await startupRecovery.value
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    nonisolated private static func recoverInterruptedPublication(storageRoot: URL, fileManager: FileManager) throws {
+        let journalURL = storageRoot.appendingPathComponent("replacement-journal.json")
+        guard fileManager.fileExists(atPath: journalURL.path) else { return }
+        let journal = try JSONDecoder().decode(ReplacementJournal.self, from: Data(contentsOf: journalURL))
+        guard journal.schemaVersion == 1,
+              journal.destinationLeaf == "pack-\(journal.packID)",
+              safeLeaf(journal.stagingLeaf), safeLeaf(journal.retainedLeaf),
+              journal.stagingLeaf.contains(journal.nonce), journal.retainedLeaf.contains(journal.nonce),
+              journal.destinationLeaf != journal.stagingLeaf,
+              journal.destinationLeaf != journal.retainedLeaf,
+              journal.stagingLeaf != journal.retainedLeaf,
+              journal.currentRecord.packID == journal.packID,
+              journal.priorRecord?.packID == nil || journal.priorRecord?.packID == journal.packID
+        else { throw CocoaError(.fileReadCorruptFile) }
+
+        let destination = storageRoot.appendingPathComponent(journal.destinationLeaf)
+        let retained = storageRoot.appendingPathComponent(journal.retainedLeaf)
+        var inventory = loadInventory(storageRoot: storageRoot)
+        switch journal.phase {
+        case .committedCleanupPending:
+            guard inventory[journal.packID] == journal.currentRecord,
+                  fileManager.fileExists(atPath: destination.path)
+            else { throw CocoaError(.fileReadCorruptFile) }
+            if fileManager.fileExists(atPath: retained.path) { try fileManager.removeItem(at: retained) }
+        case .retentionPending, .promotionPending, .inventoryCommitPending:
+            if fileManager.fileExists(atPath: destination.path) { try fileManager.removeItem(at: destination) }
+            if let priorRecord = journal.priorRecord {
+                guard fileManager.fileExists(atPath: retained.path) else { throw CocoaError(.fileReadCorruptFile) }
+                try fileManager.moveItem(at: retained, to: destination)
+                inventory[journal.packID] = priorRecord
+            } else {
+                inventory.removeValue(forKey: journal.packID)
+            }
+            try writeInventory(inventory, storageRoot: storageRoot)
+        }
+        if fileManager.fileExists(atPath: journalURL.path) { try fileManager.removeItem(at: journalURL) }
+    }
+
+    nonisolated private static func safeLeaf(_ value: String) -> Bool {
+        !value.isEmpty && !value.contains("/") && !value.contains("\\") && value != "." && value != ".."
+    }
+
+    nonisolated private static func loadInventory(storageRoot: URL) -> [String: PackInstalledRecord] {
+        let url = storageRoot.appendingPathComponent("inventory.json")
+        guard let data = try? Data(contentsOf: url),
+              let inventory = try? JSONDecoder().decode([String: PackInstalledRecord].self, from: data)
+        else { return [:] }
+        return inventory
+    }
+
+    nonisolated private static func writeInventory(_ inventory: [String: PackInstalledRecord], storageRoot: URL) throws {
+        let url = storageRoot.appendingPathComponent("inventory.json")
+        let data = try JSONEncoder().encode(inventory)
+        try data.write(to: url, options: .atomic)
     }
 
     private func rollbackPublication(destination: URL, retainedArtifact: URL?, priorInventoryData: Data?) throws {
