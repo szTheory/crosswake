@@ -348,7 +348,7 @@ checks at entry and replay.
 **Effort:** 4 Crosswake days; expect 3-5 adopter integration days outside this repo
 **Depends on:** Phase 160
 **Requirements:** PACK-01, PACK-02, PACK-03, PACK-04, PACK-05
-**Plans:** 3/5 plans executed
+**Plans:** 4/5 plans executed
 
 Plans:
 **Wave 1**
@@ -362,7 +362,7 @@ Plans:
 **Wave 3** *(parallel after Wave 2)*
 
 - [x] 161-03-PLAN.md — Wire explicit reference-host injection and accessible foreground recovery UI.
-- [ ] 161-04-PLAN.md — Extend the generated proof lane with real pack/audio fixtures, XCTest/XCUITest, and advisory verifier evidence.
+- [x] 161-04-PLAN.md — Extend the generated proof lane with real pack/audio fixtures, XCTest/XCUITest, and advisory verifier evidence.
 
 **Wave 4** *(blocked on both Wave 3 plans)*
 
