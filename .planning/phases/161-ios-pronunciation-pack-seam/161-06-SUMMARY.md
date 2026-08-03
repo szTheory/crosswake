@@ -18,6 +18,7 @@ key-files:
   created: []
   modified:
     - packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/PackStore.swift
+    - examples/ios_shell_host/CrosswakeShell/CrosswakeShellApp.swift
     - examples/ios_shell_host/CrosswakeShell/PronunciationPackProvider.swift
     - examples/ios_shell_host/CrosswakeShell/RequiredPackView.swift
     - examples/ios_shell_host/Fixtures/declared_pack_requirements.json
@@ -100,5 +101,5 @@ None.
 
 ## Self-Check: PASSED
 
-- Confirmed the six declared production and test files exist.
+- Confirmed the seven declared production and test files exist.
 - Confirmed task commits `8382bbb9`, `3908334e`, `a45875c7`, and `8b091eaf` exist.
