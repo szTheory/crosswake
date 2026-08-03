@@ -54,6 +54,8 @@ created: 2026-08-02
 | 160-11-01 | 160-11 | 8 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-01..T-160-06 | Fresh final-tree chain jointly proves the repair regressions and preserved privacy, authority, proof, and formatting contracts | full phase gate | command recorded below | final only | ✅ green |
 | 160-12-01 | 160-12 | 9 | SCOPE-03 | T-160-07, T-160-08 | A hostile fourth replay key reaches neither authority callbacks nor persistence; the exact three-key wire still reaches the host chain | Phoenix integration | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/sync_controller_test.exs)` | 4 tests | ✅ green |
 | 160-12-02 | 160-12 | 9 | SCOPE-03 | T-160-07, T-160-08 | Exact-key admission, persistence allowlisting, server-owned accepted status, and retained duplicate/conflict semantics pass on the repaired tree | Phoenix integration and full phase gate | commands recorded below | 21 focused Phoenix tests; complete chain | ✅ green |
+| 160-13-01 | 160-13 | 10 | SCOPE-01, SCOPE-02, SCOPE-03 | T-160-09, T-160-11, T-160-12, T-160-13 | Online activation dispatches the existing exact-scope lease-guarded worker; stale/fenced work remains inert and observations remain non-echoing | browser proof | `npm --prefix examples/phoenix_host run proof:offline-island -- --grep "online activation replays retained exact-scope work"` | 1 focused browser proof; retained full corpus | ✅ green |
+| 160-13-02 | 160-13 | 10 | SCOPE-03 | T-160-10, T-160-12, T-160-13 | Incomplete non-halted acknowledgement blocks before deletion, retains the submitted batch, and uses the existing paused status without hot retry | browser proof | `npm --prefix examples/phoenix_host run proof:offline-island -- --grep "truncated successful acknowledgement fails closed"` | 1 focused browser proof; retained full corpus | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -163,3 +165,38 @@ mix test test/crosswake/offline test/crosswake/telemetry_test.exs test/crosswake
 | SCOPE-01, SCOPE-02, SCOPE-04, SCOPE-05 / T-160-01..T-160-06 | The complete retained phase chain passed without changing their current contracts. |
 
 **Non-passing boundaries retained:** TODO-002 and adopter-instance completeness remain `unknown_blocking`. Generated iOS/device proof remains an asserted non-passing prerequisite (`blocked` or `unavailable` only), and independent Phase 160 security remains blocked pending `$gsd-secure-phase 160`. This evidence neither edits nor self-approves `160-SECURITY.md`.
+
+## Fresh Same-Tree Gate — 2026-08-02 (post-160-13)
+
+**Focused observed command:**
+
+```bash
+cd examples/phoenix_host && npm run proof:offline-island -- --grep "online activation replays retained exact-scope work|truncated successful acknowledgement fails closed"
+```
+
+**Focused result:** passed. The two browser regressions prove activation-triggered exact-scope replay and closed incomplete-success handling without recording replay-wire values.
+
+**Observed complete command:**
+
+```bash
+mix test test/crosswake/offline test/crosswake/telemetry_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs test/crosswake/proof_lane/evidence_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/operator_inspection/json_formatter_test.exs && (cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/companions/sigra/contracts_test.exs) && (cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first && npm run proof:offline-island) && bash script/verify_phoenix_host_proof_lane.sh && (ios_output=$(bash script/verify_generated_ios_shell.sh --proof-lane 2>&1); ios_status=$?; test "$ios_status" -eq 2 -o "$ios_status" -eq 3; printf '%s\n' "$ios_output" | grep -Eq '"outcome":"(blocked|unavailable)"') && mix test test/crosswake/planning/first_adopter_context_test.exs test/crosswake/adoption/route_inventory_test.exs && mix format --check-formatted [scoped Phase 160 Phoenix files] && git diff --check -- examples/phoenix_host/priv/static/offline_study.js examples/phoenix_host/e2e/offline_sync.spec.ts .planning/phases/160-scoped-replay-and-auth-safety/160-VALIDATION.md
+```
+
+**Observed result:** passed. The chain completed with 118 core tests, 15 Sigra contract tests, 21 Phoenix local-first tests, 20 browser offline-island proofs, one generated-host proof, asserted blocked-or-unavailable generated iOS prerequisite output, 36 planning/adoption tests, scoped formatting, and whitespace validation.
+
+**Requirement and threat coverage:**
+
+| Requirement / Threat | Fresh observed evidence |
+| --- | --- |
+| SCOPE-01, SCOPE-02, SCOPE-03 / T-160-09, T-160-11 | Authorized online activation delegates only to the existing current exact-scope lease worker; retained switch and fence proofs passed. |
+| SCOPE-03 / T-160-10, T-160-13 | A non-halted success is complete only after full ordered acknowledgement with no rejected results; incomplete success retained the batch in the existing paused state. |
+| SCOPE-04 / T-160-12 | Browser, core privacy, evidence, doctor, inspection, and planning checks passed with closed safe observations only. |
+| SCOPE-05 | The unchanged Sigra contract remained a closed backend-authority adapter. |
+
+**Executed decision set retained:** D-01 required opaque scope; D-02 one scope-indexed outbox; D-03 inert launch until host activation; D-04 fence-first epoch changes; D-05 mismatches retain work and block; D-06 host-owned account, retention, encryption, cleanup, and recovery policy; D-07 bounded ordered exact-scope drain; D-08 ordered current backend admission; D-09 one-event host transaction and idempotency; D-10 no new application after observed authority change; D-11 closed accepted/rejected/conflict/blocked outcomes; D-12 typed HTTP batch semantics; D-13 host-owned route gate and visible paused state; D-14 existing proof system; D-15 separate sensitive wire and safe observation planes; D-16 closed surface-specific observation vocabulary; D-17 no sensitive or correlating observable values; D-18 narrow per-surface ceilings; D-19 allowlist-first output and final-byte scan; D-20 Sigra as a closed backend-authority adapter; D-21 calm non-echoing learner copy and stable operator rules; D-22 positive and negative egress proof; D-23 existing accessible status model without a new visual system.
+
+**Spec-less probe status:** SCOPE-01 through SCOPE-05 remain unresolved/unclassified by SPEC fallback and are accepted here only through explicit plan truths plus executable code evidence.
+
+**Supersession:** This gate supersedes the post-160-12 gate above while retaining it as historical evidence.
+
+**Non-passing boundaries retained:** TODO-002 and adopter-instance completeness remain `unknown_blocking`. Generated iOS/device proof remains asserted non-passing (`blocked` or `unavailable` only). Independent Phase 160 security remains blocked pending `$gsd-secure-phase 160`; this ledger neither edits nor self-approves `160-SECURITY.md`.
