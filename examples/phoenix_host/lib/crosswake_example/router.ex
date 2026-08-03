@@ -596,6 +596,7 @@ defmodule CrosswakeExample.Router do
     scope "/_e2e", CrosswakeExample.E2E do
       pipe_through([:api, :e2e_session])
       post("/saas-session", SaaSSessionController, :create)
+      post("/replay-session", ReplaySessionController, :create)
     end
 
     # Phase 155 Plan 07 (PROOF-01, D-45) — the A2 route. A LiveView, so it needs

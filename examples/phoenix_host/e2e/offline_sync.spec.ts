@@ -80,6 +80,35 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     }, { timeout: 5000 }).toMatchObject({ count: 1 }); // still exactly one row
   });
 
+  test('anonymous, logged-out, switched, and revoked replay sessions deny before persistence', async ({ page }) => {
+    const denied = async (action: 'clear' | 'switch' | 'revoke', suffix: string) => {
+      const session = await page.request.post('/_e2e/replay-session', { data: { action } });
+      expect(session.ok()).toBe(true);
+
+      const mutationId = `authority-denial-${suffix}`;
+      const response = await page.request.post('/study/sync', {
+        data: {
+          scope_ref: alphaScope,
+          events: [{ client_mutation_id: mutationId, card_id: 1, rating: 'good' }],
+        },
+      });
+
+      expect(response.status()).toBe(403);
+      expect(await response.json()).toMatchObject({ error: { class: expect.any(String) } });
+
+      const state = await page.request.get(`/_e2e/sync-state/${mutationId}`);
+      expect(await state.json()).toMatchObject({ count: 0 });
+    };
+
+    await denied('clear', 'anonymous');
+    await page.request.post('/_e2e/replay-session', { data: { action: 'establish' } });
+    await denied('clear', 'logout');
+    await page.request.post('/_e2e/replay-session', { data: { action: 'establish' } });
+    await denied('switch', 'switch');
+    await page.request.post('/_e2e/replay-session', { data: { action: 'establish' } });
+    await denied('revoke', 'revoked');
+  });
+
   test('exact scope storage leaves a retained second partition untouched', async ({ page, context }) => {
     const betaScope = 'v1.scope_fixture_bravo_01';
 

@@ -6,15 +6,29 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmissionTest do
   @scope "v1.scope_fixture_alpha_01"
   @event %{"client_mutation_id" => "mutation-1", "card_id" => 1, "rating" => "good"}
 
+  setup do
+    previous = Application.get_env(:crosswake_example, :offline_study_replay_authority)
+    Application.delete_env(:crosswake_example, :offline_study_replay_authority)
+
+    on_exit(fn ->
+      if is_nil(previous),
+        do: :ok,
+        else: Application.put_env(:crosswake_example, :offline_study_replay_authority, previous)
+    end)
+  end
+
   test "the no-callback production path fails closed without a host authority adapter" do
     previous = Application.get_env(:crosswake_example, :offline_study_replay_authority)
     Application.delete_env(:crosswake_example, :offline_study_replay_authority)
 
     on_exit(fn ->
-      if is_nil(previous), do: :ok, else: Application.put_env(:crosswake_example, :offline_study_replay_authority, previous)
+      if is_nil(previous),
+        do: :ok,
+        else: Application.put_env(:crosswake_example, :offline_study_replay_authority, previous)
     end)
 
-    assert {:deny, :authority_unavailable} = ReplayAdmission.authorize(%Plug.Conn{}, @scope, @event)
+    assert {:deny, :authority_unavailable} =
+             ReplayAdmission.authorize(%Plug.Conn{}, @scope, @event)
   end
 
   test "a server-configured predicated default route denies before the domain callback" do
