@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
-status: executing
-stopped_at: Completed 160-12-PLAN.md
-last_updated: "2026-08-03T00:28:55.577Z"
+status: ready_to_execute
+stopped_at: Planned 160-13-PLAN.md
+last_updated: "2026-08-03T00:52:33Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 160 execution started
+last_activity_desc: Phase 160 gap-closure Plan 160-13 planned
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 60
+  total_plans: 61
   completed_plans: 60
   percent: 60
-current_plan: 12
+current_plan: 13
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — EXECUTED
-Plan: 12 of 12 complete
-Status: Replay authority repair complete; independent security review remains non-passing
-Last activity: 2026-08-02 — Completed Plan 160-12 replay admission and persistence authority repair
+Phase: 160 (scoped-replay-and-auth-safety) — PLANNED
+Plan: 12 of 13 complete
+Status: Gap-closure Plan 160-13 is ready to execute; independent security review remains non-passing
+Last activity: 2026-08-02 — Planned Plan 160-13 browser replay activation and acknowledgement closure
 
 ## Active Objective
 
@@ -44,16 +44,16 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-execute-phase 160` to execute Plan 160-12: replay admission must reject extra wire fields
-and persistence must allowlist server-owned attributes so the browser cannot set the stored
-outcome/status. Then rerun verification and `$gsd-secure-phase 160`. TODO-002 remains the bounded
-adopter-input gate and adopter-instance completeness remains `unknown_blocking`; do not infer
-concrete adopter routes or promote downstream device claims.
+Run `$gsd-execute-phase 160` to execute Plan 160-13: successful online scope activation must start
+the existing lease-guarded replay worker, and incomplete non-halted acknowledgements must retain the
+full batch in a visible paused state. Then rerun verification and `$gsd-secure-phase 160`. TODO-002
+remains the bounded adopter-input gate and adopter-instance completeness remains `unknown_blocking`;
+do not infer concrete adopter routes or promote downstream device claims.
 
 ## Blockers
 
-- Phase 160 SCOPE-03 remains blocked because replay admission accepts extra event fields and the
-  persistence path permits a browser-supplied outcome/status after authority checks pass.
+- Phase 160 completion remains blocked because online activation does not start replay for retained
+  exact-scope work and a truncated successful acknowledgement can be presented as complete.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
