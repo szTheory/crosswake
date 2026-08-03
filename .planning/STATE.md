@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 161
-current_phase_name: iOS Pronunciation Pack Seam
+current_phase_name: ios-pronunciation-pack-seam
 status: executing
-stopped_at: Phase 161 context gathered
-last_updated: "2026-08-03T15:41:25.873Z"
+stopped_at: Completed 161-01-PLAN.md
+last_updated: "2026-08-03T15:59:54.488Z"
 last_activity: 2026-08-03
-last_activity_desc: Phase 160 security reconciled, Phase 161 ready to plan
+last_activity_desc: Phase 161 execution started
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 70
-  completed_plans: 65
+  completed_plans: 66
   percent: 60
 current_plan: 17
 ---
@@ -22,10 +22,10 @@ current_plan: 17
 
 ## Current Position
 
-Phase: 161 — iOS Pronunciation Pack Seam
-Plan: Not started
+Phase: 161 (ios-pronunciation-pack-seam) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-08-03 — Phase 161 planned and plan-checker verified across 5 plans in 4 waves
+Last activity: 2026-08-03 — Phase 161 execution started
 
 ## Active Objective
 
@@ -178,6 +178,8 @@ closed. TODO-002 remains the bounded adopter-input gate and adopter-instance com
 - [Phase ?]: Legacy recovery remains recovery-required without a host-owned per-record ownership binding.
 - [Phase ?]: Nil-scope ReviewEvent history is scope-conflict-only before persisted outcome mapping.
 - [Phase ?]: Rating controls synchronously own one card submission across IndexedDB persistence.
+- [Phase ?]: Pack availability requires a fresh exact provider status record; install acknowledgement and legacy inventory are non-authoritative.
+- [Phase ?]: The optional host PackProvider stays outside bridge capabilities and preserves host storage and transport authority.
 
 ## Deferred Items
 
@@ -206,9 +208,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-03T13:47:21.520Z
-**Stopped at:** Phase 161 context gathered
-**Resume file:** .planning/phases/161-ios-pronunciation-pack-seam/161-CONTEXT.md
+**Last session:** 2026-08-03T15:59:54.474Z
+**Stopped at:** Completed 161-01-PLAN.md
+**Resume file:** None
 
 ## Performance Metrics
 
@@ -274,3 +276,4 @@ this milestone reset.
 | Phase 160-scoped-replay-and-auth-safety P15 | ~22m | 2 tasks | 7 files |
 | Phase 160 P16 | 15min | 2 tasks | 5 files |
 | Phase 160-scoped-replay-and-auth-safety P17 | 6min | 3 tasks | 7 files |
+| Phase 161-ios-pronunciation-pack-seam P01 | 5m | 2 tasks | 7 files |

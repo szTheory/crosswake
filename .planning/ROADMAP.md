@@ -348,12 +348,12 @@ checks at entry and replay.
 **Effort:** 4 Crosswake days; expect 3-5 adopter integration days outside this repo
 **Depends on:** Phase 160
 **Requirements:** PACK-01, PACK-02, PACK-03, PACK-04, PACK-05
-**Plans:** 5 plans
+**Plans:** 1/5 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 161-01-PLAN.md — Trace one exact requirement through real fixture bytes, fresh provider status, and route activation.
+- [x] 161-01-PLAN.md — Trace one exact requirement through real fixture bytes, fresh provider status, and route activation.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
