@@ -12,7 +12,7 @@ struct CrosswakeProofLaneApp: App {
 private struct ProofLaneView: View {
   let adapter: ProofLaneHostAdapter?
   @State private var snapshot = ProofLaneSnapshot(
-    outcome: .unavailable, prerequisite: .replayAuthorization, shellBooted: false
+    outcome: .unavailable, prerequisite: .packAudio, shellBooted: false
   )
 
   var body: some View {
@@ -21,10 +21,24 @@ private struct ProofLaneView: View {
         .accessibilityIdentifier("proof-lane-ready")
       Text("Backend authority required")
         .accessibilityIdentifier("proof-lane-auth-posture")
+      Text(adapter == nil ? "Pronunciation provider unavailable" : "Pronunciation pack status")
+        .accessibilityIdentifier("proof-lane-pack-status")
       Text("\(snapshot.outcome.rawValue.capitalized): \(snapshot.prerequisite.rawValue)")
         .multilineTextAlignment(.center)
         .fixedSize(horizontal: false, vertical: true)
         .accessibilityIdentifier("proof-lane-outcome")
+      if let adapter {
+        Button("Install pronunciation pack") {
+          Task { snapshot = await adapter.installPronunciationPackForeground() }
+        }
+        .frame(minWidth: 44, minHeight: 44)
+        .accessibilityIdentifier("proof-lane-pack-install")
+        Button("Play installed pronunciation audio") {
+          Task { snapshot = await adapter.exerciseInstalledPronunciationAudioOffline() }
+        }
+        .frame(minWidth: 44, minHeight: 44)
+        .accessibilityIdentifier("proof-lane-pack-audio")
+      }
       if let retry = adapter?.retry {
         Button("Retry proof check") {
           retry()

@@ -28,13 +28,18 @@ enum ProofLaneHostAdapterFactory {
 // This reference is test-only host scaffold. Production hosts supply their own adapter.
 final class ProofLaneReferencePackAdapter: ProofLaneHostAdapter {
   private let installedKey = "crosswake.proof-lane.reference-pack.v1.installed"
+  private let requiredVersion: String
+
+  init(requiredVersion: String = PackProviderContract.currentVersion) {
+    self.requiredVersion = requiredVersion
+  }
 
   func observe() -> ProofLaneSnapshot {
     snapshot(installed: UserDefaults.standard.bool(forKey: installedKey))
   }
 
   func installPronunciationPackForeground() async -> ProofLaneSnapshot {
-    guard fixtureBytesArePresent(), PackProviderContract.currentVersion == "v1" else {
+    guard fixtureBytesArePresent(), requiredVersion == PackProviderContract.currentVersion else {
       return blocked()
     }
 
@@ -47,6 +52,10 @@ final class ProofLaneReferencePackAdapter: ProofLaneHostAdapter {
   }
 
   var retry: (() -> Void)? { nil }
+
+  static func resetReferencePersistenceForTests() {
+    UserDefaults.standard.removeObject(forKey: "crosswake.proof-lane.reference-pack.v1.installed")
+  }
 
   private func fixtureBytesArePresent() -> Bool {
     Bundle.allBundles

@@ -12,6 +12,7 @@ final class ProofLaneContractTests: XCTestCase {
   }
 
   func testFixtureInstallReconcilesAfterRelaunch() async throws {
+    ProofLaneReferencePackAdapter.resetReferencePersistenceForTests()
     let adapter = try XCTUnwrap(ProofLaneReferencePackAdapter())
     XCTAssertEqual(adapter.observe().outcome, .blocked)
 
@@ -23,9 +24,12 @@ final class ProofLaneContractTests: XCTestCase {
   }
 
   func testWrongRequirementAndFailedAudioRemainNonPassing() async {
+    ProofLaneReferencePackAdapter.resetReferencePersistenceForTests()
     let adapter = ProofLaneReferencePackAdapter()
     let audio = await adapter.exerciseInstalledPronunciationAudioOffline()
+    let wrongRequirement = await ProofLaneReferencePackAdapter(requiredVersion: "wrong").installPronunciationPackForeground()
 
-    XCTAssertNotEqual(audio.outcome, .unavailable, "PACK-AUDIO-OFFLINE")
+    XCTAssertEqual(audio.outcome, .blocked, "PACK-AUDIO-OFFLINE")
+    XCTAssertEqual(wrongRequirement.outcome, .blocked)
   }
 }

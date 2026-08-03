@@ -1,14 +1,34 @@
 import XCTest
 
 final class ProofLaneUITests: XCTestCase {
-  func testAdapterDerivedPassedLifecycle() {
+  func testMissingProviderInstallRelaunchAndOfflineAudio() {
     let app = XCUIApplication()
     app.launchEnvironment["UIPreferredContentSizeCategoryName"] = "UIContentSizeCategoryAccessibilityXXXL"
     app.launch()
+    assertFullLabel(
+      app.staticTexts.matching(identifier: "proof-lane-pack-status").firstMatch,
+      equals: "Pronunciation provider unavailable"
+    )
+    print("PACK-MISSING-PROVIDER")
+    app.terminate()
+
+    app.launchEnvironment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] = "1"
+    app.launch()
+    let install = app.buttons.matching(identifier: "proof-lane-pack-install").firstMatch
+    XCTAssertTrue(install.waitForExistence(timeout: 5))
+    install.tap()
     assertAdapterDerivedPassedOutcome(in: app)
+    print("PACK-INSTALL-READY")
     app.terminate()
     app.launch()
     assertAdapterDerivedPassedOutcome(in: app)
+    print("PACK-RELAUNCH-READY")
+    app.launchEnvironment["CROSSWAKE_PROOF_LANE_NETWORK_DISABLED"] = "1"
+    let audio = app.buttons.matching(identifier: "proof-lane-pack-audio").firstMatch
+    XCTAssertTrue(audio.waitForExistence(timeout: 5))
+    audio.tap()
+    assertAdapterDerivedPassedOutcome(in: app)
+    print("PACK-AUDIO-OFFLINE")
   }
 
   func testAccessibilityReflowContract() {
@@ -25,6 +45,8 @@ final class ProofLaneUITests: XCTestCase {
       app.staticTexts.matching(identifier: "proof-lane-auth-posture").firstMatch,
       equals: "Backend authority required"
     )
+
+    XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-pack-status").firstMatch.exists)
 
     let outcome = app.staticTexts.matching(identifier: "proof-lane-outcome").firstMatch
     XCTAssertTrue(outcome.waitForExistence(timeout: 5))

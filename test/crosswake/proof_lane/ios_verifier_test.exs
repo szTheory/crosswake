@@ -27,7 +27,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
           {"build-fail", "blocked", 2},
           {"test-fail", "blocked", 2},
           {"generic-success", "blocked", 2},
-          {"adapter-evidence", "passed", 0}
+          {"adapter-evidence", "blocked", 2}
         ] do
       write_xcodebuild(bin)
 
@@ -47,7 +47,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
                Jason.decode(String.trim(output))
 
       assert String.starts_with?(rule_id, "PL-IOS-")
-      assert scope in ["generated-target-graph", "generated-proof-targets"]
+      assert scope in ["generated-target-graph", "generated-proof-targets", "pack_audio_prerequisite"]
     end
   end
 
@@ -79,7 +79,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
 
   test "proof-lane missing xcodebuild is unavailable and non-passing", %{project: project} do
     {output, status} =
-      System.cmd("bash", [@script, "--proof-lane"],
+      System.cmd("bash", [@script, "--proof-lane", "--reference-pack-adapter"],
         stderr_to_stdout: true,
         env: [
           {"PATH", "/usr/bin:/bin"},
@@ -163,13 +163,13 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
     before_swiftpm = File.read!(swiftpm_config)
 
     {output, status} =
-      System.cmd("bash", [@script, "--proof-lane"],
+      System.cmd("bash", [@script, "--proof-lane", "--reference-pack-adapter"],
         stderr_to_stdout: true,
         env: [
           {"HOME", home},
           {"PATH", bin <> ":" <> System.get_env("PATH")},
           {"CROSSWAKE_IOS_PROJECT_ROOT", project},
-          {"CROSSWAKE_IOS_SHIM_MODE", "adapter-evidence"},
+          {"CROSSWAKE_IOS_SHIM_MODE", "pack-adapter-evidence"},
           {"CROSSWAKE_IOS_USE_LOCAL_CORE", "1"}
         ]
       )
@@ -242,9 +242,29 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
         elif [[ " $* " == *" -showdestinations "* ]]; then
           echo "{ platform:iOS Simulator, id:FAKE-IPHONE-ID, OS:18.0, name:iPhone 16 }"
         elif [[ " $* " == *" test-without-building "* ]]; then
-          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testInstalledHostAdapterProducesPassedOutcome]' passed."
-          echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAdapterDerivedPassedLifecycle]' passed."
+          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testMissingAdapterRemainsUnavailable]' passed."
+          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testFixtureInstallReconcilesAfterRelaunch]' passed."
+          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testWrongRequirementAndFailedAudioRemainNonPassing]' passed."
+          echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testMissingProviderInstallRelaunchAndOfflineAudio]' passed."
           echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAccessibilityReflowContract]' passed."
+        fi
+        exit 0
+        ;;
+      pack-adapter-evidence)
+        if [[ " $* " == *" -list "* ]]; then
+          echo "CrosswakeProofLaneTests"
+          echo "CrosswakeProofLaneUITests"
+        elif [[ " $* " == *" -showdestinations "* ]]; then
+          echo "{ platform:iOS Simulator, id:FAKE-IPHONE-ID, OS:18.0, name:iPhone 16 }"
+        elif [[ " $* " == *" test-without-building "* ]]; then
+          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testMissingAdapterRemainsUnavailable]' passed."
+          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testFixtureInstallReconcilesAfterRelaunch]' passed."
+          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testWrongRequirementAndFailedAudioRemainNonPassing]' passed."
+          echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testMissingProviderInstallRelaunchAndOfflineAudio]' passed."
+          echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAccessibilityReflowContract]' passed."
+          echo "PACK-INSTALL-READY"
+          echo "PACK-RELAUNCH-READY"
+          echo "PACK-AUDIO-OFFLINE"
         fi
         exit 0
         ;;

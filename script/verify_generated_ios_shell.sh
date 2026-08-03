@@ -14,10 +14,21 @@ BUILD_FOR_TESTING="${CROSSWAKE_IOS_BUILD_FOR_TESTING:-1}"
 LAUNCH_SIMULATOR="${CROSSWAKE_IOS_LAUNCH_SIMULATOR:-1}"
 BUNDLE_ID=""
 PROOF_LANE=0
+REFERENCE_PACK_ADAPTER=0
 
 if [[ "${1:-}" == "--proof-lane" ]]; then
   PROOF_LANE=1
   shift
+fi
+
+if [[ "${1:-}" == "--reference-pack-adapter" ]]; then
+  REFERENCE_PACK_ADAPTER=1
+  shift
+fi
+
+if [[ "$#" -ne 0 ]]; then
+  echo "error: unsupported iOS shell verifier option" >&2
+  exit 1
 fi
 
 emit_proof_outcome() {
@@ -149,14 +160,16 @@ if [[ "$PROOF_LANE" == "1" ]]; then
 
   TEST_TRANSCRIPT="$(mktemp "${TMPDIR:-/tmp}/crosswake-ios-test-transcript.XXXXXX")"
 
-  if ! "$XCODEBUILD" -project "$project" -scheme "$scheme" -destination "$destination" -derivedDataPath "$DERIVED_DATA_ROOT" -clonedSourcePackagesDirPath "$IOS_SPM_CACHE" test-without-building >"$TEST_TRANSCRIPT" 2>&1; then
+  if ! CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER="$REFERENCE_PACK_ADAPTER" "$XCODEBUILD" -project "$project" -scheme "$scheme" -destination "$destination" -derivedDataPath "$DERIVED_DATA_ROOT" -clonedSourcePackagesDirPath "$IOS_SPM_CACHE" test-without-building >"$TEST_TRANSCRIPT" 2>&1; then
     emit_proof_outcome "blocked" "PL-IOS-TEST-EXECUTION" "generated-proof-targets"
     exit 2
   fi
 
   required_test_evidence=(
-    "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testInstalledHostAdapterProducesPassedOutcome]' passed."
-    "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAdapterDerivedPassedLifecycle]' passed."
+    "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testMissingAdapterRemainsUnavailable]' passed."
+    "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testFixtureInstallReconcilesAfterRelaunch]' passed."
+    "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testWrongRequirementAndFailedAudioRemainNonPassing]' passed."
+    "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testMissingProviderInstallRelaunchAndOfflineAudio]' passed."
     "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAccessibilityReflowContract]' passed."
   )
 
@@ -167,7 +180,19 @@ if [[ "$PROOF_LANE" == "1" ]]; then
     fi
   done
 
-  emit_proof_outcome "passed" "PL-IOS-TEST-EXECUTION" "generated-proof-targets"
+  if [[ "$REFERENCE_PACK_ADAPTER" != "1" ]]; then
+    emit_proof_outcome "blocked" "PL-IOS-HOST-ADAPTER" "pack_audio_prerequisite"
+    exit 2
+  fi
+
+  for marker in PACK-INSTALL-READY PACK-RELAUNCH-READY PACK-AUDIO-OFFLINE; do
+    if ! grep -Fq "$marker" "$TEST_TRANSCRIPT"; then
+      emit_proof_outcome "blocked" "PL-IOS-TEST-EVIDENCE" "pack_audio_prerequisite"
+      exit 2
+    fi
+  done
+
+  emit_proof_outcome "passed" "PL-IOS-PACK-AUDIO-ADVISORY" "pack_audio_prerequisite"
   exit 0
 fi
 
