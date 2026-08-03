@@ -173,6 +173,27 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await expect(page.locator('#status')).toContainText('Sync is paused');
   });
 
+  test('rapid ratings queue one mutation for one card', async ({ page, context }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
+
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+
+    await page.evaluate(() => {
+      document.getElementById('btn-good')?.click();
+      document.getElementById('btn-hard')?.click();
+    });
+
+    await expect.poll(async () => (await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).length).toBe(1);
+    expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toMatchObject([{ card_id: 1, rating: 'good' }]);
+    await expect(page.locator('#status')).toContainText('Card 2 of');
+    expect(pageErrors).toEqual([]);
+  });
+
   test('online activation replays retained exact-scope work', async ({ page, context }) => {
     const pageErrors: string[] = [];
     const consoleOutput: string[] = [];
