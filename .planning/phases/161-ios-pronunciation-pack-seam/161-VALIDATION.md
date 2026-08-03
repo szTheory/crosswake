@@ -92,61 +92,63 @@ All Phase 161 behaviors have automated verification. Physical-iPhone setup and p
 - [x] Feedback latency remains below 180 seconds for the default local loop.
 - [x] `nyquist_compliant: true` is set in frontmatter after all plan task mappings are finalized and executable.
 
-**Approval:** complete from the fresh 2026-08-03 post-gap final-tree gate.
+**Approval:** complete from the fresh 2026-08-03 post-WR-01/CR-01 final-tree gate.
 
 ---
 
-## Fresh Post-Gap Final-Tree Gate — 2026-08-03
+## Fresh Post-WR-01/CR-01 Final-Tree Gate — 2026-08-03
 
-One complete deterministic gate ran once on the repaired final tree. Retained evidence is
-allowlisted stable IDs, aggregate counts, and closed outcomes only; it contains no media,
-integrity values, locations, URLs, raw output, native artifacts, credentials, account or stable
-device identifiers, tokens, screenshots, or logs.
+One complete deterministic gate ran once after the WR-01 rollback and CR-01 observed-operation
+repairs. Retained evidence contains only stable IDs, fresh aggregate counts, and closed outcomes;
+it contains no answers, media, transcripts, integrity values, locations, URLs, raw output, native
+artifacts, credentials, account identifiers, tokens, stable device identifiers, screenshots, or
+logs.
 
 | Gate ID | Aggregate result | Closed outcome |
 |---|---:|---|
-| T-161-48 Swift core | 27 tests passed | passed |
-| T-161-48 clean focused reference-host XCTest | 16 tests passed | passed, simulator-advisory |
-| T-161-49 proof-lane and evidence | 50 tests passed | passed |
-| T-161-49 scoped replay, privacy, and egress | 121 tests passed | passed |
-| T-161-50 Sigra authority | 15 tests passed | passed |
-| T-161-50 Phoenix request-bound authorization | 33 tests passed | passed |
-| T-161-50 offline-island browser proof | 23 tests passed | passed |
-| T-161-51 default generated iOS | required non-pass observed | blocked/unavailable, non-passing |
-| T-161-51 explicit reference adapter | `pack_audio_prerequisite` accepted | passed, simulator-advisory |
-| T-161-52 no-external-API seal | one declaration accepted | passed |
+| T-161-58 Swift core | 27 tests passed | passed |
+| T-161-59 clean focused reference-host XCTest | 17 tests passed | passed, simulator-advisory |
+| T-161-60 proof-lane and evidence | 51 tests passed | passed |
+| T-161-61 scoped replay, privacy, and egress | 121 tests passed | passed |
+| T-161-62 Sigra authority | 15 tests passed | passed |
+| T-161-63 Phoenix request-bound authorization | 33 tests passed | passed |
+| T-161-64 offline-island browser proof | 23 tests passed | passed |
+| T-161-65 default generated iOS | required non-pass observed | blocked/unavailable, non-passing |
+| T-161-65 explicit reference adapter | `pack_audio_prerequisite` accepted | passed, simulator-advisory |
+| T-161-66 no-external-API seal | unchanged declaration accepted | passed |
 
-The clean reference-host XCTest used the dedicated final-tree build data and no architecture
-exclusions, active-architecture override, or prewarmed-module workaround. Its advisory simulator
-result does not promote a physical-device, adopter-instance, production, or support claim.
+The clean reference-host XCTest explicitly included the deterministic second publication-move
+failure and confirmed immediate and relaunched last-known-good bytes and inventory. The generated
+proof accepted only schema-v2 operation-derived evidence after an observed local denied-network
+operation and installed-byte read. The simulator result remains advisory and does not promote a
+physical-device, adopter-instance, production, or support claim.
 
 ### Requirement and Threat Closure
 
 | IDs | Final deterministic status |
 |---|---|
-| PACK-01, PACK-02, PACK-03, PACK-04 | passed through current-tree production construction, total fail-closed references, generation-fenced revocation, approved recovery UI, verified installation, and structured generated-proof contracts |
-| PACK-05 | passed as an explicit non-claim boundary: default generated iOS is blocked or unavailable; no Android, background transfer, generic storage, physical-device, or adopter-instance promotion occurred |
-| T-161-48 | passed: core and clean reference-host reconciliation, rollback, relaunch denial, and recovery-UI checks ran on the same final tree |
-| T-161-49 | passed: proof-lane, evidence, and Phase 160 privacy preservation ran with aggregate-only retained results |
-| T-161-50 | passed: Sigra authority, Phoenix request-bound authorization, and browser preservation ran on the final tree |
-| T-161-51 | passed: default generated iOS remained non-passing and the explicit reference adapter remained simulator-advisory only |
-| T-161-52 | passed: the unchanged no-external-API declaration was accepted without an API matrix |
+| PACK-01 | passed: the narrow status/install/invalidate seam remains runnable through the current-tree host proof |
+| PACK-02 | passed: invalid, staged, acknowledged, revoked, malformed, and unreconciled inputs remain non-available; WR-01 rollback is directly exercised |
+| PACK-03 | passed: exact integrity, atomic publication, fresh status, observed denial, and installed-byte read are jointly required |
+| PACK-04 | passed: host-private transport, storage, and playback mechanics remain outside the provider seam |
+| PACK-05 | passed as a non-claim: default generated iOS is closed non-passing; reference success is simulator-advisory only |
+| T-161-58 through T-161-66 | passed: final-tree core, host/UI, proof/evidence, privacy/authority, browser, generated-iOS, and API-declaration gates all closed |
+| T-161-67 | passed: the exact repaired blocker paths and preservation gates ran once on the same final tree |
+| T-161-68 | passed: retained evidence is aggregate-only and allowlisted to stable IDs and closed outcomes |
+| T-161-69 | passed: default non-pass and reference-adapter advisory boundaries remain explicit |
+| T-161-70 | passed: Phase 160 scoped replay, backend authority, Sigra, Phoenix, and browser preservation gates passed |
+| T-161-71 | passed: the exact no-external-API declaration remained unchanged and was accepted without an API matrix |
 
 ### Boundaries Retained
 
-- **PACK-01:** The provider seam remains exactly status/install/invalidate; no transport or storage operation is inferred.
-- **PACK-02:** Every unrecognized availability input stays non-available under the closed D-11 reasons.
-- **PACK-03:** Exact size, pinned SHA-256, atomic promotion, persistence ordering, and fresh status are all mandatory.
-- **PACK-04:** Interrupted or overlapping work is governed by per-pack serialization and current-operation authority.
-- **PACK-05:** The iOS foreground-only stop list is exhaustive and no adjacent platform or product behavior is inferred.
+- **WR-01:** A post-retention second publication-move failure restores and re-attests the committed artifact and inventory; no failed replacement silently activates.
+- **CR-01:** `networking_disabled` derives from an observed local denied-network operation, not a test-authored marker; legacy or unobserved evidence is rejected.
+- **UI-SPEC:** all 18 considerations remain covered, automated-backstopped, or dismissed; `RequiredPackViewTests` passed without UI change.
+- **PACK-01 through PACK-05:** provider scope, closed denial, integrity-before-availability, explicit host ownership, and the foreground-only stop list remain intact.
 
-### Prohibitions Retained
+### Non-Promotion Boundaries
 
-- **PACK-02:** Requested, staged, acknowledged, old-version, malformed, revoked, or unreconciled media must not silently activate a route or downgrade it to another runtime behavior.
-- **PACK-04:** The provider seam must not become Crosswake-owned distribution, generic storage, asset lookup, playback policy, or host media-layout authority.
-- **PACK-05:** Local fixture, simulator, package, or generated native results must not be represented as physical-iPhone, adopter-instance, Android, background-transfer, or generic-storage proof.
-
-TODO-002 and adopter-instance completeness remain `unknown_blocking`. Phase 162 alone owns
-physical-iPhone evidence and promotion. Android, background transfer, delta updates, eviction,
-generic storage or distribution, scoring, capture, dashboard, support promotion, Phase 162, and
-adopter-instance requirements remain unclaimed.
+- Default generated iOS remains blocked or unavailable; only the explicit reference adapter can pass, and only as simulator-advisory `pack_audio_prerequisite` evidence.
+- TODO-002 and adopter-instance completeness remain `unknown_blocking`; no sanitized adopter input was supplied.
+- Phase 162 alone owns physical-iPhone evidence and promotion.
+- Android, background transfer, delta updates, eviction, generic storage or distribution, scoring, capture, dashboard, and support promotion remain untouched and unclaimed.
