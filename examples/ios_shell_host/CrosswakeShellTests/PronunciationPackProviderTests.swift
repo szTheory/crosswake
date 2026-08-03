@@ -36,6 +36,27 @@ final class PronunciationPackProviderTests: XCTestCase {
         let status = await statusTask.value
         XCTAssertEqual(status, .notInstalled)
     }
+
+    func testConstructionBootstrapRecoveryIsIdempotent() async throws {
+        let bytes = try fixtureBytes(); let requirement = requirement(for: bytes); let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let record = expectedRecord(for: requirement); let retained = root.appendingPathComponent(".previous-transaction")
+        try bytes.write(to: retained); try writeInventory([requirement.packID: record], in: root)
+        try writeJournal(ReplacementJournal(schemaVersion: 1, phase: .retentionPending, packID: requirement.packID, nonce: "transaction", stagingLeaf: ".staging-transaction", destinationLeaf: artifactURL(in: root, for: requirement).lastPathComponent, retainedLeaf: retained.lastPathComponent, priorRecord: record, currentRecord: record), in: root)
+        let first = PronunciationPackProvider(source: { bytes }, storageRoot: root); _ = await first.status(for: requirement)
+        let snapshot = try directorySnapshot(root)
+        let second = PronunciationPackProvider(source: { bytes }, storageRoot: root); let status = await second.status(for: requirement); XCTAssertEqual(status, .installed(record))
+        XCTAssertEqual(try directorySnapshot(root), snapshot)
+    }
+
+    func testRestartRecoveryRejectsCollidingTransactionLeaves() async throws {
+        let bytes = try fixtureBytes(); let requirement = requirement(for: bytes); let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let record = expectedRecord(for: requirement); try bytes.write(to: artifactURL(in: root, for: requirement)); try writeInventory([requirement.packID: record], in: root)
+        try writeJournal(ReplacementJournal(schemaVersion: 1, phase: .promotionPending, packID: requirement.packID, nonce: "transaction", stagingLeaf: ".same-transaction", destinationLeaf: artifactURL(in: root, for: requirement).lastPathComponent, retainedLeaf: ".same-transaction", priorRecord: record, currentRecord: record), in: root)
+        let provider = PronunciationPackProvider(source: { bytes }, storageRoot: root); let status = await provider.status(for: requirement)
+        XCTAssertEqual(status, .failure(.providerFailed))
+    }
     func testBundledConstructionPropagatesExactRequirementThroughConcreteProvider() async throws {
         let fixture = try fixtureBytes()
         let root = try makeTemporaryRoot()
