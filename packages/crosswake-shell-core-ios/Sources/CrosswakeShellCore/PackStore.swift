@@ -60,12 +60,18 @@ public final class PackStore: ObservableObject {
 
     private let requirements: [String: PackRequirement]
     private let provider: (any PackProvider)?
+    private static let revocationKey = "crosswake.pack-revocations.v1"
+    private var revokedPackIDs: Set<String>
 
     public init(requirements: [PackRequirement], provider: (any PackProvider)? = nil) {
         self.requirements = Dictionary(uniqueKeysWithValues: requirements.map { ($0.packID, $0) })
         self.provider = provider
+        let persistedRevocations = Set(UserDefaults.standard.stringArray(forKey: Self.revocationKey) ?? [])
+        self.revokedPackIDs = persistedRevocations
         self.statuses = Dictionary(uniqueKeysWithValues: requirements.map {
-            ($0.packID, provider == nil
+            ($0.packID, persistedRevocations.contains($0.packID)
+                ? Self.failedStatusStatic(for: $0, reason: .invalidationFailed)
+                : provider == nil
                 ? Self.closedUnavailableStatus(for: $0)
                 : Self.checkingStatus(for: $0))
         })
@@ -117,22 +123,19 @@ public final class PackStore: ObservableObject {
 
     public func invalidatePack(_ status: RequiredPackStatus) async {
         guard let requirement = requirements[status.packID] else { return }
+        revoke(requirement.packID)
         statuses[requirement.packID] = updated(status, state: .invalidating, stage: nil, failureReason: nil)
         guard let provider else {
             statuses[requirement.packID] = updated(status, state: .failed, stage: nil, failureReason: .providerUnavailable)
             return
         }
-        let result = await provider.invalidate(requirement)
-        switch result {
-        case .notInstalled:
-            statuses[requirement.packID] = unavailableStatus(for: requirement)
-        case .failure(let reason):
-            statuses[requirement.packID] = failedStatus(for: requirement, reason: reason)
-        case .cancelled:
+        guard case .notInstalled = await provider.invalidate(requirement),
+              case .notInstalled = await provider.status(for: requirement) else {
             statuses[requirement.packID] = failedStatus(for: requirement, reason: .invalidationFailed)
-        default:
-            statuses[requirement.packID] = failedStatus(for: requirement, reason: .malformedProviderResult)
+            return
         }
+        clearRevocation(requirement.packID)
+        statuses[requirement.packID] = unavailableStatus(for: requirement)
     }
 
     private func reconcile(_ requirement: PackRequirement) async {
@@ -142,6 +145,15 @@ public final class PackStore: ObservableObject {
         }
 
         let result = await provider.status(for: requirement)
+        if revokedPackIDs.contains(requirement.packID) {
+            let reconciled = status(for: result, requirement: requirement)
+            if reconciled.state == .available {
+                clearRevocation(requirement.packID)
+            } else {
+                statuses[requirement.packID] = failedStatus(for: requirement, reason: .invalidationFailed)
+                return
+            }
+        }
         statuses[requirement.packID] = status(for: result, requirement: requirement)
     }
 
@@ -178,6 +190,20 @@ public final class PackStore: ObservableObject {
 
     private static func closedUnavailableStatus(for requirement: PackRequirement) -> RequiredPackStatus {
         RequiredPackStatus(id: requirement.packID, packID: requirement.packID, requiredVersion: requirement.requiredVersion, state: .failed, installedVersion: nil, bytes: nil, verifiedAt: nil, integrityStatus: nil, installStage: nil, failureReason: .providerUnavailable, lastKnownVersion: nil)
+    }
+
+    private static func failedStatusStatic(for requirement: PackRequirement, reason: PackFailureReason) -> RequiredPackStatus {
+        RequiredPackStatus(id: requirement.packID, packID: requirement.packID, requiredVersion: requirement.requiredVersion, state: .failed, installedVersion: nil, bytes: nil, verifiedAt: nil, integrityStatus: nil, installStage: nil, failureReason: reason, lastKnownVersion: nil)
+    }
+
+    private func revoke(_ packID: String) {
+        revokedPackIDs.insert(packID)
+        UserDefaults.standard.set(Array(revokedPackIDs), forKey: Self.revocationKey)
+    }
+
+    private func clearRevocation(_ packID: String) {
+        revokedPackIDs.remove(packID)
+        UserDefaults.standard.set(Array(revokedPackIDs), forKey: Self.revocationKey)
     }
 
     private func unavailableStatus(for requirement: PackRequirement) -> RequiredPackStatus {
