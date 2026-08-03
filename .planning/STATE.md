@@ -5,16 +5,16 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
 status: executing
-stopped_at: Completed 160-15-PLAN.md
-last_updated: "2026-08-03T01:53:06.242Z"
+stopped_at: Completed 160-16-PLAN.md
+last_updated: "2026-08-03T02:00:50.644Z"
 last_activity: 2026-08-02
 last_activity_desc: Phase 160 execution started
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 64
-  completed_plans: 62
-  percent: 40
+  completed_plans: 64
+  percent: 60
 current_plan: 15
 ---
 
@@ -23,7 +23,7 @@ current_plan: 15
 ## Current Position
 
 Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
-Plan: 15 of 16
+Plan: 16 of 16
 Status: Plan 160-15 complete; final warning-clean evidence reconciliation remains
 Last activity: 2026-08-02 — Phase 160 execution started
 containment, and final warning-clean evidence reconciliation
@@ -172,6 +172,8 @@ device claims.
 - [Phase ?]: Non-halted acknowledgements require complete ordered acceptance and no rejected records before deletion.
 - [Phase ?]: Browser replay proof uses a compile-time-gated signed test session and request-bound test authority; production remains fail closed.
 - [Phase ?]: Immediate online review replay enters replayOnOnline so current-lease failures render the existing paused state without unhandled rejections.
+- [Phase ?]: Private evidence digest barriers are declared only in the test compilation branch beside their sole consumer.
+- [Phase ?]: Phase 160 final validation retains only commands, aggregate counts, stable IDs, and closed outcomes.
 
 ## Deferred Items
 
@@ -200,8 +202,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-03T01:53:06.232Z
-**Stopped at:** Completed 160-15-PLAN.md
+**Last session:** 2026-08-03T02:00:50.635Z
+**Stopped at:** Completed 160-16-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -266,3 +268,4 @@ this milestone reset.
 | Phase 160 P12 | 2m 25s | 2 tasks | 7 files |
 | Phase 160 P13 | 16m | 2 tasks | 3 files |
 | Phase 160-scoped-replay-and-auth-safety P15 | ~22m | 2 tasks | 7 files |
+| Phase 160 P16 | 15min | 2 tasks | 5 files |

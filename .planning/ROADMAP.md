@@ -266,7 +266,7 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 14/16 plans executed
+**Plans:** 16/16 plans executed
 
 Plans:
 **Wave 1**
@@ -318,11 +318,11 @@ Plans:
 
 **Wave 12** *(blocked on Plan 160-14)*
 
-- [ ] 160-15-PLAN.md — Authenticate the browser proof through an explicit test-only host adapter and contain immediate-online replay rejection.
+- [x] 160-15-PLAN.md — Authenticate the browser proof through an explicit test-only host adapter and contain immediate-online replay rejection.
 
 **Wave 13** *(blocked on Plans 160-14 and 160-15)*
 
-- [ ] 160-16-PLAN.md — Clear the demonstrated proof-evidence compiler warning and reconcile one warning-clean final-tree gate.
+- [x] 160-16-PLAN.md — Clear the demonstrated proof-evidence compiler warning and reconcile one warning-clean final-tree gate.
 
 **Smallest shippable version:** Opaque scope on every envelope, scope-partitioned outbox,
 logout/account-switch replay stop, endpoint reauthorization, raw-payload redaction, and host flag
