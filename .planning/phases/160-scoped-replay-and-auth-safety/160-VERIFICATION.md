@@ -1,155 +1,155 @@
 ---
 phase: 160-scoped-replay-and-auth-safety
-verified: 2026-08-02T22:54:34Z
+verified: 2026-08-03T00:37:33Z
 status: gaps_found
-score: 34/35 must-haves verified
+score: 37/39 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
   previous_status: gaps_found
-  previous_score: 21/26
+  previous_score: 34/35
   gaps_closed:
-    - "Host admission uses the exact bounded opaque-scope grammar before authority callbacks."
-    - "Persisted rejected replay outcomes remain rejected and out of the accepted acknowledgement prefix."
-    - "Inactive and fenced online events are inert and caught at the event boundary."
+    - "Phoenix replay admission now rejects extra replay-wire fields before authority callbacks."
+    - "Study persistence now reconstructs allowlisted fields and assigns accepted status server-side."
   gaps_remaining: []
   regressions:
-    - "Client-supplied persistence status is admitted and written by the server-side replay path."
+    - "Online scope activation leaves retained same-scope work inert when the browser is already online."
+    - "A truncated 200 replay acknowledgement is treated as complete rather than failing closed."
 gaps:
-  - truth: "Replay re-checks backend session authority, route authorization, and server-side feature state before applying queued mutations."
+  - truth: "An active, authorized scope replays its retained exact-scope outbox when activation occurs while already online."
     status: failed
-    reason: "The host validates only required event keys, then forwards the original browser map to a changeset that permits the persisted outcome field. A browser can therefore choose a rejected persisted outcome after all authority checks pass."
+    reason: "activateScope/1 persists the active lease and updates status but never starts a guarded flush. Replay waits for a later online event or a new review, so relaunch-plus-reauthorization strands retained work."
     artifacts:
-      - path: "examples/phoenix_host/lib/crosswake_example/local_first/replay_admission.ex"
-        issue: "valid_event/1 accepts maps with unrecognized keys."
-      - path: "examples/phoenix_host/lib/crosswake_example/local_first/study.ex"
-        issue: "apply_one/3 forwards the untrusted event map to persistence."
-      - path: "examples/phoenix_host/lib/crosswake_example/local_first/review_event.ex"
-        issue: "changeset/2 permits the persisted outcome field from those attributes."
+      - path: "examples/phoenix_host/priv/static/offline_study.js"
+        issue: "Lines 51-65 activate the lease without calling guarded replay after writeLifecycle/1."
+      - path: "examples/phoenix_host/e2e/offline_sync.spec.ts"
+        issue: "No regression reloads with retained work while online, activates the scope, and asserts one sync request plus an empty scoped outbox."
     missing:
-      - "Require the exact three replay-wire keys at admission."
-      - "Persist a server-owned allowlist of replay fields and assign the outcome/status server-side."
-      - "Add an integration regression proving an extra outcome/status field is denied or ignored and cannot change the persisted outcome."
+      - "After successful lifecycle activation, conditionally start a lease-guarded replay when navigator.onLine is true."
+      - "Add the relaunch/online activation Playwright regression with no scope or payload disclosure."
+  - truth: "Only a complete, ordered accepted acknowledgement can delete a complete submitted replay batch; any incomplete 200 response fails closed and leaves queued data visibly paused."
+    status: failed
+    reason: "classifyReplayResponse/2 checks accepted IDs only against a prefix and returns complete whenever halted is null. Empty or truncated accepted_records therefore clears error styling and reports success while omitted records remain queued without a retry trigger."
+    artifacts:
+      - path: "examples/phoenix_host/priv/static/offline_study.js"
+        issue: "Lines 107-117 lack a complete-response cardinality check; lines 545-548 render ordinary synced status for the malformed result."
+      - path: "examples/phoenix_host/e2e/offline_sync.spec.ts"
+        issue: "The malformed-response test covers halted-shape validation, not a 200 response that omits an accepted record with halted null."
+    missing:
+      - "Require accepted_records to account for every submitted record when halted is null; reject any cardinality or outcome mismatch as blocked."
+      - "Add an E2E regression for a truncated successful response and assert paused status plus retained outbox."
 ---
 
 # Phase 160: Scoped Replay and Auth Safety Verification Report
 
 **Phase Goal:** Enforce account-scoped outboxes, payload redaction, backend reauthorization, auth continuity, and server-side disablement.
-**Verified:** 2026-08-02T22:54:34Z
+**Verified:** 2026-08-03T00:37:33Z
 **Status:** gaps_found
-**Re-verification:** Yes — after Plans 160-09 through 160-11
+**Re-verification:** Yes — after Plan 160-12
 
 ## Goal Achievement
 
-The earlier scope-grammar, rejected-row, and inactive-online defects are repaired and their automated regressions pass. The goal is nevertheless **not achieved**: a browser-supplied replay event can set the persisted outcome/status because server admission permits extra keys and the transaction forwards them to an accepting changeset. This is a reachable server-authority failure, not an adopter-instance unknown.
+The Plan 160-12 server-authority repair is real: exact event-key admission occurs before session resolution, persistence copies only the three admitted fields plus host scope, and `ReviewEvent` sets `accepted` itself. The prior outcome/status mass-assignment gap is closed.
+
+The goal is still **not achieved**. The current browser client has two independently observable replay defects: retained work does not start after online authorization/activation, and an incomplete successful response is displayed as successful. Both strand authorized mutations without a fail-closed visible state. These are Phase 160 code defects, not adopter-instance unknowns and not work deferred to Phases 161 or 162.
 
 ### Observable Truths
 
 | # | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Scoped outboxes use one bounded opaque reference; no production all-scope operation exists. | ✓ VERIFIED | Core and host use the shared anchored grammar; the 18-test browser corpus proves exact-partition reads, recovery, and cross-scope retention. |
-| 2 | Logout/switch fencing and reconnect lifecycle prevent cross-scope replay. | ✓ VERIFIED | `offline_study.js` fences leases before activation; `replayOnOnline` is inert without a lease and catches active failures. Browser regressions pass. |
-| 3 | Every queued mutation is reauthorized by backend session, route, feature, Sigra, and domain authority before server-side application. | ✗ FAILED | `valid_event/1` accepts extra keys; the server then persists the original event map, including a browser-selected outcome/status. The independent read-only admission probe reported `extra-field-admitted`. |
-| 4 | Operational and retained proof egress excludes raw replay payloads and authority facts. | ✓ VERIFIED | SafeObservation projection validation and success-only egress are exercised by 82 core/privacy tests; no raw transport map is passed to telemetry, Logger, Doctor, or retained evidence. |
-| 5 | Sigra remains a typed backend authority adapter; Crosswake core/browser have no credential or token authority. | ✓ VERIFIED | Guarded Sigra contract and typed host invocation pass 15 companion tests and 18 host tests. |
+| 1 | Scoped outboxes use one bounded opaque reference; no production all-scope operation exists. | ✓ VERIFIED | Core, host, and browser share the anchored scope grammar; 18-browser-test suite passed exact partition and recovery coverage. |
+| 2 | Logout/switch fencing and reconnect lifecycle prevent cross-scope replay. | ✓ VERIFIED | Lease revocation precedes awaits and current-lease checks guard browser storage/UI; active/inactive reconnect and post-response fence tests passed. |
+| 3 | Every queued mutation is reauthorized by backend session, route, feature, Sigra, and domain authority before application. | ✓ VERIFIED | `ReplayAdmission.authorize/4` validates exact wire keys before session resolution, then performs scope, route, feature, Sigra, and domain checks before `Study.apply_one/3`; focused Phoenix suite: 21/21. |
+| 4 | Operational and retained proof egress excludes raw replay payloads and authority facts. | ✓ VERIFIED | `SafeObservation` revalidates before each projection and production egress consumes only successful projections; privacy regressions are wired. |
+| 5 | Sigra remains a typed backend-authority adapter; core/browser have no credential or token authority. | ✓ VERIFIED | `replay_decision/3` accepts only `RouteEntry` and validated `AuthContext`, otherwise returns `{:deny, :sigra_denied}`. |
+| 6 | A newly authorized active scope replays retained exact-scope work while already online. | ✗ FAILED | `activateScope` ends after `writeLifecycle` and status update; no guarded `flushOutbox` call exists. |
+| 7 | A successful replay acknowledgement accounts for the full submitted batch before it is presented as complete. | ✗ FAILED | `classifyReplayResponse` accepts a matching prefix with `halted: null`, then renders `Synced N` even when records remain. |
 
-**Score:** 34/35 PLAN must-have truths verified (0 present-but-behavior-unverified). The single failed truth blocks SCOPE-03 and therefore the phase goal.
+**Score:** 37/39 PLAN must-have truths verified (0 present-but-behavior-unverified).
 
-### Must-Have Reconciliation
+### Roadmap Success Criteria
 
-All 35 plan-frontmatter truths were inspected; 34 are supported by current source plus the focused automated suites. The failed truth is Plan 02’s atomic server-side application contract and also contradicts the roadmap SCOPE-03 requirement. Plans 09–11 repair the three prior verification failures and remain verified.
+| Criterion | Status | Evidence |
+| --- | --- | --- |
+| Cross-scope replay is impossible under tests. | ✓ VERIFIED | Browser scope partition, lifecycle fence, and Phoenix scope-admission regressions pass. |
+| Raw answers never enter telemetry, doctor output, inspection, or evidence. | ✓ VERIFIED | Closed `SafeObservation` projections and egress tests protect named outputs. |
+| `crosswake_sigra` adapts backend authority without giving WebView/shell token authority. | ✓ VERIFIED | Typed Sigra boundary and host-only session resolution are present and focused tests pass. |
+| A disabled path preserves queued data and visibly fails closed. | ✓ VERIFIED | The `halted` feature-disabled path retains its suffix and renders paused; dedicated browser regression passed. |
 
-| Plan | Truths | Verdict |
-| --- | ---: | --- |
-| 160-01 | 3 | ✓ Verified — required scoped transport, inert lifecycle, serial retained drain. |
-| 160-02 | 4 | ✗ Partial — authority ordering and transaction wiring exist, but client-controlled persisted status invalidates server-owned application authority. |
-| 160-03 | 4 | ✓ Verified — closed observation/evidence projections and non-passing prerequisite boundaries. |
-| 160-04 | 3 | ✓ Verified — legacy quarantine and exact-lease recovery. |
-| 160-05 | 3 | ✓ Verified — abort/fence ordering, stale-completion guards, halted suffix. |
-| 160-06 | 3 | ✓ Verified — typed Sigra authority and closed denial projection. |
-| 160-07 | 3 | ✓ Verified — global legacy tombstone and scoped conflict handling. |
-| 160-08 | 3 | ✓ Verified — public projection revalidation and success-only egress. |
-| 160-09 | 3 | ✓ Verified — full opaque grammar and rejected-row retention. |
-| 160-10 | 3 | ✓ Verified — inactive online no-op and contained active failure. |
-| 160-11 | 3 | ✓ Verified — fresh final-tree ledger preserves TODO-002 and non-passing device/security boundaries. |
+The roadmap criteria do not reduce the broader phase-goal contract. Truths 6-7 block reliable authorized replay and fail-closed response handling.
 
 ### Required Artifacts
 
-All 36 declared artifacts exist and are substantive. `verify.artifacts` reported 36/36 passing presence/substance checks; manual wiring and data-flow checks below determine the final result.
+`verify.artifacts` reports all **41/41** PLAN-declared artifacts present and substantive. Manual source tracing finds all declared server/core links wired. The browser artifact is wired to IndexedDB and `/study/sync`, but is hollow on the two failure paths below.
 
 | Artifact group | Status | Details |
 | --- | --- | --- |
-| Core journal/replay/runtime and browser offline island | ✓ VERIFIED | Required opaque scope passes from journal to replay and into exact IndexedDB partitions; lifecycle data is read from the active lease. |
-| Phoenix admission, Study transaction, SyncController, and idempotency migrations | ✗ UNSAFE | Components are connected and tested, but untrusted event fields reach the persistence changeset. |
-| Sigra companion and host admission tests | ✓ VERIFIED | Host builds typed route/auth evidence immediately before the guarded companion call. |
-| SafeObservation, telemetry, Doctor, proof/privacy tests | ✓ VERIFIED | Data enters a bounded projection before each operational egress. |
-| Browser E2E suite and validation ledger | ✓ VERIFIED | Real browser storage/request/response paths run; current ledger records the post-repair suite and preserves non-passing external prerequisites. |
+| Core journal/runtime and browser IndexedDB scope partition | ✓ VERIFIED | Required opaque scope, compound-key store, lifecycle epoch, and exact-scope reads are implemented. |
+| Phoenix admission, transaction, and idempotency artifacts | ✓ VERIFIED | Exact admission → current authority chain → `Ecto.Multi` → server-owned accepted persistence. |
+| Sigra authority adapter | ✓ VERIFIED | Typed inputs, closed denial projection, and host-owned authority construction. |
+| Privacy/evidence/doctor artifacts | ✓ VERIFIED | Safe projection construction, validation, and success-only egress are wired. |
+| Browser replay activation and response parser | ✗ HOLLOW | Runtime entry points exist and are used, but online activation does not invoke replay and truncated acknowledgement semantics fail open. |
+| Validation ledger | ✓ VERIFIED | Current post-160-12 command ledger exists, but its green browser suite lacks the two reported cases. |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 | --- | --- | --- | --- | --- |
-| Journal entry scope | Replay request | direct required copy | ✓ WIRED | `request_for_entry/1` constructs a scope-required request. |
-| Browser active lease | IndexedDB/request/completion/UI | exact scope-plus-epoch checks | ✓ WIRED | Reads, deletes, response status, and reconnect adapter are lease-fenced; 18 browser tests pass. |
-| SyncController | ReplayAdmission | per-event authorize before `Study.apply_one/3` | ✓ WIRED | `sync_events/4` calls admission before each transaction. |
-| ReplayAdmission | Study persistence | admitted event map | ✗ UNSAFE | The connection exists, but it carries an unallowlisted client map into persistence. |
-| Host typed evidence | Sigra replay decision | RouteEntry and AuthContext | ✓ WIRED | Default construction and closed denial are exercised by companion/host tests. |
-| SafeObservation | telemetry, Logger, Doctor, proof | validate then success-only projection | ✓ WIRED | Consumers pattern-match `{:ok, projection}`; forged-struct tests prove zero egress. |
+| Journal entry | Replay request | required `scope_ref` copy | ✓ WIRED | Shared required opaque value is present through core transport. |
+| Browser active lease | IndexedDB/send/completion | scope + epoch guards | ✓ WIRED | `activeLeaseOrNull`/`leaseIsCurrent` protect existing worker paths. |
+| Sync controller | admission → study transaction | ordered per-event authority | ✓ WIRED | Source and 21 focused Phoenix tests prove admission-before-persistence. |
+| Replay admission | Sigra | typed route/auth context | ✓ WIRED | Host invokes `replay_decision/3` only after typed construction. |
+| Online authorization | replay worker | activation of retained queue | ✗ NOT_WIRED | `activateScope` has no replay invocation. |
+| Accepted server response | browser deletion/status | complete ordered acknowledgement | ✗ PARTIAL | Prefix IDs are validated, but full-batch cardinality is not. |
 
 ### Data-Flow Trace (Level 4)
 
-| Artifact | Data variable | Source | Produces real data | Status |
+| Artifact | Data Variable | Source | Produces Real Data | Status |
 | --- | --- | --- | --- | --- |
-| Browser outbox | scoped mutation records | IndexedDB `by_scope` index | Exact active partition | ✓ FLOWING |
-| Replay request | scope and replay wire fields | current lease and queued record | Request reaches Phoenix in browser proof | ✓ FLOWING |
-| Phoenix persistence | admitted event attributes | untrusted request map | Includes fields outside the wire contract | ✗ UNSAFE |
-| Operational observations | bounded projection | `SafeObservation.validate/1` | Only declared projection fields reach consumers | ✓ FLOWING |
+| Browser offline island | `records` | scoped IndexedDB `getScopeMutations(scopeRef)` | Yes; POST body uses the current exact-scope batch | ✓ FLOWING, with replay activation gap |
+| Phoenix replay path | `events` | `/study/sync` request | Yes; controller authorizes and persists outcomes in `Repo.transaction` | ✓ FLOWING |
+| Safe observations | typed projection | explicit closed constructor/validation | Yes; egress receives projections only | ✓ FLOWING |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 | --- | --- | --- | --- |
-| Core scope/lifecycle/privacy contracts | `MIX_ENV=test mix test …phase160_scoped_replay_privacy_test.exs` | 82 tests, 0 failures | ✓ PASS |
-| Typed Sigra replay contract | `cd packages/crosswake_sigra && mix deps.get && mix test …contracts_test.exs` | 15 tests, 0 failures | ✓ PASS |
-| Phoenix scope/admission/idempotency contracts | `cd examples/phoenix_host && MIX_ENV=test mix test …local_first…` | 18 tests, 0 failures | ✓ PASS — missing an extra-field persistence case. |
-| Offline-island lifecycle/replay flow | `cd examples/phoenix_host && npm run proof:offline-island` | 18 tests, 0 failures | ✓ PASS |
-| Admission rejects client-controlled persisted outcome | read-only `MIX_ENV=test mix run -e …` | `extra-field-admitted` | ✗ FAIL |
+| Extra replay-wire key is denied before authority/persistence; server-owned status persists | `(cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/replay_admission_test.exs test/crosswake_example/local_first/study_test.exs test/crosswake_example/local_first/sync_controller_test.exs)` | 21 tests, 0 failures | ✓ PASS |
+| Existing browser scoped replay, fence, halted, and malformed-halted checks | `(cd examples/phoenix_host && npm run proof:offline-island)` | 18 tests, 0 failures | ✓ PASS — insufficient for truths 6-7 |
+| Online activation replays retained work | Existing targeted test search | No matching regression; source omits call | ✗ FAIL |
+| Truncated 200 acknowledgement fails closed | Existing targeted test search | No matching regression; parser accepts prefix | ✗ FAIL |
 
 ### Requirements Coverage
 
 | Requirement | Source Plans | Description | Status | Evidence |
 | --- | --- | --- | --- | --- |
-| SCOPE-01 | 01, 02, 04, 07–09, 11 | Opaque scope and scoped outbox partitioning | ✓ SATISFIED | Exact grammar/admission, partition, quarantine, and idempotency coverage pass. |
-| SCOPE-02 | 01, 05, 08, 10–11 | Logout/switch stop replay and cross-scope replay fails closed | ✓ SATISFIED | Fence, stale-completion, inactive online, and halted-drain browser cases pass. |
-| SCOPE-03 | 02, 05–11 | Re-check backend authority and server feature state before apply | ✗ BLOCKED | Client controls a persisted replay outcome after admission; the server does not exclusively own the applied outcome. |
-| SCOPE-04 | 03, 08, 11 | Raw payloads excluded from operational/proof egress | ✓ SATISFIED | Forged observation and every-egress tests pass. |
-| SCOPE-05 | 02, 03, 06, 08, 11 | Sigra holds backend authority; core has no credential/token authority | ✓ SATISFIED | Typed contracts and host integration pass; projection omits authority details. |
+| SCOPE-01 | 01, 02, 03, 04, 07, 08, 09, 11 | Opaque scope on envelopes and scope-partitioned outbox. | ✓ SATISFIED | Shared grammar, storage partitions, quarantine/recovery, and hostile-scope regressions. |
+| SCOPE-02 | 01, 02, 03, 04, 05, 08, 10, 11 | Logout/account switch stop replay; cross-scope replay fails closed. | ✓ SATISFIED | Fence-first lifecycle, stale-completion guards, and inactive-online no-op coverage. |
+| SCOPE-03 | 02, 03, 05, 06, 07, 08, 09, 11, 12 | Backend session/route/feature reauthorization before applying mutations. | ✓ SATISFIED | Exact admission and current authority chain, server-owned persistence, 21 focused host tests. |
+| SCOPE-04 | 03, 08, 11 | Raw answers excluded from operational and proof egress. | ✓ SATISFIED | SafeObservation validation/projections and every-egress privacy tests. |
+| SCOPE-05 | 02, 03, 06, 08, 11 | Sigra is backend authority adapter; token authority stays outside core. | ✓ SATISFIED | Typed guarded Sigra decision and closed host integration. |
 
-Every Phase 160 requirement in `REQUIREMENTS.md` is claimed by at least one plan; no orphaned requirement IDs were found.
+Every Phase 160 requirement is declared by at least one PLAN; no orphaned requirement IDs were found. The two gaps are additional phase-goal/must-have failures: they do not negate the narrower reauthorization statement in SCOPE-03, but prevent completion of the end-to-end replay and auth-continuity outcome.
 
-### Review Reconciliation and Anti-Patterns
+### Anti-Patterns Found
 
-| Finding | Verdict | Impact |
-| --- | --- | --- |
-| WR-01 — client controls persisted replay outcome | 🛑 BLOCKER, confirmed | Directly blocks SCOPE-03 and phase completion. |
-| WR-02 — card fields interpolate into `innerHTML` | ⚠️ WARNING, confirmed | Current cards are local fixtures, but this creates a stored-markup execution sink if card content later becomes host/cache-controlled. Replace dynamic interpolation with DOM nodes and `textContent` before widening card sources. |
-| WR-03 — unused evidence barrier attribute | ⚠️ WARNING, confirmed | All focused commands emit the compiler warning. It is not a Phase 160 functional blocker, but the declared attribute and runtime lookup should share one key or the attribute should be removed. |
+| File | Line | Pattern | Severity | Impact |
+| --- | --- | --- | --- | --- |
+| `examples/phoenix_host/priv/static/offline_study.js` | 51-65 | Activation returns without replay start | 🛑 BLOCKER | Authorized retained mutations can remain stranded. |
+| `examples/phoenix_host/priv/static/offline_study.js` | 107-117, 545-548 | Prefix acknowledgement treated as complete | 🛑 BLOCKER | Incomplete server result is displayed as normal success. |
+| `lib/crosswake/proof_lane/evidence.ex` | 29 | Unused `@after_digest_barrier` | ℹ️ INFO | Compiler warning observed in both focused commands; not the phase goal blocker. |
 
-No unreferenced `TBD`, `FIXME`, or `XXX` marker was found in Phase 160 implementation artifacts. The independent review warnings above were investigated rather than accepted from the review narrative.
+No unreferenced `TBD`, `FIXME`, or `XXX` marker was found in Phase 160 implementation artifacts. The `return null` match in browser code is a guarded absence value, not user-visible stub output.
 
-### Boundary Preservation
+### Gaps Summary
 
-TODO-002 and adopter-instance route, scope, flag, session, adapter, and physical-device inputs remain `unknown_blocking`. Generated iOS/device output and independent security remain non-passing. These boundaries are preserved; the reported gap is a deterministic host-code defect and is not deferred to a later phase.
+Two closely related browser replay gaps block the phase goal. Repair the activation-to-replay link with existing lease guards, make complete acknowledgements exact/full-batch only, and add the two missing Playwright regressions. Re-run the focused browser suite and the Phase 160 gate afterwards. No human verification is appropriate: both defects are deterministic and automatable.
 
-## Gaps Summary
-
-One blocker prevents goal achievement: the server must not let replay input select its persisted outcome. Tighten admission to the exact wire schema, persist only an allowlisted server-owned attribute map, add an automated hostile-extra-field regression, then rerun the focused Phoenix and full Phase 160 gates. No human verification or UAT is appropriate because this is fully automatable.
-
-**Next action:** Escalation Gate — revise the host replay admission/persistence contract and re-verify.
+**Next action:** Escalation Gate — revise the browser replay activation and response-contract handling, then re-verify.
 
 **Next command:** `/gsd:plan-phase 160 --gaps`
 
 ---
 
-_Verified: 2026-08-02T22:54:34Z_
+_Verified: 2026-08-03T00:37:33Z_
 _Verifier: the agent (gsd-verifier)_
