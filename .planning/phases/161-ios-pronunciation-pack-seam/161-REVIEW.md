@@ -1,6 +1,6 @@
 ---
 phase: 161-ios-pronunciation-pack-seam
-reviewed: 2026-08-03T18:30:05Z
+reviewed: 2026-08-03T20:03:21Z
 depth: standard
 files_reviewed: 26
 files_reviewed_list:
@@ -31,8 +31,8 @@ files_reviewed_list:
   - test/crosswake/proof_lane/ios_verifier_test.exs
   - test/crosswake/proof_lane/template_contract_test.exs
 findings:
-  critical: 2
-  warning: 0
+  critical: 1
+  warning: 1
   info: 0
   total: 2
 status: issues_found
@@ -40,41 +40,39 @@ status: issues_found
 
 # Phase 161: Code Review Report
 
-**Reviewed:** 2026-08-03T18:30:05Z
+**Reviewed:** 2026-08-03T20:03:21Z
 **Depth:** standard
 **Files Reviewed:** 26
 **Status:** issues_found
 
 ## Summary
 
-The package state machine and proof-lane artifact checks were reviewed together with the example host adapter. The host adapter can report a pack as available from stale inventory after its bytes are deleted, corrupted, or replaced, so route activation can proceed without verified offline pronunciation media. Its install transaction can also leave those stale attestations behind on an inventory-write failure. Both violate the phase's fail-closed availability contract.
+The pack seam correctly blocks activation when the concrete provider reports a bad or absent artifact, and the reviewed Elixir and Swift suites pass. However, the generated proof lane can emit a passing `networking_disabled` assertion without disabling or observing networking, making the evidence artifact dishonest. The provider's replacement path can also delete a previously valid pack if publication fails after it has been moved out of place.
 
 ## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Reconciliation trusts an inventory claim instead of the installed bytes
+### CR-01: Offline-pack proof certifies a condition it never enforces
 
-**Classification:** BLOCKER
+**File:** `priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex:40-43,92-98`
 
-**File:** `examples/ios_shell_host/CrosswakeShell/PronunciationPackProvider.swift:22`
+**Issue:** `ProofLanePackEvidence.networkingDisabled` is declared but never constructed or checked. The adapter always reads the bundled fixture and local Application Support file, while the UI test merely sets `CROSSWAKE_PROOF_LANE_NETWORK_DISABLED` ([ProofLaneUITests.swift.eex](/Users/jon/projects/crosswake/priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift.eex:23)) and the contract test prints `networking_disabled` into the structured evidence ([ProofLaneContractTests.swift.eex](/Users/jon/projects/crosswake/priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneTests/ProofLaneContractTests.swift.eex:50)). Nothing reads that environment value or verifies that network access is unavailable. Consequently, `verify_generated_ios_shell.sh` accepts a passing artifact that asserts offline audio under disabled networking even when the process has normal network access. This violates the project's evidence-honesty and physical-iPhone proof contract.
 
-**Issue:** `status(for:)` reads and returns the persisted `PackInstalledRecord` without checking that the corresponding artifact still exists or recomputing its byte count and SHA-256. `PackStore` then accepts the record's self-reported `integrityVerified` and `atomicPromotionCompleted` flags as sufficient for `.available` (see `PackStore.swift:220-233`), and `ActivationCoordinator` mounts the route when the status is available (`ActivationCoordinator.swift:395-404`). Thus deletion or modification of `pack-<id>` after a prior successful install is reported as a valid install on relaunch and permits activation even though offline audio is absent or wrong. This is a fail-open availability/integrity defect.
+**Fix:** Make the proof adapter obtain its fixture through an injectable transport, and have the test install once with that transport available, relaunch with a transport that deterministically fails every request, and assert playback succeeds without invoking it. Emit `networking_disabled` only from that observed result. Alternatively, remove the assertion from the emitted artifact and label this generated lane strictly as an install/readback advisory until a real offline network-control harness exists.
 
-**Fix:** In `status(for:)`, locate the artifact and verify its current bytes against the supplied `PackRequirement` before returning `.installed`; return `.notInstalled` for absence and a closed failure for read, size, or digest mismatches. Do not treat persisted inventory booleans as an attestation. Add relaunch tests that delete and corrupt the promoted artifact after installation and assert that `PackStore` remains blocked and the route never resolves to `liveView`.
+## Warnings
 
-### CR-02: Promotion occurs before durable inventory commit and can make an old record attest to new bytes
+### WR-01: Replacement failure can delete the previously verified pronunciation pack
 
-**Classification:** BLOCKER
+**File:** `examples/ios_shell_host/CrosswakeShell/PronunciationPackProvider.swift:76-80,106-108`
 
-**File:** `examples/ios_shell_host/CrosswakeShell/PronunciationPackProvider.swift:39-59`
+**Issue:** During an update, the provider first moves the existing artifact to `retainedArtifact`, then moves the staged file into its place. If the second move throws (for example, a filesystem or protection-state failure), control reaches the outer `catch`; its deferred cleanup deletes `retainedArtifact`. No rollback runs on this path, so the old verified artifact is lost even though the new one was never published. The route remains correctly blocked afterward, but this breaks the promised atomic replacement and unnecessarily destroys offline media.
 
-**Issue:** The implementation replaces the live artifact at lines 40-44, then writes the corresponding inventory record at lines 54-56. If `saveInventory` fails after a replacement, the method returns `.atomicInstallFailed`, but the old inventory remains while the artifact already contains the new version's bytes. On the next `status(for:)`, lines 22-24 return the old record without inspecting the artifact; the old requirement can therefore be marked available and activate a route against different bytes. This also fails the stated last-known-good preservation requirement: a failed replacement has destroyed the prior artifact.
-
-**Fix:** Make artifact and inventory promotion a recoverable transaction: keep the prior artifact until the new inventory has been durably staged, then atomically commit both (or roll the artifact back if inventory persistence fails). At minimum, retain a rollback copy and restore it on every post-promotion failure. Couple this with CR-01's fresh status verification so an interrupted transaction is always closed. Add an injected inventory-write-failure test for a version replacement and verify that a fresh provider reports the original verified record and original bytes, or otherwise blocks.
+**Fix:** Treat both publication moves and inventory persistence as one rollback-protected transaction. Record whether the old artifact was moved, and in the outer `catch` call `rollbackPublication(...)` before returning failure; only remove `retainedArtifact` after successful promotion. Add a test seam that forces the staged-to-destination move to fail and asserts the old bytes and prior inventory remain readable.
 
 ---
 
-_Reviewed: 2026-08-03T18:30:05Z_
+_Reviewed: 2026-08-03T20:03:21Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
