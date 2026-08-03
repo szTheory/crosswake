@@ -636,7 +636,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     expect(afterRelaunch).toEqual([1, 0]);
   });
 
-  test('explicit host recovery scopes quarantined work while wrong scope cannot recover legacy work', async ({ page }) => {
+  test('unscoped legacy work remains recovery-required across account switch', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(async () => {
       await new Promise<void>((resolve, reject) => {
@@ -658,52 +658,20 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
 
     await page.goto('/offline');
     await expect(page.locator('#status')).toContainText('Saved changes need attention');
+    const requests: string[] = [];
+    page.on('request', request => {
+      if (request.url().includes('/study/sync')) requests.push(request.url());
+    });
+
     await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
 
     const betaScope = 'v1.scope_fixture_bravo_01';
-    await page.evaluate(async scopeRef => {
-      const database = await new Promise<IDBDatabase>((resolve, reject) => {
-        const request = indexedDB.open('crosswake_offline_study');
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
-      const tx = database.transaction('scoped_mutations', 'readwrite');
-      tx.objectStore('scoped_mutations').add({
-        scope_ref: scopeRef,
-        local_ref: 'retained-beta-entry',
-        client_mutation_id: '00000000-0000-4000-8000-0000000000bb',
-        card_id: 99,
-        rating: 'hard',
-      });
-      await new Promise<void>((resolve, reject) => {
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-      });
-      database.close();
-    }, betaScope);
-
+    await expect(page.evaluate(scopeRef => window.crosswakeOfflineStudy.recoverLegacyMutations(scopeRef), alphaScope))
+      .resolves.toBe('recovery_required');
+    await page.evaluate(() => window.crosswakeOfflineStudy.fenceScope());
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), betaScope);
     await expect(page.evaluate(scopeRef => window.crosswakeOfflineStudy.recoverLegacyMutations(scopeRef), betaScope))
-      .resolves.toBe('blocked');
-
-    await expect.poll(async () => page.evaluate(async () => {
-      const database = await new Promise<IDBDatabase>((resolve, reject) => {
-        const request = indexedDB.open('crosswake_offline_study');
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
-      const tx = database.transaction('legacy_mutations_quarantine', 'readonly');
-      const request = tx.objectStore('legacy_mutations_quarantine').count();
-      const count = await new Promise<number>((resolve, reject) => {
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
-      database.close();
-      return count;
-    })).toBe(1);
-    await expect(page.evaluate(scopeRef => window.crosswakeOfflineStudy.recoverLegacyMutations(scopeRef), alphaScope))
-      .resolves.toBe('recovered');
-    await expect(page.evaluate(scopeRef => window.crosswakeOfflineStudy.recoverLegacyMutations(scopeRef), alphaScope))
-      .resolves.toBe('recovered');
+      .resolves.toBe('recovery_required');
 
     const partitions = await page.evaluate(async scopeRef => {
       const database = await new Promise<IDBDatabase>((resolve, reject) => {
@@ -717,19 +685,15 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
       });
-      const scoped = await new Promise<number>((resolve, reject) => {
-        const request = tx.objectStore('scoped_mutations').index('by_scope').count(scopeRef);
+      const scoped = await Promise.all([alphaScope, betaScope].map(candidate => new Promise<number>((resolve, reject) => {
+        const request = tx.objectStore('scoped_mutations').index('by_scope').count(candidate);
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
-      });
+      })));
       database.close();
       return [quarantine, scoped];
     }, alphaScope);
-    expect(partitions).toEqual([0, 1]);
-
-    await page.evaluate(() => window.dispatchEvent(new Event('online')));
-    await page.waitForResponse(response => response.url().includes('/study/sync') && response.status() === 200);
-    await expectOutboxEmpty(page, { scopeRef: alphaScope });
-    expect(await readQueuedOfflineMutations(page, { scopeRef: betaScope })).toHaveLength(1);
+    expect(partitions).toEqual([1, [0, 0]]);
+    expect(requests).toEqual([]);
   });
 });

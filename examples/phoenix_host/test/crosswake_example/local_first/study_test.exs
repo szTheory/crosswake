@@ -21,7 +21,7 @@ defmodule CrosswakeExample.LocalFirst.StudyTest do
     assert Repo.aggregate(ReviewEvent, :count, :id) == 1
   end
 
-  test "a pre-scope accepted event remains a global idempotency tombstone", %{event: event} do
+  test "nil-scope accepted history grants no scoped acknowledgement or deletion authority", %{event: event} do
     assert {:ok, legacy} =
              %ReviewEvent{}
              |> Ecto.Changeset.change(%{
@@ -34,12 +34,13 @@ defmodule CrosswakeExample.LocalFirst.StudyTest do
              |> Repo.insert()
 
     assert legacy.scope_ref == nil
-    assert {:ok, %{outcome: :accepted}} = Study.apply_one(@scope, event, %{})
-    assert [%ReviewEvent{id: id, scope_ref: nil}] = Repo.all(ReviewEvent)
+    assert {:error, :scope_conflict} = Study.apply_one(@scope, event, %{})
+    assert [%ReviewEvent{id: id, status: "accepted", scope_ref: nil}] = Repo.all(ReviewEvent)
     assert id == legacy.id
+    assert Repo.aggregate(ReviewEvent, :count, :id) == 1
   end
 
-  test "same-scope and legacy rejected events remain closed rejected tombstones", %{event: event} do
+  test "same-scope rejected events stay rejected while nil-scope history remains a scope conflict", %{event: event} do
     for scope_ref <- [@scope, nil] do
       event =
         Map.put(
@@ -59,16 +60,22 @@ defmodule CrosswakeExample.LocalFirst.StudyTest do
                })
                |> Repo.insert()
 
-      assert {:ok, %{client_mutation_id: id, outcome: :rejected}} =
-               Study.apply_one(@scope, event, %{})
+      if scope_ref == nil do
+        assert {:error, :scope_conflict} = Study.apply_one(@scope, event, %{})
+      else
+        assert {:ok, %{client_mutation_id: id, outcome: :rejected}} =
+                 Study.apply_one(@scope, event, %{})
 
-      assert id == event["client_mutation_id"]
+        assert id == event["client_mutation_id"]
+      end
 
       assert %ReviewEvent{id: persisted_id, status: "rejected", scope_ref: ^scope_ref} =
                Repo.get!(ReviewEvent, persisted.id)
 
       assert persisted_id == persisted.id
     end
+
+    assert Repo.aggregate(ReviewEvent, :count, :id) == 2
   end
 
   test "rollback leaves neither an idempotency decision nor a domain effect", %{event: event} do
