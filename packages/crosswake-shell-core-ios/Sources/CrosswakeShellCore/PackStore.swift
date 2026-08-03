@@ -6,6 +6,12 @@ private enum PackReferenceResolution {
     case blocked(RequiredPackStatus)
 }
 
+private enum RevocationClearance {
+    case none
+    case invalidation
+    case reinstall
+}
+
 public enum PackState: String, Codable, CaseIterable, Sendable {
     case checking = "checking"
     case notInstalled = "not_installed"
@@ -67,6 +73,7 @@ public final class PackStore: ObservableObject {
     private let provider: (any PackProvider)?
     private static let revocationKey = "crosswake.pack-revocations.v1"
     private var revokedPackIDs: Set<String>
+    private var operationGenerations: [String: UInt64] = [:]
 
     public init(requirements: [PackRequirement], provider: (any PackProvider)? = nil) {
         self.requirements = Dictionary(uniqueKeysWithValues: requirements.map { ($0.packID, $0) })
@@ -119,13 +126,20 @@ public final class PackStore: ObservableObject {
 
     public func installRequiredPack(_ status: RequiredPackStatus) async {
         guard let requirement = requirements[status.packID] else { return }
+        let generation = beginMutation(for: requirement.packID)
         statuses[requirement.packID] = updated(status, state: .installing, stage: .preparing, failureReason: nil)
         guard let provider else {
-            statuses[requirement.packID] = updated(status, state: .failed, stage: nil, failureReason: .providerUnavailable)
+            guard isCurrent(generation, for: requirement.packID) else { return }
+            statuses[requirement.packID] = failedStatus(for: requirement, reason: .providerUnavailable)
             return
         }
-        _ = await provider.install(requirement)
-        await reconcile(requirement)
+        let result = await provider.install(requirement)
+        guard isCurrent(generation, for: requirement.packID) else { return }
+        guard case .installed = result else {
+            apply(result, for: requirement, generation: generation, clearance: .none)
+            return
+        }
+        await reconcile(requirement, generation: generation, clearance: .reinstall)
     }
 
     public func retry(_ status: RequiredPackStatus) async {
@@ -134,38 +148,71 @@ public final class PackStore: ObservableObject {
 
     public func invalidatePack(_ status: RequiredPackStatus) async {
         guard let requirement = requirements[status.packID] else { return }
+        let generation = beginMutation(for: requirement.packID)
         revoke(requirement.packID)
         statuses[requirement.packID] = updated(status, state: .invalidating, stage: nil, failureReason: nil)
         guard let provider else {
-            statuses[requirement.packID] = updated(status, state: .failed, stage: nil, failureReason: .providerUnavailable)
-            return
-        }
-        guard case .notInstalled = await provider.invalidate(requirement),
-              case .notInstalled = await provider.status(for: requirement) else {
+            guard isCurrent(generation, for: requirement.packID) else { return }
             statuses[requirement.packID] = failedStatus(for: requirement, reason: .invalidationFailed)
             return
         }
-        clearRevocation(requirement.packID)
-        statuses[requirement.packID] = unavailableStatus(for: requirement)
+        let result = await provider.invalidate(requirement)
+        guard isCurrent(generation, for: requirement.packID) else { return }
+        guard case .notInstalled = result else {
+            statuses[requirement.packID] = failedStatus(for: requirement, reason: .invalidationFailed)
+            return
+        }
+        await reconcile(requirement, generation: generation, clearance: .invalidation)
     }
 
     private func reconcile(_ requirement: PackRequirement) async {
+        await reconcile(requirement, generation: operationGenerations[requirement.packID, default: 0], clearance: .none)
+    }
+
+    private func reconcile(_ requirement: PackRequirement, generation: UInt64, clearance: RevocationClearance) async {
         guard let provider else {
+            guard isCurrent(generation, for: requirement.packID) else { return }
             statuses[requirement.packID] = failedStatus(for: requirement, reason: .providerUnavailable)
             return
         }
 
         let result = await provider.status(for: requirement)
-        if revokedPackIDs.contains(requirement.packID) {
-            let reconciled = status(for: result, requirement: requirement)
-            if reconciled.state == .available {
-                clearRevocation(requirement.packID)
-            } else {
-                statuses[requirement.packID] = failedStatus(for: requirement, reason: .invalidationFailed)
-                return
-            }
+        apply(result, for: requirement, generation: generation, clearance: clearance)
+    }
+
+    private func apply(_ result: PackProviderResult, for requirement: PackRequirement, generation: UInt64, clearance: RevocationClearance) {
+        guard isCurrent(generation, for: requirement.packID) else { return }
+        let reconciled = status(for: result, requirement: requirement)
+        guard revokedPackIDs.contains(requirement.packID) else {
+            statuses[requirement.packID] = reconciled
+            return
         }
-        statuses[requirement.packID] = status(for: result, requirement: requirement)
+        guard canClearRevocation(with: reconciled, clearance: clearance) else {
+            statuses[requirement.packID] = failedStatus(for: requirement, reason: .invalidationFailed)
+            return
+        }
+        clearRevocation(requirement.packID)
+        statuses[requirement.packID] = reconciled
+    }
+
+    private func canClearRevocation(with status: RequiredPackStatus, clearance: RevocationClearance) -> Bool {
+        switch clearance {
+        case .invalidation: return status.state == .notInstalled
+        case .reinstall: return status.state == .available
+        case .none: return false
+        }
+    }
+
+    private func beginMutation(for packID: String) -> UInt64 {
+        let current = operationGenerations[packID, default: 0]
+        precondition(current < UInt64.max, "Pack operation generation exhausted")
+        let next = current + 1
+        operationGenerations[packID] = next
+        return next
+    }
+
+    private func isCurrent(_ generation: UInt64, for packID: String) -> Bool {
+        operationGenerations[packID, default: 0] == generation
     }
 
     private func status(for result: PackProviderResult, requirement: PackRequirement) -> RequiredPackStatus {

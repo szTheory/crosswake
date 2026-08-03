@@ -100,8 +100,6 @@ final class PackStoreTests: XCTestCase {
         await provider.waitForInvalidationEntries(2)
 
         await provider.resumeNextInvalidation(.notInstalled)
-        await provider.waitForStatusEntries(1)
-        await provider.resumeNextStatus(.notInstalled)
         await older.value
         await provider.resumeNextInvalidation(.failure(.providerFailed))
         await newer.value
@@ -125,6 +123,28 @@ final class PackStoreTests: XCTestCase {
         await invalidation.value
 
         XCTAssertEqual(store.statuses[requirement.packID]?.state, .notInstalled)
+        let relaunch = PackStore(requirements: [requirement], provider: provider)
+        XCTAssertEqual(relaunch.statuses[requirement.packID]?.state, .checking)
+    }
+
+    func testVerifiedReinstallAndFreshExactStatusClearRevocation() async {
+        let requirement = uniqueRequirement()
+        let provider = ControlledPackProvider()
+        let store = PackStore(requirements: [requirement], provider: provider)
+        let status = store.statuses[requirement.packID]!
+
+        let invalidation = Task { await store.invalidatePack(status) }
+        await provider.waitForInvalidationEntries(1)
+        await provider.resumeNextInvalidation(.failure(.providerFailed))
+        await invalidation.value
+
+        await provider.setInstallResult(installedResult(for: requirement))
+        let reinstall = Task { await store.installRequiredPack(store.statuses[requirement.packID]!) }
+        await provider.waitForStatusEntries(1)
+        await provider.resumeNextStatus(installedResult(for: requirement))
+        await reinstall.value
+
+        XCTAssertEqual(store.statuses[requirement.packID]?.state, .available)
         let relaunch = PackStore(requirements: [requirement], provider: provider)
         XCTAssertEqual(relaunch.statuses[requirement.packID]?.state, .checking)
     }
@@ -173,6 +193,7 @@ private actor ControlledPackProvider: PackProvider {
     private var invalidationContinuations: [CheckedContinuation<PackProviderResult, Never>] = []
     private var statusEntries = 0
     private var invalidationEntries = 0
+    private var installResult: PackProviderResult = .failure(.providerFailed)
     private var statusWaiters: [(Int, CheckedContinuation<Void, Never>)] = []
     private var invalidationWaiters: [(Int, CheckedContinuation<Void, Never>)] = []
 
@@ -182,7 +203,7 @@ private actor ControlledPackProvider: PackProvider {
         return await withCheckedContinuation { statusContinuations.append($0) }
     }
 
-    func install(_ requirement: PackRequirement) async -> PackProviderResult { .failure(.providerFailed) }
+    func install(_ requirement: PackRequirement) async -> PackProviderResult { installResult }
 
     func invalidate(_ requirement: PackRequirement) async -> PackProviderResult {
         invalidationEntries += 1
@@ -206,6 +227,10 @@ private actor ControlledPackProvider: PackProvider {
 
     func resumeNextInvalidation(_ result: PackProviderResult) {
         invalidationContinuations.removeFirst().resume(returning: result)
+    }
+
+    func setInstallResult(_ result: PackProviderResult) {
+        installResult = result
     }
 
     private func resumeStatusWaiters() {
