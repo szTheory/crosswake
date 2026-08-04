@@ -27,11 +27,36 @@ public final class NavigationCoordinator: ObservableObject {
         guard topology.validate(against: manifest) == .valid,
               let entry = topology.entries.first(where: { $0.routeID == routeID && $0.presentation == .root }),
               case let .authorized(presentation) = resolver(routeID, manifest) else { return .denied }
-        let stackEntry = NavigationStackEntry(routeID: entry.routeID, presentation: presentation)
         selectedTabID = entry.rootTabID
-        stacks[entry.rootTabID] = [stackEntry]
-        activeRouteID = entry.routeID
+        if let retained = stacks[entry.rootTabID], let leaf = retained.last {
+            activeRouteID = leaf.routeID
+        } else {
+            let stackEntry = NavigationStackEntry(routeID: entry.routeID, presentation: presentation)
+            stacks[entry.rootTabID] = [stackEntry]
+            activeRouteID = entry.routeID
+        }
         return .authorized
+    }
+
+    /// A canceled interactive edge swipe is intentionally a no-op. A completed pop
+    /// resolves the destination before replacing the retained stack.
+    @discardableResult public func completeNativePop(completed: Bool) -> NavigationSelectionResult {
+        guard completed,
+              let tabID = selectedTabID,
+              let stack = stacks[tabID], stack.count > 1,
+              let destination = stack.dropLast().last,
+              case .authorized = resolver(destination.routeID, manifest) else { return .denied }
+        stacks[tabID] = Array(stack.dropLast())
+        activeRouteID = destination.routeID
+        return .authorized
+    }
+
+    @discardableResult public func reconstructDeepLink(routeIDs: [String]) -> NavigationSelectionResult {
+        reconstruct(routeIDs: routeIDs, posture: \.deepLinkPosture)
+    }
+
+    @discardableResult public func reconstructRestoration(routeIDs: [String]) -> NavigationSelectionResult {
+        reconstruct(routeIDs: routeIDs, posture: \.restorationPosture)
     }
 
     /// Applies every accepted web candidate only after manifest/topology validation and
@@ -67,5 +92,25 @@ public final class NavigationCoordinator: ObservableObject {
     private func record(_ transitionID: String) {
         transitionIDs.append(transitionID)
         if transitionIDs.count > transitionLedgerLimit { transitionIDs.removeFirst() }
+    }
+
+    private func reconstruct(routeIDs: [String], posture: KeyPath<NavigationTopologyEntry, NavigationEntryPosture>) -> NavigationSelectionResult {
+        guard topology.validate(against: manifest) == .valid, routeIDs.isEmpty == false else { return .denied }
+        let candidates = routeIDs.compactMap { routeID in topology.entries.first(where: { $0.routeID == routeID }) }
+        guard candidates.count == routeIDs.count,
+              candidates.allSatisfy({ $0[keyPath: posture] == .allow }),
+              candidates.first?.presentation == .root,
+              candidates.dropFirst().enumerated().allSatisfy({ index, entry in entry.presentation == .push && entry.parentRouteID == candidates[index].routeID }) else { return .denied }
+
+        var staged: [NavigationStackEntry] = []
+        for candidate in candidates {
+            guard case let .authorized(presentation) = resolver(candidate.routeID, manifest) else { return .denied }
+            staged.append(NavigationStackEntry(routeID: candidate.routeID, presentation: presentation))
+        }
+        guard let tabID = candidates.first?.rootTabID else { return .denied }
+        selectedTabID = tabID
+        stacks[tabID] = staged
+        activeRouteID = staged.last?.routeID
+        return .authorized
     }
 }

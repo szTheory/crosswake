@@ -262,11 +262,13 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
             }
         }
     )
+    private lazy var navigationTransitionChannel = shell.createNavigationTransitionChannel()
     private lazy var webView: WKWebView = {
         let configuration = WKWebViewConfiguration()
         let userContentController = WKUserContentController()
 
         userContentController.add(bridgeChannel, name: BridgeChannel.handlerName)
+        userContentController.add(navigationTransitionChannel, name: NavigationTransitionChannel.handlerName)
         
         // Inject capabilities into the window.crosswakeBridge object
         let capabilities = shell.coordinator.registeredCapabilities
@@ -316,6 +318,11 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
 
     override func loadView() {
         view = webView
+    }
+
+    deinit {
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: BridgeChannel.handlerName)
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: NavigationTransitionChannel.handlerName)
     }
 
     override func viewDidLoad() {

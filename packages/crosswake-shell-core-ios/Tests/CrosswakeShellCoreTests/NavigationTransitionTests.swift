@@ -44,6 +44,18 @@ final class NavigationTransitionTests: XCTestCase {
         XCTAssertEqual(patchCount.value, 1)
     }
 
+    func testProductionHostRegistersOnlyTheDedicatedNavigationPath() throws {
+        let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let host = try String(contentsOf: root.appendingPathComponent("examples/ios_shell_host/CrosswakeShell/LiveViewContainerViewController.swift"))
+        let channel = try String(contentsOf: root.appendingPathComponent("packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/NavigationTransitionChannel.swift"))
+
+        XCTAssertTrue(host.contains("add(navigationTransitionChannel, name: NavigationTransitionChannel.handlerName)"))
+        XCTAssertTrue(host.contains("removeScriptMessageHandler(forName: NavigationTransitionChannel.handlerName)"))
+        XCTAssertTrue(channel.contains("handlerName = \"crosswakeNavigation\""))
+        XCTAssertFalse(channel.contains("BridgeCommand"))
+        XCTAssertFalse(channel.contains("WKNavigationAction"))
+    }
+
     private func makeCoordinator(patchSink: @escaping (NavigationStackEntry) -> Void = { _ in }) -> NavigationCoordinator {
         let root = NavigationTopologyEntry(routeID: "route-0123456789abcdef", rootTabID: "tab-0123456789abcdef", presentation: .root, parentRouteID: nil, deepLinkPosture: .allow, restorationPosture: .allow)
         let push = NavigationTopologyEntry(routeID: "route-fedcba9876543210", rootTabID: root.rootTabID, presentation: .push, parentRouteID: root.routeID, deepLinkPosture: .allow, restorationPosture: .allow)

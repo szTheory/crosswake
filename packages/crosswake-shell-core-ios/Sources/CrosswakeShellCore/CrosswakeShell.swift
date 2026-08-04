@@ -89,11 +89,14 @@ public final class CrosswakeShell: ObservableObject {
     public let serverEvents = PassthroughSubject<ServerEvent, Never>()
     
     public let coordinator: ActivationCoordinator
+    private lazy var navigationCoordinator = coordinator.makeNavigationCoordinator(topology: Self.loadNavigationTopology(bundle: bundle))
     private let config: CrosswakeShellConfig
+    private let bundle: Bundle
     private var cancellables = Set<AnyCancellable>()
 
     public init(config: CrosswakeShellConfig, bundle: Bundle = .main) {
         self.config = config
+        self.bundle = bundle
         self.coordinator = ActivationCoordinator.bundled(bundle: bundle, config: config)
 
         self.coordinator.$presentation
@@ -102,6 +105,12 @@ public final class CrosswakeShell: ObservableObject {
                 self?.presentation = newPresentation
             }
             .store(in: &cancellables)
+    }
+
+    /// Creates the one dedicated D-04 WebKit delivery channel. It is intentionally
+    /// separate from `BridgeChannel` and has no request/reply capability authority.
+    public func createNavigationTransitionChannel() -> NavigationTransitionChannel {
+        NavigationTransitionChannel(coordinator: navigationCoordinator)
     }
 
     public func createBridgeChannel(
@@ -151,5 +160,14 @@ public final class CrosswakeShell: ObservableObject {
         } else {
             coordinator.bootstrapIfNeeded()
         }
+    }
+
+    private static func loadNavigationTopology(bundle: Bundle) -> NavigationTopology {
+        guard let url = bundle.url(forResource: "navigation_topology", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let topology = try? JSONDecoder().decode(NavigationTopology.self, from: data) else {
+            return NavigationTopology(topologySchemaVersion: "0.0.0", manifestSchemaVersion: "0.0.0", status: .unknownBlocking, entries: [])
+        }
+        return topology
     }
 }

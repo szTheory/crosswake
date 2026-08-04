@@ -491,6 +491,19 @@ public final class ActivationCoordinator: ObservableObject {
         )
     }
 
+    /// Builds the shell-owned navigation resolver from the same manifest/request
+    /// authority as activation. Candidate transitions never bypass this resolver.
+    public func makeNavigationCoordinator(topology: NavigationTopology) -> NavigationCoordinator {
+        let manifest = (try? loadManifest()) ?? ShellManifest(compatibility: .init(nativeRuntimeVersion: "0.0.0"), routes: [:])
+        return NavigationCoordinator(topology: topology, manifest: manifest) { [weak self] routeID, manifest in
+            guard let self, let baseline = try? self.requestLoader() else { return .denied }
+            let request = ActivationRequest(routeID: routeID, url: nil, source: .inAppNavigation, origin: baseline.origin, manifestSource: baseline.manifestSource, bridgeProtocolVersion: baseline.bridgeProtocolVersion, nativeRuntimeVersion: baseline.nativeRuntimeVersion, correlationID: baseline.correlationID, threadID: baseline.threadID, declaredPackRequirements: baseline.declaredPackRequirements, installedPacks: baseline.installedPacks, capabilities: baseline.capabilities)
+            let presentation = self.resolve(request: request, manifest: manifest)
+            if case .denied = presentation { return .denied }
+            return .authorized(presentation)
+        }
+    }
+
     private func handleIncomingURL(_ url: URL, source: ActivationSource) {
         do {
             let seededRequest = try loadAndFilterRequest()
