@@ -2,6 +2,28 @@ import XCTest
 @testable import CrosswakeProofLane
 
 final class ProofLaneContractTests: XCTestCase {
+  func testNavigationTopologyRejectsInvalidVectors() {
+    XCTAssertEqual(ProofLaneNavigationContract.topology(rootCount: 2, versionsMatch: true, hasInvalidParent: false), .passed)
+    XCTAssertEqual(ProofLaneNavigationContract.topology(rootCount: 0, versionsMatch: true, hasInvalidParent: false), .blocked)
+    XCTAssertEqual(ProofLaneNavigationContract.topology(rootCount: 2, versionsMatch: false, hasInvalidParent: false), .blocked)
+    XCTAssertEqual(ProofLaneNavigationContract.topology(rootCount: 2, versionsMatch: true, hasInvalidParent: true), .blocked)
+  }
+
+  func testNavigationSynchronizationRejectsDuplicateAndStaleTransitions() {
+    XCTAssertEqual(ProofLaneNavigationContract.transition(isNavigate: false, transitionIsFresh: true, stackDepthBefore: 1, stackDepthAfter: 1), .passed)
+    XCTAssertEqual(ProofLaneNavigationContract.transition(isNavigate: true, transitionIsFresh: true, stackDepthBefore: 1, stackDepthAfter: 2), .passed)
+    XCTAssertEqual(ProofLaneNavigationContract.transition(isNavigate: true, transitionIsFresh: false, stackDepthBefore: 1, stackDepthAfter: 2), .blocked)
+    XCTAssertEqual(ProofLaneNavigationContract.transition(isNavigate: false, transitionIsFresh: true, stackDepthBefore: 1, stackDepthAfter: 2), .blocked)
+  }
+
+  func testNavigationRestorationRemainsNonPassingWithoutAdapter() {
+    XCTAssertEqual(ProofLaneNavigationContract.restoration(adapter: nil), .unavailable)
+
+    for assertion in ProofLaneNavigationAssertion.allCases {
+      XCTAssertNotEqual(ProofLaneNavigationContract.observation(assertion, adapter: nil), .passed)
+    }
+  }
+
   func testMissingAdapterRemainsUnavailable() {
     let adapter = ProofLaneHostAdapterFactory.make()
     if ProcessInfo.processInfo.environment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] == "1" {

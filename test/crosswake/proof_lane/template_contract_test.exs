@@ -84,7 +84,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
       assert adapter =~ "export const proofLaneHostAdapter"
       assert adapter =~ "satisfies ProofLaneAdapter"
       assert adapter =~ "PL-BROWSER-HOST-ADAPTER"
-      assert manifest =~ "\"template_version\":3"
+      assert manifest =~ "\"template_version\":4"
       assert manifest =~ "e2e/crosswake_proof_lane/support/proof_lane_host_adapter.ts"
     after
       File.rm_rf!(root)
@@ -181,6 +181,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
 
   test "native test templates use deterministic and accessibility-only boundaries" do
     app = source("priv/templates/crosswake/proof_lane/ios/ProofLaneApp.swift.eex")
+
     contract =
       source(
         "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneTests/ProofLaneContractTests.swift.eex"
@@ -239,16 +240,22 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert position(ui, reset_marker) < position(ui, install_tap)
     assert position(ui, install_tap) < position(ui, passed)
     assert position(ui, passed) < position(ui, install_marker)
-    assert ui =~ "app.launchEnvironment.removeValue(forKey: \"CROSSWAKE_PROOF_LANE_RESET_REFERENCE_PACK\")"
+
+    assert ui =~
+             "app.launchEnvironment.removeValue(forKey: \"CROSSWAKE_PROOF_LANE_RESET_REFERENCE_PACK\")"
   end
 
   test "generated iOS lane owns a missing-only real-byte fixture and closed pack callbacks" do
     generator = source("lib/crosswake/proof_lane/generator.ex")
     driver = source("priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex")
-    fixture = source("priv/templates/crosswake/proof_lane/ios/Resources/pronunciation-pack-fixture.bin.eex")
+
+    fixture =
+      source(
+        "priv/templates/crosswake/proof_lane/ios/Resources/pronunciation-pack-fixture.bin.eex"
+      )
 
     assert generator =~ "pronunciation-pack-fixture.bin"
-    assert generator =~ "@template_version 3"
+    assert generator =~ "@template_version 4"
     assert fixture != ""
     assert driver =~ "installPronunciationPackForeground"
     assert driver =~ "exerciseInstalledPronunciationAudioOffline"
@@ -266,6 +273,47 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
 
     refute driver =~ "localizedDescription"
     refute driver =~ "archive"
+  end
+
+  test "generated iOS lane adds closed navigation topology and synchronization contracts" do
+    generator = source("lib/crosswake/proof_lane/generator.ex")
+    driver = source("priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex")
+
+    contract =
+      source(
+        "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneTests/ProofLaneContractTests.swift.eex"
+      )
+
+    project =
+      source(
+        "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex"
+      )
+
+    assert generator =~ "ProofLaneContractTests.swift"
+    assert generator =~ "@template_version 4"
+    assert driver =~ "ProofLaneNavigationHostAdapter"
+    assert driver =~ "PL-IOS-NAV-TOPOLOGY"
+    assert driver =~ "PL-IOS-NAV-PATCH-DEPTH"
+    assert driver =~ "PL-IOS-NAV-NAVIGATE-ONCE"
+    assert driver =~ "PL-IOS-NAV-RESTORE"
+    assert driver =~ "PL-IOS-NAV-TABS-BACK"
+    assert driver =~ "PL-IOS-NAV-MARKER-INSETS"
+    assert driver =~ "PL-IOS-NAV-FOCUS"
+    assert contract =~ "testNavigationTopologyRejectsInvalidVectors"
+    assert contract =~ "testNavigationSynchronizationRejectsDuplicateAndStaleTransitions"
+    assert contract =~ "testNavigationRestorationRemainsNonPassingWithoutAdapter"
+    assert project =~ "ProofLaneContractTests.swift in Sources"
+
+    for forbidden <- [
+          "WKBackForwardList",
+          "window.history",
+          "routePath",
+          "routePayload",
+          "UIAlert",
+          "Android"
+        ] do
+      refute driver =~ forbidden
+    end
   end
 
   test "native verifier keeps package and git configuration operation-scoped" do

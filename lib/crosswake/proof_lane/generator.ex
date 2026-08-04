@@ -4,7 +4,7 @@ defmodule Crosswake.ProofLane.Generator do
   alias Crosswake.ProofLane.{Config, GeneratorFS}
 
   @schema_version 1
-  @template_version 3
+  @template_version 4
   @templates [
     {"test/crosswake_proof_lane/crosswake_proof_lane_test.exs",
      "test/crosswake_proof_lane_test.exs.eex"},
