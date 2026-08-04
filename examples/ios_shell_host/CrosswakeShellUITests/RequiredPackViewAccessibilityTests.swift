@@ -2,7 +2,7 @@ import XCTest
 
 final class RequiredPackViewAccessibilityTests: XCTestCase {
     func testAccessibilityXXXLRecoveryCopyWrapsAndControlsRemainReachable() {
-        let app = launchProbe()
+        let app = launchProbe("invalidate")
         let status = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Offline audio needs recovery")).firstMatch
         let action = app.buttons["Invalidate downloaded audio"]
 
@@ -16,7 +16,7 @@ final class RequiredPackViewAccessibilityTests: XCTestCase {
     }
 
     func testAccessibilityXXXLLifecycleAnnouncementPreservesFocus() {
-        let app = launchProbe()
+        let app = launchProbe("install")
         let status = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Offline audio is required")).firstMatch
 
         XCTAssertTrue(status.waitForExistence(timeout: 5))
@@ -45,7 +45,7 @@ final class RequiredPackViewAccessibilityTests: XCTestCase {
     }
 
     func testAccessibilityXXXLDeveloperContextWrapsWithoutSensitiveData() {
-        let app = launchProbe()
+        let app = launchProbe("retry")
         let owner = app.staticTexts.matching(NSPredicate(format: "label == %@", "Owner: host pack provider")).firstMatch
 
         XCTAssertTrue(owner.waitForExistence(timeout: 5))
@@ -59,17 +59,17 @@ final class RequiredPackViewAccessibilityTests: XCTestCase {
         }
     }
 
-    private func launchProbe() -> XCUIApplication {
+    private func launchProbe(_ state: String = "all") -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-crosswake-required-pack-accessibility", "all", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        app.launchArguments = ["-crosswake-required-pack-accessibility", state, "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         app.launch()
         return app
     }
 }
 
 private extension XCUIElement {
-    func scrollToVisible() {
-        if !isHittable {
+    func scrollToVisible(attempts: Int = 1) {
+        for _ in 0..<attempts where !isHittable {
             XCUIApplication().swipeUp()
         }
     }
