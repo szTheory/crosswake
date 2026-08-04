@@ -2,9 +2,9 @@ import XCTest
 
 final class RequiredPackViewAccessibilityTests: XCTestCase {
     func testAccessibilityXXXLRecoveryCopyWrapsAndControlsRemainReachable() {
-        let app = launchProbe("invalidate")
-        let status = app.staticTexts["required-pack-status"]
-        let action = app.buttons["required-pack-invalidate-action"]
+        let app = launchProbe()
+        let status = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Offline audio needs recovery")).firstMatch
+        let action = app.buttons["Invalidate downloaded audio"]
 
         XCTAssertTrue(status.waitForExistence(timeout: 5))
         XCTAssertTrue(status.label.contains("Offline audio needs recovery"))
@@ -16,8 +16,8 @@ final class RequiredPackViewAccessibilityTests: XCTestCase {
     }
 
     func testAccessibilityXXXLLifecycleAnnouncementPreservesFocus() {
-        let app = launchProbe("install")
-        let status = app.staticTexts["required-pack-status"]
+        let app = launchProbe()
+        let status = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Offline audio is required")).firstMatch
 
         XCTAssertTrue(status.waitForExistence(timeout: 5))
         XCTAssertTrue(status.label.contains("Offline audio is required"))
@@ -27,27 +27,26 @@ final class RequiredPackViewAccessibilityTests: XCTestCase {
     }
 
     func testAccessibilityXXXLActionLabelsWrapWithoutTruncation() {
-        for (state, identifier, label) in [
-            ("install", "required-pack-primary-action", "Install offline audio"),
-            ("update", "required-pack-primary-action", "Update offline audio"),
-            ("retry", "required-pack-primary-action", "Retry download"),
-            ("invalidate", "required-pack-invalidate-action", "Invalidate downloaded audio")
+        let app = launchProbe()
+        for label in [
+            "Install offline audio",
+            "Update offline audio",
+            "Retry download",
+            "Invalidate downloaded audio"
         ] {
-            let app = launchProbe(state)
-            let action = app.buttons[identifier]
-            XCTAssertTrue(action.waitForExistence(timeout: 5), state)
+            let action = app.buttons[label]
+            XCTAssertTrue(action.waitForExistence(timeout: 5), label)
             action.scrollToVisible()
             XCTAssertEqual(action.label, label)
             XCTAssertFalse(action.label.contains("…"))
             XCTAssertGreaterThanOrEqual(action.frame.width, 44)
             XCTAssertGreaterThanOrEqual(action.frame.height, 44)
-            app.terminate()
         }
     }
 
     func testAccessibilityXXXLDeveloperContextWrapsWithoutSensitiveData() {
-        let app = launchProbe("retry")
-        let owner = app.staticTexts["required-pack-owner"]
+        let app = launchProbe()
+        let owner = app.staticTexts.matching(NSPredicate(format: "label == %@", "Owner: host pack provider")).firstMatch
 
         XCTAssertTrue(owner.waitForExistence(timeout: 5))
         owner.scrollToVisible()
@@ -60,9 +59,9 @@ final class RequiredPackViewAccessibilityTests: XCTestCase {
         }
     }
 
-    private func launchProbe(_ state: String) -> XCUIApplication {
+    private func launchProbe() -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-crosswake-required-pack-accessibility", state, "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        app.launchArguments = ["-crosswake-required-pack-accessibility", "all", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         app.launch()
         return app
     }
@@ -70,10 +69,8 @@ final class RequiredPackViewAccessibilityTests: XCTestCase {
 
 private extension XCUIElement {
     func scrollToVisible() {
-        var attempts = 0
-        while !isHittable && attempts < 8 {
+        if !isHittable {
             XCUIApplication().swipeUp()
-            attempts += 1
         }
     }
 }

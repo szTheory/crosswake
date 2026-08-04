@@ -193,23 +193,34 @@ struct CrosswakeShellApp: App {
 /// Debug-only launch seam for the executable accessibility contract. It is inert unless the
 /// dedicated UI-test argument is present and never supplies storage, media, or route authority.
 private struct RequiredPackAccessibilityProbe: View {
-    let state: PackState
-    let reason: PackFailureReason?
+    let states: [(PackState, PackFailureReason?)]
 
     static var fromLaunchArguments: Self? {
         let arguments = ProcessInfo.processInfo.arguments
         guard let index = arguments.firstIndex(of: "-crosswake-required-pack-accessibility"),
               arguments.indices.contains(index + 1) else { return nil }
         switch arguments[index + 1] {
-        case "install": return Self(state: .notInstalled, reason: nil)
-        case "update": return Self(state: .stale, reason: nil)
-        case "retry": return Self(state: .failed, reason: .transferInterrupted)
-        case "invalidate": return Self(state: .failed, reason: .digestMismatch)
+        case "install": return Self(states: [(.notInstalled, nil)])
+        case "update": return Self(states: [(.stale, nil)])
+        case "retry": return Self(states: [(.failed, .transferInterrupted)])
+        case "invalidate": return Self(states: [(.failed, .digestMismatch)])
+        case "all": return Self(states: [(.notInstalled, nil), (.stale, nil), (.failed, .transferInterrupted), (.failed, .digestMismatch)])
         default: return nil
         }
     }
 
     var body: some View {
+        ScrollView {
+            VStack(alignment: .leading) {
+                ForEach(states.indices, id: \.self) { index in
+                    view(state: states[index].0, reason: states[index].1)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func view(state: PackState, reason: PackFailureReason?) -> some View {
         if var status = PackStore(requirements: [
             PackRequirement(packID: "pack", requiredVersion: "1", expectedByteCount: 0, expectedSHA256: "")
         ]).statuses["pack"] {
@@ -223,8 +234,6 @@ private struct RequiredPackAccessibilityProbe: View {
                 }(),
                 onInstall: {}, onRetry: {}, onInvalidate: {}
             )
-        } else {
-            EmptyView()
         }
     }
 }
