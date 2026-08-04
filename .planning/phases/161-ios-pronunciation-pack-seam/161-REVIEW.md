@@ -1,6 +1,6 @@
 ---
 phase: 161-ios-pronunciation-pack-seam
-reviewed: 2026-08-04T01:25:14Z
+reviewed: 2026-08-04T02:44:13Z
 depth: standard
 files_reviewed: 27
 files_reviewed_list:
@@ -41,46 +41,39 @@ status: issues_found
 
 # Phase 161: Code Review Report
 
-**Reviewed:** 2026-08-04T01:25:14Z
+**Reviewed:** 2026-08-04T02:44:13Z
 **Depth:** standard
 **Files Reviewed:** 27
 **Status:** issues_found
 
 ## Summary
 
-The provider and core seam are generally fail-closed: route activation waits for provider-attested bytes, and the host recovery journal prevents interrupted publication from silently becoming available. The generated iOS proof lane is not run-isolated, however. A stale pack in the simulator container can satisfy the current UI assertions and cause the verifier to report a current-run advisory pass without performing the asserted installation.
+The reviewed implementation correctly fails route activation closed while pack state is unreconciled, and the generated proof reset chain now addresses the prior stale-simulator evidence gap. However, the crash-recovery state machine has an uncovered valid state: stale inventory without a prior artifact. A crash after its journal is written makes startup recovery fail permanently, blocking all pack operations.
 
 ## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Generated proof can certify a stale installed pack as a fresh installation
+### CR-01: Recovery permanently bricks installation when inventory outlives its artifact
 
-**File:** `priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift.eex:15-30`
-**Issue:** The UI test enables the reference adapter, taps install, and only checks for a `Passed` outcome. It neither clears the adapter's Application Support artifact nor asserts that the adapter initially reports `Blocked`. `ProofLaneReferencePackAdapter` persists at a fixed Application Support path ([ProofLaneDriver.swift.eex:165-175](priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex)), while the proof verifier runs `test-without-building` without uninstalling/resetting the proof-lane app ([verify_generated_ios_shell.sh:184-216](script/verify_generated_ios_shell.sh)). Consequently a prior run's valid fixture can make the test pass even if this run's install action does nothing or fails. The verifier then accepts the test markers and emits `PL-IOS-PACK-AUDIO-ADVISORY: passed`, producing misleading proof evidence.
+**File:** `examples/ios_shell_host/CrosswakeShell/PronunciationPackProvider.swift:147-171, 320-329`
 
-**Fix:** Add a test-only reset launch argument/environment handled by the generated app before it constructs the adapter, and assert the reference-adapter launch begins `Blocked` before tapping install. For example:
+**Classification:** BLOCKER
 
-```swift
-// ProofLaneApp.swift.eex, before ProofLaneHostAdapterFactory.make()
-if ProcessInfo.processInfo.environment["CROSSWAKE_PROOF_LANE_RESET_REFERENCE_PACK"] == "1" {
-  ProofLaneReferencePackAdapter.resetReferencePersistenceForTests()
-}
-```
+**Issue:** `install` records `priorRecord` from `inventory.json` even when the corresponding destination file does not exist (`hadPriorArtifact == false`). That state is reachable after a crash during `invalidate` after the artifact removal succeeds but before the inventory write, or after a missing/corrupt artifact is reconciled. If the process then crashes after `persistJournal` at line 171 but before promotion, recovery enters `.promotionPending`, sees the non-nil `priorRecord`, and requires the never-created `retained` file at line 323. Recovery throws, `startupRecovery` remains failed, and every subsequent `status`, `install`, and `invalidate` returns a failure indefinitely. This breaks the required restart-safe, fail-closed recovery path rather than allowing the user to reinstall.
+
+**Fix:** Only treat the previous record as recoverable when a verified previous artifact was retained. For example, derive the journal record from `hadPriorArtifact`, and add a regression test for `inventory present + destination absent + crash after journal persistence`:
 
 ```swift
-app.launchEnvironment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] = "1"
-app.launchEnvironment["CROSSWAKE_PROOF_LANE_RESET_REFERENCE_PACK"] = "1"
-app.launch()
-assertBlockedPackOutcome(in: app)
-install.tap()
-assertAdapterDerivedPassedOutcome(in: app)
+let priorRecord = hadPriorArtifact ? loadInventory()[requirement.packID] : nil
+// If no prior artifact exists, remove the stale inventory entry before journaling
+// or make recovery's promotion-pending branch remove it rather than requiring retained.
 ```
 
-Keep the reset limited to the generated reference adapter/test mode so it cannot alter a host-supplied provider's storage.
+Recovery should also explicitly handle `priorRecord == nil` by removing any stale inventory entry, preserving the current `else` path at lines 326-329.
 
 ---
 
-_Reviewed: 2026-08-04T01:25:14Z_
+_Reviewed: 2026-08-04T02:44:13Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
