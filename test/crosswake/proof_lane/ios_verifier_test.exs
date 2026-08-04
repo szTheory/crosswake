@@ -203,11 +203,64 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
     assert File.read!(swiftpm_config) == before_swiftpm
   end
 
+  test "verifier uses private DerivedData for every xcodebuild invocation", %{bin: bin, project: project, root: root} do
+    trace = Path.join(root, "xcodebuild-trace")
+    run_root = Path.join(root, "caller-run-root")
+    write_xcodebuild(bin)
+
+    {output, status} =
+      System.cmd("bash", [@script, "--proof-lane", "--reference-pack-adapter"],
+        stderr_to_stdout: true,
+        env: [
+          {"PATH", bin <> ":" <> System.get_env("PATH")},
+          {"TMPDIR", root},
+          {"CROSSWAKE_IOS_PROJECT_ROOT", project},
+          {"CROSSWAKE_IOS_RUN_ROOT", run_root},
+          {"CROSSWAKE_IOS_XCODEBUILD_TRACE", trace},
+          {"CROSSWAKE_IOS_SHIM_MODE", "structured-evidence"}
+        ]
+      )
+
+    assert status == 0, output
+    assert {:ok, %{"outcome" => "passed"}} = Jason.decode(String.trim(output))
+    assert File.read!(trace) =~ "-list"
+    assert File.read!(trace) =~ "-showdestinations"
+    assert File.read!(trace) =~ "build-for-testing"
+    assert File.read!(trace) =~ "test-without-building"
+    assert File.read!(trace) =~ "-derivedDataPath #{run_root}/DerivedData"
+    refute File.exists?(run_root)
+  end
+
+  test "verifier cleans caller run root after structured success and failures", %{bin: bin, project: project, root: root} do
+    for mode <- ["structured-evidence", "list-fail", "build-fail", "test-fail"] do
+      run_root = Path.join(root, "caller-run-root-#{mode}")
+      write_xcodebuild(bin)
+
+      {_output, _status} =
+        System.cmd("bash", [@script, "--proof-lane", "--reference-pack-adapter"],
+          stderr_to_stdout: true,
+          env: [
+            {"PATH", bin <> ":" <> System.get_env("PATH")},
+            {"TMPDIR", root},
+            {"CROSSWAKE_IOS_PROJECT_ROOT", project},
+            {"CROSSWAKE_IOS_RUN_ROOT", run_root},
+            {"CROSSWAKE_IOS_SHIM_MODE", mode}
+          ]
+        )
+
+      refute File.exists?(run_root), "expected cleanup after #{mode}"
+    end
+  end
+
   defp write_xcodebuild(bin) do
     path = Path.join(bin, "xcodebuild")
 
     File.write!(path, """
     #!/usr/bin/env bash
+    if [[ -n "${CROSSWAKE_IOS_XCODEBUILD_TRACE:-}" ]]; then
+      printf '%q ' "$@" >> "$CROSSWAKE_IOS_XCODEBUILD_TRACE"
+      printf '\n' >> "$CROSSWAKE_IOS_XCODEBUILD_TRACE"
+    fi
     case "${CROSSWAKE_IOS_SHIM_MODE:-success}" in
       list-fail)
         echo "sensitive tool output"
