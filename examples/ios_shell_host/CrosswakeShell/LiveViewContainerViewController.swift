@@ -233,6 +233,19 @@ final class FilePickerCoordinator: NSObject, UIDocumentPickerDelegate {
 }
 
 final class LiveViewContainerViewController: UIViewController, WKNavigationDelegate {
+    private struct ShellLayoutInsets: Equatable {
+        let top: CGFloat; let right: CGFloat; let bottom: CGFloat; let left: CGFloat; let keyboardBottom: CGFloat
+    }
+    static let documentStartShellScript = """
+    document.documentElement.dataset.cwNativeShell = "ios";
+    document.documentElement.style.setProperty("--cw-safe-area-top", "0px");
+    document.documentElement.style.setProperty("--cw-safe-area-right", "0px");
+    document.documentElement.style.setProperty("--cw-safe-area-bottom", "0px");
+    document.documentElement.style.setProperty("--cw-safe-area-left", "0px");
+    document.documentElement.style.setProperty("--cw-keyboard-inset-bottom", "0px");
+    """
+    private var pendingLayoutInsets: ShellLayoutInsets?
+    private var deliveredLayoutInsets: ShellLayoutInsets?
     private let onDenied: (RouteDenialPresentation) -> Void
     private var session: LiveViewSession
     private let shell: CrosswakeShell
@@ -266,6 +279,7 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
     private lazy var webView: WKWebView = {
         let configuration = WKWebViewConfiguration()
         let userContentController = WKUserContentController()
+        userContentController.addUserScript(WKUserScript(source: Self.documentStartShellScript, injectionTime: .atDocumentStart, forMainFrameOnly: true))
 
         userContentController.add(bridgeChannel, name: BridgeChannel.handlerName)
         userContentController.add(navigationTransitionChannel, name: NavigationTransitionChannel.handlerName)
@@ -331,7 +345,10 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
         uiActionDelegates.presenter = self
         uiActionDelegates.filePickerCoordinator = filePickerCoordinator
         loadRouteIfNeeded()
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardChanged(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
     }
+
+    override func viewSafeAreaInsetsDidChange() { super.viewSafeAreaInsetsDidChange(); scheduleLayoutDelivery() }
 
     func update(
         session: LiveViewSession,
@@ -348,6 +365,7 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
         self.uiActionDelegates = uiActionDelegates
         
         webView.configuration.userContentController.removeAllUserScripts()
+        webView.configuration.userContentController.addUserScript(WKUserScript(source: Self.documentStartShellScript, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         let capabilities = shell.coordinator.registeredCapabilities
         if let capabilitiesData = try? JSONSerialization.data(withJSONObject: capabilities, options: []),
            let capabilitiesString = String(data: capabilitiesData, encoding: .utf8) {
@@ -366,6 +384,28 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
         
         bridgeChannel.update(session: session, transferCoordinator: shell.coordinator.transferCoordinator)
         loadRouteIfNeeded()
+    }
+
+    @objc private func keyboardChanged(_ notification: Notification) {
+        let frame = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue ?? .null
+        let overlap = max(0, view.bounds.maxY - view.convert(frame, from: nil).minY)
+        scheduleLayoutDelivery(keyboardBottom: overlap)
+    }
+
+    private func scheduleLayoutDelivery(keyboardBottom: CGFloat? = nil) {
+        let safe = view.safeAreaInsets
+        let next = ShellLayoutInsets(top: safe.top, right: safe.right, bottom: safe.bottom, left: safe.left, keyboardBottom: keyboardBottom ?? deliveredLayoutInsets?.keyboardBottom ?? 0)
+        guard next != deliveredLayoutInsets, next != pendingLayoutInsets else { return }
+        pendingLayoutInsets = next
+        DispatchQueue.main.async { [weak self] in self?.deliverPendingLayoutInsets() }
+    }
+
+    private func deliverPendingLayoutInsets() {
+        guard let insets = pendingLayoutInsets, insets != deliveredLayoutInsets else { return }
+        pendingLayoutInsets = nil; deliveredLayoutInsets = insets
+        let values = [insets.top, insets.right, insets.bottom, insets.left, insets.keyboardBottom].map { max(0, $0.isFinite ? $0 : 0) }
+        let script = "document.documentElement.style.setProperty('--cw-safe-area-top','\\(values[0])px');document.documentElement.style.setProperty('--cw-safe-area-right','\\(values[1])px');document.documentElement.style.setProperty('--cw-safe-area-bottom','\\(values[2])px');document.documentElement.style.setProperty('--cw-safe-area-left','\\(values[3])px');document.documentElement.style.setProperty('--cw-keyboard-inset-bottom','\\(values[4])px');"
+        webView.evaluateJavaScript(script, completionHandler: nil)
     }
 
     func webView(
