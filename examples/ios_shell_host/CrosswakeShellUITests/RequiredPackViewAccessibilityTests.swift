@@ -46,12 +46,24 @@ final class RequiredPackViewAccessibilityTests: XCTestCase {
 
     func testAccessibilityXXXLDeveloperContextWrapsWithoutSensitiveData() {
         let app = launchProbe("retry")
-        let owner = app.staticTexts.matching(NSPredicate(format: "label == %@", "Owner: host pack provider")).firstMatch
+        let expected = [
+            "Owner: host pack provider",
+            "Rule: PACK-TRANSFER-INTERRUPTED",
+            "Use the foreground action when connected.",
+            "Route: route-0123456789abcdef",
+            "reference runtime"
+        ]
+        let context = expected.map {
+            app.staticTexts.matching(NSPredicate(format: "label == %@", $0)).firstMatch
+        }
 
-        XCTAssertTrue(owner.waitForExistence(timeout: 5))
-        owner.scrollToVisible()
-        let text = owner.label
-        for required in ["Owner: host pack provider", "Rule: PACK-TRANSFER-INTERRUPTED", "Use the foreground action when connected."] {
+        for element in context {
+            XCTAssertTrue(element.waitForExistence(timeout: 5), element.debugDescription)
+            element.scrollToVisible()
+            XCTAssertTrue(element.isHittable, element.debugDescription)
+        }
+        let text = context.map(\.label).joined(separator: " ")
+        for required in expected {
             XCTAssertTrue(text.contains(required), required)
         }
         for excluded in ["http", "/private/", "sha256", "credential", "token", "account", "device", "transcript", "media"] {
@@ -68,9 +80,14 @@ final class RequiredPackViewAccessibilityTests: XCTestCase {
 }
 
 private extension XCUIElement {
-    func scrollToVisible(attempts: Int = 1) {
+    func scrollToVisible(attempts: Int = 5) {
+        let app = XCUIApplication()
         for _ in 0..<attempts where !isHittable {
-            XCUIApplication().swipeUp()
+            if frame.minY < app.frame.minY {
+                app.swipeDown()
+            } else {
+                app.swipeUp()
+            }
         }
     }
 }
