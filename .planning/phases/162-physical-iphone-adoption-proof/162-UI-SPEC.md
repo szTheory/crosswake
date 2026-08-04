@@ -1,10 +1,11 @@
 ---
 phase: 162
 slug: physical-iphone-adoption-proof
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-08-04
+reviewed_at: 2026-08-04T20:41:32Z
 ---
 
 # Phase 162 — UI Design Contract
@@ -29,7 +30,7 @@ Use existing `--cw-*` semantic tokens and the existing `RequiredPackView` access
 
 ## Surface and Interaction Contract
 
-Render one contextual status row/banner in the active study flow, directly below the study heading and above answer controls. It is a combined semantic element: icon, short state label, and learner sentence. It is not a toast, routine alert, blocking modal, debug card, or backend-result display.
+Render one contextual status row/banner in the active study flow, directly below the study heading and above answer controls. The study heading is the primary focal point; the contextual status row is secondary; answer controls follow. It is a combined semantic element: icon, short state label, and learner sentence. It is not a toast, routine alert, blocking modal, debug card, or backend-result display.
 
 | Semantic state | Visible label and learner copy | Icon / semantic token | Interaction rule |
 |---|---|---|---|
@@ -110,13 +111,15 @@ Use the four locked state sentences verbatim in the surface contract. Do not use
 
 ## UI Considerations
 
-Applicable state considerations resolved: 6 covered, 2 backstop, 0 unresolved.
+Applicable state considerations resolved: 11 covered, 2 backstop, 0 unresolved.
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
-| loading | `syncing` status row; active pack operation | ✅ covered | A labeled indeterminate indicator appears only while the operation is active; pack becomes determinate only with real host byte progress. |
-| error | `needs_attention`, `sync_paused` status row | ✅ covered | The Copywriting Contract's error/paused copy is visible, retained work is not deleted, and no generic retry appears. |
+| empty | required-pack surface | ✅ covered | An absent pack remains in the established required-pack unavailable state; the study status row never implies offline audio availability. |
+| loading | `syncing` status row; active pack operation; recovery destination | ✅ covered | A labeled indeterminate indicator appears only while the operation is active; pack becomes determinate only with real host byte progress. The recovery destination may show a labeled loading affordance only while host content is loading. |
+| error | required-pack surface; `needs_attention`, `sync_paused` status row; recovery destination | ✅ covered | Pack install failure remains unavailable. The Copywriting Contract's error/paused copy is visible, retained work is not deleted, and no generic retry appears. |
 | empty | recovery destination list | ✅ covered | Empty results use the documented “No saved answers need review.” heading and body. |
+| populated | required-pack surface | ✅ covered | The existing required-pack surface represents only a verified available pack; it is not inferred from the study status row. |
 | populated | recovery destination list | ✅ covered | Host-owned records use their host domain presentation; Phase 162 adds only the contextual status entry point. |
 | partial | recovery destination | ✅ covered | Until a validated host destination exists, render the closed `needs_attention` state with no partial record detail or speculative controls. |
 | overflow | status row and recovery list | 🧪 backstop | At Accessibility XXXL, labels and sentences wrap, the containing view scrolls, and 44pt controls remain reachable; prove with XCUITest. |
@@ -146,11 +149,11 @@ Applicable state considerations resolved: 6 covered, 2 backstop, 0 unresolved.
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS (one non-blocking recommendation incorporated)
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-08-04
