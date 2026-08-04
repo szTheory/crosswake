@@ -213,6 +213,25 @@ if [[ "$PROOF_LANE" == "1" ]]; then
     exit 2
   fi
 
+  required_current_run_markers=(
+    "PACK-RESET-BLOCKED"
+    "PACK-INSTALL-READY"
+    "PACK-RELAUNCH-READY"
+    "PACK-AUDIO-OFFLINE"
+  )
+  previous_marker_line=0
+
+  for marker in "${required_current_run_markers[@]}"; do
+    mapfile -t marker_lines < <(grep -nFx -- "$marker" "$TEST_TRANSCRIPT" | cut -d: -f1 || true)
+
+    if [[ "${#marker_lines[@]}" -ne 1 ]] || (( marker_lines[0] <= previous_marker_line )); then
+      emit_proof_outcome "blocked" "PL-IOS-TEST-EVIDENCE" "pack_audio_prerequisite"
+      exit 2
+    fi
+
+    previous_marker_line="${marker_lines[0]}"
+  done
+
   emit_proof_outcome "passed" "PL-IOS-PACK-AUDIO-ADVISORY" "pack_audio_prerequisite"
   exit 0
 fi

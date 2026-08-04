@@ -13,20 +13,24 @@ final class ProofLaneUITests: XCTestCase {
     app.terminate()
 
     app.launchEnvironment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] = "1"
+    app.launchEnvironment["CROSSWAKE_PROOF_LANE_RESET_REFERENCE_PACK"] = "1"
     app.launch()
     let install = app.buttons.matching(identifier: "proof-lane-pack-install").firstMatch
     XCTAssertTrue(install.waitForExistence(timeout: 5))
+    assertClosedOutcome(in: app, equals: "Blocked: packAudio")
+    print("PACK-RESET-BLOCKED")
     install.tap()
-    assertAdapterDerivedPassedOutcome(in: app)
+    assertClosedOutcome(in: app, equals: "Passed: packAudio")
     print("PACK-INSTALL-READY")
     app.terminate()
+    app.launchEnvironment.removeValue(forKey: "CROSSWAKE_PROOF_LANE_RESET_REFERENCE_PACK")
     app.launch()
-    assertAdapterDerivedPassedOutcome(in: app)
+    assertClosedOutcome(in: app, equals: "Passed: packAudio")
     print("PACK-RELAUNCH-READY")
     let audio = app.buttons.matching(identifier: "proof-lane-pack-audio").firstMatch
     XCTAssertTrue(audio.waitForExistence(timeout: 5))
     audio.tap()
-    assertAdapterDerivedPassedOutcome(in: app)
+    assertClosedOutcome(in: app, equals: "Passed: packAudio")
     print("PACK-AUDIO-OFFLINE")
   }
 
@@ -64,13 +68,14 @@ final class ProofLaneUITests: XCTestCase {
     }
   }
 
-  private func assertAdapterDerivedPassedOutcome(in app: XCUIApplication) {
+  private func assertClosedOutcome(in app: XCUIApplication, equals expected: String) {
     XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-ready").firstMatch.waitForExistence(timeout: 5))
     XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-auth-posture").firstMatch.exists)
 
     let outcome = app.staticTexts.matching(identifier: "proof-lane-outcome").firstMatch
     XCTAssertTrue(outcome.waitForExistence(timeout: 5))
-    XCTAssertTrue(outcome.label.hasPrefix("Passed: "))
+    XCTAssertEqual(outcome.label, expected)
+    XCTAssertFalse(outcome.label.contains("…"))
   }
 
   private func assertFullLabel(_ element: XCUIElement, equals label: String) {

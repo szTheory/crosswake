@@ -2,9 +2,22 @@ import SwiftUI
 
 @main
 struct CrosswakeProofLaneApp: App {
+  private let adapter: ProofLaneHostAdapter?
+
+  init() {
+    let environment = ProcessInfo.processInfo.environment
+
+    if environment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] == "1",
+       environment["CROSSWAKE_PROOF_LANE_RESET_REFERENCE_PACK"] == "1" {
+      ProofLaneReferencePackAdapter.resetReferencePersistenceForTests()
+    }
+
+    adapter = ProofLaneHostAdapterFactory.make()
+  }
+
   var body: some Scene {
     WindowGroup {
-      ProofLaneView(adapter: ProofLaneHostAdapterFactory.make())
+      ProofLaneView(adapter: adapter)
     }
   }
 }
