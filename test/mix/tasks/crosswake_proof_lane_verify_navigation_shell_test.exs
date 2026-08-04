@@ -28,8 +28,8 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyNavigationShellTest do
     refute File.exists?(Path.join(root, ".navigation-shell-run-nonce"))
   end
 
-  test "rejects stale, forged, symlinked, and subject-raced current-run inputs" do
-    for mode <- [:stale, :forged, :symlink] do
+  test "rejects stale, forged, symlinked, duplicate, reordered, and subject-raced current-run inputs" do
+    for mode <- [:stale, :forged, :symlink, :duplicate, :reordered] do
       {root, destination, observation} = run_fixture(mode)
       on_exit(fn -> File.rm_rf(root) end)
       Mix.Task.reenable(@task)
@@ -77,6 +77,12 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyNavigationShellTest do
         File.rm!(observation)
         File.ln_s!(target, observation)
 
+      :duplicate ->
+        File.write!(observation, observation_bytes(nonce, @ids ++ [List.last(@ids)]))
+
+      :reordered ->
+        File.write!(observation, observation_bytes(nonce, Enum.reverse(@ids)))
+
       _ ->
         :ok
     end
@@ -84,9 +90,9 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyNavigationShellTest do
     {root, destination, observation}
   end
 
-  defp observation_bytes(nonce) do
+  defp observation_bytes(nonce, ids \\ @ids) do
     Jason.encode!(%{
-      "assertion_ids" => @ids,
+      "assertion_ids" => ids,
       "outcome" => "passed",
       "run_nonce" => nonce,
       "schema_version" => 1,

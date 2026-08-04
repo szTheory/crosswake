@@ -62,6 +62,7 @@ if ! xcodebuild \
 fi
 
 for host_test in \
+  testOrderedProductionNavigationProofEmitsClosedMarkers \
   testProductionContainerAuthorizesRootsAndMirrorsOneNavigateWithoutDuplicate \
   testPatchAndCancelledThenCompletedPopPreserveProductionStackAndFocus \
   testDocumentStartShellContractUsesOnlyFixedMarkerAndFiveDefaults \
@@ -73,13 +74,34 @@ for host_test in \
   esac
 done
 
+navigation_marker_file="$navigation_run_root/navigation-shell-markers.txt"
+if ! awk '
+  /^PL-IOS-NAV-[A-Z-]+: passed$/ {
+    marker = $1
+    sub(/:$/, "", marker)
+    print marker
+    next
+  }
+  /^PL-IOS-NAV-/ { invalid = 1 }
+  END { exit invalid }
+' "$navigation_output" >"$navigation_marker_file"; then
+  echo "PL-IOS-NAV-HOST-MARKER: host-markers" >&2
+  exit 1
+fi
+
 navigation_nonce="$(od -An -N32 -tx1 /dev/urandom | tr -d ' \n')"
 printf '%s' "$navigation_nonce" >"$navigation_nonce_file"
 
-CROSSWAKE_NAVIGATION_NONCE="$navigation_nonce" mix run -e '
-ids = ~w(PL-IOS-NAV-TOPOLOGY PL-IOS-NAV-PATCH-DEPTH PL-IOS-NAV-NAVIGATE-ONCE PL-IOS-NAV-RESTORE PL-IOS-NAV-TABS-BACK PL-IOS-NAV-MARKER-INSETS PL-IOS-NAV-FOCUS)
-IO.write(Jason.encode!(%{"assertion_ids" => ids, "outcome" => "passed", "run_nonce" => System.fetch_env!("CROSSWAKE_NAVIGATION_NONCE"), "schema_version" => 1, "scope" => "advisory"}))
-' >"$navigation_observation"
+if ! CROSSWAKE_NAVIGATION_MARKERS_FILE="$navigation_marker_file" \
+  CROSSWAKE_NAVIGATION_NONCE="$navigation_nonce" \
+  mix run -e '
+    ids = System.fetch_env!("CROSSWAKE_NAVIGATION_MARKERS_FILE") |> File.read!() |> String.split("\n", trim: true)
+    if ids != Crosswake.ProofLane.NavigationShellAdvisory.assertion_ids(), do: System.halt(1)
+    IO.write(Jason.encode!(%{"assertion_ids" => ids, "outcome" => "passed", "run_nonce" => System.fetch_env!("CROSSWAKE_NAVIGATION_NONCE"), "schema_version" => 1, "scope" => "advisory"}))
+  ' >"$navigation_observation"; then
+  echo "PL-IOS-NAV-HOST-MARKER: host-markers" >&2
+  exit 1
+fi
 
 mix format --check-formatted \
   lib/crosswake/proof_lane/evidence.ex \

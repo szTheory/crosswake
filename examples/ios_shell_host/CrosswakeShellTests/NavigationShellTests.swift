@@ -4,6 +4,84 @@ import CrosswakeShellCore
 
 @MainActor
 final class NavigationShellTests: XCTestCase {
+    func testOrderedProductionNavigationProofEmitsClosedMarkers() {
+        let coordinator = NavigationShellSyntheticTopology.coordinator()
+        var focusMarkers: [String] = []
+        let container = NavigationShellViewController(
+            navigationCoordinator: coordinator,
+            makeLeafController: { _ in UIViewController() },
+            accessibilityPost: { _, _ in focusMarkers.append("completed") }
+        )
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = container
+        window.makeKeyAndVisible()
+        container.loadViewIfNeeded()
+
+        XCTAssertTrue(NavigationShellViewController.isSystemContainerContract)
+        XCTAssertEqual(container.viewControllers?.count, 2)
+        print("PL-IOS-NAV-TOPOLOGY: passed")
+
+        guard let tabs = container.viewControllers as? [UINavigationController],
+              let navigation = tabs.first else {
+            return XCTFail("cw-nav-proof-containers")
+        }
+        container.tabBarController(container, didSelect: navigation)
+
+        let navigate = NavigationTransition(
+            protocolName: NavigationTransition.protocolName,
+            version: NavigationTransition.supportedVersion,
+            transitionID: "nav-0000000000000001",
+            kind: .pushNavigate,
+            routeID: "route-0000000000000003",
+            restorationRef: nil
+        )
+        XCTAssertEqual(coordinator.apply(navigate), .applied)
+        container.synchronizeForTesting()
+        XCTAssertEqual(navigation.viewControllers.count, 2)
+        XCTAssertEqual(coordinator.apply(navigate), .denied)
+        XCTAssertEqual(navigation.viewControllers.count, 2)
+
+        let patch = NavigationTransition(
+            protocolName: NavigationTransition.protocolName,
+            version: NavigationTransition.supportedVersion,
+            transitionID: "nav-0000000000000002",
+            kind: .pushPatch,
+            routeID: "route-0000000000000003",
+            restorationRef: nil
+        )
+        XCTAssertEqual(coordinator.apply(patch), .applied)
+        XCTAssertEqual(navigation.viewControllers.count, 2)
+        print("PL-IOS-NAV-PATCH-DEPTH: passed")
+        print("PL-IOS-NAV-NAVIGATE-ONCE: passed")
+
+        XCTAssertEqual(coordinator.completeNativePop(completed: false), .denied)
+        XCTAssertEqual(navigation.viewControllers.count, 2)
+        navigation.setViewControllers([navigation.viewControllers[0]], animated: false)
+        container.navigationController(navigation, didShow: navigation.topViewController!, animated: false)
+        XCTAssertEqual(coordinator.stacks["tab-0000000000000001"]?.count, 1)
+        let completedFocusMarkers = focusMarkers
+        print("PL-IOS-NAV-RESTORE: passed")
+
+        container.tabBarController(container, didSelect: tabs[1])
+        XCTAssertEqual(coordinator.selectedTabID, "tab-0000000000000002")
+        container.tabBarController(container, didSelect: navigation)
+        XCTAssertEqual(coordinator.selectedTabID, "tab-0000000000000001")
+        print("PL-IOS-NAV-TABS-BACK: passed")
+
+        let documentStart = LiveViewContainerViewController.documentStartShellScript
+        let layout = LiveViewContainerViewController.layoutDeliveryScript(for: [1, 2, 3, 4, 5])
+        XCTAssertTrue(documentStart.contains("cwNativeShell = \"ios\""))
+        XCTAssertTrue(layout.contains("5.0px"))
+        for key in ["--cw-safe-area-top", "--cw-safe-area-right", "--cw-safe-area-bottom", "--cw-safe-area-left", "--cw-keyboard-inset-bottom"] {
+            XCTAssertTrue(documentStart.contains(key))
+            XCTAssertTrue(layout.contains(key))
+        }
+        print("PL-IOS-NAV-MARKER-INSETS: passed")
+
+        XCTAssertEqual(completedFocusMarkers, ["completed"])
+        print("PL-IOS-NAV-FOCUS: passed")
+    }
+
     func testSystemContainerContractIsAvailableForValidatedTopologyOnly() {
         XCTAssertTrue(NavigationShellViewController.isSystemContainerContract)
     }

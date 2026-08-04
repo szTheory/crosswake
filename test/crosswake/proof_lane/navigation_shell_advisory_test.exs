@@ -25,11 +25,13 @@ defmodule Crosswake.ProofLane.NavigationShellAdvisoryTest do
              NavigationShellAdvisory.decode(NavigationShellAdvisory.encode!(advisory))
   end
 
-  test "rejects missing, duplicate, reordered, widened, raw, and non-canonical observations" do
+  test "rejects missing, duplicate, reordered, unknown, widened, raw, and non-canonical observations" do
     for invalid <- [
           observation_bytes(%{"assertion_ids" => Enum.drop(@ids, -1)}),
           observation_bytes(%{"assertion_ids" => @ids ++ [List.last(@ids)]}),
           observation_bytes(%{"assertion_ids" => Enum.reverse(@ids)}),
+          observation_bytes(%{"assertion_ids" => List.replace_at(@ids, 0, "PL-IOS-NAV-UNKNOWN")}),
+          observation_bytes(%{"outcome" => "blocked"}),
           observation_bytes(%{"scope" => "physical-device"}),
           Jason.encode!(Map.put(observation_map(), "raw_output", "CANARY")),
           " " <> observation_bytes()
