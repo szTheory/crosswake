@@ -39,8 +39,8 @@ separately funded business-line mandate.
 - [x] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload (completed 2026-08-02)
   redaction, backend reauthorization, auth continuity, and server-side disablement.
 
-- [ ] **Phase 161: iOS Pronunciation Pack Seam** — replace simulated availability with one
-  host-supplied foreground iOS install path that verifies and atomically installs real bytes.
+- [x] **Phase 161: iOS Pronunciation Pack Seam** — replace simulated availability with one
+  host-supplied foreground iOS install path that verifies and atomically installs real bytes (completed 2026-08-04).
 
 - [ ] **Phase 161.1: First-Adopter iOS Navigation Shell** — add a bounded, host-owned native tab
   and pushed-detail shell with typed stack synchronization, live safe-area values, and a
@@ -352,7 +352,10 @@ checks at entry and replay.
 **Effort:** 4 Crosswake days; expect 3-5 adopter integration days outside this repo
 **Depends on:** Phase 160
 **Requirements:** PACK-01, PACK-02, PACK-03, PACK-04, PACK-05
-**Plans:** 18/20 plans executed
+**Plans:** 20/20 plans executed
+**Verification:** Complete (10/10 must-haves). Schema-5 aggregate evidence records the repaired
+stale-inventory/no-artifact recovery; generated reference-host success remains simulator-advisory,
+and physical-iPhone promotion remains Phase-162-only.
 
 Plans:
 
@@ -421,11 +424,11 @@ Plans:
 
 **Wave 16** *(crash-recovery gap closure; blocked on the executed Wave 15 plan)*
 
-- [ ] 161-19-PLAN.md — Repair the stale-inventory/no-artifact journal invariant and prove recovery followed by foreground reinstall.
+- [x] 161-19-PLAN.md — Repair the stale-inventory/no-artifact journal invariant and prove recovery followed by foreground reinstall.
 
 **Wave 17** *(blocked on Plan 161-19)*
 
-- [ ] 161-20-PLAN.md — Run the fresh repaired-tree gate and retain only privacy-safe schema-5 aggregate evidence.
+- [x] 161-20-PLAN.md — Run the fresh repaired-tree gate and retain only privacy-safe schema-5 aggregate evidence.
 
 **Smallest shippable version:** One iOS `PackProvider` protocol with foreground status, install, and
 invalidate; no provider means unavailable; availability follows verified size, SHA-256, and atomic
