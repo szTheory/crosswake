@@ -339,10 +339,26 @@ defmodule Crosswake.SupportMatrixTest do
              "frozen literal should have 20 forbidden_metadata_keys; got #{length(keys)}"
 
       for key <- [
-            :access_token, :actor_id, :actor_ref, :authorization_code, :credential_id,
-            :device_id, :email, :id_token, :ip, :nonce, :org_id, :passkey_credential_id,
-            :pkce_verifier, :provider_payload, :raw_return_to, :refresh_token, :return_to,
-            :session_ref, :subject_ref, :user_agent
+            :access_token,
+            :actor_id,
+            :actor_ref,
+            :authorization_code,
+            :credential_id,
+            :device_id,
+            :email,
+            :id_token,
+            :ip,
+            :nonce,
+            :org_id,
+            :passkey_credential_id,
+            :pkce_verifier,
+            :provider_payload,
+            :raw_return_to,
+            :refresh_token,
+            :return_to,
+            :session_ref,
+            :subject_ref,
+            :user_agent
           ] do
         assert key in keys,
                "#{key} must be in the frozen forbidden_metadata_keys (SITE 1 freeze)"

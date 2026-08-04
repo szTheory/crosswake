@@ -406,6 +406,22 @@ defmodule Crosswake.CapabilityMap do
           "Require opaque scope references and redaction before any replay claim; keep payload semantics host-owned."
       ),
       row(
+        id: "first-adopter-ios-navigation-shell",
+        surface: "First adopter iOS native navigation shell",
+        route_or_evidence_source:
+          "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof",
+        category: :demoed,
+        rebuild: :native_required,
+        display_label: "Advisory evidence",
+        route_runtime_owner: :native_shell,
+        package_owner: :native_shell,
+        proof_posture: :advisory,
+        denial_fallback:
+          "No generic navigation, Android parity, native leaf rendering, arbitrary restoration, modal breadth, or browser-history authority is claimed; invalid input keeps the existing explicit Phoenix denial.",
+        adoption_implication:
+          "Phase 161.1 verifies the bounded contract only: simulator advisory, TODO-002/adopter topology unknown_blocking, and physical-iPhone promotion Phase 162 only."
+      ),
+      row(
         id: "first-adopter-physical-iphone",
         surface: "Physical-iPhone offline study and replay evidence",
         route_or_evidence_source: "First adopter public-release exit test",
@@ -418,7 +434,7 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "Simulator, generated-shell, browser, and unit evidence remain explicitly narrower than physical-device proof.",
         adoption_implication:
-          "Block the first adopter support claim until one physical iPhone proves offline answers, audio, relaunch, replay, account isolation, and remote disablement."
+          "Phase 162 only may promote the first adopter support claim after one physical iPhone proves offline answers, audio, relaunch, replay, account isolation, and remote disablement."
       ),
       row(
         id: "native-controls-alert-confirm",
@@ -433,7 +449,7 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "Until declared and proven, routes must keep Phoenix-owned confirmation surfaces.",
         adoption_implication:
-          "Stopped for now; keep the Phoenix-owned fallback unless an adopter route proves a blocker."
+          "Stopped for now; keep the Phoenix-owned fallback. Reconsider only after physical-iPhone proof, a demonstrated active-adopter route blocker, and an explicit maintainer roadmap decision."
       ),
       row(
         id: "native-controls-action-menu",

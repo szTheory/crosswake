@@ -430,7 +430,7 @@ defmodule Crosswake.SupportMatrix do
           proof_status: :supported,
           proof: "script/verify_generated_ios_shell.sh",
           notes:
-            "Checked-in iOS host boot is `checked-in public-coordinate proof`; generated-shell verification stays separate.",
+            "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; simulator advisory evidence remains distinct, TODO-002/adopter topology is unknown_blocking, and physical-iPhone promotion is Phase 162 only.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
@@ -443,7 +443,7 @@ defmodule Crosswake.SupportMatrix do
           proof_status: :supported,
           proof: "script/verify_generated_android_shell.sh",
           notes:
-            "Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android is frozen during first adopter iOS readiness: no new feature, parity, device, template, or release claim.",
+            "Android retains its frozen generator, Maven, JVM, and shared-vector posture. Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android is frozen during first adopter iOS readiness: no new feature, parity, device, template, or release claim.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
@@ -456,7 +456,7 @@ defmodule Crosswake.SupportMatrix do
           proof_status: :verification_required,
           proof: "clean-room-proof-ios; script/verify_generated_ios_shell.sh",
           notes:
-            "Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; release-time clean-room proof confirms external resolution and `swift build`. advisory — not wired as a required CI lane; macOS/Xcode toolchain not guaranteed in CI.",
+            "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority. Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; release-time clean-room proof confirms external resolution and `swift build`. advisory — not wired as a required CI lane; macOS/Xcode toolchain not guaranteed in CI.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         ),
         # D-17/D-18/D-20 (LIFE-01a, Phase 134): android-generated-shell-unit lane is now
@@ -470,7 +470,7 @@ defmodule Crosswake.SupportMatrix do
           proof:
             "native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh",
           notes:
-            "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. This existing posture is frozen during first adopter iOS readiness.",
+            "Generated Android shell artifacts retain the frozen generator, Maven, JVM, and shared-vector posture based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. This existing posture is frozen during first adopter iOS readiness; no parity/device/template/release expansion is claimed.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
