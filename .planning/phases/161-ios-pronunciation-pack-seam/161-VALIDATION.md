@@ -102,13 +102,13 @@ Retained evidence is the allowlisted machine-readable object below. Dynamic run 
 
 <!-- phase161-final-run-manifest:start -->
 {
-  "schema": 4,
-  "run_id": "8CE50BFD-9C36-4F86-888F-CA8330A8B35A",
-  "head_revision": "77780d5253fb4e88251d0ea2f7db8bbcfd81f602",
+  "schema": 5,
+  "run_id": "30357CD0-2064-4539-ACB5-F2E06E603626",
+  "head_revision": "b133fda73583e9435903b526b20982211b1b12bc",
   "subject": {
-    "set": "phase161-plans17-18-v4",
-    "file_count": 5,
-    "tree_sha256": "5539b7aa51ded153fbd06ba61671acdc33929c6bd12cc78790e27e9acbf2c86d"
+    "set": "phase161-plans19-20-v5",
+    "file_count": 2,
+    "tree_sha256": "5fa5ec44ad2082f568e40fab5c035bc53feecbcb1454fdcb1fc67264d0a56e85"
   },
   "suite_counts": {
     "swift_core": 27,
@@ -128,7 +128,8 @@ Retained evidence is the allowlisted machine-readable object below. Dynamic run 
     "sibling_destination_denied": "passed",
     "record_identity_version_denied": "passed",
     "colliding_leaves_denied": "passed",
-    "non_regular_denied": "passed"
+    "non_regular_denied": "passed",
+    "stale_inventory_absent_artifact": "passed"
   },
   "bootstrap_outcomes": {
     "construction_started": "passed",
@@ -174,7 +175,13 @@ Retained evidence is the allowlisted machine-readable object below. Dynamic run 
     "T_161_88": "passed",
     "T_161_89": "passed",
     "T_161_90": "passed",
-    "T_161_91": "passed"
+    "T_161_91": "passed",
+    "T_161_92": "passed",
+    "T_161_93": "passed",
+    "T_161_94": "passed",
+    "T_161_97": "passed",
+    "T_161_98": "passed",
+    "T_161_99": "passed"
   },
   "generated": {
     "default": "closed_non_passing",
