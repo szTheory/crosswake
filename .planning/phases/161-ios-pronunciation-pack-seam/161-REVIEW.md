@@ -1,8 +1,8 @@
 ---
 phase: 161-ios-pronunciation-pack-seam
-reviewed: 2026-08-03T21:21:38Z
+reviewed: 2026-08-04T01:25:14Z
 depth: standard
-files_reviewed: 26
+files_reviewed: 27
 files_reviewed_list:
   - examples/ios_shell_host/CrosswakeShell.xcodeproj/project.pbxproj
   - examples/ios_shell_host/CrosswakeShell/CrosswakeShellApp.swift
@@ -10,6 +10,7 @@ files_reviewed_list:
   - examples/ios_shell_host/CrosswakeShell/RequiredPackView.swift
   - examples/ios_shell_host/CrosswakeShellTests/PronunciationPackProviderTests.swift
   - examples/ios_shell_host/CrosswakeShellTests/RequiredPackViewTests.swift
+  - examples/ios_shell_host/CrosswakeShellUITests/RequiredPackViewAccessibilityTests.swift
   - examples/ios_shell_host/Fixtures/declared_pack_requirements.json
   - lib/crosswake/proof_lane/evidence.ex
   - lib/crosswake/proof_lane/generator.ex
@@ -40,28 +41,46 @@ status: issues_found
 
 # Phase 161: Code Review Report
 
-**Reviewed:** 2026-08-03T21:21:38Z
+**Reviewed:** 2026-08-04T01:25:14Z
 **Depth:** standard
-**Files Reviewed:** 26
+**Files Reviewed:** 27
 **Status:** issues_found
 
 ## Summary
 
-The 26 scoped implementation, template, and test files were reviewed in context. The current tree correctly closes the earlier thrown-error rollback path and binds generated proof evidence to the deny-only URLSession operation. However, replacement publication is still not atomic across process interruption: no on-disk transaction state or startup recovery can restore the prior verified artifact after a termination between its removal and commit.
+The provider and core seam are generally fail-closed: route activation waits for provider-attested bytes, and the host recovery journal prevents interrupted publication from silently becoming available. The generated iOS proof lane is not run-isolated, however. A stale pack in the simulator container can satisfy the current UI assertions and cause the verifier to report a current-run advisory pass without performing the asserted installation.
 
-Focused verification passed: `swift test --package-path packages/crosswake-shell-core-ios` (27 tests) and `mix test test/crosswake/proof_lane/evidence_test.exs test/crosswake/proof_lane/ios_verifier_test.exs test/crosswake/proof_lane/template_contract_test.exs` (41 tests). Those suites do not cover process termination in the replacement transaction.
+## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Replacement publication is not crash-atomic
+### CR-01: Generated proof can certify a stale installed pack as a fresh installation
 
-**File:** `examples/ios_shell_host/CrosswakeShell/PronunciationPackProvider.swift:87`
-**Issue:** The transaction first moves the known-good destination to a randomly named retained file (lines 87–89), then separately moves staging into the destination (line 103) and writes inventory (line 105). If the app or OS terminates after the first move, or after the second move but before inventory commit, deferred cleanup and `catch` rollback never execute. On relaunch, `status` only looks for `pack-{id}` and `inventory.json` (lines 46–59); it neither discovers the retained artifact nor reconciles the new artifact with the old inventory. The required route therefore remains blocked and the advertised last-known-good/atomic-replacement guarantee is violated under an ordinary interruption such as process kill, crash, or device shutdown.
+**File:** `priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift.eex:15-30`
+**Issue:** The UI test enables the reference adapter, taps install, and only checks for a `Passed` outcome. It neither clears the adapter's Application Support artifact nor asserts that the adapter initially reports `Blocked`. `ProofLaneReferencePackAdapter` persists at a fixed Application Support path ([ProofLaneDriver.swift.eex:165-175](priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex)), while the proof verifier runs `test-without-building` without uninstalling/resetting the proof-lane app ([verify_generated_ios_shell.sh:184-216](script/verify_generated_ios_shell.sh)). Consequently a prior run's valid fixture can make the test pass even if this run's install action does nothing or fails. The verifier then accepts the test markers and emits `PL-IOS-PACK-AUDIO-ADVISORY: passed`, producing misleading proof evidence.
 
-**Fix:** Persist a small, non-sensitive replacement journal before moving the live artifact, fsync it and each state transition, then recover it before `status` or `install` uses the inventory. Recovery must either restore the retained artifact and prior inventory or complete the verified new publication. Add deterministic tests that seed each journal state (prior retained, replacement promoted, inventory pending) and assert the next provider instance restores a valid, route-unblocking state. Alternatively, use an OS-supported atomic replacement primitive together with an atomic, recoverable inventory commit; do not rely on `defer`/`catch` for crash recovery.
+**Fix:** Add a test-only reset launch argument/environment handled by the generated app before it constructs the adapter, and assert the reference-adapter launch begins `Blocked` before tapping install. For example:
+
+```swift
+// ProofLaneApp.swift.eex, before ProofLaneHostAdapterFactory.make()
+if ProcessInfo.processInfo.environment["CROSSWAKE_PROOF_LANE_RESET_REFERENCE_PACK"] == "1" {
+  ProofLaneReferencePackAdapter.resetReferencePersistenceForTests()
+}
+```
+
+```swift
+app.launchEnvironment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] = "1"
+app.launchEnvironment["CROSSWAKE_PROOF_LANE_RESET_REFERENCE_PACK"] = "1"
+app.launch()
+assertBlockedPackOutcome(in: app)
+install.tap()
+assertAdapterDerivedPassedOutcome(in: app)
+```
+
+Keep the reset limited to the generated reference adapter/test mode so it cannot alter a host-supplied provider's storage.
 
 ---
 
-_Reviewed: 2026-08-03T21:21:38Z_
+_Reviewed: 2026-08-04T01:25:14Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
