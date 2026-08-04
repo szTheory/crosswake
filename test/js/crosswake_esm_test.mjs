@@ -24,7 +24,10 @@ import {
   UNREACHABLE_EVENT,
   __resetOwner,
   bridgeFacts,
-  findTransport
+  findNavigationTransport,
+  findTransport,
+  NAVIGATION_EVENT,
+  navigationDelivery
 } from "../../priv/static/crosswake.esm.js";
 
 const HOOK_SOURCE = new URL("../../priv/static/crosswake.esm.js", import.meta.url);
@@ -133,6 +136,66 @@ function pushedEvents(trace) {
 function firstPush(trace, event) {
   return trace.pushed.find((entry) => entry.event === event);
 }
+
+function navigationEnvelope(overrides) {
+  return Object.assign(
+    {
+      protocol: "crosswake.navigation_transition",
+      version: "1.0.0",
+      transition_id: "nav-0123456789abcdef",
+      kind: "push_navigate",
+      route_id: "route-0123456789abcdef"
+    },
+    overrides || {}
+  );
+}
+
+// --- navigation transition transport (D-04 / D-06) ------------------------
+
+test("navigation posts canonical JSON only to the dedicated iOS handler", () => {
+  const trace = newTrace();
+  const scope = {
+    webkit: {
+      messageHandlers: {
+        crosswakeNavigation: {
+          postMessage(body) {
+            trace.posts.push({ via: "navigation", body });
+          }
+        },
+        crosswakeBridge: {
+          postMessage() {
+            trace.posts.push({ via: "bridge" });
+          }
+        }
+      }
+    }
+  };
+
+  assert.equal(navigationDelivery(scope, navigationEnvelope()), true);
+  assert.deepEqual(trace.posts, [
+    { via: "navigation", body: JSON.stringify(navigationEnvelope()) }
+  ]);
+});
+
+test("navigation delivery fails closed for malformed, missing, or throwing handlers", () => {
+  assert.equal(navigationDelivery({}, navigationEnvelope()), false);
+  assert.equal(navigationDelivery({}, navigationEnvelope({ payload: {} })), false);
+  assert.equal(findNavigationTransport({ crosswakeBridge: { postMessage() {} } }), null);
+
+  const scope = {
+    webkit: {
+      messageHandlers: {
+        crosswakeNavigation: {
+          postMessage() {
+            throw new Error("gone");
+          }
+        }
+      }
+    }
+  };
+
+  assert.equal(navigationDelivery(scope, navigationEnvelope()), false);
+});
 
 // --- transport selection (D-35 / T-154-24) ---------------------------------
 
