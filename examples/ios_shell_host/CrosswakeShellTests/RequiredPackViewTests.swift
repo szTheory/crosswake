@@ -119,14 +119,17 @@ final class RequiredPackViewTests: XCTestCase {
             onInvalidate: {}
         )
         let controller = UIHostingController(rootView: view)
-        controller.view.frame = CGRect(x: 0, y: 0, width: 320, height: 568)
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 320, height: 568))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        controller.view.frame = window.bounds
         controller.view.layoutIfNeeded()
         guard let scrollView = descendant(of: controller.view, matching: { $0 is UIScrollView }) as? UIScrollView else {
             fatalError("RequiredPackView must preserve ScrollView overflow ownership")
         }
         scrollView.setContentOffset(CGPoint(x: 0, y: max(0, scrollView.contentSize.height - scrollView.bounds.height)), animated: false)
         controller.view.layoutIfNeeded()
-        return HostedView(rootView: controller.view, scrollView: scrollView)
+        return HostedView(window: window, rootView: controller.view, scrollView: scrollView)
     }
 
     private func requiredElement(_ identifier: String, in root: UIView) throws -> UIView {
@@ -145,6 +148,7 @@ final class RequiredPackViewTests: XCTestCase {
     }
 
     private struct HostedView {
+        let window: UIWindow
         let rootView: UIView
         let scrollView: UIScrollView
     }
