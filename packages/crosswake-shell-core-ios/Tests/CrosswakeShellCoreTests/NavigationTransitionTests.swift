@@ -45,7 +45,7 @@ final class NavigationTransitionTests: XCTestCase {
     }
 
     func testProductionHostRegistersOnlyTheDedicatedNavigationPath() throws {
-        let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let root = try XCTUnwrap(repositoryRoot())
         let host = try String(contentsOf: root.appendingPathComponent("examples/ios_shell_host/CrosswakeShell/LiveViewContainerViewController.swift"))
         let channel = try String(contentsOf: root.appendingPathComponent("packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/NavigationTransitionChannel.swift"))
 
@@ -54,6 +54,17 @@ final class NavigationTransitionTests: XCTestCase {
         XCTAssertTrue(channel.contains("handlerName = \"crosswakeNavigation\""))
         XCTAssertFalse(channel.contains("BridgeCommand"))
         XCTAssertFalse(channel.contains("WKNavigationAction"))
+    }
+
+    private func repositoryRoot() -> URL? {
+        var candidate = URL(fileURLWithPath: #file).deletingLastPathComponent()
+        while candidate.path != "/" {
+            if FileManager.default.fileExists(atPath: candidate.appendingPathComponent("examples/ios_shell_host/CrosswakeShell/LiveViewContainerViewController.swift").path) {
+                return candidate
+            }
+            candidate.deleteLastPathComponent()
+        }
+        return nil
     }
 
     private func makeCoordinator(patchSink: @escaping (NavigationStackEntry) -> Void = { _ in }) -> NavigationCoordinator {
