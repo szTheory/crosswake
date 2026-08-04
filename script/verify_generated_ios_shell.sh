@@ -69,6 +69,7 @@ if [[ -n "${CROSSWAKE_IOS_RUN_ROOT:-}" ]]; then
 else
   RUN_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-shell.XXXXXX")"
 fi
+RUN_ROOT="$(cd -L "${RUN_ROOT}" && pwd -L)"
 chmod 700 "${RUN_ROOT}"
 DERIVED_DATA_ROOT="${RUN_ROOT}/DerivedData"
 IOS_SPM_CACHE="${RUN_ROOT}/SourcePackages"
