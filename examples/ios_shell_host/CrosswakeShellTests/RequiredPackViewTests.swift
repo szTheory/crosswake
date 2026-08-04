@@ -1,4 +1,5 @@
 import XCTest
+import SwiftUI
 @testable import CrosswakeShell
 @testable import CrosswakeShellCore
 
@@ -57,8 +58,103 @@ final class RequiredPackViewTests: XCTestCase {
         XCTAssertTrue(source.contains("VStack(alignment: .leading, spacing: 8) {\n                    Text(\"Owner:"))
     }
 
+    func testAccessibilityXXXLRecoveryCopyWrapsAndControlsRemainReachable() {
+        let hosted = hostedView(status: .failed, reason: .digestMismatch)
+        let statusView = try! requiredElement("required-pack-status", in: hosted.rootView)
+        let action = try! requiredElement("required-pack-invalidate-action", in: hosted.rootView)
+
+        XCTAssertTrue(hosted.scrollView.bounds.intersects(action.convert(action.bounds, to: hosted.scrollView)))
+        XCTAssertGreaterThanOrEqual(action.bounds.width, 44)
+        XCTAssertGreaterThanOrEqual(action.bounds.height, 44)
+        XCTAssertGreaterThan(statusView.bounds.height, 44)
+        XCTAssertEqual(RequiredPackView.presentation(for: requiredStatus(.failed, reason: .digestMismatch)).learnerMessage, "Offline audio could not be verified. Try the download again while connected.")
+    }
+
+    func testAccessibilityXXXLLifecycleAnnouncementPreservesFocus() {
+        let effect = RequiredPackView.lifecycleAccessibilityEffect(for: requiredStatus(.installing))
+
+        XCTAssertEqual(effect.announcement, "Installing offline audio. Installing offline audio. Keep this screen open.")
+        XCTAssertTrue(effect.preserveFocus)
+    }
+
+    func testAccessibilityXXXLActionLabelsWrapWithoutTruncation() {
+        let actions: [(PackState, PackFailureReason?, String, String)] = [
+            (.notInstalled, nil, "Install offline audio", "required-pack-primary-action"),
+            (.stale, nil, "Update offline audio", "required-pack-primary-action"),
+            (.failed, PackFailureReason.transferInterrupted, "Retry download", "required-pack-primary-action"),
+            (.failed, PackFailureReason.digestMismatch, "Invalidate downloaded audio", "required-pack-invalidate-action")
+        ]
+        for (state, reason, expectedLabel, identifier) in actions {
+            let hosted = hostedView(status: state, reason: reason)
+            let action = try! requiredElement(identifier, in: hosted.rootView)
+
+            XCTAssertTrue(hosted.scrollView.bounds.intersects(action.convert(action.bounds, to: hosted.scrollView)))
+            XCTAssertGreaterThanOrEqual(action.bounds.width, 44)
+            XCTAssertGreaterThanOrEqual(action.bounds.height, 44)
+            XCTAssertTrue(hosted.rootView.accessibilityLabel?.contains(expectedLabel) ?? false)
+        }
+    }
+
+    func testAccessibilityXXXLDeveloperContextWrapsWithoutSensitiveData() {
+        let hosted = hostedView(status: .failed, reason: .transferInterrupted)
+        let owner = try! requiredElement("required-pack-owner", in: hosted.rootView)
+        let label = hosted.rootView.accessibilityLabel ?? ""
+
+        XCTAssertGreaterThan(owner.bounds.height, 44)
+        for safeValue in ["Owner: host pack provider", "Rule: PACK-TRANSFER-INTERRUPTED", "Route:", "reference runtime"] {
+            XCTAssertTrue(label.contains(safeValue))
+        }
+        for excluded in ["http", "/private/", "sha256", "credential", "token", "account", "device", "transcript", "media"] {
+            XCTAssertFalse(label.localizedCaseInsensitiveContains(excluded))
+        }
+    }
+
+    private func hostedView(status state: PackState, reason: PackFailureReason? = nil) -> HostedView {
+        let view = RequiredPackView(
+            routeID: "route-0123456789abcdef",
+            runtimeLabel: "reference runtime",
+            status: requiredStatus(state, reason: reason),
+            onInstall: {},
+            onRetry: {},
+            onInvalidate: {}
+        )
+        let controller = UIHostingController(rootView: view)
+        controller.view.frame = CGRect(x: 0, y: 0, width: 320, height: 568)
+        controller.view.layoutIfNeeded()
+        guard let scrollView = descendant(of: controller.view, matching: { $0 is UIScrollView }) as? UIScrollView else {
+            fatalError("RequiredPackView must preserve ScrollView overflow ownership")
+        }
+        scrollView.setContentOffset(CGPoint(x: 0, y: max(0, scrollView.contentSize.height - scrollView.bounds.height)), animated: false)
+        controller.view.layoutIfNeeded()
+        return HostedView(rootView: controller.view, scrollView: scrollView)
+    }
+
+    private func requiredElement(_ identifier: String, in root: UIView) throws -> UIView {
+        guard let element = descendant(of: root, matching: { $0.accessibilityIdentifier == identifier }) else {
+            throw XCTSkip("missing required accessibility identifier: \(identifier)")
+        }
+        return element
+    }
+
+    private func descendant(of view: UIView, matching predicate: (UIView) -> Bool) -> UIView? {
+        if predicate(view) { return view }
+        for child in view.subviews {
+            if let match = descendant(of: child, matching: predicate) { return match }
+        }
+        return nil
+    }
+
+    private struct HostedView {
+        let rootView: UIView
+        let scrollView: UIScrollView
+    }
+
     private func presentation(_ state: PackState, reason: PackFailureReason? = nil) -> RequiredPackView.Presentation {
-        RequiredPackView.presentation(for: RequiredPackStatus(
+        RequiredPackView.presentation(for: requiredStatus(state, reason: reason))
+    }
+
+    private func requiredStatus(_ state: PackState, reason: PackFailureReason? = nil) -> RequiredPackStatus {
+        RequiredPackStatus(
             id: "pack",
             packID: "pack",
             requiredVersion: "1",
@@ -70,6 +166,6 @@ final class RequiredPackViewTests: XCTestCase {
             installStage: nil,
             failureReason: reason,
             lastKnownVersion: nil
-        ))
+        )
     }
 }
