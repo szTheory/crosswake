@@ -33,7 +33,7 @@ defmodule Crosswake.Proof.Phase155NativeControlsTemplateDriftTest do
 
   @template_dir Path.join([File.cwd!(), "priv", "templates", "crosswake", "native_controls_ui"])
 
-  @checked_in_hash "f658966d8fe689ed38104b7d3217ecde5c6c284f82fb34165946057f1b3d68ed"
+  @checked_in_hash "cff393da15476ab12a643b6851eb50c171e0ec96e5e13bbf8eb8f772809a6a1e"
 
   @confirmation_reversal "Phoenix-owned confirmation is the current required fallback on every platform. Native alert/confirm is stopped and may be reconsidered only after passed physical-iPhone proof, a demonstrated active-adopter route blocker, and an explicit maintainer roadmap decision."
 
