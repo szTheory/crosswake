@@ -38,7 +38,16 @@ public struct NavigationTopology: Codable, Equatable {
                 guard let parent = entry.parentRouteID, parent != entry.routeID, entries.contains(where: { $0.routeID == parent && $0.rootTabID == entry.rootTabID }) else { return .denied(.invalidGraph) }
             }
         }
+        guard entries.allSatisfy({ reachesRoot($0, visited: []) }) else { return .denied(.invalidGraph) }
         return .valid
+    }
+
+    private func reachesRoot(_ entry: NavigationTopologyEntry, visited: Set<String>) -> Bool {
+        if entry.presentation == .root { return true }
+        guard visited.contains(entry.routeID) == false,
+              let parentID = entry.parentRouteID,
+              let parent = entries.first(where: { $0.routeID == parentID }) else { return false }
+        return reachesRoot(parent, visited: visited.union([entry.routeID]))
     }
 
     private static func isOpaqueRouteID(_ value: String) -> Bool {

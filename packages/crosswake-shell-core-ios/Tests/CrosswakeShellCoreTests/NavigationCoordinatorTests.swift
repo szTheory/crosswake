@@ -50,14 +50,29 @@ final class NavigationCoordinatorTests: XCTestCase {
         XCTAssertNil(coordinator.activeRouteID)
     }
 
+    func testCyclicTopologyIsDeniedBeforeResolverInvocation() {
+        let root = NavigationTopologyEntry(routeID: "route-0123456789abcdef", rootTabID: "tab-0123456789abcdef", presentation: .root, parentRouteID: nil, deepLinkPosture: .deny, restorationPosture: .deny)
+        let first = NavigationTopologyEntry(routeID: "route-fedcba9876543210", rootTabID: "tab-0123456789abcdef", presentation: .push, parentRouteID: "route-aaaaaaaaaaaaaaaa", deepLinkPosture: .deny, restorationPosture: .deny)
+        let second = NavigationTopologyEntry(routeID: "route-aaaaaaaaaaaaaaaa", rootTabID: "tab-0123456789abcdef", presentation: .push, parentRouteID: "route-fedcba9876543210", deepLinkPosture: .deny, restorationPosture: .deny)
+        let topology = NavigationTopology(topologySchemaVersion: "1.0.0", manifestSchemaVersion: "1.0.0", status: .ready, entries: [root, first, second])
+        let manifest = ShellManifest(compatibility: .init(nativeRuntimeVersion: "1.0.0"), routes: [root.routeID: route(root.routeID), first.routeID: route(first.routeID), second.routeID: route(second.routeID)])
+        var calls = 0
+        let coordinator = NavigationCoordinator(topology: topology, manifest: manifest, resolver: { _, _ in calls += 1; return .denied })
+
+        XCTAssertEqual(coordinator.selectRoot(routeID: root.routeID), .denied)
+        XCTAssertEqual(calls, 0)
+    }
+
     private func authorize(_ routeID: String, _ manifest: ShellManifest) -> NavigationResolution {
         guard manifest.routes[routeID] != nil else { return .denied }
         return .authorized(.liveView(LiveViewSession(routeID: routeID, url: URL(string: "https://app.example.com")!, allowedOrigin: URL(string: "https://app.example.com")!, bridgeProtocolVersion: "1.0.0", nativeRuntimeVersion: "1.0.0", threadID: "test", installedPacks: [:], routeRequiredPacks: [], capabilities: [:], declaredTransfers: [])))
     }
 
     private func makeManifest(routeID: String) -> ShellManifest {
-        ShellManifest(compatibility: .init(nativeRuntimeVersion: "1.0.0"), routes: [routeID: .init(id: routeID, path: "/study", runtime: "live_view", entry: "internal_only", capabilities: [], packs: [], transfers: [], allowlistedOrigins: ["https://app.example.com"])])
+        ShellManifest(compatibility: .init(nativeRuntimeVersion: "1.0.0"), routes: [routeID: route(routeID)])
     }
+
+    private func route(_ routeID: String) -> ShellManifest.Route { .init(id: routeID, path: "/study", runtime: "live_view", entry: "internal_only", capabilities: [], packs: [], transfers: [], allowlistedOrigins: ["https://app.example.com"]) }
 }
 
 private struct NavigationTopologyVectors: Decodable {
