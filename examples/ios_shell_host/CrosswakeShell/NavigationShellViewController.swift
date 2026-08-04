@@ -24,13 +24,21 @@ final class NavigationShellViewController: UITabBarController, UITabBarControlle
     private var cancellable: AnyCancellable?
     private var isSynchronizing = false
     private var lastFocusedController: UIViewController?
+    private let accessibilityPost: (UIAccessibility.Notification, Any?) -> Void
+    private let navigationObservation: (String) -> Void
 
     init(
         navigationCoordinator: NavigationCoordinator,
-        makeLeafController: @escaping (ShellPresentation) -> UIViewController
+        makeLeafController: @escaping (ShellPresentation) -> UIViewController,
+        accessibilityPost: @escaping (UIAccessibility.Notification, Any?) -> Void = { notification, argument in
+            UIAccessibility.post(notification: notification, argument: argument)
+        },
+        navigationObservation: @escaping (String) -> Void = { _ in }
     ) {
         self.navigationCoordinator = navigationCoordinator
         self.makeLeafController = makeLeafController
+        self.accessibilityPost = accessibilityPost
+        self.navigationObservation = navigationObservation
         super.init(nibName: nil, bundle: nil)
         delegate = self
     }
@@ -57,6 +65,7 @@ final class NavigationShellViewController: UITabBarController, UITabBarControlle
                 return nil
             }
             let navigation = UINavigationController(rootViewController: leafController(for: entry))
+            navigation.tabBarItem.accessibilityIdentifier = "cw-native-tab-\(rootRouteID)"
             navigation.delegate = self
             navigationControllerByRoot[rootRouteID] = navigation
             rootRouteByNavigationController[ObjectIdentifier(navigation)] = rootRouteID
@@ -89,6 +98,12 @@ final class NavigationShellViewController: UITabBarController, UITabBarControlle
         controllerByEntry = controllerByEntry.filter { retainedIDs.contains($0.key) }
     }
 
+    /// Internal host-test seam: invokes the same coordinator subscription body after
+    /// direct transition driving, without adding an alternate stack authority.
+    func synchronizeForTesting() {
+        synchronizeFromCoordinator()
+    }
+
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
         guard isSynchronizing == false,
               let navigation = viewController as? UINavigationController,
@@ -109,7 +124,8 @@ final class NavigationShellViewController: UITabBarController, UITabBarControlle
     private func announceCompletedNavigation(target: UIViewController?) {
         guard let target, target !== lastFocusedController else { return }
         lastFocusedController = target
-        UIAccessibility.post(notification: .screenChanged, argument: target.view)
+        accessibilityPost(.screenChanged, target.view)
+        navigationObservation("cw-navigation-focus-completed")
         shellDelegate?.navigationShellDidCompleteNavigation(self)
     }
 }

@@ -176,6 +176,8 @@ struct CrosswakeShellApp: App {
         WindowGroup {
             if let probe = RequiredPackAccessibilityProbe.fromLaunchArguments {
                 probe
+            } else if let probe = NavigationShellSyntheticProbe.fromLaunchArguments {
+                probe
             } else {
                 RootSceneWrapper(
                     notificationTokenProvider: appDelegate.notificationTokenProvider,
@@ -187,6 +189,54 @@ struct CrosswakeShellApp: App {
                 )
             }
         }
+    }
+}
+
+/// Exact XCUITest-only composition. The opaque fixture remains a candidate and every
+/// root/transition is authorized by the production coordinator before UIKit changes.
+private struct NavigationShellSyntheticProbe: View {
+    @StateObject private var coordinator = NavigationShellSyntheticTopology.coordinator()
+    @State private var marker = "cw-navigation-ready"
+
+    static var fromLaunchArguments: Self? {
+        ProcessInfo.processInfo.arguments.contains("-crosswake-navigation-synthetic") ? Self() : nil
+    }
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            NavigationShellView(navigationCoordinator: coordinator) { _ in
+                let view = UIViewController()
+                view.view.accessibilityIdentifier = "cw-navigation-leaf"
+                return view
+            }
+            HStack {
+                Button("Navigate") {
+                    _ = coordinator.apply(NavigationTransition(protocolName: NavigationTransition.protocolName, version: NavigationTransition.supportedVersion, transitionID: "nav-0000000000000001", kind: .pushNavigate, routeID: "route-0000000000000003", restorationRef: nil))
+                    marker = "cw-navigation-push-completed"
+                }
+                Button("Patch") {
+                    _ = coordinator.apply(NavigationTransition(protocolName: NavigationTransition.protocolName, version: NavigationTransition.supportedVersion, transitionID: "nav-0000000000000002", kind: .pushPatch, routeID: "route-0000000000000003", restorationRef: nil))
+                    marker = "cw-navigation-patch-depth-invariant"
+                }
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier(marker)
+        }
+    }
+}
+
+@MainActor
+enum NavigationShellSyntheticTopology {
+    static func coordinator() -> NavigationCoordinator {
+        let manifest = try! JSONDecoder().decode(ShellManifest.self, from: Data("""
+        {"compatibility":{"native_runtime_version":"1.0.0"},"routes":{"route-0000000000000001":{"id":"route-0000000000000001","path":"/","runtime":"live_view","entry":"root","capabilities":[],"packs":[],"transfers":[],"allowlisted_origins":[]},"route-0000000000000002":{"id":"route-0000000000000002","path":"/two","runtime":"live_view","entry":"root","capabilities":[],"packs":[],"transfers":[],"allowlisted_origins":[]},"route-0000000000000003":{"id":"route-0000000000000003","path":"/detail","runtime":"live_view","entry":"root","capabilities":[],"packs":[],"transfers":[],"allowlisted_origins":[]}}}
+        """.utf8))
+        let topology = NavigationTopology(topologySchemaVersion: "1.0.0", manifestSchemaVersion: "1.0.0", status: .ready, entries: [
+            .init(routeID: "route-0000000000000001", rootTabID: "tab-0000000000000001", presentation: .root, parentRouteID: nil, deepLinkPosture: .allow, restorationPosture: .allow),
+            .init(routeID: "route-0000000000000002", rootTabID: "tab-0000000000000002", presentation: .root, parentRouteID: nil, deepLinkPosture: .allow, restorationPosture: .allow),
+            .init(routeID: "route-0000000000000003", rootTabID: "tab-0000000000000001", presentation: .push, parentRouteID: "route-0000000000000001", deepLinkPosture: .allow, restorationPosture: .allow)
+        ])
+        return NavigationCoordinator(topology: topology, manifest: manifest) { _, _ in .authorized(.booting) }
     }
 }
 

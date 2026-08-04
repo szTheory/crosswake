@@ -246,6 +246,7 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
     """
     private var pendingLayoutInsets: ShellLayoutInsets?
     private var deliveredLayoutInsets: ShellLayoutInsets?
+    private let layoutObservationSink: (([CGFloat]) -> Void)?
     private let onDenied: (RouteDenialPresentation) -> Void
     private var session: LiveViewSession
     private let shell: CrosswakeShell
@@ -315,13 +316,15 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
         shell: CrosswakeShell,
         notificationTokenProvider: NotificationTokenProvider,
         uiActionDelegates: UIActionDelegates,
-        onDenied: @escaping (RouteDenialPresentation) -> Void
+        onDenied: @escaping (RouteDenialPresentation) -> Void,
+        layoutObservationSink: (([CGFloat]) -> Void)? = nil
     ) {
         self.session = session
         self.shell = shell
         self.notificationTokenProvider = notificationTokenProvider
         self.uiActionDelegates = uiActionDelegates
         self.onDenied = onDenied
+        self.layoutObservationSink = layoutObservationSink
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -404,6 +407,7 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
         guard let insets = pendingLayoutInsets, insets != deliveredLayoutInsets else { return }
         pendingLayoutInsets = nil; deliveredLayoutInsets = insets
         let values = [insets.top, insets.right, insets.bottom, insets.left, insets.keyboardBottom].map { max(0, $0.isFinite ? $0 : 0) }
+        layoutObservationSink?(values)
         let script = "document.documentElement.style.setProperty('--cw-safe-area-top','\\(values[0])px');document.documentElement.style.setProperty('--cw-safe-area-right','\\(values[1])px');document.documentElement.style.setProperty('--cw-safe-area-bottom','\\(values[2])px');document.documentElement.style.setProperty('--cw-safe-area-left','\\(values[3])px');document.documentElement.style.setProperty('--cw-keyboard-inset-bottom','\\(values[4])px');"
         webView.evaluateJavaScript(script, completionHandler: nil)
     }
