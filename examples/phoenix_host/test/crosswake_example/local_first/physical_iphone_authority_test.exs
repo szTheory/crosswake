@@ -6,10 +6,16 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityTest do
   test "Phoenix independently returns every closed backend authority observation" do
     assert {:ok, report} = PhysicalIphoneAuthorityFixture.run()
 
-    assert report ==
+    assert %{
+             "schema_version" => 1,
+             "device_class" => "physical_iphone",
+             "assertions" => assertions
+           } = report
+
+    assert assertions ==
              Crosswake.ProofLane.PhysicalIphoneContract.assertions()
              |> Enum.filter(&(&1.owner == :backend_authority))
-             |> Enum.map(&Map.put(&1, :outcome, :passed))
+             |> Enum.map(&%{"id" => &1.id, "outcome" => "passed"})
 
     rendered = Jason.encode!(report)
 
@@ -26,6 +32,9 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityFixture do
 
   alias CrosswakeExample.LocalFirst.{ReviewEvent, SyncController}
   alias CrosswakeExample.Repo
+  alias Crosswake.Compatibility.{RouteGate, Target}
+  alias Crosswake.Manifest.Builder
+  alias Crosswake.Policy.Route
 
   @current_scope "v1.fixture_alpha_scope_001"
   @other_scope "v1.fixture_beta_scope_0002"
@@ -33,8 +42,7 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityFixture do
     "PI-LOGOUT-ACCOUNT-FENCE",
     "PI-ENTRY-DISABLEMENT",
     "PI-REPLAY-DISABLEMENT",
-    "PI-EXACTLY-ONCE-EMPTY-OUTBOX",
-    "PI-REDACTED-PROMOTION"
+    "PI-EXACTLY-ONCE-EMPTY-OUTBOX"
   ]
 
   def run do
@@ -55,7 +63,12 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityFixture do
          %{retained_count: entry, blocked: true} when entry > 0 <- entry_disablement(),
          :ok <- reset_fixture(),
          %{retained_count: replay, blocked: true} when replay > 0 <- replay_disablement() do
-      {:ok, Enum.map(@backend_ids, &%{id: &1, owner: :backend_authority, outcome: :passed})}
+      {:ok,
+       %{
+         "schema_version" => 1,
+         "device_class" => "physical_iphone",
+         "assertions" => Enum.map(@backend_ids, &%{"id" => &1, "outcome" => "passed"})
+       }}
     else
       _ -> {:error, :authority_fixture_failed}
     end
@@ -133,15 +146,41 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityFixture do
   def entry_disablement do
     insert_event("fixture-alpha", @current_scope, "accepted")
 
-    case SyncController.sync_events(
-           build_conn(),
-           @current_scope,
-           [event("fixture-beta")],
-           opts(feature: :deny)
-         ) do
-      {:blocked, :feature_disabled} -> %{retained_count: event_count(), blocked: true}
-      _ -> :error
-    end
+    CrosswakeExample.RulesteadFlagSource.set_flag(:rulestead, :gated)
+
+    manifest =
+      Builder.build(
+        [
+          %Route{
+            id: "physical-entry-gate",
+            runtime: :live_view,
+            offline: :unavailable,
+            gated_by: :rulestead
+          }
+        ],
+        [
+          %{
+            path: "/entry-gate",
+            metadata: %{crosswake: [id: "physical-entry-gate"]},
+            helper: "entry_gate",
+            verb: :get
+          }
+        ]
+      )
+
+    result =
+      with decision <-
+             RouteGate.evaluate(manifest, "physical-entry-gate", %Target{},
+               activation_source: :in_app_navigation
+             ),
+           true <- decision.status == :deny do
+        %{retained_count: event_count(), blocked: true}
+      else
+        _ -> :error
+      end
+
+    CrosswakeExample.RulesteadFlagSource.delete_flag(:rulestead)
+    result
   end
 
   def replay_disablement do
