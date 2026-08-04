@@ -19,6 +19,22 @@ final class NavigationCoordinatorTests: XCTestCase {
         XCTAssertEqual(coordinator.apply(navigate), .denied)
         XCTAssertEqual(coordinator.stacks[root.rootTabID]?.count, 2)
     }
+
+    func testReconstructionIsAtomicAndNativePopHonorsCancellation() {
+        let root = NavigationTopologyEntry(routeID: "route-0123456789abcdef", rootTabID: "tab-0123456789abcdef", presentation: .root, parentRouteID: nil, deepLinkPosture: .allow, restorationPosture: .allow)
+        let child = NavigationTopologyEntry(routeID: "route-fedcba9876543210", rootTabID: root.rootTabID, presentation: .push, parentRouteID: root.routeID, deepLinkPosture: .allow, restorationPosture: .allow)
+        let manifest = ShellManifest(compatibility: .init(nativeRuntimeVersion: "1.0.0"), routes: [root.routeID: route(root.routeID), child.routeID: route(child.routeID)])
+        let coordinator = NavigationCoordinator(topology: .init(topologySchemaVersion: "1.0.0", manifestSchemaVersion: "1.0.0", status: .ready, entries: [root, child]), manifest: manifest, resolver: authorize)
+
+        XCTAssertEqual(coordinator.reconstructDeepLink(routeIDs: [root.routeID, child.routeID]), .authorized)
+        let before = coordinator.stacks
+        XCTAssertEqual(coordinator.completeNativePop(completed: false), .denied)
+        XCTAssertEqual(coordinator.stacks, before)
+        XCTAssertEqual(coordinator.completeNativePop(completed: true), .authorized)
+        XCTAssertEqual(coordinator.activeRouteID, root.routeID)
+        XCTAssertEqual(coordinator.reconstructRestoration(routeIDs: [root.routeID, "route-aaaaaaaaaaaaaaaa"]), .denied)
+        XCTAssertEqual(coordinator.stacks[root.rootTabID]?.count, 1)
+    }
     func testCompiledRootRequiresResolverAuthorization() throws {
         let vectorURL = URL(fileURLWithPath: "../../priv/contract_vectors/navigation_topology_vectors.json", relativeTo: URL(fileURLWithPath: FileManager.default.currentDirectoryPath))
         let vectors = try JSONDecoder().decode(NavigationTopologyVectors.self, from: Data(contentsOf: vectorURL))
