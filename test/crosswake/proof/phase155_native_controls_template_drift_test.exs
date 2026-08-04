@@ -29,6 +29,10 @@ defmodule Crosswake.Proof.Phase155NativeControlsTemplateDriftTest do
 
   use ExUnit.Case, async: true
 
+  alias Crosswake.Bridge.Contract
+  alias Crosswake.Bridge.Registry
+  alias Crosswake.CapabilityMap
+  alias Crosswake.SupportMatrix
   alias Crosswake.TestSupport.ProofAssertions
 
   @template_dir Path.join([File.cwd!(), "priv", "templates", "crosswake", "native_controls_ui"])
@@ -81,6 +85,49 @@ defmodule Crosswake.Proof.Phase155NativeControlsTemplateDriftTest do
       refute source =~ "Crosswake.Bridge.alert"
       refute source =~ "Crosswake.Bridge.confirm"
     end
+  end
+
+  test "NAV-07 keeps the Phoenix fallback and reversal gate aligned across canonical, generated, and rendered truth" do
+    generator = source!("lib/mix/tasks/crosswake.gen.native_controls_ui.ex")
+    template = source!("priv/templates/crosswake/native_controls_ui/crosswake_fallbacks.ex.eex")
+    guide = source!("guides/native_shell.md")
+
+    alert_confirm_row =
+      CapabilityMap.canonical()
+      |> Enum.find(&(&1.id == "native-controls-alert-confirm"))
+
+    assert alert_confirm_row.denial_fallback =~ "Phoenix-owned confirmation"
+
+    for source <- [generator, template, guide] do
+      assert source =~ @confirmation_reversal
+    end
+
+    for prerequisite <- [
+          "physical-iPhone proof",
+          "active-adopter route blocker",
+          "maintainer roadmap decision"
+        ] do
+      assert alert_confirm_row.adoption_implication =~ prerequisite
+    end
+
+    ios_notes = SupportMatrix.canonical().ios |> hd() |> Map.fetch!(:notes)
+
+    assert ios_notes =~ "simulator advisory evidence remains distinct"
+    assert ios_notes =~ "physical-iPhone promotion is Phase 162 only"
+  end
+
+  test "NAV-07 leaves native alert and confirm outside the bridge command and capability registries" do
+    commands = Contract.commands() ++ Registry.allowed_commands()
+    capability_ids = Crosswake.Manifest.Builder.capability_registry([]) |> Map.keys()
+
+    refute "alert" in commands
+    refute "confirm" in commands
+    refute "alert" in capability_ids
+    refute "confirm" in capability_ids
+  end
+
+  defp source!(relative_path) do
+    File.read!(Path.join(File.cwd!(), relative_path))
   end
 
   defp live_template_hash do
