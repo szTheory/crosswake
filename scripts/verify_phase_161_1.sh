@@ -12,6 +12,14 @@ case "$destination" in
   *) echo "DESTINATION must be absolute" >&2; exit 64 ;;
 esac
 
+umask 077
+navigation_run_root="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-161-1-navigation.XXXXXX")"
+chmod 700 "$navigation_run_root"
+trap 'rm -rf "$navigation_run_root"' EXIT HUP INT TERM
+navigation_output="$navigation_run_root/host-xcode-output.txt"
+navigation_observation="$navigation_run_root/navigation-shell-observation.json"
+navigation_nonce_file="$navigation_run_root/.navigation-shell-run-nonce"
+
 # Simulator/XCUITest execution below is advisory contract evidence only. It never
 # establishes physical-device, adopter-instance, Android, or generic-navigation truth.
 mix test \
@@ -42,13 +50,36 @@ if [ -z "$simulator_id" ]; then
   exit 69
 fi
 
-xcodebuild \
+if ! xcodebuild \
   -project examples/ios_shell_host/CrosswakeShell.xcodeproj \
   -scheme CrosswakeShell \
   -destination "platform=iOS Simulator,id=$simulator_id" \
   test \
   -only-testing:CrosswakeShellTests/NavigationShellTests \
-  -only-testing:CrosswakeShellUITests/NavigationShellTests
+  -only-testing:CrosswakeShellUITests/NavigationShellTests >"$navigation_output" 2>&1; then
+  echo "PL-IOS-NAV-HOST-TEST: host-tests" >&2
+  exit 1
+fi
+
+for host_test in \
+  testProductionContainerAuthorizesRootsAndMirrorsOneNavigateWithoutDuplicate \
+  testPatchAndCancelledThenCompletedPopPreserveProductionStackAndFocus \
+  testDocumentStartShellContractUsesOnlyFixedMarkerAndFiveDefaults \
+  testLayoutDeliveryKeepsFourSafeAreaFactsSeparateFromKeyboard \
+  testSyntheticProductionNavigationFlow; do
+  case "$(grep -E -c "Test Case .*${host_test}.* passed" "$navigation_output" || true)" in
+    1) ;;
+    *) echo "PL-IOS-NAV-HOST-MARKER: host-tests" >&2; exit 1 ;;
+  esac
+done
+
+navigation_nonce="$(od -An -N32 -tx1 /dev/urandom | tr -d ' \n')"
+printf '%s' "$navigation_nonce" >"$navigation_nonce_file"
+
+CROSSWAKE_NAVIGATION_NONCE="$navigation_nonce" mix run -e '
+ids = ~w(PL-IOS-NAV-TOPOLOGY PL-IOS-NAV-PATCH-DEPTH PL-IOS-NAV-NAVIGATE-ONCE PL-IOS-NAV-RESTORE PL-IOS-NAV-TABS-BACK PL-IOS-NAV-MARKER-INSETS PL-IOS-NAV-FOCUS)
+IO.write(Jason.encode!(%{"assertion_ids" => ids, "outcome" => "passed", "run_nonce" => System.fetch_env!("CROSSWAKE_NAVIGATION_NONCE"), "schema_version" => 1, "scope" => "advisory"}))
+' >"$navigation_observation"
 
 mix format --check-formatted \
   lib/crosswake/proof_lane/evidence.ex \
@@ -58,4 +89,7 @@ mix format --check-formatted \
   test/mix/tasks/crosswake_proof_lane_verify_navigation_shell_test.exs
 git diff --check
 
-mix crosswake.proof_lane.verify_navigation_shell --destination "$destination"
+mix crosswake.proof_lane.verify_navigation_shell \
+  --destination "$destination" \
+  --run-root "$navigation_run_root" \
+  --observation "$navigation_observation"

@@ -3,34 +3,52 @@ defmodule Crosswake.ProofLane.NavigationShellAdvisoryTest do
 
   alias Crosswake.ProofLane.NavigationShellAdvisory
 
-  test "builds one closed canonical advisory with every code-owned subject digest" do
-    assert {:ok, advisory} = NavigationShellAdvisory.build()
+  @ids ~w(PL-IOS-NAV-TOPOLOGY PL-IOS-NAV-PATCH-DEPTH PL-IOS-NAV-NAVIGATE-ONCE PL-IOS-NAV-RESTORE PL-IOS-NAV-TABS-BACK PL-IOS-NAV-MARKER-INSETS PL-IOS-NAV-FOCUS)
+
+  test "derives passed assertions only from an exact canonical current-run observation" do
+    bytes = observation_bytes()
+
+    assert {:ok, advisory} = NavigationShellAdvisory.build(bytes)
 
     assert %{
-             "schema_version" => 1,
-             "phase_id" => "161.1",
-             "proof_class" => "advisory",
              "assertions" => assertions,
+             "observation_digest" => digest,
              "subject_digests" => subject_digests
            } = NavigationShellAdvisory.to_map(advisory)
 
-    assert assertions != []
+    assert Map.keys(assertions) |> Enum.sort() == Enum.sort(@ids)
+    assert Enum.all?(assertions, fn {_id, outcome} -> outcome == "passed" end)
+    assert String.match?(digest, ~r/\A[a-f0-9]{64}\z/)
     assert subject_digests != %{}
 
     assert {:ok, ^advisory} =
              NavigationShellAdvisory.decode(NavigationShellAdvisory.encode!(advisory))
   end
 
-  test "rejects non-canonical and sensitive advisory bytes without echoing input" do
-    assert {:ok, advisory} = NavigationShellAdvisory.build()
-    bytes = NavigationShellAdvisory.encode!(advisory)
+  test "rejects missing, duplicate, reordered, widened, raw, and non-canonical observations" do
+    for invalid <- [
+          observation_bytes(%{"assertion_ids" => Enum.drop(@ids, -1)}),
+          observation_bytes(%{"assertion_ids" => @ids ++ [List.last(@ids)]}),
+          observation_bytes(%{"assertion_ids" => Enum.reverse(@ids)}),
+          observation_bytes(%{"scope" => "physical-device"}),
+          Jason.encode!(Map.put(observation_map(), "raw_output", "CANARY")),
+          " " <> observation_bytes()
+        ] do
+      assert {:error, error} = NavigationShellAdvisory.build(invalid)
+      refute inspect(error) =~ "CANARY"
+    end
+  end
 
-    assert {:error, error} = NavigationShellAdvisory.decode(" " <> bytes)
-    refute inspect(error) =~ "answer"
+  defp observation_bytes(overrides \\ %{}),
+    do: Jason.encode!(Map.merge(observation_map(), overrides))
 
-    assert {:error, error} =
-             NavigationShellAdvisory.decode(String.replace(bytes, "advisory", "token"))
-
-    refute inspect(error) =~ "token"
+  defp observation_map do
+    %{
+      "assertion_ids" => @ids,
+      "outcome" => "passed",
+      "run_nonce" => String.duplicate("a", 64),
+      "schema_version" => 1,
+      "scope" => "advisory"
+    }
   end
 end
