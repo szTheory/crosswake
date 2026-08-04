@@ -145,7 +145,9 @@ actor PronunciationPackProvider: PackProvider {
             let destination = artifactURL(for: requirement)
             let priorInventoryData = try? Data(contentsOf: inventoryURL)
             let hadPriorArtifact = fileManager.fileExists(atPath: destination.path)
-            let priorRecord = loadInventory()[requirement.packID]
+            // A journaled prior record is authoritative only when its matching bytes are
+            // retained. Inventory alone must never manufacture a last-known-good artifact.
+            let priorRecord = hadPriorArtifact ? loadInventory()[requirement.packID] : nil
             let record = PackInstalledRecord(
                 contractVersion: requirement.contractVersion,
                 packID: requirement.packID,
@@ -318,6 +320,24 @@ actor PronunciationPackProvider: PackProvider {
             else { throw CocoaError(.fileReadCorruptFile) }
             if fileManager.fileExists(atPath: retained.path) { try operations.remove(retained); try operations.synchronizeDirectory(canonicalRoot) }
         case .retentionPending, .promotionPending, .inventoryCommitPending:
+            let hasDestination = fileManager.fileExists(atPath: destination.path)
+            let hasRetainedArtifact = fileManager.fileExists(atPath: retained.path)
+            let isInventoryOnlyPromotionPending = journal.phase == .promotionPending
+                && journal.priorRecord != nil
+                && inventory[journal.packID] == journal.priorRecord
+                && !hasDestination
+                && !hasRetainedArtifact
+                && fileManager.fileExists(atPath: staging.path)
+
+            if isInventoryOnlyPromotionPending {
+                inventory.removeValue(forKey: journal.packID)
+                try writeInventory(inventory, storageRoot: canonicalRoot, operations: operations)
+                break
+            }
+
+            if journal.priorRecord != nil && !hasRetainedArtifact {
+                throw CocoaError(.fileReadCorruptFile)
+            }
             if fileManager.fileExists(atPath: destination.path) { try operations.remove(destination); try operations.synchronizeDirectory(canonicalRoot) }
             if let priorRecord = journal.priorRecord {
                 guard fileManager.fileExists(atPath: retained.path) else { throw CocoaError(.fileReadCorruptFile) }
