@@ -814,4 +814,24 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await expect(page.locator('#crosswake-study-status')).not.toContainText('scope');
     await expect(page.locator('#crosswake-review-saved-answers')).toHaveCount(0);
   });
+
+  test('study status emits one combined announcement for each changed lifecycle state', async ({ page, context }) => {
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await page.evaluate(() => {
+      (window as any).__studyStatusEffects = [];
+      document.addEventListener('crosswake:study-status-announcement', (event: Event) => {
+        const detail = (event as CustomEvent).detail;
+        (window as any).__studyStatusEffects.push({ state: detail.state, preserveFocus: detail.preserveFocus });
+      });
+    });
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+    await expect.poll(() => page.evaluate(() => (window as any).__studyStatusEffects.length)).toBe(1);
+    const effects = await page.evaluate(() => (window as any).__studyStatusEffects);
+
+    expect(effects).toEqual([{ state: 'saved_locally', preserveFocus: true }]);
+  });
 });

@@ -96,6 +96,90 @@ final class ProofLaneUITests: XCTestCase {
     assertFullLabel(app.staticTexts.matching(identifier: "proof-lane-navigation-focus").firstMatch, equals: "Navigation focus unavailable")
   }
 
+  func testStudyStatusAccessibilityContractThroughHostAdapter() {
+    guard hasStudyStatusHostAdapter else { return }
+
+    for (state, label, message) in [
+      ("saved_locally", "Saved on this iPhone.", "It will sync when you’re back online."),
+      ("syncing", "Syncing saved answers…", ""),
+      ("needs_attention", "Some saved answers need review.", ""),
+      ("sync_paused", "Saved answers paused", "Your saved answers remain on this iPhone.")
+    ] {
+      let app = studyStatusApp(state: state, reduceMotion: true)
+      let status = app.otherElements.matching(identifier: "crosswake-study-status").firstMatch
+      XCTAssertTrue(status.waitForExistence(timeout: 5))
+      XCTAssertEqual(status.value as? String, state)
+      assertFullLabel(app.staticTexts.matching(identifier: "crosswake-study-status-label").firstMatch, equals: label)
+      if !message.isEmpty {
+        assertFullLabel(app.staticTexts.matching(identifier: "crosswake-study-status-message").firstMatch, equals: message)
+      }
+      XCTAssertTrue(status.isHittable)
+      XCTAssertFalse(status.label.contains("…"))
+      XCTAssertTrue(app.staticTexts.matching(identifier: "crosswake-study-status-icon").firstMatch.exists)
+    }
+  }
+
+  func testStudyStatusRecoveryAndAccessibilityBackstops() {
+    guard hasStudyStatusHostAdapter else { return }
+
+    let app = studyStatusApp(state: "needs_attention", reduceMotion: true)
+    let window = app.windows.firstMatch
+    XCTAssertTrue(window.waitForExistence(timeout: 5))
+    let horizontalInsets = window.frame.insetBy(dx: 24, dy: 0)
+
+    let status = app.otherElements.matching(identifier: "crosswake-study-status").firstMatch
+    XCTAssertTrue(status.waitForExistence(timeout: 5))
+    assertContainedHorizontally(status, within: horizontalInsets)
+    XCTAssertTrue(app.staticTexts.matching(identifier: "crosswake-study-status-label").firstMatch.label.contains("Some saved answers need review."))
+    XCTAssertFalse(app.staticTexts.matching(identifier: "crosswake-study-status-message").firstMatch.label.contains("…"))
+
+    let review = app.buttons.matching(identifier: "crosswake-review-saved-answers").firstMatch
+    XCTAssertTrue(review.waitForExistence(timeout: 5))
+    assertFullLabel(review, equals: "Review saved answers")
+    review.scrollToVisible()
+    XCTAssertGreaterThanOrEqual(review.frame.width, 44)
+    XCTAssertGreaterThanOrEqual(review.frame.height, 44)
+    XCTAssertTrue(review.isHittable)
+    assertContainedHorizontally(review, within: horizontalInsets)
+
+    let noDestination = studyStatusApp(state: "needs_attention", reduceMotion: true, recoveryDestination: false)
+    XCTAssertFalse(noDestination.buttons.matching(identifier: "crosswake-review-saved-answers").firstMatch.exists)
+  }
+
+  func testStudyStatusAppearanceMotionAndAnnouncementContract() {
+    guard hasStudyStatusHostAdapter else { return }
+
+    for appearance in ["light", "dark", "system"] {
+      let app = studyStatusApp(state: "syncing", reduceMotion: true, appearance: appearance)
+      let status = app.otherElements.matching(identifier: "crosswake-study-status").firstMatch
+      XCTAssertTrue(status.waitForExistence(timeout: 5))
+      XCTAssertTrue(app.staticTexts.matching(identifier: "crosswake-study-status-label").firstMatch.label.contains("Syncing saved answers…"))
+      XCTAssertTrue(app.staticTexts.matching(identifier: "crosswake-study-status-icon").firstMatch.exists)
+      XCTAssertTrue(app.staticTexts.matching(identifier: "crosswake-study-status-announcement-count").firstMatch.label.contains("1"))
+      XCTAssertTrue(app.staticTexts.matching(identifier: "crosswake-study-status-focus-preserved").firstMatch.label.contains("true"))
+    }
+  }
+
+  private func studyStatusApp(
+    state: String,
+    reduceMotion: Bool,
+    appearance: String = "system",
+    recoveryDestination: Bool = true
+  ) -> XCUIApplication {
+    let app = XCUIApplication()
+    app.launchEnvironment["CROSSWAKE_PROOF_LANE_STUDY_STATUS"] = state
+    app.launchEnvironment["CROSSWAKE_PROOF_LANE_REDUCE_MOTION"] = reduceMotion ? "1" : "0"
+    app.launchEnvironment["CROSSWAKE_PROOF_LANE_APPEARANCE"] = appearance
+    app.launchEnvironment["CROSSWAKE_PROOF_LANE_RECOVERY_DESTINATION"] = recoveryDestination ? "1" : "0"
+    app.launchEnvironment["UIPreferredContentSizeCategoryName"] = "UIContentSizeCategoryAccessibilityXXXL"
+    app.launch()
+    return app
+  }
+
+  private var hasStudyStatusHostAdapter: Bool {
+    ProcessInfo.processInfo.environment["CROSSWAKE_PROOF_LANE_STUDY_HOST_ADAPTER"] == "1"
+  }
+
   private func assertClosedOutcome(in app: XCUIApplication, equals expected: String) {
     XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-ready").firstMatch.waitForExistence(timeout: 5))
     XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-auth-posture").firstMatch.exists)
@@ -115,5 +199,18 @@ final class ProofLaneUITests: XCTestCase {
   private func assertContainedHorizontally(_ element: XCUIElement, within frame: CGRect) {
     XCTAssertGreaterThanOrEqual(element.frame.minX, frame.minX)
     XCTAssertLessThanOrEqual(element.frame.maxX, frame.maxX)
+  }
+}
+
+private extension XCUIElement {
+  func scrollToVisible(attempts: Int = 5) {
+    let app = XCUIApplication()
+    for _ in 0..<attempts where !isHittable {
+      if frame.minY < app.frame.minY {
+        app.swipeDown()
+      } else {
+        app.swipeUp()
+      }
+    }
   }
 }
