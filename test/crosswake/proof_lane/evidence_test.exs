@@ -101,6 +101,44 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     assert Evidence.to_map(evidence)["assertion_ids"] == assertions
   end
 
+  test "builds, round-trips, and promotes only a complete physical iPhone record" do
+    attrs = physical_candidate()
+
+    assert {:ok, evidence} = Evidence.build(attrs)
+    assert Evidence.to_map(evidence)["device_class"] == "physical_iphone"
+    assert Evidence.to_map(evidence)["ios_runtime_line"] == "18.0"
+
+    with_destination(fn destination ->
+      assert :ok = Evidence.promote(attrs, destination)
+      assert :ok = Evidence.check(destination, physical_sources())
+    end)
+  end
+
+  test "physical iPhone evidence rejects nonphysical classes, incomplete reports, runtime aliases, and unapproved sources" do
+    base = physical_candidate()
+
+    for attrs <- [
+          Map.put(base, :device_class, :simulator),
+          Map.put(base, :ios_runtime_line, "18.0.1"),
+          Map.put(base, :assertion_ids, Enum.drop(base.assertion_ids, -1)),
+          Map.put(base, :assertion_ids, Enum.reverse(base.assertion_ids)),
+          Map.put(base, :outcome, :blocked),
+          Map.put(base, :status, :unavailable),
+          Map.put(base, :approved_hashes, [])
+        ] do
+      assert {:error, error} = Evidence.build(attrs)
+      assert error.rule_id =~ "PL-EVIDENCE-"
+    end
+
+    assert {:error, error} =
+             Evidence.build(%{
+               base
+               | approved_hashes: [%{kind: :evidence_json, canonical_bytes: "{}"}]
+             })
+
+    assert error.rule_id == "PL-EVIDENCE-HASH"
+  end
+
   test "rejects D-21 private and raw proof candidates without echoing candidate values" do
     candidates = [
       {:archive_bytes, :assertion_ids, ["CANARY-ARCHIVE-BYTES"]},
@@ -503,6 +541,44 @@ defmodule Crosswake.ProofLane.EvidenceTest do
       Path.join(stage, ".complete"),
       Base.encode16(:crypto.hash(:sha256, artifact), case: :lower)
     )
+  end
+
+  defp physical_candidate do
+    %{
+      schema_version: "1",
+      crosswake_version: "1.0.0",
+      template_version: "1",
+      commit_ref: "git-0123456789abcdef0123456789abcdef01234567",
+      route_id: "route-0123456789abcdef",
+      assertion_ids: Crosswake.ProofLane.PhysicalIphoneContract.assertions() |> Enum.map(& &1.id),
+      status: :passed,
+      outcome: :passed,
+      captured_at: "2026-08-04T12:00:00Z",
+      retention_label: :brief,
+      device_class: :physical_iphone,
+      ios_runtime_line: "18.0",
+      approved_hashes: physical_sources()
+    }
+  end
+
+  defp physical_sources do
+    [
+      %{
+        kind: :physical_iphone_run_contract,
+        canonical_bytes:
+          Jason.encode!(%{
+            "schema_version" => 1,
+            "device_class" => "physical_iphone",
+            "ios_runtime_line" => "18.0",
+            "outcome" => "passed",
+            "assertions" =>
+              Crosswake.ProofLane.PhysicalIphoneContract.assertions()
+              |> Enum.map(fn %{id: id, owner: owner} ->
+                %{"id" => id, "owner" => Atom.to_string(owner), "outcome" => "passed"}
+              end)
+          })
+      }
+    ]
   end
 
   defp assert_promotion_hook_failure!(error, destination, canary) do
