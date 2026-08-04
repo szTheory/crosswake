@@ -1,40 +1,25 @@
 ---
 phase: 161-ios-pronunciation-pack-seam
-verified: 2026-08-04T02:47:59Z
-status: gaps_found
-score: 9/10 must-haves verified
+verified: 2026-08-04T14:42:00Z
+status: passed
+score: 10/10 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
-next_action: "Repair stale-inventory/no-artifact recovery, add a direct crash-recovery regression, run the fresh same-tree gate, then re-verify."
-next_command: "$gsd-plan-phase 161 --gaps"
 re_verification:
   previous_status: gaps_found
-  previous_score: 19/20
+  previous_score: 9/10
   gaps_closed:
-    - "Generated reference-adapter proof now resets test-only persistence before adapter construction and proves Blocked → foreground install → Passed → relaunch → offline audio in order."
-  gaps_remaining:
-    - "Crash recovery cannot handle a journal whose prior inventory record exists but whose prior artifact was absent, permanently blocking all provider operations."
+    - "Replacement is restart-recoverable: the exact stale-inventory/no-artifact promotion-pending journal now recovers to not-installed and permits a verified foreground reinstall."
+  gaps_remaining: []
   regressions: []
-gaps:
-  - truth: "Replacement is restart-recoverable: interrupted publication restores a safe usable state before public provider operations report."
-    status: failed
-    reason: "install records priorRecord from inventory even when no destination artifact exists. If interrupted after the promotion-pending journal is fsynced, recovery requires a retained file that was never created, throws, and memoizes startup recovery failure."
-    artifacts:
-      - path: "examples/ios_shell_host/CrosswakeShell/PronunciationPackProvider.swift"
-        issue: "Lines 147-171 create the inconsistent journal; lines 320-329 reject it instead of removing stale inventory. awaitStartupRecovery then turns every status/install/invalidate into a permanent closed failure."
-      - path: "examples/ios_shell_host/CrosswakeShellTests/PronunciationPackProviderTests.swift"
-        issue: "No test covers inventory present + destination absent + interruption after journal persistence."
-    missing:
-      - "Journal a prior record only when its verified artifact is actually retained, or make promotion-pending recovery remove stale inventory when the prior artifact is absent."
-      - "Add a direct regression that constructs the reachable stale-inventory/no-artifact journal state and proves a newly constructed provider can recover and install."
 ---
 
 # Phase 161: iOS Pronunciation Pack Seam Verification Report
 
 **Phase Goal:** Replace simulated availability with one host-supplied foreground iOS install path that verifies and atomically installs real bytes.
-**Verified:** 2026-08-04T02:47:59Z
-**Status:** gaps_found
-**Re-verification:** Yes — after Plans 161-17 and 161-18
+**Verified:** 2026-08-04T14:42:00Z
+**Status:** passed
+**Re-verification:** Yes — after Plans 161-19 and 161-20
 
 ## Goal Achievement
 
@@ -42,86 +27,82 @@ gaps:
 
 | # | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | A host can supply one closed v1 provider for requirement-bound status, install, and invalidate; malformed, cancelled, nil, and failed results do not activate routes. | ✓ VERIFIED | `PackProvider.swift:81-85` exposes only the three operations. `PackStore.swift:121-195` reconciles results into closed states and `ActivationCoordinator.swift:395-404` blocks any non-available pack. |
-| 2 | Availability comes from verified current bytes, not simulated time, staging bytes, or install acknowledgement. | ✓ VERIFIED | `PronunciationPackProvider.install` stages and hashes before move (`:137-202`); `status` re-verifies destination bytes (`:104-121`); `PackStore.installRequiredPack` fresh-reconciles after `.installed` (`:127-146`). Focused `PackProviderFixtureTests/testVerifiedFixturePromotesThenFreshStatusUnblocksActivation` passed. |
-| 3 | Corrupt, missing, stale, revoked, unconfigured, and ordinary interrupted paths fail closed rather than activate a route. | ✓ VERIFIED | Missing provider/bytes and verification failures map to non-available results; revocation is persisted before invalidation (`PackStore.swift:149-195`), and `blockingStatus` refuses every state other than `.available`. |
-| 4 | Interrupted replacement publication is restart-recoverable and leaves the foreground installer usable. | ✗ FAILED | A persisted inventory record with no prior destination is reachable; the next install journals it as `priorRecord` (`PronunciationPackProvider.swift:147-171`). Recovery of `.promotionPending` requires the non-existent retained file (`:320-329`), throws, and its memoized `startupRecovery` makes all public operations fail (`:104-105`, `:124-125`, `:226-227`). |
-| 5 | Crosswake owns declaration/lifecycle/inventory/activation denial, while host source, storage, layout, codecs, and playback remain host-owned. | ✓ VERIFIED | Core contract carries only requirement-bound records/results; the filesystem-backed provider is confined to `examples/ios_shell_host`, while `ProofLaneDriver.swift.eex` labels its adapter host scaffold. |
-| 6 | The generated reference-adapter proof now proves a current-run foreground install before advisory success. | ✓ VERIFIED | `ProofLaneApp.swift.eex:7-15` consumes both exact test keys before factory construction. XCUITest asserts `Blocked: packAudio` before `install.tap()`, then `Passed`, removes reset before relaunch, and emits four ordered markers. The verifier requires each marker exactly once and in order (`verify_generated_ios_shell.sh:216-235`). Fresh template/verifier suites passed 19/19. |
-| 7 | Retained proof evidence remains aggregate-only and simulator output cannot promote physical-iPhone or adopter-instance claims. | ✓ VERIFIED | `161-VALIDATION.md` schema-4 manifest retains `passed_simulator_advisory`, `todo_002: unknown_blocking`, `adopter_instance: unknown_blocking`, and `physical_iphone_promotion: phase_162_only`; no product/template diff exists after its recorded subject revision. |
-| 8 | Android, background transfer, delta/eviction, generic storage/distribution, scoring, and capture remain unclaimed. | ✓ VERIFIED | The reviewed Phase 161 product/template paths contain no implementation of these surfaces; ROADMAP/ADR scope remains iOS foreground only. |
-| 9 | The approved foreground recovery UI remains accessible and route activation—not the proof view—owns availability. | ✓ VERIFIED | `RequiredPackView` and its host/UI test targets remain wired in the Xcode project; the phase’s retained schema-4 evidence records the four existing UI backstops. No product/UI source changed after that gate. |
-| 10 | Evidence and diagnostics retain no raw media, credentials, account identifiers, paths, URLs, or transcript output. | ✓ VERIFIED | The schema-4 retained manifest contains closed aggregate fields only; the generated verifier emits only closed JSON outcome/rule/scope fields. |
+| 1 | A host can supply one closed v1 provider for requirement-bound status, install, and invalidate; malformed, cancelled, nil, and failed results cannot activate routes. | ✓ VERIFIED | `PackProvider` remains the narrow three-operation seam; `PackStore` reconciles its closed results and `ActivationCoordinator` blocks non-available state. `PackStoreTests` passed 9/9. |
+| 2 | Availability derives from verified current bytes, not elapsed time, staged bytes, or install acknowledgement. | ✓ VERIFIED | The provider streams/verifies the staged artifact before promotion and `status` re-attests the destination bytes. `PackProviderFixtureTests` passed 3/3, including fresh-status-before-activation. |
+| 3 | Corrupt, interrupted, missing, stale, revoked, or unconfigured states fail closed and preserve a usable foreground recovery path where recovery is safe. | ✓ VERIFIED | The host XCTest suite passed 34/34, covering malformed journals, unsafe leaves, volume mismatch, missing artifacts, invalidation races, retained-old recovery, and the repaired stale-inventory path. |
+| 4 | The reachable stale-inventory/no-artifact promotion-pending interruption recovers before public operations and then permits a verified foreground reinstall. | ✓ VERIFIED | `PronunciationPackProvider.swift:147-150` journals a prior record only with an actual prior artifact. `:322-351` recognizes exactly the legacy inventory-only topology, removes stale authority, and retains fail-closed rejection for every other missing-retained-artifact topology. `testConstructionBootstrapRecoversStaleInventoryWithoutArtifactAndPermitsReinstall` passed in the independent 34-test XCTest run. |
+| 5 | Genuine retained bytes still restore as a last-known-good record/artifact pair; no optimistic availability or silent fallback was introduced. | ✓ VERIFIED | Recovery preserves the retained-artifact branch after topology validation; retained-old and promoted-inventory-pending XCTest regressions passed. |
+| 6 | Crosswake owns declaration, lifecycle, inventory, and activation denial, while source, storage, layout, codecs, transport, and playback remain host-owned. | ✓ VERIFIED | The filesystem-backed installer remains solely in `examples/ios_shell_host`; the diff from the prior gate changes only its private journal invariant and recovery branch. No core provider API changed. |
+| 7 | Generated reference-adapter evidence requires a current-run foreground install but remains simulator-advisory. | ✓ VERIFIED | `mix test test/crosswake/proof_lane/template_contract_test.exs test/crosswake/proof_lane/ios_verifier_test.exs` passed 19/19. Schema-5 records the required ordered current-run outcomes and `passed_simulator_advisory`. |
+| 8 | Required-pack recovery UI remains accessible and route activation, not the proof UI, owns availability. | ✓ VERIFIED | Schema-5 records all four executed UI backstops; provider/activation wiring is unchanged by the recovery repair. |
+| 9 | Evidence and diagnostics exclude raw media, credentials, account identifiers, paths, URLs, and transcript output. | ✓ VERIFIED | The retained schema-5 object contains aggregate counts, stable outcomes, an opaque run identifier, and a tree digest only; its scoped privacy-field scan found no sensitive category. |
+| 10 | Android, generic storage/distribution, background transfer, delta/eviction, scoring, and capture remain unclaimed. | ✓ VERIFIED | No Android file is in the repaired implementation history. The change is confined to the host-private iOS provider/tests, and the ROADMAP/ADR boundary remains foreground-iOS-only. |
 
-**Score:** 9/10 truths verified (0 present, behavior-unverified)
+**Score:** 10/10 truths verified (0 present, behavior-unverified)
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 | --- | --- | --- | --- |
-| `PackProvider.swift` | Narrow host-supplied v1 seam | ✓ VERIFIED | Substantive protocol and closed values; used by `PackStore`. |
-| `PackStore.swift` / `ActivationCoordinator.swift` | Checking-first reconciliation and route denial | ✓ VERIFIED | Provider result → status → `blockingStatus` → activation is wired. |
-| `PronunciationPackProvider.swift` | Host-private real-byte, atomic, restart-recoverable installer | ✗ FAILED | Installation/status are substantive and wired, but the reachable recovery topology above permanently bricks public operations. |
-| `PronunciationPackProviderTests.swift` | Concrete integrity and recovery backstops | ⚠️ PARTIAL | Covers several journal topologies but misses stale inventory with absent artifact before journal persistence. |
-| Generated proof app/UI/verifier templates | Run-isolated current-run advisory proof | ✓ VERIFIED | Reset, exact UI ordering, relaunch key removal, and transcript gate are all connected. |
-| `161-VALIDATION.md` | Privacy-safe advisory evidence | ✓ VERIFIED | Schema-4 aggregate boundary preserves Phase 162-only promotion. |
+| `examples/ios_shell_host/CrosswakeShell/PronunciationPackProvider.swift` | Host-private real-byte, atomic, restart-recoverable installer | ✓ VERIFIED | Substantive actor; startup recovery gates all public operations; exact stale legacy topology is repaired without weakening corrupt-state denial. |
+| `examples/ios_shell_host/CrosswakeShellTests/PronunciationPackProviderTests.swift` | Executable recovery and reinstallation regression | ✓ VERIFIED | Contains direct crash/relaunch construction, inventory/journal cleanup assertions, fixture install, and fresh relaunch re-attestation. |
+| `packages/crosswake-shell-core-ios` PackProvider/PackStore | Closed provider seam and activation lifecycle | ✓ VERIFIED | Imported and used by the host path; 12 focused core tests passed. |
+| Generated proof templates/verifier | Current-run advisory contract | ✓ VERIFIED | Template/verifier regression suite passed 19/19; it does not promote device proof. |
+| `161-VALIDATION.md` | Privacy-safe final evidence | ✓ VERIFIED | Schema-5 binds the two-file repair subject and records the stale-inventory outcome as passed. |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 | --- | --- | --- | --- | --- |
-| `PackRequirement` | `PackProvider.status(for:)` | exact ID/version/count/digest binding | ✓ WIRED | Contract and reconciliation code consume the exact requirement. |
-| `PackProvider.install(_:)` | `PackStore.reconcile` | mandatory fresh status after acknowledgement | ✓ WIRED | `installRequiredPack` recurses to reconciliation only after `.installed`. |
-| Host publication | provider `status` | live destination byte re-attestation | ✓ WIRED | `status` opens and hashes the destination artifact. |
-| Journal/inventory transitions | filesystem recovery | recovery before provider operations | ✗ NOT WIRED SAFELY | The journal permits `priorRecord` without retained bytes; recovery cannot resolve that valid state. |
-| Generated install action | advisory evidence | reset → blocked → install → passed → relaunch → audio markers | ✓ WIRED | Source ordering and 19 passing template/verifier tests confirm the repair. |
+| `hadPriorArtifact` | `ReplacementJournal.priorRecord` | Prior record is emitted only with retained destination bytes | ✓ WIRED | `priorRecord = hadPriorArtifact ? loadInventory()[...] : nil`. |
+| `replacement-journal.json` | Startup recovery | Validated phase/file topology before persistent mutation | ✓ WIRED | Recovery checks schema, leaf safety, identities, regular-file/volume properties, and recognized state before inventory mutation. |
+| Startup recovery | `status` / `install` / `invalidate` | Shared memoized recovery result gates each provider operation | ✓ WIRED | Exact stale state resolves successfully; malformed/ambiguous states retain the closed memoized failure behavior. |
+| Host publication | fresh provider status | Streaming integrity check → atomic destination → inventory → byte re-attestation | ✓ WIRED | Fixture and host XCTest evidence exercise the complete data flow. |
 
 ### Data-Flow Trace (Level 4)
 
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 | --- | --- | --- | --- | --- |
-| `PackStore` | `RequiredPackStatus` | provider’s re-attested `PackInstalledRecord` | Yes | ✓ FLOWING |
-| Host provider | staged/destination bytes | host source → streamed count/SHA-256 → atomic destination → inventory | Yes on ordinary path | ✓ FLOWING |
-| Startup recovery | journal + inventory + retained artifact | fsynced journal and host-private files | No for stale-inventory/no-artifact state | ✗ HOLLOW FAILURE PATH |
-| Generated proof | current-run UI outcome | test-only reset → foreground operation → persisted readback | Yes | ✓ FLOWING |
+| Host provider | staged/destination artifact | Host source → bounded stream/count/SHA-256 → atomic destination → inventory | Yes | ✓ FLOWING |
+| Startup recovery | journal, inventory, destination/retained/staging leaves | Fsynced host-private state validated before recovery mutation | Yes | ✓ FLOWING |
+| `PackStore` | required-pack availability | Fresh provider `PackInstalledRecord` → closed lifecycle state → activation decision | Yes | ✓ FLOWING |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 | --- | --- | --- | --- |
-| Ordered generated-proof contract rejects missing/reordered provenance | `mix test test/crosswake/proof_lane/template_contract_test.exs test/crosswake/proof_lane/ios_verifier_test.exs` | 19 tests, 0 failures | ✓ PASS |
-| Verified bytes require fresh status before activation | `swift test --package-path packages/crosswake-shell-core-ios --filter PackProviderFixtureTests/testVerifiedFixturePromotesThenFreshStatusUnblocksActivation` | 1 test, 0 failures | ✓ PASS |
-| Stale inventory + absent artifact + journal interruption recovery | Static state-machine trace | No regression exists; source deterministically throws at recovery guard | ✗ FAIL |
+| Exact stale inventory/no-artifact crash recovery and foreground reinstall | `xcodebuild clean test ... -only-testing:CrosswakeShellTests/PronunciationPackProviderTests` | 34 tests, 0 failures; exact regression passed | ✓ PASS |
+| Fresh byte verification and closed core lifecycle | `swift test --package-path packages/crosswake-shell-core-ios --filter PackProviderFixtureTests && ... --filter PackStoreTests` | 3 + 9 tests, 0 failures | ✓ PASS |
+| Current-run generated proof contract | `mix test test/crosswake/proof_lane/template_contract_test.exs test/crosswake/proof_lane/ios_verifier_test.exs` | 19 tests, 0 failures | ✓ PASS |
+| Repair formatting | `git diff --check -- examples/ios_shell_host/CrosswakeShell/PronunciationPackProvider.swift examples/ios_shell_host/CrosswakeShellTests/PronunciationPackProviderTests.swift` | Exit 0 | ✓ PASS |
 
 ### Requirements Coverage
 
-| Requirement | Source Plans | Description | Status | Evidence |
-| --- | --- | --- | --- | --- |
-| PACK-01 | 01, 03–06, 08–11, 13–14, 16, 18 | Host foreground status/install/invalidate seam | ✓ SATISFIED | Closed three-operation protocol is implemented and used. |
-| PACK-02 | 01–07, 09–12, 14–18 | Invalid/interrupted states never report available | ✗ BLOCKED | It fails closed but a reachable interrupted state permanently disables all foreground recovery, so the required usable foreground path is not achieved. |
-| PACK-03 | 01–02, 04–06, 08–18 | Exact size/SHA-256 verification then atomic installation | ✗ BLOCKED | Normal installation verifies and promotes, but the restart-safe atomic publication contract fails for the reachable interrupted topology. |
-| PACK-04 | 01–16, 18 | Explicit Crosswake/host ownership boundary | ✓ SATISFIED | Transport/storage/playback remain host-owned. |
-| PACK-05 | 03–06, 08–09, 11, 13–14, 16–18 | Adjacent claims remain unclaimed | ✓ SATISFIED | Simulator remains advisory; Phase 162 alone owns physical-iPhone promotion. |
+| Requirement | Description | Status | Evidence |
+| --- | --- | --- | --- |
+| PACK-01 | Host-supplied foreground status/install/invalidate seam | ✓ SATISFIED | Narrow protocol and host injection remain wired; focused core and host tests pass. |
+| PACK-02 | Invalid/interrupted states never report available | ✓ SATISFIED | Direct regression proves the one recoverable interruption is not installed; malformed/ambiguous paths remain closed. |
+| PACK-03 | Exact size/SHA-256 verification then atomic installation | ✓ SATISFIED | Fixture/core and host tests prove verification, atomic promotion, restart readback, and recovery. |
+| PACK-04 | Explicit Crosswake/host ownership boundary | ✓ SATISFIED | Repair is private to the example host; public core seam did not expand. |
+| PACK-05 | Adjacent storage/media/platform claims remain unclaimed | ✓ SATISFIED | Schema-5 and source inspection preserve foreground iOS only; simulator proof is advisory and physical-iPhone promotion remains Phase 162-only. |
 
-All plan-declared requirement IDs are PACK-01 through PACK-05, which exactly match Phase 161’s IDs in `REQUIREMENTS.md`. No orphaned Phase 161 requirement was found.
+All Phase 161 plan requirements map exactly to PACK-01 through PACK-05. No orphaned Phase 161 requirement was found.
 
 ### Anti-Patterns Found
 
-| File | Line | Pattern | Severity | Impact |
-| --- | --- | --- | --- | --- |
-| `PronunciationPackProvider.swift` | 147–171, 320–329 | Recovery journal records inventory-only prior state but recovery assumes retained prior bytes | 🛑 BLOCKER | One interrupted installation state memoizes failure and permanently blocks status/install/invalidate. |
+No blocker anti-patterns or unreferenced `TBD`, `FIXME`, or `XXX` markers were found in the repaired production/test artifacts.
 
-No unreferenced `TBD`, `FIXME`, or `XXX` marker was found in the reviewed Phase 161 implementation paths.
+### Disconfirmation Pass
 
-### Review-Finding Disposition
-
-**CR-01 — confirmed BLOCKER.** This is independently established by the code, not the review narrative: `hadPriorArtifact` is calculated separately from `priorRecord`; `priorRecord` is nevertheless journaled when only inventory exists; `.promotionPending` requires `retained` whenever that field is non-nil. A crash after `persistJournal` and before promotion therefore makes the construction-time recovery task throw. Because that task is shared and memoized, each public operation returns its closed failure indefinitely. Existing tests cover retained-old, promoted-new, committed, malformed, volume, and invalidation states, but no test covers this topology.
+- The generated reference-adapter proof is deliberately insufficient as physical-iPhone evidence. It proves a simulator advisory contract only; schema-5 and the roadmap explicitly retain physical-device promotion for Phase 162. This is a preserved boundary, not a Phase 161 failure.
+- The recovery test does not accept arbitrary missing-retained-artifact journals: source and the same XCTest suite distinguish the exact inventory-only `.promotionPending` topology from malformed, colliding, mismatched, non-regular, and ambiguous states, which still fail closed.
+- The previous failure mode is now directly tested as an actual reconstructed on-disk journal/inventory/staging state, rather than inferred from the implementation or a summary claim.
 
 ### Gaps Summary
 
-The prior proof-isolation gap is closed: the generated simulator reference path now establishes current-run provenance, and remains advisory only. Phase 161 is still not achieved because its advertised host-supplied foreground installer cannot recover from one reachable crash state. This is not deferred to Phase 162: physical-iPhone promotion is separate, while safe restart recovery is part of Phase 161’s atomic installation path.
+None. The previous CR-01 blocker is closed by production code and an independently executed host XCTest regression. TODO-002/adopter-instance completeness remains `unknown_blocking`, and physical-iPhone promotion remains Phase 162-only; neither is a missing deliverable of this bounded Phase 161 seam.
 
-**Escalation gate:** repair the journal/recovery invariant and add the missing executable regression before the phase can proceed.
+---
 
-_Verified: 2026-08-04T02:47:59Z_
+_Verified: 2026-08-04T14:42:00Z_
 _Verifier: the agent (gsd-verifier)_
