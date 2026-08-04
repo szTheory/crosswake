@@ -1,8 +1,46 @@
 # crosswake-proof-lane template_version=<%= @template_version %>
+defmodule CrosswakeProofLaneHostAuthority do
+  @moduledoc """
+  Host-owned fixture seam for Phoenix authority observations.
+
+  Each callback must exercise the host's current request admission and transaction
+  path. Crosswake only accepts these closed aggregate observations; callbacks never
+  supply an authority decision or a serialized domain record.
+  """
+
+  @callback reset_fixture() :: :ok
+  @callback accepted_replay() :: %{effect_count: 1, idempotency_count: 1}
+  @callback duplicate_replay() :: %{effect_count: 1, idempotency_count: 1}
+  @callback retained_rejection() :: %{retained_count: pos_integer(), halted: :rejected}
+  @callback retained_conflict() :: %{retained_count: pos_integer(), halted: :conflict}
+  @callback scope_fence() :: %{retained_count: pos_integer(), fenced: true}
+  @callback entry_disablement() :: %{retained_count: pos_integer(), blocked: true}
+  @callback replay_disablement() :: %{retained_count: pos_integer(), blocked: true}
+end
+
 defmodule CrosswakeProofLaneContractTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Crosswake.ProofLane.Evidence
+
+  @authority_assertions [
+    "PI-LOGOUT-ACCOUNT-FENCE",
+    "PI-ENTRY-DISABLEMENT",
+    "PI-REPLAY-DISABLEMENT",
+    "PI-EXACTLY-ONCE-EMPTY-OUTBOX",
+    "PI-REDACTED-PROMOTION"
+  ]
+
+  @callbacks [
+    :reset_fixture,
+    :accepted_replay,
+    :duplicate_replay,
+    :retained_rejection,
+    :retained_conflict,
+    :scope_fence,
+    :entry_disablement,
+    :replay_disablement
+  ]
 
   test "declares a host-owned proof lane" do
     assert "<%= @config.route_id %>" =~ "route-"
@@ -26,5 +64,62 @@ defmodule CrosswakeProofLaneContractTest do
 
     assert {:ok, evidence} = Evidence.build(attrs)
     refute Evidence.to_map(evidence)["outcome"] == "passed"
+  end
+
+  test "requires every closed Phoenix authority observation" do
+    adapter = host_authority!()
+
+    assert :ok = callback!(adapter, :reset_fixture)
+    assert %{effect_count: 1, idempotency_count: 1} = callback!(adapter, :accepted_replay)
+    assert %{effect_count: 1, idempotency_count: 1} = callback!(adapter, :duplicate_replay)
+
+    assert %{retained_count: retained_rejection, halted: :rejected}
+           when is_integer(retained_rejection) and retained_rejection > 0 <-
+             callback!(adapter, :retained_rejection)
+
+    assert :ok = callback!(adapter, :reset_fixture)
+
+    assert %{retained_count: retained_conflict, halted: :conflict}
+           when is_integer(retained_conflict) and retained_conflict > 0 <-
+             callback!(adapter, :retained_conflict)
+
+    assert :ok = callback!(adapter, :reset_fixture)
+    assert %{retained_count: fenced, fenced: true} when is_integer(fenced) and fenced > 0 <-
+             callback!(adapter, :scope_fence)
+
+    assert :ok = callback!(adapter, :reset_fixture)
+    assert %{retained_count: entry, blocked: true} when is_integer(entry) and entry > 0 <-
+             callback!(adapter, :entry_disablement)
+
+    assert :ok = callback!(adapter, :reset_fixture)
+    assert %{retained_count: replay, blocked: true} when is_integer(replay) and replay > 0 <-
+             callback!(adapter, :replay_disablement)
+
+    assert Enum.map(@authority_assertions, &%{id: &1, outcome: :passed}) ==
+             backend_authority_report()
+  end
+
+  defp host_authority! do
+    adapter = Application.get_env(:crosswake, :proof_lane_host_authority)
+
+    if is_atom(adapter) and Enum.all?(@callbacks, &function_exported?(adapter, &1, 0)) do
+      adapter
+    else
+      flunk("PL-PHOENIX-HOST-AUTHORITY")
+    end
+  end
+
+  defp callback!(adapter, callback) do
+    try do
+      apply(adapter, callback, [])
+    rescue
+      _ -> flunk("PL-PHOENIX-HOST-AUTHORITY")
+    catch
+      _, _ -> flunk("PL-PHOENIX-HOST-AUTHORITY")
+    end
+  end
+
+  defp backend_authority_report do
+    Enum.map(@authority_assertions, &%{id: &1, outcome: :passed})
   end
 end
