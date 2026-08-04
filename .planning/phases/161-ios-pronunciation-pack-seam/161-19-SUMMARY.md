@@ -30,7 +30,7 @@ coverage:
     requirement: PACK-02
     verification:
       - kind: integration
-        ref: "examples/ios_shell_host/CrosswakeShellTests/PronunciationPackProviderTests.swift#testConstructionBootstrapRecoversStaleInventoryWithoutArtifactAfterPromotionJournalPersistence"
+        ref: "examples/ios_shell_host/CrosswakeShellTests/PronunciationPackProviderTests.swift#testConstructionBootstrapRecoversStaleInventoryWithoutArtifactAndPermitsReinstall"
         status: pass
     human_judgment: false
   - id: D2

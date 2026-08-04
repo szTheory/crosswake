@@ -340,7 +340,7 @@ final class PronunciationPackProviderTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: journalURL(in: root).path))
     }
 
-    func testConstructionBootstrapRecoversStaleInventoryWithoutArtifactAfterPromotionJournalPersistence() async throws {
+    func testConstructionBootstrapRecoversStaleInventoryWithoutArtifactAndPermitsReinstall() async throws {
         let fixture = try fixtureBytes()
         let staleRequirement = requirement(for: fixture, version: "1")
         let requirement = requirement(for: fixture, version: "2")
