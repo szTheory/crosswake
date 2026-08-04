@@ -489,32 +489,32 @@ and app CSS can detect the shell synchronously.
 **Effort:** 2-3 focused days plus adopter/backend availability
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
-**Plans:** 6 plans
+**Plans:** 6/6 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 162-01-PLAN.md — Establish the physical-only assertion contract and fail-closed preflight tracer.
+- [x] 162-01-PLAN.md — Establish the physical-only assertion contract and fail-closed preflight tracer.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 162-02-PLAN.md — Generate and prove independent Phoenix replay, idempotency, recovery, scope, and gate authority.
+- [x] 162-02-PLAN.md — Generate and prove independent Phoenix replay, idempotency, recovery, scope, and gate authority.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 162-03-PLAN.md — Run the uninterrupted signed physical-iPhone driver and join dual-authority reports.
+- [x] 162-03-PLAN.md — Run the uninterrupted signed physical-iPhone driver and join dual-authority reports.
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 162-04-PLAN.md — Deliver and automate the approved in-flow accessible study recovery surface.
+- [x] 162-04-PLAN.md — Deliver and automate the approved in-flow accessible study recovery surface.
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 162-05-PLAN.md — Promote the canonical redacted artifact and publish narrow support truth.
+- [x] 162-05-PLAN.md — Promote the canonical redacted artifact and publish narrow support truth.
 
 **Wave 6** *(gap closure after verification/review)*
 
-- [ ] 162-06-PLAN.md — Repair the closed production promotion path, canonical report envelope, evidence authority, and independent entry/replay gates while physical prerequisites remain blocked.
+- [x] 162-06-PLAN.md — Repair the closed production promotion path, canonical report envelope, evidence authority, and independent entry/replay gates while physical prerequisites remain blocked.
 
 **Smallest shippable version:** A dated, redacted physical-iPhone artifact proving the ten-step exit
 test in the adopter route-policy map.

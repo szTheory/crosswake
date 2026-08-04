@@ -3,18 +3,18 @@ gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 162
-current_phase_name: Physical-iPhone Adoption Proof
+current_phase_name: physical-iphone-adoption-proof
 status: executing
-stopped_at: Phase 162 UI-SPEC approved
-last_updated: "2026-08-04T21:14:18.406Z"
+stopped_at: Plan 162-06 complete; physical proof awaiting external prerequisites
+last_updated: "2026-08-04T23:41:35.276Z"
 last_activity: 2026-08-04
-last_activity_desc: Phase 161.1 complete, transitioned to Phase 162
+last_activity_desc: Plan 162-06 production wiring complete; physical proof remains externally blocked
 progress:
   total_phases: 6
-  completed_phases: 5
-  total_plans: 103
-  completed_plans: 98
-  percent: 83
+  completed_phases: 6
+  total_plans: 104
+  completed_plans: 104
+  percent: 100
 current_plan: 0
 ---
 
@@ -22,10 +22,10 @@ current_plan: 0
 
 ## Current Position
 
-Phase: 162 — Physical-iPhone Adoption Proof
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-08-04 — Phase 161.1 complete, transitioned to Phase 162
+Phase: 162 (physical-iphone-adoption-proof) — EXTERNAL GATE
+Plan: 6 of 6 (production wiring complete)
+Status: Awaiting TODO-002, eligible host/backend configuration, and a physical iPhone
+Last activity: 2026-08-04 — Plan 162-06 completed; no physical evidence was promoted
 
 ## Active Objective
 
@@ -44,9 +44,10 @@ framework launch.
 
 ## Next Action
 
-Start Phase 162 with `$gsd-discuss-phase 162`. TODO-002 remains `unknown_blocking` until a
-sanitized adopter route-policy handoff is validated; its absence is an explicit fail-closed promotion
-gate for physical-iPhone promotion.
+Obtain the sanitized TODO-002 route-policy handoff, eligible signed host/backend adapters, and a
+physical iPhone, then run `mix crosswake.proof_lane.physical_iphone --run --promote --json`.
+Until then, TODO-002 remains `unknown_blocking`, the command must block at preflight, and no
+physical artifact or support claim may be promoted.
 
 ## Blockers
 
