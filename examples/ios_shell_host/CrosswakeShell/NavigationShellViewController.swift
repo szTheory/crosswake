@@ -23,6 +23,7 @@ final class NavigationShellViewController: UITabBarController, UITabBarControlle
     private var rootRouteByNavigationController: [ObjectIdentifier: String] = [:]
     private var cancellable: AnyCancellable?
     private var isSynchronizing = false
+    private var lastFocusedController: UIViewController?
 
     init(
         navigationCoordinator: NavigationCoordinator,
@@ -93,7 +94,7 @@ final class NavigationShellViewController: UITabBarController, UITabBarControlle
               let navigation = viewController as? UINavigationController,
               let rootRouteID = rootRouteByNavigationController[ObjectIdentifier(navigation)],
               navigationCoordinator.selectRoot(routeID: rootRouteID) == .authorized else { return }
-        shellDelegate?.navigationShellDidCompleteNavigation(self)
+        announceCompletedNavigation(target: navigation.topViewController)
     }
 
     func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
@@ -102,6 +103,13 @@ final class NavigationShellViewController: UITabBarController, UITabBarControlle
               let expected = navigationCoordinator.stacks.values.first(where: { $0.first?.routeID == rootRouteID })?.last,
               controllerByEntry[expected.routeID] !== viewController else { return }
         guard navigationCoordinator.completeNativePop(completed: true) == .authorized else { return }
+        announceCompletedNavigation(target: viewController)
+    }
+
+    private func announceCompletedNavigation(target: UIViewController?) {
+        guard let target, target !== lastFocusedController else { return }
+        lastFocusedController = target
+        UIAccessibility.post(notification: .screenChanged, argument: target.view)
         shellDelegate?.navigationShellDidCompleteNavigation(self)
     }
 }
