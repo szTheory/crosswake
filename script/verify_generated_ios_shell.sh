@@ -131,7 +131,7 @@ if [[ "$PROOF_LANE" != "1" && "${CROSSWAKE_IOS_USE_LOCAL_CORE:-0}" == "1" ]]; th
 fi
 
 project_list_capture="${RUN_ROOT}/project-list.log"
-run_xcodebuild -list -project "$project" -derivedDataPath "${DERIVED_DATA_ROOT}" -clonedSourcePackagesDirPath "${IOS_SPM_CACHE}" >"${project_list_capture}" 2>&1 || {
+run_xcodebuild -list -project "$project" -scheme "$scheme" -derivedDataPath "${DERIVED_DATA_ROOT}" -clonedSourcePackagesDirPath "${IOS_SPM_CACHE}" >"${project_list_capture}" 2>&1 || {
   if [[ "$PROOF_LANE" == "1" ]]; then
     emit_proof_outcome "unavailable" "PL-IOS-TARGET-ENUMERATION" "generated-target-graph"
     exit 3

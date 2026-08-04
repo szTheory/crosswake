@@ -41,8 +41,10 @@ final class ProofLaneContractTests: XCTestCase {
   func testUnexpectedNetworkObservationBlocksAudioAndEmitsNoEvidence() async {
     ProofLaneReferencePackAdapter.resetReferencePersistenceForTests()
     let adapter = ProofLaneReferencePackAdapter(networkObservation: { .unexpectedSuccess })
-    XCTAssertEqual((await adapter.installPronunciationPackForeground()).outcome, .passed)
-    XCTAssertEqual((await adapter.exerciseInstalledPronunciationAudioOffline()).outcome, .blocked)
+    let installed = await adapter.installPronunciationPackForeground()
+    let audio = await adapter.exerciseInstalledPronunciationAudioOffline()
+    XCTAssertEqual(installed.outcome, .passed)
+    XCTAssertEqual(audio.outcome, .blocked)
     XCTAssertNil(adapter.audioEvidenceForContractTest())
   }
 
