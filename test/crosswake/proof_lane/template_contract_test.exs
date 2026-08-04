@@ -422,4 +422,21 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
       File.rm_rf!(root)
     end
   end
+
+  test "generated Phoenix authority fixture requires closed host callbacks" do
+    fixture = source("priv/templates/crosswake/proof_lane/test/crosswake_proof_lane_test.exs.eex")
+
+    assert fixture =~ "CrosswakeProofLaneHostAuthority"
+    assert fixture =~ "accepted_replay"
+    assert fixture =~ "duplicate_replay"
+    assert fixture =~ "retained_rejection"
+    assert fixture =~ "retained_conflict"
+    assert fixture =~ "scope_fence"
+    assert fixture =~ "entry_disablement"
+    assert fixture =~ "replay_disablement"
+    assert fixture =~ "PI-EXACTLY-ONCE-EMPTY-OUTBOX"
+    assert fixture =~ "PI-LOGOUT-ACCOUNT-FENCE"
+    refute fixture =~ "scope_ref"
+    refute fixture =~ "client_mutation_id"
+  end
 end
