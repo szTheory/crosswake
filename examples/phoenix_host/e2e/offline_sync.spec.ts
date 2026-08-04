@@ -717,4 +717,84 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     expect(partitions).toEqual([1, [0, 0]]);
     expect(requests).toEqual([]);
   });
+
+  test('study status presents saved locally work without exposing replay mechanics', async ({ page, context }) => {
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+
+    const status = page.locator('#crosswake-study-status');
+    await expect(status).toContainText('Saved on this iPhone.');
+    await expect(status).toContainText('It will sync when you’re back online.');
+    await expect(status).toHaveAttribute('role', 'status');
+    await expect(page.locator('#crosswake-review-saved-answers')).toHaveCount(0);
+    await expect(status).not.toContainText(alphaScope);
+    await expect(status).not.toContainText('Queued for replay');
+  });
+
+  test('study status shows active syncing only during replay and preserves answer focus', async ({ page, context }) => {
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+    await context.setOffline(false);
+
+    await page.evaluate(() => {
+      window.fetch = () => new Promise(() => {});
+      document.getElementById('btn-flip')?.focus();
+      window.dispatchEvent(new Event('online'));
+    });
+
+    await expect(page.locator('#crosswake-study-status')).toContainText('Syncing saved answers…');
+    await expect(page.locator('#crosswake-study-status-indicator')).toHaveAttribute('aria-label', 'Syncing saved answers');
+    await expect(page.locator('#btn-flip')).toBeFocused();
+  });
+
+  test('study status retains rejected work and exposes recovery only through a validated host destination', async ({ page, context }) => {
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+    await context.setOffline(false);
+    await page.evaluate(() => {
+      window.fetch = async () => new Response(JSON.stringify({ data: {
+        accepted_records: [], rejected: [{ class: 'sigra_denied' }], halted: 'sigra_denied',
+      } }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      window.dispatchEvent(new Event('online'));
+    });
+
+    await expect(page.locator('#crosswake-study-status')).toContainText('Some saved answers need review.');
+    expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
+    await expect(page.locator('#crosswake-review-saved-answers')).toHaveCount(0);
+
+    await page.locator('body').evaluate(body => { body.dataset.recoveryDestination = '/saved-answers'; });
+    await page.evaluate(() => window.crosswakeOfflineStudy.refreshStudyStatus());
+    const review = page.locator('#crosswake-review-saved-answers');
+    await expect(review).toHaveText('Review saved answers');
+    await expect(review).toBeVisible();
+    await expect(review).toBeEnabled();
+  });
+
+  test('study status pauses fenced and disabled work without retry or destructive actions', async ({ page, context }) => {
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+    await page.evaluate(() => window.crosswakeOfflineStudy.fenceScope());
+
+    await expect(page.locator('#crosswake-study-status')).toContainText('Your saved answers remain on this iPhone.');
+    await expect(page.locator('#crosswake-study-status')).not.toContainText('retry');
+    await expect(page.locator('#crosswake-study-status')).not.toContainText('account');
+    await expect(page.locator('#crosswake-study-status')).not.toContainText('scope');
+    await expect(page.locator('#crosswake-review-saved-answers')).toHaveCount(0);
+  });
 });
