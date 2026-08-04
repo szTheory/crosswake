@@ -102,17 +102,17 @@ Retained evidence is the allowlisted machine-readable object below. Dynamic run 
 
 <!-- phase161-final-run-manifest:start -->
 {
-  "schema": 3,
-  "run_id": "4BC7744A-3279-4BFC-8352-532FC93D1055",
-  "head_revision": "41a7825bcbac0b4aa4ff52f24d4c75bc5739d41e",
+  "schema": 4,
+  "run_id": "8CE50BFD-9C36-4F86-888F-CA8330A8B35A",
+  "head_revision": "77780d5253fb4e88251d0ea2f7db8bbcfd81f602",
   "subject": {
-    "set": "phase161-plans15-16-v3",
-    "file_count": 6,
-    "tree_sha256": "b39a95a83ec9314f457cfa0b19c0c41d17d3821b38ec17d394e09b37024efaaa"
+    "set": "phase161-plans17-18-v4",
+    "file_count": 5,
+    "tree_sha256": "5539b7aa51ded153fbd06ba61671acdc33929c6bd12cc78790e27e9acbf2c86d"
   },
   "suite_counts": {
     "swift_core": 27,
-    "host_xctest": 43,
+    "host_xctest": 4,
     "proof_lane": 53,
     "privacy": 121,
     "sigra": 15,
@@ -165,20 +165,26 @@ Retained evidence is the allowlisted machine-readable object below. Dynamic run 
     "PACK_05": "passed_non_claim"
   },
   "threats": {
-    "T_161_72": "passed",
-    "T_161_73": "passed",
-    "T_161_74": "passed",
-    "T_161_75": "passed",
-    "T_161_76": "passed",
-    "T_161_77": "passed",
-    "T_161_78": "passed",
-    "T_161_79": "passed",
-    "T_161_80": "passed",
-    "T_161_81": "passed"
+    "T_161_82": "passed",
+    "T_161_83": "passed",
+    "T_161_84": "passed",
+    "T_161_85": "passed",
+    "T_161_86": "passed",
+    "T_161_87": "passed",
+    "T_161_88": "passed",
+    "T_161_89": "passed",
+    "T_161_90": "passed",
+    "T_161_91": "passed"
   },
   "generated": {
     "default": "closed_non_passing",
     "reference": "passed_simulator_advisory"
+  },
+  "generated_current_run": {
+    "reset_initial_blocked": "passed",
+    "foreground_install_passed": "passed",
+    "relaunch_readback_passed": "passed",
+    "offline_audio_passed": "passed"
   },
   "api_coverage": "passed",
   "ui_spec": {
