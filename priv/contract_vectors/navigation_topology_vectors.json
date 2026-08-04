@@ -3,6 +3,9 @@
   "manifest_schema_version": "1.0.0",
   "vectors": [
     {"id": "synthetic_authorized_root", "status": "ready", "entries": [{"route_id": "route-0123456789abcdef", "root_tab_id": "tab-0123456789abcdef", "presentation": "root", "deep_link_posture": "deny", "restoration_posture": "deny"}]},
-    {"id": "empty_inventory", "status": "unknown_blocking", "entries": []}
+    {"id": "empty_inventory", "status": "unknown_blocking", "entries": []},
+    {"id": "invalid_parent", "status": "ready", "entries": [{"route_id": "route-fedcba9876543210", "root_tab_id": "tab-0123456789abcdef", "presentation": "push", "parent_route_id": "route-0123456789abcdef", "deep_link_posture": "deny", "restoration_posture": "deny"}]},
+    {"id": "incompatible_manifest", "status": "ready", "entries": []},
+    {"id": "authorization_denial", "status": "ready", "entries": [{"route_id": "route-0123456789abcdef", "root_tab_id": "tab-0123456789abcdef", "presentation": "root", "deep_link_posture": "deny", "restoration_posture": "deny"}]}
   ]
 }

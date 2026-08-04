@@ -187,12 +187,27 @@ defmodule Crosswake.Adoption.NavigationTopology do
           )
       end)
 
-    if roots != [] and not duplicate_route? and not duplicate_root? and valid_parents?,
+    rooted? = Enum.all?(entries, &reaches_root?(&1, entries, MapSet.new()))
+
+    if roots != [] and not duplicate_route? and not duplicate_root? and valid_parents? and rooted?,
       do: :ok,
       else: {:error, error("NT-INVALID_GRAPH", "unresolved", "entries")}
   end
 
   defp duplicates?(values), do: length(values) != MapSet.size(MapSet.new(values))
+
+  defp reaches_root?(%Entry{presentation: :root}, _entries, _seen), do: true
+
+  defp reaches_root?(%Entry{} = entry, entries, seen) do
+    if MapSet.member?(seen, entry.route_id) do
+      false
+    else
+      case Enum.find(entries, &(&1.route_id == entry.parent_route_id)) do
+        nil -> false
+        parent -> reaches_root?(parent, entries, MapSet.put(seen, entry.route_id))
+      end
+    end
+  end
 
   defp ready(entries),
     do: %{

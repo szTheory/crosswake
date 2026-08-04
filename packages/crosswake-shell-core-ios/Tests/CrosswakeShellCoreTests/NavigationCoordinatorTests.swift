@@ -4,21 +4,9 @@ import XCTest
 @MainActor
 final class NavigationCoordinatorTests: XCTestCase {
     func testCompiledRootRequiresResolverAuthorization() throws {
-        let topology = NavigationTopology(
-            topologySchemaVersion: "1.0.0",
-            manifestSchemaVersion: "1.0.0",
-            status: .ready,
-            entries: [
-                NavigationTopologyEntry(
-                    routeID: "route-0123456789abcdef",
-                    rootTabID: "tab-0123456789abcdef",
-                    presentation: .root,
-                    parentRouteID: nil,
-                    deepLinkPosture: .deny,
-                    restorationPosture: .deny
-                )
-            ]
-        )
+        let vectorURL = URL(fileURLWithPath: "../../priv/contract_vectors/navigation_topology_vectors.json", relativeTo: URL(fileURLWithPath: FileManager.default.currentDirectoryPath))
+        let vectors = try JSONDecoder().decode(NavigationTopologyVectors.self, from: Data(contentsOf: vectorURL))
+        let topology = try XCTUnwrap(vectors.topology(for: "synthetic_authorized_root"))
         let manifest = makeManifest(routeID: "route-0123456789abcdef")
         let coordinator = NavigationCoordinator(topology: topology, manifest: manifest, resolver: authorize)
 
@@ -70,4 +58,23 @@ final class NavigationCoordinatorTests: XCTestCase {
     private func makeManifest(routeID: String) -> ShellManifest {
         ShellManifest(compatibility: .init(nativeRuntimeVersion: "1.0.0"), routes: [routeID: .init(id: routeID, path: "/study", runtime: "live_view", entry: "internal_only", capabilities: [], packs: [], transfers: [], allowlistedOrigins: ["https://app.example.com"])])
     }
+}
+
+private struct NavigationTopologyVectors: Decodable {
+    let topologySchemaVersion: String
+    let manifestSchemaVersion: String
+    let vectors: [Vector]
+
+    struct Vector: Decodable {
+        let id: String
+        let status: NavigationTopologyStatus
+        let entries: [NavigationTopologyEntry]
+    }
+
+    func topology(for id: String) -> NavigationTopology? {
+        guard let vector = vectors.first(where: { $0.id == id }) else { return nil }
+        return NavigationTopology(topologySchemaVersion: topologySchemaVersion, manifestSchemaVersion: manifestSchemaVersion, status: vector.status, entries: vector.entries)
+    }
+
+    enum CodingKeys: String, CodingKey { case topologySchemaVersion = "topology_schema_version", manifestSchemaVersion = "manifest_schema_version", vectors }
 }
