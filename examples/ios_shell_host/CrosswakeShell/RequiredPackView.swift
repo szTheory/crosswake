@@ -2,6 +2,13 @@ import SwiftUI
 import CrosswakeShellCore
 
 struct RequiredPackView: View {
+    struct LifecycleAccessibilityEffect: Equatable {
+        let announcement: String
+        let preserveFocus: Bool
+    }
+
+    typealias LifecycleAnnouncementSink = (LifecycleAccessibilityEffect) -> Void
+
     enum ForegroundAction: Equatable {
         case none
         case install
@@ -34,8 +41,29 @@ struct RequiredPackView: View {
     let onInstall: () -> Void
     let onRetry: () -> Void
     let onInvalidate: () -> Void
+    private let lifecycleAnnouncementSink: LifecycleAnnouncementSink
 
     @AccessibilityFocusState private var statusIsFocused: Bool
+
+    init(
+        routeID: String,
+        runtimeLabel: String,
+        status: RequiredPackStatus,
+        onInstall: @escaping () -> Void,
+        onRetry: @escaping () -> Void,
+        onInvalidate: @escaping () -> Void,
+        lifecycleAnnouncementSink: @escaping LifecycleAnnouncementSink = { effect in
+            UIAccessibility.post(notification: .announcement, argument: effect.announcement)
+        }
+    ) {
+        self.routeID = routeID
+        self.runtimeLabel = runtimeLabel
+        self.status = status
+        self.onInstall = onInstall
+        self.onRetry = onRetry
+        self.onInvalidate = onInvalidate
+        self.lifecycleAnnouncementSink = lifecycleAnnouncementSink
+    }
 
     var body: some View {
         let model = Self.presentation(for: status)
@@ -97,8 +125,16 @@ struct RequiredPackView: View {
         .animation(nil, value: status.state)
         .onChange(of: status.state) { _, _ in
             // Announce changes while leaving VoiceOver focus where the learner placed it.
-            UIAccessibility.post(notification: .announcement, argument: Self.presentation(for: status).stateLabel)
+            lifecycleAnnouncementSink(Self.lifecycleAccessibilityEffect(for: status))
         }
+    }
+
+    static func lifecycleAccessibilityEffect(for status: RequiredPackStatus) -> LifecycleAccessibilityEffect {
+        let presentation = presentation(for: status)
+        return LifecycleAccessibilityEffect(
+            announcement: "\(presentation.stateLabel). \(presentation.learnerMessage)",
+            preserveFocus: true
+        )
     }
 
     static func presentation(for status: RequiredPackStatus) -> Presentation {
