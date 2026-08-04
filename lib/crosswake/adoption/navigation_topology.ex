@@ -35,33 +35,36 @@ defmodule Crosswake.Adoption.NavigationTopology do
   @opaque_route ~r/^route-[0-9a-f]{16}$/
   @opaque_tab ~r/^tab-[0-9a-f]{16}$/
 
-  @spec compile(list() | map()) :: {:ok, map()} | {:error, CompileError.t()}
-  def compile([]), do: {:ok, unknown_blocking()}
+  @spec compile(list() | map(), String.t()) :: {:ok, map()} | {:error, CompileError.t()}
+  def compile(input, manifest_schema_version \\ @manifest_schema_version)
 
-  def compile(%{rows: rows, entries: entries}) when is_list(rows) and is_list(entries) do
+  def compile([], manifest_schema_version), do: {:ok, unknown_blocking(manifest_schema_version)}
+
+  def compile(%{rows: rows, entries: entries}, manifest_schema_version)
+      when is_list(rows) and is_list(entries) do
     with {:ok, validated_rows} <- validate_rows(rows),
          {:eligible, _} <- RouteInventory.promotion_status(validated_rows),
          {:ok, compiled_entries} <- validate_entries(entries, validated_rows) do
-      {:ok, ready(compiled_entries)}
+      {:ok, ready(compiled_entries, manifest_schema_version)}
     else
-      {:blocked, _} -> {:ok, unknown_blocking()}
+      {:blocked, _} -> {:ok, unknown_blocking(manifest_schema_version)}
       {:error, %RouteInventory.ValidationError{} = error} -> {:error, from_inventory(error)}
       error -> error
     end
   end
 
-  def compile(rows) when is_list(rows) do
+  def compile(rows, manifest_schema_version) when is_list(rows) do
     with {:ok, validated_rows} <- validate_rows(rows) do
       case RouteInventory.promotion_status(validated_rows) do
-        {:eligible, _} -> {:ok, unknown_blocking()}
-        {:blocked, _} -> {:ok, unknown_blocking()}
+        {:eligible, _} -> {:ok, unknown_blocking(manifest_schema_version)}
+        {:blocked, _} -> {:ok, unknown_blocking(manifest_schema_version)}
       end
     else
       {:error, %RouteInventory.ValidationError{} = error} -> {:error, from_inventory(error)}
     end
   end
 
-  def compile(_), do: {:error, error("NT-INVALID", "unresolved", "topology")}
+  def compile(_, _), do: {:error, error("NT-INVALID", "unresolved", "topology")}
 
   @spec render(list() | map()) :: {:ok, binary()} | {:error, CompileError.t()}
   def render(input) do
@@ -209,18 +212,18 @@ defmodule Crosswake.Adoption.NavigationTopology do
     end
   end
 
-  defp ready(entries),
+  defp ready(entries, manifest_schema_version),
     do: %{
       topology_schema_version: @topology_schema_version,
-      manifest_schema_version: @manifest_schema_version,
+      manifest_schema_version: manifest_schema_version,
       status: :ready,
       entries: Enum.map(entries, &entry_map/1)
     }
 
-  defp unknown_blocking,
+  defp unknown_blocking(manifest_schema_version),
     do: %{
       topology_schema_version: @topology_schema_version,
-      manifest_schema_version: @manifest_schema_version,
+      manifest_schema_version: manifest_schema_version,
       status: :unknown_blocking,
       entries: []
     }

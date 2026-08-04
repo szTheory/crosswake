@@ -19,6 +19,7 @@ defmodule Crosswake.Manifest.Types do
       :capability_registry,
       :pack_registry,
       :commerce_corridors,
+      :navigation_topology,
       :routes
     ]
     defstruct [
@@ -31,6 +32,7 @@ defmodule Crosswake.Manifest.Types do
       capability_registry: %{},
       pack_registry: %{},
       commerce_corridors: %{},
+      navigation_topology: nil,
       routes: %{}
     ]
 
@@ -50,7 +52,54 @@ defmodule Crosswake.Manifest.Types do
             commerce_corridors: %{
               optional(String.t()) => Crosswake.Manifest.Types.CommerceCorridor.t()
             },
+            navigation_topology: Crosswake.Manifest.Types.NavigationTopology.t(),
             routes: %{optional(String.t()) => Crosswake.Manifest.Types.RouteEntry.t()}
+          }
+  end
+
+  defmodule NavigationTopology do
+    @moduledoc false
+
+    @enforce_keys [:topology_schema_version, :manifest_schema_version, :status, :entries]
+    defstruct [:topology_schema_version, :manifest_schema_version, :status, entries: []]
+
+    @type status :: :ready | :unknown_blocking
+
+    @type t :: %__MODULE__{
+            topology_schema_version: String.t(),
+            manifest_schema_version: String.t(),
+            status: status(),
+            entries: [Crosswake.Manifest.Types.NavigationTopologyEntry.t()]
+          }
+  end
+
+  defmodule NavigationTopologyEntry do
+    @moduledoc false
+
+    @enforce_keys [
+      :route_id,
+      :root_tab_id,
+      :presentation,
+      :parent_route_id,
+      :deep_link_posture,
+      :restoration_posture
+    ]
+    defstruct [
+      :route_id,
+      :root_tab_id,
+      :presentation,
+      :parent_route_id,
+      :deep_link_posture,
+      :restoration_posture
+    ]
+
+    @type t :: %__MODULE__{
+            route_id: String.t(),
+            root_tab_id: String.t(),
+            presentation: :root | :push,
+            parent_route_id: String.t() | nil,
+            deep_link_posture: :allow | :deny,
+            restoration_posture: :allow | :deny
           }
   end
 
@@ -470,7 +519,8 @@ defmodule Crosswake.Manifest.Types do
       verification_method: :none
     ]
 
-    @type verification_method :: :none | :provider_advisory | :jvm_hermetic | :emulator_advisory | :device_verified
+    @type verification_method ::
+            :none | :provider_advisory | :jvm_hermetic | :emulator_advisory | :device_verified
 
     @type t :: %__MODULE__{
             family: String.t(),
@@ -677,7 +727,8 @@ defmodule Crosswake.Manifest.Types do
             action_class: String.t(),
             check_ids: [String.t()],
             demotion_trigger: String.t(),
-            required_verification_method: Crosswake.Manifest.Types.CapabilitySupportEntry.verification_method()
+            required_verification_method:
+              Crosswake.Manifest.Types.CapabilitySupportEntry.verification_method()
           }
   end
 
@@ -685,7 +736,14 @@ defmodule Crosswake.Manifest.Types do
     @moduledoc false
     @derive Jason.Encoder
 
-    @enforce_keys [:runtime_line, :capability_surface, :change_class, :ota_safe, :rebuild_required, :evidence_tier]
+    @enforce_keys [
+      :runtime_line,
+      :capability_surface,
+      :change_class,
+      :ota_safe,
+      :rebuild_required,
+      :evidence_tier
+    ]
     defstruct [
       :runtime_line,
       :capability_surface,
@@ -695,7 +753,8 @@ defmodule Crosswake.Manifest.Types do
       :evidence_tier
     ]
 
-    @type evidence_tier :: :none | :provider_advisory | :jvm_hermetic | :emulator_advisory | :device_verified
+    @type evidence_tier ::
+            :none | :provider_advisory | :jvm_hermetic | :emulator_advisory | :device_verified
 
     @type t :: %__MODULE__{
             runtime_line: String.t(),
@@ -737,6 +796,16 @@ defmodule Crosswake.Manifest.Types do
       capability_registry: Keyword.get(attrs, :capability_registry, %{}),
       pack_registry: Keyword.get(attrs, :pack_registry, %{}),
       commerce_corridors: Keyword.get(attrs, :commerce_corridors, %{}),
+      navigation_topology:
+        Keyword.get_lazy(attrs, :navigation_topology, fn ->
+          new_navigation_topology(
+            topology_schema_version: "1.0.0",
+            manifest_schema_version:
+              Keyword.get(attrs, :manifest_schema_version, @manifest_schema_version),
+            status: :unknown_blocking,
+            entries: []
+          )
+        end),
       routes: Keyword.get(attrs, :routes, %{})
     })
   end
@@ -821,6 +890,28 @@ defmodule Crosswake.Manifest.Types do
       auth_posture: Keyword.get(attrs, :auth_posture),
       auth_return: Keyword.get(attrs, :auth_return),
       notification_open: Keyword.get(attrs, :notification_open)
+    })
+  end
+
+  @spec new_navigation_topology(keyword()) :: NavigationTopology.t()
+  def new_navigation_topology(attrs) when is_list(attrs) do
+    struct!(NavigationTopology, %{
+      topology_schema_version: Keyword.fetch!(attrs, :topology_schema_version),
+      manifest_schema_version: Keyword.fetch!(attrs, :manifest_schema_version),
+      status: Keyword.fetch!(attrs, :status),
+      entries: Keyword.get(attrs, :entries, [])
+    })
+  end
+
+  @spec new_navigation_topology_entry(keyword()) :: NavigationTopologyEntry.t()
+  def new_navigation_topology_entry(attrs) when is_list(attrs) do
+    struct!(NavigationTopologyEntry, %{
+      route_id: Keyword.fetch!(attrs, :route_id),
+      root_tab_id: Keyword.fetch!(attrs, :root_tab_id),
+      presentation: Keyword.fetch!(attrs, :presentation),
+      parent_route_id: Keyword.get(attrs, :parent_route_id),
+      deep_link_posture: Keyword.fetch!(attrs, :deep_link_posture),
+      restoration_posture: Keyword.fetch!(attrs, :restoration_posture)
     })
   end
 
@@ -1057,6 +1148,7 @@ defmodule Crosswake.Manifest.Types do
       "capability_registry" => to_map(root.capability_registry),
       "pack_registry" => to_map(root.pack_registry),
       "commerce_corridors" => to_map(root.commerce_corridors),
+      "navigation_topology" => to_map(root.navigation_topology),
       "routes" => to_map(root.routes)
     }
   end
@@ -1116,6 +1208,26 @@ defmodule Crosswake.Manifest.Types do
       "denial" => corridor.denial,
       "fallback" => corridor.fallback,
       "prerequisites" => corridor.prerequisites
+    }
+  end
+
+  def to_map(%NavigationTopology{} = topology) do
+    %{
+      "topology_schema_version" => topology.topology_schema_version,
+      "manifest_schema_version" => topology.manifest_schema_version,
+      "status" => Atom.to_string(topology.status),
+      "entries" => Enum.map(topology.entries, &to_map/1)
+    }
+  end
+
+  def to_map(%NavigationTopologyEntry{} = entry) do
+    %{
+      "route_id" => entry.route_id,
+      "root_tab_id" => entry.root_tab_id,
+      "presentation" => Atom.to_string(entry.presentation),
+      "parent_route_id" => entry.parent_route_id,
+      "deep_link_posture" => Atom.to_string(entry.deep_link_posture),
+      "restoration_posture" => Atom.to_string(entry.restoration_posture)
     }
   end
 
@@ -1354,7 +1466,9 @@ defmodule Crosswake.Manifest.Types do
 
   defp serialize_notification_open(nil), do: nil
   defp serialize_notification_open(true), do: true
-  defp serialize_notification_open(%{actions: actions}), do: %{"actions" => Enum.map(actions, &Atom.to_string/1)}
+
+  defp serialize_notification_open(%{actions: actions}),
+    do: %{"actions" => Enum.map(actions, &Atom.to_string/1)}
 
   defp format_status(:verification_required), do: "verification required"
   defp format_status(status), do: Atom.to_string(status)
