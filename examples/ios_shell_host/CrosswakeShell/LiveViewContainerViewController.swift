@@ -244,6 +244,11 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
     document.documentElement.style.setProperty("--cw-safe-area-left", "0px");
     document.documentElement.style.setProperty("--cw-keyboard-inset-bottom", "0px");
     """
+
+    static func layoutDeliveryScript(for values: [CGFloat]) -> String {
+        precondition(values.count == 5)
+        return "document.documentElement.style.setProperty('--cw-safe-area-top','\\(values[0])px');document.documentElement.style.setProperty('--cw-safe-area-right','\\(values[1])px');document.documentElement.style.setProperty('--cw-safe-area-bottom','\\(values[2])px');document.documentElement.style.setProperty('--cw-safe-area-left','\\(values[3])px');document.documentElement.style.setProperty('--cw-keyboard-inset-bottom','\\(values[4])px');"
+    }
     private var pendingLayoutInsets: ShellLayoutInsets?
     private var deliveredLayoutInsets: ShellLayoutInsets?
     private let layoutObservationSink: (([CGFloat]) -> Void)?
@@ -408,7 +413,7 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
         pendingLayoutInsets = nil; deliveredLayoutInsets = insets
         let values = [insets.top, insets.right, insets.bottom, insets.left, insets.keyboardBottom].map { max(0, $0.isFinite ? $0 : 0) }
         layoutObservationSink?(values)
-        let script = "document.documentElement.style.setProperty('--cw-safe-area-top','\\(values[0])px');document.documentElement.style.setProperty('--cw-safe-area-right','\\(values[1])px');document.documentElement.style.setProperty('--cw-safe-area-bottom','\\(values[2])px');document.documentElement.style.setProperty('--cw-safe-area-left','\\(values[3])px');document.documentElement.style.setProperty('--cw-keyboard-inset-bottom','\\(values[4])px');"
+        let script = Self.layoutDeliveryScript(for: values)
         webView.evaluateJavaScript(script, completionHandler: nil)
     }
 
