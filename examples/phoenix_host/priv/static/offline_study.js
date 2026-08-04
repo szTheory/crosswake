@@ -18,6 +18,12 @@ const HALTED_REPLAY_CLASSES = new Set([
   'sigra_denied',
   'transaction_failed',
 ]);
+const STUDY_STATUS_PRESENTATIONS = Object.freeze({
+  saved_locally: Object.freeze({ label: 'Saved on this iPhone.', message: 'It will sync when you’re back online.', icon: '●' }),
+  syncing: Object.freeze({ label: 'Syncing saved answers…', message: '', icon: '↻' }),
+  needs_attention: Object.freeze({ label: 'Some saved answers need review.', message: '', icon: '▲' }),
+  sync_paused: Object.freeze({ label: 'Saved answers paused', message: 'Your saved answers remain on this iPhone.', icon: 'Ⅱ' }),
+});
 
 let db;
 let currentCardIndex = 0;
@@ -26,6 +32,7 @@ let activeScopeRef = null;
 let activeEpoch = 0;
 let legacyRecoveryRequired = false;
 let reviewSubmissionOwned = false;
+let currentStudyStatus = null;
 
 function isScopeRef(value) {
   return typeof value === 'string' && SCOPE_REF_PATTERN.test(value);
@@ -62,7 +69,7 @@ async function activateScope(scopeRef) {
   activeEpoch = lifecycle.epoch + 1;
   activeScopeRef = scopeRef;
   await writeLifecycle({ key: 'active', state: 'active', scope_ref: scopeRef, epoch: activeEpoch });
-  updateStatus('Saved changes will sync when ready.');
+  renderStudyStatus('sync_paused');
   if (navigator.onLine) replayOnOnline();
 }
 
@@ -81,7 +88,7 @@ async function fenceScope() {
   await writeLifecycle({ key: 'active', state: 'stopping', scope_ref: null, epoch });
   await worker?.promise.catch(() => undefined);
   await writeLifecycle({ key: 'active', state: 'inactive', scope_ref: null, epoch });
-  updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
+  renderStudyStatus('sync_paused');
 }
 
 function leaseIsCurrent(lease) {
@@ -89,8 +96,7 @@ function leaseIsCurrent(lease) {
 }
 
 function renderPausedStatus() {
-  updateStatusError();
-  updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
+  renderStudyStatus('sync_paused');
 }
 
 function classifyReplayResponse(data, records) {
@@ -122,7 +128,7 @@ function classifyReplayResponse(data, records) {
   return { kind: halted == null ? 'complete' : 'halted', acceptedIds, rejected };
 }
 
-window.crosswakeOfflineStudy = Object.freeze({ activateScope, fenceScope, recoverLegacyMutations });
+window.crosswakeOfflineStudy = Object.freeze({ activateScope, fenceScope, recoverLegacyMutations, refreshStudyStatus });
 
 function configuredSyncEndpoint() {
   const endpoint = document.body.dataset.syncEndpoint;
@@ -158,11 +164,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderCurrentCard();
     setupEventListeners();
     await resetLifecycleOnLaunch();
-    updateStatus(legacyRecoveryRequired
-      ? 'Saved changes need attention and remain on this device.'
-      : 'Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
+    renderStudyStatus(legacyRecoveryRequired ? 'needs_attention' : 'sync_paused');
   } catch (error) {
-    updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
+    renderStudyStatus('sync_paused');
   }
 });
 
@@ -378,28 +382,63 @@ function countScopeMutations(scopeRef) {
   });
 }
 
-function updateStatusClear() {
-  const statusElement = document.getElementById('status');
-  if (statusElement) {
-    statusElement.style.borderLeft = '';
-    statusElement.style.paddingLeft = '';
-    statusElement.style.color = '';
+function validatedRecoveryDestination() {
+  const rawDestination = document.body.dataset.recoveryDestination;
+  if (typeof rawDestination !== 'string' || rawDestination.length === 0) return null;
+
+  try {
+    const destination = new URL(rawDestination, window.location.origin);
+    return destination.origin === window.location.origin && destination.protocol === window.location.protocol
+      ? destination.href
+      : null;
+  } catch (_) {
+    return null;
   }
 }
 
-function updateStatusError() {
-  const statusElement = document.getElementById('status');
-  if (statusElement) {
-    statusElement.style.borderLeft = '3px solid var(--cw-status-error)';
-    statusElement.style.paddingLeft = '0.5rem';
-    statusElement.style.color = 'var(--cw-text-default)';
+function renderStudyStatus(state) {
+  const presentation = STUDY_STATUS_PRESENTATIONS[state];
+  if (!presentation) return;
+
+  const statusElement = document.getElementById('crosswake-study-status');
+  const labelElement = document.getElementById('crosswake-study-status-label');
+  const messageElement = document.getElementById('crosswake-study-status-message');
+  const iconElement = document.getElementById('crosswake-study-status-icon');
+  const indicator = document.getElementById('crosswake-study-status-indicator');
+  const actionContainer = document.getElementById('crosswake-study-status-action');
+  if (!statusElement || !labelElement || !messageElement || !iconElement || !indicator || !actionContainer) return;
+
+  const focusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const changed = currentStudyStatus !== state;
+  currentStudyStatus = state;
+  statusElement.dataset.state = state;
+  labelElement.textContent = presentation.label;
+  messageElement.textContent = presentation.message;
+  messageElement.hidden = presentation.message.length === 0;
+  iconElement.textContent = presentation.icon;
+  indicator.hidden = state !== 'syncing';
+  actionContainer.replaceChildren();
+
+  const destination = state === 'needs_attention' ? validatedRecoveryDestination() : null;
+  if (destination) {
+    const action = document.createElement('a');
+    action.id = 'crosswake-review-saved-answers';
+    action.href = destination;
+    action.textContent = 'Review saved answers';
+    actionContainer.append(action);
+  }
+
+  if (focusedElement?.isConnected) focusedElement.focus({ preventScroll: true });
+
+  if (changed) {
+    document.dispatchEvent(new CustomEvent('crosswake:study-status-announcement', {
+      detail: Object.freeze({ state, announcement: `${presentation.label}${presentation.message ? ` ${presentation.message}` : ''}`, preserveFocus: true }),
+    }));
   }
 }
 
-async function updateQueuedStatus(prefix = 'Queued for replay') {
-  const { scopeRef } = requireActiveLease();
-  const queued = await countScopeMutations(scopeRef).catch(() => 0);
-  updateStatus(`${prefix} - ${queued} saved locally`);
+function refreshStudyStatus() {
+  if (currentStudyStatus) renderStudyStatus(currentStudyStatus);
 }
 
 let activeFlush = null;
@@ -436,8 +475,7 @@ async function flushScopedOutbox(invocation) {
     const records = await getScopeMutations(scopeRef);
     if (!leaseIsCurrent(lease) || records.length === 0) return;
 
-    updateStatusClear();
-    updateStatus('Syncing');
+    renderStudyStatus('syncing');
 
     let response;
     try {
@@ -456,8 +494,7 @@ async function flushScopedOutbox(invocation) {
       });
     } catch (_networkError) {
       if (!leaseIsCurrent(lease)) return;
-      updateStatusError();
-      updateStatus(`Queued for replay - ${records.length} saved locally. Retrying on reconnect.`);
+      renderStudyStatus('saved_locally');
       return;
     }
 
@@ -484,19 +521,14 @@ async function flushScopedOutbox(invocation) {
       if (!leaseIsCurrent(lease)) return;
       const accepted = result.acceptedIds.length;
 
-      if (result.kind === 'halted') {
-        renderPausedStatus();
-        return;
-      }
-
       if (result.rejected.length > 0) {
         if (!leaseIsCurrent(lease)) return;
-        updateStatusError();
-        updateStatus('Saved changes need attention and remain on this device.');
+        renderStudyStatus('needs_attention');
+      } else if (result.kind === 'halted') {
+        renderPausedStatus();
       } else {
         if (!leaseIsCurrent(lease)) return;
-        updateStatusClear();
-        updateStatus(`Synced ${accepted} - queued ${remaining}`);
+        renderStudyStatus(remaining > 0 ? 'saved_locally' : 'sync_paused');
       }
     } else {
       if (!leaseIsCurrent(lease)) return;
@@ -531,7 +563,7 @@ function renderCurrentCard() {
   btnFlip.style.display = 'block';
   btnGood.style.display = 'none';
   btnHard.style.display = 'none';
-  updateStatus(`Card ${currentCardIndex + 1} of ${cards.length}`);
+  document.getElementById('card-position').textContent = `Card ${currentCardIndex + 1} of ${cards.length}`;
 }
 
 function setupEventListeners() {
@@ -551,8 +583,7 @@ function setupEventListeners() {
 
   window.addEventListener('online', replayOnOnline);
   window.addEventListener('offline', async () => {
-    updateStatusClear();
-    if (activeScopeRef) await updateQueuedStatus('Queued for replay');
+    if (activeScopeRef) renderStudyStatus('saved_locally');
   });
 
   // Retained work stays inert until the host calls activateScope with fresh authority.
@@ -583,15 +614,12 @@ async function handleReview(rating) {
     const { scopeRef } = lease;
     await queueMutation(scopeRef, mutation);
     if (!leaseIsCurrent(lease)) return;
-    updateStatusClear();
-    updateStatus('Saved locally');
+    renderStudyStatus('saved_locally');
 
     currentCardIndex++;
     renderCurrentCard();
     reviewSubmissionOwned = false;
     setReviewControlsDisabled(false);
-    await updateQueuedStatus('Saved locally - Queued for replay');
-
     if (navigator.onLine) {
       replayOnOnline();
     }
@@ -607,18 +635,9 @@ async function handleReview(rating) {
       errorMsg.style.marginTop = '1rem';
       errorMsg.textContent = 'Device storage limit reached! Cannot save more progress. Please free up space on your device.';
       container.prepend(errorMsg);
-      updateStatusClear();
-      updateStatus('QuotaExceededError handled gracefully.');
+      renderStudyStatus('sync_paused');
     } else {
-      updateStatusClear();
-      updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
+      renderStudyStatus('sync_paused');
     }
-  }
-}
-
-function updateStatus(message) {
-  const statusElement = document.getElementById('status');
-  if (statusElement) {
-    statusElement.textContent = message;
   }
 }

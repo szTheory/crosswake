@@ -11,7 +11,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
   const alphaScope = 'v1.scope_fixture_alpha_01';
 
   async function waitForInactiveLifecycle(page) {
-    await expect.poll(() => page.locator('#status').textContent()).toContain('Sync is paused');
+    await expect.poll(() => page.locator('#crosswake-study-status').textContent()).toContain('Your saved answers remain on this iPhone.');
   }
 
   test.beforeEach(async ({ page }, testInfo) => {
@@ -148,8 +148,8 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
 
     expect(alphaRecords).toHaveLength(1);
     expect(betaAfter).toEqual(betaBefore);
-    await expect(page.locator('#status')).not.toContainText(alphaScope);
-    await expect(page.locator('#status')).not.toContainText(betaScope);
+    await expect(page.locator('#crosswake-study-status')).not.toContainText(alphaScope);
+    await expect(page.locator('#crosswake-study-status')).not.toContainText(betaScope);
   });
 
   test('inactive relaunch keeps retained work unavailable until host activation', async ({ page }) => {
@@ -170,7 +170,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
       });
     })).toMatchObject({ state: 'inactive', scope_ref: null });
 
-    await expect(page.locator('#status')).toContainText('Sync is paused');
+    await expect(page.locator('#crosswake-study-status')).toContainText('Your saved answers remain on this iPhone.');
   });
 
   test('rapid ratings queue one mutation for one card', async ({ page, context }) => {
@@ -261,12 +261,12 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
       });
     });
 
-    const inactiveStatus = await page.locator('#status').textContent();
+    const inactiveStatus = await page.locator('#crosswake-study-status').textContent();
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await page.waitForTimeout(50);
 
     expect(await page.evaluate(() => (window as any).__inactiveOnlineReplay)).toEqual({ fetches: 0, rejections: 0 });
-    expect(await page.locator('#status').textContent()).toBe(inactiveStatus);
+    expect(await page.locator('#crosswake-study-status').textContent()).toBe(inactiveStatus);
     expect(pageErrors).toEqual([]);
     expect(consoleOutput).toEqual([]);
 
@@ -274,12 +274,12 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
       await window.crosswakeOfflineStudy.activateScope(scopeRef);
       await window.crosswakeOfflineStudy.fenceScope();
     }, alphaScope);
-    const fencedStatus = await page.locator('#status').textContent();
+    const fencedStatus = await page.locator('#crosswake-study-status').textContent();
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await page.waitForTimeout(50);
 
     expect(await page.evaluate(() => (window as any).__inactiveOnlineReplay)).toEqual({ fetches: 0, rejections: 0 });
-    expect(await page.locator('#status').textContent()).toBe(fencedStatus);
+    expect(await page.locator('#crosswake-study-status').textContent()).toBe(fencedStatus);
     expect(pageErrors).toEqual([]);
     expect(consoleOutput).toEqual([]);
   });
@@ -307,16 +307,16 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     });
 
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
-    await expect(page.locator('#status')).toContainText('Sync is paused');
+    await expect(page.locator('#crosswake-study-status')).toContainText('Your saved answers remain on this iPhone.');
     expect(await page.evaluate(() => (window as any).__activeOnlineReplay)).toEqual({ rejections: 0 });
     expect(pageErrors).toEqual([]);
     expect(consoleOutput).toEqual([]);
 
     await page.evaluate(async () => window.crosswakeOfflineStudy.fenceScope());
-    const fencedStatus = await page.locator('#status').textContent();
+    const fencedStatus = await page.locator('#crosswake-study-status').textContent();
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await page.waitForTimeout(50);
-    expect(await page.locator('#status').textContent()).toBe(fencedStatus);
+    expect(await page.locator('#crosswake-study-status').textContent()).toBe(fencedStatus);
   });
 
   test('immediate online submit failure retains queued work without an unhandled rejection', async ({ page }) => {
@@ -351,7 +351,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await page.click('#btn-flip');
     await page.click('#btn-good');
 
-    await expect(page.locator('#status')).toContainText('Sync is paused');
+    await expect(page.locator('#crosswake-study-status')).toContainText('Your saved answers remain on this iPhone.');
     expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
     expect(await page.evaluate(() => (window as any).__immediateOnlineFailure.storageFailures)).toBe(1);
     expect(pageErrors).toEqual([]);
@@ -413,7 +413,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
 
     await expect.poll(async () => (await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).length).toBe(1);
     expect(await readQueuedOfflineMutations(page, { scopeRef: betaScope })).toHaveLength(0);
-    await expect(page.locator('#status')).not.toContainText(alphaScope);
+    await expect(page.locator('#crosswake-study-status')).not.toContainText(alphaScope);
   });
 
   test('post-response fence blocks old success side effects', async ({ page, context }) => {
@@ -449,7 +449,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
 
     expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
     expect(await readQueuedOfflineMutations(page, { scopeRef: betaScope })).toHaveLength(0);
-    await expect(page.locator('#status')).toContainText('Saved changes will sync when ready.');
+    await expect(page.locator('#crosswake-study-status')).toContainText('Your saved answers remain on this iPhone.');
   });
 
   test('post-response fence blocks old denial status', async ({ page, context }) => {
@@ -481,7 +481,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), betaScope);
 
     expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
-    await expect(page.locator('#status')).toContainText('Saved changes will sync when ready.');
+    await expect(page.locator('#crosswake-study-status')).toContainText('Your saved answers remain on this iPhone.');
   });
 
   test('mid-batch disablement retains halted suffix', async ({ page, context }) => {
@@ -514,7 +514,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await expect.poll(async () => (await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).length).toBe(1);
     expect((await readQueuedOfflineMutations(page, { scopeRef: alphaScope }))[0].client_mutation_id).toBe(queued[1].client_mutation_id);
-    await expect(page.locator('#status')).toContainText('Sync is paused');
+    await expect(page.locator('#crosswake-study-status')).toContainText('Your saved answers remain on this iPhone.');
     expect(requests).toBe(1);
   });
 
@@ -537,7 +537,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await context.setOffline(false);
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await expect.poll(async () => (await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).length).toBe(1);
-    await expect(page.locator('#status')).toContainText('Sync is paused');
+    await expect(page.locator('#crosswake-study-status')).toContainText('Your saved answers remain on this iPhone.');
   });
 
   test('truncated successful acknowledgement fails closed', async ({ page, context }) => {
@@ -568,7 +568,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await context.setOffline(false);
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await expect.poll(async () => (await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).length).toBe(2);
-    await expect(page.locator('#status')).toContainText('Sync is paused');
+    await expect(page.locator('#crosswake-study-status')).toContainText('Your saved answers remain on this iPhone.');
     expect(requests).toBe(1);
   });
 
@@ -598,7 +598,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     });
 
     await page.goto('/offline');
-    await expect(page.locator('#status')).toContainText('Saved changes need attention');
+    await expect(page.locator('#crosswake-study-status')).toContainText('Some saved answers need review.');
 
     const stores = await page.evaluate(async () => {
       const database = await new Promise<IDBDatabase>((resolve, reject) => {
@@ -629,13 +629,13 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     });
 
     expect(stores).toEqual([0, 1, 0]);
-    await expect(page.locator('#status')).toContainText('Saved changes need attention');
+    await expect(page.locator('#crosswake-study-status')).toContainText('Some saved answers need review.');
     await expect(page.locator('body')).not.toContainText('legacy-mutation');
 
     await page.reload();
-    await expect(page.locator('#status')).toContainText('Saved changes need attention');
+    await expect(page.locator('#crosswake-study-status')).toContainText('Some saved answers need review.');
     await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), 'v1.scope_fixture_bravo_01');
-    await expect(page.locator('#status')).not.toContainText('scope_fixture_bravo_01');
+    await expect(page.locator('#crosswake-study-status')).not.toContainText('scope_fixture_bravo_01');
 
     const afterRelaunch = await page.evaluate(async () => {
       const database = await new Promise<IDBDatabase>((resolve, reject) => {
@@ -678,7 +678,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     });
 
     await page.goto('/offline');
-    await expect(page.locator('#status')).toContainText('Saved changes need attention');
+    await expect(page.locator('#crosswake-study-status')).toContainText('Some saved answers need review.');
     const requests: string[] = [];
     page.on('request', request => {
       if (request.url().includes('/study/sync')) requests.push(request.url());
@@ -739,20 +739,37 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await page.goto('/offline');
     await waitForInactiveLifecycle(page);
     await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
-    await context.setOffline(true);
+    await page.evaluate(async scopeRef => {
+      const database = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open('crosswake_offline_study');
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      await new Promise<void>((resolve, reject) => {
+        const transaction = database.transaction('scoped_mutations', 'readwrite');
+        transaction.objectStore('scoped_mutations').add({
+          scope_ref: scopeRef,
+          local_ref: '00000000-0000-4000-8000-000000000005',
+          client_mutation_id: '00000000-0000-4000-8000-000000000005',
+          card_id: 1,
+          rating: 'good',
+        });
+        transaction.oncomplete = () => { database.close(); resolve(); };
+        transaction.onerror = () => reject(transaction.error);
+      });
+    }, alphaScope);
     await page.click('#btn-flip');
-    await page.click('#btn-good');
-    await context.setOffline(false);
+    await page.locator('#btn-good').focus();
 
     await page.evaluate(() => {
       window.fetch = () => new Promise(() => {});
-      document.getElementById('btn-flip')?.focus();
+      document.getElementById('btn-good')?.focus();
       window.dispatchEvent(new Event('online'));
     });
 
     await expect(page.locator('#crosswake-study-status')).toContainText('Syncing saved answers…');
     await expect(page.locator('#crosswake-study-status-indicator')).toHaveAttribute('aria-label', 'Syncing saved answers');
-    await expect(page.locator('#btn-flip')).toBeFocused();
+    await expect(page.locator('#btn-good')).toBeFocused();
   });
 
   test('study status retains rejected work and exposes recovery only through a validated host destination', async ({ page, context }) => {
