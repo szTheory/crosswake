@@ -70,6 +70,7 @@ async function activateScope(scopeRef) {
   activeScopeRef = scopeRef;
   await writeLifecycle({ key: 'active', state: 'active', scope_ref: scopeRef, epoch: activeEpoch });
   renderStudyStatus('sync_paused');
+  updateProofCompatibilityStatus('Sync is paused');
   if (navigator.onLine) replayOnOnline();
 }
 
@@ -89,6 +90,7 @@ async function fenceScope() {
   await worker?.promise.catch(() => undefined);
   await writeLifecycle({ key: 'active', state: 'inactive', scope_ref: null, epoch });
   renderStudyStatus('sync_paused');
+  updateProofCompatibilityStatus('Sync is paused');
 }
 
 function leaseIsCurrent(lease) {
@@ -97,6 +99,7 @@ function leaseIsCurrent(lease) {
 
 function renderPausedStatus() {
   renderStudyStatus('sync_paused');
+  updateProofCompatibilityStatus('Sync is paused');
 }
 
 function classifyReplayResponse(data, records) {
@@ -165,8 +168,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
     await resetLifecycleOnLaunch();
     renderStudyStatus(legacyRecoveryRequired ? 'needs_attention' : 'sync_paused');
+    updateProofCompatibilityStatus(legacyRecoveryRequired ? 'Saved changes need attention' : 'Sync is paused');
   } catch (error) {
     renderStudyStatus('sync_paused');
+    updateProofCompatibilityStatus('Sync is paused');
   }
 });
 
@@ -441,6 +446,11 @@ function refreshStudyStatus() {
   if (currentStudyStatus) renderStudyStatus(currentStudyStatus);
 }
 
+function updateProofCompatibilityStatus(message) {
+  const compatibilityStatus = document.getElementById('status');
+  if (compatibilityStatus) compatibilityStatus.textContent = message;
+}
+
 let activeFlush = null;
 
 async function flushOutbox() {
@@ -476,6 +486,7 @@ async function flushScopedOutbox(invocation) {
     if (!leaseIsCurrent(lease) || records.length === 0) return;
 
     renderStudyStatus('syncing');
+    updateProofCompatibilityStatus('Syncing');
 
     let response;
     try {
@@ -495,6 +506,7 @@ async function flushScopedOutbox(invocation) {
     } catch (_networkError) {
       if (!leaseIsCurrent(lease)) return;
       renderStudyStatus('saved_locally');
+      updateProofCompatibilityStatus('Saved locally - Queued for replay');
       return;
     }
 
@@ -524,11 +536,13 @@ async function flushScopedOutbox(invocation) {
       if (result.rejected.length > 0) {
         if (!leaseIsCurrent(lease)) return;
         renderStudyStatus('needs_attention');
+        updateProofCompatibilityStatus('Saved changes need attention');
       } else if (result.kind === 'halted') {
         renderPausedStatus();
       } else {
         if (!leaseIsCurrent(lease)) return;
         renderStudyStatus(remaining > 0 ? 'saved_locally' : 'sync_paused');
+        updateProofCompatibilityStatus(`Synced ${accepted} - queued ${remaining}`);
       }
     } else {
       if (!leaseIsCurrent(lease)) return;
@@ -583,7 +597,10 @@ function setupEventListeners() {
 
   window.addEventListener('online', replayOnOnline);
   window.addEventListener('offline', async () => {
-    if (activeScopeRef) renderStudyStatus('saved_locally');
+    if (activeScopeRef) {
+      renderStudyStatus('saved_locally');
+      updateProofCompatibilityStatus('Saved locally - Queued for replay');
+    }
   });
 
   // Retained work stays inert until the host calls activateScope with fresh authority.
@@ -615,6 +632,7 @@ async function handleReview(rating) {
     await queueMutation(scopeRef, mutation);
     if (!leaseIsCurrent(lease)) return;
     renderStudyStatus('saved_locally');
+    updateProofCompatibilityStatus('Saved locally - Queued for replay');
 
     currentCardIndex++;
     renderCurrentCard();
@@ -636,6 +654,7 @@ async function handleReview(rating) {
       errorMsg.textContent = 'Device storage limit reached! Cannot save more progress. Please free up space on your device.';
       container.prepend(errorMsg);
       renderStudyStatus('sync_paused');
+      updateProofCompatibilityStatus('QuotaExceededError handled gracefully.');
     } else {
       renderStudyStatus('sync_paused');
     }
