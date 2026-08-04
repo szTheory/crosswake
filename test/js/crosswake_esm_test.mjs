@@ -512,6 +512,37 @@ test("two mounted hook elements produce exactly one post per dispatch", () => {
   __resetOwner();
 });
 
+test("two mounted hook elements produce exactly one navigation delivery", () => {
+  __resetOwner();
+
+  const trace = newTrace();
+  const scope = {
+    webkit: {
+      messageHandlers: {
+        crosswakeNavigation: {
+          postMessage(body) {
+            trace.posts.push({ via: "navigation", body });
+          }
+        }
+      }
+    }
+  };
+  const handlers = [];
+  const first = mountHook(scope, trace, handlers);
+  const second = mountHook(scope, trace, handlers);
+
+  handlers
+    .filter((entry) => entry.event === NAVIGATION_EVENT)
+    .forEach((entry) => entry.callback(navigationEnvelope()));
+
+  assert.equal(trace.posts.length, 1);
+  assert.equal(trace.posts[0].via, "navigation");
+
+  first.destroyed();
+  second.destroyed();
+  __resetOwner();
+});
+
 test("ownership is released on destroy so a later mount can take over", () => {
   __resetOwner();
 

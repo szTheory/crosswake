@@ -16,8 +16,8 @@ defmodule Crosswake.NavigationTransitionTest do
 
     assert {:ok, pushed} = NavigationTransition.push(socket, @valid)
 
-    assert pushed.private[:push_events] == [
-             {"crosswake:navigation_transition", @valid}
+    assert pushed.private[:live_temp][:push_events] == [
+             ["crosswake:navigation_transition", @valid]
            ]
   end
 
@@ -26,7 +26,9 @@ defmodule Crosswake.NavigationTransitionTest do
 
     assert {:ok, pushed} = NavigationTransition.push(%Phoenix.LiveView.Socket{}, attrs)
 
-    assert pushed.private[:push_events] == [{"crosswake:navigation_transition", attrs}]
+    assert pushed.private[:live_temp][:push_events] == [
+             ["crosswake:navigation_transition", attrs]
+           ]
   end
 
   test "malformed, incompatible, unknown, and sensitive input fails closed" do
