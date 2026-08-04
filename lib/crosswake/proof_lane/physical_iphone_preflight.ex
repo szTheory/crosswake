@@ -2,7 +2,7 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
   @moduledoc "Ordered, callback-driven, side-effect-free physical-iPhone readiness gate."
 
   alias Crosswake.Adoption.RouteInventory
-  alias Crosswake.ProofLane.Config
+  alias Crosswake.ProofLane.{Config, PhysicalIphoneContract}
 
   @checks [
     {:generated_lane, "PI-PREFLIGHT-GENERATED-LANE"},
@@ -26,9 +26,9 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
          :ok <- run_checks(options, @checks) do
       {:ready,
        %{
-         schema_version: 1,
-         device_class: :physical_iphone,
-         assertion_ids: []
+         schema_version: PhysicalIphoneContract.schema_version(),
+         device_class: PhysicalIphoneContract.device_class(),
+         assertion_ids: Enum.map(PhysicalIphoneContract.assertions(), & &1.id)
        }}
     else
       {:inventory_error, _} -> {:blocked, "PI-PREFLIGHT-INVENTORY"}

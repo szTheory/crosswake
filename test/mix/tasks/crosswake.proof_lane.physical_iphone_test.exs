@@ -28,7 +28,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
              )
 
     assert_receive {:runner, %{assertion_ids: assertion_ids}}
-    assert is_list(assertion_ids)
+    assert length(assertion_ids) == 10
     refute_received {:runner, _}
   end
 

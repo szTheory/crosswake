@@ -2,6 +2,7 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
   use ExUnit.Case, async: true
 
   alias Crosswake.ProofLane.PhysicalIphonePreflight
+  alias Crosswake.ProofLane.PhysicalIphoneContract
 
   test "preflight is ready only after every closed prerequisite succeeds in order" do
     parent = self()
@@ -58,6 +59,43 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
       assert {:blocked, ^rule} = PhysicalIphonePreflight.check(options)
       refute inspect(PhysicalIphonePreflight.check(options)) =~ secret
     end
+  end
+
+  test "physical contract exposes a fixed ordered owner-tagged assertion manifest" do
+    assertions = PhysicalIphoneContract.assertions()
+
+    assert PhysicalIphoneContract.device_class() == :physical_iphone
+    assert PhysicalIphoneContract.schema_version() == 1
+    assert length(assertions) == 10
+    assert Enum.all?(assertions, &(&1.owner in [:device_local, :backend_authority]))
+    assert Enum.all?(assertions, &String.starts_with?(&1.id, "PI-"))
+    assert {:ok, "17.4"} = PhysicalIphoneContract.ios_runtime_line("17.4")
+
+    assert {:error, "PI-RUNTIME-LINE"} =
+             PhysicalIphoneContract.ios_runtime_line("17.4.1-device-id")
+  end
+
+  test "contract rejects missing duplicate reordered and cross-owner reports" do
+    assertions = PhysicalIphoneContract.assertions()
+    passed = Enum.map(assertions, &%{id: &1.id, owner: &1.owner, outcome: :passed})
+
+    assert :ok = PhysicalIphoneContract.validate_report(passed)
+
+    assert {:error, "PI-ASSERTIONS-COMPLETE"} =
+             PhysicalIphoneContract.validate_report(Enum.drop(passed, 1))
+
+    assert {:error, "PI-ASSERTIONS-COMPLETE"} =
+             PhysicalIphoneContract.validate_report([hd(passed) | passed])
+
+    assert {:error, "PI-ASSERTIONS-ORDER"} =
+             PhysicalIphoneContract.validate_report(Enum.reverse(passed))
+
+    [first | rest] = passed
+
+    assert {:error, "PI-ASSERTIONS-OWNER"} =
+             PhysicalIphoneContract.validate_report([
+               Map.put(first, :owner, :backend_authority) | rest
+             ])
   end
 
   defp ready_options do
