@@ -3,11 +3,11 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
 
   alias Mix.Tasks.Crosswake.ProofLane.PhysicalIphone
 
-  test "preflight-only JSON is exact and a blocked command does not invoke its runner" do
+  test "run JSON is exact and a blocked command does not invoke its runner" do
     parent = self()
 
     assert {:blocked, %{outcome: "blocked", rule_id: "PI-PREFLIGHT-INVENTORY"}} =
-             PhysicalIphone.run_with(["--preflight-only", "--json"],
+             PhysicalIphone.run_with(["--run", "--json"],
                runner: fn _ -> send(parent, :runner) end
              )
 
@@ -18,18 +18,49 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
     assert {:error, "PI-COMMAND-OPTIONS"} = PhysicalIphone.run_with(["--unknown"], [])
   end
 
-  test "the runner is invoked exactly once only after a ready preflight" do
+  test "a complete owner-disjoint report joins only after ready preflight" do
     parent = self()
 
-    assert {:ready, %{device_class: :physical_iphone}} =
+    assert {:passed, %{device_class: "physical_iphone", assertions: assertions}} =
              PhysicalIphone.run_with(
-               ["--preflight-only", "--json"],
-               ready_options() ++ [runner: fn contract -> send(parent, {:runner, contract}) end]
+               ["--run", "--json"],
+               ready_options() ++
+                 [
+                   device_report: fn contract ->
+                     send(parent, {:device, contract})
+                     device_report()
+                   end,
+                   backend_report: fn _ -> backend_report() end
+                 ]
              )
 
-    assert_receive {:runner, %{assertion_ids: assertion_ids}}
+    assert_receive {:device, %{assertion_ids: assertion_ids}}
     assert length(assertion_ids) == 10
-    refute_received {:runner, _}
+    assert Enum.all?(assertions, &(&1.outcome == :passed))
+    refute_received {:device, _}
+  end
+
+  test "a device report cannot satisfy backend assertions" do
+    reports = device_report()
+
+    assert {:blocked, %{outcome: "blocked", rule_id: "PI-REPORT-OWNER"}} =
+             PhysicalIphone.run_with(
+               ["--run", "--json"],
+               ready_options() ++
+                 [device_report: fn _ -> reports end, backend_report: fn _ -> reports end]
+             )
+  end
+
+  defp device_report do
+    Crosswake.ProofLane.PhysicalIphoneContract.assertions()
+    |> Enum.filter(&(&1.owner == :device_local))
+    |> Enum.map(&Map.put(&1, :outcome, :passed))
+  end
+
+  defp backend_report do
+    Crosswake.ProofLane.PhysicalIphoneContract.assertions()
+    |> Enum.filter(&(&1.owner == :backend_authority))
+    |> Enum.map(&Map.put(&1, :outcome, :passed))
   end
 
   defp ready_options do
