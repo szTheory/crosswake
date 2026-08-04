@@ -43,6 +43,25 @@ final class NavigationCoordinatorTests: XCTestCase {
         XCTAssertEqual(coordinator.activeRouteID, before.2)
     }
 
+    func testUnknownBlockingTopologyCannotCreateARoot() {
+        let topology = NavigationTopology(topologySchemaVersion: "1.0.0", manifestSchemaVersion: "1.0.0", status: .unknownBlocking, entries: [])
+        let coordinator = NavigationCoordinator(topology: topology, manifest: makeManifest(routeID: "route-0123456789abcdef"), resolver: authorize)
+
+        XCTAssertEqual(coordinator.selectRoot(routeID: "route-0123456789abcdef"), .denied)
+        XCTAssertNil(coordinator.selectedTabID)
+        XCTAssertEqual(coordinator.stacks, [:])
+    }
+
+    func testMalformedTopologyDoesNotCallResolverOrMutateState() {
+        let topology = NavigationTopology(topologySchemaVersion: "1.0.0", manifestSchemaVersion: "2.0.0", status: .ready, entries: [])
+        var calls = 0
+        let coordinator = NavigationCoordinator(topology: topology, manifest: makeManifest(routeID: "route-0123456789abcdef"), resolver: { _, _ in calls += 1; return .denied })
+
+        XCTAssertEqual(coordinator.selectRoot(routeID: "route-0123456789abcdef"), .denied)
+        XCTAssertEqual(calls, 0)
+        XCTAssertNil(coordinator.activeRouteID)
+    }
+
     private func authorize(_ routeID: String, _ manifest: ShellManifest) -> NavigationResolution {
         guard manifest.routes[routeID] != nil else { return .denied }
         return .authorized(.liveView(LiveViewSession(routeID: routeID, url: URL(string: "https://app.example.com")!, allowedOrigin: URL(string: "https://app.example.com")!, bridgeProtocolVersion: "1.0.0", nativeRuntimeVersion: "1.0.0", threadID: "test", installedPacks: [:], routeRequiredPacks: [], capabilities: [:], declaredTransfers: [])))
