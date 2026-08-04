@@ -29,6 +29,7 @@ defmodule Crosswake.SupportMatrixTest do
              "generated_at",
              "host",
              "manifest_schema_version",
+             "navigation_topology",
              "pack_registry",
              "routes",
              "support_matrix"
@@ -58,6 +59,32 @@ defmodule Crosswake.SupportMatrixTest do
            ]
 
     assert SupportMatrix.statuses() == [:supported, :verification_required, :unsupported]
+  end
+
+  test "D-11/D-12 support truth limits navigation verification to bounded advisory iOS evidence" do
+    matrix = SupportMatrix.canonical()
+
+    [ios] = matrix.ios
+    assert ios.notes =~ "bounded iOS-only"
+    assert ios.notes =~ "compiled topology"
+    assert ios.notes =~ "typed stack protocol"
+    assert ios.notes =~ "UIKit host composition"
+    assert ios.notes =~ "simulator advisory"
+    assert ios.notes =~ "Phase 162"
+    assert ios.notes =~ "unknown_blocking"
+
+    [ios_shell] = Enum.filter(matrix.shells, &(&1.target == "ios_shell"))
+    assert ios_shell.notes =~ "generic navigation"
+    assert ios_shell.notes =~ "native leaf rendering"
+    assert ios_shell.notes =~ "browser-history authority"
+
+    [android] = matrix.android
+
+    for frozen_posture <- ["generator", "Maven", "JVM", "shared-vector"] do
+      assert android.notes =~ frozen_posture
+    end
+
+    assert android.notes =~ "no new feature, parity, device, template, or release claim"
   end
 
   test "the first support matrix stays narrow and proof-oriented" do

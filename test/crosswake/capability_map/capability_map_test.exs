@@ -63,6 +63,7 @@ defmodule Crosswake.CapabilityMapTest do
     "commerce-provider-integration",
     "first-adopter-host-proof",
     "first-adopter-scoped-replay",
+    "first-adopter-ios-navigation-shell",
     "first-adopter-physical-iphone",
     "native-controls-alert-confirm",
     "native-controls-action-menu",
@@ -164,6 +165,7 @@ defmodule Crosswake.CapabilityMapTest do
     assert row!(rows, "learnloop-sync-productization").package_owner == :deferred
     assert row!(rows, "first-adopter-host-proof").proof_posture == :not_yet_proven
     assert row!(rows, "first-adopter-scoped-replay").route_runtime_owner == :offline_island
+    assert row!(rows, "first-adopter-ios-navigation-shell").route_runtime_owner == :native_shell
     assert row!(rows, "first-adopter-physical-iphone").rebuild == :native_required
 
     paywall = row!(rows, "learnloop-paywall-projection")
@@ -183,6 +185,49 @@ defmodule Crosswake.CapabilityMapTest do
       assert row.category == :next_pack_candidate
       assert row.display_label == "Next-pack candidate"
       assert row.route_runtime_owner == :future_native_control
+    end
+  end
+
+  test "D-11/D-12 first-adopter navigation truth is bounded, advisory, and Phase-162-only for device promotion" do
+    rows = canonical_rows()
+
+    shell = row!(rows, "first-adopter-ios-navigation-shell")
+    assert shell.category == :demoed
+    assert shell.display_label == "Advisory evidence"
+    assert shell.proof_posture == :advisory
+    assert shell.route_runtime_owner == :native_shell
+
+    assert shell.route_or_evidence_source =~ "bounded iOS-only"
+    assert shell.route_or_evidence_source =~ "typed stack protocol"
+    assert shell.route_or_evidence_source =~ "UIKit host composition"
+    assert shell.adoption_implication =~ "simulator advisory"
+    assert shell.adoption_implication =~ "Phase 162"
+    assert shell.adoption_implication =~ "unknown_blocking"
+
+    for non_claim <- [
+          "generic navigation",
+          "Android parity",
+          "native leaf rendering",
+          "arbitrary restoration",
+          "modal breadth",
+          "browser-history authority"
+        ] do
+      assert shell.denial_fallback =~ non_claim
+    end
+
+    physical_iphone = row!(rows, "first-adopter-physical-iphone")
+    assert physical_iphone.proof_posture == :not_yet_proven
+    assert physical_iphone.adoption_implication =~ "Phase 162"
+
+    confirmation = row!(rows, "native-controls-alert-confirm")
+    assert confirmation.denial_fallback =~ "Phoenix-owned confirmation"
+
+    for prerequisite <- [
+          "physical-iPhone proof",
+          "active-adopter route blocker",
+          "maintainer roadmap decision"
+        ] do
+      assert confirmation.adoption_implication =~ prerequisite
     end
   end
 
