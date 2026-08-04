@@ -240,15 +240,27 @@ Use the existing generated test’s launch/terminate precedent, but replace its 
 |---|---|---|---|
 | A1 | None. | — | All recommendations are constrained by repository contracts or official docs fetched this session. |
 
-## Open Questions
+## Open Questions — RESOLVED Planning Posture
 
-1. **When will sanitized TODO-002 rows validate?**
-   - What we know: none are present; promotion is currently `unknown_blocking`. [VERIFIED: TODO-002-first-b2c-adopter-route-inputs.md]
-   - Recommendation: implement and test the stable blocked preflight first; do not infer a route, path, fixture, device, or runtime value.
+No availability date is assumed for sanitized TODO-002 rows, a signed physical iPhone, or a
+runnable adopter host/backend. Their current availability is `unknown_blocking`, not an invitation
+to infer a route, path, fixture, device, signing identity, runtime value, or backend capability.
 
-2. **Which signed physical iPhone and host backend will run the lane?**
-   - What we know: no physical phone is currently listed by local Xcode tooling. [VERIFIED: local `xcrun xctrace list devices`]
-   - Recommendation: retain only a low-cardinality runtime line after the actual device run; connection/signing is a bounded setup prerequisite, not manual evidence evaluation.
+Plan 01's stable blocked preflight is the required current behavior. It must complete before any
+fixture reset, device execution, evidence staging, or promotion side effect. The physical run and
+promotion remain blocked until all three external prerequisite groups are supplied and validated:
+
+1. TODO-002 contains at least one eligible sanitized route row accepted by
+   `Crosswake.Adoption.RouteInventory`;
+2. a selected physical iPhone is connected through a valid signed host configuration, with no
+   simulator substitution; and
+3. the adopter host/backend is runnable with the required fixture, media-adapter, replay,
+   rejection/conflict, scoped-session, and feature-gate controls.
+
+When those prerequisites exist, the automated driver and verifier—not an availability estimate or
+manual approval—decide whether the physical run and promotion pass. Only that successful run may
+retain a low-cardinality iOS runtime line. [VERIFIED: TODO-002-first-b2c-adopter-route-inputs.md;
+VERIFIED: 162-CONTEXT.md; VERIFIED: local `xcrun xctrace list devices`]
 
 ## Environment Availability
 
