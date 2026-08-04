@@ -32,6 +32,8 @@ defmodule Crosswake.Manifest.Validator do
     "status"
   ]
   @additive_compatibility_hint "commerce corridor fields are additive in manifest schema 1.0.0 and only required when a route declares commerce"
+  @opaque_route_id ~r/^route-[0-9a-f]{16}$/
+  @opaque_tab_id ~r/^tab-[0-9a-f]{16}$/
 
   @spec validate(Types.Root.t()) :: [Error.t()]
   def validate(%Types.Root{} = manifest) do
@@ -177,13 +179,15 @@ defmodule Crosswake.Manifest.Validator do
 
   defp validate_topology_entries(errors, %Types.NavigationTopology{entries: entries}, routes)
        when is_list(entries) do
+    valid_entries = Enum.filter(entries, &valid_topology_entry?/1)
+
     errors
     |> validate_topology_entry_shapes(entries)
-    |> validate_topology_route_references(entries, routes)
-    |> validate_topology_roots(entries)
-    |> validate_topology_parents(entries)
-    |> validate_topology_cycles(entries)
-    |> validate_topology_runtime_pairs(entries, routes)
+    |> validate_topology_route_references(valid_entries, routes)
+    |> validate_topology_roots(valid_entries)
+    |> validate_topology_parents(valid_entries)
+    |> validate_topology_cycles(valid_entries)
+    |> validate_topology_runtime_pairs(valid_entries, routes)
   end
 
   defp validate_topology_entries(errors, _topology, _routes),
@@ -192,19 +196,38 @@ defmodule Crosswake.Manifest.Validator do
   defp validate_topology_entry_shapes(errors, entries) do
     Enum.reduce(entries, errors, fn
       %Types.NavigationTopologyEntry{
+        route_id: route_id,
+        root_tab_id: root_tab_id,
         presentation: presentation,
         deep_link_posture: deep_link_posture,
         restoration_posture: restoration_posture
       },
       acc
-      when presentation in [:root, :push] and deep_link_posture in [:allow, :deny] and
+      when is_binary(route_id) and is_binary(root_tab_id) and presentation in [:root, :push] and
+             deep_link_posture in [:allow, :deny] and
              restoration_posture in [:allow, :deny] ->
-        acc
+        if Regex.match?(@opaque_route_id, route_id) and Regex.match?(@opaque_tab_id, root_tab_id),
+          do: acc,
+          else: [topology_error("NT-MANIFEST-ENTRY", :entry) | acc]
 
       _entry, acc ->
         [topology_error("NT-MANIFEST-ENTRY", :entry) | acc]
     end)
   end
+
+  defp valid_topology_entry?(%Types.NavigationTopologyEntry{
+         route_id: route_id,
+         root_tab_id: root_tab_id,
+         presentation: presentation,
+         deep_link_posture: deep_link_posture,
+         restoration_posture: restoration_posture
+       }) do
+    is_binary(route_id) and Regex.match?(@opaque_route_id, route_id) and is_binary(root_tab_id) and
+      Regex.match?(@opaque_tab_id, root_tab_id) and presentation in [:root, :push] and
+      deep_link_posture in [:allow, :deny] and restoration_posture in [:allow, :deny]
+  end
+
+  defp valid_topology_entry?(_entry), do: false
 
   defp validate_topology_route_references(errors, entries, routes) do
     Enum.reduce(entries, errors, fn

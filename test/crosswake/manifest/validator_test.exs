@@ -42,13 +42,15 @@ defmodule Crosswake.Manifest.ValidatorTest do
       topology_manifest([
         topology_entry(route_id: secret),
         topology_entry(root_tab_id: "tab-0123456789abcdef"),
+        topology_entry(route_id: "route-aaaaaaaaaaaaaaaa"),
         topology_entry(
           route_id: "route-fedcba9876543210",
           presentation: :push,
-          parent_route_id: "route-aaaaaaaaaaaaaaaa"
+          parent_route_id: "route-bbbbbbbbbbbbbbbb"
         )
       ])
       |> update_in([Access.key!(:routes)], &Map.delete(&1, secret))
+      |> update_in([Access.key!(:routes)], &Map.delete(&1, "route-fedcba9876543210"))
       |> put_in(
         [Access.key!(:navigation_topology), Access.key!(:manifest_schema_version)],
         "0.0.0"
@@ -58,6 +60,7 @@ defmodule Crosswake.Manifest.ValidatorTest do
     messages = Enum.map(errors, & &1.message)
 
     assert Enum.any?(messages, &String.contains?(&1, "NT-MANIFEST-VERSION"))
+    assert Enum.any?(messages, &String.contains?(&1, "NT-MANIFEST-ENTRY"))
     assert Enum.any?(messages, &String.contains?(&1, "NT-MANIFEST-UNKNOWN_ROUTE"))
     assert Enum.any?(messages, &String.contains?(&1, "NT-MANIFEST-DUPLICATE_ROOT"))
     assert Enum.any?(messages, &String.contains?(&1, "NT-MANIFEST-INVALID_PARENT"))
@@ -72,6 +75,19 @@ defmodule Crosswake.Manifest.ValidatorTest do
     errors = Validator.validate(manifest)
 
     assert Enum.any?(errors, &String.contains?(&1.message, "NT-MANIFEST-UNKNOWN_BLOCKING"))
+  end
+
+  test "malformed topology entries fail closed without raising or echoing supplied values" do
+    secret = "topology-private-canary"
+
+    manifest =
+      topology_manifest([])
+      |> put_in([Access.key!(:navigation_topology), Access.key!(:entries)], [%{route_id: secret}])
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, &String.contains?(&1.message, "NT-MANIFEST-ENTRY"))
+    refute Enum.any?(errors, &String.contains?(&1.message, secret))
   end
 
   test "topology validation rejects root-parent, cross-tab, cyclic, and unsupported runtime relationships" do
@@ -121,6 +137,8 @@ defmodule Crosswake.Manifest.ValidatorTest do
         System.tmp_dir!(),
         "crosswake-manifest-#{System.unique_integer([:positive])}.json"
       )
+
+    File.rm(path)
 
     rendered_once = Serializer.render(manifest)
     rendered_twice = Serializer.render(manifest)
