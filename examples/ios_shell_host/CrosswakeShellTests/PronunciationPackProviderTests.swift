@@ -340,6 +340,47 @@ final class PronunciationPackProviderTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: journalURL(in: root).path))
     }
 
+    func testConstructionBootstrapRecoversStaleInventoryWithoutArtifactAfterPromotionJournalPersistence() async throws {
+        let fixture = try fixtureBytes()
+        let staleRequirement = requirement(for: fixture, version: "1")
+        let requirement = requirement(for: fixture, version: "2")
+        let staleRecord = expectedRecord(for: staleRequirement)
+        let record = expectedRecord(for: requirement)
+        let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let staging = root.appendingPathComponent(".staging-transaction")
+        try fixture.write(to: staging)
+        try writeInventory([requirement.packID: staleRecord], in: root)
+        try writeJournal(
+            ReplacementJournal(
+                schemaVersion: 1,
+                phase: .promotionPending,
+                packID: requirement.packID,
+                nonce: "transaction",
+                stagingLeaf: staging.lastPathComponent,
+                destinationLeaf: artifactURL(in: root, for: requirement).lastPathComponent,
+                retainedLeaf: ".previous-transaction",
+                priorRecord: staleRecord,
+                currentRecord: record
+            ),
+            in: root
+        )
+
+        let relaunched = PronunciationPackProvider(source: { fixture }, storageRoot: root)
+        let recoveredStatus = await relaunched.status(for: requirement)
+        XCTAssertEqual(recoveredStatus, .notInstalled)
+        let recoveredInventory = try JSONDecoder().decode([String: PackInstalledRecord].self, from: Data(contentsOf: inventoryURL(in: root)))
+        XCTAssertEqual(recoveredInventory, [:])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: journalURL(in: root).path))
+
+        let installResult = await relaunched.install(requirement)
+        XCTAssertEqual(installResult, .installed(record))
+        let fresh = PronunciationPackProvider(source: { fixture }, storageRoot: root)
+        let freshStatus = await fresh.status(for: requirement)
+        XCTAssertEqual(freshStatus, .installed(record))
+    }
+
     func testConstructionBootstrapRollsBackPromotedReplacementBeforeInventoryCommit() async throws {
         let oldBytes = try fixtureBytes()
         var replacementBytes = oldBytes
