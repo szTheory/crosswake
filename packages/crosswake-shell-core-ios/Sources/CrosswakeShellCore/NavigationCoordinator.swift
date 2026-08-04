@@ -19,6 +19,15 @@ public final class NavigationCoordinator: ObservableObject {
     private var transitionIDs: [String] = []
     private let transitionLedgerLimit = 128
 
+    /// The only roots a host shell may materialize. An unvalidated or blocked topology
+    /// deliberately produces no native chrome.
+    public var rootRouteIDs: [String] {
+        guard topology.validate(against: manifest) == .valid else { return [] }
+        return topology.entries.compactMap { $0.presentation == .root ? $0.routeID : nil }
+    }
+
+    public var hasPromotableTopology: Bool { rootRouteIDs.isEmpty == false }
+
     public init(topology: NavigationTopology, manifest: ShellManifest, resolver: @escaping (String, ShellManifest) -> NavigationResolution, patchSink: @escaping (NavigationStackEntry) -> Void = { _ in }) {
         self.topology = topology; self.manifest = manifest; self.resolver = resolver; self.patchSink = patchSink
     }

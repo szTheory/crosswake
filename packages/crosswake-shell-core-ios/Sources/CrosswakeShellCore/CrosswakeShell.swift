@@ -89,7 +89,9 @@ public final class CrosswakeShell: ObservableObject {
     public let serverEvents = PassthroughSubject<ServerEvent, Never>()
     
     public let coordinator: ActivationCoordinator
-    private lazy var navigationCoordinator = coordinator.makeNavigationCoordinator(topology: Self.loadNavigationTopology(bundle: bundle))
+    /// Shell state is published for the host-owned UIKit composition only. It carries
+    /// no host labels, route payloads, browser history, or identity facts.
+    public lazy var navigationCoordinator = coordinator.makeNavigationCoordinator(topology: Self.loadNavigationTopology(bundle: bundle))
     private let config: CrosswakeShellConfig
     private let bundle: Bundle
     private var cancellables = Set<AnyCancellable>()

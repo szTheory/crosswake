@@ -20,6 +20,10 @@
 		D10000110000000000000001 /* SemVer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000110000000000000001 /* SemVer.swift */; };
 		D10000120000000000000001 /* ServerEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000120000000000000001 /* ServerEvent.swift */; };
 		D10000130000000000000001 /* TransferCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000130000000000000001 /* TransferCoordinator.swift */; };
+		E16102010000000000000001 /* NavigationTopology.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16102110000000000000001 /* NavigationTopology.swift */; };
+		E16102020000000000000001 /* NavigationTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16102120000000000000001 /* NavigationTransition.swift */; };
+		E16102030000000000000001 /* NavigationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16102130000000000000001 /* NavigationCoordinator.swift */; };
+		E16102040000000000000001 /* NavigationTransitionChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16102140000000000000001 /* NavigationTransitionChannel.swift */; };
 		C20001010000000000000001 /* ActivationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10002010000000000000001 /* ActivationCoordinator.swift */; };
 		C20001020000000000000001 /* BridgeChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10002020000000000000001 /* BridgeChannel.swift */; };
 		C20001030000000000000001 /* ConnectionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10002030000000000000001 /* ConnectionState.swift */; };
@@ -64,6 +68,7 @@
 		A10000093000000000000001 /* pronunciation-pack-fixture.bin in Resources */ = {isa = PBXBuildFile; fileRef = A10000193000000000000001 /* pronunciation-pack-fixture.bin */; };
 		A10000094000000000000001 /* PronunciationPackProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000194000000000000001 /* PronunciationPackProviderTests.swift */; };
 		A10000095000000000000001 /* RequiredPackViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000195000000000000001 /* RequiredPackViewTests.swift */; };
+		E16102050000000000000001 /* NavigationShellViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16102150000000000000001 /* NavigationShellViewController.swift */; };
 		E16101010000000000000001 /* NavigationShellTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16101110000000000000001 /* NavigationShellTests.swift */; };
 		E16100010000000000000001 /* RequiredPackViewAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16100110000000000000001 /* RequiredPackViewAccessibilityTests.swift */; };
 /* End PBXBuildFile section */
@@ -106,6 +111,10 @@
 		D20000110000000000000001 /* SemVer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../../packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/SemVer.swift; sourceTree = SOURCE_ROOT; };
 		D20000120000000000000001 /* ServerEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../../packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/ServerEvent.swift; sourceTree = SOURCE_ROOT; };
 		D20000130000000000000001 /* TransferCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../../packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/TransferCoordinator.swift; sourceTree = SOURCE_ROOT; };
+		E16102110000000000000001 /* NavigationTopology.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../../packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/NavigationTopology.swift; sourceTree = SOURCE_ROOT; };
+		E16102120000000000000001 /* NavigationTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../../packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/NavigationTransition.swift; sourceTree = SOURCE_ROOT; };
+		E16102130000000000000001 /* NavigationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../../packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/NavigationCoordinator.swift; sourceTree = SOURCE_ROOT; };
+		E16102140000000000000001 /* NavigationTransitionChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../../packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/NavigationTransitionChannel.swift; sourceTree = SOURCE_ROOT; };
 		A10000110000000000000001 /* CrosswakeShellApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrosswakeShellApp.swift; sourceTree = "<group>"; };
 		A10000120500000000000001 /* NativeCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeCaptureView.swift; sourceTree = "<group>"; };
 		A10000122000000000000001 /* RequiredPackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequiredPackView.swift; sourceTree = "<group>"; };
@@ -122,6 +131,7 @@
 		A10000193000000000000001 /* pronunciation-pack-fixture.bin */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Resources/pronunciation-pack-fixture.bin"; sourceTree = "<group>"; };
 		A10000194000000000000001 /* PronunciationPackProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PronunciationPackProviderTests.swift; sourceTree = "<group>"; };
 		A10000195000000000000001 /* RequiredPackViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequiredPackViewTests.swift; sourceTree = "<group>"; };
+		E16102150000000000000001 /* NavigationShellViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationShellViewController.swift; sourceTree = "<group>"; };
 		E16101110000000000000001 /* NavigationShellTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationShellTests.swift; sourceTree = "<group>"; };
 		A100001B0000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A100001C0000000000000001 /* CrosswakeShell.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrosswakeShell.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -222,6 +232,7 @@
 			isa = PBXGroup;
 			children = (
 				A10000110000000000000001 /* CrosswakeShellApp.swift */,
+				E16102150000000000000001 /* NavigationShellViewController.swift */,
 				A10000120500000000000001 /* NativeCaptureView.swift */,
 				A10000122000000000000001 /* RequiredPackView.swift */,
 				A10000123500000000000001 /* PermissionStatusProvider.swift */,
@@ -406,6 +417,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000010000000000000001 /* CrosswakeShellApp.swift in Sources */,
+				E16102050000000000000001 /* NavigationShellViewController.swift in Sources */,
 				A10000020500000000000001 /* NativeCaptureView.swift in Sources */,
 				A10000022000000000000001 /* RequiredPackView.swift in Sources */,
 				A10000023500000000000001 /* PermissionStatusProvider.swift in Sources */,
@@ -460,7 +472,7 @@
 		D00000500000000000000001 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = (D10000010000000000000001 /* ActivationCoordinator.swift in Sources */, D10000020000000000000001 /* BridgeChannel.swift in Sources */, D10000030000000000000001 /* ConnectionState.swift in Sources */, D10000040000000000000001 /* CrosswakeDelegates.swift in Sources */, D10000050000000000000001 /* CrosswakeShell.swift in Sources */, D10000060000000000000001 /* CrosswakeShellConfig.swift in Sources */, D10000070000000000000001 /* DiagnosticExportManager.swift in Sources */, D10000080000000000000001 /* PackProvider.swift in Sources */, D10000090000000000000001 /* PackStore.swift in Sources */, D10000100000000000000001 /* RouteUnavailableView.swift in Sources */, D10000110000000000000001 /* SemVer.swift in Sources */, D10000120000000000000001 /* ServerEvent.swift in Sources */, D10000130000000000000001 /* TransferCoordinator.swift in Sources */,);
+			files = (D10000010000000000000001 /* ActivationCoordinator.swift in Sources */, D10000020000000000000001 /* BridgeChannel.swift in Sources */, D10000030000000000000001 /* ConnectionState.swift in Sources */, D10000040000000000000001 /* CrosswakeDelegates.swift in Sources */, D10000050000000000000001 /* CrosswakeShell.swift in Sources */, D10000060000000000000001 /* CrosswakeShellConfig.swift in Sources */, D10000070000000000000001 /* DiagnosticExportManager.swift in Sources */, D10000080000000000000001 /* PackProvider.swift in Sources */, D10000090000000000000001 /* PackStore.swift in Sources */, D10000100000000000000001 /* RouteUnavailableView.swift in Sources */, D10000110000000000000001 /* SemVer.swift in Sources */, D10000120000000000000001 /* ServerEvent.swift in Sources */, D10000130000000000000001 /* TransferCoordinator.swift in Sources */, E16102010000000000000001 /* NavigationTopology.swift in Sources */, E16102020000000000000001 /* NavigationTransition.swift in Sources */, E16102030000000000000001 /* NavigationCoordinator.swift in Sources */, E16102040000000000000001 /* NavigationTransitionChannel.swift in Sources */,);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */

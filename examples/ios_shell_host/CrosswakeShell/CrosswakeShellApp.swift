@@ -304,7 +304,50 @@ private struct RootSceneView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            switch shell.presentation {
+            if shell.navigationCoordinator.hasPromotableTopology {
+                NavigationShellView(navigationCoordinator: shell.navigationCoordinator) { presentation in
+                    UIHostingController(rootView: presentationView(presentation))
+                }
+            } else {
+                presentationView(shell.presentation)
+            }
+
+            VStack {
+                if shell.connectionState != .connected && shell.connectionState != .disconnected {
+                    Text(shell.connectionState == .connecting ? "Connecting..." : "Retrying...")
+                        .font(.caption)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.yellow.opacity(0.9))
+                        .cornerRadius(8)
+                        .padding(.top, 40)
+                }
+
+                if let toastMessage {
+                    Text(toastMessage)
+                        .padding()
+                        .background(Color.black.opacity(0.8))
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .padding(.horizontal)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .zIndex(1)
+                }
+            }
+            .animation(.easeInOut, value: shell.connectionState)
+            .animation(.easeInOut, value: toastMessage)
+        }
+        .onReceive(shell.serverEvents) { event in
+            if event.name == "toast" {
+                let message = event.payload["message"] ?? "Notification"
+                showToast(message: message)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func presentationView(_ presentation: ShellPresentation) -> some View {
+        switch presentation {
             case .booting:
                 ProgressView("Resolving route from bundled manifest truth…")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -356,38 +399,6 @@ private struct RootSceneView: View {
                     shell.coordinator.perform(action)
                 }
             }
-
-            VStack {
-                if shell.connectionState != .connected && shell.connectionState != .disconnected {
-                    Text(shell.connectionState == .connecting ? "Connecting..." : "Retrying...")
-                        .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.yellow.opacity(0.9))
-                        .cornerRadius(8)
-                        .padding(.top, 40)
-                }
-
-                if let toastMessage {
-                    Text(toastMessage)
-                        .padding()
-                        .background(Color.black.opacity(0.8))
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                        .padding(.horizontal)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                        .zIndex(1)
-                }
-            }
-            .animation(.easeInOut, value: shell.connectionState)
-            .animation(.easeInOut, value: toastMessage)
-        }
-        .onReceive(shell.serverEvents) { event in
-            if event.name == "toast" {
-                let message = event.payload["message"] ?? "Notification"
-                showToast(message: message)
-            }
-        }
     }
 
     private func showToast(message: String) {
