@@ -137,6 +137,11 @@ defmodule Crosswake.ProofLane.EvidenceTest do
              })
 
     assert error.rule_id == "PL-EVIDENCE-HASH"
+
+    with_stage(fn root ->
+      assert {:error, rejected} = Evidence.promote(@valid, Path.join(root, "physical_iphone"))
+      assert rejected.rule_id == "PL-EVIDENCE-PHYSICAL"
+    end)
   end
 
   test "rejects D-21 private and raw proof candidates without echoing candidate values" do

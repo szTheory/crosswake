@@ -6,7 +6,9 @@ defmodule Crosswake.ProofLane.Evidence do
   same final-byte scanner is used by hashing, read-only checking, and promotion.
   """
 
-  @schema_keys [
+  alias Crosswake.ProofLane.PhysicalIphoneContract
+
+  @legacy_schema_keys [
     :schema_version,
     :crosswake_version,
     :template_version,
@@ -20,16 +22,20 @@ defmodule Crosswake.ProofLane.Evidence do
     :device_class,
     :approved_hashes
   ]
+  @physical_schema_keys @legacy_schema_keys ++ [:ios_runtime_line]
+  @schema_keys @physical_schema_keys
   @outcomes [:passed, :blocked, :unavailable]
   @retention_labels [:brief, :ephemeral]
-  @device_classes [:ios, :simulator, :unknown]
+  @device_classes [:ios, :simulator, :unknown, :physical_iphone]
   @artifact_name "proof-lane-evidence.json"
   @complete_name ".complete"
-  @approved_kinds [:evidence_json, :navigation_shell_advisory]
+  @approved_kinds [:evidence_json, :navigation_shell_advisory, :physical_iphone_run_contract]
   @phase_160_assertion_ids ~w(scope_partition lifecycle_fence per_event_reauthorization atomic_idempotency safe_observation disablement)
+  @physical_assertion_ids PhysicalIphoneContract.assertions() |> Enum.map(& &1.id)
   @assertion_ids ~w(browser_offline_island shell_boot auth_continuity relaunch_persistence replay_prerequisite pack_audio_prerequisite) ++
                    @phase_160_assertion_ids ++
-                   ~w(PL-IOS-NAV-TOPOLOGY PL-IOS-NAV-PATCH-DEPTH PL-IOS-NAV-NAVIGATE-ONCE PL-IOS-NAV-RESTORE PL-IOS-NAV-TABS-BACK PL-IOS-NAV-MARKER-INSETS PL-IOS-NAV-FOCUS)
+                   ~w(PL-IOS-NAV-TOPOLOGY PL-IOS-NAV-PATCH-DEPTH PL-IOS-NAV-NAVIGATE-ONCE PL-IOS-NAV-RESTORE PL-IOS-NAV-TABS-BACK PL-IOS-NAV-MARKER-INSETS PL-IOS-NAV-FOCUS) ++
+                   @physical_assertion_ids
 
   @sensitive_terms ~w(
     answer selected payload account customer credential password secret token transcript media
@@ -62,7 +68,7 @@ defmodule Crosswake.ProofLane.Evidence do
 
   @spec to_map(t()) :: map()
   def to_map(%__MODULE__{} = evidence) do
-    %{
+    map = %{
       "schema_version" => evidence.schema_version,
       "crosswake_version" => evidence.crosswake_version,
       "template_version" => evidence.template_version,
@@ -76,6 +82,10 @@ defmodule Crosswake.ProofLane.Evidence do
       "device_class" => Atom.to_string(evidence.device_class),
       "approved_hashes" => Enum.map(evidence.approved_hashes, &hash_to_map/1)
     }
+
+    if evidence.device_class == :physical_iphone,
+      do: Map.put(map, "ios_runtime_line", evidence.ios_runtime_line),
+      else: map
   end
 
   @spec approved_hash(atom(), binary()) :: result(String.t())
@@ -92,6 +102,8 @@ defmodule Crosswake.ProofLane.Evidence do
 
   defp scan_source(:navigation_shell_advisory, bytes),
     do: Crosswake.ProofLane.NavigationShellAdvisory.scan(bytes)
+
+  defp scan_source(:physical_iphone_run_contract, bytes), do: scan_physical_run_contract(bytes)
 
   @spec check(Path.t()) :: :ok | {:error, Error.t()}
   def check(path) when is_binary(path) do
@@ -131,6 +143,7 @@ defmodule Crosswake.ProofLane.Evidence do
     with {:ok, evidence} <- normalize(candidate),
          {:ok, sources} <- promotion_sources(candidate),
          :ok <- safe_destination(destination),
+         :ok <- promotion_class(evidence, destination),
          bytes = Jason.encode!(to_map(evidence)),
          :ok <- scan_bytes(bytes, @artifact_name),
          :ok <- verify_sources(evidence.approved_hashes, sources),
@@ -167,7 +180,9 @@ defmodule Crosswake.ProofLane.Evidence do
   end
 
   defp exact_keys(map) do
-    if Map.keys(map) |> MapSet.new() == MapSet.new(@schema_keys),
+    keys = Map.keys(map) |> MapSet.new()
+
+    if keys in [MapSet.new(@legacy_schema_keys), MapSet.new(@physical_schema_keys)],
       do: :ok,
       else: error("PL-EVIDENCE-KEY", "input", "use only declared evidence keys")
   end
@@ -179,7 +194,7 @@ defmodule Crosswake.ProofLane.Evidence do
       safe_key =
         if is_atom(key), do: Atom.to_string(key), else: if(is_binary(key), do: key, else: "key")
 
-      if safe_key in ["assertion_ids", "canonical_bytes"] do
+      if safe_key in ["assertion_ids", "assertions", "canonical_bytes"] do
         # Assertion values are validated against the closed allowlist below. Some
         # safe IDs intentionally contain substrings that the collateral scanner
         # rejects elsewhere (for example, "log" in a topology assertion). Canonical
@@ -277,6 +292,48 @@ defmodule Crosswake.ProofLane.Evidence do
       do: :ok,
       else: error("PL-EVIDENCE-ASSERTION", "assertion_ids", "use closed assertion references")
   end
+
+  defp valid_physical_fields(input) do
+    physical_ids = PhysicalIphoneContract.assertions() |> Enum.map(& &1.id)
+
+    case input[:device_class] do
+      :physical_iphone ->
+        with :ok <- runtime_line(input[:ios_runtime_line]),
+             true <- input[:assertion_ids] == physical_ids,
+             true <- input[:status] == :passed and input[:outcome] == :passed,
+             true <- physical_hashes?(input[:approved_hashes]) do
+          :ok
+        else
+          false ->
+            error("PL-EVIDENCE-PHYSICAL", "artifact", "use a complete passed physical record")
+
+          {:error, _} ->
+            error("PL-EVIDENCE-RUNTIME", "ios_runtime_line", "use a bounded iOS runtime line")
+        end
+
+      _ ->
+        if Map.has_key?(input, :ios_runtime_line),
+          do:
+            error(
+              "PL-EVIDENCE-PHYSICAL",
+              "ios_runtime_line",
+              "reserve runtime lines for physical records"
+            ),
+          else: :ok
+    end
+  end
+
+  defp runtime_line(value) do
+    case PhysicalIphoneContract.ios_runtime_line(value) do
+      {:ok, _} -> :ok
+      {:error, _} -> {:error, :invalid}
+    end
+  end
+
+  defp physical_hashes?([%{kind: :physical_iphone_run_contract, digest: digest}]),
+    do: is_binary(digest) and String.match?(digest, ~r/^[a-f0-9]{64}$/)
+
+  defp physical_hashes?(_), do: false
 
   defp enum(value, allowed, path) do
     if value in allowed,
@@ -499,8 +556,9 @@ defmodule Crosswake.ProofLane.Evidence do
          :ok <- utc(input[:captured_at]),
          :ok <- enum(input[:retention_label], @retention_labels, "retention_label"),
          :ok <- enum(input[:device_class], @device_classes, "device_class"),
-         :ok <- valid_hashes(input[:approved_hashes]) do
-      {:ok, struct!(__MODULE__, input)}
+         :ok <- valid_hashes(input[:approved_hashes]),
+         :ok <- valid_physical_fields(input) do
+      {:ok, struct!(__MODULE__, Map.put_new(input, :ios_runtime_line, nil))}
     end
   end
 
@@ -522,12 +580,83 @@ defmodule Crosswake.ProofLane.Evidence do
     end
   end
 
+  defp scan_physical_run_contract(bytes) do
+    with {:ok, decoded} <- Jason.decode(bytes),
+         :ok <- no_sensitive_value(decoded, "run_contract"),
+         {:ok, canonical} <- decode_physical_run_contract(decoded),
+         true <- Jason.encode!(canonical) == bytes do
+      :ok
+    else
+      _ -> error("PL-EVIDENCE-HASH", "approved_hashes", "use an approved physical run contract")
+    end
+  end
+
+  defp decode_physical_run_contract(
+         %{
+           "schema_version" => schema_version,
+           "device_class" => "physical_iphone",
+           "ios_runtime_line" => runtime_line,
+           "outcome" => "passed",
+           "assertions" => assertions
+         } = input
+       )
+       when map_size(input) == 5 and is_integer(schema_version) and is_list(assertions) do
+    expected = PhysicalIphoneContract.assertions()
+
+    report =
+      Enum.map(assertions, fn
+        %{"id" => id, "owner" => owner, "outcome" => outcome} = assertion
+        when map_size(assertion) == 3 and is_binary(id) and is_binary(owner) and
+               is_binary(outcome) ->
+          with {:ok, owner} <- decode_enum(owner, [:device_local, :backend_authority]),
+               {:ok, outcome} <- decode_enum(outcome, @outcomes) do
+            %{id: id, owner: owner, outcome: outcome}
+          else
+            _ -> :invalid
+          end
+
+        _ ->
+          :invalid
+      end)
+
+    if schema_version == PhysicalIphoneContract.schema_version() and
+         :invalid not in report and
+         runtime_line(runtime_line) == :ok and
+         PhysicalIphoneContract.validate_report(report) == :ok and
+         Enum.all?(report, &(&1.outcome == :passed)) do
+      {:ok,
+       %{
+         "schema_version" => schema_version,
+         "device_class" => "physical_iphone",
+         "ios_runtime_line" => runtime_line,
+         "outcome" => "passed",
+         "assertions" =>
+           Enum.zip(report, expected)
+           |> Enum.map(fn {%{id: id, owner: owner, outcome: outcome}, _} ->
+             %{"id" => id, "owner" => Atom.to_string(owner), "outcome" => Atom.to_string(outcome)}
+           end)
+       }}
+    else
+      :error
+    end
+  end
+
+  defp decode_physical_run_contract(_), do: :error
+
   defp safe_destination(path),
     do:
       if(Path.type(path) == :absolute and not String.contains?(path, ".."),
         do: :ok,
         else: error("PL-EVIDENCE-PATH", "artifact", "use an absolute safe destination")
       )
+
+  defp promotion_class(%__MODULE__{device_class: :physical_iphone}, _destination), do: :ok
+
+  defp promotion_class(_evidence, destination) do
+    if Path.basename(destination) == "physical_iphone",
+      do: error("PL-EVIDENCE-PHYSICAL", "artifact", "promote only a complete physical record"),
+      else: :ok
+  end
 
   if Mix.env() == :test do
     @after_digest_barrier {__MODULE__, :after_digest_barrier}
