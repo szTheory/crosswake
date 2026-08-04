@@ -44,9 +44,9 @@ framework launch.
 
 ## Next Action
 
-Execute Phase 161.1 with `$gsd-execute-phase 161.1`. TODO-002 remains `unknown_blocking` until a
+Start Phase 162 with `$gsd-discuss-phase 162`. TODO-002 remains `unknown_blocking` until a
 sanitized adopter route-policy handoff is validated; its absence is an explicit fail-closed promotion
-gate in the Phase 161.1 plans.
+gate for physical-iPhone promotion.
 
 ## Blockers
 
