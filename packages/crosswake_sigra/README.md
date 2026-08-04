@@ -23,6 +23,18 @@ Then configure the companion in your application:
 config :crosswake, :companions, [Crosswake.Companions.Sigra]
 ```
 
+## Single-user B2C hosts
+
+For a host that has no organization model, project the backend-validated Sigra
+session into `SessionAuthorityLane` with `org_id: nil`. This is an explicit
+personal-account scope, not a synthetic organization. `AuthContext` derives
+the same value from the lane.
+
+The host must build that lane only after validating its Phoenix/Sigra session.
+Browser or iOS return data can be evidence for a server-owned attempt, but it
+does not grant route access. Do not pass cookies, OAuth tokens, credentials, or
+stable account identifiers into shell diagnostics or offline payloads.
+
 ## Package-family discipline
 
 `crosswake_sigra` is part of the Crosswake package family. Core (`crosswake`) never compile-depends on a companion; companions never depend on each other. See the [companion contract guide](https://hexdocs.pm/crosswake/companion_contract.html) for the stable seam surface.
