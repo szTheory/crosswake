@@ -24,6 +24,23 @@ git.
 - online, offline, denied, corrupt-pack, and disabled fallbacks; and
 - the host flag used to disable study entry and replay.
 
+## Available handoff signal
+
+The adopter has confirmed that a comprehensive screen/flow coverage artifact already exists and
+can be supplied as a route-policy-map handoff. Do not reconstruct it or paste the raw artifact into
+git. Request a sanitized export that maps each relevant route to the closed fields above plus the
+minimum navigation presentation needed by Phase 161.1.
+
+Safe media facts available for normalization:
+
+- codec family is MP3;
+- archive/pack size remains `unknown_blocking` until the adopter supplies an approved size band;
+- some study route classes require pronunciation media to render a usable prompt, so missing
+  required media needs an explicit designed fallback and must never silently omit the route item.
+
+Do not durably record object-store vendors, URL derivation formulas, exact content counts, language
+or voice taxonomy, per-item media layout, or the raw screen/flow inventory.
+
 ## Constraints
 
 - Use **First B2C Adopter** in durable planning and **first adopter** in public guides.
@@ -34,7 +51,6 @@ git.
 
 ## Routing
 
-Resolve during `$gsd-discuss-phase 158`. Once resolved, update the route-policy map and close this
-todo. Fast-changing execution drafts are in
+Transform the offered handoff during `$gsd-discuss-phase 161.1`. Once every required route row is
+sanitized and validates, update the route-policy map and close this todo. Fast-changing execution drafts are in
 `.planning/FIRST-B2C-ADOPTER-LINEAR-ISSUE-DRAFTS.md`.
-

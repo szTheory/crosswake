@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
-current_phase: 161.1
-current_phase_name: first-adopter-ios-navigation-shell
-status: planned
-stopped_at: Phase 161.1 planning complete
-last_updated: "2026-08-04T16:45:00.000Z"
+current_phase: 162
+current_phase_name: Physical-iPhone Adoption Proof
+status: planning
+stopped_at: Phase 161.1 verified complete; Phase 162 ready to plan
+last_updated: "2026-08-04T19:34:11.249Z"
 last_activity: 2026-08-04
-last_activity_desc: Phase 161.1 planned and plan-checked (9 plans; NAV-01–NAV-07 covered)
+last_activity_desc: Phase 161.1 complete, transitioned to Phase 162
 progress:
   total_phases: 6
-  completed_phases: 4
-  total_plans: 94
-  completed_plans: 85
-  percent: 67
+  completed_phases: 5
+  total_plans: 98
+  completed_plans: 98
+  percent: 83
 current_plan: 0
 ---
 
@@ -22,10 +22,10 @@ current_plan: 0
 
 ## Current Position
 
-Phase: 161.1 (first-adopter-ios-navigation-shell) — READY TO EXECUTE
-Plan: 9 plans
-Status: Planned
-Last activity: 2026-08-04 — Phase 161.1 planned and plan-checked (9 plans; NAV-01–NAV-07 covered)
+Phase: 162 — Physical-iPhone Adoption Proof
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-04 — Phase 161.1 complete, transitioned to Phase 162
 
 ## Active Objective
 

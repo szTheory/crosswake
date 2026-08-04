@@ -120,8 +120,10 @@ Public v1 requires:
 4. offline pronunciation audio installed from verified real bytes;
 5. backend-authoritative auth continuity;
 6. server-side disablement at route entry and replay;
-7. host-reusable browser/shell/device proof; and
-8. a dated physical-iPhone artifact.
+7. host-reusable browser/shell/device proof;
+8. a bounded iOS native-navigation shell for confirmed first-adopter routes;
+9. live safe-area and keyboard-occlusion values plus declarative shell presence; and
+10. a dated physical-iPhone artifact.
 
 Crosswake is on the public-release path, not automatically the revenue-critical Alpha path.
 
@@ -272,6 +274,23 @@ blocked state. App-review rollout, cohorts, and operational flag naming remain h
 
 This prevents App Store review latency from turning one broken native path into an unbounded outage.
 
+## Navigation shell fast track
+
+SEED-006 is triggered for a bounded iOS-first slice. Native tabs and pushed detail navigation are
+host-owned shell chrome over explicit Crosswake route topology; they are not bounded bridge
+capabilities and do not make LiveView the native renderer. The native stack is authoritative:
+`push_patch` stays within the current frame, while `push_navigate` requires a typed idempotent shell
+transition contract. Safe-area CSS variables and a declarative document-root shell marker are
+prerequisites. Keyboard occlusion is separate from safe area.
+
+The full cross-platform seed remains larger than v21. Android implementation and predictive-back
+proof stay frozen. Sanitized TODO-002 route rows must supply the concrete topology before planning
+may claim a complete first-adopter graph.
+
+Phoenix-owned confirmation remains the current required destructive-action surface. Native
+alert/confirm is reversible only after physical-device proof and concrete blocker evidence; stale
+generated wording that calls the fallback permanent is not authoritative.
+
 ## iOS-only posture
 
 Shipping iOS-only avoids:
@@ -358,9 +377,12 @@ decision against these proxy risks:
 | 159 | 2026-08-03 through 2026-08-05 | Host-reusable proof lane — 3 days |
 | 160 | 2026-08-06 through 2026-08-07 | Scoped replay and auth safety — 2 days |
 | 161 | 2026-08-10 through 2026-08-13 | iOS pronunciation-pack seam — 4 days |
+| 161.1 | 2026-08-14 through 2026-08-16 | First-adopter iOS navigation shell — strict 3-day slice |
 | 162 | 2026-08-14 through 2026-08-18 | Physical-iPhone proof — 2 to 3 days plus adopter availability |
 
-After 2026-08-18, stop Crosswake work except for defects demonstrated by Phase 162.
+The 2026-08-18 stop date remains fixed. If Phase 161.1 cannot fit its strict time box, preserve only
+the smallest route-confirmed iOS slice and defer residual navigation breadth. After 2026-08-18,
+stop Crosswake work except for defects demonstrated by Phase 162.
 
 ## Physical-iPhone milestone
 

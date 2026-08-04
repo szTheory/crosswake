@@ -62,20 +62,48 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 
 ### PACK — Foreground iOS pronunciation media
 
-- [ ] **PACK-01:** The iOS shell exposes a host-supplied foreground pack-provider seam for status,
+- [x] **PACK-01:** The iOS shell exposes a host-supplied foreground pack-provider seam for status,
   install, and invalidate.
 
-- [ ] **PACK-02:** No provider, interrupted transfer, insufficient storage, wrong size, wrong
+- [x] **PACK-02:** No provider, interrupted transfer, insufficient storage, wrong size, wrong
   digest, wrong version, or failed atomic install never reports `available`.
 
-- [ ] **PACK-03:** One immutable pronunciation archive becomes available only after expected-size
+- [x] **PACK-03:** One immutable pronunciation archive becomes available only after expected-size
   and SHA-256 verification followed by atomic installation.
 
-- [ ] **PACK-04:** Crosswake owns declaration, lifecycle, inventory, activation denial, and
+- [x] **PACK-04:** Crosswake owns declaration, lifecycle, inventory, activation denial, and
   diagnostics; the host owns URL/auth/CDN/layout/codecs/retention/storage budget/download UI.
 
-- [ ] **PACK-05:** Background transfer, delta updates, generic eviction, Android storage, offline
+- [x] **PACK-05:** Background transfer, delta updates, generic eviction, Android storage, offline
   scoring, microphone capture, and generic content distribution remain explicitly unclaimed.
+
+### NAV — First-adopter iOS navigation shell
+
+- [ ] **NAV-01:** A compiled first-adopter topology declares stable root-tab IDs, root routes,
+  pushed-detail presentation, and parent relationships without transferring leaf-route ownership
+  away from Phoenix, offline islands, or native screens.
+
+- [ ] **NAV-02:** The host-owned iOS shell renders native root tabs and pushed detail navigation
+  with edge-swipe/back behavior while the existing route resolver remains authoritative for each
+  destination's runtime owner.
+
+- [ ] **NAV-03:** Web/native stack synchronization is typed, versioned, and fail-closed:
+  `push_patch` changes the current web route without growing the native stack, while
+  `push_navigate` produces one idempotent native transition.
+
+- [ ] **NAV-04:** The shell publishes live `--cw-safe-area-top`, `--cw-safe-area-right`,
+  `--cw-safe-area-bottom`, and `--cw-safe-area-left` CSS custom properties across viewport changes;
+  keyboard occlusion is represented separately as `--cw-keyboard-inset-bottom`.
+
+- [ ] **NAV-05:** The document root receives a synchronous, declarative native-shell marker before
+  app CSS evaluates, without a custom user-agent or any account, device, or stable identity value.
+
+- [ ] **NAV-06:** Executable graph, synchronization, simulator, accessibility-focus, and bounded
+  device checks prove the shell contract without claiming Android parity or generic navigation.
+
+- [ ] **NAV-07:** Canonical and generated support truth says Phoenix-owned confirmation is the
+  current required fallback; native alert/confirm remains reversible only after physical-iPhone
+  proof, a demonstrated active-adopter route blocker, and an explicit maintainer roadmap decision.
 
 ### DEVICE — Physical-iPhone adoption proof
 
@@ -132,11 +160,18 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 | SCOPE-03 | Phase 160 | Complete |
 | SCOPE-04 | Phase 160 | Complete |
 | SCOPE-05 | Phase 160 | Complete |
-| PACK-01 | Phase 161 | Gaps Found |
-| PACK-02 | Phase 161 | Gaps Found |
-| PACK-03 | Phase 161 | Gaps Found |
-| PACK-04 | Phase 161 | Gaps Found |
-| PACK-05 | Phase 161 | Gaps Found |
+| PACK-01 | Phase 161 | Complete |
+| PACK-02 | Phase 161 | Complete |
+| PACK-03 | Phase 161 | Complete |
+| PACK-04 | Phase 161 | Complete |
+| PACK-05 | Phase 161 | Complete |
+| NAV-01 | Phase 161.1 | Complete |
+| NAV-02 | Phase 161.1 | Complete |
+| NAV-03 | Phase 161.1 | Complete |
+| NAV-04 | Phase 161.1 | Complete |
+| NAV-05 | Phase 161.1 | Complete |
+| NAV-06 | Phase 161.1 | Complete |
+| NAV-07 | Phase 161.1 | Complete |
 | DEVICE-01 | Phase 162 | Pending |
 | DEVICE-02 | Phase 162 | Pending |
 | DEVICE-03 | Phase 162 | Pending |
@@ -145,8 +180,8 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 | DEVICE-06 | Phase 162 | Pending |
 | DEVICE-07 | Phase 162 | Pending |
 
-**Coverage:** 25/25 requirements mapped. No Crosswake Alpha requirements.
+**Coverage:** 32/32 requirements mapped. No Crosswake Alpha requirements.
 
 ---
 *Requirements defined: 2026-07-30*
-*Last updated: 2026-08-02 after Phase 160 completion*
+*Last updated: 2026-08-04 after Phase 161.1 completion*

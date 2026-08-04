@@ -112,6 +112,75 @@ High
 
 Accepted
 
+## First-adopter native navigation is a bounded iOS shell requirement
+
+**Decision**
+
+Activate SEED-006 for one first-adopter iOS slice before physical-device proof. The shell may own
+native root tabs, pushed detail presentation, platform back behavior, deep-link reconstruction,
+live safe-area values, and a declarative native-shell marker. Route ownership and the compiled
+navigation topology remain Crosswake contract truth; live stack state remains native-shell state.
+`push_patch` does not change native stack depth. Android implementation remains frozen during v21.
+
+**Why**
+
+Sanitized adopter design evidence shows that native root navigation and pushed details are
+load-bearing public-v1 shell behavior, while the offline study loop is a long route-local patch
+sequence. This exercises the shell-versus-route boundary the existing seed identified and cannot
+be represented honestly by a web-rendered navigation wrapper.
+
+**Alternatives considered**
+
+- Hide the work inside the physical-device proof phase.
+- Implement the full iOS/Android seed during v21.
+- Keep navigation entirely web-rendered and treat shell fidelity as product polish.
+
+**What would change my mind**
+
+If sanitized TODO-002 rows show the public-v1 host can complete representative device proof without
+native navigation, defer the full tab/stack implementation and retain only the safe-area,
+shell-marker, and synchronization-spike contracts. Android work still requires an explicit future
+roadmap decision.
+
+**Date**
+
+2026-08-03
+
+**Confidence**
+
+Medium-high pending sanitized route rows
+
+**Status**
+
+Accepted
+
+## Native alert and confirm remains a reversible stopped candidate
+
+**Decision**
+
+Phoenix-owned confirmation is the current required fallback on every platform. Native
+alert/confirm is stopped, not permanently prohibited. It may be reconsidered only after the
+physical-iPhone proof passes and an active adopter route demonstrates that the Phoenix fallback is
+a real product blocker. A maintainer roadmap/ADR decision—not runtime input alone—activates work.
+
+**Why**
+
+The canonical capability map already states this reversible condition. Generated fallback
+moduledocs that describe the decision as permanent are stale and must be reconciled before an
+adopter treats them as an irrevocable API promise.
+
+**Date**
+
+2026-08-03
+
+**Confidence**
+
+High
+
+**Status**
+
+Accepted
+
 ## The highest-impact framework change is a host-reusable proof lane
 
 **Decision**

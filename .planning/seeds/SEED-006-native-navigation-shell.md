@@ -1,13 +1,37 @@
 ---
 id: SEED-006
-status: planted
+status: triggered
 planted: 2026-07-27
+triggered: 2026-08-03
 planted_during: "Phase 153 iOS mirror unblock (v20.0 Native Controls Pack 1) — planted alongside SEED-005 while the native-shell + control vocabulary is fresh"
 trigger_when: "Surface during Native Navigation Shell milestone planning, or whenever the roadmap turns to native app-shell chrome (tab bars / nav stacks), consumer-grade 'feels-native' fidelity, or a `nav_graph` in the manifest."
 scope: Large
 ---
 
 # SEED-006: Give Phoenix apps a native navigation shell (native tab bar + nav stack over LiveView content)
+
+## Activation Update — First-Adopter Fast Track
+
+The trigger is now satisfied by sanitized First B2C Adopter design evidence: the public-v1 shell
+requires a small set of stable root tabs, pushed detail routes, and a long route-local study flow
+whose `push_patch` transitions must not create native frames. This is adopter infrastructure, not
+generic native-control breadth.
+
+The activated v21 slice is intentionally narrower than this seed's original cross-platform
+milestone:
+
+- iOS first: host-owned native tabs, pushed details, edge-swipe/back, deep-link restoration needed
+  by confirmed sanitized routes, accessibility focus handoff, and executable proof;
+- a native-authoritative, versioned shell-navigation protocol in which `push_patch` is a native
+  stack no-op and `push_navigate` is idempotent transition intent;
+- synchronous declarative shell presence on the document root plus live safe-area CSS variables;
+  keyboard occlusion remains a separate variable, not a safe-area mutation; and
+- Android implementation, predictive-back proof, parity work, broad positioning, and generic
+  navigation-framework claims remain outside v21.
+
+Phase 161.1 is the urgent insertion for this bounded slice. The full Android renderer and any
+generalized multi-adopter navigation product remain residual future work. The route graph cannot
+be populated from guesses: TODO-002 must first receive sanitized route-policy rows.
 
 ## Thesis + Positioning Shift (read this first)
 
@@ -111,7 +135,7 @@ Native `UITabBar`/`BottomNavigationView` + `UINavigationController` give real ta
 Portable 1:1: the section list, per-section stacks, "detail push" semantics. Platform-specific (renderer owns, NOT in the schema): the primary-nav container (iOS tab bar / Android bottom-nav-or-rail-by-width / web top-nav-or-drawer), the back affordance (edge-swipe / predictive-back / browser-back), per-screen primary action (FAB is Android-only), task-flow presentation (iOS sheet / Android full-screen dialog / web modal). **Keep primary sections to 3–5** (the iOS tab-bar constraint; satisfy it and Android/web follow). **Hamburger:** wrong as *primary* nav on native (esp. iOS — no drawer idiom; ~40% slower task completion vs tabs); fine for *secondary/long-tail* nav, Android drawer for long grouped lists, and web narrow-width collapse. Icons are semantic tokens (`:house`), mapped to SF Symbols / Material per-platform in generated chrome — never platform asset paths in the DSL. Emit safe-area insets (notch/Dynamic Island/home indicator) to LiveView.
 
 ### Proof strategy (four honest tiers — maps onto Crosswake's support-truth discipline)
-- **Proven (hermetic, merge-blocking):** nav_graph compiles/validates/serializes deterministically (golden snapshot); intent-protocol wire-schema round-trips; `route → presentation` mapping totality; `deep_link → [stack frames]` reducer; **and "a LiveView link emits the correct intent"** via a bridge-message spy (instrumented build tapping the `WKScriptMessageHandler`/`@JavascriptInterface`). Assert the *message*, not pixels — this collapses the flaky boundary test into a deterministic one. (Footgun: the bridge only connects when the UA string carries the native marker — the harness must inject it.)
+- **Proven (hermetic, merge-blocking):** nav_graph compiles/validates/serializes deterministically (golden snapshot); intent-protocol wire-schema round-trips; `route → presentation` mapping totality; `deep_link → [stack frames]` reducer; **and "a LiveView link emits the correct intent"** via a bridge-message spy (instrumented build tapping the `WKScriptMessageHandler`/`@JavascriptInterface`). Assert the *message*, not pixels — this collapses the flaky boundary test into a deterministic one. The earlier UA-marker assumption is rejected: the harness must inject the same synchronous document-root shell marker as production, and tests must prove the marker exists before app CSS evaluates.
 - **Emulator evidence (advisory):** XCUITest / Espresso+UI Automator drive the real tab bar / back-pop / deep-link-rebuild against **stable accessibility identifiers** (never labels), with current-route + stack-depth exposed as accessibility values to assert state.
 - **Device-only (declare unprovable):** true gesture/interactive-pop fidelity, per-OEM back quirks, animation feel, real OS cold-start deep-link. Never let a green sim lane imply device fidelity.
 - Add a **support-matrix row per claim** ("native push from web link", "deep-link stack rebuild", "tab back-stack retention") with its tier badge.

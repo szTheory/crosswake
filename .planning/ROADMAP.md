@@ -42,7 +42,7 @@ separately funded business-line mandate.
 - [x] **Phase 161: iOS Pronunciation Pack Seam** — replace simulated availability with one
   host-supplied foreground iOS install path that verifies and atomically installs real bytes (completed 2026-08-04).
 
-- [ ] **Phase 161.1: First-Adopter iOS Navigation Shell** — add a bounded, host-owned native tab
+- [x] **Phase 161.1: First-Adopter iOS Navigation Shell** — add a bounded, host-owned native tab (completed 2026-08-04)
   and pushed-detail shell with typed stack synchronization, live safe-area values, and a
   declarative shell marker; Android implementation remains frozen.
 
@@ -449,11 +449,23 @@ turning Crosswake into a generic navigation framework or changing leaf-route run
 **Effort:** 2-3 focused days
 **Depends on:** Phase 161
 **Requirements:** NAV-01, NAV-02, NAV-03, NAV-04, NAV-05, NAV-06, NAV-07
-**Plans:** 0 plans
+**Plans:** 13/13 plans complete
 
 Plans:
 
-- [ ] TBD (run $gsd-plan-phase 161.1 to break down)
+- [x] 161.1-01-PLAN.md
+- [x] 161.1-02-PLAN.md
+- [x] 161.1-03-PLAN.md
+- [x] 161.1-04-PLAN.md
+- [x] 161.1-05-PLAN.md
+- [x] 161.1-06-PLAN.md
+- [x] 161.1-07-PLAN.md
+- [x] 161.1-08-PLAN.md
+- [x] 161.1-09-PLAN.md
+- [x] 161.1-10-PLAN.md
+- [x] 161.1-11-PLAN.md
+- [x] 161.1-12-PLAN.md
+- [x] 161.1-13-PLAN.md
 
 **Smallest shippable version:** One sanitized first-adopter topology drives host-owned iOS root
 tabs and pushed details; `push_patch` does not grow the native stack, `push_navigate` is

@@ -23,6 +23,7 @@ pricing, geography, founder details, proprietary lesson taxonomies, or revealing
 | Pronunciation audio playback | Asset consumption inside `:offline_island` | Required pack must be installed before offline entry | Host-supplied iOS pack provider; fail closed when missing, stale, corrupt, or unverifiable |
 | Microphone capture or pronunciation scoring | Deferred | Not claimed | Revisit only after playback and study replay pass on a physical iPhone |
 | Emergency native-path disablement | Route policy plus host flag source | Evaluated at entry and replay | Existing `gated_by`; retain queued data and show blocked state |
+| Root and pushed app navigation | Host-owned iOS shell over compiled route topology | Navigation chrome remains available around route-local offline state | Native stack owns tabs/back; `push_patch` stays in-frame and `push_navigate` uses a typed transition |
 
 ## Layered inventory contract
 
@@ -81,6 +82,19 @@ or physical-device promotion until all required rows validate.
 
 If customer Alpha is web-only, complete this bounded contract and pause Crosswake work until the
 public-v1 mobile path is active.
+
+### Navigation handoff state
+
+A comprehensive adopter coverage artifact is available for a sanitized handoff, but no raw screen
+inventory or proprietary flow taxonomy belongs in git. Phase 161.1 may populate navigation truth
+only from validated TODO-002 rows: stable opaque route IDs, sanitized paths, root-tab membership,
+closed presentation class, optional parent route, and deep-link/restoration posture. Until that
+transformation occurs, concrete topology remains `unknown_blocking`.
+
+The shell contract must expose live `--cw-safe-area-top`, `--cw-safe-area-right`,
+`--cw-safe-area-bottom`, and `--cw-safe-area-left` CSS values plus a separate keyboard-occlusion
+value. It must also set a synchronous declarative native-shell marker on the document root. These
+signals contain no identity, route payload, or device identifier.
 
 ### Concrete-route promotion invariants
 

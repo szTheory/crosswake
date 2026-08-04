@@ -42,6 +42,8 @@ widening Crosswake into a generic sync, storage, native-control, or multi-platfo
   from diagnostics and evidence.
 - A host-supplied foreground iOS pack adapter that installs one real pronunciation archive only
   after size/hash verification and atomic placement.
+- A bounded first-adopter iOS navigation shell with native root tabs, pushed-detail/back behavior,
+  typed stack synchronization, live safe-area values, and a declarative document-root marker.
 - A dated, redacted physical-iPhone proof of offline answers, offline audio, kill/relaunch
   persistence, exactly-once replay, conflict recovery, account isolation, and remote disablement.
 
@@ -55,9 +57,22 @@ separately funded business-line mandate. Durable reasoning is in
 
 ## Current State
 - **v21.0 Adopter Readiness — ACTIVE 2026-07-30.** The roadmap now begins with route ownership and
-  host-reusable proof, then closes privacy/auth, real offline pronunciation media, and
-  physical-iPhone evidence. Work stops after the dated device proof except for defects that proof
-  demonstrates.
+  host-reusable proof, then closes privacy/auth, real offline pronunciation media, a bounded iOS
+  native navigation shell, and physical-iPhone evidence. Work stops after the dated device proof
+  except for defects that proof demonstrates.
+- **v21.0 Phase 161 iOS Pronunciation Pack Seam — GAPS FOUND 2026-08-03.** All 18 plans executed,
+  but independent review and verification found one crash-recovery blocker: a stale inventory can
+  create a promotion journal for a retained file that never existed and memoize startup failure.
+  Phase 161 remains current until a gap-closure plan repairs and re-verifies that path.
+- **v21.0 Phase 161.1 First-Adopter iOS Navigation Shell — INSERTED/URGENT 2026-08-03.** SEED-006
+  is triggered for a bounded iOS slice: native root tabs, pushed details and edge-swipe back,
+  typed patch/navigate synchronization, live safe-area and separate keyboard values, a synchronous
+  shell marker, and automated proof. Android implementation and parity remain frozen.
+- **v21.0 Phase 161.1 First-Adopter iOS Navigation Shell — COMPLETE 2026-08-04.** The bounded
+  iOS root-tab/detail shell, typed stack synchronization, safe-area and shell-marker seams, and
+  provenance-backed advisory simulator proof are verified. TODO-002 remains `unknown_blocking`;
+  Phoenix confirmation remains required; Android remains frozen; Phase 162 alone owns
+  physical-iPhone promotion.
 - **v21.0 Phase 160 Scoped Replay and Auth Safety — COMPLETE 2026-08-02.** Opaque scoped replay,
   scope-partitioned browser storage, account-switch fencing, request-bound backend authority,
   scope-safe idempotency, and privacy-safe operational evidence are verified 39/39 by a fresh
@@ -315,7 +330,10 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 - **(v7.0 Threadline anti-scope)** Threadline as an APM/observability platform, an OpenTelemetry replacement or generic distributed tracer, a logging framework, or a generic plugin/event bus — it emits `:telemetry`, sets Logger metadata, and coexists with OTel; it does not replace them.
 - **(v7.0 Threadline anti-scope)** PII in the audit ledger, library-owned audit tables, async-telemetry-driven durable writes, full-session replay, cross-service thread propagation, actor-identity reverse lookup, and a LiveDashboard UI in v1 (deferred to a separate `crosswake_dashboard` package).
 - **(v20.0 anti-scope)** A native `toast` capability — iOS ships no toast primitive, so a cross-platform native toast overclaims by construction; toasts are LiveView-owned UI.
-- **(v20.0 anti-scope)** A native `alert`/`confirm` bridge family — a branded, focus-trapped, route-tour-provable LiveView modal is better than an unbranded OS alert on a route Phoenix already owns; it ships as a generated host-owned fallback, not a bridge command.
+- **(v20.0 stopped candidate)** A native `alert`/`confirm` bridge family — the branded,
+  focus-trapped, route-tour-provable LiveView modal remains the current required fallback. Reversal
+  requires physical-iPhone proof, a demonstrated blocker on an active adopter route, and an
+  explicit maintainer roadmap decision.
 - **(v20.0 anti-scope)** A review-prompt control — both Apple and Google forbid CTA-triggered prompts and provide no completion signal, so any API reporting success would be a lie. Deferred until it can ship as a `requested`-only reply with no button.
 - **(v20.0 anti-scope)** An importable `Crosswake.UI.*` component tier — fallbacks are generated, host-owned, verbatim-copy files (the `gen.offline_ui` precedent). Crosswake ships no component library.
 - **(v20.0 anti-scope)** A `crosswake_controls` companion package — controls have no external SDK or optional dependency to gate, which is what defines a companion; they stay in core alongside the v3.1 command families.
@@ -413,4 +431,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-08-02 after Phase 160 completion.*
+*Last updated: 2026-08-04 after Phase 161.1 completion.*
