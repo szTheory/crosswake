@@ -348,7 +348,7 @@ checks at entry and replay.
 **Effort:** 4 Crosswake days; expect 3-5 adopter integration days outside this repo
 **Depends on:** Phase 160
 **Requirements:** PACK-01, PACK-02, PACK-03, PACK-04, PACK-05
-**Plans:** 16/16 plans executed
+**Plans:** 16/18 plans executed
 
 Plans:
 **Wave 1**
@@ -405,6 +405,14 @@ Plans:
 **Wave 13** *(blocked on Plan 161-15)*
 
 - [x] 161-16-PLAN.md — Run the fresh crash-recovery same-tree gate and retain only privacy-safe aggregate evidence.
+
+**Wave 14** *(current-run proof-isolation gap closure; blocked on the executed Wave 13 plan)*
+
+- [ ] 161-17-PLAN.md — Reset generated reference persistence before construction and prove Blocked before the current-run foreground install can pass.
+
+**Wave 15** *(blocked on Plan 161-17)*
+
+- [ ] 161-18-PLAN.md — Run the fresh current-run-provenance same-tree gate and retain only privacy-safe aggregate evidence.
 
 **Smallest shippable version:** One iOS `PackProvider` protocol with foreground status, install, and
 invalidate; no provider means unavailable; availability follows verified size, SHA-256, and atomic
