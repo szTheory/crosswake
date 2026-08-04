@@ -197,6 +197,14 @@ test("navigation delivery fails closed for malformed, missing, or throwing handl
   assert.equal(navigationDelivery(scope, navigationEnvelope()), false);
 });
 
+test("navigation delivery does not accept inherited envelope fields", () => {
+  const inherited = navigationEnvelope();
+  const payload = Object.create(inherited);
+  payload.protocol = inherited.protocol;
+
+  assert.equal(navigationDelivery({}, payload), false);
+});
+
 // --- transport selection (D-35 / T-154-24) ---------------------------------
 
 test("posts through the iOS message handler when it exposes a callable post method", () => {

@@ -107,17 +107,17 @@ function navigationEnvelope(payload) {
   const allowed = ["protocol", "version", "transition_id", "kind", "route_id", "restoration_ref"];
   const keys = Object.keys(payload);
   const required = ["protocol", "version", "transition_id", "kind", "route_id"];
-  const opaque = /^(?:nav|route|restore)-[0-9a-f]{16}$/;
+  const hasOwn = (key) => Object.prototype.hasOwnProperty.call(payload, key);
 
   if (
     keys.some((key) => !allowed.includes(key)) ||
-    required.some((key) => !(key in payload)) ||
+    required.some((key) => !hasOwn(key)) ||
     payload.protocol !== "crosswake.navigation_transition" ||
     payload.version !== "1.0.0" ||
     !["push_patch", "push_navigate"].includes(payload.kind) ||
     typeof payload.transition_id !== "string" || !/^nav-[0-9a-f]{16}$/.test(payload.transition_id) ||
     typeof payload.route_id !== "string" || !/^route-[0-9a-f]{16}$/.test(payload.route_id) ||
-    ("restoration_ref" in payload &&
+    (hasOwn("restoration_ref") &&
       (typeof payload.restoration_ref !== "string" || !/^restore-[0-9a-f]{16}$/.test(payload.restoration_ref)))
   ) {
     return null;
@@ -131,7 +131,7 @@ function navigationEnvelope(payload) {
     route_id: payload.route_id
   };
 
-  if ("restoration_ref" in payload) {
+  if (hasOwn("restoration_ref")) {
     envelope.restoration_ref = payload.restoration_ref;
   }
 
