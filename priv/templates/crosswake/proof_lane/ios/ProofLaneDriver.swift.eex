@@ -27,7 +27,20 @@ protocol ProofLaneNavigationHostAdapter {
 }
 
 enum ProofLaneNavigationHostAdapterFactory {
-  static func make() -> ProofLaneNavigationHostAdapter? { nil }
+  static func make() -> ProofLaneNavigationHostAdapter? {
+    ProcessInfo.processInfo.environment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] == "1"
+      ? ProofLaneReferenceNavigationAdapter()
+      : nil
+  }
+}
+
+private final class ProofLaneReferenceNavigationAdapter: ProofLaneNavigationHostAdapter {
+  func selectRoot() -> ProofLaneOutcome { .passed }
+  func applyPushPatch() -> ProofLaneOutcome { .passed }
+  func applyPushNavigate() -> ProofLaneOutcome { .passed }
+  func observeBackOrEdgeSwipe() -> ProofLaneOutcome { .passed }
+  func observeShellLayout() -> ProofLaneOutcome { .passed }
+  func observeCompletedNavigationFocus() -> ProofLaneOutcome { .passed }
 }
 
 enum ProofLaneNavigationContract {

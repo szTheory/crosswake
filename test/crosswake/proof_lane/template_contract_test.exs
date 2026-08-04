@@ -316,6 +316,35 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     end
   end
 
+  test "generated iOS lane keeps navigation UI flows advisory and accessibility-only" do
+    ui =
+      source(
+        "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift.eex"
+      )
+
+    for token <- [
+          "testNavigationTabsAndBackAreAdvisory",
+          "testNavigationMarkerInsetsAndFocusAreAdvisory",
+          "proof-lane-navigation-tab",
+          "proof-lane-navigation-back",
+          "proof-lane-navigation-marker",
+          "proof-lane-navigation-insets",
+          "proof-lane-navigation-focus"
+        ] do
+      assert ui =~ token
+    end
+
+    for forbidden <- [
+          "addAttachment",
+          "screenshot",
+          "debugDescription",
+          "routePayload",
+          "XCResult"
+        ] do
+      refute ui =~ forbidden
+    end
+  end
+
   test "native verifier keeps package and git configuration operation-scoped" do
     verifier = source("script/verify_generated_ios_shell.sh")
 

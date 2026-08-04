@@ -191,8 +191,13 @@ if [[ "$PROOF_LANE" == "1" ]]; then
     "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testFixtureInstallReconcilesAfterRelaunch]' passed"
     "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testWrongRequirementAndFailedAudioRemainNonPassing]' passed"
     "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testUnexpectedNetworkObservationBlocksAudioAndEmitsNoEvidence]' passed"
+    "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testNavigationTopologyRejectsInvalidVectors]' passed"
+    "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testNavigationSynchronizationRejectsDuplicateAndStaleTransitions]' passed"
+    "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testNavigationRestorationRemainsNonPassingWithoutAdapter]' passed"
     "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testMissingProviderInstallRelaunchAndOfflineAudio]' passed"
     "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAccessibilityReflowContract]' passed"
+    "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testNavigationTabsAndBackAreAdvisory]' passed"
+    "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testNavigationMarkerInsetsAndFocusAreAdvisory]' passed"
   )
 
   for evidence in "${required_test_evidence[@]}"; do
@@ -210,6 +215,12 @@ if [[ "$PROOF_LANE" == "1" ]]; then
   expected_evidence='{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","network_operation_denied","installed_audio_read"],"outcome":"passed","schema_version":2}'
   if ! grep -Fq "$expected_evidence" "$TEST_TRANSCRIPT"; then
     emit_proof_outcome "blocked" "PL-IOS-TEST-EVIDENCE" "pack_audio_prerequisite"
+    exit 2
+  fi
+
+  expected_navigation_evidence='{"assertion_ids":["PL-IOS-NAV-TOPOLOGY","PL-IOS-NAV-PATCH-DEPTH","PL-IOS-NAV-NAVIGATE-ONCE","PL-IOS-NAV-RESTORE","PL-IOS-NAV-TABS-BACK","PL-IOS-NAV-MARKER-INSETS","PL-IOS-NAV-FOCUS"],"outcome":"passed","scope":"advisory","schema_version":3}'
+  if ! grep -Fqx "$expected_navigation_evidence" "$TEST_TRANSCRIPT"; then
+    emit_proof_outcome "blocked" "PL-IOS-TEST-EVIDENCE" "generated-proof-targets"
     exit 2
   fi
 

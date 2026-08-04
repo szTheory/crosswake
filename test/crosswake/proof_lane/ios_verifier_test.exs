@@ -47,14 +47,20 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
                Jason.decode(String.trim(output))
 
       assert String.starts_with?(rule_id, "PL-IOS-")
-      assert scope in ["generated-target-graph", "generated-proof-targets", "pack_audio_prerequisite"]
+
+      assert scope in [
+               "generated-target-graph",
+               "generated-proof-targets",
+               "pack_audio_prerequisite"
+             ]
     end
   end
 
-  test "reference-pack mode passes only with exact structured operation evidence and remains advisory", %{
-    bin: bin,
-    project: project
-  } do
+  test "reference-pack mode passes only with exact structured operation evidence and remains advisory",
+       %{
+         bin: bin,
+         project: project
+       } do
     write_xcodebuild(bin)
 
     {output, status} =
@@ -75,6 +81,35 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
               "scope" => "pack_audio_prerequisite",
               "rule_id" => "PL-IOS-PACK-AUDIO-ADVISORY"
             }} = Jason.decode(String.trim(output))
+  end
+
+  test "navigation advisory evidence accepts only the closed assertion vocabulary", %{
+    bin: bin,
+    project: project
+  } do
+    for {mode, expected_outcome, expected_rule} <- [
+          {"navigation-evidence", "passed", "PL-IOS-PACK-AUDIO-ADVISORY"},
+          {"navigation-unknown-id", "blocked", "PL-IOS-TEST-EVIDENCE"},
+          {"navigation-unknown-outcome", "blocked", "PL-IOS-TEST-EVIDENCE"},
+          {"navigation-sensitive-field", "blocked", "PL-IOS-TEST-EVIDENCE"}
+        ] do
+      write_xcodebuild(bin)
+
+      {output, status} =
+        System.cmd("bash", [@script, "--proof-lane", "--reference-pack-adapter"],
+          stderr_to_stdout: true,
+          env: [
+            {"PATH", bin <> ":" <> System.get_env("PATH")},
+            {"CROSSWAKE_IOS_PROJECT_ROOT", project},
+            {"CROSSWAKE_IOS_SHIM_MODE", mode}
+          ]
+        )
+
+      assert status == if(expected_outcome == "passed", do: 0, else: 2)
+
+      assert {:ok, %{"outcome" => ^expected_outcome, "rule_id" => ^expected_rule}} =
+               Jason.decode(String.trim(output))
+    end
   end
 
   test "reference-pack mode rejects incomplete or reordered current-run provenance", %{
@@ -105,6 +140,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
         )
 
       assert status == 2
+
       assert {:ok, %{"outcome" => "blocked", "rule_id" => "PL-IOS-TEST-EVIDENCE"}} =
                Jason.decode(String.trim(output))
     end
@@ -213,7 +249,11 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
     assert File.read!(swiftpm_config) == before_swiftpm
   end
 
-  test "verifier uses private DerivedData for every xcodebuild invocation", %{bin: bin, project: project, root: root} do
+  test "verifier uses private DerivedData for every xcodebuild invocation", %{
+    bin: bin,
+    project: project,
+    root: root
+  } do
     trace = Path.join(root, "xcodebuild-trace")
     run_root = Path.join(root, "caller-run-root")
     write_xcodebuild(bin)
@@ -241,7 +281,11 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
     refute File.exists?(run_root)
   end
 
-  test "verifier cleans caller run root after structured success and failures", %{bin: bin, project: project, root: root} do
+  test "verifier cleans caller run root after structured success and failures", %{
+    bin: bin,
+    project: project,
+    root: root
+  } do
     for mode <- ["structured-evidence", "list-fail", "build-fail", "test-fail"] do
       run_root = Path.join(root, "caller-run-root-#{mode}")
       write_xcodebuild(bin)
@@ -337,7 +381,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
         fi
         exit 0
         ;;
-      structured-evidence)
+      structured-evidence|navigation-evidence|navigation-unknown-id|navigation-unknown-outcome|navigation-sensitive-field)
         if [[ " $* " == *" -list "* ]]; then
           echo "CrosswakeProofLaneTests"
           echo "CrosswakeProofLaneUITests"
@@ -348,13 +392,24 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
           echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testFixtureInstallReconcilesAfterRelaunch]' passed (0.001 seconds)."
           echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testWrongRequirementAndFailedAudioRemainNonPassing]' passed (0.001 seconds)."
           echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testUnexpectedNetworkObservationBlocksAudioAndEmitsNoEvidence]' passed (0.001 seconds)."
+          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testNavigationTopologyRejectsInvalidVectors]' passed (0.001 seconds)."
+          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testNavigationSynchronizationRejectsDuplicateAndStaleTransitions]' passed (0.001 seconds)."
+          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testNavigationRestorationRemainsNonPassingWithoutAdapter]' passed (0.001 seconds)."
           echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testMissingProviderInstallRelaunchAndOfflineAudio]' passed (0.001 seconds)."
           echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAccessibilityReflowContract]' passed (0.001 seconds)."
+          echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testNavigationTabsAndBackAreAdvisory]' passed (0.001 seconds)."
+          echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testNavigationMarkerInsetsAndFocusAreAdvisory]' passed (0.001 seconds)."
           echo "PACK-RESET-BLOCKED"
           echo "PACK-INSTALL-READY"
           echo "PACK-RELAUNCH-READY"
           echo "PACK-AUDIO-OFFLINE"
           echo '{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","network_operation_denied","installed_audio_read"],"outcome":"passed","schema_version":2}'
+          case "${CROSSWAKE_IOS_SHIM_MODE}" in
+            navigation-unknown-id) echo '{"assertion_ids":["PL-IOS-NAV-UNKNOWN"],"outcome":"passed","scope":"advisory","schema_version":3}' ;;
+            navigation-unknown-outcome) echo '{"assertion_ids":["PL-IOS-NAV-TOPOLOGY","PL-IOS-NAV-PATCH-DEPTH","PL-IOS-NAV-NAVIGATE-ONCE","PL-IOS-NAV-RESTORE","PL-IOS-NAV-TABS-BACK","PL-IOS-NAV-MARKER-INSETS","PL-IOS-NAV-FOCUS"],"outcome":"unknown","scope":"advisory","schema_version":3}' ;;
+            navigation-sensitive-field) echo '{"assertion_ids":["PL-IOS-NAV-TOPOLOGY","PL-IOS-NAV-PATCH-DEPTH","PL-IOS-NAV-NAVIGATE-ONCE","PL-IOS-NAV-RESTORE","PL-IOS-NAV-TABS-BACK","PL-IOS-NAV-MARKER-INSETS","PL-IOS-NAV-FOCUS"],"outcome":"passed","scope":"advisory","schema_version":3,"url":"CANARY"}' ;;
+            *) echo '{"assertion_ids":["PL-IOS-NAV-TOPOLOGY","PL-IOS-NAV-PATCH-DEPTH","PL-IOS-NAV-NAVIGATE-ONCE","PL-IOS-NAV-RESTORE","PL-IOS-NAV-TABS-BACK","PL-IOS-NAV-MARKER-INSETS","PL-IOS-NAV-FOCUS"],"outcome":"passed","scope":"advisory","schema_version":3}' ;;
+          esac
         fi
         exit 0
         ;;

@@ -28,7 +28,8 @@ defmodule Crosswake.ProofLane.Evidence do
   @approved_kinds [:evidence_json]
   @phase_160_assertion_ids ~w(scope_partition lifecycle_fence per_event_reauthorization atomic_idempotency safe_observation disablement)
   @assertion_ids ~w(browser_offline_island shell_boot auth_continuity relaunch_persistence replay_prerequisite pack_audio_prerequisite) ++
-                   @phase_160_assertion_ids
+                   @phase_160_assertion_ids ++
+                   ~w(PL-IOS-NAV-TOPOLOGY PL-IOS-NAV-PATCH-DEPTH PL-IOS-NAV-NAVIGATE-ONCE PL-IOS-NAV-RESTORE PL-IOS-NAV-TABS-BACK PL-IOS-NAV-MARKER-INSETS PL-IOS-NAV-FOCUS)
 
   @sensitive_terms ~w(
     answer selected payload account customer credential password secret token transcript media
@@ -172,19 +173,32 @@ defmodule Crosswake.ProofLane.Evidence do
     Enum.reduce_while(value, :ok, fn {key, nested}, :ok ->
       safe_key = if is_atom(key), do: Atom.to_string(key), else: "key"
 
-      if sensitive?(safe_key) do
-        {:halt, error("PL-EVIDENCE-SENSITIVE", path, "remove sensitive evidence data")}
+      if safe_key == "assertion_ids" do
+        # Assertion values are validated against the closed allowlist below. Some
+        # safe IDs intentionally contain substrings that the collateral scanner
+        # rejects elsewhere (for example, "log" in a topology assertion).
+        {:cont, :ok}
       else
-        case no_sensitive_value(nested, path) do
-          :ok -> {:cont, :ok}
-          error -> {:halt, error}
+        if sensitive?(safe_key) do
+          {:halt, error("PL-EVIDENCE-SENSITIVE", path, "remove sensitive evidence data")}
+        else
+          case no_sensitive_value(nested, path) do
+            :ok -> {:cont, :ok}
+            error -> {:halt, error}
+          end
         end
       end
     end)
   end
 
-  defp no_sensitive_value(value, path) when is_list(value),
-    do: Enum.reduce_while(value, :ok, fn item, :ok -> {:cont, no_sensitive_value(item, path)} end)
+  defp no_sensitive_value(value, path) when is_list(value) do
+    Enum.reduce_while(value, :ok, fn item, :ok ->
+      case no_sensitive_value(item, path) do
+        :ok -> {:cont, :ok}
+        error -> {:halt, error}
+      end
+    end)
+  end
 
   defp no_sensitive_value(value, path) when is_binary(value),
     do:

@@ -91,6 +91,16 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     end
   end
 
+  test "retains only the closed advisory iOS navigation assertion identifiers" do
+    assertions =
+      ~w(PL-IOS-NAV-TOPOLOGY PL-IOS-NAV-PATCH-DEPTH PL-IOS-NAV-NAVIGATE-ONCE PL-IOS-NAV-RESTORE PL-IOS-NAV-TABS-BACK PL-IOS-NAV-MARKER-INSETS PL-IOS-NAV-FOCUS)
+
+    assert {:ok, evidence} =
+             Evidence.build(%{@valid | assertion_ids: assertions, outcome: :passed})
+
+    assert Evidence.to_map(evidence)["assertion_ids"] == assertions
+  end
+
   test "rejects D-21 private and raw proof candidates without echoing candidate values" do
     candidates = [
       {:archive_bytes, :assertion_ids, ["CANARY-ARCHIVE-BYTES"]},

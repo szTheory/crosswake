@@ -68,6 +68,41 @@ final class ProofLaneUITests: XCTestCase {
     }
   }
 
+  func testNavigationTabsAndBackAreAdvisory() {
+    let app = XCUIApplication()
+    app.launchEnvironment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] = "1"
+    app.launch()
+
+    let tab = app.buttons.matching(identifier: "proof-lane-navigation-tab").firstMatch
+    let navigate = app.buttons.matching(identifier: "proof-lane-navigation-navigate").firstMatch
+    let back = app.buttons.matching(identifier: "proof-lane-navigation-back").firstMatch
+
+    XCTAssertTrue(tab.waitForExistence(timeout: 5))
+    XCTAssertTrue(navigate.exists)
+    XCTAssertTrue(back.exists)
+    tab.tap()
+    navigate.tap()
+    back.tap()
+    assertFullLabel(
+      app.staticTexts.matching(identifier: "proof-lane-navigation-outcome").firstMatch,
+      equals: "Navigation advisory: Passed"
+    )
+  }
+
+  func testNavigationMarkerInsetsAndFocusAreAdvisory() {
+    let app = XCUIApplication()
+    app.launchEnvironment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] = "1"
+    app.launch()
+
+    for identifier in [
+      "proof-lane-navigation-marker",
+      "proof-lane-navigation-insets",
+      "proof-lane-navigation-focus"
+    ] {
+      XCTAssertTrue(app.staticTexts.matching(identifier: identifier).firstMatch.waitForExistence(timeout: 5))
+    }
+  }
+
   private func assertClosedOutcome(in app: XCUIApplication, equals expected: String) {
     XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-ready").firstMatch.waitForExistence(timeout: 5))
     XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-auth-posture").firstMatch.exists)
