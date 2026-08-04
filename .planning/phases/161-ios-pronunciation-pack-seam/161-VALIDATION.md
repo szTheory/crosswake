@@ -96,59 +96,105 @@ All Phase 161 behaviors have automated verification. Physical-iPhone setup and p
 
 ---
 
-## Fresh Post-WR-01/CR-01 Final-Tree Gate — 2026-08-03
+## Fresh Post-Crash-Recovery Final-Tree Gate
 
-One complete deterministic gate ran once after the WR-01 rollback and CR-01 observed-operation
-repairs. Retained evidence contains only stable IDs, fresh aggregate counts, and closed outcomes;
-it contains no answers, media, transcripts, integrity values, locations, URLs, raw output, native
-artifacts, credentials, account identifiers, tokens, stable device identifiers, screenshots, or
-logs.
+Retained evidence is the allowlisted machine-readable object below. Dynamic run facts appear only in this object so they can be compared mechanically; raw native output and private values are excluded.
 
-| Gate ID | Aggregate result | Closed outcome |
-|---|---:|---|
-| T-161-58 Swift core | 27 tests passed | passed |
-| T-161-59 clean focused reference-host XCTest | 17 tests passed | passed, simulator-advisory |
-| T-161-60 proof-lane and evidence | 51 tests passed | passed |
-| T-161-61 scoped replay, privacy, and egress | 121 tests passed | passed |
-| T-161-62 Sigra authority | 15 tests passed | passed |
-| T-161-63 Phoenix request-bound authorization | 33 tests passed | passed |
-| T-161-64 offline-island browser proof | 23 tests passed | passed |
-| T-161-65 default generated iOS | required non-pass observed | blocked/unavailable, non-passing |
-| T-161-65 explicit reference adapter | `pack_audio_prerequisite` accepted | passed, simulator-advisory |
-| T-161-66 no-external-API seal | unchanged declaration accepted | passed |
-
-The clean reference-host XCTest explicitly included the deterministic second publication-move
-failure and confirmed immediate and relaunched last-known-good bytes and inventory. The generated
-proof accepted only schema-v2 operation-derived evidence after an observed local denied-network
-operation and installed-byte read. The simulator result remains advisory and does not promote a
-physical-device, adopter-instance, production, or support claim.
-
-### Requirement and Threat Closure
-
-| IDs | Final deterministic status |
-|---|---|
-| PACK-01 | passed: the narrow status/install/invalidate seam remains runnable through the current-tree host proof |
-| PACK-02 | passed: invalid, staged, acknowledged, revoked, malformed, and unreconciled inputs remain non-available; WR-01 rollback is directly exercised |
-| PACK-03 | passed: exact integrity, atomic publication, fresh status, observed denial, and installed-byte read are jointly required |
-| PACK-04 | passed: host-private transport, storage, and playback mechanics remain outside the provider seam |
-| PACK-05 | passed as a non-claim: default generated iOS is closed non-passing; reference success is simulator-advisory only |
-| T-161-58 through T-161-66 | passed: final-tree core, host/UI, proof/evidence, privacy/authority, browser, generated-iOS, and API-declaration gates all closed |
-| T-161-67 | passed: the exact repaired blocker paths and preservation gates ran once on the same final tree |
-| T-161-68 | passed: retained evidence is aggregate-only and allowlisted to stable IDs and closed outcomes |
-| T-161-69 | passed: default non-pass and reference-adapter advisory boundaries remain explicit |
-| T-161-70 | passed: Phase 160 scoped replay, backend authority, Sigra, Phoenix, and browser preservation gates passed |
-| T-161-71 | passed: the exact no-external-API declaration remained unchanged and was accepted without an API matrix |
+<!-- phase161-final-run-manifest:start -->
+{
+  "schema": 3,
+  "run_id": "4BC7744A-3279-4BFC-8352-532FC93D1055",
+  "head_revision": "41a7825bcbac0b4aa4ff52f24d4c75bc5739d41e",
+  "subject": {
+    "set": "phase161-plans15-16-v3",
+    "file_count": 6,
+    "tree_sha256": "b39a95a83ec9314f457cfa0b19c0c41d17d3821b38ec17d394e09b37024efaaa"
+  },
+  "suite_counts": {
+    "swift_core": 27,
+    "host_xctest": 43,
+    "proof_lane": 53,
+    "privacy": 121,
+    "sigra": 15,
+    "phoenix": 33,
+    "browser": 23
+  },
+  "restart_outcomes": {
+    "retained_old": "passed",
+    "promoted_inventory_pending": "passed",
+    "inventory_committed": "passed",
+    "idempotence": "passed",
+    "malformed_schema_phase_denied": "passed",
+    "sibling_destination_denied": "passed",
+    "record_identity_version_denied": "passed",
+    "colliding_leaves_denied": "passed",
+    "non_regular_denied": "passed"
+  },
+  "bootstrap_outcomes": {
+    "construction_started": "passed",
+    "in_flight_status_awaited_existing": "passed",
+    "repeated_status_unchanged": "passed",
+    "failure_memoized_no_mutation": "passed"
+  },
+  "volume_anchor_outcomes": {
+    "retained_old_absent_destination": "passed",
+    "first_install_absent_destination": "passed",
+    "mismatched_existing_leaf_denied": "passed"
+  },
+  "invalidate_recovery_outcomes": {
+    "retained_old_before_revocation": "passed",
+    "promoted_inventory_pending_before_revocation": "passed"
+  },
+  "durability_outcomes": {
+    "retention_order": "passed",
+    "promotion_order": "passed",
+    "inventory_before_committed_cleanup": "passed",
+    "committed_cleanup_order": "passed"
+  },
+  "ui_backstops": {
+    "recovery_wrap_reachability": "passed",
+    "announcement_focus": "passed",
+    "action_wrap_targets": "passed",
+    "developer_context": "passed"
+  },
+  "requirements": {
+    "PACK_01": "passed",
+    "PACK_02": "passed",
+    "PACK_03": "passed",
+    "PACK_04": "passed",
+    "PACK_05": "passed_non_claim"
+  },
+  "threats": {
+    "T_161_72": "passed",
+    "T_161_73": "passed",
+    "T_161_74": "passed",
+    "T_161_75": "passed",
+    "T_161_76": "passed",
+    "T_161_77": "passed",
+    "T_161_78": "passed",
+    "T_161_79": "passed",
+    "T_161_80": "passed",
+    "T_161_81": "passed"
+  },
+  "generated": {
+    "default": "closed_non_passing",
+    "reference": "passed_simulator_advisory"
+  },
+  "api_coverage": "passed",
+  "ui_spec": {
+    "covered": 12,
+    "backstop": 4,
+    "dismissed": 2,
+    "unresolved": 0
+  },
+  "boundaries": {
+    "todo_002": "unknown_blocking",
+    "adopter_instance": "unknown_blocking",
+    "physical_iphone_promotion": "phase_162_only"
+  }
+}
+<!-- phase161-final-run-manifest:end -->
 
 ### Boundaries Retained
 
-- **WR-01:** A post-retention second publication-move failure restores and re-attests the committed artifact and inventory; no failed replacement silently activates.
-- **CR-01:** `networking_disabled` derives from an observed local denied-network operation, not a test-authored marker; legacy or unobserved evidence is rejected.
-- **UI-SPEC:** all 18 considerations remain covered, automated-backstopped, or dismissed; `RequiredPackViewTests` passed without UI change.
-- **PACK-01 through PACK-05:** provider scope, closed denial, integrity-before-availability, explicit host ownership, and the foreground-only stop list remain intact.
-
-### Non-Promotion Boundaries
-
-- Default generated iOS remains blocked or unavailable; only the explicit reference adapter can pass, and only as simulator-advisory `pack_audio_prerequisite` evidence.
-- TODO-002 and adopter-instance completeness remain `unknown_blocking`; no sanitized adopter input was supplied.
-- Phase 162 alone owns physical-iPhone evidence and promotion.
-- Android, background transfer, delta updates, eviction, generic storage or distribution, scoring, capture, dashboard, and support promotion remain untouched and unclaimed.
+The object above is simulator-advisory evidence only. Adopter-instance and physical-device promotion remain outside Phase 161, and the foreground iOS stop list remains unchanged.
