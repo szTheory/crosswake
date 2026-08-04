@@ -28,45 +28,13 @@ protocol ProofLaneNavigationHostAdapter {
 
 enum ProofLaneNavigationHostAdapterFactory {
   static func make() -> ProofLaneNavigationHostAdapter? {
-    ProcessInfo.processInfo.environment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] == "1"
-      ? ProofLaneReferenceNavigationAdapter()
-      : nil
+    // The generated lane has no navigation authority. A host that owns a
+    // production coordinator may replace this seam with observations from it.
+    nil
   }
-}
-
-private final class ProofLaneReferenceNavigationAdapter: ProofLaneNavigationHostAdapter {
-  func selectRoot() -> ProofLaneOutcome { .passed }
-  func applyPushPatch() -> ProofLaneOutcome { .passed }
-  func applyPushNavigate() -> ProofLaneOutcome { .passed }
-  func observeBackOrEdgeSwipe() -> ProofLaneOutcome { .passed }
-  func observeShellLayout() -> ProofLaneOutcome { .passed }
-  func observeCompletedNavigationFocus() -> ProofLaneOutcome { .passed }
 }
 
 enum ProofLaneNavigationContract {
-  static func topology(rootCount: Int, versionsMatch: Bool, hasInvalidParent: Bool) -> ProofLaneOutcome {
-    rootCount > 0 && versionsMatch && !hasInvalidParent ? .passed : .blocked
-  }
-
-  static func transition(
-    isNavigate: Bool,
-    transitionIsFresh: Bool,
-    stackDepthBefore: Int,
-    stackDepthAfter: Int
-  ) -> ProofLaneOutcome {
-    guard transitionIsFresh, stackDepthBefore >= 0, stackDepthAfter >= stackDepthBefore else {
-      return .blocked
-    }
-
-    let expectedDepth = isNavigate ? stackDepthBefore + 1 : stackDepthBefore
-    return stackDepthAfter == expectedDepth ? .passed : .blocked
-  }
-
-  static func restoration(adapter: ProofLaneNavigationHostAdapter?) -> ProofLaneOutcome {
-    guard let adapter else { return .unavailable }
-    return adapter.applyPushNavigate() == .passed ? .blocked : adapter.applyPushNavigate()
-  }
-
   static func observation(
     _ assertion: ProofLaneNavigationAssertion,
     adapter: ProofLaneNavigationHostAdapter?

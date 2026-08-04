@@ -2,25 +2,10 @@ import XCTest
 @testable import CrosswakeProofLane
 
 final class ProofLaneContractTests: XCTestCase {
-  func testNavigationTopologyRejectsInvalidVectors() {
-    XCTAssertEqual(ProofLaneNavigationContract.topology(rootCount: 2, versionsMatch: true, hasInvalidParent: false), .passed)
-    XCTAssertEqual(ProofLaneNavigationContract.topology(rootCount: 0, versionsMatch: true, hasInvalidParent: false), .blocked)
-    XCTAssertEqual(ProofLaneNavigationContract.topology(rootCount: 2, versionsMatch: false, hasInvalidParent: false), .blocked)
-    XCTAssertEqual(ProofLaneNavigationContract.topology(rootCount: 2, versionsMatch: true, hasInvalidParent: true), .blocked)
-  }
-
-  func testNavigationSynchronizationRejectsDuplicateAndStaleTransitions() {
-    XCTAssertEqual(ProofLaneNavigationContract.transition(isNavigate: false, transitionIsFresh: true, stackDepthBefore: 1, stackDepthAfter: 1), .passed)
-    XCTAssertEqual(ProofLaneNavigationContract.transition(isNavigate: true, transitionIsFresh: true, stackDepthBefore: 1, stackDepthAfter: 2), .passed)
-    XCTAssertEqual(ProofLaneNavigationContract.transition(isNavigate: true, transitionIsFresh: false, stackDepthBefore: 1, stackDepthAfter: 2), .blocked)
-    XCTAssertEqual(ProofLaneNavigationContract.transition(isNavigate: false, transitionIsFresh: true, stackDepthBefore: 1, stackDepthAfter: 2), .blocked)
-  }
-
-  func testNavigationRestorationRemainsNonPassingWithoutAdapter() {
-    XCTAssertEqual(ProofLaneNavigationContract.restoration(adapter: nil), .unavailable)
-
+  func testNavigationRemainsUnavailableWithoutProductionHostObservations() {
+    XCTAssertNil(ProofLaneNavigationHostAdapterFactory.make())
     for assertion in ProofLaneNavigationAssertion.allCases {
-      XCTAssertNotEqual(ProofLaneNavigationContract.observation(assertion, adapter: nil), .passed)
+      XCTAssertEqual(ProofLaneNavigationContract.observation(assertion, adapter: nil), .unavailable)
     }
   }
 
@@ -31,6 +16,11 @@ final class ProofLaneContractTests: XCTestCase {
     } else {
       XCTAssertNil(adapter)
     }
+  }
+
+  func testReferencePackDoesNotCreateNavigationEvidence() {
+    XCTAssertNil(ProofLaneNavigationHostAdapterFactory.make())
+    emitNavigationEvidence(outcome: .unavailable)
   }
 
   func testFixtureInstallReconcilesAfterRelaunch() async throws {
@@ -83,6 +73,20 @@ final class ProofLaneContractTests: XCTestCase {
           let output = String(data: data, encoding: .utf8) else { return }
     print(output)
   }
+
+  private func emitNavigationEvidence(outcome: ProofLaneOutcome) {
+    let document = ProofLaneNavigationEvidenceDocument(
+      schemaVersion: 3,
+      outcome: outcome.rawValue,
+      scope: "advisory",
+      assertionIDs: ProofLaneNavigationAssertion.allCases.map(\.rawValue)
+    )
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.sortedKeys]
+    guard let data = try? encoder.encode(document),
+          let output = String(data: data, encoding: .utf8) else { return }
+    print(output)
+  }
 }
 
 private struct ProofLaneEvidenceDocument: Codable {
@@ -93,6 +97,20 @@ private struct ProofLaneEvidenceDocument: Codable {
   enum CodingKeys: String, CodingKey {
     case schemaVersion = "schema_version"
     case outcome
+    case assertionIDs = "assertion_ids"
+  }
+}
+
+private struct ProofLaneNavigationEvidenceDocument: Codable {
+  let schemaVersion: Int
+  let outcome: String
+  let scope: String
+  let assertionIDs: [String]
+
+  enum CodingKeys: String, CodingKey {
+    case schemaVersion = "schema_version"
+    case outcome
+    case scope
     case assertionIDs = "assertion_ids"
   }
 }

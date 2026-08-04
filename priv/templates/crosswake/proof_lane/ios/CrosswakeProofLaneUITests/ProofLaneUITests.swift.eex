@@ -68,7 +68,7 @@ final class ProofLaneUITests: XCTestCase {
     }
   }
 
-  func testNavigationTabsAndBackAreAdvisory() {
+  func testReferencePackLeavesNavigationUnavailable() {
     let app = XCUIApplication()
     app.launchEnvironment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] = "1"
     app.launch()
@@ -77,30 +77,23 @@ final class ProofLaneUITests: XCTestCase {
     let navigate = app.buttons.matching(identifier: "proof-lane-navigation-navigate").firstMatch
     let back = app.buttons.matching(identifier: "proof-lane-navigation-back").firstMatch
 
-    XCTAssertTrue(tab.waitForExistence(timeout: 5))
-    XCTAssertTrue(navigate.exists)
-    XCTAssertTrue(back.exists)
-    tab.tap()
-    navigate.tap()
-    back.tap()
+    XCTAssertFalse(tab.waitForExistence(timeout: 1))
+    XCTAssertFalse(navigate.exists)
+    XCTAssertFalse(back.exists)
     assertFullLabel(
       app.staticTexts.matching(identifier: "proof-lane-navigation-outcome").firstMatch,
-      equals: "Navigation advisory: Passed"
+      equals: "Navigation advisory: Unavailable"
     )
   }
 
-  func testNavigationMarkerInsetsAndFocusAreAdvisory() {
+  func testReferencePackNavigationMarkersRemainUnavailable() {
     let app = XCUIApplication()
     app.launchEnvironment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] = "1"
     app.launch()
 
-    for identifier in [
-      "proof-lane-navigation-marker",
-      "proof-lane-navigation-insets",
-      "proof-lane-navigation-focus"
-    ] {
-      XCTAssertTrue(app.staticTexts.matching(identifier: identifier).firstMatch.waitForExistence(timeout: 5))
-    }
+    assertFullLabel(app.staticTexts.matching(identifier: "proof-lane-navigation-marker").firstMatch, equals: "Navigation shell marker unavailable")
+    assertFullLabel(app.staticTexts.matching(identifier: "proof-lane-navigation-insets").firstMatch, equals: "Navigation insets unavailable")
+    assertFullLabel(app.staticTexts.matching(identifier: "proof-lane-navigation-focus").firstMatch, equals: "Navigation focus unavailable")
   }
 
   private func assertClosedOutcome(in app: XCUIApplication, equals expected: String) {

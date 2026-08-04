@@ -63,9 +63,7 @@ private struct ProofLaneView: View {
         .frame(minWidth: 44, minHeight: 44)
         .accessibilityIdentifier("proof-lane-reconnect")
       }
-      if let navigationAdapter {
-        NavigationProofView(adapter: navigationAdapter)
-      }
+      NavigationProofView(adapter: navigationAdapter)
     }
     .padding(24)
     .onAppear(perform: refresh)
@@ -78,28 +76,30 @@ private struct ProofLaneView: View {
 }
 
 private struct NavigationProofView: View {
-  let adapter: ProofLaneNavigationHostAdapter
+  let adapter: ProofLaneNavigationHostAdapter?
   @State private var outcome: ProofLaneOutcome = .unavailable
 
   var body: some View {
     VStack(spacing: 12) {
-      Text("Navigation shell marker observed")
+      Text(adapter == nil ? "Navigation shell marker unavailable" : "Navigation shell marker observed")
         .accessibilityIdentifier("proof-lane-navigation-marker")
-      Text("Navigation insets observed")
+      Text(adapter == nil ? "Navigation insets unavailable" : "Navigation insets observed")
         .accessibilityIdentifier("proof-lane-navigation-insets")
-      Text("Navigation focus observed")
+      Text(adapter == nil ? "Navigation focus unavailable" : "Navigation focus observed")
         .accessibilityIdentifier("proof-lane-navigation-focus")
       Text("Navigation advisory: \(outcome.rawValue.capitalized)")
         .accessibilityIdentifier("proof-lane-navigation-outcome")
-      Button("Select proof tab") { outcome = adapter.selectRoot() }
-        .frame(minWidth: 44, minHeight: 44)
-        .accessibilityIdentifier("proof-lane-navigation-tab")
-      Button("Navigate once") { outcome = adapter.applyPushNavigate() }
-        .frame(minWidth: 44, minHeight: 44)
-        .accessibilityIdentifier("proof-lane-navigation-navigate")
-      Button("Observe back") { outcome = adapter.observeBackOrEdgeSwipe() }
-        .frame(minWidth: 44, minHeight: 44)
-        .accessibilityIdentifier("proof-lane-navigation-back")
+      if let adapter {
+        Button("Select proof tab") { outcome = adapter.selectRoot() }
+          .frame(minWidth: 44, minHeight: 44)
+          .accessibilityIdentifier("proof-lane-navigation-tab")
+        Button("Navigate once") { outcome = adapter.applyPushNavigate() }
+          .frame(minWidth: 44, minHeight: 44)
+          .accessibilityIdentifier("proof-lane-navigation-navigate")
+        Button("Observe back") { outcome = adapter.observeBackOrEdgeSwipe() }
+          .frame(minWidth: 44, minHeight: 44)
+          .accessibilityIdentifier("proof-lane-navigation-back")
+      }
     }
   }
 }

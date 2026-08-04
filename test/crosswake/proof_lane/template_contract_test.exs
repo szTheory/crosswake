@@ -275,7 +275,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     refute driver =~ "archive"
   end
 
-  test "generated iOS lane adds closed navigation topology and synchronization contracts" do
+  test "generated iOS lane exposes only a fail-closed navigation observation seam" do
     generator = source("lib/crosswake/proof_lane/generator.ex")
     driver = source("priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex")
 
@@ -299,16 +299,31 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert driver =~ "PL-IOS-NAV-TABS-BACK"
     assert driver =~ "PL-IOS-NAV-MARKER-INSETS"
     assert driver =~ "PL-IOS-NAV-FOCUS"
-    assert contract =~ "testNavigationTopologyRejectsInvalidVectors"
-    assert contract =~ "testNavigationSynchronizationRejectsDuplicateAndStaleTransitions"
-    assert contract =~ "testNavigationRestorationRemainsNonPassingWithoutAdapter"
+    assert contract =~ "testNavigationRemainsUnavailableWithoutProductionHostObservations"
+    assert contract =~ "testReferencePackDoesNotCreateNavigationEvidence"
+    assert contract =~ "ProofLaneNavigationEvidenceDocument"
     assert project =~ "ProofLaneContractTests.swift in Sources"
+
+    navigation_factory =
+      driver
+      |> String.split("enum ProofLaneNavigationHostAdapterFactory", parts: 2)
+      |> List.last()
+      |> String.split("enum ProofLaneNavigationContract", parts: 2)
+      |> List.first()
+
+    assert navigation_factory =~ "nil"
+    refute navigation_factory =~ "CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"
+    refute navigation_factory =~ ".passed"
 
     for forbidden <- [
           "WKBackForwardList",
           "window.history",
           "routePath",
           "routePayload",
+          "ProofLaneReferenceNavigationAdapter",
+          "func topology(",
+          "func transition(",
+          "return .passed",
           "UIAlert",
           "Android"
         ] do
@@ -316,15 +331,15 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     end
   end
 
-  test "generated iOS lane keeps navigation UI flows advisory and accessibility-only" do
+  test "generated iOS lane makes missing navigation visibly unavailable" do
     ui =
       source(
         "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift.eex"
       )
 
     for token <- [
-          "testNavigationTabsAndBackAreAdvisory",
-          "testNavigationMarkerInsetsAndFocusAreAdvisory",
+          "testReferencePackLeavesNavigationUnavailable",
+          "testReferencePackNavigationMarkersRemainUnavailable",
           "proof-lane-navigation-tab",
           "proof-lane-navigation-back",
           "proof-lane-navigation-marker",
@@ -343,6 +358,9 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
         ] do
       refute ui =~ forbidden
     end
+
+    assert ui =~ "Navigation advisory: Unavailable"
+    refute ui =~ "Navigation advisory: Passed"
   end
 
   test "native verifier keeps package and git configuration operation-scoped" do
@@ -354,12 +372,15 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     refute verifier =~ "${HOME}/.swiftpm"
     refute verifier =~ "-downloadPlatform"
     assert verifier =~ "testMissingAdapterRemainsUnavailable"
+    assert verifier =~ "testNavigationRemainsUnavailableWithoutProductionHostObservations"
+    assert verifier =~ "testReferencePackDoesNotCreateNavigationEvidence"
     assert verifier =~ "testMissingProviderInstallRelaunchAndOfflineAudio"
     assert verifier =~ "testAccessibilityReflowContract"
     assert verifier =~ "--reference-pack-adapter"
     assert verifier =~ "assertion_ids"
     assert verifier =~ "pack_audio_prerequisite"
     assert verifier =~ "PL-IOS-TEST-EVIDENCE"
+    assert verifier =~ "PL-IOS-NAV-SOURCE"
     assert verifier =~ "PACK-RESET-BLOCKED"
     assert verifier =~ "PACK-INSTALL-READY"
     assert verifier =~ "PACK-RELAUNCH-READY"
