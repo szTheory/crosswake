@@ -33,7 +33,9 @@ defmodule Crosswake.Proof.Phase155NativeControlsTemplateDriftTest do
 
   @template_dir Path.join([File.cwd!(), "priv", "templates", "crosswake", "native_controls_ui"])
 
-  @checked_in_hash "4f440d1e806a86ad9d1ae12465aed374fe2414385f8192dd43f5ee81dbd2d68c"
+  @checked_in_hash "f658966d8fe689ed38104b7d3217ecde5c6c284f82fb34165946057f1b3d68ed"
+
+  @confirmation_reversal "Phoenix-owned confirmation is the current required fallback on every platform. Native alert/confirm is stopped and may be reconsidered only after passed physical-iPhone proof, a demonstrated active-adopter route blocker, and an explicit maintainer roadmap decision."
 
   test "template hash matches checked-in hash (drift guard)" do
     live = live_template_hash()
@@ -65,6 +67,20 @@ defmodule Crosswake.Proof.Phase155NativeControlsTemplateDriftTest do
              "confirm both crosswake_fallbacks.ex.eex and crosswake_fallback.css.eex exist",
              :merge_blocking
            )
+  end
+
+  test "generator and fallback template preserve Phoenix-owned confirmation and the exhaustive reversal gate" do
+    generator =
+      Path.join([File.cwd!(), "lib", "mix", "tasks", "crosswake.gen.native_controls_ui.ex"])
+      |> File.read!()
+
+    template = Path.join(@template_dir, "crosswake_fallbacks.ex.eex") |> File.read!()
+
+    for source <- [generator, template] do
+      assert source =~ @confirmation_reversal
+      refute source =~ "Crosswake.Bridge.alert"
+      refute source =~ "Crosswake.Bridge.confirm"
+    end
   end
 
   defp live_template_hash do
