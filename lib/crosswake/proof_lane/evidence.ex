@@ -25,7 +25,7 @@ defmodule Crosswake.ProofLane.Evidence do
   @device_classes [:ios, :simulator, :unknown]
   @artifact_name "proof-lane-evidence.json"
   @complete_name ".complete"
-  @approved_kinds [:evidence_json]
+  @approved_kinds [:evidence_json, :navigation_shell_advisory]
   @phase_160_assertion_ids ~w(scope_partition lifecycle_fence per_event_reauthorization atomic_idempotency safe_observation disablement)
   @assertion_ids ~w(browser_offline_island shell_boot auth_continuity relaunch_persistence replay_prerequisite pack_audio_prerequisite) ++
                    @phase_160_assertion_ids ++
@@ -80,13 +80,18 @@ defmodule Crosswake.ProofLane.Evidence do
 
   @spec approved_hash(atom(), binary()) :: result(String.t())
   def approved_hash(kind, bytes) when kind in @approved_kinds and is_binary(bytes) do
-    with :ok <- scan_bytes(bytes, @artifact_name) do
+    with :ok <- scan_source(kind, bytes) do
       {:ok, :crypto.hash(:sha256, bytes) |> Base.encode16(case: :lower)}
     end
   end
 
   def approved_hash(_, _),
     do: error("PL-EVIDENCE-HASH-KIND", "artifact", "use an approved sanitized artifact")
+
+  defp scan_source(:evidence_json, bytes), do: scan_bytes(bytes, @artifact_name)
+
+  defp scan_source(:navigation_shell_advisory, bytes),
+    do: Crosswake.ProofLane.NavigationShellAdvisory.scan(bytes)
 
   @spec check(Path.t()) :: :ok | {:error, Error.t()}
   def check(path) when is_binary(path) do
@@ -171,12 +176,14 @@ defmodule Crosswake.ProofLane.Evidence do
 
   defp no_sensitive_value(value, path) when is_map(value) do
     Enum.reduce_while(value, :ok, fn {key, nested}, :ok ->
-      safe_key = if is_atom(key), do: Atom.to_string(key), else: "key"
+      safe_key =
+        if is_atom(key), do: Atom.to_string(key), else: if(is_binary(key), do: key, else: "key")
 
-      if safe_key == "assertion_ids" do
+      if safe_key in ["assertion_ids", "canonical_bytes"] do
         # Assertion values are validated against the closed allowlist below. Some
         # safe IDs intentionally contain substrings that the collateral scanner
-        # rejects elsewhere (for example, "log" in a topology assertion).
+        # rejects elsewhere (for example, "log" in a topology assertion). Canonical
+        # source bytes are instead scanned by their closed kind dispatcher below.
         {:cont, :ok}
       else
         if sensitive?(safe_key) do
