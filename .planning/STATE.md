@@ -5,16 +5,16 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 161
 current_phase_name: ios-pronunciation-pack-seam
 status: executing
-stopped_at: Completed 161-17-PLAN.md
-last_updated: "2026-08-04T02:17:22.969Z"
+stopped_at: Completed 161-18-PLAN.md
+last_updated: "2026-08-04T02:40:40.641Z"
 last_activity: 2026-08-03
 last_activity_desc: Phase 161 execution started
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 83
-  completed_plans: 82
-  percent: 60
+  completed_plans: 83
+  percent: 80
 current_plan: 16
 ---
 
@@ -23,7 +23,7 @@ current_plan: 16
 ## Current Position
 
 Phase: 161 (ios-pronunciation-pack-seam) — EXECUTING
-Plan: 2 of 18
+Plan: 3 of 18
 Status: Ready to execute
 Last activity: 2026-08-03 — Phase 161 execution started
 
@@ -212,6 +212,7 @@ remains the bounded adopter-input gate and adopter-instance completeness remains
 - [Phase ?]: Generated iOS verifier run roots normalize logical paths and scope every Xcode discovery/build/test invocation.
 - [Phase ?]: Reference persistence resets only under the exact adapter-and-reset test environment before adapter construction.
 - [Phase ?]: Passing simulator advisory output requires all four unique current-run markers in transcript order plus existing schema-v2 operation evidence.
+- [Phase ?]: Phase 161 final closure retains schema-4 aggregate-only current-run provenance; the host XCTest gate explicitly selects the existing UI accessibility backstops.
 
 ## Deferred Items
 
@@ -240,8 +241,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-04T02:17:22.958Z
-**Stopped at:** Completed 161-17-PLAN.md
+**Last session:** 2026-08-04T02:40:40.630Z
+**Stopped at:** Completed 161-18-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -324,3 +325,4 @@ this milestone reset.
 | Phase 161 P15 | recovery continuation | 1 tasks | 2 files |
 | Phase 161 P16 | 30m | 2 tasks | 8 files |
 | Phase 161-ios-pronunciation-pack-seam P17 | 15m | 1 tasks | 5 files |
+| Phase 161-ios-pronunciation-pack-seam P18 | 15m | 1 tasks | 2 files |

@@ -348,7 +348,7 @@ checks at entry and replay.
 **Effort:** 4 Crosswake days; expect 3-5 adopter integration days outside this repo
 **Depends on:** Phase 160
 **Requirements:** PACK-01, PACK-02, PACK-03, PACK-04, PACK-05
-**Plans:** 17/18 plans executed
+**Plans:** 18/18 plans executed
 
 Plans:
 **Wave 1**
@@ -412,7 +412,7 @@ Plans:
 
 **Wave 15** *(blocked on Plan 161-17)*
 
-- [ ] 161-18-PLAN.md — Run the fresh current-run-provenance same-tree gate and retain only privacy-safe aggregate evidence.
+- [x] 161-18-PLAN.md — Run the fresh current-run-provenance same-tree gate and retain only privacy-safe aggregate evidence.
 
 **Smallest shippable version:** One iOS `PackProvider` protocol with foreground status, install, and
 invalidate; no provider means unavailable; availability follows verified size, SHA-256, and atomic
