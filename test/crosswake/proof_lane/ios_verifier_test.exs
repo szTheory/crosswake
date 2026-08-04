@@ -77,11 +77,21 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
             }} = Jason.decode(String.trim(output))
   end
 
-  test "reference-pack mode rejects legacy, missing, extra, duplicate, and reordered denial evidence", %{
+  test "reference-pack mode rejects incomplete or reordered current-run provenance", %{
     bin: bin,
     project: project
   } do
-    for mode <- ["legacy-evidence", "missing-denial", "extra-evidence", "duplicate-evidence", "reordered-evidence"] do
+    for mode <- [
+          "legacy-evidence",
+          "missing-denial",
+          "extra-evidence",
+          "duplicate-evidence",
+          "reordered-evidence",
+          "missing-reset",
+          "marker-only",
+          "duplicate-current-run",
+          "reordered-current-run"
+        ] do
       write_xcodebuild(bin)
 
       {output, status} =
@@ -340,11 +350,15 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
           echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testUnexpectedNetworkObservationBlocksAudioAndEmitsNoEvidence]' passed (0.001 seconds)."
           echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testMissingProviderInstallRelaunchAndOfflineAudio]' passed (0.001 seconds)."
           echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAccessibilityReflowContract]' passed (0.001 seconds)."
+          echo "PACK-RESET-BLOCKED"
+          echo "PACK-INSTALL-READY"
+          echo "PACK-RELAUNCH-READY"
+          echo "PACK-AUDIO-OFFLINE"
           echo '{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","network_operation_denied","installed_audio_read"],"outcome":"passed","schema_version":2}'
         fi
         exit 0
         ;;
-      legacy-evidence|missing-denial|extra-evidence|duplicate-evidence|reordered-evidence)
+      legacy-evidence|missing-denial|extra-evidence|duplicate-evidence|reordered-evidence|missing-reset|marker-only|duplicate-current-run|reordered-current-run)
         if [[ " $* " == *" -list "* ]]; then
           echo "CrosswakeProofLaneTests"
           echo "CrosswakeProofLaneUITests"
@@ -362,6 +376,33 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
             extra-evidence) echo '{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","network_operation_denied","installed_audio_read","extra"],"outcome":"passed","schema_version":2}' ;;
             duplicate-evidence) echo '{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","network_operation_denied","network_operation_denied","installed_audio_read"],"outcome":"passed","schema_version":2}' ;;
             reordered-evidence) echo '{"assertion_ids":["fixture_acquired","network_operation_denied","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","installed_audio_read"],"outcome":"passed","schema_version":2}' ;;
+            missing-reset)
+              echo "PACK-INSTALL-READY"
+              echo "PACK-RELAUNCH-READY"
+              echo "PACK-AUDIO-OFFLINE"
+              echo '{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","network_operation_denied","installed_audio_read"],"outcome":"passed","schema_version":2}'
+              ;;
+            marker-only)
+              echo "PACK-RESET-BLOCKED"
+              echo "PACK-INSTALL-READY"
+              echo "PACK-RELAUNCH-READY"
+              echo "PACK-AUDIO-OFFLINE"
+              ;;
+            duplicate-current-run)
+              echo "PACK-RESET-BLOCKED"
+              echo "PACK-INSTALL-READY"
+              echo "PACK-INSTALL-READY"
+              echo "PACK-RELAUNCH-READY"
+              echo "PACK-AUDIO-OFFLINE"
+              echo '{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","network_operation_denied","installed_audio_read"],"outcome":"passed","schema_version":2}'
+              ;;
+            reordered-current-run)
+              echo "PACK-INSTALL-READY"
+              echo "PACK-RESET-BLOCKED"
+              echo "PACK-RELAUNCH-READY"
+              echo "PACK-AUDIO-OFFLINE"
+              echo '{"assertion_ids":["fixture_acquired","exact_integrity_verified","atomic_promotion_completed","relaunch_artifact_readback","network_operation_denied","installed_audio_read"],"outcome":"passed","schema_version":2}'
+              ;;
           esac
         fi
         exit 0

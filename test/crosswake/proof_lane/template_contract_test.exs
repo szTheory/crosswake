@@ -7,6 +7,11 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
 
   defp source(path), do: File.read!(Path.join(@root, path))
 
+  defp position(content, needle) do
+    {index, _length} = :binary.match(content, needle)
+    index
+  end
+
   test "generated browser adapter fixture is byte-identical to the fixed safe render" do
     config = %Config{
       route_id: "route-0123456789abcdef",
@@ -175,6 +180,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
   end
 
   test "native test templates use deterministic and accessibility-only boundaries" do
+    app = source("priv/templates/crosswake/proof_lane/ios/ProofLaneApp.swift.eex")
     contract =
       source(
         "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneTests/ProofLaneContractTests.swift.eex"
@@ -211,6 +217,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert ui =~ "proof-lane-pack-audio"
     assert ui =~ "testMissingProviderInstallRelaunchAndOfflineAudio"
     assert ui =~ "CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"
+    assert ui =~ "CROSSWAKE_PROOF_LANE_RESET_REFERENCE_PACK"
     refute ui =~ "CROSSWAKE_PROOF_LANE_NETWORK_DISABLED"
     assert ui =~ "proof-lane-auth-posture"
     assert ui =~ "24"
@@ -218,6 +225,21 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert ui =~ "44"
     refute ui =~ "resetContentAndSettings"
     refute ui =~ "XCTSkip"
+
+    reset = "ProofLaneReferencePackAdapter.resetReferencePersistenceForTests()"
+    factory = "ProofLaneHostAdapterFactory.make()"
+    blocked = "equals: \"Blocked: packAudio\""
+    reset_marker = "PACK-RESET-BLOCKED"
+    install_tap = "install.tap()"
+    passed = "equals: \"Passed: packAudio\""
+    install_marker = "PACK-INSTALL-READY"
+
+    assert position(app, reset) < position(app, factory)
+    assert position(ui, blocked) < position(ui, reset_marker)
+    assert position(ui, reset_marker) < position(ui, install_tap)
+    assert position(ui, install_tap) < position(ui, passed)
+    assert position(ui, passed) < position(ui, install_marker)
+    assert ui =~ "app.launchEnvironment.removeValue(forKey: \"CROSSWAKE_PROOF_LANE_RESET_REFERENCE_PACK\")"
   end
 
   test "generated iOS lane owns a missing-only real-byte fixture and closed pack callbacks" do
@@ -261,6 +283,10 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert verifier =~ "assertion_ids"
     assert verifier =~ "pack_audio_prerequisite"
     assert verifier =~ "PL-IOS-TEST-EVIDENCE"
+    assert verifier =~ "PACK-RESET-BLOCKED"
+    assert verifier =~ "PACK-INSTALL-READY"
+    assert verifier =~ "PACK-RELAUNCH-READY"
+    assert verifier =~ "PACK-AUDIO-OFFLINE"
   end
 
   test "generator reruns preserve edited browser and native proof sources" do
