@@ -247,7 +247,7 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
 
     static func layoutDeliveryScript(for values: [CGFloat]) -> String {
         precondition(values.count == 5)
-        return "document.documentElement.style.setProperty('--cw-safe-area-top','\\(values[0])px');document.documentElement.style.setProperty('--cw-safe-area-right','\\(values[1])px');document.documentElement.style.setProperty('--cw-safe-area-bottom','\\(values[2])px');document.documentElement.style.setProperty('--cw-safe-area-left','\\(values[3])px');document.documentElement.style.setProperty('--cw-keyboard-inset-bottom','\\(values[4])px');"
+        return "document.documentElement.style.setProperty('--cw-safe-area-top','\(values[0])px');document.documentElement.style.setProperty('--cw-safe-area-right','\(values[1])px');document.documentElement.style.setProperty('--cw-safe-area-bottom','\(values[2])px');document.documentElement.style.setProperty('--cw-safe-area-left','\(values[3])px');document.documentElement.style.setProperty('--cw-keyboard-inset-bottom','\(values[4])px');"
     }
     private var pendingLayoutInsets: ShellLayoutInsets?
     private var deliveredLayoutInsets: ShellLayoutInsets?
