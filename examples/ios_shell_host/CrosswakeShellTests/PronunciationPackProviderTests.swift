@@ -20,6 +20,91 @@ final class PronunciationPackProviderTests: XCTestCase {
         XCTAssertLessThan(journalSync, rename)
     }
 
+    func testDurabilityOrderingRecordsJournalSyncBeforePromotionRename() async throws {
+        let bytes = try fixtureBytes(); let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let recorder = DurabilityOperationRecorder()
+        _ = await PronunciationPackProvider(source: { bytes }, storageRoot: root, publicationOperations: recorder.operations).install(requirement(for: bytes))
+        try assertSubsequence(["write:replacement-journal.json", "sync-file:replacement-journal.json", "sync-directory:\(root.lastPathComponent)", "move:.staging-", "sync-directory:\(root.lastPathComponent)"], in: recorder.events, prefixMatchAt: 3)
+    }
+
+    func testDurabilityOrderingRecordsInventorySyncBeforeCommittedCleanup() async throws {
+        let bytes = try fixtureBytes(); let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let recorder = DurabilityOperationRecorder()
+        _ = await PronunciationPackProvider(source: { bytes }, storageRoot: root, publicationOperations: recorder.operations).install(requirement(for: bytes))
+        try assertSubsequence(["write:inventory.json", "sync-file:inventory.json", "sync-directory:\(root.lastPathComponent)", "write:replacement-journal.json", "sync-file:replacement-journal.json", "sync-directory:\(root.lastPathComponent)"], in: recorder.events)
+    }
+
+    func testDurabilityOrderingRecordsCommittedCleanupDirectorySync() async throws {
+        let bytes = try fixtureBytes(); let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let old = PronunciationPackProvider(source: { bytes }, storageRoot: root)
+        _ = await old.install(requirement(for: bytes, version: "1"))
+        let recorder = DurabilityOperationRecorder()
+        _ = await PronunciationPackProvider(source: { bytes }, storageRoot: root, publicationOperations: recorder.operations).install(requirement(for: bytes, version: "2"))
+        try assertSubsequence(["remove:.previous-", "sync-directory:\(root.lastPathComponent)", "remove:replacement-journal.json", "sync-directory:\(root.lastPathComponent)"], in: recorder.events, prefixMatchAt: 0)
+    }
+
+    func testRepeatedStatusAfterBootstrapLeavesStorageSnapshotUnchanged() async throws {
+        let bytes = try fixtureBytes(); let requirement = requirement(for: bytes); let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let provider = PronunciationPackProvider(source: { bytes }, storageRoot: root)
+        let installResult = await provider.install(requirement)
+        XCTAssertEqual(installResult, .installed(expectedRecord(for: requirement)))
+        let before = try directorySnapshot(root)
+        let firstStatus = await provider.status(for: requirement)
+        let secondStatus = await provider.status(for: requirement)
+        XCTAssertEqual(firstStatus, .installed(expectedRecord(for: requirement)))
+        XCTAssertEqual(secondStatus, .installed(expectedRecord(for: requirement)))
+        XCTAssertEqual(try directorySnapshot(root), before)
+    }
+
+    func testConstructionBootstrapFailureIsMemoizedAndClosesAllOperations() async throws {
+        let bytes = try fixtureBytes(); let requirement = requirement(for: bytes); let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let provider = PronunciationPackProvider(source: { bytes }, storageRoot: root, startupRecoveryOverride: { throw CocoaError(.fileReadCorruptFile) })
+        let before = try directoryEntries(root)
+        let firstStatus = await provider.status(for: requirement)
+        let secondStatus = await provider.status(for: requirement)
+        let installResult = await provider.install(requirement)
+        let invalidateResult = await provider.invalidate(requirement)
+        XCTAssertEqual(firstStatus, .failure(.providerFailed))
+        XCTAssertEqual(secondStatus, .failure(.providerFailed))
+        XCTAssertEqual(installResult, .failure(.atomicInstallFailed))
+        XCTAssertEqual(invalidateResult, .failure(.invalidationFailed))
+        XCTAssertEqual(try directoryEntries(root), before)
+    }
+
+    func testInvalidateAwaitsRetainedKnownGoodBootstrapBeforeRevocation() async throws {
+        let bytes = try fixtureBytes(); let requirement = requirement(for: bytes); let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let record = expectedRecord(for: requirement); let retained = root.appendingPathComponent(".previous-transaction")
+        try bytes.write(to: retained); try writeInventory([requirement.packID: record], in: root)
+        try writeJournal(ReplacementJournal(schemaVersion: 1, phase: .retentionPending, packID: requirement.packID, nonce: "transaction", stagingLeaf: ".staging-transaction", destinationLeaf: artifactURL(in: root, for: requirement).lastPathComponent, retainedLeaf: retained.lastPathComponent, priorRecord: record, currentRecord: record), in: root)
+        let recorder = DurabilityOperationRecorder()
+        let provider = PronunciationPackProvider(source: { bytes }, storageRoot: root, publicationOperations: recorder.operations)
+        let invalidation = await provider.invalidate(requirement)
+        XCTAssertEqual(invalidation, .notInstalled)
+        let restore = try XCTUnwrap(recorder.events.firstIndex(where: { $0.hasPrefix("move:.previous-") }))
+        let revoke = try XCTUnwrap(recorder.events.firstIndex(where: { $0.hasPrefix("remove:pack-") }))
+        XCTAssertLessThan(restore, revoke)
+    }
+
+    func testInvalidateAwaitsPromotedReplacementBootstrapBeforeRevocation() async throws {
+        let oldBytes = try fixtureBytes(); var newBytes = oldBytes; newBytes[0] ^= 0xFF
+        let old = requirement(for: oldBytes, version: "1"); let current = requirement(for: newBytes, version: "2"); let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let retained = root.appendingPathComponent(".previous-transaction"); try oldBytes.write(to: retained); try newBytes.write(to: artifactURL(in: root, for: old)); try writeInventory([old.packID: expectedRecord(for: old)], in: root)
+        try writeJournal(ReplacementJournal(schemaVersion: 1, phase: .inventoryCommitPending, packID: old.packID, nonce: "transaction", stagingLeaf: ".staging-transaction", destinationLeaf: artifactURL(in: root, for: old).lastPathComponent, retainedLeaf: retained.lastPathComponent, priorRecord: expectedRecord(for: old), currentRecord: expectedRecord(for: current)), in: root)
+        let recorder = DurabilityOperationRecorder(); let provider = PronunciationPackProvider(source: { oldBytes }, storageRoot: root, publicationOperations: recorder.operations)
+        let invalidation = await provider.invalidate(old)
+        XCTAssertEqual(invalidation, .notInstalled)
+        let restore = try XCTUnwrap(recorder.events.firstIndex(where: { $0.hasPrefix("move:.previous-") }))
+        let revoke = try XCTUnwrap(recorder.events.lastIndex(where: { $0.hasPrefix("remove:pack-") }))
+        XCTAssertLessThan(restore, revoke)
+    }
+
     func testStatusDuringInFlightBootstrapAwaitsExistingRecoveryWithoutStartingAnother() async throws {
         let bytes = try fixtureBytes()
         let requirement = requirement(for: bytes)
@@ -424,6 +509,35 @@ final class PronunciationPackProviderTests: XCTestCase {
         XCTAssertEqual(try directorySnapshot(root), snapshot)
     }
 
+    func testRetainedOldRecoveryUsesStorageRootVolumeAnchorWhenDestinationIsAbsent() async throws {
+        let bytes = try fixtureBytes(); let requirement = requirement(for: bytes); let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let record = expectedRecord(for: requirement); let retained = root.appendingPathComponent(".previous-transaction")
+        try bytes.write(to: retained); try writeInventory([requirement.packID: record], in: root)
+        try writeJournal(ReplacementJournal(schemaVersion: 1, phase: .retentionPending, packID: requirement.packID, nonce: "transaction", stagingLeaf: ".staging-transaction", destinationLeaf: artifactURL(in: root, for: requirement).lastPathComponent, retainedLeaf: retained.lastPathComponent, priorRecord: record, currentRecord: record), in: root)
+        let identities = IdentityRecorder()
+        let provider = PronunciationPackProvider(source: { bytes }, storageRoot: root, filesystemIdentity: identities.identity)
+        let status = await provider.status(for: requirement)
+        XCTAssertEqual(status, .installed(record))
+        XCTAssertFalse(identities.urls.contains(artifactURL(in: root, for: requirement).lastPathComponent))
+        XCTAssertTrue(identities.urls.contains(root.lastPathComponent))
+        XCTAssertTrue(identities.urls.contains(retained.lastPathComponent))
+    }
+
+    func testFirstInstallRecoveryUsesStorageRootVolumeAnchorWhenDestinationIsAbsent() async throws {
+        let bytes = try fixtureBytes(); let requirement = requirement(for: bytes); let root = try makeTemporaryRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let staging = root.appendingPathComponent(".staging-transaction"); try bytes.write(to: staging)
+        try writeJournal(ReplacementJournal(schemaVersion: 1, phase: .promotionPending, packID: requirement.packID, nonce: "transaction", stagingLeaf: staging.lastPathComponent, destinationLeaf: artifactURL(in: root, for: requirement).lastPathComponent, retainedLeaf: ".previous-transaction", priorRecord: nil, currentRecord: expectedRecord(for: requirement)), in: root)
+        let identities = IdentityRecorder()
+        let provider = PronunciationPackProvider(source: { bytes }, storageRoot: root, filesystemIdentity: identities.identity)
+        let status = await provider.status(for: requirement)
+        XCTAssertEqual(status, .notInstalled)
+        XCTAssertFalse(identities.urls.contains(artifactURL(in: root, for: requirement).lastPathComponent))
+        XCTAssertTrue(identities.urls.contains(root.lastPathComponent))
+        XCTAssertTrue(identities.urls.contains(staging.lastPathComponent))
+    }
+
     func testFirstInstallInventoryFailureRemovesUncommittedArtifactAndRecord() async throws {
         let fixture = try fixtureBytes()
         let requirement = requirement(for: fixture)
@@ -531,6 +645,16 @@ final class PronunciationPackProviderTests: XCTestCase {
         try FileManager.default.contentsOfDirectory(atPath: root.path).sorted()
     }
 
+    private func assertSubsequence(_ expected: [String], in events: [String], prefixMatchAt prefixIndex: Int? = nil) throws {
+        var index = 0
+        for event in events {
+            guard index < expected.count else { break }
+            let matches = prefixIndex == index ? event.hasPrefix(expected[index]) : event == expected[index]
+            if matches { index += 1 }
+        }
+        XCTAssertEqual(index, expected.count, "Missing durability sequence \(expected) in \(events)")
+    }
+
 
     private func makeTemporaryRoot() throws -> URL {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -551,6 +675,16 @@ private final class DurabilityOperationRecorder: @unchecked Sendable {
         synchronizeFile: { [weak self] url in self?.record("sync-file:\(url.lastPathComponent)") },
         synchronizeDirectory: { [weak self] url in self?.record("sync-directory:\(url.lastPathComponent)") }
     )
+}
+
+private final class IdentityRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var values: [String] = []
+    var urls: [String] { lock.lock(); defer { lock.unlock() }; return values }
+    lazy var identity: PublicationFilesystemIdentity = { [weak self] url in
+        self?.lock.lock(); self?.values.append(url.lastPathComponent); self?.lock.unlock()
+        return "root"
+    }
 }
 
 private actor TestStartupGate {

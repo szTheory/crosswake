@@ -75,9 +75,7 @@ actor PronunciationPackProvider: PackProvider {
             let verification = try await PronunciationPackProvider.verifyStagedFile(url, chunkSize: chunkSize)
             return (verification.byteCount, verification.sha256)
         }
-        self.inventoryWriter = inventoryWriter ?? { data, url in
-            try data.write(to: url, options: .atomic)
-        }
+        self.inventoryWriter = inventoryWriter ?? { _, _ in }
         self.publicationMover = publicationMover ?? { source, destination in
             try FileManager.default.moveItem(at: source, to: destination)
         }
@@ -173,6 +171,7 @@ actor PronunciationPackProvider: PackProvider {
                 try persistJournal(journal)
                 if hadPriorArtifact {
                     try publicationOperations.move(destination, retainedArtifact)
+                    try publicationOperations.synchronizeDirectory(storageRoot)
                     publicationState = .priorArtifactRetained
                     try persistJournal(ReplacementJournal(
                         schemaVersion: journal.schemaVersion, phase: .promotionPending,
@@ -182,6 +181,7 @@ actor PronunciationPackProvider: PackProvider {
                     ))
                 }
                 try publicationOperations.move(staging, destination)
+                try publicationOperations.synchronizeDirectory(storageRoot)
                 publicationState = .replacementPromoted
                 try persistJournal(ReplacementJournal(
                     schemaVersion: journal.schemaVersion, phase: .inventoryCommitPending,
@@ -197,8 +197,8 @@ actor PronunciationPackProvider: PackProvider {
                     destinationLeaf: journal.destinationLeaf, retainedLeaf: journal.retainedLeaf,
                     priorRecord: journal.priorRecord, currentRecord: journal.currentRecord
                 ))
-                try? fileManager.removeItem(at: retainedArtifact)
-                try? fileManager.removeItem(at: replacementJournalURL)
+                try removeDurablyIfPresent(retainedArtifact)
+                try removeDurablyIfPresent(replacementJournalURL)
                 return .installed(record)
             } catch {
                 let failure: PackFailureReason = publicationState == .replacementPromoted
@@ -210,7 +210,7 @@ actor PronunciationPackProvider: PackProvider {
                         retainedArtifact: hadPriorArtifact ? retainedArtifact : nil,
                         priorInventoryData: priorInventoryData
                     )
-                    try? fileManager.removeItem(at: replacementJournalURL)
+                    try? removeDurablyIfPresent(replacementJournalURL)
                     publicationState = .noPriorArtifact
                     return .failure(failure)
                 } catch {
@@ -228,7 +228,8 @@ actor PronunciationPackProvider: PackProvider {
         do {
             let destination = artifactURL(for: requirement)
             if fileManager.fileExists(atPath: destination.path) {
-                try fileManager.removeItem(at: destination)
+                try publicationOperations.remove(destination)
+                try publicationOperations.synchronizeDirectory(storageRoot)
             }
             var inventory = loadInventory()
             inventory.removeValue(forKey: requirement.packID)
@@ -256,6 +257,7 @@ actor PronunciationPackProvider: PackProvider {
     private func saveInventory(_ inventory: [String: PackInstalledRecord]) throws {
         let data = try JSONEncoder().encode(inventory)
         try inventoryWriter(data, inventoryURL)
+        try publicationOperations.atomicWrite(data, inventoryURL)
         try publicationOperations.synchronizeFile(inventoryURL)
         try publicationOperations.synchronizeDirectory(storageRoot)
     }
@@ -291,10 +293,12 @@ actor PronunciationPackProvider: PackProvider {
               journal.priorRecord?.packID == nil || journal.priorRecord?.packID == journal.packID
         else { throw CocoaError(.fileReadCorruptFile) }
 
-        let canonicalRoot = storageRoot.resolvingSymlinksInPath().standardizedFileURL
-        guard (try fileManager.attributesOfItem(atPath: canonicalRoot.path))[.type] as? FileAttributeType == .typeDirectory else {
+        try fileManager.createDirectory(at: storageRoot, withIntermediateDirectories: true)
+        let rootAttributes = try fileManager.attributesOfItem(atPath: storageRoot.path)
+        guard rootAttributes[.type] as? FileAttributeType == .typeDirectory else {
             throw CocoaError(.fileReadCorruptFile)
         }
+        let canonicalRoot = storageRoot.standardizedFileURL
         let rootIdentity = try filesystemIdentity(canonicalRoot)
         let destination = canonicalRoot.appendingPathComponent(journal.destinationLeaf)
         let retained = canonicalRoot.appendingPathComponent(journal.retainedLeaf)
@@ -322,7 +326,7 @@ actor PronunciationPackProvider: PackProvider {
             } else {
                 inventory.removeValue(forKey: journal.packID)
             }
-            try writeInventory(inventory, storageRoot: storageRoot)
+            try writeInventory(inventory, storageRoot: canonicalRoot, operations: operations)
         }
         if fileManager.fileExists(atPath: journalURL.path) { try operations.remove(journalURL); try operations.synchronizeDirectory(canonicalRoot) }
     }
@@ -339,10 +343,12 @@ actor PronunciationPackProvider: PackProvider {
         return inventory
     }
 
-    nonisolated private static func writeInventory(_ inventory: [String: PackInstalledRecord], storageRoot: URL) throws {
+    nonisolated private static func writeInventory(_ inventory: [String: PackInstalledRecord], storageRoot: URL, operations: PublicationOperations) throws {
         let url = storageRoot.appendingPathComponent("inventory.json")
         let data = try JSONEncoder().encode(inventory)
-        try data.write(to: url, options: .atomic)
+        try operations.atomicWrite(data, url)
+        try operations.synchronizeFile(url)
+        try operations.synchronizeDirectory(storageRoot)
     }
 
     private func rollbackPublication(destination: URL, retainedArtifact: URL?, priorInventoryData: Data?) throws {
@@ -357,6 +363,12 @@ actor PronunciationPackProvider: PackProvider {
         } else if fileManager.fileExists(atPath: inventoryURL.path) {
             try fileManager.removeItem(at: inventoryURL)
         }
+    }
+
+    private func removeDurablyIfPresent(_ url: URL) throws {
+        guard fileManager.fileExists(atPath: url.path) else { return }
+        try publicationOperations.remove(url)
+        try publicationOperations.synchronizeDirectory(storageRoot)
     }
 
     private enum PublicationState {
