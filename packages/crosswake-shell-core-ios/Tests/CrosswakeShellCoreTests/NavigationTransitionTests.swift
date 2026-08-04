@@ -6,6 +6,7 @@ import WebKit
 final class NavigationTransitionTests: XCTestCase {
     func testTransitionDecodingAndNavigateAreIdempotent() throws {
         let coordinator = makeCoordinator()
+        XCTAssertEqual(coordinator.selectRoot(routeID: "route-0123456789abcdef"), .authorized)
         let channel = NavigationTransitionChannel(coordinator: coordinator)
         let body: [String: Any] = [
             "protocol": "crosswake.navigation_transition", "version": "1.0.0",

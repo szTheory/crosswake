@@ -15,9 +15,12 @@ public final class NavigationCoordinator: ObservableObject {
     private let topology: NavigationTopology
     private let manifest: ShellManifest
     private let resolver: (String, ShellManifest) -> NavigationResolution
+    private let patchSink: (NavigationStackEntry) -> Void
+    private var transitionIDs: [String] = []
+    private let transitionLedgerLimit = 128
 
-    public init(topology: NavigationTopology, manifest: ShellManifest, resolver: @escaping (String, ShellManifest) -> NavigationResolution) {
-        self.topology = topology; self.manifest = manifest; self.resolver = resolver
+    public init(topology: NavigationTopology, manifest: ShellManifest, resolver: @escaping (String, ShellManifest) -> NavigationResolution, patchSink: @escaping (NavigationStackEntry) -> Void = { _ in }) {
+        self.topology = topology; self.manifest = manifest; self.resolver = resolver; self.patchSink = patchSink
     }
 
     @discardableResult public func selectRoot(routeID: String) -> NavigationSelectionResult {
@@ -29,5 +32,40 @@ public final class NavigationCoordinator: ObservableObject {
         stacks[entry.rootTabID] = [stackEntry]
         activeRouteID = entry.routeID
         return .authorized
+    }
+
+    /// Applies every accepted web candidate only after manifest/topology validation and
+    /// resolver authorization. Rejections deliberately have no observable state effect.
+    @discardableResult public func apply(_ transition: NavigationTransition) -> NavigationTransitionOutcome {
+        guard topology.validate(against: manifest) == .valid,
+              transitionIDs.contains(transition.transitionID) == false,
+              let entry = topology.entries.first(where: { $0.routeID == transition.routeID }),
+              case let .authorized(presentation) = resolver(transition.routeID, manifest) else { return .denied }
+
+        switch transition.kind {
+        case .pushPatch:
+            guard activeRouteID == entry.routeID,
+                  let tabID = selectedTabID,
+                  let current = stacks[tabID]?.last,
+                  current.routeID == entry.routeID else { return .denied }
+            record(transition.transitionID)
+            patchSink(NavigationStackEntry(routeID: entry.routeID, presentation: presentation))
+            return .applied
+        case .pushNavigate:
+            guard entry.presentation == .push,
+                  let tabID = selectedTabID,
+                  entry.rootTabID == tabID,
+                  let current = stacks[tabID]?.last,
+                  current.routeID == entry.parentRouteID else { return .denied }
+            record(transition.transitionID)
+            stacks[tabID, default: []].append(NavigationStackEntry(routeID: entry.routeID, presentation: presentation))
+            activeRouteID = entry.routeID
+            return .applied
+        }
+    }
+
+    private func record(_ transitionID: String) {
+        transitionIDs.append(transitionID)
+        if transitionIDs.count > transitionLedgerLimit { transitionIDs.removeFirst() }
     }
 }

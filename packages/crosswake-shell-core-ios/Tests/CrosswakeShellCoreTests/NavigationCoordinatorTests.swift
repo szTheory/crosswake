@@ -3,6 +3,22 @@ import XCTest
 
 @MainActor
 final class NavigationCoordinatorTests: XCTestCase {
+    func testPatchDoesNotGrowAndNavigateIsIdempotent() {
+        let root = NavigationTopologyEntry(routeID: "route-0123456789abcdef", rootTabID: "tab-0123456789abcdef", presentation: .root, parentRouteID: nil, deepLinkPosture: .allow, restorationPosture: .allow)
+        let child = NavigationTopologyEntry(routeID: "route-fedcba9876543210", rootTabID: root.rootTabID, presentation: .push, parentRouteID: root.routeID, deepLinkPosture: .allow, restorationPosture: .allow)
+        let manifest = ShellManifest(compatibility: .init(nativeRuntimeVersion: "1.0.0"), routes: [root.routeID: route(root.routeID), child.routeID: route(child.routeID)])
+        var patches = 0
+        let coordinator = NavigationCoordinator(topology: .init(topologySchemaVersion: "1.0.0", manifestSchemaVersion: "1.0.0", status: .ready, entries: [root, child]), manifest: manifest, resolver: authorize, patchSink: { _ in patches += 1 })
+        XCTAssertEqual(coordinator.selectRoot(routeID: root.routeID), .authorized)
+
+        XCTAssertEqual(coordinator.apply(.init(protocolName: "crosswake.navigation_transition", version: "1.0.0", transitionID: "nav-0123456789abcdef", kind: .pushPatch, routeID: root.routeID, restorationRef: nil)), .applied)
+        XCTAssertEqual(coordinator.stacks[root.rootTabID]?.count, 1)
+        XCTAssertEqual(patches, 1)
+        let navigate = NavigationTransition(protocolName: "crosswake.navigation_transition", version: "1.0.0", transitionID: "nav-fedcba9876543210", kind: .pushNavigate, routeID: child.routeID, restorationRef: nil)
+        XCTAssertEqual(coordinator.apply(navigate), .applied)
+        XCTAssertEqual(coordinator.apply(navigate), .denied)
+        XCTAssertEqual(coordinator.stacks[root.rootTabID]?.count, 2)
+    }
     func testCompiledRootRequiresResolverAuthorization() throws {
         let vectorURL = URL(fileURLWithPath: "../../priv/contract_vectors/navigation_topology_vectors.json", relativeTo: URL(fileURLWithPath: FileManager.default.currentDirectoryPath))
         let vectors = try JSONDecoder().decode(NavigationTopologyVectors.self, from: Data(contentsOf: vectorURL))
