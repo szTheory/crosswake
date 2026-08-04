@@ -5,10 +5,10 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 161.1
 current_phase_name: first-adopter-ios-navigation-shell
 status: planned
-stopped_at: Phase 161 complete; Phase 161.1 is next
-last_updated: "2026-08-04T14:42:00-04:00"
+stopped_at: Phase 161.1 context gathered
+last_updated: "2026-08-04T15:24:10.765Z"
 last_activity: 2026-08-04
-last_activity_desc: Phase 161 verified complete — 20 plans and 10/10 must-haves passed
+last_activity_desc: Phase 161 verified complete (10/10 must-haves)
 progress:
   total_phases: 6
   completed_phases: 4
@@ -63,7 +63,6 @@ sanitized adopter route-policy handoff is validated.
 - TODO-002 remains open: the route inventory still needs adopter-supplied concrete route IDs/paths,
   mutation actions, staleness, auth sensitivity, expected pronunciation-pack sizes/codecs, and
   fallbacks before adopter-instance promotion.
-
 
 ## Decisions
 
@@ -237,9 +236,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-04T14:42:00.000Z
-**Stopped at:** Phase 161 verified complete; Phase 161.1 discussion is next
-**Resume file:** None
+**Last session:** 2026-08-04T15:24:10.734Z
+**Stopped at:** Phase 161.1 context gathered
+**Resume file:** .planning/phases/161.1-first-adopter-ios-navigation-shell/161.1-CONTEXT.md
 
 ## Performance Metrics
 
