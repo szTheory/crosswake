@@ -154,6 +154,18 @@ defmodule Crosswake.CapabilityMap.RendererTest do
     assert Renderer.render([equal_dual]) =~ "canonical implication"
   end
 
+  test "NAV-06 renders the bounded iOS-only shell truth without widening it" do
+    rendered = Renderer.render()
+
+    for claim <- [
+          "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof",
+          "No generic navigation, Android parity, native leaf rendering, arbitrary restoration, modal breadth, or browser-history authority is claimed; invalid input keeps the existing explicit Phoenix denial.",
+          "Phase 161.1 verifies the bounded contract only: simulator advisory, TODO-002/adopter topology unknown_blocking, and physical-iPhone promotion Phase 162 only."
+        ] do
+      assert rendered =~ claim
+    end
+  end
+
   test "D-12 conflicting implication aliases fail closed without echoing row content" do
     assert_raise ArgumentError, "conflicting adoption_implication and v20_implication", fn ->
       Renderer.render([renderer_row(%{v20_implication: "legacy secret"})])
