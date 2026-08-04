@@ -4,15 +4,15 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 161
 current_phase_name: ios-pronunciation-pack-seam
-status: gaps_found
-stopped_at: Phase 161 verification confirmed stale generated-pack proof gap
-last_updated: "2026-08-04T01:29:20.000Z"
+status: ready_to_execute
+stopped_at: Phase 161 gap closure planned in Plans 17-18
+last_updated: "2026-08-03T22:04:39.000-04:00"
 last_activity: 2026-08-03
-last_activity_desc: 161-15 crash-safe replacement recovery verified
+last_activity_desc: Phase 161 proof-isolation gap closure planned
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 81
+  total_plans: 83
   completed_plans: 81
   percent: 80
 current_plan: 16
@@ -22,10 +22,10 @@ current_plan: 16
 
 ## Current Position
 
-Phase: 161 (ios-pronunciation-pack-seam) — GAPS FOUND
-Plan: 16 of 16 executed
-Status: Verification confirmed generated reference proof is not run-isolated
-Last activity: 2026-08-03 — Phase 161 verified at 19/20 must-haves
+Phase: 161 (ios-pronunciation-pack-seam) — READY TO EXECUTE
+Plan: 16 of 18 executed
+Status: Plans 161-17 and 161-18 are verified and ready to execute
+Last activity: 2026-08-03 — Phase 161 proof-isolation gap closure planned
 
 ## Active Objective
 
@@ -44,8 +44,8 @@ framework launch.
 
 ## Next Action
 
-Plan the confirmed Phase 161 proof-isolation repair with `$gsd-plan-phase 161 --gaps`, then execute
-and re-verify before Phase 162. Phase 160 security is reconciled at 37/37 threats closed. TODO-002
+Execute the confirmed Phase 161 proof-isolation repair with `$gsd-execute-phase 161`, then re-verify
+before Phase 162. Phase 160 security is reconciled at 37/37 threats closed. TODO-002
 remains the bounded adopter-input gate and adopter-instance completeness remains
 `unknown_blocking`; do not infer concrete adopter routes or promote downstream device claims.
 
@@ -53,8 +53,8 @@ remains the bounded adopter-input gate and adopter-instance completeness remains
 
 - Phase 161 verification confirms the generated reference-adapter proof can pass from a stale
   persisted simulator pack because it neither resets test-only storage nor asserts the initial
-  blocked state. The real host installer and crash recovery pass, but PACK-03 remains blocked until
-  current-run proof isolation is repaired and the fresh same-tree gate is rerun.
+  blocked state. Plans 161-17 and 161-18 now cover the repair and fresh same-tree gate; PACK-03
+  remains blocked until those plans execute and verification passes.
 
 - Phase 160 code review WR-01 records a non-blocking browser lifecycle race: fencing during an
   IndexedDB save can leave rating controls owned until reload. The finding remains available for
