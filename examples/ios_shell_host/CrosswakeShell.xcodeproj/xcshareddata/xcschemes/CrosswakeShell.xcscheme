@@ -39,6 +39,16 @@
                ReferencedContainer = "container:CrosswakeShell.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "E161002B0000000000000001"
+               BuildableName = "CrosswakeShellUITests.xctest"
+               BlueprintName = "CrosswakeShellUITests"
+               ReferencedContainer = "container:CrosswakeShell.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

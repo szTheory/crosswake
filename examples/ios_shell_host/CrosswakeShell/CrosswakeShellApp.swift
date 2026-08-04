@@ -174,14 +174,57 @@ struct CrosswakeShellApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootSceneWrapper(
-                notificationTokenProvider: appDelegate.notificationTokenProvider,
-                uiActionDelegates: uiActionDelegates,
-                permissionProvider: permissionProvider,
-                appInfoProvider: appInfoProvider,
-                hapticsProvider: hapticsProvider,
-                routeDelegate: routeDelegate
+            if let probe = RequiredPackAccessibilityProbe.fromLaunchArguments {
+                probe
+            } else {
+                RootSceneWrapper(
+                    notificationTokenProvider: appDelegate.notificationTokenProvider,
+                    uiActionDelegates: uiActionDelegates,
+                    permissionProvider: permissionProvider,
+                    appInfoProvider: appInfoProvider,
+                    hapticsProvider: hapticsProvider,
+                    routeDelegate: routeDelegate
+                )
+            }
+        }
+    }
+}
+
+/// Debug-only launch seam for the executable accessibility contract. It is inert unless the
+/// dedicated UI-test argument is present and never supplies storage, media, or route authority.
+private struct RequiredPackAccessibilityProbe: View {
+    let state: PackState
+    let reason: PackFailureReason?
+
+    static var fromLaunchArguments: Self? {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: "-crosswake-required-pack-accessibility"),
+              arguments.indices.contains(index + 1) else { return nil }
+        switch arguments[index + 1] {
+        case "install": return Self(state: .notInstalled, reason: nil)
+        case "update": return Self(state: .stale, reason: nil)
+        case "retry": return Self(state: .failed, reason: .transferInterrupted)
+        case "invalidate": return Self(state: .failed, reason: .digestMismatch)
+        default: return nil
+        }
+    }
+
+    var body: some View {
+        if var status = PackStore(requirements: [
+            PackRequirement(packID: "pack", requiredVersion: "1", expectedByteCount: 0, expectedSHA256: "")
+        ]).statuses["pack"] {
+            RequiredPackView(
+                routeID: "route-0123456789abcdef",
+                runtimeLabel: "reference runtime",
+                status: {
+                    status.state = state
+                    status.failureReason = reason
+                    return status
+                }(),
+                onInstall: {}, onRetry: {}, onInvalidate: {}
             )
+        } else {
+            EmptyView()
         }
     }
 }
