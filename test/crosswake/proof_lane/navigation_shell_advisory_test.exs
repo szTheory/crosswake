@@ -16,7 +16,9 @@ defmodule Crosswake.ProofLane.NavigationShellAdvisoryTest do
 
     assert assertions != []
     assert subject_digests != %{}
-    assert {:ok, ^advisory} = NavigationShellAdvisory.decode(NavigationShellAdvisory.encode!(advisory))
+
+    assert {:ok, ^advisory} =
+             NavigationShellAdvisory.decode(NavigationShellAdvisory.encode!(advisory))
   end
 
   test "rejects non-canonical and sensitive advisory bytes without echoing input" do
@@ -26,7 +28,9 @@ defmodule Crosswake.ProofLane.NavigationShellAdvisoryTest do
     assert {:error, error} = NavigationShellAdvisory.decode(" " <> bytes)
     refute inspect(error) =~ "answer"
 
-    assert {:error, error} = NavigationShellAdvisory.decode(String.replace(bytes, "advisory", "token"))
+    assert {:error, error} =
+             NavigationShellAdvisory.decode(String.replace(bytes, "advisory", "token"))
+
     refute inspect(error) =~ "token"
   end
 end
