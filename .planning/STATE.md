@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 161
 current_phase_name: ios-pronunciation-pack-seam
-status: ready_to_execute
-stopped_at: Planned 161-15 and 161-16 crash-recovery gap closure
-last_updated: "2026-08-03T23:41:58.000Z"
+status: executing
+stopped_at: Completed 161-15-PLAN.md
+last_updated: "2026-08-04T00:03:17.948Z"
 last_activity: 2026-08-03
-last_activity_desc: Phase 161 verification found one crash-atomic replacement gap
+last_activity_desc: Phase 161 execution started
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 3
   total_plans: 81
-  completed_plans: 79
-  percent: 80
-current_plan: 15
+  completed_plans: 80
+  percent: 60
+current_plan: 16
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 161 (ios-pronunciation-pack-seam) — READY TO EXECUTE
-Plan: 14 of 16 executed
-Status: Gap-closure plans verified and ready to execute
-Last activity: 2026-08-03 — Planned and verified crash-recovery gap closure
+Phase: 161 (ios-pronunciation-pack-seam) — EXECUTING
+Plan: 15 of 16 executed
+Status: Ready to execute the remaining 161-16 crash-recovery gap closure
+Last activity: 2026-08-03 — 161-15 crash-safe replacement recovery verified
 
 ## Active Objective
 
@@ -206,6 +206,7 @@ remains `unknown_blocking`; do not infer concrete adopter routes or promote down
 - [Phase ?]: Schema-v2 pack-audio evidence accepts only ordered operation-derived stable IDs; simulator success remains advisory.
 - [Phase ?]: Phase 161 closure requires fresh repaired-tree evidence for rollback and observed denied-network proof; earlier seals do not suffice.
 - [Phase ?]: Phase 161 reference-adapter success remains simulator-advisory; TODO-002 stays unknown_blocking and Phase 162 alone owns physical-iPhone promotion.
+- [Phase ?]: Crash-safe pack replacement recovery starts once at provider construction and blocks mutation on a memoized failure.
 
 ## Deferred Items
 
@@ -234,8 +235,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-03T23:41:58.000Z
-**Stopped at:** Planned and verified 161-15-PLAN.md and 161-16-PLAN.md
+**Last session:** 2026-08-04T00:03:17.938Z
+**Stopped at:** Completed 161-15-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -315,3 +316,4 @@ this milestone reset.
 | Phase 161-ios-pronunciation-pack-seam P12 | 12min | 1 tasks | 2 files |
 | Phase 161-ios-pronunciation-pack-seam P13 | 14m | 2 tasks | 6 files |
 | Phase 161 P14 | 161s | 1 tasks | 2 files |
+| Phase 161 P15 | recovery continuation | 1 tasks | 2 files |

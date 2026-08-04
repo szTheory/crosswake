@@ -348,7 +348,7 @@ checks at entry and replay.
 **Effort:** 4 Crosswake days; expect 3-5 adopter integration days outside this repo
 **Depends on:** Phase 160
 **Requirements:** PACK-01, PACK-02, PACK-03, PACK-04, PACK-05
-**Plans:** 16 plans (14 executed; 2 gap-closure plans pending)
+**Plans:** 15/16 plans executed
 
 Plans:
 **Wave 1**
@@ -400,7 +400,7 @@ Plans:
 
 **Wave 12** *(crash-recovery gap closure; blocked on the executed Wave 11 gate)*
 
-- [ ] 161-15-PLAN.md — Make replacement publication restart-recoverable with a fsynced host-private journal and deterministic interruption-state tests.
+- [x] 161-15-PLAN.md — Make replacement publication restart-recoverable with a fsynced host-private journal and deterministic interruption-state tests.
 
 **Wave 13** *(blocked on Plan 161-15)*
 
