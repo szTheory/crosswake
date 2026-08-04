@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 161
 current_phase_name: ios-pronunciation-pack-seam
-status: ready_to_execute
-stopped_at: Phase 161 gap closure planned in Plans 17-18
-last_updated: "2026-08-03T22:04:39.000-04:00"
+status: executing
+stopped_at: Completed 161-17-PLAN.md
+last_updated: "2026-08-04T02:17:22.969Z"
 last_activity: 2026-08-03
-last_activity_desc: Phase 161 proof-isolation gap closure planned
+last_activity_desc: Phase 161 execution started
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 3
   total_plans: 83
-  completed_plans: 81
-  percent: 80
+  completed_plans: 82
+  percent: 60
 current_plan: 16
 ---
 
@@ -22,10 +22,10 @@ current_plan: 16
 
 ## Current Position
 
-Phase: 161 (ios-pronunciation-pack-seam) — READY TO EXECUTE
-Plan: 16 of 18 executed
-Status: Plans 161-17 and 161-18 are verified and ready to execute
-Last activity: 2026-08-03 — Phase 161 proof-isolation gap closure planned
+Phase: 161 (ios-pronunciation-pack-seam) — EXECUTING
+Plan: 2 of 18
+Status: Ready to execute
+Last activity: 2026-08-03 — Phase 161 execution started
 
 ## Active Objective
 
@@ -210,6 +210,8 @@ remains the bounded adopter-input gate and adopter-instance completeness remains
 - [Phase ?]: Crash-safe pack replacement recovery starts once at provider construction and blocks mutation on a memoized failure.
 - [Phase ?]: Real XCUI probes provide the executable E1-E4 contract while unit tests retain lifecycle-effect internals.
 - [Phase ?]: Generated iOS verifier run roots normalize logical paths and scope every Xcode discovery/build/test invocation.
+- [Phase ?]: Reference persistence resets only under the exact adapter-and-reset test environment before adapter construction.
+- [Phase ?]: Passing simulator advisory output requires all four unique current-run markers in transcript order plus existing schema-v2 operation evidence.
 
 ## Deferred Items
 
@@ -238,8 +240,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-04T01:21:23.407Z
-**Stopped at:** Completed 161-16-PLAN.md
+**Last session:** 2026-08-04T02:17:22.958Z
+**Stopped at:** Completed 161-17-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -321,3 +323,4 @@ this milestone reset.
 | Phase 161 P14 | 161s | 1 tasks | 2 files |
 | Phase 161 P15 | recovery continuation | 1 tasks | 2 files |
 | Phase 161 P16 | 30m | 2 tasks | 8 files |
+| Phase 161-ios-pronunciation-pack-seam P17 | 15m | 1 tasks | 5 files |
