@@ -5,14 +5,14 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 161.1
 current_phase_name: first-adopter-ios-navigation-shell
 status: planned
-stopped_at: Phase 161.1 context gathered
-last_updated: "2026-08-04T15:24:10.765Z"
+stopped_at: Phase 161.1 planning complete
+last_updated: "2026-08-04T16:45:00.000Z"
 last_activity: 2026-08-04
-last_activity_desc: Phase 161 verified complete (10/10 must-haves)
+last_activity_desc: Phase 161.1 planned and plan-checked (9 plans; NAV-01–NAV-07 covered)
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 85
+  total_plans: 94
   completed_plans: 85
   percent: 67
 current_plan: 0
@@ -22,10 +22,10 @@ current_plan: 0
 
 ## Current Position
 
-Phase: 161.1 (first-adopter-ios-navigation-shell) — READY FOR DISCUSSION
-Plan: 0 planned
+Phase: 161.1 (first-adopter-ios-navigation-shell) — READY TO EXECUTE
+Plan: 9 plans
 Status: Planned
-Last activity: 2026-08-04 — Phase 161 verified complete (10/10 must-haves)
+Last activity: 2026-08-04 — Phase 161.1 planned and plan-checked (9 plans; NAV-01–NAV-07 covered)
 
 ## Active Objective
 
@@ -44,8 +44,9 @@ framework launch.
 
 ## Next Action
 
-Start Phase 161.1 with `$gsd-discuss-phase 161.1`. TODO-002 remains `unknown_blocking` until a
-sanitized adopter route-policy handoff is validated.
+Execute Phase 161.1 with `$gsd-execute-phase 161.1`. TODO-002 remains `unknown_blocking` until a
+sanitized adopter route-policy handoff is validated; its absence is an explicit fail-closed promotion
+gate in the Phase 161.1 plans.
 
 ## Blockers
 
