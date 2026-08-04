@@ -103,6 +103,18 @@ else
 fi
 
 if [[ "$PROOF_LANE" == "1" ]]; then
+  navigation_driver="${PROJECT_ROOT}/CrosswakeProofLane/ProofLaneDriver.swift"
+  navigation_source="$(sed -n '/enum ProofLaneNavigationHostAdapterFactory/,/struct ProofLaneSnapshot/p' "$navigation_driver" 2>/dev/null || true)"
+  if [[ ! -f "$navigation_driver" ]] ||
+     ! grep -Fq "static func make() -> ProofLaneNavigationHostAdapter? {" <<<"$navigation_source" ||
+     ! grep -Fq "nil" <<<"$navigation_source" ||
+     grep -Fq "ProofLaneReferenceNavigationAdapter" <<<"$navigation_source" ||
+     grep -Fq "CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER" <<<"$navigation_source" ||
+     grep -Fq ".passed" <<<"$navigation_source"; then
+    emit_proof_outcome "blocked" "PL-IOS-NAV-SOURCE" "generated-proof-targets"
+    exit 2
+  fi
+
   project="${PROJECT_ROOT}/CrosswakeProofLane.xcodeproj"
   scheme="CrosswakeProofLane"
 else
@@ -191,13 +203,12 @@ if [[ "$PROOF_LANE" == "1" ]]; then
     "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testFixtureInstallReconcilesAfterRelaunch]' passed"
     "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testWrongRequirementAndFailedAudioRemainNonPassing]' passed"
     "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testUnexpectedNetworkObservationBlocksAudioAndEmitsNoEvidence]' passed"
-    "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testNavigationTopologyRejectsInvalidVectors]' passed"
-    "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testNavigationSynchronizationRejectsDuplicateAndStaleTransitions]' passed"
-    "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testNavigationRestorationRemainsNonPassingWithoutAdapter]' passed"
+    "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testNavigationRemainsUnavailableWithoutProductionHostObservations]' passed"
+    "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testReferencePackDoesNotCreateNavigationEvidence]' passed"
     "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testMissingProviderInstallRelaunchAndOfflineAudio]' passed"
     "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAccessibilityReflowContract]' passed"
-    "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testNavigationTabsAndBackAreAdvisory]' passed"
-    "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testNavigationMarkerInsetsAndFocusAreAdvisory]' passed"
+    "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testReferencePackLeavesNavigationUnavailable]' passed"
+    "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testReferencePackNavigationMarkersRemainUnavailable]' passed"
   )
 
   for evidence in "${required_test_evidence[@]}"; do
@@ -218,7 +229,7 @@ if [[ "$PROOF_LANE" == "1" ]]; then
     exit 2
   fi
 
-  expected_navigation_evidence='{"assertion_ids":["PL-IOS-NAV-TOPOLOGY","PL-IOS-NAV-PATCH-DEPTH","PL-IOS-NAV-NAVIGATE-ONCE","PL-IOS-NAV-RESTORE","PL-IOS-NAV-TABS-BACK","PL-IOS-NAV-MARKER-INSETS","PL-IOS-NAV-FOCUS"],"outcome":"passed","scope":"advisory","schema_version":3}'
+  expected_navigation_evidence='{"assertion_ids":["PL-IOS-NAV-TOPOLOGY","PL-IOS-NAV-PATCH-DEPTH","PL-IOS-NAV-NAVIGATE-ONCE","PL-IOS-NAV-RESTORE","PL-IOS-NAV-TABS-BACK","PL-IOS-NAV-MARKER-INSETS","PL-IOS-NAV-FOCUS"],"outcome":"unavailable","scope":"advisory","schema_version":3}'
   if ! grep -Fqx "$expected_navigation_evidence" "$TEST_TRANSCRIPT"; then
     emit_proof_outcome "blocked" "PL-IOS-TEST-EVIDENCE" "generated-proof-targets"
     exit 2
