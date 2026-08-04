@@ -23,6 +23,24 @@ final class ProofLaneContractTests: XCTestCase {
     emitNavigationEvidence(outcome: .unavailable)
   }
 
+  func testPhysicalSequenceRequiresAProductionAdapter() async {
+    let report = await PhysicalIphoneSequence.run(adapter: nil)
+
+    XCTAssertEqual(report.schemaVersion, 1)
+    XCTAssertEqual(report.deviceClass, .physicalIphone)
+    XCTAssertEqual(report.assertions.map(\.id), PhysicalIphoneAssertion.allCases.map(\.rawValue))
+    XCTAssertTrue(report.assertions.allSatisfy { $0.outcome == .unavailable })
+  }
+
+  func testPhysicalReportNeverCarriesHostValues() async throws {
+    let report = await PhysicalIphoneSequence.run(adapter: nil)
+    let data = try JSONEncoder().encode(report)
+    let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+    XCTAssertEqual(Set(object.keys), ["schema_version", "device_class", "assertions"])
+    XCTAssertFalse(String(data: data, encoding: .utf8)!.contains("path"))
+  }
+
   func testFixtureInstallReconcilesAfterRelaunch() async throws {
     ProofLaneReferencePackAdapter.resetReferencePersistenceForTests()
     let adapter = try XCTUnwrap(ProofLaneReferencePackAdapter())
