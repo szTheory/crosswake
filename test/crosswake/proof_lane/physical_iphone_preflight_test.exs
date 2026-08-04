@@ -67,7 +67,8 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
     assert PhysicalIphoneContract.device_class() == :physical_iphone
     assert PhysicalIphoneContract.schema_version() == 1
     assert length(assertions) == 10
-    assert Enum.all?(assertions, &(&1.owner in [:device_local, :backend_authority]))
+    assert Enum.all?(assertions, &(&1.owner in [:device_local, :backend_authority, :evidence_promotion]))
+    assert %{id: "PI-REDACTED-PROMOTION", owner: :evidence_promotion} = List.last(assertions)
     assert Enum.all?(assertions, &String.starts_with?(&1.id, "PI-"))
     assert {:ok, "17.4"} = PhysicalIphoneContract.ios_runtime_line("17.4")
 

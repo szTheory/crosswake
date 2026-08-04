@@ -608,7 +608,8 @@ defmodule Crosswake.ProofLane.Evidence do
         %{"id" => id, "owner" => owner, "outcome" => outcome} = assertion
         when map_size(assertion) == 3 and is_binary(id) and is_binary(owner) and
                is_binary(outcome) ->
-          with {:ok, owner} <- decode_enum(owner, [:device_local, :backend_authority]),
+          with {:ok, owner} <-
+                 decode_enum(owner, [:device_local, :backend_authority, :evidence_promotion]),
                {:ok, outcome} <- decode_enum(outcome, @outcomes) do
             %{id: id, owner: owner, outcome: outcome}
           else

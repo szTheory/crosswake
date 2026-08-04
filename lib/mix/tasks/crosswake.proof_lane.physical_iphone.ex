@@ -1,14 +1,25 @@
 defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
   use Mix.Task
 
-  alias Crosswake.ProofLane.{PhysicalIphoneContract, PhysicalIphonePreflight}
+  alias Crosswake.ProofLane.{
+    Evidence,
+    PhysicalIphoneContract,
+    PhysicalIphoneHost,
+    PhysicalIphonePreflight
+  }
 
   @shortdoc "Runs the host-owned physical-iPhone proof only after closed preflight"
-  @switches [preflight_only: :boolean, run: :boolean, json: :boolean]
+  @switches [preflight_only: :boolean, run: :boolean, promote: :boolean, json: :boolean]
 
   @impl Mix.Task
   def run(args) do
-    case run_with(args, []) do
+    options =
+      case PhysicalIphoneHost.load() do
+        {:ok, host} -> host_options(host)
+        {:error, _} -> []
+      end
+
+    case run_with(args, options) do
       {:ready, contract} ->
         emit(%{outcome: "ready", schema_version: contract.schema_version})
 
@@ -37,7 +48,8 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
         {:ready, contract} ->
           if parsed[:preflight_only] == true,
             do: {:ready, contract},
-            else: invoke_runner(contract, options)
+            else:
+              invoke_runner(contract, Keyword.put(options, :promote, parsed[:promote] == true))
 
         {:blocked, rule_id} ->
           {:blocked, %{outcome: "blocked", rule_id: rule_id}}
@@ -72,15 +84,50 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
     join_reports(contract, device_entries, backend_entries)
   end
 
-  defp invalid_mode?(parsed), do: parsed[:preflight_only] == true == (parsed[:run] == true)
+  defp invalid_mode?(parsed) do
+    parsed[:preflight_only] == true == (parsed[:run] == true) or
+      (parsed[:promote] == true and parsed[:run] != true)
+  end
 
   defp invoke_runner(contract, options) do
     with {:ok, device_report} <- report_from(options, :device_report, contract),
          {:ok, backend_report} <- report_from(options, :backend_report, contract),
-         {:ok, candidate} <- join_reports(contract, device_report, backend_report) do
-      {:passed, candidate}
+         {:ok, candidate} <- join_reports(contract, device_report, backend_report),
+         {:ok, result} <- promote_if_requested(candidate, options) do
+      {:passed, result}
     else
       {:error, rule_id} -> {:blocked, %{outcome: "blocked", rule_id: rule_id}}
+    end
+  end
+
+  defp host_options(host) do
+    case host[:inventory_and_checks].() do
+      options when is_list(options) -> Keyword.drop(host, [:inventory_and_checks]) ++ options
+      _ -> []
+    end
+  end
+
+  defp promote_if_requested(candidate, options) do
+    if Keyword.get(options, :promote, false) do
+      with callback when is_function(callback, 1) <- Keyword.get(options, :evidence_input),
+           destination when is_function(destination, 0) <-
+             Keyword.get(options, :evidence_destination),
+           input when is_map(input) <- callback.(candidate),
+           path when is_binary(path) <- destination.(),
+           :ok <- Evidence.promote(input, path),
+           :ok <- Evidence.check(path, Map.get(input, :approved_hashes, [])) do
+        {:ok,
+         Map.put(
+           candidate,
+           :assertions,
+           candidate.assertions ++
+             [%{id: "PI-REDACTED-PROMOTION", owner: :evidence_promotion, outcome: :passed}]
+         )}
+      else
+        _ -> {:error, "PI-PROMOTION"}
+      end
+    else
+      {:ok, candidate}
     end
   end
 
