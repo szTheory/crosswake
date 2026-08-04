@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 161
 current_phase_name: ios-pronunciation-pack-seam
-status: executing
-stopped_at: Completed 161-18-PLAN.md
-last_updated: "2026-08-04T02:40:40.641Z"
+status: planned
+stopped_at: Phase 161 crash-recovery gap closure planned; Plans 161-19 and 161-20 ready
+last_updated: "2026-08-03T23:25:49-04:00"
 last_activity: 2026-08-03
-last_activity_desc: Phase 161 execution started
+last_activity_desc: Phase 161 gap-closure planning complete — 20 plans total
 progress:
-  total_phases: 5
-  completed_phases: 4
-  total_plans: 83
+  total_phases: 6
+  completed_phases: 3
+  total_plans: 85
   completed_plans: 83
-  percent: 80
-current_plan: 16
+  percent: 50
+current_plan: 0
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 161 (ios-pronunciation-pack-seam) — EXECUTING
-Plan: 3 of 18
+Phase: 161 (ios-pronunciation-pack-seam) — READY TO EXECUTE GAP CLOSURE
+Plan: 18 of 20 executed; Plans 161-19 and 161-20 ready
 Status: Ready to execute
-Last activity: 2026-08-03 — Phase 161 execution started
+Last activity: 2026-08-03 — Phase 161 gap-closure planning complete
 
 ## Active Objective
 
@@ -44,17 +44,11 @@ framework launch.
 
 ## Next Action
 
-Execute the confirmed Phase 161 proof-isolation repair with `$gsd-execute-phase 161`, then re-verify
-before Phase 162. Phase 160 security is reconciled at 37/37 threats closed. TODO-002
-remains the bounded adopter-input gate and adopter-instance completeness remains
-`unknown_blocking`; do not infer concrete adopter routes or promote downstream device claims.
+Execute Plans 161-19 and 161-20 with `$gsd-execute-phase 161`, then re-verify. Phase 161.1 is the
+urgent next feature phase; TODO-002 remains `unknown_blocking` until a sanitized adopter
+route-policy handoff is validated.
 
 ## Blockers
-
-- Phase 161 verification confirms the generated reference-adapter proof can pass from a stale
-  persisted simulator pack because it neither resets test-only storage nor asserts the initial
-  blocked state. Plans 161-17 and 161-18 now cover the repair and fresh same-tree gate; PACK-03
-  remains blocked until those plans execute and verification passes.
 
 - Phase 160 code review WR-01 records a non-blocking browser lifecycle race: fencing during an
   IndexedDB save can leave rating controls owned until reload. The finding remains available for
@@ -70,6 +64,8 @@ remains the bounded adopter-input gate and adopter-instance completeness remains
 - TODO-002 remains open: the route inventory still needs adopter-supplied concrete route IDs/paths,
   mutation actions, staleness, auth sensitivity, expected pronunciation-pack sizes/codecs, and
   fallbacks before adopter-instance promotion.
+
+- Phase 161 CR-01: stale inventory without an installed artifact can create a promotion-pending journal for a retained file that never existed, memoizing startup recovery failure and blocking future pack operations.
 
 ## Decisions
 
@@ -213,6 +209,8 @@ remains the bounded adopter-input gate and adopter-instance completeness remains
 - [Phase ?]: Reference persistence resets only under the exact adapter-and-reset test environment before adapter construction.
 - [Phase ?]: Passing simulator advisory output requires all four unique current-run markers in transcript order plus existing schema-v2 operation evidence.
 - [Phase ?]: Phase 161 final closure retains schema-4 aggregate-only current-run provenance; the host XCTest gate explicitly selects the existing UI accessibility backstops.
+- [Phase 161.1]: Fast-track SEED-006 as a bounded first-adopter iOS navigation shell before Phase 162; keep Android implementation and parity frozen in v21. — Native root tabs, pushed-detail back behavior, safe-area values, and shell detection are prerequisites for the public-v1 iPhone route graph, but generic navigation would exceed the governing ADR.
+- [Phase 161.1]: Phoenix-owned confirmation is the current required fallback, not a permanent architectural ban. — Native alert/confirm may be reconsidered only after physical-iPhone proof, a demonstrated active-adopter route blocker, and an explicit maintainer roadmap decision.
 
 ## Deferred Items
 
@@ -241,8 +239,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-04T02:40:40.630Z
-**Stopped at:** Completed 161-18-PLAN.md
+**Last session:** 2026-08-04T02:58:36.242Z
+**Stopped at:** Phase 161 crash-recovery gap closure planned; Plans 161-19 and 161-20 ready
 **Resume file:** None
 
 ## Performance Metrics
@@ -326,3 +324,9 @@ this milestone reset.
 | Phase 161 P16 | 30m | 2 tasks | 8 files |
 | Phase 161-ios-pronunciation-pack-seam P17 | 15m | 1 tasks | 5 files |
 | Phase 161-ios-pronunciation-pack-seam P18 | 15m | 1 tasks | 2 files |
+
+## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 161.1 inserted after Phase 161: First-Adopter iOS Navigation Shell (URGENT)

@@ -6,7 +6,7 @@
 - ⏹ **v20.0 Native Controls Pack 1** — Phases 153-157 (stopped/partial 2026-07-30; no
   shipped claim or tag)
 
-- 🚧 **v21.0 First B2C Adopter Readiness** — Phases 158-162 (active)
+- 🚧 **v21.0 First B2C Adopter Readiness** — Phases 158-162 plus urgent Phase 161.1 (active)
 
 Older shipped milestones remain indexed in `.planning/MILESTONES.md`.
 
@@ -41,6 +41,10 @@ separately funded business-line mandate.
 
 - [ ] **Phase 161: iOS Pronunciation Pack Seam** — replace simulated availability with one
   host-supplied foreground iOS install path that verifies and atomically installs real bytes.
+
+- [ ] **Phase 161.1: First-Adopter iOS Navigation Shell** — add a bounded, host-owned native tab
+  and pushed-detail shell with typed stack synchronization, live safe-area values, and a
+  declarative shell marker; Android implementation remains frozen.
 
 - [ ] **Phase 162: Physical-iPhone Adoption Proof** — prove offline answers, offline audio,
   kill/relaunch persistence, exactly-once replay, conflict recovery, account isolation, and remote
@@ -348,9 +352,10 @@ checks at entry and replay.
 **Effort:** 4 Crosswake days; expect 3-5 adopter integration days outside this repo
 **Depends on:** Phase 160
 **Requirements:** PACK-01, PACK-02, PACK-03, PACK-04, PACK-05
-**Plans:** 18/18 plans executed
+**Plans:** 18/20 plans executed
 
 Plans:
+
 **Wave 1**
 
 - [x] 161-01-PLAN.md — Trace one exact requirement through real fixture bytes, fresh provider status, and route activation.
@@ -414,6 +419,14 @@ Plans:
 
 - [x] 161-18-PLAN.md — Run the fresh current-run-provenance same-tree gate and retain only privacy-safe aggregate evidence.
 
+**Wave 16** *(crash-recovery gap closure; blocked on the executed Wave 15 plan)*
+
+- [ ] 161-19-PLAN.md — Repair the stale-inventory/no-artifact journal invariant and prove recovery followed by foreground reinstall.
+
+**Wave 17** *(blocked on Plan 161-19)*
+
+- [ ] 161-20-PLAN.md — Run the fresh repaired-tree gate and retain only privacy-safe schema-5 aggregate evidence.
+
 **Smallest shippable version:** One iOS `PackProvider` protocol with foreground status, install, and
 invalidate; no provider means unavailable; availability follows verified size, SHA-256, and atomic
 rename only.
@@ -425,11 +438,41 @@ rename only.
 3. Host and Crosswake ownership is explicit and tested.
 4. Generic native content-pack storage remains a non-claim.
 
+### Phase 161.1: First-Adopter iOS Navigation Shell (INSERTED)
+
+**Goal:** Make the first adopter's root tabs and pushed detail routes feel native on iOS without
+turning Crosswake into a generic navigation framework or changing leaf-route runtime ownership.
+**Target:** 2026-08-11 through 2026-08-13 (strict fast-track time box)
+**Effort:** 2-3 focused days
+**Depends on:** Phase 161
+**Requirements:** NAV-01, NAV-02, NAV-03, NAV-04, NAV-05, NAV-06, NAV-07
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run $gsd-plan-phase 161.1 to break down)
+
+**Smallest shippable version:** One sanitized first-adopter topology drives host-owned iOS root
+tabs and pushed details; `push_patch` does not grow the native stack, `push_navigate` is
+idempotently intercepted, native back stays synchronized, safe-area and keyboard insets are live,
+and app CSS can detect the shell synchronously.
+
+**Success criteria:**
+
+1. Root-tab selection and pushed-detail/back transitions preserve explicit route ownership.
+2. Patch-only study steps never create native history; navigate transitions never duplicate it.
+3. Safe-area changes remain correct through rotation and keyboard presentation without conflating
+   the keyboard with the device safe area.
+
+4. A privacy-safe document-root marker lets one stylesheet distinguish web from iOS shell.
+5. Executable proof covers synchronization, restoration needed by the bounded graph, edge-swipe
+   back, and accessibility focus handoff; Android parity remains an explicit non-claim.
+
 ### Phase 162: Physical-iPhone Adoption Proof
 
 **Target:** 2026-08-14 through 2026-08-18
 **Effort:** 2-3 focused days plus adopter/backend availability
-**Depends on:** Phase 161 and a runnable adopter host
+**Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
 
 **Smallest shippable version:** A dated, redacted physical-iPhone artifact proving the ten-step exit
