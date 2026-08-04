@@ -39,6 +39,15 @@ final class ProofLaneContractTests: XCTestCase {
 
     XCTAssertEqual(Set(object.keys), ["schema_version", "device_class", "assertions"])
     XCTAssertFalse(String(data: data, encoding: .utf8)!.contains("path"))
+    XCTAssertFalse(String(data: data, encoding: .utf8)!.contains("owner"))
+  }
+
+  func testPhysicalContractModeEmitsOwnerFreeReport() async throws {
+    guard ProcessInfo.processInfo.environment["CROSSWAKE_PHYSICAL_IPHONE_CONTRACT_MODE"] == "1" else { return }
+    let report = await PhysicalIphoneSequence.run(adapter: nil)
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.sortedKeys]
+    print(String(decoding: try encoder.encode(report), as: UTF8.self))
   }
 
   func testFixtureInstallReconcilesAfterRelaunch() async throws {

@@ -27,8 +27,7 @@ defmodule CrosswakeProofLaneContractTest do
     "PI-LOGOUT-ACCOUNT-FENCE",
     "PI-ENTRY-DISABLEMENT",
     "PI-REPLAY-DISABLEMENT",
-    "PI-EXACTLY-ONCE-EMPTY-OUTBOX",
-    "PI-REDACTED-PROMOTION"
+    "PI-EXACTLY-ONCE-EMPTY-OUTBOX"
   ]
 
   @callbacks [
@@ -95,8 +94,10 @@ defmodule CrosswakeProofLaneContractTest do
     assert %{retained_count: replay, blocked: true} when is_integer(replay) and replay > 0 <-
              callback!(adapter, :replay_disablement)
 
-    assert Enum.map(@authority_assertions, &%{id: &1, outcome: :passed}) ==
+    assert %{"assertions" => assertions, "device_class" => "physical_iphone", "schema_version" => 1} =
              backend_authority_report()
+
+    assert Enum.map(@authority_assertions, &%{id: &1, outcome: "passed"}) == assertions
   end
 
   defp host_authority! do
@@ -120,6 +121,10 @@ defmodule CrosswakeProofLaneContractTest do
   end
 
   defp backend_authority_report do
-    Enum.map(@authority_assertions, &%{id: &1, outcome: :passed})
+    %{
+      "schema_version" => 1,
+      "device_class" => "physical_iphone",
+      "assertions" => Enum.map(@authority_assertions, &%{"id" => &1, "outcome" => "passed"})
+    }
   end
 end

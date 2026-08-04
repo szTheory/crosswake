@@ -47,6 +47,31 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
 
   def run_with(_, _), do: {:error, "PI-COMMAND-OPTIONS"}
 
+  @doc false
+  @spec parse_report(binary(), :device_local | :backend_authority) ::
+          {:ok, [map()]} | {:error, String.t()}
+  def parse_report(bytes, slot)
+      when is_binary(bytes) and slot in [:device_local, :backend_authority] do
+    with {:ok, envelope} <- decode_exact_envelope(bytes),
+         :ok <- valid_envelope_header(envelope),
+         {:ok, entries} <- exact_entries(envelope["assertions"], slot) do
+      {:ok, entries}
+    end
+  end
+
+  def parse_report(_, _), do: {:error, "PI-REPORT-ENVELOPE"}
+
+  @doc false
+  @spec join_report_entries([map()], [map()]) :: {:ok, map()} | {:error, String.t()}
+  def join_report_entries(device_entries, backend_entries) do
+    contract = %{
+      schema_version: PhysicalIphoneContract.schema_version(),
+      device_class: PhysicalIphoneContract.device_class()
+    }
+
+    join_reports(contract, device_entries, backend_entries)
+  end
+
   defp invalid_mode?(parsed), do: parsed[:preflight_only] == true == (parsed[:run] == true)
 
   defp invoke_runner(contract, options) do
@@ -65,6 +90,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
         try do
           case callback.(contract) do
             report when is_list(report) -> {:ok, report}
+            report when is_binary(report) -> parse_report(report, slot_for(name))
             _ -> {:error, "PI-REPORT-#{report_name(name)}"}
           end
         rescue
@@ -78,15 +104,23 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
     end
   end
 
+  defp slot_for(:device_report), do: :device_local
+  defp slot_for(:backend_report), do: :backend_authority
+
   defp join_reports(contract, device_report, backend_report) do
     report = device_report ++ backend_report
+
+    expected =
+      PhysicalIphoneContract.assertions()
+      |> Enum.reject(&(&1.owner == :evidence_promotion))
 
     cond do
       not owned_by?(device_report, :device_local) or
           not owned_by?(backend_report, :backend_authority) ->
         {:error, "PI-REPORT-OWNER"}
 
-      PhysicalIphoneContract.validate_report(report) != :ok ->
+      Enum.map(report, &Map.take(&1, [:id, :owner, :outcome])) !=
+          Enum.map(expected, &Map.put(&1, :outcome, :passed)) ->
         {:error, "PI-REPORT-COMPLETE"}
 
       not Enum.all?(report, &(&1.outcome == :passed)) ->
@@ -112,6 +146,52 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
 
   defp report_name(:device_report), do: "DEVICE"
   defp report_name(:backend_report), do: "BACKEND"
+
+  defp decode_exact_envelope(bytes) do
+    with {:ok, decoded} <- Jason.decode(bytes),
+         true <- is_map(decoded),
+         true <-
+           Map.keys(decoded) |> MapSet.new() ==
+             MapSet.new(["schema_version", "device_class", "assertions"]) do
+      {:ok, decoded}
+    else
+      _ -> {:error, "PI-REPORT-ENVELOPE"}
+    end
+  end
+
+  defp valid_envelope_header(%{"schema_version" => schema, "device_class" => "physical_iphone"}) do
+    if schema == PhysicalIphoneContract.schema_version(),
+      do: :ok,
+      else: {:error, "PI-REPORT-ENVELOPE"}
+  end
+
+  defp valid_envelope_header(_), do: {:error, "PI-REPORT-ENVELOPE"}
+
+  defp exact_entries(entries, owner) when is_list(entries) do
+    expected =
+      PhysicalIphoneContract.assertions()
+      |> Enum.filter(&(&1.owner == owner))
+
+    parsed =
+      Enum.map(entries, fn
+        %{"id" => id, "outcome" => outcome} = entry
+        when map_size(entry) == 2 and is_binary(id) and
+               outcome in ["passed", "blocked", "unavailable"] ->
+          %{id: id, owner: owner, outcome: String.to_existing_atom(outcome)}
+
+        _ ->
+          :invalid
+      end)
+
+    if Enum.any?(parsed, &(&1 == :invalid)) or
+         Enum.map(parsed, & &1.id) != Enum.map(expected, & &1.id),
+       do: {:error, "PI-REPORT-OWNER"},
+       else: {:ok, parsed}
+  rescue
+    _ -> {:error, "PI-REPORT-ENVELOPE"}
+  end
+
+  defp exact_entries(_, _), do: {:error, "PI-REPORT-ENVELOPE"}
 
   defp emit(result), do: IO.puts(Jason.encode!(result))
 end

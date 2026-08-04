@@ -7,7 +7,7 @@ defmodule Crosswake.ProofLane.PhysicalIphoneContract do
 
   @schema_version 1
   @device_class :physical_iphone
-  @owners [:device_local, :backend_authority]
+  @owners [:device_local, :backend_authority, :evidence_promotion]
   @outcomes [:passed, :blocked, :unavailable]
   @assertions [
     %{id: "PI-PACK-INSTALL-AUDIO", owner: :device_local},
@@ -19,7 +19,7 @@ defmodule Crosswake.ProofLane.PhysicalIphoneContract do
     %{id: "PI-ENTRY-DISABLEMENT", owner: :backend_authority},
     %{id: "PI-REPLAY-DISABLEMENT", owner: :backend_authority},
     %{id: "PI-EXACTLY-ONCE-EMPTY-OUTBOX", owner: :backend_authority},
-    %{id: "PI-REDACTED-PROMOTION", owner: :backend_authority}
+    %{id: "PI-REDACTED-PROMOTION", owner: :evidence_promotion}
   ]
 
   @spec schema_version() :: pos_integer()
@@ -28,7 +28,9 @@ defmodule Crosswake.ProofLane.PhysicalIphoneContract do
   @spec device_class() :: :physical_iphone
   def device_class, do: @device_class
 
-  @spec assertions() :: [%{id: String.t(), owner: :device_local | :backend_authority}]
+  @spec assertions() :: [
+          %{id: String.t(), owner: :device_local | :backend_authority | :evidence_promotion}
+        ]
   def assertions, do: @assertions
 
   @spec ios_runtime_line(term()) :: {:ok, String.t()} | {:error, String.t()}

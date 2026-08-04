@@ -51,6 +51,28 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
              )
   end
 
+  test "canonical owner-free producer envelopes parse only in their trusted slots" do
+    device = canonical_report(:device_local)
+    backend = canonical_report(:backend_authority)
+
+    assert {:ok, device_entries} =
+             PhysicalIphone.parse_report(Jason.encode!(device), :device_local)
+
+    assert {:ok, backend_entries} =
+             PhysicalIphone.parse_report(Jason.encode!(backend), :backend_authority)
+
+    assert {:ok, _candidate} = PhysicalIphone.join_report_entries(device_entries, backend_entries)
+
+    assert {:error, "PI-REPORT-OWNER"} =
+             PhysicalIphone.parse_report(Jason.encode!(device), :backend_authority)
+
+    assert {:error, "PI-REPORT-ENVELOPE"} =
+             PhysicalIphone.parse_report(
+               Jason.encode!(Map.put(device, "owner", "device_local")),
+               :device_local
+             )
+  end
+
   defp device_report do
     Crosswake.ProofLane.PhysicalIphoneContract.assertions()
     |> Enum.filter(&(&1.owner == :device_local))
@@ -61,6 +83,17 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
     Crosswake.ProofLane.PhysicalIphoneContract.assertions()
     |> Enum.filter(&(&1.owner == :backend_authority))
     |> Enum.map(&Map.put(&1, :outcome, :passed))
+  end
+
+  defp canonical_report(owner) do
+    %{
+      "schema_version" => 1,
+      "device_class" => "physical_iphone",
+      "assertions" =>
+        Crosswake.ProofLane.PhysicalIphoneContract.assertions()
+        |> Enum.filter(&(&1.owner == owner))
+        |> Enum.map(&%{"id" => &1.id, "outcome" => "passed"})
+    }
   end
 
   defp ready_options do
