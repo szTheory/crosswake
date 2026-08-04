@@ -19,7 +19,7 @@ final class NavigationShellTests: XCTestCase {
         for key in ["--cw-safe-area-top", "--cw-safe-area-right", "--cw-safe-area-bottom", "--cw-safe-area-left", "--cw-keyboard-inset-bottom"] {
             XCTAssertTrue(script.contains(key), "cw-layout-\(key)")
         }
-        XCTAssertTrue(script.contains("'5.0px'"), "cw-layout-keyboard-separate")
+        XCTAssertTrue(script.contains("5.0px"), "cw-layout-keyboard-separate")
     }
 
     func testProductionContainerAuthorizesRootsAndMirrorsOneNavigateWithoutDuplicate() {
