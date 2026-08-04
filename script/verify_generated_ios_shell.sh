@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROJECT_ROOT_INPUT="${CROSSWAKE_IOS_PROJECT_ROOT:-}"
 PROJECT_ROOT=""
-TMPDIR_ROOT=""
+RUN_ROOT=""
 DERIVED_DATA_ROOT=""
 IOS_SPM_CACHE=""
 TEST_TRANSCRIPT=""
@@ -48,22 +48,43 @@ if ! command -v "$XCODEBUILD" >/dev/null 2>&1; then
 fi
 
 cleanup() {
-  [[ -n "${TMPDIR_ROOT}" ]] && rm -rf "${TMPDIR_ROOT}"
-  [[ -n "${DERIVED_DATA_ROOT}" ]] && rm -rf "${DERIVED_DATA_ROOT}"
-  [[ -n "${IOS_SPM_CACHE}" ]] && rm -rf "${IOS_SPM_CACHE}"
-  [[ -n "${TEST_TRANSCRIPT}" ]] && rm -f "${TEST_TRANSCRIPT}"
+  [[ -n "${RUN_ROOT}" ]] && rm -rf "${RUN_ROOT}"
   return 0
 }
 trap cleanup EXIT
 
+if [[ -n "${CROSSWAKE_IOS_RUN_ROOT:-}" ]]; then
+  RUN_ROOT="${CROSSWAKE_IOS_RUN_ROOT}"
+  case "${RUN_ROOT}" in
+    /|.|..|*"/../"*|*"/./"*)
+      echo "error: invalid iOS verifier run root" >&2
+      exit 1
+      ;;
+  esac
+  if [[ "${RUN_ROOT}" != /* ]]; then
+    echo "error: iOS verifier run root must be absolute" >&2
+    exit 1
+  fi
+  mkdir -p "${RUN_ROOT}"
+else
+  RUN_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-shell.XXXXXX")"
+fi
+chmod 700 "${RUN_ROOT}"
+DERIVED_DATA_ROOT="${RUN_ROOT}/DerivedData"
+IOS_SPM_CACHE="${RUN_ROOT}/SourcePackages"
+TEST_TRANSCRIPT="${RUN_ROOT}/test-transcript.log"
+mkdir -p "${RUN_ROOT}/TMPDIR" "${DERIVED_DATA_ROOT}" "${IOS_SPM_CACHE}"
+
+run_xcodebuild() {
+  TMPDIR="${RUN_ROOT}/TMPDIR" "$XCODEBUILD" "$@"
+}
+
 if [[ -n "${PROJECT_ROOT_INPUT}" ]]; then
   PROJECT_ROOT="$(cd "${ROOT_DIR}" && cd "${PROJECT_ROOT_INPUT}" && pwd)"
 else
-  TMPDIR_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-shell.XXXXXX")"
-  TMPDIR_ROOT="$(cd "${TMPDIR_ROOT}" && pwd -P)"
   cd "${ROOT_DIR}"
   if [[ "$PROOF_LANE" == "1" ]]; then
-    CROSSWAKE_PROOF_LANE_TARGET="${TMPDIR_ROOT}" mix run -e '
+    CROSSWAKE_PROOF_LANE_TARGET="${RUN_ROOT}" mix run -e '
       root = System.fetch_env!("CROSSWAKE_PROOF_LANE_TARGET")
       Application.put_env(:crosswake, :proof_lane,
         route_id: "route-0123456789abcdef", route_path: "/study/:id",
@@ -73,15 +94,12 @@ else
         ios_shell_root: Path.join(root, "native/ios"))
       Mix.Tasks.Crosswake.Gen.ProofLane.run(["ios"])
     ' >/dev/null
-    PROJECT_ROOT="${TMPDIR_ROOT}/native/ios"
+    PROJECT_ROOT="${RUN_ROOT}/native/ios"
   else
-    mix crosswake.gen.shell ios --target "${TMPDIR_ROOT}" >/dev/null
-    PROJECT_ROOT="${TMPDIR_ROOT}/native/ios/crosswake_shell"
+    mix crosswake.gen.shell ios --target "${RUN_ROOT}" >/dev/null
+    PROJECT_ROOT="${RUN_ROOT}/native/ios/crosswake_shell"
   fi
 fi
-
-DERIVED_DATA_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-derived.XXXXXX")"
-IOS_SPM_CACHE="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-spm.XXXXXX")"
 
 if [[ "$PROOF_LANE" == "1" ]]; then
   project="${PROJECT_ROOT}/CrosswakeProofLane.xcodeproj"
@@ -97,7 +115,7 @@ if [[ "$PROOF_LANE" != "1" && "${CROSSWAKE_IOS_USE_LOCAL_CORE:-0}" == "1" ]]; th
   ios_core_remote="https://github.com/szTheory/crosswake-shell-core-ios.git"
   ios_core_version="$(sed -n 's/.*minimumVersion = \([0-9][0-9.]*\);.*/\1/p' "${project}/project.pbxproj" | head -1)"
   if [[ -n "${ios_core_version}" ]]; then
-    ios_core_clone="${TMPDIR_ROOT:-${DERIVED_DATA_ROOT}}/crosswake-ios-core-hermetic"
+    ios_core_clone="${RUN_ROOT}/crosswake-ios-core-hermetic"
     mkdir -p "${ios_core_clone}"
     cp -R "${ROOT_DIR}/packages/crosswake-shell-core-ios/." "${ios_core_clone}/"
     git -C "${ios_core_clone}" -c init.defaultBranch=main init -q
@@ -111,15 +129,17 @@ if [[ "$PROOF_LANE" != "1" && "${CROSSWAKE_IOS_USE_LOCAL_CORE:-0}" == "1" ]]; th
   fi
 fi
 
-project_check="$("$XCODEBUILD" -list -project "$project" -clonedSourcePackagesDirPath "${IOS_SPM_CACHE}" 2>&1)" || {
+project_list_capture="${RUN_ROOT}/project-list.log"
+run_xcodebuild -list -project "$project" -derivedDataPath "${DERIVED_DATA_ROOT}" -clonedSourcePackagesDirPath "${IOS_SPM_CACHE}" >"${project_list_capture}" 2>&1 || {
   if [[ "$PROOF_LANE" == "1" ]]; then
     emit_proof_outcome "unavailable" "PL-IOS-TARGET-ENUMERATION" "generated-target-graph"
     exit 3
   fi
   echo "error: generated scheme is not buildable via xcodebuild -list" >&2
-  printf '%s\n' "$project_check" >&2
+  cat "${project_list_capture}" >&2
   exit 1
 }
+project_check="$(<"${project_list_capture}")"
 
 if [[ "$PROOF_LANE" == "1" ]]; then
   for target in CrosswakeProofLaneTests CrosswakeProofLaneUITests; do
@@ -129,10 +149,12 @@ if [[ "$PROOF_LANE" == "1" ]]; then
     fi
   done
 
-  destinations="$("$XCODEBUILD" -project "$project" -scheme "$scheme" -showdestinations 2>&1)" || {
+  destinations_capture="${RUN_ROOT}/proof-destinations.log"
+  run_xcodebuild -project "$project" -scheme "$scheme" -derivedDataPath "$DERIVED_DATA_ROOT" -clonedSourcePackagesDirPath "$IOS_SPM_CACHE" -showdestinations >"${destinations_capture}" 2>&1 || {
     emit_proof_outcome "unavailable" "PL-IOS-SIMULATOR" "generated-proof-targets"
     exit 3
   }
+  destinations="$(<"${destinations_capture}")"
 
   destination_id="$(printf '%s\n' "$destinations" | awk '
     /platform:iOS Simulator/ && /name:iPhone/ {
@@ -153,13 +175,12 @@ if [[ "$PROOF_LANE" == "1" ]]; then
 
   destination="platform=iOS Simulator,id=$destination_id"
 
-  if ! "$XCODEBUILD" -project "$project" -scheme "$scheme" -destination "$destination" -derivedDataPath "$DERIVED_DATA_ROOT" -clonedSourcePackagesDirPath "$IOS_SPM_CACHE" build-for-testing >/dev/null 2>&1; then
+  if ! run_xcodebuild -project "$project" -scheme "$scheme" -destination "$destination" -derivedDataPath "$DERIVED_DATA_ROOT" -clonedSourcePackagesDirPath "$IOS_SPM_CACHE" build-for-testing >"${RUN_ROOT}/build-for-testing.log" 2>&1; then
     emit_proof_outcome "blocked" "PL-IOS-BUILD-FOR-TESTING" "generated-proof-targets"
     exit 2
   fi
 
-  TEST_TRANSCRIPT="$(mktemp "${TMPDIR:-/tmp}/crosswake-ios-test-transcript.XXXXXX")"
-  if ! CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER="$REFERENCE_PACK_ADAPTER" "$XCODEBUILD" -project "$project" -scheme "$scheme" -destination "$destination" -derivedDataPath "$DERIVED_DATA_ROOT" -clonedSourcePackagesDirPath "$IOS_SPM_CACHE" test-without-building >"$TEST_TRANSCRIPT" 2>&1; then
+  if ! CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER="$REFERENCE_PACK_ADAPTER" TMPDIR="${RUN_ROOT}/TMPDIR" "$XCODEBUILD" -project "$project" -scheme "$scheme" -destination "$destination" -derivedDataPath "$DERIVED_DATA_ROOT" -clonedSourcePackagesDirPath "$IOS_SPM_CACHE" test-without-building >"$TEST_TRANSCRIPT" 2>&1; then
     emit_proof_outcome "blocked" "PL-IOS-TEST-EXECUTION" "generated-proof-targets"
     exit 2
   fi
@@ -199,7 +220,9 @@ if [[ "$BUILD_FOR_TESTING" != "1" ]]; then
   exit 0
 fi
 
-destinations="$("$XCODEBUILD" -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
+destinations_capture="${RUN_ROOT}/shell-destinations.log"
+run_xcodebuild -project "$project" -scheme "$scheme" -derivedDataPath "$DERIVED_DATA_ROOT" -clonedSourcePackagesDirPath "$IOS_SPM_CACHE" -showdestinations >"${destinations_capture}" 2>&1
+destinations="$(<"${destinations_capture}")"
 
 destination_name="$(printf '%s\n' "$destinations" | awk '
   /platform:iOS Simulator/ && /name:iPhone/ {
@@ -271,7 +294,7 @@ app_path="${DERIVED_DATA_ROOT}/Build/Products/Debug-iphonesimulator/${scheme}.ap
 # fail before test execution starts on hosts where pseudo-terminal setup is unavailable.
 # Phase 5's proof goal is the public install path, so this lane proves the built shell
 # can be produced, installed, and launched in a real simulator.
-"$XCODEBUILD" \
+run_xcodebuild \
   -project "$project" \
   -scheme "$scheme" \
   -destination "$destination" \
