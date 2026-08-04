@@ -489,7 +489,7 @@ and app CSS can detect the shell synchronously.
 **Effort:** 2-3 focused days plus adopter/backend availability
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
-**Plans:** 5 plans
+**Plans:** 6 plans
 
 Plans:
 **Wave 1**
@@ -511,6 +511,10 @@ Plans:
 **Wave 5** *(blocked on Wave 4 completion)*
 
 - [ ] 162-05-PLAN.md — Promote the canonical redacted artifact and publish narrow support truth.
+
+**Wave 6** *(gap closure after verification/review)*
+
+- [ ] 162-06-PLAN.md — Repair the closed production promotion path, canonical report envelope, evidence authority, and independent entry/replay gates while physical prerequisites remain blocked.
 
 **Smallest shippable version:** A dated, redacted physical-iPhone artifact proving the ten-step exit
 test in the adopter route-policy map.
