@@ -58,10 +58,10 @@ final class RequiredPackViewTests: XCTestCase {
         XCTAssertTrue(source.contains("VStack(alignment: .leading, spacing: 8) {\n                    Text(\"Owner:"))
     }
 
-    func testAccessibilityXXXLRecoveryCopyWrapsAndControlsRemainReachable() {
+    func testAccessibilityXXXLRecoveryCopyWrapsAndControlsRemainReachable() throws {
         let hosted = hostedView(status: .failed, reason: .digestMismatch)
-        let statusView = try! requiredElement("required-pack-status", in: hosted.rootView)
-        let action = try! requiredElement("required-pack-invalidate-action", in: hosted.rootView)
+        let statusView = try XCTUnwrap(requiredElement("required-pack-status", in: hosted.rootView))
+        let action = try XCTUnwrap(requiredElement("required-pack-invalidate-action", in: hosted.rootView))
 
         XCTAssertTrue(hosted.scrollView.bounds.intersects(action.convert(action.bounds, to: hosted.scrollView)))
         XCTAssertGreaterThanOrEqual(action.bounds.width, 44)
@@ -77,7 +77,7 @@ final class RequiredPackViewTests: XCTestCase {
         XCTAssertTrue(effect.preserveFocus)
     }
 
-    func testAccessibilityXXXLActionLabelsWrapWithoutTruncation() {
+    func testAccessibilityXXXLActionLabelsWrapWithoutTruncation() throws {
         let actions: [(PackState, PackFailureReason?, String, String)] = [
             (.notInstalled, nil, "Install offline audio", "required-pack-primary-action"),
             (.stale, nil, "Update offline audio", "required-pack-primary-action"),
@@ -86,7 +86,7 @@ final class RequiredPackViewTests: XCTestCase {
         ]
         for (state, reason, expectedLabel, identifier) in actions {
             let hosted = hostedView(status: state, reason: reason)
-            let action = try! requiredElement(identifier, in: hosted.rootView)
+            let action = try XCTUnwrap(requiredElement(identifier, in: hosted.rootView))
 
             XCTAssertTrue(hosted.scrollView.bounds.intersects(action.convert(action.bounds, to: hosted.scrollView)))
             XCTAssertGreaterThanOrEqual(action.bounds.width, 44)
@@ -95,9 +95,9 @@ final class RequiredPackViewTests: XCTestCase {
         }
     }
 
-    func testAccessibilityXXXLDeveloperContextWrapsWithoutSensitiveData() {
+    func testAccessibilityXXXLDeveloperContextWrapsWithoutSensitiveData() throws {
         let hosted = hostedView(status: .failed, reason: .transferInterrupted)
-        let owner = try! requiredElement("required-pack-owner", in: hosted.rootView)
+        let owner = try XCTUnwrap(requiredElement("required-pack-owner", in: hosted.rootView))
         let label = hosted.rootView.accessibilityLabel ?? ""
 
         XCTAssertGreaterThan(owner.bounds.height, 44)
@@ -132,11 +132,8 @@ final class RequiredPackViewTests: XCTestCase {
         return HostedView(window: window, rootView: controller.view, scrollView: scrollView)
     }
 
-    private func requiredElement(_ identifier: String, in root: UIView) throws -> UIView {
-        guard let element = descendant(of: root, matching: { $0.accessibilityIdentifier == identifier }) else {
-            throw XCTSkip("missing required accessibility identifier: \(identifier)")
-        }
-        return element
+    private func requiredElement(_ identifier: String, in root: UIView) -> UIView? {
+        descendant(of: root, matching: { $0.accessibilityIdentifier == identifier })
     }
 
     private func descendant(of view: UIView, matching predicate: (UIView) -> Bool) -> UIView? {
