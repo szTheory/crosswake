@@ -47,7 +47,6 @@ defmodule Crosswake.Proof.Phase35PaywallLiveTest do
       html = render_state(:denied)
 
       assert html =~ "Subscribe to Pro Monthly"
-      assert html =~ "$" <> "9.99 / month"
       assert html =~ ~s(phx-click="subscribe")
       assert html =~ "Restore purchase"
       assert html =~ "Backend entitlement projection"

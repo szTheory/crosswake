@@ -212,7 +212,7 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     )
   end
 
-  test "filesystem scanning applies generic privacy rules to every recognized textual artifact" do
+  test "filesystem scanning applies commercial-detail rules to prose artifacts" do
     paths = [
       "guides/unregistered-commercial-note.md",
       "lib/crosswake/unregistered_commercial_scan.ex",
@@ -225,7 +225,7 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
 
     with_temporary_repository(paths, commercial_detail, fn root ->
       expected =
-        paths
+        Enum.filter(paths, &(Path.extname(&1) in [".md"]))
         |> Enum.map(&%{rule_id: "privacy.commercial_detail", path: &1})
         |> Enum.sort_by(& &1.path)
 
@@ -262,7 +262,7 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
              |> Enum.sort_by(& &1.path) == FirstAdopterContext.scan_filesystem(root, [])
     end)
 
-    with_temporary_repository([shell_path, swift_path], "placeholder #{one}", fn root ->
+    with_temporary_repository([shell_path, swift_path], "placeholder #{one} and $0.0", fn root ->
       refute Enum.any?(FirstAdopterContext.scan_filesystem(root, []), fn violation ->
                violation.rule_id == "privacy.commercial_detail"
              end)

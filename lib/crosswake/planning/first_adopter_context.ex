@@ -52,10 +52,10 @@ defmodule Crosswake.Planning.FirstAdopterContext do
   ]
 
   @scannable_extensions ~w(
-    .bak .bat .css .eex .ex .exs .gradle .heex .html .java .js .json .kt .kts .lock .md .mjs
+    .bak .bat .c .css .eex .ex .exs .gradle .heex .html .java .js .json .kt .kts .lock .md .mjs
     .orig .pbxproj .plist .properties .py .sh .svg .swift .tape .toml .ts .tsx .txt .xcscheme .xml .yaml .yml
   )
-  @binary_extensions ~w(.a .app .beam .bundle .dylib .gif .gz .ico .jar .jpeg .jpg .mp3 .mp4 .o .pdf .png .so .webp .zip)
+  @binary_extensions ~w(.a .app .beam .bin .bundle .dylib .gif .gz .ico .jar .jpeg .jpg .mp3 .mp4 .o .pdf .png .so .webp .zip)
   @prose_extensions ~w(.html .md .svg .txt .xml)
   @commercial_context ~r/\b(?:amount|cost|dollar|fee|payment|price|revenue|subscription|usd)\b/i
   @commercial_amount ~r/\$\s*\d+(?:\.\d{1,2})?\b/
@@ -202,7 +202,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
       Regex.match?(@multi_digit_or_decimal_commercial_amount, contents) or
         Enum.any?(String.split(contents, "\n"), &single_digit_commercial_line?/1)
     else
-      Regex.match?(@multi_digit_or_decimal_commercial_amount, contents)
+      false
     end
   end
 
