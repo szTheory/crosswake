@@ -555,6 +555,13 @@ public final class ActivationCoordinator: ObservableObject {
             filteredCapabilities.removeValue(forKey: "file_picker")
         }
 
+        let registeredHostCommands = config.hostBridgeCommandDelegate?.registeredCommands ?? []
+        for key in filteredCapabilities.keys where key.hasPrefix("host.") {
+            if !registeredHostCommands.contains(key) {
+                filteredCapabilities.removeValue(forKey: key)
+            }
+        }
+
         let registeredRoutes = config.routeDelegate?.registeredRoutes ?? []
         for key in filteredCapabilities.keys {
             if key.hasPrefix("route.") {

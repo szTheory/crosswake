@@ -8,6 +8,7 @@ public struct CrosswakeShellConfig {
     public weak var notificationTokenDelegate: NotificationTokenDelegate?
     public weak var shareDelegate: ShareDelegate?
     public weak var filesPickDelegate: FilesPickDelegate?
+    public weak var hostBridgeCommandDelegate: HostBridgeCommandDelegate?
     public weak var routeDelegate: RouteDelegate?
 
     public init(
@@ -18,6 +19,7 @@ public struct CrosswakeShellConfig {
         notificationTokenDelegate: NotificationTokenDelegate? = nil,
         shareDelegate: ShareDelegate? = nil,
         filesPickDelegate: FilesPickDelegate? = nil,
+        hostBridgeCommandDelegate: HostBridgeCommandDelegate? = nil,
         routeDelegate: RouteDelegate? = nil
     ) {
         self.packProvider = packProvider
@@ -27,6 +29,7 @@ public struct CrosswakeShellConfig {
         self.notificationTokenDelegate = notificationTokenDelegate
         self.shareDelegate = shareDelegate
         self.filesPickDelegate = filesPickDelegate
+        self.hostBridgeCommandDelegate = hostBridgeCommandDelegate
         self.routeDelegate = routeDelegate
     }
 
@@ -38,6 +41,9 @@ public struct CrosswakeShellConfig {
         if notificationTokenDelegate != nil { caps.append("notification_token") }
         if shareDelegate != nil { caps.append("share.invoke") }
         if filesPickDelegate != nil { caps.append("file_picker") }
+        if let hostBridgeCommandDelegate {
+            caps.append(contentsOf: hostBridgeCommandDelegate.registeredCommands)
+        }
         if let routeDelegate = routeDelegate {
             caps.append(contentsOf: routeDelegate.registeredRoutes.map { "route.\($0)" })
         }

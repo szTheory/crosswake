@@ -195,7 +195,12 @@ public final class BridgeChannel: NSObject, WKScriptMessageHandler {
             return
         }
 
-        guard let command = BridgeCommand(rawValue: request.command), request.capability == command.capability else {
+        guard let command = BridgeCommand(rawValue: request.command) else {
+            evaluateHostCommand(request, completion: completion)
+            return
+        }
+
+        guard request.capability == command.capability else {
             completion(
                 deny(
                     request,
@@ -399,6 +404,45 @@ public final class BridgeChannel: NSObject, WKScriptMessageHandler {
         }
 
         return SemVer.compatible(provides: request.capabilities[command.capability], demands: requiredCapabilityVersion)
+    }
+
+    private func evaluateHostCommand(
+        _ request: BridgeRequestEnvelope,
+        completion: @escaping (BridgeReplyEnvelope) -> Void
+    ) {
+        guard request.command.hasPrefix("host."), request.capability == request.command,
+              let delegate = config.hostBridgeCommandDelegate,
+              delegate.registeredCommands.contains(request.command),
+              capabilityAvailable(for: request) else {
+            completion(deny(
+                request,
+                reason: "undeclared_capability",
+                message: "The bridge command is outside the host-declared contract.",
+                hint: "Declare the command for this host and active route before retrying."
+            ))
+            return
+        }
+
+        delegate.handle(command: request.command, payload: request.payload, correlationID: request.correlationID) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case let .success(payload):
+                completion(self.ok(request, payload: payload))
+            case let .deny(reason, message, hint):
+                completion(self.deny(request, reason: reason, message: message, hint: hint))
+            }
+        }
+    }
+
+    private func capabilityAvailable(for request: BridgeRequestEnvelope) -> Bool {
+        guard let requiredCapabilityVersion = session.capabilities[request.command] else {
+            return false
+        }
+
+        return SemVer.compatible(
+            provides: request.capabilities[request.command],
+            demands: requiredCapabilityVersion
+        )
     }
 
     private func unavailableCapability(_ request: BridgeRequestEnvelope) -> BridgeReplyEnvelope {
