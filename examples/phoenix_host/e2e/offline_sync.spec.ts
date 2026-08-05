@@ -772,7 +772,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await expect(page.locator('#btn-good')).toBeFocused();
   });
 
-  test('study status retains rejected work and exposes recovery only through a validated host destination', async ({ page, context }) => {
+  test('study status retains rejected work and exposes recovery only through a server-approved route capability', async ({ page, context }) => {
     await page.goto('/offline');
     await waitForInactiveLifecycle(page);
     await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
@@ -791,12 +791,20 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
     await expect(page.locator('#crosswake-review-saved-answers')).toHaveCount(0);
 
-    await page.locator('body').evaluate(body => { body.dataset.recoveryDestination = '/saved-answers'; });
-    await page.evaluate(() => window.crosswakeOfflineStudy.refreshStudyStatus());
-    const review = page.locator('#crosswake-review-saved-answers');
-    await expect(review).toHaveText('Review saved answers');
-    await expect(review).toBeVisible();
-    await expect(review).toBeEnabled();
+    for (const destination of [
+      '/saved-answers',
+      'https://example.test/saved-answers',
+      '//example.test/saved-answers',
+      '://malformed',
+      '/offline',
+    ]) {
+      await page.locator('body').evaluate((body, value) => { body.dataset.recoveryDestination = value; }, destination);
+      await page.evaluate(() => window.crosswakeOfflineStudy.refreshStudyStatus());
+      await expect(page.locator('#crosswake-review-saved-answers')).toHaveCount(0);
+    }
+
+    expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
+    await expect(page.locator('#crosswake-study-status')).toContainText('Some saved answers need review.');
   });
 
   test('study status pauses fenced and disabled work without retry or destructive actions', async ({ page, context }) => {

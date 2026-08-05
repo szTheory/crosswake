@@ -388,12 +388,18 @@ function countScopeMutations(scopeRef) {
 }
 
 function validatedRecoveryDestination() {
+  if (document.body.dataset.recoveryCapability !== 'approved_saved_answers') return null;
+
   const rawDestination = document.body.dataset.recoveryDestination;
   if (typeof rawDestination !== 'string' || rawDestination.length === 0) return null;
 
   try {
     const destination = new URL(rawDestination, window.location.origin);
-    return destination.origin === window.location.origin && destination.protocol === window.location.protocol
+    return destination.origin === window.location.origin &&
+      destination.protocol === window.location.protocol &&
+      destination.pathname === '/saved-answers' &&
+      destination.search === '' &&
+      destination.hash === ''
       ? destination.href
       : null;
   } catch (_) {
