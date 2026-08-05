@@ -44,26 +44,37 @@ defmodule Crosswake.ProofLane.PhysicalIphoneContract do
 
   @spec validate_report(term()) :: :ok | {:error, String.t()}
   def validate_report(report) when is_list(report) do
-    expected_ids = Enum.map(@assertions, & &1.id)
-    supplied_ids = Enum.map(report, &Map.get(&1, :id))
+    if Enum.all?(report, &exact_report_entry_shape?/1) do
+      expected_ids = Enum.map(@assertions, & &1.id)
+      supplied_ids = Enum.map(report, &Map.fetch!(&1, :id))
 
-    cond do
-      length(report) != length(@assertions) or Enum.uniq(supplied_ids) != supplied_ids or
-          Enum.sort(supplied_ids) != Enum.sort(expected_ids) ->
-        {:error, "PI-ASSERTIONS-COMPLETE"}
+      cond do
+        length(report) != length(@assertions) or Enum.uniq(supplied_ids) != supplied_ids or
+            Enum.sort(supplied_ids) != Enum.sort(expected_ids) ->
+          {:error, "PI-ASSERTIONS-COMPLETE"}
 
-      supplied_ids != expected_ids ->
-        {:error, "PI-ASSERTIONS-ORDER"}
+        supplied_ids != expected_ids ->
+          {:error, "PI-ASSERTIONS-ORDER"}
 
-      not Enum.all?(report, &valid_report_entry?/1) ->
-        {:error, "PI-ASSERTIONS-OWNER"}
+        not Enum.all?(report, &valid_report_entry?/1) ->
+          {:error, "PI-ASSERTIONS-OWNER"}
 
-      true ->
-        :ok
+        true ->
+          :ok
+      end
+    else
+      {:error, "PI-ASSERTIONS-COMPLETE"}
     end
   end
 
   def validate_report(_), do: {:error, "PI-ASSERTIONS-COMPLETE"}
+
+  defp exact_report_entry_shape?(entry) when is_map(entry),
+    do:
+      map_size(entry) == 3 and
+        Map.keys(entry) |> MapSet.new() == MapSet.new([:id, :owner, :outcome])
+
+  defp exact_report_entry_shape?(_), do: false
 
   defp valid_report_entry?(%{id: id, owner: owner, outcome: outcome})
        when owner in @owners and outcome in @outcomes do

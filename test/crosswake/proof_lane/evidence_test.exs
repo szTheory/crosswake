@@ -144,6 +144,23 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     end)
   end
 
+  test "physical run-contract malformed assertion entries fail closed without echoing content" do
+    canary = "MALFORMED-PHYSICAL-CANARY"
+
+    for {marker, malformed} <- [
+          {:malformed_nil, nil},
+          {:entry, canary},
+          {:entry, %{}},
+          {:entry, %{"id" => "PI-PACK-INSTALL-AUDIO"}}
+        ] do
+      attrs = %{physical_candidate() | approved_hashes: physical_sources({marker, malformed})}
+
+      assert {:error, error} = Evidence.build(attrs)
+      assert error.rule_id == "PL-EVIDENCE-HASH"
+      refute inspect(error) =~ canary
+    end
+  end
+
   test "rejects D-21 private and raw proof candidates without echoing candidate values" do
     candidates = [
       {:archive_bytes, :assertion_ids, ["CANARY-ARCHIVE-BYTES"]},
@@ -566,7 +583,7 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     }
   end
 
-  defp physical_sources do
+  defp physical_sources(malformed_assertion \\ nil) do
     [
       %{
         kind: :physical_iphone_run_contract,
@@ -576,15 +593,23 @@ defmodule Crosswake.ProofLane.EvidenceTest do
             "device_class" => "physical_iphone",
             "ios_runtime_line" => "18.0",
             "outcome" => "passed",
-            "assertions" =>
-              Crosswake.ProofLane.PhysicalIphoneContract.assertions()
-              |> Enum.map(fn %{id: id, owner: owner} ->
-                %{"id" => id, "owner" => Atom.to_string(owner), "outcome" => "passed"}
-              end)
+            "assertions" => physical_assertions(malformed_assertion)
           })
       }
     ]
   end
+
+  defp physical_assertions(nil) do
+    Crosswake.ProofLane.PhysicalIphoneContract.assertions()
+    |> Enum.map(fn %{id: id, owner: owner} ->
+      %{"id" => id, "owner" => Atom.to_string(owner), "outcome" => "passed"}
+    end)
+  end
+
+  defp physical_assertions({:malformed_nil, nil}), do: [nil | physical_assertions(nil)]
+
+  defp physical_assertions({:entry, malformed_assertion}),
+    do: [malformed_assertion | physical_assertions(nil)]
 
   defp assert_promotion_hook_failure!(error, destination, canary) do
     assert error.rule_id == "PL-EVIDENCE-PROMOTE"

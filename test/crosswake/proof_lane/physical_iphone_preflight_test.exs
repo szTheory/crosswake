@@ -67,7 +67,12 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
     assert PhysicalIphoneContract.device_class() == :physical_iphone
     assert PhysicalIphoneContract.schema_version() == 1
     assert length(assertions) == 10
-    assert Enum.all?(assertions, &(&1.owner in [:device_local, :backend_authority, :evidence_promotion]))
+
+    assert Enum.all?(
+             assertions,
+             &(&1.owner in [:device_local, :backend_authority, :evidence_promotion])
+           )
+
     assert %{id: "PI-REDACTED-PROMOTION", owner: :evidence_promotion} = List.last(assertions)
     assert Enum.all?(assertions, &String.starts_with?(&1.id, "PI-"))
     assert {:ok, "17.4"} = PhysicalIphoneContract.ios_runtime_line("17.4")
@@ -97,6 +102,26 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
              PhysicalIphoneContract.validate_report([
                Map.put(first, :owner, :backend_authority) | rest
              ])
+  end
+
+  test "contract rejects malformed entry shapes without raising" do
+    valid =
+      Enum.map(
+        PhysicalIphoneContract.assertions(),
+        &%{id: &1.id, owner: &1.owner, outcome: :passed}
+      )
+
+    for report <- [
+          [nil],
+          [:bad],
+          [%{}],
+          [%{id: "PI-PACK-INSTALL-AUDIO", owner: :device_local}],
+          [%{id: "PI-PACK-INSTALL-AUDIO", owner: :device_local, outcome: :passed, extra: :bad}],
+          [hd(valid) | [nil | tl(valid)]],
+          [%{"id" => "PI-PACK-INSTALL-AUDIO", "owner" => "device_local", "outcome" => "passed"}]
+        ] do
+      assert {:error, "PI-ASSERTIONS-COMPLETE"} = PhysicalIphoneContract.validate_report(report)
+    end
   end
 
   defp ready_options do
