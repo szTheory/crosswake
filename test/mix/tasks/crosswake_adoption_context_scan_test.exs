@@ -90,75 +90,6 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     end)
   end
 
-  test "raises stable private rule and path for unregistered guide and later-phase artifacts without echoing secret-backed content" do
-    with_temporary_root(fn root ->
-      term = Enum.join(["task", "private", "canary"], "-")
-
-      paths = [
-        "guides/unregistered-adoption-note.md",
-        ".planning/phases/159-host-reusable-proof-lane/159-NOTES.md"
-      ]
-
-      Enum.each(paths, &write_file(root, &1, "prefix #{term} suffix"))
-
-      with_private_terms(term, fn ->
-        error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
-
-        assert error.message ==
-                 paths
-                 |> Enum.map(&"privacy.private_term #{&1}")
-                 |> Enum.sort()
-                 |> Enum.join("\n")
-
-        refute error.message =~ term
-        refute error.message =~ "prefix"
-      end)
-    end)
-  end
-
-  test "scans textual SVG artifacts without echoing secret-backed content" do
-    with_temporary_root(fn root ->
-      path = "guides/route-ownership.svg"
-      term = Enum.join(["svg", "private", "canary"], "-")
-      write_file(root, path, "<svg><text>#{term}</text></svg>")
-
-      with_private_terms(term, fn ->
-        error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
-
-        assert error.message == "privacy.private_term #{path}"
-        refute error.message =~ term
-        refute error.message =~ "<svg>"
-      end)
-    end)
-  end
-
-  test "raises sorted private-term paths for action, script, and future-phase candidates" do
-    with_temporary_root(fn root ->
-      term = Enum.join(["process", "only", "private", "term"], "-")
-
-      paths = [
-        ".github/actions/private-check.yml",
-        "script/private-check.sh",
-        ".planning/phases/999-future-proof/999-NOTES.md"
-      ]
-
-      Enum.each(paths, &write_file(root, &1, "prefix #{term} suffix"))
-
-      with_private_terms(term, fn ->
-        error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
-
-        assert error.message ==
-                 paths
-                 |> Enum.map(&"privacy.private_term #{&1}")
-                 |> Enum.sort()
-                 |> Enum.join("\n")
-
-        refute error.message =~ term
-        refute error.message =~ "prefix"
-      end)
-    end)
-  end
-
   test "raises commercial-detail privacy violations for prose artifacts" do
     with_temporary_root(fn root ->
       paths = [
@@ -185,40 +116,13 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     end)
   end
 
-  test "fails closed when private terms are required but unavailable" do
-    with_temporary_root(fn root ->
-      with_private_terms(nil, fn ->
-        error =
-          assert_raise Mix.Error, fn ->
-            Scan.run(["--root", root, "--require-private-terms"])
-          end
-
-        assert error.message == "privacy.private_terms_required secret.input"
-      end)
-    end)
-  end
-
-  test "workflow runs the protected scan only for trusted provenance and blocks fork bypasses" do
+  test "workflow runs the repository privacy scan without a secret-backed denylist" do
     workflow = File.read!(".github/workflows/hex-page-proof.yml")
 
-    trusted_condition =
-      "github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository"
-
-    fork_condition =
-      "github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository"
-
-    assert workflow =~ "name: Enforce protected first-adopter private-term gate"
-    assert workflow =~ "if: #{trusted_condition}"
-
-    assert workflow =~
-             "CROSSWAKE_PRIVATE_ADOPTER_TERMS: ${{ secrets.CROSSWAKE_PRIVATE_ADOPTER_TERMS }}"
-
-    assert workflow =~ "mix crosswake.adoption_context.scan --require-private-terms"
-
-    assert workflow =~ "name: Block untrusted fork protected-check bypass"
-    assert workflow =~ "if: #{fork_condition}"
-    assert workflow =~ "privacy.private_terms_trusted_maintainer_required"
-    refute workflow =~ "pull_request_target"
+    assert workflow =~ "name: Enforce first-adopter privacy gate"
+    assert workflow =~ "run: mix crosswake.adoption_context.scan"
+    refute workflow =~ "CROSSWAKE_PRIVATE_ADOPTER_TERMS"
+    refute workflow =~ "require-private-terms"
   end
 
   defp with_temporary_root(fun) do
@@ -237,21 +141,5 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     absolute_path = Path.join(root, path)
     File.mkdir_p!(Path.dirname(absolute_path))
     File.write!(absolute_path, contents)
-  end
-
-  defp with_private_terms(value, fun) do
-    previous = System.get_env("CROSSWAKE_PRIVATE_ADOPTER_TERMS")
-
-    if value,
-      do: System.put_env("CROSSWAKE_PRIVATE_ADOPTER_TERMS", value),
-      else: System.delete_env("CROSSWAKE_PRIVATE_ADOPTER_TERMS")
-
-    try do
-      fun.()
-    after
-      if previous,
-        do: System.put_env("CROSSWAKE_PRIVATE_ADOPTER_TERMS", previous),
-        else: System.delete_env("CROSSWAKE_PRIVATE_ADOPTER_TERMS")
-    end
   end
 end
