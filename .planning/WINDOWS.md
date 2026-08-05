@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 11
+open_count: 12
 waived_count: 0
 fixed_count: 0
-total_count: 11
-last_updated: 2026-08-03T02:58:59.173Z
+total_count: 12
+last_updated: 2026-08-05T02:37:57.808Z
 ---
 
 # Broken Windows Ledger
@@ -26,6 +26,7 @@ last_updated: 2026-08-03T02:58:59.173Z
 | 9 | 160 | deviation | examples/phoenix_host/e2e/offline_sync.spec.ts |  | Rule 1 test scope capture correction during legacy browser regression | open |  | 2026-08-03T02:40:38.572Z |  |
 | 10 | 160 | deviation | examples/phoenix_host/e2e/crosswake_proof_lane/proof_lane.spec.ts |  | Generated proof adapter now establishes the existing request-bound test session before online replay | open |  | 2026-08-03T02:58:59.105Z |  |
 | 11 | 160 | deviation | examples/phoenix_host/e2e/offline_sync.spec.ts |  | Activation replay console capture begins after unrelated setup reload teardown | open |  | 2026-08-03T02:58:59.173Z |  |
+| 12 | 162 | deviation | script/verify_physical_iphone_report_contract.sh |  | Plan-named support-matrix Mix task was unavailable; existing support-matrix contract suite was run instead. | open |  | 2026-08-05T02:37:57.808Z |  |
 
 ````json
 [
@@ -159,6 +160,18 @@ last_updated: 2026-08-03T02:58:59.173Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-03T02:58:59.173Z",
+    "resolved_at": null
+  },
+  {
+    "id": 12,
+    "kind": "deviation",
+    "phase": "162",
+    "file": "script/verify_physical_iphone_report_contract.sh",
+    "line": null,
+    "description": "Plan-named support-matrix Mix task was unavailable; existing support-matrix contract suite was run instead.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-05T02:37:57.808Z",
     "resolved_at": null
   }
 ]

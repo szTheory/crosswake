@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
 status: external_gate
-stopped_at: Completed 162-07-PLAN.md; external physical proof remains blocked
-last_updated: "2026-08-05T01:59:49.300Z"
-last_activity: 2026-08-04
-last_activity_desc: Plan 162-07 completed; external physical proof remains blocked
+stopped_at: Completed 162-08-PLAN.md; external physical proof remains blocked
+last_updated: "2026-08-05T02:37:43.921Z"
+last_activity: 2026-08-05
+last_activity_desc: Plan 162-08 completed; code-review gaps closed and external physical proof remains blocked
 progress:
   total_phases: 6
   completed_phases: 6
-  total_plans: 105
-  completed_plans: 105
+  total_plans: 106
+  completed_plans: 106
   percent: 100
 current_plan: 0
 ---
@@ -212,6 +212,8 @@ physical artifact or support claim may be promoted.
 - [Phase 161.1]: Phoenix-owned confirmation is the current required fallback, not a permanent architectural ban. — Native alert/confirm may be reconsidered only after physical-iPhone proof, a demonstrated active-adopter route blocker, and an explicit maintainer roadmap decision.
 - [Phase 162]: Physical proof driver short-circuits every blocked or unavailable host prerequisite before later device operations.
 - [Phase 162]: Physical evidence report entries require exact atom-key shape before semantic validation or canonical evidence acceptance.
+- [Phase ?]: Advisory physical report joins require exact bytes from an executed host-owned Phoenix producer.
+- [Phase ?]: Study-status accessibility tests fail closed without the required host adapter; TODO-002 keeps recovery unavailable.
 
 ## Deferred Items
 
@@ -240,8 +242,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-05T01:59:49.282Z
-**Stopped at:** Completed 162-07-PLAN.md; external physical proof remains blocked
+**Last session:** 2026-08-05T02:37:43.905Z
+**Stopped at:** Completed 162-08-PLAN.md; external physical proof remains blocked
 **Resume file:** None
 
 ## Performance Metrics
@@ -326,6 +328,7 @@ this milestone reset.
 | Phase 161-ios-pronunciation-pack-seam P17 | 15m | 1 tasks | 5 files |
 | Phase 161-ios-pronunciation-pack-seam P18 | 15m | 1 tasks | 2 files |
 | Phase 162 P07 | 20m | 2 tasks | 6 files |
+| Phase 162 P08 | 8m | 3 tasks | 9 files |
 
 ## Accumulated Context
 

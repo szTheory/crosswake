@@ -489,9 +489,12 @@ and app CSS can detect the shell synchronously.
 **Effort:** 2-3 focused days plus adopter/backend availability
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
-**Plans:** 7/7 plans executed
+**Plans:** 8/8 plans executed
 
 Plans:
+
+- [x] 162-08-PLAN.md
+
 **Wave 1**
 
 - [x] 162-01-PLAN.md — Establish the physical-only assertion contract and fail-closed preflight tracer.
