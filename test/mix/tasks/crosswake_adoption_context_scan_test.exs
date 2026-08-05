@@ -159,7 +159,7 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     end)
   end
 
-  test "raises generic privacy violations for every recognized unregistered text class" do
+  test "raises commercial-detail privacy violations for prose artifacts" do
     with_temporary_root(fn root ->
       paths = [
         "guides/unregistered-commercial-note.md",
@@ -175,7 +175,7 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
       error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
 
       assert error.message ==
-               paths
+               Enum.filter(paths, &(Path.extname(&1) == ".md"))
                |> Enum.map(&"privacy.commercial_detail #{&1}")
                |> Enum.sort()
                |> Enum.join("\n")

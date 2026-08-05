@@ -90,9 +90,15 @@ defmodule Crosswake.Manifest.Builder do
     manifest_schema_version = Types.manifest_schema_version()
     source = navigation_source(managed_routes)
 
-    case NavigationTopology.compile(source, manifest_schema_version) do
-      {:ok, topology} -> topology_from_compiled(topology)
-      {:error, _error} -> unknown_navigation_topology(manifest_schema_version)
+    case source do
+      [] ->
+        unknown_navigation_topology(manifest_schema_version)
+
+      _ ->
+        case NavigationTopology.compile(source, manifest_schema_version) do
+          {:ok, topology} -> topology_from_compiled(topology)
+          {:error, _error} -> unknown_navigation_topology(manifest_schema_version)
+        end
     end
     |> ensure_topology_routes_match(routes)
   end

@@ -187,6 +187,13 @@ defmodule Crosswake.Manifest.Validator do
   defp validate_topology_status(errors, _topology),
     do: [topology_error("NT-MANIFEST-STATUS", :status) | errors]
 
+  defp validate_topology_entries(
+         errors,
+         %Types.NavigationTopology{status: :unknown_blocking, entries: []},
+         _routes
+       ),
+       do: errors
+
   defp validate_topology_entries(errors, %Types.NavigationTopology{entries: entries}, routes)
        when is_list(entries) do
     valid_entries = Enum.filter(entries, &valid_topology_entry?/1)
