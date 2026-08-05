@@ -5,10 +5,10 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
 status: external_gate
-stopped_at: Completed 162-08-PLAN.md; external physical proof remains blocked
-last_updated: "2026-08-05T02:37:43.921Z"
+stopped_at: Completed 162-08 gap closure; external physical proof remains blocked
+last_updated: "2026-08-05T03:00:00Z"
 last_activity: 2026-08-05
-last_activity_desc: Plan 162-08 completed; code-review gaps closed and external physical proof remains blocked
+last_activity_desc: Plan 162-08 and final verification completed; external physical proof remains blocked
 progress:
   total_phases: 6
   completed_phases: 6
@@ -23,9 +23,9 @@ current_plan: 0
 ## Current Position
 
 Phase: 162 (physical-iphone-adoption-proof) — EXTERNAL GATE
-Plan: 7 of 7 (fail-closed repair complete)
+Plan: 8 of 8 (fail-closed repairs complete)
 Status: Await TODO-002, eligible host/backend configuration, and a physical iPhone before promotion
-Last activity: 2026-08-05 — Plan 162-07 completed; no physical evidence was promoted
+Last activity: 2026-08-05 — Plan 162-08 and final verification completed; no physical evidence was promoted
 
 ## Active Objective
 
