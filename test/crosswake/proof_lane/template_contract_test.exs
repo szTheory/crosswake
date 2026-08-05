@@ -248,6 +248,17 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
              "app.launchEnvironment.removeValue(forKey: \"CROSSWAKE_PROOF_LANE_RESET_REFERENCE_PACK\")"
   end
 
+  test "Phoenix authority producer emits only after the host callback contract passes" do
+    phoenix = source("priv/templates/crosswake/proof_lane/test/crosswake_proof_lane_test.exs.eex")
+
+    assert phoenix =~ "CROSSWAKE_PHYSICAL_IPHONE_PHOENIX_CONTRACT_MODE"
+    assert phoenix =~ "emit_backend_authority_report()"
+    assert phoenix =~ "IO.write(Jason.encode!(backend_authority_report()))"
+
+    assert position(phoenix, "assert Enum.map(@authority_assertions") <
+             position(phoenix, "emit_backend_authority_report()")
+  end
+
   test "generated iOS lane owns a missing-only real-byte fixture and closed pack callbacks" do
     generator = source("lib/crosswake/proof_lane/generator.ex")
     driver = source("priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex")

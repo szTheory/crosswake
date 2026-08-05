@@ -24,18 +24,31 @@ PROJECT="$RUN_ROOT/native/ios/CrosswakeProofLane.xcodeproj"
 DEVICE_OUT="$RUN_ROOT/device.json"
 PHOENIX_OUT="$RUN_ROOT/backend.json"
 
-CROSSWAKE_PHYSICAL_IPHONE_CONTRACT_MODE=1 xcodebuild test -project "$PROJECT" -scheme CrosswakeProofLane -destination 'platform=iOS Simulator,name=iPhone 16' 2>&1 |
+CROSSWAKE_PHYSICAL_IPHONE_CONTRACT_MODE=1 xcodebuild test -project "$PROJECT" -scheme CrosswakeProofLane -destination 'platform=iOS Simulator,name=iPhone 16' \
+  -only-testing:CrosswakeProofLaneTests/ProofLaneContractTests/testPhysicalContractModeEmitsOwnerFreeReport 2>&1 |
   sed -n 's/.*\({"assertions".*"device_class":"physical_iphone".*}\).*/\1/p' | tail -1 >"$DEVICE_OUT"
 
-if [[ ! -s "$DEVICE_OUT" ]]; then printf '%s\n' 'PI-CONTRACT-DEVICE-REPORT' >&2; exit 2; fi
+if [[ ! -f "$DEVICE_OUT" || ! -s "$DEVICE_OUT" ]]; then printf '%s\n' 'PI-CONTRACT-DEVICE-REPORT' >&2; exit 2; fi
 
-# The generated Phoenix template is rendered by the real generator. Its authority
-# report is deliberately backend-only and owner-free; the focused public test
-# consumes the two raw files unchanged.
-mix test test/mix/tasks/crosswake.proof_lane.physical_iphone_test.exs --only physical_contract_files \
-  --include physical_contract_files --max-failures 1 >/dev/null 2>&1 || true
+# The host provides this explicit producer command after rendering the generated
+# Phoenix test template into its test suite. Its stdout is the sole backend report
+# authority and is intentionally neither logged nor rewritten by this verifier.
+PHOENIX_PRODUCER="${CROSSWAKE_PROOF_LANE_PHOENIX_PRODUCER:-}"
 
-printf '%s' '{"schema_version":1,"device_class":"physical_iphone","assertions":[{"id":"PI-LOGOUT-ACCOUNT-FENCE","outcome":"passed"},{"id":"PI-ENTRY-DISABLEMENT","outcome":"passed"},{"id":"PI-REPLAY-DISABLEMENT","outcome":"passed"},{"id":"PI-EXACTLY-ONCE-EMPTY-OUTBOX","outcome":"passed"}]}' >"$PHOENIX_OUT"
+if [[ -z "$PHOENIX_PRODUCER" ]]; then
+  printf '%s\n' 'PI-CONTRACT-PHOENIX-PRODUCER' >&2
+  exit 2
+fi
+
+if ! bash -c "$PHOENIX_PRODUCER" >"$PHOENIX_OUT"; then
+  printf '%s\n' 'PI-CONTRACT-PHOENIX-PRODUCER' >&2
+  exit 2
+fi
+
+if [[ ! -f "$PHOENIX_OUT" || ! -s "$PHOENIX_OUT" ]]; then
+  printf '%s\n' 'PI-CONTRACT-PHOENIX-REPORT' >&2
+  exit 2
+fi
 
 DEVICE_REPORT_FILE="$DEVICE_OUT" BACKEND_REPORT_FILE="$PHOENIX_OUT" mix run -e '
   alias Mix.Tasks.Crosswake.ProofLane.PhysicalIphone

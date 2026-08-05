@@ -98,6 +98,8 @@ defmodule CrosswakeProofLaneContractTest do
              backend_authority_report()
 
     assert Enum.map(@authority_assertions, &%{id: &1, outcome: "passed"}) == assertions
+
+    emit_backend_authority_report()
   end
 
   defp host_authority! do
@@ -126,5 +128,14 @@ defmodule CrosswakeProofLaneContractTest do
       "device_class" => "physical_iphone",
       "assertions" => Enum.map(@authority_assertions, &%{"id" => &1, "outcome" => "passed"})
     }
+  end
+
+  # The host's explicitly selected advisory producer runs this test with contract
+  # mode enabled. Emission follows every callback assertion so failure, an absent
+  # adapter, or a wrong callback shape terminates before any report bytes exist.
+  defp emit_backend_authority_report do
+    if System.get_env("CROSSWAKE_PHYSICAL_IPHONE_PHOENIX_CONTRACT_MODE") == "1" do
+      IO.write(Jason.encode!(backend_authority_report()))
+    end
   end
 end
