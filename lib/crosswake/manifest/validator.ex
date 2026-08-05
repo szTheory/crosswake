@@ -129,6 +129,16 @@ defmodule Crosswake.Manifest.Validator do
 
   defp validate_navigation_topology(
          errors,
+         %Types.NavigationTopology{status: :unknown_blocking, entries: []} = topology,
+         _routes,
+         manifest_schema_version,
+         compatibility
+       ) do
+    validate_topology_versions(errors, topology, manifest_schema_version, compatibility)
+  end
+
+  defp validate_navigation_topology(
+         errors,
          %Types.NavigationTopology{} = topology,
          routes,
          manifest_schema_version,

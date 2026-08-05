@@ -77,6 +77,17 @@ defmodule Crosswake.Manifest.ValidatorTest do
     assert Enum.any?(errors, &String.contains?(&1.message, "NT-MANIFEST-UNKNOWN_BLOCKING"))
   end
 
+  test "an empty unknown-blocking topology remains a valid non-promoting manifest section" do
+    manifest =
+      topology_manifest([])
+      |> put_in([Access.key!(:navigation_topology), Access.key!(:status)], :unknown_blocking)
+
+    refute Enum.any?(
+             Validator.validate(manifest),
+             &String.contains?(&1.message, "NT-MANIFEST-ROOT_REQUIRED")
+           )
+  end
+
   test "malformed topology entries fail closed without raising or echoing supplied values" do
     secret = "topology-private-canary"
 

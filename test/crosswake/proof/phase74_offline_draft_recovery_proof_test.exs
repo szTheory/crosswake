@@ -6,6 +6,7 @@ defmodule Crosswake.Proof.Phase74OfflineDraftRecoveryProofTest do
   alias Crosswake.Manifest.Types.Root
   alias Crosswake.Manifest.Types.RouteEntry
   alias Crosswake.Manifest.Types.IslandContract
+  alias Crosswake.Manifest.Types.NavigationTopology
   alias Crosswake.Policy.Validator
   alias Crosswake.Policy.Route
 
@@ -17,13 +18,16 @@ defmodule Crosswake.Proof.Phase74OfflineDraftRecoveryProofTest do
     def call(conn, _opts) do
       # Simulates draft ingestion and mutation using the SyncController pattern
       {:ok, body, conn} = Plug.Conn.read_body(conn)
-      
+
       draft = Jason.decode!(body)
-      
+
       if draft["mutation"] == "update_draft" do
         conn
         |> Plug.Conn.put_resp_content_type("application/json")
-        |> Plug.Conn.send_resp(200, Jason.encode!(%{status: "ok", draft_id: draft["id"], synced: true}))
+        |> Plug.Conn.send_resp(
+          200,
+          Jason.encode!(%{status: "ok", draft_id: draft["id"], synced: true})
+        )
       else
         Plug.Conn.send_resp(conn, 400, "invalid mutation")
       end
@@ -62,7 +66,7 @@ defmodule Crosswake.Proof.Phase74OfflineDraftRecoveryProofTest do
       }
 
       errors = Validator.validate([route], [managed_route])
-      
+
       offline_error = Enum.find(errors, &(&1.key == :offline))
       assert offline_error
       assert offline_error.message == "live_view routes cannot declare offline :local_first"
@@ -90,7 +94,7 @@ defmodule Crosswake.Proof.Phase74OfflineDraftRecoveryProofTest do
       }
 
       manifest = manifest(%{"offline-draft-route" => route})
-      
+
       decision = RouteGate.evaluate(manifest, "offline-draft-route", target())
 
       assert route.runtime == :offline_island
@@ -110,7 +114,7 @@ defmodule Crosswake.Proof.Phase74OfflineDraftRecoveryProofTest do
       }
 
       manifest = manifest(%{"cached-route" => route})
-      
+
       decision = RouteGate.evaluate(manifest, "cached-route", target())
 
       assert route.runtime == :live_view
@@ -122,11 +126,16 @@ defmodule Crosswake.Proof.Phase74OfflineDraftRecoveryProofTest do
 
   describe "Local draft ingestion and mutation" do
     test "simulates local draft ingestion and mutation using the SyncController pattern" do
-      conn = Plug.Test.conn(:post, "/sync", Jason.encode!(%{id: "draft-123", mutation: "update_draft"}))
-             |> Plug.Conn.put_req_header("content-type", "application/json")
-      
+      conn =
+        Plug.Test.conn(
+          :post,
+          "/sync",
+          Jason.encode!(%{id: "draft-123", mutation: "update_draft"})
+        )
+        |> Plug.Conn.put_req_header("content-type", "application/json")
+
       conn = FakeSyncController.call(conn, FakeSyncController.init([]))
-      
+
       assert conn.status == 200
       response = Jason.decode!(conn.resp_body)
       assert response["status"] == "ok"
@@ -167,6 +176,12 @@ defmodule Crosswake.Proof.Phase74OfflineDraftRecoveryProofTest do
       capability_registry: %{},
       pack_registry: %{},
       commerce_corridors: %{},
+      navigation_topology: %NavigationTopology{
+        topology_schema_version: "1.0.0",
+        manifest_schema_version: "2.0.0",
+        status: :unknown_blocking,
+        entries: []
+      },
       routes: routes
     }
   end
