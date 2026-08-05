@@ -83,7 +83,6 @@ physical artifact or support claim may be promoted.
 - [Phase ?]: Empty or unknown-blocking inventories are explicitly blocked from promotion.
 - [Phase ?]: Canonical capability rows use adoption_implication; v20_implication remains a renderer input alias for one documented compatibility window.
 - [Phase ?]: Conflicting canonical and legacy implication values fail closed without echoing supplied row content.
-- [Phase ?]: Private-term scans omit plan files that intentionally document the secret-input seam and synthetic canary.
 - [Phase ?]: Executor-state discoverability asserts the active execute command rather than the pre-execution discuss command.
 - [Phase ?]: Policy-contract completion and surface defaults never promote external-host or physical-device support while route inputs are unknown_blocking.
 - [Phase ?]: Public support wording uses first adopter, retains the existing vocabulary, and keeps Android at its frozen generator/Maven/JVM/vector posture.
@@ -91,7 +90,6 @@ physical artifact or support claim may be promoted.
 - [Phase ?]: Local-first promotion requires explicit coherent ownership, mutation, scope, fallback, disablement, retention, and recent-auth authority.
 - [Phase ?]: Approved first-adopter artifacts are discovered through destination-tagged globs, with private-term failures limited to stable rule/path pairs.
 - [Phase ?]: Phase 158 post-gap validation closes defaults-only/incoherent route promotion and unscanned planning-artifact gaps, while adopter-instance input remains unknown_blocking.
-- [Phase ?]: Protected private-term scans run only for trusted same-repository PRs, main pushes, and manual dispatches; fork PRs fail closed without secret exposure.
 - [Phase ?]: Public capability prose uses first adopter throughout rendered output; stable row IDs remain unchanged.
 - [Phase ?]: Final validation records a protected test input only as runtime-assembled neutral fragments and preserves adopter-instance unknown_blocking.
 - [Phase ?]: Durable route IDs use exactly route- plus 16 lowercase hexadecimal characters.
