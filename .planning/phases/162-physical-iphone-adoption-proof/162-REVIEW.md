@@ -1,6 +1,6 @@
 ---
 phase: 162-physical-iphone-adoption-proof
-reviewed: 2026-08-04T23:46:08Z
+reviewed: 2026-08-05T02:09:21Z
 depth: standard
 files_reviewed: 17
 files_reviewed_list:
@@ -23,47 +23,49 @@ files_reviewed_list:
   - test/mix/tasks/crosswake.proof_lane.physical_iphone_test.exs
 findings:
   critical: 1
-  warning: 1
+  warning: 2
   info: 0
-  total: 2
+  total: 3
 status: issues_found
 ---
 
 # Phase 162: Code Review Report
 
-**Reviewed:** 2026-08-04T23:46:08Z
+**Reviewed:** 2026-08-05T02:09:21Z
 **Depth:** standard
 **Files Reviewed:** 17
 **Status:** issues_found
 
 ## Summary
 
-The host-loader, parser/join, and evidence-promotion path are wired and fail closed when the repository has no external physical prerequisites. However, the generated iOS device sequence continues making real host calls after a failed prerequisite, so a deliberately blocked device run can still submit/reconcile mutations. Its public report validator also raises on malformed entries instead of returning its documented closed error.
+The reviewed proof contracts and focused Elixir suite are generally fail-closed for malformed reports and preflight callbacks. However, the proof-verification path fabricates backend authority success, and the generated accessibility contract silently skips its required assertions when no adapter is installed. The recovery-link seam also treats any same-origin URL as validated rather than requiring a host-approved recovery destination.
 
 ## Narrative Findings (AI reviewer)
 
-## Critical Issues
+## Blocker Issues
 
-### CR-01: Failed device prerequisites do not stop later mutation/replay operations
+### BL-01: Advisory dual-authority verifier fabricates Phoenix success
 
-**File:** `priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex:115-120`
-
-**Issue:** `PhysicalIphoneSequence.run` invokes every adapter operation even when `installAndVerifyPack`, `playInstalledAudioOffline`, `enterAuthorizedStudy`, or a submission has already returned `.blocked` or `.unavailable`. The `combine` calls only change the final report; they do not gate execution. Thus a failed pack/entry precondition can still execute selected/free-form submissions and `relaunchWithoutResetAndReconnect`, which may replay real mutations against the host during a run that is known invalid. This breaks the fail-closed physical-proof boundary and risks changing adopter data while no pass can be promoted.
-
-**Fix:** Short-circuit the sequence at each prerequisite failure. Emit blocked/unavailable observations for the unrun remainder, and call study submissions only after authorized entry and offline-audio verification pass. Add a fake adapter test that returns `.blocked` at every step in turn and asserts no subsequent adapter method was invoked.
+**File:** `script/verify_physical_iphone_report_contract.sh:35-38`
+**Issue:** The verifier suppresses failures from the only purported Phoenix producer check using `|| true`, then writes a literal all-passed backend report and joins it with the device report. It can therefore emit a passed contract-verification result even when the generated Phoenix authority test is absent, fails, or emits different bytes. This contradicts the phase's required independent authority proof and creates misleading physical-proof evidence for downstream users of the verifier.
+**Fix:** Run the rendered/generated Phoenix authority producer, fail on any producer failure, and write its exact stdout to `BACKEND_REPORT_FILE`; remove both `|| true` and the hard-coded JSON. Parse and join those produced bytes unchanged.
 
 ## Warnings
 
-### WR-01: Malformed report entries can crash the public validator
+### WR-01: Required physical accessibility assertions silently pass without execution
 
-**File:** `lib/crosswake/proof_lane/physical_iphone_contract.ex:48`
+**File:** `priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift.eex:99-100`
+**Issue:** Each of the three study-status accessibility tests returns successfully when `CROSSWAKE_PROOF_LANE_STUDY_HOST_ADAPTER` is not set (also at lines 123-124 and 149-150). XCTest marks these as passing, so Dynamic Type, focus, announcement, recovery-link, appearance, and motion coverage can disappear without failing the generated proof lane.
+**Fix:** Assert that a production status adapter is present for a physical-status run, or make the test target/configuration unavailable and have the host runner reject that unavailable state before it can be counted as proof. Do not use a bare early return for a required assertion.
 
-**Issue:** `validate_report/1` immediately calls `Map.get/2` for every list element. A caller passing a non-map entry (for example `[nil]` or `[:bad]`) raises `BadMapError` rather than returning `{:error, "PI-ASSERTIONS-COMPLETE"}`. This contradicts the function’s declared return contract and turns malformed untrusted/integration input into a task crash instead of a stable denial.
+### WR-02: Same-origin is treated as recovery-destination validation
 
-**Fix:** Validate that every entry is a map before reading IDs, or pattern-match the map entries in a safe reducer and return the closed error for any other term. Add regression cases for non-map and malformed-map entries.
+**File:** `examples/phoenix_host/priv/static/offline_study.js:390-398`
+**Issue:** `validatedRecoveryDestination()` accepts any same-origin, same-protocol URL from `body.dataset.recoveryDestination`. That is URL syntax/origin validation, not validation that the destination is a host-approved recovery route. A bad host value can expose the recovery CTA for an unrelated or unsafe GET route, contrary to the bounded host-owned recovery seam.
+**Fix:** Have the host provide a closed recovery-route capability (for example, a boolean plus a fixed route ID resolved server-side), or validate against an explicit allowlist of approved recovery paths before rendering the link.
 
 ---
 
-_Reviewed: 2026-08-04T23:46:08Z_
+_Reviewed: 2026-08-05T02:09:21Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
