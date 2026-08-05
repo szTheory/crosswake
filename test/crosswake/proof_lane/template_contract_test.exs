@@ -259,6 +259,18 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
              position(phoenix, "emit_backend_authority_report()")
   end
 
+  test "required study-status UI assertions fail closed without their host adapter" do
+    ui =
+      source(
+        "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift.eex"
+      )
+
+    assert ui =~ "requireStudyStatusHostAdapter()"
+    assert ui =~ "XCTFail(\"PL-STUDY-STATUS-HOST-ADAPTER\")"
+    refute ui =~ "guard hasStudyStatusHostAdapter else { return }"
+    assert ui =~ "CROSSWAKE_PROOF_LANE_STUDY_HOST_ADAPTER"
+  end
+
   test "generated iOS lane owns a missing-only real-byte fixture and closed pack callbacks" do
     generator = source("lib/crosswake/proof_lane/generator.ex")
     driver = source("priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex")

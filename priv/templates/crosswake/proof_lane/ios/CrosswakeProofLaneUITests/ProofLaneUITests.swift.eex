@@ -97,7 +97,7 @@ final class ProofLaneUITests: XCTestCase {
   }
 
   func testStudyStatusAccessibilityContractThroughHostAdapter() {
-    guard hasStudyStatusHostAdapter else { return }
+    guard requireStudyStatusHostAdapter() else { return }
 
     for (state, label, message) in [
       ("saved_locally", "Saved on this iPhone.", "It will sync when you’re back online."),
@@ -120,7 +120,7 @@ final class ProofLaneUITests: XCTestCase {
   }
 
   func testStudyStatusRecoveryAndAccessibilityBackstops() {
-    guard hasStudyStatusHostAdapter else { return }
+    guard requireStudyStatusHostAdapter() else { return }
 
     let app = studyStatusApp(state: "needs_attention", reduceMotion: true)
     let window = app.windows.firstMatch
@@ -147,7 +147,7 @@ final class ProofLaneUITests: XCTestCase {
   }
 
   func testStudyStatusAppearanceMotionAndAnnouncementContract() {
-    guard hasStudyStatusHostAdapter else { return }
+    guard requireStudyStatusHostAdapter() else { return }
 
     for appearance in ["light", "dark", "system"] {
       let app = studyStatusApp(state: "syncing", reduceMotion: true, appearance: appearance)
@@ -176,8 +176,13 @@ final class ProofLaneUITests: XCTestCase {
     return app
   }
 
-  private var hasStudyStatusHostAdapter: Bool {
-    ProcessInfo.processInfo.environment["CROSSWAKE_PROOF_LANE_STUDY_HOST_ADAPTER"] == "1"
+  private func requireStudyStatusHostAdapter() -> Bool {
+    guard ProcessInfo.processInfo.environment["CROSSWAKE_PROOF_LANE_STUDY_HOST_ADAPTER"] == "1" else {
+      XCTFail("PL-STUDY-STATUS-HOST-ADAPTER")
+      return false
+    }
+
+    return true
   }
 
   private func assertClosedOutcome(in app: XCUIApplication, equals expected: String) {
