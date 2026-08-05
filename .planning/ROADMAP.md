@@ -489,7 +489,7 @@ and app CSS can detect the shell synchronously.
 **Effort:** 2-3 focused days plus adopter/backend availability
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
-**Plans:** 6/7 plans executed
+**Plans:** 7/7 plans executed
 
 Plans:
 **Wave 1**
@@ -518,7 +518,7 @@ Plans:
 
 **Wave 7** *(gap closure after verification/review)*
 
-- [ ] 162-07-PLAN.md — Fail-close the generated device sequence and physical-report validation before a real host/device proof run.
+- [x] 162-07-PLAN.md — Fail-close the generated device sequence and physical-report validation before a real host/device proof run.
 
 **Smallest shippable version:** A dated, redacted physical-iPhone artifact proving the ten-step exit
 test in the adopter route-policy map.

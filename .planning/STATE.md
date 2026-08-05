@@ -4,16 +4,16 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
-status: executing
-stopped_at: Plan 162-07 planned; fail-closed repair must execute before physical proof
-last_updated: "2026-08-04T23:41:35.276Z"
+status: external_gate
+stopped_at: Completed 162-07-PLAN.md; external physical proof remains blocked
+last_updated: "2026-08-05T01:59:49.300Z"
 last_activity: 2026-08-04
-last_activity_desc: Plan 162-07 planned to close fail-closed device-sequence and report-validation gaps
+last_activity_desc: Plan 162-07 completed; external physical proof remains blocked
 progress:
   total_phases: 6
   completed_phases: 6
-  total_plans: 104
-  completed_plans: 104
+  total_plans: 105
+  completed_plans: 105
   percent: 100
 current_plan: 0
 ---
@@ -23,9 +23,9 @@ current_plan: 0
 ## Current Position
 
 Phase: 162 (physical-iphone-adoption-proof) — EXTERNAL GATE
-Plan: 6 of 7 (gap-closure repair planned)
-Status: Execute Plan 162-07, then await TODO-002, eligible host/backend configuration, and a physical iPhone
-Last activity: 2026-08-04 — Plan 162-07 planned; no physical evidence was promoted
+Plan: 7 of 7 (fail-closed repair complete)
+Status: Await TODO-002, eligible host/backend configuration, and a physical iPhone before promotion
+Last activity: 2026-08-05 — Plan 162-07 completed; no physical evidence was promoted
 
 ## Active Objective
 
@@ -210,6 +210,8 @@ physical artifact or support claim may be promoted.
 - [Phase 161]: Final closure retains schema-5 aggregate-only current-run provenance; the host XCTest gate observed the repaired stale-inventory recovery/reinstall regression and existing UI accessibility backstops.
 - [Phase 161.1]: Fast-track SEED-006 as a bounded first-adopter iOS navigation shell before Phase 162; keep Android implementation and parity frozen in v21. — Native root tabs, pushed-detail back behavior, safe-area values, and shell detection are prerequisites for the public-v1 iPhone route graph, but generic navigation would exceed the governing ADR.
 - [Phase 161.1]: Phoenix-owned confirmation is the current required fallback, not a permanent architectural ban. — Native alert/confirm may be reconsidered only after physical-iPhone proof, a demonstrated active-adopter route blocker, and an explicit maintainer roadmap decision.
+- [Phase 162]: Physical proof driver short-circuits every blocked or unavailable host prerequisite before later device operations.
+- [Phase 162]: Physical evidence report entries require exact atom-key shape before semantic validation or canonical evidence acceptance.
 
 ## Deferred Items
 
@@ -238,9 +240,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-04T20:45:12.140Z
-**Stopped at:** Phase 162 UI-SPEC approved
-**Resume file:** .planning/phases/162-physical-iphone-adoption-proof/162-UI-SPEC.md
+**Last session:** 2026-08-05T01:59:49.282Z
+**Stopped at:** Completed 162-07-PLAN.md; external physical proof remains blocked
+**Resume file:** None
 
 ## Performance Metrics
 
@@ -323,6 +325,7 @@ this milestone reset.
 | Phase 161 P16 | 30m | 2 tasks | 8 files |
 | Phase 161-ios-pronunciation-pack-seam P17 | 15m | 1 tasks | 5 files |
 | Phase 161-ios-pronunciation-pack-seam P18 | 15m | 1 tasks | 2 files |
+| Phase 162 P07 | 20m | 2 tasks | 6 files |
 
 ## Accumulated Context
 
