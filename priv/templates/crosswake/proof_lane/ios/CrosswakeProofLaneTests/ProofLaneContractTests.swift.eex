@@ -32,6 +32,36 @@ final class ProofLaneContractTests: XCTestCase {
     XCTAssertTrue(report.assertions.allSatisfy { $0.outcome == .unavailable })
   }
 
+  func testPhysicalSequenceStopsAtTheFirstNonPassingHostOperation() async {
+    let operations = PhysicalIphoneOperation.allCases
+
+    for stoppingOutcome in [ProofLaneOutcome.blocked, .unavailable] {
+      for (index, operation) in operations.enumerated() {
+        let adapter = RecordingPhysicalIphoneAdapter(failing: operation, outcome: stoppingOutcome)
+        let report = await PhysicalIphoneSequence.run(adapter: adapter)
+
+        XCTAssertEqual(adapter.calls, Array(operations.prefix(index + 1)))
+        XCTAssertEqual(
+          report.assertions.map(\.id),
+          PhysicalIphoneAssertion.allCases.map(\.rawValue)
+        )
+
+        XCTAssertEqual(
+          report.assertions.map(\.outcome),
+          expectedOutcomes(stoppingAt: operation, outcome: stoppingOutcome)
+        )
+      }
+    }
+  }
+
+  func testPhysicalSequenceCallsEveryOperationOnceWhenAllPass() async {
+    let adapter = RecordingPhysicalIphoneAdapter()
+    let report = await PhysicalIphoneSequence.run(adapter: adapter)
+
+    XCTAssertEqual(adapter.calls, PhysicalIphoneOperation.allCases)
+    XCTAssertTrue(report.assertions.allSatisfy { $0.outcome == .passed })
+  }
+
   func testPhysicalReportNeverCarriesHostValues() async throws {
     let report = await PhysicalIphoneSequence.run(adapter: nil)
     let data = try JSONEncoder().encode(report)
@@ -113,6 +143,58 @@ final class ProofLaneContractTests: XCTestCase {
     guard let data = try? encoder.encode(document),
           let output = String(data: data, encoding: .utf8) else { return }
     print(output)
+  }
+
+  private func expectedOutcomes(
+    stoppingAt operation: PhysicalIphoneOperation,
+    outcome: ProofLaneOutcome
+  ) -> [ProofLaneOutcome] {
+    switch operation {
+    case .install, .audio:
+      return Array(repeating: outcome, count: PhysicalIphoneAssertion.allCases.count)
+    case .entry, .selected:
+      return [.passed, outcome, outcome, outcome, outcome]
+    case .freeForm:
+      return [.passed, .passed, outcome, outcome, outcome]
+    case .relaunch:
+      return [.passed, .passed, .passed, outcome, outcome]
+    case .recovery:
+      return [.passed, .passed, .passed, .passed, outcome]
+    }
+  }
+}
+
+private enum PhysicalIphoneOperation: CaseIterable {
+  case install
+  case audio
+  case entry
+  case selected
+  case freeForm
+  case relaunch
+  case recovery
+}
+
+private final class RecordingPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
+  private(set) var calls: [PhysicalIphoneOperation] = []
+  private let failing: PhysicalIphoneOperation?
+  private let outcome: ProofLaneOutcome
+
+  init(failing: PhysicalIphoneOperation? = nil, outcome: ProofLaneOutcome = .passed) {
+    self.failing = failing
+    self.outcome = outcome
+  }
+
+  func installAndVerifyPack() async -> ProofLaneOutcome { record(.install) }
+  func playInstalledAudioOffline() async -> ProofLaneOutcome { record(.audio) }
+  func enterAuthorizedStudy() async -> ProofLaneOutcome { record(.entry) }
+  func submitSelectedAnswerOffline() async -> ProofLaneOutcome { record(.selected) }
+  func submitFreeFormAnswerOffline() async -> ProofLaneOutcome { record(.freeForm) }
+  func relaunchWithoutResetAndReconnect() async -> ProofLaneOutcome { record(.relaunch) }
+  func observeRecoveryAndRetainedWork() async -> ProofLaneOutcome { record(.recovery) }
+
+  private func record(_ operation: PhysicalIphoneOperation) -> ProofLaneOutcome {
+    calls.append(operation)
+    return failing == operation ? outcome : .passed
   }
 }
 

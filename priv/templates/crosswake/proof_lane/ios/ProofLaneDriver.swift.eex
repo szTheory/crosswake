@@ -90,10 +90,10 @@ struct PhysicalIphoneDeviceReport: Codable {
 
 protocol PhysicalIphoneHostAdapter {
   func installAndVerifyPack() async -> ProofLaneOutcome
+  func playInstalledAudioOffline() async -> ProofLaneOutcome
   func enterAuthorizedStudy() async -> ProofLaneOutcome
   func submitSelectedAnswerOffline() async -> ProofLaneOutcome
   func submitFreeFormAnswerOffline() async -> ProofLaneOutcome
-  func playInstalledAudioOffline() async -> ProofLaneOutcome
   func relaunchWithoutResetAndReconnect() async -> ProofLaneOutcome
   func observeRecoveryAndRetainedWork() async -> ProofLaneOutcome
 }
@@ -112,24 +112,69 @@ enum PhysicalIphoneSequence {
     // There is intentionally no reset operation in this protocol. The host owns
     // any fixture reset between independent recovery/fence cases, never in this
     // uninterrupted offline-submit, terminate/relaunch, and reconnect sequence.
-    let pack = await combine(await adapter.installAndVerifyPack(), await adapter.playInstalledAudioOffline())
-    let entry = await adapter.enterAuthorizedStudy()
-    let selected = await combine(entry, await adapter.submitSelectedAnswerOffline())
-    let freeForm = await combine(selected, await adapter.submitFreeFormAnswerOffline())
-    let relaunch = await combine(freeForm, await adapter.relaunchWithoutResetAndReconnect())
-    let recovery = await adapter.observeRecoveryAndRetainedWork()
+    let install = await adapter.installAndVerifyPack()
+    guard install == .passed else { return terminalReport(install) }
 
-    return report([
-      .packInstallAudio: pack,
-      .offlineSelectedPersistence: selected,
-      .offlineFreeFormPersistence: freeForm,
-      .relaunchPersistence: relaunch,
-      .recoveryRetained: recovery
-    ])
+    let audio = await adapter.playInstalledAudioOffline()
+    guard audio == .passed else { return terminalReport(audio) }
+
+    let entry = await adapter.enterAuthorizedStudy()
+    guard entry == .passed else {
+      return terminalReport(entry, completed: [.packInstallAudio: .passed])
+    }
+
+    let selected = await adapter.submitSelectedAnswerOffline()
+    guard selected == .passed else {
+      return terminalReport(selected, completed: [.packInstallAudio: .passed])
+    }
+
+    let freeForm = await adapter.submitFreeFormAnswerOffline()
+    guard freeForm == .passed else {
+      return terminalReport(
+        freeForm,
+        completed: [.packInstallAudio: .passed, .offlineSelectedPersistence: .passed]
+      )
+    }
+
+    let relaunch = await adapter.relaunchWithoutResetAndReconnect()
+    guard relaunch == .passed else {
+      return terminalReport(
+        relaunch,
+        completed: [
+          .packInstallAudio: .passed,
+          .offlineSelectedPersistence: .passed,
+          .offlineFreeFormPersistence: .passed
+        ]
+      )
+    }
+
+    let recovery = await adapter.observeRecoveryAndRetainedWork()
+    guard recovery == .passed else {
+      return terminalReport(
+        recovery,
+        completed: [
+          .packInstallAudio: .passed,
+          .offlineSelectedPersistence: .passed,
+          .offlineFreeFormPersistence: .passed,
+          .relaunchPersistence: .passed
+        ]
+      )
+    }
+
+    return report(Dictionary(uniqueKeysWithValues: PhysicalIphoneAssertion.allCases.map { ($0, .passed) }))
   }
 
   private static func unavailableReport() -> PhysicalIphoneDeviceReport {
     report(Dictionary(uniqueKeysWithValues: PhysicalIphoneAssertion.allCases.map { ($0, .unavailable) }))
+  }
+
+  private static func terminalReport(
+    _ outcome: ProofLaneOutcome,
+    completed: [PhysicalIphoneAssertion: ProofLaneOutcome] = [:]
+  ) -> PhysicalIphoneDeviceReport {
+    report(Dictionary(uniqueKeysWithValues: PhysicalIphoneAssertion.allCases.map { assertion in
+      (assertion, completed[assertion] ?? outcome)
+    }))
   }
 
   private static func report(_ outcomes: [PhysicalIphoneAssertion: ProofLaneOutcome]) -> PhysicalIphoneDeviceReport {
@@ -140,12 +185,6 @@ enum PhysicalIphoneSequence {
         PhysicalIphoneAssertionObservation(id: assertion.rawValue, outcome: outcomes[assertion] ?? .unavailable)
       }
     )
-  }
-
-  private static func combine(_ first: ProofLaneOutcome, _ second: ProofLaneOutcome) -> ProofLaneOutcome {
-    if first == .passed && second == .passed { .passed }
-    else if first == .blocked || second == .blocked { .blocked }
-    else { .unavailable }
   }
 }
 
