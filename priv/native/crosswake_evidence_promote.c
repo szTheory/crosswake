@@ -1,3 +1,6 @@
+#if defined(__linux__)
+#define _GNU_SOURCE
+#endif
 #define _POSIX_C_SOURCE 200809L
 #if defined(__APPLE__)
 #define _DARWIN_C_SOURCE
@@ -10,6 +13,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 
 #if defined(__linux__)
@@ -126,8 +130,10 @@ static int wait_for_test_release(const char *ready_path, const char *release_pat
     return -1;
   }
   for (attempts = 0; attempts < 500; ++attempts) {
+    const struct timespec pause = {.tv_sec = 0, .tv_nsec = 10000000L};
+
     if (access(release_path, F_OK) == 0) return 0;
-    usleep(10000);
+    if (nanosleep(&pause, NULL) != 0) return -1;
   }
   return -1;
 }

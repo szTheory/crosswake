@@ -14,9 +14,17 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
   )
 
   @tag :tmp_dir
-  test "a zero-exit host run with passed names cannot promote without every ordered marker", %{tmp_dir: tmp} do
+  test "a zero-exit host run with passed names cannot promote without every ordered marker", %{
+    tmp_dir: tmp
+  } do
     assert_marker_failure(tmp, Enum.drop(NavigationShellAdvisory.assertion_ids(), -1))
-    assert_marker_failure(tmp, NavigationShellAdvisory.assertion_ids() ++ [List.last(NavigationShellAdvisory.assertion_ids())])
+
+    assert_marker_failure(
+      tmp,
+      NavigationShellAdvisory.assertion_ids() ++
+        [List.last(NavigationShellAdvisory.assertion_ids())]
+    )
+
     assert_marker_failure(tmp, Enum.reverse(NavigationShellAdvisory.assertion_ids()))
   end
 
@@ -39,6 +47,10 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
   defp run_gate(tmp, markers) do
     bin = Path.join(tmp, "bin-#{System.unique_integer([:positive])}")
     destination = Path.join(tmp, "retained-#{System.unique_integer([:positive])}")
+    real_mix = System.find_executable("mix")
+
+    assert is_binary(real_mix)
+
     File.mkdir_p!(bin)
     write_shims(bin)
 
@@ -46,6 +58,7 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
       cd: File.cwd!(),
       env: [
         {"PATH", bin <> ":" <> System.get_env("PATH", "")},
+        {"CROSSWAKE_REAL_MIX", real_mix},
         {"CROSSWAKE_FIXTURE_MARKERS", Enum.map_join(markers, "\n", &"#{&1}: passed")}
       ],
       stderr_to_stdout: true
@@ -55,12 +68,16 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
   defp write_shims(bin) do
     File.write!(
       Path.join(bin, "mix"),
-      "#!/usr/bin/env bash\nif [ \"${1:-}\" = run ]; then exec /opt/homebrew/bin/mix \"$@\"; fi\nexit 0\n"
+      "#!/usr/bin/env bash\nif [ \"${1:-}\" = run ]; then exec \"$CROSSWAKE_REAL_MIX\" \"$@\"; fi\nexit 0\n"
     )
+
     File.write!(Path.join(bin, "node"), "#!/usr/bin/env bash\nexit 0\n")
     File.write!(Path.join(bin, "swift"), "#!/usr/bin/env bash\nexit 0\n")
 
-    File.write!(Path.join(bin, "xcrun"), "#!/usr/bin/env bash\necho 'iPhone fixture (fixture-id) (Booted)'\n")
+    File.write!(
+      Path.join(bin, "xcrun"),
+      "#!/usr/bin/env bash\necho 'iPhone fixture (fixture-id) (Booted)'\n"
+    )
 
     File.write!(
       Path.join(bin, "xcodebuild"),
