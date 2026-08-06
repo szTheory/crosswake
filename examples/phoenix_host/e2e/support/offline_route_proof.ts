@@ -89,7 +89,8 @@ export async function proveLearnLoopRoute(
 ) {
   const captureScreenshots = options.captureScreenshots ?? true;
 
-  await resetOfflineStudyDatabase(page, options);
+  const session = await page.request.post('/_e2e/replay-session', { data: { action: 'establish' } });
+  expect(session.status(), learnloopProofMessage('learnloop-study-session', 'test replay authority')).toBe(201);
 
   const reset = await page.request.post('/_e2e/showcase-reset');
   expect(reset.ok(), learnloopProofMessage('showcase-reset', 'deterministic LearnLoop reset')).toBe(true);
@@ -207,8 +208,16 @@ export async function proveLearnLoopRoute(
   await expect(page.locator('#flashcard-container'), learnloopProofMessage('learnloop-study-session', 'study cards')).toContainText(
     /Elixir|Loading flashcards/i,
   );
+  await expect(page.locator('#flashcard-container'), learnloopProofMessage('learnloop-study-session', 'study island ready')).not.toContainText(
+    'Loading flashcards...',
+  );
   await expect(page.locator('body'), learnloopProofMessage('learnloop-study-session', 'reset honesty')).toContainText(
     "Server reset does not clear this device's offline state",
+  );
+
+  await page.evaluate(
+    scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef),
+    options.scopeRef ?? 'v1.scope_fixture_alpha_01',
   );
 
   const capturedId = await runOfflineIslandProof(page, context, {
@@ -236,10 +245,17 @@ export async function proveLearnLoopRoute(
     assertOutboxEmpty: () => expectOutboxEmpty(page, options),
     assertDuplicateIdempotency: async (mutationId, record) => {
       const mutation = record as OfflineMutationRecord;
-      const duplicate = await page.request.post('/learnloop/sync', { data: { events: [{ client_mutation_id: mutationId, card_id: mutation.card_id, rating: mutation.rating }] } });
+      const duplicate = await page.request.post('/learnloop/sync', {
+        data: {
+          scope_ref: options.scopeRef ?? 'v1.scope_fixture_alpha_01',
+          events: [{ client_mutation_id: mutationId, card_id: mutation.card_id, rating: mutation.rating }],
+        },
+      });
       expect(duplicate.ok(), learnloopProofMessage('learnloop-study-session', 'duplicate replay accepted as idempotent request')).toBe(true);
       const duplicateBody = await duplicate.json();
-      expect(duplicateBody.data.accepted_count, learnloopProofMessage('learnloop-study-session', 'duplicate replay creates no second row')).toBe(0);
+      expect(duplicateBody.data.accepted_records, learnloopProofMessage('learnloop-study-session', 'duplicate replay preserves one row')).toEqual([
+        { client_mutation_id: mutationId, outcome: 'accepted' },
+      ]);
       await expectSyncedReview(page.request, mutationId, 1);
       await expectOutboxEmpty(page, options);
     },
@@ -273,6 +289,13 @@ export async function resetOfflineStudyDatabase(page: Page, options: OfflineRout
   const databaseName = options.databaseName ?? DEFAULT_OFFLINE_STUDY_DB;
 
   await page.addInitScript((dbName: string) => {
+    const resetKey = `crosswake-offline-proof-reset:${dbName}`;
+
+    if (sessionStorage.getItem(resetKey)) {
+      return;
+    }
+
+    sessionStorage.setItem(resetKey, 'true');
     indexedDB.deleteDatabase(dbName);
   }, databaseName);
 }

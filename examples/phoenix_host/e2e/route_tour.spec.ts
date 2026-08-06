@@ -371,6 +371,7 @@ async function proveOfflineRoute(page: Page, context: BrowserContext) {
   await expect(page, ownerMessage('offline-study', 'browser title')).toHaveTitle('Offline Study · LearnLoop · Crosswake');
   expect(await page.evaluate(() => !!window.liveSocket), ownerMessage('offline-study', 'offline_island')).toBe(false);
   await expect(page.locator('#flashcard-container'), ownerMessage('offline-study', 'offline_island')).toContainText('Elixir');
+  await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), 'v1.scope_fixture_alpha_01');
 
   await context.setOffline(true);
   await page.click('#btn-flip');
@@ -382,8 +383,9 @@ async function proveOfflineRoute(page: Page, context: BrowserContext) {
   expect(mutations[0].rating, ownerMessage('offline-study', 'offline_island')).toBe('good');
 
   await context.setOffline(false);
+  const syncResponse = page.waitForResponse(response => response.url().includes('/study/sync') && response.status() === 200);
   await page.evaluate(() => window.dispatchEvent(new Event('online')));
-  await page.waitForResponse(response => response.url().includes('/study/sync') && response.status() === 200);
+  await syncResponse;
 
   await expectSyncedReview(page.request, mutations[0].client_mutation_id);
   await expectOutboxEmpty(page);
@@ -400,7 +402,9 @@ async function proveOfflineRoute(page: Page, context: BrowserContext) {
   });
   expect(duplicate.ok(), ownerMessage('offline-study', 'offline_island')).toBe(true);
   const body = await duplicate.json();
-  expect(body.data.accepted_count, ownerMessage('offline-study', 'offline_island')).toBe(0);
+  expect(body.data.accepted_records, ownerMessage('offline-study', 'offline_island')).toEqual([
+    { client_mutation_id: mutations[0].client_mutation_id, outcome: 'accepted' },
+  ]);
   await expectSyncedReview(page.request, mutations[0].client_mutation_id);
 }
 

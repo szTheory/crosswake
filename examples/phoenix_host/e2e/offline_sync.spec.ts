@@ -327,12 +327,11 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
 
     await page.goto('/offline');
     await waitForInactiveLifecycle(page);
-    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
     await page.evaluate(() => {
       (window as any).__immediateOnlineFailure = { readonlyCalls: 0, storageFailures: 0, rejections: 0 };
       const transaction = IDBDatabase.prototype.transaction;
-      IDBDatabase.prototype.transaction = function (stores, mode, options) {
-        if (stores === 'scoped_mutations' && mode === 'readonly') {
+      IDBDatabase.prototype.transaction = function (...args) {
+        if (args[0] === 'scoped_mutations' && args[1] === 'readonly') {
           const failure = (window as any).__immediateOnlineFailure;
           failure.readonlyCalls += 1;
           if (failure.readonlyCalls === 2) {
@@ -340,18 +339,25 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
             throw new Error('worker storage failure');
           }
         }
-        return transaction.call(this, stores, mode, options);
+        return transaction.apply(this, args as any);
       };
       window.addEventListener('unhandledrejection', event => {
         (window as any).__immediateOnlineFailure.rejections += 1;
         event.preventDefault();
       });
     });
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+
+    // Scope activation performs the first, empty outbox read. Wait for it so the
+    // injected second read belongs to the replay triggered by this mutation,
+    // rather than to this test's later observation of IndexedDB.
+    await expect.poll(async () => page.evaluate(() => (window as any).__immediateOnlineFailure.readonlyCalls)).toBe(1);
 
     await page.click('#btn-flip');
     await page.click('#btn-good');
 
     await expect(page.locator('#crosswake-study-status')).toContainText('Your saved answers remain on this iPhone.');
+    await expect.poll(async () => page.evaluate(() => (window as any).__immediateOnlineFailure.storageFailures)).toBe(1);
     expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
     expect(await page.evaluate(() => (window as any).__immediateOnlineFailure.storageFailures)).toBe(1);
     expect(pageErrors).toEqual([]);
