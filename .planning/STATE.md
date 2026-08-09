@@ -333,3 +333,6 @@ this milestone reset.
 ### Roadmap Evolution
 
 - Phase 161.1 inserted after Phase 161: First-Adopter iOS Navigation Shell (URGENT)
+- Phase 163 added: Alpha Reference Host Integration. It is the bounded eligible-host build needed
+  to unblock Phase 162's physical-iPhone proof; Phase 162 remains an external device-evidence
+  gate until the resulting host and signed iPhone run are available.
