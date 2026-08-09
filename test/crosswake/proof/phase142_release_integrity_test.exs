@@ -822,6 +822,14 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   end
 
   @tag :phase143_auto_publish
+  test "companion release tests keep their local-core contract" do
+    helper = guarded_helper()
+
+    assert helper =~ "run_without_release_env bash -lc \"$TEST_CMD\""
+    assert helper =~ "run_with_release_env mix compile --warnings-as-errors"
+  end
+
+  @tag :phase143_auto_publish
   test "missing already-live helper preflight fails with stable check id" do
     helper =
       guarded_helper()

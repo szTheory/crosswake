@@ -25,6 +25,7 @@ VERSION_FILE=""
 RELEASE_ENV=""
 TEST_CMD=""
 PUBLISH_CMD=""
+TEMP_FILES=()
 
 log() {
   echo "[crosswake] $*"
@@ -172,15 +173,34 @@ run_with_release_env() {
   "$@"
 }
 
+run_without_release_env() {
+  env -u CROSSWAKE_RELEASE "$@"
+}
+
+cleanup_temp_files() {
+  if [ "${#TEMP_FILES[@]}" -gt 0 ]; then
+    rm -f "${TEMP_FILES[@]}"
+  fi
+}
+
+trap cleanup_temp_files EXIT
+
 run_mix_bar() {
   log "package=${PACKAGE} version=${VERSION} ref=${RELEASE_REF} checked_sha=${CHECKED_SHA}"
   log "registry=hex.pm state=publish-required proof=run package mix bar"
 
   (
     cd "$REPO_ROOT/$WORKDIR"
+    # Companion proof tests exercise in-tree integration contracts, including
+    # test-only core support. They must use the local path dependency. The
+    # release resolver is still compiled below and used by the dry-run/publish
+    # steps, so the emitted tarball remains honest about its public Hex floor.
+    run_without_release_env mix deps.get
+    run_without_release_env mix compile --warnings-as-errors
+    run_without_release_env bash -lc "$TEST_CMD"
+
     run_with_release_env mix deps.get
     run_with_release_env mix compile --warnings-as-errors
-    run_with_release_env bash -lc "$TEST_CMD"
   )
 }
 
@@ -215,7 +235,7 @@ poll_hex_release() {
 
   body_file=$(mktemp "${TMPDIR:-/tmp}/crosswake-hex-release-XXXXXX.json")
   code_file=$(mktemp "${TMPDIR:-/tmp}/crosswake-hex-code-XXXXXX")
-  trap 'rm -f "$body_file" "$code_file"' RETURN
+  TEMP_FILES+=("$body_file" "$code_file")
 
   for i in $(seq 1 "$max_attempts"); do
     hex_release_state "$body_file" "$code_file"
@@ -251,7 +271,7 @@ main() {
 
   body_file=$(mktemp "${TMPDIR:-/tmp}/crosswake-hex-preflight-XXXXXX.json")
   code_file=$(mktemp "${TMPDIR:-/tmp}/crosswake-hex-code-XXXXXX")
-  trap 'rm -f "$body_file" "$code_file"' EXIT
+  TEMP_FILES+=("$body_file" "$code_file")
 
   hex_release_state "$body_file" "$code_file"
   code=$(cat "$code_file")
