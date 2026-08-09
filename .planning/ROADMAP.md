@@ -568,5 +568,18 @@ test in the adopter route-policy map.
 The only boundary movement allowed in v21 is privacy-safe envelope constraints, reusable test
 scaffolding, and one host-supplied foreground iOS pack adapter.
 
+### Phase 163: Alpha Reference Host Integration
+
+**Goal:** Make the bounded Alpha reference host the eligible host for the existing physical-iPhone
+proof: one integrity-verified offline card/image/audio bundle, one scoped review replay flow, and
+real host-owned authority without creating a generic content or sync system.
+**Requirements**: ALPHA-01, ALPHA-02, ALPHA-03, ALPHA-04
+**Depends on:** Phase 161.1 and the published `crosswake_sigra` hosted-session interoperability release
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-discuss-phase 163, then /gsd-plan-phase 163 to break down)
+
 ---
 *Roadmap reset: 2026-07-30*
