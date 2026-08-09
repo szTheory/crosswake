@@ -13,6 +13,13 @@ requirement declares a compatible-core floor, not a lockstep pin. See
 `guides/companion_compatibility.md` in the core repo for the cross-package
 compatibility matrix.
 
+## [0.1.1](https://github.com/szTheory/crosswake/compare/crosswake_chimeway-v0.1.0...crosswake_chimeway-v0.1.1) (2026-08-09)
+
+
+### Bug Fixes
+
+* align browser proof fixtures with scoped replay ([21dd21b](https://github.com/szTheory/crosswake/commit/21dd21b3dca1550166339c68ea0afd84b95843c3))
+
 ## [0.1.0](https://github.com/szTheory/crosswake/compare/crosswake_chimeway-v0.1.0...crosswake_chimeway-v0.1.0) (2026-07-04)
 
 
