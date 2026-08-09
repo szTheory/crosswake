@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Independent versioning
 
 `crosswake_sigra` is versioned **independently** of core `crosswake` — it is NOT
-in the lockstep `linked-versions` release group. The `{:crosswake, "~> 0.1"}`
+ in the lockstep `linked-versions` release group. The `{:crosswake, "~> 0.2"}`
 requirement declares a compatible-core floor, not a lockstep pin. See
 `guides/companion_compatibility.md` in the core repo for the cross-package
 compatibility matrix.
