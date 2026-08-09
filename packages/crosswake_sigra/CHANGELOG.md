@@ -13,6 +13,18 @@ requirement declares a compatible-core floor, not a lockstep pin. See
 `guides/companion_compatibility.md` in the core repo for the cross-package
 compatibility matrix.
 
+## [0.1.2](https://github.com/szTheory/crosswake/compare/crosswake_sigra-v0.1.1...crosswake_sigra-v0.1.2) (2026-08-09)
+
+
+### Features
+
+* **crosswake-sigra:** support personal hosted returns ([#113](https://github.com/szTheory/crosswake/issues/113)) ([4b202ab](https://github.com/szTheory/crosswake/commit/4b202aba99b5d499823f8be0a60e43ca365cd19f))
+
+
+### Bug Fixes
+
+* align browser proof fixtures with scoped replay ([21dd21b](https://github.com/szTheory/crosswake/commit/21dd21b3dca1550166339c68ea0afd84b95843c3))
+
 ## [0.1.1](https://github.com/szTheory/crosswake/compare/crosswake_sigra-v0.1.0...crosswake_sigra-v0.1.1) (2026-07-03)
 
 
