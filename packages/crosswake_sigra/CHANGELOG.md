@@ -13,6 +13,13 @@ requirement declares a compatible-core floor, not a lockstep pin. See
 `guides/companion_compatibility.md` in the core repo for the cross-package
 compatibility matrix.
 
+## [0.1.3](https://github.com/szTheory/crosswake/compare/crosswake_sigra-v0.1.2...crosswake_sigra-v0.1.3) (2026-08-09)
+
+
+### Bug Fixes
+
+* **release:** preserve local companion proof contract ([#117](https://github.com/szTheory/crosswake/issues/117)) ([5597c34](https://github.com/szTheory/crosswake/commit/5597c3455b6fa309d7fa56957f55715549c2045f))
+
 ## [0.1.2](https://github.com/szTheory/crosswake/compare/crosswake_sigra-v0.1.1...crosswake_sigra-v0.1.2) (2026-08-09)
 
 
