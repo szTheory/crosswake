@@ -1,5 +1,20 @@
 # Project Milestones: Crosswake
 
+## v20.0 Native Controls Pack 1 (Stopped / Partial: 2026-07-30)
+
+This milestone is recorded for history but is not a shipped release and has no completion tag.
+Phases 153-155 produced retained release, CI, typed-bridge, and generated-fallback substrate.
+Phases 156-157 were stopped because native-menu breadth and bundled support-promotion work do not
+unblock the first real adopter's iPhone/offline path.
+
+**Archive:**
+
+- `.planning/milestones/v20.0-ROADMAP.md`
+- `.planning/milestones/v20.0-REQUIREMENTS.md`
+- `.planning/v20.0-MILESTONE-AUDIT.md`
+
+---
+
 ## v19.0 Showcase Apps & Capability Map (Shipped: 2026-07-12)
 
 **Phases completed:** 7 phases, 33 plans, 83 tasks

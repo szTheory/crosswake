@@ -4,7 +4,7 @@ defmodule Crosswake.Telemetry do
 
   `events/0` returns the runtime-aggregated catalog of every `:telemetry`
   event Crosswake emits across companion spans, doctor, threadline, sigra,
-  and chimeway subsystems. Call it at runtime — not at compile time.
+  chimeway, and bridge subsystems. Call it at runtime — not at compile time.
 
   Telemetry events are **public API**: additions are non-breaking minors;
   removals or renames are breaking majors requiring a semver major bump.
@@ -18,6 +18,7 @@ defmodule Crosswake.Telemetry do
   """
 
   require Logger
+  alias Crosswake.Offline.SafeObservation
 
   @typedoc """
   A self-describing telemetry event catalog entry.
@@ -29,12 +30,12 @@ defmodule Crosswake.Telemetry do
   - `metadata` — list of metadata key atoms emitted in the metadata map (key names only, no PII values)
   """
   @type event_doc :: %{
-    event: [atom()],
-    tier: :active | :reserved,
-    description: String.t(),
-    measurements: [atom()],
-    metadata: [atom()]
-  }
+          event: [atom()],
+          tier: :active | :reserved,
+          description: String.t(),
+          measurements: [atom()],
+          metadata: [atom()]
+        }
 
   # The 11-atom core PII baseline denylist (D-136-A / DECOUPLE-05 / D-5 Phase 139).
   # Always applied regardless of companion presence — an absent/misconfigured companion
@@ -123,6 +124,13 @@ defmodule Crosswake.Telemetry do
   defp build_active_events do
     [
       %{
+        event: [:crosswake, :offline, :replay],
+        tier: :active,
+        description: "Emitted for a closed scoped-replay observation.",
+        measurements: [:attempt_count, :event_count, :duration_ms],
+        metadata: [:route_id, :runtime, :lifecycle, :outcome, :denial]
+      },
+      %{
         event: [:crosswake, :companion, :dependency_check],
         tier: :active,
         description:
@@ -173,6 +181,67 @@ defmodule Crosswake.Telemetry do
             "Metadata includes thread_id, correlation_id, route_id, and source.",
         measurements: [:system_time, :duration],
         metadata: [:thread_id, :correlation_id, :route_id, :source]
+      },
+      %{
+        event: [:crosswake, :bridge, :push],
+        tier: :active,
+        description:
+          "Emitted when Crosswake.Bridge.push/3 dispatches a bounded capability to the " <>
+            "native shell. Start measurements include system_time; stop measurements " <>
+            "include duration. Metadata includes route_id, capability, and command — " <>
+            "never the adopter-supplied ref, which stays library-internal and never " <>
+            "enters telemetry (D-20).",
+        measurements: [:system_time, :duration],
+        metadata: [:route_id, :capability, :command]
+      },
+      %{
+        event: [:crosswake, :bridge, :reply],
+        tier: :active,
+        description:
+          "Emitted when a bridge ask resolves to a delivered reply (ok or deny) — whether " <>
+            "or not the adopter passed a ref: and receives it in handle_info/2 (D-21). " <>
+            "Start measurements include system_time; stop measurements include duration. " <>
+            "Metadata includes route_id, command, and status; deny replies also carry " <>
+            "denial_reason, drawn from the closed 14-reason Crosswake.Shell.Denial " <>
+            "vocabulary, never a free string.",
+        measurements: [:system_time, :duration],
+        metadata: [:route_id, :command, :status, :denial_reason]
+      },
+      %{
+        event: [:crosswake, :bridge, :dropped],
+        tier: :active,
+        description:
+          "Emitted when a reply, unreachable fact, or timer message arrives for a " <>
+            "correlation id no longer in flight — a duplicate delivery, or a reply minted " <>
+            "under a prior per-mount epoch (the LiveView reconnected since it was " <>
+            "dispatched). Start measurements include system_time; stop measurements " <>
+            "include duration. Metadata includes route_id and reason (:duplicate or " <>
+            ":foreign_epoch).",
+        measurements: [:system_time, :duration],
+        metadata: [:route_id, :reason]
+      },
+      %{
+        event: [:crosswake, :bridge, :hook_ack],
+        tier: :active,
+        description:
+          "Emitted when the bridge hook's acknowledgement arrives before the server-armed " <>
+            "wiring deadline. Start measurements include system_time; stop measurements " <>
+            "include duration. Metadata includes route_id.",
+        measurements: [:system_time, :duration],
+        metadata: [:route_id]
+      },
+      %{
+        event: [:crosswake, :bridge, :hook_missing],
+        tier: :active,
+        description:
+          "Emitted when no acknowledgement arrives before the server-armed wiring " <>
+            "deadline elapses — the bridge hook is not wired on this page at all. This " <>
+            "count should always be zero in a healthy deploy; a nonzero rate means some " <>
+            "page is missing the hook script tag or the phx-hook attribute. Start " <>
+            "measurements include system_time; stop measurements include duration. " <>
+            "Metadata includes route_id.",
+        measurements: [:system_time, :duration],
+        metadata: [:route_id]
       }
     ]
   end
@@ -250,7 +319,9 @@ defmodule Crosswake.Telemetry do
     companion_forbidden_keys =
       Application.get_env(:crosswake, :companions, [])
       |> Enum.flat_map(fn mod ->
-        if function_exported?(mod, :forbidden_metadata_keys, 0), do: mod.forbidden_metadata_keys(), else: []
+        if function_exported?(mod, :forbidden_metadata_keys, 0),
+          do: mod.forbidden_metadata_keys(),
+          else: []
       end)
 
     forbidden_keys =
@@ -285,6 +356,23 @@ defmodule Crosswake.Telemetry do
   def detach_default_logger do
     :telemetry.detach("crosswake-default-logger")
   end
+
+  @doc false
+  @spec emit_safe_observation(SafeObservation.t()) :: :ok | {:error, SafeObservation.Error.t()}
+  def emit_safe_observation(%SafeObservation{} = observation) do
+    with {:ok, metadata} <- SafeObservation.to_telemetry(observation) do
+      measurements = Map.take(metadata, [:attempt_count, :event_count, :duration_ms])
+
+      :telemetry.execute(
+        [:crosswake, :offline, :replay, :stop],
+        measurements,
+        Map.drop(metadata, Map.keys(measurements))
+      )
+    end
+  end
+
+  def emit_safe_observation(_),
+    do: {:error, %SafeObservation.Error{rule_id: "CW-SAFE-OBSERVATION-INPUT", path: :input}}
 
   # ---------------------------------------------------------------------------
   # Private: handler, opts normalization, PII scrub
@@ -355,5 +443,4 @@ defmodule Crosswake.Telemetry do
     |> Keyword.put_new(:level, :info)
     |> Keyword.put_new(:encode, false)
   end
-
 end

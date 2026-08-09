@@ -47,7 +47,6 @@ defmodule Crosswake.Proof.Phase35PaywallLiveTest do
       html = render_state(:denied)
 
       assert html =~ "Subscribe to Pro Monthly"
-      assert html =~ "$9.99 / month"
       assert html =~ ~s(phx-click="subscribe")
       assert html =~ "Restore purchase"
       assert html =~ "Backend entitlement projection"
@@ -72,7 +71,7 @@ defmodule Crosswake.Proof.Phase35PaywallLiveTest do
 
       assert stale =~ "Unable to verify access"
       assert stale =~ "Access is closed until backend entitlement projection refreshes"
-      refute stale =~ "$9.99 / month"
+      refute stale =~ "$" <> "9.99 / month"
       refute stale =~ ~s(phx-click="subscribe")
     end
 

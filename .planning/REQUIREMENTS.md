@@ -1,115 +1,187 @@
-# Requirements: v20.0 Native Controls Pack 1
+# Requirements: v21.0 First B2C Adopter Readiness
 
-**Milestone goal:** Ship the typed control-contract seam that every native-controls pack
-rides on, and prove it with the one control that genuinely needs to be native — replacing
-the ad-hoc `<script>` escape hatch adopters use today with a bounded, fail-closed,
-route-declared affordance.
+**Milestone goal:** Prove one real Phoenix application's offline study flow on one physical iPhone
+without widening Crosswake into a generic sync, storage, native-control, or multi-platform
+framework.
 
-Research synthesis: `.planning/research/v20/SUMMARY.md`.
+**Adopter naming:** Durable artifacts use **First B2C Adopter**. Public guides use **first
+adopter**. Never store identifying business or personal information.
+
+**Customer Alpha:** If Alpha is web-only, Crosswake has no Alpha requirement. The route inventory
+is a bounded public-v1 design input and must not delay the adopter's monolith, billing, or customer
+work.
+
+**Verification posture:** Automatable acceptance uses executable unit, integration, E2E, device,
+or artifact checks rather than conversational verification or manual UAT. Checks enter CI only
+when they protect a recurring contract; one-time reconciliation remains phase evidence.
 
 ## v1 Requirements
 
-### MIRROR — iOS mirror unblock (prerequisite)
+### RESET — Adoption boundary and route ownership
 
-Native bridge dispatch is a closed `switch` over a fixed enum compiled into the shipped
-shell-core binaries, so any new control requires a new native release. The
-`crosswake-shell-core-ios` SwiftPM mirror is stuck at `v0.1.2` while core and Android are
-at `0.2.0` — until that is fixed, a new shell-core release cannot reach iOS adopters at
-all. This category must land before MENU.
+- [x] **RESET-01:** The infrastructure-versus-business-line decision, reversal condition, scope
+  audit, non-goals, and stop list are durable and discoverable.
 
-- [ ] **MIRROR-01**: The `crosswake-shell-core-ios` SwiftPM mirror carries a `v0.2.0` tag matching the live Hex and Maven `0.2.0` core, so iOS adopters can resolve the current shell core.
-- [ ] **MIRROR-02**: A native shell-core release publishes to Hex, Maven, and the iOS mirror in one run, and a mirror-push failure surfaces as a hard, named CI failure instead of a silent 403.
+- [x] **RESET-02:** Every known first-adopter surface has an explicit runtime owner, offline
+  posture, authority boundary, fallback, and remote-disable posture.
 
-### CTRL — the control-contract seam (load-bearing)
+- [x] **RESET-03:** v20 is recorded as stopped/partial without a shipped claim or release tag, and
+  Phases 156-157 are absent from active scope.
 
-The reusable machinery. Once this exists, controls 4..N are cheap, repeatable work.
+- [x] **RESET-04:** Planning and public adoption artifacts contain no prohibited adopter identity
+  or personal information.
 
-- [ ] **CTRL-01**: A LiveView can invoke a bounded control via `Crosswake.Bridge.push/3` and receive a typed reply correlated to the invocation.
-- [ ] **CTRL-02**: No-shell, too-old-shell, and undeclared-capability all resolve to one typed `Crosswake.Shell.Denial` reply, so an adopter writes one `handle_event` branch rather than three.
-- [ ] **CTRL-03**: A route invoking a capability it never declared in route policy fails loudly and names the missing declaration, rather than silently doing nothing.
-- [ ] **CTRL-04**: The bridge command vocabulary stays closed and named — host-registrable or dynamic command registration is structurally impossible.
-- [ ] **CTRL-05**: Every control declares its rebuild class, and a native-rebuild-required release is labeled as such in the changelog, the support matrix, and doctor guidance.
+### PROOF — Host-reusable proof lane
 
-### MENU — the first genuinely-new native control
+- [x] **PROOF-01:** `mix crosswake.gen.proof_lane ios` copies host-owned configurable ExUnit,
+  Playwright, shell, and physical-device proof scaffolding without overwriting host files.
 
-The reply-path exemplar. Unanimous across research lenses as the strongest new control:
-the literal "feels wrong in a webview" moment, zero platform-policy risk, clean fallback.
+- [x] **PROOF-02:** The scaffold accepts route ID/path, IndexedDB database/store, mutation-ID
+  extraction, sync endpoint, evidence endpoint, router, and iOS shell root.
 
-- [ ] **MENU-01**: A route declares menu/action-button affordances in route policy, with allowed actions and fallback behavior explicit.
-- [ ] **MENU-02**: The iOS and Android shell cores render a native menu and return the chosen action as a typed reply.
-- [ ] **MENU-03**: Native menu actions carry VoiceOver and TalkBack semantics and native dismiss gestures.
+- [x] **PROOF-03:** Browser proof preserves an adopter's existing browser/unit/fixture corpus and
+  adds only shell/offline-island coverage that browser automation cannot provide.
 
-### FALL — host-owned fallbacks (no component tier)
+- [x] **PROOF-04:** Generated evidence rejects raw mutation payloads, account identifiers, media,
+  tokens, and stable device identifiers.
 
-Crosswake ships no component library — that is a deliberate anti-feature. But fallbacks
-must look right on day one, so they are generated and owned by the host, never imported.
+### SCOPE — Privacy-safe replay and auth safety
 
-- [ ] **FALL-01**: `mix crosswake.gen.native_controls_ui` scaffolds host-owned, brand-tokenized fallback components (confirm modal, action menu) as verbatim-copy files the adopter owns outright.
-- [ ] **FALL-02**: Generated fallbacks render correctly in light and dark, trap focus, and meet the existing contrast gates; no importable `Crosswake.UI.*` module exists.
+- [x] **SCOPE-01:** Journal and replay envelopes carry an opaque `scope_ref`; the outbox partitions
+  entries by scope.
 
-### HRDN — harden what already shipped
+- [x] **SCOPE-02:** Logout and account switching stop replay, and cross-scope replay fails closed.
+- [x] **SCOPE-03:** Replay re-checks backend session authority, route authorization, and
+  server-side feature state before applying queued mutations.
 
-- [ ] **HRDN-01**: The AdminPilot haptics call runs through `Bridge.push/3`; the hand-rolled `<script>` IIFE with no reply path is gone.
-- [ ] **HRDN-02**: Haptics respects the operating system's reduce-motion and haptics accessibility settings.
-- [ ] **HRDN-03**: The iOS share sheet cannot crash on iPad — a missing popover anchor is guarded rather than left to the OS.
+- [x] **SCOPE-04:** Raw answer payloads are excluded from telemetry, doctor output, inspection,
+  logs, aggregates, and evidence artifacts.
 
-### EVID — read-only surfaces stay honest
+- [x] **SCOPE-05:** `crosswake_sigra` remains the adapter for backend session-authority evidence;
+  credentials, provider/device identity, and token authority remain outside Crosswake core.
 
-- [ ] **EVID-01**: `permissions.status` documentation and support truth never imply permission *request* authority; it is a read-only snapshot.
-- [ ] **EVID-02**: `notification_token` documentation and support truth never imply delivery assurance; it is provider-tagged evidence only.
+### PACK — Foreground iOS pronunciation media
 
-### PROOF — the lanes
+- [x] **PACK-01:** The iOS shell exposes a host-supplied foreground pack-provider seam for status,
+  install, and invalidate.
 
-- [ ] **PROOF-01**: A merge-blocking browser route-tour lane proves fallbacks render, fail closed when undeclared, and never silently degrade.
-- [ ] **PROOF-02**: `share` and `notification_token` move from advisory to merge-blocking proof posture.
-- [ ] **PROOF-03**: Menu behavior is proven from the committed `bridge_contract_vectors.json` on both natives without a simulator or emulator.
-- [ ] **PROOF-04**: The catalog line ships as a merge-blocking structural test — a proposed control failing any of its six criteria fails CI.
+- [x] **PACK-02:** No provider, interrupted transfer, insufficient storage, wrong size, wrong
+  digest, wrong version, or failed atomic install never reports `available`.
 
-## Future Requirements (deferred)
+- [x] **PACK-03:** One immutable pronunciation archive becomes available only after expected-size
+  and SHA-256 verification followed by atomic installation.
 
-- **Review prompt** — deferred until it can ship as a `requested`-only reply with no button and no success signal. Both Apple and Google forbid CTA-triggered prompts and provide no completion callback.
-- **Capture & Device Controls pack** — camera, scanner, document scan, media upload, permission-request UX, evidence availability.
-- **Commerce/Paywall productionization** — storefront adapters, entitlement refresh, purchase-evidence ingestion.
-- **Offline Sync / Native Storage productization** (SYNCP-01, NTV-01) — native storage budgets, durable journals, outboxes, retry, conflict handling.
-- **Native Controls Pack 2 — Themable Web Control Equivalents** (THEME-*, WCTRL-*, reuse FALL-*) — a brand-themable, host-owned, generator-emitted WEB equivalent for every delegated native control; extends the token system by elevation/z/motion/border-width/padding and generalizes v20's FALL host-owned fallback family. Planted as SEED-005; the web-side follow-on to this milestone.
-- **Native Navigation Shell** (NAVG-*, SHELL-*, SYNC-*, LIFE-*, A11Y-*) — a real native tab bar + nav stack (à la Hotwire Native) hosting Crosswake routes, nav graph declared once in the manifest and rendered per-platform; native shell fidelity toward consumer-grade "feels-native." Planted as SEED-006; its own milestone (distinct axis from the controls packs) carrying an explicit positioning north-star shift.
-- **Release-PR changelog deadlock** (RELTRUTH-01) — the root release PR (#57, `0.2.0`→`0.2.1`) can never go green. `test/crosswake/guides/release_boundaries_test.exs:128` derives "current version" from `mix.exs` via `Application.spec(:crosswake, :vsn)`, so inside a release PR the bumped version makes the *previous* version look stale and flags `CHANGELOG.md:20-22,36` as `[stale_latest_hex]` — even though those lines are **true** (`0.2.0` genuinely is the published release; `0.2.1` is not out). The root package sets `skip-changelog: true`, so release-please never updates `CHANGELOG.md` to resolve it. Root cause: the gate conflates "version in `mix.exs`" with "latest published Hex release", which are deliberately different during a release PR. The principled fix follows the precedent already set by `script/check_release_as_staleness.sh` — *the git tag, not the local manifest, is the authoritative already-released signal* — but proof workflows currently check out without `fetch-tags`, so it also needs a CI checkout change. Deferred as its own scoped work, not a drive-by: it changes the semantics of a merge-blocking release-honesty gate (the same class that caught the rulestead/rindle overclaim), and #57 additionally needs version-bump fixture regeneration (`release-status` mirror ref, `phase52_publish_readiness.json`, `native_evidence_drift`, `doctor_threadline`, `phase43`) that only makes sense alongside a real decision to publish `0.2.1`.
-- **`crosswake_dashboard`** (DASH-01) — operator route/support/telemetry/audit/release inspection surface.
-- **SEED-004** — companion clean-room proof harness cosmetics. The real defect was fixed in v18 Phase 144; the harness only runs for companion Hex publishes, a surface v20 does not touch.
+- [x] **PACK-04:** Crosswake owns declaration, lifecycle, inventory, activation denial, and
+  diagnostics; the host owns URL/auth/CDN/layout/codecs/retention/storage budget/download UI.
+
+- [x] **PACK-05:** Background transfer, delta updates, generic eviction, Android storage, offline
+  scoring, microphone capture, and generic content distribution remain explicitly unclaimed.
+
+### NAV — First-adopter iOS navigation shell
+
+- [ ] **NAV-01:** A compiled first-adopter topology declares stable root-tab IDs, root routes,
+  pushed-detail presentation, and parent relationships without transferring leaf-route ownership
+  away from Phoenix, offline islands, or native screens.
+
+- [ ] **NAV-02:** The host-owned iOS shell renders native root tabs and pushed detail navigation
+  with edge-swipe/back behavior while the existing route resolver remains authoritative for each
+  destination's runtime owner.
+
+- [ ] **NAV-03:** Web/native stack synchronization is typed, versioned, and fail-closed:
+  `push_patch` changes the current web route without growing the native stack, while
+  `push_navigate` produces one idempotent native transition.
+
+- [ ] **NAV-04:** The shell publishes live `--cw-safe-area-top`, `--cw-safe-area-right`,
+  `--cw-safe-area-bottom`, and `--cw-safe-area-left` CSS custom properties across viewport changes;
+  keyboard occlusion is represented separately as `--cw-keyboard-inset-bottom`.
+
+- [ ] **NAV-05:** The document root receives a synchronous, declarative native-shell marker before
+  app CSS evaluates, without a custom user-agent or any account, device, or stable identity value.
+
+- [ ] **NAV-06:** Executable graph, synchronization, simulator, accessibility-focus, and bounded
+  device checks prove the shell contract without claiming Android parity or generic navigation.
+
+- [ ] **NAV-07:** Canonical and generated support truth says Phoenix-owned confirmation is the
+  current required fallback; native alert/confirm remains reversible only after physical-iPhone
+  proof, a demonstrated active-adopter route blocker, and an explicit maintainer roadmap decision.
+
+### DEVICE — Physical-iPhone adoption proof
+
+- [ ] **DEVICE-01:** A physical iPhone installs one verified pronunciation pack and plays its audio
+  while offline.
+
+- [ ] **DEVICE-02:** The offline study route queues selected and free-form answers, survives
+  kill/relaunch, reconnects, and reconciles exactly once until its outbox is empty.
+
+- [ ] **DEVICE-03:** Rejected and conflict outcomes are visible and recoverable; no silent
+  last-write-wins path exists.
+
+- [ ] **DEVICE-04:** Logout and account switching produce no cross-scope replay.
+- [ ] **DEVICE-05:** A host flag disables route entry and replay server-side without losing queued
+  events or requiring a new binary.
+
+- [ ] **DEVICE-06:** The dated proof artifact contains only runtime versions, route identifiers,
+  device class, low-cardinality outcomes, and redacted hashes.
+
+- [ ] **DEVICE-07:** The resulting support claim stays narrow: one adopter flow, one iOS runtime
+  line, no Android/background/generic-storage/multiple-island claim.
 
 ## Out of Scope
 
-- **A native `toast` capability** — iOS ships no toast primitive, so a cross-platform native toast overclaims by construction. Toasts are LiveView-owned UI.
-- **A native `alert`/`confirm` bridge family** — a branded, focus-trapped, route-tour-provable LiveView modal is better than an unbranded OS alert on a route Phoenix already owns. It ships as a generated fallback (FALL-01), not a bridge command.
-- **An importable `Crosswake.UI.*` component tier** — fallbacks are generated, host-owned, verbatim-copy files, following the `gen.offline_ui` precedent.
-- **A `crosswake_controls` companion package** — controls have no external SDK or optional dependency to gate, which is what defines a companion in this family. They stay in core alongside the v3.1 command families.
-- **Host-registrable, dynamic, or high-frequency bridge commands** — the vocabulary stays closed and named, enforced by PROOF-04.
-- **Expanding the haptics pattern vocabulary** — `haptics.impact` shipped in v3.1 and is sufficient.
+| Surface | Reason |
+| --- | --- |
+| Generic app-wide sync | Domain authority and conflicts stay host-owned |
+| Background sync | Active app and active route are sufficient for the first proof |
+| Silent last-write-wins | Conflicts must remain explicit |
+| Multiple proven offline islands | One study flow is the honest adoption unit |
+| Generic productionized native pack storage | v21 permits one host-supplied iOS foreground adapter only |
+| Broad runtime sync helpers | Test scaffolding may be reusable; domain reconciliation may not |
+| Android feature, device, parity, or release work | Android is frozen outside the adopter's public v1 |
+| Native menu/action-button work | Does not unblock the adopter |
+| New companion packages | No adopter need justifies ecosystem expansion |
+| Brandbook, showcase, profile, or launch polish | Business-line investment, not adopter infrastructure |
+| Capture/device controls, commerce productionization, dashboard | Named future pressure, not v21 |
+| Microphone capture and offline pronunciation scoring | Playback and study replay must prove first |
 
 ## Traceability
 
 | Requirement | Phase | Status |
-|-------------|-------|--------|
-| MIRROR-01 | Phase 153 | In Progress (153-01 done; live tag push is 153-02, human-gated) |
-| MIRROR-02 | Phase 153 | In Progress (153-01/153-03 done: transport, atomic push, and escalation land; merge-blocking parity gate + release-truth CLI split are 153-04) |
-| CTRL-01 | Phase 154 | Pending |
-| CTRL-02 | Phase 154 | Pending |
-| CTRL-03 | Phase 154 | Pending |
-| CTRL-04 | Phase 154 | Pending |
-| CTRL-05 | Phase 154 | Pending |
-| PROOF-04 | Phase 154 | Pending |
-| HRDN-01 | Phase 154 | Pending |
-| FALL-01 | Phase 155 | Pending |
-| FALL-02 | Phase 155 | Pending |
-| PROOF-01 | Phase 155 | Pending |
-| MENU-01 | Phase 156 | Pending |
-| MENU-02 | Phase 156 | Pending |
-| MENU-03 | Phase 156 | Pending |
-| PROOF-03 | Phase 156 | Pending |
-| HRDN-02 | Phase 157 | Pending |
-| HRDN-03 | Phase 157 | Pending |
-| EVID-01 | Phase 157 | Pending |
-| EVID-02 | Phase 157 | Pending |
-| PROOF-02 | Phase 157 | Pending |
+| --- | --- | --- |
+| RESET-01 | Phase 158 | Complete |
+| RESET-02 | Phase 158 | Complete |
+| RESET-03 | Phase 158 | Complete |
+| RESET-04 | Phase 158 | Complete |
+| PROOF-01 | Phase 159 | Complete |
+| PROOF-02 | Phase 159 | Complete |
+| PROOF-03 | Phase 159 | Complete |
+| PROOF-04 | Phase 159 | Complete |
+| SCOPE-01 | Phase 160 | Complete |
+| SCOPE-02 | Phase 160 | Complete |
+| SCOPE-03 | Phase 160 | Complete |
+| SCOPE-04 | Phase 160 | Complete |
+| SCOPE-05 | Phase 160 | Complete |
+| PACK-01 | Phase 161 | Complete |
+| PACK-02 | Phase 161 | Complete |
+| PACK-03 | Phase 161 | Complete |
+| PACK-04 | Phase 161 | Complete |
+| PACK-05 | Phase 161 | Complete |
+| NAV-01 | Phase 161.1 | Complete |
+| NAV-02 | Phase 161.1 | Complete |
+| NAV-03 | Phase 161.1 | Complete |
+| NAV-04 | Phase 161.1 | Complete |
+| NAV-05 | Phase 161.1 | Complete |
+| NAV-06 | Phase 161.1 | Complete |
+| NAV-07 | Phase 161.1 | Complete |
+| DEVICE-01 | Phase 162 | Pending |
+| DEVICE-02 | Phase 162 | Pending |
+| DEVICE-03 | Phase 162 | Pending |
+| DEVICE-04 | Phase 162 | Pending |
+| DEVICE-05 | Phase 162 | Pending |
+| DEVICE-06 | Phase 162 | Pending |
+| DEVICE-07 | Phase 162 | Pending |
 
-**Coverage:** 21/21 v1 requirements mapped. No orphans.
+**Coverage:** 32/32 requirements mapped. No Crosswake Alpha requirements.
+
+---
+*Requirements defined: 2026-07-30*
+*Last updated: 2026-08-04 after Phase 161.1 completion*

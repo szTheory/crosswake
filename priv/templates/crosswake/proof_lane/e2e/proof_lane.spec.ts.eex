@@ -1,0 +1,8 @@
+// crosswake-proof-lane template_version=<%= @template_version %>
+import { test } from '@playwright/test';
+import { proofLaneConfig, runOfflineIslandProof } from './support/proof_lane';
+import { proofLaneHostAdapter } from './support/proof_lane_host_adapter';
+
+test('Crosswake generated offline-island proof', async ({ page, context }) => {
+  await runOfflineIslandProof(page, context, proofLaneHostAdapter, proofLaneConfig);
+});

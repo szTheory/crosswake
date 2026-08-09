@@ -4,6 +4,7 @@ defmodule Crosswake.Manifest.Builder do
   """
 
   alias Crosswake.Manifest.Types
+  alias Crosswake.Adoption.NavigationTopology
   alias Crosswake.Offline.Contracts
   alias Crosswake.Offline.ContentPack
   alias Crosswake.Policy.CorridorProfiles
@@ -59,7 +60,11 @@ defmodule Crosswake.Manifest.Builder do
         Crosswake.SupportMatrix.canonical(capability_registry: capability_registry)
       )
 
+    manifest_schema_version = Types.manifest_schema_version()
+    route_entries = route_entries(routes, managed_routes, host.origin)
+
     Types.new_root(
+      manifest_schema_version: manifest_schema_version,
       crosswake_version:
         Keyword.get(opts, :crosswake_version, Mix.Project.config()[:version] || "dev"),
       generated_at:
@@ -74,9 +79,72 @@ defmodule Crosswake.Manifest.Builder do
       capability_registry: capability_registry,
       pack_registry: pack_registry(routes),
       commerce_corridors: commerce_corridors,
-      routes: route_entries(routes, managed_routes, host.origin)
+      navigation_topology: navigation_topology(routes, managed_routes),
+      routes: route_entries
     )
   end
+
+  @doc false
+  @spec navigation_topology([Route.t()], [map()]) :: Types.NavigationTopology.t()
+  def navigation_topology(routes, managed_routes) do
+    manifest_schema_version = Types.manifest_schema_version()
+    source = navigation_source(managed_routes)
+
+    case source do
+      [] ->
+        unknown_navigation_topology(manifest_schema_version)
+
+      _ ->
+        case NavigationTopology.compile(source, manifest_schema_version) do
+          {:ok, topology} -> topology_from_compiled(topology)
+          {:error, _error} -> unknown_navigation_topology(manifest_schema_version)
+        end
+    end
+    |> ensure_topology_routes_match(routes)
+  end
+
+  defp navigation_source(managed_routes) do
+    managed_routes
+    |> Enum.map(fn route ->
+      route |> Map.get(:metadata, %{}) |> Map.get(:crosswake_navigation)
+    end)
+    |> Enum.reject(&is_nil/1)
+    |> case do
+      [source] -> source
+      _ -> []
+    end
+  end
+
+  defp topology_from_compiled(topology) do
+    Types.new_navigation_topology(
+      topology_schema_version: topology.topology_schema_version,
+      manifest_schema_version: topology.manifest_schema_version,
+      status: topology.status,
+      entries:
+        Enum.map(topology.entries, fn entry ->
+          Types.new_navigation_topology_entry(Map.to_list(entry))
+        end)
+    )
+  end
+
+  defp unknown_navigation_topology(manifest_schema_version) do
+    Types.new_navigation_topology(
+      topology_schema_version: "1.0.0",
+      manifest_schema_version: manifest_schema_version,
+      status: :unknown_blocking,
+      entries: []
+    )
+  end
+
+  defp ensure_topology_routes_match(%Types.NavigationTopology{status: :ready} = topology, routes) do
+    route_ids = MapSet.new(routes, & &1.id)
+
+    if Enum.all?(topology.entries, &MapSet.member?(route_ids, &1.route_id)),
+      do: topology,
+      else: unknown_navigation_topology(topology.manifest_schema_version)
+  end
+
+  defp ensure_topology_routes_match(topology, _routes), do: topology
 
   @spec capability_registry([Route.t()]) :: %{String.t() => Types.Capability.t()}
   def capability_registry(routes) do
@@ -143,7 +211,7 @@ defmodule Crosswake.Manifest.Builder do
           auth_posture: route.auth_posture,
           auth_return: route_auth_return(route),
           notification_open: route.notification_open
-          )
+        )
 
       {route.id, entry}
     end)
@@ -251,6 +319,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :none,
+        interaction: :fire_and_forget,
         prerequisites: [
           "bundled or cached manifest",
           "shell activation support",
@@ -268,6 +337,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :none,
+        interaction: :device_answer,
         prerequisites: ["declared route capability", "bounded bridge support"],
         denial: "undeclared_capability",
         fallback: "Phoenix route continues without native app metadata",
@@ -281,6 +351,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :none,
+        interaction: :fire_and_forget,
         prerequisites: ["declared route capability", "bounded bridge support"],
         denial: "undeclared_capability",
         fallback: "Phoenix route continues without native confirmation feedback",
@@ -294,6 +365,10 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :advisory,
         rebuild: :none,
+        # D-54's honesty-forcing case: share returns %{"outcome" => "requested"} —
+        # a request acknowledgement, not a completion — so it is
+        # :fire_and_forget even though it returns a payload.
+        interaction: :fire_and_forget,
         prerequisites: ["truthful semantic share contract"],
         denial: "undeclared_capability",
         fallback: "keep content in the Phoenix-owned route until a share family is declared",
@@ -306,6 +381,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :none,
+        interaction: :device_answer,
         prerequisites: [
           "declared route capability",
           "bounded bridge support",
@@ -322,6 +398,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :companion,
         proof_class: :advisory,
         rebuild: :companion_required,
+        interaction: :device_answer,
         prerequisites: [
           "declared route capability",
           "bounded bridge support",
@@ -341,6 +418,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :native_required,
+        interaction: :user_answer,
         prerequisites: [
           "declared transfer_id",
           "bounded bridge support",
@@ -360,6 +438,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :companion,
         proof_class: :merge_blocking,
         rebuild: :native_required,
+        interaction: :user_answer,
         prerequisites: ["native screen route", "capture pack availability"],
         denial: "pack_incompatible",
         fallback: "fail closed instead of degrading into a bounded web upload flow",
@@ -373,6 +452,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :defer,
         proof_class: :advisory,
         rebuild: :companion_required,
+        interaction: :user_answer,
         prerequisites: ["scanner-native runtime", "policy-heavy proof lane"],
         denial: "unavailable_capability",
         fallback: "defer scanner support until native and proof posture are explicit",
@@ -385,6 +465,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :defer,
         proof_class: :advisory,
         rebuild: :companion_required,
+        interaction: :user_answer,
         prerequisites: ["document-scan runtime", "policy-heavy proof lane"],
         denial: "unavailable_capability",
         fallback: "defer document scan support until native and proof posture are explicit",
@@ -397,6 +478,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :companion_required,
+        interaction: :fire_and_forget,
         prerequisites: ["backend entitlement contract", "storefront guidance"],
         denial: "unavailable_capability",
         fallback: "fall back to Phoenix-owned paywall guidance without device authority",
@@ -409,6 +491,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :companion_required,
+        interaction: :user_answer,
         prerequisites: ["backend reconciliation", "provider-specific adapter"],
         denial: "unavailable_capability",
         fallback: "treat purchase events as reconciliation inputs, not entitlement truth",
@@ -421,6 +504,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :companion_required,
+        interaction: :user_answer,
         prerequisites: ["backend reconciliation", "storefront-aware adapter"],
         denial: "unavailable_capability",
         fallback: "keep restore flow backend-owned until adapter truth is explicit",
@@ -433,6 +517,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :companion_required,
+        interaction: :device_answer,
         prerequisites: ["backend entitlement authority", "reconciliation hook"],
         denial: "unavailable_capability",
         fallback: "treat device-side state as evidence instead of final entitlement truth",
@@ -445,6 +530,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :companion_required,
+        interaction: :device_answer,
         prerequisites: ["backend reconciliation", "device callback or webhook"],
         denial: "unavailable_capability",
         fallback: "treat evidence as asynchronous payload without blocking route entry",
@@ -462,7 +548,14 @@ defmodule Crosswake.Manifest.Builder do
   defp compatibility_capability_attrs(nil, capability_id) do
     [
       id: capability_id,
-      version: capability_version(capability_id)
+      version: capability_version(capability_id),
+      # Fail-closed / least-claiming defaults for a capability id with no
+      # family-catalog match at all (D-51 for :rebuild, D-54 for
+      # :interaction) — declared explicitly here, not left to
+      # Types.new_capability/1's own defaults, so the value is visible in
+      # this committed literal per D-52.
+      rebuild: :native_required,
+      interaction: :fire_and_forget
     ]
   end
 
@@ -470,7 +563,12 @@ defmodule Crosswake.Manifest.Builder do
     attrs
     |> Keyword.put(:id, capability_id)
     |> Keyword.put(:version, capability_version(capability_id))
-    |> Keyword.put(:family, Keyword.fetch!(attrs, :family))
+    |> Keyword.merge(
+      family: Keyword.fetch!(attrs, :family),
+      rebuild: Keyword.fetch!(attrs, :rebuild),
+      interaction: Keyword.fetch!(attrs, :interaction)
+    )
+    |> Keyword.delete(:legacy_ids)
   end
 
   defp capability_version(_capability), do: "1.0.0"

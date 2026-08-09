@@ -1,0 +1,225 @@
+import XCTest
+@testable import CrosswakeProofLane
+
+final class ProofLaneContractTests: XCTestCase {
+  func testNavigationRemainsUnavailableWithoutProductionHostObservations() {
+    XCTAssertNil(ProofLaneNavigationHostAdapterFactory.make())
+    for assertion in ProofLaneNavigationAssertion.allCases {
+      XCTAssertEqual(ProofLaneNavigationContract.observation(assertion, adapter: nil), .unavailable)
+    }
+  }
+
+  func testMissingAdapterRemainsUnavailable() {
+    let adapter = ProofLaneHostAdapterFactory.make()
+    if ProcessInfo.processInfo.environment["CROSSWAKE_PROOF_LANE_REFERENCE_PACK_ADAPTER"] == "1" {
+      XCTAssertNotNil(adapter)
+    } else {
+      XCTAssertNil(adapter)
+    }
+  }
+
+  func testReferencePackDoesNotCreateNavigationEvidence() {
+    XCTAssertNil(ProofLaneNavigationHostAdapterFactory.make())
+    emitNavigationEvidence(outcome: .unavailable)
+  }
+
+  func testPhysicalSequenceRequiresAProductionAdapter() async {
+    let report = await PhysicalIphoneSequence.run(adapter: nil)
+
+    XCTAssertEqual(report.schemaVersion, 1)
+    XCTAssertEqual(report.deviceClass, .physicalIphone)
+    XCTAssertEqual(report.assertions.map(\.id), PhysicalIphoneAssertion.allCases.map(\.rawValue))
+    XCTAssertTrue(report.assertions.allSatisfy { $0.outcome == .unavailable })
+  }
+
+  func testPhysicalSequenceStopsAtTheFirstNonPassingHostOperation() async {
+    let operations = PhysicalIphoneOperation.allCases
+
+    for stoppingOutcome in [ProofLaneOutcome.blocked, .unavailable] {
+      for (index, operation) in operations.enumerated() {
+        let adapter = RecordingPhysicalIphoneAdapter(failing: operation, outcome: stoppingOutcome)
+        let report = await PhysicalIphoneSequence.run(adapter: adapter)
+
+        XCTAssertEqual(adapter.calls, Array(operations.prefix(index + 1)))
+        XCTAssertEqual(
+          report.assertions.map(\.id),
+          PhysicalIphoneAssertion.allCases.map(\.rawValue)
+        )
+
+        XCTAssertEqual(
+          report.assertions.map(\.outcome),
+          expectedOutcomes(stoppingAt: operation, outcome: stoppingOutcome)
+        )
+      }
+    }
+  }
+
+  func testPhysicalSequenceCallsEveryOperationOnceWhenAllPass() async {
+    let adapter = RecordingPhysicalIphoneAdapter()
+    let report = await PhysicalIphoneSequence.run(adapter: adapter)
+
+    XCTAssertEqual(adapter.calls, PhysicalIphoneOperation.allCases)
+    XCTAssertTrue(report.assertions.allSatisfy { $0.outcome == .passed })
+  }
+
+  func testPhysicalReportNeverCarriesHostValues() async throws {
+    let report = await PhysicalIphoneSequence.run(adapter: nil)
+    let data = try JSONEncoder().encode(report)
+    let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+    XCTAssertEqual(Set(object.keys), ["schema_version", "device_class", "assertions"])
+    XCTAssertFalse(String(data: data, encoding: .utf8)!.contains("path"))
+    XCTAssertFalse(String(data: data, encoding: .utf8)!.contains("owner"))
+  }
+
+  func testPhysicalContractModeEmitsOwnerFreeReport() async throws {
+    guard ProcessInfo.processInfo.environment["CROSSWAKE_PHYSICAL_IPHONE_CONTRACT_MODE"] == "1" else { return }
+    let report = await PhysicalIphoneSequence.run(adapter: nil)
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.sortedKeys]
+    print(String(decoding: try encoder.encode(report), as: UTF8.self))
+  }
+
+  func testFixtureInstallReconcilesAfterRelaunch() async throws {
+    ProofLaneReferencePackAdapter.resetReferencePersistenceForTests()
+    let adapter = try XCTUnwrap(ProofLaneReferencePackAdapter())
+    XCTAssertEqual(adapter.observe().outcome, .blocked)
+
+    let installed = await adapter.installPronunciationPackForeground()
+    XCTAssertEqual(installed.outcome, .passed, "PACK-INSTALL-READY")
+
+    let relaunched = ProofLaneReferencePackAdapter().observe()
+    XCTAssertEqual(relaunched.outcome, .passed, "PACK-RELAUNCH-READY")
+
+    let audioAdapter = ProofLaneReferencePackAdapter()
+    let audio = await audioAdapter.exerciseInstalledPronunciationAudioOffline()
+    XCTAssertEqual(audio.outcome, .passed)
+    emitStructuredEvidence(from: audioAdapter.audioEvidenceForContractTest())
+  }
+
+  func testWrongRequirementAndFailedAudioRemainNonPassing() async {
+    ProofLaneReferencePackAdapter.resetReferencePersistenceForTests()
+    let adapter = ProofLaneReferencePackAdapter()
+    let audio = await adapter.exerciseInstalledPronunciationAudioOffline()
+    let wrongRequirement = await ProofLaneReferencePackAdapter(requiredVersion: "wrong").installPronunciationPackForeground()
+
+    XCTAssertEqual(audio.outcome, .blocked, "PACK-AUDIO-OFFLINE")
+    XCTAssertEqual(wrongRequirement.outcome, .blocked)
+  }
+
+  func testUnexpectedNetworkObservationBlocksAudioAndEmitsNoEvidence() async {
+    ProofLaneReferencePackAdapter.resetReferencePersistenceForTests()
+    let adapter = ProofLaneReferencePackAdapter(networkObservation: { .unexpectedSuccess })
+    let installed = await adapter.installPronunciationPackForeground()
+    let audio = await adapter.exerciseInstalledPronunciationAudioOffline()
+    XCTAssertEqual(installed.outcome, .passed)
+    XCTAssertEqual(audio.outcome, .blocked)
+    XCTAssertNil(adapter.audioEvidenceForContractTest())
+  }
+
+  private func emitStructuredEvidence(from assertionIDs: [String]?) {
+    guard let assertionIDs else { return }
+    let document = ProofLaneEvidenceDocument(
+      schemaVersion: 2,
+      outcome: "passed",
+      assertionIDs: assertionIDs
+    )
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.sortedKeys]
+    guard let data = try? encoder.encode(document),
+          let output = String(data: data, encoding: .utf8) else { return }
+    print(output)
+  }
+
+  private func emitNavigationEvidence(outcome: ProofLaneOutcome) {
+    let document = ProofLaneNavigationEvidenceDocument(
+      schemaVersion: 3,
+      outcome: outcome.rawValue,
+      scope: "advisory",
+      assertionIDs: ProofLaneNavigationAssertion.allCases.map(\.rawValue)
+    )
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.sortedKeys]
+    guard let data = try? encoder.encode(document),
+          let output = String(data: data, encoding: .utf8) else { return }
+    print(output)
+  }
+
+  private func expectedOutcomes(
+    stoppingAt operation: PhysicalIphoneOperation,
+    outcome: ProofLaneOutcome
+  ) -> [ProofLaneOutcome] {
+    switch operation {
+    case .install, .audio:
+      return Array(repeating: outcome, count: PhysicalIphoneAssertion.allCases.count)
+    case .entry, .selected:
+      return [.passed, outcome, outcome, outcome, outcome]
+    case .freeForm:
+      return [.passed, .passed, outcome, outcome, outcome]
+    case .relaunch:
+      return [.passed, .passed, .passed, outcome, outcome]
+    case .recovery:
+      return [.passed, .passed, .passed, .passed, outcome]
+    }
+  }
+}
+
+private enum PhysicalIphoneOperation: CaseIterable {
+  case install
+  case audio
+  case entry
+  case selected
+  case freeForm
+  case relaunch
+  case recovery
+}
+
+private final class RecordingPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
+  private(set) var calls: [PhysicalIphoneOperation] = []
+  private let failing: PhysicalIphoneOperation?
+  private let outcome: ProofLaneOutcome
+
+  init(failing: PhysicalIphoneOperation? = nil, outcome: ProofLaneOutcome = .passed) {
+    self.failing = failing
+    self.outcome = outcome
+  }
+
+  func installAndVerifyPack() async -> ProofLaneOutcome { record(.install) }
+  func playInstalledAudioOffline() async -> ProofLaneOutcome { record(.audio) }
+  func enterAuthorizedStudy() async -> ProofLaneOutcome { record(.entry) }
+  func submitSelectedAnswerOffline() async -> ProofLaneOutcome { record(.selected) }
+  func submitFreeFormAnswerOffline() async -> ProofLaneOutcome { record(.freeForm) }
+  func relaunchWithoutResetAndReconnect() async -> ProofLaneOutcome { record(.relaunch) }
+  func observeRecoveryAndRetainedWork() async -> ProofLaneOutcome { record(.recovery) }
+
+  private func record(_ operation: PhysicalIphoneOperation) -> ProofLaneOutcome {
+    calls.append(operation)
+    return failing == operation ? outcome : .passed
+  }
+}
+
+private struct ProofLaneEvidenceDocument: Codable {
+  let schemaVersion: Int
+  let outcome: String
+  let assertionIDs: [String]
+
+  enum CodingKeys: String, CodingKey {
+    case schemaVersion = "schema_version"
+    case outcome
+    case assertionIDs = "assertion_ids"
+  }
+}
+
+private struct ProofLaneNavigationEvidenceDocument: Codable {
+  let schemaVersion: Int
+  let outcome: String
+  let scope: String
+  let assertionIDs: [String]
+
+  enum CodingKeys: String, CodingKey {
+    case schemaVersion = "schema_version"
+    case outcome
+    case scope
+    case assertionIDs = "assertion_ids"
+  }
+}

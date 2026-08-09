@@ -1,61 +1,105 @@
 defmodule CrosswakeExample.LocalFirst.Study do
+  @moduledoc false
+
   alias CrosswakeExample.Repo
   alias CrosswakeExample.LocalFirst.ReviewEvent
 
-  def list_events do
-    Repo.all(ReviewEvent)
-  end
+  def list_events, do: Repo.all(ReviewEvent)
 
-  def sync_events(events_payload) when is_list(events_payload) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+  @spec apply_one(String.t(), map(), map()) :: {:ok, map()} | {:error, atom()}
+  def apply_one(scope_ref, event, authority) when is_binary(scope_ref) and is_map(event) do
+    id = Map.get(event, "client_mutation_id")
 
-    {valid, rejections} =
-      Enum.reduce(events_payload, {[], []}, fn payload, {valid_acc, rejections_acc} ->
-        changeset = ReviewEvent.changeset(%ReviewEvent{}, payload)
-        
-        if changeset.valid? do
-          map = 
-            Ecto.Changeset.apply_changes(changeset)
-            |> Map.from_struct()
-            |> Map.drop([:__meta__, :id])
-            |> Map.put(:inserted_at, now)
-            |> Map.put(:updated_at, now)
-            
-          {[map | valid_acc], rejections_acc}
-        else
-          id = Map.get(payload, "client_mutation_id") || Map.get(payload, :client_mutation_id)
-          errors = format_errors(changeset)
-          {valid_acc, [%{client_mutation_id: id, errors: errors} | rejections_acc]}
+    transaction =
+      Ecto.Multi.new()
+      |> Ecto.Multi.run(:idempotency, fn repo, _changes ->
+        case repo.get_by(ReviewEvent, client_mutation_id: id) do
+          nil -> {:ok, :new}
+          %ReviewEvent{scope_ref: nil} -> {:ok, :scope_conflict}
+          %ReviewEvent{scope_ref: ^scope_ref} -> {:ok, :duplicate}
+          %ReviewEvent{} -> {:ok, :scope_conflict}
+        end
+      end)
+      |> Ecto.Multi.run(:effect, fn repo, %{idempotency: state} ->
+        case state do
+          :duplicate ->
+            {:ok, :duplicate}
+
+          :scope_conflict ->
+            {:ok, :scope_conflict}
+
+          :new ->
+            if Map.get(authority, :rollback) do
+              {:error, :forced_rollback}
+            else
+              %ReviewEvent{}
+              |> ReviewEvent.changeset(persistence_attrs(scope_ref, event))
+              |> repo.insert()
+            end
         end
       end)
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert_all(:sync, ReviewEvent, Enum.reverse(valid),
-      on_conflict: :nothing,
-      conflict_target: :client_mutation_id,
-      returning: true
-    )
-    |> Repo.transaction()
+    transaction
+    |> transact(scope_ref, id)
     |> case do
-      {:ok, %{sync: {count, records}}} ->
-        # Convert Ecto structs to plain maps so Jason.Encoder can serialize the response.
-        # insert_all returning: true yields %ReviewEvent{} structs; Jason cannot encode them
-        # without @derive Jason.Encoder. Using Map.from_struct avoids coupling the schema to JSON.
-        serializable = Enum.map(records, fn r ->
-          Map.from_struct(r) |> Map.drop([:__meta__])
-        end)
-        {:ok, %{accepted_count: count, accepted_records: serializable, rejected: Enum.reverse(rejections)}}
+      {:race, result} ->
+        result
 
-      {:error, _, reason, _} ->
-        {:error, reason}
+      {:ok, %{effect: :scope_conflict}} ->
+        {:error, :scope_conflict}
+
+      {:ok, %{effect: :duplicate}} ->
+        current_outcome(scope_ref, id)
+
+      {:ok, %{effect: %ReviewEvent{}}} ->
+        {:ok, %{client_mutation_id: id, outcome: :accepted}}
+
+      {:error, _operation, _reason, _changes} ->
+        current_outcome(scope_ref, id)
     end
   end
 
-  defp format_errors(changeset) do
-    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-      Enum.reduce(opts, msg, fn {key, value}, acc ->
-        String.replace(acc, "%{#{key}}", to_string(value))
-      end)
-    end)
+  def apply_one(_, _, _), do: {:error, :invalid_envelope}
+
+  defp persistence_attrs(scope_ref, event) do
+    event
+    |> Map.take(["client_mutation_id", "card_id", "rating"])
+    |> Map.put("scope_ref", scope_ref)
+  end
+
+  defp transact(transaction, scope_ref, id) do
+    Repo.transaction(transaction)
+  rescue
+    Exqlite.Error -> {:race, race_outcome(scope_ref, id)}
+  end
+
+  defp current_outcome(scope_ref, id) do
+    case Repo.get_by(ReviewEvent, client_mutation_id: id) do
+      %ReviewEvent{scope_ref: nil} -> {:error, :scope_conflict}
+      %ReviewEvent{scope_ref: ^scope_ref} = review_event -> persisted_outcome(review_event, id)
+      %ReviewEvent{} -> {:error, :scope_conflict}
+      nil -> {:error, :transaction_failed}
+    end
+  end
+
+  defp persisted_outcome(%ReviewEvent{status: "accepted"}, id),
+    do: {:ok, %{client_mutation_id: id, outcome: :accepted}}
+
+  defp persisted_outcome(%ReviewEvent{status: "rejected"}, id),
+    do: {:ok, %{client_mutation_id: id, outcome: :rejected}}
+
+  defp persisted_outcome(_review_event, _id), do: {:error, :invalid_persisted_outcome}
+
+  defp race_outcome(scope_ref, id, attempts \\ 3)
+
+  defp race_outcome(scope_ref, id, attempts) do
+    case current_outcome(scope_ref, id) do
+      {:error, :transaction_failed} when attempts > 0 ->
+        Process.sleep(10)
+        race_outcome(scope_ref, id, attempts - 1)
+
+      result ->
+        result
+    end
   end
 end

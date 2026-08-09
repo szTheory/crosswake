@@ -13,6 +13,14 @@ requirement declares a compatible-core floor, not a lockstep pin. See
 `guides/companion_compatibility.md` in the core repo for the cross-package
 compatibility matrix.
 
+## [0.1.0](https://github.com/szTheory/crosswake/compare/crosswake_rulestead-v0.1.0...crosswake_rulestead-v0.1.0) (2026-08-09)
+
+
+### Bug Fixes
+
+* **rulestead:** replace core-inherited changelog with the package's own ([a36779e](https://github.com/szTheory/crosswake/commit/a36779ecc84759d7afa67d646b2bdfac4a1147b9))
+* **rulestead:** replace core-inherited changelog with the package's own ([0ad6970](https://github.com/szTheory/crosswake/commit/0ad69701b9d5554652f12dfbcea529f36659321c))
+
 ## [Unreleased]
 
 `crosswake_rulestead` has not been published to Hex yet, so there is no released

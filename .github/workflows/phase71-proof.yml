@@ -27,13 +27,10 @@ on:
   schedule:
     - cron: "0 6 * * 1"
 
-env:
-  DEVELOPER_DIR: /Applications/Xcode_26.0.app/Contents/Developer
-
 jobs:
   merge-blocking-notification-workflow-proof:
     name: merge-blocking notification workflow proof (hermetic)
-    runs-on: macos-15
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'merge-blocking' || inputs.lane == 'all')) }}
 
@@ -41,14 +38,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
 
-      - name: Setup BEAM
-        uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+      - name: Setup BEAM and restore Elixir caches
+        uses: ./.github/actions/setup-elixir-cache
         with:
-          elixir-version: "1.19.5"
-          otp-version: "27.3"
-
-      - name: Install Elixir dependencies
-        run: mix deps.get
+          # dev, NOT test — this lane is the exception. Its `mix test` runs in
+          # packages/crosswake_chimeway (working-directory), so the repo-root _build/test is
+          # never created and caching it saved nothing: the entry was skipped at
+          # save time and the lane took a permanent miss on every run. The only
+          # root-level compile here is `mix compile --warnings-as-errors`, which
+          # is dev. Measured: this was 2 of the 2 misses in the 93%-hit-rate run.
+          #
+          # The package's own deps/_build are still uncached — a second cache
+          # scoped to packages/crosswake_chimeway is a follow-up (see 153.1-RESULTS.md).
+          mix-env: dev
 
       - name: Compile (warnings as errors)
         run: mix compile --warnings-as-errors

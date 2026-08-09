@@ -56,6 +56,34 @@ defmodule Crosswake.Bridge.Registry do
     Map.has_key?(@capability_commands, command) or Map.has_key?(@transfer_commands, command)
   end
 
+  @doc """
+  Resolves the wire command for a declared capability family (the reverse of
+  `command_capability/1`). `@capability_commands` is a bijection today (every
+  capability family has exactly one command), so this reverse lookup is
+  well-defined. Returns `nil` when the family is not part of the bounded bridge
+  command vocabulary at all — the caller (`Crosswake.Bridge.push/3`) treats that
+  as an undeclared-capability preflight failure (D-04), not a new authorization
+  path.
+  """
+  @spec capability_command(String.t()) :: String.t() | nil
+  def capability_command(capability_family) when is_binary(capability_family) do
+    Enum.find_value(@capability_commands, fn {command, capability} ->
+      if capability == capability_family, do: command
+    end)
+  end
+
+  @doc """
+  Returns the closed vocabulary of capability families `capability_command/1` (and, by
+  extension, `Crosswake.Bridge.push/3`) recognizes at all — the domain of the reverse
+  lookup above. A family absent from this list can never be authorized by any route's
+  declaration; it fails the vocabulary check (moment C, D-51), not the per-route
+  declaration check (moment B, `Crosswake.Bridge.UndeclaredCapabilityError`).
+  """
+  @spec known_capability_families() :: [String.t()]
+  def known_capability_families do
+    @capability_commands |> Map.values() |> Enum.uniq() |> Enum.sort()
+  end
+
   @spec lookup(Root.t(), String.t(), String.t()) ::
           {:ok, Entry.t()}
           | {:error, :inactive_route | :unsupported_command | :undeclared_capability}

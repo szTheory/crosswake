@@ -58,12 +58,16 @@ jobs:
   android-package-unit:                    # MERGE-BLOCKING: JVM tests, no emulator (D-07)
     name: android-package-unit
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/cache@v6
-        with:
-          path: packages/crosswake-shell-core-android/.gradle
-          key: gradle-${{ hashFiles('packages/crosswake-shell-core-android/build.gradle.kts') }}
+      # setup-gradle, not a hand-rolled actions/cache. The previous cache
+      # pointed at the PROJECT-LOCAL .gradle directory (per-project build state)
+      # rather than ~/.gradle/caches (the downloaded-dependency cache), so it
+      # stored almost nothing worth restoring. setup-gradle caches the right
+      # directories and handles invalidation itself; phase67-proof.yml already
+      # uses it.
+      - uses: gradle/actions/setup-gradle@v6
       - name: Run Android JVM tests
         working-directory: packages/crosswake-shell-core-android
         run: ./gradlew test
@@ -74,12 +78,18 @@ jobs:
   ios-package-unit:                        # ADVISORY: macOS Xcode native toolchain — NOT in aggregator needs (D-07)
     name: ios-package-unit
     runs-on: macos-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - uses: actions/cache@v6
         with:
           path: packages/crosswake-shell-core-ios/.build
-          key: spm-${{ hashFiles('packages/crosswake-shell-core-ios/Package.swift') }}
+          # runner.os/runner.arch are load-bearing: `.build` holds compiled
+          # object files, so restoring one built for a different platform serves
+          # unusable artifacts. This job is macos-latest today, but the key must
+          # not depend on that staying true — Phase 153.1 moved 13 jobs between
+          # runner classes and an unqualified key would have followed them.
+          key: spm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('packages/crosswake-shell-core-ios/Package.swift') }}
       - name: Run Swift tests
         working-directory: packages/crosswake-shell-core-ios
         run: swift test
@@ -90,6 +100,7 @@ jobs:
   android-generated-shell-unit:            # NEW — hermetic JVM generated-shell proof (D-17, LIFE-01a)
     name: android-generated-shell-unit
     runs-on: macos-latest                  # REVIEW FIX finding 2: verify script is mac-specific (arch() exit-1s off-mac)
+    timeout-minutes: 30
     env:
       CROSSWAKE_ANDROID_CONNECTED_TESTS: "0"  # hermetic JVM-only; bypasses emulator branches (script line 9)
       CROSSWAKE_ANDROID_USE_MAVEN_LOCAL: "1"  # resolve shell-core from ~/.m2 (see publishToMavenLocal step) so a
@@ -124,6 +135,7 @@ jobs:
     if: always()
     needs: [android-package-unit, android-generated-shell-unit]  # D-18: both jobs feed the aggregator
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Roll up native behavioral proof results
         uses: re-actors/alls-green@release/v1

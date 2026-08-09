@@ -557,9 +557,9 @@ defmodule Crosswake.Guides.NativeEvidenceDriftTest do
 
       "examples/ios_shell_host/CrosswakeShell.xcodeproj/project.pbxproj" ->
         [
-          "XCRemoteSwiftPackageReference",
-          "repositoryURL = \"https://github.com/szTheory/crosswake-shell-core-ios.git\"",
-          "minimumVersion = #{current_version()}"
+          "PBXNativeTarget",
+          "CrosswakeShellCore.framework",
+          "../../packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/PackStore.swift"
         ]
 
       "examples/android_shell_host/app/build.gradle" ->

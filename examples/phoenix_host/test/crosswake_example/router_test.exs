@@ -35,6 +35,28 @@ defmodule CrosswakeExample.RouterTest do
              ~r/if Mix\.env\(\) in \[:test, :e2e\] do.*post\("\/showcase-reset", ShowcaseResetController, :create\)/s
   end
 
+  test "E2E undeclared-control route (PROOF-01 A2) is present in :test, wired to the LiveView" do
+    route = route_by_path("/_e2e/undeclared-control")
+
+    assert route, "expected /_e2e/undeclared-control compiled in :test"
+    assert route.verb == :get
+    assert route.plug == Phoenix.LiveView.Plug
+    assert route.plug_opts == CrosswakeExample.E2E.UndeclaredControlLive
+
+    {:ok, policy} = RouterMetadata.fetch(route.metadata)
+    assert policy.id == "e2e-a2-shell-denial"
+    assert policy.capabilities == ["haptics"]
+  end
+
+  test "E2E undeclared-control route remains inside the compile-time test/e2e guard" do
+    source =
+      Path.expand("../../lib/crosswake_example/router.ex", __DIR__)
+      |> File.read!()
+
+    assert source =~
+             ~r/if Mix\.env\(\) in \[:test, :e2e\] do.*live\("\/undeclared-control", UndeclaredControlLive/s
+  end
+
   test "root route is the Crosswake showcase hub LiveView with cached read-only metadata" do
     route = route_by_path("/")
     {:ok, policy} = RouterMetadata.fetch(route.metadata)

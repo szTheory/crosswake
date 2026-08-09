@@ -1,0 +1,287 @@
+/* ─── Zero theme logic (D-25) ───────────────────────────────────────────── *
+ * Both light/dark resolution is inherited entirely from the library-served
+ * tokens.css — neither of its two theming mechanisms is repeated here. This
+ * is the one theme line every generated CSS file in this repo carries
+ * (offline.css:5-7). */
+:root {
+  color-scheme: light dark;
+}
+
+/* ─── Token alias layer (D-24) ──────────────────────────────────────────── *
+ * Everything below this block references a --cwfb-* alias only, never a bare
+ * cw-prefixed custom property directly. Re-point these ~15 lines to adopt
+ * your own design system instead of deleting the tokens.css link. Sizing
+ * below (spacing/type-scale/radius) is intentionally literal, not
+ * token-aliased — the alias contract here is color, font, and radius only,
+ * matching the fixed 15-entry table this template ships with.
+ * Shared with .cw-fallback-inline-alert: that region renders OUTSIDE the
+ * .cw-fallback subtree entirely (in normal document flow, never inside a
+ * modal), so it needs the same alias block to resolve its own colors. */
+.cw-fallback,
+.cw-fallback-inline-alert {
+  --cwfb-surface:       var(--cw-surface-inset);
+  --cwfb-scrim:         var(--cw-overlay-scrim);
+  --cwfb-ink:           var(--cw-text-default);
+  --cwfb-ink-muted:     var(--cw-text-muted);
+  --cwfb-border:        var(--cw-border-default);
+  --cwfb-border-strong: var(--cw-border-strong);
+  --cwfb-action-bg:     var(--cw-action-bg);
+  --cwfb-action-fg:     var(--cw-action-fg);
+  --cwfb-action-hover:  var(--cw-action-hover);
+  --cwfb-focus-ring:    var(--cw-action-focus-ring);
+  --cwfb-danger-bg:     var(--cw-status-error);
+  --cwfb-danger-fg:     var(--cw-status-error-fg);
+  --cwfb-radius:        var(--cw-radius-lg);
+  --cwfb-font-display:  var(--cw-font-display);
+  --cwfb-font-body:     var(--cw-font-body);
+}
+
+/* ─── Backdrop (D-15, D-17) ──────────────────────────────────────────────── *
+ * Bottom-anchored sheet below 768px, centred dialog above. */
+.cw-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background-color: var(--cwfb-scrim);
+  padding: 16px;
+}
+
+@media (min-width: 768px) {
+  .cw-fallback {
+    align-items: center;
+  }
+}
+
+/* ─── Panel (D-15, D-31) ─────────────────────────────────────────────────── *
+ * --cwfb-surface maps to the INSET surface, never the raised one — text-muted
+ * on raised is 4.11:1 and fails AA (the trap documented at offline.css:61-64). */
+.cw-fallback-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 28rem;
+  background-color: var(--cwfb-surface);
+  color: var(--cwfb-ink);
+  font-family: var(--cwfb-font-body);
+  font-size: 16px;
+  border-radius: var(--cwfb-radius);
+  padding: 24px;
+  /* A shadow, not the scrim — degrades gracefully, composed off the panel's
+     own ink alias rather than a bare cw-prefixed custom property (D-24). */
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--cwfb-ink) 24%, transparent);
+}
+
+/* One 20-degree, 2px wake-seam rule along the panel's top edge. */
+.cw-fallback-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background-color: var(--cwfb-action-bg);
+  transform-origin: top left;
+  transform: skewX(-20deg);
+}
+
+.cw-fallback-title {
+  margin: 0 0 16px;
+  font-family: var(--cwfb-font-display);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 30px;
+  color: var(--cwfb-ink);
+}
+
+/* ─── Scrollable body (D-16 / E1 overflow) ──────────────────────────────── *
+ * Title and button row stay OUTSIDE this container so the confirm action is
+ * never scrolled out of reach. */
+.cw-fallback-scroll {
+  overflow-y: auto;
+  max-height: min(60vh, 420px);
+  margin-bottom: 24px;
+}
+
+.cw-fallback-body-copy {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cwfb-ink-muted);
+}
+
+/* The failed-answer state (role="alert"). Deliberately styled with the full-
+   strength ink alias, not a danger token: --cw-status-error is 2.44:1 as text
+   on the dark inset surface and fails AA there (only the filled-button case
+   is fixed this phase). The alert role plus the border-left shape cue carry
+   the signal instead of relying on a color pairing that isn't proven safe. */
+.cw-fallback-error {
+  margin: 12px 0 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--cwfb-border-strong);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--cwfb-ink);
+}
+
+/* ─── Button row (D-18) ──────────────────────────────────────────────────── *
+ * DOM order [Cancel, Action]; column-reverse narrow (Action on top), row +
+ * flex-end wide (Cancel left, Action right). No tone exception. */
+.cw-fallback-actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .cw-fallback-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
+
+.cw-fallback-cancel,
+.cw-fallback-action {
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-family: var(--cwfb-font-body);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Cancel's border is the STRONG alias, not the default one — dark
+   --cw-border-default is 1.49:1 and fails as a visible border (D-31). */
+.cw-fallback-cancel {
+  background-color: transparent;
+  border: 1px solid var(--cwfb-border-strong);
+  color: var(--cwfb-ink);
+}
+
+.cw-fallback-action {
+  border: none;
+  background-color: var(--cwfb-action-bg);
+  color: var(--cwfb-action-fg);
+}
+
+.cw-fallback-action:hover:not(:disabled) {
+  background-color: var(--cwfb-action-hover);
+}
+
+.cw-fallback-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ─── Destructive action button (D-32) ──────────────────────────────────── *
+ * A filled danger surface + danger text PLUS a left-border shape cue —
+ * colour and shape both carry the signal, never colour alone. The error
+ * token as TEXT is only 2.44:1 on dark and is not safe on its own; the
+ * filled variant is what makes the destructive confirm have a colour
+ * channel at all on dark. Declared after .cw-fallback-action so its
+ * background wins at equal specificity, including on :hover below. */
+.cw-fallback-action-danger {
+  background-color: var(--cwfb-danger-bg);
+  color: var(--cwfb-danger-fg);
+  border-left: 3px solid var(--cwfb-border-strong);
+}
+
+.cw-fallback-action-danger:hover:not(:disabled) {
+  background-color: var(--cwfb-danger-bg);
+}
+
+.cw-fallback-cancel:focus-visible,
+.cw-fallback-action:focus-visible {
+  outline: 2px solid var(--cwfb-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ─── Inline fail-closed alert (D-59, E4) ───────────────────────────────── *
+ * Rendered in normal document flow, entirely OUTSIDE .cw-fallback — this
+ * selector was added to the alias block above so its --cwfb-* references
+ * resolve without needing to live inside the modal subtree. No fixed
+ * height, no overflow rule of any kind: a clipped denial would read as
+ * silent degradation, which PROOF-01 forbids. Same left-border shape cue as
+ * the modal's own role="alert" region, for the same reason (D-31: the error
+ * token is not safe as text/border alone on dark). */
+.cw-fallback-inline-alert {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--cwfb-border-strong);
+  font-family: var(--cwfb-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--cwfb-ink);
+}
+
+/* ─── Action menu list (D-20) ────────────────────────────────────────────── *
+ * Shares .cw-fallback-scroll (defined above) as its scroll container — same
+ * max-height: min(60vh, 420px) rule, same "heading and Cancel stay outside
+ * the scroll container" discipline as the confirm modal's body. */
+.cw-fallback-menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* The 4px gap band ahead of the (grouped, always-last) destructive row. */
+.cw-fallback-menu-item-gap {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--cwfb-border);
+}
+
+.cw-fallback-menu-row {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 10px;
+  background-color: transparent;
+  color: var(--cwfb-ink);
+  font-family: var(--cwfb-font-body);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* The 3px left bar shape cue on the destructive row — same discipline as
+   the destructive confirm's action button (D-32): shape in addition to
+   colour, never instead of it. */
+.cw-fallback-menu-row-danger {
+  border-left: 3px solid var(--cwfb-danger-bg);
+}
+
+/* A row whose action has no `id` is present-but-not-permitted (D-59); its
+   label already carries the reason inline, so this rule only demotes it to
+   the smaller Label type scale used for helper/reason text elsewhere in
+   this file — never a silently greyed control, never omitted. */
+.cw-fallback-menu-row:disabled {
+  cursor: not-allowed;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--cwfb-ink-muted);
+}
+
+.cw-fallback-menu-row:focus-visible {
+  outline: 2px solid var(--cwfb-focus-ring);
+  outline-offset: 2px;
+}
+
+.cw-fallback-menu-empty {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--cwfb-ink-muted);
+}

@@ -1,0 +1,10 @@
+{
+  "protocol": "crosswake.navigation_transition",
+  "version": "1.0.0",
+  "vectors": [
+    {"id": "navigate-once", "kind": "push_navigate", "expected": "applied"},
+    {"id": "patch-no-growth", "kind": "push_patch", "expected": "applied"},
+    {"id": "duplicate", "expected": "denied"},
+    {"id": "malformed", "expected": "denied"}
+  ]
+}

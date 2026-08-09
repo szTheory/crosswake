@@ -1,8 +1,11 @@
 /**
- * GUARD-01 — AST-based E2E honesty check for offline route proof files
+ * GUARD-01 — AST-based E2E honesty check for pinned route proof specs
  *
- * Purpose: Prevent future PRs from silently reverting the honest offline-sync E2E test
- * (written in phases 112–113) back to injection-based fabrication. This script parses
+ * Purpose: Prevent future PRs from silently reverting an honest E2E proof back to
+ * injection-based fabrication, or deleting one outright. Pinned specs are the
+ * offline-sync route proof (phases 112–113) and the bridge evidence panel proof
+ * (phase 154-08), which mechanizes what was previously a human verification gate —
+ * a gate nothing else would notice the loss of. This script parses
  * the spec via the TypeScript compiler API (AST, not regex) and bans three fabrication
  * shapes unconditionally — no bypassable `// OBSERVATION_ONLY` allowlist (D-05).
  *
@@ -50,9 +53,11 @@ try {
 }
 
 const FILES = [
+  'examples/phoenix_host/e2e/evidence_panel.spec.ts',
   'examples/phoenix_host/e2e/offline_sync.spec.ts',
   'examples/phoenix_host/e2e/route_tour.spec.ts',
   'examples/phoenix_host/e2e/support/offline_route_proof.ts',
+  'examples/phoenix_host/e2e/native_controls_fallback.spec.ts',
 ];
 
 /** Violations accumulated: [lineNumber, ruleId, message] */
@@ -76,7 +81,7 @@ const isNetwork = n => {
 for (const file of FILES) {
   if (!existsSync(file)) {
     console.error(`\n  ✖ GUARD-01 FAILED — ${file} is missing.\n`);
-    console.error('  The offline route proof files must exist. A rename or deletion defeats the honesty guard.');
+    console.error('  Every pinned route proof file must exist. A rename or deletion defeats the honesty guard.');
     console.error('  See REQUIREMENTS.md GUARD-01, COLL-01, and the route-tour offline-study proof.\n');
     process.exit(1);
   }
@@ -162,4 +167,4 @@ if (V.length > 0) {
   process.exit(1);
 }
 
-console.log(`  ✓ E2E honesty check passed — ${FILES.join(', ')} exercise the real offline-study path.`);
+console.log(`  ✓ E2E honesty check passed — ${FILES.join(', ')} observe real app behavior.`);

@@ -38,16 +38,13 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUiTest do
     assert js_content =~ "checkStorageBudget"
   end
 
-  test "copies tokens.css into host priv/static/assets/ with no-clobber semantics" do
+  test "does NOT copy tokens.css into the host — it is served by Crosswake, not generated" do
     run(["--dir", @tmp_dir, "--app", "TestApp"])
 
     tokens_css_path = Path.join([@tmp_dir, "priv", "static", "assets", "tokens.css"])
-    assert File.exists?(tokens_css_path),
-      "Expected tokens.css to be created at #{tokens_css_path}"
-
-    tokens_content = File.read!(tokens_css_path)
-    assert tokens_content =~ "--cw-font-display",
-      "Expected tokens.css to contain --cw-font-display custom property"
+    refute File.exists?(tokens_css_path),
+      "tokens.css must NOT be copied into the host — it is served at /crosswake/tokens.css, " <>
+        "not host-owned (D-26); a copy here would silently drift from every future token addition"
   end
 
   test "generated offline_root.html.heex links tokens.css before app.css" do
@@ -55,6 +52,11 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUiTest do
 
     root_layout_path = Path.join([@tmp_dir, "lib", "test_app_web", "components", "layouts", "offline_root.html.heex"])
     root_layout_content = File.read!(root_layout_path)
+
+    # tokens.css is now a plain href served by Crosswake's own Plug.Static, not a
+    # verified-router-path helper — the URL is not a route in the host's router.
+    assert root_layout_content =~ ~s(href="/crosswake/tokens.css"),
+      "Expected offline_root.html.heex to link the library-served /crosswake/tokens.css"
 
     tokens_index = :binary.match(root_layout_content, "tokens.css")
     app_index = :binary.match(root_layout_content, "app.css")
@@ -71,28 +73,6 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUiTest do
       "Expected tokens.css link to appear before app.css link in offline_root.html.heex"
   end
 
-  test "tokens.css copy uses no-clobber semantics — does not overwrite existing file" do
-    # First run — creates the file
-    run(["--dir", @tmp_dir, "--app", "TestApp"])
-
-    tokens_css_path = Path.join([@tmp_dir, "priv", "static", "assets", "tokens.css"])
-    assert File.exists?(tokens_css_path)
-
-    # Overwrite with custom content to simulate host customization
-    custom_content = "/* custom host tokens */"
-    File.write!(tokens_css_path, custom_content)
-
-    # Second run — must NOT overwrite
-    output = capture_io(fn ->
-      run(["--dir", @tmp_dir, "--app", "TestApp"])
-    end)
-
-    assert File.read!(tokens_css_path) == custom_content,
-      "Expected ensure_file to preserve existing tokens.css (no-clobber), but it was overwritten"
-    assert output =~ "reused",
-      "Expected 'reused' in output when tokens.css already exists"
-  end
-
   test "outputs standard instructions to Mix.shell().info" do
     output = capture_io(fn ->
       run(["--dir", @tmp_dir, "--app", "TestApp"])
@@ -101,6 +81,10 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUiTest do
     assert output =~ "Offline UI components generated successfully!"
     assert output =~ "get \"/offline\""
     assert output =~ "TestAppWeb.OfflineController"
+    assert output =~ "/crosswake/tokens.css",
+      "Next steps must tell the adopter tokens.css is served by Crosswake, not copied"
+    refute output =~ "copied tokens.css",
+      "Must not claim the generator copies tokens.css — it no longer does (D-26)"
   end
 
   test "generated output contains semantic token references, not Tailwind classes" do

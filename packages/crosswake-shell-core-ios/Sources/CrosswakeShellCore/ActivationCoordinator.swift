@@ -111,14 +111,14 @@ public struct ShellManifest: Codable, Equatable {
     }
 
     public struct TransferSeam: Codable, Equatable {
-        let id: String
-        let intent: String
-        let direction: String
-        let source: String?
-        let destination: String?
-        let verification: String
-        let mediaTypes: [String]
-        let states: [String]
+        public let id: String
+        public let intent: String
+        public let direction: String
+        public let source: String?
+        public let destination: String?
+        public let verification: String
+        public let mediaTypes: [String]
+        public let states: [String]
 
         enum CodingKeys: String, CodingKey {
             case id
@@ -176,6 +176,15 @@ public struct RouteDenialPresentation: Equatable {
     public let hint: String?
     public let routeID: String?
     public let actions: [RouteUnavailableAction]
+
+    public init(reason: RouteDenialReason, title: String, message: String, hint: String?, routeID: String?, actions: [RouteUnavailableAction]) {
+        self.reason = reason
+        self.title = title
+        self.message = message
+        self.hint = hint
+        self.routeID = routeID
+        self.actions = actions
+    }
 }
 
 public struct LiveViewSession: Equatable {
@@ -226,6 +235,11 @@ public final class ActivationCoordinator: ObservableObject {
     private var lastRequest: ActivationRequest?
     private var cachedManifest: ShellManifest?
 
+    /// Existing host WebView bootstrap needs the configuration's declared bridge capabilities.
+    public var registeredCapabilities: [String] {
+        config.registeredCapabilities
+    }
+
     public init(
         manifestLoader: @escaping () throws -> ShellManifest,
         requestLoader: @escaping () throws -> ActivationRequest,
@@ -239,7 +253,7 @@ public final class ActivationCoordinator: ObservableObject {
     }
 
     public static func bundled(bundle: Bundle = .main, config: CrosswakeShellConfig) -> ActivationCoordinator {
-        let store = (try? PackStore.bundled(bundle: bundle)) ?? PackStore(requiredVersions: [:], inventory: [])
+        let store = (try? PackStore.bundled(bundle: bundle, provider: config.packProvider)) ?? PackStore(requirements: [], provider: config.packProvider)
 
         return ActivationCoordinator(
             manifestLoader: { try Self.decode("crosswake_manifest", bundle: bundle) },
@@ -256,6 +270,11 @@ public final class ActivationCoordinator: ObservableObject {
         do {
             let request = try loadAndFilterRequest()
             activate(request)
+            Task { [weak self] in
+                guard let self else { return }
+                await self.packStore.reconcileAll()
+                self.reactivateLastRequest()
+            }
         } catch {
             presentation = .denied(
                 RouteDenialPresentation(
@@ -472,6 +491,19 @@ public final class ActivationCoordinator: ObservableObject {
         )
     }
 
+    /// Builds the shell-owned navigation resolver from the same manifest/request
+    /// authority as activation. Candidate transitions never bypass this resolver.
+    public func makeNavigationCoordinator(topology: NavigationTopology) -> NavigationCoordinator {
+        let manifest = (try? loadManifest()) ?? ShellManifest(compatibility: .init(nativeRuntimeVersion: "0.0.0"), routes: [:])
+        return NavigationCoordinator(topology: topology, manifest: manifest) { [weak self] routeID, manifest in
+            guard let self, let baseline = try? self.requestLoader() else { return .denied }
+            let request = ActivationRequest(routeID: routeID, url: nil, source: .inAppNavigation, origin: baseline.origin, manifestSource: baseline.manifestSource, bridgeProtocolVersion: baseline.bridgeProtocolVersion, nativeRuntimeVersion: baseline.nativeRuntimeVersion, correlationID: baseline.correlationID, threadID: baseline.threadID, declaredPackRequirements: baseline.declaredPackRequirements, installedPacks: baseline.installedPacks, capabilities: baseline.capabilities)
+            let presentation = self.resolve(request: request, manifest: manifest)
+            if case .denied = presentation { return .denied }
+            return .authorized(presentation)
+        }
+    }
+
     private func handleIncomingURL(_ url: URL, source: ActivationSource) {
         do {
             let seededRequest = try loadAndFilterRequest()
@@ -521,6 +553,13 @@ public final class ActivationCoordinator: ObservableObject {
         }
         if config.filesPickDelegate == nil {
             filteredCapabilities.removeValue(forKey: "file_picker")
+        }
+
+        let registeredHostCommands = config.hostBridgeCommandDelegate?.registeredCommands ?? []
+        for key in filteredCapabilities.keys where key.hasPrefix("host.") {
+            if !registeredHostCommands.contains(key) {
+                filteredCapabilities.removeValue(forKey: key)
+            }
         }
 
         let registeredRoutes = config.routeDelegate?.registeredRoutes ?? []
@@ -664,4 +703,3 @@ extension URL {
         }
     }
 }
-

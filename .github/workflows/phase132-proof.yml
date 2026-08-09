@@ -53,7 +53,7 @@ jobs:
     #   - the broad hermetic suite (excludes requires_example_host / advisory_only).
     #
     # Intentionally skipped on the weekly `schedule` trigger (advisory lane only).
-    name: core hermetic proof (merge-blocking)
+    name: phase132 core hermetic proof (merge-blocking)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
@@ -95,7 +95,7 @@ jobs:
     # parameterized verify script for crosswake_rindle. Merge-blocking.
     #
     # Intentionally skipped on the weekly `schedule` trigger (advisory lane only).
-    name: companion engine-absent proof (merge-blocking)
+    name: phase132 companion engine-absent proof (merge-blocking)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
@@ -137,7 +137,7 @@ jobs:
     # ENGINE_PRESENT_LANE=1 appends test/engine_present/rindle.ex (the fake top-level
     # Rindle stub) to elixirc_paths(:test). The mix clean step BEFORE this lane
     # prevents stale .beam files from leaking into the engine-absent lane (D-33).
-    name: companion engine-present proof (advisory)
+    name: phase132 companion engine-present proof (advisory)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}

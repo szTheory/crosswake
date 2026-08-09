@@ -36,6 +36,7 @@ jobs:
   verify-or-backfill-ios-mirror:
     name: Verify or backfill iOS SwiftPM mirror
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Validate inputs
         env:

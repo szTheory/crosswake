@@ -5,6 +5,7 @@ defmodule Crosswake.Compatibility do
 
   alias Crosswake.Bridge.Contract
   alias Crosswake.Bridge.Registry
+  alias Crosswake.Manifest.Types
   alias Crosswake.Manifest.Types.Compatibility, as: CompatibilityTruth
   alias Crosswake.Manifest.Types.Capability
   alias Crosswake.Manifest.Types.Root
@@ -673,7 +674,7 @@ defmodule Crosswake.Compatibility do
 
   defp bridge_target(%Contract.Request{} = request) do
     %Target{
-      manifest_schema_version: "1.0.0",
+      manifest_schema_version: Types.manifest_schema_version(),
       bridge_protocol_version: request.version,
       native_runtime_version: request.native_runtime_version,
       origin: request.origin,

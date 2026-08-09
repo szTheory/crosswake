@@ -26,13 +26,10 @@ on:
   schedule:
     - cron: "0 6 * * 1"
 
-env:
-  DEVELOPER_DIR: /Applications/Xcode_26.0.app/Contents/Developer
-
 jobs:
   merge-blocking-provider-adapter-proof:
     name: merge-blocking provider adapter proof (hermetic)
-    runs-on: macos-15
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'merge-blocking' || inputs.lane == 'all')) }}
 
@@ -40,14 +37,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
 
-      - name: Setup BEAM
-        uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+      - name: Setup BEAM and restore Elixir caches
+        uses: ./.github/actions/setup-elixir-cache
         with:
-          elixir-version: "1.19.5"
-          otp-version: "27.3"
-
-      - name: Install Elixir dependencies
-        run: mix deps.get
+          # test, not dev: `mix test` below compiles lib PLUS the test files and
+          # is the larger of this lane's two compiles. The `mix compile` step is
+          # still a cold dev-env compile — see the double-compile note in
+          # 153.1-03-RESULTS.md; collapsing the two would change which Mix.env()
+          # the warnings check runs under, which is not a silent change to make
+          # across 11 merge-blocking gates.
+          mix-env: test
 
       - name: Compile (warnings as errors)
         run: mix compile --warnings-as-errors
@@ -66,14 +65,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
 
-      - name: Setup BEAM
-        uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+      - name: Setup BEAM and restore Elixir caches
+        uses: ./.github/actions/setup-elixir-cache
         with:
-          elixir-version: "1.19.5"
-          otp-version: "27.3"
-
-      - name: Install Elixir dependencies
-        run: mix deps.get
+          # test, not dev: `mix test` below compiles lib PLUS the test files and
+          # is the larger of this lane's two compiles. The `mix compile` step is
+          # still a cold dev-env compile — see the double-compile note in
+          # 153.1-03-RESULTS.md; collapsing the two would change which Mix.env()
+          # the warnings check runs under, which is not a silent change to make
+          # across 11 merge-blocking gates.
+          mix-env: test
 
       - name: Advisory StoreKit sandbox/device checks
         env:

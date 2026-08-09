@@ -6,6 +6,15 @@ const ROOT = path.resolve(__dirname, '../..');
 const JSON_PATH = path.join(ROOT, 'brandbook/tokens/crosswake.tokens.json');
 const CSS_PATH = path.join(ROOT, 'brandbook/tokens/tokens.css');
 const PRIV_CSS_PATH = path.join(ROOT, 'priv/static/crosswake/tokens.css');
+// Phase 155 D-26: a second byte-identical copy, sibling to priv/static/crosswake.esm.js,
+// so the library's existing single "/crosswake" Plug.Static block (from: :crosswake,
+// i.e. that app's priv/static ROOT) can serve it at /crosswake/tokens.css. Plug.Static
+// resolves `only:`-listed names relative to `from:`'s root, not to the nested
+// priv/static/crosswake/ directory PRIV_CSS_PATH already writes to (which stays a
+// second copy — the pre-existing "packaged mirror" test at compile-tokens.test.mjs:222
+// pins that path). Both copies are written from the identical `out` string in the same
+// run, so they can never drift from each other.
+const SERVED_CSS_PATH = path.join(ROOT, 'priv/static/tokens.css');
 
 // Flatten nested DTCG token tree to dot-path -> token map; skip $-prefixed metadata keys
 function flattenTokens(obj, prefix, acc) {
@@ -64,7 +73,7 @@ function main() {
   const flat = flattenTokens(tokens);
   const all = Object.keys(flat).sort();
   const prim = all.filter(p => p.startsWith('primitive.'));
-  const groups = ['surface', 'text', 'action', 'border', 'status', 'runtime'];
+  const groups = ['surface', 'text', 'action', 'border', 'status', 'runtime', 'overlay'];
   const sem = all.filter(p => groups.some(g => p.startsWith(g + '.')));
   const darkSem = props(flat, sem, true, false);
   const nonColor = all.filter(p => NON_COLOR_GROUPS.some(g => p.startsWith(g + '.')));
@@ -97,6 +106,9 @@ function main() {
   fs.mkdirSync(path.dirname(PRIV_CSS_PATH), { recursive: true });
   fs.writeFileSync(PRIV_CSS_PATH, out, 'utf8');
   process.stdout.write('priv/static/crosswake/tokens.css written\n');
+  fs.mkdirSync(path.dirname(SERVED_CSS_PATH), { recursive: true });
+  fs.writeFileSync(SERVED_CSS_PATH, out, 'utf8');
+  process.stdout.write('priv/static/tokens.css written\n');
 }
 
 if (require.main === module) main();

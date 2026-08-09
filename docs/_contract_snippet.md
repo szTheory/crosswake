@@ -7,7 +7,7 @@
 |------|---------|
 | `bridge_protocol_version` | `1.1.0` |
 | `native_runtime_version` (minimum floor) | `1.0.0` |
-| `manifest_schema_version` | `1.0.0` |
+| `manifest_schema_version` | `1.1.0` |
 
 The authoritative source is `Crosswake.Bridge.Contract.version/0` (`lib/crosswake/bridge/contract.ex`).
 Do not hand-edit this snippet — run `mix crosswake.contract.gen` to regenerate.

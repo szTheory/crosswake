@@ -8,6 +8,7 @@ defmodule Crosswake.Offline.ReplayTest do
     entry =
       Journal.new_entry(
         id: "journal-01",
+        scope_ref: "v1.scope_fixture_alpha_01",
         route_id: "study-session",
         sync_seam: "study_reviews",
         operation: :grade_card,
@@ -20,6 +21,7 @@ defmodule Crosswake.Offline.ReplayTest do
     request = Replay.request_for_entry(entry)
 
     assert request.route_id == "study-session"
+    assert request.scope_ref == "v1.scope_fixture_alpha_01"
     assert request.sync_seam == "study_reviews"
     assert request.journal_entry_id == "journal-01"
     assert request.idempotency_key == "study-session:mutation-01"
@@ -28,6 +30,7 @@ defmodule Crosswake.Offline.ReplayTest do
   test "replay outcomes are explicit accepted rejected or conflict results" do
     request =
       Replay.new_request(
+        scope_ref: "v1.scope_fixture_alpha_01",
         route_id: "study-session",
         sync_seam: "study_reviews",
         journal_entry_id: "journal-01",
@@ -54,5 +57,35 @@ defmodule Crosswake.Offline.ReplayTest do
     assert rejected.reason == "validation_failed"
     assert conflict.status == :conflict
     assert conflict.reason == "checkpoint_mismatch"
+  end
+
+  test "replay serialization preserves the exact sensitive opaque scope" do
+    entry =
+      Journal.new_entry(
+        id: "journal-serialized-scope",
+        scope_ref: "v1.scope_fixture_alpha_01",
+        route_id: "study-session",
+        sync_seam: "study_reviews",
+        operation: :grade_card,
+        client_mutation_id: "mutation-serialized-scope",
+        idempotency_key: "study-session:mutation-serialized-scope",
+        base_checkpoint: "deck-42:v7"
+      )
+
+    assert Replay.to_map(Replay.request_for_entry(entry))["scope_ref"] == entry.scope_ref
+  end
+
+  test "replay requests reject malformed scopes with the stable non-echoing rule" do
+    assert_raise ArgumentError, "CW-OFFLINE-SCOPE-REF", fn ->
+      Replay.new_request(
+        scope_ref: "not-a-scope",
+        route_id: "study-session",
+        sync_seam: "study_reviews",
+        journal_entry_id: "journal-invalid-request",
+        client_mutation_id: "mutation-invalid-request",
+        idempotency_key: "study-session:mutation-invalid-request",
+        base_checkpoint: "deck-42:v7"
+      )
+    end
   end
 end

@@ -34,8 +34,6 @@ defmodule Crosswake.Offline.ProofLaneTest do
   test "docs keep the narrow offline claim and shell verification required posture" do
     offline = File.read!("guides/offline.md")
     compatibility = File.read!("guides/compatibility.md")
-    support = File.read!("guides/support_matrix.md")
-
     assert offline =~ "cached read-only"
     assert offline =~ "study-session offline island"
     assert offline =~ "queued for replay"

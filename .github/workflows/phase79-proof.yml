@@ -16,6 +16,7 @@ jobs:
   merge-blocking-v5-proof:
     name: Hermetic v5.0 Shell Verification
     runs-on: macos-15
+    timeout-minutes: 30
     steps:
       - name: Checkout code
         uses: actions/checkout@v7

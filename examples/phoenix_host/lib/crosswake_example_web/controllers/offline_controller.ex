@@ -22,6 +22,15 @@ defmodule CrosswakeExample.OfflineController do
     conn
     |> put_view(CrosswakeExample.OfflineHTML)
     |> put_root_layout(false)
-    |> render(:index, page_title: PageTitle.learn("Offline Study"), island: island)
+    |> render(
+      :index,
+      page_title: PageTitle.learn("Offline Study"),
+      island: island,
+      recovery_route: recovery_route_capability()
+    )
   end
+
+  # TODO-002 has not supplied a concrete saved-answer recovery route. Keep the
+  # browser closed until Phoenix can resolve one explicit GET capability.
+  defp recovery_route_capability, do: %{status: "unavailable", destination: nil}
 end

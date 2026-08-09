@@ -52,7 +52,7 @@ defmodule Crosswake.ManifestTest do
   test "top-level manifest includes host, compatibility, support matrix, capability registry, and routes" do
     assert {:ok, %{manifest: manifest}} = Manifest.compile(ManagedRouter)
 
-    assert manifest.manifest_schema_version == "1.0.0"
+    assert manifest.manifest_schema_version == "1.1.0"
     assert manifest.crosswake_version == Mix.Project.config()[:version]
     assert manifest.host.manifest_sources == [:bundled, :cached, :remote]
     assert manifest.compatibility.bridge_protocol_version == Crosswake.Bridge.Contract.version()
@@ -64,10 +64,10 @@ defmodule Crosswake.ManifestTest do
     assert manifest.support_matrix.capability_families != []
   end
 
-  test "manifest keeps schema 1.0.0 while commerce corridor fields remain additive" do
+  test "manifest keeps schema 1.1.0 while commerce corridor fields remain additive" do
     assert {:ok, %{manifest: baseline_manifest}} = Manifest.compile(ManagedRouter)
 
-    assert baseline_manifest.manifest_schema_version == "1.0.0"
+    assert baseline_manifest.manifest_schema_version == "1.1.0"
     assert baseline_manifest.commerce_corridors == %{}
     assert Enum.all?(baseline_manifest.routes, fn {_id, route} -> is_nil(route.commerce) end)
 
@@ -84,7 +84,7 @@ defmodule Crosswake.ManifestTest do
                )
              ])
 
-    assert commerce_manifest.manifest_schema_version == "1.0.0"
+    assert commerce_manifest.manifest_schema_version == "1.1.0"
     assert Map.has_key?(commerce_manifest.commerce_corridors, "subscription_default")
     assert commerce_manifest.routes["paywall"].commerce.corridor_ref == "subscription_default"
     assert commerce_manifest.routes["paywall"].commerce.role == :paywall_entry

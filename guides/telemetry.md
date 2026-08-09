@@ -2,7 +2,7 @@
 
 ## What Crosswake Telemetry Is
 
-`Crosswake.Telemetry` is the canonical public API for the `:telemetry` events Crosswake emits across its companion, doctor, threadline, sigra, and chimeway subsystems.
+`Crosswake.Telemetry` is the canonical public API for the `:telemetry` events Crosswake emits across its companion, doctor, threadline, sigra, chimeway, and bridge subsystems.
 
 Call `Crosswake.Telemetry.events/0` at runtime to retrieve a self-describing catalog of every event Crosswake declares. Each entry carries the event name prefix, a tier (`:active` for events that fire today, `:reserved` for events declared but not yet emitted), a description, and the exact measurement and metadata keys the event carries. This catalog is the source of truth for host observability pipelines, dashboards, and contract tests.
 
@@ -110,6 +110,81 @@ Event names:
 - `` `[:crosswake, :threadline, :request, :start]` ``
 - `` `[:crosswake, :threadline, :request, :stop]` ``
 - `` `[:crosswake, :threadline, :request, :exception]` ``
+
+### Bridge: push
+
+Emitted when `Crosswake.Bridge.push/3` dispatches a bounded capability to the native shell. Metadata never includes the adopter-supplied `ref:` — it stays library-internal (D-20) and never crosses into telemetry, keeping metadata cardinality bounded to route/capability/command.
+
+| Suffix | Measurements | Metadata |
+|--------|-------------|----------|
+| `:start` | `system_time` | `route_id`, `capability`, `command` |
+| `:stop` | `duration` | `route_id`, `capability`, `command` |
+| `:exception` | `duration` | `route_id`, `capability`, `command` |
+
+Event names:
+- `` `[:crosswake, :bridge, :push, :start]` ``
+- `` `[:crosswake, :bridge, :push, :stop]` ``
+- `` `[:crosswake, :bridge, :push, :exception]` ``
+
+### Bridge: reply
+
+Emitted when a bridge ask resolves to a delivered reply (`:ok` or `:deny`) — whether or not the adopter passed `ref:` and receives it in `handle_info/2` (D-21). Deny replies also carry `denial_reason`, drawn from the closed 14-reason `Crosswake.Shell.Denial` vocabulary — never a free string.
+
+| Suffix | Measurements | Metadata |
+|--------|-------------|----------|
+| `:start` | `system_time` | `route_id`, `command`, `status`, `denial_reason` (deny only) |
+| `:stop` | `duration` | `route_id`, `command`, `status`, `denial_reason` (deny only) |
+| `:exception` | `duration` | `route_id`, `command`, `status`, `denial_reason` (deny only) |
+
+Event names:
+- `` `[:crosswake, :bridge, :reply, :start]` ``
+- `` `[:crosswake, :bridge, :reply, :stop]` ``
+- `` `[:crosswake, :bridge, :reply, :exception]` ``
+
+### Bridge: dropped
+
+Emitted when a reply, unreachable fact, or timer message arrives for a correlation id that is no longer in flight. `reason` is `:duplicate` (a second terminal event arrived for a correlation id already resolved) or `:foreign_epoch` (the reply was minted under a prior per-mount epoch — the LiveView reconnected since it was dispatched). Exactly-once delivery is structural (D-23): this event is what makes a duplicate or stale delivery an observable counter instead of a silent double mutation.
+
+| Suffix | Measurements | Metadata |
+|--------|-------------|----------|
+| `:start` | `system_time` | `route_id`, `reason` |
+| `:stop` | `duration` | `route_id`, `reason` |
+| `:exception` | `duration` | `route_id`, `reason` |
+
+Event names:
+- `` `[:crosswake, :bridge, :dropped, :start]` ``
+- `` `[:crosswake, :bridge, :dropped, :stop]` ``
+- `` `[:crosswake, :bridge, :dropped, :exception]` ``
+
+### Bridge: hook\_ack
+
+Emitted when the bridge hook's acknowledgement arrives before the server-armed wiring deadline.
+
+| Suffix | Measurements | Metadata |
+|--------|-------------|----------|
+| `:start` | `system_time` | `route_id` |
+| `:stop` | `duration` | `route_id` |
+| `:exception` | `duration` | `route_id` |
+
+Event names:
+- `` `[:crosswake, :bridge, :hook_ack, :start]` ``
+- `` `[:crosswake, :bridge, :hook_ack, :stop]` ``
+- `` `[:crosswake, :bridge, :hook_ack, :exception]` ``
+
+### Bridge: hook\_missing
+
+Emitted when no acknowledgement arrives before the server-armed wiring deadline elapses — the bridge hook is not wired on this page at all. **This count should always be zero in a healthy deploy.** A nonzero rate means some page is missing the hook script tag or the `phx-hook` attribute — alert on it.
+
+| Suffix | Measurements | Metadata |
+|--------|-------------|----------|
+| `:start` | `system_time` | `route_id` |
+| `:stop` | `duration` | `route_id` |
+| `:exception` | `duration` | `route_id` |
+
+Event names:
+- `` `[:crosswake, :bridge, :hook_missing, :start]` ``
+- `` `[:crosswake, :bridge, :hook_missing, :stop]` ``
+- `` `[:crosswake, :bridge, :hook_missing, :exception]` ``
 
 ## Reserved Events
 

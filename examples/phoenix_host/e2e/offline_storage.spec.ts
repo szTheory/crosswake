@@ -51,7 +51,7 @@ test.describe('Offline Storage Quota Enforcement', () => {
     await expect(blockHeader).not.toBeVisible();
   });
 
-  test('displays graceful error on runtime QuotaExceededError', async ({ page }) => {
+  test('displays graceful error on runtime QuotaExceededError', async ({ page, context }) => {
     // Satisfy upfront block
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'storage', {
@@ -64,25 +64,19 @@ test.describe('Offline Storage Quota Enforcement', () => {
         configurable: true
       });
       
-      // Override IDBObjectStore.prototype.add to simulate QuotaExceededError
-      const originalAdd = IDBObjectStore.prototype.add;
-      IDBObjectStore.prototype.add = function(...args) {
-        const req = originalAdd.apply(this, args);
-        if (this.name === 'mutations') {
-          setTimeout(() => {
-            if (req.onerror) {
-              const err = new DOMException('Quota exceeded.', 'QuotaExceededError');
-              const event = new Event('error');
-              Object.defineProperty(event, 'target', { value: { error: err } });
-              req.onerror(event);
-            }
-          }, 0);
+      // Refuse the scoped outbox transaction as IndexedDB does when quota is exhausted.
+      const originalTransaction = IDBDatabase.prototype.transaction;
+      IDBDatabase.prototype.transaction = function(...args) {
+        if (args[0] === 'scoped_mutations' && args[1] === 'readwrite') {
+          throw new DOMException('Quota exceeded.', 'QuotaExceededError');
         }
-        return req;
+        return originalTransaction.apply(this, args);
       };
     });
 
     await page.goto('/offline');
+    await context.setOffline(true);
+    await page.evaluate(() => window.crosswakeOfflineStudy.activateScope('v1.scope_fixture_alpha_01'));
     
     // Flip a card and pass it to trigger a mutation save
     await page.click('#btn-flip');
@@ -93,7 +87,6 @@ test.describe('Offline Storage Quota Enforcement', () => {
     await expect(notification).toBeVisible();
     
     // Verify we didn't crash completely - the status message should also say handled
-    const status = page.locator('#status', { hasText: 'QuotaExceededError handled gracefully.' });
-    await expect(status).toBeVisible();
+    await expect(page.locator('#status')).toHaveText('QuotaExceededError handled gracefully.');
   });
 });

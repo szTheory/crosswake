@@ -8,10 +8,10 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellStampTest do
   - gradle.properties IS stamped (regression guard for review finding 4 correction (a)).
   - README.md files are NOT stamped (generated from shell_readme/1 string literal, not .eex).
 
-  Async-safe: each test uses its own System.unique_integer tmp dir.
+  Mix task invocation is process-global, so these generator assertions must run serially.
   """
 
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   import ExUnit.CaptureIO
 
@@ -151,7 +151,10 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellStampTest do
     end)
 
     android_root = Path.join(target, "native/android/crosswake_shell")
-    main_activity = Path.join(android_root, "app/src/main/java/dev/crosswake/shell/MainActivity.kt")
+
+    main_activity =
+      Path.join(android_root, "app/src/main/java/dev/crosswake/shell/MainActivity.kt")
+
     contents = File.read!(main_activity)
 
     assert contents =~ "(template_version:",

@@ -9,11 +9,23 @@ defmodule Mix.Tasks.Crosswake.Install do
   @moduledoc """
   Bootstraps a Phoenix host for Crosswake with explicit markers, a host-owned policy
   module, and a machine-readable install manifest.
+
+  ## Patch what is canonical, print what is not (D-41)
+
+  The installer patches the router and, when it can find one, the endpoint's static
+  plug block that serves the library-owned bridge hook. Both are mechanical and
+  identical across hosts.
+
+  It PRINTS — never rewrites — the layout's module import, the socket constructor's
+  hooks map, and the hook element. Those are host-authored: the import path depends on
+  whether the host bundles JavaScript at all, and rewriting somebody's `LiveSocket`
+  constructor under them is not an additive install.
   """
 
   @switches [
     target: :string,
     router: :string,
+    endpoint: :string,
     web_module: :string,
     policy_module: :string,
     manifest_path: :string
@@ -43,6 +55,9 @@ defmodule Mix.Tasks.Crosswake.Install do
     {policy_action, _policy_contents} =
       ensure_policy_module(policy_path, policy_module, router_path)
 
+    endpoint_path = opts[:endpoint] && Path.expand(opts[:endpoint], target)
+    {endpoint_summary, endpoint_files} = patch_endpoint(endpoint_path || infer_endpoint_path(target), target)
+
     {:ok, manifest_action} =
       Manifest.write(manifest_path, %{
         crosswake_version: Mix.Project.config()[:version] || "dev",
@@ -50,11 +65,12 @@ defmodule Mix.Tasks.Crosswake.Install do
         web_module: web_module,
         policy_module: policy_module,
         files: %{
-          created_or_reused: [
-            Path.relative_to(router_path, target),
-            Path.relative_to(policy_path, target),
-            Path.relative_to(manifest_path, target)
-          ]
+          created_or_reused:
+            [
+              Path.relative_to(router_path, target),
+              Path.relative_to(policy_path, target),
+              Path.relative_to(manifest_path, target)
+            ] ++ endpoint_files
         },
         markers: Patcher.marker_lines()
       })
@@ -63,8 +79,89 @@ defmodule Mix.Tasks.Crosswake.Install do
     Crosswake install complete for #{Path.basename(target)}
       router: #{Path.relative_to(router_path, target)} (#{format_router_actions(router_result.actions)})
       policy module: #{Path.relative_to(policy_path, target)} (#{policy_action})
+      endpoint: #{endpoint_summary}
       install manifest: #{Path.relative_to(manifest_path, target)} (#{manifest_action})
+
+    #{layout_wiring_notice()}
     """)
+  end
+
+  # Patch what is canonical (D-41). A host without a resolvable endpoint is NOT an
+  # install failure — the block is four lines an adopter can place by hand, and
+  # failing an additive installer over it would be worse than saying so.
+  defp patch_endpoint(nil, _target) do
+    {"not found (place the static plug block from `mix crosswake.gen.bridge_hook` by hand)", []}
+  end
+
+  defp patch_endpoint(endpoint_path, target) do
+    case Patcher.patch_endpoint(endpoint_path) do
+      {:ok, result} ->
+        summary =
+          "#{Path.relative_to(endpoint_path, target)} (#{format_router_actions(result.actions)})"
+
+        summary =
+          if :marker_stale in result.actions do
+            summary <> "\n" <> stale_endpoint_block_notice()
+          else
+            summary
+          end
+
+        {summary, [Path.relative_to(endpoint_path, target)]}
+
+      {:error, reason} ->
+        {"#{Path.relative_to(endpoint_path, target)} (skipped — #{reason})", []}
+    end
+  end
+
+  # Printed, never auto-applied (D-52/T-155-13) — the marker block sits inside a
+  # file the adopter owns, so a stale body is reported with the canonical
+  # replacement text, not silently rewritten.
+  defp stale_endpoint_block_notice do
+    """
+
+      Your endpoint's Crosswake static plug block is stale — it no longer matches
+      the current canonical block (Crosswake never rewrites a marker block it does
+      not fully control). Replace the body between the
+      `# crosswake:install:start` / `# crosswake:install:end` markers with:
+
+      #{Patcher.endpoint_static_plug_block()}
+    """
+  end
+
+  defp infer_endpoint_path(target) do
+    case Path.wildcard(Path.join([target, "lib", "*_web", "endpoint.ex"])) do
+      [endpoint_path | _rest] -> endpoint_path
+      [] -> nil
+    end
+  end
+
+  # PRINT what is not canonical (D-41). Printed on every run, including a fully
+  # idempotent second run: the layout wiring is the half the installer cannot verify,
+  # and a socket that never attached raises a named error on the FIRST push — a
+  # brand-new install-time failure surface every adopter hits exactly once.
+  defp layout_wiring_notice do
+    [import_line, hooks_map_line, hook_element] = Patcher.layout_wiring_lines()
+
+    """
+    Two things the installer will not write for you (they are host-authored):
+
+      1. Import the bridge hook and register it in your socket's hooks map:
+
+             #{import_line}
+             #{hooks_map_line}
+
+      2. Put ONE hook element on the page (client events broadcast to every mounted
+         hook, so a second element posts every request to the shell twice):
+
+             #{hook_element}
+
+    And one thing that is neither: `Crosswake.Bridge.push/3` raises
+    Crosswake.Bridge.NotMountedError on a socket that never called
+    `Crosswake.Bridge.attach/1` (or used `on_mount: Crosswake.Bridge`). Crosswake
+    never guesses a route id. Attach in mount/3 before you push.
+
+    Confirm all of it with: mix crosswake.doctor
+    """
   end
 
   defp infer_router_path!(target) do

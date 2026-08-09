@@ -113,4 +113,12 @@ defmodule Crosswake.OperatorInspection.JSONFormatterTest do
     assert json =~ ~s("routes")
     assert json =~ ~s("indexes")
   end
+
+  test "inspection formatter keeps route-policy readiness and omits replay transport vocabulary" do
+    source = File.read!("lib/crosswake/operator_inspection/json_formatter.ex")
+    refute source =~ "outbox"
+    refute source =~ "scope_ref"
+    refute source =~ "metadata"
+    refute source =~ "details"
+  end
 end

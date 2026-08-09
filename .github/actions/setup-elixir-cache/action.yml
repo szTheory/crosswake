@@ -1,0 +1,162 @@
+name: Setup Elixir with dependency cache
+description: >
+  erlef/setup-beam plus correctly-keyed deps/ and _build caches. Replaces the
+  setup+deps.get+compile block copy-pasted across the phase-proof lanes.
+
+# ---------------------------------------------------------------------------
+# CACHE KEY DESIGN — read before changing a key.
+#
+# A restored `_build` is only safe if the key pins everything that can change
+# the bytes in it. Four dimensions are non-negotiable:
+#
+#   os / arch  A BEAM file built on macOS arm64 is not valid on ubuntu x64.
+#              Omitting these is how a cache silently corrupts a lane after a
+#              runner move (Phase 153.1 moved 13 jobs macos-15 -> ubuntu).
+#   otp/elixir The toolchain comes from .tool-versions. A key without these
+#              restores BEAM files built by a different compiler, and the
+#              failure surfaces far from the cause.
+#   mix-env    dev and test _build trees are not interchangeable.
+#   mix.lock   the actual dependency set.
+#
+# `restore-keys` differs from `key` by EXACTLY the lock hash. Any looser prefix
+# reintroduces the cross-toolchain corruption the dimensions above prevent.
+#
+# scope: THE NON-OBVIOUS ONE. These caches are NOT safe to share repo-wide.
+#   Several lanes are hermetic ABSENCE proofs — phase43 proves rulestead is not
+#   loaded, phase45 the same for rindle — while other lanes install exactly
+#   those optional deps. A shared key would let a dep-present lane populate a
+#   `_build` that a dep-absent lane then restores, so a fail-closed proof would
+#   be evaluating a tree that contains the very thing it claims is missing.
+#   Scoping per workflow+job costs cache entries but keeps each proof hermetic.
+#   Watch the 10 GB repo cap with LRU eviction (CACHE Task 4) — if entries start
+#   evicting each other, reduce what is cached rather than loosen this.
+# ---------------------------------------------------------------------------
+
+inputs:
+  mix-env:
+    description: MIX_ENV whose _build tree is cached. A key dimension.
+    default: "test"
+  working-directory:
+    description: Directory containing mix.exs / mix.lock.
+    default: "."
+  cache-scope:
+    description: >
+      Isolation key. Defaults to workflow+job so hermetic absence proofs never
+      restore a _build populated by a dep-present lane. Override only to share
+      a cache between lanes proven to install an identical dependency set.
+    default: ""
+
+outputs:
+  deps-cache-hit:
+    description: "true when deps/ was restored"
+    value: ${{ steps.deps-cache.outputs.cache-hit }}
+  build-cache-hit:
+    description: "true when _build/<mix-env> was restored"
+    value: ${{ steps.build-cache.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    - id: beam
+      uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+      with:
+        # .tool-versions is the single source of truth. Hardcoding versions here
+        # would reintroduce drift the moment either is bumped — and because the
+        # cache key is built from this step's OUTPUTS, drift would also mean
+        # restoring a _build compiled by a different compiler.
+        version-file: .tool-versions
+        version-type: strict
+
+    - id: scope
+      shell: bash
+      # Resolved here, not in a default:, because ${{ github.* }} is not
+      # available in an inputs default expression.
+      run: |
+        scope="${{ inputs.cache-scope }}"
+        if [ -z "$scope" ]; then
+          scope="${{ github.workflow }}-${{ github.job }}"
+        fi
+        # Cache keys are matched literally; normalise anything shell- or
+        # path-hostile so a workflow rename cannot produce an unmatchable key.
+        scope="$(printf '%s' "$scope" | tr -c '[:alnum:]._-' '-')"
+        echo "value=${scope}" >> "$GITHUB_OUTPUT"
+
+    - id: deps-cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ inputs.working-directory }}/deps
+        key: deps-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-${{ hashFiles(format('{0}/mix.lock', inputs.working-directory)) }}
+        restore-keys: |
+          deps-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-
+
+    - id: build-cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ inputs.working-directory }}/_build/${{ inputs.mix-env }}
+        key: build-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-${{ hashFiles(format('{0}/mix.lock', inputs.working-directory)) }}
+        restore-keys: |
+          build-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-
+
+    # Hex TARBALL cache, deliberately NOT scoped per workflow+job the way
+    # deps/_build are.
+    #
+    # Why it exists: `mix deps.get` contacts hex.pm even when deps/ restored
+    # cleanly, so a registry blip fails a job whose packages are already on disk.
+    # Observed on PR #98 — both caches hit, then:
+    #     Failed to fetch record for nimble_options from registry
+    #     :timeout
+    #     ** (Mix) Unknown package nimble_options in lockfile
+    # A docs-only change, red, for a reason entirely outside the repo.
+    #
+    # Why sharing is safe here, unlike deps/_build: these are downloaded source
+    # tarballs, not compiled artifacts. `deps.get` only fetches what
+    # mix.exs/mix.lock declare, so a lane that caches the rulestead tarball cannot
+    # cause a hermetic absence proof to load rulestead — nothing here reaches
+    # _build unless it was declared. One shared entry maximises hit rate and keeps
+    # storage down against the 10 GB cap.
+    #
+    # PATH IS ~/.hex/packages, NOT ~/.hex. This is load-bearing and was learned
+    # the hard way: caching all of ~/.hex restores `cache.ets`, Mix's registry
+    # ETS dump, and a restored copy came back unreadable:
+    #
+    #     Error opening ETS file /home/runner/.hex/cache.ets: :badfile
+    #     Request failed (:timeout)
+    #     ** (Mix) Package fetch failed and no cached copy available
+    #        (https://repo.hex.pm/tarballs/phoenix_live_view-1.1.30.tar)
+    #
+    # That is strictly WORSE than no cache. With no registry cache Mix refetches
+    # metadata and moves on; with a corrupt one it cannot read the registry at
+    # all and is forced into exactly the live fetch this step exists to avoid.
+    # ~/.hex/packages holds the downloaded TARBALLS — the expensive part, and the
+    # thing the error above actually wanted — and is inert data with no ETS to
+    # corrupt. cache.ets is small and cheap to rebuild; never cache it.
+    - id: hex-cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.hex/packages
+        key: hex-packages-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(format('{0}/mix.lock', inputs.working-directory)) }}
+        restore-keys: |
+          hex-packages-${{ runner.os }}-${{ runner.arch }}-
+
+    - name: Install Elixir dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      # Bounded retry, and note carefully what it does NOT cover: this wraps a
+      # dependency FETCH, which is a network call to a third-party service. It is
+      # not a proof, a test, or a gate. The repo rule against auto-retrying flaky
+      # lanes exists so a real defect cannot be papered over by a second attempt;
+      # retrying a socket timeout to hex.pm hides no defect of ours, and a package
+      # that genuinely does not exist fails all three attempts identically.
+      #
+      # Never extend this pattern to a `mix test` or a proof script.
+      run: |
+        set -euo pipefail
+        for attempt in 1 2 3; do
+          if mix deps.get; then exit 0; fi
+          if [ "$attempt" -lt 3 ]; then
+            echo "::warning::mix deps.get failed (attempt ${attempt}/3) — retrying in $((attempt * 10))s. This retries a hex.pm fetch only."
+            sleep $((attempt * 10))
+          fi
+        done
+        echo "::error::mix deps.get failed 3 times. This is not a transient registry blip."
+        exit 1

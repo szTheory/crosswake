@@ -8,3 +8,6 @@ import Config
 
 # Keep test-server logs quiet so Playwright output stays readable.
 config :logger, level: :warning
+
+config :crosswake_example,
+  offline_study_replay_authority: CrosswakeExample.E2E.ReplayAuthority

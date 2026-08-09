@@ -40,6 +40,8 @@ export const MANIFEST = [
   { path: 'priv/templates/crosswake/offline_ui/offline_page.html.heex.eex',                                       type: 'heex' },
   { path: 'priv/templates/crosswake/offline_ui/offline_root.html.heex.eex',                                       type: 'heex' },
   { path: 'examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/index.html.heex',             type: 'heex' },
+  { path: 'priv/templates/crosswake/native_controls_ui/crosswake_fallbacks.ex.eex',                                type: 'heex' },
+  { path: 'priv/templates/crosswake/native_controls_ui/crosswake_fallback.css.eex',                                type: 'css' },
 ];
 
 // Retired Tailwind blocklist — D-03 Rule 4 (HEEX/template files only).

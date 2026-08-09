@@ -13,7 +13,7 @@ defmodule CrosswakeExample.Flashcards.DeckLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/crosswake/tokens.css" />
     <link rel="stylesheet" href="/css/app.css" />
     <div class="page-container">
       <h1 class="page-title">Flashcard Decks</h1>

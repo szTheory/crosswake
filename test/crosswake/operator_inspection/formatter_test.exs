@@ -82,7 +82,7 @@ defmodule Crosswake.OperatorInspection.FormatterTest do
 
     assert output =~ "Crosswake operator inspection"
     assert output =~ "schema_version: 1.0.0"
-    assert output =~ "source: manifest_schema_version=1.0.0"
+    assert output =~ "source: manifest_schema_version=1.1.0"
     assert output =~ "routes:"
     assert output =~ "dashboard /dashboard runtime=live_view owner=phoenix"
     assert output =~ "library /library runtime=live_view owner=phoenix"

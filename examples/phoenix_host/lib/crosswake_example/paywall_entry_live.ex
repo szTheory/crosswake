@@ -423,7 +423,7 @@ defmodule CrosswakeExample.PaywallEntryLive do
   defp paywall_entry do
     %Contracts.PaywallEntry{
       id: @group_id,
-      price_display: "$9.99 / month",
+      price_display: "Monthly subscription",
       group_id: @group_id,
       features: [
         "Full access to all content",

@@ -177,11 +177,77 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
       {"bridge_protocol_version", bridge_vsn},
       {"commands", commands},
       {"denial_reasons", denial_reasons},
-      {"manifest_schema_version", "1.0.0"},
+      {"manifest_schema_version", "1.1.0"},
       {"native_runtime_version", "1.0.0"},
       {"protocol", protocol},
+      {"reply_leg_vectors", reply_leg_vectors(protocol, bridge_vsn)},
       {"vectors", seed_vectors(bridge_vsn)}
     ])
+  end
+
+  # The reply-leg vectors live in their OWN top-level array, deliberately not in
+  # `vectors`. `vectors` is a request-evaluation corpus: every entry is fed through
+  # the native `BridgeChannel.evaluate/…` harness. A reply-leg case has no request to
+  # evaluate — it is a REPLY that must survive the trip back into the page — so
+  # folding it into `vectors` would have made both native harnesses evaluate a
+  # phantom request.
+  #
+  # `vec-reply-002` carries the adversarial denial message on purpose (T-154-23). A
+  # reply denial message is host-influenced content, and it travels through iOS's
+  # `evaluateJavaScript` into the adopter's own origin. Both native suites assert the
+  # message arrives byte-intact and cannot terminate or extend the evaluated script.
+  @adversarial_denial_message "quote:\" backslash:\\ newline:\n tag:</script> line-sep:\u{2028} para-sep:\u{2029} wave:🌊"
+
+  defp reply_leg_vectors(protocol, bridge_vsn) do
+    [
+      [
+        {"id", "vec-reply-001-ok-landing-pad"},
+        {"description",
+         "A shell reply reaches the page through the hook's landing pad, carrying the correlation id the hook is holding."},
+        {"landing_pad", "window.crosswakeBridge.__reply"},
+        {"reply",
+         [
+           {"protocol", protocol},
+           {"version", bridge_vsn},
+           {"command", "haptics.impact"},
+           {"route_id", "saas-approval"},
+           {"correlation_id", "cwbridge-e1-reply-vector-ok"},
+           {"status", "ok"},
+           {"payload", [{"style", "light"}]}
+         ]}
+      ],
+      [
+        {"id", "vec-reply-002-adversarial-denial-message"},
+        {"description",
+         "A deny reply whose denial message carries quote, backslash, newline, script-tag, and Unicode line/paragraph separator characters is delivered byte-intact and cannot terminate or extend the evaluated script."},
+        {"landing_pad", "window.crosswakeBridge.__reply"},
+        {"adversarial", true},
+        {"reply",
+         [
+           {"protocol", protocol},
+           {"version", bridge_vsn},
+           {"command", "haptics.impact"},
+           {"route_id", "saas-approval"},
+           {"correlation_id", "cwbridge-e1-reply-vector-deny"},
+           {"status", "deny"},
+           {"payload", :empty_object},
+           {"denial",
+            [
+              {"command", "haptics.impact"},
+              {"route_id", "saas-approval"},
+              {"correlation_id", "cwbridge-e1-reply-vector-deny"},
+              {"denial",
+               [
+                 {"reason", "unavailable_capability"},
+                 {"code", "unavailable_capability"},
+                 {"message", @adversarial_denial_message},
+                 {"route_id", "saas-approval"},
+                 {"hint", "Ship the declared capability version before retrying."}
+               ]}
+            ]}
+         ]}
+      ]
+    ]
   end
 
   defp seed_vectors(bridge_vsn) do
@@ -388,7 +454,7 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
     |------|---------|
     | `bridge_protocol_version` | `#{bridge_vsn}` |
     | `native_runtime_version` (minimum floor) | `1.0.0` |
-    | `manifest_schema_version` | `1.0.0` |
+    | `manifest_schema_version` | `1.1.0` |
 
     The authoritative source is `Crosswake.Bridge.Contract.version/0` (`lib/crosswake/bridge/contract.ex`).
     Do not hand-edit this snippet — run `mix crosswake.contract.gen` to regenerate.
@@ -454,6 +520,11 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
 
   defp convert_value([]), do: []
   defp convert_value(nil), do: nil
+  # A pairs list is how this encoder spells "JSON object", so an EMPTY object cannot
+  # be spelled `[]` — that encodes as `[]`, a JSON array, which then fails to decode
+  # into the native `[String: String]`/`Map<String, String>` payload types. This atom
+  # is the explicit spelling for `{}`.
+  defp convert_value(:empty_object), do: %{}
   defp convert_value(v), do: v
 
   # ---------------------------------------------------------------------------

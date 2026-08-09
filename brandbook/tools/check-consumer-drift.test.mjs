@@ -26,9 +26,9 @@ const ROOT = resolve(__dirname, '../..');
 
 // ─── Manifest completeness ────────────────────────────────────────────────────
 
-test('manifest has exactly 5 entries', () => {
-  assert.strictEqual(MANIFEST.length, 5,
-    `MANIFEST must have exactly 5 entries; got ${MANIFEST.length}`);
+test('manifest has exactly 7 entries', () => {
+  assert.strictEqual(MANIFEST.length, 7,
+    `MANIFEST must have exactly 7 entries; got ${MANIFEST.length}`);
 });
 
 test('all manifest files exist on disk', () => {

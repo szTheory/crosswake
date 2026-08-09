@@ -16,6 +16,25 @@ shell path stays `generated public-coordinate proof`, and `--local` stays
 - LiveView routes mount only inside bounded same-origin web containers.
 - Bridge calls stay typed, versioned, request/reply-only, and low-frequency.
 
+## Bounded First-Adopter iOS Navigation
+
+Phase 161.1 verifies the bounded iOS-only compiled topology, typed stack protocol,
+UIKit host composition, marker/insets, and generated host proof. Simulator evidence
+is advisory, TODO-002/adopter topology remains `unknown_blocking`, and physical-iPhone
+promotion is Phase 162 only.
+
+This is not generic navigation, native leaf rendering, arbitrary restoration or modal
+breadth, browser-history authority, or Android parity. Invalid navigation input keeps
+the existing explicit Phoenix denial rather than silently falling back to generic
+WebView navigation.
+
+Phoenix-owned confirmation is the current required fallback on every platform. Native alert/confirm is stopped and may be reconsidered only after passed physical-iPhone proof, a demonstrated active-adopter route blocker, and an explicit maintainer roadmap decision.
+
+Android retains its frozen generator, Maven, JVM, and shared-vector posture. No new
+Android feature, parity, template, emulator/device, or release requirement is active.
+No URL, route payload/history, account, device, token, stable ID, screenshot,
+transcript, or raw test output is retained as shell-proof evidence.
+
 ## Generated Projects
 
 Generate one or both shells:

@@ -34,12 +34,38 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "unsupported"
   end
 
+  test "first adopter readiness keeps policy completion separate from host and device proof" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    assert guide =~ "policy-contract complete"
+    assert guide =~ "adopter-instance input remains `unknown_blocking`"
+    assert guide =~ "unknown_blocking` blocks host-proof and physical-device promotion"
+    assert guide =~ "Route-local safety fields do not inherit from surface defaults."
+    assert guide =~ "host-owned `gated_by` seam"
+    assert guide =~ "v20 is stopped/partial; it has no shipped support claim."
+    assert guide =~ "one offline island"
+    assert guide =~ "Generic sync is not claimed."
+  end
+
+  test "first adopter readiness preserves Android freeze and makes no unsupported proof claim" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    assert guide =~
+             "Android is frozen at its existing generator, Maven, JVM, and shared-vector posture."
+
+    assert guide =~
+             "Example-host, simulator, package-version, and policy-contract evidence do not prove an external host or physical device."
+
+    refute guide =~ "First B2C Adopter"
+    refute guide =~ "first-adopter"
+  end
+
   test "generated guide renders support-truth labels with proof and non-proof meanings" do
     guide = Renderer.render(SupportMatrix.canonical())
 
     assert guide =~ "## Support-Truth Label Legend"
 
-      for label <- [
+    for label <- [
           "merge-blocking proof",
           "advisory evidence",
           "checked-in public-coordinate proof",
@@ -121,6 +147,7 @@ defmodule Crosswake.SupportMatrix.RendererTest do
              "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass"
 
     refute String.downcase(guide) =~ "revenuecat"
+
     assert guide =~
              "| document_scan | native_screen | native_screen | unsupported | unsupported | defer |"
 
@@ -137,9 +164,11 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     guide = Renderer.render(SupportMatrix.canonical())
 
     for family <- ["document_scan", "scanner"] do
-      assert guide =~ "| #{family} | native_screen | native_screen | unsupported | unsupported | defer |"
+      assert guide =~
+               "| #{family} | native_screen | native_screen | unsupported | unsupported | defer |"
 
-      refute guide =~ "| #{family} | native_screen | native_screen | supported | supported | defer |",
+      refute guide =~
+               "| #{family} | native_screen | native_screen | supported | supported | defer |",
              "#{family} must stay unsupported until native runtime and proof posture ship"
     end
   end
@@ -337,5 +366,18 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert install =~ "guides/compatibility.md"
     assert install =~ "guides/support_matrix.md"
     assert install =~ "Do I need to rebuild?"
+  end
+
+  test "NAV-06 renders the bounded iOS posture and frozen Android boundary" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    for claim <- [
+          "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; simulator advisory evidence remains distinct, TODO-002/adopter topology is unknown_blocking, and physical-iPhone promotion is Phase 162 only.",
+          "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority.",
+          "Android retains its frozen generator, Maven, JVM, and shared-vector posture.",
+          "Android is frozen during first adopter iOS readiness: no new feature, parity, device, template, or release claim."
+        ] do
+      assert guide =~ claim
+    end
   end
 end

@@ -102,6 +102,58 @@ Promotion rules keep advisory support explicit: StoreKit/Play Billing seams in v
 
 compatibility-window narrowing is distinct from a native rebuild; it belongs to `compatibility-bump only` when only the accepted version window changes.
 
+## The `shell_unreachable` Boundary
+
+Crosswake core owns a closed denial vocabulary. Companions own a separate `Finding` axis.
+`shell_unreachable` — the fourteenth reason, added in Phase 154 — sits on the core side of
+that line, and the distinction is load-bearing for companion authors.
+
+**A companion must never return `shell_unreachable`.** It is minted only by core, only on
+the server, and only for the one situation a companion is definitionally not in: no shell
+answer could be obtained at all. A companion that ran far enough to form an opinion is by
+construction reachable, so the reason would be false on its face. There is no companion
+`Finding` axis that maps onto it, and none is planned.
+
+What core mints it for is named in `details.failing_moment`:
+
+- `no_transport` — the page never had a shell channel.
+- `hook_not_wired` — a shell was present but the page never installed the bridge hook.
+- `reply_timeout` — the ask was dispatched and no reply arrived before the backstop fired.
+- `transport_error` — the channel existed and failed mid-flight.
+
+One reason, four moments. Adopter code branches on the reason; an operator diagnoses with
+the moment. Companion authors describing an unreachable dependency of their own should use
+their own `Finding` vocabulary, not this reason.
+
+### Native reason strings today, and what the server does with them
+
+Crosswake claims one typed denial **at the adopter boundary**. That is the honest scope,
+and it is narrower than "one denial vocabulary on the wire". Both halves of the gap are
+known, counted, and tracked rather than papered over:
+
+- **Eight fixed strings** emitted by shipped native code today fall outside the closed
+  fourteen-reason set. They are enumerated one by one, each with an inline justification
+  and a site, in `Crosswake.Bridge.CatalogGuard`. A ninth turns a merge-blocking gate red,
+  so the set cannot grow quietly.
+- **Five public delegate seams** on the iOS and Android shell cores accept a bare `String`
+  denial reason from an adopter's own host code. No static enumeration can bound a field an
+  adopter fills in, so this half is explicitly labelled non-mechanical in the guard's
+  moduledoc rather than pretended into the allowlist.
+
+The server is tolerant by design, and that tolerance is permanent: an unrecognized reason
+string resolves to `unavailable_capability`, the raw value is preserved at
+`details.raw_reason`, and no atom is minted. Already-shipped shell binaries emit their
+strings forever, so this decoder can never be removed even after the vocabulary is closed.
+The practical consequence for you: match on the typed reason your `handle_info/2` receives,
+and treat `details.raw_reason` as diagnostic detail rather than as a branch key.
+
+Closing both halves is deferred, not forgotten. Half one is a rename affordable with the
+next native release; half two changes public adopter-implemented types on both platforms
+and is a breaking change needing its own major-version story. Both are tracked in
+`.planning/seeds/SEED-008-native-denial-vocabulary.md`, which is also what a reviewer
+should cite if a future claim upgrades "one typed denial at the adopter boundary" into "one
+vocabulary on the wire" before that work lands.
+
 ## Runtime Line Rules
 
 iOS and Android shell artifacts publish against the same runtime line even if their
@@ -131,6 +183,9 @@ Crosswake activation is fail-closed.
 - Bridge execution is request/reply-only and denies side effects on
   `compatibility_mismatch`, `origin_denied`, `inactive_route`,
   `undeclared_capability`, `unavailable_capability`, and `pack_incompatible`.
+- When no shell answer can be obtained at all, core synthesizes a `shell_unreachable`
+  denial rather than leaving the ask unanswered. There is no configuration in which a
+  bridge push resolves to silence.
 
 ## Change Class Examples
 

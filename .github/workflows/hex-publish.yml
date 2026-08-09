@@ -38,6 +38,7 @@ jobs:
   publish:
     name: Recover Hex package
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Validate recovery ref
         env:

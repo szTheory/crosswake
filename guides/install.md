@@ -62,12 +62,86 @@ What it does:
 
 - patches `lib/<app>_web/router.ex` with explicit Crosswake marker lines
 - keeps LiveView router imports compatible with the Crosswake `live` macro
+- patches `lib/<app>_web/endpoint.ex` with the static plug block that serves the bridge hook
 - generates a host-owned policy module at `lib/<app>_web/crosswake/policy.ex`
 - writes `priv/crosswake/install_manifest.json` so later tooling can inspect what Crosswake created or reused
+- prints the layout wiring it deliberately does not patch (see Step 1b)
 - points follow-up diagnostics at `mix crosswake.doctor`, `guides/compatibility.md`, `guides/support_matrix.md`, `guides/native_shell.md`, `guides/bridge.md`, and `guides/packs.md`
 
 Repeated installer runs are idempotent. Existing marker blocks are reused instead
 of duplicating router edits, and existing host-owned policy files are left alone.
+
+## Step 1b: Wire The Bridge Hook
+
+The client half of the bridge is one dependency-free ESM file that ships from
+Crosswake's own `priv/static/`. It is library-owned on purpose: its single most
+important job is reporting the "no native transport is reachable" fact, which is what
+turns a missing shell into an honest typed denial instead of silence. Crosswake does
+not generate a host-owned copy of it and does not publish it to npm — a second copy or
+a second registry would open a second version axis on exactly the code that decides
+whether the fail-closed contract holds.
+
+`mix crosswake.install` patches the part that is mechanical (the endpoint plug) and
+prints the part that is not. Run `mix crosswake.gen.bridge_hook` at any time to see all
+three fragments again — it refuses to generate anything and prints the wiring instead:
+
+```elixir
+# lib/<app>_web/endpoint.ex — patched for you by mix crosswake.install
+# crosswake:install:start
+plug(Plug.Static,
+  at: "/crosswake",
+  from: :crosswake,
+  gzip: false,
+  only: ~w(crosswake.esm.js tokens.css)
+)
+# crosswake:install:end
+```
+
+```javascript
+// your layout's module script — yours to place
+import {CrosswakeBridge} from "/crosswake/crosswake.esm.js";
+const liveSocket = new LiveSocket("/live", Socket, {params, hooks: {CrosswakeBridge}});
+```
+
+```heex
+<%!-- ONE element per page. Client events broadcast to EVERY mounted hook, so a
+      second element would post every bridge request to the shell twice. --%>
+<div id="crosswake-bridge" phx-hook="CrosswakeBridge" phx-update="ignore"></div>
+```
+
+If you genuinely need a host-owned copy, `mix crosswake.gen.bridge_hook --eject` writes
+one carrying a protocol-version stamp. You own it from that moment on, and
+`mix crosswake.doctor` warns when its stamp falls behind
+`Crosswake.Bridge.Contract.version/0`.
+
+### You must attach the bridge before you push
+
+This is the one new install-time failure surface, and every adopter hits it exactly
+once. `Crosswake.Bridge.push/3` raises `Crosswake.Bridge.NotMountedError` on a socket
+that never called `Crosswake.Bridge.attach/1`. Crosswake never guesses a route id, so a
+missing attach is a named, loud, first-push failure rather than a silent no-op.
+
+```elixir
+def mount(_params, _session, socket) do
+  socket =
+    socket
+    |> assign(crosswake_manifest: MyAppWeb.Crosswake.Policy.manifest(), crosswake_route_id: "my-route")
+    |> Crosswake.Bridge.attach()
+
+  {:ok, socket}
+end
+```
+
+`attach/1` requires `:crosswake_manifest` and `:crosswake_route_id` to already be
+assigned. `on_mount: Crosswake.Bridge` works too, as long as it runs after whatever
+hook assigns those two. See [guides/bridge.md](bridge.md) for `push/3`, the reply
+`handle_info/2` clause, and `resolve/2`.
+
+`mix crosswake.doctor` greps your assets tree and your HEEx templates for the hook and
+names it when it finds nothing. That grep is best-effort and never authoritative — it
+cannot see a hook registered through a bundler alias. The authoritative detector is the
+runtime wiring deadline: the server arms it on every push and delivers a
+`:shell_unreachable` denial when no acknowledgement arrives.
 
 ## Step 2: Generate Host-Owned Native Shells
 

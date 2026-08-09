@@ -1,0 +1,101 @@
+name: Requires Example Host Gate
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+# GATE-03 — the only CI lane that executes the :requires_example_host tag.
+#
+# WHY THIS EXISTS:
+#   20 test files carry the :requires_example_host tag. Before this lane, EIGHT workflows passed
+#   `--exclude requires_example_host` and NO workflow passed `--only` — so those 20 files ran on
+#   developer laptops and nowhere else. A regression in them could reach main with every check
+#   green. That is not hypothetical: the red gate fixed in #89 sat undetected on main precisely
+#   because nothing here executed it.
+#
+#   The tag is legitimate — these tests need the checked-in example Phoenix app compiled, which
+#   most lanes have no reason to build. The defect was that "excluded everywhere" was mistaken for
+#   "covered somewhere". This lane is that somewhere.
+#
+# EXAMPLE-HOST BUILD:
+#   test/support/example_host.ex `load!/0` prepends `examples/phoenix_host/_build/dev/lib/*/ebin`
+#   at runtime. The example app must therefore be compiled in the DEV env, in its own directory,
+#   before the root suite runs. Compiling only the root project leaves CrosswakeExample.* undefined
+#   and every test in this lane errors in setup.
+#
+# REGISTRATION (maintainer, out-of-band, AFTER this goes green on main at least once):
+#   DRY_RUN=0 script/register_required_checks.sh
+#   The job name below carries the "merge-blocking" substring, so
+#   script/list_merge_blocking_checks.py discovers it with no new registration code.
+#   Do NOT register before it is green on main — an unsatisfiable required context blocks every PR.
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  merge-blocking-requires-example-host:
+    name: merge-blocking-requires-example-host
+    runs-on: ubuntu-latest
+    # No Apple toolchain anywhere in this lane: pure Elixir plus the example Phoenix app.
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Compile the example Phoenix host (dev env)
+        # MIX_ENV=dev is load-bearing, not a default: example_host.ex globs _build/DEV/lib/*/ebin.
+        # Building this in :test would leave that glob empty and every test would fail in setup.
+        env:
+          MIX_ENV: dev
+        working-directory: examples/phoenix_host
+        run: |
+          mix deps.get
+          mix compile
+
+      - name: Install root Mix dependencies
+        env:
+          MIX_ENV: test
+        run: mix deps.get
+
+      - name: Compile root project
+        env:
+          MIX_ENV: test
+        run: mix compile
+
+      - name: Run the example-host-tagged suite
+        env:
+          MIX_ENV: test
+        # --max-cases 1 is a DELIBERATE STOPGAP, not a preference.
+        #
+        # These tests are known order-dependent: SEED-007 documents leaked
+        # `Application.put_env(:crosswake, :companions, ...)` global state, and
+        # test/support/example_host.ex REPLACES rather than merges repo config. Under concurrency
+        # that leakage makes results depend on scheduling.
+        #
+        # Fixing the leakage is FLAKE-* in SEED-007 and is explicitly out of scope for Phase 153.1.
+        # Running serially buys a trustworthy signal now without pretending the isolation bug is
+        # fixed. When FLAKE-* lands, delete this flag — do not quietly keep it as a crutch.
+        #
+        # Measured 2026-07-28: 51 tests pass both serially (20.2 s) and in parallel (14.4 s)
+        # locally. One clean parallel run is not proof of determinism, so the stopgap stays until
+        # the isolation defect is actually fixed.
+        run: mix test --only requires_example_host --max-cases 1
+
+      - name: Step summary
+        if: always()
+        run: |
+          echo "GATE-03 — executed the :requires_example_host tag (serial)." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "These 20 test files run in CI ONLY here. Every other suite lane excludes the tag." >> "$GITHUB_STEP_SUMMARY"

@@ -13,7 +13,7 @@ defmodule CrosswakeExample.LibraryLive do
     # CSS only — the DOM text stays exactly "lesson library" so the route-tour
     # owner assertion (toContainText('lesson library')) holds without change.
     ~H"""
-    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/crosswake/tokens.css" />
     <style>
       body {
         font-family: var(--cw-font-body);
@@ -120,17 +120,23 @@ defmodule CrosswakeExample.Router do
     plug(:accepts, ["json"])
   end
 
+  pipeline :replay_api do
+    plug(:accepts, ["json"])
+    plug(:fetch_session)
+    plug(CrosswakeExample.LocalFirst.ReplayAuth)
+  end
+
   pipeline :e2e_session do
     plug(:fetch_session)
   end
 
   scope "/study", CrosswakeExample.LocalFirst do
-    pipe_through([:api])
+    pipe_through([:replay_api])
     post("/sync", SyncController, :sync)
   end
 
   scope "/learnloop", CrosswakeExample.LocalFirst do
-    pipe_through([:api])
+    pipe_through([:replay_api])
     post("/sync", SyncController, :sync)
   end
 
@@ -327,7 +333,7 @@ defmodule CrosswakeExample.Router do
             id: "saas-approval",
             runtime: :live_view,
             entry: :external,
-            capabilities: ["haptics.impact"],
+            capabilities: ["haptics"],
             offline: :cached_read_only,
             security: :standard
           ]
@@ -590,6 +596,26 @@ defmodule CrosswakeExample.Router do
     scope "/_e2e", CrosswakeExample.E2E do
       pipe_through([:api, :e2e_session])
       post("/saas-session", SaaSSessionController, :create)
+      post("/replay-session", ReplaySessionController, :create)
+    end
+
+    # Phase 155 Plan 07 (PROOF-01, D-45) — the A2 route. A LiveView, so it needs
+    # the :browser pipeline (CSRF, session), not :api like the controllers above.
+    # Still inside the SAME compile-time guard as every other /_e2e scope — a
+    # second `if Mix.env()` block would risk drifting from guard-02's assumption
+    # that ALL /_e2e routes live under one grep-able guard.
+    scope "/_e2e", CrosswakeExample.E2E do
+      pipe_through([:browser])
+
+      live("/undeclared-control", UndeclaredControlLive,
+        crosswake: [
+          id: "e2e-a2-shell-denial",
+          runtime: :live_view,
+          capabilities: ["haptics"],
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
     end
   end
 end
