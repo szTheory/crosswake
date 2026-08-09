@@ -192,7 +192,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert %{live: %{status: :missing, source: "maven"}} =
              Enum.find(status.core, &(&1.component == "android-core"))
 
-    assert %{live: %{status: :unavailable, source: "hex"}} =
+    assert %{version: sigra_version, live: %{status: :unavailable, source: "hex"}} =
              Enum.find(status.companions, &(&1.package == "crosswake_sigra"))
 
     # Definite negatives: the registry answered, the release is not there.
@@ -220,7 +220,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
            } = unverifiable = check!(status, "release.live_registry_unverifiable")
 
     assert unverifiable_next =~ "mix crosswake.release.status --live"
-    assert unverifiable_message =~ "crosswake_sigra@0.1.1 unavailable on hex"
+    assert unverifiable_message =~ "crosswake_sigra@#{sigra_version} unavailable on hex"
     assert unverifiable_message =~ "probe failure"
     refute unverifiable_message =~ "ios-core"
     refute unverifiable_message =~ "android-core"
