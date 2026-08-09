@@ -120,6 +120,7 @@ defmodule Crosswake.MixProject do
         "guides/see_it_run.md",
         "guides/architecture.md",
         "guides/code-walkthrough.md",
+        "guides/physical_iphone_handoff.md",
         "CHANGELOG.md",
         "LICENSE",
         "guides/install.md",
@@ -171,7 +172,8 @@ defmodule Crosswake.MixProject do
           "guides/architecture.md",
           "guides/code-walkthrough.md",
           "guides/route_policy.md",
-          "guides/install.md"
+          "guides/install.md",
+          "guides/physical_iphone_handoff.md"
         ],
         Adopt: [
           "guides/web_to_mobile_migration.md",

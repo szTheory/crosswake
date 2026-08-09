@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Opens the checked-in offline-study reference host in an iPhone Simulator.
+# This is deliberately advisory: it is a rehearsal, never physical-device evidence.
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT="${ROOT_DIR}/examples/ios_shell_host/CrosswakeShell.xcodeproj"
+RUN_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-rehearsal.XXXXXX")"
+PID_FILE="${TMPDIR:-/tmp}/crosswake-ios-rehearsal-phoenix.pid"
+VERIFY=1
+NATIVE_SERVER_PID=""
+
+cleanup() {
+  if [[ -n "$NATIVE_SERVER_PID" ]]; then
+    kill "$NATIVE_SERVER_PID" >/dev/null 2>&1 || true
+  fi
+  rm -rf "$RUN_ROOT"
+}
+trap cleanup EXIT
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --no-verify) VERIFY=0; shift ;;
+    --stop)
+      if [[ -f "$PID_FILE" ]] && kill -0 "$(cat "$PID_FILE")" >/dev/null 2>&1; then
+        kill "$(cat "$PID_FILE")"
+      fi
+      rm -f "$PID_FILE"
+      echo "[crosswake] Reference rehearsal host stopped."
+      exit 0
+      ;;
+    --help|-h)
+      cat <<'USAGE'
+Usage: bin/crosswake-ios-rehearsal [--no-verify|--stop]
+
+Boots the checked-in Phoenix reference host, opens its offline-study route in
+iPhone Simulator, and optionally runs the iOS reference-host test suite.
+This output is advisory and cannot promote physical-device evidence.
+USAGE
+      exit 0
+      ;;
+    *) echo "error: unknown option: $1" >&2; exit 64 ;;
+  esac
+done
+
+for command in docker curl xcrun xcodebuild open; do
+  command -v "$command" >/dev/null 2>&1 || { echo "error: $command is required" >&2; exit 69; }
+done
+
+if ! curl -sf "http://localhost:4700/" >/dev/null 2>&1 &&
+    ! "${ROOT_DIR}/bin/see-it-run.sh" --web-only --no-open; then
+  # Do not prune or alter shared Docker networks. A local Phoenix process is an
+  # isolated fallback when Docker Desktop cannot allocate another project network.
+  (
+    cd "${ROOT_DIR}/examples/phoenix_host"
+    PORT=4700 mix phx.server
+  ) >"$RUN_ROOT/phoenix.log" 2>&1 &
+  NATIVE_SERVER_PID="$!"
+  printf '%s\n' "$NATIVE_SERVER_PID" >"$PID_FILE"
+
+  for _ in $(seq 1 30); do
+    if curl -sf "http://localhost:4700/" >/dev/null 2>&1; then
+      break
+    fi
+    sleep 1
+  done
+
+  if ! curl -sf "http://localhost:4700/" >/dev/null 2>&1; then
+    rm -f "$PID_FILE"
+    echo "error: reference Phoenix host did not become ready" >&2
+    exit 70
+  fi
+
+  # Keep the fallback available for the open Simulator route. --stop owns cleanup.
+  NATIVE_SERVER_PID=""
+fi
+
+SIM_UDID="$(xcrun simctl list devices booted 2>/dev/null | sed -nE 's/.*\(([0-9A-F-]{36})\).*/\1/p' | head -1)"
+if [[ -z "$SIM_UDID" ]]; then
+  SIM_UDID="$(xcrun simctl list devices available 2>/dev/null | sed -nE '/iPhone/ s/.*\(([0-9A-F-]{36})\).*/\1/p' | head -1)"
+fi
+
+if [[ -z "$SIM_UDID" ]]; then
+  echo "error: no available iPhone Simulator was found" >&2
+  exit 69
+fi
+
+xcrun simctl boot "$SIM_UDID" >/dev/null 2>&1 || true
+open -a Simulator --args -CurrentDeviceUDID "$SIM_UDID" >/dev/null 2>&1 || true
+
+if [[ "$VERIFY" == "1" ]]; then
+  xcodebuild \
+    -project "$PROJECT" \
+    -scheme Dev \
+    -destination "platform=iOS Simulator,id=$SIM_UDID" \
+    -derivedDataPath "$RUN_ROOT/DerivedData" \
+    test >/dev/null
+fi
+
+# The study island is browser-owned by design, so rehearsal opens its real route in
+# Simulator Safari rather than misrepresenting it as a native-screen route.
+xcrun simctl openurl "$SIM_UDID" "http://localhost:4700/learnloop/study/session"
+
+echo "[crosswake] Reference-host simulator rehearsal is open."
+echo "[crosswake] advisory: Simulator validates dev wiring only; not physical-device proof."

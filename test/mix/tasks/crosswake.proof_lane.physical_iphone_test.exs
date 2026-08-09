@@ -18,6 +18,29 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
     assert {:error, "PI-COMMAND-OPTIONS"} = PhysicalIphone.run_with(["--unknown"], [])
   end
 
+  test "readiness JSON returns all stable prerequisite categories without running reports" do
+    assert {:readiness, %{outcome: "blocked", checks: checks}} =
+             PhysicalIphone.run_with(["--readiness", "--json"], inventory: [])
+
+    assert Enum.map(checks, & &1.id) == [
+             "PI-PREFLIGHT-INVENTORY",
+             "PI-PREFLIGHT-CONFIG",
+             "PI-PREFLIGHT-GENERATED-LANE",
+             "PI-PREFLIGHT-DESTINATION",
+             "PI-PREFLIGHT-SIGNING",
+             "PI-PREFLIGHT-HOST",
+             "PI-PREFLIGHT-FIXTURE",
+             "PI-PREFLIGHT-MEDIA",
+             "PI-PREFLIGHT-REPLAY",
+             "PI-PREFLIGHT-REJECTION-CONFLICT",
+             "PI-PREFLIGHT-SCOPE",
+             "PI-PREFLIGHT-FEATURE-CONTROLS",
+             "PI-PREFLIGHT-DESTINATION-PARENT"
+           ]
+
+    assert Enum.all?(checks, &(&1.state == "blocked"))
+  end
+
   test "a complete owner-disjoint report joins only after ready preflight" do
     parent = self()
 

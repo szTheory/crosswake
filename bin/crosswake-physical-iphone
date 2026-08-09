@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# The configured host adapter owns signed-device selection and reports. This wrapper
+# makes the operator flow deterministic without printing device or account details.
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+mix crosswake.proof_lane.physical_iphone --readiness --json
+exec mix crosswake.proof_lane.physical_iphone --run --promote --json

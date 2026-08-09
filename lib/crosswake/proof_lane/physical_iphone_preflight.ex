@@ -18,6 +18,30 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
     {:destination_parent, "PI-PREFLIGHT-DESTINATION-PARENT"}
   ]
 
+  @inventory_rule "PI-PREFLIGHT-INVENTORY"
+  @config_rule "PI-PREFLIGHT-CONFIG"
+
+  @doc "Returns a safe, complete readiness summary without invoking proof reports or promotion."
+  @spec readiness(keyword()) :: %{outcome: :ready | :blocked, checks: [map()]}
+  def readiness(options) when is_list(options) do
+    checks = [
+      readiness_entry(@inventory_rule, inventory_ready?(options)),
+      readiness_entry(@config_rule, config_ready?(options))
+      | Enum.map(@checks, fn {name, rule} ->
+          readiness_entry(rule, check_ready?(name, Keyword.get(options, name)))
+        end)
+    ]
+
+    %{
+      outcome: if(Enum.all?(checks, &(&1.state == :ready)), do: :ready, else: :blocked),
+      checks: checks
+    }
+  rescue
+    _ -> blocked_readiness()
+  end
+
+  def readiness(_), do: blocked_readiness()
+
   @spec check(keyword()) :: {:ready, map()} | {:blocked, String.t()}
   def check(options) when is_list(options) do
     with {:ok, rows} <- inventory(options),
@@ -42,6 +66,32 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
   end
 
   def check(_), do: {:blocked, "PI-PREFLIGHT-INVENTORY"}
+
+  defp blocked_readiness do
+    %{
+      outcome: :blocked,
+      checks:
+        [@inventory_rule, @config_rule | Enum.map(@checks, &elem(&1, 1))]
+        |> Enum.map(&%{id: &1, state: :blocked})
+    }
+  end
+
+  defp readiness_entry(rule, true), do: %{id: rule, state: :ready}
+  defp readiness_entry(rule, false), do: %{id: rule, state: :blocked}
+
+  defp inventory_ready?(options) do
+    with {:ok, rows} <- inventory(options),
+         {:eligible, _} <- RouteInventory.promotion_status(rows),
+         do: true,
+         else: (_ -> false)
+  end
+
+  defp config_ready?(options), do: match?({:ok, _}, config(options))
+
+  defp check_ready?(:destination, callback),
+    do: callback_result(:destination, callback) == :physical_iphone
+
+  defp check_ready?(_name, callback), do: callback_result(:check, callback) == :ok
 
   defp inventory(options) do
     case RouteInventory.validate_inventory(Keyword.get(options, :inventory, [])) do

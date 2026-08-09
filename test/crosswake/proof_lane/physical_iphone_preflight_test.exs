@@ -46,6 +46,22 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
              PhysicalIphonePreflight.check(inventory: [], generated_lane: refute_called)
   end
 
+  test "readiness reports every safe prerequisite category without echoing host data" do
+    secret = "private-host-value-canary"
+
+    assert %{
+             outcome: :blocked,
+             checks: [
+               %{id: "PI-PREFLIGHT-INVENTORY", state: :blocked},
+               %{id: "PI-PREFLIGHT-CONFIG", state: :blocked},
+               %{id: "PI-PREFLIGHT-GENERATED-LANE", state: :blocked}
+               | _
+             ]
+           } = PhysicalIphonePreflight.readiness(inventory: [], config: secret)
+
+    refute inspect(PhysicalIphonePreflight.readiness(inventory: [], config: secret)) =~ secret
+  end
+
   test "simulators, malformed callbacks, and exceptions collapse to stable non-echoing blocks" do
     secret = "device-id-private-canary"
 
