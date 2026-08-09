@@ -60,3 +60,8 @@ erl_crash.dump
 # Research-tool response cache (.planning/research/.cache/) — scratch, not an
 # artifact. Committed by accident in c9b30749 via a broad `git add -A .planning/`.
 .planning/research/.cache/
+
+# ExUnit @tag :tmp_dir scratch. ExUnit writes tmp/<TestModule>/<test-name>-<hash>/
+# under the project root by default; Phase 153.1's gate-integrity negative controls
+# leave synthetic workflow trees there. Test detritus, never an artifact.
+/tmp/

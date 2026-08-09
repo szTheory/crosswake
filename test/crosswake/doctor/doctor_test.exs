@@ -19,9 +19,53 @@ defmodule Crosswake.DoctorTest do
   alias Crosswake.Doctor.Formatter
   alias Crosswake.Doctor.JSONFormatter
   alias Crosswake.Offline.Status
+  alias Crosswake.Offline.SafeObservation
   alias Crosswake.Offline.Telemetry
   alias Crosswake.SupportMatrix
   alias Mix.Tasks.Crosswake.Gen.NativeControlsUi
+
+  test "static readiness excludes runtime and active-scope data" do
+    assert {:ok, observation} =
+             SafeObservation.new(%{
+               route_id: "route-0123456789abcdef",
+               runtime: :offline_island,
+               lifecycle: :replayed,
+               outcome: :accepted,
+               denial: :none,
+               measurements: %{event_count: 1},
+               configuration: :configured,
+               adapter_readiness: :blocked
+             })
+
+    assert {:ok, readiness} = Doctor.static_readiness(observation)
+
+    assert readiness == %{
+             configuration: :configured,
+             adapter_readiness: :blocked
+           }
+  end
+
+  test "static readiness rejects forged observations without returning detail" do
+    assert {:ok, observation} =
+             SafeObservation.new(%{
+               route_id: "route-0123456789abcdef",
+               runtime: :offline_island,
+               lifecycle: :replayed,
+               outcome: :accepted,
+               denial: :none,
+               measurements: %{event_count: 1},
+               configuration: :configured,
+               adapter_readiness: :blocked
+             })
+
+    forged = Map.put(observation, :adapter_readiness, :canary_readiness)
+
+    assert {:error,
+            %SafeObservation.Error{
+              rule_id: "CW-SAFE-OBSERVATION-READINESS",
+              path: :adapter_readiness
+            }} = Doctor.static_readiness(forged)
+  end
 
   setup do
     target =
@@ -94,7 +138,10 @@ defmodule Crosswake.DoctorTest do
     assert report.offline.status == :supported
     assert report.support.release_policy.crosswake_version == Mix.Project.config()[:version]
     assert report.support.release_policy.manifest_schema_version == "1.1.0"
-    assert report.support.release_policy.bridge_protocol_version == Crosswake.Bridge.Contract.version()
+
+    assert report.support.release_policy.bridge_protocol_version ==
+             Crosswake.Bridge.Contract.version()
+
     assert report.support.release_policy.native_runtime_version == "1.0.0"
     assert report.support.release_policy.package_version_truth =~ "Package versions alone"
     assert report.offline.states == Enum.map(Status.states(), &Atom.to_string/1)
@@ -215,7 +262,10 @@ defmodule Crosswake.DoctorTest do
     assert decoded["status"] == "ok"
     assert decoded["support"]["status"] == "supported"
     assert decoded["support"]["release_policy"]["manifest_schema_version"] == "1.1.0"
-    assert decoded["support"]["release_policy"]["bridge_protocol_version"] == Crosswake.Bridge.Contract.version()
+
+    assert decoded["support"]["release_policy"]["bridge_protocol_version"] ==
+             Crosswake.Bridge.Contract.version()
+
     assert decoded["support"]["release_policy"]["native_runtime_version"] == "1.0.0"
 
     assert decoded["support"]["release_policy"]["package_version_truth"] =~
@@ -1001,7 +1051,8 @@ defmodule Crosswake.DoctorTest do
         cwd: target
       )
 
-    notification_findings = Enum.filter(report.findings, &String.starts_with?(&1.code, "notification."))
+    notification_findings =
+      Enum.filter(report.findings, &String.starts_with?(&1.code, "notification."))
 
     assert Enum.any?(
              notification_findings,
@@ -1040,7 +1091,10 @@ defmodule Crosswake.DoctorTest do
       "WKWebView\nWKNavigationDelegate\nsame-origin\n"
     )
 
-    write_file!(Path.join(ios_root, "CrosswakeShell/Info.plist"), "WKAppBoundDomains\nNSCameraUsageDescription\nNSPhotoLibraryUsageDescription\naps-environment\nNSPrivacyCollectedDataTypeDeviceID\ncom.apple.developer.associated-domains\n")
+    write_file!(
+      Path.join(ios_root, "CrosswakeShell/Info.plist"),
+      "WKAppBoundDomains\nNSCameraUsageDescription\nNSPhotoLibraryUsageDescription\naps-environment\nNSPrivacyCollectedDataTypeDeviceID\ncom.apple.developer.associated-domains\n"
+    )
 
     write_file!(
       Path.join(ios_root, "CrosswakeShell/RouteUnavailableView.swift"),
@@ -1178,6 +1232,7 @@ defmodule Crosswake.DoctorTest do
         )
 
       matching = Enum.filter(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+
       assert length(matching) == 1,
              "diagnostic_export.contract_shipped must fire unconditionally regardless of notification routes"
     end
@@ -1195,6 +1250,7 @@ defmodule Crosswake.DoctorTest do
         Enum.find(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
 
       assert finding != nil
+
       refute String.contains?(finding.message, "crash-reporting service"),
              "doctor finding message must not contain 'crash-reporting service' (seam language lives in SupportMatrix posture)"
     end
@@ -1397,7 +1453,10 @@ defmodule Crosswake.DoctorTest do
           cwd: target
         )
 
-      assert Enum.filter(report.findings, &(&1.code == "bridge.capability.native_rebuild_required")) ==
+      assert Enum.filter(
+               report.findings,
+               &(&1.code == "bridge.capability.native_rebuild_required")
+             ) ==
                []
     end
 
@@ -1498,7 +1557,10 @@ defmodule Crosswake.DoctorTest do
   describe "bridge hook wiring findings" do
     setup do
       host =
-        Path.join(System.tmp_dir!(), "crosswake-bridge-hook-#{System.unique_integer([:positive])}")
+        Path.join(
+          System.tmp_dir!(),
+          "crosswake-bridge-hook-#{System.unique_integer([:positive])}"
+        )
 
       File.mkdir_p!(host)
       on_exit(fn -> File.rm_rf!(host) end)
@@ -1508,7 +1570,11 @@ defmodule Crosswake.DoctorTest do
 
     test "reports a finding when no hook reference exists in either tree", %{host: host} do
       File.mkdir_p!(Path.join(host, "lib/demo_web"))
-      File.write!(Path.join(host, "lib/demo_web/layouts.ex"), "defmodule DemoWeb.Layouts do\nend\n")
+
+      File.write!(
+        Path.join(host, "lib/demo_web/layouts.ex"),
+        "defmodule DemoWeb.Layouts do\nend\n"
+      )
 
       findings = Doctor.bridge_hook_wiring_findings(host)
 

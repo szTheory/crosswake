@@ -219,8 +219,7 @@ defmodule Crosswake.SupportMatrix do
     },
     security_closeout: %{
       status: :shipped,
-      artifact:
-        ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
+      artifact: ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
       review_model: :stride,
       proof_class: :merge_blocking,
       unresolved_high_or_critical_findings: 0
@@ -236,7 +235,7 @@ defmodule Crosswake.SupportMatrix do
       :provider_device_proof
     ],
     posture:
-      "Phase 73 Sigra admin posture: backend-owned SessionAuthorityLane route evaluation, shipped short-lived handoff ticket/server-record redemption, shipped server-owned step-up intent plus shared Plug/LiveView ceremony proof, shipped OAuth/passkey/native auth-return boundary contracts, stable low-cardinality auth telemetry, dedicated security closeout, and a hermetic auth-sensitive admin workflow proof. Handoff envelopes, step-up locators, OAuth/passkey/native return envelopes, deep links, bridge events, provider payloads, persistent shell session state, and telemetry are evidence only; server records, audit evidence, and refreshed SessionAuthorityLane projections remain authoritative. Refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, native auth UI, and a generic audit system remain deferred."
+      "Phase 73 Sigra admin posture: backend-owned SessionAuthorityLane route evaluation, shipped short-lived handoff ticket/server-record redemption, shipped server-owned step-up intent plus shared Plug/LiveView ceremony proof, shipped OAuth/passkey/native auth-return boundary contracts, stable low-cardinality auth telemetry, dedicated security closeout, and a hermetic auth-sensitive admin workflow proof. Handoff envelopes, step-up locators, OAuth/passkey/native return envelopes, deep links, bridge events, provider payloads, persistent shell session state, and telemetry are evidence only; server records, audit evidence, and refreshed SessionAuthorityLane projections remain authoritative. Refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, native auth UI, and a generic audit system remain deferred. Promotion requires an executable host reference proof covering reconnect, backend reauthorization before replay, logout, expiry, revocation, and account switching; documentation alone cannot promote a deferred item."
   }
   @companion_support_truth [
     %{
@@ -251,7 +250,7 @@ defmodule Crosswake.SupportMatrix do
         :provider_device_proof
       ],
       posture:
-        "Sigra support includes backend session-authority contracts, auth_posture route truth, fail-closed step_up_required denial codes, shipped handoff ticket/server-record contracts, shipped step-up intent plus Plug/LiveView ceremony proof, shipped OAuth/passkey/native auth-return boundary contracts, stable auth telemetry, security closeout, and hermetic auth-sensitive admin workflow proof; refresh tokens, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, native auth UI, and generic audit machinery remain deferred."
+        "Sigra support includes backend session-authority contracts, auth_posture route truth, fail-closed step_up_required denial codes, shipped handoff ticket/server-record contracts, shipped step-up intent plus Plug/LiveView ceremony proof, shipped OAuth/passkey/native auth-return boundary contracts, stable auth telemetry, security closeout, and hermetic auth-sensitive admin workflow proof; refresh tokens, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, native auth UI, and generic audit machinery remain deferred. Promotion requires an executable host reference proof covering reconnect, backend reauthorization before replay, logout, expiry, revocation, and account switching; documentation alone cannot promote a deferred item."
     }
   ]
   # @notification_support_truth was previously a module attribute (stale-beam footgun: Chimeway
@@ -431,7 +430,7 @@ defmodule Crosswake.SupportMatrix do
           proof_status: :supported,
           proof: "script/verify_generated_ios_shell.sh",
           notes:
-            "Checked-in iOS host boot is `checked-in public-coordinate proof`; generated-shell verification stays separate.",
+            "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; simulator advisory evidence remains distinct, TODO-002/adopter topology is unknown_blocking, and physical-iPhone promotion is Phase 162 only.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
@@ -444,7 +443,7 @@ defmodule Crosswake.SupportMatrix do
           proof_status: :supported,
           proof: "script/verify_generated_android_shell.sh",
           notes:
-            "Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate.",
+            "Android retains its frozen generator, Maven, JVM, and shared-vector posture. Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android is frozen during first adopter iOS readiness: no new feature, parity, device, template, or release claim.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
@@ -457,7 +456,7 @@ defmodule Crosswake.SupportMatrix do
           proof_status: :verification_required,
           proof: "clean-room-proof-ios; script/verify_generated_ios_shell.sh",
           notes:
-            "Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; release-time clean-room proof confirms external resolution and `swift build`. advisory — not wired as a required CI lane; macOS/Xcode toolchain not guaranteed in CI.",
+            "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority. Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; release-time clean-room proof confirms external resolution and `swift build`. advisory — not wired as a required CI lane; macOS/Xcode toolchain not guaranteed in CI.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         ),
         # D-17/D-18/D-20 (LIFE-01a, Phase 134): android-generated-shell-unit lane is now
@@ -468,9 +467,10 @@ defmodule Crosswake.SupportMatrix do
           :supported,
           baseline_status: :supported,
           proof_status: :supported,
-          proof: "native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh",
+          proof:
+            "native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh",
           notes:
-            "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof.",
+            "Generated Android shell artifacts retain the frozen generator, Maven, JVM, and shared-vector posture based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. This existing posture is frozen during first adopter iOS readiness; no parity/device/template/release expansion is claimed.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],

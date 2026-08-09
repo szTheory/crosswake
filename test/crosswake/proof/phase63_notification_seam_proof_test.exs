@@ -32,6 +32,7 @@ defmodule Crosswake.Proof.Phase63NotificationSeamProofTest do
     alias CrosswakeExample.Chimeway.Registry
     alias Crosswake.Companions.Chimeway.Resolver
     alias Crosswake.Companions.Chimeway.Contracts.NotificationOpenEvidence
+    alias Crosswake.Manifest.Types.NavigationTopology
     alias Crosswake.Manifest.Types.Root
     alias Crosswake.Manifest.Types.RouteEntry
 
@@ -148,6 +149,12 @@ defmodule Crosswake.Proof.Phase63NotificationSeamProofTest do
       capability_registry: %{},
       pack_registry: %{},
       commerce_corridors: %{},
+      navigation_topology: %NavigationTopology{
+        topology_schema_version: "1.0.0",
+        manifest_schema_version: "1.0.0",
+        status: :unknown_blocking,
+        entries: []
+      },
       routes: %{
         "route_test_1" => %RouteEntry{
           id: "route_test_1",

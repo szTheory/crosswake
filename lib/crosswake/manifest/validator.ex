@@ -10,7 +10,13 @@ defmodule Crosswake.Manifest.Validator do
   alias Crosswake.Transfer.Contracts
 
   @commerce_role_values Crosswake.Policy.Schema.commerce_role_values()
-  @provider_specific_commerce_terms ["storekit", "play_billing", "play-billing", "play billing", "revenuecat"]
+  @provider_specific_commerce_terms [
+    "storekit",
+    "play_billing",
+    "play-billing",
+    "play billing",
+    "revenuecat"
+  ]
   @nested_commerce_semantic_keys [
     "entitlement",
     "entitlements",
@@ -26,6 +32,8 @@ defmodule Crosswake.Manifest.Validator do
     "status"
   ]
   @additive_compatibility_hint "commerce corridor fields are additive in manifest schema 1.0.0 and only required when a route declares commerce"
+  @opaque_route_id ~r/^route-[0-9a-f]{16}$/
+  @opaque_tab_id ~r/^tab-[0-9a-f]{16}$/
 
   @spec validate(Types.Root.t()) :: [Error.t()]
   def validate(%Types.Root{} = manifest) do
@@ -41,6 +49,12 @@ defmodule Crosswake.Manifest.Validator do
       manifest.pack_registry,
       manifest.commerce_corridors
     )
+    |> validate_navigation_topology(
+      manifest.navigation_topology,
+      manifest.routes,
+      manifest.manifest_schema_version,
+      manifest.compatibility
+    )
   end
 
   defp validate_top_level_sections(errors, %Types.Root{} = manifest) do
@@ -54,6 +68,7 @@ defmodule Crosswake.Manifest.Validator do
       {:capability_registry, manifest.capability_registry},
       {:pack_registry, manifest.pack_registry},
       {:commerce_corridors, manifest.commerce_corridors},
+      {:navigation_topology, manifest.navigation_topology},
       {:routes, manifest.routes}
     ]
     |> Enum.reduce(errors, fn {key, value}, acc ->
@@ -84,7 +99,8 @@ defmodule Crosswake.Manifest.Validator do
     |> Kernel.++(errors)
   end
 
-  defp validate_capability_registry(errors, capability_registry) when is_map(capability_registry) do
+  defp validate_capability_registry(errors, capability_registry)
+       when is_map(capability_registry) do
     Enum.reduce(capability_registry, errors, fn {_id, capability}, acc ->
       capability
       |> capability_errors()
@@ -108,6 +124,220 @@ defmodule Crosswake.Manifest.Validator do
       |> route_errors(capability_registry, pack_registry, commerce_corridors)
       |> Enum.map(&build_error(&1, route))
       |> Kernel.++(acc)
+    end)
+  end
+
+  defp validate_navigation_topology(
+         errors,
+         %Types.NavigationTopology{status: :unknown_blocking, entries: []} = topology,
+         _routes,
+         manifest_schema_version,
+         compatibility
+       ) do
+    validate_topology_versions(errors, topology, manifest_schema_version, compatibility)
+  end
+
+  defp validate_navigation_topology(
+         errors,
+         %Types.NavigationTopology{} = topology,
+         routes,
+         manifest_schema_version,
+         compatibility
+       ) do
+    errors
+    |> validate_topology_versions(topology, manifest_schema_version, compatibility)
+    |> validate_topology_status(topology)
+    |> validate_topology_entries(topology, routes)
+  end
+
+  defp validate_navigation_topology(
+         errors,
+         _topology,
+         _routes,
+         _manifest_schema_version,
+         _compatibility
+       ),
+       do: [topology_error("NT-MANIFEST-SECTION", :navigation_topology) | errors]
+
+  defp validate_topology_versions(errors, topology, manifest_schema_version, compatibility) do
+    if topology.manifest_schema_version == manifest_schema_version and
+         topology.manifest_schema_version == compatibility.manifest_schema_version do
+      errors
+    else
+      [topology_error("NT-MANIFEST-VERSION", :manifest_schema_version) | errors]
+    end
+  end
+
+  defp validate_topology_status(errors, %Types.NavigationTopology{
+         status: :unknown_blocking,
+         entries: []
+       }),
+       do: errors
+
+  defp validate_topology_status(errors, %Types.NavigationTopology{status: :unknown_blocking}),
+    do: [topology_error("NT-MANIFEST-UNKNOWN_BLOCKING", :entries) | errors]
+
+  defp validate_topology_status(errors, %Types.NavigationTopology{
+         status: :ready,
+         entries: entries
+       })
+       when is_list(entries) and entries != [],
+       do: errors
+
+  defp validate_topology_status(errors, _topology),
+    do: [topology_error("NT-MANIFEST-STATUS", :status) | errors]
+
+  defp validate_topology_entries(
+         errors,
+         %Types.NavigationTopology{status: :unknown_blocking, entries: []},
+         _routes
+       ),
+       do: errors
+
+  defp validate_topology_entries(errors, %Types.NavigationTopology{entries: entries}, routes)
+       when is_list(entries) do
+    valid_entries = Enum.filter(entries, &valid_topology_entry?/1)
+
+    errors
+    |> validate_topology_entry_shapes(entries)
+    |> validate_topology_route_references(valid_entries, routes)
+    |> validate_topology_roots(valid_entries)
+    |> validate_topology_parents(valid_entries)
+    |> validate_topology_cycles(valid_entries)
+    |> validate_topology_runtime_pairs(valid_entries, routes)
+  end
+
+  defp validate_topology_entries(errors, _topology, _routes),
+    do: [topology_error("NT-MANIFEST-ENTRIES", :entries) | errors]
+
+  defp validate_topology_entry_shapes(errors, entries) do
+    Enum.reduce(entries, errors, fn
+      %Types.NavigationTopologyEntry{
+        route_id: route_id,
+        root_tab_id: root_tab_id,
+        presentation: presentation,
+        deep_link_posture: deep_link_posture,
+        restoration_posture: restoration_posture
+      },
+      acc
+      when is_binary(route_id) and is_binary(root_tab_id) and presentation in [:root, :push] and
+             deep_link_posture in [:allow, :deny] and
+             restoration_posture in [:allow, :deny] ->
+        if Regex.match?(@opaque_route_id, route_id) and Regex.match?(@opaque_tab_id, root_tab_id),
+          do: acc,
+          else: [topology_error("NT-MANIFEST-ENTRY", :entry) | acc]
+
+      _entry, acc ->
+        [topology_error("NT-MANIFEST-ENTRY", :entry) | acc]
+    end)
+  end
+
+  defp valid_topology_entry?(%Types.NavigationTopologyEntry{
+         route_id: route_id,
+         root_tab_id: root_tab_id,
+         presentation: presentation,
+         deep_link_posture: deep_link_posture,
+         restoration_posture: restoration_posture
+       }) do
+    is_binary(route_id) and Regex.match?(@opaque_route_id, route_id) and is_binary(root_tab_id) and
+      Regex.match?(@opaque_tab_id, root_tab_id) and presentation in [:root, :push] and
+      deep_link_posture in [:allow, :deny] and restoration_posture in [:allow, :deny]
+  end
+
+  defp valid_topology_entry?(_entry), do: false
+
+  defp validate_topology_route_references(errors, entries, routes) do
+    Enum.reduce(entries, errors, fn
+      %Types.NavigationTopologyEntry{route_id: route_id}, acc when is_binary(route_id) ->
+        if Map.has_key?(routes, route_id),
+          do: acc,
+          else: [topology_error("NT-MANIFEST-UNKNOWN_ROUTE", :route_id) | acc]
+
+      _entry, acc ->
+        [topology_error("NT-MANIFEST-UNKNOWN_ROUTE", :route_id) | acc]
+    end)
+  end
+
+  defp validate_topology_roots(errors, entries) do
+    roots = Enum.filter(entries, &match?(%Types.NavigationTopologyEntry{presentation: :root}, &1))
+    root_tab_ids = Enum.map(roots, & &1.root_tab_id)
+
+    cond do
+      roots == [] ->
+        [topology_error("NT-MANIFEST-ROOT_REQUIRED", :entries) | errors]
+
+      Enum.any?(roots, &(&1.parent_route_id != nil)) ->
+        [topology_error("NT-MANIFEST-ROOT_PARENT", :parent_route_id) | errors]
+
+      length(root_tab_ids) != MapSet.size(MapSet.new(root_tab_ids)) ->
+        [topology_error("NT-MANIFEST-DUPLICATE_ROOT", :root_tab_id) | errors]
+
+      true ->
+        errors
+    end
+  end
+
+  defp validate_topology_parents(errors, entries) do
+    entry_by_id = Map.new(entries, &{&1.route_id, &1})
+
+    Enum.reduce(entries, errors, fn
+      %Types.NavigationTopologyEntry{presentation: :push} = entry, acc ->
+        case Map.get(entry_by_id, entry.parent_route_id) do
+          %Types.NavigationTopologyEntry{root_tab_id: root_tab_id}
+          when root_tab_id == entry.root_tab_id ->
+            acc
+
+          _parent ->
+            [topology_error("NT-MANIFEST-INVALID_PARENT", :parent_route_id) | acc]
+        end
+
+      _entry, acc ->
+        acc
+    end)
+  end
+
+  defp validate_topology_cycles(errors, entries) do
+    entry_by_id = Map.new(entries, &{&1.route_id, &1})
+
+    if Enum.any?(entries, &topology_cycle?(&1, entry_by_id, MapSet.new())) do
+      [topology_error("NT-MANIFEST-CYCLE", :parent_route_id) | errors]
+    else
+      errors
+    end
+  end
+
+  defp topology_cycle?(%Types.NavigationTopologyEntry{presentation: :root}, _entries, _seen),
+    do: false
+
+  defp topology_cycle?(%Types.NavigationTopologyEntry{} = entry, entries, seen) do
+    cond do
+      MapSet.member?(seen, entry.route_id) ->
+        true
+
+      not is_binary(entry.parent_route_id) ->
+        false
+
+      true ->
+        case Map.get(entries, entry.parent_route_id) do
+          %Types.NavigationTopologyEntry{} = parent ->
+            topology_cycle?(parent, entries, MapSet.put(seen, entry.route_id))
+
+          _parent ->
+            false
+        end
+    end
+  end
+
+  defp validate_topology_runtime_pairs(errors, entries, routes) do
+    Enum.reduce(entries, errors, fn
+      %Types.NavigationTopologyEntry{route_id: route_id}, acc ->
+        case Map.get(routes, route_id) do
+          %{runtime: runtime} when runtime in [:live_view, :offline_island, :native_screen] -> acc
+          _route -> [topology_error("NT-MANIFEST-RUNTIME_PRESENTATION", :runtime) | acc]
+        end
+
+      _entry, acc ->
+        acc
     end)
   end
 
@@ -283,8 +513,18 @@ defmodule Crosswake.Manifest.Validator do
   defp commerce_corridor_errors(corridor, corridor_ref) do
     []
     |> validate_commerce_corridor_id(corridor, corridor_ref)
-    |> validate_commerce_corridor_required_string(corridor, corridor_ref, :denial, corridor.denial)
-    |> validate_commerce_corridor_required_string(corridor, corridor_ref, :fallback, corridor.fallback)
+    |> validate_commerce_corridor_required_string(
+      corridor,
+      corridor_ref,
+      :denial,
+      corridor.denial
+    )
+    |> validate_commerce_corridor_required_string(
+      corridor,
+      corridor_ref,
+      :fallback,
+      corridor.fallback
+    )
     |> validate_commerce_corridor_prerequisites(corridor, corridor_ref)
     |> validate_commerce_corridor_vocab(corridor, corridor_ref)
   end
@@ -372,7 +612,10 @@ defmodule Crosswake.Manifest.Validator do
       capability.package_class,
       [:core, :companion, :example_docs_only, :defer]
     )
-    |> validate_capability_vocab(:proof_class, capability.proof_class, [:merge_blocking, :advisory])
+    |> validate_capability_vocab(:proof_class, capability.proof_class, [
+      :merge_blocking,
+      :advisory
+    ])
     |> validate_capability_vocab(
       :rebuild,
       capability.rebuild,
@@ -406,7 +649,8 @@ defmodule Crosswake.Manifest.Validator do
       [
         %{
           key: key,
-          message: "capability #{inspect(capability_id)} must provide non-empty #{inspect(key)} metadata",
+          message:
+            "capability #{inspect(capability_id)} must provide non-empty #{inspect(key)} metadata",
           hint: "populate #{inspect(key)} with explicit support truth"
         }
         | errors
@@ -414,8 +658,12 @@ defmodule Crosswake.Manifest.Validator do
     end
   end
 
-  defp validate_capability_prerequisites(errors, %Types.Capability{id: id, prerequisites: prerequisites}) do
-    if is_list(prerequisites) and prerequisites != [] and Enum.all?(prerequisites, &non_empty_string?/1) do
+  defp validate_capability_prerequisites(errors, %Types.Capability{
+         id: id,
+         prerequisites: prerequisites
+       }) do
+    if is_list(prerequisites) and prerequisites != [] and
+         Enum.all?(prerequisites, &non_empty_string?/1) do
       errors
     else
       [
@@ -446,8 +694,7 @@ defmodule Crosswake.Manifest.Validator do
             path: route.path,
             message:
               "route #{route.id} declares pack reference #{inspect(pack_reference)} outside the manifest pack registry",
-            hint:
-              "compile #{inspect(pack_reference)} into pack_registry before validation passes"
+            hint: "compile #{inspect(pack_reference)} into pack_registry before validation passes"
           }
           | acc
         ]
@@ -561,7 +808,8 @@ defmodule Crosswake.Manifest.Validator do
           path: route.path,
           message:
             "transfer seam #{inspect(transfer.id)} native_capture source requires route runtime :native_screen",
-          hint: "move capture-owned transfers to a native_screen route or use a non-capture transfer source"
+          hint:
+            "move capture-owned transfers to a native_screen route or use a non-capture transfer source"
         }
         | errors
       ]
@@ -577,6 +825,14 @@ defmodule Crosswake.Manifest.Validator do
       path: attrs[:path] || (route && route.path),
       message: attrs[:message],
       hint: attrs[:hint]
+    })
+  end
+
+  defp topology_error(rule_id, field) do
+    build_error(%{
+      key: :navigation_topology,
+      message: "#{rule_id}: navigation topology #{field} is invalid",
+      hint: "regenerate navigation_topology from validated route inventory"
     })
   end
 
@@ -621,8 +877,12 @@ defmodule Crosswake.Manifest.Validator do
 
   defp provider_specific_semantic_vocabulary?(_value), do: false
 
-  defp commerce_semantic_key?(value) when is_atom(value), do: value |> Atom.to_string() |> commerce_semantic_key?()
-  defp commerce_semantic_key?(value) when is_binary(value), do: String.downcase(value) in @nested_commerce_semantic_keys
+  defp commerce_semantic_key?(value) when is_atom(value),
+    do: value |> Atom.to_string() |> commerce_semantic_key?()
+
+  defp commerce_semantic_key?(value) when is_binary(value),
+    do: String.downcase(value) in @nested_commerce_semantic_keys
+
   defp commerce_semantic_key?(_value), do: false
 
   defp normalize_provider_vocab_map(%_{} = struct), do: Map.from_struct(struct)

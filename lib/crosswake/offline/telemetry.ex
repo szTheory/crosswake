@@ -16,6 +16,19 @@ defmodule Crosswake.Offline.Telemetry do
   ]
   @terminal_outcomes [:accepted, :rejected, :conflict]
 
+  alias Crosswake.Offline.SafeObservation
+
+  @spec emit(SafeObservation.t(), (map() -> any())) :: :ok | {:error, SafeObservation.Error.t()}
+  def emit(%SafeObservation{} = observation, callback) when is_function(callback, 1) do
+    with {:ok, telemetry} <- SafeObservation.to_telemetry(observation) do
+      callback.(telemetry)
+      :ok
+    end
+  end
+
+  def emit(_, _),
+    do: {:error, %SafeObservation.Error{rule_id: "CW-SAFE-OBSERVATION-INPUT", path: :input}}
+
   defmodule Event do
     @moduledoc false
 

@@ -280,6 +280,12 @@ defmodule Crosswake.Compatibility.RouteGateTest do
       capability_registry: %{},
       pack_registry: %{},
       commerce_corridors: %{},
+      navigation_topology: %Crosswake.Manifest.Types.NavigationTopology{
+        topology_schema_version: "1.0.0",
+        manifest_schema_version: "2.0.0",
+        status: :unknown_blocking,
+        entries: []
+      },
       routes: %{route.id => route}
     }
   end

@@ -76,7 +76,7 @@ defmodule CrosswakeExample.SaaSPortal.Fixtures do
   @settings %{
     id: "settings-acct-north",
     account_id: @account.id,
-    approval_threshold: "$25,000",
+    approval_threshold: "high",
     renewal_notice_window: "14 days",
     member_access_review: "MFA and recent-auth required",
     cached_read_posture: "Cached read-only",
@@ -91,7 +91,7 @@ defmodule CrosswakeExample.SaaSPortal.Fixtures do
       status: :pending,
       requested_by: "member-1",
       reviewed_by: nil,
-      amount: "$42,000",
+      amount: "high",
       policy_id: "policy-spend",
       route_id: "saas-approval"
     },
@@ -102,7 +102,7 @@ defmodule CrosswakeExample.SaaSPortal.Fixtures do
       status: :pending,
       requested_by: "member-1",
       reviewed_by: nil,
-      amount: "$8,400",
+      amount: "medium",
       policy_id: "policy-access",
       route_id: "saas-approval"
     },
@@ -113,7 +113,7 @@ defmodule CrosswakeExample.SaaSPortal.Fixtures do
       status: :approved,
       requested_by: "member-1",
       reviewed_by: "approver-1",
-      amount: "$0",
+      amount: "none",
       policy_id: "policy-export",
       route_id: "saas-approval"
     }
@@ -149,7 +149,7 @@ defmodule CrosswakeExample.SaaSPortal.Fixtures do
   @approval_policies [
     %{
       id: "policy-spend",
-      title: "Spend approvals above $25,000",
+      title: "High-band spend approvals",
       required_role: :approver,
       support_label: "Server authority"
     },

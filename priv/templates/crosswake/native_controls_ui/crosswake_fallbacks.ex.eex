@@ -3,13 +3,10 @@ defmodule <%= app_module %>Web.CrosswakeFallbacks do
   Host-owned, brand-tokenized fallback UI for controls Crosswake has no native
   bridge command for.
 
-  ## The confirm modal has no native counterpart, and never will
+  ## The confirm modal is the current required fallback
 
-  `REQUIREMENTS.md` places a native alert/confirm bridge family permanently
-  out of scope. This is not a fallback that degrades from something better —
-  it is the primary, only, permanent confirm surface on every platform. It
-  makes zero `Crosswake.Bridge` calls: no push, no `ref`, no `resolve/2`, no
-  denial branch.
+  Phoenix-owned confirmation is the current required fallback on every platform. Native alert/confirm is stopped and may be reconsidered only after passed physical-iPhone proof, a demonstrated active-adopter route blocker, and an explicit maintainer roadmap decision. It makes zero `Crosswake.Bridge` calls: no push, no `ref`, no `resolve/2`, no denial
+  branch.
 
   If you can offer undo instead of asking "are you sure?", offer undo instead
   of this modal (Nielsen Norman Group).

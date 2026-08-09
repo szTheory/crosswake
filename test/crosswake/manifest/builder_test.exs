@@ -3,10 +3,47 @@ defmodule Crosswake.Manifest.BuilderTest do
 
   alias Crosswake.Bridge.Registry
   alias Crosswake.Manifest.Builder
+  alias Crosswake.Manifest.Serializer
   alias Crosswake.Manifest.Types
   alias Crosswake.Manifest.Types.Capability
   alias Crosswake.Offline.ContentPack
   alias Crosswake.Policy.Route
+
+  test "builds a version-bound topology from the paired validated route inventory" do
+    route = %Route{id: "route-0123456789abcdef", runtime: :offline_island, offline: :local_first}
+
+    managed_route = %{
+      path: "/dashboard/:id",
+      metadata: %{
+        crosswake_navigation: %{
+          rows: [topology_row()],
+          entries: [topology_root_entry()]
+        }
+      },
+      helper: "dashboard",
+      verb: :get
+    }
+
+    manifest = Builder.build([route], [managed_route], generated_at: "2026-08-04T00:00:00Z")
+
+    assert manifest.routes[route.id].runtime == :offline_island
+    assert manifest.navigation_topology.status == :ready
+
+    assert manifest.navigation_topology.manifest_schema_version ==
+             manifest.manifest_schema_version
+
+    assert [entry] = manifest.navigation_topology.entries
+    assert entry.route_id == route.id
+    assert entry.presentation == :root
+    assert Serializer.render(manifest) == Serializer.render(manifest)
+  end
+
+  test "builds an explicit unknown-blocking topology without fabricating roots" do
+    manifest = Builder.build([], [], generated_at: "2026-08-04T00:00:00Z")
+
+    assert manifest.navigation_topology.status == :unknown_blocking
+    assert manifest.navigation_topology.entries == []
+  end
 
   test "ContentPack references populate pack_registry and route packs list" do
     route = %Route{
@@ -26,7 +63,7 @@ defmodule Crosswake.Manifest.BuilderTest do
     manifest = Builder.build([route], [managed_route])
 
     assert Map.has_key?(manifest.pack_registry, "data_core@1.0.0")
-    
+
     pack_entry = manifest.pack_registry["data_core@1.0.0"]
     assert pack_entry.id == "data_core"
     assert pack_entry.version == "1.0.0"
@@ -100,7 +137,12 @@ defmodule Crosswake.Manifest.BuilderTest do
         capabilities: ["haptics.impact"]
       }
 
-      managed_route = %{path: "/approvals-legacy/1", metadata: %{}, helper: "approval_legacy", verb: :get}
+      managed_route = %{
+        path: "/approvals-legacy/1",
+        metadata: %{},
+        helper: "approval_legacy",
+        verb: :get
+      }
 
       manifest = Builder.build([route], [managed_route])
 
@@ -243,4 +285,53 @@ defmodule Crosswake.Manifest.BuilderTest do
       assert Types.new_compatibility().manifest_schema_version == "1.1.0"
     end
   end
+
+  defp topology_root_entry do
+    %{
+      route_id: "route-0123456789abcdef",
+      root_tab_id: "tab-0123456789abcdef",
+      presentation: :root,
+      parent_route_id: nil,
+      deep_link_posture: :deny,
+      restoration_posture: :deny
+    }
+  end
+
+  defp topology_row do
+    %{
+      route_id: "route-0123456789abcdef",
+      path_pattern: "/dashboard/:id",
+      runtime_owner: confirmed(:offline_island),
+      offline_posture: confirmed(:local_first),
+      mutation_categories: confirmed([:answer_submission]),
+      staleness_class: confirmed(:not_cacheable),
+      auth: confirmed(:authenticated),
+      recent_auth: confirmed(:not_required),
+      scope_posture:
+        confirmed(%{
+          scope: :opaque_partitioned,
+          logout: :stops_replay,
+          account_switch: :stops_replay
+        }),
+      media_requirement:
+        confirmed(%{
+          requirement: :required,
+          size_band: :small,
+          codec_family: :aac,
+          integrity: :verified
+        }),
+      fallbacks:
+        confirmed(%{
+          online: :serve,
+          offline: :queue_local,
+          denied: :block,
+          corrupt_pack: :block,
+          disabled: :retain_and_block
+        }),
+      disablement: confirmed(%{entry: :server_enforced, replay: :server_reauthorized}),
+      queued_data_retention: confirmed(:retain_until_resolution)
+    }
+  end
+
+  defp confirmed(value), do: %{status: :confirmed_sanitized, value: value}
 end

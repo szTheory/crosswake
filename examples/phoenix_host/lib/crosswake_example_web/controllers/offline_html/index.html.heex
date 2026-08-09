@@ -48,13 +48,16 @@
       #controls {
         display: flex;
         gap: 1rem;
+        flex-wrap: wrap;
       }
       button {
         padding: 0.75rem 1.5rem;
         border-radius: var(--cw-radius-sm);
         border: 2px solid transparent;
-        font-weight: bold;
+        font-weight: 600;
         cursor: pointer;
+        min-width: 44px;
+        min-height: 44px;
       }
       .btn-primary { background: var(--cw-action-bg); color: var(--cw-action-fg); }
       /*
@@ -64,10 +67,75 @@
         Render-verified light + dark (108-RENDER-VERIFY.md).
       */
       .btn-secondary { background: transparent; color: var(--cw-text-default); border-color: var(--cw-border-default); }
-      #status {
-        margin-top: 2rem;
-        font-size: var(--cw-text-scale-sm);
+      #crosswake-study-status {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 24rem;
+        margin: 1rem 0;
+        padding: 16px;
+        background: var(--cw-surface-raised);
+        border: 1px solid var(--cw-border-default);
+        border-radius: var(--cw-radius-md);
+        color: var(--cw-text-default);
+      }
+      .study-status-content {
+        display: flex;
+        gap: 4px;
+        align-items: flex-start;
+      }
+      .study-status-icon {
+        width: 20px;
+        height: 20px;
+        flex: 0 0 20px;
+        margin-top: 2px;
+        color: var(--cw-status-info);
+      }
+      #crosswake-study-status[data-state="needs_attention"] .study-status-icon,
+      #crosswake-study-status[data-state="sync_paused"] .study-status-icon {
+        color: var(--cw-status-warning);
+      }
+      .study-status-copy { min-width: 0; }
+      #crosswake-study-status-label {
+        display: block;
+        font: 600 18px/28px var(--cw-font-body);
+      }
+      #crosswake-study-status-message {
+        margin: 0;
+        font: 400 16px/24px var(--cw-font-body);
+      }
+      #crosswake-study-status-indicator {
+        width: 16px;
+        height: 16px;
+        margin-top: 4px;
+        flex: 0 0 16px;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        color: var(--cw-status-info);
+        animation: study-status-spin 0.9s linear infinite;
+      }
+      #crosswake-review-saved-answers {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        min-height: 44px;
+        margin-top: 8px;
+        padding: 0 16px;
+        border-radius: var(--cw-radius-sm);
+        background: var(--cw-action-bg);
+        color: var(--cw-action-fg);
+        font: 600 18px/28px var(--cw-font-body);
+        text-decoration: none;
+      }
+      #card-position {
+        margin: 0 0 8px;
         color: var(--cw-text-muted);
+        font: 600 14px/20px var(--cw-font-display);
+      }
+      @keyframes study-status-spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) {
+        #crosswake-study-status-indicator { animation: none; }
       }
     </style>
   </head>
@@ -75,9 +143,26 @@
     data-storage-budget={@island.storage_budget}
     data-reserve-for-journal={@island.reserve_for_journal}
     data-eviction-policy={@island.eviction}
+    data-recovery-capability={@recovery_route.status}
+    data-recovery-destination={@recovery_route.destination}
   >
     <h1>Offline Study Island</h1>
 
+    <div id="crosswake-study-status" data-state="sync_paused" role="status" aria-live="polite" aria-atomic="true">
+      <div class="study-status-content">
+        <span id="crosswake-study-status-icon" class="study-status-icon" aria-hidden="true">●</span>
+        <div class="study-status-copy">
+          <span id="crosswake-study-status-label">Saved answers paused</span>
+          <p id="crosswake-study-status-message">Your saved answers remain on this iPhone.</p>
+        </div>
+        <span id="crosswake-study-status-indicator" hidden aria-label="Syncing saved answers"></span>
+      </div>
+      <div id="crosswake-study-status-action"></div>
+    </div>
+    <%!-- Test-only compatibility mirror for the existing host proof corpus; never learner-visible or announced. --%>
+    <span id="status" hidden aria-hidden="true"></span>
+
+    <p id="card-position"></p>
     <div id="flashcard-container">
       Loading flashcards...
     </div>
@@ -87,8 +172,6 @@
       <button id="btn-good" class="btn-primary" style="display: none;">Good</button>
       <button id="btn-hard" class="btn-secondary" style="display: none;">Hard</button>
     </div>
-
-    <div id="status" aria-live="polite" role="status" aria-atomic="true"></div>
 
     <script type="module" src="/offline_study.js"></script>
   </body>

@@ -10,12 +10,12 @@ defmodule Crosswake.Companions.Sigra.Contracts do
     @moduledoc """
     Backend-projected auth context used for route-level auth checks.
     """
-    @enforce_keys [:actor_id, :org_id, :mfa_level, :auth_age]
+    @enforce_keys [:actor_id, :mfa_level, :auth_age]
     defstruct [:actor_id, :org_id, :mfa_level, :auth_age, :session_authority_lane, :as_of]
 
     @type t :: %__MODULE__{
             actor_id: String.t(),
-            org_id: String.t(),
+            org_id: String.t() | nil,
             mfa_level: atom(),
             auth_age: non_neg_integer(),
             session_authority_lane:
@@ -31,7 +31,6 @@ defmodule Crosswake.Companions.Sigra.Contracts do
     @enforce_keys [
       :session_ref,
       :subject_ref,
-      :org_id,
       :state,
       :assurance_level,
       :authn_methods,
@@ -70,7 +69,7 @@ defmodule Crosswake.Companions.Sigra.Contracts do
     @type t :: %__MODULE__{
             session_ref: String.t(),
             subject_ref: String.t(),
-            org_id: String.t(),
+            org_id: String.t() | nil,
             state: authority_state(),
             assurance_level: atom(),
             authn_methods: [atom()],
@@ -222,7 +221,7 @@ defmodule Crosswake.Companions.Sigra.Contracts do
     errors =
       []
       |> validate_required_string(:actor_id, auth_context.actor_id)
-      |> validate_required_string(:org_id, auth_context.org_id)
+      |> validate_optional_string(:org_id, auth_context.org_id)
       |> validate_mfa_level(:mfa_level, auth_context.mfa_level)
       |> validate_non_negative_integer(:auth_age, auth_age_seconds(auth_context))
 
@@ -247,7 +246,7 @@ defmodule Crosswake.Companions.Sigra.Contracts do
     []
     |> validate_required_string(:session_ref, lane.session_ref)
     |> validate_required_string(:subject_ref, lane.subject_ref)
-    |> validate_required_string(:org_id, lane.org_id)
+    |> validate_optional_string(:org_id, lane.org_id)
     |> validate_authority_state(lane.state)
     |> validate_mfa_level(:assurance_level, lane.assurance_level)
     |> validate_authn_methods(lane.authn_methods)
@@ -432,6 +431,15 @@ defmodule Crosswake.Companions.Sigra.Contracts do
 
   defp validate_required_string(errors, field, value) do
     if present_string?(value), do: errors, else: [{field, :required} | errors]
+  end
+
+  # A nil organization is an explicit personal-account scope for a B2C host.
+  # Empty strings remain invalid so callers cannot accidentally erase a real
+  # organization boundary while still passing validation.
+  defp validate_optional_string(errors, _field, nil), do: errors
+
+  defp validate_optional_string(errors, field, value) do
+    if present_string?(value), do: errors, else: [{field, :invalid_optional_string} | errors]
   end
 
   defp validate_non_negative_integer(errors, _field, value) when is_integer(value) and value >= 0,

@@ -146,7 +146,7 @@ Support truth accessor:
 
 - `Crosswake.SupportMatrix.auth_contract_truth/0`
 
-Session-authority support now includes Phase 55 handoff ticket contracts and server-record redemption proof, Phase 56 step-up intent and Plug/LiveView ceremony proof, Phase 57 OAuth/passkey/native auth-return boundary contracts with host-owned replay source posture, Phase 58 stable auth telemetry plus STRIDE-style security closeout, and Phase 73 auth-sensitive admin workflow proof. It intentionally does not claim provider-specific OAuth templates, passkey SDK wrappers, refresh-token orchestration, provider/device proof, direct shell/WebView token authority, native auth UI, or generic audit machinery.
+Session-authority support now includes Phase 55 handoff ticket contracts and server-record redemption proof, Phase 56 step-up intent and Plug/LiveView ceremony proof, Phase 57 OAuth/passkey/native auth-return boundary contracts with host-owned replay source posture, Phase 58 stable auth telemetry plus STRIDE-style security closeout, and Phase 73 auth-sensitive admin workflow proof. It intentionally does not claim provider-specific OAuth templates, passkey SDK wrappers, refresh-token orchestration, provider/device proof, direct shell/WebView token authority, native auth UI, or generic audit machinery. Promotion requires an executable host reference proof covering reconnect, backend reauthorization before replay, logout, expiry, revocation, and account switching; documentation alone cannot promote a deferred item.
 
 ## Chimeway Surface (NOTIFICATIONS, Token Binding And Open Contract)
 

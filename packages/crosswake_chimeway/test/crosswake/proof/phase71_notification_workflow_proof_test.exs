@@ -7,6 +7,7 @@ defmodule Crosswake.Proof.Phase71NotificationWorkflowProofTest do
   alias Crosswake.Companions.Sigra.Contracts, as: SigraContracts
   alias Crosswake.Manifest.Types.Compatibility
   alias Crosswake.Manifest.Types.Host
+  alias Crosswake.Manifest.Types.NavigationTopology
   alias Crosswake.Manifest.Types.Root
   alias Crosswake.Manifest.Types.RouteEntry
   alias Crosswake.Manifest.Types.SupportMatrix
@@ -226,6 +227,12 @@ defmodule Crosswake.Proof.Phase71NotificationWorkflowProofTest do
       capability_registry: %{},
       pack_registry: %{},
       commerce_corridors: %{},
+      navigation_topology: %NavigationTopology{
+        topology_schema_version: "1.0.0",
+        manifest_schema_version: "2.0.0",
+        status: :unknown_blocking,
+        entries: []
+      },
       routes: routes(mode)
     }
   end

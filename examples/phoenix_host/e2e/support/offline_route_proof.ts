@@ -4,6 +4,8 @@ import path from 'node:path';
 
 const DEFAULT_OFFLINE_STUDY_DB = 'crosswake_offline_study';
 const ROUTER_PATH = path.join(process.cwd(), 'lib', 'crosswake_example', 'router.ex');
+const OPAQUE_MUTATION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const MUTATION_ID_ERROR = 'PL-BROWSER-MUTATION-ID';
 
 export type OfflineMutationRecord = {
   id?: number;
@@ -14,12 +16,71 @@ export type OfflineMutationRecord = {
 
 export type OfflineRouteProofOptions = {
   databaseName?: string;
+  scopeRef?: string;
 };
 
 export type LearnLoopRouteProofOptions = OfflineRouteProofOptions & {
   captureScreenshots?: boolean;
   screenshotDir?: string;
 };
+
+export type OfflineIslandProofConfig = {
+  databaseName: string;
+  storeName: string;
+  mutationIdPath: string;
+};
+
+export type OfflineIslandProofAdapter = {
+  navigate(): Promise<void>;
+  performMutation(): Promise<void>;
+  readQueuedRecord(): Promise<unknown>;
+  reconnect(): Promise<void>;
+  assertBackendConfirmation(mutationId: string): Promise<void>;
+  assertOutboxEmpty(): Promise<void>;
+  assertDuplicateIdempotency(mutationId: string, record: unknown): Promise<void>;
+};
+
+export async function runOfflineIslandProof(
+  _page: Page,
+  context: BrowserContext,
+  adapter: OfflineIslandProofAdapter,
+  config: OfflineIslandProofConfig,
+): Promise<string> {
+  await adapter.navigate();
+  await context.setOffline(true);
+  let record: unknown;
+  let mutationId: string;
+
+  try {
+    await adapter.performMutation();
+    record = await adapter.readQueuedRecord();
+    mutationId = extractMutationId(record, config.mutationIdPath);
+  } finally {
+    await context.setOffline(false);
+  }
+
+  await adapter.reconnect();
+  await adapter.assertBackendConfirmation(mutationId!);
+  await adapter.assertOutboxEmpty();
+  await adapter.assertDuplicateIdempotency(mutationId!, record!);
+  return mutationId!;
+}
+
+export function extractMutationId(record: unknown, fieldPath: string): string {
+  const value = fieldPath.split('.').reduce<unknown>((current, field) => {
+    if (current && typeof current === 'object' && field in current) {
+      return (current as Record<string, unknown>)[field];
+    }
+
+    return undefined;
+  }, record);
+
+  if (typeof value !== 'string' || !OPAQUE_MUTATION_ID.test(value)) {
+    throw new Error(MUTATION_ID_ERROR);
+  }
+
+  return value;
+}
 
 export async function proveLearnLoopRoute(
   page: Page,
@@ -28,7 +89,8 @@ export async function proveLearnLoopRoute(
 ) {
   const captureScreenshots = options.captureScreenshots ?? true;
 
-  await resetOfflineStudyDatabase(page, options);
+  const session = await page.request.post('/_e2e/replay-session', { data: { action: 'establish' } });
+  expect(session.status(), learnloopProofMessage('learnloop-study-session', 'test replay authority')).toBe(201);
 
   const reset = await page.request.post('/_e2e/showcase-reset');
   expect(reset.ok(), learnloopProofMessage('showcase-reset', 'deterministic LearnLoop reset')).toBe(true);
@@ -146,46 +208,62 @@ export async function proveLearnLoopRoute(
   await expect(page.locator('#flashcard-container'), learnloopProofMessage('learnloop-study-session', 'study cards')).toContainText(
     /Elixir|Loading flashcards/i,
   );
+  await expect(page.locator('#flashcard-container'), learnloopProofMessage('learnloop-study-session', 'study island ready')).not.toContainText(
+    'Loading flashcards...',
+  );
   await expect(page.locator('body'), learnloopProofMessage('learnloop-study-session', 'reset honesty')).toContainText(
     "Server reset does not clear this device's offline state",
   );
 
-  await context.setOffline(true);
-  await page.click('#btn-flip');
-  await page.click('#btn-good');
-  await expect(page.locator('#status'), learnloopProofMessage('learnloop-study-session', 'queued status copy')).toContainText(
-    /Saved locally|Queued for replay/i,
+  await page.evaluate(
+    scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef),
+    options.scopeRef ?? 'v1.scope_fixture_alpha_01',
   );
 
-  const mutations = await readQueuedOfflineMutations(page, options);
-  expect(mutations, learnloopProofMessage('learnloop-study-session', 'one queued IndexedDB mutation')).toHaveLength(1);
-  const { client_mutation_id: capturedId, card_id, rating } = mutations[0];
-  assertAppGeneratedMutation(mutations[0]);
-
-  await context.setOffline(false);
-  const syncResponse = page.waitForResponse(response =>
-    response.url().includes('/learnloop/sync') &&
-    response.status() === 200,
-  );
-  await page.evaluate(() => window.dispatchEvent(new Event('online')));
-  await syncResponse;
-
-  await expect(page.locator('#status'), learnloopProofMessage('learnloop-study-session', 'synced status copy')).toContainText(
-    /Synced \d+ - queued 0/i,
-  );
-  await expectSyncedReview(page.request, capturedId, 1);
-  await expectOutboxEmpty(page, options);
-
-  const duplicate = await page.request.post('/learnloop/sync', {
-    data: {
-      events: [{ client_mutation_id: capturedId, card_id, rating }],
+  const capturedId = await runOfflineIslandProof(page, context, {
+    navigate: async () => undefined,
+    performMutation: async () => {
+      await page.click('#btn-flip');
+      await page.click('#btn-good');
+      await expect(page.locator('#status'), learnloopProofMessage('learnloop-study-session', 'queued status copy')).toContainText(
+        /Saved locally|Queued for replay/i,
+      );
     },
+    readQueuedRecord: async () => {
+      const mutations = await readQueuedOfflineMutations(page, options);
+      expect(mutations, learnloopProofMessage('learnloop-study-session', 'one queued IndexedDB mutation')).toHaveLength(1);
+      assertAppGeneratedMutation(mutations[0]);
+      return mutations[0];
+    },
+    reconnect: async () => {
+      const syncResponse = page.waitForResponse(response => response.url().includes('/learnloop/sync') && response.status() === 200);
+      await page.evaluate(() => window.dispatchEvent(new Event('online')));
+      await syncResponse;
+      await expect(page.locator('#status'), learnloopProofMessage('learnloop-study-session', 'synced status copy')).toContainText(/Synced \d+ - queued 0/i);
+    },
+    assertBackendConfirmation: mutationId => expectSyncedReview(page.request, mutationId, 1),
+    assertOutboxEmpty: () => expectOutboxEmpty(page, options),
+    assertDuplicateIdempotency: async (mutationId, record) => {
+      const mutation = record as OfflineMutationRecord;
+      const duplicate = await page.request.post('/learnloop/sync', {
+        data: {
+          scope_ref: options.scopeRef ?? 'v1.scope_fixture_alpha_01',
+          events: [{ client_mutation_id: mutationId, card_id: mutation.card_id, rating: mutation.rating }],
+        },
+      });
+      expect(duplicate.ok(), learnloopProofMessage('learnloop-study-session', 'duplicate replay accepted as idempotent request')).toBe(true);
+      const duplicateBody = await duplicate.json();
+      expect(duplicateBody.data.accepted_records, learnloopProofMessage('learnloop-study-session', 'duplicate replay preserves one row')).toEqual([
+        { client_mutation_id: mutationId, outcome: 'accepted' },
+      ]);
+      await expectSyncedReview(page.request, mutationId, 1);
+      await expectOutboxEmpty(page, options);
+    },
+  }, {
+    databaseName: options.databaseName ?? DEFAULT_OFFLINE_STUDY_DB,
+    storeName: 'mutations',
+    mutationIdPath: 'client_mutation_id',
   });
-  expect(duplicate.ok(), learnloopProofMessage('learnloop-study-session', 'duplicate replay accepted as idempotent request')).toBe(true);
-  const duplicateBody = await duplicate.json();
-  expect(duplicateBody.data.accepted_count, learnloopProofMessage('learnloop-study-session', 'duplicate replay creates no second row')).toBe(0);
-  await expectSyncedReview(page.request, capturedId, 1);
-  await expectOutboxEmpty(page, options);
 
   await page.goto('/learnloop/history');
   await expectLiveViewConnected(page, 'learnloop-history');
@@ -211,6 +289,13 @@ export async function resetOfflineStudyDatabase(page: Page, options: OfflineRout
   const databaseName = options.databaseName ?? DEFAULT_OFFLINE_STUDY_DB;
 
   await page.addInitScript((dbName: string) => {
+    const resetKey = `crosswake-offline-proof-reset:${dbName}`;
+
+    if (sessionStorage.getItem(resetKey)) {
+      return;
+    }
+
+    sessionStorage.setItem(resetKey, 'true');
     indexedDB.deleteDatabase(dbName);
   }, databaseName);
 }
@@ -220,21 +305,26 @@ export async function readQueuedOfflineMutations(
   options: OfflineRouteProofOptions = {},
 ): Promise<OfflineMutationRecord[]> {
   const databaseName = options.databaseName ?? DEFAULT_OFFLINE_STUDY_DB;
+  const scopeRef = options.scopeRef ?? 'v1.scope_fixture_alpha_01';
 
-  return page.evaluate((dbName: string) => {
+  return page.evaluate(({ dbName, expectedScope }: { dbName: string; expectedScope: string }) => {
     return new Promise((resolve, reject) => {
-      const req = indexedDB.open(dbName, 1);
+      const req = indexedDB.open(dbName, 4);
       req.onsuccess = () => {
         const db = req.result;
-        const tx = db.transaction('mutations', 'readonly');
-        const store = tx.objectStore('mutations');
-        const getAll = store.getAll();
-        getAll.onsuccess = () => resolve(getAll.result);
+        const tx = db.transaction('scoped_mutations', 'readonly');
+        const store = tx.objectStore('scoped_mutations');
+        const getAll = store.index('by_scope').getAll(expectedScope);
+        getAll.onsuccess = () => resolve(getAll.result.map(({ client_mutation_id, card_id, rating }) => ({
+          client_mutation_id,
+          card_id,
+          rating,
+        })));
         getAll.onerror = () => reject(getAll.error);
       };
       req.onerror = () => reject(req.error);
     });
-  }, databaseName);
+  }, { dbName: databaseName, expectedScope: scopeRef });
 }
 
 export async function expectSyncedReview(request: APIRequestContext, clientMutationId: string, expectedCount = 1) {
@@ -254,7 +344,7 @@ export async function expectOutboxEmpty(page: Page, options: OfflineRouteProofOp
 
 export function assertAppGeneratedMutation(record: OfflineMutationRecord) {
   expect(typeof record.client_mutation_id).toBe('string');
-  expect(record.client_mutation_id).toMatch(/^[0-9a-f-]{36}$/);
+  expect(record.client_mutation_id).toMatch(OPAQUE_MUTATION_ID);
   expect(record.rating).toMatch(/^(good|hard)$/);
 }
 

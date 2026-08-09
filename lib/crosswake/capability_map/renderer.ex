@@ -9,6 +9,19 @@ defmodule Crosswake.CapabilityMap.Renderer do
 
   @guide_path "guides/capability_map.md"
 
+  @row_fields [
+    :id,
+    :surface,
+    :route_or_evidence_source,
+    :category,
+    :display_label,
+    :route_runtime_owner,
+    :package_owner,
+    :proof_posture,
+    :rebuild,
+    :denial_fallback
+  ]
+
   @spec render() :: String.t()
   def render do
     render(CapabilityMap.canonical())
@@ -21,13 +34,13 @@ defmodule Crosswake.CapabilityMap.Renderer do
     [
       "# Crosswake Capability Map",
       "",
-      "This guide is rendered from `Crosswake.CapabilityMap`. It classifies what Crosswake supports today, what the v19 showcase proves, what is demo pressure, what remains a future gap, and what v20 Native Controls Pack 1 should consider next.",
+      "This guide is rendered from `Crosswake.CapabilityMap`. It classifies what Crosswake supports today, what existing proof demonstrates, what the first adopter pressures, and what remains a future gap.",
       "",
       what_works_today_section(rows),
       "",
       what_evidence_exists_section(rows),
       "",
-      what_v20_will_do_section(rows),
+      adoption_priority_section(rows),
       "",
       detailed_rows_section(rows),
       ""
@@ -86,7 +99,7 @@ defmodule Crosswake.CapabilityMap.Renderer do
     [
       "## What evidence exists",
       "",
-      "The v19 showcase gives proof-backed examples and demo pressure across AdminPilot, Fieldserv, LearnLoop, bridge, offline study, native fallback, and capability-pressure rows. Screenshots are collateral after route-tour assertions; screenshots are not proof posture.",
+      "Existing examples give proof-backed evidence and demo pressure across bounded bridge, offline study, native fallback, and capability-pressure rows. Screenshots are collateral after route-tour assertions; screenshots are not proof posture.",
       "",
       "Cached read-only is not offline mutation. Backend projection required means provider or storefront evidence is reconciliation input until the backend grants authority.",
       "",
@@ -95,20 +108,20 @@ defmodule Crosswake.CapabilityMap.Renderer do
     |> Enum.join("\n")
   end
 
-  defp what_v20_will_do_section(rows) do
+  defp adoption_priority_section(rows) do
     candidate_rows = Enum.filter(rows, &(&1.category == :next_pack_candidate))
     deferred_rows = Enum.filter(rows, &(&1.category == :deferred))
 
     [
-      "## What v20 will do",
+      "## What the first adopter changes",
       "",
-      "v20 Native Controls Pack 1 should stay route-local, typed, versioned, low-frequency, and fail-closed. It should prioritize bounded controls and keep capture/device, commerce/paywall productionization, offline sync/native storage, and operator dashboard work as named later packs.",
+      "Crosswake is currently infrastructure for one first adopter. Work is ordered by host-reusable proof, privacy-safe replay, one foreground iOS pronunciation-pack adapter, and physical-iPhone evidence. Android parity and native-control breadth are frozen.",
       "",
-      "### Next-pack candidates",
+      "### Frozen candidates",
       "",
       bullet_rows(candidate_rows),
       "",
-      "### Deferred later packs",
+      "### Deferred surfaces",
       "",
       bullet_rows(deferred_rows)
     ]
@@ -119,7 +132,7 @@ defmodule Crosswake.CapabilityMap.Renderer do
     [
       "## Detailed Capability Rows",
       "",
-      "| Capability or surface | Display label | Route or evidence source | Current category | Route runtime owner | Package owner | Proof posture | Rebuild | Denial/fallback behavior | v20 implication |",
+      "| Capability or surface | Display label | Route or evidence source | Current category | Route runtime owner | Package owner | Proof posture | Rebuild | Denial/fallback behavior | Adoption implication |",
       "|-----------------------|---------------|--------------------------|------------------|---------------------|---------------|---------------|---------|--------------------------|-----------------|",
       Enum.map_join(rows, "\n", &table_row/1)
     ]
@@ -130,16 +143,69 @@ defmodule Crosswake.CapabilityMap.Renderer do
 
   defp bullet_rows(rows) do
     Enum.map_join(rows, "\n", fn row ->
-      "- **#{escape_inline(row.surface)}** — #{escape_inline(row.display_label)}; #{escape_inline(row.v20_implication)}"
+      "- **#{escape_inline(row.surface)}** — #{escape_inline(row.display_label)}; #{escape_inline(row.adoption_implication)}"
     end)
   end
 
   defp table_row(row) do
-    "| #{escape_cell(row.surface)} | #{escape_cell(row.display_label)} | #{escape_cell(row.route_or_evidence_source)} | #{escape_cell(category_label(row.category))} | #{escape_cell(owner_label(row.route_runtime_owner))} | #{escape_cell(owner_label(row.package_owner))} | #{escape_cell(proof_label(row.proof_posture))} | #{escape_cell(rebuild_label(row.rebuild))} | #{escape_cell(row.denial_fallback)} | #{escape_cell(row.v20_implication)} |"
+    "| #{escape_cell(row.surface)} | #{escape_cell(row.display_label)} | #{escape_cell(row.route_or_evidence_source)} | #{escape_cell(category_label(row.category))} | #{escape_cell(owner_label(row.route_runtime_owner))} | #{escape_cell(owner_label(row.package_owner))} | #{escape_cell(proof_label(row.proof_posture))} | #{escape_cell(rebuild_label(row.rebuild))} | #{escape_cell(row.denial_fallback)} | #{escape_cell(row.adoption_implication)} |"
   end
 
-  defp normalize_row(%_{} = row), do: Map.from_struct(row)
-  defp normalize_row(row) when is_map(row), do: row
+  # D-12 compatibility window: map-based renderer callers may keep supplying
+  # `v20_implication` until this documented alias is removed in a future breaking change.
+  # Canonical rows and renderer output use `adoption_implication` exclusively.
+  defp normalize_row(%_{} = row), do: row |> Map.from_struct() |> normalize_implication()
+
+  defp normalize_row(row) when is_map(row) do
+    row
+    |> normalize_string_keys()
+    |> normalize_implication()
+  end
+
+  defp normalize_string_keys(row) do
+    Enum.reduce(@row_fields, row, fn field, normalized ->
+      case implication_value(normalized, field) do
+        {:present, value} -> Map.put(normalized, field, value)
+        :missing -> normalized
+      end
+    end)
+  end
+
+  defp normalize_implication(row) do
+    canonical = implication_value(row, :adoption_implication)
+    legacy = implication_value(row, :v20_implication)
+
+    implication =
+      case {canonical, legacy} do
+        {{:present, canonical_value}, {:present, legacy_value}}
+        when canonical_value != legacy_value ->
+          raise ArgumentError, "conflicting adoption_implication and v20_implication"
+
+        {{:present, value}, _} ->
+          value
+
+        {:missing, {:present, value}} ->
+          value
+
+        {:missing, :missing} ->
+          nil
+      end
+
+    row
+    |> Map.delete(:v20_implication)
+    |> Map.delete("v20_implication")
+    |> Map.put(:adoption_implication, implication)
+  end
+
+  defp implication_value(row, field) do
+    string_field = Atom.to_string(field)
+
+    cond do
+      Map.has_key?(row, field) -> {:present, Map.fetch!(row, field)}
+      Map.has_key?(row, string_field) -> {:present, Map.fetch!(row, string_field)}
+      true -> :missing
+    end
+  end
 
   defp category_label(:next_pack_candidate), do: "next-pack candidate"
   defp category_label(value), do: value |> Atom.to_string() |> String.replace("_", "-")

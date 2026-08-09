@@ -4,6 +4,7 @@ defmodule Crosswake.Manifest.Builder do
   """
 
   alias Crosswake.Manifest.Types
+  alias Crosswake.Adoption.NavigationTopology
   alias Crosswake.Offline.Contracts
   alias Crosswake.Offline.ContentPack
   alias Crosswake.Policy.CorridorProfiles
@@ -59,7 +60,11 @@ defmodule Crosswake.Manifest.Builder do
         Crosswake.SupportMatrix.canonical(capability_registry: capability_registry)
       )
 
+    manifest_schema_version = Types.manifest_schema_version()
+    route_entries = route_entries(routes, managed_routes, host.origin)
+
     Types.new_root(
+      manifest_schema_version: manifest_schema_version,
       crosswake_version:
         Keyword.get(opts, :crosswake_version, Mix.Project.config()[:version] || "dev"),
       generated_at:
@@ -74,9 +79,72 @@ defmodule Crosswake.Manifest.Builder do
       capability_registry: capability_registry,
       pack_registry: pack_registry(routes),
       commerce_corridors: commerce_corridors,
-      routes: route_entries(routes, managed_routes, host.origin)
+      navigation_topology: navigation_topology(routes, managed_routes),
+      routes: route_entries
     )
   end
+
+  @doc false
+  @spec navigation_topology([Route.t()], [map()]) :: Types.NavigationTopology.t()
+  def navigation_topology(routes, managed_routes) do
+    manifest_schema_version = Types.manifest_schema_version()
+    source = navigation_source(managed_routes)
+
+    case source do
+      [] ->
+        unknown_navigation_topology(manifest_schema_version)
+
+      _ ->
+        case NavigationTopology.compile(source, manifest_schema_version) do
+          {:ok, topology} -> topology_from_compiled(topology)
+          {:error, _error} -> unknown_navigation_topology(manifest_schema_version)
+        end
+    end
+    |> ensure_topology_routes_match(routes)
+  end
+
+  defp navigation_source(managed_routes) do
+    managed_routes
+    |> Enum.map(fn route ->
+      route |> Map.get(:metadata, %{}) |> Map.get(:crosswake_navigation)
+    end)
+    |> Enum.reject(&is_nil/1)
+    |> case do
+      [source] -> source
+      _ -> []
+    end
+  end
+
+  defp topology_from_compiled(topology) do
+    Types.new_navigation_topology(
+      topology_schema_version: topology.topology_schema_version,
+      manifest_schema_version: topology.manifest_schema_version,
+      status: topology.status,
+      entries:
+        Enum.map(topology.entries, fn entry ->
+          Types.new_navigation_topology_entry(Map.to_list(entry))
+        end)
+    )
+  end
+
+  defp unknown_navigation_topology(manifest_schema_version) do
+    Types.new_navigation_topology(
+      topology_schema_version: "1.0.0",
+      manifest_schema_version: manifest_schema_version,
+      status: :unknown_blocking,
+      entries: []
+    )
+  end
+
+  defp ensure_topology_routes_match(%Types.NavigationTopology{status: :ready} = topology, routes) do
+    route_ids = MapSet.new(routes, & &1.id)
+
+    if Enum.all?(topology.entries, &MapSet.member?(route_ids, &1.route_id)),
+      do: topology,
+      else: unknown_navigation_topology(topology.manifest_schema_version)
+  end
+
+  defp ensure_topology_routes_match(topology, _routes), do: topology
 
   @spec capability_registry([Route.t()]) :: %{String.t() => Types.Capability.t()}
   def capability_registry(routes) do
@@ -143,7 +211,7 @@ defmodule Crosswake.Manifest.Builder do
           auth_posture: route.auth_posture,
           auth_return: route_auth_return(route),
           notification_open: route.notification_open
-          )
+        )
 
       {route.id, entry}
     end)

@@ -16,9 +16,12 @@ defmodule Crosswake.Companions.Sigra do
   @behaviour Crosswake.Companion
 
   alias Crosswake.Companion.State
+  alias Crosswake.Companions.Sigra.Contracts
+  alias Crosswake.Companions.Sigra.Contracts.AuthContext
   alias Crosswake.Companions.Sigra.DenialCodes
   alias Crosswake.Companions.Sigra.Evaluator
   alias Crosswake.Companions.Sigra.Telemetry, as: SigraTelemetry
+  alias Crosswake.Manifest.Types.RouteEntry
 
   # ---------------------------------------------------------------------------
   # Required callbacks (mirror chimeway.ex conventions)
@@ -93,6 +96,27 @@ defmodule Crosswake.Companions.Sigra do
         {:deny, finding}
     end
   end
+
+  @doc false
+  @spec replay_decision(term(), term(), keyword()) :: :allow | {:deny, :sigra_denied}
+  def replay_decision(route, auth_context, opts \\ [])
+
+  def replay_decision(%RouteEntry{} = route, %AuthContext{} = auth_context, opts)
+      when is_list(opts) do
+    with :ok <- Contracts.validate_auth_context(auth_context),
+         {:allow, _result} <- Evaluator.evaluate_route_auth(route, auth_context, opts) do
+      :allow
+    else
+      _ -> {:deny, :sigra_denied}
+    end
+  rescue
+    _ -> {:deny, :sigra_denied}
+  catch
+    :exit, _ -> {:deny, :sigra_denied}
+    :throw, _ -> {:deny, :sigra_denied}
+  end
+
+  def replay_decision(_route, _auth_context, _opts), do: {:deny, :sigra_denied}
 
   @impl true
   @doc false

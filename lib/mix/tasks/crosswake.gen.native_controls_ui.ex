@@ -19,13 +19,10 @@ defmodule Mix.Tasks.Crosswake.Gen.NativeControlsUi do
   importable-tier concern — the same rule that already governs
   `mix crosswake.gen.offline_ui` and `mix crosswake.gen.bridge_hook`.
 
-  ## The confirm modal has no native counterpart, and never will
+  ## The confirm modal is the current required fallback
 
-  `REQUIREMENTS.md` places a native alert/confirm bridge family permanently
-  out of scope. The generated `confirm_modal/1` is not a fallback that
-  degrades from something better — it is the primary, only, permanent confirm
-  surface on every platform. It makes zero `Crosswake.Bridge` calls: no push,
-  no `ref`, no `resolve/2`, no denial branch.
+  Phoenix-owned confirmation is the current required fallback on every platform. Native alert/confirm is stopped and may be reconsidered only after passed physical-iPhone proof, a demonstrated active-adopter route blocker, and an explicit maintainer roadmap decision. The generated `confirm_modal/1` makes zero `Crosswake.Bridge`
+  calls: no push, no `ref`, no `resolve/2`, no denial branch.
 
   If you can offer undo instead of asking "are you sure?", offer undo instead
   of this modal (Nielsen Norman Group).
@@ -60,7 +57,7 @@ defmodule Mix.Tasks.Crosswake.Gen.NativeControlsUi do
   @component_template "crosswake_fallbacks.ex.eex"
   @stylesheet_template "crosswake_fallback.css.eex"
 
-  @template_version 2
+  @template_version 3
 
   @stamp_slug "crosswake:native-controls-ui"
 
@@ -92,7 +89,13 @@ defmodule Mix.Tasks.Crosswake.Gen.NativeControlsUi do
     component_result = ensure_file(component_dest, component_content)
     stylesheet_result = ensure_file(stylesheet_dest, stylesheet_content)
 
-    print_next_steps(app_module, component_dest, stylesheet_dest, component_result, stylesheet_result)
+    print_next_steps(
+      app_module,
+      component_dest,
+      stylesheet_dest,
+      component_result,
+      stylesheet_result
+    )
   end
 
   @doc false
@@ -143,7 +146,8 @@ defmodule Mix.Tasks.Crosswake.Gen.NativeControlsUi do
     expanded_dir = Path.expand(dir)
     expanded_dest = Path.expand(destination)
 
-    unless expanded_dest == expanded_dir or String.starts_with?(expanded_dest, expanded_dir <> "/") do
+    unless expanded_dest == expanded_dir or
+             String.starts_with?(expanded_dest, expanded_dir <> "/") do
       Mix.raise(
         "refusing to write outside the target directory: #{expanded_dest} is not under #{expanded_dir}"
       )
@@ -217,7 +221,13 @@ defmodule Mix.Tasks.Crosswake.Gen.NativeControlsUi do
   # Printed output (D-06 — the biggest DX number in this phase)
   # ---------------------------------------------------------------------------
 
-  defp print_next_steps(app_module, component_dest, stylesheet_dest, component_result, stylesheet_result) do
+  defp print_next_steps(
+         app_module,
+         component_dest,
+         stylesheet_dest,
+         component_result,
+         stylesheet_result
+       ) do
     Mix.shell().info("""
 
     Native-controls fallback UI:
@@ -259,9 +269,7 @@ defmodule Mix.Tasks.Crosswake.Gen.NativeControlsUi do
              {:noreply, socket}
            end
 
-    This is the control you reach for when you are looking for a native
-    confirm dialog and Crosswake doesn't have one — it never will (there is
-    no native alert/confirm bridge family; see REQUIREMENTS.md).
+    Phoenix-owned confirmation is the current required fallback on every platform. Native alert/confirm is stopped and may be reconsidered only after passed physical-iPhone proof, a demonstrated active-adopter route blocker, and an explicit maintainer roadmap decision.
 
     If you can offer undo instead of asking "are you sure?", offer undo instead of this modal.
 

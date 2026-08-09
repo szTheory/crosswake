@@ -31,6 +31,7 @@ export const DISPATCH_EVENT = "crosswake:bridge";
 export const ACK_EVENT = "crosswake:bridge_ack";
 export const REPLY_EVENT = "crosswake:bridge_reply";
 export const UNREACHABLE_EVENT = "crosswake:bridge_unreachable";
+export const NAVIGATION_EVENT = "crosswake:navigation_transition";
 
 // Failing moments Crosswake.Bridge translates into the single :shell_unreachable
 // denial. The hook only ever names a moment; it never authors a denial.
@@ -87,6 +88,71 @@ export function findTransport(scope) {
   }
 
   return null;
+}
+
+/* The navigation seam intentionally accepts no injected-global or bridge fallback. */
+export function findNavigationTransport(scope) {
+  const root = scope || globalThis;
+  const webkit = root.webkit;
+  const handler = webkit && webkit.messageHandlers && webkit.messageHandlers.crosswakeNavigation;
+
+  return handler && typeof handler.postMessage === "function" ? handler : null;
+}
+
+function navigationEnvelope(payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return null;
+  }
+
+  const allowed = ["protocol", "version", "transition_id", "kind", "route_id", "restoration_ref"];
+  const keys = Object.keys(payload);
+  const required = ["protocol", "version", "transition_id", "kind", "route_id"];
+  const hasOwn = (key) => Object.prototype.hasOwnProperty.call(payload, key);
+
+  if (
+    keys.some((key) => !allowed.includes(key)) ||
+    required.some((key) => !hasOwn(key)) ||
+    payload.protocol !== "crosswake.navigation_transition" ||
+    payload.version !== "1.0.0" ||
+    !["push_patch", "push_navigate"].includes(payload.kind) ||
+    typeof payload.transition_id !== "string" || !/^nav-[0-9a-f]{16}$/.test(payload.transition_id) ||
+    typeof payload.route_id !== "string" || !/^route-[0-9a-f]{16}$/.test(payload.route_id) ||
+    (hasOwn("restoration_ref") &&
+      (typeof payload.restoration_ref !== "string" || !/^restore-[0-9a-f]{16}$/.test(payload.restoration_ref)))
+  ) {
+    return null;
+  }
+
+  const envelope = {
+    protocol: payload.protocol,
+    version: payload.version,
+    transition_id: payload.transition_id,
+    kind: payload.kind,
+    route_id: payload.route_id
+  };
+
+  if (hasOwn("restoration_ref")) {
+    envelope.restoration_ref = payload.restoration_ref;
+  }
+
+  return envelope;
+}
+
+/* Best-effort local delivery only: no acknowledgement, reply, or fallback authority. */
+export function navigationDelivery(scope, payload) {
+  const envelope = navigationEnvelope(payload);
+  const transport = findNavigationTransport(scope);
+
+  if (!envelope || !transport) {
+    return false;
+  }
+
+  try {
+    transport.postMessage(JSON.stringify(envelope));
+    return true;
+  } catch (_error) {
+    return false;
+  }
 }
 
 /** Reads the facts both shells inject at document start. Never a transport. */
@@ -310,6 +376,9 @@ export const CrosswakeBridge = {
 
     this.crosswakeSession.installLandingPad();
     this.handleEvent(DISPATCH_EVENT, (payload) => this.crosswakeSession.dispatch(payload));
+    this.handleEvent(NAVIGATION_EVENT, (payload) =>
+      navigationDelivery(this.crosswakeScope || globalThis, payload)
+    );
   },
 
   destroyed() {

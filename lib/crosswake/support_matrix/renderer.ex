@@ -49,6 +49,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "",
       section("Shell Artifacts", support_matrix.shells),
       "",
+      first_adopter_readiness_section(),
+      "",
       capability_family_section(support_matrix.capability_families),
       "",
       bridge_reply_delivery_section(),
@@ -272,7 +274,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "|------------|----------|--------------|-------|",
       "| server-synthesized denial | supported | merge-blocking | Every platform including a plain browser with no shell at all. No shell, an unwired hook, and a shell refusal each resolve to exactly one typed denial; there is no configuration in which a push resolves to silence (CTRL-02). |",
       "| Android native reply | supported | JVM hermetic proof | The shipped Android shell core has been duplex since day one — the page receives a reply proxy and the reply travels back as a JSON string. |",
-      "| iOS native reply | verification required | merge-blocking | The return leg lands in-repo in Phase 154: the reply sink evaluates JavaScript against the hook's landing pad, with Swift unit tests and committed contract vectors. It reaches adopters with the **Phase 156** native release, which requires a shell rebuild regardless. Until then an iOS route still receives the server-synthesized denial rather than a native reply. |",
+      "| iOS native reply | verification required | merge-blocking | The return leg exists in-repo from Phase 154: the reply sink evaluates JavaScript against the hook's landing pad, with Swift unit tests and committed contract vectors. Phase 156 was stopped, so no native-menu release promotes this path. It must ship only as needed for the first adopter runtime line and remains narrower than physical-device proof. Until then an iOS route still receives the server-synthesized denial rather than a native reply. |",
       "",
       "Fire-and-forget families do not wait on the iOS leg: `haptics.impact` is already present in the shipped closed command enum of both native cores, so its proof needs no native release."
     ]
@@ -324,14 +326,38 @@ defmodule Crosswake.SupportMatrix.Renderer do
     |> Enum.join("\n")
   end
 
+  defp first_adopter_readiness_section do
+    [
+      "## First Adopter Readiness",
+      "",
+      "The policy contract is policy-contract complete, while concrete adopter-instance input remains `unknown_blocking`. Known surface ownership is discovery context, not host or device proof. `unknown_blocking` blocks host-proof and physical-device promotion.",
+      "",
+      "Example-host, simulator, package-version, and policy-contract evidence do not prove an external host or physical device. Route-local safety fields do not inherit from surface defaults. Cached read-only is not mutation, and one offline island does not claim generic sync.",
+      "",
+      "| Surface | Current truth | Promotion evidence | Boundary |",
+      "|---------|---------------|--------------------|----------|",
+      "| host-reusable offline/shell proof | verification required | A generated host-owned scaffold runs against an external Phoenix router, real route/storage identifiers, existing browser tests, and the iOS shell flow. | Policy completion and example-host proof do not automatically transfer to a host application. |",
+      "| privacy-safe scoped replay | verification required | Opaque scope references, scope-partitioned outbox, logout/account-switch stops, endpoint reauthorization, and redacted evidence all pass. | The existing host-owned `gated_by` seam remains the server-side disablement authority; raw mutation payloads, account identifiers, media, transcripts, tokens, and stable device identifiers are never diagnostics. |",
+      "| foreground iOS pronunciation pack | verification required | A host provider downloads real bytes, verifies expected size and SHA-256, and atomically installs one immutable archive before reporting available. | Current timed native pack transitions are simulated lifecycle evidence, not productionized native content-pack storage. |",
+      "| physical-iPhone offline study | verification required | One dated physical-device artifact proves offline answers, offline audio, kill/relaunch persistence, exactly-once replay, conflict/rejection recovery, account isolation, and server-side disablement. | This promotes one adopter flow on one iOS runtime line only; v20 is stopped/partial; it has no shipped support claim. |",
+      "| Android during first adopter readiness | advisory evidence frozen at current posture | Android is frozen at its existing generator, Maven, JVM, and shared-vector posture. | No new Android feature, parity, template, emulator/device, or release requirement is active. |",
+      "",
+      "Generic sync is not claimed."
+    ]
+    |> Enum.join("\n")
+  end
+
   defp public_non_claims_section do
     [
       "## Public Non-Claims And Rough Edges",
       "",
       "- StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass.",
-      "- Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, Phase 58 auth telemetry/security closeout, and Phase 73 auth-sensitive admin workflow proof are shipped for route predicates, `auth_posture`, route-local `auth_return`, `:step_up_required`, canonical `auth.handoff.*`, canonical `auth.step_up_intent.*`, canonical `auth.return.*` denial codes, stable `[:crosswake, :auth, ...]` telemetry events, low-cardinality diagnostic metadata, and proof that persistent shell session state does not grant admin access; refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, native auth UI, and generic audit machinery remain deferred.",
+      "- Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, Phase 58 auth telemetry/security closeout, and Phase 73 auth-sensitive admin workflow proof are shipped for route predicates, `auth_posture`, route-local `auth_return`, `:step_up_required`, canonical `auth.handoff.*`, canonical `auth.step_up_intent.*`, canonical `auth.return.*` denial codes, stable `[:crosswake, :auth, ...]` telemetry events, low-cardinality diagnostic metadata, and proof that persistent shell session state does not grant admin access; refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, native auth UI, and generic audit machinery remain deferred. Promotion requires an executable host reference proof covering reconnect, backend reauthorization before replay, logout, expiry, revocation, and account switching; documentation alone cannot promote a deferred item.",
       "- APNs/FCM push delivery execution, delivery metrics, and deep UI native notification presentation remain deferred; notification support focuses strictly on token binding, notification-open routing, RouteGate/Sigra route activation proof, and diagnostic telemetry.",
-      "- Standalone native shell core packages are consumed by generated host-owned wrappers through SwiftPM and Maven Central; device/emulator proof and broader native runtime claims remain deferred until separately proven."
+      "- Standalone native shell core packages are consumed by generated host-owned wrappers through SwiftPM and Maven Central; device/emulator proof and broader native runtime claims remain deferred until separately proven.",
+      "- Native pack lifecycle transitions currently prove contract behavior, not production byte download, integrity verification, atomic installation, eviction, background transfer, or generic content storage.",
+      "- First adopter work may add one host-supplied foreground iOS pronunciation-pack adapter. Generic app-wide sync, background sync, silent last-write-wins, multiple proven islands, broad reusable runtime sync helpers, and generic productionized native pack storage remain unclaimed.",
+      "- Android remains available at its existing generated-shell/JVM proof posture but is frozen during first adopter iOS readiness; frozen does not mean device-verified."
     ]
     |> Enum.join("\n")
   end

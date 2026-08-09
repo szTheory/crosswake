@@ -79,7 +79,7 @@ defmodule CrosswakeExample.SaaSPortal.Fixtures do
     status: :pending,
     requested_by: "member-1",
     reviewed_by: nil,
-    amount: "$42,000",
+    amount: "high",
     policy_id: "policy-spend",
     route_id: "saas-approval"
   }
@@ -1238,4 +1238,3 @@ None. Every proposed file has a same-role or same-flow analog in the current cod
 **Analog search scope:** `examples/phoenix_host/lib/crosswake_example/{saas_portal,selective_native,media,showcase}`, `examples/phoenix_host/test/crosswake_example/{saas_portal,selective_native,showcase,e2e}`, `examples/phoenix_host/e2e`, and `examples/phoenix_host/priv/static/css/app.css`.
 **Files scanned:** 53 relevant files from `rg --files` and targeted line-numbered reads.
 **Pattern extraction date:** 2026-07-11
-

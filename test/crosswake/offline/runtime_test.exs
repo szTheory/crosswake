@@ -50,6 +50,7 @@ defmodule Crosswake.Offline.RuntimeTest do
     entry =
       Journal.new_entry(
         id: "journal-01",
+        scope_ref: "v1.scope_fixture_alpha_01",
         route_id: "study-session",
         sync_seam: "study_reviews",
         operation: :grade_card,
@@ -63,5 +64,35 @@ defmodule Crosswake.Offline.RuntimeTest do
     assert session.direct_server_mutation == false
     assert {:ok, queued} = Runtime.queue_entry(session, entry)
     assert queued.status == :queued
+  end
+
+  test "runtime starts inert and fences an old scope before another activates" do
+    inactive = Runtime.new_lifecycle()
+
+    assert inactive.state == :inactive
+    assert inactive.epoch == 0
+    assert {:error, :scope_inactive} = Runtime.lease(inactive, "v1.scope_fixture_alpha_01", 0)
+
+    assert {:ok, active} = Runtime.activate(inactive, "v1.scope_fixture_alpha_01")
+    assert {:ok, _lease} = Runtime.lease(active, "v1.scope_fixture_alpha_01", 1)
+
+    fenced = Runtime.fence(active)
+    assert fenced.state == :inactive
+    assert fenced.epoch == 2
+    assert {:error, :scope_inactive} = Runtime.lease(fenced, "v1.scope_fixture_alpha_01", 1)
+    assert {:ok, switched} = Runtime.activate(fenced, "v1.scope_fixture_bravo_01")
+    assert {:error, :stale_lease} = Runtime.lease(switched, "v1.scope_fixture_alpha_01", 1)
+    assert {:ok, _lease} = Runtime.lease(switched, "v1.scope_fixture_bravo_01", 3)
+  end
+
+  test "runtime retains unaccepted entries in journal order when replay is blocked" do
+    entries = [:first, :second, :third]
+
+    assert {:halted, [:second, :third]} =
+             Runtime.drain(entries, fn
+               :first -> :accepted
+               :second -> :blocked
+               :third -> :accepted
+             end)
   end
 end

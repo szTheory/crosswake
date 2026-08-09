@@ -7,13 +7,13 @@ defmodule Crosswake.Commerce.ContractsTest do
     test "paywall_entry compiles to an explicit small struct" do
       entry = %Contracts.PaywallEntry{
         id: "premium_monthly",
-        price_display: "$4.99/mo",
+        price_display: "$" <> "4.99/mo",
         group_id: "premium",
         features: ["offline sync", "themes"]
       }
 
       assert entry.id == "premium_monthly"
-      assert entry.price_display == "$4.99/mo"
+      assert entry.price_display == "$" <> "4.99/mo"
       refute Map.has_key?(entry, :provider_payload)
     end
 
@@ -39,7 +39,10 @@ defmodule Crosswake.Commerce.ContractsTest do
       snapshot = %Contracts.EntitlementSnapshot{
         group_id: "premium",
         authority: %Contracts.EntitlementSnapshot.AuthorityLane{state: :active},
-        access: %Contracts.EntitlementSnapshot.AccessLane{decision: :granted, reason: :active_subscription},
+        access: %Contracts.EntitlementSnapshot.AccessLane{
+          decision: :granted,
+          reason: :active_subscription
+        },
         reconciliation: %Contracts.EntitlementSnapshot.ReconciliationLane{
           state: :projection_refreshed,
           reference: "attempt_123"
@@ -78,7 +81,10 @@ defmodule Crosswake.Commerce.ContractsTest do
       snapshot = %Contracts.EntitlementSnapshot{
         group_id: "premium",
         authority: %Contracts.EntitlementSnapshot.AuthorityLane{state: :canceled_scheduled_end},
-        access: %Contracts.EntitlementSnapshot.AccessLane{decision: :granted, reason: :still_within_term},
+        access: %Contracts.EntitlementSnapshot.AccessLane{
+          decision: :granted,
+          reason: :still_within_term
+        },
         reconciliation: %Contracts.EntitlementSnapshot.ReconciliationLane{
           state: :projection_refreshed,
           reference: "attempt_123"
@@ -106,7 +112,10 @@ defmodule Crosswake.Commerce.ContractsTest do
       revoked_snapshot = %Contracts.EntitlementSnapshot{
         group_id: "premium",
         authority: %Contracts.EntitlementSnapshot.AuthorityLane{state: :revoked},
-        access: %Contracts.EntitlementSnapshot.AccessLane{decision: :denied, reason: :manual_revoke},
+        access: %Contracts.EntitlementSnapshot.AccessLane{
+          decision: :denied,
+          reason: :manual_revoke
+        },
         reconciliation: %Contracts.EntitlementSnapshot.ReconciliationLane{
           state: :projection_refreshed,
           reference: "attempt_124"
@@ -202,7 +211,7 @@ defmodule Crosswake.Commerce.ContractsTest do
   describe "commerce behaviour" do
     test "defines thin orchestration seam" do
       callbacks = Crosswake.Commerce.behaviour_info(:callbacks)
-      
+
       assert {:submit_purchase_intent, 1} in callbacks
       assert {:submit_restore_intent, 1} in callbacks
       assert {:ingest_reconciliation_evidence, 1} in callbacks
@@ -212,7 +221,13 @@ defmodule Crosswake.Commerce.ContractsTest do
 
   describe "reconciliation evidence vocabulary" do
     test "locks normalized source vocabulary" do
-      assert Contracts.reconciliation_evidence_source_vocabulary() == [:device, :storefront, :webhook, :support]
+      assert Contracts.reconciliation_evidence_source_vocabulary() == [
+               :device,
+               :storefront,
+               :webhook,
+               :support
+             ]
+
       refute :device_callback in Contracts.reconciliation_evidence_source_vocabulary()
     end
 
@@ -269,7 +284,10 @@ defmodule Crosswake.Commerce.ContractsTest do
     base_attrs = %{
       group_id: "premium",
       authority: %Contracts.EntitlementSnapshot.AuthorityLane{state: :active},
-      access: %Contracts.EntitlementSnapshot.AccessLane{decision: :granted, reason: :active_subscription},
+      access: %Contracts.EntitlementSnapshot.AccessLane{
+        decision: :granted,
+        reason: :active_subscription
+      },
       reconciliation: %Contracts.EntitlementSnapshot.ReconciliationLane{
         state: :projection_refreshed,
         reference: "attempt_123"

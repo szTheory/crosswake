@@ -1,4 +1,3 @@
-
 defmodule Crosswake.Manifest.ValidatorTest do
   use ExUnit.Case, async: true
 
@@ -6,6 +5,7 @@ defmodule Crosswake.Manifest.ValidatorTest do
   alias Crosswake.Manifest.Serializer
   alias Crosswake.Manifest.Types
   alias Crosswake.Manifest.Validator
+  alias Crosswake.Policy.Route
   alias Crosswake.SupportMatrix
 
   test "manifest validation rejects missing sections and invalid compatibility truth before serialization" do
@@ -35,6 +35,111 @@ defmodule Crosswake.Manifest.ValidatorTest do
     assert Enum.any?(errors, &String.contains?(&1.message, "support matrix is missing phoenix"))
   end
 
+  test "topology validation accumulates graph and version failures without echoing rejected values" do
+    secret = "topology-private-canary"
+
+    manifest =
+      topology_manifest([
+        topology_entry(route_id: secret),
+        topology_entry(root_tab_id: "tab-0123456789abcdef"),
+        topology_entry(route_id: "route-aaaaaaaaaaaaaaaa"),
+        topology_entry(
+          route_id: "route-fedcba9876543210",
+          presentation: :push,
+          parent_route_id: "route-bbbbbbbbbbbbbbbb"
+        )
+      ])
+      |> update_in([Access.key!(:routes)], &Map.delete(&1, secret))
+      |> update_in([Access.key!(:routes)], &Map.delete(&1, "route-fedcba9876543210"))
+      |> put_in(
+        [Access.key!(:navigation_topology), Access.key!(:manifest_schema_version)],
+        "0.0.0"
+      )
+
+    errors = Validator.validate(manifest)
+    messages = Enum.map(errors, & &1.message)
+
+    assert Enum.any?(messages, &String.contains?(&1, "NT-MANIFEST-VERSION"))
+    assert Enum.any?(messages, &String.contains?(&1, "NT-MANIFEST-ENTRY"))
+    assert Enum.any?(messages, &String.contains?(&1, "NT-MANIFEST-UNKNOWN_ROUTE"))
+    assert Enum.any?(messages, &String.contains?(&1, "NT-MANIFEST-DUPLICATE_ROOT"))
+    assert Enum.any?(messages, &String.contains?(&1, "NT-MANIFEST-INVALID_PARENT"))
+    refute Enum.any?(messages, &String.contains?(&1, secret))
+  end
+
+  test "unknown-blocking topology cannot serialize promoted entries" do
+    manifest =
+      topology_manifest([topology_entry()])
+      |> put_in([Access.key!(:navigation_topology), Access.key!(:status)], :unknown_blocking)
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, &String.contains?(&1.message, "NT-MANIFEST-UNKNOWN_BLOCKING"))
+  end
+
+  test "an empty unknown-blocking topology remains a valid non-promoting manifest section" do
+    manifest =
+      topology_manifest([])
+      |> put_in([Access.key!(:navigation_topology), Access.key!(:status)], :unknown_blocking)
+
+    refute Enum.any?(
+             Validator.validate(manifest),
+             &String.contains?(&1.message, "NT-MANIFEST-ROOT_REQUIRED")
+           )
+  end
+
+  test "malformed topology entries fail closed without raising or echoing supplied values" do
+    secret = "topology-private-canary"
+
+    manifest =
+      topology_manifest([])
+      |> put_in([Access.key!(:navigation_topology), Access.key!(:entries)], [%{route_id: secret}])
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, &String.contains?(&1.message, "NT-MANIFEST-ENTRY"))
+    refute Enum.any?(errors, &String.contains?(&1.message, secret))
+  end
+
+  test "topology validation rejects root-parent, cross-tab, cyclic, and unsupported runtime relationships" do
+    root = topology_entry()
+
+    root_with_parent = %{root | parent_route_id: "route-fedcba9876543210"}
+
+    cross_tab_child =
+      topology_entry(
+        route_id: "route-fedcba9876543210",
+        root_tab_id: "tab-fedcba9876543210",
+        presentation: :push,
+        parent_route_id: root.route_id
+      )
+
+    cycle_one =
+      topology_entry(
+        route_id: "route-aaaaaaaaaaaaaaaa",
+        presentation: :push,
+        parent_route_id: "route-bbbbbbbbbbbbbbbb"
+      )
+
+    cycle_two =
+      topology_entry(
+        route_id: "route-bbbbbbbbbbbbbbbb",
+        presentation: :push,
+        parent_route_id: cycle_one.route_id
+      )
+
+    manifest =
+      topology_manifest([root_with_parent, cross_tab_child, cycle_one, cycle_two])
+      |> put_in([Access.key!(:routes), root.route_id, Access.key!(:runtime)], :unsupported)
+
+    rule_ids = manifest |> Validator.validate() |> Enum.map(& &1.message)
+
+    assert Enum.any?(rule_ids, &String.contains?(&1, "NT-MANIFEST-ROOT_PARENT"))
+    assert Enum.any?(rule_ids, &String.contains?(&1, "NT-MANIFEST-INVALID_PARENT"))
+    assert Enum.any?(rule_ids, &String.contains?(&1, "NT-MANIFEST-CYCLE"))
+    assert Enum.any?(rule_ids, &String.contains?(&1, "NT-MANIFEST-RUNTIME_PRESENTATION"))
+  end
+
   test "json rendering is deterministic and preserves created, reused, and updated semantics" do
     manifest = manifest_fixture()
 
@@ -43,6 +148,8 @@ defmodule Crosswake.Manifest.ValidatorTest do
         System.tmp_dir!(),
         "crosswake-manifest-#{System.unique_integer([:positive])}.json"
       )
+
+    File.rm(path)
 
     rendered_once = Serializer.render(manifest)
     rendered_twice = Serializer.render(manifest)
@@ -110,7 +217,9 @@ defmodule Crosswake.Manifest.ValidatorTest do
   test "manifest validation rejects route pack references that drift from the canonical registry version" do
     manifest =
       manifest_fixture()
-      |> put_in([Access.key!(:routes), "camera", Access.key!(:packs)], ["camera_capture_assets@2.0.0"])
+      |> put_in([Access.key!(:routes), "camera", Access.key!(:packs)], [
+        "camera_capture_assets@2.0.0"
+      ])
 
     errors = Validator.validate(manifest)
 
@@ -150,7 +259,10 @@ defmodule Crosswake.Manifest.ValidatorTest do
     errors = Validator.validate(manifest)
 
     assert Enum.any?(errors, fn error ->
-           String.contains?(error.message, "native_capture source requires route runtime :native_screen")
+             String.contains?(
+               error.message,
+               "native_capture source requires route runtime :native_screen"
+             )
            end)
   end
 
@@ -425,6 +537,53 @@ defmodule Crosswake.Manifest.ValidatorTest do
             allowlisted_origins: [Types.default_origin()]
           )
       }
+    )
+  end
+
+  defp topology_manifest(entries) do
+    route = %Route{id: "route-0123456789abcdef", runtime: :live_view}
+
+    manifest =
+      Crosswake.Manifest.Builder.build(
+        [route],
+        [%{path: "/dashboard/:id", metadata: %{}, helper: "dashboard", verb: :get}],
+        generated_at: "2026-08-04T00:00:00Z"
+      )
+
+    routes =
+      entries
+      |> Enum.map(& &1.route_id)
+      |> Enum.uniq()
+      |> Enum.reduce(manifest.routes, fn route_id, acc ->
+        Map.put(acc, route_id, %{manifest.routes[route.id] | id: route_id})
+      end)
+
+    manifest
+    |> Map.put(:routes, routes)
+    |> Map.put(
+      :navigation_topology,
+      Types.new_navigation_topology(
+        topology_schema_version: "1.0.0",
+        manifest_schema_version: Types.manifest_schema_version(),
+        status: :ready,
+        entries: entries
+      )
+    )
+  end
+
+  defp topology_entry(overrides \\ []) do
+    Types.new_navigation_topology_entry(
+      Keyword.merge(
+        [
+          route_id: "route-0123456789abcdef",
+          root_tab_id: "tab-0123456789abcdef",
+          presentation: :root,
+          parent_route_id: nil,
+          deep_link_posture: :deny,
+          restoration_posture: :deny
+        ],
+        overrides
+      )
     )
   end
 end

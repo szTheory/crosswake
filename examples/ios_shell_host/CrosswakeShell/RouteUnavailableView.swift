@@ -1,4 +1,5 @@
 import SwiftUI
+import CrosswakeShellCore
 
 struct RouteUnavailableView: View {
     let denial: RouteDenialPresentation

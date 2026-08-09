@@ -18,6 +18,7 @@ defmodule Crosswake.Telemetry do
   """
 
   require Logger
+  alias Crosswake.Offline.SafeObservation
 
   @typedoc """
   A self-describing telemetry event catalog entry.
@@ -29,12 +30,12 @@ defmodule Crosswake.Telemetry do
   - `metadata` — list of metadata key atoms emitted in the metadata map (key names only, no PII values)
   """
   @type event_doc :: %{
-    event: [atom()],
-    tier: :active | :reserved,
-    description: String.t(),
-    measurements: [atom()],
-    metadata: [atom()]
-  }
+          event: [atom()],
+          tier: :active | :reserved,
+          description: String.t(),
+          measurements: [atom()],
+          metadata: [atom()]
+        }
 
   # The 11-atom core PII baseline denylist (D-136-A / DECOUPLE-05 / D-5 Phase 139).
   # Always applied regardless of companion presence — an absent/misconfigured companion
@@ -122,6 +123,13 @@ defmodule Crosswake.Telemetry do
   # Called at call time — NOT a module attribute (D-05 runtime aggregation, avoids stale-.beam).
   defp build_active_events do
     [
+      %{
+        event: [:crosswake, :offline, :replay],
+        tier: :active,
+        description: "Emitted for a closed scoped-replay observation.",
+        measurements: [:attempt_count, :event_count, :duration_ms],
+        metadata: [:route_id, :runtime, :lifecycle, :outcome, :denial]
+      },
       %{
         event: [:crosswake, :companion, :dependency_check],
         tier: :active,
@@ -311,7 +319,9 @@ defmodule Crosswake.Telemetry do
     companion_forbidden_keys =
       Application.get_env(:crosswake, :companions, [])
       |> Enum.flat_map(fn mod ->
-        if function_exported?(mod, :forbidden_metadata_keys, 0), do: mod.forbidden_metadata_keys(), else: []
+        if function_exported?(mod, :forbidden_metadata_keys, 0),
+          do: mod.forbidden_metadata_keys(),
+          else: []
       end)
 
     forbidden_keys =
@@ -346,6 +356,23 @@ defmodule Crosswake.Telemetry do
   def detach_default_logger do
     :telemetry.detach("crosswake-default-logger")
   end
+
+  @doc false
+  @spec emit_safe_observation(SafeObservation.t()) :: :ok | {:error, SafeObservation.Error.t()}
+  def emit_safe_observation(%SafeObservation{} = observation) do
+    with {:ok, metadata} <- SafeObservation.to_telemetry(observation) do
+      measurements = Map.take(metadata, [:attempt_count, :event_count, :duration_ms])
+
+      :telemetry.execute(
+        [:crosswake, :offline, :replay, :stop],
+        measurements,
+        Map.drop(metadata, Map.keys(measurements))
+      )
+    end
+  end
+
+  def emit_safe_observation(_),
+    do: {:error, %SafeObservation.Error{rule_id: "CW-SAFE-OBSERVATION-INPUT", path: :input}}
 
   # ---------------------------------------------------------------------------
   # Private: handler, opts normalization, PII scrub
@@ -416,5 +443,4 @@ defmodule Crosswake.Telemetry do
     |> Keyword.put_new(:level, :info)
     |> Keyword.put_new(:encode, false)
   end
-
 end

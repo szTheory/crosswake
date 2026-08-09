@@ -39,7 +39,7 @@ defmodule Crosswake.CapabilityMapTest do
     :proof_posture,
     :rebuild,
     :denial_fallback,
-    :v20_implication
+    :adoption_implication
   ]
 
   @required_ids [
@@ -61,6 +61,10 @@ defmodule Crosswake.CapabilityMapTest do
     "learnloop-sync-productization",
     "learnloop-paywall-projection",
     "commerce-provider-integration",
+    "first-adopter-host-proof",
+    "first-adopter-scoped-replay",
+    "first-adopter-ios-navigation-shell",
+    "first-adopter-physical-iphone",
     "native-controls-alert-confirm",
     "native-controls-action-menu",
     "native-controls-toast-review"
@@ -136,12 +140,12 @@ defmodule Crosswake.CapabilityMapTest do
       assert non_empty?(row.denial_fallback),
              "D-03: #{inspect(row.id)} must name denial or fallback behavior"
 
-      assert non_empty?(row.v20_implication),
-             "D-03/D-13: #{inspect(row.id)} must name v20 implication or exclusion"
+      assert non_empty?(row.adoption_implication),
+             "D-03/D-13: #{inspect(row.id)} must name an adoption implication or exclusion"
     end
   end
 
-  test "D-08 through D-12 and D-33/D-34 canonical rows cover v19 evidence and v20 pressure" do
+  test "canonical rows preserve historical evidence and name first-adopter pressure" do
     rows = canonical_rows()
 
     ids = MapSet.new(Enum.map(rows, & &1.id))
@@ -159,6 +163,10 @@ defmodule Crosswake.CapabilityMapTest do
     assert row!(rows, "learnloop-offline-study").route_runtime_owner == :offline_island
     assert row!(rows, "learnloop-native-storage").package_owner == :deferred
     assert row!(rows, "learnloop-sync-productization").package_owner == :deferred
+    assert row!(rows, "first-adopter-host-proof").proof_posture == :not_yet_proven
+    assert row!(rows, "first-adopter-scoped-replay").route_runtime_owner == :offline_island
+    assert row!(rows, "first-adopter-ios-navigation-shell").route_runtime_owner == :native_shell
+    assert row!(rows, "first-adopter-physical-iphone").rebuild == :native_required
 
     paywall = row!(rows, "learnloop-paywall-projection")
     assert paywall.route_runtime_owner == :backend_projection
@@ -166,7 +174,7 @@ defmodule Crosswake.CapabilityMapTest do
 
     commerce = row!(rows, "commerce-provider-integration")
     assert commerce.package_owner == :deferred
-    assert commerce.v20_implication =~ ~r/Commerce\/Paywall Productionization|later/i
+    assert commerce.adoption_implication =~ ~r/Commerce\/Paywall Productionization|later/i
 
     for id <- [
           "native-controls-alert-confirm",
@@ -177,6 +185,49 @@ defmodule Crosswake.CapabilityMapTest do
       assert row.category == :next_pack_candidate
       assert row.display_label == "Next-pack candidate"
       assert row.route_runtime_owner == :future_native_control
+    end
+  end
+
+  test "D-11/D-12 first-adopter navigation truth is bounded, advisory, and Phase-162-only for device promotion" do
+    rows = canonical_rows()
+
+    shell = row!(rows, "first-adopter-ios-navigation-shell")
+    assert shell.category == :demoed
+    assert shell.display_label == "Advisory evidence"
+    assert shell.proof_posture == :advisory
+    assert shell.route_runtime_owner == :native_shell
+
+    assert shell.route_or_evidence_source =~ "bounded iOS-only"
+    assert shell.route_or_evidence_source =~ "typed stack protocol"
+    assert shell.route_or_evidence_source =~ "UIKit host composition"
+    assert shell.adoption_implication =~ "simulator advisory"
+    assert shell.adoption_implication =~ "Phase 162"
+    assert shell.adoption_implication =~ "unknown_blocking"
+
+    for non_claim <- [
+          "generic navigation",
+          "Android parity",
+          "native leaf rendering",
+          "arbitrary restoration",
+          "modal breadth",
+          "browser-history authority"
+        ] do
+      assert shell.denial_fallback =~ non_claim
+    end
+
+    physical_iphone = row!(rows, "first-adopter-physical-iphone")
+    assert physical_iphone.proof_posture == :not_yet_proven
+    assert physical_iphone.adoption_implication =~ "Phase 162"
+
+    confirmation = row!(rows, "native-controls-alert-confirm")
+    assert confirmation.denial_fallback =~ "Phoenix-owned confirmation"
+
+    for prerequisite <- [
+          "physical-iPhone proof",
+          "active-adopter route blocker",
+          "maintainer roadmap decision"
+        ] do
+      assert confirmation.adoption_implication =~ prerequisite
     end
   end
 
@@ -207,7 +258,7 @@ defmodule Crosswake.CapabilityMapTest do
     assert offline.denial_fallback =~ ~r/outbox|browser-owned|offline island|reconciliation/i
 
     storage = row!(rows, "learnloop-native-storage")
-    assert storage.v20_implication =~ ~r/Offline Sync\/Native Storage Productization|later/i
+    assert storage.adoption_implication =~ ~r/host-supplied|generic native pack storage/i
     refute storage.display_label == "Available today"
 
     paywall = row!(rows, "learnloop-paywall-projection")
@@ -215,7 +266,7 @@ defmodule Crosswake.CapabilityMapTest do
     refute paywall.denial_fallback =~ ~r/device grants|storefront grants|subscriber truth/i
 
     provider = row!(rows, "commerce-provider-integration")
-    assert provider.v20_implication =~ ~r/Commerce\/Paywall Productionization|later/i
+    assert provider.adoption_implication =~ ~r/Commerce\/Paywall Productionization|later/i
     refute provider.display_label == "Available today"
   end
 

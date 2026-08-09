@@ -120,17 +120,23 @@ defmodule CrosswakeExample.Router do
     plug(:accepts, ["json"])
   end
 
+  pipeline :replay_api do
+    plug(:accepts, ["json"])
+    plug(:fetch_session)
+    plug(CrosswakeExample.LocalFirst.ReplayAuth)
+  end
+
   pipeline :e2e_session do
     plug(:fetch_session)
   end
 
   scope "/study", CrosswakeExample.LocalFirst do
-    pipe_through([:api])
+    pipe_through([:replay_api])
     post("/sync", SyncController, :sync)
   end
 
   scope "/learnloop", CrosswakeExample.LocalFirst do
-    pipe_through([:api])
+    pipe_through([:replay_api])
     post("/sync", SyncController, :sync)
   end
 
@@ -590,6 +596,7 @@ defmodule CrosswakeExample.Router do
     scope "/_e2e", CrosswakeExample.E2E do
       pipe_through([:api, :e2e_session])
       post("/saas-session", SaaSSessionController, :create)
+      post("/replay-session", ReplaySessionController, :create)
     end
 
     # Phase 155 Plan 07 (PROOF-01, D-45) — the A2 route. A LiveView, so it needs

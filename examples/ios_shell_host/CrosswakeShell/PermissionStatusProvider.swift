@@ -1,4 +1,5 @@
 import Foundation
+import CrosswakeShellCore
 import UserNotifications
 
 final class PermissionStatusProvider: PermissionStatusDelegate {

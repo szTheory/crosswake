@@ -24,7 +24,10 @@ import {
   UNREACHABLE_EVENT,
   __resetOwner,
   bridgeFacts,
-  findTransport
+  findNavigationTransport,
+  findTransport,
+  NAVIGATION_EVENT,
+  navigationDelivery
 } from "../../priv/static/crosswake.esm.js";
 
 const HOOK_SOURCE = new URL("../../priv/static/crosswake.esm.js", import.meta.url);
@@ -133,6 +136,74 @@ function pushedEvents(trace) {
 function firstPush(trace, event) {
   return trace.pushed.find((entry) => entry.event === event);
 }
+
+function navigationEnvelope(overrides) {
+  return Object.assign(
+    {
+      protocol: "crosswake.navigation_transition",
+      version: "1.0.0",
+      transition_id: "nav-0123456789abcdef",
+      kind: "push_navigate",
+      route_id: "route-0123456789abcdef"
+    },
+    overrides || {}
+  );
+}
+
+// --- navigation transition transport (D-04 / D-06) ------------------------
+
+test("navigation posts canonical JSON only to the dedicated iOS handler", () => {
+  const trace = newTrace();
+  const scope = {
+    webkit: {
+      messageHandlers: {
+        crosswakeNavigation: {
+          postMessage(body) {
+            trace.posts.push({ via: "navigation", body });
+          }
+        },
+        crosswakeBridge: {
+          postMessage() {
+            trace.posts.push({ via: "bridge" });
+          }
+        }
+      }
+    }
+  };
+
+  assert.equal(navigationDelivery(scope, navigationEnvelope()), true);
+  assert.deepEqual(trace.posts, [
+    { via: "navigation", body: JSON.stringify(navigationEnvelope()) }
+  ]);
+});
+
+test("navigation delivery fails closed for malformed, missing, or throwing handlers", () => {
+  assert.equal(navigationDelivery({}, navigationEnvelope()), false);
+  assert.equal(navigationDelivery({}, navigationEnvelope({ payload: {} })), false);
+  assert.equal(findNavigationTransport({ crosswakeBridge: { postMessage() {} } }), null);
+
+  const scope = {
+    webkit: {
+      messageHandlers: {
+        crosswakeNavigation: {
+          postMessage() {
+            throw new Error("gone");
+          }
+        }
+      }
+    }
+  };
+
+  assert.equal(navigationDelivery(scope, navigationEnvelope()), false);
+});
+
+test("navigation delivery does not accept inherited envelope fields", () => {
+  const inherited = navigationEnvelope();
+  const payload = Object.create(inherited);
+  payload.protocol = inherited.protocol;
+
+  assert.equal(navigationDelivery({}, payload), false);
+});
 
 // --- transport selection (D-35 / T-154-24) ---------------------------------
 
@@ -443,6 +514,37 @@ test("two mounted hook elements produce exactly one post per dispatch", () => {
 
   assert.equal(trace.posts.length, 1, "exactly one post reaches the shell");
   assert.equal(trace.pushed.filter((e) => e.event === ACK_EVENT).length, 1);
+
+  first.destroyed();
+  second.destroyed();
+  __resetOwner();
+});
+
+test("two mounted hook elements produce exactly one navigation delivery", () => {
+  __resetOwner();
+
+  const trace = newTrace();
+  const scope = {
+    webkit: {
+      messageHandlers: {
+        crosswakeNavigation: {
+          postMessage(body) {
+            trace.posts.push({ via: "navigation", body });
+          }
+        }
+      }
+    }
+  };
+  const handlers = [];
+  const first = mountHook(scope, trace, handlers);
+  const second = mountHook(scope, trace, handlers);
+
+  handlers
+    .filter((entry) => entry.event === NAVIGATION_EVENT)
+    .forEach((entry) => entry.callback(navigationEnvelope()));
+
+  assert.equal(trace.posts.length, 1);
+  assert.equal(trace.posts[0].via, "navigation");
 
   first.destroyed();
   second.destroyed();

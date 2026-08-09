@@ -32,7 +32,7 @@ defmodule CrosswakeExample.SaaSPortal.AdminPagesTest do
 
     assert html =~ "adminpilot-shell"
     assert html =~ "Operations Control"
-    assert html =~ "Spend approvals above $25,000"
+    assert html =~ "High-band spend approvals"
     assert html =~ "Marta Member"
     assert html =~ "Alex Approver"
     assert html =~ "No edit controls"

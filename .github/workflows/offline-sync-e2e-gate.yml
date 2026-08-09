@@ -124,6 +124,9 @@ jobs:
       - name: Phoenix route + controller assertions
         working-directory: examples/phoenix_host
         run: mix test test/crosswake_example/router_test.exs test/crosswake_example/e2e/sync_state_controller_test.exs
+      - name: Scoped replay admission integration
+        working-directory: examples/phoenix_host
+        run: mix test test/crosswake_example/local_first
       - name: Install Node dependencies
         working-directory: examples/phoenix_host
         run: npm ci
