@@ -96,7 +96,6 @@
       "component": "crosswake_rulestead",
       "release-type": "elixir",
       "separate-pull-requests": true,
-      "release-as": "0.1.0",
       "extra-files": ["packages/crosswake_rulestead/mix.exs"],
       "changelog-sections": [
         { "type": "feat",     "section": "Features" },
