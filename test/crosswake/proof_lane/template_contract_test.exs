@@ -84,7 +84,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
       assert adapter =~ "export const proofLaneHostAdapter"
       assert adapter =~ "satisfies ProofLaneAdapter"
       assert adapter =~ "PL-BROWSER-HOST-ADAPTER"
-      assert manifest =~ "\"template_version\":4"
+      assert manifest =~ "\"template_version\":5"
       assert manifest =~ "e2e/crosswake_proof_lane/support/proof_lane_host_adapter.ts"
     after
       File.rm_rf!(root)
@@ -281,7 +281,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
       )
 
     assert generator =~ "pronunciation-pack-fixture.bin"
-    assert generator =~ "@template_version 4"
+    assert generator =~ "@template_version 5"
     assert fixture != ""
     assert driver =~ "installPronunciationPackForeground"
     assert driver =~ "exerciseInstalledPronunciationAudioOffline"
@@ -316,7 +316,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
       )
 
     assert generator =~ "ProofLaneContractTests.swift"
-    assert generator =~ "@template_version 4"
+    assert generator =~ "@template_version 5"
     assert driver =~ "ProofLaneNavigationHostAdapter"
     assert driver =~ "PL-IOS-NAV-TOPOLOGY"
     assert driver =~ "PL-IOS-NAV-PATCH-DEPTH"
@@ -355,6 +355,20 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
         ] do
       refute driver =~ forbidden
     end
+  end
+
+  test "generator supplies a missing-only physical iPhone host adapter skeleton" do
+    generator = source("lib/crosswake/proof_lane/generator.ex")
+
+    template_path =
+      "priv/templates/crosswake/proof_lane/physical_iphone/physical_iphone_proof_host.ex.eex"
+
+    assert generator =~ "physical_iphone/physical_iphone_proof_host.ex"
+    assert File.exists?(template_path)
+
+    template = source(template_path)
+    assert template =~ "def preflight_options"
+    assert template =~ "{:error, :unavailable}"
   end
 
   test "generated iOS lane makes missing navigation visibly unavailable" do

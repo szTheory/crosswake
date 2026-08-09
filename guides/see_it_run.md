@@ -70,6 +70,15 @@ If you have Elixir installed locally, `mix crosswake.demo` does the same thing.
 For the full first-run walkthrough including offline replay proof, see
 [examples/QUICK_START.md](https://github.com/szTheory/crosswake/blob/main/examples/QUICK_START.md) — Option A: One Command (Docker).
 
+To visibly rehearse the checked-in offline study route in iPhone Simulator, run:
+
+```bash
+bin/crosswake-ios-rehearsal
+```
+
+It is advisory Simulator evidence only. The real-phone handoff and its one-command
+promotion flow are documented in [Physical iPhone handoff](physical_iphone_handoff.md).
+
 ## Browse the Route Owners
 
 Visit these routes while the backend is running at `http://localhost:4700`:

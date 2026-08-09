@@ -9,7 +9,13 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
   }
 
   @shortdoc "Runs the host-owned physical-iPhone proof only after closed preflight"
-  @switches [preflight_only: :boolean, run: :boolean, promote: :boolean, json: :boolean]
+  @switches [
+    preflight_only: :boolean,
+    readiness: :boolean,
+    run: :boolean,
+    promote: :boolean,
+    json: :boolean
+  ]
 
   @impl Mix.Task
   def run(args) do
@@ -22,6 +28,10 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
     case run_with(args, options) do
       {:ready, contract} ->
         emit(%{outcome: "ready", schema_version: contract.schema_version})
+
+      {:readiness, result} ->
+        emit(result)
+        if result.outcome == "blocked", do: System.halt(2)
 
       {:passed, candidate} ->
         emit(candidate)
@@ -44,15 +54,19 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
     if positional != [] or invalid != [] or parsed[:json] != true or invalid_mode?(parsed) do
       {:error, "PI-COMMAND-OPTIONS"}
     else
-      case PhysicalIphonePreflight.check(options) do
-        {:ready, contract} ->
-          if parsed[:preflight_only] == true,
-            do: {:ready, contract},
-            else:
-              invoke_runner(contract, Keyword.put(options, :promote, parsed[:promote] == true))
+      if parsed[:readiness] == true do
+        {:readiness, readiness_result(options)}
+      else
+        case PhysicalIphonePreflight.check(options) do
+          {:ready, contract} ->
+            if parsed[:preflight_only] == true,
+              do: {:ready, contract},
+              else:
+                invoke_runner(contract, Keyword.put(options, :promote, parsed[:promote] == true))
 
-        {:blocked, rule_id} ->
-          {:blocked, %{outcome: "blocked", rule_id: rule_id}}
+          {:blocked, rule_id} ->
+            {:blocked, %{outcome: "blocked", rule_id: rule_id}}
+        end
       end
     end
   end
@@ -85,8 +99,16 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
   end
 
   defp invalid_mode?(parsed) do
-    parsed[:preflight_only] == true == (parsed[:run] == true) or
+    Enum.count([:preflight_only, :readiness, :run], &(parsed[&1] == true)) != 1 or
       (parsed[:promote] == true and parsed[:run] != true)
+  end
+
+  defp readiness_result(options) do
+    PhysicalIphonePreflight.readiness(options)
+    |> Map.update!(:outcome, &Atom.to_string/1)
+    |> Map.update!(:checks, fn checks ->
+      Enum.map(checks, &Map.update!(&1, :state, fn state -> Atom.to_string(state) end))
+    end)
   end
 
   defp invoke_runner(contract, options) do

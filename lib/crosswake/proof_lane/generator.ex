@@ -4,7 +4,7 @@ defmodule Crosswake.ProofLane.Generator do
   alias Crosswake.ProofLane.{Config, GeneratorFS}
 
   @schema_version 1
-  @template_version 4
+  @template_version 5
   @templates [
     {"test/crosswake_proof_lane/crosswake_proof_lane_test.exs",
      "test/crosswake_proof_lane_test.exs.eex"},
@@ -12,6 +12,8 @@ defmodule Crosswake.ProofLane.Generator do
     {"e2e/crosswake_proof_lane/support/proof_lane.ts", "e2e/support/proof_lane.ts.eex"},
     {"e2e/crosswake_proof_lane/support/proof_lane_host_adapter.ts",
      "e2e/support/proof_lane_host_adapter.ts.eex"},
+    {"physical_iphone/physical_iphone_proof_host.ex",
+     "physical_iphone/physical_iphone_proof_host.ex.eex"},
     {"CrosswakeProofLane/ProofLaneDriver.swift", "ios/ProofLaneDriver.swift.eex"},
     {"CrosswakeProofLane/ProofLaneApp.swift", "ios/ProofLaneApp.swift.eex"},
     {"CrosswakeProofLane/Resources/pronunciation-pack-fixture.bin",

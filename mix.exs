@@ -118,6 +118,7 @@ defmodule Crosswake.MixProject do
       extras: [
         "README.md",
         "guides/see_it_run.md",
+        "guides/physical_iphone_handoff.md",
         "guides/architecture.md",
         "guides/code-walkthrough.md",
         "CHANGELOG.md",
@@ -168,6 +169,7 @@ defmodule Crosswake.MixProject do
         Start: [
           "README.md",
           "guides/see_it_run.md",
+          "guides/physical_iphone_handoff.md",
           "guides/architecture.md",
           "guides/code-walkthrough.md",
           "guides/route_policy.md",
