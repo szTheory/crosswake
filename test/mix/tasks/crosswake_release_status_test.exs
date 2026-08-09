@@ -352,9 +352,6 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
             %{kind: :hex, package: "crosswake_rindle"} ->
               %{status: :missing, evidence: ["never released"]}
 
-            %{kind: :hex, package: "crosswake_rulestead"} ->
-              %{status: :missing, evidence: ["never released"]}
-
             _ ->
               %{status: :ok, evidence: ["live"]}
           end
@@ -369,7 +366,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
              check!(status, "release.live_registry_bootstrap_pending")
 
     assert message =~ "crosswake_rindle"
-    assert message =~ "crosswake_rulestead"
+    refute message =~ "crosswake_rulestead"
     assert message =~ "never been released"
     assert is_binary(next_action) and next_action != ""
 
