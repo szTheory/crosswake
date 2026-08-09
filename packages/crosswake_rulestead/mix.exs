@@ -65,7 +65,7 @@ defmodule CrosswakeRulestead.MixProject do
   # it does NOT represent an active bare path dep in deps/0.
   defp crosswake_dep do
     if System.get_env("CROSSWAKE_RELEASE") == "1",
-      do: {:crosswake, "~> 0.1"},
+      do: {:crosswake, "~> 0.2"},
       else: {:crosswake, path: "../.."}
   end
 
