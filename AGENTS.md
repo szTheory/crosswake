@@ -26,8 +26,10 @@ Priority order:
 2. host-reusable proof that preserves existing browser tests and fixtures;
 3. privacy-safe scoped replay and backend auth authority;
 4. real offline pronunciation media through one host-supplied foreground iOS adapter;
-5. physical-iPhone offline/replay evidence;
-6. only defects demonstrated by that evidence.
+5. a bounded first-adopter iOS navigation shell with native tabs/back, live safe-area insets, and
+   declarative shell presence;
+6. physical-iPhone offline/replay evidence;
+7. only defects demonstrated by that evidence.
 
 If customer Alpha is web-only, Crosswake has no Alpha deliverable. Complete the bounded route
 inventory, then pause Crosswake until the public-v1 mobile path is active.
@@ -47,6 +49,9 @@ inventory, then pause Crosswake until the public-v1 mobile path is active.
   taxonomy.
 - Android is frozen at its current generator, Maven, JVM, and vector posture. Do not add Android
   features, templates, device proof, parity work, or release requirements during v21.
+- Native navigation is a shell-level route-policy/runtime-contract concern, not a bounded bridge
+  capability. During v21, implement only the first-adopter iOS slice; Android predictive-back and
+  renderer work remain frozen even when shared vocabulary anticipates them.
 - Do not build native menu/action-button breadth, new companions, capture/device packs, commerce
   productionization, a dashboard, brand/showcase polish, generic sync, background sync, or generic
   native storage unless the governing ADR's reversal condition is met.
