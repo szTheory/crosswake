@@ -114,7 +114,7 @@ defmodule Mix.Tasks.Crosswake.Doctor do
     Mix.Task.reenable("compile")
     Mix.Task.run("compile")
     Mix.Task.reenable("loadpaths")
-    Mix.Task.run("loadpaths", ["--no-compile"])
+    Mix.Task.run("loadpaths")
     router_loaded?(module)
   rescue
     Mix.Error -> false
