@@ -489,11 +489,9 @@ and app CSS can detect the shell synchronously.
 **Effort:** 2-3 focused days plus adopter/backend availability
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
-**Plans:** 8/8 plans executed
+**Plans:** 11 plans (8 executed, 3 gap-closure plans pending external prerequisites)
 
 Plans:
-
-- [x] 162-08-PLAN.md
 
 **Wave 1**
 
@@ -522,6 +520,22 @@ Plans:
 **Wave 7** *(gap closure after verification/review)*
 
 - [x] 162-07-PLAN.md — Fail-close the generated device sequence and physical-report validation before a real host/device proof run.
+
+**Wave 8** *(gap closure after verification/review)*
+
+- [x] 162-08-PLAN.md — Require executed Phoenix authority bytes, fail-closed study-status composition, and server-approved recovery routing.
+
+**Wave 9** *(external physical-proof gap closure; blocked until all D-04 prerequisites are genuinely ready)*
+
+- [ ] 162-09-PLAN.md — Execute the real signed physical-iPhone exit test and atomically promote the dated redacted evidence.
+
+**Wave 10** *(blocked on Wave 9 evidence)*
+
+- [ ] 162-10-PLAN.md — Derive the narrow one-flow/one-runtime public support truth from the checked physical record.
+
+**Wave 11** *(blocked on Waves 9-10)*
+
+- [ ] 162-11-PLAN.md — Reconcile DEVICE requirements, roadmap, state, and validation from fresh final-tree evidence.
 
 **Smallest shippable version:** A dated, redacted physical-iPhone artifact proving the ten-step exit
 test in the adopter route-policy map.
