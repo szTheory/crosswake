@@ -1,4 +1,4 @@
-# crosswake-proof-lane template_version=<%= @template_version %>
+# crosswake-proof-lane template_version=5
 defmodule CrosswakeProofLaneHostAuthority do
   @moduledoc """
   Host-owned fixture seam for Phoenix authority observations.
@@ -42,16 +42,16 @@ defmodule CrosswakeProofLaneContractTest do
   ]
 
   test "declares a host-owned proof lane" do
-    assert "<%= @config.route_id %>" =~ "route-"
+    assert "route-1630000000000001" =~ "route-"
   end
 
   test "records only opaque low-cardinality blocked prerequisites" do
     attrs = %{
       schema_version: "1",
       crosswake_version: "1.0.0",
-      template_version: "<%= @template_version %>",
+      template_version: "5",
       commit_ref: "git-0123456789abcdef0123456789abcdef01234567",
-      route_id: "<%= @config.route_id %>",
+      route_id: "route-1630000000000001",
       assertion_ids: ["replay_prerequisite", "pack_audio_prerequisite"],
       status: :blocked,
       outcome: :blocked,
@@ -72,32 +72,38 @@ defmodule CrosswakeProofLaneContractTest do
     assert %{effect_count: 1, idempotency_count: 1} = callback!(adapter, :accepted_replay)
     assert %{effect_count: 1, idempotency_count: 1} = callback!(adapter, :duplicate_replay)
 
-    assert %{retained_count: retained_rejection, halted: :rejected}
-           when is_integer(retained_rejection) and retained_rejection > 0 <-
+    assert %{retained_count: retained_rejection, halted: :rejected} =
              callback!(adapter, :retained_rejection)
 
+    assert is_integer(retained_rejection) and retained_rejection > 0
+
     assert :ok = callback!(adapter, :reset_fixture)
 
-    assert %{retained_count: retained_conflict, halted: :conflict}
-           when is_integer(retained_conflict) and retained_conflict > 0 <-
+    assert %{retained_count: retained_conflict, halted: :conflict} =
              callback!(adapter, :retained_conflict)
 
-    assert :ok = callback!(adapter, :reset_fixture)
-    assert %{retained_count: fenced, fenced: true} when is_integer(fenced) and fenced > 0 <-
-             callback!(adapter, :scope_fence)
+    assert is_integer(retained_conflict) and retained_conflict > 0
 
     assert :ok = callback!(adapter, :reset_fixture)
-    assert %{retained_count: entry, blocked: true} when is_integer(entry) and entry > 0 <-
-             callback!(adapter, :entry_disablement)
+    assert %{retained_count: fenced, fenced: true} = callback!(adapter, :scope_fence)
+    assert is_integer(fenced) and fenced > 0
 
     assert :ok = callback!(adapter, :reset_fixture)
-    assert %{retained_count: replay, blocked: true} when is_integer(replay) and replay > 0 <-
-             callback!(adapter, :replay_disablement)
+    assert %{retained_count: entry, blocked: true} = callback!(adapter, :entry_disablement)
+    assert is_integer(entry) and entry > 0
 
-    assert %{"assertions" => assertions, "device_class" => "physical_iphone", "schema_version" => 1} =
+    assert :ok = callback!(adapter, :reset_fixture)
+    assert %{retained_count: replay, blocked: true} = callback!(adapter, :replay_disablement)
+    assert is_integer(replay) and replay > 0
+
+    assert %{
+             "assertions" => assertions,
+             "device_class" => "physical_iphone",
+             "schema_version" => 1
+           } =
              backend_authority_report()
 
-    assert Enum.map(@authority_assertions, &%{id: &1, outcome: "passed"}) == assertions
+    assert Enum.map(@authority_assertions, &%{"id" => &1, "outcome" => "passed"}) == assertions
 
     emit_backend_authority_report()
   end

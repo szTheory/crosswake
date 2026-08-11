@@ -19,6 +19,18 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
 
   @impl Mix.Task
   def run(args) do
+    # The command's stdout is a machine interface. Load project configuration,
+    # then suppress normal host startup chatter before starting the configured
+    # application; callbacks still fail closed to stable PI rules.
+    Mix.Task.run("app.config")
+    Application.put_env(:logger, :level, :warning)
+    Logger.configure(level: :warning)
+
+    # Host adapters belong to the invoking Mix project. Loading the current app
+    # before resolving callbacks makes a configured host adapter available to a
+    # normal `mix` invocation without turning readiness into an evidence run.
+    Mix.Task.run("app.start")
+
     options =
       case PhysicalIphoneHost.load() do
         {:ok, host} -> host_options(host)

@@ -13,7 +13,10 @@ defmodule Crosswake.ProofLane.PhysicalIphoneHost do
   def load do
     case Application.get_env(:crosswake, :physical_iphone_proof_host) do
       adapter when is_atom(adapter) and adapter not in [nil, true, false] ->
-        if Enum.all?(@callbacks, fn {name, arity} -> function_exported?(adapter, name, arity) end) do
+        if Code.ensure_loaded?(adapter) and
+             Enum.all?(@callbacks, fn {name, arity} ->
+               function_exported?(adapter, name, arity)
+             end) do
           {:ok,
            [
              host_adapter: adapter,
