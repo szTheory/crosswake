@@ -46,6 +46,9 @@ separately funded business-line mandate.
   and pushed-detail shell with typed stack synchronization, live safe-area values, and a
   declarative shell marker; Android implementation remains frozen.
 
+- [x] **Phase 163: First B2C Adopter Reference Host Integration** — provide the bounded eligible (completed 2026-08-10)
+  Phoenix/iOS host, exact learning bundle, and independent physical/backend proof producers.
+
 - [ ] **Phase 162: Physical-iPhone Adoption Proof** — prove offline answers, offline audio,
   kill/relaunch persistence, exactly-once replay, conflict recovery, account isolation, and remote
   disablement on a physical iPhone.
@@ -582,18 +585,19 @@ test in the adopter route-policy map.
 The only boundary movement allowed in v21 is privacy-safe envelope constraints, reusable test
 scaffolding, and one host-supplied foreground iOS pack adapter.
 
-### Phase 163: Alpha Reference Host Integration
+### Phase 163: First B2C Adopter Reference Host Integration
 
-**Goal:** Make the bounded Alpha reference host the eligible host for the existing physical-iPhone
+**Goal:** Make the bounded First B2C Adopter reference host the eligible host for the existing physical-iPhone
 proof: one integrity-verified offline card/image/audio bundle, one scoped review replay flow, and
 real host-owned authority without creating a generic content or sync system.
 **Requirements**: ALPHA-01, ALPHA-02, ALPHA-03, ALPHA-04
 **Depends on:** Phase 161.1 and the published `crosswake_sigra` hosted-session interoperability release
-**Plans:** 0 plans
+**Plans:** 1/1 complete; prerequisite to Phase 162 Wave 9 satisfied
 
 Plans:
 
-- [ ] TBD (run /gsd-discuss-phase 163, then /gsd-plan-phase 163 to break down)
+- [x] 163-01-PLAN.md — generate and configure the bounded host, implement exact learning-bundle,
+  device, backend, and evidence producers, and return Phase 162 to its signing gate
 
 ---
 *Roadmap reset: 2026-07-30*

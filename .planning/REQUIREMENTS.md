@@ -128,19 +128,19 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 
 ### ALPHA — Bounded reference-host integration
 
-- [ ] **ALPHA-01:** The anonymous Alpha reference host installs one foreground, versioned learning
+- [x] **ALPHA-01:** The anonymous First B2C Adopter reference host installs one foreground, versioned learning
   bundle containing a card manifest plus exact image and pronunciation-audio assets; every
   manifest and asset byte is verified before atomic availability.
 
-- [ ] **ALPHA-02:** The selected offline study route renders only from the installed bundle across
+- [x] **ALPHA-02:** The selected offline study route renders only from the installed bundle across
   offline use and kill/relaunch, and never claims generic native storage or background content
   synchronization.
 
-- [ ] **ALPHA-03:** Reconnect revalidates backend-owned session, opaque scope, route, and feature
+- [x] **ALPHA-03:** Reconnect revalidates backend-owned session, opaque scope, route, and feature
   authority before ordered idempotent replay of the one review mutation; account switch, logout,
   revocation, and disablement deny without scope crossing.
 
-- [ ] **ALPHA-04:** Browser, iOS, and physical-proof automation demonstrate the bounded bundle and
+- [x] **ALPHA-04:** Browser, iOS, and physical-proof automation demonstrate the bounded bundle and
   replay lifecycle while retaining only redacted contract evidence; a connected signed iPhone is
   the sole remaining human setup gate.
 
@@ -196,14 +196,14 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 | DEVICE-04 | Phase 162 | Pending |
 | DEVICE-05 | Phase 162 | Pending |
 | DEVICE-06 | Phase 162 | Pending |
-| ALPHA-01 | Phase 163 | Pending |
-| ALPHA-02 | Phase 163 | Pending |
-| ALPHA-03 | Phase 163 | Pending |
-| ALPHA-04 | Phase 163 | Pending |
+| ALPHA-01 | Phase 163 | Complete |
+| ALPHA-02 | Phase 163 | Complete |
+| ALPHA-03 | Phase 163 | Complete |
+| ALPHA-04 | Phase 163 | Complete |
 | DEVICE-07 | Phase 162 | Pending |
 
-**Coverage:** 36/36 requirements mapped. Alpha requirements remain limited to the anonymous
-reference-host integration slice.
+**Coverage:** 36/36 requirements mapped. Stable ALPHA identifiers remain limited to the anonymous
+First B2C Adopter reference-host integration slice.
 
 ---
 *Requirements defined: 2026-07-30*
