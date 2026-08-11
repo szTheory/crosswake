@@ -251,7 +251,14 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   defp development_team do
     case System.get_env("CROSSWAKE_IOS_DEVELOPMENT_TEAM") do
       value when is_binary(value) -> validate_team(value)
-      _ -> xcode_development_team()
+      _ -> xcode_development_team_or_project()
+    end
+  end
+
+  defp xcode_development_team_or_project do
+    case xcode_development_team() do
+      {:ok, _team} = result -> result
+      _ -> project_development_team()
     end
   end
 
@@ -279,6 +286,20 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     if String.match?(value, ~r/^[A-Z0-9]{10}$/),
       do: {:ok, value},
       else: {:error, :unavailable}
+  end
+
+  defp project_development_team do
+    project_file = Path.join(@ios_project, "project.pbxproj")
+
+    with {:ok, bytes} <- File.read(project_file),
+         [team] <-
+           Regex.scan(~r/DEVELOPMENT_TEAM = ([A-Z0-9]{10});/, bytes, capture: :all_but_first)
+           |> Enum.map(&hd/1)
+           |> Enum.uniq() do
+      validate_team(team)
+    else
+      _ -> {:error, :unavailable}
+    end
   end
 
   defp codesigning_identity_ready? do
