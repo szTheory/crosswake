@@ -30,6 +30,7 @@ added.
 | Task | Commit | Description |
 | --- | --- | --- |
 | 1–3 | `04ef40cf` | Generate the lane and add the bounded device/backend/evidence producers |
+| 3 | `a06f1348` | Accept the team selected in the generated Xcode project as a signing source |
 
 ## Verification
 
