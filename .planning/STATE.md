@@ -5,17 +5,17 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
 status: external_gate
-stopped_at: Completed 162-08 gap closure; external physical proof remains blocked
-last_updated: "2026-08-05T03:00:00Z"
-last_activity: 2026-08-05
-last_activity_desc: Plan 162-08 and final verification completed; external physical proof remains blocked
+stopped_at: Phase 163 complete; Phase 162 physical promotion is blocked only at PI-PREFLIGHT-SIGNING
+last_updated: "2026-08-11T03:50:00Z"
+last_activity: 2026-08-10
+last_activity_desc: Completed Phase 163 reference host; physical readiness is blocked only by Apple signing
 progress:
-  total_phases: 6
+  total_phases: 7
   completed_phases: 6
-  total_plans: 106
-  completed_plans: 106
-  percent: 100
-current_plan: 0
+  total_plans: 107
+  completed_plans: 107
+  percent: 86
+current_plan: 9
 ---
 
 # Project State
@@ -23,9 +23,9 @@ current_plan: 0
 ## Current Position
 
 Phase: 162 (physical-iphone-adoption-proof) — EXTERNAL GATE
-Plan: 8 of 8 (fail-closed repairs complete)
-Status: Await TODO-002, eligible host/backend configuration, and a physical iPhone before promotion
-Last activity: 2026-08-05 — Plan 162-08 and final verification completed; no physical evidence was promoted
+Plan: 9 of 11; the Phase 163 reference-host prerequisite is complete
+Status: Physical readiness is blocked only at `PI-PREFLIGHT-SIGNING`; no evidence exists
+Last activity: 2026-08-10 — verified the host, backend, browser, iOS, and readiness contracts
 
 ## Active Objective
 
@@ -44,10 +44,9 @@ framework launch.
 
 ## Next Action
 
-Obtain the sanitized TODO-002 route-policy handoff, eligible signed host/backend adapters, and a
-physical iPhone, then run `mix crosswake.proof_lane.physical_iphone --run --promote --json`.
-Until then, TODO-002 remains `unknown_blocking`, the command must block at preflight, and no
-physical artifact or support claim may be promoted.
+Configure normal local Apple development signing in Xcode, then re-run readiness. Only an exact
+all-ready result may invoke Phase 162-09's existing promotion command. Until then, the command must
+block at `PI-PREFLIGHT-SIGNING` and no physical artifact or support claim may be promoted.
 
 ## Blockers
 
@@ -58,7 +57,8 @@ physical artifact or support claim may be promoted.
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
 
-- Phase 162 ultimately needs a runnable adopter host, backend replay endpoint, and physical iPhone.
+- Phase 162 has a runnable bounded reference host, independent backend producer, and detected
+  physical iPhone; normal local Apple signing is the sole remaining preflight blocker.
 - The canonical historical six product-failure labels were not stored because only a privacy-safe
   proxy audit was authorized.
 
@@ -78,6 +78,8 @@ physical artifact or support claim may be promoted.
 - Generic sync and generic native storage non-goals remain in force.
 - Automatable acceptance requires executable proof, not conversational verification or manual UAT;
   CI promotion is reserved for recurring contract value.
+- Phase 163 uses the sanctioned generated lane plus one host-owned exact manifest/image/audio
+  bundle; device and backend assertion ownership remain independent and promotion remains Phase 162.
 
 - [Phase ?]: Route-local safety posture is represented as a closed status/value pair and never inherits from surface defaults.
 - [Phase ?]: Empty or unknown-blocking inventories are explicitly blocked from promotion.
@@ -327,6 +329,7 @@ this milestone reset.
 | Phase 161-ios-pronunciation-pack-seam P18 | 15m | 1 tasks | 2 files |
 | Phase 162 P07 | 20m | 2 tasks | 6 files |
 | Phase 162 P08 | 8m | 3 tasks | 9 files |
+| Phase 163 P01 | bounded host integration | 3 tasks | 23 files |
 
 ## Accumulated Context
 
@@ -336,3 +339,6 @@ this milestone reset.
 - Phase 163 added: Alpha Reference Host Integration. It is the bounded eligible-host build needed
   to unblock Phase 162's physical-iPhone proof; Phase 162 remains an external device-evidence
   gate until the resulting host and signed iPhone run are available.
+- Phase 163 completed: generated Phoenix/iOS host, exact foreground learning bundle, scoped replay
+  authority, and physical report/evidence producers are verified; Phase 162 is blocked only by
+  normal local Apple signing.
