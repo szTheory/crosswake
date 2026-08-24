@@ -3,6 +3,32 @@ import XCTest
 
 @MainActor
 final class ProtectedNotificationActivationTests: XCTestCase {
+    func test_every_protected_denial_is_terminal_and_never_activates_or_falls_back() {
+        let coordinator = coordinator(manifest: manifest(entry: "external"))
+        let denials: [NotificationOpenDenial] = [
+            .replayed,
+            .expired,
+            .revoked,
+            .wrongBinding,
+            .logoutOrSessionChanged,
+            .tenantSwitched,
+            .removedRoute,
+            .removedAction,
+            .malformedPolicy,
+            .routeGateDenied
+        ]
+
+        for denial in denials {
+            coordinator.handleProtectedNotificationOutcome(.denied(denial))
+
+            guard case let .denied(presentation) = coordinator.presentation else {
+                return XCTFail("expected terminal denial for \(denial)")
+            }
+
+            XCTAssertTrue(presentation.actions.isEmpty)
+        }
+    }
+
     func test_protected_activation_uses_allowed_request_and_never_adds_safe_fallback() {
         let coordinator = coordinator(manifest: manifest(entry: "external"))
         coordinator.activateAllowedNotification(NotificationOpenAllowedActivation(request: request(routeID: "dashboard")))
