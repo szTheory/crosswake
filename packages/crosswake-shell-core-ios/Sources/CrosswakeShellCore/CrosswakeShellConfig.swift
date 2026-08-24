@@ -6,6 +6,7 @@ public struct CrosswakeShellConfig {
     public weak var hapticsDelegate: HapticsDelegate?
     public weak var permissionStatusDelegate: PermissionStatusDelegate?
     public weak var notificationTokenDelegate: NotificationTokenDelegate?
+    public weak var notificationRegistrationDelegate: NotificationRegistrationDelegate?
     public weak var shareDelegate: ShareDelegate?
     public weak var filesPickDelegate: FilesPickDelegate?
     public weak var hostBridgeCommandDelegate: HostBridgeCommandDelegate?
@@ -17,6 +18,7 @@ public struct CrosswakeShellConfig {
         hapticsDelegate: HapticsDelegate? = nil,
         permissionStatusDelegate: PermissionStatusDelegate? = nil,
         notificationTokenDelegate: NotificationTokenDelegate? = nil,
+        notificationRegistrationDelegate: NotificationRegistrationDelegate? = nil,
         shareDelegate: ShareDelegate? = nil,
         filesPickDelegate: FilesPickDelegate? = nil,
         hostBridgeCommandDelegate: HostBridgeCommandDelegate? = nil,
@@ -27,6 +29,7 @@ public struct CrosswakeShellConfig {
         self.hapticsDelegate = hapticsDelegate
         self.permissionStatusDelegate = permissionStatusDelegate
         self.notificationTokenDelegate = notificationTokenDelegate
+        self.notificationRegistrationDelegate = notificationRegistrationDelegate
         self.shareDelegate = shareDelegate
         self.filesPickDelegate = filesPickDelegate
         self.hostBridgeCommandDelegate = hostBridgeCommandDelegate
@@ -39,6 +42,7 @@ public struct CrosswakeShellConfig {
         if hapticsDelegate != nil { caps.append("haptics.impact") }
         if permissionStatusDelegate != nil { caps.append("permissions.status") }
         if notificationTokenDelegate != nil { caps.append("notification_token") }
+        if notificationRegistrationDelegate != nil { caps.append("notification_registration") }
         if shareDelegate != nil { caps.append("share.invoke") }
         if filesPickDelegate != nil { caps.append("file_picker") }
         if let hostBridgeCommandDelegate {

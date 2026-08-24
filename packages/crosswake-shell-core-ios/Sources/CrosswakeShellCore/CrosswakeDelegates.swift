@@ -16,6 +16,14 @@ public protocol NotificationTokenDelegate: AnyObject {
     func currentToken() -> BridgeChannel.NotificationTokenCommandSnapshot
 }
 
+/// Host-owned notification registration authority. APNs token bytes cross this
+/// seam only for the duration of `bindObservedNotificationToken`; Crosswake
+/// retains only the opaque binding reference returned by the host.
+public protocol NotificationRegistrationDelegate: AnyObject {
+    func bindObservedNotificationToken(_ token: Data, scope: NotificationRegistrationScope) -> NotificationBindingOutcome
+    func revokeNotificationBindingForPermissionLoss(_ command: NotificationPermissionLossCommand) -> NotificationPermissionLossOutcome
+}
+
 public protocol ShareDelegate: AnyObject {
     func invoke(payload: [String: String])
 }
