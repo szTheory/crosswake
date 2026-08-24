@@ -355,6 +355,44 @@ public final class ActivationCoordinator: ObservableObject {
         }
     }
 
+    /// Activates only the transient request returned by a host's closed allow
+    /// outcome. Notification denials intentionally omit retry and safe-fallback
+    /// actions so stale local evidence never degrades into local navigation.
+    public func activateAllowedNotification(_ allowed: NotificationOpenAllowedActivation) {
+        let request = allowed.request
+        guard request.source == .notification else { return }
+
+        do {
+            let manifest = try loadManifest()
+            let result = resolve(request: request, manifest: manifest)
+            if case let .denied(denial) = result {
+                presentation = .denied(
+                    RouteDenialPresentation(
+                        reason: denial.reason,
+                        title: denial.title,
+                        message: denial.message,
+                        hint: denial.hint,
+                        routeID: denial.routeID,
+                        actions: []
+                    )
+                )
+            } else {
+                presentation = result
+            }
+        } catch {
+            presentation = .denied(
+                RouteDenialPresentation(
+                    reason: .compatibilityMismatch,
+                    title: "Notification open blocked",
+                    message: "The notification could not be opened from current shell truth.",
+                    hint: nil,
+                    routeID: request.routeID,
+                    actions: []
+                )
+            )
+        }
+    }
+
     public func resolve(request: ActivationRequest, manifest: ShellManifest) -> ShellPresentation {
         guard SemVer.compatible(provides: manifest.compatibility.nativeRuntimeVersion, demands: request.nativeRuntimeVersion) else {
             return .denied(

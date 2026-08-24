@@ -2,28 +2,30 @@ import Foundation
 import XCTest
 @testable import CrosswakeShellCore
 
+@MainActor
 final class NotificationOpenQueueTests: XCTestCase {
     func test_queue_is_bounded_reloads_and_serializes_only_opaque_evidence() async throws {
         let directory = try temporaryDirectory()
-        var now = Date(timeIntervalSince1970: 1_000)
-        let queue = try NotificationOpenQueue(directory: directory, maximumCount: 2, maximumAge: 60, now: { now })
+        let enqueueTime = Date(timeIntervalSince1970: 1_000)
+        let queue = try NotificationOpenQueue(directory: directory, maximumCount: 2, maximumAge: 60, now: { enqueueTime })
 
         try await queue.enqueue(evidence(openRef: "open-1", correlationID: "correlation-1"))
-        now.addTimeInterval(1)
         try await queue.enqueue(evidence(openRef: "open-2", correlationID: "correlation-2"))
-        now.addTimeInterval(1)
         try await queue.enqueue(evidence(openRef: "open-3", correlationID: "correlation-3"))
 
-        XCTAssertEqual(try await queue.pendingEvidence().map(\.openRef), ["open-2", "open-3"])
+        let bounded = try await queue.pendingEvidence()
+        XCTAssertEqual(bounded.map(\.openRef), ["open-2", "open-3"])
         let persisted = try String(contentsOf: directory.appendingPathComponent("notification-open-queue-v1.json"), encoding: .utf8)
         ["url", "route", "token", "tenant", "session", "payload", "authorized"].forEach { forbidden in
             XCTAssertFalse(persisted.lowercased().contains(forbidden))
         }
 
-        let reloaded = try NotificationOpenQueue(directory: directory, maximumCount: 2, maximumAge: 60, now: { now })
-        XCTAssertEqual(try await reloaded.pendingEvidence().map(\.openRef), ["open-2", "open-3"])
-        now.addTimeInterval(61)
-        XCTAssertTrue(try await reloaded.pendingEvidence().isEmpty)
+        let reloaded = try NotificationOpenQueue(directory: directory, maximumCount: 2, maximumAge: 60, now: { enqueueTime })
+        let reloadedEvidence = try await reloaded.pendingEvidence()
+        XCTAssertEqual(reloadedEvidence.map(\.openRef), ["open-2", "open-3"])
+        let expired = try NotificationOpenQueue(directory: directory, maximumCount: 2, maximumAge: 60, now: { enqueueTime.addingTimeInterval(61) })
+        let expiredEvidence = try await expired.pendingEvidence()
+        XCTAssertTrue(expiredEvidence.isEmpty)
     }
 
     func test_drain_consumes_once_and_removes_terminal_outcomes() async throws {
@@ -41,7 +43,8 @@ final class NotificationOpenQueueTests: XCTestCase {
 
         XCTAssertEqual(delegate.consumed.map(\.openRef), ["allow", "replayed", "retry"])
         XCTAssertEqual(allowed, [allow])
-        XCTAssertEqual(try await queue.pendingEvidence().map(\.openRef), ["retry"])
+        let pending = try await queue.pendingEvidence()
+        XCTAssertEqual(pending.map(\.openRef), ["retry"])
     }
 
     func test_corrupt_storage_is_discarded_without_exposing_contents() async throws {
@@ -50,7 +53,8 @@ final class NotificationOpenQueueTests: XCTestCase {
         try Data("not-json-secret".utf8).write(to: file)
 
         let queue = try NotificationOpenQueue(directory: directory)
-        XCTAssertTrue(try await queue.pendingEvidence().isEmpty)
+        let pending = try await queue.pendingEvidence()
+        XCTAssertTrue(pending.isEmpty)
         XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
     }
 
