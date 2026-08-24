@@ -27,6 +27,17 @@ defmodule Crosswake.Companions.Chimeway.ResolverTest do
        }}
     end
 
+    def consume_intent(%NotificationOpenEvidence{open_ref: "server_bound_unsupported_action"}) do
+      {:ok,
+       %OpenResolution{
+         open_ref: "server_bound_unsupported_action",
+         state: :valid,
+         route_id: "dashboard",
+         action_ref: "delete",
+         resolved_at: DateTime.utc_now()
+       }}
+    end
+
     def consume_intent(%NotificationOpenEvidence{} = evidence)
         when evidence.open_ref == "valid_ref" do
       {:ok,
@@ -61,28 +72,28 @@ defmodule Crosswake.Companions.Chimeway.ResolverTest do
             id: "dashboard",
             path: "/dashboard",
             runtime: :liveview,
-            notification_open: true,
+            notification_open: %{actions: ["tap"]},
             entry: :external
           },
           "no_notif" => %RouteEntry{
             id: "no_notif",
             path: "/no_notif",
             runtime: :liveview,
-            notification_open: false,
+            notification_open: nil,
             entry: :external
           },
           "restricted_actions" => %RouteEntry{
             id: "restricted_actions",
             path: "/restricted",
             runtime: :liveview,
-            notification_open: [actions: ["tap", "reply"]],
+            notification_open: %{actions: ["tap", "reply"]},
             entry: :external
           },
           "auth_route" => %RouteEntry{
             id: "auth_route",
             path: "/auth",
             runtime: :liveview,
-            notification_open: true,
+            notification_open: %{actions: ["tap"]},
             auth_posture: :remembered_ok,
             auth_min_level: 2,
             entry: :external
@@ -217,6 +228,21 @@ defmodule Crosswake.Companions.Chimeway.ResolverTest do
              Resolver.resolve(manifest, evidence, MockIntentConsumer)
 
     assert decision.route_id == "dashboard"
+  end
+
+  test "denies a server-bound action absent from the current policy after consuming once", %{
+    manifest: manifest
+  } do
+    evidence =
+      struct(NotificationOpenEvidence,
+        open_ref: "server_bound_unsupported_action",
+        route_id: "client_supplied_route",
+        action_ref: "client_supplied_action",
+        auth_context: %{}
+      )
+
+    assert {:deny, %Denial{} = denial} = Resolver.resolve(manifest, evidence, MockIntentConsumer)
+    assert denial.code == "notification.open.unsupported_action"
   end
 
   test "passes through RouteGate denial for auth-predicated route", %{manifest: manifest} do

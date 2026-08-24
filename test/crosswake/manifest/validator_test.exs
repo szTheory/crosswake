@@ -214,6 +214,26 @@ defmodule Crosswake.Manifest.ValidatorTest do
            end)
   end
 
+  test "manifest validation rejects malformed compiled notification-open policies" do
+    for {policy, description} <- [
+          {true, "raw legacy boolean"},
+          {[actions: ["tap"]], "keyword list"},
+          {%{actions: []}, "empty actions"},
+          {%{actions: ["tap", "tap"]}, "duplicate actions"},
+          {%{actions: ["tap", "delete"]}, "unknown action"},
+          {%{actions: ["tap", 1]}, "non-string action"},
+          {%{unexpected: ["tap"]}, "malformed map"}
+        ] do
+      errors =
+        manifest_fixture()
+        |> put_in([Access.key!(:routes), "camera", Access.key!(:notification_open)], policy)
+        |> Validator.validate()
+
+      assert Enum.any?(errors, &(&1.key == :notification_open)),
+             "expected notification_open finding for #{description}"
+    end
+  end
+
   test "manifest validation rejects route pack references that drift from the canonical registry version" do
     manifest =
       manifest_fixture()
