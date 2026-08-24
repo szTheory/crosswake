@@ -37,6 +37,34 @@ final class NotificationRegistrationTests: XCTestCase {
         XCTAssertEqual(delegate.permissionLossCommands.count, 1)
     }
 
+    func test_denied_recheck_retries_rejected_permission_loss_until_revoked() throws {
+        let transcript = try permissionLossTranscript()
+        var status = NotificationPermissionStatus.granted
+        let delegate = RecordingRegistrationDelegate(
+            binding: .bound(bindingRef: transcript.bindingRef),
+            permissionLossOutcomes: [.rejected, .revoked]
+        )
+        let coordinator = NotificationRegistrationCoordinator(permissionStatusProvider: { status }, delegate: delegate)
+
+        XCTAssertEqual(
+            coordinator.observeAPNSToken(Data("forbidden-apns-token".utf8), scope: transcript.scope),
+            .bound(bindingRef: transcript.bindingRef)
+        )
+
+        status = .denied
+        XCTAssertEqual(coordinator.recheckPermissionState(), .rejected)
+        XCTAssertEqual(coordinator.state, .permissionDenied)
+        XCTAssertEqual(delegate.permissionLossCommands, [transcript.command])
+        XCTAssertFalse(coordinator.diagnostics.contains("forbidden-apns-token"))
+
+        XCTAssertEqual(coordinator.recheckPermissionState(), .revoked)
+        XCTAssertEqual(delegate.permissionLossCommands, [transcript.command, transcript.command])
+        XCTAssertFalse(coordinator.diagnostics.contains("forbidden-apns-token"))
+
+        XCTAssertEqual(coordinator.recheckPermissionState(), .permissionDeniedNoop)
+        XCTAssertEqual(delegate.permissionLossCommands.count, 2)
+    }
+
     func test_capability_is_advertised_only_with_delegate() {
         XCTAssertFalse(CrosswakeShellConfig().registeredCapabilities.contains("notification_registration"))
         let delegate = RecordingRegistrationDelegate(binding: .rejected(reason: .hostRejected))
@@ -56,13 +84,20 @@ final class NotificationRegistrationTests: XCTestCase {
 private final class RecordingRegistrationDelegate: NotificationRegistrationDelegate {
     let binding: NotificationBindingOutcome
     var permissionLossCommands: [NotificationPermissionLossCommand] = []
+    private var permissionLossOutcomes: [NotificationPermissionLossOutcome]
 
-    init(binding: NotificationBindingOutcome) { self.binding = binding }
+    init(
+        binding: NotificationBindingOutcome,
+        permissionLossOutcomes: [NotificationPermissionLossOutcome] = [.staleNoop]
+    ) {
+        self.binding = binding
+        self.permissionLossOutcomes = permissionLossOutcomes
+    }
 
     func bindObservedNotificationToken(_ token: Data, scope: NotificationRegistrationScope) -> NotificationBindingOutcome { binding }
 
     func revokeNotificationBindingForPermissionLoss(_ command: NotificationPermissionLossCommand) -> NotificationPermissionLossOutcome {
         permissionLossCommands.append(command)
-        return .staleNoop
+        return permissionLossOutcomes.removeFirst()
     }
 }
