@@ -18,46 +18,57 @@ defmodule Crosswake.Companions.Chimeway.Resolver do
   Resolves notification open evidence.
   """
   def resolve(%Root{} = manifest, %NotificationOpenEvidence{} = evidence, intent_consumer) do
-    route = Map.get(manifest.routes, evidence.route_id)
+    case intent_consumer.consume_intent(evidence) do
+      {:ok, %OpenResolution{state: :valid, route_id: route_id, action_ref: action_ref}}
+      when is_binary(route_id) and is_binary(action_ref) ->
+        route = Map.get(manifest.routes, route_id)
 
-    cond do
-      is_nil(route) ->
-        deny_no_route(evidence.route_id, "notification.open.route_mismatch", %{})
+        cond do
+          is_nil(route) ->
+            deny_no_route(route_id, "notification.open.route_mismatch", %{})
 
-      not notification_open_allowed?(route) ->
-        deny(route, "notification.open.policy_denied", %{})
+          not notification_open_allowed?(route) ->
+            deny(route, "notification.open.policy_denied", %{})
 
-      not action_allowed?(route, evidence.action_ref) ->
-        deny(route, "notification.open.unsupported_action", %{action_ref: evidence.action_ref})
+          not action_allowed?(route, action_ref) ->
+            deny(route, "notification.open.unsupported_action", %{action_ref: action_ref})
 
-      true ->
-        case intent_consumer.consume_intent(evidence) do
-          {:ok, %OpenResolution{state: :valid}} ->
+          true ->
             target = %Crosswake.Compatibility.Target{
-              manifest_schema_version: manifest.compatibility && manifest.compatibility.manifest_schema_version,
-              bridge_protocol_version: manifest.compatibility && manifest.compatibility.bridge_protocol_version,
-              native_runtime_version: manifest.compatibility && manifest.compatibility.native_runtime_version,
+              manifest_schema_version:
+                manifest.compatibility && manifest.compatibility.manifest_schema_version,
+              bridge_protocol_version:
+                manifest.compatibility && manifest.compatibility.bridge_protocol_version,
+              native_runtime_version:
+                manifest.compatibility && manifest.compatibility.native_runtime_version,
               origin: manifest.host && manifest.host.origin
             }
 
             # Delegate to RouteGate
-            decision = RouteGate.evaluate(manifest, evidence.route_id, target, 
-              activation_source: :notification, 
-              auth_context: evidence.auth_context
-            )
-            
+            decision =
+              RouteGate.evaluate(manifest, route_id, target,
+                activation_source: :notification,
+                auth_context: evidence.auth_context
+              )
+
             if decision.status == :allow do
               {:allow, decision}
             else
               {:deny, decision.denial}
             end
-
-          {:ok, %OpenResolution{state: state}} ->
-            deny(route, denial_code_for_intent_state(state), %{intent_state: state})
-
-          {:error, state} ->
-            deny(route, denial_code_for_intent_state(state), %{intent_state: state})
         end
+
+      {:ok, %OpenResolution{state: :valid}} ->
+        deny_no_route("unknown", DenialCodes.notification_open_policy_denied(), %{})
+
+      {:ok, %OpenResolution{state: state}} ->
+        deny_no_route("unknown", denial_code_for_intent_state(state), %{intent_state: state})
+
+      {:error, state} ->
+        deny_no_route("unknown", denial_code_for_intent_state(state), %{intent_state: state})
+
+      _unexpected ->
+        deny_no_route("unknown", DenialCodes.notification_open_policy_denied(), %{})
     end
   end
 
@@ -65,9 +76,11 @@ defmodule Crosswake.Companions.Chimeway.Resolver do
   defp notification_open_allowed?(%RouteEntry{notification_open: nil}), do: false
   defp notification_open_allowed?(%RouteEntry{notification_open: _}), do: true
 
-  defp action_allowed?(%RouteEntry{notification_open: [actions: actions]}, action_ref) when is_list(actions) do
+  defp action_allowed?(%RouteEntry{notification_open: [actions: actions]}, action_ref)
+       when is_list(actions) do
     action_ref in actions
   end
+
   defp action_allowed?(%RouteEntry{}, _action_ref), do: true
 
   defp denial_code_for_intent_state(:expired), do: DenialCodes.notification_open_expired()

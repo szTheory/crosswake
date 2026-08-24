@@ -16,13 +16,25 @@ defmodule Crosswake.Companions.Chimeway.ResolverTest do
   defmodule MockIntentConsumer do
     @behaviour Crosswake.Companions.Chimeway.IntentConsumer
 
-    def consume_intent(%NotificationOpenEvidence{open_ref: "valid_ref"}) do
+    def consume_intent(%NotificationOpenEvidence{open_ref: "server_bound_ref"}) do
       {:ok,
        %OpenResolution{
-         open_ref: "valid_ref",
+         open_ref: "server_bound_ref",
          state: :valid,
          route_id: "dashboard",
          action_ref: "tap",
+         resolved_at: DateTime.utc_now()
+       }}
+    end
+
+    def consume_intent(%NotificationOpenEvidence{} = evidence)
+        when evidence.open_ref == "valid_ref" do
+      {:ok,
+       %OpenResolution{
+         open_ref: evidence.open_ref,
+         state: :valid,
+         route_id: evidence.route_id,
+         action_ref: evidence.action_ref || "tap",
          resolved_at: DateTime.utc_now()
        }}
     end
@@ -34,43 +46,49 @@ defmodule Crosswake.Companions.Chimeway.ResolverTest do
   end
 
   setup do
-    manifest = struct(Root,
-      compatibility: struct(Compatibility, manifest_schema_version: "2.0.0", bridge_protocol_version: "1.0.0", native_runtime_version: "1.0.0"),
-      capability_registry: %{},
-      host: struct(Host, origin: "https://test.com"),
-      routes: %{
-        "dashboard" => %RouteEntry{
-          id: "dashboard",
-          path: "/dashboard",
-          runtime: :liveview,
-          notification_open: true,
-          entry: :external
-        },
-        "no_notif" => %RouteEntry{
-          id: "no_notif",
-          path: "/no_notif",
-          runtime: :liveview,
-          notification_open: false,
-          entry: :external
-        },
-        "restricted_actions" => %RouteEntry{
-          id: "restricted_actions",
-          path: "/restricted",
-          runtime: :liveview,
-          notification_open: [actions: ["tap", "reply"]],
-          entry: :external
-        },
-        "auth_route" => %RouteEntry{
-          id: "auth_route",
-          path: "/auth",
-          runtime: :liveview,
-          notification_open: true,
-          auth_posture: :remembered_ok,
-          auth_min_level: 2,
-          entry: :external
+    manifest =
+      struct(Root,
+        compatibility:
+          struct(Compatibility,
+            manifest_schema_version: "2.0.0",
+            bridge_protocol_version: "1.0.0",
+            native_runtime_version: "1.0.0"
+          ),
+        capability_registry: %{},
+        host: struct(Host, origin: "https://test.com"),
+        routes: %{
+          "dashboard" => %RouteEntry{
+            id: "dashboard",
+            path: "/dashboard",
+            runtime: :liveview,
+            notification_open: true,
+            entry: :external
+          },
+          "no_notif" => %RouteEntry{
+            id: "no_notif",
+            path: "/no_notif",
+            runtime: :liveview,
+            notification_open: false,
+            entry: :external
+          },
+          "restricted_actions" => %RouteEntry{
+            id: "restricted_actions",
+            path: "/restricted",
+            runtime: :liveview,
+            notification_open: [actions: ["tap", "reply"]],
+            entry: :external
+          },
+          "auth_route" => %RouteEntry{
+            id: "auth_route",
+            path: "/auth",
+            runtime: :liveview,
+            notification_open: true,
+            auth_posture: :remembered_ok,
+            auth_min_level: 2,
+            entry: :external
+          }
         }
-      }
-    )
+      )
 
     %{manifest: manifest}
   end
@@ -90,14 +108,26 @@ defmodule Crosswake.Companions.Chimeway.ResolverTest do
   end
 
   test "returns unsupported_action when action is not in allowed list", %{manifest: manifest} do
-    evidence = struct(NotificationOpenEvidence, open_ref: "valid_ref", route_id: "restricted_actions", action_ref: "delete")
+    evidence =
+      struct(NotificationOpenEvidence,
+        open_ref: "valid_ref",
+        route_id: "restricted_actions",
+        action_ref: "delete"
+      )
+
     assert {:deny, %Denial{} = denial} = Resolver.resolve(manifest, evidence, MockIntentConsumer)
     assert denial.reason == :notification_open_denied
     assert denial.code == "notification.open.unsupported_action"
   end
 
   test "allows valid action in restricted list", %{manifest: manifest} do
-    evidence = struct(NotificationOpenEvidence, open_ref: "valid_ref", route_id: "restricted_actions", action_ref: "tap")
+    evidence =
+      struct(NotificationOpenEvidence,
+        open_ref: "valid_ref",
+        route_id: "restricted_actions",
+        action_ref: "tap"
+      )
+
     assert {:allow, %Decision{}} = Resolver.resolve(manifest, evidence, MockIntentConsumer)
   end
 
@@ -164,20 +194,28 @@ defmodule Crosswake.Companions.Chimeway.ResolverTest do
 
   test "delegates to RouteGate when valid", %{manifest: manifest} do
     # RouteGate will return {:allow, %Decision{}} because it's a basic route unless we test auth
-    evidence = struct(NotificationOpenEvidence, open_ref: "valid_ref", route_id: "dashboard", auth_context: %{})
+    evidence =
+      struct(NotificationOpenEvidence,
+        open_ref: "valid_ref",
+        route_id: "dashboard",
+        auth_context: %{}
+      )
+
     assert {:allow, %Decision{}} = Resolver.resolve(manifest, evidence, MockIntentConsumer)
   end
 
   test "uses only server-bound route and action after consumption", %{manifest: manifest} do
     evidence =
       struct(NotificationOpenEvidence,
-        open_ref: "valid_ref",
+        open_ref: "server_bound_ref",
         route_id: "client_supplied_route",
         action_ref: "client_supplied_action",
         auth_context: %{}
       )
 
-    assert {:allow, %Decision{} = decision} = Resolver.resolve(manifest, evidence, MockIntentConsumer)
+    assert {:allow, %Decision{} = decision} =
+             Resolver.resolve(manifest, evidence, MockIntentConsumer)
+
     assert decision.route_id == "dashboard"
   end
 
@@ -186,7 +224,13 @@ defmodule Crosswake.Companions.Chimeway.ResolverTest do
     # in :companions, RouteGate returns :dependency_missing (fail-closed sentinel).
     # The integration test for :step_up_required lives in
     # packages/crosswake_chimeway/test/crosswake/proof/phase71_notification_workflow_proof_test.exs.
-    evidence = struct(NotificationOpenEvidence, open_ref: "valid_ref", route_id: "auth_route", auth_context: %{})
+    evidence =
+      struct(NotificationOpenEvidence,
+        open_ref: "valid_ref",
+        route_id: "auth_route",
+        auth_context: %{}
+      )
+
     assert {:deny, %Denial{} = denial} = Resolver.resolve(manifest, evidence, MockIntentConsumer)
     # fail-closed: no auth-authority companion registered
     assert denial.reason == :dependency_missing

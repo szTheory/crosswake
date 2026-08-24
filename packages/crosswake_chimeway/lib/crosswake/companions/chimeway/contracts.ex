@@ -300,6 +300,8 @@ defmodule Crosswake.Companions.Chimeway.Contracts do
       :open_ref,
       :state,
       :reason,
+      :route_id,
+      :action_ref,
       :resolved_at,
       metadata: %{}
     ]
@@ -308,6 +310,8 @@ defmodule Crosswake.Companions.Chimeway.Contracts do
             open_ref: String.t(),
             state: atom(),
             reason: atom() | nil,
+            route_id: String.t() | nil,
+            action_ref: String.t() | nil,
             resolved_at: String.t() | nil,
             metadata: map()
           }
@@ -397,7 +401,8 @@ defmodule Crosswake.Companions.Chimeway.Contracts do
   @spec new_binding_result!(map() | keyword()) :: BindingResult.t()
   def new_binding_result!(attrs), do: unwrap!(new_binding_result(attrs))
 
-  @spec new_notification_open_evidence(map() | keyword()) :: {:ok, NotificationOpenEvidence.t()} | {:error, keyword()}
+  @spec new_notification_open_evidence(map() | keyword()) ::
+          {:ok, NotificationOpenEvidence.t()} | {:error, keyword()}
   def new_notification_open_evidence(attrs),
     do:
       attrs
@@ -521,7 +526,8 @@ defmodule Crosswake.Companions.Chimeway.Contracts do
 
   def validate_binding_result(_result), do: {:error, [binding_result: :invalid_contract]}
 
-  @spec validate_notification_open_evidence(NotificationOpenEvidence.t()) :: :ok | {:error, keyword()}
+  @spec validate_notification_open_evidence(NotificationOpenEvidence.t()) ::
+          :ok | {:error, keyword()}
   def validate_notification_open_evidence(%NotificationOpenEvidence{} = evidence) do
     []
     |> validate_required_string(:route_id, evidence.route_id)
@@ -532,12 +538,14 @@ defmodule Crosswake.Companions.Chimeway.Contracts do
     |> to_result()
   end
 
-  def validate_notification_open_evidence(_evidence), do: {:error, [notification_open_evidence: :invalid_contract]}
+  def validate_notification_open_evidence(_evidence),
+    do: {:error, [notification_open_evidence: :invalid_contract]}
 
   @spec validate_open_resolution(OpenResolution.t()) :: :ok | {:error, keyword()}
   def validate_open_resolution(%OpenResolution{} = resolution) do
     []
     |> validate_required_string(:open_ref, resolution.open_ref)
+    |> validate_valid_open_resolution(resolution)
     |> to_result()
   end
 
@@ -630,6 +638,14 @@ defmodule Crosswake.Companions.Chimeway.Contracts do
 
   defp validate_optional_closed(errors, key, value, allowed),
     do: validate_closed(errors, key, value, allowed)
+
+  defp validate_valid_open_resolution(errors, %OpenResolution{state: :valid} = resolution) do
+    errors
+    |> validate_required_string(:route_id, resolution.route_id)
+    |> validate_required_string(:action_ref, resolution.action_ref)
+  end
+
+  defp validate_valid_open_resolution(errors, _resolution), do: errors
 
   defp to_result([]), do: :ok
   defp to_result(errors), do: {:error, Enum.reverse(errors)}

@@ -210,12 +210,14 @@ defmodule Crosswake.Companions.Chimeway.ContractsTest do
   test "builds notification open evidence" do
     assert {:ok, %NotificationOpenEvidence{} = evidence} =
              Contracts.new_notification_open_evidence(notification_open_evidence_attrs())
+
     assert evidence.open_ref == "open_123"
   end
 
   test "builds open resolution" do
     assert {:ok, %OpenResolution{} = resolution} =
              Contracts.new_open_resolution(open_resolution_attrs())
+
     assert resolution.open_ref == "open_123"
   end
 
@@ -233,7 +235,9 @@ defmodule Crosswake.Companions.Chimeway.ContractsTest do
   defp open_resolution_attrs do
     %{
       open_ref: "open_123",
-      state: :valid
+      state: :valid,
+      route_id: "route_123",
+      action_ref: "tap"
     }
   end
 

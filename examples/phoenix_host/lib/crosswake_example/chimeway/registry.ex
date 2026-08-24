@@ -269,7 +269,8 @@ defmodule CrosswakeExample.Chimeway.Registry do
           {:ok, count}
         end
       end)
-      |> Ecto.Multi.run(:binding, fn repo, %{existing_same_token: same, displaced_bindings: displaced} ->
+      |> Ecto.Multi.run(:binding, fn repo,
+                                     %{existing_same_token: same, displaced_bindings: displaced} ->
         if same do
           # Same-token refresh: update only mutable fields per D-17
           {_count, _rows} =
@@ -281,7 +282,8 @@ defmodule CrosswakeExample.Chimeway.Registry do
                 last_seen_at: now,
                 notification_status: ev.notification_status,
                 app_identity_posture: ev.app_identity_posture || same.app_identity_posture,
-                metadata: MetadataSanitizer.sanitize(merge_metadata(same.metadata, ev.metadata || %{})),
+                metadata:
+                  MetadataSanitizer.sanitize(merge_metadata(same.metadata, ev.metadata || %{})),
                 updated_at: now
               ]
             )
@@ -307,29 +309,30 @@ defmodule CrosswakeExample.Chimeway.Registry do
         cond do
           same ->
             # Refresh: single :observed audit row
-            event_attrs = build_audit_attrs(
-              %{
-                event_type: :observed,
-                binding_ref: binding.binding_ref,
-                token_ref: binding.token_ref,
-                token_fingerprint: binding.token_fingerprint,
-                provider: binding.provider,
-                platform: binding.platform,
-                environment: binding.environment,
-                installation_ref: binding.installation_ref,
-                subject_scope: binding.subject_scope,
-                state_before: :active,
-                state_after: :active,
-                reason: :initial_bind,
-                notification_status: ev.notification_status,
-                app_identity_posture: ev.app_identity_posture || :unknown,
-                occurred_at: now,
-                correlation_id: ev.correlation_id || ctx[:correlation_id],
-                actor_kind: :backend,
-                proof_class: :hermetic
-              },
-              opts
-            )
+            event_attrs =
+              build_audit_attrs(
+                %{
+                  event_type: :observed,
+                  binding_ref: binding.binding_ref,
+                  token_ref: binding.token_ref,
+                  token_fingerprint: binding.token_fingerprint,
+                  provider: binding.provider,
+                  platform: binding.platform,
+                  environment: binding.environment,
+                  installation_ref: binding.installation_ref,
+                  subject_scope: binding.subject_scope,
+                  state_before: :active,
+                  state_after: :active,
+                  reason: :initial_bind,
+                  notification_status: ev.notification_status,
+                  app_identity_posture: ev.app_identity_posture || :unknown,
+                  occurred_at: now,
+                  correlation_id: ev.correlation_id || ctx[:correlation_id],
+                  actor_kind: :backend,
+                  proof_class: :hermetic
+                },
+                opts
+              )
 
             case repo.insert(TokenBindingEvent.changeset(%TokenBindingEvent{}, event_attrs)) do
               {:ok, event} -> {:ok, [event]}
@@ -368,29 +371,30 @@ defmodule CrosswakeExample.Chimeway.Registry do
               end)
 
             # WR-04: rotated binding must record :token_rotated reason, not :initial_bind
-            bound_event_attrs = build_audit_attrs(
-              %{
-                event_type: :bound,
-                binding_ref: binding.binding_ref,
-                token_ref: binding.token_ref,
-                token_fingerprint: binding.token_fingerprint,
-                provider: binding.provider,
-                platform: binding.platform,
-                environment: binding.environment,
-                installation_ref: binding.installation_ref,
-                subject_scope: binding.subject_scope,
-                state_before: nil,
-                state_after: :active,
-                reason: :token_rotated,
-                notification_status: ev.notification_status,
-                app_identity_posture: ev.app_identity_posture || :unknown,
-                occurred_at: now_dt,
-                correlation_id: ev.correlation_id || ctx[:correlation_id],
-                actor_kind: :backend,
-                proof_class: :hermetic
-              },
-              opts
-            )
+            bound_event_attrs =
+              build_audit_attrs(
+                %{
+                  event_type: :bound,
+                  binding_ref: binding.binding_ref,
+                  token_ref: binding.token_ref,
+                  token_fingerprint: binding.token_fingerprint,
+                  provider: binding.provider,
+                  platform: binding.platform,
+                  environment: binding.environment,
+                  installation_ref: binding.installation_ref,
+                  subject_scope: binding.subject_scope,
+                  state_before: nil,
+                  state_after: :active,
+                  reason: :token_rotated,
+                  notification_status: ev.notification_status,
+                  app_identity_posture: ev.app_identity_posture || :unknown,
+                  occurred_at: now_dt,
+                  correlation_id: ev.correlation_id || ctx[:correlation_id],
+                  actor_kind: :backend,
+                  proof_class: :hermetic
+                },
+                opts
+              )
 
             all_event_attrs = supersede_events ++ [bound_event_attrs]
 
@@ -409,29 +413,30 @@ defmodule CrosswakeExample.Chimeway.Registry do
 
           true ->
             # Initial bind: single :bound audit event
-            event_attrs = build_audit_attrs(
-              %{
-                event_type: :bound,
-                binding_ref: binding.binding_ref,
-                token_ref: binding.token_ref,
-                token_fingerprint: binding.token_fingerprint,
-                provider: binding.provider,
-                platform: binding.platform,
-                environment: binding.environment,
-                installation_ref: binding.installation_ref,
-                subject_scope: binding.subject_scope,
-                state_before: nil,
-                state_after: :active,
-                reason: :initial_bind,
-                notification_status: ev.notification_status,
-                app_identity_posture: ev.app_identity_posture || :unknown,
-                occurred_at: now,
-                correlation_id: ev.correlation_id || ctx[:correlation_id],
-                actor_kind: :backend,
-                proof_class: :hermetic
-              },
-              opts
-            )
+            event_attrs =
+              build_audit_attrs(
+                %{
+                  event_type: :bound,
+                  binding_ref: binding.binding_ref,
+                  token_ref: binding.token_ref,
+                  token_fingerprint: binding.token_fingerprint,
+                  provider: binding.provider,
+                  platform: binding.platform,
+                  environment: binding.environment,
+                  installation_ref: binding.installation_ref,
+                  subject_scope: binding.subject_scope,
+                  state_before: nil,
+                  state_after: :active,
+                  reason: :initial_bind,
+                  notification_status: ev.notification_status,
+                  app_identity_posture: ev.app_identity_posture || :unknown,
+                  occurred_at: now,
+                  correlation_id: ev.correlation_id || ctx[:correlation_id],
+                  actor_kind: :backend,
+                  proof_class: :hermetic
+                },
+                opts
+              )
 
             case repo.insert(TokenBindingEvent.changeset(%TokenBindingEvent{}, event_attrs)) do
               {:ok, event} -> {:ok, [event]}
@@ -442,7 +447,14 @@ defmodule CrosswakeExample.Chimeway.Registry do
       |> Repo.transaction()
 
     case result do
-      {:ok, %{binding: binding, audit_events: [event], existing_same_token: same, displaced_bindings: []}} when not is_nil(same) ->
+      {:ok,
+       %{
+         binding: binding,
+         audit_events: [event],
+         existing_same_token: same,
+         displaced_bindings: []
+       }}
+      when not is_nil(same) ->
         # Refresh
         result_struct = build_binding_result(:bound, binding, event)
 
@@ -799,28 +811,29 @@ defmodule CrosswakeExample.Chimeway.Registry do
   end
 
   defp do_feedback_audit_only(fb, now, opts) do
-    event_attrs = build_audit_attrs(
-      %{
-        event_type: :feedback,
-        binding_ref: fb.token_ref || "unknown",
-        token_ref: fb.token_ref,
-        token_fingerprint: fb.token_fingerprint,
-        provider: fb.provider,
-        platform: fb.platform,
-        environment: fb.environment,
-        feedback_event: fb.feedback_event,
-        state_before: nil,
-        state_after: nil,
-        reason: nil,
-        notification_status: nil,
-        app_identity_posture: fb.app_identity_posture,
-        occurred_at: now,
-        correlation_id: fb.correlation_id,
-        actor_kind: :provider,
-        proof_class: :advisory
-      },
-      opts
-    )
+    event_attrs =
+      build_audit_attrs(
+        %{
+          event_type: :feedback,
+          binding_ref: fb.token_ref || "unknown",
+          token_ref: fb.token_ref,
+          token_fingerprint: fb.token_fingerprint,
+          provider: fb.provider,
+          platform: fb.platform,
+          environment: fb.environment,
+          feedback_event: fb.feedback_event,
+          state_before: nil,
+          state_after: nil,
+          reason: nil,
+          notification_status: nil,
+          app_identity_posture: fb.app_identity_posture,
+          occurred_at: now,
+          correlation_id: fb.correlation_id,
+          actor_kind: :provider,
+          proof_class: :advisory
+        },
+        opts
+      )
 
     result =
       Ecto.Multi.new()
@@ -951,30 +964,32 @@ defmodule CrosswakeExample.Chimeway.Registry do
 
           events =
             Enum.reduce_while(sorted_pre_bindings, [], fn pre_binding, acc ->
-              event_attrs = build_audit_attrs(
-                %{
-                  event_type: event_type,
-                  binding_ref: pre_binding.binding_ref,
-                  token_ref: pre_binding.token_ref,
-                  token_fingerprint: pre_binding.token_fingerprint,
-                  provider: pre_binding.provider,
-                  platform: pre_binding.platform,
-                  environment: pre_binding.environment,
-                  installation_ref: pre_binding.installation_ref,
-                  subject_scope: pre_binding.subject_scope,
-                  state_before: :active,
-                  state_after: binding_state,
-                  reason: binding_reason,
-                  feedback_event: fb.feedback_event,
-                  notification_status: pre_binding.notification_status,
-                  app_identity_posture: fb.app_identity_posture || pre_binding.app_identity_posture,
-                  occurred_at: now,
-                  correlation_id: fb.correlation_id,
-                  actor_kind: :provider,
-                  proof_class: :advisory
-                },
-                opts
-              )
+              event_attrs =
+                build_audit_attrs(
+                  %{
+                    event_type: event_type,
+                    binding_ref: pre_binding.binding_ref,
+                    token_ref: pre_binding.token_ref,
+                    token_fingerprint: pre_binding.token_fingerprint,
+                    provider: pre_binding.provider,
+                    platform: pre_binding.platform,
+                    environment: pre_binding.environment,
+                    installation_ref: pre_binding.installation_ref,
+                    subject_scope: pre_binding.subject_scope,
+                    state_before: :active,
+                    state_after: binding_state,
+                    reason: binding_reason,
+                    feedback_event: fb.feedback_event,
+                    notification_status: pre_binding.notification_status,
+                    app_identity_posture:
+                      fb.app_identity_posture || pre_binding.app_identity_posture,
+                    occurred_at: now,
+                    correlation_id: fb.correlation_id,
+                    actor_kind: :provider,
+                    proof_class: :advisory
+                  },
+                  opts
+                )
 
               case repo.insert(TokenBindingEvent.changeset(%TokenBindingEvent{}, event_attrs)) do
                 {:ok, event} -> {:cont, [event | acc]}
@@ -1126,29 +1141,30 @@ defmodule CrosswakeExample.Chimeway.Registry do
 
           events =
             Enum.reduce_while(sorted_pre_bindings, [], fn pre_binding, acc ->
-              event_attrs = build_audit_attrs(
-                %{
-                  event_type: :stale,
-                  binding_ref: pre_binding.binding_ref,
-                  token_ref: pre_binding.token_ref,
-                  token_fingerprint: pre_binding.token_fingerprint,
-                  provider: pre_binding.provider,
-                  platform: pre_binding.platform,
-                  environment: pre_binding.environment,
-                  installation_ref: pre_binding.installation_ref,
-                  subject_scope: pre_binding.subject_scope,
-                  state_before: :active,
-                  state_after: :stale,
-                  reason: :staleness_pruned,
-                  notification_status: pre_binding.notification_status,
-                  app_identity_posture: pre_binding.app_identity_posture,
-                  occurred_at: now,
-                  correlation_id: opts[:correlation_id],
-                  actor_kind: :maintenance,
-                  proof_class: :hermetic
-                },
-                opts
-              )
+              event_attrs =
+                build_audit_attrs(
+                  %{
+                    event_type: :stale,
+                    binding_ref: pre_binding.binding_ref,
+                    token_ref: pre_binding.token_ref,
+                    token_fingerprint: pre_binding.token_fingerprint,
+                    provider: pre_binding.provider,
+                    platform: pre_binding.platform,
+                    environment: pre_binding.environment,
+                    installation_ref: pre_binding.installation_ref,
+                    subject_scope: pre_binding.subject_scope,
+                    state_before: :active,
+                    state_after: :stale,
+                    reason: :staleness_pruned,
+                    notification_status: pre_binding.notification_status,
+                    app_identity_posture: pre_binding.app_identity_posture,
+                    occurred_at: now,
+                    correlation_id: opts[:correlation_id],
+                    actor_kind: :maintenance,
+                    proof_class: :hermetic
+                  },
+                  opts
+                )
 
               case repo.insert(TokenBindingEvent.changeset(%TokenBindingEvent{}, event_attrs)) do
                 {:ok, event} -> {:cont, [event | acc]}
@@ -1208,12 +1224,14 @@ defmodule CrosswakeExample.Chimeway.Registry do
       Ecto.Multi.new()
       |> Ecto.Multi.insert(:intent, intent_changeset)
       |> Ecto.Multi.run(:event, fn repo, %{intent: intent} ->
-        event_changeset = NotificationOpenIntentEvent.changeset(%NotificationOpenIntentEvent{}, %{
-          open_intent_id: intent.id,
-          event_type: "issued",
-          occurred_at: utc_now(),
-          details: %{}
-        })
+        event_changeset =
+          NotificationOpenIntentEvent.changeset(%NotificationOpenIntentEvent{}, %{
+            open_intent_id: intent.id,
+            event_type: "issued",
+            occurred_at: utc_now(),
+            details: %{}
+          })
+
         repo.insert(event_changeset)
       end)
       |> Repo.transaction()
@@ -1233,7 +1251,7 @@ defmodule CrosswakeExample.Chimeway.Registry do
   @impl Crosswake.Companions.Chimeway.IntentConsumer
   def consume_intent(%NotificationOpenEvidence{} = evidence) do
     now = utc_now()
-    
+
     intent_query =
       from(i in NotificationOpenIntent,
         where: i.open_ref == ^evidence.open_ref
@@ -1258,12 +1276,6 @@ defmodule CrosswakeExample.Chimeway.Registry do
           intent.binding_ref != evidence.binding_ref ->
             {:error, :binding_mismatch}
 
-          intent.route_id != evidence.route_id ->
-            {:error, :route_mismatch}
-
-          is_binary(intent.action_ref) and intent.action_ref != evidence.action_ref ->
-            {:error, :action_mismatch}
-
           true ->
             {:ok, :valid}
         end
@@ -1286,44 +1298,52 @@ defmodule CrosswakeExample.Chimeway.Registry do
         })
       end)
       |> Ecto.Multi.run(:event, fn repo, %{consume: intent} ->
-        event_changeset = NotificationOpenIntentEvent.changeset(%NotificationOpenIntentEvent{}, %{
-          open_intent_id: intent.id,
-          event_type: "consumed",
-          occurred_at: now,
-          details: %{}
-        })
+        event_changeset =
+          NotificationOpenIntentEvent.changeset(%NotificationOpenIntentEvent{}, %{
+            open_intent_id: intent.id,
+            event_type: "consumed",
+            occurred_at: now,
+            details: %{}
+          })
+
         repo.insert(event_changeset)
       end)
       |> Repo.transaction()
 
     case result do
-      {:ok, %{consume: _intent}} ->
-        {:ok, Contracts.new_open_resolution!(%{
-          open_ref: evidence.open_ref,
-          state: :valid,
-          resolved_at: now
-        })}
+      {:ok, %{consume: intent}} ->
+        {:ok,
+         Contracts.new_open_resolution!(%{
+           open_ref: evidence.open_ref,
+           state: :valid,
+           route_id: intent.route_id,
+           action_ref: intent.action_ref || "tap",
+           resolved_at: now
+         })}
 
       {:error, :intent, :not_found, _changes} ->
-        {:ok, Contracts.new_open_resolution!(%{
-          open_ref: evidence.open_ref,
-          state: :invalid,
-          resolved_at: now
-        })}
+        {:ok,
+         Contracts.new_open_resolution!(%{
+           open_ref: evidence.open_ref,
+           state: :invalid,
+           resolved_at: now
+         })}
 
       {:error, :binding, :revoked, _changes} ->
-        {:ok, Contracts.new_open_resolution!(%{
-          open_ref: evidence.open_ref,
-          state: :binding_revoked,
-          resolved_at: now
-        })}
+        {:ok,
+         Contracts.new_open_resolution!(%{
+           open_ref: evidence.open_ref,
+           state: :binding_revoked,
+           resolved_at: now
+         })}
 
       {:error, :validate, reason, _changes} ->
-        {:ok, Contracts.new_open_resolution!(%{
-          open_ref: evidence.open_ref,
-          state: reason,
-          resolved_at: now
-        })}
+        {:ok,
+         Contracts.new_open_resolution!(%{
+           open_ref: evidence.open_ref,
+           state: reason,
+           resolved_at: now
+         })}
     end
   end
 
@@ -1483,29 +1503,30 @@ defmodule CrosswakeExample.Chimeway.Registry do
 
     events =
       Enum.reduce_while(sorted_pre_bindings, [], fn pre_binding, acc ->
-        event_attrs = build_audit_attrs(
-          %{
-            event_type: :revoked,
-            binding_ref: pre_binding.binding_ref,
-            token_ref: pre_binding.token_ref,
-            token_fingerprint: pre_binding.token_fingerprint,
-            provider: pre_binding.provider,
-            platform: pre_binding.platform,
-            environment: pre_binding.environment,
-            installation_ref: pre_binding.installation_ref,
-            subject_scope: pre_binding.subject_scope,
-            state_before: :active,
-            state_after: :revoked,
-            reason: reason,
-            notification_status: pre_binding.notification_status,
-            app_identity_posture: pre_binding.app_identity_posture,
-            occurred_at: now,
-            correlation_id: ctx[:correlation_id],
-            actor_kind: :backend,
-            proof_class: :hermetic
-          },
-          opts
-        )
+        event_attrs =
+          build_audit_attrs(
+            %{
+              event_type: :revoked,
+              binding_ref: pre_binding.binding_ref,
+              token_ref: pre_binding.token_ref,
+              token_fingerprint: pre_binding.token_fingerprint,
+              provider: pre_binding.provider,
+              platform: pre_binding.platform,
+              environment: pre_binding.environment,
+              installation_ref: pre_binding.installation_ref,
+              subject_scope: pre_binding.subject_scope,
+              state_before: :active,
+              state_after: :revoked,
+              reason: reason,
+              notification_status: pre_binding.notification_status,
+              app_identity_posture: pre_binding.app_identity_posture,
+              occurred_at: now,
+              correlation_id: ctx[:correlation_id],
+              actor_kind: :backend,
+              proof_class: :hermetic
+            },
+            opts
+          )
 
         case repo.insert(TokenBindingEvent.changeset(%TokenBindingEvent{}, event_attrs)) do
           {:ok, event} -> {:cont, [event | acc]}
@@ -1525,29 +1546,30 @@ defmodule CrosswakeExample.Chimeway.Registry do
 
     events =
       Enum.reduce_while(sorted_pre_bindings, [], fn pre_binding, acc ->
-        event_attrs = build_audit_attrs(
-          %{
-            event_type: :revoked,
-            binding_ref: pre_binding.binding_ref,
-            token_ref: pre_binding.token_ref,
-            token_fingerprint: pre_binding.token_fingerprint,
-            provider: pre_binding.provider,
-            platform: pre_binding.platform,
-            environment: pre_binding.environment,
-            installation_ref: pre_binding.installation_ref,
-            subject_scope: pre_binding.subject_scope,
-            state_before: :active,
-            state_after: :revoked,
-            reason: :permission_denied,
-            notification_status: :denied,
-            app_identity_posture: pre_binding.app_identity_posture,
-            occurred_at: now,
-            correlation_id: ctx[:correlation_id],
-            actor_kind: :backend,
-            proof_class: :hermetic
-          },
-          opts
-        )
+        event_attrs =
+          build_audit_attrs(
+            %{
+              event_type: :revoked,
+              binding_ref: pre_binding.binding_ref,
+              token_ref: pre_binding.token_ref,
+              token_fingerprint: pre_binding.token_fingerprint,
+              provider: pre_binding.provider,
+              platform: pre_binding.platform,
+              environment: pre_binding.environment,
+              installation_ref: pre_binding.installation_ref,
+              subject_scope: pre_binding.subject_scope,
+              state_before: :active,
+              state_after: :revoked,
+              reason: :permission_denied,
+              notification_status: :denied,
+              app_identity_posture: pre_binding.app_identity_posture,
+              occurred_at: now,
+              correlation_id: ctx[:correlation_id],
+              actor_kind: :backend,
+              proof_class: :hermetic
+            },
+            opts
+          )
 
         case repo.insert(TokenBindingEvent.changeset(%TokenBindingEvent{}, event_attrs)) do
           {:ok, event} -> {:cont, [event | acc]}

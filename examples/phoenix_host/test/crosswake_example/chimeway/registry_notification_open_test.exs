@@ -175,31 +175,34 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
         expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
       })
 
-    manifest = struct(Root,
-      compatibility: struct(Compatibility,
-        manifest_schema_version: "2.0.0",
-        bridge_protocol_version: "1.0.0",
-        native_runtime_version: "1.0.0",
-        supported_manifest_sources: [:bundled],
-        remote_updates: []
-      ),
-      capability_registry: %{},
-      host: struct(Host,
-        phoenix_version: "1.7.0",
-        live_view_version: "1.0.0",
-        manifest_sources: [:bundled],
-        origin: "https://test.example"
-      ),
-      routes: %{
-        "home" => %RouteEntry{
-          id: "home",
-          path: "/home",
-          runtime: :liveview,
-          notification_open: true,
-          entry: :external
+    manifest =
+      struct(Root,
+        compatibility:
+          struct(Compatibility,
+            manifest_schema_version: "2.0.0",
+            bridge_protocol_version: "1.0.0",
+            native_runtime_version: "1.0.0",
+            supported_manifest_sources: [:bundled],
+            remote_updates: []
+          ),
+        capability_registry: %{},
+        host:
+          struct(Host,
+            phoenix_version: "1.7.0",
+            live_view_version: "1.0.0",
+            manifest_sources: [:bundled],
+            origin: "https://test.example"
+          ),
+        routes: %{
+          "home" => %RouteEntry{
+            id: "home",
+            path: "/home",
+            runtime: :liveview,
+            notification_open: true,
+            entry: :external
+          }
         }
-      }
-    )
+      )
 
     evidence = %NotificationOpenEvidence{
       route_id: "untrusted-client-route",
@@ -217,7 +220,7 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
     assert denial.code == "notification.open.replayed"
   end
 
-  test "consume_intent/1 validates stored action_ref mismatch", %{
+  test "consume_intent/1 returns the stored action instead of client action", %{
     open_ref: open_ref,
     binding_ref: binding_ref
   } do
@@ -241,7 +244,9 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
     }
 
     assert {:ok, resolution} = Registry.consume_intent(evidence)
-    assert resolution.state == :action_mismatch
+    assert resolution.state == :valid
+    assert resolution.route_id == "dashboard"
+    assert resolution.action_ref == "approve"
   end
 
   test "consume_intent/1 rejects a revoked binding", %{open_ref: open_ref, binding: binding} do
