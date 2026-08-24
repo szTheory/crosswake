@@ -17,7 +17,18 @@ defmodule Crosswake.Companions.Chimeway.Telemetry do
     [:crosswake, :notification, :provider, :feedback],
     [:crosswake, :notification, :open, :received],
     [:crosswake, :notification, :open, :resolved],
-    [:crosswake, :notification, :open, :denied]
+    [:crosswake, :notification, :open, :denied],
+    [:crosswake, :notification, :open, :queued],
+    [:crosswake, :notification, :open, :consumed],
+    [:crosswake, :notification, :open, :authorized],
+    [:crosswake, :notification, :open, :replayed],
+    [:crosswake, :notification, :open, :expired],
+    [:crosswake, :notification, :open, :binding_revoked],
+    [:crosswake, :notification, :open, :binding_mismatch],
+    [:crosswake, :notification, :open, :route_mismatch],
+    [:crosswake, :notification, :open, :action_mismatch],
+    [:crosswake, :notification, :open, :authorization_denied],
+    [:crosswake, :notification, :open, :default_policy_denied]
   ]
 
   @metadata_keys [
@@ -57,6 +68,19 @@ defmodule Crosswake.Companions.Chimeway.Telemetry do
     :user_agent,
     :email,
     :provider_response_body
+  ]
+
+  @closed_denial_codes [
+    "notification.open.expired",
+    "notification.open.replayed",
+    "notification.open.binding_revoked",
+    "notification.open.binding_mismatch",
+    "notification.open.route_mismatch",
+    "notification.open.action_mismatch",
+    "notification.open.unsupported_action",
+    "notification.open.policy_denied",
+    "notification.open.authorization_denied",
+    "notification.open.default_policy_denied"
   ]
 
   defmodule Event do
@@ -125,7 +149,7 @@ defmodule Crosswake.Companions.Chimeway.Telemetry do
         key in @forbidden_metadata_keys ->
           acc
 
-        key in @metadata_keys and safe_value?(value) ->
+        key in @metadata_keys and safe_value?(key, value) ->
           Map.put(acc, key, normalize_value(value))
 
         true ->
@@ -160,11 +184,16 @@ defmodule Crosswake.Companions.Chimeway.Telemetry do
 
   defp normalize_key(key), do: key
 
-  defp safe_value?(nil), do: false
-  defp safe_value?(value) when is_atom(value), do: true
-  defp safe_value?(value) when is_integer(value) and value >= 0, do: true
-  defp safe_value?(value) when is_binary(value), do: String.length(value) <= 128
-  defp safe_value?(_value), do: false
+  defp safe_value?(:denial_code, value), do: value in @closed_denial_codes
+
+  defp safe_value?(_key, nil), do: false
+  defp safe_value?(_key, value) when is_atom(value), do: true
+  defp safe_value?(_key, value) when is_integer(value) and value >= 0, do: true
+
+  defp safe_value?(_key, value) when is_binary(value),
+    do: byte_size(value) > 0 and byte_size(value) <= 128
+
+  defp safe_value?(_key, _value), do: false
 
   defp normalize_value(value) when is_atom(value), do: value
   defp normalize_value(value), do: value

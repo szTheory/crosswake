@@ -19,6 +19,8 @@ defmodule Crosswake.Companions.Chimeway.Redaction do
     :apns_token,
     :fcm_token
   ]
+  @safe_metadata_keys [:safe_detail]
+  @max_metadata_string_bytes 128
 
   @apns_feedback %{
     "BadDeviceToken" => :environment_mismatch,
@@ -173,11 +175,28 @@ defmodule Crosswake.Companions.Chimeway.Redaction do
 
   defp safe_metadata(metadata) when is_map(metadata) do
     metadata
-    |> Enum.reject(fn {key, _value} -> normalize_key(key) in @forbidden_public_token_keys end)
-    |> Enum.into(%{})
+    |> Enum.reduce(%{}, fn {key, value}, safe ->
+      key = normalize_key(key)
+
+      if key in @safe_metadata_keys and safe_metadata_value?(value) do
+        Map.put(safe, key, value)
+      else
+        safe
+      end
+    end)
   end
 
   defp safe_metadata(_metadata), do: %{}
+
+  defp safe_metadata_value?(value) when is_atom(value), do: true
+  defp safe_metadata_value?(value) when is_integer(value) and value >= 0, do: true
+
+  defp safe_metadata_value?(value)
+       when is_binary(value) and byte_size(value) > 0 and
+              byte_size(value) <= @max_metadata_string_bytes,
+       do: true
+
+  defp safe_metadata_value?(_value), do: false
 
   defp normalize_key(key) when is_atom(key), do: key
 
