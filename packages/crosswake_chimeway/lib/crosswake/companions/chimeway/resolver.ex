@@ -88,7 +88,9 @@ defmodule Crosswake.Companions.Chimeway.Resolver do
 
   defp notification_open_actions(%RouteEntry{}), do: :error
 
-  defp valid_notification_open_action?(action) when is_binary(action), do: action in @notification_open_actions
+  defp valid_notification_open_action?(action) when is_binary(action),
+    do: action in @notification_open_actions
+
   defp valid_notification_open_action?(_action), do: false
 
   defp denial_code_for_intent_state(:expired), do: DenialCodes.notification_open_expired()
@@ -105,6 +107,10 @@ defmodule Crosswake.Companions.Chimeway.Resolver do
 
   defp denial_code_for_intent_state(:action_mismatch),
     do: DenialCodes.notification_open_action_mismatch()
+
+  defp denial_code_for_intent_state(state)
+       when state in [:authorization_denied, :logout, :session_mismatch, :tenant_mismatch],
+       do: DenialCodes.notification_open_authorization_denied()
 
   defp denial_code_for_intent_state(_state), do: DenialCodes.notification_open_policy_denied()
 

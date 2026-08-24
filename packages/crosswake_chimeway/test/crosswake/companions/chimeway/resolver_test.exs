@@ -172,6 +172,20 @@ defmodule Crosswake.Companions.Chimeway.ResolverTest do
     end
   end
 
+  test "coalesces session, logout, and tenant authority states without disclosing their cause", %{
+    manifest: manifest
+  } do
+    for state <- ["authorization_denied", "logout", "session_mismatch", "tenant_mismatch"] do
+      evidence = struct(NotificationOpenEvidence, open_ref: state, route_id: "dashboard")
+
+      assert {:deny, %Denial{} = denial} =
+               Resolver.resolve(manifest, evidence, MockIntentConsumer)
+
+      assert denial.code == "notification.open.authorization_denied"
+      refute inspect(denial.details) =~ state
+    end
+  end
+
   test "unknown intent state fails closed without raw-state public code", %{manifest: manifest} do
     evidence = struct(NotificationOpenEvidence, open_ref: "internal_state", route_id: "dashboard")
 
