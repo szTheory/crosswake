@@ -119,8 +119,16 @@ public final class NotificationRegistrationCoordinator {
         guard permissionStatusProvider() == .denied else { return .rejected }
         guard let command = retainedBinding else { state = .permissionDenied; return .permissionDeniedNoop }
         guard !permissionLossDelivered else { return .permissionDeniedNoop }
-        permissionLossDelivered = true
         state = .permissionDenied
-        return delegate?.revokeNotificationBindingForPermissionLoss(command) ?? .rejected
+        let outcome = delegate?.revokeNotificationBindingForPermissionLoss(command) ?? .rejected
+
+        switch outcome {
+        case .revoked, .staleNoop:
+            permissionLossDelivered = true
+        case .rejected, .permissionDeniedNoop:
+            break
+        }
+
+        return outcome
     }
 }
