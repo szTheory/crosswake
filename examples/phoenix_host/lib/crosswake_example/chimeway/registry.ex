@@ -1261,11 +1261,28 @@ defmodule CrosswakeExample.Chimeway.Registry do
   Issues a one-time notification open intent.
   """
   def issue_notification_open_intent(attrs) do
-    intent_changeset = NotificationOpenIntent.changeset(%NotificationOpenIntent{}, attrs)
-
     result =
       Ecto.Multi.new()
-      |> Ecto.Multi.insert(:intent, intent_changeset)
+      |> Ecto.Multi.run(:binding, fn repo, _changes ->
+        case repo.one(
+               from(b in TokenBinding,
+                 where: b.binding_ref == ^attrs.binding_ref and b.state == :active
+               )
+             ) do
+          nil -> {:error, :binding_revoked}
+          binding -> {:ok, binding}
+        end
+      end)
+      |> Ecto.Multi.run(:intent, fn repo, %{binding: binding} ->
+        attrs =
+          attrs
+          |> Map.put(:tenant_ref, binding.org_ref)
+          |> Map.put(:subject_ref, binding.subject_ref)
+          |> Map.put(:session_ref, binding.session_ref)
+          |> Map.put(:session_version, binding.session_version)
+
+        repo.insert(NotificationOpenIntent.changeset(%NotificationOpenIntent{}, attrs))
+      end)
       |> Ecto.Multi.run(:event, fn repo, %{intent: intent} ->
         event_changeset =
           NotificationOpenIntentEvent.changeset(%NotificationOpenIntentEvent{}, %{
@@ -1294,100 +1311,137 @@ defmodule CrosswakeExample.Chimeway.Registry do
   @impl Crosswake.Companions.Chimeway.IntentConsumer
   def consume_intent(%NotificationOpenEvidence{} = evidence) do
     now = utc_now()
+    scope = notification_open_scope(evidence.auth_context)
 
-    intent_query =
+    case Repo.transaction(fn -> consume_current_intent(evidence, scope, now) end) do
+      {:ok, {:valid, intent}} -> open_resolution(evidence.open_ref, :valid, now, intent)
+      {:ok, {:denied, state}} -> open_resolution(evidence.open_ref, state, now)
+      {:error, _reason} -> open_resolution(evidence.open_ref, :invalid, now)
+    end
+  end
+
+  defp consume_current_intent(_evidence, :invalid, _now), do: {:denied, :binding_mismatch}
+
+  defp consume_current_intent(evidence, scope, now) do
+    query =
       from(i in NotificationOpenIntent,
-        where: i.open_ref == ^evidence.open_ref
+        as: :intent,
+        where:
+          i.open_ref == ^evidence.open_ref and i.binding_ref == ^evidence.binding_ref and
+            i.tenant_ref == ^scope.tenant_ref and i.subject_ref == ^scope.subject_ref and
+            i.session_ref == ^scope.session_ref and i.session_version == ^scope.session_version and
+            i.state == "issued" and i.expires_at > ^now,
+        where:
+          exists(
+            from(b in TokenBinding,
+              where:
+                b.binding_ref == parent_as(:intent).binding_ref and b.state == :active and
+                  b.org_ref == parent_as(:intent).tenant_ref and
+                  b.subject_ref == parent_as(:intent).subject_ref and
+                  b.session_ref == parent_as(:intent).session_ref and
+                  b.session_version == parent_as(:intent).session_version
+            )
+          )
       )
 
-    result =
-      Ecto.Multi.new()
-      |> Ecto.Multi.run(:intent, fn repo, _changes ->
-        case repo.one(intent_query) do
-          nil -> {:error, :not_found}
-          intent -> {:ok, intent}
-        end
-      end)
-      |> Ecto.Multi.run(:validate, fn _repo, %{intent: intent} ->
-        cond do
-          intent.state != "issued" ->
-            {:error, :replayed}
+    case Repo.update_all(query, set: [state: "consumed", consumed_at: now, updated_at: now]) do
+      {1, _} ->
+        intent =
+          Repo.one!(from(i in NotificationOpenIntent, where: i.open_ref == ^evidence.open_ref))
 
-          DateTime.compare(intent.expires_at, now) == :lt ->
-            {:error, :expired}
-
-          intent.binding_ref != evidence.binding_ref ->
-            {:error, :binding_mismatch}
-
-          true ->
-            {:ok, :valid}
-        end
-      end)
-      |> Ecto.Multi.run(:binding, fn repo, %{intent: intent} ->
-        binding_query =
-          from(b in TokenBinding,
-            where: b.binding_ref == ^intent.binding_ref and b.state == :active
+        {:ok, _event} =
+          Repo.insert(
+            NotificationOpenIntentEvent.changeset(%NotificationOpenIntentEvent{}, %{
+              open_intent_id: intent.id,
+              event_type: "consumed",
+              occurred_at: now,
+              details: %{}
+            })
           )
 
-        case repo.one(binding_query) do
-          nil -> {:error, :revoked}
-          binding -> {:ok, binding}
-        end
-      end)
-      |> Ecto.Multi.update(:consume, fn %{intent: intent} ->
-        NotificationOpenIntent.changeset(intent, %{
-          state: "consumed",
-          consumed_at: now
-        })
-      end)
-      |> Ecto.Multi.run(:event, fn repo, %{consume: intent} ->
-        event_changeset =
-          NotificationOpenIntentEvent.changeset(%NotificationOpenIntentEvent{}, %{
-            open_intent_id: intent.id,
-            event_type: "consumed",
-            occurred_at: now,
-            details: %{}
-          })
+        {:valid, intent}
 
-        repo.insert(event_changeset)
-      end)
-      |> Repo.transaction()
-
-    case result do
-      {:ok, %{consume: intent}} ->
-        {:ok,
-         Contracts.new_open_resolution!(%{
-           open_ref: evidence.open_ref,
-           state: :valid,
-           route_id: intent.route_id,
-           action_ref: intent.action_ref || "tap",
-           resolved_at: now
-         })}
-
-      {:error, :intent, :not_found, _changes} ->
-        {:ok,
-         Contracts.new_open_resolution!(%{
-           open_ref: evidence.open_ref,
-           state: :invalid,
-           resolved_at: now
-         })}
-
-      {:error, :binding, :revoked, _changes} ->
-        {:ok,
-         Contracts.new_open_resolution!(%{
-           open_ref: evidence.open_ref,
-           state: :binding_revoked,
-           resolved_at: now
-         })}
-
-      {:error, :validate, reason, _changes} ->
-        {:ok,
-         Contracts.new_open_resolution!(%{
-           open_ref: evidence.open_ref,
-           state: reason,
-           resolved_at: now
-         })}
+      {0, _} ->
+        {:denied, classify_intent_denial(evidence, scope, now)}
     end
+  end
+
+  defp classify_intent_denial(evidence, scope, now) do
+    case Repo.one(from(i in NotificationOpenIntent, where: i.open_ref == ^evidence.open_ref)) do
+      nil ->
+        :invalid
+
+      %{state: state} when state != "issued" ->
+        :replayed
+
+      %{expires_at: expires_at} when expires_at <= now ->
+        :expired
+
+      %{binding_ref: binding_ref} when binding_ref != evidence.binding_ref ->
+        :binding_mismatch
+
+      intent ->
+        cond do
+          scope == :invalid -> :binding_mismatch
+          not intent_scope_matches?(intent, scope) -> :binding_mismatch
+          not active_binding_matches?(intent) -> :binding_revoked
+          true -> :replayed
+        end
+    end
+  end
+
+  defp active_binding_matches?(intent) do
+    Repo.exists?(
+      from(b in TokenBinding,
+        where:
+          b.binding_ref == ^intent.binding_ref and b.state == :active and
+            b.org_ref == ^intent.tenant_ref and b.subject_ref == ^intent.subject_ref and
+            b.session_ref == ^intent.session_ref and b.session_version == ^intent.session_version
+      )
+    )
+  end
+
+  defp intent_scope_matches?(intent, scope) do
+    intent.tenant_ref == scope.tenant_ref and intent.subject_ref == scope.subject_ref and
+      intent.session_ref == scope.session_ref and intent.session_version == scope.session_version
+  end
+
+  defp notification_open_scope(auth_context) when is_map(auth_context) do
+    tenant_ref = Map.get(auth_context, :tenant_ref) || Map.get(auth_context, :org_ref)
+
+    with tenant_ref when is_binary(tenant_ref) and tenant_ref != "" <- tenant_ref,
+         subject_ref when is_binary(subject_ref) and subject_ref != "" <-
+           Map.get(auth_context, :subject_ref),
+         session_ref when is_binary(session_ref) and session_ref != "" <-
+           Map.get(auth_context, :session_ref),
+         session_version when is_integer(session_version) and session_version >= 0 <-
+           Map.get(auth_context, :session_version) do
+      %{
+        tenant_ref: tenant_ref,
+        subject_ref: subject_ref,
+        session_ref: session_ref,
+        session_version: session_version
+      }
+    else
+      _ -> :invalid
+    end
+  end
+
+  defp notification_open_scope(_auth_context), do: :invalid
+
+  defp open_resolution(open_ref, :valid, now, intent) do
+    {:ok,
+     Contracts.new_open_resolution!(%{
+       open_ref: open_ref,
+       state: :valid,
+       route_id: intent.route_id,
+       action_ref: intent.action_ref || "tap",
+       resolved_at: now
+     })}
+  end
+
+  defp open_resolution(open_ref, state, now) do
+    {:ok, Contracts.new_open_resolution!(%{open_ref: open_ref, state: state, resolved_at: now})}
   end
 
   # ---------------------------------------------------------------------------

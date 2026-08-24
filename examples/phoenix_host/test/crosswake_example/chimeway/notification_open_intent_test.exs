@@ -15,6 +15,10 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntentTest do
     @valid_attrs %{
       open_ref: "open_123",
       binding_ref: "bind_123",
+      tenant_ref: "tenant_123",
+      subject_ref: "subject_123",
+      session_ref: "session_123",
+      session_version: 1,
       route_id: "dashboard",
       state: "issued",
       expires_at: ~U[2026-06-03 00:00:00Z],
@@ -38,7 +42,12 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntentTest do
     end
 
     test "enforces state inclusion" do
-      changeset = NotificationOpenIntent.changeset(%NotificationOpenIntent{}, Map.put(@valid_attrs, :state, "invalid"))
+      changeset =
+        NotificationOpenIntent.changeset(
+          %NotificationOpenIntent{},
+          Map.put(@valid_attrs, :state, "invalid")
+        )
+
       refute changeset.valid?
       assert "is invalid" in errors_on(changeset).state
     end

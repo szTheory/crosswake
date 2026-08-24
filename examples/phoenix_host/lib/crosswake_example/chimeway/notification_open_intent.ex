@@ -12,6 +12,10 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntent do
   schema "chimeway_notification_open_intents" do
     field(:open_ref, :string)
     field(:binding_ref, :string)
+    field(:tenant_ref, :string)
+    field(:subject_ref, :string)
+    field(:session_ref, :string)
+    field(:session_version, :integer)
     field(:route_id, :string)
     field(:action_ref, :string)
     field(:scope, :string)
@@ -29,6 +33,10 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntent do
     |> cast(attrs, [
       :open_ref,
       :binding_ref,
+      :tenant_ref,
+      :subject_ref,
+      :session_ref,
+      :session_version,
       :route_id,
       :action_ref,
       :scope,
@@ -40,6 +48,10 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntent do
     |> validate_required([
       :open_ref,
       :binding_ref,
+      :tenant_ref,
+      :subject_ref,
+      :session_ref,
+      :session_version,
       :route_id,
       :state,
       :expires_at
