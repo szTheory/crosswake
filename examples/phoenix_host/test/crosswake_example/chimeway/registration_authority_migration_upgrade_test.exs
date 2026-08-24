@@ -12,6 +12,7 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
     script = """
     Logger.configure(level: :warning)
     import ExUnit.Assertions
+    import Ecto.Query
     Mix.Task.run("app.config")
 
     db = Path.join(System.tmp_dir!(), "crosswake_registration_upgrade_" <> Integer.to_string(System.unique_integer([:positive])) <> ".db")
@@ -32,6 +33,16 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
     Repo.query!("INSERT INTO chimeway_notification_open_intents (id, open_ref, binding_ref, route_id, state, expires_at, inserted_at, updated_at) VALUES ('intent-valid', 'open-valid', 'binding-valid', 'route', 'issued', ?, ?, ?)", [now, now, now])
     Repo.query!("INSERT INTO chimeway_notification_open_intents (id, open_ref, binding_ref, route_id, state, expires_at, inserted_at, updated_at) VALUES ('intent-unmatched', 'open-unmatched', 'missing-binding', 'route', 'issued', ?, ?, ?)", [now, now, now])
 
+    # This column represents a host which ran the briefly released rewritten
+    # migration. The forward migration must support it as well as the pristine
+    # released boundary above, without replaying either historical migration.
+    Repo.query!("UPDATE chimeway_token_bindings SET app_identity_ref = 'com.example.host' WHERE binding_ref = 'binding-valid'")
+    collision_old = ["collision-old", "subject-collision", "org-collision", "session-collision", 1, "installation-collision", "apns", "ios", "production", "matched", "com.example.host", "token-old", "fingerprint-old", "granted", "active", "initial_bind", "2026-08-24 11:00:00", "2026-08-24 11:00:00", "correlation-old", "{}", now, now]
+    collision_new = ["collision-new", "subject-collision", "org-collision", "session-collision", 1, "installation-collision", "apns", "ios", "production", "unknown", "com.example.host", "token-new", "fingerprint-new", "granted", "active", "initial_bind", now, now, "correlation-new", "{}", now, now]
+    collision_sql = "INSERT INTO chimeway_token_bindings (binding_ref, subject_ref, org_ref, session_ref, session_version, installation_ref, provider, platform, environment, app_identity_posture, app_identity_ref, token_ref, token_fingerprint, notification_status, state, reason, bound_at, last_seen_at, audit_correlation_ref, metadata, inserted_at, updated_at, subject_scope) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'subject_session')"
+    Repo.query!(collision_sql, collision_old)
+    Repo.query!(collision_sql, collision_new)
+
     Ecto.Migrator.run(Repo, path, :up, all: true)
 
     [[tenant, subject, session, version, state]] = Repo.query!("SELECT tenant_ref, subject_ref, session_ref, session_version, state FROM chimeway_notification_open_intents WHERE open_ref = 'open-valid'").rows
@@ -41,6 +52,9 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
     [[legacy_state, legacy_marker]] = Repo.query!("SELECT state, app_identity_ref FROM chimeway_token_bindings WHERE binding_ref = 'binding-missing'").rows
     assert legacy_state == "invalid"
     assert legacy_marker == "legacy_non_authoritative"
+    assert 1 == Repo.aggregate(from(binding in "chimeway_token_bindings", where: binding.subject_ref == "subject-collision" and binding.state == "active"), :count)
+    [[winner]] = Repo.query!("SELECT binding_ref FROM chimeway_token_bindings WHERE subject_ref = 'subject-collision' AND state = 'active'").rows
+    assert winner == "collision-new"
 
     indexes = Repo.query!("SELECT name, sql FROM sqlite_master WHERE type = 'index' AND tbl_name = 'chimeway_token_bindings'").rows
     for name <- ["chimeway_token_bindings_active_token_identity_index", "chimeway_token_bindings_active_subject_session_scope_index", "chimeway_token_bindings_active_subject_installation_scope_index"] do
@@ -56,6 +70,6 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
                stderr_to_stdout: true
              )
 
-    assert output =~ "Migrated"
+    refute output =~ "raw-apns-token"
   end
 end
