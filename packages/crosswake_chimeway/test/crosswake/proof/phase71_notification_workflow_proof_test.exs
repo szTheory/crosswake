@@ -39,28 +39,51 @@ defmodule Crosswake.Proof.Phase71NotificationWorkflowProofTest do
     alias Crosswake.Companions.Chimeway.Contracts.OpenResolution
 
     @fixed_now "2026-06-04T12:00:00Z"
+    @valid_open_resolutions %{
+      "open_valid" => {"saas_approval", "approve"},
+      "open_fallback" => {"saas_approval_with_fallback", "approve"},
+      "open_unknown_route" => {"unknown_route", "approve"},
+      "open_notification_disabled" => {"notification_disabled", "approve"},
+      "open_unsupported_action" => {"saas_approval", "delete"}
+    }
+
+    @closed_intent_states %{
+      "open_expired" => :expired,
+      "open_replayed" => :replayed,
+      "open_revoked" => :revoked,
+      "open_binding_mismatch" => :binding_mismatch,
+      "open_route_mismatch" => :route_mismatch,
+      "open_action_mismatch" => :action_mismatch
+    }
 
     @impl true
     def consume_intent(%NotificationOpenEvidence{} = evidence) do
-      state =
-        case {evidence.open_ref, evidence.binding_ref, evidence.route_id, evidence.action_ref} do
-          {"open_valid", "binding_active", route_id, "approve"}
-          when route_id in ["saas_approval", "saas_approval_with_fallback"] ->
-            :valid
-          {"open_expired", _, _, _} -> :expired
-          {"open_replayed", _, _, _} -> :replayed
-          {"open_revoked", _, _, _} -> :revoked
-          {"open_binding_mismatch", _, _, _} -> :binding_mismatch
-          {"open_route_mismatch", _, _, _} -> :route_mismatch
-          {"open_action_mismatch", _, _, _} -> :action_mismatch
-          {_, "binding_revoked", _, _} -> :binding_revoked
-          {_, _binding_ref, "wrong_route", _} -> :route_mismatch
-          {_, _, _, "wrong_action"} -> :action_mismatch
-          _other -> :policy_denied
-        end
+      case resolution_for(evidence.open_ref, evidence.binding_ref) do
+        {:valid, route_id, action_ref} ->
+          {:ok,
+           %OpenResolution{
+             open_ref: evidence.open_ref,
+             state: :valid,
+             route_id: route_id,
+             action_ref: action_ref,
+             resolved_at: @fixed_now
+           }}
 
-      {:ok, %OpenResolution{open_ref: evidence.open_ref, state: state, resolved_at: @fixed_now}}
+        {:denied, state} ->
+          {:ok, %OpenResolution{open_ref: evidence.open_ref, state: state, resolved_at: @fixed_now}}
+      end
     end
+
+    defp resolution_for(_open_ref, "binding_revoked"), do: {:denied, :binding_revoked}
+
+    defp resolution_for(open_ref, "binding_active") do
+      case Map.fetch(@valid_open_resolutions, open_ref) do
+        {:ok, {route_id, action_ref}} -> {:valid, route_id, action_ref}
+        :error -> {:denied, Map.get(@closed_intent_states, open_ref, :policy_denied)}
+      end
+    end
+
+    defp resolution_for(_open_ref, _binding_ref), do: {:denied, :policy_denied}
   end
 
   # D-137-03: Register Sigra so RouteGate.evaluate/4 returns :step_up_required
@@ -96,7 +119,15 @@ defmodule Crosswake.Proof.Phase71NotificationWorkflowProofTest do
   describe "notification re-entry over Chimeway RouteGate and Sigra" do
     test "valid one-time intent and fresh backend MFA auth activate the route" do
       assert {:allow, decision} =
-               Resolver.resolve(manifest(), evidence(auth_context: auth_context()), StatefulIntentConsumer)
+               Resolver.resolve(
+                 manifest(),
+                 evidence(
+                   route_id: "client_supplied_route",
+                   action_ref: "client_supplied_action",
+                   auth_context: auth_context()
+                 ),
+                 StatefulIntentConsumer
+               )
 
       assert decision.status == :allow
       assert decision.transition == :activate
@@ -132,7 +163,9 @@ defmodule Crosswake.Proof.Phase71NotificationWorkflowProofTest do
                Resolver.resolve(
                  manifest(:with_fallback),
                  evidence(
-                   route_id: "saas_approval_with_fallback",
+                   open_ref: "open_fallback",
+                   route_id: "client_supplied_route",
+                   action_ref: "client_supplied_action",
                    auth_context: stale_auth_context()
                  ),
                  StatefulIntentConsumer
@@ -159,9 +192,9 @@ defmodule Crosswake.Proof.Phase71NotificationWorkflowProofTest do
   describe "Chimeway denial matrix and support-safe output" do
     test "route policy and intent failures use canonical Chimeway denial vocabulary" do
       cases = [
-        {evidence(route_id: "unknown_route"), "notification.open.route_mismatch"},
-        {evidence(route_id: "notification_disabled"), "notification.open.policy_denied"},
-        {evidence(action_ref: "delete"), "notification.open.unsupported_action"},
+        {evidence(open_ref: "open_unknown_route"), "notification.open.route_mismatch"},
+        {evidence(open_ref: "open_notification_disabled"), "notification.open.policy_denied"},
+        {evidence(open_ref: "open_unsupported_action"), "notification.open.unsupported_action"},
         {evidence(open_ref: "open_expired"), "notification.open.expired"},
         {evidence(open_ref: "open_replayed"), "notification.open.replayed"},
         {evidence(open_ref: "open_revoked"), "notification.open.binding_revoked"},
