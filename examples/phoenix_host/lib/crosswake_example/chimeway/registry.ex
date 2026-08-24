@@ -74,8 +74,9 @@ defmodule CrosswakeExample.Chimeway.Registry do
           {:ok, map()} | {:error, term()}
   def bind_or_rotate(context, evidence, opts \\ []) do
     with {:ok, ctx} <- validate_context(context),
-         {:ok, ev} <- normalize_evidence(evidence) do
-      do_bind_or_rotate(ctx, ev, opts)
+         {:ok, ev} <- normalize_evidence(evidence),
+         {:ok, scope} <- binding_scope(ctx, ev, opts) do
+      retry_busy_transaction(fn -> do_bind_or_rotate(ctx, ev, scope, opts) end)
     end
   end
 
@@ -129,8 +130,9 @@ defmodule CrosswakeExample.Chimeway.Registry do
   """
   @spec revoke_for_permission_loss(map(), keyword()) :: {:ok, map()} | {:error, term()}
   def revoke_for_permission_loss(context, opts \\ []) do
-    with {:ok, ctx} <- validate_context(context) do
-      do_revoke_for_permission_loss(ctx, opts)
+    with {:ok, ctx} <- validate_context(context),
+         {:ok, scope} <- permission_loss_scope(ctx, opts) do
+      retry_busy_transaction(fn -> do_revoke_for_permission_loss(ctx, scope, opts) end)
     end
   end
 
@@ -197,9 +199,8 @@ defmodule CrosswakeExample.Chimeway.Registry do
   # Implementation: bind_or_rotate
   # ---------------------------------------------------------------------------
 
-  defp do_bind_or_rotate(ctx, ev, opts) do
+  defp do_bind_or_rotate(ctx, ev, scope, opts) do
     now = utc_now()
-    installation_ref = ev.installation_ref || ctx[:installation_ref]
 
     same_token_query =
       from(b in TokenBinding,
@@ -208,6 +209,11 @@ defmodule CrosswakeExample.Chimeway.Registry do
             b.provider == ^ev.provider and
             b.platform == ^ev.platform and
             b.environment == ^ev.environment and
+            b.app_identity_ref == ^scope.app_identity_ref and
+            b.installation_ref == ^scope.installation_ref and
+            b.subject_scope == ^ctx.subject_scope and
+            b.session_ref == ^scope.session_ref and
+            b.session_version == ^scope.session_version and
             b.subject_ref == ^ctx.subject_ref and
             b.org_ref == ^ctx.org_ref and
             b.state == :active
@@ -225,17 +231,20 @@ defmodule CrosswakeExample.Chimeway.Registry do
               where:
                 b.subject_ref == ^ctx.subject_ref and
                   b.org_ref == ^ctx.org_ref and
-                  b.installation_ref == ^installation_ref and
+                  b.installation_ref == ^scope.installation_ref and
                   b.provider == ^ev.provider and
                   b.platform == ^ev.platform and
                   b.environment == ^ev.environment and
+                  b.app_identity_ref == ^scope.app_identity_ref and
+                  b.subject_scope == ^ctx.subject_scope and
+                  b.session_version == ^scope.session_version and
                   b.state == :active
             )
 
           displaced_query =
             case ctx[:subject_scope] do
               :subject_session ->
-                where(displaced_query, [b], b.session_ref == ^ctx[:session_ref])
+                where(displaced_query, [b], b.session_ref == ^scope.session_ref)
 
               _ ->
                 displaced_query
@@ -256,7 +265,14 @@ defmodule CrosswakeExample.Chimeway.Registry do
           {count, _} =
             repo.update_all(
               from(b in TokenBinding,
-                where: b.binding_ref in ^binding_refs and b.state == :active
+                where:
+                  b.binding_ref in ^binding_refs and b.state == :active and
+                    b.subject_ref == ^ctx.subject_ref and b.org_ref == ^ctx.org_ref and
+                    b.installation_ref == ^scope.installation_ref and b.provider == ^ev.provider and
+                    b.platform == ^ev.platform and b.environment == ^ev.environment and
+                    b.app_identity_ref == ^scope.app_identity_ref and
+                    b.session_ref == ^scope.session_ref and
+                    b.session_version == ^scope.session_version
               ),
               set: [
                 state: :superseded,
@@ -276,7 +292,15 @@ defmodule CrosswakeExample.Chimeway.Registry do
           {_count, _rows} =
             repo.update_all(
               from(b in TokenBinding,
-                where: b.id == ^same.id
+                where:
+                  b.id == ^same.id and b.binding_ref == ^same.binding_ref and
+                    b.subject_ref == ^ctx.subject_ref and b.org_ref == ^ctx.org_ref and
+                    b.installation_ref == ^scope.installation_ref and b.provider == ^ev.provider and
+                    b.platform == ^ev.platform and b.environment == ^ev.environment and
+                    b.app_identity_ref == ^scope.app_identity_ref and
+                    b.session_ref == ^scope.session_ref and
+                    b.session_version == ^scope.session_version and
+                    b.state == :active
               ),
               set: [
                 last_seen_at: now,
@@ -295,7 +319,7 @@ defmodule CrosswakeExample.Chimeway.Registry do
           reason = if is_rotation, do: :token_rotated, else: :initial_bind
 
           binding_attrs =
-            build_binding_attrs(ctx, ev, installation_ref, now, reason)
+            build_binding_attrs(ctx, ev, scope, now, reason)
 
           changeset = TokenBinding.changeset(%TokenBinding{}, binding_attrs)
           repo.insert(changeset)
@@ -704,14 +728,23 @@ defmodule CrosswakeExample.Chimeway.Registry do
   # Implementation: revoke_for_permission_loss
   # ---------------------------------------------------------------------------
 
-  defp do_revoke_for_permission_loss(ctx, opts) do
+  defp do_revoke_for_permission_loss(ctx, scope, opts) do
     now = utc_now()
 
     query =
       from(b in TokenBinding,
         where:
-          b.subject_ref == ^ctx.subject_ref and
+          b.binding_ref == ^scope.binding_ref and
+            b.subject_ref == ^ctx.subject_ref and
             b.org_ref == ^ctx.org_ref and
+            b.subject_scope == ^ctx.subject_scope and
+            b.installation_ref == ^scope.installation_ref and
+            b.provider == ^scope.provider and
+            b.platform == ^scope.platform and
+            b.environment == ^scope.environment and
+            b.app_identity_ref == ^scope.app_identity_ref and
+            b.session_ref == ^scope.session_ref and
+            b.session_version == ^scope.session_version and
             b.state == :active
       )
 
@@ -729,7 +762,17 @@ defmodule CrosswakeExample.Chimeway.Registry do
           {count, _} =
             repo.update_all(
               from(b in TokenBinding,
-                where: b.binding_ref in ^binding_refs and b.state == :active
+                where:
+                  b.binding_ref in ^binding_refs and b.binding_ref == ^scope.binding_ref and
+                    b.subject_ref == ^ctx.subject_ref and b.org_ref == ^ctx.org_ref and
+                    b.subject_scope == ^ctx.subject_scope and
+                    b.installation_ref == ^scope.installation_ref and
+                    b.provider == ^scope.provider and
+                    b.platform == ^scope.platform and b.environment == ^scope.environment and
+                    b.app_identity_ref == ^scope.app_identity_ref and
+                    b.session_ref == ^scope.session_ref and
+                    b.session_version == ^scope.session_version and
+                    b.state == :active
               ),
               set: [
                 state: :revoked,
@@ -1371,6 +1414,46 @@ defmodule CrosswakeExample.Chimeway.Registry do
 
   defp validate_context(_context), do: {:error, :invalid_context}
 
+  # The app identity ref is the APNs topic/app identity supplied by the authenticated
+  # host command. It is part of the durable authority scope, not token metadata.
+  defp binding_scope(ctx, ev, opts) do
+    with {:ok, app_identity_ref} <- required_option_string(opts, :app_identity_ref),
+         {:ok, installation_ref} <-
+           required_string(
+             %{installation_ref: ev.installation_ref || ctx.installation_ref},
+             :installation_ref
+           ) do
+      {:ok,
+       %{
+         installation_ref: installation_ref,
+         app_identity_ref: app_identity_ref,
+         session_ref: ctx.session_ref,
+         session_version: ctx.session_version
+       }}
+    end
+  end
+
+  defp permission_loss_scope(ctx, opts) do
+    with {:ok, binding_ref} <- required_option_string(opts, :binding_ref),
+         {:ok, installation_ref} <- required_option_string(opts, :installation_ref),
+         {:ok, provider} <- required_option(opts, :provider),
+         {:ok, platform} <- required_option(opts, :platform),
+         {:ok, environment} <- required_option(opts, :environment),
+         {:ok, app_identity_ref} <- required_option_string(opts, :app_identity_ref) do
+      {:ok,
+       %{
+         binding_ref: binding_ref,
+         installation_ref: installation_ref,
+         provider: provider,
+         platform: platform,
+         environment: environment,
+         app_identity_ref: app_identity_ref,
+         session_ref: ctx.session_ref,
+         session_version: ctx.session_version
+       }}
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # Helper: evidence normalization
   # ---------------------------------------------------------------------------
@@ -1432,7 +1515,7 @@ defmodule CrosswakeExample.Chimeway.Registry do
   # ---------------------------------------------------------------------------
 
   # WR-04: accept reason so rotation callers can pass :token_rotated
-  defp build_binding_attrs(ctx, ev, installation_ref, now, reason) do
+  defp build_binding_attrs(ctx, ev, scope, now, reason) do
     %{
       binding_ref: unique_ref("bnd"),
       subject_scope: ctx.subject_scope,
@@ -1440,11 +1523,12 @@ defmodule CrosswakeExample.Chimeway.Registry do
       org_ref: ctx.org_ref,
       session_ref: ctx[:session_ref],
       session_version: ctx[:session_version],
-      installation_ref: installation_ref,
+      installation_ref: scope.installation_ref,
       provider: ev.provider,
       platform: ev.platform,
       environment: ev.environment,
       app_identity_posture: ev.app_identity_posture || :unknown,
+      app_identity_ref: scope.app_identity_ref,
       token_ref: ev.token_ref,
       token_fingerprint: ev.token_fingerprint,
       notification_status: ev.notification_status,
@@ -1628,6 +1712,37 @@ defmodule CrosswakeExample.Chimeway.Registry do
       value when is_binary(value) and byte_size(value) > 0 -> {:ok, value}
       _ -> {:error, {key, :required}}
     end
+  end
+
+  defp required_option_string(opts, key) do
+    case opts[key] do
+      value when is_binary(value) and byte_size(value) > 0 -> {:ok, value}
+      _ -> {:error, {key, :required}}
+    end
+  end
+
+  defp required_option(opts, key) do
+    case opts[key] do
+      nil -> {:error, {key, :required}}
+      value -> {:ok, value}
+    end
+  end
+
+  # SQLite serializes concurrent writes in the example host. Preserve the same
+  # exact-CAS semantics as PostgreSQL while retrying only transient local lock
+  # contention, so a lifecycle command never becomes a process crash.
+  defp retry_busy_transaction(fun, attempts \\ 3)
+
+  defp retry_busy_transaction(fun, attempts) do
+    fun.()
+  rescue
+    error in Exqlite.Error ->
+      if attempts > 0 and String.contains?(Exception.message(error), "Database busy") do
+        Process.sleep((4 - attempts) * 10)
+        retry_busy_transaction(fun, attempts - 1)
+      else
+        reraise error, __STACKTRACE__
+      end
   end
 
   defp reject_raw_token_keys(attrs) do

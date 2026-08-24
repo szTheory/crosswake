@@ -14,7 +14,7 @@ defmodule CrosswakeExample.Repo.Migrations.CreateChimewayTokenBindings do
       add(:platform, :string, null: false)
       add(:environment, :string, null: false)
       add(:app_identity_posture, :string, null: false, default: "unknown")
-      add(:app_identity_ref, :string)
+      add(:app_identity_ref, :string, null: false)
       add(:token_ref, :string, null: false)
       add(:token_fingerprint, :string, null: false)
       add(:notification_status, :string, null: false)
@@ -51,7 +51,14 @@ defmodule CrosswakeExample.Repo.Migrations.CreateChimewayTokenBindings do
     create(
       unique_index(
         :chimeway_token_bindings,
-        [:token_fingerprint, :provider, :platform, :environment, :app_identity_posture],
+        [
+          :token_fingerprint,
+          :provider,
+          :platform,
+          :environment,
+          :app_identity_posture,
+          :app_identity_ref
+        ],
         name: :chimeway_token_bindings_active_token_identity_index,
         where: "state = 'active'"
       )
@@ -66,11 +73,13 @@ defmodule CrosswakeExample.Repo.Migrations.CreateChimewayTokenBindings do
           :subject_ref,
           :org_ref,
           :session_ref,
+          :session_version,
           :installation_ref,
           :provider,
           :platform,
           :environment,
-          :app_identity_posture
+          :app_identity_posture,
+          :app_identity_ref
         ],
         name: :chimeway_token_bindings_active_subject_session_scope_index,
         where: "state = 'active' AND subject_scope = 'subject_session'"
@@ -89,7 +98,8 @@ defmodule CrosswakeExample.Repo.Migrations.CreateChimewayTokenBindings do
           :provider,
           :platform,
           :environment,
-          :app_identity_posture
+          :app_identity_posture,
+          :app_identity_ref
         ],
         name: :chimeway_token_bindings_active_subject_installation_scope_index,
         where: "state = 'active' AND subject_scope = 'subject_installation'"

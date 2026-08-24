@@ -29,18 +29,19 @@ defmodule CrosswakeExample.Chimeway.TokenBinding do
     field(:provider, Ecto.Enum, values: [:apns, :fcm])
     field(:platform, Ecto.Enum, values: [:ios, :android])
     field(:environment, Ecto.Enum, values: [:sandbox, :production, :development, :unknown])
-    field(:app_identity_posture, Ecto.Enum, values: [:matched, :mismatched, :unknown], default: :unknown)
+
+    field(:app_identity_posture, Ecto.Enum,
+      values: [:matched, :mismatched, :unknown],
+      default: :unknown
+    )
+
     field(:app_identity_ref, :string)
     field(:token_ref, :string)
     field(:token_fingerprint, :string)
 
-    field(:notification_status, Ecto.Enum,
-      values: [:granted, :denied, :restricted]
-    )
+    field(:notification_status, Ecto.Enum, values: [:granted, :denied, :restricted])
 
-    field(:state, Ecto.Enum,
-      values: [:active, :superseded, :revoked, :stale, :invalid]
-    )
+    field(:state, Ecto.Enum, values: [:active, :superseded, :revoked, :stale, :invalid])
 
     field(:reason, Ecto.Enum,
       values: [
@@ -112,15 +113,42 @@ defmodule CrosswakeExample.Chimeway.TokenBinding do
       name: :chimeway_token_bindings_binding_ref_index
     )
     |> unique_constraint(
-      [:token_fingerprint, :provider, :platform, :environment, :app_identity_posture],
+      [
+        :token_fingerprint,
+        :provider,
+        :platform,
+        :environment,
+        :app_identity_posture,
+        :app_identity_ref
+      ],
       name: :chimeway_token_bindings_active_token_identity_index
     )
     |> unique_constraint(
-      [:subject_ref, :org_ref, :session_ref, :installation_ref, :provider, :platform, :environment, :app_identity_posture],
+      [
+        :subject_ref,
+        :org_ref,
+        :session_ref,
+        :session_version,
+        :installation_ref,
+        :provider,
+        :platform,
+        :environment,
+        :app_identity_posture,
+        :app_identity_ref
+      ],
       name: :chimeway_token_bindings_active_subject_session_scope_index
     )
     |> unique_constraint(
-      [:subject_ref, :org_ref, :installation_ref, :provider, :platform, :environment, :app_identity_posture],
+      [
+        :subject_ref,
+        :org_ref,
+        :installation_ref,
+        :provider,
+        :platform,
+        :environment,
+        :app_identity_posture,
+        :app_identity_ref
+      ],
       name: :chimeway_token_bindings_active_subject_installation_scope_index
     )
   end
