@@ -362,14 +362,20 @@ defmodule Crosswake.Policy.SchemaTest do
   end
 
   describe "notification_open validation" do
-    test "accepts true" do
+    test "normalizes legacy true to the canonical tap action (D-05, D-06)" do
       validated = Schema.validate!(id: "home", runtime: :live_view, notification_open: true)
-      assert validated[:notification_open] == true
+      assert validated[:notification_open] == %{actions: ["tap"]}
     end
 
-    test "accepts actions keyword list and normalizes to map" do
-      validated = Schema.validate!(id: "home", runtime: :live_view, notification_open: [actions: [:view, :reply]])
-      assert validated[:notification_open] == %{actions: [:view, :reply]}
+    test "normalizes an explicit ordered action allowlist to strings without widening (D-05, D-06)" do
+      validated =
+        Schema.validate!(
+          id: "home",
+          runtime: :live_view,
+          notification_open: [actions: [:tap, :reply]]
+        )
+
+      assert validated[:notification_open] == %{actions: ["tap", "reply"]}
     end
 
     test "defaults to nil when not provided" do
@@ -377,13 +383,24 @@ defmodule Crosswake.Policy.SchemaTest do
       assert validated[:notification_open] == nil
     end
 
-    test "rejects invalid values" do
+    test "rejects malformed, empty, duplicate, non-atom, and unrecognized actions" do
       assert_raise NimbleOptions.ValidationError, ~r/expected notification_open/, fn ->
         Schema.validate!(id: "home", runtime: :live_view, notification_open: "yes")
       end
 
-      assert_raise NimbleOptions.ValidationError, ~r/list of atoms/, fn ->
+      assert_raise NimbleOptions.ValidationError, ~r/non-empty list of recognized atoms/, fn ->
         Schema.validate!(id: "home", runtime: :live_view, notification_open: [actions: ["view"]])
+      end
+
+      for declaration <- [
+            [actions: []],
+            [actions: [:tap, :tap]],
+            [actions: [:tap, :approve]],
+            [actions: [:tap, "reply"]]
+          ] do
+        assert_raise NimbleOptions.ValidationError, ~r/non-empty list of recognized atoms/, fn ->
+          Schema.validate!(id: "home", runtime: :live_view, notification_open: declaration)
+        end
       end
     end
   end
