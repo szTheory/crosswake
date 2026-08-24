@@ -1,0 +1,28 @@
+{
+  "version": "v1",
+  "binding_ref": "binding-revision-a",
+  "scope": {
+    "tenant_ref": "tenant-1",
+    "subject_ref": "subject-1",
+    "installation_ref": "installation-1",
+    "provider": "apns",
+    "environment": "sandbox",
+    "topic": "com.example.app",
+    "session_ref": "session-1",
+    "session_version": "1",
+    "channel": "push"
+  },
+  "command": {
+    "binding_ref": "binding-revision-a",
+    "tenant_ref": "tenant-1",
+    "subject_ref": "subject-1",
+    "installation_ref": "installation-1",
+    "provider": "apns",
+    "environment": "sandbox",
+    "topic": "com.example.app",
+    "session_ref": "session-1",
+    "session_version": "1",
+    "channel": "push"
+  },
+  "expected_outcome": "stale_noop"
+}
