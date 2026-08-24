@@ -118,7 +118,6 @@ defmodule CrosswakeExample.Chimeway.TokenBinding do
         :provider,
         :platform,
         :environment,
-        :app_identity_posture,
         :app_identity_ref
       ],
       name: :chimeway_token_bindings_active_token_identity_index
@@ -133,7 +132,6 @@ defmodule CrosswakeExample.Chimeway.TokenBinding do
         :provider,
         :platform,
         :environment,
-        :app_identity_posture,
         :app_identity_ref
       ],
       name: :chimeway_token_bindings_active_subject_session_scope_index
@@ -146,7 +144,6 @@ defmodule CrosswakeExample.Chimeway.TokenBinding do
         :provider,
         :platform,
         :environment,
-        :app_identity_posture,
         :app_identity_ref
       ],
       name: :chimeway_token_bindings_active_subject_installation_scope_index

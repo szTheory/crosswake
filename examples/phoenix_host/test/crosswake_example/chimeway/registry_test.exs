@@ -180,6 +180,50 @@ defmodule CrosswakeExample.Chimeway.RegistryTest do
     refute replacement_ref == original.binding_ref
   end
 
+  test "concurrent differing-posture observations converge on one active authority binding" do
+    ctx = context()
+    fingerprint = unique_ref("fingerprint")
+    barrier = :ets.new(:posture_binding_race_barrier, [:set, :public])
+    :ets.insert(barrier, {:ready, 0})
+
+    results =
+      [:matched, :unknown]
+      |> Task.async_stream(
+        fn posture ->
+          await_barrier(barrier, 2)
+
+          Registry.bind_or_rotate(
+            ctx,
+            evidence(fingerprint, ctx.installation_ref, %{app_identity_posture: posture}),
+            binding_opts(ctx)
+          )
+        end,
+        max_concurrency: 2,
+        ordered: false,
+        timeout: 5_000
+      )
+      |> Enum.map(fn {:ok, result} -> result end)
+
+    assert Enum.all?(results, &match?({:ok, %{binding: %{binding_ref: _}}}, &1))
+
+    binding_refs =
+      Enum.map(results, fn {:ok, %{binding: binding}} -> binding.binding_ref end)
+
+    assert Enum.uniq(binding_refs) |> length() == 1
+
+    assert 1 ==
+             Repo.aggregate(
+               from(binding in TokenBinding,
+                 where:
+                   binding.subject_ref == ^ctx.subject_ref and
+                     binding.org_ref == ^ctx.org_ref and
+                     binding.installation_ref == ^ctx.installation_ref and
+                     binding.state == :active
+               ),
+               :count
+             )
+  end
+
   test "registry rejects raw token bytes before they can reach durable rows or returned facts" do
     ctx = context()
     raw_token = "raw-apns-token-#{unique_ref("secret")}"

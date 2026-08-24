@@ -42,6 +42,12 @@ defmodule CrosswakeExample.Chimeway.Registry do
   alias CrosswakeExample.Chimeway.TokenBindingEvent
   alias CrosswakeExample.Repo
 
+  @active_identity_constraint_names [
+    "chimeway_token_bindings_active_token_identity_index",
+    "chimeway_token_bindings_active_subject_session_scope_index",
+    "chimeway_token_bindings_active_subject_installation_scope_index"
+  ]
+
   # ---------------------------------------------------------------------------
   # Public API — bind, refresh, rotate
   # ---------------------------------------------------------------------------
@@ -76,7 +82,9 @@ defmodule CrosswakeExample.Chimeway.Registry do
     with {:ok, ctx} <- validate_context(context),
          {:ok, ev} <- normalize_evidence(evidence),
          {:ok, scope} <- binding_scope(ctx, ev, opts) do
-      retry_busy_transaction(fn -> do_bind_or_rotate(ctx, ev, scope, opts) end)
+      retry_busy_transaction(fn ->
+        retry_active_identity_conflict(fn -> do_bind_or_rotate(ctx, ev, scope, opts) end)
+      end)
     end
   end
 
@@ -1797,6 +1805,33 @@ defmodule CrosswakeExample.Chimeway.Registry do
       else
         reraise error, __STACKTRACE__
       end
+  end
+
+  # PostgreSQL can report an active-identity conflict after both callers have
+  # read the same scope. Retry only that named authority conflict so the loser
+  # re-runs the full lookup/supersession operation and refreshes the winner.
+  # All unrelated validation and binding-ref collisions remain visible.
+  defp retry_active_identity_conflict(fun, attempts \\ 2)
+
+  defp retry_active_identity_conflict(fun, attempts) do
+    case fun.() do
+      {:error, %Ecto.Changeset{} = changeset} = error ->
+        if attempts > 0 and active_identity_conflict?(changeset) do
+          Process.sleep((3 - attempts) * 5)
+          retry_active_identity_conflict(fun, attempts - 1)
+        else
+          error
+        end
+
+      result ->
+        result
+    end
+  end
+
+  defp active_identity_conflict?(changeset) do
+    Enum.any?(changeset.errors, fn {_field, {_message, options}} ->
+      Keyword.get(options, :constraint_name) in @active_identity_constraint_names
+    end)
   end
 
   defp reject_raw_token_keys(attrs) do
