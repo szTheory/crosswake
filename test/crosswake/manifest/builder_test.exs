@@ -72,13 +72,14 @@ defmodule Crosswake.Manifest.BuilderTest do
     assert "data_core@1.0.0" in manifest.routes["offline-data"].packs
   end
 
-  test "notification_open policy is transferred into RouteEntry" do
-    route = %Route{
-      id: "notifications-page",
-      runtime: :live_view,
-      entry: :internal_only,
-      notification_open: true
-    }
+  test "notification_open legacy shorthand compiles to the tap-only RouteEntry policy" do
+    route =
+      Route.new!(
+        id: "notifications-page",
+        runtime: :live_view,
+        entry: :internal_only,
+        notification_open: true
+      )
 
     managed_route = %{
       path: "/notifications",
@@ -89,16 +90,21 @@ defmodule Crosswake.Manifest.BuilderTest do
 
     manifest = Builder.build([route], [managed_route])
 
-    assert manifest.routes["notifications-page"].notification_open == true
+    assert manifest.routes["notifications-page"].notification_open == %{actions: ["tap"]}
+
+    assert Types.to_map(manifest.routes["notifications-page"])["notification_open"] == %{
+             "actions" => ["tap"]
+           }
   end
 
-  test "notification_open policy with actions is transferred into RouteEntry" do
-    route = %Route{
-      id: "notifications-page",
-      runtime: :live_view,
-      entry: :internal_only,
-      notification_open: %{actions: [:view, :reply]}
-    }
+  test "notification_open explicit actions are transferred unchanged into RouteEntry" do
+    route =
+      Route.new!(
+        id: "notifications-page",
+        runtime: :live_view,
+        entry: :internal_only,
+        notification_open: [actions: [:tap, :reply]]
+      )
 
     managed_route = %{
       path: "/notifications",
@@ -109,7 +115,11 @@ defmodule Crosswake.Manifest.BuilderTest do
 
     manifest = Builder.build([route], [managed_route])
 
-    assert manifest.routes["notifications-page"].notification_open == %{actions: [:view, :reply]}
+    assert manifest.routes["notifications-page"].notification_open == %{actions: ["tap", "reply"]}
+
+    assert Types.to_map(manifest.routes["notifications-page"])["notification_open"] == %{
+             "actions" => ["tap", "reply"]
+           }
   end
 
   describe "haptics vocabulary flip (D-57, D-58, D-60, D-61)" do

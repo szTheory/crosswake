@@ -146,7 +146,9 @@ defmodule Crosswake.Policy.Schema do
   @type security :: :standard | :sensitive
   @type auth_posture :: :strict_recent | :remembered_ok | :cached_read_only_ok
   @type auth_return_kind :: :oauth | :passkey | :native_auth
-  @type notification_open_declaration :: true | %{actions: [atom()]}
+  @type notification_open_action :: :tap | :reply
+  @type notification_open_declaration :: true | [actions: [notification_open_action()]]
+  @type notification_open_policy :: %{required(:actions) => [String.t()]}
   @type auth_return_transport ::
           :http_callback | :verified_https_link | :custom_scheme | :bridge_event
   @type auth_return_validation ::
@@ -486,30 +488,25 @@ defmodule Crosswake.Policy.Schema do
      "unsupported commerce role #{inspect(value)}; expected one of #{inspect(@commerce_role_values)}"}
   end
 
+  @notification_open_actions [:tap, :reply]
+
   @spec validate_notification_open(term()) ::
-          {:ok, true | %{actions: [atom()]} | nil} | {:error, String.t()}
+          {:ok, notification_open_policy() | nil} | {:error, String.t()}
   def validate_notification_open(nil), do: {:ok, nil}
   def validate_notification_open(false), do: {:ok, nil}
-  def validate_notification_open(true), do: {:ok, true}
+  def validate_notification_open(true), do: {:ok, %{actions: ["tap"]}}
 
-  def validate_notification_open(declaration) when is_list(declaration) do
-    declaration
-    |> Enum.into(%{})
-    |> validate_notification_open()
-  end
-
-  def validate_notification_open(declaration) when is_map(declaration) do
-    actions = Map.get(declaration, :actions, Map.get(declaration, "actions", []))
-
-    if is_list(actions) and Enum.all?(actions, &is_atom/1) do
-      {:ok, %{actions: actions}}
+  def validate_notification_open(actions: actions) when is_list(actions) do
+    if actions != [] and Enum.all?(actions, &is_atom/1) and Enum.uniq(actions) == actions and
+         Enum.all?(actions, &(&1 in @notification_open_actions)) do
+      {:ok, %{actions: Enum.map(actions, &Atom.to_string/1)}}
     else
-      {:error, "expected notification_open actions to be a list of atoms"}
+      {:error, "expected notification_open actions to be a non-empty list of recognized atoms"}
     end
   end
 
   def validate_notification_open(_value),
-    do: {:error, "expected notification_open declaration to be a boolean, a keyword list, or a map"}
+    do: {:error, "expected notification_open actions to be a non-empty list of recognized atoms"}
 
   defp validate_auth_return_kind(nil), do: {:ok, nil}
 

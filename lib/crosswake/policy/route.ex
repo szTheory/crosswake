@@ -65,7 +65,7 @@ defmodule Crosswake.Policy.Route do
           requires_recent_auth: pos_integer() | nil,
           auth_posture: Schema.auth_posture() | nil,
           auth_return: Schema.auth_return_declaration() | nil,
-          notification_open: Schema.notification_open_declaration() | nil
+          notification_open: Schema.notification_open_policy() | nil
         }
 
   @spec new(keyword()) :: {:ok, t()} | {:error, NimbleOptions.ValidationError.t()}

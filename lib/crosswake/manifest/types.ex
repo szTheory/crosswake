@@ -327,7 +327,7 @@ defmodule Crosswake.Manifest.Types do
             requires_recent_auth: pos_integer() | nil,
             auth_posture: Crosswake.Policy.Schema.auth_posture() | nil,
             auth_return: Crosswake.Manifest.Types.RouteAuthReturn.t() | nil,
-            notification_open: Crosswake.Policy.Schema.notification_open_declaration() | nil
+            notification_open: Crosswake.Policy.Schema.notification_open_policy() | nil
           }
   end
 
@@ -1465,10 +1465,9 @@ defmodule Crosswake.Manifest.Types do
   defp serialize_on_unavailable({:fallback_phoenix, route_id}), do: "fallback_phoenix:#{route_id}"
 
   defp serialize_notification_open(nil), do: nil
-  defp serialize_notification_open(true), do: true
 
   defp serialize_notification_open(%{actions: actions}),
-    do: %{"actions" => Enum.map(actions, &Atom.to_string/1)}
+    do: %{"actions" => actions}
 
   defp format_status(:verification_required), do: "verification required"
   defp format_status(status), do: Atom.to_string(status)
