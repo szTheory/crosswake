@@ -146,7 +146,7 @@ defmodule Crosswake.Policy.Schema do
   @type security :: :standard | :sensitive
   @type auth_posture :: :strict_recent | :remembered_ok | :cached_read_only_ok
   @type auth_return_kind :: :oauth | :passkey | :native_auth
-  @type notification_open_action :: :tap | :reply
+  @type notification_open_action :: :tap | :reply | :approve
   @type notification_open_declaration :: true | [actions: [notification_open_action()]]
   @type notification_open_policy :: %{required(:actions) => [String.t()]}
   @type auth_return_transport ::
@@ -488,7 +488,7 @@ defmodule Crosswake.Policy.Schema do
      "unsupported commerce role #{inspect(value)}; expected one of #{inspect(@commerce_role_values)}"}
   end
 
-  @notification_open_actions [:tap, :reply]
+  @notification_open_actions [:tap, :reply, :approve]
 
   @spec validate_notification_open(term()) ::
           {:ok, notification_open_policy() | nil} | {:error, String.t()}

@@ -378,6 +378,17 @@ defmodule Crosswake.Policy.SchemaTest do
       assert validated[:notification_open] == %{actions: ["tap", "reply"]}
     end
 
+    test "normalizes the existing bounded approval action used by route fixtures" do
+      validated =
+        Schema.validate!(
+          id: "approval",
+          runtime: :live_view,
+          notification_open: [actions: [:tap, :approve]]
+        )
+
+      assert validated[:notification_open] == %{actions: ["tap", "approve"]}
+    end
+
     test "defaults to nil when not provided" do
       validated = Schema.validate!(id: "home", runtime: :live_view)
       assert validated[:notification_open] == nil
@@ -395,7 +406,7 @@ defmodule Crosswake.Policy.SchemaTest do
       for declaration <- [
             [actions: []],
             [actions: [:tap, :tap]],
-            [actions: [:tap, :approve]],
+            [actions: [:tap, :unrecognized]],
             [actions: [:tap, "reply"]]
           ] do
         assert_raise NimbleOptions.ValidationError, ~r/non-empty list of recognized atoms/, fn ->

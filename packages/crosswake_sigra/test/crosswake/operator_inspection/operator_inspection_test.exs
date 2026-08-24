@@ -187,7 +187,7 @@ defmodule Crosswake.OperatorInspectionTest do
     assert approval.notifications.open_routing_active == true
     assert approval.notifications.route_activation_proof == :hermetic
     assert approval.notifications.activation_authority == :route_gate_sigra
-    assert approval.notifications.action_allowlist == [:tap, :approve]
+    assert approval.notifications.action_allowlist == ["tap", "approve"]
     assert approval.notifications.delivery_supported == false
     assert approval.auth.auth_min_level == :mfa
     assert approval.auth.requires_recent_auth == 300
