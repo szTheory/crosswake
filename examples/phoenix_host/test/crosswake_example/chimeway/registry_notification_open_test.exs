@@ -6,6 +6,8 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
   alias CrosswakeExample.Chimeway.NotificationOpenIntentEvent
   alias Crosswake.Companions.Chimeway.Contracts.NotificationOpenEvidence
   alias CrosswakeExample.Repo
+  alias Crosswake.Companions.Chimeway.Resolver
+  alias Crosswake.Manifest.Types.{Compatibility, Host, Root, RouteEntry}
   import Ecto.Query
 
   defp unique_ref(prefix) do
@@ -156,6 +158,63 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
       )
 
     assert event != nil
+    assert resolution.route_id == "dashboard"
+    assert resolution.action_ref == "tap"
+  end
+
+  test "one default tap is consumed, authorized, and then denied as replay", %{
+    open_ref: open_ref,
+    binding_ref: binding_ref
+  } do
+    {:ok, %{intent: _}} =
+      Registry.issue_notification_open_intent(%{
+        open_ref: open_ref,
+        binding_ref: binding_ref,
+        route_id: "home",
+        action_ref: "tap",
+        expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
+      })
+
+    manifest = struct(Root,
+      compatibility: struct(Compatibility,
+        manifest_schema_version: "2.0.0",
+        bridge_protocol_version: "1.0.0",
+        native_runtime_version: "1.0.0",
+        supported_manifest_sources: [:bundled],
+        remote_updates: []
+      ),
+      capability_registry: %{},
+      host: struct(Host,
+        phoenix_version: "1.7.0",
+        live_view_version: "1.0.0",
+        manifest_sources: [:bundled],
+        origin: "https://test.example"
+      ),
+      routes: %{
+        "home" => %RouteEntry{
+          id: "home",
+          path: "/home",
+          runtime: :liveview,
+          notification_open: true,
+          entry: :external
+        }
+      }
+    )
+
+    evidence = %NotificationOpenEvidence{
+      route_id: "untrusted-client-route",
+      open_ref: open_ref,
+      binding_ref: binding_ref,
+      provider: :apns,
+      action_ref: "untrusted-client-action",
+      auth_context: %{}
+    }
+
+    assert {:allow, decision} = Resolver.resolve(manifest, evidence, Registry)
+    assert decision.route_id == "home"
+
+    assert {:deny, denial} = Resolver.resolve(manifest, evidence, Registry)
+    assert denial.code == "notification.open.replayed"
   end
 
   test "consume_intent/1 validates stored action_ref mismatch", %{

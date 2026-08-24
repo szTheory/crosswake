@@ -17,7 +17,14 @@ defmodule Crosswake.Companions.Chimeway.ResolverTest do
     @behaviour Crosswake.Companions.Chimeway.IntentConsumer
 
     def consume_intent(%NotificationOpenEvidence{open_ref: "valid_ref"}) do
-      {:ok, %OpenResolution{open_ref: "valid_ref", state: :valid, resolved_at: DateTime.utc_now()}}
+      {:ok,
+       %OpenResolution{
+         open_ref: "valid_ref",
+         state: :valid,
+         route_id: "dashboard",
+         action_ref: "tap",
+         resolved_at: DateTime.utc_now()
+       }}
     end
 
     def consume_intent(%NotificationOpenEvidence{open_ref: open_ref}) do
@@ -159,6 +166,19 @@ defmodule Crosswake.Companions.Chimeway.ResolverTest do
     # RouteGate will return {:allow, %Decision{}} because it's a basic route unless we test auth
     evidence = struct(NotificationOpenEvidence, open_ref: "valid_ref", route_id: "dashboard", auth_context: %{})
     assert {:allow, %Decision{}} = Resolver.resolve(manifest, evidence, MockIntentConsumer)
+  end
+
+  test "uses only server-bound route and action after consumption", %{manifest: manifest} do
+    evidence =
+      struct(NotificationOpenEvidence,
+        open_ref: "valid_ref",
+        route_id: "client_supplied_route",
+        action_ref: "client_supplied_action",
+        auth_context: %{}
+      )
+
+    assert {:allow, %Decision{} = decision} = Resolver.resolve(manifest, evidence, MockIntentConsumer)
+    assert decision.route_id == "dashboard"
   end
 
   test "passes through RouteGate denial for auth-predicated route", %{manifest: manifest} do
