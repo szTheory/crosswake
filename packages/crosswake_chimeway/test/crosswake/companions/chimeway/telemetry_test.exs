@@ -13,7 +13,18 @@ defmodule Crosswake.Companions.Chimeway.TelemetryTest do
     [:crosswake, :notification, :provider, :feedback],
     [:crosswake, :notification, :open, :received],
     [:crosswake, :notification, :open, :resolved],
-    [:crosswake, :notification, :open, :denied]
+    [:crosswake, :notification, :open, :denied],
+    [:crosswake, :notification, :open, :queued],
+    [:crosswake, :notification, :open, :consumed],
+    [:crosswake, :notification, :open, :authorized],
+    [:crosswake, :notification, :open, :replayed],
+    [:crosswake, :notification, :open, :expired],
+    [:crosswake, :notification, :open, :binding_revoked],
+    [:crosswake, :notification, :open, :binding_mismatch],
+    [:crosswake, :notification, :open, :route_mismatch],
+    [:crosswake, :notification, :open, :action_mismatch],
+    [:crosswake, :notification, :open, :authorization_denied],
+    [:crosswake, :notification, :open, :default_policy_denied]
   ]
 
   test "exposes exact ordered event names and metadata keys" do
@@ -35,6 +46,27 @@ defmodule Crosswake.Companions.Chimeway.TelemetryTest do
              :action_ref,
              :denial_code
            ]
+  end
+
+  test "declares closed protected-open lifecycle event names" do
+    assert Enum.all?(
+             [
+               :queued,
+               :consumed,
+               :authorized,
+               :replayed,
+               :expired,
+               :binding_revoked,
+               :binding_mismatch,
+               :route_mismatch,
+               :action_mismatch,
+               :authorization_denied,
+               :default_policy_denied
+             ],
+             fn outcome ->
+               [:crosswake, :notification, :open, outcome] in Telemetry.event_names()
+             end
+           )
   end
 
   test "drops forbidden atom and string keys while retaining safe metadata" do
@@ -82,6 +114,28 @@ defmodule Crosswake.Companions.Chimeway.TelemetryTest do
              reason: nil,
              unknown: :value
            }) == %{proof_class: :hermetic}
+  end
+
+  test "recursively rejects nested forbidden metadata and non-scalar values" do
+    raw_token = "raw_token_must_never_escape"
+    provider_body = "provider_body_must_never_escape"
+
+    assert Telemetry.metadata(%{
+             state: :authorized,
+             denial_code: "notification.open.authorization_denied",
+             route_id: "account",
+             action_ref: "tap",
+             provider_payload: %{body: provider_body},
+             nested: %{token: raw_token},
+             session: [session_ref: "session-secret"],
+             url: "https://private.example.test/path",
+             correlation_id: %{trace: "not-a-scalar"}
+           }) == %{
+             state: :authorized,
+             denial_code: "notification.open.authorization_denied",
+             route_id: "account",
+             action_ref: "tap"
+           }
   end
 
   test "serializes events without raw token aliases or provider payload bodies" do

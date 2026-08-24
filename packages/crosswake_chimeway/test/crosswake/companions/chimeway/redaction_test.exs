@@ -104,6 +104,30 @@ defmodule Crosswake.Companions.Chimeway.RedactionTest do
     refute inspect(error) =~ @raw_token
   end
 
+  test "recursively drops forbidden nested metadata from provider evidence" do
+    raw_token = "raw_token_must_never_escape"
+    provider_body = "provider_body_must_never_escape"
+
+    assert {:ok, %ProviderFeedback{} = feedback} =
+             Redaction.feedback_from_provider_attrs(%{
+               provider: :apns,
+               platform: :ios,
+               environment: :production,
+               reason: :delivery_failed,
+               occurred_at: "2026-08-24T12:00:00Z",
+               metadata: %{
+                 safe_detail: :kept,
+                 nested: %{token: raw_token, provider_payload: %{body: provider_body}},
+                 url: "https://private.example.test/path",
+                 session: [session_ref: "session-secret"]
+               }
+             })
+
+    assert feedback.metadata == %{safe_detail: :kept}
+    refute inspect(Contracts.to_map(feedback)) =~ raw_token
+    refute inspect(Contracts.to_map(feedback)) =~ provider_body
+  end
+
   defp assert_feedback(provider, code, expected_event) do
     assert {:ok, %ProviderFeedback{} = feedback} =
              Redaction.feedback_from_provider_attrs(%{
