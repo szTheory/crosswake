@@ -1,0 +1,82 @@
+import Foundation
+import XCTest
+@testable import CrosswakeShellCore
+
+final class NotificationOpenQueueTests: XCTestCase {
+    func test_queue_is_bounded_reloads_and_serializes_only_opaque_evidence() async throws {
+        let directory = try temporaryDirectory()
+        var now = Date(timeIntervalSince1970: 1_000)
+        let queue = try NotificationOpenQueue(directory: directory, maximumCount: 2, maximumAge: 60, now: { now })
+
+        try await queue.enqueue(evidence(openRef: "open-1", correlationID: "correlation-1"))
+        now.addTimeInterval(1)
+        try await queue.enqueue(evidence(openRef: "open-2", correlationID: "correlation-2"))
+        now.addTimeInterval(1)
+        try await queue.enqueue(evidence(openRef: "open-3", correlationID: "correlation-3"))
+
+        XCTAssertEqual(try await queue.pendingEvidence().map(\.openRef), ["open-2", "open-3"])
+        let persisted = try String(contentsOf: directory.appendingPathComponent("notification-open-queue-v1.json"), encoding: .utf8)
+        ["url", "route", "token", "tenant", "session", "payload", "authorized"].forEach { forbidden in
+            XCTAssertFalse(persisted.lowercased().contains(forbidden))
+        }
+
+        let reloaded = try NotificationOpenQueue(directory: directory, maximumCount: 2, maximumAge: 60, now: { now })
+        XCTAssertEqual(try await reloaded.pendingEvidence().map(\.openRef), ["open-2", "open-3"])
+        now.addTimeInterval(61)
+        XCTAssertTrue(try await reloaded.pendingEvidence().isEmpty)
+    }
+
+    func test_drain_consumes_once_and_removes_terminal_outcomes() async throws {
+        let directory = try temporaryDirectory()
+        let queue = try NotificationOpenQueue(directory: directory)
+        let allow = NotificationOpenAllowedActivation(request: request())
+        let delegate = RecordingOpenDelegate(outcomes: [.allowed(allow), .denied(.replayed), .retryableTransportFailure])
+
+        try await queue.enqueue(evidence(openRef: "allow", correlationID: "one"))
+        try await queue.enqueue(evidence(openRef: "replayed", correlationID: "two"))
+        try await queue.enqueue(evidence(openRef: "retry", correlationID: "three"))
+
+        var allowed: [NotificationOpenAllowedActivation] = []
+        try await queue.drain(using: delegate) { allowed.append($0) }
+
+        XCTAssertEqual(delegate.consumed.map(\.openRef), ["allow", "replayed", "retry"])
+        XCTAssertEqual(allowed, [allow])
+        XCTAssertEqual(try await queue.pendingEvidence().map(\.openRef), ["retry"])
+    }
+
+    func test_corrupt_storage_is_discarded_without_exposing_contents() async throws {
+        let directory = try temporaryDirectory()
+        let file = directory.appendingPathComponent("notification-open-queue-v1.json")
+        try Data("not-json-secret".utf8).write(to: file)
+
+        let queue = try NotificationOpenQueue(directory: directory)
+        XCTAssertTrue(try await queue.pendingEvidence().isEmpty)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
+    }
+
+    private func evidence(openRef: String, correlationID: String) -> NotificationOpenEvidence {
+        NotificationOpenEvidence(openRef: openRef, bindingRef: "binding-1", actionRef: "tap", correlationID: correlationID)
+    }
+
+    private func request() -> ActivationRequest {
+        ActivationRequest(routeID: "dashboard", url: nil, source: .notification, origin: "https://app.example.com", manifestSource: .bundled, bridgeProtocolVersion: "1", nativeRuntimeVersion: "1.0.0", correlationID: "trusted")
+    }
+
+    private func temporaryDirectory() throws -> URL {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return directory
+    }
+}
+
+private final class RecordingOpenDelegate: NotificationOpenDelegate {
+    private var outcomes: [NotificationOpenConsumptionOutcome]
+    private(set) var consumed: [NotificationOpenEvidence] = []
+
+    init(outcomes: [NotificationOpenConsumptionOutcome]) { self.outcomes = outcomes }
+
+    func consume(_ evidence: NotificationOpenEvidence) async -> NotificationOpenConsumptionOutcome {
+        consumed.append(evidence)
+        return outcomes.removeFirst()
+    }
+}
