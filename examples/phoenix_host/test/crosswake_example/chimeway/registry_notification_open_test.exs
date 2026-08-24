@@ -274,4 +274,41 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
     assert {:ok, resolution} = Registry.consume_intent(evidence)
     assert resolution.state == :binding_revoked
   end
+
+  test "consume_intent/1 does not consume an intent after its tenant authority changes", %{
+    open_ref: open_ref,
+    binding: binding
+  } do
+    {:ok, %{intent: intent}} =
+      Registry.issue_notification_open_intent(%{
+        open_ref: open_ref,
+        binding_ref: binding.binding_ref,
+        route_id: "dashboard",
+        action_ref: "tap",
+        tenant_ref: binding.org_ref,
+        subject_ref: binding.subject_ref,
+        session_ref: binding.session_ref,
+        session_version: binding.session_version,
+        expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
+      })
+
+    evidence = %NotificationOpenEvidence{
+      route_id: "untrusted-client-route",
+      open_ref: open_ref,
+      binding_ref: binding.binding_ref,
+      provider: :apns,
+      action_ref: "untrusted-client-action",
+      auth_context: %{
+        tenant_ref: unique_ref("other_tenant"),
+        subject_ref: binding.subject_ref,
+        session_ref: binding.session_ref,
+        session_version: binding.session_version
+      }
+    }
+
+    assert {:ok, resolution} = Registry.consume_intent(evidence)
+    assert resolution.state == :binding_mismatch
+    assert Repo.get!(NotificationOpenIntent, intent.id).state == "issued"
+    assert Repo.aggregate(NotificationOpenIntentEvent, :count, :id) == 1
+  end
 end
