@@ -17,10 +17,10 @@ defmodule CrosswakeExample.Chimeway.NotificationRegistrationAdapterTest do
 
     principal = principal(transcript)
     context = registry_context(principal)
-    original = bind!(context, "fingerprint-a")
-    replacement = bind!(context, "fingerprint-b")
+    original = bind!(context, unique("fingerprint-a"))
+    replacement = bind!(context, unique("fingerprint-b"))
     unrelated_context = registry_context(%{principal | installation_ref: unique("other-installation")})
-    unrelated = bind!(unrelated_context, "unrelated-fingerprint")
+    unrelated = bind!(unrelated_context, unique("unrelated-fingerprint"))
 
     assert {:ok, :stale_noop} =
              NotificationRegistrationAdapter.revoke_for_permission_loss(principal, transcript["command"])
@@ -74,7 +74,7 @@ defmodule CrosswakeExample.Chimeway.NotificationRegistrationAdapterTest do
       installation_ref: scope["installation_ref"], provider: scope["provider"],
       environment: scope["environment"], topic: scope["topic"],
       session_ref: scope["session_ref"], session_version: String.to_integer(scope["session_version"]),
-      channel: scope["channel"]
+      channel: scope["channel"], authenticated?: true
     }
   end
 
