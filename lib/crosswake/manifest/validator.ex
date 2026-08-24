@@ -34,6 +34,7 @@ defmodule Crosswake.Manifest.Validator do
   @additive_compatibility_hint "commerce corridor fields are additive in manifest schema 1.0.0 and only required when a route declares commerce"
   @opaque_route_id ~r/^route-[0-9a-f]{16}$/
   @opaque_tab_id ~r/^tab-[0-9a-f]{16}$/
+  @notification_open_actions ["tap", "reply", "approve"]
 
   @spec validate(Types.Root.t()) :: [Error.t()]
   def validate(%Types.Root{} = manifest) do
@@ -346,6 +347,7 @@ defmodule Crosswake.Manifest.Validator do
     |> validate_route_field(route, :path, route.path)
     |> validate_route_field(route, :runtime, route.runtime)
     |> validate_route_entry(route)
+    |> validate_route_notification_open(route)
     |> validate_route_capabilities(route, capability_registry)
     |> validate_route_packs(route, pack_registry)
     |> validate_route_commerce(route, commerce_corridors)
@@ -368,6 +370,36 @@ defmodule Crosswake.Manifest.Validator do
       ]
     end
   end
+
+  defp validate_route_notification_open(errors, %{notification_open: nil}), do: errors
+
+  defp validate_route_notification_open(errors, route) do
+    policy = Map.get(route, :notification_open)
+
+    if valid_notification_open_policy?(policy) do
+      errors
+    else
+      [
+        %{
+          key: :notification_open,
+          route_id: route.id,
+          path: route.path,
+          message: "route #{route.id} declares malformed notification-open policy",
+          hint:
+            "use a non-empty unique canonical action list containing only tap, reply, or approve"
+        }
+        | errors
+      ]
+    end
+  end
+
+  defp valid_notification_open_policy?(%{actions: actions} = policy)
+       when is_list(actions) and map_size(policy) == 1 do
+    actions != [] and Enum.all?(actions, &non_empty_string?/1) and
+      Enum.uniq(actions) == actions and Enum.all?(actions, &(&1 in @notification_open_actions))
+  end
+
+  defp valid_notification_open_policy?(_policy), do: false
 
   defp validate_route_field(errors, _route, _key, value) when not is_nil(value), do: errors
 

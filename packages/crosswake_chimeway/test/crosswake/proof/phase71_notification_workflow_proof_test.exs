@@ -288,7 +288,7 @@ defmodule Crosswake.Proof.Phase71NotificationWorkflowProofTest do
       path: @target_path,
       runtime: :live_view,
       entry: :external,
-      notification_open: [actions: @allowed_actions],
+      notification_open: %{actions: @allowed_actions},
       auth_min_level: :mfa,
       requires_recent_auth: 300,
       auth_posture: :strict_recent,
@@ -303,7 +303,7 @@ defmodule Crosswake.Proof.Phase71NotificationWorkflowProofTest do
         path: @target_path,
         runtime: :live_view,
         entry: :external,
-        notification_open: [actions: @allowed_actions],
+        notification_open: %{actions: @allowed_actions},
         auth_min_level: :mfa,
         requires_recent_auth: 300,
         auth_posture: :strict_recent
