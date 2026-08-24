@@ -39,6 +39,13 @@ public enum NotificationOpenDenial: String, Equatable, Sendable {
     case replayed
     case expired
     case revoked
+    case wrongBinding = "wrong_binding"
+    case logoutOrSessionChanged = "logout_or_session_changed"
+    case tenantSwitched = "tenant_switched"
+    case removedRoute = "removed_route"
+    case removedAction = "removed_action"
+    case malformedPolicy = "malformed_policy"
+    case routeGateDenied = "route_gate_denied"
     case routeActionRemoved = "route_action_removed"
 }
 

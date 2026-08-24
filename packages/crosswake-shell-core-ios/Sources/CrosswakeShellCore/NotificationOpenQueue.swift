@@ -94,8 +94,19 @@ public actor NotificationOpenQueue {
         using delegate: NotificationOpenDelegate,
         activationCoordinator: ActivationCoordinator
     ) async throws {
-        try await drain(using: delegate) { allowed in
-            activationCoordinator.activateAllowedNotification(allowed)
+        let changed = pruneExpired()
+        if changed { try persist() }
+
+        for item in items {
+            let outcome = await delegate.consume(item.evidence)
+            await activationCoordinator.handleProtectedNotificationOutcome(outcome)
+
+            switch outcome {
+            case .allowed, .denied:
+                try remove(item)
+            case .retryableTransportFailure:
+                continue
+            }
         }
     }
 

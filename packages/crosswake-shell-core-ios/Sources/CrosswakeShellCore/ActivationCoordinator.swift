@@ -393,6 +393,29 @@ public final class ActivationCoordinator: ObservableObject {
         }
     }
 
+    /// Handles the closed reconnect result without allowing a denied notification
+    /// to reuse ordinary URL or unavailable-route recovery. Denial classification
+    /// stays host-owned; the shell deliberately exposes one stable terminal view.
+    public func handleProtectedNotificationOutcome(_ outcome: NotificationOpenConsumptionOutcome) {
+        switch outcome {
+        case let .allowed(allowed):
+            activateAllowedNotification(allowed)
+        case .denied:
+            presentation = .denied(
+                RouteDenialPresentation(
+                    reason: .externalEntryDenied,
+                    title: "Notification open blocked",
+                    message: "The notification could not be opened from current authority.",
+                    hint: nil,
+                    routeID: nil,
+                    actions: []
+                )
+            )
+        case .retryableTransportFailure:
+            break
+        }
+    }
+
     public func resolve(request: ActivationRequest, manifest: ShellManifest) -> ShellPresentation {
         guard SemVer.compatible(provides: manifest.compatibility.nativeRuntimeVersion, demands: request.nativeRuntimeVersion) else {
             return .denied(
