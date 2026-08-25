@@ -43,6 +43,14 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
     Repo.query!(collision_sql, collision_old)
     Repo.query!(collision_sql, collision_new)
 
+    # These rows were valid under the released posture-keyed indexes because
+    # their authority scopes and posture differ. The forward migration's new
+    # posture-independent token identity index must reconcile them first.
+    token_identity_old = ["token-identity-old", "subject-token-old", "org-token-old", "session-token-old", 1, "installation-token-old", "apns", "ios", "production", "matched", "com.example.host", "token-token-old", "fingerprint-token-identity", "granted", "active", "initial_bind", "2026-08-24 10:00:00", "2026-08-24 10:00:00", "correlation-token-old", "{}", now, now]
+    token_identity_new = ["token-identity-new", "subject-token-new", "org-token-new", "session-token-new", 2, "installation-token-new", "apns", "ios", "production", "unknown", "com.example.host", "token-token-new", "fingerprint-token-identity", "granted", "active", "initial_bind", now, now, "correlation-token-new", "{}", now, now]
+    Repo.query!(collision_sql, token_identity_old)
+    Repo.query!(collision_sql, token_identity_new)
+
     Ecto.Migrator.run(Repo, path, :up, all: true)
 
     [[tenant, subject, session, version, state]] = Repo.query!("SELECT tenant_ref, subject_ref, session_ref, session_version, state FROM chimeway_notification_open_intents WHERE open_ref = 'open-valid'").rows
@@ -55,6 +63,10 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
     assert 1 == Repo.aggregate(from(binding in "chimeway_token_bindings", where: binding.subject_ref == "subject-collision" and binding.state == "active"), :count)
     [[winner]] = Repo.query!("SELECT binding_ref FROM chimeway_token_bindings WHERE subject_ref = 'subject-collision' AND state = 'active'").rows
     assert winner == "collision-new"
+    [[token_identity_winner]] = Repo.query!("SELECT binding_ref FROM chimeway_token_bindings WHERE token_fingerprint = 'fingerprint-token-identity' AND state = 'active'").rows
+    assert token_identity_winner == "token-identity-new"
+    [[token_identity_loser_state, token_identity_loser_reason]] = Repo.query!("SELECT state, reason FROM chimeway_token_bindings WHERE binding_ref = 'token-identity-old'").rows
+    assert [token_identity_loser_state, token_identity_loser_reason] == ["superseded", "token_rotated"]
 
     indexes = Repo.query!("SELECT name, sql FROM sqlite_master WHERE type = 'index' AND tbl_name = 'chimeway_token_bindings'").rows
     for name <- ["chimeway_token_bindings_active_token_identity_index", "chimeway_token_bindings_active_subject_session_scope_index", "chimeway_token_bindings_active_subject_installation_scope_index"] do
