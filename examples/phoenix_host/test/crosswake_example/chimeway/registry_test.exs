@@ -44,6 +44,14 @@ defmodule CrosswakeExample.Chimeway.RegistryTest do
 
   defp binding_opts(_ctx), do: [app_identity_ref: "com.example.crosswake"]
 
+  defp errors_on(changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn {message, opts} ->
+      Regex.replace(~r/%{(\w+)}/, message, fn _, key ->
+        opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
+      end)
+    end)
+  end
+
   defp permission_loss_opts(ctx, binding_ref) do
     [
       binding_ref: binding_ref,
@@ -400,6 +408,100 @@ defmodule CrosswakeExample.Chimeway.RegistryTest do
 
     assert %TokenBinding{state: :active} =
              Repo.get_by!(TokenBinding, binding_ref: other_installation_control.binding_ref)
+  end
+
+  test "installation authority rejects session fields and survives session lifecycle revocation" do
+    installation_ctx =
+      context(%{subject_scope: :subject_installation, session_ref: nil, session_version: nil})
+
+    invalid_attrs = %{
+      binding_ref: unique_ref("invalid_installation"),
+      subject_scope: :subject_installation,
+      subject_ref: installation_ctx.subject_ref,
+      org_ref: installation_ctx.org_ref,
+      session_ref: "session-must-not-bind",
+      session_version: 1,
+      installation_ref: installation_ctx.installation_ref,
+      provider: :apns,
+      platform: :ios,
+      environment: :production,
+      token_ref: unique_ref("token"),
+      token_fingerprint: unique_ref("fingerprint"),
+      notification_status: :granted,
+      state: :active,
+      reason: :initial_bind,
+      bound_at: DateTime.utc_now() |> DateTime.truncate(:second),
+      last_seen_at: DateTime.utc_now() |> DateTime.truncate(:second),
+      audit_correlation_ref: unique_ref("correlation")
+    }
+
+    changeset = TokenBinding.changeset(%TokenBinding{}, invalid_attrs)
+    refute changeset.valid?
+    assert "must be blank for installation authority" in errors_on(changeset).session_ref
+    assert "must be blank for installation authority" in errors_on(changeset).session_version
+
+    inconsistent_ctx = %{
+      installation_ctx
+      | session_ref: "session-must-not-bind",
+        session_version: 1
+    }
+
+    assert {:error, {:subject_scope, :installation_session_authority_forbidden}} =
+             Registry.bind_or_rotate(
+               inconsistent_ctx,
+               evidence(unique_ref("rejected_fingerprint"), inconsistent_ctx.installation_ref),
+               binding_opts(inconsistent_ctx)
+             )
+
+    refute Repo.exists?(
+             from(binding in TokenBinding,
+               where: binding.subject_ref == ^installation_ctx.subject_ref and binding.state == :active
+             )
+           )
+
+    assert {:ok, %{binding: installation_binding}} =
+             Registry.bind_or_rotate(
+               installation_ctx,
+               evidence(unique_ref("installation_fingerprint"), installation_ctx.installation_ref),
+               binding_opts(installation_ctx)
+             )
+
+    session_ctx = %{
+      installation_ctx
+      | subject_scope: :subject_session,
+        session_ref: unique_ref("logout_session"),
+        session_version: 1
+    }
+
+    assert {:ok, %{binding: logout_binding}} =
+             Registry.bind_or_rotate(
+               session_ctx,
+               evidence(unique_ref("logout_fingerprint"), session_ctx.installation_ref),
+               binding_opts(session_ctx)
+             )
+
+    assert {:ok, %{bindings: [revoked]}} = Registry.revoke_for_logout(session_ctx)
+    assert revoked.binding_ref == logout_binding.binding_ref
+    assert %TokenBinding{state: :active} = Repo.get_by!(TokenBinding, binding_ref: installation_binding.binding_ref)
+    assert %TokenBinding{state: :revoked} = Repo.get_by!(TokenBinding, binding_ref: logout_binding.binding_ref)
+
+    session_revocation_ctx = %{session_ctx | session_ref: unique_ref("revocation_session")}
+
+    assert {:ok, %{binding: session_revocation_binding}} =
+             Registry.bind_or_rotate(
+               session_revocation_ctx,
+               evidence(unique_ref("revocation_fingerprint"), session_revocation_ctx.installation_ref),
+               binding_opts(session_revocation_ctx)
+             )
+
+    assert {:ok, %{bindings: [session_revoked]}} =
+             Registry.revoke_for_session_revocation(session_revocation_ctx.session_ref,
+               session_version: session_revocation_ctx.session_version
+             )
+
+    assert session_revoked.binding_ref == session_revocation_binding.binding_ref
+    assert %TokenBinding{state: :active} = Repo.get_by!(TokenBinding, binding_ref: installation_binding.binding_ref)
+    assert %TokenBinding{state: :revoked} = Repo.get_by!(TokenBinding, binding_ref: session_revocation_binding.binding_ref)
   end
 
   defp await_barrier(table, total) do

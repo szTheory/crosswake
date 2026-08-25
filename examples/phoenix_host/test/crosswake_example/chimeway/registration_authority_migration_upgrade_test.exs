@@ -51,6 +51,12 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
     Repo.query!(collision_sql, token_identity_old)
     Repo.query!(collision_sql, token_identity_new)
 
+    Ecto.Migrator.run(Repo, path, :up, to: 20_260_824_210_000)
+
+    malformed = ["binding-malformed-installation", "subject-malformed", "org-malformed", "session-malformed", 1, "installation-malformed", "apns", "ios", "production", "unknown", "com.example.host", "token-malformed", "fingerprint-malformed", "granted", "active", "initial_bind", now, now, "correlation-malformed", "{}", now, now]
+
+    Repo.query!(collision_sql |> String.replace("'subject_session'", "'subject_installation'"), malformed)
+
     Ecto.Migrator.run(Repo, path, :up, all: true)
 
     [[tenant, subject, session, version, state]] = Repo.query!("SELECT tenant_ref, subject_ref, session_ref, session_version, state FROM chimeway_notification_open_intents WHERE open_ref = 'open-valid'").rows
@@ -73,6 +79,26 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
       [^name, sql] = Enum.find(indexes, fn [index_name, _] -> index_name == name end)
       assert sql =~ "app_identity_ref"
       refute sql =~ "app_identity_posture"
+    end
+
+    [[malformed_state, malformed_reason]] = Repo.query!("SELECT state, reason FROM chimeway_token_bindings WHERE binding_ref = 'binding-malformed-installation'").rows
+    assert [malformed_state, malformed_reason] == ["revoked", "session_revoked"]
+
+    triggers = Repo.query!("SELECT name FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'chimeway_token_bindings'").rows
+    assert ["chimeway_token_bindings_subject_scope_consistency_insert_guard"] in triggers
+    assert ["chimeway_token_bindings_subject_scope_consistency_update_guard"] in triggers
+
+    invalid_active = ["binding-direct-invalid", "subject-direct", "org-direct", "session-direct", 1, "installation-direct", "apns", "ios", "production", "unknown", "com.example.host", "token-direct", "fingerprint-direct", "granted", "active", "initial_bind", now, now, "correlation-direct", "{}", now, now]
+
+    assert_raise Exqlite.Error, fn ->
+      Repo.query!(collision_sql |> String.replace("'subject_session'", "'subject_installation'"), invalid_active)
+    end
+
+    valid_installation = ["binding-direct-valid", "subject-direct-valid", "org-direct-valid", nil, nil, "installation-direct-valid", "apns", "ios", "production", "unknown", "com.example.host", "token-direct-valid", "fingerprint-direct-valid", "granted", "active", "initial_bind", now, now, "correlation-direct-valid", "{}", now, now]
+    Repo.query!(collision_sql |> String.replace("'subject_session'", "'subject_installation'"), valid_installation)
+
+    assert_raise Exqlite.Error, fn ->
+      Repo.query!("UPDATE chimeway_token_bindings SET session_ref = 'unexpected', session_version = 1 WHERE binding_ref = 'binding-direct-valid'")
     end
     """
 
