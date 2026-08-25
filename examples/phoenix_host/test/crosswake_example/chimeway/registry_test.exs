@@ -486,6 +486,45 @@ defmodule CrosswakeExample.Chimeway.RegistryTest do
              Repo.get_by!(TokenBinding, binding_ref: other_installation_control.binding_ref)
   end
 
+  test "stale logout revokes only its exact session version and audits only that revision" do
+    old_ctx = context()
+    current_ctx = %{old_ctx | session_version: 2}
+
+    assert {:ok, %{binding: old_binding}} =
+             Registry.bind_or_rotate(
+               old_ctx,
+               evidence(unique_ref("stale_logout_old_fingerprint"), old_ctx.installation_ref),
+               binding_opts(old_ctx)
+             )
+
+    assert {:ok, %{binding: current_binding}} =
+             Registry.bind_or_rotate(
+               current_ctx,
+               evidence(
+                 unique_ref("stale_logout_current_fingerprint"),
+                 current_ctx.installation_ref
+               ),
+               binding_opts(current_ctx)
+             )
+
+    assert {:ok, %{bindings: [revoked], audit_events: [event]}} =
+             Registry.revoke_for_logout(old_ctx)
+
+    assert revoked.binding_ref == old_binding.binding_ref
+    assert event.binding_ref == old_binding.binding_ref
+    assert event.reason == :logout_revoked
+    assert %TokenBinding{state: :revoked} = Repo.get_by!(TokenBinding, binding_ref: old_binding.binding_ref)
+    assert %TokenBinding{state: :active} = Repo.get_by!(TokenBinding, binding_ref: current_binding.binding_ref)
+
+    refute Repo.exists?(
+             from(event in CrosswakeExample.Chimeway.TokenBindingEvent,
+               where:
+                 event.binding_ref == ^current_binding.binding_ref and
+                   event.reason == :logout_revoked
+             )
+           )
+  end
+
   test "installation authority rejects session fields and survives session lifecycle revocation" do
     installation_ctx =
       context(%{subject_scope: :subject_installation, session_ref: nil, session_version: nil})
