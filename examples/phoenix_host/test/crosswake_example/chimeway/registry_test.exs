@@ -288,11 +288,85 @@ defmodule CrosswakeExample.Chimeway.RegistryTest do
 
     assert {:ok, %{bindings: [revoked]}} = Registry.apply_provider_feedback(feedback, scope)
     assert revoked.binding_ref == target.binding_ref
-    assert %TokenBinding{state: :revoked} = Repo.get_by!(TokenBinding, binding_ref: target.binding_ref)
-    assert %TokenBinding{state: :active} = Repo.get_by!(TokenBinding, binding_ref: other.binding_ref)
+
+    assert %TokenBinding{state: :revoked} =
+             Repo.get_by!(TokenBinding, binding_ref: target.binding_ref)
+
+    assert %TokenBinding{state: :active} =
+             Repo.get_by!(TokenBinding, binding_ref: other.binding_ref)
 
     assert {:error, :no_active_bindings} = Registry.apply_provider_feedback(feedback, [])
-    assert %TokenBinding{state: :active} = Repo.get_by!(TokenBinding, binding_ref: other.binding_ref)
+
+    assert %TokenBinding{state: :active} =
+             Repo.get_by!(TokenBinding, binding_ref: other.binding_ref)
+  end
+
+  test "installation-scoped provider feedback revokes only its exact binding without session authority" do
+    fingerprint = unique_ref("installation_fingerprint")
+
+    installation_ctx =
+      context(%{
+        subject_scope: :subject_installation,
+        session_ref: nil,
+        session_version: nil
+      })
+
+    session_ctx = context(%{installation_ref: installation_ctx.installation_ref})
+
+    other_installation_ctx =
+      context(%{subject_scope: :subject_installation, session_ref: nil, session_version: nil})
+
+    assert {:ok, %{binding: target}} =
+             Registry.bind_or_rotate(
+               installation_ctx,
+               evidence(fingerprint, installation_ctx.installation_ref),
+               app_identity_ref: "com.example.crosswake.installation"
+             )
+
+    assert {:ok, %{binding: session_control}} =
+             Registry.bind_or_rotate(
+               session_ctx,
+               evidence(unique_ref("session_control"), session_ctx.installation_ref),
+               app_identity_ref: "com.example.crosswake.session-control"
+             )
+
+    assert {:ok, %{binding: other_installation_control}} =
+             Registry.bind_or_rotate(
+               other_installation_ctx,
+               evidence(
+                 unique_ref("other_installation_control"),
+                 other_installation_ctx.installation_ref
+               ),
+               app_identity_ref: "com.example.crosswake.other-installation"
+             )
+
+    feedback = %Crosswake.Companions.Chimeway.Contracts.ProviderFeedback{
+      provider: :apns,
+      platform: :ios,
+      environment: :production,
+      feedback_event: :token_unregistered,
+      occurred_at: "2026-08-24T12:00:00Z",
+      token_fingerprint: fingerprint
+    }
+
+    assert {:ok, %{bindings: [revoked]}} =
+             Registry.apply_provider_feedback(feedback,
+               authenticated_context: installation_ctx,
+               binding_ref: target.binding_ref,
+               installation_ref: installation_ctx.installation_ref,
+               app_identity_ref: "com.example.crosswake.installation"
+             )
+
+    assert revoked.binding_ref == target.binding_ref
+
+    assert %TokenBinding{state: :revoked} =
+             Repo.get_by!(TokenBinding, binding_ref: target.binding_ref)
+
+    assert %TokenBinding{state: :active} =
+             Repo.get_by!(TokenBinding, binding_ref: session_control.binding_ref)
+
+    assert %TokenBinding{state: :active} =
+             Repo.get_by!(TokenBinding, binding_ref: other_installation_control.binding_ref)
   end
 
   defp await_barrier(table, total) do

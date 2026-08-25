@@ -399,4 +399,69 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
              :id
            ) == 1
   end
+
+  test "installation-scoped intents issue and consume once without session fields" do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    installation_binding =
+      Repo.insert!(%CrosswakeExample.Chimeway.TokenBinding{
+        binding_ref: unique_ref("installation_binding"),
+        subject_scope: :subject_installation,
+        subject_ref: unique_ref("installation_subject"),
+        org_ref: unique_ref("installation_org"),
+        session_ref: nil,
+        session_version: nil,
+        installation_ref: unique_ref("installation"),
+        provider: :apns,
+        platform: :ios,
+        environment: :production,
+        app_identity_posture: :unknown,
+        app_identity_ref: unique_ref("installation_app"),
+        token_ref: unique_ref("installation_token"),
+        token_fingerprint: unique_ref("installation_fingerprint"),
+        notification_status: :granted,
+        state: :active,
+        reason: :initial_bind,
+        audit_correlation_ref: unique_ref("installation_correlation"),
+        bound_at: now,
+        last_seen_at: now
+      })
+
+    open_ref = unique_ref("installation_open")
+
+    assert {:ok, %{intent: intent}} =
+             Registry.issue_notification_open_intent(%{
+               open_ref: open_ref,
+               binding_ref: installation_binding.binding_ref,
+               route_id: "dashboard",
+               action_ref: "server-action",
+               expires_at: DateTime.add(now, 3600, :second)
+             })
+
+    assert intent.scope == "subject_installation"
+    assert is_nil(intent.session_ref)
+    assert is_nil(intent.session_version)
+
+    evidence = %NotificationOpenEvidence{
+      route_id: "untrusted-client-route",
+      open_ref: open_ref,
+      binding_ref: installation_binding.binding_ref,
+      provider: :apns,
+      action_ref: "untrusted-client-action",
+      auth_context: %{
+        subject_scope: :subject_installation,
+        tenant_ref: installation_binding.org_ref,
+        subject_ref: installation_binding.subject_ref,
+        installation_ref: installation_binding.installation_ref
+      }
+    }
+
+    assert {:ok, resolution} = Registry.consume_intent(evidence)
+    assert resolution.state == :valid
+    assert resolution.route_id == "dashboard"
+    assert resolution.action_ref == "server-action"
+
+    assert {:ok, replay} = Registry.consume_intent(evidence)
+    assert replay.state == :replayed
+  end
 end
