@@ -221,12 +221,12 @@ defmodule CrosswakeExample.Chimeway.Registry do
             b.app_identity_ref == ^scope.app_identity_ref and
             b.installation_ref == ^scope.installation_ref and
             b.subject_scope == ^ctx.subject_scope and
-            b.session_ref == ^scope.session_ref and
-            b.session_version == ^scope.session_version and
             b.subject_ref == ^ctx.subject_ref and
             b.org_ref == ^ctx.org_ref and
             b.state == :active
       )
+
+    same_token_query = scope_authority_query(same_token_query, ctx, scope)
 
     result =
       Ecto.Multi.new()
@@ -246,18 +246,10 @@ defmodule CrosswakeExample.Chimeway.Registry do
                   b.environment == ^ev.environment and
                   b.app_identity_ref == ^scope.app_identity_ref and
                   b.subject_scope == ^ctx.subject_scope and
-                  b.session_version == ^scope.session_version and
                   b.state == :active
             )
 
-          displaced_query =
-            case ctx[:subject_scope] do
-              :subject_session ->
-                where(displaced_query, [b], b.session_ref == ^scope.session_ref)
-
-              _ ->
-                displaced_query
-            end
+          displaced_query = scope_authority_query(displaced_query, ctx, scope)
 
           {:ok, repo.all(displaced_query)}
         else
@@ -279,9 +271,7 @@ defmodule CrosswakeExample.Chimeway.Registry do
                     b.subject_ref == ^ctx.subject_ref and b.org_ref == ^ctx.org_ref and
                     b.installation_ref == ^scope.installation_ref and b.provider == ^ev.provider and
                     b.platform == ^ev.platform and b.environment == ^ev.environment and
-                    b.app_identity_ref == ^scope.app_identity_ref and
-                    b.session_ref == ^scope.session_ref and
-                    b.session_version == ^scope.session_version
+                    b.app_identity_ref == ^scope.app_identity_ref
               ),
               set: [
                 state: :superseded,
@@ -307,8 +297,6 @@ defmodule CrosswakeExample.Chimeway.Registry do
                     b.installation_ref == ^scope.installation_ref and b.provider == ^ev.provider and
                     b.platform == ^ev.platform and b.environment == ^ev.environment and
                     b.app_identity_ref == ^scope.app_identity_ref and
-                    b.session_ref == ^scope.session_ref and
-                    b.session_version == ^scope.session_version and
                     b.state == :active
               ),
               set: [
@@ -553,6 +541,7 @@ defmodule CrosswakeExample.Chimeway.Registry do
           b.subject_ref == ^ctx.subject_ref and
             b.org_ref == ^ctx.org_ref and
             b.session_ref == ^session_ref and
+            b.subject_scope == :subject_session and
             b.state == :active
       )
 
@@ -642,7 +631,9 @@ defmodule CrosswakeExample.Chimeway.Registry do
 
     query =
       from(b in TokenBinding,
-        where: b.session_ref == ^session_ref and b.state == :active
+        where:
+          b.session_ref == ^session_ref and b.subject_scope == :subject_session and
+            b.state == :active
       )
 
     # If session_version supplied, only revoke rows with version <= session_version
@@ -1575,11 +1566,35 @@ defmodule CrosswakeExample.Chimeway.Registry do
         correlation_id: Map.get(context, :correlation_id)
       }
 
-      {:ok, ctx}
+      validate_context_scope(ctx)
     end
   end
 
   defp validate_context(_context), do: {:error, :invalid_context}
+
+  defp validate_context_scope(%{
+         subject_scope: :subject_session,
+         session_ref: session_ref,
+         session_version: session_version
+       } = ctx)
+       when is_binary(session_ref) and byte_size(session_ref) > 0 and is_integer(session_version) and
+              session_version >= 0,
+       do: {:ok, ctx}
+
+  defp validate_context_scope(%{subject_scope: :subject_session}),
+    do: {:error, {:subject_scope, :session_authority_required}}
+
+  defp validate_context_scope(%{
+         subject_scope: :subject_installation,
+         session_ref: nil,
+         session_version: nil
+       } = ctx),
+       do: {:ok, ctx}
+
+  defp validate_context_scope(%{subject_scope: :subject_installation}),
+    do: {:error, {:subject_scope, :installation_session_authority_forbidden}}
+
+  defp validate_context_scope(_ctx), do: {:error, {:subject_scope, :invalid}}
 
   # The app identity ref is the APNs topic/app identity supplied by the authenticated
   # host command. It is part of the durable authority scope, not token metadata.
@@ -1598,6 +1613,18 @@ defmodule CrosswakeExample.Chimeway.Registry do
          session_version: ctx.session_version
        }}
     end
+  end
+
+  defp scope_authority_query(query, %{subject_scope: :subject_session}, scope) do
+    where(
+      query,
+      [b],
+      b.session_ref == ^scope.session_ref and b.session_version == ^scope.session_version
+    )
+  end
+
+  defp scope_authority_query(query, %{subject_scope: :subject_installation}, _scope) do
+    where(query, [b], is_nil(b.session_ref) and is_nil(b.session_version))
   end
 
   defp permission_loss_scope(ctx, opts) do

@@ -54,8 +54,10 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
     Ecto.Migrator.run(Repo, path, :up, to: 20_260_824_210_000)
 
     malformed = ["binding-malformed-installation", "subject-malformed", "org-malformed", "session-malformed", 1, "installation-malformed", "apns", "ios", "production", "unknown", "com.example.host", "token-malformed", "fingerprint-malformed", "granted", "active", "initial_bind", now, now, "correlation-malformed", "{}", now, now]
+    installation_control = ["binding-installation-control", "subject-installation-control", "org-installation-control", nil, nil, "installation-control", "apns", "ios", "production", "unknown", "com.example.host", "token-installation-control", "fingerprint-installation-control", "granted", "active", "initial_bind", now, now, "correlation-installation-control", "{}", now, now]
 
     Repo.query!(collision_sql |> String.replace("'subject_session'", "'subject_installation'"), malformed)
+    Repo.query!(collision_sql |> String.replace("'subject_session'", "'subject_installation'"), installation_control)
 
     Ecto.Migrator.run(Repo, path, :up, all: true)
 
@@ -83,6 +85,10 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
 
     [[malformed_state, malformed_reason]] = Repo.query!("SELECT state, reason FROM chimeway_token_bindings WHERE binding_ref = 'binding-malformed-installation'").rows
     assert [malformed_state, malformed_reason] == ["revoked", "session_revoked"]
+    [[valid_session_state]] = Repo.query!("SELECT state FROM chimeway_token_bindings WHERE binding_ref = 'binding-valid'").rows
+    assert valid_session_state == "active"
+    [[installation_control_state]] = Repo.query!("SELECT state FROM chimeway_token_bindings WHERE binding_ref = 'binding-installation-control'").rows
+    assert installation_control_state == "active"
 
     triggers = Repo.query!("SELECT name FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'chimeway_token_bindings'").rows
     assert ["chimeway_token_bindings_subject_scope_consistency_insert_guard"] in triggers

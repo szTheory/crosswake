@@ -419,8 +419,8 @@ defmodule CrosswakeExample.Chimeway.RegistryTest do
       subject_scope: :subject_installation,
       subject_ref: installation_ctx.subject_ref,
       org_ref: installation_ctx.org_ref,
-      session_ref: "session-must-not-bind",
-      session_version: 1,
+      session_ref: nil,
+      session_version: nil,
       installation_ref: installation_ctx.installation_ref,
       provider: :apns,
       platform: :ios,
@@ -435,10 +435,16 @@ defmodule CrosswakeExample.Chimeway.RegistryTest do
       audit_correlation_ref: unique_ref("correlation")
     }
 
-    changeset = TokenBinding.changeset(%TokenBinding{}, invalid_attrs)
-    refute changeset.valid?
-    assert "must be blank for installation authority" in errors_on(changeset).session_ref
-    assert "must be blank for installation authority" in errors_on(changeset).session_version
+    for attrs <- [
+          %{invalid_attrs | session_ref: "session-must-not-bind"},
+          %{invalid_attrs | session_version: 1},
+          %{invalid_attrs | session_ref: "session-must-not-bind", session_version: 1}
+        ] do
+      changeset = TokenBinding.changeset(%TokenBinding{}, attrs)
+      refute changeset.valid?
+      assert "must be blank for installation authority" in errors_on(changeset).session_ref
+      assert "must be blank for installation authority" in errors_on(changeset).session_version
+    end
 
     inconsistent_ctx = %{
       installation_ctx

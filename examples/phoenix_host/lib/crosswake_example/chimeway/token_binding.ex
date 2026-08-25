@@ -160,10 +160,16 @@ defmodule CrosswakeExample.Chimeway.TokenBinding do
         |> validate_number(:session_version, greater_than_or_equal_to: 0)
 
       :subject_installation ->
-        changeset
+        if is_nil(get_field(changeset, :session_ref)) and is_nil(get_field(changeset, :session_version)) do
+          changeset
+        else
+          changeset
+          |> add_error(:session_ref, "must be blank for installation authority")
+          |> add_error(:session_version, "must be blank for installation authority")
+        end
 
       _other ->
-        changeset
+        add_error(changeset, :subject_scope, "is invalid")
     end
   end
 
