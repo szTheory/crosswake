@@ -61,27 +61,27 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntentTest do
       nested = "intent-nested-sentinel"
       oversized = String.duplicate("intent-oversized-sentinel", 256)
 
-      changeset =
-        NotificationOpenIntent.changeset(
-          %NotificationOpenIntent{},
-          Map.put(@valid_attrs, :metadata, %{
-            "deviceToken" => device_token,
-            "authorization" => authorization,
-            "user_email" => email,
-            "apns_response_body" => provider_body,
-            "otherwise_unknown" => unknown,
-            "nested" => %{
-              "unknown" => nested,
-              "nested_list" => [%{"unknown" => nested}]
-            },
-            "non_scalar" => {:untrusted, unknown},
-            "oversized" => oversized
-          })
-        )
+      attrs =
+        Map.put(@valid_attrs, :metadata, %{
+          "deviceToken" => device_token,
+          "authorization" => authorization,
+          "user_email" => email,
+          "apns_response_body" => provider_body,
+          "otherwise_unknown" => unknown,
+          "nested" => %{
+            "unknown" => nested,
+            "nested_list" => [%{"unknown" => nested}]
+          },
+          "non_scalar" => {:untrusted, unknown},
+          "oversized" => oversized
+        })
 
-      metadata = Ecto.Changeset.get_change(changeset, :metadata)
+      string_attrs = Map.new(attrs, fn {key, value} -> {Atom.to_string(key), value} end)
 
-      assert metadata == %{}
+      for input_attrs <- [attrs, string_attrs] do
+        changeset = NotificationOpenIntent.changeset(%NotificationOpenIntent{}, input_attrs)
+        assert Ecto.Changeset.get_change(changeset, :metadata) == %{}
+      end
     end
 
     test "projects non-map metadata to an empty map" do

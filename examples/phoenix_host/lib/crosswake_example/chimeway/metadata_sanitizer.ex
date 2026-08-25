@@ -40,6 +40,16 @@ defmodule CrosswakeExample.Chimeway.MetadataSanitizer do
 
   def sanitize(_metadata), do: %{}
 
+  @doc """
+  Projects untrusted notification-open metadata to the empty durable contract.
+
+  Notification opens retain their explicit schema fields and host-authoritative
+  lifecycle events only. Caller metadata is never retained, inspected, or
+  traversed at this persistence boundary.
+  """
+  @spec sanitize_notification_open(term()) :: %{}
+  def sanitize_notification_open(_metadata), do: %{}
+
   defp sanitize_value(value) when is_map(value), do: sanitize(value)
 
   defp sanitize_value(value) when is_list(value) do

@@ -90,7 +90,8 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntent do
   defp sanitize_metadata(changeset) do
     case get_change(changeset, :metadata) do
       nil -> changeset
-      metadata -> put_change(changeset, :metadata, MetadataSanitizer.sanitize(metadata))
+      metadata ->
+        put_change(changeset, :metadata, MetadataSanitizer.sanitize_notification_open(metadata))
     end
   end
 
