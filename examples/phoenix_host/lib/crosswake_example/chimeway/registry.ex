@@ -541,6 +541,7 @@ defmodule CrosswakeExample.Chimeway.Registry do
           b.subject_ref == ^ctx.subject_ref and
             b.org_ref == ^ctx.org_ref and
             b.session_ref == ^session_ref and
+            b.session_version == ^ctx.session_version and
             b.subject_scope == :subject_session and
             b.state == :active
       )
@@ -559,7 +560,9 @@ defmodule CrosswakeExample.Chimeway.Registry do
           {count, _} =
             repo.update_all(
               from(b in TokenBinding,
-                where: b.binding_ref in ^binding_refs and b.state == :active
+                where:
+                  b.binding_ref in ^binding_refs and
+                    b.session_version == ^ctx.session_version and b.state == :active
               ),
               set: [
                 state: :revoked,
