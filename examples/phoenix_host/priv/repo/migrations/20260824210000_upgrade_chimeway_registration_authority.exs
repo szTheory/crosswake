@@ -40,6 +40,7 @@ defmodule CrosswakeExample.Repo.Migrations.UpgradeChimewayRegistrationAuthority 
     """)
 
     reconcile_active_collisions()
+    reconcile_active_token_identity_collisions()
     replace_active_indexes()
   end
 
@@ -89,6 +90,25 @@ defmodule CrosswakeExample.Repo.Migrations.UpgradeChimewayRegistrationAuthority 
       SELECT id, ROW_NUMBER() OVER (
         PARTITION BY subject_scope, subject_ref, org_ref, session_ref, session_version,
                      installation_ref, provider, platform, environment, app_identity_ref
+        ORDER BY last_seen_at DESC, id DESC
+      ) AS position
+      FROM chimeway_token_bindings
+      WHERE state = 'active'
+    )
+    UPDATE chimeway_token_bindings
+    SET state = 'superseded', reason = 'token_rotated', superseded_at = CURRENT_TIMESTAMP
+    WHERE id IN (SELECT id FROM ranked WHERE position > 1)
+    """)
+  end
+
+  # Old posture-keyed active identities could legitimately retain the same
+  # token selector in separate authority scopes. Reconcile that second new
+  # uniqueness domain before its posture-independent index is created.
+  defp reconcile_active_token_identity_collisions do
+    execute("""
+    WITH ranked AS (
+      SELECT id, ROW_NUMBER() OVER (
+        PARTITION BY token_fingerprint, provider, platform, environment, app_identity_ref
         ORDER BY last_seen_at DESC, id DESC
       ) AS position
       FROM chimeway_token_bindings
