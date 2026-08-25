@@ -47,6 +47,38 @@ final class NotificationOpenQueueTests: XCTestCase {
         XCTAssertEqual(pending.map(\.openRef), ["retry"])
     }
 
+    func test_duplicate_open_ref_is_first_wins_across_reload_and_production_drain() async throws {
+        let directory = try temporaryDirectory()
+        let evidence = evidence(openRef: "one-time-open", correlationID: "first-correlation")
+        let queue = try NotificationOpenQueue(directory: directory)
+
+        try await queue.enqueue(evidence)
+        try await queue.enqueue(evidence)
+
+        let reloaded = try NotificationOpenQueue(directory: directory)
+        let reloadedEvidence = try await reloaded.pendingEvidence()
+        XCTAssertEqual(reloadedEvidence, [evidence])
+
+        let allowed = NotificationOpenAllowedActivation(request: request())
+        let delegate = RecordingOpenDelegate(outcomes: [.allowed(allowed), .denied(.replayed)])
+        let coordinator = ActivationCoordinator(
+            manifestLoader: { self.manifest(entry: "external") },
+            requestLoader: { self.request() },
+            packStore: PackStore(requiredVersions: [:], inventory: []),
+            config: CrosswakeShellConfig()
+        )
+
+        try await reloaded.drain(using: delegate, activationCoordinator: coordinator)
+
+        XCTAssertEqual(delegate.consumed, [evidence])
+        let pendingEvidence = try await reloaded.pendingEvidence()
+        XCTAssertTrue(pendingEvidence.isEmpty)
+        guard case let .liveView(session) = coordinator.presentation else {
+            return XCTFail("expected allowed protected activation to remain presented")
+        }
+        XCTAssertEqual(session.routeID, "dashboard")
+    }
+
     func test_corrupt_storage_is_discarded_without_exposing_contents() async throws {
         let directory = try temporaryDirectory()
         let file = directory.appendingPathComponent("notification-open-queue-v1.json")
@@ -64,6 +96,13 @@ final class NotificationOpenQueueTests: XCTestCase {
 
     private func request() -> ActivationRequest {
         ActivationRequest(routeID: "dashboard", url: nil, source: .notification, origin: "https://app.example.com", manifestSource: .bundled, bridgeProtocolVersion: "1", nativeRuntimeVersion: "1.0.0", correlationID: "trusted")
+    }
+
+    private func manifest(entry: String) -> ShellManifest {
+        ShellManifest(
+            compatibility: .init(nativeRuntimeVersion: "1.0.0"),
+            routes: ["dashboard": .init(id: "dashboard", path: "/dashboard", runtime: "live_view", entry: entry, capabilities: [], packs: [], transfers: [], allowlistedOrigins: ["https://app.example.com"])]
+        )
     }
 
     private func temporaryDirectory() throws -> URL {
