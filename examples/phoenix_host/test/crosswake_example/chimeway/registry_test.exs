@@ -44,6 +44,82 @@ defmodule CrosswakeExample.Chimeway.RegistryTest do
 
   defp binding_opts(_ctx), do: [app_identity_ref: "com.example.crosswake"]
 
+  test "registration binding and audit rows drop all caller metadata across refresh and rotation" do
+    ctx = context()
+    initial_fingerprint = unique_ref("initial_fingerprint")
+    replacement_fingerprint = unique_ref("replacement_fingerprint")
+
+    sentinels = %{
+      api_token: unique_ref("raw_token"),
+      authorization: unique_ref("authorization"),
+      email: "#{unique_ref("identity")}@example.test",
+      provider_body: unique_ref("provider_body"),
+      arbitrary: unique_ref("arbitrary"),
+      nested: unique_ref("nested"),
+      list: unique_ref("list"),
+      keyword: unique_ref("keyword"),
+      non_scalar: unique_ref("non_scalar"),
+      oversized: String.duplicate(unique_ref("oversized"), 64)
+    }
+
+    metadata = %{
+      "apiToken" => sentinels.api_token,
+      "authorization" => sentinels.authorization,
+      "email" => sentinels.email,
+      "providerResponseBody" => sentinels.provider_body,
+      "arbitrarySafeLookingKey" => sentinels.arbitrary,
+      "nestedUnknown" => %{"token" => sentinels.nested},
+      "listUnknown" => [sentinels.list, %{credential: sentinels.nested}],
+      "keywordUnknown" => [authorization: sentinels.keyword],
+      "nonScalarUnknown" => {sentinels.non_scalar, :value},
+      "oversizedUnknown" => sentinels.oversized
+    }
+
+    assert {:ok, %{binding: initial}} =
+             Registry.bind_or_rotate(
+               ctx,
+               evidence(initial_fingerprint, ctx.installation_ref, %{metadata: metadata}),
+               binding_opts(ctx)
+             )
+
+    assert {:ok, %{binding: refreshed}} =
+             Registry.bind_or_rotate(
+               ctx,
+               evidence(initial_fingerprint, ctx.installation_ref, %{metadata: metadata}),
+               binding_opts(ctx)
+             )
+
+    assert {:ok, %{binding: replacement}} =
+             Registry.bind_or_rotate(
+               ctx,
+               evidence(replacement_fingerprint, ctx.installation_ref, %{metadata: metadata}),
+               binding_opts(ctx)
+             )
+
+    bindings =
+      Repo.all(
+        from(binding in TokenBinding,
+          where: binding.binding_ref in ^[initial.binding_ref, refreshed.binding_ref, replacement.binding_ref]
+        )
+      )
+
+    events =
+      Repo.all(
+        from(event in CrosswakeExample.Chimeway.TokenBindingEvent,
+          where: event.binding_ref in ^Enum.map(bindings, & &1.binding_ref)
+        )
+      )
+
+    assert Enum.all?(bindings, &(&1.metadata == %{}))
+    assert Enum.all?(events, &(&1.metadata == %{}))
+
+    durable_values = inspect(bindings) <> inspect(events)
+
+    for sentinel <- Map.values(sentinels) do
+      refute durable_values =~ sentinel
+    end
+  end
+
   defp errors_on(changeset) do
     Ecto.Changeset.traverse_errors(changeset, fn {message, opts} ->
       Regex.replace(~r/%{(\w+)}/, message, fn _, key ->
