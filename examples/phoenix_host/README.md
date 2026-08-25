@@ -125,7 +125,11 @@ defmodule MyApp.Workers.ChimewayProviderFeedbackWorker do
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"feedback" => feedback_attrs}}) do
     feedback = Crosswake.Companions.Chimeway.Contracts.ProviderFeedback.from_attrs(feedback_attrs)
-    CrosswakeExample.Chimeway.Registry.apply_provider_feedback(feedback)
+
+    # Resolve this from authenticated host-owned delivery/binding state. Provider
+    # token fields corroborate the event; they never authenticate a revocation.
+    scope = MyApp.Notifications.resolve_authenticated_binding_scope!(feedback)
+    CrosswakeExample.Chimeway.Registry.apply_provider_feedback(feedback, scope)
     :ok
   end
 end
@@ -133,7 +137,9 @@ end
 
 These workers are host-owned. They call `CrosswakeExample.Chimeway.Registry.prune_stale/1`
 and `CrosswakeExample.Chimeway.Registry.apply_provider_feedback/2` and do not duplicate
-lifecycle writes or claim delivery authority.
+lifecycle writes or claim delivery authority. Invalidating provider feedback requires
+`authenticated_context`, the exact `binding_ref`, `app_identity_ref`, installation, and current
+session/version scope; a token reference or fingerprint is corroborating evidence only.
 
 ### Secondary: Quantum or cron scheduling (for pruning)
 

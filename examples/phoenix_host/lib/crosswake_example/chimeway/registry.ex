@@ -149,8 +149,9 @@ defmodule CrosswakeExample.Chimeway.Registry do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Applies normalized provider feedback to active bindings matched by
-  `token_fingerprint` (and optionally `token_ref`).
+  Applies normalized provider feedback. Invalidating feedback requires an
+  authenticated host context plus the exact current `binding_ref` and
+  `app_identity_ref`; provider token fields are corroborating evidence only.
 
   Accepts either a `%ProviderFeedback{}` struct or raw provider attrs normalized
   through `Crosswake.Companions.Chimeway.Redaction.feedback_from_provider_attrs/1`.
@@ -857,7 +858,13 @@ defmodule CrosswakeExample.Chimeway.Registry do
         do_feedback_audit_only(fb, now, opts)
 
       _ ->
-        do_feedback_invalidate(fb, binding_state, binding_reason, now, opts)
+        with {:ok, scope} <- provider_feedback_scope(opts) do
+          do_feedback_invalidate(fb, scope, binding_state, binding_reason, now, opts)
+        else
+          # Scope failures are deliberately indistinguishable from a stale or
+          # absent binding. Provider evidence must not reveal host authority.
+          {:error, _reason} -> {:error, :no_active_bindings}
+        end
     end
   end
 
@@ -923,39 +930,32 @@ defmodule CrosswakeExample.Chimeway.Registry do
     end
   end
 
-  # CR-01: Builds a provider/platform/environment-scoped query for the given
-  # feedback struct. Fails closed when no token selector is present — avoids
-  # unbounded fan-out across the whole active set.
-  defp feedback_target_query(fb) do
+  # Provider token evidence corroborates an already authenticated exact binding;
+  # it never selects a binding by itself.
+  defp feedback_target_query(fb, scope) do
     fp = fb.token_fingerprint
     tr = fb.token_ref
 
-    cond do
-      is_binary(fp) and byte_size(fp) > 0 ->
-        {:ok,
-         from(b in TokenBinding,
-           where:
-             b.state == :active and b.token_fingerprint == ^fp and
-               b.provider == ^fb.provider and b.platform == ^fb.platform and
-               b.environment == ^fb.environment
-         )}
+    query =
+      from(b in TokenBinding,
+        where:
+          b.binding_ref == ^scope.binding_ref and
+            b.subject_scope == ^scope.subject_scope and
+            b.subject_ref == ^scope.subject_ref and b.org_ref == ^scope.org_ref and
+            b.installation_ref == ^scope.installation_ref and
+            b.session_ref == ^scope.session_ref and b.session_version == ^scope.session_version and
+            b.app_identity_ref == ^scope.app_identity_ref and
+            b.provider == ^fb.provider and b.platform == ^fb.platform and
+            b.environment == ^fb.environment and b.state == :active
+      )
 
-      is_binary(tr) and byte_size(tr) > 0 ->
-        {:ok,
-         from(b in TokenBinding,
-           where:
-             b.state == :active and b.token_ref == ^tr and
-               b.provider == ^fb.provider and b.platform == ^fb.platform and
-               b.environment == ^fb.environment
-         )}
-
-      true ->
-        {:error, :feedback_missing_token_selector}
-    end
+    query = if is_binary(fp) and byte_size(fp) > 0, do: where(query, [b], b.token_fingerprint == ^fp), else: query
+    query = if is_binary(tr) and byte_size(tr) > 0, do: where(query, [b], b.token_ref == ^tr), else: query
+    {:ok, query}
   end
 
-  defp do_feedback_invalidate(fb, binding_state, binding_reason, now, opts) do
-    with {:ok, query} <- feedback_target_query(fb) do
+  defp do_feedback_invalidate(fb, scope, binding_state, binding_reason, now, opts) do
+    with {:ok, query} <- feedback_target_query(fb, scope) do
       result =
         Ecto.Multi.new()
         |> Ecto.Multi.run(:active_bindings, fn repo, _changes ->
@@ -966,8 +966,6 @@ defmodule CrosswakeExample.Chimeway.Registry do
           if Enum.empty?(bindings) do
             {:error, :no_active_bindings}
           else
-            binding_refs = Enum.map(bindings, & &1.binding_ref)
-
             terminal_ts_field =
               case binding_state do
                 :revoked -> [revoked_at: now]
@@ -979,7 +977,16 @@ defmodule CrosswakeExample.Chimeway.Registry do
             {count, _} =
               repo.update_all(
                 from(b in TokenBinding,
-                  where: b.binding_ref in ^binding_refs and b.state == :active
+                  where:
+                    b.binding_ref == ^scope.binding_ref and
+                      b.subject_scope == ^scope.subject_scope and
+                      b.subject_ref == ^scope.subject_ref and b.org_ref == ^scope.org_ref and
+                      b.installation_ref == ^scope.installation_ref and
+                      b.session_ref == ^scope.session_ref and
+                      b.session_version == ^scope.session_version and
+                      b.app_identity_ref == ^scope.app_identity_ref and
+                      b.provider == ^fb.provider and b.platform == ^fb.platform and
+                      b.environment == ^fb.environment and b.state == :active
                 ),
                 set:
                   [
@@ -1513,6 +1520,35 @@ defmodule CrosswakeExample.Chimeway.Registry do
          session_ref: ctx.session_ref,
          session_version: ctx.session_version
        }}
+    end
+  end
+
+  defp provider_feedback_scope(opts) do
+    with {:ok, context} <- required_option(opts, :authenticated_context),
+         {:ok, ctx} <- validate_context(context),
+         {:ok, binding_ref} <- required_option_string(opts, :binding_ref),
+         {:ok, installation_ref} <- required_option_string(opts, :installation_ref),
+         {:ok, session_ref} <- required_option_string(opts, :session_ref),
+         {:ok, session_version} <- required_option(opts, :session_version),
+         true <- is_integer(session_version) and session_version >= 0,
+         {:ok, app_identity_ref} <- required_option_string(opts, :app_identity_ref),
+         true <- ctx.installation_ref == installation_ref,
+         true <- ctx.session_ref == session_ref,
+         true <- ctx.session_version == session_version do
+      {:ok,
+       %{
+         binding_ref: binding_ref,
+         subject_scope: ctx.subject_scope,
+         subject_ref: ctx.subject_ref,
+         org_ref: ctx.org_ref,
+         installation_ref: installation_ref,
+         session_ref: session_ref,
+         session_version: session_version,
+         app_identity_ref: app_identity_ref
+       }}
+    else
+      false -> {:error, :invalid_provider_feedback_scope}
+      {:error, _reason} = error -> error
     end
   end
 

@@ -512,7 +512,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
       metadata: %{safe_key: "safe_value", apns_token: "raw_apns_token_should_not_leak_123"}
     }
 
-    {:ok, bind_result} = Registry.bind_or_rotate(context, evidence_v1)
+    {:ok, bind_result} = Registry.bind_or_rotate(context, evidence_v1, app_identity_ref: "com.example.phase60")
     binding_v1 = bind_result.binding
     audit_event_v1 = bind_result.audit_event
     result_v1 = bind_result.result
@@ -559,7 +559,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
 
     # --- Same-token refresh ---
     evidence_v1_refresh = %{evidence_v1 | notification_status: :granted}
-    {:ok, refresh_result} = Registry.bind_or_rotate(context, evidence_v1_refresh)
+    {:ok, refresh_result} = Registry.bind_or_rotate(context, evidence_v1_refresh, app_identity_ref: "com.example.phase60")
     binding_refreshed = refresh_result.binding
     refresh_event = refresh_result.audit_event
 
@@ -585,7 +585,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
       correlation_id: "corr_rotate_001"
     }
 
-    {:ok, rotate_result} = Registry.bind_or_rotate(context, evidence_v2)
+    {:ok, rotate_result} = Registry.bind_or_rotate(context, evidence_v2, app_identity_ref: "com.example.phase60")
     binding_v2 = rotate_result.binding
     audit_events_rotation = rotate_result.audit_events
     result_rotate = rotate_result.result
@@ -701,7 +701,28 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
           app_identity_posture: :matched
         }
 
-        Registry.bind_or_rotate(context, evidence)
+        Registry.bind_or_rotate(context, evidence,
+          app_identity_ref: opts[:app_identity_ref] || "com.example.phase60"
+        )
+      end
+
+      def provider_feedback_scope(binding) do
+        [
+          authenticated_context: %{
+            subject_scope: binding.subject_scope,
+            subject_ref: binding.subject_ref,
+            org_ref: binding.org_ref,
+            installation_ref: binding.installation_ref,
+            session_ref: binding.session_ref,
+            session_version: binding.session_version,
+            actor_kind: :backend
+          },
+          binding_ref: binding.binding_ref,
+          installation_ref: binding.installation_ref,
+          session_ref: binding.session_ref,
+          session_version: binding.session_version,
+          app_identity_ref: binding.app_identity_ref
+        ]
       end
     end
 
@@ -760,10 +781,26 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
     end
 
     # --- Permission loss revocation ---
-    {:ok, _} = Phase60TestHelpers.bind_session("sub_perm_loss", "sess_perm_001", "hmac-sha256:fp_perm_001",
+    {:ok, perm_bind} = Phase60TestHelpers.bind_session("sub_perm_loss", "sess_perm_001", "hmac-sha256:fp_perm_001",
       org_ref: "org_perm_test")
-    perm_context = %{subject_ref: "sub_perm_loss", org_ref: "org_perm_test"}
-    {:ok, perm_result} = Registry.revoke_for_permission_loss(perm_context)
+    perm_context = %{
+      subject_scope: :subject_session,
+      subject_ref: "sub_perm_loss",
+      org_ref: "org_perm_test",
+      installation_ref: perm_bind.binding.installation_ref,
+      session_ref: perm_bind.binding.session_ref,
+      session_version: perm_bind.binding.session_version,
+      actor_kind: :backend
+    }
+    {:ok, perm_result} =
+      Registry.revoke_for_permission_loss(perm_context,
+        binding_ref: perm_bind.binding.binding_ref,
+        installation_ref: perm_bind.binding.installation_ref,
+        provider: perm_bind.binding.provider,
+        platform: perm_bind.binding.platform,
+        environment: perm_bind.binding.environment,
+        app_identity_ref: perm_bind.binding.app_identity_ref
+      )
     assert perm_result.result.status == :revoked
 
     perm_bindings = Repo.all(from b in TokenBinding,
@@ -798,7 +835,8 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
       app_identity_posture: :matched
     }
 
-    {:ok, provider_result} = Registry.apply_provider_feedback(feedback_unregistered)
+    {:ok, provider_result} =
+      Registry.apply_provider_feedback(feedback_unregistered, Phase60TestHelpers.provider_feedback_scope(provider_binding))
     assert provider_result.result.status == :invalidated
 
     provider_bindings = Repo.all(from b in TokenBinding,
@@ -855,7 +893,8 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
       app_identity_posture: :mismatched
     }
 
-    {:ok, env_feedback_result} = Registry.apply_provider_feedback(feedback_env)
+    {:ok, env_feedback_result} =
+      Registry.apply_provider_feedback(feedback_env, Phase60TestHelpers.provider_feedback_scope(env_binding))
     assert env_feedback_result.result.status == :invalidated
 
     env_binding_after = Repo.get!(TokenBinding, env_binding.id)
@@ -1022,7 +1061,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
       notification_status: :granted,
       observed_at: DateTime.to_iso8601(DateTime.utc_now())
     }
-    {:ok, bind_a} = Registry.bind_or_rotate(context_a, evidence_a)
+    {:ok, bind_a} = Registry.bind_or_rotate(context_a, evidence_a, app_identity_ref: "com.example.phase60")
 
     context_b = %{
       subject_scope: :subject_session,
@@ -1040,13 +1079,14 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
       notification_status: :granted,
       observed_at: DateTime.to_iso8601(DateTime.utc_now())
     }
-    {:ok, bind_b} = Registry.bind_or_rotate(context_b, evidence_b)
+    {:ok, bind_b} = Registry.bind_or_rotate(context_b, evidence_b, app_identity_ref: "com.example.phase60")
 
     # Sanity: both bindings are active
     assert bind_a.binding.state == :active
     assert bind_b.binding.state == :active
 
-    # CR-01: feedback with NEITHER token_fingerprint NOR token_ref must fail closed
+    # Invalidating feedback with no authenticated exact scope must fail closed,
+    # even when provider evidence omits both token selectors.
     feedback_no_selector = %ProviderFeedback{
       provider: :apns,
       platform: :ios,
@@ -1058,8 +1098,8 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
     }
 
     result = Registry.apply_provider_feedback(feedback_no_selector)
-    assert result == {:error, :feedback_missing_token_selector},
-           "feedback with no token selector must return {:error, :feedback_missing_token_selector}, got: \#{inspect(result)}"
+    assert result == {:error, :no_active_bindings},
+           "feedback without authenticated exact scope must return {:error, :no_active_bindings}, got: \#{inspect(result)}"
 
     # Both bindings must still be active — no unbounded fan-out occurred
     binding_a_after = Repo.get!(TokenBinding, bind_a.binding.id)
@@ -1114,7 +1154,24 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
       token_fingerprint: "hmac-sha256:nonexistent_fingerprint_xyzzy"
     }
 
-    result = Registry.apply_provider_feedback(feedback_no_match)
+    no_match_scope = [
+      authenticated_context: %{
+        subject_scope: :subject_session,
+        subject_ref: "missing-subject",
+        org_ref: "missing-org",
+        installation_ref: "missing-installation",
+        session_ref: "missing-session",
+        session_version: 1,
+        actor_kind: :backend
+      },
+      binding_ref: "missing-binding",
+      installation_ref: "missing-installation",
+      session_ref: "missing-session",
+      session_version: 1,
+      app_identity_ref: "missing-app-identity"
+    ]
+
+    result = Registry.apply_provider_feedback(feedback_no_match, no_match_scope)
     assert result == {:error, :no_active_bindings},
            "invalidating feedback matching zero bindings must return {:error, :no_active_bindings}, got: \#{inspect(result)}"
 
