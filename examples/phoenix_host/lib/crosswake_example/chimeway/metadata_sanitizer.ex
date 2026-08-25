@@ -33,12 +33,29 @@ defmodule CrosswakeExample.Chimeway.MetadataSanitizer do
 
   @spec sanitize(map()) :: map()
   def sanitize(metadata) when is_map(metadata) do
-    Enum.reject(metadata, fn {key, _value} ->
-      (is_atom(key) and key in @forbidden_atom_keys) or
-        (is_binary(key) and key in @forbidden_string_keys)
-    end)
-    |> Map.new()
+    metadata
+    |> Enum.reject(fn {key, _value} -> forbidden_key?(key) end)
+    |> Map.new(fn {key, value} -> {key, sanitize_value(value)} end)
   end
 
   def sanitize(_metadata), do: %{}
+
+  defp sanitize_value(value) when is_map(value), do: sanitize(value)
+
+  defp sanitize_value(value) when is_list(value) do
+    if Keyword.keyword?(value) do
+      value
+      |> Enum.reject(fn {key, _value} -> forbidden_key?(key) end)
+      |> Enum.map(fn {key, nested_value} -> {key, sanitize_value(nested_value)} end)
+    else
+      Enum.map(value, &sanitize_value/1)
+    end
+  end
+
+  defp sanitize_value(value), do: value
+
+  defp forbidden_key?(key) do
+    (is_atom(key) and key in @forbidden_atom_keys) or
+      (is_binary(key) and key in @forbidden_string_keys)
+  end
 end

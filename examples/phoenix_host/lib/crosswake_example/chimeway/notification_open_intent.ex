@@ -6,6 +6,8 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntent do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias CrosswakeExample.Chimeway.MetadataSanitizer
+
   @states ["issued", "consumed", "revoked"]
   @scopes ["subject_session", "subject_installation"]
 
@@ -30,6 +32,8 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntent do
 
   @doc false
   def changeset(intent, attrs) do
+    attrs = normalize_metadata_attr(attrs)
+
     intent
     |> cast(attrs, [
       :open_ref,
@@ -56,6 +60,7 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntent do
       :state,
       :expires_at
     ])
+    |> sanitize_metadata()
     |> validate_inclusion(:scope, @scopes)
     |> validate_scope_consistency()
     |> validate_inclusion(:state, @states)
@@ -79,6 +84,30 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntent do
 
       _ ->
         changeset
+    end
+  end
+
+  defp sanitize_metadata(changeset) do
+    case get_change(changeset, :metadata) do
+      nil -> changeset
+      metadata -> put_change(changeset, :metadata, MetadataSanitizer.sanitize(metadata))
+    end
+  end
+
+  defp normalize_metadata_attr(attrs) when is_map(attrs) do
+    case Map.fetch(attrs, :metadata) do
+      {:ok, metadata} when not is_map(metadata) -> Map.put(attrs, :metadata, %{})
+      {:ok, _metadata} -> attrs
+      :error -> normalize_string_metadata_attr(attrs)
+    end
+  end
+
+  defp normalize_metadata_attr(attrs), do: attrs
+
+  defp normalize_string_metadata_attr(attrs) do
+    case Map.fetch(attrs, "metadata") do
+      {:ok, metadata} when not is_map(metadata) -> Map.put(attrs, "metadata", %{})
+      _ -> attrs
     end
   end
 end
