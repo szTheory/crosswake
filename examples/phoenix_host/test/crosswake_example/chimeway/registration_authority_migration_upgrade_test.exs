@@ -31,8 +31,10 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
     missing = ["binding-missing", "subject-missing", "org-missing", "session-missing", 1, "installation-missing", "apns", "ios", "production", "unknown", "token-ref-missing", "fingerprint-missing", "granted", "active", "initial_bind", now, now, "correlation-missing", "{}", now, now]
     Repo.query!("INSERT INTO chimeway_token_bindings (binding_ref, subject_ref, org_ref, session_ref, session_version, installation_ref, provider, platform, environment, app_identity_posture, token_ref, token_fingerprint, notification_status, state, reason, bound_at, last_seen_at, audit_correlation_ref, metadata, inserted_at, updated_at, subject_scope) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'subject_session')", binding)
     Repo.query!("INSERT INTO chimeway_token_bindings (binding_ref, subject_ref, org_ref, session_ref, session_version, installation_ref, provider, platform, environment, app_identity_posture, token_ref, token_fingerprint, notification_status, state, reason, bound_at, last_seen_at, audit_correlation_ref, metadata, inserted_at, updated_at, subject_scope) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'subject_session')", missing)
+    Repo.query!("UPDATE chimeway_token_bindings SET state = 'revoked' WHERE binding_ref = 'binding-missing'")
     Repo.query!("INSERT INTO chimeway_notification_open_intents (id, open_ref, binding_ref, route_id, state, expires_at, inserted_at, updated_at) VALUES ('intent-valid', 'open-valid', 'binding-valid', 'route', 'issued', ?, ?, ?)", [expires_at, now, now])
     Repo.query!("INSERT INTO chimeway_notification_open_intents (id, open_ref, binding_ref, route_id, state, expires_at, inserted_at, updated_at) VALUES ('intent-unmatched', 'open-unmatched', 'missing-binding', 'route', 'issued', ?, ?, ?)", [now, now, now])
+    Repo.query!("INSERT INTO chimeway_notification_open_intents (id, open_ref, binding_ref, route_id, state, expires_at, inserted_at, updated_at) VALUES ('intent-inactive', 'open-inactive', 'binding-missing', 'route', 'issued', ?, ?, ?)", [now, now, now])
 
     # This column represents a host which ran the briefly released rewritten
     # migration. The forward migration must support it as well as the pristine
@@ -69,6 +71,8 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
     assert [tenant, subject, session, version, scope, state] == ["org", "subject", "session", 1, "subject_session", "issued"]
     [[unmatched_state]] = Repo.query!("SELECT state FROM chimeway_notification_open_intents WHERE open_ref = 'open-unmatched'").rows
     assert unmatched_state == "revoked"
+    [[inactive_state]] = Repo.query!("SELECT state FROM chimeway_notification_open_intents WHERE open_ref = 'open-inactive'").rows
+    assert inactive_state == "revoked"
     [[legacy_state, legacy_marker]] = Repo.query!("SELECT state, app_identity_ref FROM chimeway_token_bindings WHERE binding_ref = 'binding-missing'").rows
     assert legacy_state == "invalid"
     assert legacy_marker == "legacy_non_authoritative"
