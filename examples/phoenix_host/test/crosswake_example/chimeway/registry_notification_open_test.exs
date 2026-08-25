@@ -466,4 +466,35 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
     assert {:ok, replay} = Registry.consume_intent(evidence)
     assert replay.state == :replayed
   end
+
+  test "issued intents never persist raw notification metadata", %{
+    open_ref: open_ref,
+    binding: binding
+  } do
+    raw_token = "persisted-raw-token-sentinel"
+    body = "persisted-notification-body-sentinel"
+    payload = "persisted-provider-payload-sentinel"
+
+    assert {:ok, %{intent: intent}} =
+             Registry.issue_notification_open_intent(%{
+               open_ref: open_ref,
+               binding_ref: binding.binding_ref,
+               route_id: "dashboard",
+               expires_at: DateTime.add(DateTime.utc_now(), 3600, :second),
+               metadata: %{
+                 "safe" => "explainable",
+                 "raw_token" => raw_token,
+                 "notification_body" => body,
+                 "nested" => %{"provider_payload" => payload, "safe_nested" => "kept"}
+               }
+             })
+
+    persisted = Repo.get!(NotificationOpenIntent, intent.id)
+
+    assert persisted.metadata["safe"] == "explainable"
+    assert persisted.metadata["nested"]["safe_nested"] == "kept"
+    refute inspect(persisted) =~ raw_token
+    refute inspect(persisted) =~ body
+    refute inspect(persisted) =~ payload
+  end
 end

@@ -51,5 +51,48 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntentTest do
       refute changeset.valid?
       assert "is invalid" in errors_on(changeset).state
     end
+
+    test "recursively removes forbidden metadata while preserving safe siblings" do
+      raw_token = "intent-raw-token-sentinel"
+      body = "intent-notification-body-sentinel"
+      payload = "intent-provider-payload-sentinel"
+
+      changeset =
+        NotificationOpenIntent.changeset(
+          %NotificationOpenIntent{},
+          Map.put(@valid_attrs, :metadata, %{
+            "safe_top_level" => "kept",
+            "notification_body" => body,
+            "nested" => %{
+              "provider_payload" => payload,
+              "safe_nested" => "kept"
+            },
+            "list" => [
+              %{"safe_list" => "kept", device_token: raw_token},
+              [provider_response_body: payload, safe_keyword: "kept"]
+            ],
+            raw_token: raw_token
+          })
+        )
+
+      metadata = Ecto.Changeset.get_change(changeset, :metadata)
+
+      assert metadata["safe_top_level"] == "kept"
+      assert metadata["nested"]["safe_nested"] == "kept"
+      assert inspect(metadata) =~ "kept"
+      refute inspect(metadata) =~ raw_token
+      refute inspect(metadata) =~ body
+      refute inspect(metadata) =~ payload
+    end
+
+    test "projects non-map metadata to an empty map" do
+      changeset =
+        NotificationOpenIntent.changeset(
+          %NotificationOpenIntent{},
+          Map.put(@valid_attrs, :metadata, ["untrusted"])
+        )
+
+      assert Ecto.Changeset.get_change(changeset, :metadata) == %{}
+    end
   end
 end
