@@ -16,8 +16,10 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
 
   defp auth_context(binding) do
     %{
+      subject_scope: binding.subject_scope,
       tenant_ref: binding.org_ref,
       subject_ref: binding.subject_ref,
+      installation_ref: binding.installation_ref,
       session_ref: binding.session_ref,
       session_version: binding.session_version
     }

@@ -7,6 +7,7 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntent do
   import Ecto.Changeset
 
   @states ["issued", "consumed", "revoked"]
+  @scopes ["subject_session", "subject_installation"]
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "chimeway_notification_open_intents" do
@@ -50,13 +51,34 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntent do
       :binding_ref,
       :tenant_ref,
       :subject_ref,
-      :session_ref,
-      :session_version,
       :route_id,
+      :scope,
       :state,
       :expires_at
     ])
+    |> validate_inclusion(:scope, @scopes)
+    |> validate_scope_consistency()
     |> validate_inclusion(:state, @states)
     |> unique_constraint(:open_ref)
+  end
+
+  defp validate_scope_consistency(changeset) do
+    case get_field(changeset, :scope) do
+      "subject_session" ->
+        changeset
+        |> validate_required([:session_ref, :session_version])
+        |> validate_number(:session_version, greater_than_or_equal_to: 0)
+
+      "subject_installation" ->
+        if is_nil(get_field(changeset, :session_ref)) and
+             is_nil(get_field(changeset, :session_version)) do
+          changeset
+        else
+          add_error(changeset, :scope, "requires nil session authority")
+        end
+
+      _ ->
+        changeset
+    end
   end
 end

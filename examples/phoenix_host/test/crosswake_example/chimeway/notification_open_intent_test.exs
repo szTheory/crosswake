@@ -22,7 +22,7 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntentTest do
       route_id: "dashboard",
       state: "issued",
       expires_at: ~U[2026-06-03 00:00:00Z],
-      scope: "test_scope",
+      scope: "subject_session",
       metadata: %{"key" => "value"}
     }
 

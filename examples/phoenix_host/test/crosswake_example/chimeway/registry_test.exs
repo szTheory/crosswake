@@ -316,12 +316,31 @@ defmodule CrosswakeExample.Chimeway.RegistryTest do
     other_installation_ctx =
       context(%{subject_scope: :subject_installation, session_ref: nil, session_version: nil})
 
-    assert {:ok, %{binding: target}} =
-             Registry.bind_or_rotate(
-               installation_ctx,
-               evidence(fingerprint, installation_ctx.installation_ref),
-               app_identity_ref: "com.example.crosswake.installation"
-             )
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    target =
+      Repo.insert!(%TokenBinding{
+        binding_ref: unique_ref("installation_binding"),
+        subject_scope: :subject_installation,
+        subject_ref: installation_ctx.subject_ref,
+        org_ref: installation_ctx.org_ref,
+        session_ref: nil,
+        session_version: nil,
+        installation_ref: installation_ctx.installation_ref,
+        provider: :apns,
+        platform: :ios,
+        environment: :production,
+        app_identity_posture: :unknown,
+        app_identity_ref: "com.example.crosswake.installation",
+        token_ref: unique_ref("installation_token"),
+        token_fingerprint: fingerprint,
+        notification_status: :granted,
+        state: :active,
+        reason: :initial_bind,
+        audit_correlation_ref: unique_ref("installation_correlation"),
+        bound_at: now,
+        last_seen_at: now
+      })
 
     assert {:ok, %{binding: session_control}} =
              Registry.bind_or_rotate(
@@ -330,15 +349,29 @@ defmodule CrosswakeExample.Chimeway.RegistryTest do
                app_identity_ref: "com.example.crosswake.session-control"
              )
 
-    assert {:ok, %{binding: other_installation_control}} =
-             Registry.bind_or_rotate(
-               other_installation_ctx,
-               evidence(
-                 unique_ref("other_installation_control"),
-                 other_installation_ctx.installation_ref
-               ),
-               app_identity_ref: "com.example.crosswake.other-installation"
-             )
+    other_installation_control =
+      Repo.insert!(%TokenBinding{
+        binding_ref: unique_ref("other_installation_binding"),
+        subject_scope: :subject_installation,
+        subject_ref: other_installation_ctx.subject_ref,
+        org_ref: other_installation_ctx.org_ref,
+        session_ref: nil,
+        session_version: nil,
+        installation_ref: other_installation_ctx.installation_ref,
+        provider: :apns,
+        platform: :ios,
+        environment: :production,
+        app_identity_posture: :unknown,
+        app_identity_ref: "com.example.crosswake.other-installation",
+        token_ref: unique_ref("other_installation_token"),
+        token_fingerprint: unique_ref("other_installation_fingerprint"),
+        notification_status: :granted,
+        state: :active,
+        reason: :initial_bind,
+        audit_correlation_ref: unique_ref("other_installation_correlation"),
+        bound_at: now,
+        last_seen_at: now
+      })
 
     feedback = %Crosswake.Companions.Chimeway.Contracts.ProviderFeedback{
       provider: :apns,

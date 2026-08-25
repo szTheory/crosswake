@@ -943,14 +943,23 @@ defmodule CrosswakeExample.Chimeway.Registry do
             b.subject_scope == ^scope.subject_scope and
             b.subject_ref == ^scope.subject_ref and b.org_ref == ^scope.org_ref and
             b.installation_ref == ^scope.installation_ref and
-            b.session_ref == ^scope.session_ref and b.session_version == ^scope.session_version and
             b.app_identity_ref == ^scope.app_identity_ref and
             b.provider == ^fb.provider and b.platform == ^fb.platform and
             b.environment == ^fb.environment and b.state == :active
       )
 
-    query = if is_binary(fp) and byte_size(fp) > 0, do: where(query, [b], b.token_fingerprint == ^fp), else: query
-    query = if is_binary(tr) and byte_size(tr) > 0, do: where(query, [b], b.token_ref == ^tr), else: query
+    query = apply_binding_scope(query, scope)
+
+    query =
+      if is_binary(fp) and byte_size(fp) > 0,
+        do: where(query, [b], b.token_fingerprint == ^fp),
+        else: query
+
+    query =
+      if is_binary(tr) and byte_size(tr) > 0,
+        do: where(query, [b], b.token_ref == ^tr),
+        else: query
+
     {:ok, query}
   end
 
@@ -974,20 +983,21 @@ defmodule CrosswakeExample.Chimeway.Registry do
                 _ -> []
               end
 
+            update_query =
+              from(b in TokenBinding,
+                where:
+                  b.binding_ref == ^scope.binding_ref and
+                    b.subject_scope == ^scope.subject_scope and
+                    b.subject_ref == ^scope.subject_ref and b.org_ref == ^scope.org_ref and
+                    b.installation_ref == ^scope.installation_ref and
+                    b.app_identity_ref == ^scope.app_identity_ref and
+                    b.provider == ^fb.provider and b.platform == ^fb.platform and
+                    b.environment == ^fb.environment and b.state == :active
+              )
+
             {count, _} =
               repo.update_all(
-                from(b in TokenBinding,
-                  where:
-                    b.binding_ref == ^scope.binding_ref and
-                      b.subject_scope == ^scope.subject_scope and
-                      b.subject_ref == ^scope.subject_ref and b.org_ref == ^scope.org_ref and
-                      b.installation_ref == ^scope.installation_ref and
-                      b.session_ref == ^scope.session_ref and
-                      b.session_version == ^scope.session_version and
-                      b.app_identity_ref == ^scope.app_identity_ref and
-                      b.provider == ^fb.provider and b.platform == ^fb.platform and
-                      b.environment == ^fb.environment and b.state == :active
-                ),
+                apply_binding_scope(update_query, scope),
                 set:
                   [
                     state: binding_state,
@@ -1293,8 +1303,8 @@ defmodule CrosswakeExample.Chimeway.Registry do
           attrs
           |> Map.put(:tenant_ref, binding.org_ref)
           |> Map.put(:subject_ref, binding.subject_ref)
-          |> Map.put(:session_ref, binding.session_ref)
-          |> Map.put(:session_version, binding.session_version)
+          |> Map.put(:scope, Atom.to_string(binding.subject_scope))
+          |> put_intent_session_authority(binding)
 
         repo.insert(NotificationOpenIntent.changeset(%NotificationOpenIntent{}, attrs))
       end)
@@ -1338,26 +1348,30 @@ defmodule CrosswakeExample.Chimeway.Registry do
   defp consume_current_intent(_evidence, :invalid, _now), do: {:denied, :binding_mismatch}
 
   defp consume_current_intent(evidence, scope, now) do
+    binding_query =
+      from(b in TokenBinding,
+        where:
+          b.binding_ref == parent_as(:intent).binding_ref and b.state == :active and
+            b.org_ref == parent_as(:intent).tenant_ref and
+            b.subject_ref == parent_as(:intent).subject_ref and
+            b.installation_ref == ^scope.installation_ref and
+            b.subject_scope == ^scope.subject_scope
+      )
+
+    binding_query = apply_intent_binding_scope(binding_query, scope)
+
     query =
       from(i in NotificationOpenIntent,
         as: :intent,
         where:
           i.open_ref == ^evidence.open_ref and i.binding_ref == ^evidence.binding_ref and
             i.tenant_ref == ^scope.tenant_ref and i.subject_ref == ^scope.subject_ref and
-            i.session_ref == ^scope.session_ref and i.session_version == ^scope.session_version and
+            i.scope == ^scope.scope and
             i.state == "issued" and i.expires_at > ^now,
-        where:
-          exists(
-            from(b in TokenBinding,
-              where:
-                b.binding_ref == parent_as(:intent).binding_ref and b.state == :active and
-                  b.org_ref == parent_as(:intent).tenant_ref and
-                  b.subject_ref == parent_as(:intent).subject_ref and
-                  b.session_ref == parent_as(:intent).session_ref and
-                  b.session_version == parent_as(:intent).session_version
-            )
-          )
+        where: exists(binding_query)
       )
+
+    query = apply_intent_scope(query, scope)
 
     case Repo.update_all(query, set: [state: "consumed", consumed_at: now, updated_at: now]) do
       {1, _} ->
@@ -1399,26 +1413,36 @@ defmodule CrosswakeExample.Chimeway.Registry do
         cond do
           scope == :invalid -> :binding_mismatch
           not intent_scope_matches?(intent, scope) -> :binding_mismatch
-          not active_binding_matches?(intent) -> :binding_revoked
+          not active_binding_matches?(intent, scope) -> :binding_revoked
           true -> :replayed
         end
     end
   end
 
-  defp active_binding_matches?(intent) do
-    Repo.exists?(
+  defp active_binding_matches?(intent, scope) do
+    query =
       from(b in TokenBinding,
         where:
           b.binding_ref == ^intent.binding_ref and b.state == :active and
             b.org_ref == ^intent.tenant_ref and b.subject_ref == ^intent.subject_ref and
-            b.session_ref == ^intent.session_ref and b.session_version == ^intent.session_version
+            b.installation_ref == ^scope.installation_ref and
+            b.subject_scope == ^scope.subject_scope
       )
-    )
+
+    Repo.exists?(apply_binding_scope(query, scope))
   end
 
   defp intent_scope_matches?(intent, scope) do
     intent.tenant_ref == scope.tenant_ref and intent.subject_ref == scope.subject_ref and
-      intent.session_ref == scope.session_ref and intent.session_version == scope.session_version
+      intent.scope == scope.scope and
+      case scope.subject_scope do
+        :subject_session ->
+          intent.session_ref == scope.session_ref and
+            intent.session_version == scope.session_version
+
+        :subject_installation ->
+          is_nil(intent.session_ref) and is_nil(intent.session_version)
+      end
   end
 
   defp notification_open_scope(auth_context) when is_map(auth_context) do
@@ -1427,22 +1451,96 @@ defmodule CrosswakeExample.Chimeway.Registry do
     with tenant_ref when is_binary(tenant_ref) and tenant_ref != "" <- tenant_ref,
          subject_ref when is_binary(subject_ref) and subject_ref != "" <-
            Map.get(auth_context, :subject_ref),
-         session_ref when is_binary(session_ref) and session_ref != "" <-
-           Map.get(auth_context, :session_ref),
-         session_version when is_integer(session_version) and session_version >= 0 <-
-           Map.get(auth_context, :session_version) do
-      %{
-        tenant_ref: tenant_ref,
-        subject_ref: subject_ref,
-        session_ref: session_ref,
-        session_version: session_version
-      }
+         installation_ref when is_binary(installation_ref) and installation_ref != "" <-
+           Map.get(auth_context, :installation_ref) do
+      case Map.get(auth_context, :subject_scope) do
+        :subject_session ->
+          with session_ref when is_binary(session_ref) and session_ref != "" <-
+                 Map.get(auth_context, :session_ref),
+               session_version when is_integer(session_version) and session_version >= 0 <-
+                 Map.get(auth_context, :session_version) do
+            %{
+              tenant_ref: tenant_ref,
+              subject_ref: subject_ref,
+              installation_ref: installation_ref,
+              subject_scope: :subject_session,
+              scope: "subject_session",
+              session_ref: session_ref,
+              session_version: session_version
+            }
+          else
+            _ -> :invalid
+          end
+
+        :subject_installation ->
+          %{
+            tenant_ref: tenant_ref,
+            subject_ref: subject_ref,
+            installation_ref: installation_ref,
+            subject_scope: :subject_installation,
+            scope: "subject_installation",
+            session_ref: nil,
+            session_version: nil
+          }
+
+        _ ->
+          :invalid
+      end
     else
       _ -> :invalid
     end
   end
 
   defp notification_open_scope(_auth_context), do: :invalid
+
+  defp apply_binding_scope(query, %{subject_scope: :subject_session} = scope) do
+    where(
+      query,
+      [b],
+      b.session_ref == ^scope.session_ref and b.session_version == ^scope.session_version
+    )
+  end
+
+  defp apply_binding_scope(query, %{subject_scope: :subject_installation}) do
+    where(query, [b], is_nil(b.session_ref) and is_nil(b.session_version))
+  end
+
+  defp apply_intent_scope(query, %{subject_scope: :subject_session} = scope) do
+    where(
+      query,
+      [i],
+      i.session_ref == ^scope.session_ref and i.session_version == ^scope.session_version
+    )
+  end
+
+  defp apply_intent_scope(query, %{subject_scope: :subject_installation}) do
+    where(query, [i], is_nil(i.session_ref) and is_nil(i.session_version))
+  end
+
+  defp apply_intent_binding_scope(query, %{subject_scope: :subject_session}) do
+    where(
+      query,
+      [b],
+      b.session_ref == parent_as(:intent).session_ref and
+        b.session_version == parent_as(:intent).session_version
+    )
+  end
+
+  defp apply_intent_binding_scope(query, %{subject_scope: :subject_installation}) do
+    where(query, [b], is_nil(b.session_ref) and is_nil(b.session_version))
+  end
+
+  defp put_intent_session_authority(attrs, %{subject_scope: :subject_session} = binding) do
+    attrs
+    |> Map.put(:session_ref, binding.session_ref)
+    |> Map.put(:session_version, binding.session_version)
+  end
+
+  defp put_intent_session_authority(attrs, %{subject_scope: :subject_installation}) do
+    attrs
+    |> Map.put(:session_ref, nil)
+    |> Map.put(:session_version, nil)
+  end
 
   defp open_resolution(open_ref, :valid, now, intent) do
     {:ok,
@@ -1528,24 +1626,46 @@ defmodule CrosswakeExample.Chimeway.Registry do
          {:ok, ctx} <- validate_context(context),
          {:ok, binding_ref} <- required_option_string(opts, :binding_ref),
          {:ok, installation_ref} <- required_option_string(opts, :installation_ref),
-         {:ok, session_ref} <- required_option_string(opts, :session_ref),
-         {:ok, session_version} <- required_option(opts, :session_version),
-         true <- is_integer(session_version) and session_version >= 0,
          {:ok, app_identity_ref} <- required_option_string(opts, :app_identity_ref),
-         true <- ctx.installation_ref == installation_ref,
-         true <- ctx.session_ref == session_ref,
-         true <- ctx.session_version == session_version do
-      {:ok,
-       %{
-         binding_ref: binding_ref,
-         subject_scope: ctx.subject_scope,
-         subject_ref: ctx.subject_ref,
-         org_ref: ctx.org_ref,
-         installation_ref: installation_ref,
-         session_ref: session_ref,
-         session_version: session_version,
-         app_identity_ref: app_identity_ref
-       }}
+         true <- ctx.installation_ref == installation_ref do
+      case ctx.subject_scope do
+        :subject_session ->
+          with {:ok, session_ref} <- required_option_string(opts, :session_ref),
+               {:ok, session_version} <- required_option(opts, :session_version),
+               true <- is_integer(session_version) and session_version >= 0,
+               true <- ctx.session_ref == session_ref,
+               true <- ctx.session_version == session_version do
+            {:ok,
+             %{
+               binding_ref: binding_ref,
+               subject_scope: :subject_session,
+               subject_ref: ctx.subject_ref,
+               org_ref: ctx.org_ref,
+               installation_ref: installation_ref,
+               session_ref: session_ref,
+               session_version: session_version,
+               app_identity_ref: app_identity_ref
+             }}
+          else
+            _ -> {:error, :invalid_provider_feedback_scope}
+          end
+
+        :subject_installation when is_nil(ctx.session_ref) and is_nil(ctx.session_version) ->
+          {:ok,
+           %{
+             binding_ref: binding_ref,
+             subject_scope: :subject_installation,
+             subject_ref: ctx.subject_ref,
+             org_ref: ctx.org_ref,
+             installation_ref: installation_ref,
+             session_ref: nil,
+             session_version: nil,
+             app_identity_ref: app_identity_ref
+           }}
+
+        _ ->
+          {:error, :invalid_provider_feedback_scope}
+      end
     else
       false -> {:error, :invalid_provider_feedback_scope}
       {:error, _reason} = error -> error
