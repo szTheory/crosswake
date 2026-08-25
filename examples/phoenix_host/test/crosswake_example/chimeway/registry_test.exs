@@ -240,6 +240,61 @@ defmodule CrosswakeExample.Chimeway.RegistryTest do
            )
   end
 
+  test "invalidating provider feedback only mutates its authenticated exact binding scope" do
+    fingerprint = unique_ref("shared_fingerprint")
+    ctx = context()
+
+    assert {:ok, %{binding: target}} =
+             Registry.bind_or_rotate(
+               ctx,
+               evidence(fingerprint, ctx.installation_ref, %{token_ref: "shared-token"}),
+               app_identity_ref: "com.example.crosswake.target"
+             )
+
+    other_ctx =
+      context(%{
+        subject_ref: unique_ref("other_subject"),
+        org_ref: unique_ref("other_org"),
+        installation_ref: unique_ref("other_installation"),
+        session_ref: unique_ref("other_session"),
+        session_version: 2
+      })
+
+    assert {:ok, %{binding: other}} =
+             Registry.bind_or_rotate(
+               other_ctx,
+               evidence(fingerprint, other_ctx.installation_ref, %{token_ref: "shared-token"}),
+               app_identity_ref: "com.example.crosswake.other"
+             )
+
+    feedback = %Crosswake.Companions.Chimeway.Contracts.ProviderFeedback{
+      provider: :apns,
+      platform: :ios,
+      environment: :production,
+      feedback_event: :token_unregistered,
+      occurred_at: "2026-08-24T12:00:00Z",
+      token_ref: "shared-token",
+      token_fingerprint: fingerprint
+    }
+
+    scope = [
+      authenticated_context: ctx,
+      binding_ref: target.binding_ref,
+      app_identity_ref: "com.example.crosswake.target",
+      installation_ref: ctx.installation_ref,
+      session_ref: ctx.session_ref,
+      session_version: ctx.session_version
+    ]
+
+    assert {:ok, %{bindings: [revoked]}} = Registry.apply_provider_feedback(feedback, scope)
+    assert revoked.binding_ref == target.binding_ref
+    assert %TokenBinding{state: :revoked} = Repo.get_by!(TokenBinding, binding_ref: target.binding_ref)
+    assert %TokenBinding{state: :active} = Repo.get_by!(TokenBinding, binding_ref: other.binding_ref)
+
+    assert {:error, :no_active_bindings} = Registry.apply_provider_feedback(feedback, [])
+    assert %TokenBinding{state: :active} = Repo.get_by!(TokenBinding, binding_ref: other.binding_ref)
+  end
+
   defp await_barrier(table, total) do
     :ets.update_counter(table, :ready, {2, 1})
     wait_for_barrier(table, total)
