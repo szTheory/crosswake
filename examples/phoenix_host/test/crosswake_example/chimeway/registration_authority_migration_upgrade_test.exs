@@ -215,7 +215,7 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
                [intent.id]
              ).rows
 
-    Ecto.Migrator.run(Repo, path, :down, to: 20_260_825_190_000)
+    Ecto.Migrator.run(Repo, path, :down, step: 1)
 
     assert [] ==
              Repo.query!(

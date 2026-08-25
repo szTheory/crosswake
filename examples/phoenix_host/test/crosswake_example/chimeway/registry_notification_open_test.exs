@@ -526,7 +526,9 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
                expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
              })
 
-    assert {:error, _changeset} = Repo.delete(intent)
+    assert_raise Exqlite.Error, fn ->
+      Repo.delete!(intent)
+    end
     assert %NotificationOpenIntent{id: intent_id} = Repo.get(NotificationOpenIntent, intent.id)
 
     assert [%NotificationOpenIntentEvent{id: event_id, event_type: "issued"}] =
