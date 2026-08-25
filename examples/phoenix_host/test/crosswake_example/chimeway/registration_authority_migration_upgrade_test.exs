@@ -25,12 +25,13 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
     path = Path.expand("priv/repo/migrations", File.cwd!())
     Ecto.Migrator.run(Repo, path, :up, to: 20_260_603_000_000)
 
-    now = "2026-08-24 12:00:00"
+    now = DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_iso8601()
+    expires_at = DateTime.add(DateTime.utc_now(), 3600, :second) |> DateTime.truncate(:second) |> DateTime.to_iso8601()
     binding = ["binding-valid", "subject", "org", "session", 1, "installation", "apns", "ios", "production", "matched", "token-ref", "fingerprint-valid", "granted", "active", "initial_bind", now, now, "correlation", "{}", now, now]
     missing = ["binding-missing", "subject-missing", "org-missing", "session-missing", 1, "installation-missing", "apns", "ios", "production", "unknown", "token-ref-missing", "fingerprint-missing", "granted", "active", "initial_bind", now, now, "correlation-missing", "{}", now, now]
     Repo.query!("INSERT INTO chimeway_token_bindings (binding_ref, subject_ref, org_ref, session_ref, session_version, installation_ref, provider, platform, environment, app_identity_posture, token_ref, token_fingerprint, notification_status, state, reason, bound_at, last_seen_at, audit_correlation_ref, metadata, inserted_at, updated_at, subject_scope) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'subject_session')", binding)
     Repo.query!("INSERT INTO chimeway_token_bindings (binding_ref, subject_ref, org_ref, session_ref, session_version, installation_ref, provider, platform, environment, app_identity_posture, token_ref, token_fingerprint, notification_status, state, reason, bound_at, last_seen_at, audit_correlation_ref, metadata, inserted_at, updated_at, subject_scope) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'subject_session')", missing)
-    Repo.query!("INSERT INTO chimeway_notification_open_intents (id, open_ref, binding_ref, route_id, state, expires_at, inserted_at, updated_at) VALUES ('intent-valid', 'open-valid', 'binding-valid', 'route', 'issued', ?, ?, ?)", [now, now, now])
+    Repo.query!("INSERT INTO chimeway_notification_open_intents (id, open_ref, binding_ref, route_id, state, expires_at, inserted_at, updated_at) VALUES ('intent-valid', 'open-valid', 'binding-valid', 'route', 'issued', ?, ?, ?)", [expires_at, now, now])
     Repo.query!("INSERT INTO chimeway_notification_open_intents (id, open_ref, binding_ref, route_id, state, expires_at, inserted_at, updated_at) VALUES ('intent-unmatched', 'open-unmatched', 'missing-binding', 'route', 'issued', ?, ?, ?)", [now, now, now])
 
     # This column represents a host which ran the briefly released rewritten
@@ -53,6 +54,9 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
 
     Ecto.Migrator.run(Repo, path, :up, to: 20_260_824_210_000)
 
+    [[scope_before_upgrade]] = Repo.query!("SELECT scope FROM chimeway_notification_open_intents WHERE open_ref = 'open-valid'").rows
+    assert is_nil(scope_before_upgrade)
+
     malformed = ["binding-malformed-installation", "subject-malformed", "org-malformed", "session-malformed", 1, "installation-malformed", "apns", "ios", "production", "unknown", "com.example.host", "token-malformed", "fingerprint-malformed", "granted", "active", "initial_bind", now, now, "correlation-malformed", "{}", now, now]
     installation_control = ["binding-installation-control", "subject-installation-control", "org-installation-control", nil, nil, "installation-control", "apns", "ios", "production", "unknown", "com.example.host", "token-installation-control", "fingerprint-installation-control", "granted", "active", "initial_bind", now, now, "correlation-installation-control", "{}", now, now]
 
@@ -61,8 +65,8 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
 
     Ecto.Migrator.run(Repo, path, :up, all: true)
 
-    [[tenant, subject, session, version, state]] = Repo.query!("SELECT tenant_ref, subject_ref, session_ref, session_version, state FROM chimeway_notification_open_intents WHERE open_ref = 'open-valid'").rows
-    assert [tenant, subject, session, version, state] == ["org", "subject", "session", 1, "issued"]
+    [[tenant, subject, session, version, scope, state]] = Repo.query!("SELECT tenant_ref, subject_ref, session_ref, session_version, scope, state FROM chimeway_notification_open_intents WHERE open_ref = 'open-valid'").rows
+    assert [tenant, subject, session, version, scope, state] == ["org", "subject", "session", 1, "subject_session", "issued"]
     [[unmatched_state]] = Repo.query!("SELECT state FROM chimeway_notification_open_intents WHERE open_ref = 'open-unmatched'").rows
     assert unmatched_state == "revoked"
     [[legacy_state, legacy_marker]] = Repo.query!("SELECT state, app_identity_ref FROM chimeway_token_bindings WHERE binding_ref = 'binding-missing'").rows
@@ -106,6 +110,33 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
     assert_raise Exqlite.Error, fn ->
       Repo.query!("UPDATE chimeway_token_bindings SET session_ref = 'unexpected', session_version = 1 WHERE binding_ref = 'binding-direct-valid'")
     end
+
+    alias Crosswake.Companions.Chimeway.Contracts.NotificationOpenEvidence
+    alias CrosswakeExample.Chimeway.{NotificationOpenIntent, NotificationOpenIntentEvent, Registry}
+
+    evidence = %NotificationOpenEvidence{
+      route_id: "untrusted-route",
+      action_ref: "untrusted-action",
+      open_ref: "open-valid",
+      binding_ref: "binding-valid",
+      provider: :apns,
+      auth_context: %{
+        tenant_ref: "org",
+        subject_ref: "subject",
+        installation_ref: "installation",
+        subject_scope: :subject_session,
+        session_ref: "session",
+        session_version: 1
+      }
+    }
+
+    assert {:ok, %{state: :valid}} = Registry.consume_intent(evidence)
+    assert {:ok, %{state: :replayed}} = Registry.consume_intent(evidence)
+
+    intent = Repo.get_by!(NotificationOpenIntent, open_ref: "open-valid")
+    assert intent.state == "consumed"
+    assert intent.consumed_at
+    assert Repo.exists?(from(event in NotificationOpenIntentEvent, where: event.open_intent_id == ^intent.id and event.event_type == "consumed"))
     """
 
     assert {output, 0} =
