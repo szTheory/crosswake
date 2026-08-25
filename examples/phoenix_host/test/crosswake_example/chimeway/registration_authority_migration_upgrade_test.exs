@@ -59,6 +59,11 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
     [[scope_before_upgrade]] = Repo.query!("SELECT scope FROM chimeway_notification_open_intents WHERE open_ref = 'open-valid'").rows
     assert is_nil(scope_before_upgrade)
 
+    # The released authority migration already closes an absent binding. Reissue
+    # this legacy control at the 20260825190000 boundary so the forward
+    # reconciliation itself proves its durable denied-open explanation.
+    Repo.query!("UPDATE chimeway_notification_open_intents SET state = 'issued' WHERE open_ref = 'open-unmatched'")
+
     malformed = ["binding-malformed-installation", "subject-malformed", "org-malformed", "session-malformed", 1, "installation-malformed", "apns", "ios", "production", "unknown", "com.example.host", "token-malformed", "fingerprint-malformed", "granted", "active", "initial_bind", now, now, "correlation-malformed", "{}", now, now]
     installation_control = ["binding-installation-control", "subject-installation-control", "org-installation-control", nil, nil, "installation-control", "apns", "ios", "production", "unknown", "com.example.host", "token-installation-control", "fingerprint-installation-control", "granted", "active", "initial_bind", now, now, "correlation-installation-control", "{}", now, now]
 
