@@ -52,14 +52,19 @@ public actor NotificationOpenQueue {
     }
 
     public func enqueue(_ evidence: NotificationOpenEvidence) throws {
-        pruneExpired()
+        let changed = pruneAndCompactPendingItems()
+        if items.contains(where: { $0.evidence.openRef == evidence.openRef }) {
+            if changed { try persist() }
+            return
+        }
+
         items.append(StoredItem(id: UUID(), evidence: evidence, enqueuedAt: now(), state: .pending))
         trimToCount()
         try persist()
     }
 
     public func pendingEvidence() throws -> [NotificationOpenEvidence] {
-        let changed = pruneExpired()
+        let changed = pruneAndCompactPendingItems()
         if changed { try persist() }
         return items.map(\.evidence)
     }
@@ -72,7 +77,7 @@ public actor NotificationOpenQueue {
         using delegate: NotificationOpenDelegate,
         onAllowed: @MainActor @escaping (NotificationOpenAllowedActivation) -> Void
     ) async throws {
-        let changed = pruneExpired()
+        let changed = pruneAndCompactPendingItems()
         if changed { try persist() }
 
         for item in items {
@@ -94,7 +99,7 @@ public actor NotificationOpenQueue {
         using delegate: NotificationOpenDelegate,
         activationCoordinator: ActivationCoordinator
     ) async throws {
-        let changed = pruneExpired()
+        let changed = pruneAndCompactPendingItems()
         if changed { try persist() }
 
         for item in items {
@@ -132,6 +137,19 @@ public actor NotificationOpenQueue {
         let changed = retained.count != items.count
         items = retained
         return changed
+    }
+
+    /// Retains the earliest pending evidence for each one-time open reference.
+    /// This compacts records written by prior versions before they can consume
+    /// host authority, while preserving FIFO order and original enqueue age.
+    @discardableResult
+    private func pruneAndCompactPendingItems() -> Bool {
+        let pruned = pruneExpired()
+        var openRefs = Set<String>()
+        let compacted = items.filter { openRefs.insert($0.evidence.openRef).inserted }
+        let deduplicated = compacted.count != items.count
+        items = compacted
+        return pruned || deduplicated
     }
 
     private func trimToCount() {
