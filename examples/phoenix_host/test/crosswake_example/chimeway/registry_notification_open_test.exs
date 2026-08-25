@@ -467,13 +467,17 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
     assert replay.state == :replayed
   end
 
-  test "issued intents never persist raw notification metadata", %{
+  test "issued intents never persist caller notification metadata", %{
     open_ref: open_ref,
     binding: binding
   } do
-    raw_token = "persisted-raw-token-sentinel"
-    body = "persisted-notification-body-sentinel"
-    payload = "persisted-provider-payload-sentinel"
+    device_token = "persisted-device-token-sentinel"
+    authorization = "persisted-authorization-sentinel"
+    email = "persisted-email-sentinel"
+    provider_body = "persisted-provider-body-sentinel"
+    unknown = "persisted-unknown-sentinel"
+    nested = "persisted-nested-sentinel"
+    oversized = String.duplicate("persisted-oversized-sentinel", 256)
 
     assert {:ok, %{intent: intent}} =
              Registry.issue_notification_open_intent(%{
@@ -482,19 +486,31 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
                route_id: "dashboard",
                expires_at: DateTime.add(DateTime.utc_now(), 3600, :second),
                metadata: %{
-                 "safe" => "explainable",
-                 "raw_token" => raw_token,
-                 "notification_body" => body,
-                 "nested" => %{"provider_payload" => payload, "safe_nested" => "kept"}
+                 "deviceToken" => device_token,
+                 "authorization" => authorization,
+                 "user_email" => email,
+                 "apns_response_body" => provider_body,
+                 "otherwise_unknown" => unknown,
+                 "nested" => %{"unknown" => nested, "nested_list" => [%{"unknown" => nested}]},
+                 "non_scalar" => {:untrusted, unknown},
+                 "oversized" => oversized
                }
              })
 
     persisted = Repo.get!(NotificationOpenIntent, intent.id)
 
-    assert persisted.metadata["safe"] == "explainable"
-    assert persisted.metadata["nested"]["safe_nested"] == "kept"
-    refute inspect(persisted) =~ raw_token
-    refute inspect(persisted) =~ body
-    refute inspect(persisted) =~ payload
+    assert persisted.metadata == %{}
+
+    event =
+      Repo.one!(
+        from(e in NotificationOpenIntentEvent,
+          where: e.open_intent_id == ^intent.id and e.event_type == "issued"
+        )
+      )
+
+    for sentinel <- [device_token, authorization, email, provider_body, unknown, nested, oversized] do
+      refute inspect(intent) =~ sentinel
+      refute inspect(event) =~ sentinel
+    end
   end
 end

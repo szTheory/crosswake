@@ -52,37 +52,36 @@ defmodule CrosswakeExample.Chimeway.NotificationOpenIntentTest do
       assert "is invalid" in errors_on(changeset).state
     end
 
-    test "recursively removes forbidden metadata while preserving safe siblings" do
-      raw_token = "intent-raw-token-sentinel"
-      body = "intent-notification-body-sentinel"
-      payload = "intent-provider-payload-sentinel"
+    test "drops every class of caller metadata from the durable intent contract" do
+      device_token = "intent-device-token-sentinel"
+      authorization = "intent-authorization-sentinel"
+      email = "intent-email-sentinel"
+      provider_body = "intent-provider-body-sentinel"
+      unknown = "intent-unknown-sentinel"
+      nested = "intent-nested-sentinel"
+      oversized = String.duplicate("intent-oversized-sentinel", 256)
 
       changeset =
         NotificationOpenIntent.changeset(
           %NotificationOpenIntent{},
           Map.put(@valid_attrs, :metadata, %{
-            "safe_top_level" => "kept",
-            "notification_body" => body,
+            "deviceToken" => device_token,
+            "authorization" => authorization,
+            "user_email" => email,
+            "apns_response_body" => provider_body,
+            "otherwise_unknown" => unknown,
             "nested" => %{
-              "provider_payload" => payload,
-              "safe_nested" => "kept"
+              "unknown" => nested,
+              "nested_list" => [%{"unknown" => nested}]
             },
-            "list" => [
-              %{"safe_list" => "kept", device_token: raw_token},
-              [provider_response_body: payload, safe_keyword: "kept"]
-            ],
-            raw_token: raw_token
+            "non_scalar" => {:untrusted, unknown},
+            "oversized" => oversized
           })
         )
 
       metadata = Ecto.Changeset.get_change(changeset, :metadata)
 
-      assert metadata["safe_top_level"] == "kept"
-      assert metadata["nested"]["safe_nested"] == "kept"
-      assert inspect(metadata) =~ "kept"
-      refute inspect(metadata) =~ raw_token
-      refute inspect(metadata) =~ body
-      refute inspect(metadata) =~ payload
+      assert metadata == %{}
     end
 
     test "projects non-map metadata to an empty map" do
