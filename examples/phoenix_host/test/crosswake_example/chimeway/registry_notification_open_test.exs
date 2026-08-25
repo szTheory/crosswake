@@ -513,4 +513,30 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
       refute inspect(event) =~ sentinel
     end
   end
+
+  test "event-bearing intents reject deletion and retain append-only history", %{
+    open_ref: open_ref,
+    binding: binding
+  } do
+    assert {:ok, %{intent: intent, event: event}} =
+             Registry.issue_notification_open_intent(%{
+               open_ref: open_ref,
+               binding_ref: binding.binding_ref,
+               route_id: "dashboard",
+               expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
+             })
+
+    assert {:error, _changeset} = Repo.delete(intent)
+    assert %NotificationOpenIntent{id: intent_id} = Repo.get(NotificationOpenIntent, intent.id)
+
+    assert [%NotificationOpenIntentEvent{id: event_id, event_type: "issued"}] =
+             Repo.all(
+               from(e in NotificationOpenIntentEvent,
+                 where: e.open_intent_id == ^intent_id,
+                 order_by: e.id
+               )
+             )
+
+    assert event_id == event.id
+  end
 end

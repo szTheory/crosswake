@@ -178,6 +178,65 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
     assert intent.state == "consumed"
     assert intent.consumed_at
     assert Repo.exists?(from(event in NotificationOpenIntentEvent, where: event.open_intent_id == ^intent.id and event.event_type == "consumed"))
+
+    history_guard = "chimeway_notification_open_intents_event_history_delete_guard"
+
+    assert [[^history_guard]] =
+             Repo.query!(
+               "SELECT name FROM sqlite_master WHERE type = 'trigger' AND name = ?",
+               [history_guard]
+             ).rows
+
+    before_parent =
+      Repo.query!(
+        "SELECT id, state, consumed_at FROM chimeway_notification_open_intents WHERE id = ?",
+        [intent.id]
+      ).rows
+
+    before_events =
+      Repo.query!(
+        "SELECT id, event_type, occurred_at, details FROM chimeway_notification_open_intent_events WHERE open_intent_id = ? ORDER BY id",
+        [intent.id]
+      ).rows
+
+    assert_raise Exqlite.Error, fn ->
+      Repo.query!("DELETE FROM chimeway_notification_open_intents WHERE id = ?", [intent.id])
+    end
+
+    assert before_parent ==
+             Repo.query!(
+               "SELECT id, state, consumed_at FROM chimeway_notification_open_intents WHERE id = ?",
+               [intent.id]
+             ).rows
+
+    assert before_events ==
+             Repo.query!(
+               "SELECT id, event_type, occurred_at, details FROM chimeway_notification_open_intent_events WHERE open_intent_id = ? ORDER BY id",
+               [intent.id]
+             ).rows
+
+    Ecto.Migrator.run(Repo, path, :down, to: 20_260_825_190_000)
+
+    assert [] ==
+             Repo.query!(
+               "SELECT name FROM sqlite_master WHERE type = 'trigger' AND name = ?",
+               [history_guard]
+             ).rows
+
+    assert [[20_260_825_190_000]] =
+             Repo.query!("SELECT version FROM schema_migrations WHERE version = ?", [20_260_825_190_000]).rows
+
+    assert before_parent ==
+             Repo.query!(
+               "SELECT id, state, consumed_at FROM chimeway_notification_open_intents WHERE id = ?",
+               [intent.id]
+             ).rows
+
+    assert before_events ==
+             Repo.query!(
+               "SELECT id, event_type, occurred_at, details FROM chimeway_notification_open_intent_events WHERE open_intent_id = ? ORDER BY id",
+               [intent.id]
+             ).rows
     """
 
     assert {output, 0} =
