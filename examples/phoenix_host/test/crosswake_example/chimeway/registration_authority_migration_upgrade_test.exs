@@ -73,6 +73,38 @@ defmodule CrosswakeExample.Chimeway.RegistrationAuthorityMigrationUpgradeTest do
     assert unmatched_state == "revoked"
     [[inactive_state]] = Repo.query!("SELECT state FROM chimeway_notification_open_intents WHERE open_ref = 'open-inactive'").rows
     assert inactive_state == "revoked"
+
+    reconciliation_events = fn open_ref ->
+      Repo.query!(
+        "SELECT event.id, event.event_type, event.occurred_at, event.details, intent.updated_at " <>
+          "FROM chimeway_notification_open_intent_events AS event " <>
+          "INNER JOIN chimeway_notification_open_intents AS intent ON intent.id = event.open_intent_id " <>
+          "WHERE intent.open_ref = ? AND event.event_type = 'reconciliation_revoked'",
+        [open_ref]
+      ).rows
+    end
+
+    for open_ref <- ["open-unmatched", "open-inactive"] do
+      assert [[event_id, "reconciliation_revoked", occurred_at, details, updated_at]] =
+               reconciliation_events.(open_ref)
+
+      assert is_binary(event_id)
+      assert Jason.decode!(details) == %{}
+      assert occurred_at == updated_at
+    end
+
+    assert reconciliation_events.("open-valid") == []
+    reconciliation_counts = Map.new(["open-valid", "open-unmatched", "open-inactive"], fn open_ref ->
+      {open_ref, length(reconciliation_events.(open_ref))}
+    end)
+
+    Ecto.Migrator.run(Repo, path, :up, all: true)
+
+    assert reconciliation_counts ==
+             Map.new(["open-valid", "open-unmatched", "open-inactive"], fn open_ref ->
+               {open_ref, length(reconciliation_events.(open_ref))}
+             end)
+
     [[legacy_state, legacy_marker]] = Repo.query!("SELECT state, app_identity_ref FROM chimeway_token_bindings WHERE binding_ref = 'binding-missing'").rows
     assert legacy_state == "invalid"
     assert legacy_marker == "legacy_non_authoritative"
