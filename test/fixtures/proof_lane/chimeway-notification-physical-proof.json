@@ -1,0 +1,1 @@
+{"schema_version":1,"assertions":[{"id":"permission_observed","owner":"device_local","outcome":"passed"},{"id":"authenticated_registration","owner":"backend_authority","outcome":"passed"},{"id":"protected_activation_once","owner":"backend_authority","outcome":"passed"}]}
