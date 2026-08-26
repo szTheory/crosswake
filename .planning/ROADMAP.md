@@ -49,7 +49,7 @@ separately funded business-line mandate.
 - [x] **Phase 163: First B2C Adopter Reference Host Integration** — provide the bounded eligible (completed 2026-08-10)
   Phoenix/iOS host, exact learning bundle, and independent physical/backend proof producers.
 
-- [ ] **Phase 162: Physical-iPhone Adoption Proof** — prove offline answers, offline audio,
+- [x] **Phase 162: Physical-iPhone Adoption Proof** — prove offline answers, offline audio,
   kill/relaunch persistence, exactly-once replay, conflict recovery, account isolation, and remote
   disablement on a physical iPhone.
 
@@ -492,7 +492,7 @@ and app CSS can detect the shell synchronously.
 **Effort:** 2-3 focused days plus adopter/backend availability
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
-**Plans:** 10/11 plans executed
+**Plans:** 11/11 plans executed
 
 Plans:
 
@@ -536,9 +536,9 @@ Plans:
 
 - [x] 162-10-PLAN.md — Derive the narrow one-flow/one-runtime public support truth from the checked physical record.
 
-**Wave 11** *(blocked on Waves 9-10)*
+**Wave 11** *(final-tree reconciliation after Waves 9-10)*
 
-- [ ] 162-11-PLAN.md — Reconcile DEVICE requirements, roadmap, state, and validation from fresh final-tree evidence.
+- [x] 162-11-PLAN.md — Reconcile DEVICE requirements, roadmap, state, and validation from fresh final-tree evidence.
 
 **Smallest shippable version:** A dated, redacted physical-iPhone artifact proving the ten-step exit
 test in the adopter route-policy map.
