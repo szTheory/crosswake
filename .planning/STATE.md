@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
-status: complete
-stopped_at: Completed 162-11-PLAN.md; Phase 162 awaits independent re-verification
-last_updated: "2026-08-26T17:46:46.277Z"
+status: gaps_found
+stopped_at: Phase 162 verification found CR-01 and CR-02; gap planning required
+last_updated: "2026-08-26T17:56:46Z"
 last_activity: 2026-08-26
-last_activity_desc: completed evidence-backed DEVICE reconciliation from final-tree checks
+last_activity_desc: independent Phase 162 verification found two blocking proof gaps
 progress:
   total_phases: 7
-  completed_phases: 7
+  completed_phases: 6
   total_plans: 110
   completed_plans: 110
-  percent: 100
+  percent: 86
 current_plan: 11
 ---
 
@@ -22,10 +22,10 @@ current_plan: 11
 
 ## Current Position
 
-Phase: 162 (physical-iphone-adoption-proof) — COMPLETE
-Plan: 11 of 11; final-tree physical evidence, focused contracts, and generated guide agree
-Status: DEVICE-01 through DEVICE-07 are complete for one first-adopter offline-study flow on one iOS runtime line
-Last activity: 2026-08-26 — completed evidence-backed DEVICE reconciliation from final-tree checks
+Phase: 162 (physical-iphone-adoption-proof) — GAPS FOUND
+Plan: 11 of 11 executed; independent verification scored 6/7 must-haves
+Status: Free-form persistence and the advisory serialization success path remain blocking gaps
+Last activity: 2026-08-26 — independent verification confirmed CR-01 and CR-02
 
 ## Active Objective
 
@@ -44,11 +44,18 @@ framework launch.
 
 ## Next Action
 
-Run the independent Phase 162 verification described in `162-VERIFICATION.md`. Preserve the
-completed narrow scope: the evidence does not widen to Android, background replay or sync, generic
-storage or sync, multiple islands, simulator substitution, or every-iPhone coverage.
+Plan the two verified Phase 162 gaps with `$gsd-plan-phase 162 --gaps`, then execute only the
+resulting gap-closure plans. Preserve the narrow scope: the evidence does not widen to Android,
+background replay or sync, generic storage or sync, multiple islands, simulator substitution, or
+every-iPhone coverage.
 
 ## Blockers
+
+- Phase 162 CR-01: the physical iOS flow discards submitted free-form content and persists only a
+  boolean marker, so DEVICE-02 free-form persistence and relaunch recovery are not proven.
+
+- Phase 162 CR-02: the advisory report-contract script joins an unavailable simulator report as
+  all-passed, while its positive test stubs the real parser/join semantics.
 
 - Phase 160 code review WR-01 records a non-blocking browser lifecycle race: fencing during an
   IndexedDB save can leave rating controls owned until reload. The finding remains available for
