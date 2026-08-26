@@ -1,4 +1,5 @@
 import XCTest
+import CryptoKit
 @testable import CrosswakeProofLane
 
 final class ProofLaneContractTests: XCTestCase {
@@ -78,6 +79,34 @@ final class ProofLaneContractTests: XCTestCase {
     XCTAssertEqual(journal.recover(scopeRef: "v1.scope_fixture_alpha_01"), .passed)
     XCTAssertEqual(journal.recover(scopeRef: "v1.scope_fixture_bravo_01"), .blocked)
     XCTAssertEqual(journal.recover(scopeRef: nil), .blocked)
+  }
+
+  func testScopeTransitionsFenceRetainedJournalBytesUntilTheOriginalScopeReturns() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let provider = ReferenceHostPhysicalIphoneScopeProvider(
+      environment: ["CROSSWAKE_REFERENCE_HOST_SCOPE_REF": "v1.scope_fixture_alpha_01"]
+    )
+    let journal = ReferenceStudyJournal(root: root)
+
+    XCTAssertEqual(journal.append(value: "neutral-answer", scopeRef: provider.currentScopeRef()), .passed)
+    provider.didSwitchAccount(to: "v1.scope_fixture_bravo_01")
+    XCTAssertEqual(journal.recover(scopeRef: provider.currentScopeRef()), .blocked)
+    provider.didLogout()
+    XCTAssertEqual(journal.recover(scopeRef: provider.currentScopeRef()), .blocked)
+    provider.didSwitchAccount(to: "v1.scope_fixture_alpha_01")
+    XCTAssertEqual(journal.recover(scopeRef: provider.currentScopeRef()), .passed)
+  }
+
+  func testCorruptJournalBytesRemainBlockedWithoutRenderingTheirContents() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let scope = "v1.scope_fixture_alpha_01"
+    let filename = SHA256.hash(data: Data(scope.utf8)).hexString + ".json"
+    try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    try Data("{".utf8).write(to: root.appendingPathComponent(filename))
+
+    XCTAssertEqual(ReferenceStudyJournal(root: root).recover(scopeRef: scope), .blocked)
   }
 
   func testPhysicalReportNeverCarriesHostValues() async throws {

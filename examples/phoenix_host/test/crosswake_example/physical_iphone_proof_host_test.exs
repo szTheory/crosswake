@@ -36,6 +36,18 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
     assert Enum.all?(readiness.checks, &(&1.state in [:ready, :blocked]))
   end
 
+  test "physical replay fixture is a closed host-owned lifecycle contract" do
+    assert %{
+             scope_ref: scope,
+             establish_action: "establish",
+             switch_action: "switch",
+             logout_action: "clear"
+           } = ReplayAuthority.physical_fixture()
+
+    assert is_binary(scope)
+    refute scope == ""
+  end
+
   test "invalid device contracts remain unavailable without invoking Xcode" do
     assert {:error, :unavailable} = PhysicalIphoneProofHost.device_report(%{})
   end
