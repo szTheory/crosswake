@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
-status: gaps_found
-stopped_at: Phase 162 verification found CR-01 and CR-02; gap planning required
+status: ready_to_execute
+stopped_at: Phase 162 gap plans 12-15 verified; ready to execute 162-12
 last_updated: "2026-08-26T17:56:46Z"
 last_activity: 2026-08-26
-last_activity_desc: independent Phase 162 verification found two blocking proof gaps
+last_activity_desc: Phase 162 gap planning complete — 4 plans ready
 progress:
   total_phases: 7
   completed_phases: 6
-  total_plans: 110
+  total_plans: 114
   completed_plans: 110
   percent: 86
-current_plan: 11
+current_plan: 12
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 162 (physical-iphone-adoption-proof) — GAPS FOUND
-Plan: 11 of 11 executed; independent verification scored 6/7 must-haves
-Status: Free-form persistence and the advisory serialization success path remain blocking gaps
-Last activity: 2026-08-26 — independent verification confirmed CR-01 and CR-02
+Phase: 162 (physical-iphone-adoption-proof) — READY TO EXECUTE GAP CLOSURE
+Plan: 12 of 15; Plans 12-15 are verified and ready
+Status: Ready to execute
+Last activity: 2026-08-26 — Phase 162 gap planning complete
 
 ## Active Objective
 
@@ -44,10 +44,10 @@ framework launch.
 
 ## Next Action
 
-Plan the two verified Phase 162 gaps with `$gsd-plan-phase 162 --gaps`, then execute only the
-resulting gap-closure plans. Preserve the narrow scope: the evidence does not widen to Android,
-background replay or sync, generic storage or sync, multiple islands, simulator substitution, or
-every-iPhone coverage.
+Execute Plans 162-12 through 162-15 in order with `$gsd-execute-phase 162`. Preserve the narrow
+scope: the evidence does not widen to Android, background replay or sync, generic storage or sync,
+multiple islands, simulator substitution, or every-iPhone coverage. Durable completion and public
+support remain fail closed until the fresh standard physical proof and reconciliation gates pass.
 
 ## Blockers
 
@@ -254,7 +254,7 @@ this milestone reset.
 ## Session
 
 **Last session:** 2026-08-26T17:46:46.260Z
-**Stopped at:** Completed 162-11-PLAN.md; Phase 162 awaits independent re-verification
+**Stopped at:** Phase 162 gap plans 12-15 verified; ready to execute 162-12
 **Resume file:** None
 
 ## Performance Metrics
