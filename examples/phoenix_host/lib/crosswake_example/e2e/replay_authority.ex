@@ -10,6 +10,17 @@ defmodule CrosswakeExample.E2E.ReplayAuthority do
   @alpha_scope "v1.scope_fixture_alpha_01"
   @beta_scope "v1.scope_fixture_bravo_01"
 
+  # Host-only launch contract. iOS receives this value only through the
+  # ephemeral signed-test environment and never supplies or serializes it.
+  def physical_fixture do
+    %{
+      scope_ref: @alpha_scope,
+      establish_action: "establish",
+      switch_action: "switch",
+      logout_action: "clear"
+    }
+  end
+
   def current_session(conn) do
     with %{"state" => "current", "principal" => principal} <- get_session(conn, @session_key),
          {:ok, auth_context} <- auth_context(principal),

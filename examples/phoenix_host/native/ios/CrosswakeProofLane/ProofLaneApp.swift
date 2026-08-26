@@ -112,8 +112,8 @@ private struct ReferencePhysicalStudyView: View {
       Button("Save free-form answer") {
         guard !freeFormDraft.isEmpty else { return }
         Task {
-          freeFormReady = await adapter.submitFreeFormAnswerOffline() == .passed
-          freeFormDraft = ""
+          freeFormReady = await adapter.submitFreeFormAnswerOffline(freeFormDraft) == .passed
+          if freeFormReady { freeFormDraft = "" }
         }
       }
       .disabled(!selectedReady)
