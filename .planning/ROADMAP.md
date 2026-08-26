@@ -492,7 +492,7 @@ and app CSS can detect the shell synchronously.
 **Effort:** 2-3 focused days plus adopter/backend availability
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
-**Plans:** 11 plans (8 executed, 3 gap-closure plans pending external prerequisites)
+**Plans:** 11 plans (9 executed, 2 follow-up plans pending)
 
 Plans:
 
@@ -530,7 +530,7 @@ Plans:
 
 **Wave 9** *(external physical-proof gap closure; blocked until all D-04 prerequisites are genuinely ready)*
 
-- [ ] 162-09-PLAN.md — Execute the real signed physical-iPhone exit test and atomically promote the dated redacted evidence.
+- [x] 162-09-PLAN.md — Execute the real signed physical-iPhone exit test and atomically promote the dated redacted evidence.
 
 **Wave 10** *(blocked on Wave 9 evidence)*
 

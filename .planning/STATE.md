@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
-status: external_gate
-stopped_at: Phase 163 complete; Phase 162 physical promotion is blocked only at PI-PREFLIGHT-SIGNING
-last_updated: "2026-08-11T03:50:00Z"
-last_activity: 2026-08-10
-last_activity_desc: Completed Phase 163 reference host; physical readiness is blocked only by Apple signing
+status: in_progress
+stopped_at: Completed 162-09-PLAN.md; next 162-10-PLAN.md
+last_updated: "2026-08-26T17:34:09.234Z"
+last_activity: 2026-08-26
+last_activity_desc: reconciled source-bound physical evidence and focused contract checks
 progress:
   total_phases: 7
   completed_phases: 6
-  total_plans: 107
-  completed_plans: 107
+  total_plans: 110
+  completed_plans: 108
   percent: 86
-current_plan: 9
+current_plan: 10
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 162 (physical-iphone-adoption-proof) — EXTERNAL GATE
-Plan: 9 of 11; the Phase 163 reference-host prerequisite is complete
-Status: Physical readiness is blocked only at `PI-PREFLIGHT-SIGNING`; no evidence exists
-Last activity: 2026-08-10 — verified the host, backend, browser, iOS, and readiness contracts
+Phase: 162 (physical-iphone-adoption-proof) — IN PROGRESS
+Plan: 10 of 11; checked physical evidence is available for narrow support derivation
+Status: Plan 162-09 is complete; Plans 162-10 and 162-11 remain pending
+Last activity: 2026-08-26 — reconciled source-bound physical evidence and focused contract checks
 
 ## Active Objective
 
@@ -44,9 +44,9 @@ framework launch.
 
 ## Next Action
 
-Configure normal local Apple development signing in Xcode, then re-run readiness. Only an exact
-all-ready result may invoke Phase 162-09's existing promotion command. Until then, the command must
-block at `PI-PREFLIGHT-SIGNING` and no physical artifact or support claim may be promoted.
+Execute Plan 162-10 to derive only the narrow support truth from the checked physical record. Do
+not complete Phase 162 or any DEVICE requirement until Plan 162-11 performs its explicit final-tree
+reconciliation.
 
 ## Blockers
 
@@ -57,8 +57,6 @@ block at `PI-PREFLIGHT-SIGNING` and no physical artifact or support claim may be
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
 
-- Phase 162 has a runnable bounded reference host, independent backend producer, and detected
-  physical iPhone; normal local Apple signing is the sole remaining preflight blocker.
 - The canonical historical six product-failure labels were not stored because only a privacy-safe
   proxy audit was authorized.
 
@@ -78,6 +76,7 @@ block at `PI-PREFLIGHT-SIGNING` and no physical artifact or support claim may be
 - Generic sync and generic native storage non-goals remain in force.
 - Automatable acceptance requires executable proof, not conversational verification or manual UAT;
   CI promotion is reserved for recurring contract value.
+
 - Phase 163 uses the sanctioned generated lane plus one host-owned exact manifest/image/audio
   bundle; device and backend assertion ownership remain independent and promotion remains Phase 162.
 
@@ -214,6 +213,7 @@ block at `PI-PREFLIGHT-SIGNING` and no physical artifact or support claim may be
 - [Phase 162]: Physical evidence report entries require exact atom-key shape before semantic validation or canonical evidence acceptance.
 - [Phase ?]: Advisory physical report joins require exact bytes from an executed host-owned Phoenix producer.
 - [Phase ?]: Study-status accessibility tests fail closed without the required host adapter; TODO-002 keeps recovery unavailable.
+- [Phase ?]: Plan 162-09 reconciles physical evidence through authorized source-bound Evidence.check/2; literal Evidence.check/1 lacks approved source bytes by design.
 
 ## Deferred Items
 
@@ -242,9 +242,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-05T02:37:43.905Z
-**Stopped at:** Completed 162-08-PLAN.md; external physical proof remains blocked
-**Resume file:** None
+**Last session:** 2026-08-26T17:34:09.223Z
+**Stopped at:** Completed 162-09-PLAN.md; next 162-10-PLAN.md
+**Resume file:** .planning/phases/162-physical-iphone-adoption-proof/162-10-PLAN.md
 
 ## Performance Metrics
 
@@ -339,6 +339,7 @@ this milestone reset.
 - Phase 163 added: Alpha Reference Host Integration. It is the bounded eligible-host build needed
   to unblock Phase 162's physical-iPhone proof; Phase 162 remains an external device-evidence
   gate until the resulting host and signed iPhone run are available.
+
 - Phase 163 completed: generated Phoenix/iOS host, exact foreground learning bundle, scoped replay
   authority, and physical report/evidence producers are verified; Phase 162 is blocked only by
   normal local Apple signing.
