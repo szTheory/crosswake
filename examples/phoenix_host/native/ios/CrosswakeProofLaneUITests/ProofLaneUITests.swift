@@ -2,7 +2,9 @@ import XCTest
 
 final class ProofLaneUITests: XCTestCase {
   func testReferenceHostPhysicalStudyContract() throws {
-    guard ProcessInfo.processInfo.environment["CROSSWAKE_PHYSICAL_IPHONE_CONTRACT_MODE"] == "1" else { return }
+    #if targetEnvironment(simulator)
+      throw XCTSkip("PI-PREFLIGHT-DESTINATION")
+    #endif
 
     let app = XCUIApplication()
     app.launchEnvironment["CROSSWAKE_REFERENCE_HOST_PHYSICAL_ADAPTER"] = "1"
@@ -10,30 +12,72 @@ final class ProofLaneUITests: XCTestCase {
     app.launch()
 
     let install = app.buttons.matching(identifier: "reference-pack-install").firstMatch
-    XCTAssertTrue(install.waitForExistence(timeout: 10))
+    XCTAssertTrue(install.waitForExistence(timeout: 10), "PI-PACK-INSTALL-AUDIO:INSTALL-CONTROL")
     install.tap()
+    let packDiagnostic = app.staticTexts.matching(identifier: "reference-pack-diagnostic").firstMatch
+    XCTAssertTrue(packDiagnostic.waitForExistence(timeout: 5), "PI-PACK-INSTALL-AUDIO:DIAGNOSTIC")
+    let packTerminal = XCTNSPredicateExpectation(
+      predicate: NSPredicate(
+        format: "label IN %@",
+        [
+          "PI-PACK-INSTALL-AUDIO:INSTALL-BLOCKED",
+          "PI-PACK-INSTALL-AUDIO:SANDBOX-BLOCKED",
+          "PI-PACK-INSTALL-AUDIO:SOURCE-BLOCKED",
+          "PI-PACK-INSTALL-AUDIO:SOURCE-MANIFEST-BLOCKED",
+          "PI-PACK-INSTALL-AUDIO:SOURCE-IMAGE-BLOCKED",
+          "PI-PACK-INSTALL-AUDIO:SOURCE-AUDIO-BLOCKED",
+          "PI-PACK-INSTALL-AUDIO:STAGING-BLOCKED",
+          "PI-PACK-INSTALL-AUDIO:FILESYSTEM-BLOCKED",
+          "PI-PACK-INSTALL-AUDIO:FINAL-BLOCKED",
+          "PI-PACK-INSTALL-AUDIO:AUDIO-BLOCKED",
+          "PI-PACK-INSTALL-AUDIO:ENTRY-BLOCKED",
+          "PI-PACK-INSTALL-AUDIO:PASSED",
+        ]
+      ),
+      object: packDiagnostic
+    )
+    XCTAssertEqual(
+      XCTWaiter.wait(for: [packTerminal], timeout: 5),
+      .completed,
+      "PI-PACK-INSTALL-AUDIO:DIAGNOSTIC"
+    )
+    XCTAssertEqual(
+      packDiagnostic.label,
+      "PI-PACK-INSTALL-AUDIO:PASSED",
+      packDiagnostic.label
+    )
     assertFullLabel(
       app.staticTexts.matching(identifier: "reference-pack-state").firstMatch,
-      equals: "Pronunciation ready offline"
+      equals: "Pronunciation ready offline",
+      ruleID: "PI-PACK-INSTALL-AUDIO:OFFLINE-STATE"
     )
-    XCTAssertTrue(app.images.matching(identifier: "reference-card-image").firstMatch.waitForExistence(timeout: 5))
+    XCTAssertTrue(
+      app.images.matching(identifier: "reference-card-image").firstMatch.waitForExistence(timeout: 5),
+      "PI-PACK-INSTALL-AUDIO:INSTALLED-IMAGE"
+    )
 
     let selected = app.buttons.matching(identifier: "reference-selected-submit").firstMatch
-    XCTAssertTrue(selected.waitForExistence(timeout: 5))
+    XCTAssertTrue(selected.waitForExistence(timeout: 5), "PI-OFFLINE-SELECTED-PERSISTENCE")
     selected.tap()
     assertFullLabel(
       app.staticTexts.matching(identifier: "reference-selected-state").firstMatch,
-      equals: "Selected answer saved"
+      equals: "Selected answer saved",
+      ruleID: "PI-OFFLINE-SELECTED-PERSISTENCE"
     )
 
     let freeForm = app.textFields.matching(identifier: "reference-free-form-input").firstMatch
-    XCTAssertTrue(freeForm.waitForExistence(timeout: 5))
+    XCTAssertTrue(freeForm.waitForExistence(timeout: 5), "PI-OFFLINE-FREE-FORM-PERSISTENCE")
     freeForm.tap()
     freeForm.typeText("local-response")
-    app.buttons.matching(identifier: "reference-free-form-submit").firstMatch.tap()
+    freeForm.typeText("\n")
+    let freeFormSubmit = app.buttons.matching(identifier: "reference-free-form-submit").firstMatch
+    freeFormSubmit.scrollToVisible()
+    XCTAssertTrue(freeFormSubmit.isHittable, "PI-OFFLINE-FREE-FORM-PERSISTENCE")
+    freeFormSubmit.tap()
     assertFullLabel(
       app.staticTexts.matching(identifier: "reference-free-form-state").firstMatch,
-      equals: "Free-form answer saved"
+      equals: "Free-form answer saved",
+      ruleID: "PI-OFFLINE-FREE-FORM-PERSISTENCE"
     )
 
     app.terminate()
@@ -42,13 +86,18 @@ final class ProofLaneUITests: XCTestCase {
 
     assertFullLabel(
       app.staticTexts.matching(identifier: "reference-relaunch-state").firstMatch,
-      equals: "Relaunch state retained"
+      equals: "Relaunch state retained",
+      ruleID: "PI-RELAUNCH-PERSISTENCE"
     )
     assertFullLabel(
       app.staticTexts.matching(identifier: "reference-recovery-state").firstMatch,
-      equals: "Recovery work retained"
+      equals: "Recovery work retained",
+      ruleID: "PI-RECOVERY-RETAINED"
     )
-    XCTAssertTrue(app.images.matching(identifier: "reference-card-image").firstMatch.waitForExistence(timeout: 5))
+    XCTAssertTrue(
+      app.images.matching(identifier: "reference-card-image").firstMatch.waitForExistence(timeout: 5),
+      "PI-RELAUNCH-PERSISTENCE"
+    )
 
     let report: [String: Any] = [
       "schema_version": 1,
@@ -263,10 +312,28 @@ final class ProofLaneUITests: XCTestCase {
     XCTAssertFalse(outcome.label.contains("…"))
   }
 
-  private func assertFullLabel(_ element: XCUIElement, equals label: String) {
-    XCTAssertTrue(element.waitForExistence(timeout: 5))
-    XCTAssertEqual(element.label, label)
-    XCTAssertFalse(element.label.contains("…"))
+  private func assertFullLabel(
+    _ element: XCUIElement,
+    equals label: String,
+    ruleID: String = "PI-REPORT-DEVICE",
+    file: StaticString = #filePath,
+    line: UInt = #line
+  ) {
+    XCTAssertTrue(element.waitForExistence(timeout: 5), ruleID, file: file, line: line)
+
+    let labelExpectation = XCTNSPredicateExpectation(
+      predicate: NSPredicate(format: "label == %@", label),
+      object: element
+    )
+    XCTAssertEqual(
+      XCTWaiter.wait(for: [labelExpectation], timeout: 5),
+      .completed,
+      ruleID,
+      file: file,
+      line: line
+    )
+    XCTAssertEqual(element.label, label, ruleID, file: file, line: line)
+    XCTAssertFalse(element.label.contains("…"), ruleID, file: file, line: line)
   }
 
   private func assertContainedHorizontally(_ element: XCUIElement, within frame: CGRect) {
