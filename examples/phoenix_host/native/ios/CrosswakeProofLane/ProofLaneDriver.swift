@@ -94,9 +94,84 @@ protocol PhysicalIphoneHostAdapter {
   func playInstalledAudioOffline() async -> ProofLaneOutcome
   func enterAuthorizedStudy() async -> ProofLaneOutcome
   func submitSelectedAnswerOffline() async -> ProofLaneOutcome
-  func submitFreeFormAnswerOffline() async -> ProofLaneOutcome
+  func submitFreeFormAnswerOffline(_ value: String) async -> ProofLaneOutcome
   func relaunchWithoutResetAndReconnect() async -> ProofLaneOutcome
   func observeRecoveryAndRetainedWork() async -> ProofLaneOutcome
+}
+
+// This is intentionally host-private: the reference lane has one scoped study
+// journal, not a reusable native-storage or sync product.
+protocol ReferenceStudyScopeProviding {
+  func currentScopeRef() -> String?
+  func didLogout()
+  func didSwitchAccount(to scopeRef: String?)
+}
+
+final class ReferenceHostPhysicalIphoneScopeProvider: ReferenceStudyScopeProviding {
+  private var activeScopeRef: String?
+
+  init(environment: [String: String] = ProcessInfo.processInfo.environment) {
+    let configured = environment["CROSSWAKE_REFERENCE_HOST_SCOPE_REF"]
+    activeScopeRef = configured?.isEmpty == false ? configured : nil
+  }
+
+  func currentScopeRef() -> String? { activeScopeRef }
+  func didLogout() { activeScopeRef = nil }
+  func didSwitchAccount(to scopeRef: String?) { activeScopeRef = scopeRef?.isEmpty == false ? scopeRef : nil }
+}
+
+private struct ReferenceStudyJournalRecord: Codable {
+  let version: Int
+  let scopeRef: String
+  let mutationID: String
+  let cardID: Int
+  let value: String
+}
+
+final class ReferenceStudyJournal {
+  private let fileManager: FileManager
+  private let root: URL
+
+  init(fileManager: FileManager = .default, root: URL? = nil) {
+    self.fileManager = fileManager
+    self.root = root ?? ((try? fileManager.url(for: .applicationSupportDirectory, in: .userDomainMask,
+      appropriateFor: nil, create: true))?.appendingPathComponent("CrosswakeReferenceStudy/v1", isDirectory: true)
+      ?? URL(fileURLWithPath: "/dev/null"))
+  }
+
+  func append(value: String, scopeRef: String?) -> ProofLaneOutcome {
+    guard !value.isEmpty, let scopeRef, !scopeRef.isEmpty else { return .blocked }
+    let record = ReferenceStudyJournalRecord(version: 1, scopeRef: scopeRef, mutationID: UUID().uuidString,
+                                             cardID: 1, value: value)
+    do {
+      try fileManager.createDirectory(at: root, withIntermediateDirectories: true)
+      try JSONEncoder().encode(record).write(to: fileURL(for: scopeRef), options: .atomic)
+      return .passed
+    } catch { return .blocked }
+  }
+
+  func recover(scopeRef: String?) -> ProofLaneOutcome {
+    guard let record = read(scopeRef: scopeRef), record.version == 1,
+          record.scopeRef == scopeRef, !record.value.isEmpty else { return .blocked }
+    return .passed
+  }
+
+  func hasRecord(scopeRef: String?) -> Bool { read(scopeRef: scopeRef) != nil }
+
+  func reset() { try? fileManager.removeItem(at: root) }
+
+  private func read(scopeRef: String?) -> ReferenceStudyJournalRecord? {
+    guard let scopeRef, !scopeRef.isEmpty,
+          let data = try? Data(contentsOf: fileURL(for: scopeRef)),
+          let record = try? JSONDecoder().decode(ReferenceStudyJournalRecord.self, from: data),
+          record.scopeRef == scopeRef else { return nil }
+    return record
+  }
+
+  private func fileURL(for scopeRef: String) -> URL {
+    let name = SHA256.hash(data: Data(scopeRef.utf8)).hexString
+    return root.appendingPathComponent(name + ".json", isDirectory: false)
+  }
 }
 
 enum PhysicalIphoneHostAdapterFactory {
@@ -269,9 +344,15 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
   private let pack = ReferenceLearningBundleAdapter()
   private let defaults: UserDefaults
   private let prefix = "crosswake.reference-study.v1."
+  private let scopeProvider: ReferenceStudyScopeProviding
+  private let journal: ReferenceStudyJournal
 
-  init(defaults: UserDefaults = .standard) {
+  init(defaults: UserDefaults = .standard,
+       scopeProvider: ReferenceStudyScopeProviding = ReferenceHostPhysicalIphoneScopeProvider(),
+       journal: ReferenceStudyJournal = ReferenceStudyJournal()) {
     self.defaults = defaults
+    self.scopeProvider = scopeProvider
+    self.journal = journal
   }
 
   func installAndVerifyPack() async -> ProofLaneOutcome {
@@ -298,17 +379,15 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
     return .passed
   }
 
-  func submitFreeFormAnswerOffline() async -> ProofLaneOutcome {
+  func submitFreeFormAnswerOffline(_ value: String) async -> ProofLaneOutcome {
     guard defaults.bool(forKey: prefix + "selected") else { return .blocked }
-    // A marker proves persistence without retaining or serializing user text.
-    defaults.set(true, forKey: prefix + "free_form")
-    return .passed
+    return journal.append(value: value, scopeRef: scopeProvider.currentScopeRef())
   }
 
   func relaunchWithoutResetAndReconnect() async -> ProofLaneOutcome {
     guard pack.observe() == .passed,
           defaults.bool(forKey: prefix + "selected"),
-          defaults.bool(forKey: prefix + "free_form")
+          journal.recover(scopeRef: scopeProvider.currentScopeRef()) == .passed
     else { return .blocked }
     return .passed
   }
@@ -316,7 +395,7 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
   func observeRecoveryAndRetainedWork() async -> ProofLaneOutcome {
     defaults.bool(forKey: prefix + "entered") &&
       defaults.bool(forKey: prefix + "selected") &&
-      defaults.bool(forKey: prefix + "free_form")
+      journal.recover(scopeRef: scopeProvider.currentScopeRef()) == .passed
       ? .passed
       : .blocked
   }
@@ -325,7 +404,7 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
     (
       defaults.bool(forKey: prefix + "entered"),
       defaults.bool(forKey: prefix + "selected"),
-      defaults.bool(forKey: prefix + "free_form")
+      journal.recover(scopeRef: scopeProvider.currentScopeRef()) == .passed
     )
   }
 
@@ -335,9 +414,10 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
 
   static func resetReferenceStudyPersistenceForTests(defaults: UserDefaults = .standard) {
     let prefix = "crosswake.reference-study.v1."
-    for key in ["entered", "selected", "free_form"] {
+    for key in ["entered", "selected"] {
       defaults.removeObject(forKey: prefix + key)
     }
+    ReferenceStudyJournal().reset()
     ReferenceLearningBundleAdapter.resetForTests()
   }
 }
@@ -365,7 +445,7 @@ enum PhysicalIphoneSequence {
       return terminalReport(selected, completed: [.packInstallAudio: .passed])
     }
 
-    let freeForm = await adapter.submitFreeFormAnswerOffline()
+    let freeForm = await adapter.submitFreeFormAnswerOffline("contract-value")
     guard freeForm == .passed else {
       return terminalReport(
         freeForm,

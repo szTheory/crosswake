@@ -2,7 +2,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   @moduledoc false
 
   alias Crosswake.ProofLane.{Config, Generator, PhysicalIphoneContract}
-  alias CrosswakeExample.LocalFirst.PhysicalIphoneAuthority
+  alias CrosswakeExample.{E2E.ReplayAuthority, LocalFirst.PhysicalIphoneAuthority}
 
   @host_root Path.expand("../..", __DIR__)
   @repo_root Path.expand("../..", @host_root)
@@ -167,9 +167,41 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   defp fixture_adapter_ready? do
     if Enum.all?(@learning_bundle_assets, fn {name, _, _} ->
          File.regular?(Path.join(@learning_bundle_root, name))
-       end),
+       end) and valid_physical_host_url?() and valid_physical_fixture?(),
        do: :ok,
        else: :blocked
+  end
+
+  defp valid_physical_host_url? do
+    case System.get_env("CROSSWAKE_PHYSICAL_IPHONE_HOST_BASE_URL") do
+      value when is_binary(value) ->
+        case URI.parse(value) do
+          %URI{scheme: scheme, host: host} when scheme in ["http", "https"] and is_binary(host) ->
+            true
+
+          _ ->
+            false
+        end
+
+      _ ->
+        false
+    end
+  end
+
+  defp valid_physical_fixture? do
+    case ReplayAuthority.physical_fixture() do
+      %{
+        scope_ref: scope,
+        establish_action: "establish",
+        switch_action: "switch",
+        logout_action: "clear"
+      }
+      when is_binary(scope) and byte_size(scope) > 0 ->
+        true
+
+      _ ->
+        false
+    end
   end
 
   defp media_ready? do
@@ -355,9 +387,14 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
       "test"
     ]
 
+    fixture = ReplayAuthority.physical_fixture()
+
     env = [
       {"CROSSWAKE_PHYSICAL_IPHONE_CONTRACT_MODE", "1"},
-      {"CROSSWAKE_REFERENCE_HOST_PHYSICAL_ADAPTER", "1"}
+      {"CROSSWAKE_REFERENCE_HOST_PHYSICAL_ADAPTER", "1"},
+      {"CROSSWAKE_REFERENCE_HOST_SCOPE_REF", fixture.scope_ref},
+      {"CROSSWAKE_REFERENCE_HOST_BASE_URL",
+       System.get_env("CROSSWAKE_PHYSICAL_IPHONE_HOST_BASE_URL")}
     ]
 
     case System.cmd("xcodebuild", args, env: env, stderr_to_stdout: true) do
