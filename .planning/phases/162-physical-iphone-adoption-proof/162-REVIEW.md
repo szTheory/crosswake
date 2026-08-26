@@ -1,71 +1,80 @@
 ---
 phase: 162-physical-iphone-adoption-proof
-reviewed: 2026-08-05T02:09:21Z
+reviewed: 2026-08-26T00:00:00Z
 depth: standard
-files_reviewed: 17
+files_reviewed: 29
 files_reviewed_list:
   - examples/phoenix_host/e2e/offline_sync.spec.ts
+  - examples/phoenix_host/lib/crosswake_example/physical_iphone_proof_host.ex
+  - examples/phoenix_host/lib/crosswake_example_web/controllers/offline_controller.ex
   - examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/index.html.heex
+  - examples/phoenix_host/native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj
+  - examples/phoenix_host/native/ios/CrosswakeProofLane/ProofLaneApp.swift
+  - examples/phoenix_host/native/ios/CrosswakeProofLane/ProofLaneDriver.swift
+  - examples/phoenix_host/native/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift
   - examples/phoenix_host/priv/static/offline_study.js
   - examples/phoenix_host/test/crosswake_example/local_first/physical_iphone_authority_test.exs
+  - guides/support_matrix.md
   - lib/crosswake/proof_lane/evidence.ex
   - lib/crosswake/proof_lane/physical_iphone_contract.ex
   - lib/crosswake/proof_lane/physical_iphone_preflight.ex
+  - lib/crosswake/support_matrix/renderer.ex
   - lib/mix/tasks/crosswake.proof_lane.physical_iphone.ex
   - priv/templates/crosswake/proof_lane/e2e/support/proof_lane_host_adapter.ts.eex
+  - priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex
   - priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneTests/ProofLaneContractTests.swift.eex
   - priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift.eex
   - priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex
   - priv/templates/crosswake/proof_lane/test/crosswake_proof_lane_test.exs.eex
+  - script/verify_physical_iphone_report_contract.sh
   - test/crosswake/proof_lane/evidence_test.exs
   - test/crosswake/proof_lane/physical_iphone_preflight_test.exs
+  - test/crosswake/proof_lane/physical_iphone_report_contract_script_test.exs
   - test/crosswake/proof_lane/template_contract_test.exs
+  - test/crosswake/support_matrix/renderer_test.exs
   - test/mix/tasks/crosswake.proof_lane.physical_iphone_test.exs
 findings:
-  critical: 1
-  warning: 2
+  critical: 2
+  warning: 0
   info: 0
-  total: 3
+  total: 2
 status: issues_found
 ---
 
 # Phase 162: Code Review Report
 
-**Reviewed:** 2026-08-05T02:09:21Z
+**Reviewed:** 2026-08-26T00:00:00Z
 **Depth:** standard
-**Files Reviewed:** 17
+**Files Reviewed:** 29
 **Status:** issues_found
 
 ## Summary
 
-The reviewed proof contracts and focused Elixir suite are generally fail-closed for malformed reports and preflight callbacks. However, the proof-verification path fabricates backend authority success, and the generated accessibility contract silently skips its required assertions when no adapter is installed. The recovery-link seam also treats any same-origin URL as validated rather than requiring a host-approved recovery destination.
+The phase has strong closed-envelope and redaction checks, but its device evidence currently overstates what the iOS app proves. Two blockers remain: the physical UI flow discards free-form content while marking it persisted, and the advisory serialization script cannot successfully join the actual generated simulator report it invokes.
 
 ## Narrative Findings (AI reviewer)
 
-## Blocker Issues
+## Critical Issues
 
-### BL-01: Advisory dual-authority verifier fabricates Phoenix success
+### CR-01: Physical proof marks discarded free-form input as persisted
 
-**File:** `script/verify_physical_iphone_report_contract.sh:35-38`
-**Issue:** The verifier suppresses failures from the only purported Phoenix producer check using `|| true`, then writes a literal all-passed backend report and joins it with the device report. It can therefore emit a passed contract-verification result even when the generated Phoenix authority test is absent, fails, or emits different bytes. This contradicts the phase's required independent authority proof and creates misleading physical-proof evidence for downstream users of the verifier.
-**Fix:** Run the rendered/generated Phoenix authority producer, fail on any producer failure, and write its exact stdout to `BACKEND_REPORT_FILE`; remove both `|| true` and the hard-coded JSON. Parse and join those produced bytes unchanged.
+**File:** `/Users/jon/projects/crosswake/examples/phoenix_host/native/ios/CrosswakeProofLane/ProofLaneApp.swift:108-117`, `/Users/jon/projects/crosswake/examples/phoenix_host/native/ios/CrosswakeProofLane/ProofLaneDriver.swift:301-305`, `/Users/jon/projects/crosswake/examples/phoenix_host/native/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift:68-95`
 
-## Warnings
+**Issue:** The UI accepts text in `freeFormDraft`, but invokes an adapter method with no content argument. The adapter only writes a boolean `free_form` marker, and relaunch checks only that marker. Thus the test can enter any text, discard it immediately, relaunch, and still emit `PI-OFFLINE-FREE-FORM-PERSISTENCE` and `PI-RELAUNCH-PERSISTENCE` as passed. The retained evidence and support matrix then represent this as a physical offline-study flow, even though the sensitive mutation value itself was never persisted or rehydrated.
 
-### WR-01: Required physical accessibility assertions silently pass without execution
+**Fix:** Pass the draft to a host-owned local journal method, persist it inside the scope-partitioned offline store, and after relaunch verify the saved value (or a locally computed, test-only integrity marker) is recoverable before reporting success. Keep the value and any derived marker out of the XCTest attachment, stdout, evidence JSON, telemetry, and diagnostics.
 
-**File:** `priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift.eex:99-100`
-**Issue:** Each of the three study-status accessibility tests returns successfully when `CROSSWAKE_PROOF_LANE_STUDY_HOST_ADAPTER` is not set (also at lines 123-124 and 149-150). XCTest marks these as passing, so Dynamic Type, focus, announcement, recovery-link, appearance, and motion coverage can disappear without failing the generated proof lane.
-**Fix:** Assert that a production status adapter is present for a physical-status run, or make the test target/configuration unavailable and have the host runner reject that unavailable state before it can be counted as proof. Do not use a bare early return for a required assertion.
+### CR-02: Serialization verifier always joins a non-passing simulator device report
 
-### WR-02: Same-origin is treated as recovery-destination validation
+**File:** `/Users/jon/projects/crosswake/script/verify_physical_iphone_report_contract.sh:27-29,53-58`, `/Users/jon/projects/crosswake/priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneTests/ProofLaneContractTests.swift.eex:75-80`, `/Users/jon/projects/crosswake/priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex:101-105,167-169`
 
-**File:** `examples/phoenix_host/priv/static/offline_study.js:390-398`
-**Issue:** `validatedRecoveryDestination()` accepts any same-origin, same-protocol URL from `body.dataset.recoveryDestination`. That is URL syntax/origin validation, not validation that the destination is a host-approved recovery route. A bad host value can expose the recovery CTA for an unrelated or unsafe GET route, contrary to the bounded host-owned recovery seam.
-**Fix:** Have the host provide a closed recovery-route capability (for example, a boolean plus a fixed route ID resolved server-side), or validate against an explicit allowlist of approved recovery paths before rendering the link.
+**Issue:** The script runs `testPhysicalContractModeEmitsOwnerFreeReport` on a simulator. That test calls `PhysicalIphoneSequence.run(adapter: nil)`; the generated factory always returns `nil`, so every device assertion is `unavailable`. The script then calls `join_report_entries/2`, which accepts only the exact all-`passed` device assertion list. Consequently, with the real generated project the final `{:ok, _}` match fails and the script cannot emit its success result. Its ExUnit coverage masks this by replacing both `xcodebuild` and `mix` with shell stubs, rather than executing the join semantics.
+
+**Fix:** Keep this lane serialization-only: parse and validate the owner-free simulator envelope without joining it as a passed physical run. Alternatively, provide a deliberately bounded contract-test adapter that emits the required passed shape exclusively for serialization tests, with an explicit assertion that it cannot be used by the physical runner. Add an integration test using the real Elixir join function so the script’s advertised success path is executable.
 
 ---
 
-_Reviewed: 2026-08-05T02:09:21Z_
+_Reviewed: 2026-08-26T00:00:00Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
+
