@@ -62,6 +62,13 @@ final class ProofLaneContractTests: XCTestCase {
     XCTAssertTrue(report.assertions.allSatisfy { $0.outcome == .passed })
   }
 
+  func testPhysicalSequenceCarriesOneNonemptyFreeFormValue() async {
+    let adapter = RecordingPhysicalIphoneAdapter()
+    _ = await adapter.submitFreeFormAnswerOffline("contract-value")
+    XCTAssertEqual(adapter.calls, [.freeForm])
+    XCTAssertEqual(await adapter.submitFreeFormAnswerOffline(""), .blocked)
+  }
+
   func testPhysicalReportNeverCarriesHostValues() async throws {
     let report = await PhysicalIphoneSequence.run(adapter: nil)
     let data = try JSONEncoder().encode(report)
@@ -188,7 +195,10 @@ private final class RecordingPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
   func playInstalledAudioOffline() async -> ProofLaneOutcome { record(.audio) }
   func enterAuthorizedStudy() async -> ProofLaneOutcome { record(.entry) }
   func submitSelectedAnswerOffline() async -> ProofLaneOutcome { record(.selected) }
-  func submitFreeFormAnswerOffline() async -> ProofLaneOutcome { record(.freeForm) }
+  func submitFreeFormAnswerOffline(_ value: String) async -> ProofLaneOutcome {
+    guard value == "contract-value" else { return .blocked }
+    return record(.freeForm)
+  }
   func relaunchWithoutResetAndReconnect() async -> ProofLaneOutcome { record(.relaunch) }
   func observeRecoveryAndRetainedWork() async -> ProofLaneOutcome { record(.recovery) }
 
