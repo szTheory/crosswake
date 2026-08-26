@@ -62,6 +62,10 @@ final class ProofLaneUITests: XCTestCase {
       ]
     ]
     let bytes = try JSONSerialization.data(withJSONObject: report, options: [.sortedKeys])
+    let attachment = XCTAttachment(data: bytes, uniformTypeIdentifier: "public.json")
+    attachment.name = "crosswake-physical-report.json"
+    attachment.lifetime = .keepAlways
+    add(attachment)
     print(String(decoding: bytes, as: UTF8.self))
   }
 

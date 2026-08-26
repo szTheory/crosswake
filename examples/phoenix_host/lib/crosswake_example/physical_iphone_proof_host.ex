@@ -56,8 +56,9 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   end
 
   # The device report comes only from the generated XCTest executing on the
-  # selected signed physical destination. Raw xcodebuild output stays in memory
-  # and its private derived-data root is always removed.
+  # selected signed physical destination. Its report travels as a kept XCTest
+  # attachment inside the private result bundle; the whole run root is removed
+  # before the validated bytes leave this callback.
   def device_report(%{schema_version: 1, device_class: :physical_iphone}) do
     with {:ok, destination} <- selected_physical_destination(),
          {:ok, team} <- development_team(),
@@ -330,6 +331,8 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   end
 
   defp run_physical_xctest(root, destination, team) do
+    result_bundle = Path.join(root, "Result.xcresult")
+
     args = [
       "-project",
       @ios_project,
@@ -339,6 +342,8 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
       "id=#{destination.id}",
       "-derivedDataPath",
       Path.join(root, "DerivedData"),
+      "-resultBundlePath",
+      result_bundle,
       "-parallel-testing-enabled",
       "NO",
       "-only-testing:CrosswakeProofLaneUITests/ProofLaneUITests/testReferenceHostPhysicalStudyContract",
@@ -356,7 +361,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     ]
 
     case System.cmd("xcodebuild", args, env: env, stderr_to_stdout: true) do
-      {output, 0} -> extract_device_report(output)
+      {_output, 0} -> extract_device_report(root, result_bundle)
       _ -> {:error, :unavailable}
     end
   end
@@ -369,25 +374,47 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     _, _ -> {:error, :unavailable}
   end
 
-  defp extract_device_report(output) do
-    output
-    |> String.split("\n", trim: true)
-    |> Enum.map(&String.trim/1)
-    |> Enum.filter(&(String.starts_with?(&1, "{") and String.ends_with?(&1, "}")))
-    |> Enum.filter(fn line ->
-      match?(
-        {:ok,
-         %{
-           "schema_version" => 1,
-           "device_class" => "physical_iphone",
-           "assertions" => _
-         }},
-        Jason.decode(line)
-      )
-    end)
-    |> case do
-      [report] -> {:ok, report}
+  defp extract_device_report(root, result_bundle) do
+    attachment_root = Path.join(root, "Attachments")
+
+    with {_output, 0} <-
+           System.cmd(
+             "xcrun",
+             [
+               "xcresulttool",
+               "export",
+               "attachments",
+               "--path",
+               result_bundle,
+               "--output-path",
+               attachment_root
+             ],
+             stderr_to_stdout: true
+           ),
+         [report] <-
+           attachment_root
+           |> Path.join("**/*")
+           |> Path.wildcard()
+           |> Enum.filter(&File.regular?/1)
+           |> Enum.flat_map(&physical_report_bytes/1) do
+      {:ok, report}
+    else
       _ -> {:error, :unavailable}
+    end
+  end
+
+  defp physical_report_bytes(path) do
+    with {:ok, bytes} <- File.read(path),
+         {:ok,
+          %{
+            "schema_version" => 1,
+            "device_class" => "physical_iphone",
+            "assertions" => assertions
+          }}
+         when is_list(assertions) <- Jason.decode(bytes) do
+      [bytes]
+    else
+      _ -> []
     end
   end
 
