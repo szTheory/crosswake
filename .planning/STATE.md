@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
-status: in_progress
-stopped_at: Completed 162-10-PLAN.md; next 162-11-PLAN.md
-last_updated: "2026-08-26T17:41:11.585Z"
+status: complete
+stopped_at: Completed 162-11-PLAN.md; Phase 162 awaits independent re-verification
+last_updated: "2026-08-26T17:46:46.277Z"
 last_activity: 2026-08-26
-last_activity_desc: reconciled source-bound physical evidence and focused contract checks
+last_activity_desc: completed evidence-backed DEVICE reconciliation from final-tree checks
 progress:
   total_phases: 7
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 110
-  completed_plans: 109
-  percent: 86
-current_plan: 10
+  completed_plans: 110
+  percent: 100
+current_plan: 11
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 162 (physical-iphone-adoption-proof) — IN PROGRESS
-Plan: 11 of 11; checked physical evidence is available for narrow support derivation
-Status: Plan 162-09 is complete; Plans 162-10 and 162-11 remain pending
-Last activity: 2026-08-26 — reconciled source-bound physical evidence and focused contract checks
+Phase: 162 (physical-iphone-adoption-proof) — COMPLETE
+Plan: 11 of 11; final-tree physical evidence, focused contracts, and generated guide agree
+Status: DEVICE-01 through DEVICE-07 are complete for one first-adopter offline-study flow on one iOS runtime line
+Last activity: 2026-08-26 — completed evidence-backed DEVICE reconciliation from final-tree checks
 
 ## Active Objective
 
@@ -44,9 +44,9 @@ framework launch.
 
 ## Next Action
 
-Execute Plan 162-10 to derive only the narrow support truth from the checked physical record. Do
-not complete Phase 162 or any DEVICE requirement until Plan 162-11 performs its explicit final-tree
-reconciliation.
+Run the independent Phase 162 verification described in `162-VERIFICATION.md`. Preserve the
+completed narrow scope: the evidence does not widen to Android, background replay or sync, generic
+storage or sync, multiple islands, simulator substitution, or every-iPhone coverage.
 
 ## Blockers
 
@@ -216,6 +216,8 @@ reconciliation.
 - [Phase ?]: Plan 162-09 reconciles physical evidence through authorized source-bound Evidence.check/2; literal Evidence.check/1 lacks approved source bytes by design.
 - [Phase ?]: Public physical support derives from authorized source-bound Evidence.check/2; Evidence.check/1 remains intentionally non-passing without canonical source bytes.
 - [Phase ?]: DEVICE-07 public wording is limited to one first adopter offline-study flow on iOS 26.6 with explicit platform, sync, storage, island, simulator, and all-device non-claims.
+- [Phase ?]: Authorized source-bound Evidence.check/2 remains the physical-record completion authority; Evidence.check/1 is intentionally non-passing without canonical source bytes.
+- [Phase ?]: DEVICE completion is limited to the checked one-flow/one-runtime iOS proof and changes no Android or deferred-work truth.
 
 ## Deferred Items
 
@@ -244,8 +246,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-26T17:41:11.572Z
-**Stopped at:** Completed 162-10-PLAN.md; next 162-11-PLAN.md
+**Last session:** 2026-08-26T17:46:46.260Z
+**Stopped at:** Completed 162-11-PLAN.md; Phase 162 awaits independent re-verification
 **Resume file:** None
 
 ## Performance Metrics
@@ -333,6 +335,7 @@ this milestone reset.
 | Phase 162 P08 | 8m | 3 tasks | 9 files |
 | Phase 163 P01 | bounded host integration | 3 tasks | 23 files |
 | Phase 162-physical-iphone-adoption-proof P10 | 12 min | 1 tasks | 3 files |
+| Phase 162-physical-iphone-adoption-proof P11 | 18 min | 1 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -340,9 +343,9 @@ this milestone reset.
 
 - Phase 161.1 inserted after Phase 161: First-Adopter iOS Navigation Shell (URGENT)
 - Phase 163 added: Alpha Reference Host Integration. It is the bounded eligible-host build needed
-  to unblock Phase 162's physical-iPhone proof; Phase 162 remains an external device-evidence
-  gate until the resulting host and signed iPhone run are available.
+  to unblock Phase 162's physical-iPhone proof; its device and backend assertion ownership remain
+  independent from Phase 162 promotion.
 
 - Phase 163 completed: generated Phoenix/iOS host, exact foreground learning bundle, scoped replay
-  authority, and physical report/evidence producers are verified; Phase 162 is blocked only by
-  normal local Apple signing.
+  authority, and physical report/evidence producers are verified; the final physical record closed
+  Phase 162's narrow device-evidence gate.
