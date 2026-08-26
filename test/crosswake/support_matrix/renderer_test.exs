@@ -60,6 +60,27 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     refute guide =~ "first-adopter"
   end
 
+  test "first adopter readiness limits physical iPhone device evidence to the checked run" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    assert guide =~
+             "| physical-iPhone offline study | device evidence | One checked physical-device artifact covers one first adopter offline-study flow on the recorded iOS 26.6 runtime line. |"
+
+    for non_claim <- [
+          "It does not claim Android.",
+          "It does not claim background replay or sync.",
+          "It does not claim generic storage or sync.",
+          "It does not claim multiple offline islands.",
+          "It does not claim simulator substitution.",
+          "It does not claim every iPhone."
+        ] do
+      assert guide =~ non_claim
+    end
+
+    refute guide =~ "| physical-iPhone offline study | verification required |"
+    refute guide =~ "First B2C Adopter"
+  end
+
   test "generated guide renders support-truth labels with proof and non-proof meanings" do
     guide = Renderer.render(SupportMatrix.canonical())
 
