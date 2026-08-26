@@ -10,6 +10,7 @@ struct CrosswakeProofLaneApp: App {
   init() {
     let environment = ProcessInfo.processInfo.environment
     physicalReferenceHost = environment["CROSSWAKE_REFERENCE_HOST_PHYSICAL_ADAPTER"] == "1"
+    UIApplication.shared.isIdleTimerDisabled = physicalReferenceHost
 
     if physicalReferenceHost,
        environment["CROSSWAKE_REFERENCE_HOST_RESET_STUDY"] == "1" {
@@ -39,6 +40,7 @@ struct CrosswakeProofLaneApp: App {
 private struct ReferencePhysicalStudyView: View {
   private let adapter = ReferenceHostPhysicalIphoneAdapter()
   @State private var packReady = false
+  @State private var packDiagnostic = "PI-PACK-INSTALL-AUDIO:NOT-RUN"
   @State private var selectedReady = false
   @State private var freeFormReady = false
   @State private var freeFormDraft = ""
@@ -50,6 +52,9 @@ private struct ReferencePhysicalStudyView: View {
 
       Text(packReady ? "Pronunciation ready offline" : "Pronunciation unavailable")
         .accessibilityIdentifier("reference-pack-state")
+
+      Text(packDiagnostic)
+        .accessibilityIdentifier("reference-pack-diagnostic")
 
       if let location = adapter.installedCardImageURL(),
          let image = UIImage(contentsOfFile: location.path) {
@@ -64,9 +69,25 @@ private struct ReferencePhysicalStudyView: View {
       Button("Install pronunciation pack") {
         Task {
           let installed = await adapter.installAndVerifyPack()
+          guard installed == .passed else {
+            packDiagnostic = adapter.packInstallDiagnostic()
+            return
+          }
+
           let audio = await adapter.playInstalledAudioOffline()
+          guard audio == .passed else {
+            packDiagnostic = "PI-PACK-INSTALL-AUDIO:AUDIO-BLOCKED"
+            return
+          }
+
           let entered = await adapter.enterAuthorizedStudy()
-          packReady = installed == .passed && audio == .passed && entered == .passed
+          guard entered == .passed else {
+            packDiagnostic = "PI-PACK-INSTALL-AUDIO:ENTRY-BLOCKED"
+            return
+          }
+
+          packReady = true
+          packDiagnostic = "PI-PACK-INSTALL-AUDIO:PASSED"
         }
       }
       .frame(minWidth: 44, minHeight: 44)
@@ -114,6 +135,9 @@ private struct ReferencePhysicalStudyView: View {
       selectedReady = state.selected
       freeFormReady = state.freeForm
       packReady = state.entered
+      if packReady {
+        packDiagnostic = "PI-PACK-INSTALL-AUDIO:PASSED"
+      }
     }
   }
 }

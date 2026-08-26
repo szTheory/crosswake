@@ -137,14 +137,21 @@ private final class ReferenceLearningBundleAdapter {
   ]
   private let fileManager: FileManager
   private var audioPlayer: AVAudioPlayer?
+  private(set) var lastInstallDiagnostic = "PI-PACK-INSTALL-AUDIO:NOT-RUN"
 
   init(fileManager: FileManager = .default) {
     self.fileManager = fileManager
   }
 
   func installForeground() async -> ProofLaneOutcome {
-    guard let destination = installedRoot() else { return .blocked }
-    if verify(root: destination) { return .passed }
+    guard let destination = installedRoot() else {
+      lastInstallDiagnostic = "PI-PACK-INSTALL-AUDIO:SANDBOX-BLOCKED"
+      return .blocked
+    }
+    if verify(root: destination) {
+      lastInstallDiagnostic = "PI-PACK-INSTALL-AUDIO:PASSED"
+      return .passed
+    }
 
     let parent = destination.deletingLastPathComponent()
     let staging = parent.appendingPathComponent(".reference-learning-\(UUID().uuidString)")
@@ -155,18 +162,30 @@ private final class ReferenceLearningBundleAdapter {
       try fileManager.createDirectory(at: staging, withIntermediateDirectories: false)
 
       for asset in assets {
-        guard let bytes = sourceBytes(asset), matches(bytes, asset) else { return .blocked }
+        guard let bytes = sourceBytes(asset), matches(bytes, asset) else {
+          lastInstallDiagnostic = sourceDiagnostic(for: asset)
+          return .blocked
+        }
         try bytes.write(to: assetURL(asset, under: staging), options: .atomic)
       }
 
-      guard verify(root: staging) else { return .blocked }
+      guard verify(root: staging) else {
+        lastInstallDiagnostic = "PI-PACK-INSTALL-AUDIO:STAGING-BLOCKED"
+        return .blocked
+      }
       if fileManager.fileExists(atPath: destination.path) {
         _ = try fileManager.replaceItemAt(destination, withItemAt: staging)
       } else {
         try fileManager.moveItem(at: staging, to: destination)
       }
-      return verify(root: destination) ? .passed : .blocked
+      guard verify(root: destination) else {
+        lastInstallDiagnostic = "PI-PACK-INSTALL-AUDIO:FINAL-BLOCKED"
+        return .blocked
+      }
+      lastInstallDiagnostic = "PI-PACK-INSTALL-AUDIO:PASSED"
+      return .passed
     } catch {
+      lastInstallDiagnostic = "PI-PACK-INSTALL-AUDIO:FILESYSTEM-BLOCKED"
       return .blocked
     }
   }
@@ -208,15 +227,24 @@ private final class ReferenceLearningBundleAdapter {
   }
 
   private func sourceBytes(_ asset: ReferenceLearningAsset) -> Data? {
-    Bundle.allBundles
+    ([Bundle.main] + Bundle.allBundles)
       .compactMap { $0.url(forResource: asset.name, withExtension: asset.fileExtension) }
       .compactMap { try? Data(contentsOf: $0) }
       .first
   }
 
+  private func sourceDiagnostic(for asset: ReferenceLearningAsset) -> String {
+    switch asset.fileExtension {
+    case "json": "PI-PACK-INSTALL-AUDIO:SOURCE-MANIFEST-BLOCKED"
+    case "png": "PI-PACK-INSTALL-AUDIO:SOURCE-IMAGE-BLOCKED"
+    case "aiff": "PI-PACK-INSTALL-AUDIO:SOURCE-AUDIO-BLOCKED"
+    default: "PI-PACK-INSTALL-AUDIO:SOURCE-BLOCKED"
+    }
+  }
+
   private func installedRoot() -> URL? {
     guard let support = try? fileManager.url(
-      for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: false
+      for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true
     ) else { return nil }
     return support.appendingPathComponent("CrosswakeReferenceLearning/v1", isDirectory: true)
   }
@@ -248,6 +276,10 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
 
   func installAndVerifyPack() async -> ProofLaneOutcome {
     await pack.installForeground()
+  }
+
+  func packInstallDiagnostic() -> String {
+    pack.lastInstallDiagnostic
   }
 
   func playInstalledAudioOffline() async -> ProofLaneOutcome {
