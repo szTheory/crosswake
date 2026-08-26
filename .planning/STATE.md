@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
 status: in_progress
-stopped_at: Completed 162-09-PLAN.md; next 162-10-PLAN.md
-last_updated: "2026-08-26T17:34:09.234Z"
+stopped_at: Completed 162-10-PLAN.md; next 162-11-PLAN.md
+last_updated: "2026-08-26T17:41:11.585Z"
 last_activity: 2026-08-26
 last_activity_desc: reconciled source-bound physical evidence and focused contract checks
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 110
-  completed_plans: 108
+  completed_plans: 109
   percent: 86
 current_plan: 10
 ---
@@ -23,7 +23,7 @@ current_plan: 10
 ## Current Position
 
 Phase: 162 (physical-iphone-adoption-proof) — IN PROGRESS
-Plan: 10 of 11; checked physical evidence is available for narrow support derivation
+Plan: 11 of 11; checked physical evidence is available for narrow support derivation
 Status: Plan 162-09 is complete; Plans 162-10 and 162-11 remain pending
 Last activity: 2026-08-26 — reconciled source-bound physical evidence and focused contract checks
 
@@ -214,6 +214,8 @@ reconciliation.
 - [Phase ?]: Advisory physical report joins require exact bytes from an executed host-owned Phoenix producer.
 - [Phase ?]: Study-status accessibility tests fail closed without the required host adapter; TODO-002 keeps recovery unavailable.
 - [Phase ?]: Plan 162-09 reconciles physical evidence through authorized source-bound Evidence.check/2; literal Evidence.check/1 lacks approved source bytes by design.
+- [Phase ?]: Public physical support derives from authorized source-bound Evidence.check/2; Evidence.check/1 remains intentionally non-passing without canonical source bytes.
+- [Phase ?]: DEVICE-07 public wording is limited to one first adopter offline-study flow on iOS 26.6 with explicit platform, sync, storage, island, simulator, and all-device non-claims.
 
 ## Deferred Items
 
@@ -242,9 +244,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-26T17:34:09.223Z
-**Stopped at:** Completed 162-09-PLAN.md; next 162-10-PLAN.md
-**Resume file:** .planning/phases/162-physical-iphone-adoption-proof/162-10-PLAN.md
+**Last session:** 2026-08-26T17:41:11.572Z
+**Stopped at:** Completed 162-10-PLAN.md; next 162-11-PLAN.md
+**Resume file:** None
 
 ## Performance Metrics
 
@@ -330,6 +332,7 @@ this milestone reset.
 | Phase 162 P07 | 20m | 2 tasks | 6 files |
 | Phase 162 P08 | 8m | 3 tasks | 9 files |
 | Phase 163 P01 | bounded host integration | 3 tasks | 23 files |
+| Phase 162-physical-iphone-adoption-proof P10 | 12 min | 1 tasks | 3 files |
 
 ## Accumulated Context
 
