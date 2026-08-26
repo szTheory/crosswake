@@ -2,6 +2,7 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
   @moduledoc false
 
   import Phoenix.ConnTest, only: [build_conn: 0]
+  import Ecto.Query, only: [from: 2]
 
   alias Crosswake.Companions.Sigra.Contracts
   alias Crosswake.Manifest.Builder
@@ -9,6 +10,7 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
   alias Crosswake.Policy.Route
   alias Crosswake.Compatibility.{RouteGate, Target}
   alias CrosswakeExample.LocalFirst.{ReviewEvent, SyncController}
+  alias CrosswakeExample.E2E.ReplayAuthority
   alias CrosswakeExample.Repo
 
   @scope_current "v1.reference_scope_current"
@@ -37,9 +39,7 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
     # below. Keep the producer silent and return only its closed report.
     Logger.disable(self())
 
-    with :ok <- reset_fixture(),
-         %{effect_count: 1, idempotency_count: 1} <- accepted_replay(),
-         %{effect_count: 1, idempotency_count: 1} <- duplicate_replay(),
+    with :ok <- verify_device_created_replay(),
          :ok <- reset_fixture(),
          %{retained_count: rejected, halted: :rejected} when rejected > 0 <- retained_rejection(),
          :ok <- reset_fixture(),
@@ -73,6 +73,47 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
   def reset_fixture do
     Repo.delete_all(ReviewEvent)
     :ok
+  end
+
+  # The physical XCTest creates this row through the normal replay authority.
+  # It must exist before this independent backend producer can contribute its
+  # closed assertions; synthetic acceptance is not a substitute.
+  defp verify_device_created_replay do
+    scope = ReplayAuthority.physical_fixture().scope_ref
+
+    case Repo.one(from(record in ReviewEvent, where: record.scope_ref == ^scope)) do
+      %ReviewEvent{
+        client_mutation_id: id,
+        card_id: card_id,
+        rating: rating,
+        free_form_answer: answer,
+        status: "accepted"
+      }
+      when is_binary(id) and is_integer(card_id) and card_id > 0 and rating in ["good", "hard"] and
+             is_binary(answer) and byte_size(answer) in 1..4096 ->
+        case SyncController.sync_events(
+               build_conn(),
+               scope,
+               [
+                 %{
+                   "client_mutation_id" => id,
+                   "card_id" => card_id,
+                   "rating" => rating,
+                   "free_form_answer" => answer
+                 }
+               ],
+               authority_options(session_scope: scope)
+             ) do
+          {:ok, %{accepted_records: [%{outcome: :accepted}], halted: nil}} ->
+            if Repo.aggregate(ReviewEvent, :count, :id) == 1, do: :ok, else: :error
+
+          _ ->
+            :error
+        end
+
+      _ ->
+        :error
+    end
   end
 
   defp safe_reset_fixture do

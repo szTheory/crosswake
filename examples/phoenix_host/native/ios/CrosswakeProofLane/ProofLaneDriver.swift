@@ -120,7 +120,7 @@ final class ReferenceHostPhysicalIphoneScopeProvider: ReferenceStudyScopeProvidi
   func didSwitchAccount(to scopeRef: String?) { activeScopeRef = scopeRef?.isEmpty == false ? scopeRef : nil }
 }
 
-private struct ReferenceStudyJournalRecord: Codable {
+fileprivate struct ReferenceStudyJournalRecord: Codable {
   let version: Int
   let scopeRef: String
   let mutationID: String
@@ -158,6 +158,17 @@ final class ReferenceStudyJournal {
 
   func hasRecord(scopeRef: String?) -> Bool { read(scopeRef: scopeRef) != nil }
 
+  fileprivate func record(scopeRef: String?) -> ReferenceStudyJournalRecord? { read(scopeRef: scopeRef) }
+
+  fileprivate func remove(_ record: ReferenceStudyJournalRecord, scopeRef: String?) -> ProofLaneOutcome {
+    guard let current = read(scopeRef: scopeRef), current.scopeRef == record.scopeRef,
+          current.mutationID == record.mutationID else { return .blocked }
+    do {
+      try fileManager.removeItem(at: fileURL(for: record.scopeRef))
+      return .passed
+    } catch { return .blocked }
+  }
+
   func reset() { try? fileManager.removeItem(at: root) }
 
   private func read(scopeRef: String?) -> ReferenceStudyJournalRecord? {
@@ -171,6 +182,79 @@ final class ReferenceStudyJournal {
   private func fileURL(for scopeRef: String) -> URL {
     let name = SHA256.hash(data: Data(scopeRef.utf8)).hexString
     return root.appendingPathComponent(name + ".json", isDirectory: false)
+  }
+}
+
+// Deliberately foreground-only and reference-host-private. It carries one
+// journal record through the existing session-authorized Phoenix endpoints;
+// callers receive only a closed outcome and never response or payload bytes.
+private final class ReferenceStudyReplayTransport {
+  private let environment: [String: String]
+  private let session: URLSession
+
+  init(environment: [String: String] = ProcessInfo.processInfo.environment) {
+    self.environment = environment
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.httpCookieStorage = HTTPCookieStorage()
+    self.session = URLSession(configuration: configuration)
+  }
+
+  func replay(_ record: ReferenceStudyJournalRecord, scopeRef: String?) async -> ProofLaneOutcome {
+    guard let scopeRef, scopeRef == record.scopeRef,
+          let base = environment["CROSSWAKE_REFERENCE_HOST_BASE_URL"],
+          let baseURL = URL(string: base), baseURL.scheme != nil,
+          let action = environment["CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION"], action == "establish"
+    else { return .blocked }
+
+    guard await post(baseURL, path: "/_e2e/replay-session", body: ["action": action]) else { return .blocked }
+    let event: [String: Any] = [
+      "client_mutation_id": record.mutationID,
+      "card_id": record.cardID,
+      "rating": "good",
+      "free_form_answer": record.value
+    ]
+    let body: [String: Any] = ["scope_ref": scopeRef, "events": [event]]
+    guard await accepted(baseURL, body: body), await accepted(baseURL, body: body),
+          await oneRow(baseURL, mutationID: record.mutationID) else { return .blocked }
+    return .passed
+  }
+
+  private func post(_ baseURL: URL, path: String, body: [String: Any]) async -> Bool {
+    guard JSONSerialization.isValidJSONObject(body), let data = try? JSONSerialization.data(withJSONObject: body),
+          let url = URL(string: path, relativeTo: baseURL) else { return false }
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = data
+    guard let (_, response) = try? await session.data(for: request),
+          let http = response as? HTTPURLResponse else { return false }
+    return (200...299).contains(http.statusCode)
+  }
+
+  private func accepted(_ baseURL: URL, body: [String: Any]) async -> Bool {
+    guard JSONSerialization.isValidJSONObject(body), let data = try? JSONSerialization.data(withJSONObject: body),
+          let url = URL(string: "/study/sync", relativeTo: baseURL) else { return false }
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = data
+    guard let (responseData, response) = try? await session.data(for: request),
+          let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode),
+          let object = try? JSONSerialization.jsonObject(with: responseData) as? [String: Any],
+          let dataObject = object["data"] as? [String: Any],
+          let accepted = dataObject["accepted_records"] as? [[String: Any]], accepted.count == 1,
+          accepted.first?["outcome"] as? String == "accepted" else { return false }
+    return true
+  }
+
+  private func oneRow(_ baseURL: URL, mutationID: String) async -> Bool {
+    guard let encoded = mutationID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+          let url = URL(string: "/_e2e/sync-state/\(encoded)", relativeTo: baseURL),
+          let (data, response) = try? await session.data(from: url),
+          let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode),
+          let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+          object["count"] as? Int == 1 else { return false }
+    return true
   }
 }
 
@@ -393,11 +477,12 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
   }
 
   func observeRecoveryAndRetainedWork() async -> ProofLaneOutcome {
-    defaults.bool(forKey: prefix + "entered") &&
-      defaults.bool(forKey: prefix + "selected") &&
-      journal.recover(scopeRef: scopeProvider.currentScopeRef()) == .passed
-      ? .passed
-      : .blocked
+    guard defaults.bool(forKey: prefix + "entered"), defaults.bool(forKey: prefix + "selected"),
+          let scopeRef = scopeProvider.currentScopeRef(), let record = journal.record(scopeRef: scopeRef),
+          journal.recover(scopeRef: scopeRef) == .passed,
+          await ReferenceStudyReplayTransport().replay(record, scopeRef: scopeRef) == .passed
+    else { return .blocked }
+    return journal.remove(record, scopeRef: scopeRef)
   }
 
   func persistedStudyState() -> (entered: Bool, selected: Bool, freeForm: Bool) {

@@ -63,7 +63,7 @@ defmodule CrosswakeExample.LocalFirst.Study do
 
   defp persistence_attrs(scope_ref, event) do
     event
-    |> Map.take(["client_mutation_id", "card_id", "rating"])
+    |> Map.take(["client_mutation_id", "card_id", "rating", "free_form_answer"])
     |> Map.put("scope_ref", scope_ref)
   end
 

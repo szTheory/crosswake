@@ -69,6 +69,17 @@ final class ProofLaneContractTests: XCTestCase {
     XCTAssertEqual(await adapter.submitFreeFormAnswerOffline(""), .blocked)
   }
 
+  func testReferenceJournalRecoversOnlyInsideItsOriginalScope() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let journal = ReferenceStudyJournal(root: root)
+
+    XCTAssertEqual(journal.append(value: "neutral-answer", scopeRef: "v1.scope_fixture_alpha_01"), .passed)
+    XCTAssertEqual(journal.recover(scopeRef: "v1.scope_fixture_alpha_01"), .passed)
+    XCTAssertEqual(journal.recover(scopeRef: "v1.scope_fixture_bravo_01"), .blocked)
+    XCTAssertEqual(journal.recover(scopeRef: nil), .blocked)
+  }
+
   func testPhysicalReportNeverCarriesHostValues() async throws {
     let report = await PhysicalIphoneSequence.run(adapter: nil)
     let data = try JSONEncoder().encode(report)

@@ -2,9 +2,9 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
   use ExUnit.Case, async: false
 
   alias Crosswake.ProofLane.{Evidence, PhysicalIphoneContract, PhysicalIphonePreflight}
+  alias CrosswakeExample.E2E.ReplayAuthority
   alias CrosswakeExample.LocalFirst.{PhysicalIphoneAuthority, ReviewEvent}
   alias CrosswakeExample.{PhysicalIphoneProofHost, Repo}
-  alias Mix.Tasks.Crosswake.ProofLane.PhysicalIphone, as: PhysicalIphoneTask
 
   setup do
     Repo.delete_all(ReviewEvent)
@@ -40,13 +40,29 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
     assert {:error, :unavailable} = PhysicalIphoneProofHost.device_report(%{})
   end
 
-  test "backend producer independently emits its exact owner-free report" do
+  test "backend producer fails closed without the device-created replay effect" do
     contract = %{schema_version: 1, device_class: :physical_iphone}
-    report = PhysicalIphoneAuthority.report(contract)
-    assert is_binary(report)
-    assert {:ok, assertions} = PhysicalIphoneTask.parse_report(report, :backend_authority)
-    assert length(assertions) == 4
-    assert Enum.all?(assertions, &(&1.owner == :backend_authority and &1.outcome == :passed))
+    assert {:error, :unavailable} = PhysicalIphoneAuthority.report(contract)
+    assert Repo.aggregate(ReviewEvent, :count, :id) == 0
+  end
+
+  test "backend producer accepts only the matching scoped device-created effect" do
+    scope = ReplayAuthority.physical_fixture().scope_ref
+
+    %ReviewEvent{}
+    |> ReviewEvent.changeset(%{
+      scope_ref: scope,
+      client_mutation_id: "00000000-0000-4000-8000-000000000111",
+      card_id: 1,
+      rating: "good",
+      free_form_answer: "neutral-answer"
+    })
+    |> Repo.insert!()
+
+    assert is_binary(
+             PhysicalIphoneAuthority.report(%{schema_version: 1, device_class: :physical_iphone})
+           )
+
     assert Repo.aggregate(ReviewEvent, :count, :id) == 0
   end
 

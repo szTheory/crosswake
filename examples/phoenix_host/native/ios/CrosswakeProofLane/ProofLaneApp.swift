@@ -43,6 +43,7 @@ private struct ReferencePhysicalStudyView: View {
   @State private var packDiagnostic = "PI-PACK-INSTALL-AUDIO:NOT-RUN"
   @State private var selectedReady = false
   @State private var freeFormReady = false
+  @State private var recoveryReady = false
   @State private var freeFormDraft = ""
 
   var body: some View {
@@ -126,7 +127,7 @@ private struct ReferencePhysicalStudyView: View {
       Text(selectedReady && freeFormReady ? "Relaunch state retained" : "Relaunch state pending")
         .accessibilityIdentifier("reference-relaunch-state")
 
-      Text(selectedReady && freeFormReady ? "Recovery work retained" : "Recovery work pending")
+      Text(recoveryReady ? "Recovery work retained" : "Recovery work pending")
         .accessibilityIdentifier("reference-recovery-state")
     }
     .padding(24)
@@ -137,6 +138,11 @@ private struct ReferencePhysicalStudyView: View {
       packReady = state.entered
       if packReady {
         packDiagnostic = "PI-PACK-INSTALL-AUDIO:PASSED"
+      }
+      if selectedReady && freeFormReady {
+        Task {
+          recoveryReady = await adapter.observeRecoveryAndRetainedWork() == .passed
+        }
       }
     }
   }

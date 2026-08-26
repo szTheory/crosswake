@@ -393,6 +393,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
       {"CROSSWAKE_PHYSICAL_IPHONE_CONTRACT_MODE", "1"},
       {"CROSSWAKE_REFERENCE_HOST_PHYSICAL_ADAPTER", "1"},
       {"CROSSWAKE_REFERENCE_HOST_SCOPE_REF", fixture.scope_ref},
+      {"CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION", fixture.establish_action},
       {"CROSSWAKE_REFERENCE_HOST_BASE_URL",
        System.get_env("CROSSWAKE_PHYSICAL_IPHONE_HOST_BASE_URL")}
     ]

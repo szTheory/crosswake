@@ -7,6 +7,9 @@ defmodule CrosswakeExample.LocalFirst.ReviewEvent do
     field(:client_mutation_id, :string)
     field(:card_id, :integer)
     field(:rating, :string)
+    # This field belongs only to the reference host's authorized study mutation
+    # path. It is deliberately absent from operational projections and reports.
+    field(:free_form_answer, :string)
     field(:status, :string, default: "accepted")
 
     timestamps(type: :utc_datetime)
@@ -15,10 +18,11 @@ defmodule CrosswakeExample.LocalFirst.ReviewEvent do
   @doc false
   def changeset(review_event, attrs) do
     review_event
-    |> cast(attrs, [:scope_ref, :client_mutation_id, :card_id, :rating])
+    |> cast(attrs, [:scope_ref, :client_mutation_id, :card_id, :rating, :free_form_answer])
     |> put_change(:status, "accepted")
     |> validate_required([:scope_ref, :client_mutation_id, :card_id, :rating])
     |> validate_inclusion(:rating, ["good", "hard"])
+    |> validate_length(:free_form_answer, max: 4096)
     |> validate_inclusion(:status, ["accepted", "rejected"])
     |> unique_constraint(:client_mutation_id,
       name: :review_events_client_mutation_id_index,
