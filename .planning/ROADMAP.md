@@ -492,7 +492,7 @@ and app CSS can detect the shell synchronously.
 **Effort:** 2-3 focused days plus adopter/backend availability
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
-**Plans:** 11 plans (9 executed, 2 follow-up plans pending)
+**Plans:** 10/11 plans executed
 
 Plans:
 
@@ -534,7 +534,7 @@ Plans:
 
 **Wave 10** *(blocked on Wave 9 evidence)*
 
-- [ ] 162-10-PLAN.md — Derive the narrow one-flow/one-runtime public support truth from the checked physical record.
+- [x] 162-10-PLAN.md — Derive the narrow one-flow/one-runtime public support truth from the checked physical record.
 
 **Wave 11** *(blocked on Waves 9-10)*
 
