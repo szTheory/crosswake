@@ -493,6 +493,8 @@ and app CSS can detect the shell synchronously.
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
 **Plans:** 11/11 plans executed
+**Verification:** Gaps found (6/7 must-haves verified). Free-form answer persistence is hollow,
+and the advisory report-serialization success path is not executable against the real join.
 
 Plans:
 
