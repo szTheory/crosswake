@@ -67,7 +67,8 @@ final class ProofLaneContractTests: XCTestCase {
     let adapter = RecordingPhysicalIphoneAdapter()
     _ = await adapter.submitFreeFormAnswerOffline("contract-value")
     XCTAssertEqual(adapter.calls, [.freeForm])
-    XCTAssertEqual(await adapter.submitFreeFormAnswerOffline(""), .blocked)
+    let emptyValueOutcome = await adapter.submitFreeFormAnswerOffline("")
+    XCTAssertEqual(emptyValueOutcome, .blocked)
   }
 
   func testReferenceJournalRecoversOnlyInsideItsOriginalScope() throws {
@@ -102,7 +103,7 @@ final class ProofLaneContractTests: XCTestCase {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: root) }
     let scope = "v1.scope_fixture_alpha_01"
-    let filename = SHA256.hash(data: Data(scope.utf8)).hexString + ".json"
+    let filename = sha256Hex(Data(scope.utf8)) + ".json"
     try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
     try Data("{".utf8).write(to: root.appendingPathComponent(filename))
 
@@ -176,6 +177,10 @@ final class ProofLaneContractTests: XCTestCase {
     guard let data = try? encoder.encode(document),
           let output = String(data: data, encoding: .utf8) else { return }
     print(output)
+  }
+
+  private func sha256Hex(_ data: Data) -> String {
+    SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
   }
 
   private func emitNavigationEvidence(outcome: ProofLaneOutcome) {
