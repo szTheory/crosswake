@@ -48,11 +48,35 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
     refute scope == ""
   end
 
-  test "physical Xcode invocation uses quiet mode before executing the focused UI contract" do
+  test "physical Xcode invocation builds once, injects the exact UI-test environment, and runs quietly" do
     source = File.read!("lib/crosswake_example/physical_iphone_proof_host.ex")
 
     assert source =~
-             ~r/args = \[\s*"-quiet",\s*"-project",.*?only-testing:CrosswakeProofLaneUITests\/ProofLaneUITests\/testReferenceHostPhysicalStudyContract/s
+             ~r/build_args = \[\s*"-quiet",\s*"-project",.*?"build-for-testing"/s
+
+    assert source =~ ~r/exactly_one_xctestrun\(derived_data\)/
+    assert source =~ ~r/\[xctestrun\] -> \{:ok, xctestrun\}/
+    assert source =~ ~r/test-without-building.*?-xctestrun.*?xctestrun/s
+
+    for key <- [
+          "CROSSWAKE_REFERENCE_HOST_SCOPE_REF",
+          "CROSSWAKE_REFERENCE_HOST_BASE_URL",
+          "CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION"
+        ] do
+      assert source =~ "replace_plist_string(\n             environment_plist,\n             \"#{key}\""
+    end
+
+    assert source =~ "GENERATE_INFOPLIST_FILE=NO"
+    assert source =~ "INFOPLIST_FILE=\#{@physical_info_plist}"
+  end
+
+  test "physical-only app plist allows local networking without arbitrary loads" do
+    plist = File.read!("native/ios/CrosswakeProofLane/PhysicalProofInfo.plist")
+
+    assert plist =~ "<key>NSAppTransportSecurity</key>"
+    assert plist =~ "<key>NSAllowsLocalNetworking</key>"
+    assert plist =~ "<key>NSLocalNetworkUsageDescription</key>"
+    refute plist =~ "NSAllowsArbitraryLoads"
   end
 
   test "invalid device contracts remain unavailable without invoking Xcode" do

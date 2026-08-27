@@ -7,7 +7,9 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   @host_root Path.expand("../..", __DIR__)
   @repo_root Path.expand("../..", @host_root)
   @ios_project Path.join([@host_root, "native", "ios", "CrosswakeProofLane.xcodeproj"])
+  @physical_info_plist "CrosswakeProofLane/PhysicalProofInfo.plist"
   @ios_scheme "CrosswakeProofLane"
+  @ui_test_target "CrosswakeProofLaneUITests"
   @manifest Path.join(@host_root, ".crosswake/proof_lane.json")
   @evidence_parent Path.join([
                      @repo_root,
@@ -364,8 +366,10 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
 
   defp run_physical_xctest(root, destination, team) do
     result_bundle = Path.join(root, "Result.xcresult")
+    derived_data = Path.join(root, "DerivedData")
+    fixture = ReplayAuthority.physical_fixture()
 
-    args = [
+    build_args = [
       "-quiet",
       "-project",
       @ios_project,
@@ -374,9 +378,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
       "-destination",
       "id=#{destination.id}",
       "-derivedDataPath",
-      Path.join(root, "DerivedData"),
-      "-resultBundlePath",
-      result_bundle,
+      derived_data,
       "-parallel-testing-enabled",
       "NO",
       "-only-testing:CrosswakeProofLaneUITests/ProofLaneUITests/testReferenceHostPhysicalStudyContract",
@@ -385,25 +387,99 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
       "CODE_SIGNING_REQUIRED=YES",
       "CODE_SIGN_STYLE=Automatic",
       "DEVELOPMENT_TEAM=#{team}",
-      "test"
+      "GENERATE_INFOPLIST_FILE=NO",
+      "INFOPLIST_FILE=#{@physical_info_plist}",
+      "build-for-testing"
     ]
 
-    fixture = ReplayAuthority.physical_fixture()
-
-    env = [
-      {"CROSSWAKE_PHYSICAL_IPHONE_CONTRACT_MODE", "1"},
-      {"CROSSWAKE_REFERENCE_HOST_PHYSICAL_ADAPTER", "1"},
-      {"CROSSWAKE_REFERENCE_HOST_SCOPE_REF", fixture.scope_ref},
-      {"CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION", fixture.establish_action},
-      {"CROSSWAKE_REFERENCE_HOST_BASE_URL",
-       System.get_env("CROSSWAKE_PHYSICAL_IPHONE_HOST_BASE_URL")}
-    ]
-
-    case System.cmd("xcodebuild", args, env: env, stderr_to_stdout: true) do
-      {_output, 0} -> extract_device_report(root, result_bundle)
+    with {_output, 0} <- System.cmd("xcodebuild", build_args, stderr_to_stdout: true),
+         {:ok, xctestrun} <- exactly_one_xctestrun(derived_data),
+         :ok <- inject_ui_test_environment(xctestrun, fixture),
+         {_output, 0} <-
+           System.cmd(
+             "xcodebuild",
+             [
+               "-quiet",
+               "test-without-building",
+               "-xctestrun",
+               xctestrun,
+               "-destination",
+               "id=#{destination.id}",
+               "-resultBundlePath",
+               result_bundle,
+               "-parallel-testing-enabled",
+               "NO",
+               "-only-testing:CrosswakeProofLaneUITests/ProofLaneUITests/testReferenceHostPhysicalStudyContract"
+             ],
+             stderr_to_stdout: true
+           ) do
+      extract_device_report(root, result_bundle)
+    else
       _ -> {:error, :unavailable}
     end
   end
+
+  defp exactly_one_xctestrun(derived_data) do
+    case Path.wildcard(Path.join([derived_data, "Build", "Products", "*.xctestrun"])) do
+      [xctestrun] -> {:ok, xctestrun}
+      _ -> {:error, :unavailable}
+    end
+  end
+
+  defp inject_ui_test_environment(xctestrun, fixture) do
+    environment_plist = xctestrun <> ".environment.plist"
+
+    with {_output, 0} <-
+           System.cmd(
+             "plutil",
+             ["-extract", "#{@ui_test_target}.EnvironmentVariables", "xml1", "-o", environment_plist, xctestrun],
+             stderr_to_stdout: true
+           ),
+         :ok <-
+           replace_plist_string(
+             environment_plist,
+             "CROSSWAKE_REFERENCE_HOST_SCOPE_REF",
+             fixture.scope_ref
+           ),
+         :ok <-
+           replace_plist_string(
+             environment_plist,
+             "CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION",
+             fixture.establish_action
+           ),
+         :ok <-
+           replace_plist_string(
+             environment_plist,
+             "CROSSWAKE_REFERENCE_HOST_BASE_URL",
+             System.get_env("CROSSWAKE_PHYSICAL_IPHONE_HOST_BASE_URL")
+           ),
+         {:ok, environment_bytes} <- File.read(environment_plist),
+         {_output, 0} <-
+           System.cmd(
+             "plutil",
+             [
+               "-replace",
+               "#{@ui_test_target}.EnvironmentVariables",
+               "-xml",
+               environment_bytes,
+               xctestrun
+             ],
+             stderr_to_stdout: true
+           ) do
+      :ok
+    else
+      _ -> {:error, :unavailable}
+    end
+  end
+
+  defp replace_plist_string(path, key, value) when is_binary(value) and byte_size(value) > 0 do
+    case System.cmd("plutil", ["-replace", key, "-string", value, path], stderr_to_stdout: true) do
+      {_output, 0} -> :ok
+      _ -> {:error, :unavailable}
+    end
+  end
+
+  defp replace_plist_string(_, _, _), do: {:error, :unavailable}
 
   defp safely_run_physical_xctest(root, destination, team) do
     run_physical_xctest(root, destination, team)
