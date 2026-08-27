@@ -357,6 +357,22 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     end
   end
 
+  test "generated physical iPhone contract forwards a nonempty value without reporting it" do
+    driver = source("priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex")
+
+    contract =
+      source(
+        "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneTests/ProofLaneContractTests.swift.eex"
+      )
+
+    assert driver =~ "func submitFreeFormAnswerOffline(_ value: String) async -> ProofLaneOutcome"
+    assert driver =~ "submitFreeFormAnswerOffline(contractOnlyFreeFormValue)"
+    assert contract =~ "testPhysicalSequenceForwardsContractOnlyFreeFormValue"
+    assert contract =~ "receivedFreeFormValues"
+    assert contract =~ "contract-only-free-form"
+    refute contract =~ "print(adapter.receivedFreeFormValues"
+  end
+
   test "generator supplies a missing-only physical iPhone host adapter skeleton" do
     generator = source("lib/crosswake/proof_lane/generator.ex")
 
