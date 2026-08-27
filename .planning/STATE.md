@@ -231,7 +231,7 @@ simulator substitution, or every-iPhone coverage.
 ## Deferred Items
 
 - Phase 156 native menu/action-button planning artifacts are retained but abandoned.
-- Phase 157 hardening/promotion work is not active.
+- The abandoned hardening/promotion track is not active.
 - Brandbook/showcase/profile/launch polish is frozen as business-line investment.
 - Android device/parity work is frozen.
 - Capture/device controls, commerce productionization, dashboard, and broad offline/storage
