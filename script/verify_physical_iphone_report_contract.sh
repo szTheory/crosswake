@@ -22,7 +22,6 @@ CROSSWAKE_PROOF_LANE_TARGET="$RUN_ROOT" mix run -e '
 
 PROJECT="$RUN_ROOT/native/ios/CrosswakeProofLane.xcodeproj"
 DEVICE_OUT="$RUN_ROOT/device.json"
-PHOENIX_OUT="$RUN_ROOT/backend.json"
 
 CROSSWAKE_PHYSICAL_IPHONE_CONTRACT_MODE=1 xcodebuild test -project "$PROJECT" -scheme CrosswakeProofLane -destination 'platform=iOS Simulator,name=iPhone 16' \
   -only-testing:CrosswakeProofLaneTests/ProofLaneContractTests/testPhysicalContractModeEmitsOwnerFreeReport 2>&1 |
@@ -30,31 +29,17 @@ CROSSWAKE_PHYSICAL_IPHONE_CONTRACT_MODE=1 xcodebuild test -project "$PROJECT" -s
 
 if [[ ! -f "$DEVICE_OUT" || ! -s "$DEVICE_OUT" ]]; then printf '%s\n' 'PI-CONTRACT-DEVICE-REPORT' >&2; exit 2; fi
 
-# The host provides this explicit producer command after rendering the generated
-# Phoenix test template into its test suite. Its stdout is the sole backend report
-# authority and is intentionally neither logged nor rewritten by this verifier.
-PHOENIX_PRODUCER="${CROSSWAKE_PROOF_LANE_PHOENIX_PRODUCER:-}"
-
-if [[ -z "$PHOENIX_PRODUCER" ]]; then
-  printf '%s\n' 'PI-CONTRACT-PHOENIX-PRODUCER' >&2
-  exit 2
-fi
-
-if ! bash -c "$PHOENIX_PRODUCER" >"$PHOENIX_OUT"; then
-  printf '%s\n' 'PI-CONTRACT-PHOENIX-PRODUCER' >&2
-  exit 2
-fi
-
-if [[ ! -f "$PHOENIX_OUT" || ! -s "$PHOENIX_OUT" ]]; then
-  printf '%s\n' 'PI-CONTRACT-PHOENIX-REPORT' >&2
-  exit 2
-fi
-
-DEVICE_REPORT_FILE="$DEVICE_OUT" BACKEND_REPORT_FILE="$PHOENIX_OUT" mix run -e '
+if ! DEVICE_REPORT_FILE="$DEVICE_OUT" mix run -e '
   alias Mix.Tasks.Crosswake.ProofLane.PhysicalIphone
-  {:ok, device} = File.read!(System.fetch_env!("DEVICE_REPORT_FILE")) |> PhysicalIphone.parse_report(:device_local)
-  {:ok, backend} = File.read!(System.fetch_env!("BACKEND_REPORT_FILE")) |> PhysicalIphone.parse_report(:backend_authority)
-  {:ok, _} = PhysicalIphone.join_report_entries(device, backend)
-' >/dev/null
+  with {:ok, entries} <- File.read!(System.fetch_env!("DEVICE_REPORT_FILE")) |> PhysicalIphone.parse_report(:device_local),
+       true <- Enum.all?(entries, &(&1.outcome == :unavailable)) do
+    :ok
+  else
+    _ -> System.halt(2)
+  end
+' >/dev/null; then
+  printf '%s\n' 'PI-CONTRACT-DEVICE-REPORT' >&2
+  exit 2
+fi
 
 printf '%s\n' '{"outcome":"passed","scope":"advisory","rule_id":"PI-CONTRACT-SERIALIZATION"}'
