@@ -6,15 +6,15 @@ current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
 status: complete
 stopped_at: Completed 162-15-PLAN.md
-last_updated: "2026-08-27T18:50:36.773Z"
+last_updated: "2026-08-27T19:05:49.887Z"
 last_activity: 2026-08-27
-last_activity_desc: Plan 162-15 reconciled repaired current-tree evidence; independent verification rerun remains pending
+last_activity_desc: Plan 162-15 passed deterministic reconciliation gates and restored durable completion truth
 progress:
   total_phases: 7
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 114
-  completed_plans: 113
-  percent: 86
+  completed_plans: 114
+  percent: 100
 current_plan: 15
 ---
 
@@ -224,6 +224,8 @@ simulator substitution, or every-iPhone coverage.
 - [Phase ?]: The simulator CLI validates only an exact unavailable device-local envelope and cannot join, promote, or publish physical evidence.
 - [Phase ?]: Only committed post-exit source-bound Task 2 evidence re-earns the narrow physical-study device-evidence row.
 - [Phase ?]: Public physical support remains one first-adopter flow on one recorded iOS runtime line with Android, background, generic-storage, generic-sync, multiple-island, simulator, and every-iPhone non-claims.
+- [Phase ?]: Plan 14 retained standard proof is the sole physical-device authority; Plan 15 performs only non-Xcode current-tree reconciliation.
+- [Phase ?]: Compiled production parser/join regressions replace the Xcode-dependent advisory shell gate and remain non-promoting.
 
 ## Deferred Items
 
@@ -252,7 +254,7 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-27T18:50:36.753Z
+**Last session:** 2026-08-27T19:05:49.873Z
 **Stopped at:** Completed 162-15-PLAN.md
 **Resume file:** None
 
@@ -345,6 +347,7 @@ this milestone reset.
 | Phase 162 P12 | closeout continuation | 1 tasks | 14 files |
 | Phase 162 P13 | 10m | 2 tasks | 5 files |
 | Phase 162 P14 | closeout continuation | 3 tasks | 5 files |
+| Phase 162 P15 | 14m | 2 tasks | 5 files |
 
 ## Accumulated Context
 
