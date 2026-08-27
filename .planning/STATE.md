@@ -4,11 +4,11 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
-status: gaps_found
-stopped_at: Plan 162-16 fail-closed withdrawal pending corrected-provenance transaction
-last_updated: "2026-08-27T19:05:49.887Z"
+status: pending_verification
+stopped_at: Plan 162-17 internally complete; fresh independent verification pending
+last_updated: "2026-08-27T20:40:00Z"
 last_activity: 2026-08-27
-last_activity_desc: Plan 162-16 withdrew stale physical authority before the one corrected-provenance transaction
+last_activity_desc: Plan 162-17 retained the corrected-provenance pair and restored narrow truth pending independent verification
 progress:
   total_phases: 7
   completed_phases: 7
@@ -22,10 +22,10 @@ current_plan: 15
 
 ## Current Position
 
-Phase: 162 (physical-iphone-adoption-proof) — GAPS FOUND
-Plan: 16 of 16
-Status: Gap closure — stale physical authority withdrawn pending one corrected-provenance transaction
-Last activity: 2026-08-27 — Plan 162-16 fail-closed withdrawal completed before device execution
+Phase: 162 (physical-iphone-adoption-proof) — PENDING INDEPENDENT VERIFICATION
+Plan: 17 of 17
+Status: Internally complete — narrow truth restored from the committed corrected-provenance record
+Last activity: 2026-08-27 — Plan 162-17 repaired retention validation and committed the exact evidence pair
 
 ## Active Objective
 
@@ -44,9 +44,9 @@ framework launch.
 
 ## Next Action
 
-Run the one authorized corrected-provenance transaction after deterministic gates pass. Preserve
-the narrow scope: the evidence does not widen to Android, background replay or sync, generic
-storage or sync, multiple islands, simulator substitution, or every-iPhone coverage.
+Run a fresh independent Phase 162 verifier against the committed recovery topology and current
+truth. Preserve the narrow scope: the evidence does not widen to Android, background replay or
+sync, generic storage or sync, multiple islands, simulator substitution, or every-iPhone coverage.
 
 ## Blockers
 

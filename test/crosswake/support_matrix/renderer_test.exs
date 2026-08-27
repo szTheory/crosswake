@@ -60,11 +60,11 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     refute guide =~ "first-adopter"
   end
 
-  test "first adopter readiness fails closed until corrected physical evidence is retained" do
+  test "first adopter readiness renders only the retained corrected physical evidence claim" do
     guide = Renderer.render(SupportMatrix.canonical())
 
     assert guide =~
-             "| physical-iPhone offline study | verification required | A corrected-provenance physical-device record is required before one first adopter offline-study flow can be supported. |"
+             "| physical-iPhone offline study | device evidence | A committed corrected-provenance physical-device record and deterministic authority gates support one first adopter offline-study flow. |"
 
     for non_claim <- [
           "It does not claim Android.",
@@ -77,7 +77,6 @@ defmodule Crosswake.SupportMatrix.RendererTest do
       assert guide =~ non_claim
     end
 
-    refute guide =~ "| physical-iPhone offline study | device evidence |"
     refute guide =~ "First B2C Adopter"
   end
 

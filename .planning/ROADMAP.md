@@ -492,13 +492,12 @@ and app CSS can detect the shell synchronously.
 **Effort:** 2-3 focused days plus adopter/backend availability
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
-**Plans:** 15/17 plans complete
-**Verification:** Gap recovery — Plan 16's corrected-code standard physical transaction completed
-and promoted the fresh two-file record, but its wrapper failed afterward by requiring commit
-provenance in optional run JSON. Plan 17 repairs that deterministic wrapper check, retains the
-already-produced record without another physical attempt, and hands the result to a fresh
-independent verifier. Android, background or generic sync, generic storage, multiple islands,
-simulator substitution, and every-iPhone support remain non-claims.
+**Plans:** 17/17 plans complete
+**Verification:** Internally complete pending fresh independent verification — Plan 16's one
+corrected-code transaction produced the record; Plan 17 repaired post-promotion provenance
+validation and retained the exact pair without another attempt. Android, background or generic
+sync, generic storage, multiple islands, simulator substitution, and every-iPhone support remain
+non-claims.
 
 Plans:
 
@@ -564,11 +563,11 @@ Plans:
 
 **Wave 16** *(stale-provenance gap closure; blocked on Wave 15 and current verifier findings)*
 
-- [ ] 162-16-PLAN.md — Withdraw stale authority and replace it with exactly one corrected-code standard physical transaction before independent re-verification.
+- [x] 162-16-PLAN.md — Withdraw stale authority and replace it with exactly one corrected-code standard physical transaction before independent re-verification.
 
 **Wave 17** *(post-promotion recovery; blocked on the immutable Plan 16 ledger and fresh retained pair)*
 
-- [ ] 162-17-PLAN.md — Repair the wrapper-only commit-ref check, retain exactly the already-produced evidence pair through a validated non-rewriting topology, and reconcile narrow truth without another physical attempt.
+- [x] 162-17-PLAN.md — Repair the wrapper-only commit-ref check, retain exactly the already-produced evidence pair through a validated non-rewriting topology, and reconcile narrow truth without another physical attempt.
 
 **Smallest shippable version:** A dated, redacted physical-iPhone artifact proving the ten-step exit
 test in the adopter route-policy map.
