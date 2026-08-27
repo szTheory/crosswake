@@ -190,17 +190,17 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 | NAV-05 | Phase 161.1 | Complete |
 | NAV-06 | Phase 161.1 | Complete |
 | NAV-07 | Phase 161.1 | Complete |
-| DEVICE-01 | Phase 162 | Complete |
-| DEVICE-02 | Phase 162 | Complete |
-| DEVICE-03 | Phase 162 | Complete |
-| DEVICE-04 | Phase 162 | Complete |
-| DEVICE-05 | Phase 162 | Complete |
-| DEVICE-06 | Phase 162 | Complete |
+| DEVICE-01 | Phase 162 | Gaps Found |
+| DEVICE-02 | Phase 162 | Gaps Found |
+| DEVICE-03 | Phase 162 | Gaps Found |
+| DEVICE-04 | Phase 162 | Gaps Found |
+| DEVICE-05 | Phase 162 | Gaps Found |
+| DEVICE-06 | Phase 162 | Gaps Found |
 | ALPHA-01 | Phase 163 | Complete |
 | ALPHA-02 | Phase 163 | Complete |
 | ALPHA-03 | Phase 163 | Complete |
 | ALPHA-04 | Phase 163 | Complete |
-| DEVICE-07 | Phase 162 | Complete |
+| DEVICE-07 | Phase 162 | Gaps Found |
 
 **Coverage:** 36/36 requirements mapped. Stable ALPHA identifiers remain limited to the anonymous
 First B2C Adopter reference-host integration slice.
