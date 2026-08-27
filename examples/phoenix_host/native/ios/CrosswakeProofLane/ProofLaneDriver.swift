@@ -195,7 +195,8 @@ private final class ReferenceStudyReplayTransport {
   init(environment: [String: String] = ProcessInfo.processInfo.environment) {
     self.environment = environment
     let configuration = URLSessionConfiguration.ephemeral
-    configuration.httpCookieStorage = HTTPCookieStorage()
+    configuration.httpShouldSetCookies = true
+    configuration.httpCookieAcceptPolicy = .always
     self.session = URLSession(configuration: configuration)
   }
 

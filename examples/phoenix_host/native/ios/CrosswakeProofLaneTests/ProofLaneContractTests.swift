@@ -71,6 +71,19 @@ final class ProofLaneContractTests: XCTestCase {
     XCTAssertEqual(emptyValueOutcome, .blocked)
   }
 
+  func testReferenceReplayTransportKeepsOnlyItsInMemorySessionCookie() throws {
+    let driverPath = URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+      .appendingPathComponent("CrosswakeProofLane/ProofLaneDriver.swift")
+    let source = try String(contentsOf: driverPath, encoding: .utf8)
+
+    XCTAssertTrue(source.contains("let configuration = URLSessionConfiguration.ephemeral"))
+    XCTAssertTrue(source.contains("configuration.httpShouldSetCookies = true"))
+    XCTAssertTrue(source.contains("configuration.httpCookieAcceptPolicy = .always"))
+    XCTAssertFalse(source.contains("configuration.httpCookieStorage = HTTPCookieStorage()"))
+  }
+
   func testReferenceJournalRecoversOnlyInsideItsOriginalScope() throws {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: root) }
