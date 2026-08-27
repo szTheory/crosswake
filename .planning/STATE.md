@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
-status: ready_to_execute
-stopped_at: Phase 162 gap plans 12-15 verified; ready to execute 162-12
-last_updated: "2026-08-26T17:56:46Z"
-last_activity: 2026-08-26
-last_activity_desc: Phase 162 gap planning complete — 4 plans ready
+status: executing
+stopped_at: Completed 162-12-PLAN.md
+last_updated: "2026-08-27T18:00:18.700Z"
+last_activity: 2026-08-27
+last_activity_desc: Plan 162-12 closeout completed
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 114
-  completed_plans: 110
+  completed_plans: 111
   percent: 86
-current_plan: 12
+current_plan: 13
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 162 (physical-iphone-adoption-proof) — READY TO EXECUTE GAP CLOSURE
-Plan: 12 of 15; Plans 12-15 are verified and ready
+Phase: 162 (physical-iphone-adoption-proof) — EXECUTING
+Plan: 13 of 15
 Status: Ready to execute
-Last activity: 2026-08-26 — Phase 162 gap planning complete
+Last activity: 2026-08-27 — Plan 162-12 closeout completed
 
 ## Active Objective
 
@@ -44,7 +44,7 @@ framework launch.
 
 ## Next Action
 
-Execute Plans 162-12 through 162-15 in order with `$gsd-execute-phase 162`. Preserve the narrow
+Execute Plans 162-13 through 162-15 in order with `$gsd-execute-phase 162`. Preserve the narrow
 scope: the evidence does not widen to Android, background replay or sync, generic storage or sync,
 multiple islands, simulator substitution, or every-iPhone coverage. Durable completion and public
 support remain fail closed until the fresh standard physical proof and reconciliation gates pass.
@@ -225,6 +225,8 @@ support remain fail closed until the fresh standard physical proof and reconcili
 - [Phase ?]: DEVICE-07 public wording is limited to one first adopter offline-study flow on iOS 26.6 with explicit platform, sync, storage, island, simulator, and all-device non-claims.
 - [Phase ?]: Authorized source-bound Evidence.check/2 remains the physical-record completion authority; Evidence.check/1 is intentionally non-passing without canonical source bytes.
 - [Phase ?]: DEVICE completion is limited to the checked one-flow/one-runtime iOS proof and changes no Android or deferred-work truth.
+- [Phase ?]: Plan 162-12 keeps sensitive journal, opaque scope lifecycle, and foreground replay transport host-owned; Crosswake core remains outside the stored payload boundary.
+- [Phase ?]: Plan 162-12 drains a queued record only after accepted replay, same-ID duplicate confirmation, and exactly one scoped Phoenix domain effect.
 
 ## Deferred Items
 
@@ -253,8 +255,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-26T17:46:46.260Z
-**Stopped at:** Phase 162 gap plans 12-15 verified; ready to execute 162-12
+**Last session:** 2026-08-27T18:00:18.687Z
+**Stopped at:** Completed 162-12-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -343,6 +345,7 @@ this milestone reset.
 | Phase 163 P01 | bounded host integration | 3 tasks | 23 files |
 | Phase 162-physical-iphone-adoption-proof P10 | 12 min | 1 tasks | 3 files |
 | Phase 162-physical-iphone-adoption-proof P11 | 18 min | 1 tasks | 5 files |
+| Phase 162 P12 | closeout continuation | 1 tasks | 14 files |
 
 ## Accumulated Context
 
