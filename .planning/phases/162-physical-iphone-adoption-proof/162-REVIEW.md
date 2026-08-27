@@ -1,6 +1,6 @@
 ---
 phase: 162-physical-iphone-adoption-proof
-reviewed: 2026-08-27T19:09:59Z
+reviewed: 2026-08-27T19:27:54Z
 depth: standard
 files_reviewed: 29
 files_reviewed_list:
@@ -43,29 +43,60 @@ status: issues_found
 
 # Phase 162: Code Review Report
 
-**Reviewed:** 2026-08-27T19:09:59Z
+**Reviewed:** 2026-08-27T19:27:54Z
 **Depth:** standard
 **Files Reviewed:** 29
 **Status:** issues_found
 
 ## Summary
 
-The scoped source implements the evidence and physical-device lane, including fail-closed report parsing and payload-redacted evidence. The physical run is nevertheless not provenance-bound to the Phoenix host that the backend producer inspects, so it can publish a physical-iPhone pass for a different server or an earlier replay row.
+The previous compile blocker is resolved: the Phoenix host compiles and `backend_report/1` now performs cleanup through a valid `try ... after`. The single-use opaque nonce and mutation-ID binding is present from the injected test environment through session claim, replay admission, persisted row matching, and backend verification; wrong/stale rows and wrong host tickets fail closed. Host-only and generated-template contracts remain appropriately separated, and the reviewed report/evidence paths do not serialize the nonce, mutation ID, raw answer, or host endpoint.
+
+One critical lifecycle hole remains. If the device callback returns a malformed report, the task rejects it before calling `backend_report/1`; that callback is the only successful-run cleanup path. The claimed nonce then remains active in ETS and in the task process. This violates the required failure cleanup guarantee, leaves sensitive run state live beyond a failed run, and means CR-01 is not fully resolved.
+
+Verification performed without Xcode, device, readiness, transaction, promotion, or physical host-run commands:
+
+- `mix compile` — passed.
+- `mix compile` in `examples/phoenix_host` — passed.
+- Root deterministic Phase 162 suite — 80 tests, 0 failures.
+- Phoenix-host deterministic authority/proof-host suite — 13 tests, 0 failures.
 
 ## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Physical device proof is not bound to the checked Phoenix replay
+### CR-01: Malformed device report leaks the claimed proof ticket
 
-**File:** `examples/phoenix_host/lib/crosswake_example/physical_iphone_proof_host.ex:181`
+**File:** `lib/mix/tasks/crosswake.proof_lane.physical_iphone.ex:126-134`
 
-**Issue:** Preflight accepts any syntactically valid `http` or `https` host URL. The device adapter then posts the real journal record to that URL ([`ProofLaneDriver.swift:203`](/Users/jon/projects/crosswake/examples/phoenix_host/native/ios/CrosswakeProofLane/ProofLaneDriver.swift:203)), while the later backend report only looks for any accepted row with the fixed scope ([`physical_iphone_authority.ex:81`](/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/local_first/physical_iphone_authority.ex:81)). It neither receives the device mutation ID nor requires a per-run nonce. Consequently, a remote/stale host can make the XCUITest pass and an already-present row for the static fixture scope can make the local backend report pass. The resulting joined report and evidence hash attest only to the assertion labels, not that this physical device replay reached the intended Phoenix authority in this run. This violates the lane's claimed replay-authority/provenance boundary and permits a false physical-proof artifact.
+**Issue:** `invoke_runner/2` is a `with`: it calls `backend_report` only after `report_from(options, :device_report, contract)` succeeds. The reference host creates and claims the nonce before its device callback returns, but only `PhysicalIphoneProofHost.backend_report/1` removes it (via its `after` at `examples/phoenix_host/lib/crosswake_example/physical_iphone_proof_host.ex:92-102`). A malformed or otherwise unparsable device report returns `{:error, "PI-REPORT-DEVICE"}` at lines 168-185, skips `backend_report/1`, and leaves both the process run and active ETS ticket intact. The ticket is then neither single-run bounded nor reliably cleaned after failure.
 
-**Fix:** Have the local Phoenix proof host mint a single-use, opaque run nonce and expected mutation ID before launching XCTest. Restrict the device URL to that started host (or perform an authenticated local handshake), send the nonce only as an internal request header/body field, and make the sync endpoint persist/return the exact nonce and mutation ID. Pass those opaque values privately to `PhysicalIphoneAuthority.report/2`, require exactly that accepted row and duplicate result, and delete/reset only after it is verified. Keep both values out of the report, logs, and retained evidence.
+**Fix:** Make cleanup an explicit required host callback and execute it in an `after` around the whole device/backend join. The callback must be idempotent and delete both the process run and ETS ticket; add a regression that returns malformed device-report bytes after a claimed ticket and asserts no process run and `active?/2 == false`.
+
+```elixir
+defp invoke_runner(contract, options) do
+  try do
+    with {:ok, device_report} <- report_from(options, :device_report, contract),
+         {:ok, backend_report} <- report_from(options, :backend_report, contract),
+         {:ok, candidate} <- join_reports(contract, device_report, backend_report),
+         {:ok, result} <- promote_if_requested(candidate, options) do
+      {:passed, result}
+    else
+      {:error, rule_id} -> {:blocked, %{outcome: "blocked", rule_id: rule_id}}
+    end
+  after
+    case Keyword.get(options, :cleanup_run) do
+      cleanup when is_function(cleanup, 0) -> cleanup.()
+      _ -> :ok
+    end
+  end
+end
+```
+
+Expose `cleanup_run/0` through `PhysicalIphoneHost.load/0` and implement it in the reference host by deleting the process key and invoking `PhysicalIphoneRunProvenance.cleanup/1`. Keep `backend_report/1` cleanup as a safe idempotent defense-in-depth fallback.
 
 ---
 
-_Reviewed: 2026-08-27T19:09:59Z_
+_Reviewed: 2026-08-27T19:27:54Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
