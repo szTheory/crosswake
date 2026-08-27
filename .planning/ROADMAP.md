@@ -492,7 +492,7 @@ and app CSS can detect the shell synchronously.
 **Effort:** 2-3 focused days plus adopter/backend availability
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
-**Plans:** 13/15 plans executed
+**Plans:** 14/15 plans executed
 **Verification:** Gaps found (6/7 must-haves verified). Free-form answer persistence is hollow,
 and the advisory report-serialization success path is not executable against the real join. Plans
 162-12 through 162-15 are verified to close those gaps and re-earn durable support/completion truth.
@@ -553,7 +553,7 @@ Plans:
 
 **Wave 14** *(support-truth repair; blocked on Waves 12-13)*
 
-- [ ] 162-14-PLAN.md — Withdraw stale support truth and re-earn the narrow claim only through a fresh standard physical proof run.
+- [x] 162-14-PLAN.md — Withdraw stale support truth and re-earn the narrow claim only through a fresh standard physical proof run.
 
 **Wave 15** *(final reconciliation; blocked on Wave 14)*
 
