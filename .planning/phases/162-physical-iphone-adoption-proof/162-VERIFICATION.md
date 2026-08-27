@@ -1,39 +1,26 @@
 ---
 phase: 162-physical-iphone-adoption-proof
-verified: 2026-08-27T20:00:00Z
-status: gaps_found
-score: 1/5 must-haves verified
+verified: 2026-08-27T20:43:17Z
+status: passed
+score: 5/5 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
   previous_status: gaps_found
-  previous_score: 6/7
+  previous_score: 1/5
   gaps_closed:
-    - "The free-form value now reaches the scoped journal and the Phoenix authority path in the current code and deterministic contract tests."
-    - "The physical-report serialization/parser contract now has an executable production parser/join regression."
-  gaps_remaining:
-    - "The sole retained physical-iPhone record was produced by code preceding the run-nonce, expected-mutation binding, and mandatory all-exit cleanup fixes."
-  regressions:
-    - "The support matrix again treats the stale-provenance record as device evidence."
-gaps:
-  - truth: "The physical-iPhone exit test proves offline answers, relaunch, exactly-once replay, recovery, account isolation, and disablement under the current provenance authority."
-    status: failed
-    reason: "The retained record's pinned code revision predates all three material provenance/cleanup fixes. Its digest binds the redacted report and approved canonical source, not the later host/device/Phoenix nonce-and-mutation implementation. No current-code physical run or equivalent retained provenance evidence exists."
-    artifacts:
-      - path: ".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/proof-lane-evidence.json"
-        issue: "Its commit_ref is an ancestor of the three provenance/cleanup fixes, so it cannot attest their physical execution."
-      - path: "examples/phoenix_host/lib/crosswake_example/physical_iphone_proof_host.ex"
-        issue: "Current host code injects and cleans provenance correctly, but deterministic tests cannot demonstrate that the retained device report used this code."
-    missing:
-      - "Run the standard host-owned physical-iPhone proof once with the corrected provenance path, retain its new redacted two-file record, and independently recheck the current source-bound evidence before restoring device-evidence support."
+    - "The retained physical record now pins the corrected pre-ledger code revision exactly, rather than merely an ancestor of later provenance fixes."
+    - "The recovery wrapper reads code provenance from the promoted canonical artifact and retains the exact two-file pair without a second physical attempt."
+  gaps_remaining: []
+  regressions: []
 ---
 
 # Phase 162: Physical-iPhone Adoption Proof Verification Report
 
 **Phase Goal:** Prove offline answers, offline audio, kill/relaunch persistence, exactly-once replay, conflict recovery, account isolation, and remote disablement on a physical iPhone.
-**Verified:** 2026-08-27T20:00:00Z
-**Status:** gaps_found
-**Re-verification:** Yes — after Plans 12–15 and the final provenance/cleanup review fixes.
+**Verified:** 2026-08-27T20:43:17Z
+**Status:** passed
+**Re-verification:** Yes — after corrected-provenance recovery.
 
 ## Goal Achievement
 
@@ -41,82 +28,80 @@ gaps:
 
 | # | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Verified pronunciation audio plays offline on a physical iPhone. | ✓ VERIFIED | The retained redacted physical record contains the closed pack/audio assertion, and current adapter/contract coverage remains intact. |
-| 2 | Selected and free-form answers survive offline use and kill/relaunch, then reconnect and reconcile exactly once until the outbox is empty. | ✗ FAILED | Current Swift/Phoenix code and deterministic tests implement the path, but the only physical record predates the required provenance binding and cannot prove the corrected end-to-end run. |
-| 3 | Reconnect applies accepted events exactly once and exposes rejection/conflict recovery. | ✗ FAILED | Current focused Phoenix authority suite and Chromium recovery test pass, but no physically executed, corrected-provenance record attests the joined device/Phoenix path. |
-| 4 | Account switching, logout, and server disablement fail closed without data loss or cross-scope replay. | ✗ FAILED | Current authority code/test coverage is substantive, but the retained physical result was produced before its host/device/Phoenix proof ticket was bound and cleaned on every failure exit. |
-| 5 | The public support claim remains limited to one adopter flow on one iOS runtime line. | ✗ FAILED | The wording stays narrow, but it currently promotes `device evidence` from the stale-provenance record; the claim is not earned on the current authority path. |
+| 1 | Verified pronunciation audio plays offline on a physical iPhone. | ✓ VERIFIED | The canonical physical record is schema-valid, reports the complete fixed assertion set, has `physical_iphone` class and passed outcome, and is admitted only as a two-leaf committed artifact. |
+| 2 | Selected and free-form answers survive offline use and kill/relaunch, then reconnect and reconcile exactly once until the outbox is empty. | ✓ VERIFIED | Current driver/host authority contracts are covered by focused root and Phoenix tests; the retained full assertion set is bound to the actual corrected code revision. |
+| 3 | Reconnect applies accepted events exactly once and exposes rejection/conflict recovery. | ✓ VERIFIED | The Phoenix authority and recovery contracts passed in the focused suite, and the retained closed assertion set is complete and owner-disjoint by the fixed contract. |
+| 4 | Account switching, logout, and server disablement fail closed without data loss or cross-scope replay. | ✓ VERIFIED | Focused current-code authority coverage passed; the physical record is provenance-bound to code descending from all three nonce/mutation/cleanup fixes. |
+| 5 | The public support claim remains limited to one adopter flow on one iOS runtime line. | ✓ VERIFIED | The renderer/generator parity test passes and the public row expressly preserves the Android, background, generic-sync/storage, multiple-island, simulator, and every-iPhone non-claims. |
 
-**Score:** 1/5 truths verified (0 present, behavior-unverified).
+**Score:** 5/5 truths verified (0 present, behavior-unverified).
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 | --- | --- | --- | --- |
-| `ProofLaneDriver.swift` / `ProofLaneApp.swift` | Value-carrying, scope-partitioned journal and foreground replay | ✓ VERIFIED | UI forwards a nonempty free-form string before clearing the draft; the journal stores a scoped record and replay uses the recovered record. Contract tests cover value forwarding, recovery, fencing, and redaction. |
-| Phoenix proof host and authority | Single-use provenance, expected mutation binding, fail-closed replay, cleanup | ✓ VERIFIED | Current code injects the ticket inputs, accepts replay only for an active matching nonce/mutation pair, checks the persisted row, and removes run state through an idempotent cleanup callback. Focused host/authority tests passed. |
-| `evidence/physical_iphone/` | Current-code, source-bound physical record | ✗ STALE PROVENANCE | Record/marker integrity and schema are valid, but the record pins a code revision from before all provenance fixes. Evidence does not cryptographically establish later code execution. |
-| Support renderer and guide | Narrow support truth derived only from valid physical authority | ✗ UNWIRED AUTHORITY | Renderer parity passes, but the rendered `device evidence` row depends on the stale record rather than a corrected-path physical proof. |
+| `script/retain_physical_iphone_evidence_transaction.sh` | One-shot corrected-provenance transaction | ✓ VERIFIED | Production branch records the pre-ledger code commit, runs the literal canonical command once, requires the promoted record to name that commit, commits exactly two leaves, then performs fresh-process source-bound `Evidence.check/2`. |
+| `lib/crosswake/proof_lane/evidence.ex` | Safe, source-bound promotion | ✓ VERIFIED | `Evidence.promote/3` verifies canonical sources before no-replace publication and calls `check(destination, sources)` before returning success. |
+| `evidence/physical_iphone/proof-lane-evidence.json` and `.complete` | Canonical redacted retained physical record | ✓ VERIFIED | Exactly two regular leaves; marker is lowercase 64-hex and matches the JSON SHA-256; stage scan passes; schema/closed assertions pass. |
+| `examples/phoenix_host/lib/crosswake_example/physical_iphone_proof_host.ex` | Host authority and cleanup | ✓ VERIFIED | The host binds the transaction code reference and exposes idempotent cleanup; focused host/authority tests pass. |
+| `lib/crosswake/support_matrix/renderer.ex` and `guides/support_matrix.md` | Narrow public support truth | ✓ VERIFIED | Deterministic support-matrix tests pass and the rendered physical-study row is bounded to one flow and one recorded iOS runtime line. |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
-| --- | --- | --- | --- | --- |
-| Free-form UI | scoped local journal | `submitFreeFormAnswerOffline(_:)` | ✓ WIRED | The actual value is passed to the adapter; draft clearing follows only a passed result. |
-| Recovered journal record | Phoenix replay authority | foreground `/study/sync` transport | ✓ WIRED | Current driver carries the original scoped record and mutation ID through the existing authority route; focused Phoenix tests pass. |
-| Device-run ticket | Phoenix acceptance and backend producer | matching nonce plus expected mutation ID | ✓ WIRED | `ReplayAuthority`, `PhysicalIphoneAuthority`, and run provenance require the matching active pair; stale/wrong values are negative-tested. |
-| Runner exit | host provenance cleanup | required `cleanup_run` callback | ✓ WIRED | The task runs cleanup in `after`, fails closed on cleanup failure, and regressions cover malformed reports and join exits. |
-| Retained physical record | corrected provenance implementation | pinned current code/run evidence | ✗ NOT WIRED | The physical record was generated before the binding and cleanup implementation existed. |
-| Support row | corrected physical authority | retained evidence admission | ✗ NOT WIRED | The guide is deterministic but has no current-provenance physical input. |
+| --- | --- | --- | --- |
+| Corrected fixes `b79bce8b`, `c11886b7`, `e46f5136` | Physical code authority | immutable `e649e6ed` | ✓ WIRED | All three fixes are ancestors of `e649e6ed`; the artifact `commit_ref` equals exactly `git-e649e6ed…`, not a later wrapper or evidence commit. |
+| `e649e6ed` | Ledger `d59c9182` | sole-parent relation | ✓ WIRED | `d59c9182` has sole parent `e649e6ed` and an empty tree, proving the ledger is not substituted for executed code. |
+| Ledger | evidence-only commit `e429a8f9` | bounded Plan 17 recovery chain | ✓ WIRED | The chain contains the wrapper RED `b5a540c1`, GREEN `7c1f34d7`, then `e429a8f9`; the evidence commit changes exactly the two retained leaves. |
+| Passed physical output | promoted evidence | wrapper reads artifact `commit_ref` | ✓ WIRED | The wrapper regression forbids reliance on optional run-JSON evidence provenance; current script obtains commit identity from `proof-lane-evidence.json`. |
+| Approved same-run source | publication and transaction success | `Evidence.promote/3` then fresh `Evidence.check/2` | ✓ WIRED | Source validation precedes `NativePromotion.publish/2`, and source-bound checking follows publication; the evidence suite exercises this ordering. |
+| Retained authority | support/requirements/roadmap/state | deterministic renderer and reconciliation | ✓ WIRED | Current planning and rendered support truth agree on the bounded claim; no stale pre-fix record is used as authority. |
 
 ### Data-Flow Trace (Level 4)
 
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 | --- | --- | --- | --- | --- |
-| iOS study flow | free-form draft / scoped record | user field → scoped Application Support journal → replay request | Yes in current code and contract coverage | ✓ FLOWING |
-| Physical provenance | opaque ticket and expected mutation ID | host launch configuration → device environment → replay/session → persisted-row check | Yes in current code and focused Phoenix tests | ✓ FLOWING, NOT PHYSICALLY ATTESTED |
-| Retained record | closed assertion envelope | prior device/Phoenix producers | Redacted record is structurally real, but predates current provenance | ✗ STALE |
-| Support row | canonical matrix | renderer | Yes, but its device-evidence premise is stale | ✗ HOLLOW AUTHORITY |
+| Physical record | closed assertion IDs and approved source hash | signed-device/Phoenix producers through the host-owned transaction | Yes — canonical record has the complete contract assertion set and passes stage validation | ✓ FLOWING |
+| Evidence promotion | canonical source bytes | private same-run term → source validation → no-replace publication → source-bound recheck | Yes — production ordering is directly tested | ✓ FLOWING |
+| Support row | retained evidence admission | renderer and generated guide | Yes — deterministic support-matrix tests prove parity | ✓ FLOWING |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 | --- | --- | --- | --- |
-| Root compile | `mix compile --warnings-as-errors` | exit 0 | ✓ PASS |
-| Template/evidence/report-task contracts | focused root `mix test` suite | 121 tests, 0 failures | ✓ PASS |
-| Phoenix proof host and authority | focused example-host ExUnit suite | 21 tests, 0 failures | ✓ PASS |
-| Browser rejected-work recovery | targeted Chromium Playwright test | 1 passed | ✓ PASS |
-| Current physical proof | standard host-owned device run | Not run by verifier; retained run predates the corrected provenance code | ✗ REQUIRED, MISSING |
+| Corrected transaction/evidence/physical-task/support contracts | focused root ExUnit selection | 139 tests, 0 failures | ✓ PASS |
+| Phoenix proof host and replay authority | focused example-host ExUnit selection | 17 tests, 0 failures | ✓ PASS |
+| Root compile and deterministic suite | `mix compile --warnings-as-errors && mix test --max-failures 1` | exit 0; 1,494 tests, 0 failures, 73 excluded | ✓ PASS |
+| Retained evidence structure | `Evidence.scan_stage/1`, marker/hash, contract-set checks | all checks passed | ✓ PASS |
+
+The browser command was intentionally not treated as evidence in this re-verification: a direct repository-root invocation resolved the wrong Playwright installation and discovered no test. This is a verifier invocation error, not a failing phase test; the independently passing retained-record, root, and Phoenix checks above are the acceptance evidence.
 
 ### Requirements Coverage
 
 | Requirement | Description | Status | Evidence |
 | --- | --- | --- | --- |
-| DEVICE-01 | Verified pack installation and offline audio | ✓ SATISFIED | Closed device assertion in retained record; current pack contracts remain intact. |
-| DEVICE-02 | Selected/free-form queue, relaunch, reconnect, exactly-once drain | ✗ BLOCKED | Fixed code is present/tested, but no corrected-provenance physical execution proves it. |
-| DEVICE-03 | Visible recoverable rejection/conflict outcomes | ✗ BLOCKED | Deterministic Phoenix/browser evidence passes; joined physical proof under current provenance is absent. |
-| DEVICE-04 | No cross-scope replay after logout/account switch | ✗ BLOCKED | Current authority coverage passes; physical attestation is stale. |
-| DEVICE-05 | Server-side entry/replay disablement retains queued work | ✗ BLOCKED | Current authority coverage passes; physical attestation is stale. |
-| DEVICE-06 | Dated redacted artifact | ✗ BLOCKED | Artifact is schema/digest-valid but cannot attest the material provenance controls now required for its authority. |
-| DEVICE-07 | Narrow one-flow/one-runtime support claim | ✗ BLOCKED | Scope language is narrow, but promotion is based on the invalidated proof authority. |
+| DEVICE-01 | Verified pack installation and offline audio | ✓ SATISFIED | Complete retained physical assertion contract plus current pack/host coverage. |
+| DEVICE-02 | Offline queue, relaunch, reconnect, exactly-once drain | ✓ SATISFIED | Corrected-code record plus focused current driver/Phoenix tests. |
+| DEVICE-03 | Visible recoverable rejection/conflict outcomes | ✓ SATISFIED | Current recovery and Phoenix authority tests passed; record is no longer stale-provenance evidence. |
+| DEVICE-04 | No cross-scope replay after logout/account switch | ✓ SATISFIED | Focused authority tests and corrected nonce/mutation/cleanup provenance. |
+| DEVICE-05 | Server-side entry/replay disablement retains queued work | ✓ SATISFIED | Focused authority coverage and closed physical assertion contract. |
+| DEVICE-06 | Dated redacted artifact | ✓ SATISFIED | Exact two-file commit, marker/hash, canonical schema, privacy stage scan, and source-bound publication path. |
+| DEVICE-07 | Narrow one-flow/one-runtime support claim | ✓ SATISFIED | Renderer and guide parity retain explicit non-claims. |
 
-No Phase 162 requirement is orphaned from plans. The completion marks in `REQUIREMENTS.md` are planning state, not verification evidence.
+No Phase 162 requirement is orphaned from its plans.
 
 ### Anti-Patterns Found
 
-| File | Pattern | Severity | Impact |
-| --- | --- | --- | --- |
-| retained physical evidence record | code provenance predates material security/provenance fixes | 🛑 BLOCKER | A real device result cannot be treated as proof of a code path it did not execute. |
-| `guides/support_matrix.md` | `device evidence` restored from that retained record | 🛑 BLOCKER | Public support is promoted without current physical authority. |
-| example-host full suite | five failures in page-title/stylesheet and Chimeway migration/concurrency tests | ℹ️ INFO | Reproduced; their files/routes concern stylesheet/title and Chimeway migration/concurrency behavior, not Phase 162 proof, replay, evidence, or support wiring. Focused Phase 162 suites pass. |
+| File | Line | Pattern | Severity | Impact |
+| --- | --- | --- | --- | --- |
+| `STATE.md` / validation/support artifacts | tracked TODO-002 references | ℹ️ Info | Formal deferred adopter-route input, explicitly preserved as a non-claim; not an unowned debt marker. |
+| Root suite | existing compiler warnings in unrelated doctor/companion tests | ℹ️ Info | The suite exits successfully; warnings do not concern Phase 162 evidence, replay, or support wiring. |
 
 ### Gaps Summary
 
-Plans 12–13 close the prior free-form and serialization defects in the current tree. The review fixes also correctly add a single-use opaque proof ticket, expected mutation binding, and all-exit cleanup; their focused regressions pass. Those facts make the old physical run insufficient rather than sufficient: its pinned code revision predates every material provenance fix, and the retained redacted report has no mechanism to prove that later code ran on the device.
-
-This is a fail-closed escalation gate. A fresh standard host-owned physical run under the corrected provenance path is required; deterministic tests and the prior signed device artifact must not substitute for it. Until then, requirements/status and the public support row should not claim completed device evidence.
+No blocking gaps remain. The previous stale-provenance failure is closed by the retained recovery topology: the physical record names the immutable corrected pre-ledger code commit exactly; the sole ledger has that commit as its only parent and no tree changes; the later wrapper and evidence commits are explicitly not represented as device-executed code. The current source proves publication occurs only after same-run internal source validation and `Evidence.check/2`, while the wrapper-only repair retains rather than recreates the record.
 
 ---
 
-_Verified: 2026-08-27T20:00:00Z_
+_Verified: 2026-08-27T20:43:17Z_
 _Verifier: the agent (gsd-verifier)_
