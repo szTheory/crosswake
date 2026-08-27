@@ -1,14 +1,18 @@
 ---
 phase: 162
 slug: physical-iphone-adoption-proof
-status: complete
+status: gaps_found
 nyquist_compliant: true
 validated: 2026-08-27
 ---
 
-# Phase 162 — Repaired Final-Tree Validation Ledger
+# Phase 162 — Superseded Validation Ledger
 
-Plan 14's retained standard production result closed the device-to-Phoenix value, relaunch,
+# Superseded by Plan 162-16 before the corrected-provenance transaction. The prior Plan 14 record
+# predates nonce, expected-mutation, and all-exit cleanup provenance fixes and cannot authorize
+# support or completion. Deterministic gates below remain useful but do not replace a fresh run.
+
+Plan 14's retained standard production result previously described the device-to-Phoenix value, relaunch,
 replay, exactly-one drain, no-replace promotion, and source-bound evidence path. Plan 15 then
 passed the current-tree deterministic gates below. This ledger retains aggregate results, stable
 identifiers, closed outcomes, reproducible commands, and narrow public scope only.

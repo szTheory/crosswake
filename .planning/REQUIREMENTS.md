@@ -107,23 +107,23 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 
 ### DEVICE — Physical-iPhone adoption proof
 
-- [x] **DEVICE-01:** A physical iPhone installs one verified pronunciation pack and plays its audio
+- [ ] **DEVICE-01:** A physical iPhone installs one verified pronunciation pack and plays its audio
   while offline.
 
-- [x] **DEVICE-02:** The offline study route queues selected and free-form answers, survives
+- [ ] **DEVICE-02:** The offline study route queues selected and free-form answers, survives
   kill/relaunch, reconnects, and reconciles exactly once until its outbox is empty.
 
-- [x] **DEVICE-03:** Rejected and conflict outcomes are visible and recoverable; no silent
+- [ ] **DEVICE-03:** Rejected and conflict outcomes are visible and recoverable; no silent
   last-write-wins path exists.
 
-- [x] **DEVICE-04:** Logout and account switching produce no cross-scope replay.
-- [x] **DEVICE-05:** A host flag disables route entry and replay server-side without losing queued
+- [ ] **DEVICE-04:** Logout and account switching produce no cross-scope replay.
+- [ ] **DEVICE-05:** A host flag disables route entry and replay server-side without losing queued
   events or requiring a new binary.
 
-- [x] **DEVICE-06:** The dated proof artifact contains only runtime versions, route identifiers,
+- [ ] **DEVICE-06:** The dated proof artifact contains only runtime versions, route identifiers,
   device class, low-cardinality outcomes, and redacted hashes.
 
-- [x] **DEVICE-07:** The resulting support claim stays narrow: one adopter flow, one iOS runtime
+- [ ] **DEVICE-07:** The resulting support claim stays narrow: one adopter flow, one iOS runtime
   line, no Android/background/generic-storage/multiple-island claim.
 
 ### ALPHA — Bounded reference-host integration

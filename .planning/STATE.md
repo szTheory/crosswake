@@ -4,11 +4,11 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
-status: complete
-stopped_at: Completed 162-15-PLAN.md
+status: gaps_found
+stopped_at: Plan 162-16 fail-closed withdrawal pending corrected-provenance transaction
 last_updated: "2026-08-27T19:05:49.887Z"
 last_activity: 2026-08-27
-last_activity_desc: Plan 162-15 passed deterministic reconciliation gates and restored durable completion truth
+last_activity_desc: Plan 162-16 withdrew stale physical authority before the one corrected-provenance transaction
 progress:
   total_phases: 7
   completed_phases: 7
@@ -22,10 +22,10 @@ current_plan: 15
 
 ## Current Position
 
-Phase: 162 (physical-iphone-adoption-proof) — COMPLETE
-Plan: 15 of 15
-Status: Complete — repaired current-tree reconciliation is ready for independent verification rerun
-Last activity: 2026-08-27 — Plan 162-15 passed deterministic reconciliation gates and restored durable completion truth
+Phase: 162 (physical-iphone-adoption-proof) — GAPS FOUND
+Plan: 16 of 16
+Status: Gap closure — stale physical authority withdrawn pending one corrected-provenance transaction
+Last activity: 2026-08-27 — Plan 162-16 fail-closed withdrawal completed before device execution
 
 ## Active Objective
 
@@ -44,9 +44,9 @@ framework launch.
 
 ## Next Action
 
-Run the independent Phase 162 verification rerun. Preserve the narrow scope: the evidence does
-not widen to Android, background replay or sync, generic storage or sync, multiple islands,
-simulator substitution, or every-iPhone coverage.
+Run the one authorized corrected-provenance transaction after deterministic gates pass. Preserve
+the narrow scope: the evidence does not widen to Android, background replay or sync, generic
+storage or sync, multiple islands, simulator substitution, or every-iPhone coverage.
 
 ## Blockers
 
