@@ -90,11 +90,13 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
 
   # Phoenix executes the backend authority cases independently from XCTest.
   def backend_report(contract) do
-    with run when is_map(run) <- Process.get(@run_key),
-         report when is_binary(report) <- PhysicalIphoneAuthority.report(contract, run) do
-      report
-    else
-      _ -> {:error, :unavailable}
+    try do
+      with run when is_map(run) <- Process.get(@run_key),
+           report when is_binary(report) <- PhysicalIphoneAuthority.report(contract, run) do
+        report
+      else
+        _ -> {:error, :unavailable}
+      end
     after
       cleanup_run()
     end

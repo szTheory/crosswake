@@ -112,6 +112,16 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
     assert Repo.aggregate(ReviewEvent, :count, :id) == 0
   end
 
+  test "backend report clears the process-local run after an unavailable result" do
+    contract = %{schema_version: 1, device_class: :physical_iphone}
+    assert {:ok, run} = PhysicalIphoneRunProvenance.start()
+    Process.put({PhysicalIphoneProofHost, :physical_run}, run)
+
+    assert {:error, :unavailable} = PhysicalIphoneProofHost.backend_report(contract)
+    refute Process.get({PhysicalIphoneProofHost, :physical_run})
+    refute PhysicalIphoneRunProvenance.active?(run.nonce, run.mutation_id)
+  end
+
   test "backend producer rejects stale, wrong-run, and wrong-mutation rows without exposing proof values" do
     scope = ReplayAuthority.physical_fixture().scope_ref
     assert {:ok, run} = PhysicalIphoneRunProvenance.start()
@@ -166,17 +176,20 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
     })
     |> Repo.insert!()
 
+    Process.put({PhysicalIphoneProofHost, :physical_run}, run)
+
     assert report =
-             PhysicalIphoneAuthority.report(
-               %{schema_version: 1, device_class: :physical_iphone},
-               run
-             )
+             PhysicalIphoneProofHost.backend_report(%{
+               schema_version: 1,
+               device_class: :physical_iphone
+             })
 
     refute report =~ run.nonce
     refute report =~ run.mutation_id
 
     assert Repo.aggregate(ReviewEvent, :count, :id) == 0
-    assert :ok = PhysicalIphoneRunProvenance.cleanup(run)
+    refute Process.get({PhysicalIphoneProofHost, :physical_run})
+    refute PhysicalIphoneRunProvenance.active?(run.nonce, run.mutation_id)
   end
 
   test "passed joined candidate becomes a closed evidence input" do
