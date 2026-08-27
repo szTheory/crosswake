@@ -110,7 +110,7 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 - [x] **DEVICE-01:** A physical iPhone installs one verified pronunciation pack and plays its audio
   while offline.
 
-- [ ] **DEVICE-02:** The offline study route queues selected and free-form answers, survives
+- [x] **DEVICE-02:** The offline study route queues selected and free-form answers, survives
   kill/relaunch, reconnects, and reconciles exactly once until its outbox is empty.
 
 - [x] **DEVICE-03:** Rejected and conflict outcomes are visible and recoverable; no silent
@@ -123,7 +123,7 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 - [x] **DEVICE-06:** The dated proof artifact contains only runtime versions, route identifiers,
   device class, low-cardinality outcomes, and redacted hashes.
 
-- [ ] **DEVICE-07:** The resulting support claim stays narrow: one adopter flow, one iOS runtime
+- [x] **DEVICE-07:** The resulting support claim stays narrow: one adopter flow, one iOS runtime
   line, no Android/background/generic-storage/multiple-island claim.
 
 ### ALPHA — Bounded reference-host integration
@@ -190,17 +190,17 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 | NAV-05 | Phase 161.1 | Complete |
 | NAV-06 | Phase 161.1 | Complete |
 | NAV-07 | Phase 161.1 | Complete |
-| DEVICE-01 | Phase 162 | Gaps Found |
-| DEVICE-02 | Phase 162 | Gaps Found |
-| DEVICE-03 | Phase 162 | Gaps Found |
-| DEVICE-04 | Phase 162 | Gaps Found |
-| DEVICE-05 | Phase 162 | Gaps Found |
-| DEVICE-06 | Phase 162 | Gaps Found |
+| DEVICE-01 | Phase 162 | Complete |
+| DEVICE-02 | Phase 162 | Complete |
+| DEVICE-03 | Phase 162 | Complete |
+| DEVICE-04 | Phase 162 | Complete |
+| DEVICE-05 | Phase 162 | Complete |
+| DEVICE-06 | Phase 162 | Complete |
 | ALPHA-01 | Phase 163 | Complete |
 | ALPHA-02 | Phase 163 | Complete |
 | ALPHA-03 | Phase 163 | Complete |
 | ALPHA-04 | Phase 163 | Complete |
-| DEVICE-07 | Phase 162 | Gaps Found |
+| DEVICE-07 | Phase 162 | Complete |
 
 **Coverage:** 36/36 requirements mapped. Stable ALPHA identifiers remain limited to the anonymous
 First B2C Adopter reference-host integration slice.

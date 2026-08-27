@@ -49,7 +49,7 @@ separately funded business-line mandate.
 - [x] **Phase 163: First B2C Adopter Reference Host Integration** — provide the bounded eligible (completed 2026-08-10)
   Phoenix/iOS host, exact learning bundle, and independent physical/backend proof producers.
 
-- [ ] **Phase 162: Physical-iPhone Adoption Proof** — prove offline answers, offline audio,
+- [x] **Phase 162: Physical-iPhone Adoption Proof** — prove offline answers, offline audio,
   kill/relaunch persistence, exactly-once replay, conflict recovery, account isolation, and remote
   disablement on a physical iPhone.
 
@@ -492,10 +492,13 @@ and app CSS can detect the shell synchronously.
 **Effort:** 2-3 focused days plus adopter/backend availability
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
-**Plans:** 11/15 plans executed
-**Verification:** Gaps found (6/7 must-haves verified). Free-form answer persistence is hollow,
-and the advisory report-serialization success path is not executable against the real join. Plans
-162-12 through 162-15 are verified to close those gaps and re-earn durable support/completion truth.
+**Plans:** 15/15 plans complete
+**Verification:** Complete — Plan 14's retained standard signed-device and independent Phoenix
+producer join re-earned the narrow physical proof. Plan 15 reran deterministic template/evidence,
+production parser/join, Phoenix recovery/authority, browser, renderer, and guide-parity gates;
+the independent verifier report remains unchanged pending a fresh rerun. Android, background or
+generic sync, generic storage, multiple islands, simulator substitution, and every-iPhone support
+remain non-claims.
 
 Plans:
 
@@ -545,19 +548,19 @@ Plans:
 
 **Wave 12** *(CR-01 tracer repair; blocked on Wave 11)*
 
-- [ ] 162-12-PLAN.md — Carry the actual free-form value through the scoped journal, relaunch, authorized replay, exactly-one application, and outbox drain.
+- [x] 162-12-PLAN.md — Carry the actual free-form value through the scoped journal, relaunch, authorized replay, exactly-one application, and outbox drain.
 
 **Wave 13** *(CR-02 contract repair; blocked on Wave 12)*
 
-- [ ] 162-13-PLAN.md — Make advisory serialization executable and exercise the real Elixir parser/join semantics without simulator promotion.
+- [x] 162-13-PLAN.md — Make advisory serialization executable and exercise the real Elixir parser/join semantics without simulator promotion.
 
 **Wave 14** *(support-truth repair; blocked on Waves 12-13)*
 
-- [ ] 162-14-PLAN.md — Withdraw stale support truth and re-earn the narrow claim only through a fresh standard physical proof run.
+- [x] 162-14-PLAN.md — Withdraw stale support truth and re-earn the narrow claim only through a fresh standard physical proof run.
 
 **Wave 15** *(final reconciliation; blocked on Wave 14)*
 
-- [ ] 162-15-PLAN.md — Reconcile requirements, roadmap, state, and validation only after all repaired current-tree gates pass.
+- [x] 162-15-PLAN.md — Reconcile requirements, roadmap, state, and validation only after all repaired current-tree gates pass.
 
 **Smallest shippable version:** A dated, redacted physical-iPhone artifact proving the ten-step exit
 test in the adopter route-policy map.

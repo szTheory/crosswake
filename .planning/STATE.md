@@ -4,11 +4,11 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
-status: gaps_found
-stopped_at: Completed 162-14-PLAN.md
+status: complete
+stopped_at: Completed 162-15-PLAN.md
 last_updated: "2026-08-27T18:50:36.773Z"
 last_activity: 2026-08-27
-last_activity_desc: Plan 162-15 withdrew stale completion truth pending repaired current-tree verification
+last_activity_desc: Plan 162-15 reconciled repaired current-tree evidence; independent verification rerun remains pending
 progress:
   total_phases: 7
   completed_phases: 6
@@ -22,10 +22,10 @@ current_plan: 15
 
 ## Current Position
 
-Phase: 162 (physical-iphone-adoption-proof) — EXECUTING
+Phase: 162 (physical-iphone-adoption-proof) — COMPLETE
 Plan: 15 of 15
-Status: Gaps found — repaired final-tree reconciliation pending
-Last activity: 2026-08-27 — Plan 162-15 withdrew stale completion truth pending current-tree gates
+Status: Complete — repaired current-tree reconciliation is ready for independent verification rerun
+Last activity: 2026-08-27 — Plan 162-15 passed deterministic reconciliation gates and restored durable completion truth
 
 ## Active Objective
 
@@ -44,18 +44,11 @@ framework launch.
 
 ## Next Action
 
-Complete Plan 162-15's deterministic current-tree reconciliation. Preserve the narrow scope: the
-evidence does not widen to Android, background replay or sync, generic storage or sync, multiple
-islands, simulator substitution, or every-iPhone coverage. Durable completion and public support
-remain fail closed until the fresh standard physical proof and every reconciliation gate passes.
+Run the independent Phase 162 verification rerun. Preserve the narrow scope: the evidence does
+not widen to Android, background replay or sync, generic storage or sync, multiple islands,
+simulator substitution, or every-iPhone coverage.
 
 ## Blockers
-
-- Phase 162 CR-01: the physical iOS flow discards submitted free-form content and persists only a
-  boolean marker, so DEVICE-02 free-form persistence and relaunch recovery are not proven.
-
-- Phase 162 CR-02: the advisory report-contract script joins an unavailable simulator report as
-  all-passed, while its positive test stubs the real parser/join semantics.
 
 - Phase 160 code review WR-01 records a non-blocking browser lifecycle race: fencing during an
   IndexedDB save can leave rating controls owned until reload. The finding remains available for
@@ -260,8 +253,8 @@ this milestone reset.
 ## Session
 
 **Last session:** 2026-08-27T18:50:36.753Z
-**Stopped at:** Completed 162-14-PLAN.md
-**Resume file:** 162-15-PLAN.md
+**Stopped at:** Completed 162-15-PLAN.md
+**Resume file:** None
 
 ## Performance Metrics
 
