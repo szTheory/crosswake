@@ -139,9 +139,9 @@ final class ReferenceStudyJournal {
       ?? URL(fileURLWithPath: "/dev/null"))
   }
 
-  func append(value: String, scopeRef: String?) -> ProofLaneOutcome {
+  func append(value: String, scopeRef: String?, mutationID: String? = nil) -> ProofLaneOutcome {
     guard !value.isEmpty, let scopeRef, !scopeRef.isEmpty else { return .blocked }
-    let record = ReferenceStudyJournalRecord(version: 1, scopeRef: scopeRef, mutationID: UUID().uuidString,
+    let record = ReferenceStudyJournalRecord(version: 1, scopeRef: scopeRef, mutationID: mutationID ?? UUID().uuidString,
                                              cardID: 1, value: value)
     do {
       try fileManager.createDirectory(at: root, withIntermediateDirectories: true)
@@ -204,19 +204,23 @@ private final class ReferenceStudyReplayTransport {
     guard let scopeRef, scopeRef == record.scopeRef,
           let base = environment["CROSSWAKE_REFERENCE_HOST_BASE_URL"],
           let baseURL = URL(string: base), baseURL.scheme != nil,
-          let action = environment["CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION"], action == "establish"
+          let action = environment["CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION"], action == "establish",
+          let nonce = environment["CROSSWAKE_REFERENCE_HOST_PHYSICAL_PROOF_NONCE"], !nonce.isEmpty,
+          let expectedMutationID = environment["CROSSWAKE_REFERENCE_HOST_PHYSICAL_MUTATION_ID"], !expectedMutationID.isEmpty,
+          record.mutationID == expectedMutationID
     else { return .blocked }
 
-    guard await post(baseURL, path: "/_e2e/replay-session", body: ["action": action]) else { return .blocked }
+    guard await post(baseURL, path: "/_e2e/replay-session", body: ["action": action, "physical_proof_nonce": nonce, "client_mutation_id": expectedMutationID]) else { return .blocked }
     let event: [String: Any] = [
       "client_mutation_id": record.mutationID,
       "card_id": record.cardID,
       "rating": "good",
-      "free_form_answer": record.value
+      "free_form_answer": record.value,
+      "physical_proof_nonce": nonce
     ]
     let body: [String: Any] = ["scope_ref": scopeRef, "events": [event]]
-    guard await accepted(baseURL, body: body), await accepted(baseURL, body: body),
-          await oneRow(baseURL, mutationID: record.mutationID) else { return .blocked }
+    guard await accepted(baseURL, body: body, expectedMutationID: expectedMutationID), await accepted(baseURL, body: body, expectedMutationID: expectedMutationID),
+          await oneRow(baseURL, mutationID: expectedMutationID) else { return .blocked }
     return .passed
   }
 
@@ -232,7 +236,7 @@ private final class ReferenceStudyReplayTransport {
     return (200...299).contains(http.statusCode)
   }
 
-  private func accepted(_ baseURL: URL, body: [String: Any]) async -> Bool {
+  private func accepted(_ baseURL: URL, body: [String: Any], expectedMutationID: String) async -> Bool {
     guard JSONSerialization.isValidJSONObject(body), let data = try? JSONSerialization.data(withJSONObject: body),
           let url = URL(string: "/study/sync", relativeTo: baseURL) else { return false }
     var request = URLRequest(url: url)
@@ -244,7 +248,8 @@ private final class ReferenceStudyReplayTransport {
           let object = try? JSONSerialization.jsonObject(with: responseData) as? [String: Any],
           let dataObject = object["data"] as? [String: Any],
           let accepted = dataObject["accepted_records"] as? [[String: Any]], accepted.count == 1,
-          accepted.first?["outcome"] as? String == "accepted" else { return false }
+          accepted.first?["outcome"] as? String == "accepted",
+          accepted.first?["client_mutation_id"] as? String == expectedMutationID else { return false }
     return true
   }
 
@@ -431,13 +436,16 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
   private let prefix = "crosswake.reference-study.v1."
   private let scopeProvider: ReferenceStudyScopeProviding
   private let journal: ReferenceStudyJournal
+  private let expectedMutationID: String?
 
   init(defaults: UserDefaults = .standard,
        scopeProvider: ReferenceStudyScopeProviding = ReferenceHostPhysicalIphoneScopeProvider(),
-       journal: ReferenceStudyJournal = ReferenceStudyJournal()) {
+       journal: ReferenceStudyJournal = ReferenceStudyJournal(),
+       environment: [String: String] = ProcessInfo.processInfo.environment) {
     self.defaults = defaults
     self.scopeProvider = scopeProvider
     self.journal = journal
+    self.expectedMutationID = environment["CROSSWAKE_REFERENCE_HOST_PHYSICAL_MUTATION_ID"]
   }
 
   func installAndVerifyPack() async -> ProofLaneOutcome {
@@ -466,7 +474,7 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
 
   func submitFreeFormAnswerOffline(_ value: String) async -> ProofLaneOutcome {
     guard defaults.bool(forKey: prefix + "selected") else { return .blocked }
-    return journal.append(value: value, scopeRef: scopeProvider.currentScopeRef())
+    return journal.append(value: value, scopeRef: scopeProvider.currentScopeRef(), mutationID: expectedMutationID)
   }
 
   func relaunchWithoutResetAndReconnect() async -> ProofLaneOutcome {

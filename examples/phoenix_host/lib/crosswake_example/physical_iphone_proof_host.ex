@@ -3,6 +3,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
 
   alias Crosswake.ProofLane.{Config, Generator, PhysicalIphoneContract}
   alias CrosswakeExample.{E2E.ReplayAuthority, LocalFirst.PhysicalIphoneAuthority}
+  alias CrosswakeExample.LocalFirst.PhysicalIphoneRunProvenance
 
   @host_root Path.expand("../..", __DIR__)
   @repo_root Path.expand("../..", @host_root)
@@ -20,6 +21,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
                    ])
   @evidence_destination Path.join(@evidence_parent, "physical_iphone")
   @runtime_key {__MODULE__, :ios_runtime_line}
+  @run_key {__MODULE__, :physical_run}
   @destination_key {__MODULE__, :physical_destination}
   @learning_bundle_root Path.join([
                           @host_root,
@@ -65,23 +67,38 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     with {:ok, destination} <- selected_physical_destination(),
          {:ok, team} <- development_team(),
          true <- codesigning_identity_ready?(),
+         {:ok, run} <- PhysicalIphoneRunProvenance.start(),
+         :ok <- put_run(run),
          {:ok, root} <- private_run_root(),
-         result <- safely_run_physical_xctest(root, destination, team),
+         result <- safely_run_physical_xctest(root, destination, team, run),
          :ok <- remove_private_run_root(root),
          {:ok, report} <- result do
       Process.put(@runtime_key, destination.runtime_line)
       report
     else
-      _ -> {:error, :unavailable}
+      _ ->
+        cleanup_run()
+        {:error, :unavailable}
     end
   rescue
-    _ -> {:error, :unavailable}
+    _ ->
+      cleanup_run()
+      {:error, :unavailable}
   end
 
   def device_report(_), do: {:error, :unavailable}
 
   # Phoenix executes the backend authority cases independently from XCTest.
-  def backend_report(contract), do: PhysicalIphoneAuthority.report(contract)
+  def backend_report(contract) do
+    with run when is_map(run) <- Process.get(@run_key),
+         report when is_binary(report) <- PhysicalIphoneAuthority.report(contract, run) do
+      report
+    else
+      _ -> {:error, :unavailable}
+    after
+      cleanup_run()
+    end
+  end
 
   # This callback constructs only the allowlisted input. Evidence remains the
   # sole validator and promoter, and the Mix task remains the sole caller.
@@ -368,7 +385,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     end
   end
 
-  defp run_physical_xctest(root, destination, team) do
+  defp run_physical_xctest(root, destination, team, run) do
     result_bundle = Path.join(root, "Result.xcresult")
     derived_data = Path.join(root, "DerivedData")
     fixture = ReplayAuthority.physical_fixture()
@@ -398,7 +415,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
 
     with {_output, 0} <- System.cmd("xcodebuild", build_args, stderr_to_stdout: true),
          {:ok, xctestrun} <- exactly_one_xctestrun(derived_data),
-         :ok <- inject_ui_test_environment(xctestrun, fixture),
+         :ok <- inject_ui_test_environment(xctestrun, fixture, run),
          {_output, 0} <-
            System.cmd(
              "xcodebuild",
@@ -430,13 +447,20 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     end
   end
 
-  defp inject_ui_test_environment(xctestrun, fixture) do
+  defp inject_ui_test_environment(xctestrun, fixture, run) do
     environment_plist = xctestrun <> ".environment.plist"
 
     with {_output, 0} <-
            System.cmd(
              "plutil",
-             ["-extract", "#{@ui_test_target}.EnvironmentVariables", "xml1", "-o", environment_plist, xctestrun],
+             [
+               "-extract",
+               "#{@ui_test_target}.EnvironmentVariables",
+               "xml1",
+               "-o",
+               environment_plist,
+               xctestrun
+             ],
              stderr_to_stdout: true
            ),
          :ok <-
@@ -456,6 +480,18 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
              environment_plist,
              "CROSSWAKE_REFERENCE_HOST_BASE_URL",
              System.get_env("CROSSWAKE_PHYSICAL_IPHONE_HOST_BASE_URL")
+           ),
+         :ok <-
+           replace_plist_string(
+             environment_plist,
+             "CROSSWAKE_REFERENCE_HOST_PHYSICAL_PROOF_NONCE",
+             run.nonce
+           ),
+         :ok <-
+           replace_plist_string(
+             environment_plist,
+             "CROSSWAKE_REFERENCE_HOST_PHYSICAL_MUTATION_ID",
+             run.mutation_id
            ),
          {:ok, environment_bytes} <- File.read(environment_plist),
          {_output, 0} <-
@@ -485,8 +521,8 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
 
   defp replace_plist_string(_, _, _), do: {:error, :unavailable}
 
-  defp safely_run_physical_xctest(root, destination, team) do
-    run_physical_xctest(root, destination, team)
+  defp safely_run_physical_xctest(root, destination, team, run) do
+    run_physical_xctest(root, destination, team, run)
   rescue
     _ -> {:error, :unavailable}
   catch
@@ -544,6 +580,18 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     end
   end
 
+  defp cleanup_run do
+    case Process.delete(@run_key) do
+      run when is_map(run) -> PhysicalIphoneRunProvenance.cleanup(run)
+      _ -> :ok
+    end
+  end
+
+  defp put_run(run) when is_map(run) do
+    Process.put(@run_key, run)
+    :ok
+  end
+
   defp complete_assertions(assertions) when is_list(assertions) do
     expected =
       PhysicalIphoneContract.assertions()
@@ -595,7 +643,10 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
 
     with true <- is_binary(capture) and capture != "",
          true <- String.match?(value, ~r/^(?:[0-9a-f]{40}|[0-9a-f]{64})$/),
-         {resolved, 0} <- System.cmd("git", ["-C", @repo_root, "rev-parse", value <> "^{commit}"], stderr_to_stdout: true),
+         {resolved, 0} <-
+           System.cmd("git", ["-C", @repo_root, "rev-parse", value <> "^{commit}"],
+             stderr_to_stdout: true
+           ),
          true <- String.trim(resolved) == value do
       {:ok, "git-" <> value}
     else
@@ -618,8 +669,11 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
           _ -> {:error, :unavailable}
         end
 
-      {nil, nil} -> :ok
-      _ -> {:error, :unavailable}
+      {nil, nil} ->
+        :ok
+
+      _ ->
+        {:error, :unavailable}
     end
   end
 
@@ -633,7 +687,8 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
           File.close(io)
         end
 
-      _ -> {:error, :unavailable}
+      _ ->
+        {:error, :unavailable}
     end
   end
 

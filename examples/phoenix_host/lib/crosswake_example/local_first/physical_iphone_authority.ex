@@ -34,12 +34,16 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
   end
 
   @spec report(map()) :: binary() | {:error, :unavailable}
-  def report(%{schema_version: 1, device_class: :physical_iphone}) do
+  def report(%{schema_version: 1, device_class: :physical_iphone}, %{
+        nonce: nonce,
+        mutation_id: mutation_id
+      })
+      when is_binary(nonce) and is_binary(mutation_id) do
     # Ecto debug output can contain the opaque mutation/scope values exercised
     # below. Keep the producer silent and return only its closed report.
     Logger.disable(self())
 
-    with :ok <- verify_device_created_replay(),
+    with :ok <- verify_device_created_replay(nonce, mutation_id),
          :ok <- reset_fixture(),
          %{retained_count: rejected, halted: :rejected} when rejected > 0 <- retained_rejection(),
          :ok <- reset_fixture(),
@@ -68,6 +72,11 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
     Logger.enable(self())
   end
 
+  def report(_contract, _run), do: {:error, :unavailable}
+
+  # Kept for the ordinary fixture tests; a physical proof must use report/2.
+  def report(%{schema_version: 1, device_class: :physical_iphone}), do: {:error, :unavailable}
+
   def report(_), do: {:error, :unavailable}
 
   def reset_fixture do
@@ -78,33 +87,45 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
   # The physical XCTest creates this row through the normal replay authority.
   # It must exist before this independent backend producer can contribute its
   # closed assertions; synthetic acceptance is not a substitute.
-  defp verify_device_created_replay do
+  defp verify_device_created_replay(nonce, expected_id) do
     scope = ReplayAuthority.physical_fixture().scope_ref
 
-    case Repo.one(from(record in ReviewEvent, where: record.scope_ref == ^scope)) do
+    case Repo.one(
+           from(record in ReviewEvent,
+             where:
+               record.scope_ref == ^scope and record.client_mutation_id == ^expected_id and
+                 record.physical_proof_nonce == ^nonce
+           )
+         ) do
       %ReviewEvent{
-        client_mutation_id: id,
+        client_mutation_id: ^expected_id,
         card_id: card_id,
         rating: rating,
         free_form_answer: answer,
+        physical_proof_nonce: ^nonce,
         status: "accepted"
       }
-      when is_binary(id) and is_integer(card_id) and card_id > 0 and rating in ["good", "hard"] and
+      when is_integer(card_id) and card_id > 0 and rating in ["good", "hard"] and
              is_binary(answer) and byte_size(answer) in 1..4096 ->
         case SyncController.sync_events(
                build_conn(),
                scope,
                [
                  %{
-                   "client_mutation_id" => id,
+                   "client_mutation_id" => expected_id,
                    "card_id" => card_id,
                    "rating" => rating,
-                   "free_form_answer" => answer
+                   "free_form_answer" => answer,
+                   "physical_proof_nonce" => nonce
                  }
                ],
                authority_options(session_scope: scope)
              ) do
-          {:ok, %{accepted_records: [%{outcome: :accepted}], halted: nil}} ->
+          {:ok,
+           %{
+             accepted_records: [%{client_mutation_id: ^expected_id, outcome: :accepted}],
+             halted: nil
+           }} ->
             if Repo.aggregate(ReviewEvent, :count, :id) == 1, do: :ok, else: :error
 
           _ ->

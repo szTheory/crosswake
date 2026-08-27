@@ -7,6 +7,13 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
   @max_events 20
   @event_keys ["card_id", "client_mutation_id", "rating"]
   @free_form_event_keys ["card_id", "client_mutation_id", "free_form_answer", "rating"]
+  @physical_proof_event_keys [
+    "card_id",
+    "client_mutation_id",
+    "free_form_answer",
+    "physical_proof_nonce",
+    "rating"
+  ]
   @scope_ref_pattern ~r/\Av[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}\z/
 
   alias CrosswakeExample.LocalFirst.ReplayAuth
@@ -53,7 +60,11 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
   defp valid_scope(_), do: {:error, :invalid_envelope}
 
   defp valid_event(event) when is_map(event) do
-    if Enum.sort(Map.keys(event)) in [@event_keys, @free_form_event_keys] do
+    if Enum.sort(Map.keys(event)) in [
+         @event_keys,
+         @free_form_event_keys,
+         @physical_proof_event_keys
+       ] do
       valid_event_fields(event)
     else
       {:error, :invalid_envelope}
@@ -75,6 +86,18 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
        })
        when is_binary(id) and byte_size(id) in 1..120 and is_integer(card) and card > 0 and
               rating in ["good", "hard"] and is_binary(answer) and byte_size(answer) in 1..4096,
+       do: :ok
+
+  defp valid_event_fields(%{
+         "client_mutation_id" => id,
+         "card_id" => card,
+         "rating" => rating,
+         "free_form_answer" => answer,
+         "physical_proof_nonce" => nonce
+       })
+       when is_binary(id) and byte_size(id) in 1..120 and is_integer(card) and card > 0 and
+              rating in ["good", "hard"] and is_binary(answer) and byte_size(answer) in 1..4096 and
+              is_binary(nonce) and byte_size(nonce) in 32..128,
        do: :ok
 
   defp valid_event_fields(_), do: {:error, :invalid_envelope}

@@ -128,7 +128,9 @@ final class ProofLaneUITests: XCTestCase {
     let supplied = [
       "CROSSWAKE_REFERENCE_HOST_SCOPE_REF": "fixture-scope",
       "CROSSWAKE_REFERENCE_HOST_BASE_URL": "https://localhost",
-      "CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION": "establish"
+      "CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION": "establish",
+      "CROSSWAKE_REFERENCE_HOST_PHYSICAL_PROOF_NONCE": "opaque-proof-nonce-value-000000000000",
+      "CROSSWAKE_REFERENCE_HOST_PHYSICAL_MUTATION_ID": "00000000-0000-4000-8000-000000000001"
     ]
 
     let forwarded = try referenceHostLaunchEnvironment(from: supplied)
@@ -373,7 +375,9 @@ private enum ReferenceHostLaunchEnvironment {
   static let requiredKeys = [
     "CROSSWAKE_REFERENCE_HOST_SCOPE_REF",
     "CROSSWAKE_REFERENCE_HOST_BASE_URL",
-    "CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION"
+    "CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION",
+    "CROSSWAKE_REFERENCE_HOST_PHYSICAL_PROOF_NONCE",
+    "CROSSWAKE_REFERENCE_HOST_PHYSICAL_MUTATION_ID"
   ]
 
   static func validated(from environment: [String: String]) throws -> [String: String] {
@@ -382,7 +386,9 @@ private enum ReferenceHostLaunchEnvironment {
           let url = URL(string: baseURL),
           ["http", "https"].contains(url.scheme),
           url.host != nil,
-          environment[requiredKeys[2]] == "establish"
+          environment[requiredKeys[2]] == "establish",
+          let nonce = environment[requiredKeys[3]], !nonce.isEmpty,
+          let mutationID = environment[requiredKeys[4]], !mutationID.isEmpty
     else {
       throw ValidationError.invalid
     }

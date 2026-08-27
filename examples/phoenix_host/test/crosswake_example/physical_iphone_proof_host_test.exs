@@ -3,7 +3,13 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
 
   alias Crosswake.ProofLane.{Evidence, PhysicalIphoneContract, PhysicalIphonePreflight}
   alias CrosswakeExample.E2E.ReplayAuthority
-  alias CrosswakeExample.LocalFirst.{PhysicalIphoneAuthority, ReviewEvent}
+
+  alias CrosswakeExample.LocalFirst.{
+    PhysicalIphoneAuthority,
+    PhysicalIphoneRunProvenance,
+    ReviewEvent
+  }
+
   alias CrosswakeExample.{PhysicalIphoneProofHost, Repo}
 
   setup do
@@ -48,6 +54,20 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
     refute scope == ""
   end
 
+  test "a proof ticket is single-use and a host that did not mint it fails closed" do
+    assert {:ok, run} = PhysicalIphoneRunProvenance.start()
+    assert :ok = PhysicalIphoneRunProvenance.claim(run.nonce, run.mutation_id)
+    assert {:error, :unavailable} = PhysicalIphoneRunProvenance.claim(run.nonce, run.mutation_id)
+
+    assert {:error, :unavailable} =
+             PhysicalIphoneRunProvenance.claim(
+               "remote-host-ticket-000000000000000000",
+               run.mutation_id
+             )
+
+    assert :ok = PhysicalIphoneRunProvenance.cleanup(run)
+  end
+
   test "physical Xcode invocation builds once, injects the exact UI-test environment, and runs quietly" do
     source = File.read!("lib/crosswake_example/physical_iphone_proof_host.ex")
 
@@ -61,9 +81,12 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
     for key <- [
           "CROSSWAKE_REFERENCE_HOST_SCOPE_REF",
           "CROSSWAKE_REFERENCE_HOST_BASE_URL",
-          "CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION"
+          "CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION",
+          "CROSSWAKE_REFERENCE_HOST_PHYSICAL_PROOF_NONCE",
+          "CROSSWAKE_REFERENCE_HOST_PHYSICAL_MUTATION_ID"
         ] do
-      assert source =~ "replace_plist_string(\n             environment_plist,\n             \"#{key}\""
+      assert source =~
+               "replace_plist_string(\n             environment_plist,\n             \"#{key}\""
     end
 
     assert source =~ "GENERATE_INFOPLIST_FILE=NO"
@@ -89,8 +112,10 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
     assert Repo.aggregate(ReviewEvent, :count, :id) == 0
   end
 
-  test "backend producer accepts only the matching scoped device-created effect" do
+  test "backend producer rejects stale, wrong-run, and wrong-mutation rows without exposing proof values" do
     scope = ReplayAuthority.physical_fixture().scope_ref
+    assert {:ok, run} = PhysicalIphoneRunProvenance.start()
+    assert :ok = PhysicalIphoneRunProvenance.claim(run.nonce, run.mutation_id)
 
     %ReviewEvent{}
     |> ReviewEvent.changeset(%{
@@ -98,15 +123,60 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
       client_mutation_id: "00000000-0000-4000-8000-000000000111",
       card_id: 1,
       rating: "good",
-      free_form_answer: "neutral-answer"
+      free_form_answer: "neutral-answer",
+      physical_proof_nonce: run.nonce
     })
     |> Repo.insert!()
 
-    assert is_binary(
-             PhysicalIphoneAuthority.report(%{schema_version: 1, device_class: :physical_iphone})
-           )
+    assert {:error, :unavailable} =
+             PhysicalIphoneAuthority.report(
+               %{schema_version: 1, device_class: :physical_iphone},
+               run
+             )
+
+    Repo.delete_all(ReviewEvent)
+
+    %ReviewEvent{}
+    |> ReviewEvent.changeset(%{
+      scope_ref: scope,
+      client_mutation_id: run.mutation_id,
+      card_id: 1,
+      rating: "good",
+      free_form_answer: "neutral-answer",
+      physical_proof_nonce: "wrong-run-nonce-value-0000000000000000"
+    })
+    |> Repo.insert!()
+
+    assert {:error, :unavailable} =
+             PhysicalIphoneAuthority.report(
+               %{schema_version: 1, device_class: :physical_iphone},
+               run
+             )
+
+    Repo.delete_all(ReviewEvent)
+
+    %ReviewEvent{}
+    |> ReviewEvent.changeset(%{
+      scope_ref: scope,
+      client_mutation_id: run.mutation_id,
+      card_id: 1,
+      rating: "good",
+      free_form_answer: "neutral-answer",
+      physical_proof_nonce: run.nonce
+    })
+    |> Repo.insert!()
+
+    assert report =
+             PhysicalIphoneAuthority.report(
+               %{schema_version: 1, device_class: :physical_iphone},
+               run
+             )
+
+    refute report =~ run.nonce
+    refute report =~ run.mutation_id
 
     assert Repo.aggregate(ReviewEvent, :count, :id) == 0
+    assert :ok = PhysicalIphoneRunProvenance.cleanup(run)
   end
 
   test "passed joined candidate becomes a closed evidence input" do
@@ -138,6 +208,8 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
 
     assert source =~ "maybe_write_transaction_sources"
     assert source =~ "CROSSWAKE_PHYSICAL_IPHONE_TRANSACTION_CAPTURE"
-    assert File.read!("../../script/retain_physical_iphone_evidence_transaction.sh") =~ "binary_to_term"
+
+    assert File.read!("../../script/retain_physical_iphone_evidence_transaction.sh") =~
+             "binary_to_term"
   end
 end
