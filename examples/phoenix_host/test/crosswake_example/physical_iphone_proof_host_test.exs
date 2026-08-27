@@ -48,6 +48,13 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
     refute scope == ""
   end
 
+  test "physical Xcode invocation uses quiet mode before executing the focused UI contract" do
+    source = File.read!("lib/crosswake_example/physical_iphone_proof_host.ex")
+
+    assert source =~
+             ~r/args = \[\s*"-quiet",\s*"-project",.*?only-testing:CrosswakeProofLaneUITests\/ProofLaneUITests\/testReferenceHostPhysicalStudyContract/s
+  end
+
   test "invalid device contracts remain unavailable without invoking Xcode" do
     assert {:error, :unavailable} = PhysicalIphoneProofHost.device_report(%{})
   end

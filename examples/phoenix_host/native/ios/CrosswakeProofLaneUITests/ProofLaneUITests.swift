@@ -6,9 +6,15 @@ final class ProofLaneUITests: XCTestCase {
       throw XCTSkip("PI-PREFLIGHT-DESTINATION")
     #endif
 
+    let inheritedHostEnvironment = try referenceHostLaunchEnvironment(
+      from: ProcessInfo.processInfo.environment
+    )
     let app = XCUIApplication()
     app.launchEnvironment["CROSSWAKE_REFERENCE_HOST_PHYSICAL_ADAPTER"] = "1"
     app.launchEnvironment["CROSSWAKE_REFERENCE_HOST_RESET_STUDY"] = "1"
+    inheritedHostEnvironment.forEach { key, value in
+      app.launchEnvironment[key] = value
+    }
     app.launch()
 
     let install = app.buttons.matching(identifier: "reference-pack-install").firstMatch
@@ -116,6 +122,27 @@ final class ProofLaneUITests: XCTestCase {
     attachment.lifetime = .keepAlways
     add(attachment)
     print(String(decoding: bytes, as: UTF8.self))
+  }
+
+  func testReferenceHostLaunchEnvironmentRequiresAndForwardsValidatedInputs() throws {
+    let supplied = [
+      "CROSSWAKE_REFERENCE_HOST_SCOPE_REF": "fixture-scope",
+      "CROSSWAKE_REFERENCE_HOST_BASE_URL": "https://localhost",
+      "CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION": "establish"
+    ]
+
+    let forwarded = try referenceHostLaunchEnvironment(from: supplied)
+
+    XCTAssertEqual(Set(forwarded.keys), Set(ReferenceHostLaunchEnvironment.requiredKeys))
+    XCTAssertEqual(forwarded, supplied)
+    XCTAssertThrowsError(
+      try referenceHostLaunchEnvironment(
+        from: [
+          "CROSSWAKE_REFERENCE_HOST_SCOPE_REF": "fixture-scope",
+          "CROSSWAKE_REFERENCE_HOST_BASE_URL": "https://localhost"
+        ]
+      )
+    )
   }
 
   func testMissingProviderInstallRelaunchAndOfflineAudio() {
@@ -340,6 +367,40 @@ final class ProofLaneUITests: XCTestCase {
     XCTAssertGreaterThanOrEqual(element.frame.minX, frame.minX)
     XCTAssertLessThanOrEqual(element.frame.maxX, frame.maxX)
   }
+}
+
+private enum ReferenceHostLaunchEnvironment {
+  static let requiredKeys = [
+    "CROSSWAKE_REFERENCE_HOST_SCOPE_REF",
+    "CROSSWAKE_REFERENCE_HOST_BASE_URL",
+    "CROSSWAKE_REFERENCE_HOST_ESTABLISH_ACTION"
+  ]
+
+  static func validated(from environment: [String: String]) throws -> [String: String] {
+    guard let scope = environment[requiredKeys[0]], !scope.isEmpty,
+          let baseURL = environment[requiredKeys[1]],
+          let url = URL(string: baseURL),
+          ["http", "https"].contains(url.scheme),
+          url.host != nil,
+          environment[requiredKeys[2]] == "establish"
+    else {
+      throw ValidationError.invalid
+    }
+
+    return Dictionary(uniqueKeysWithValues: requiredKeys.compactMap { key in
+      environment[key].map { (key, $0) }
+    })
+  }
+
+  enum ValidationError: Error {
+    case invalid
+  }
+}
+
+private func referenceHostLaunchEnvironment(
+  from environment: [String: String]
+) throws -> [String: String] {
+  try ReferenceHostLaunchEnvironment.validated(from: environment)
 }
 
 private extension XCUIElement {

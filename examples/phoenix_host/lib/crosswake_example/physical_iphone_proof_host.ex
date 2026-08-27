@@ -366,6 +366,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     result_bundle = Path.join(root, "Result.xcresult")
 
     args = [
+      "-quiet",
       "-project",
       @ios_project,
       "-scheme",
