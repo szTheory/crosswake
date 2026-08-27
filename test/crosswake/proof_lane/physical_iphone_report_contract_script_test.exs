@@ -28,6 +28,14 @@ defmodule Crosswake.ProofLane.PhysicalIphoneReportContractScriptTest do
     assert output =~ "PI-CONTRACT-SERIALIZATION"
   end
 
+  test "the script validates an unavailable simulator envelope with the real parser" do
+    {output, status} = run_contract_with_real_mix()
+
+    assert status == 0
+    assert output ==
+             "{\"outcome\":\"passed\",\"scope\":\"advisory\",\"rule_id\":\"PI-CONTRACT-SERIALIZATION\"}\n"
+  end
+
   defp run_contract(producer) do
     root =
       Path.join(
@@ -63,6 +71,33 @@ defmodule Crosswake.ProofLane.PhysicalIphoneReportContractScriptTest do
         {"PATH", bin <> ":" <> System.get_env("PATH", "")},
         {"CROSSWAKE_PHYSICAL_IPHONE_CONTRACT_TEST_MODE", "1"},
         {"CROSSWAKE_PROOF_LANE_PHOENIX_PRODUCER", producer}
+      ],
+      stderr_to_stdout: true
+    )
+  end
+
+  defp run_contract_with_real_mix do
+    root =
+      Path.join(
+        System.tmp_dir!(),
+        "physical-contract-real-mix-#{System.unique_integer([:positive])}"
+      )
+
+    bin = Path.join(root, "bin")
+    File.mkdir_p!(bin)
+
+    on_exit(fn -> File.rm_rf(root) end)
+
+    unavailable_device =
+      ~s|#!/usr/bin/env bash\nprintf '%s\\n' '{"assertions":[{"id":"PI-PACK-INSTALL-AUDIO","outcome":"unavailable"},{"id":"PI-OFFLINE-SELECTED-PERSISTENCE","outcome":"unavailable"},{"id":"PI-OFFLINE-FREE-FORM-PERSISTENCE","outcome":"unavailable"},{"id":"PI-RELAUNCH-PERSISTENCE","outcome":"unavailable"},{"id":"PI-RECOVERY-RETAINED","outcome":"unavailable"}],"device_class":"physical_iphone","schema_version":1}'\n|
+
+    File.write!(Path.join(bin, "xcodebuild"), unavailable_device)
+    File.chmod!(Path.join(bin, "xcodebuild"), 0o755)
+
+    System.cmd("bash", [@script],
+      cd: @root,
+      env: [
+        {"PATH", bin <> ":" <> System.get_env("PATH", "")}
       ],
       stderr_to_stdout: true
     )
