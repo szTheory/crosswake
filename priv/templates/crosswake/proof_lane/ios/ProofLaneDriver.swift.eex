@@ -93,7 +93,7 @@ protocol PhysicalIphoneHostAdapter {
   func playInstalledAudioOffline() async -> ProofLaneOutcome
   func enterAuthorizedStudy() async -> ProofLaneOutcome
   func submitSelectedAnswerOffline() async -> ProofLaneOutcome
-  func submitFreeFormAnswerOffline() async -> ProofLaneOutcome
+  func submitFreeFormAnswerOffline(_ value: String) async -> ProofLaneOutcome
   func relaunchWithoutResetAndReconnect() async -> ProofLaneOutcome
   func observeRecoveryAndRetainedWork() async -> ProofLaneOutcome
 }
@@ -106,6 +106,10 @@ enum PhysicalIphoneHostAdapterFactory {
 }
 
 enum PhysicalIphoneSequence {
+  // This fixed contract-only value proves argument forwarding in generated tests.
+  // It is never copied into a report, log, or retained evidence artifact.
+  private static let contractOnlyFreeFormValue = "contract-only-free-form"
+
   static func run(adapter: PhysicalIphoneHostAdapter?) async -> PhysicalIphoneDeviceReport {
     guard let adapter else { return unavailableReport() }
 
@@ -128,7 +132,7 @@ enum PhysicalIphoneSequence {
       return terminalReport(selected, completed: [.packInstallAudio: .passed])
     }
 
-    let freeForm = await adapter.submitFreeFormAnswerOffline()
+    let freeForm = await adapter.submitFreeFormAnswerOffline(contractOnlyFreeFormValue)
     guard freeForm == .passed else {
       return terminalReport(
         freeForm,
