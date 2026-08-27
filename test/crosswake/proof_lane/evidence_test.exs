@@ -114,6 +114,16 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     end)
   end
 
+  test "successful physical-class promotion survives the producing subprocess exit" do
+    with_destination(fn destination ->
+      run_promotion_subprocess!(destination, physical_candidate())
+
+      assert File.regular?(Path.join(destination, "proof-lane-evidence.json"))
+      assert File.regular?(Path.join(destination, ".complete"))
+      assert :ok = Evidence.check(destination, physical_sources())
+    end)
+  end
+
   test "physical iPhone evidence rejects nonphysical classes, incomplete reports, runtime aliases, and unapproved sources" do
     base = physical_candidate()
 
