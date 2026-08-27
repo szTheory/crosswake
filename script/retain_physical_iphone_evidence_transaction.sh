@@ -40,8 +40,12 @@ if [ -z "${CROSSWAKE_PHYSICAL_IPHONE_HOST_BASE_URL:-}" ]; then
 fi
 export BIND_ALL=true
 
-if [ -n "$READY_CMD" ]; then "$READY_CMD" >"$CAPTURE_ROOT/ready.json"; else (cd "$ROOT/examples/phoenix_host" && MIX_ENV=test mix crosswake.proof_lane.physical_iphone --readiness --json) >"$CAPTURE_ROOT/ready.json"; fi
-jq -e '.outcome == "ready" and (.checks|type == "array" and length > 0 and all(.[]; .state == "ready"))' "$CAPTURE_ROOT/ready.json" >/dev/null || fail
+if [ -n "$READY_CMD" ]; then
+  READY_JSON="$($READY_CMD)" || fail
+else
+  READY_JSON="$(cd "$ROOT/examples/phoenix_host" && MIX_ENV=test mix crosswake.proof_lane.physical_iphone --readiness --json)" || fail
+fi
+printf '%s' "$READY_JSON" | jq -e '.outcome == "ready" and (.checks|type == "array" and length > 0 and all(.[]; .state == "ready"))' >/dev/null || fail
 
 # The connected-device signing file is user-local setup, explicitly outside the
 # transaction authority. It is neither staged nor treated as executed code.
