@@ -621,7 +621,7 @@ proof: one integrity-verified offline card/image/audio bundle, one scoped review
 real host-owned authority without creating a generic content or sync system.
 **Requirements**: ALPHA-01, ALPHA-02, ALPHA-03, ALPHA-04
 **Depends on:** Phase 161.1 and the published `crosswake_sigra` hosted-session interoperability release
-**Plans:** 1/1 complete; prerequisite to Phase 162 Wave 9 satisfied
+**Plans:** 1/1 plans complete
 
 Plans:
 
