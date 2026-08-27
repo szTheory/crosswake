@@ -132,4 +132,12 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
     assert evidence.assertion_ids == Enum.map(PhysicalIphoneContract.assertions(), & &1.id)
     refute Process.get({PhysicalIphoneProofHost, :ios_runtime_line})
   end
+
+  test "transaction source handoff stays private and disabled by default" do
+    source = File.read!("lib/crosswake_example/physical_iphone_proof_host.ex")
+
+    assert source =~ "maybe_write_transaction_sources"
+    assert source =~ "CROSSWAKE_PHYSICAL_IPHONE_TRANSACTION_CAPTURE"
+    assert source =~ "binary_to_term"
+  end
 end
