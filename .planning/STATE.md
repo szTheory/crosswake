@@ -5,17 +5,17 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
 status: executing
-stopped_at: Completed 162-12-PLAN.md
-last_updated: "2026-08-27T18:00:18.700Z"
+stopped_at: Completed 162-13-PLAN.md
+last_updated: "2026-08-27T18:09:04.993Z"
 last_activity: 2026-08-27
 last_activity_desc: Plan 162-12 closeout completed
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 114
-  completed_plans: 111
+  completed_plans: 112
   percent: 86
-current_plan: 13
+current_plan: 14
 ---
 
 # Project State
@@ -23,9 +23,9 @@ current_plan: 13
 ## Current Position
 
 Phase: 162 (physical-iphone-adoption-proof) — EXECUTING
-Plan: 13 of 15
+Plan: 14 of 15
 Status: Ready to execute
-Last activity: 2026-08-27 — Plan 162-12 closeout completed
+Last activity: 2026-08-27 — Plan 162-13 advisory serialization repair completed
 
 ## Active Objective
 
@@ -227,6 +227,8 @@ support remain fail closed until the fresh standard physical proof and reconcili
 - [Phase ?]: DEVICE completion is limited to the checked one-flow/one-runtime iOS proof and changes no Android or deferred-work truth.
 - [Phase ?]: Plan 162-12 keeps sensitive journal, opaque scope lifecycle, and foreground replay transport host-owned; Crosswake core remains outside the stored payload boundary.
 - [Phase ?]: Plan 162-12 drains a queued record only after accepted replay, same-ID duplicate confirmation, and exactly one scoped Phoenix domain effect.
+- [Phase ?]: Generated contract tests forward one fixed nonempty value only in Swift process memory; reports remain the three-key owner-free envelope.
+- [Phase ?]: The simulator CLI validates only an exact unavailable device-local envelope and cannot join, promote, or publish physical evidence.
 
 ## Deferred Items
 
@@ -255,8 +257,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-27T18:00:18.687Z
-**Stopped at:** Completed 162-12-PLAN.md
+**Last session:** 2026-08-27T18:09:04.972Z
+**Stopped at:** Completed 162-13-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -346,6 +348,7 @@ this milestone reset.
 | Phase 162-physical-iphone-adoption-proof P10 | 12 min | 1 tasks | 3 files |
 | Phase 162-physical-iphone-adoption-proof P11 | 18 min | 1 tasks | 5 files |
 | Phase 162 P12 | closeout continuation | 1 tasks | 14 files |
+| Phase 162 P13 | 10m | 2 tasks | 5 files |
 
 ## Accumulated Context
 

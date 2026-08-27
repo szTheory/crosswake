@@ -492,7 +492,7 @@ and app CSS can detect the shell synchronously.
 **Effort:** 2-3 focused days plus adopter/backend availability
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
-**Plans:** 12/15 plans executed
+**Plans:** 13/15 plans executed
 **Verification:** Gaps found (6/7 must-haves verified). Free-form answer persistence is hollow,
 and the advisory report-serialization success path is not executable against the real join. Plans
 162-12 through 162-15 are verified to close those gaps and re-earn durable support/completion truth.
@@ -549,7 +549,7 @@ Plans:
 
 **Wave 13** *(CR-02 contract repair; blocked on Wave 12)*
 
-- [ ] 162-13-PLAN.md — Make advisory serialization executable and exercise the real Elixir parser/join semantics without simulator promotion.
+- [x] 162-13-PLAN.md — Make advisory serialization executable and exercise the real Elixir parser/join semantics without simulator promotion.
 
 **Wave 14** *(support-truth repair; blocked on Waves 12-13)*
 
