@@ -49,7 +49,7 @@ separately funded business-line mandate.
 - [x] **Phase 163: First B2C Adopter Reference Host Integration** — provide the bounded eligible (completed 2026-08-10)
   Phoenix/iOS host, exact learning bundle, and independent physical/backend proof producers.
 
-- [ ] **Phase 162: Physical-iPhone Adoption Proof** — prove offline answers, offline audio,
+- [x] **Phase 162: Physical-iPhone Adoption Proof** — prove offline answers, offline audio, (completed 2026-08-27)
   kill/relaunch persistence, exactly-once replay, conflict recovery, account isolation, and remote
   disablement on a physical iPhone.
 
