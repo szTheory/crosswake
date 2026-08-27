@@ -96,7 +96,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
          {:ok, complete_assertions} <- complete_assertions(assertions),
          {:ok, version} <- crosswake_version(),
          {:ok, template_version} <- template_version(),
-         {:ok, commit_ref} <- commit_ref() do
+         {:ok, commit_ref} <- transaction_commit_ref() do
       canonical_bytes =
         Jason.encode!(%{
           "schema_version" => PhysicalIphoneContract.schema_version(),
@@ -113,7 +113,11 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
             end)
         })
 
-      %{
+      approved_hashes = [
+        %{kind: :physical_iphone_run_contract, canonical_bytes: canonical_bytes}
+      ]
+
+      input = %{
         schema_version: Integer.to_string(PhysicalIphoneContract.schema_version()),
         crosswake_version: version,
         template_version: Integer.to_string(template_version),
@@ -126,10 +130,10 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
         retention_label: :brief,
         device_class: :physical_iphone,
         ios_runtime_line: runtime,
-        approved_hashes: [
-          %{kind: :physical_iphone_run_contract, canonical_bytes: canonical_bytes}
-        ]
+        approved_hashes: approved_hashes
       }
+
+      with :ok <- maybe_write_transaction_sources(approved_hashes), do: input
     else
       _ -> {:error, :unavailable}
     end
@@ -575,6 +579,60 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
          {:ok, %{"template_version" => value}} when is_integer(value) <- Jason.decode(bytes) do
       {:ok, value}
     else
+      _ -> {:error, :unavailable}
+    end
+  end
+
+  defp transaction_commit_ref do
+    case System.get_env("CROSSWAKE_PHYSICAL_IPHONE_TRANSACTION_CODE_COMMIT") do
+      nil -> commit_ref()
+      value -> pinned_commit_ref(value)
+    end
+  end
+
+  defp pinned_commit_ref(value) do
+    capture = System.get_env("CROSSWAKE_PHYSICAL_IPHONE_TRANSACTION_CAPTURE")
+
+    with true <- is_binary(capture) and capture != "",
+         true <- String.match?(value, ~r/^(?:[0-9a-f]{40}|[0-9a-f]{64})$/),
+         {resolved, 0} <- System.cmd("git", ["-C", @repo_root, "rev-parse", value <> "^{commit}"], stderr_to_stdout: true),
+         true <- String.trim(resolved) == value do
+      {:ok, "git-" <> value}
+    else
+      _ -> {:error, :unavailable}
+    end
+  end
+
+  defp maybe_write_transaction_sources(approved_hashes) do
+    case {System.get_env("CROSSWAKE_PHYSICAL_IPHONE_TRANSACTION_CAPTURE"),
+          System.get_env("CROSSWAKE_PHYSICAL_IPHONE_TRANSACTION_CODE_COMMIT")} do
+      {path, commit} when is_binary(path) and is_binary(commit) ->
+        parent = Path.dirname(path)
+
+        with true <- String.starts_with?(Path.basename(parent), "crosswake-physical-transaction-"),
+             :ok <- File.mkdir_p(parent),
+             :ok <- File.chmod(parent, 0o700),
+             :ok <- write_new_private_term(path, :erlang.term_to_binary(approved_hashes)) do
+          :ok
+        else
+          _ -> {:error, :unavailable}
+        end
+
+      {nil, nil} -> :ok
+      _ -> {:error, :unavailable}
+    end
+  end
+
+  defp write_new_private_term(path, bytes) do
+    case File.open(path, [:write, :exclusive, :binary]) do
+      {:ok, io} ->
+        try do
+          :ok = IO.binwrite(io, bytes)
+          :ok = File.chmod(path, 0o600)
+        after
+          File.close(io)
+        end
+
       _ -> {:error, :unavailable}
     end
   end

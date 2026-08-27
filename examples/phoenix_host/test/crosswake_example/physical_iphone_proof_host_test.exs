@@ -138,6 +138,6 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
 
     assert source =~ "maybe_write_transaction_sources"
     assert source =~ "CROSSWAKE_PHYSICAL_IPHONE_TRANSACTION_CAPTURE"
-    assert source =~ "binary_to_term"
+    assert File.read!("../../script/retain_physical_iphone_evidence_transaction.sh") =~ "binary_to_term"
   end
 end
