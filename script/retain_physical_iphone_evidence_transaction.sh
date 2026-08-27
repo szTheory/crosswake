@@ -6,6 +6,7 @@ set -euo pipefail
 # its mode-0700 lifecycle root.
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DEST="$ROOT/.planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone"
+EVIDENCE_PARENT="$(dirname "$DEST")"
 LEDGER_SUBJECT='chore(162-16): consume corrected-provenance run'
 EVIDENCE_SUBJECT='feat(162-16): retain corrected physical iPhone evidence'
 CAPTURE_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-physical-transaction-XXXXXX")"
@@ -15,6 +16,11 @@ trap cleanup EXIT HUP INT TERM
 chmod 700 "$CAPTURE_ROOT"
 
 fail() { printf '%s\n' '{"outcome":"blocked","rule_id":"PI-TRANSACTION"}'; exit 2; }
+[ -e "$EVIDENCE_PARENT" ] && [ ! -d "$EVIDENCE_PARENT" ] && fail
+[ -L "$EVIDENCE_PARENT" ] && fail
+mkdir -p "$EVIDENCE_PARENT" || fail
+PARENT_REAL="$(cd "$EVIDENCE_PARENT" && pwd -P)" || fail
+[ "$PARENT_REAL" = "$ROOT/.planning/phases/162-physical-iphone-adoption-proof/evidence" ] || fail
 [ ! -e "$DEST" ] || fail
 ! git -C "$ROOT" log --format=%s | grep -Fxq "$LEDGER_SUBJECT" || fail
 
