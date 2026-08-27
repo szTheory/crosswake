@@ -492,13 +492,12 @@ and app CSS can detect the shell synchronously.
 **Effort:** 2-3 focused days plus adopter/backend availability
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
-**Plans:** 15/15 plans complete
-**Verification:** Complete — Plan 14's retained standard signed-device and independent Phoenix
-producer join re-earned the narrow physical proof. Plan 15 reran deterministic template/evidence,
-production parser/join, Phoenix recovery/authority, browser, renderer, and guide-parity gates;
-the independent verifier report remains unchanged pending a fresh rerun. Android, background or
-generic sync, generic storage, multiple islands, simulator substitution, and every-iPhone support
-remain non-claims.
+**Plans:** 15/16 plans complete
+**Verification:** Gaps found — the retained physical record predates the nonce, expected-mutation,
+and all-exit cleanup fixes. Plan 16 must withdraw stale truth, execute exactly one corrected-code
+standard physical transaction, and hand the result to a fresh independent verifier. Android,
+background or generic sync, generic storage, multiple islands, simulator substitution, and
+every-iPhone support remain non-claims.
 
 Plans:
 
@@ -561,6 +560,10 @@ Plans:
 **Wave 15** *(final reconciliation; blocked on Wave 14)*
 
 - [x] 162-15-PLAN.md — Reconcile requirements, roadmap, state, and validation only after all repaired current-tree gates pass.
+
+**Wave 16** *(stale-provenance gap closure; blocked on Wave 15 and current verifier findings)*
+
+- [ ] 162-16-PLAN.md — Withdraw stale authority and replace it with exactly one corrected-code standard physical transaction before independent re-verification.
 
 **Smallest shippable version:** A dated, redacted physical-iPhone artifact proving the ten-step exit
 test in the adopter route-policy map.
