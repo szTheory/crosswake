@@ -43,7 +43,9 @@ export BIND_ALL=true
 if [ -n "$READY_CMD" ]; then "$READY_CMD" >"$CAPTURE_ROOT/ready.json"; else (cd "$ROOT/examples/phoenix_host" && MIX_ENV=test mix crosswake.proof_lane.physical_iphone --readiness --json) >"$CAPTURE_ROOT/ready.json"; fi
 jq -e '.outcome == "ready" and (.checks|type == "array" and length > 0 and all(.[]; .state == "ready"))' "$CAPTURE_ROOT/ready.json" >/dev/null || fail
 
-git -C "$ROOT" diff --quiet && git -C "$ROOT" diff --cached --quiet || fail
+# The connected-device signing file is user-local setup, explicitly outside the
+# transaction authority. It is neither staged nor treated as executed code.
+git -C "$ROOT" diff --quiet -- . ':(exclude)examples/phoenix_host/native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj' && git -C "$ROOT" diff --cached --quiet || fail
 CODE_COMMIT="$(git -C "$ROOT" rev-parse HEAD)"
 git -C "$ROOT" commit --allow-empty -m "$LEDGER_SUBJECT" >/dev/null
 
