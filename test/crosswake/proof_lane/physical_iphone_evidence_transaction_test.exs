@@ -42,7 +42,7 @@ defmodule Crosswake.ProofLane.PhysicalIphoneEvidenceTransactionTest do
     File.mkdir_p!(Path.join(root, "fake"))
     write_fixture_commands!(root, evidence_dir, code_commit)
 
-    {_, status} =
+    {output, status} =
       System.cmd("bash", [@script],
         cd: root,
         env: [
@@ -54,7 +54,7 @@ defmodule Crosswake.ProofLane.PhysicalIphoneEvidenceTransactionTest do
         stderr_to_stdout: true
       )
 
-    assert status == 0
+    assert status == 0, output
     assert {subject, 0} = System.cmd("git", ["show", "-s", "--format=%s", "HEAD"], cd: root)
     assert String.trim(subject) == "feat(162-16): retain corrected physical iPhone evidence"
     assert {parent, 0} = System.cmd("git", ["rev-parse", "HEAD^"], cd: root)
@@ -79,7 +79,7 @@ defmodule Crosswake.ProofLane.PhysicalIphoneEvidenceTransactionTest do
 
     File.write!(
       Path.join(root, "fake/run"),
-      "#!/usr/bin/env bash\nset -euo pipefail\nmkdir -p #{shell_quote(evidence_dir)}\ncp #{shell_quote(artifact)} #{shell_quote(Path.join(evidence_dir, "proof-lane-evidence.json"))}\nprintf '%s' #{shell_quote(marker)} > #{shell_quote(Path.join(evidence_dir, ".complete"))}\nprintf '%s' '{\"outcome\":\"passed\",\"assertions\":[{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"}]}'\nprintf '%s' fixture > \"$CROSSWAKE_PHYSICAL_IPHONE_TRANSACTION_CAPTURE\"\n"
+      "#!/usr/bin/env bash\nset -euo pipefail\nmkdir -p #{shell_quote(evidence_dir)}\ncp #{shell_quote(artifact)} #{shell_quote(Path.join(evidence_dir, "proof-lane-evidence.json"))}\nprintf '%s' #{shell_quote(marker)} > #{shell_quote(Path.join(evidence_dir, ".complete"))}\nprintf '%s' '{\"outcome\":\"passed\",\"assertions\":[{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"},{\"outcome\":\"passed\"}]}'\nprintf '%s' fixture > \"$CROSSWAKE_PHYSICAL_IPHONE_TRANSACTION_CAPTURE\"\nchmod 600 \"$CROSSWAKE_PHYSICAL_IPHONE_TRANSACTION_CAPTURE\"\n"
     )
 
     File.write!(Path.join(root, "fake/verify"), "#!/usr/bin/env bash\nset -euo pipefail\ntest -f \"$1/proof-lane-evidence.json\"\ntest -f \"$1/.complete\"\n")

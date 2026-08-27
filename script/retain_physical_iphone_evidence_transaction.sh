@@ -5,7 +5,8 @@ set -euo pipefail
 # closed outcomes; host facts and the private canonical-source term never leave
 # its mode-0700 lifecycle root.
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DEST="$ROOT/.planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone"
+DEST_REL=".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone"
+DEST="$ROOT/$DEST_REL"
 EVIDENCE_PARENT="$(dirname "$DEST")"
 LEDGER_SUBJECT='chore(162-16): consume corrected-provenance run'
 EVIDENCE_SUBJECT='feat(162-16): retain corrected physical iPhone evidence'
@@ -75,10 +76,19 @@ else
   (cd "$ROOT/examples/phoenix_host" && CROSSWAKE_PHYSICAL_IPHONE_TRANSACTION_CAPTURE="$CAPTURE" CROSSWAKE_PHYSICAL_IPHONE_TRANSACTION_CODE_COMMIT="$CODE_COMMIT" MIX_ENV=test mix crosswake.proof_lane.physical_iphone --run --promote --json) >"$CAPTURE_ROOT/run.json"
 fi
 jq -e --arg ref "git-$CODE_COMMIT" '.outcome == "passed" and (.assertions|length == 10 and all(.[]; .outcome == "passed"))' "$CAPTURE_ROOT/run.json" >/dev/null || fail
-[ "$(jq -er '.evidence.commit_ref // empty' "$CAPTURE_ROOT/run.json" 2>/dev/null || true)" = "git-$CODE_COMMIT" ] || fail
 [ -f "$CAPTURE" ] || fail
 [ "$(stat -f %Lp "$CAPTURE" 2>/dev/null || stat -c %a "$CAPTURE")" = 600 ] || fail
-[ "$(find "$DEST" -maxdepth 1 -type f | wc -l | tr -d ' ')" = 2 ] || fail
+[ "$(find "$DEST" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')" = 2 ] || fail
+[ "$(find "$DEST" -mindepth 2 | wc -l | tr -d ' ')" = 0 ] || fail
+[ -f "$DEST/proof-lane-evidence.json" ] && [ ! -L "$DEST/proof-lane-evidence.json" ] || fail
+[ -f "$DEST/.complete" ] && [ ! -L "$DEST/.complete" ] || fail
+[ "$(cat "$DEST/.complete")" = "$(shasum -a 256 "$DEST/proof-lane-evidence.json" | cut -d' ' -f1)" ] || fail
+[ "$(jq -er '.commit_ref | sub("^git-"; "")' "$DEST/proof-lane-evidence.json")" = "$CODE_COMMIT" ] || fail
+if [ -n "$VERIFY_CMD" ]; then
+  "$VERIFY_CMD" "$DEST" "$CAPTURE" || fail
+else
+  mix run -e 'case Crosswake.ProofLane.Evidence.scan_stage(System.argv() |> hd()) do :ok -> :ok; _ -> System.halt(2) end' -- "$DEST" || fail
+fi
 git -C "$ROOT" add -- "$DEST/proof-lane-evidence.json" "$DEST/.complete"
 git -C "$ROOT" diff --cached --name-only | sort | cmp -s - <(printf '%s\n%s\n' ".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete" ".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/proof-lane-evidence.json") || fail
 git -C "$ROOT" commit -m "$EVIDENCE_SUBJECT" >/dev/null
@@ -87,7 +97,7 @@ LEDGER_COMMIT="$(git -C "$ROOT" rev-parse "$EVIDENCE_COMMIT^")"
 [ "$(git -C "$ROOT" show -s --format=%s "$LEDGER_COMMIT")" = "$LEDGER_SUBJECT" ] || fail
 [ "$(git -C "$ROOT" rev-parse "$LEDGER_COMMIT^")" = "$CODE_COMMIT" ] || fail
 [ "$(jq -er '.commit_ref | sub("^git-"; "")' "$DEST/proof-lane-evidence.json")" = "$CODE_COMMIT" ] || fail
-[ "$(git -C "$ROOT" show "$EVIDENCE_COMMIT:$DEST/proof-lane-evidence.json" | shasum -a 256 | cut -d' ' -f1)" = "$(shasum -a 256 "$DEST/proof-lane-evidence.json" | cut -d' ' -f1)" ] || fail
+[ "$(git -C "$ROOT" show "$EVIDENCE_COMMIT:$DEST_REL/proof-lane-evidence.json" | shasum -a 256 | cut -d' ' -f1)" = "$(shasum -a 256 "$DEST/proof-lane-evidence.json" | cut -d' ' -f1)" ] || fail
 
 if [ -n "$VERIFY_CMD" ]; then "$VERIFY_CMD" "$DEST" "$CAPTURE"; else mix run -e ' [destination, capture] = System.argv(); sources = capture |> File.read!() |> :erlang.binary_to_term([:safe]); case sources do [%{kind: :physical_iphone_run_contract, canonical_bytes: bytes}] when is_binary(bytes) -> case Crosswake.ProofLane.Evidence.check(destination, sources) do :ok -> :ok; _ -> System.halt(2) end; _ -> System.halt(2) end' -- "$DEST" "$CAPTURE"; fi
 printf '%s\n' '{"outcome":"passed"}'
