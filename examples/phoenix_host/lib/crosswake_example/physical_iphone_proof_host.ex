@@ -102,6 +102,16 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     end
   end
 
+  # The proof task invokes this after every device/backend join exit. Keeping
+  # it public makes cleanup mandatory in the host adapter contract; repeated
+  # calls are harmless so backend_report/1 can retain its local fallback.
+  def cleanup_run do
+    case Process.delete(@run_key) do
+      run when is_map(run) -> PhysicalIphoneRunProvenance.cleanup(run)
+      _ -> :ok
+    end
+  end
+
   # This callback constructs only the allowlisted input. Evidence remains the
   # sole validator and promoter, and the Mix task remains the sole caller.
   def evidence_input(%{
@@ -579,13 +589,6 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     case File.rm_rf(root) do
       {:ok, _} -> :ok
       _ -> {:error, :unavailable}
-    end
-  end
-
-  defp cleanup_run do
-    case Process.delete(@run_key) do
-      run when is_map(run) -> PhysicalIphoneRunProvenance.cleanup(run)
-      _ -> :ok
     end
   end
 

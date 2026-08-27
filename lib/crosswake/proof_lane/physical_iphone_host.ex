@@ -5,6 +5,7 @@ defmodule Crosswake.ProofLane.PhysicalIphoneHost do
     {:preflight_options, 0},
     {:device_report, 1},
     {:backend_report, 1},
+    {:cleanup_run, 0},
     {:evidence_input, 1},
     {:destination, 0}
   ]
@@ -23,6 +24,7 @@ defmodule Crosswake.ProofLane.PhysicalIphoneHost do
              inventory_and_checks: fn -> safe(adapter, :preflight_options, []) end,
              device_report: fn contract -> safe(adapter, :device_report, [contract]) end,
              backend_report: fn contract -> safe(adapter, :backend_report, [contract]) end,
+             cleanup_run: fn -> safe(adapter, :cleanup_run, []) end,
              evidence_input: fn candidate -> safe(adapter, :evidence_input, [candidate]) end,
              evidence_destination: fn -> safe(adapter, :destination, []) end
            ]}

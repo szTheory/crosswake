@@ -384,6 +384,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
 
     template = source(template_path)
     assert template =~ "def preflight_options"
+    assert template =~ "def cleanup_run, do: :ok"
     assert template =~ "{:error, :unavailable}"
   end
 

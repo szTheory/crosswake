@@ -122,6 +122,16 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
     refute PhysicalIphoneRunProvenance.active?(run.nonce, run.mutation_id)
   end
 
+  test "explicit cleanup clears a claimed proof ticket without exposing it" do
+    assert {:ok, run} = PhysicalIphoneRunProvenance.start()
+    assert :ok = PhysicalIphoneRunProvenance.claim(run.nonce, run.mutation_id)
+    Process.put({PhysicalIphoneProofHost, :physical_run}, run)
+
+    assert :ok = PhysicalIphoneProofHost.cleanup_run()
+    refute Process.get({PhysicalIphoneProofHost, :physical_run})
+    refute PhysicalIphoneRunProvenance.active?(run.nonce, run.mutation_id)
+  end
+
   test "backend producer rejects stale, wrong-run, and wrong-mutation rows without exposing proof values" do
     scope = ReplayAuthority.physical_fixture().scope_ref
     assert {:ok, run} = PhysicalIphoneRunProvenance.start()
