@@ -4,11 +4,11 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 162
 current_phase_name: physical-iphone-adoption-proof
-status: executing
+status: gaps_found
 stopped_at: Completed 162-14-PLAN.md
 last_updated: "2026-08-27T18:50:36.773Z"
 last_activity: 2026-08-27
-last_activity_desc: Plan 162-13 advisory serialization repair completed
+last_activity_desc: Plan 162-15 withdrew stale completion truth pending repaired current-tree verification
 progress:
   total_phases: 7
   completed_phases: 6
@@ -24,8 +24,8 @@ current_plan: 15
 
 Phase: 162 (physical-iphone-adoption-proof) — EXECUTING
 Plan: 15 of 15
-Status: Ready to execute
-Last activity: 2026-08-27 — Plan 162-14 durable physical evidence and narrow support truth completed
+Status: Gaps found — repaired final-tree reconciliation pending
+Last activity: 2026-08-27 — Plan 162-15 withdrew stale completion truth pending current-tree gates
 
 ## Active Objective
 
@@ -44,10 +44,10 @@ framework launch.
 
 ## Next Action
 
-Execute Plans 162-13 through 162-15 in order with `$gsd-execute-phase 162`. Preserve the narrow
-scope: the evidence does not widen to Android, background replay or sync, generic storage or sync,
-multiple islands, simulator substitution, or every-iPhone coverage. Durable completion and public
-support remain fail closed until the fresh standard physical proof and reconciliation gates pass.
+Complete Plan 162-15's deterministic current-tree reconciliation. Preserve the narrow scope: the
+evidence does not widen to Android, background replay or sync, generic storage or sync, multiple
+islands, simulator substitution, or every-iPhone coverage. Durable completion and public support
+remain fail closed until the fresh standard physical proof and every reconciliation gate passes.
 
 ## Blockers
 

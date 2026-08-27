@@ -1,15 +1,16 @@
 ---
 phase: 162
 slug: physical-iphone-adoption-proof
-status: complete
+status: gaps_found
 nyquist_compliant: true
-completed: 2026-08-26
+superseded: 2026-08-27
 ---
 
-# Phase 162 — Final Validation Ledger
+# Phase 162 — Superseded Validation Ledger
 
-Phase 162 is complete for one public first-adopter offline-study flow on one iOS runtime line.
-This ledger retains commands, aggregate outcomes, stable IDs, and the fixed evidence location only.
+This pre-repair ledger is superseded and does not close Phase 162. Its aggregate successes did not
+exercise CR-01 value persistence or CR-02's real serialization parser/join. The repaired
+current-tree ledger is required before any completion status can be restored.
 
 ## Final-Tree Evidence Gates
 

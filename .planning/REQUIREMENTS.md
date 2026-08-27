@@ -110,7 +110,7 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 - [x] **DEVICE-01:** A physical iPhone installs one verified pronunciation pack and plays its audio
   while offline.
 
-- [x] **DEVICE-02:** The offline study route queues selected and free-form answers, survives
+- [ ] **DEVICE-02:** The offline study route queues selected and free-form answers, survives
   kill/relaunch, reconnects, and reconciles exactly once until its outbox is empty.
 
 - [x] **DEVICE-03:** Rejected and conflict outcomes are visible and recoverable; no silent
@@ -123,7 +123,7 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 - [x] **DEVICE-06:** The dated proof artifact contains only runtime versions, route identifiers,
   device class, low-cardinality outcomes, and redacted hashes.
 
-- [x] **DEVICE-07:** The resulting support claim stays narrow: one adopter flow, one iOS runtime
+- [ ] **DEVICE-07:** The resulting support claim stays narrow: one adopter flow, one iOS runtime
   line, no Android/background/generic-storage/multiple-island claim.
 
 ### ALPHA — Bounded reference-host integration
