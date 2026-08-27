@@ -44,9 +44,10 @@ framework launch.
 
 ## Next Action
 
-Run a fresh independent Phase 162 verifier against the committed recovery topology and current
-truth. Preserve the narrow scope: the evidence does not widen to Android, background replay or
-sync, generic storage or sync, multiple islands, simulator substitution, or every-iPhone coverage.
+Phase 162 independent verification passed against the committed recovery topology and current
+truth. Stop here and use `$gsd-progress` for the next explicit routing decision. The evidence does
+not widen to Android, background replay or sync, generic storage or sync, multiple islands,
+simulator substitution, or every-iPhone coverage.
 
 ## Blockers
 
