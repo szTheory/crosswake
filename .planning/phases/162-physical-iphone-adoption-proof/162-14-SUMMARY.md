@@ -55,6 +55,14 @@ status: complete
 - Reconciled Task 2 from the shared committed tree: lifecycle and transaction code, the single retry ledger, and the exact two-file evidence record are all present; the transaction returned success and the record passed the supplied root reconciliation checks.
 - Re-promoted only the physical-study support row to existing `device evidence` wording, retaining the Android, background, generic-storage, generic-sync, multiple-island, simulator, and every-iPhone non-claims.
 
+## Standard Production Gate
+
+- After the stale record was removed and the fixed destination was absent, the read-only readiness command returned a nonempty all-ready check set.
+- The transaction invoked the standard host-owned production command exactly once: `(cd examples/phoenix_host && MIX_ENV=test mix crosswake.proof_lane.physical_iphone --run --promote --json)`.
+- That passed result joined the real signed-device producer with the independent Phoenix producer for the complete ordered owner-disjoint assertion set; no simulator or synthetic producer filled either authority slot.
+- The run published the fresh two-file record through atomic no-replace promotion, then its internal `Evidence.check/2` used the canonical source bytes produced by that same run. Source-less `Evidence.check/1` was not accepted as pass authority.
+- The distinct evidence-only commit retained the record after the producing process exited, with marker integrity and pre-ledger GREEN code provenance verified before public support was restored.
+
 ## Task Commits
 
 1. **Task 1: Preserve the completed fail-closed withdrawal** — `3ef8a959` (RED), `60efab5d` (GREEN).
