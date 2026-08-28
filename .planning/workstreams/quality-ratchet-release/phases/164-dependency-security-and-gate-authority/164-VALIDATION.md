@@ -47,8 +47,8 @@ created: 2026-08-28
 | 164-02-01 | 02 | 3 | CIG-01 | T-164-01, T-164-03, T-164-08 | Every required context has exactly one literal producer and malformed authority fails closed against the final post-workflow-edit tree | unit + local audit | `mix test test/crosswake/proof/phase153_1_gate_integrity_test.exs && python3 script/list_merge_blocking_checks.py --emitters >/dev/null && script/check_required_checks_registered.sh --local-only` | ✅ extend | ⬜ pending |
 | 164-02-02 | 02 | 3 | CIG-02 | T-164-03 | Every intended root ExUnit file maps to a merge-blocking execution class | structural negative control | `elixir script/check_exunit_ownership.exs && mix test test/crosswake/proof/phase164_exunit_ownership_test.exs` | ❌ W0 | ⬜ pending |
 | 164-02-03 | 02 | 3 | SEC-01, SEC-02, SEC-03, CIG-01, CIG-02, CIG-03, CIG-04 | T-164-01, T-164-02, T-164-03, T-164-04, T-164-06 | One credential-free phase entry point awaits root and example-host lock resolution before dependency audit/proof, then inventory, local audit, ownership, isolation, and aggregator proof | aggregate integration | `script/check_phase164_dependency_security_and_gate_authority.sh` | ❌ W0 | ⬜ pending |
-| 164-03-01 | 03 | 2 | CIG-03 | T-164-06 | Example-host setup restores exact prior env/path/process/file/database state | unit + integration | `mix test test/crosswake/proof/phase164_example_host_isolation_test.exs` | ❌ W0 | ⬜ pending |
-| 164-03-02 | 03 | 2 | CIG-03 | T-164-09 | Tagged and complete suites pass for all six seed/class combinations at seeds 17, 101, and 1009 without residue | integration | `script/check_example_host_isolation.sh` | ❌ W0 | ⬜ pending |
+| 164-03-01 | 03 | 2 | CIG-03 | T-164-06 | Example-host setup restores exact prior env/path/process/file/database state | unit + integration | `mix test test/crosswake/proof/phase164_example_host_isolation_test.exs` | ✅ | ✅ green |
+| 164-03-02 | 03 | 2 | CIG-03 | T-164-09 | Tagged and complete suites pass for all six seed/class combinations at seeds 17, 101, and 1009 without residue | integration | `script/check_example_host_isolation.sh` | ✅ | ✅ green |
 | 164-04-01 | 04 | 2 | CIG-04 | T-164-02 | Named aggregators reject missing or unexpected leaves through exact parity | structural negative control | `mix test test/crosswake/proof/phase134_native_gate_blocking_proof_test.exs` | ✅ | ✅ green |
 | 164-04-02 | 04 | 2 | CIG-04 | T-164-02, T-164-10 | Credential-free full result vocabulary plus missing/inverted records fail closed, and CI awaits the same outcome assertion | semantic matrix + workflow negative control | `python3 script/check_aggregator_result_semantics.py --self-test` | ✅ | ✅ green |
 
@@ -64,7 +64,7 @@ created: 2026-08-28
 - [ ] Strict fixture support for duplicate, malformed, unnamed, dynamic, and missing workflow
   producers in `script/list_merge_blocking_checks.py`.
 - [ ] `script/check_exunit_ownership.exs` with owned, unowned, comment-only, and string-only cases.
-- [ ] `script/check_example_host_isolation.sh` whose unfiltered invocation compiles the example host in dev and runs `mix test --only requires_example_host --seed N` plus `CROSSWAKE_INCLUDE_EXAMPLE_HOST=1 mix test --seed N` for N = 17, 101, and 1009 with residue checks.
+- [x] `script/check_example_host_isolation.sh` whose unfiltered invocation compiles the example host in dev and runs `mix test --only requires_example_host --seed N` plus `CROSSWAKE_INCLUDE_EXAMPLE_HOST=1 mix test --seed N` for N = 17, 101, and 1009 with residue checks.
 - [x] `script/check_aggregator_result_semantics.py` with the complete credential-free vocabulary, missing/inverted negative controls, and workflow outcome-assertion mode.
 - [x] Aggregator cancelled, explicit-neutral, unknown, empty, and exact missing-leaf workflow cases.
 - [ ] `script/check_phase164_dependency_security_and_gate_authority.sh` as the credential-free aggregate entry point over every focused phase check.
