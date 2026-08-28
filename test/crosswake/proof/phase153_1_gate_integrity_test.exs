@@ -16,6 +16,37 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
   @discover "script/list_merge_blocking_checks.py"
   @checker "script/check_required_checks_registered.sh"
 
+  defp prepare_fixture!(tmp, workflows) do
+    File.mkdir_p!(Path.join(tmp, "script"))
+    File.mkdir_p!(Path.join(tmp, ".github/workflows"))
+    File.cp!(@discover, Path.join(tmp, @discover))
+    File.cp!(@checker, Path.join(tmp, @checker))
+
+    Enum.each(workflows, fn {name, source} ->
+      File.write!(Path.join(tmp, ".github/workflows/#{name}"), source)
+    end)
+  end
+
+  defp run_detector(tmp, args \\ ["--emitters"]) do
+    System.cmd("python3", [@discover | args],
+      cd: tmp,
+      stderr_to_stdout: true
+    )
+  end
+
+  defp run_checker(tmp, registered_json \\ nil, args \\ []) do
+    env =
+      if registered_json,
+        do: [{"CROSSWAKE_REQUIRED_CHECKS_JSON", registered_json}],
+        else: []
+
+    System.cmd("bash", [@checker | args],
+      cd: tmp,
+      env: env,
+      stderr_to_stdout: true
+    )
+  end
+
   defp emitters do
     {out, 0} = System.cmd("python3", [@discover, "--emitters"])
 
@@ -142,5 +173,130 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
     {out, _status} = System.cmd("bash", [@checker], cd: tmp, stderr_to_stdout: true)
 
     refute out =~ "duplicate-merge-blocking-name"
+  end
+
+  @tag :tmp_dir
+  test "malformed workflow YAML fails with provenance and remediation", %{tmp_dir: tmp} do
+    prepare_fixture!(tmp, [{"broken.yml", "jobs:\n  nope: ["}])
+
+    {out, status} = run_detector(tmp)
+
+    assert status == 1
+    assert out =~ "malformed-workflow"
+    assert out =~ ".github/workflows/broken.yml"
+    assert out =~ "What to do next"
+  end
+
+  @tag :tmp_dir
+  test "non-map jobs fails closed instead of disappearing", %{tmp_dir: tmp} do
+    prepare_fixture!(tmp, [{"jobs.yml", "name: Broken\njobs: []\n"}])
+
+    {out, status} = run_detector(tmp)
+
+    assert status == 1
+    assert out =~ "non-map-jobs"
+    assert out =~ ".github/workflows/jobs.yml"
+    assert out =~ "What to do next"
+  end
+
+  @tag :tmp_dir
+  test "explicitly unnamed and dynamic authority names fail with exact job provenance", %{
+    tmp_dir: tmp
+  } do
+    prepare_fixture!(tmp, [
+      {"unnamed.yml",
+       "name: Unnamed\njobs:\n  merge-blocking-unnamed:\n    name: \"\"\n    runs-on: ubuntu-latest\n"},
+      {"dynamic.yml",
+       "name: Dynamic\njobs:\n  merge-blocking-dynamic:\n    name: \"merge-blocking-${{ matrix.kind }}\"\n    runs-on: ubuntu-latest\n"}
+    ])
+
+    {out, status} = run_detector(tmp)
+
+    assert status == 1
+    assert out =~ "unnamed-authority"
+    assert out =~ "unnamed.yml (merge-blocking-unnamed)"
+    assert out =~ "dynamic-authority"
+    assert out =~ "dynamic.yml (merge-blocking-dynamic)"
+    assert out =~ "literal name"
+  end
+
+  @tag :tmp_dir
+  test "registered context without a producer fails the bidirectional audit", %{tmp_dir: tmp} do
+    prepare_fixture!(tmp, [
+      {"one.yml",
+       "name: One\njobs:\n  gate:\n    name: merge-blocking-one\n    runs-on: ubuntu-latest\n"}
+    ])
+
+    json = ~s({"checks":[{"context":"merge-blocking-one"},{"context":"stale-required"}]})
+    {out, status} = run_checker(tmp, json)
+
+    assert status == 1
+    assert out =~ "registered-without-producer"
+    assert out =~ "stale-required"
+    assert out =~ "What to do next"
+  end
+
+  @tag :tmp_dir
+  test "local merge-blocking candidate absent from registration fails", %{tmp_dir: tmp} do
+    prepare_fixture!(tmp, [
+      {"one.yml",
+       "name: One\njobs:\n  gate:\n    name: merge-blocking-one\n    runs-on: ubuntu-latest\n"}
+    ])
+
+    {out, status} = run_checker(tmp, ~s({"checks":[]}))
+
+    assert status == 1
+    assert out =~ "candidate-without-registration"
+    assert out =~ "merge-blocking-one"
+    assert out =~ "DRY_RUN=0 script/register_required_checks.sh"
+  end
+
+  @tag :tmp_dir
+  test "local-only performs complete local validation without gh authority", %{tmp_dir: tmp} do
+    prepare_fixture!(tmp, [
+      {"one.yml",
+       "name: One\njobs:\n  gate:\n    name: merge-blocking-one\n    runs-on: ubuntu-latest\n"}
+    ])
+
+    fake_bin = Path.join(tmp, "fake-bin")
+    File.mkdir_p!(fake_bin)
+    File.write!(Path.join(fake_bin, "gh"), "#!/bin/sh\necho gh-was-invoked >&2\nexit 99\n")
+    File.chmod!(Path.join(fake_bin, "gh"), 0o755)
+
+    {out, status} =
+      System.cmd("bash", [@checker, "--local-only"],
+        cd: tmp,
+        env: [{"PATH", fake_bin <> ":" <> System.get_env("PATH")}],
+        stderr_to_stdout: true
+      )
+
+    assert status == 0
+    assert out =~ "local producer authority verified"
+    refute out =~ "gh-was-invoked"
+  end
+
+  @tag :tmp_dir
+  test "unreadable branch protection remains exit 3 after local checks", %{tmp_dir: tmp} do
+    prepare_fixture!(tmp, [
+      {"one.yml",
+       "name: One\njobs:\n  gate:\n    name: merge-blocking-one\n    runs-on: ubuntu-latest\n"}
+    ])
+
+    fake_bin = Path.join(tmp, "fake-bin")
+    File.mkdir_p!(fake_bin)
+    File.write!(Path.join(fake_bin, "gh"), "#!/bin/sh\nexit 1\n")
+    File.chmod!(Path.join(fake_bin, "gh"), 0o755)
+
+    {out, status} =
+      System.cmd("bash", [@checker],
+        cd: tmp,
+        env: [{"PATH", fake_bin <> ":" <> System.get_env("PATH")}],
+        stderr_to_stdout: true
+      )
+
+    assert status == 3
+    assert out =~ "local producer authority verified"
+    assert out =~ "UNVERIFIED (exit 3)"
+    refute out =~ "OK: all"
   end
 end
