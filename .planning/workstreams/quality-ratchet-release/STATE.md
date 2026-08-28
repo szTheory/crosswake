@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 164
 current_phase_name: Dependency Security and Gate Authority
 status: ready_to_plan
-stopped_at: Phase 164 context gathered
-last_updated: "2026-08-28T19:24:33.196Z"
+stopped_at: Completed 164-01-PLAN.md
+last_updated: "2026-08-28T19:36:01.264Z"
 last_activity: 2026-08-28
 last_activity_desc: v22.0 roadmap created with 26/26 requirements mapped
-state_head: e2e0d14158b9c703452a00d5620a77c9318fde44
+state_head: b32c7f0fbd041a93d1aa98ae39b7e9ba98c64845
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 4
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 workstream: quality-ratchet-release
 ---
@@ -51,6 +51,11 @@ Progress: [░░░░░░░░░░] 0%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 164-168 | 0 | 0 min | N/A |
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 164 P01 | 7 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -64,6 +69,9 @@ Progress: [░░░░░░░░░░] 0%
 
 - Package and tag publication remains an irreversible maintainer approval; v22 automates reversible
   preparation and proves the exact 0.2.1 candidate.
+
+- [Phase 164]: Plan 164-01 retained public compatibility declarations and constrained lock changes to the prescribed patched targets plus Plug Crypto 2.2.0.
+- [Phase 164]: Dependency security has one literal producer; required-check registration remains green-first post-main work through the existing registrar.
 
 ### Pending Todos
 
@@ -85,6 +93,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-08-28T18:04:25.564Z
-Stopped at: Phase 164 context gathered
-Resume file: .planning/workstreams/quality-ratchet-release/phases/164-dependency-security-and-gate-authority/164-CONTEXT.md
+Last session: 2026-08-28T19:36:01.255Z
+Stopped at: Completed 164-01-PLAN.md
+Resume file: None

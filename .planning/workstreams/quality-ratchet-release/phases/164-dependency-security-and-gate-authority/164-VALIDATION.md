@@ -42,8 +42,8 @@ created: 2026-08-28
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 164-01-01 | 01 | 1 | SEC-01, SEC-02 | T-164-04 | Both locks resolve to exact fixed current-minor versions with zero advisories | integration | `script/check_dependency_security.sh && mix deps.get --check-locked && (cd examples/phoenix_host && mix deps.get --check-locked) && mix test test/crosswake/proof/phase164_dependency_security_and_gate_authority_test.exs` | ❌ W0 | ⬜ pending |
-| 164-01-02 | 01 | 1 | SEC-03 | T-164-04, T-164-05, T-164-07 | One security producer rejects an advisory-bearing fixture without leaking environment data | negative control | `mix test test/crosswake/proof/phase164_dependency_security_and_gate_authority_test.exs` | ❌ W0 | ⬜ pending |
+| 164-01-01 | 01 | 1 | SEC-01, SEC-02 | T-164-04 | Both locks resolve to exact fixed current-minor versions with zero advisories | integration | `script/check_dependency_security.sh && mix deps.get --check-locked && (cd examples/phoenix_host && mix deps.get --check-locked) && mix test test/crosswake/proof/phase164_dependency_security_and_gate_authority_test.exs` | ✅ | ✅ green |
+| 164-01-02 | 01 | 1 | SEC-03 | T-164-04, T-164-05, T-164-07 | One security producer rejects an advisory-bearing fixture without leaking environment data | negative control | `mix test test/crosswake/proof/phase164_dependency_security_and_gate_authority_test.exs` | ✅ | ✅ green |
 | 164-02-01 | 02 | 3 | CIG-01 | T-164-01, T-164-03, T-164-08 | Every required context has exactly one literal producer and malformed authority fails closed against the final post-workflow-edit tree | unit + local audit | `mix test test/crosswake/proof/phase153_1_gate_integrity_test.exs && python3 script/list_merge_blocking_checks.py --emitters >/dev/null && script/check_required_checks_registered.sh --local-only` | ✅ extend | ⬜ pending |
 | 164-02-02 | 02 | 3 | CIG-02 | T-164-03 | Every intended root ExUnit file maps to a merge-blocking execution class | structural negative control | `elixir script/check_exunit_ownership.exs && mix test test/crosswake/proof/phase164_exunit_ownership_test.exs` | ❌ W0 | ⬜ pending |
 | 164-02-03 | 02 | 3 | SEC-01, SEC-02, SEC-03, CIG-01, CIG-02, CIG-03, CIG-04 | T-164-01, T-164-02, T-164-03, T-164-04, T-164-06 | One credential-free phase entry point awaits root and example-host lock resolution before dependency audit/proof, then inventory, local audit, ownership, isolation, and aggregator proof | aggregate integration | `script/check_phase164_dependency_security_and_gate_authority.sh` | ❌ W0 | ⬜ pending |
@@ -58,8 +58,8 @@ created: 2026-08-28
 
 ## Wave 0 Requirements
 
-- [ ] `script/check_dependency_security.sh` and an inactive vulnerable-lock fixture.
-- [ ] `test/crosswake/proof/phase164_dependency_security_and_gate_authority_test.exs` for exact
+- [x] `script/check_dependency_security.sh` and an inactive vulnerable-lock fixture.
+- [x] `test/crosswake/proof/phase164_dependency_security_and_gate_authority_test.exs` for exact
   targets, security-producer uniqueness, negative controls, and resource restoration.
 - [ ] Strict fixture support for duplicate, malformed, unnamed, dynamic, and missing workflow
   producers in `script/list_merge_blocking_checks.py`.
