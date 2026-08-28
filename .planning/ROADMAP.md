@@ -640,7 +640,7 @@ source-bound physical evidence transaction; promotion remains blocked until TODO
 signed physical iPhone is available.
 **Requirements**: COMPOSE-01, COMPOSE-02, COMPOSE-03, COMPOSE-04, COMPOSE-05, COMPOSE-06
 **Depends on:** Phase 163
-**Plans:** 6/10 plans executed
+**Plans:** 7/10 plans executed
 
 Plans:
 **Wave 1**
@@ -663,7 +663,7 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 163.1-07-PLAN.md (Wave 5) — drive recovery, account, and disablement cases from the physical app
+- [x] 163.1-07-PLAN.md (Wave 5) — drive recovery, account, and disablement cases from the physical app
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
