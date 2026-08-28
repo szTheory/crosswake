@@ -359,17 +359,30 @@ The leaf name above is illustrative, not an in-repo discrete value. The planner 
 |---|-------|---------|---------------|
 | — | None. Recommendations are derived from locked context, opened repository sources, and official Hex/OSV/GitHub/Elixir sources. | — | — |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Which collateral transitive lock entries are required by the exact target set?**
-   - What we know: an unconstrained isolated update broadened LiveView and Plug, so its collateral diff is not admissible evidence. [VERIFIED: mix.exs:47-58] [VERIFIED: examples/phoenix_host/mix.exs:86-93]
-   - What's unclear: the final exact constrained resolver diff has not been committed or executed in this research artifact.
-   - Recommendation: make the first implementation task resolve the five exact targets in disposable copies and retain a reviewed before/after package table before editing canonical locks.
+1. **Exact constrained lock tuple set.** A disposable copy of the current tree temporarily pinned
+   the five D-01 targets and every candidate collateral package, then ran Mix resolution without
+   editing either canonical manifest or lock. The broad resolver result was rejected. Re-running
+   with the old compatible collateral versions pinned proved that only `plug_crypto 2.2.0` is
+   required outside the five named targets; Phoenix 1.8.13 requires its `~> 2.2` line. The complete
+   allowed changed-entry set is therefore:
 
-2. **When can `--max-cases 1` be removed?**
-   - What we know: the context requires deterministic bounded repeated evidence after restoration, and the current lane explicitly calls serialization a stopgap. [VERIFIED: .planning/workstreams/quality-ratchet-release/phases/164-dependency-security-and-gate-authority/164-CONTEXT.md:50-56] [VERIFIED: .github/workflows/requires-example-host-gate.yml:80-94]
-   - What's unclear: the exact repeated-seed count is delegated to the agent.
-   - Recommendation: prescribe a small fixed seed set in the plan, run the tagged class alone and the complete suite for every seed, and remove the flag only if all runs are green and leave no resources.
+   | Lock | Target tuples | Resolver-required collateral | Proved unchanged candidate collateral |
+   |------|---------------|------------------------------|---------------------------------------|
+   | `mix.lock` | `phoenix 1.8.7 -> 1.8.13`; `phoenix_live_view 1.1.30 -> 1.1.33`; `plug 1.19.1 -> 1.19.5` | `plug_crypto 2.1.1 -> 2.2.0` | `phoenix_pubsub 2.2.0`; `websock_adapter 0.5.9` |
+   | `examples/phoenix_host/mix.lock` | `bandit 1.12.0 -> 1.12.5`; `hpax 1.0.3 -> 1.0.4`; `phoenix 1.8.7 -> 1.8.13`; `phoenix_live_view 1.1.30 -> 1.1.33`; `plug 1.19.2 -> 1.19.5` | `plug_crypto 2.1.1 -> 2.2.0` | `decimal 3.1.0`; `elixir_make 0.9.0`; `phoenix_pubsub 2.2.0`; `websock_adapter 0.5.9` |
+
+   The implementation may reproduce that disposable resolver procedure, but any changed lock key
+   outside these two exact sets is unrelated refresh and must fail review. [VERIFIED: disposable
+   exact-constraint probe executed 2026-08-28; canonical `mix.exs`,
+   `examples/phoenix_host/mix.exs`, and both locks remained unchanged]
+
+2. **Bounded isolation seed authority.** The fixed seed set is exactly `17`, `101`, and `1009`.
+   Each seed must execute both the `requires_example_host` class and the complete root suite, for
+   six required seed/class combinations total. The serialization stopgap may be removed only after
+   the unfiltered six-run command and residue assertions pass. [VERIFIED:
+   .planning/workstreams/quality-ratchet-release/phases/164-dependency-security-and-gate-authority/164-CONTEXT.md:50-56]
 
 ## Environment Availability
 
