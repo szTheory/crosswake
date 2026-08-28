@@ -77,7 +77,12 @@ else
 fi
 jq -e --arg ref "git-$CODE_COMMIT" '.outcome == "passed" and (.assertions|length == 10 and all(.[]; .outcome == "passed"))' "$CAPTURE_ROOT/run.json" >/dev/null || fail
 [ -f "$CAPTURE" ] || fail
-[ "$(stat -f %Lp "$CAPTURE" 2>/dev/null || stat -c %a "$CAPTURE")" = 600 ] || fail
+if CAPTURE_MODE="$(stat -f %Lp "$CAPTURE" 2>/dev/null)"; then
+  :
+else
+  CAPTURE_MODE="$(stat -c %a "$CAPTURE" 2>/dev/null)" || fail
+fi
+[ "$CAPTURE_MODE" = 600 ] || fail
 [ "$(find "$DEST" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')" = 2 ] || fail
 [ "$(find "$DEST" -mindepth 2 | wc -l | tr -d ' ')" = 0 ] || fail
 [ -f "$DEST/proof-lane-evidence.json" ] && [ ! -L "$DEST/proof-lane-evidence.json" ] || fail
