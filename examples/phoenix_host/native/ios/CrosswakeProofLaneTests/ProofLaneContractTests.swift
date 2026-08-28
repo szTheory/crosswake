@@ -62,6 +62,35 @@ final class ProofLaneContractTests: XCTestCase {
     }
   }
 
+  @MainActor
+  func testPhysicalShellAuthorityFailsClosedBeforeCoordinatorMaterialization() {
+    let manifest = "{\"compatibility\":{\"native_runtime_version\":\"1.0.0\"},\"routes\":{\"route-0123456789abcdef\":{\"id\":\"route-0123456789abcdef\",\"path\":\"/\",\"runtime\":\"offline_island\",\"entry\":\"root\",\"capabilities\":[],\"packs\":[],\"transfers\":[],\"allowlisted_origins\":[]}}}"
+    let topology = "{\"topology_schema_version\":\"1.0.0\",\"manifest_schema_version\":\"1.0.0\",\"status\":\"ready\",\"entries\":[{\"route_id\":\"route-0123456789abcdef\",\"root_tab_id\":\"tab-0123456789abcdef\",\"presentation\":\"root\",\"deep_link_posture\":\"allow\",\"restoration_posture\":\"allow\"}]}"
+    let envelope = "{\"schema_version\":1,\"run_binding\":\"current-run\",\"topology\":\(topology)}"
+    let valid = [
+      "CROSSWAKE_REFERENCE_HOST_NAVIGATION_MANIFEST": manifest,
+      "CROSSWAKE_REFERENCE_HOST_NAVIGATION_MANIFEST_SCHEMA_VERSION": "1.0.0",
+      "CROSSWAKE_REFERENCE_HOST_NAVIGATION_CONFIGURATION": envelope,
+      "CROSSWAKE_REFERENCE_HOST_NAVIGATION_NONCE": "current-run",
+      "CROSSWAKE_REFERENCE_HOST_AUTHORIZED_ROUTE_IDS": "route-0123456789abcdef"
+    ]
+
+    XCTAssertNotNil(ReferenceHostShellAuthority(environment: valid).coordinator)
+
+    for invalid in [
+      valid.merging(["CROSSWAKE_REFERENCE_HOST_NAVIGATION_CONFIGURATION": "{}"], uniquingKeysWith: { _, replacement in replacement }),
+      valid.merging(["CROSSWAKE_REFERENCE_HOST_NAVIGATION_NONCE": "stale-run"], uniquingKeysWith: { _, replacement in replacement }),
+      valid.merging(["CROSSWAKE_REFERENCE_HOST_NAVIGATION_MANIFEST_SCHEMA_VERSION": "2.0.0"], uniquingKeysWith: { _, replacement in replacement }),
+      valid.merging([
+        "CROSSWAKE_REFERENCE_HOST_NAVIGATION_CONFIGURATION": envelope.replacingOccurrences(
+          of: "route-0123456789abcdef", with: "route-fedcba9876543210"
+        )
+      ], uniquingKeysWith: { _, replacement in replacement })
+    ] {
+      XCTAssertNil(ReferenceHostShellAuthority(environment: invalid).coordinator)
+    }
+  }
+
   func testNavigationRemainsUnavailableWithoutProductionHostObservations() {
     XCTAssertNil(ProofLaneNavigationHostAdapterFactory.make())
     for assertion in ProofLaneNavigationAssertion.allCases {

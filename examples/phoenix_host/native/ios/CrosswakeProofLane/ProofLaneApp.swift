@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import CrosswakeShellCore
 
 @main
 struct CrosswakeProofLaneApp: App {
@@ -29,11 +30,76 @@ struct CrosswakeProofLaneApp: App {
   var body: some Scene {
     WindowGroup {
       if physicalReferenceHost {
-        ReferencePhysicalStudyView()
+        ReferencePhysicalNavigationShell(environment: ProcessInfo.processInfo.environment)
       } else {
         ProofLaneView(adapter: adapter, navigationAdapter: navigationAdapter)
       }
     }
+  }
+}
+
+@MainActor
+final class ReferenceHostShellAuthority: ObservableObject {
+  let coordinator: NavigationCoordinator?
+
+  init(environment: [String: String]) {
+    guard let manifestText = environment["CROSSWAKE_REFERENCE_HOST_NAVIGATION_MANIFEST"],
+          let manifestData = manifestText.data(using: .utf8),
+          let manifest = try? JSONDecoder().decode(ShellManifest.self, from: manifestData),
+          let configuration = ReferenceHostNavigationConfiguration.decode(
+            envelope: environment["CROSSWAKE_REFERENCE_HOST_NAVIGATION_CONFIGURATION"],
+            currentNonce: environment["CROSSWAKE_REFERENCE_HOST_NAVIGATION_NONCE"],
+            manifestSchemaVersion: environment["CROSSWAKE_REFERENCE_HOST_NAVIGATION_MANIFEST_SCHEMA_VERSION"] ?? ""
+          ),
+          configuration.topology.validate(against: manifest) == .valid
+    else {
+      coordinator = nil
+      return
+    }
+
+    let authorizedRouteIDs = Set(
+      (environment["CROSSWAKE_REFERENCE_HOST_AUTHORIZED_ROUTE_IDS"] ?? "")
+        .split(separator: ",")
+        .map(String.init)
+    )
+    guard authorizedRouteIDs.isEmpty == false else {
+      coordinator = nil
+      return
+    }
+
+    coordinator = NavigationCoordinator(
+      topology: configuration.topology,
+      manifest: manifest,
+      resolver: { routeID, _ in
+        authorizedRouteIDs.contains(routeID) ? .authorized(.booting) : .denied
+      }
+    )
+  }
+}
+
+private struct ReferencePhysicalNavigationShell: View {
+  @StateObject private var authority: ReferenceHostShellAuthority
+
+  init(environment: [String: String]) {
+    _authority = StateObject(wrappedValue: ReferenceHostShellAuthority(environment: environment))
+  }
+
+  var body: some View {
+    if let coordinator = authority.coordinator {
+      NavigationShellView(navigationCoordinator: coordinator, makeLeafController: makeStudyLeaf)
+        .accessibilityIdentifier("cw-physical-navigation-shell")
+    } else {
+      ContentUnavailableView("Study unavailable", systemImage: "lock.fill")
+        .accessibilityIdentifier("cw-physical-study-unavailable")
+    }
+  }
+
+  private func makeStudyLeaf(_ presentation: ShellPresentation) -> UIViewController {
+    let controller = UIHostingController(rootView: ReferencePhysicalStudyView())
+    controller.title = "Study"
+    controller.tabBarItem = UITabBarItem(title: "Study", image: UIImage(systemName: "book.closed"), selectedImage: nil)
+    controller.view.accessibilityIdentifier = "cw-physical-study-leaf"
+    return controller
   }
 }
 

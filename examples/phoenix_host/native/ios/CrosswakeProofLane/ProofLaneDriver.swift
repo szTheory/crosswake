@@ -1,11 +1,12 @@
 // crosswake-proof-lane template_version=5
 import AVFoundation
+import CrosswakeShellCore
 import CryptoKit
 import Foundation
 /// The physical host owns this short-lived configuration seam.  It accepts only
 /// a current invocation's closed topology and never constructs navigation state.
 struct ReferenceHostNavigationConfiguration {
-  private let topology: ReferenceHostNavigationTopology
+  let topology: NavigationTopology
 
   static func decode(envelope: String?, currentNonce: String?, manifestSchemaVersion: String) -> ReferenceHostNavigationConfiguration? {
     guard let envelope, let currentNonce, !currentNonce.isEmpty,
@@ -17,8 +18,8 @@ struct ReferenceHostNavigationConfiguration {
           let topologyObject = object["topology"] as? [String: Any],
           Set(topologyObject.keys) == ["topology_schema_version", "manifest_schema_version", "status", "entries"],
           let topologyData = try? JSONSerialization.data(withJSONObject: object["topology"] as Any),
-          let topology = try? JSONDecoder().decode(ReferenceHostNavigationTopology.self, from: topologyData),
-          topology.status == "ready",
+          let topology = try? JSONDecoder().decode(NavigationTopology.self, from: topologyData),
+          topology.status == .ready,
           !topology.entries.isEmpty,
           topology.topologySchemaVersion == manifestSchemaVersion,
           topology.manifestSchemaVersion == manifestSchemaVersion
@@ -26,25 +27,6 @@ struct ReferenceHostNavigationConfiguration {
 
     return ReferenceHostNavigationConfiguration(topology: topology)
   }
-}
-
-private struct ReferenceHostNavigationTopology: Decodable {
-  let topologySchemaVersion: String
-  let manifestSchemaVersion: String
-  let status: String
-  let entries: [ReferenceHostNavigationEntry]
-
-  enum CodingKeys: String, CodingKey {
-    case topologySchemaVersion = "topology_schema_version"
-    case manifestSchemaVersion = "manifest_schema_version"
-    case status, entries
-  }
-}
-
-private struct ReferenceHostNavigationEntry: Decodable {
-  let routeID: String
-
-  enum CodingKeys: String, CodingKey { case routeID = "route_id" }
 }
 
 enum ProofLaneOutcome: String, Codable { case passed, blocked, unavailable }
