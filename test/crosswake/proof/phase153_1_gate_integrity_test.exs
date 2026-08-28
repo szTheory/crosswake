@@ -34,13 +34,13 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
     )
   end
 
-  defp run_checker(tmp, registered_json \\ nil, args \\ []) do
+  defp run_checker(tmp, registered_json) do
     env =
       if registered_json,
         do: [{"CROSSWAKE_REQUIRED_CHECKS_JSON", registered_json}],
         else: []
 
-    System.cmd("bash", [@checker | args],
+    System.cmd("bash", [@checker],
       cd: tmp,
       env: env,
       stderr_to_stdout: true
