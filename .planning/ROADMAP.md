@@ -640,12 +640,12 @@ source-bound physical evidence transaction; promotion remains blocked until TODO
 signed physical iPhone is available.
 **Requirements**: COMPOSE-01, COMPOSE-02, COMPOSE-03, COMPOSE-04, COMPOSE-05, COMPOSE-06
 **Depends on:** Phase 163
-**Plans:** 10 plans
+**Plans:** 1/10 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 163.1-02-PLAN.md (Wave 1) — create the audit gap ledger and synchronize blocked support truth
+- [x] 163.1-02-PLAN.md (Wave 1) — create the audit gap ledger and synchronize blocked support truth
 
 **Wave 2** *(blocked on Wave 1 completion)*
 

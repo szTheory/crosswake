@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 163.1
 current_phase_name: close-gap-v21-physical-adopter-composition
 status: executing
-stopped_at: Plan 163.1-02 audit-gap ledger in progress
-last_updated: "2026-08-28T03:29:01.216Z"
-last_activity: 2026-08-27
-last_activity_desc: Phase 163.1 execution started
+stopped_at: Completed 163.1-02-PLAN.md
+last_updated: "2026-08-28T03:33:28.257Z"
+last_activity: 2026-08-28
+last_activity_desc: Plan 163.1-02 installed the pending composition-gap ledger
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 126
-  completed_plans: 116
+  completed_plans: 117
   percent: 88
 current_plan: 2
 ---
@@ -24,7 +24,7 @@ current_plan: 2
 
 Phase: 163.1 (close-gap-v21-physical-adopter-composition) — EXECUTING
 Plan: 2 of 10
-Status: Executing Phase 163.1
+Status: Ready to execute
 Last activity: 2026-08-28 — Plan 163.1-02 installed the pending composition-gap ledger
 
 ## Active Objective
@@ -54,6 +54,7 @@ substitution, or every-iPhone coverage.
 
 - TODO-002 remains open: a validated sanitized adopter handoff is required before adopter binding,
   physical promotion, evidence publication, or support promotion.
+
 - Signed-device source-bound execution remains required after the handoff validates; fixture and
   simulator evidence cannot satisfy COMPOSE-06.
 
@@ -233,6 +234,8 @@ substitution, or every-iPhone coverage.
 - [Phase ?]: Public physical support remains one first-adopter flow on one recorded iOS runtime line with Android, background, generic-storage, generic-sync, multiple-island, simulator, and every-iPhone non-claims.
 - [Phase ?]: Plan 14 retained standard proof is the sole physical-device authority; Plan 15 performs only non-Xcode current-tree reconciliation.
 - [Phase ?]: Compiled production parser/join regressions replace the Xcode-dependent advisory shell gate and remain non-promoting.
+- [Phase ?]: The historical 36/36 ledger remains phase-local completion; COMPOSE-01 through COMPOSE-06 own the audit-proven integration gaps.
+- [Phase ?]: Only a validated TODO-002 handoff plus a source-bound signed-device run may promote physical or support truth.
 
 ## Deferred Items
 
@@ -261,9 +264,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-28T02:31:14.475Z
-**Stopped at:** Phase 163.1 context gathered
-**Resume file:** .planning/phases/163.1-close-gap-v21-physical-adopter-composition/163.1-CONTEXT.md
+**Last session:** 2026-08-28T03:33:28.228Z
+**Stopped at:** Completed 163.1-02-PLAN.md
+**Resume file:** 163.1-01-PLAN.md
 
 ## Performance Metrics
 
@@ -355,6 +358,7 @@ this milestone reset.
 | Phase 162 P13 | 10m | 2 tasks | 5 files |
 | Phase 162 P14 | closeout continuation | 3 tasks | 5 files |
 | Phase 162 P15 | 14m | 2 tasks | 5 files |
+| Phase 163.1-close-gap-v21-physical-adopter-composition P02 | 10m | 1 tasks | 9 files |
 
 ## Accumulated Context
 
