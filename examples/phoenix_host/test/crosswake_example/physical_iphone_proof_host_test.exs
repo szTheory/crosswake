@@ -189,14 +189,11 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
 
     Process.put({PhysicalIphoneProofHost, :physical_run}, run)
 
-    assert report =
+    assert {:error, :unavailable} =
              PhysicalIphoneProofHost.backend_report(%{
                schema_version: 1,
                device_class: :physical_iphone
              })
-
-    refute report =~ run.nonce
-    refute report =~ run.mutation_id
 
     assert Repo.aggregate(ReviewEvent, :count, :id) == 0
     refute Process.get({PhysicalIphoneProofHost, :physical_run})
