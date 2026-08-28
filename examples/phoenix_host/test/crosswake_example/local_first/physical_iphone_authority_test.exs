@@ -4,6 +4,7 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityTest do
   import Phoenix.ConnTest, only: [build_conn: 0]
 
   alias CrosswakeExample.LocalFirst.ReviewEvent
+  alias CrosswakeExample.LocalFirst.{PhysicalIphoneAuthority, PhysicalIphoneRunProvenance}
   alias CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityFixture
   alias CrosswakeExample.Repo
 
@@ -50,6 +51,25 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityTest do
 
     assert %ReviewEvent{free_form_answer: "neutral-answer", scope_ref: ^scope} =
              Repo.get_by(ReviewEvent, client_mutation_id: event["client_mutation_id"])
+  end
+
+  test "prepared case cannot pass verification before a correlated device result" do
+    assert {:ok, run} = PhysicalIphoneRunProvenance.start()
+    assert :ok = PhysicalIphoneRunProvenance.claim(run.nonce, run.mutation_id)
+
+    assert {:ok, :prepared} = PhysicalIphoneAuthority.prepare_case(run, :rejection)
+    assert {:error, :unavailable} = PhysicalIphoneAuthority.verify_case(run, :rejection)
+
+    assert :ok =
+             PhysicalIphoneAuthority.observe_device_result(
+               %{"physical_proof_nonce" => run.nonce, "client_mutation_id" => run.mutation_id},
+               :rejected
+             )
+
+    assert {:ok, :passed} = PhysicalIphoneAuthority.verify_case(run, :rejection)
+    assert {:error, :unavailable} = PhysicalIphoneAuthority.verify_case(run, :rejection)
+
+    assert :ok = PhysicalIphoneRunProvenance.cleanup(run)
   end
 end
 
