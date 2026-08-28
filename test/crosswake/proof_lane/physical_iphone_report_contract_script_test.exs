@@ -30,6 +30,7 @@ defmodule Crosswake.ProofLane.PhysicalIphoneReportContractScriptTest do
     {output, status} = run_contract(envelope(:device_local, "unavailable"))
 
     assert status == 0
+
     assert Jason.decode!(output) == %{
              "outcome" => "passed",
              "scope" => "advisory",
@@ -43,17 +44,23 @@ defmodule Crosswake.ProofLane.PhysicalIphoneReportContractScriptTest do
 
     assert {:ok, device_entries} = PhysicalIphone.parse_report(device, :device_local)
     assert {:ok, backend_entries} = PhysicalIphone.parse_report(backend, :backend_authority)
+
     assert {:ok, %{outcome: "passed"}} =
              PhysicalIphone.join_report_entries(device_entries, backend_entries)
 
     assert {:error, "PI-REPORT-OWNER"} = PhysicalIphone.parse_report(device, :backend_authority)
+
     assert {:ok, unavailable_entries} =
-             PhysicalIphone.parse_report(Jason.encode!(envelope(:device_local, "unavailable")), :device_local)
+             PhysicalIphone.parse_report(
+               Jason.encode!(envelope(:device_local, "unavailable")),
+               :device_local
+             )
 
     assert {:error, "PI-REPORT-COMPLETE"} =
              PhysicalIphone.join_report_entries(unavailable_entries, backend_entries)
 
-    assert {:error, "PI-REPORT-ENVELOPE"} = PhysicalIphone.parse_report("malformed", :device_local)
+    assert {:error, "PI-REPORT-ENVELOPE"} =
+             PhysicalIphone.parse_report("malformed", :device_local)
 
     assert {:error, "PI-REPORT-OWNER"} =
              PhysicalIphone.parse_report(
@@ -91,7 +98,7 @@ defmodule Crosswake.ProofLane.PhysicalIphoneReportContractScriptTest do
 
   defp envelope(owner, outcome) do
     %{
-      "schema_version" => 1,
+      "schema_version" => Crosswake.ProofLane.PhysicalIphoneContract.schema_version(),
       "device_class" => "physical_iphone",
       "assertions" =>
         Crosswake.ProofLane.PhysicalIphoneContract.assertions()
