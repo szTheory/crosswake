@@ -108,13 +108,21 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
   end
 
   test "backend producer fails closed without the device-created replay effect" do
-    contract = %{schema_version: 1, device_class: :physical_iphone}
+    contract = %{
+      schema_version: PhysicalIphoneContract.schema_version(),
+      device_class: :physical_iphone
+    }
+
     assert {:error, :unavailable} = PhysicalIphoneAuthority.report(contract)
     assert Repo.aggregate(ReviewEvent, :count, :id) == 0
   end
 
   test "backend report clears the process-local run after an unavailable result" do
-    contract = %{schema_version: 1, device_class: :physical_iphone}
+    contract = %{
+      schema_version: PhysicalIphoneContract.schema_version(),
+      device_class: :physical_iphone
+    }
+
     assert {:ok, run} = PhysicalIphoneRunProvenance.start()
     Process.put({PhysicalIphoneProofHost, :physical_run}, run)
 
@@ -151,7 +159,10 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
 
     assert {:error, :unavailable} =
              PhysicalIphoneAuthority.report(
-               %{schema_version: 1, device_class: :physical_iphone},
+               %{
+                 schema_version: PhysicalIphoneContract.schema_version(),
+                 device_class: :physical_iphone
+               },
                run
              )
 
@@ -170,7 +181,10 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
 
     assert {:error, :unavailable} =
              PhysicalIphoneAuthority.report(
-               %{schema_version: 1, device_class: :physical_iphone},
+               %{
+                 schema_version: PhysicalIphoneContract.schema_version(),
+                 device_class: :physical_iphone
+               },
                run
              )
 
@@ -191,7 +205,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
 
     assert {:error, :unavailable} =
              PhysicalIphoneProofHost.backend_report(%{
-               schema_version: 1,
+               schema_version: PhysicalIphoneContract.schema_version(),
                device_class: :physical_iphone
              })
 
@@ -211,7 +225,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
     input =
       PhysicalIphoneProofHost.evidence_input(%{
         outcome: "passed",
-        schema_version: 1,
+        schema_version: PhysicalIphoneContract.schema_version(),
         device_class: "physical_iphone",
         assertions: assertions
       })

@@ -12,10 +12,12 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityTest do
     assert {:ok, report} = PhysicalIphoneAuthorityFixture.run()
 
     assert %{
-             "schema_version" => 1,
+             "schema_version" => schema_version,
              "device_class" => "physical_iphone",
              "assertions" => assertions
            } = report
+
+    assert schema_version == Crosswake.ProofLane.PhysicalIphoneContract.schema_version()
 
     assert assertions ==
              Crosswake.ProofLane.PhysicalIphoneContract.assertions()
@@ -87,9 +89,12 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityFixture do
   @current_scope "v1.fixture_alpha_scope_001"
   @other_scope "v1.fixture_beta_scope_0002"
   @backend_ids [
-    "PI-LOGOUT-ACCOUNT-FENCE",
-    "PI-ENTRY-DISABLEMENT",
-    "PI-REPLAY-DISABLEMENT",
+    "PI-RECOVERY-REJECTION-AUTHORITY",
+    "PI-RECOVERY-CONFLICT-AUTHORITY",
+    "PI-LOGOUT-FENCE-AUTHORITY",
+    "PI-ACCOUNT-SWITCH-FENCE-AUTHORITY",
+    "PI-ENTRY-DISABLEMENT-AUTHORITY",
+    "PI-REPLAY-DISABLEMENT-AUTHORITY",
     "PI-EXACTLY-ONCE-EMPTY-OUTBOX"
   ]
 
@@ -113,7 +118,7 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityFixture do
          %{retained_count: replay, blocked: true} when replay > 0 <- replay_disablement() do
       {:ok,
        %{
-         "schema_version" => 1,
+         "schema_version" => Crosswake.ProofLane.PhysicalIphoneContract.schema_version(),
          "device_class" => "physical_iphone",
          "assertions" => Enum.map(@backend_ids, &%{"id" => &1, "outcome" => "passed"})
        }}
