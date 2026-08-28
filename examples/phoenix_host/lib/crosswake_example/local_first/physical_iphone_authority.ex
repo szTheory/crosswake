@@ -3,16 +3,27 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
 
   use Phoenix.Controller, formats: [:json]
 
+  alias Crosswake.ProofLane.PhysicalIphoneContract
   alias CrosswakeExample.LocalFirst.{PhysicalIphoneRunProvenance, ReviewEvent}
   alias CrosswakeExample.Repo
 
   @backend_ids [
-    "PI-LOGOUT-ACCOUNT-FENCE",
-    "PI-ENTRY-DISABLEMENT",
-    "PI-REPLAY-DISABLEMENT",
+    "PI-RECOVERY-REJECTION-AUTHORITY",
+    "PI-RECOVERY-CONFLICT-AUTHORITY",
+    "PI-LOGOUT-FENCE-AUTHORITY",
+    "PI-ACCOUNT-SWITCH-FENCE-AUTHORITY",
+    "PI-ENTRY-DISABLEMENT-AUTHORITY",
+    "PI-REPLAY-DISABLEMENT-AUTHORITY",
     "PI-EXACTLY-ONCE-EMPTY-OUTBOX"
   ]
-  @case_refs [:rejection, :conflict, :logout, :account_switch, :entry_disablement, :replay_disablement]
+  @case_refs [
+    :rejection,
+    :conflict,
+    :logout,
+    :account_switch,
+    :entry_disablement,
+    :replay_disablement
+  ]
   @case_table __MODULE__.Cases
 
   @spec prepare_case(map(), atom()) :: {:ok, :prepared} | {:error, :unavailable}
@@ -20,7 +31,10 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
       when is_binary(nonce) and is_binary(mutation_id) and case_ref in @case_refs do
     with true <- PhysicalIphoneRunProvenance.active?(nonce, mutation_id),
          true <-
-           :ets.insert_new(case_table(), {{nonce, case_ref}, %{mutation_id: mutation_id, case_ref: case_ref}}) do
+           :ets.insert_new(
+             case_table(),
+             {{nonce, case_ref}, %{mutation_id: mutation_id, case_ref: case_ref}}
+           ) do
       {:ok, :prepared}
     else
       _ -> {:error, :unavailable}
@@ -38,7 +52,9 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
 
     case :ets.take(case_table(), key) do
       [{^key, %{mutation_id: ^mutation_id, case_ref: ^case_ref, outcome: outcome}}] ->
-        if outcome in expected_outcomes(case_ref), do: {:ok, :passed}, else: {:error, :unavailable}
+        if outcome in expected_outcomes(case_ref),
+          do: {:ok, :passed},
+          else: {:error, :unavailable}
 
       [{^key, entry}] ->
         true = :ets.insert(case_table(), {key, entry})
@@ -56,7 +72,10 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
   # Called only by SyncController after a request has passed through normal
   # Phoenix replay admission. A fixture route cannot call this recorder.
   @doc false
-  def observe_device_result(%{"physical_proof_nonce" => nonce, "client_mutation_id" => mutation_id}, outcome)
+  def observe_device_result(
+        %{"physical_proof_nonce" => nonce, "client_mutation_id" => mutation_id},
+        outcome
+      )
       when is_binary(nonce) and is_binary(mutation_id) do
     Enum.each(@case_refs, fn case_ref ->
       key = {nonce, case_ref}
@@ -106,7 +125,10 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
     end
   end
 
-  defp fixture_case(%{"nonce" => nonce, "mutation_id" => mutation_id, "case_ref" => case_ref}, fun)
+  defp fixture_case(
+         %{"nonce" => nonce, "mutation_id" => mutation_id, "case_ref" => case_ref},
+         fun
+       )
        when is_binary(nonce) and is_binary(mutation_id) do
     with {:ok, case_ref} <- case_ref(case_ref) do
       fun.(%{nonce: nonce, mutation_id: mutation_id}, case_ref)
@@ -139,12 +161,13 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
           ArgumentError -> @case_table
         end
 
-      _ -> @case_table
+      _ ->
+        @case_table
     end
   end
 
   @spec report(map()) :: binary() | {:error, :unavailable}
-  def report(%{schema_version: 1, device_class: :physical_iphone}, %{
+  def report(%{schema_version: schema_version, device_class: :physical_iphone}, %{
         nonce: nonce,
         mutation_id: mutation_id
       })
@@ -153,10 +176,15 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
     # below. Keep the producer silent and return only its closed report.
     Logger.disable(self())
 
-    with true <- PhysicalIphoneRunProvenance.active?(nonce, mutation_id),
-         true <- Enum.all?(@case_refs, &(verify_case(%{nonce: nonce, mutation_id: mutation_id}, &1) == {:ok, :passed})) do
+    with true <- schema_version == PhysicalIphoneContract.schema_version(),
+         true <- PhysicalIphoneRunProvenance.active?(nonce, mutation_id),
+         true <-
+           Enum.all?(
+             @case_refs,
+             &(verify_case(%{nonce: nonce, mutation_id: mutation_id}, &1) == {:ok, :passed})
+           ) do
       Jason.encode!(%{
-        "schema_version" => 1,
+        "schema_version" => schema_version,
         "device_class" => "physical_iphone",
         "assertions" => Enum.map(@backend_ids, &%{"id" => &1, "outcome" => "passed"})
       })
@@ -174,7 +202,8 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
   def report(_contract, _run), do: {:error, :unavailable}
 
   # Kept for the ordinary fixture tests; a physical proof must use report/2.
-  def report(%{schema_version: 1, device_class: :physical_iphone}), do: {:error, :unavailable}
+  def report(%{schema_version: _schema_version, device_class: :physical_iphone}),
+    do: {:error, :unavailable}
 
   def report(_), do: {:error, :unavailable}
 
@@ -188,5 +217,4 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthority do
   rescue
     _ -> :ok
   end
-
 end

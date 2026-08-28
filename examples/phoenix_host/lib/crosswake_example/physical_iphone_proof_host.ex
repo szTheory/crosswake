@@ -65,8 +65,9 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   # selected signed physical destination. Its report travels as a kept XCTest
   # attachment inside the private result bundle; the whole run root is removed
   # before the validated bytes leave this callback.
-  def device_report(%{schema_version: 1, device_class: :physical_iphone}) do
-    with {:ok, handoff} <- current_adopter_handoff(),
+  def device_report(%{schema_version: schema_version, device_class: :physical_iphone}) do
+    with true <- schema_version == PhysicalIphoneContract.schema_version(),
+         {:ok, handoff} <- current_adopter_handoff(),
          {:ok, destination} <- selected_physical_destination(),
          {:ok, team} <- development_team(),
          true <- codesigning_identity_ready?(),
@@ -119,11 +120,12 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   # sole validator and promoter, and the Mix task remains the sole caller.
   def evidence_input(%{
         outcome: "passed",
-        schema_version: 1,
+        schema_version: schema_version,
         device_class: "physical_iphone",
         assertions: assertions
       }) do
-    with runtime when is_binary(runtime) <- Process.delete(@runtime_key),
+    with true <- schema_version == PhysicalIphoneContract.schema_version(),
+         runtime when is_binary(runtime) <- Process.delete(@runtime_key),
          {:ok, runtime} <- PhysicalIphoneContract.ios_runtime_line(runtime),
          {:ok, complete_assertions} <- complete_assertions(assertions),
          {:ok, version} <- crosswake_version(),
@@ -617,11 +619,12 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     with {:ok, bytes} <- File.read(path),
          {:ok,
           %{
-            "schema_version" => 1,
+            "schema_version" => schema_version,
             "device_class" => "physical_iphone",
             "assertions" => assertions
           }}
-         when is_list(assertions) <- Jason.decode(bytes) do
+         when is_list(assertions) <- Jason.decode(bytes),
+         true <- schema_version == PhysicalIphoneContract.schema_version() do
       [bytes]
     else
       _ -> []
