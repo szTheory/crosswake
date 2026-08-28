@@ -3,29 +3,29 @@ gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 163.1
-current_phase_name: "Close gap: v21 physical adopter composition"
+current_phase_name: close-gap-v21-physical-adopter-composition
 status: executing
-stopped_at: Phase 163.1 context gathered
-last_updated: "2026-08-28T03:18:27.351Z"
+stopped_at: Plan 163.1-02 audit-gap ledger in progress
+last_updated: "2026-08-28T03:29:01.216Z"
 last_activity: 2026-08-27
-last_activity_desc: Phase 163.1 inserted; run $gsd-plan-phase 163.1
+last_activity_desc: Phase 163.1 execution started
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 126
   completed_plans: 116
   percent: 88
-current_plan: 1
+current_plan: 2
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 163.1 — Close gap: v21 physical adopter composition
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-08-27 — Phase 163.1 inserted; run $gsd-plan-phase 163.1
+Phase: 163.1 (close-gap-v21-physical-adopter-composition) — EXECUTING
+Plan: 2 of 10
+Status: Executing Phase 163.1
+Last activity: 2026-08-28 — Plan 163.1-02 installed the pending composition-gap ledger
 
 ## Active Objective
 
@@ -44,14 +44,18 @@ framework launch.
 
 ## Next Action
 
-Phase 162 independent verification passed against the committed recovery topology and current
-truth. Stop here and use `$gsd-progress` for the next explicit routing decision. The evidence does
-not widen to Android, background replay or sync, generic storage or sync, multiple islands,
-simulator substitution, or every-iPhone coverage.
+Execute the Phase 163.1 composition plans against the audit-derived COMPOSE ledger. Fixture and
+simulator results remain advisory and non-promoting; no physical or support claim advances until
+validated TODO-002 handoff input and a source-bound signed-device run both pass. The work does not
+widen to Android, background replay or sync, generic storage or sync, multiple islands, simulator
+substitution, or every-iPhone coverage.
 
 ## Blockers
 
-None. All v21 phase contracts and automated verification gates are complete.
+- TODO-002 remains open: a validated sanitized adopter handoff is required before adopter binding,
+  physical promotion, evidence publication, or support promotion.
+- Signed-device source-bound execution remains required after the handoff validates; fixture and
+  simulator evidence cannot satisfy COMPOSE-06.
 
 ## Deferred Items
 

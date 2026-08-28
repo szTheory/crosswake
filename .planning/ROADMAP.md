@@ -630,3 +630,49 @@ Plans:
 
 ---
 *Roadmap reset: 2026-07-30*
+
+### Phase 163.1: Close gap: v21 physical adopter composition (INSERTED)
+
+**Goal:** Close only the audit-demonstrated v21 composition defects by routing one validated,
+sanitized First B2C Adopter handoff through the delivered iOS shell, existing PackProvider/PackStore
+seam, scoped backend-authoritative replay, device-caused lifecycle recovery, and a privacy-safe
+source-bound physical evidence transaction; promotion remains blocked until TODO-002 validates and a
+signed physical iPhone is available.
+**Requirements**: COMPOSE-01, COMPOSE-02, COMPOSE-03, COMPOSE-04, COMPOSE-05, COMPOSE-06
+**Depends on:** Phase 163
+**Plans:** 10 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 163.1-02-PLAN.md (Wave 1) — create the audit gap ledger and synchronize blocked support truth
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 163.1-01-PLAN.md (Wave 2, first production tracer) — trace the current handoff/topology through preflight and the closed host-to-iOS configuration boundary
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 163.1-03-PLAN.md (Wave 3) — classify only the approved physical marker and reference-host AIFF fixture
+- [ ] 163.1-04-PLAN.md (Wave 3) — converge physical media on the existing PackProvider/PackStore seam
+- [ ] 163.1-06-PLAN.md (Wave 3) — make scoped replay atomic and backend evidence device-caused
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 163.1-05-PLAN.md (Wave 4) — compose the eligible physical study leaf through the delivered iOS shell
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 163.1-07-PLAN.md (Wave 5) — drive recovery, account, and disablement cases from the physical app
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
+- [ ] 163.1-08-PLAN.md (Wave 6) — seal exact evidence, run source-bound physical proof, and record fresh validation
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
+- [ ] 163.1-09-PLAN.md (Wave 7) — rerun outstanding Nyquist validations and the milestone audit
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
+- [ ] 163.1-10-PLAN.md (Wave 8) — reconcile final requirement, policy, capability, support, and guide truth

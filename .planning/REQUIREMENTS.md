@@ -144,6 +144,32 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
   replay lifecycle while retaining only redacted contract evidence; a connected signed iPhone is
   the sole remaining human setup gate.
 
+### COMPOSE — Physical adopter composition closure
+
+- [ ] **COMPOSE-01:** A current host-owned sanitized handoff validates through the closed route
+  inventory and compiles a ready navigation topology before adopter binding, physical execution,
+  evidence publication, or support promotion; fixture and simulator output remain non-promoting.
+
+- [ ] **COMPOSE-02:** The eligible physical host composes the delivered bounded iOS navigation shell
+  and its coordinator with a host-supplied study leaf, preserving typed transitions, retained stacks,
+  marker, and live inset contracts without a second route authority.
+
+- [ ] **COMPOSE-03:** The physical host reaches offline-media availability only through one
+  host-private `PackProvider` and fresh `PackStore` reconciliation, preserving verified atomic
+  manifest/image/audio install, relaunch, rollback, and revocation truth.
+
+- [ ] **COMPOSE-04:** Device-caused rejection, conflict, logout, account-switch, entry-disablement,
+  and replay-disablement cases traverse the normal iPhone-to-Phoenix path, preserve scoped queued
+  work, and pair device-observed recovery with independent backend authority checks.
+
+- [ ] **COMPOSE-05:** Exact approved physical-marker and reference-host media routing remains
+  privacy-safe and fail-closed; only redacted device/backend evidence may join, with raw handoff,
+  payload, account, scope, media, endpoint, and device details excluded.
+
+- [ ] **COMPOSE-06:** Closure requires fresh composed-target automation, a source-bound physical
+  run against validated TODO-002 input, outstanding Nyquist validation, and a fresh milestone audit;
+  fixture or simulator evidence cannot substitute for the signed-device execution.
+
 ## Out of Scope
 
 | Surface | Reason |
@@ -201,10 +227,18 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 | ALPHA-03 | Phase 163 | Complete |
 | ALPHA-04 | Phase 163 | Complete |
 | DEVICE-07 | Phase 162 | Complete |
+| COMPOSE-01 | Phase 163.1 | Pending |
+| COMPOSE-02 | Phase 163.1 | Pending |
+| COMPOSE-03 | Phase 163.1 | Pending |
+| COMPOSE-04 | Phase 163.1 | Pending |
+| COMPOSE-05 | Phase 163.1 | Pending |
+| COMPOSE-06 | Phase 163.1 | Pending |
 
-**Coverage:** 36/36 requirements mapped. Stable ALPHA identifiers remain limited to the anonymous
+**Coverage:** The prior 36/36 phase-local requirements remain mapped and complete. Six audit-derived
+COMPOSE requirements map to Phase 163.1 as Pending; they close cross-phase composition gaps and do
+not reopen or reassign the prior ledger. Stable ALPHA identifiers remain limited to the anonymous
 First B2C Adopter reference-host integration slice.
 
 ---
 *Requirements defined: 2026-07-30*
-*Last updated: 2026-08-08 after Phase 163 addition*
+*Last updated: 2026-08-28 after Phase 163.1 composition-gap ledger addition*

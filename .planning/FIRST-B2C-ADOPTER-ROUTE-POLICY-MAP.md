@@ -96,6 +96,15 @@ The shell contract must expose live `--cw-safe-area-top`, `--cw-safe-area-right`
 value. It must also set a synchronous declarative native-shell marker on the document root. These
 signals contain no identity, route payload, or device identifier.
 
+### Concrete-handoff execution status
+
+The repository has no validated TODO-002 handoff bundle, so current host composition remains
+`unknown_blocking` for adopter binding, physical promotion, evidence publication, and support
+promotion. A reference fixture may exercise deterministic regression seams only; fixture and
+simulator output are advisory and cannot promote the first-adopter claim. When sanitized input is
+available, the host must validate the current inventory, compile a `ready` topology, and repeat that
+check in physical preflight before any device or evidence side effect.
+
 ### Concrete-route promotion invariants
 
 `known_default` never supplies a concrete-route safety field. A row can be eligible only after
@@ -157,6 +166,10 @@ redacted artifact.
 
 Passing this test proves one adopter flow on one iOS runtime line. It does not prove generic sync,
 background sync, generic pack storage, multiple islands, Android, or all-device support.
+
+The exit test is pending until TODO-002 supplies validated sanitized input and a source-bound run
+passes on a signed physical iPhone. Reference-fixture and simulator results remain non-promoting;
+they cannot satisfy the physical-adopter exit condition.
 
 ## One-day route-inventory time box
 
