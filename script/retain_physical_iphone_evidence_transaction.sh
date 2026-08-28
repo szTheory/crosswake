@@ -5,7 +5,7 @@ set -euo pipefail
 # closed outcomes; host facts and the private canonical-source term never leave
 # its mode-0700 lifecycle root.
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DEST_REL=".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone"
+DEST_REL=".planning/workstreams/first-b2c-adopter-readiness/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone"
 DEST="$ROOT/$DEST_REL"
 EVIDENCE_PARENT="$(dirname "$DEST")"
 LEDGER_SUBJECT='chore(162-16): consume corrected-provenance run'
@@ -21,7 +21,7 @@ fail() { printf '%s\n' '{"outcome":"blocked","rule_id":"PI-TRANSACTION"}'; exit 
 [ -L "$EVIDENCE_PARENT" ] && fail
 mkdir -p "$EVIDENCE_PARENT" || fail
 PARENT_REAL="$(cd "$EVIDENCE_PARENT" && pwd -P)" || fail
-[ "$PARENT_REAL" = "$ROOT/.planning/phases/162-physical-iphone-adoption-proof/evidence" ] || fail
+[ "$PARENT_REAL" = "$ROOT/.planning/workstreams/first-b2c-adopter-readiness/phases/162-physical-iphone-adoption-proof/evidence" ] || fail
 [ ! -e "$DEST" ] || fail
 ! git -C "$ROOT" log --format=%s | grep -Fxq "$LEDGER_SUBJECT" || fail
 
@@ -95,7 +95,7 @@ else
   mix run -e 'case Crosswake.ProofLane.Evidence.scan_stage(System.argv() |> hd()) do :ok -> :ok; _ -> System.halt(2) end' -- "$DEST" || fail
 fi
 git -C "$ROOT" add -- "$DEST/proof-lane-evidence.json" "$DEST/.complete"
-git -C "$ROOT" diff --cached --name-only | sort | cmp -s - <(printf '%s\n%s\n' ".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete" ".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/proof-lane-evidence.json") || fail
+git -C "$ROOT" diff --cached --name-only | sort | cmp -s - <(printf '%s\n%s\n' ".planning/workstreams/first-b2c-adopter-readiness/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete" ".planning/workstreams/first-b2c-adopter-readiness/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/proof-lane-evidence.json") || fail
 git -C "$ROOT" commit -m "$EVIDENCE_SUBJECT" >/dev/null
 EVIDENCE_COMMIT="$(git -C "$ROOT" rev-parse HEAD)"
 LEDGER_COMMIT="$(git -C "$ROOT" rev-parse "$EVIDENCE_COMMIT^")"

@@ -52,7 +52,9 @@ defmodule Crosswake.ProofLane.PhysicalIphoneEvidenceTransactionTest do
                  "commit",
                  "-qm",
                  "baseline"
-               ], cd: root)
+               ],
+               cd: root
+             )
 
     {code_commit, 0} = System.cmd("git", ["rev-parse", "HEAD"], cd: root)
     code_commit = String.trim(code_commit)
@@ -60,7 +62,7 @@ defmodule Crosswake.ProofLane.PhysicalIphoneEvidenceTransactionTest do
     evidence_dir =
       Path.join(
         root,
-        ".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone"
+        ".planning/workstreams/first-b2c-adopter-readiness/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone"
       )
 
     File.mkdir_p!(Path.join(root, "fake"))

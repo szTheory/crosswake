@@ -27,7 +27,16 @@ team of one out of framework-debugging purgatory.
 
 **Archive:** `.planning/milestones/v19.0-ROADMAP.md`, `.planning/milestones/v19.0-REQUIREMENTS.md`, and `.planning/milestones/v19.0-MILESTONE-AUDIT.md`.
 
-## Current Milestone: v21.0 First B2C Adopter Readiness
+## Active Workstreams
+
+### v22.0 Quality Ratchet & Release Readiness (active)
+
+**Goal:** Make Crosswake safe to change, inexpensive to verify, pleasant to review, and ready for
+an exact approval-gated 0.2.1 release candidate without reopening product or mobile breadth.
+
+**Planning:** `.planning/workstreams/quality-ratchet-release/`
+
+### v21.0 First B2C Adopter Readiness (parked)
 
 **Goal:** Prove one real Phoenix application's offline study flow on one physical iPhone without
 widening Crosswake into a generic sync, storage, native-control, or multi-platform framework.
@@ -56,10 +65,13 @@ separately funded business-line mandate. Durable reasoning is in
 `.planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md`.
 
 ## Current State
-- **v21.0 Adopter Readiness — ALL PHASES COMPLETE / MILESTONE AUDIT PENDING 2026-08-27.** The
-  bounded reference host and retained physical-iPhone proof are independently verified. The support
-  claim remains one adopter flow on one iOS runtime line; work stays stopped except for defects
-  demonstrated by Phase 162 evidence.
+- **v22.0 Quality Ratchet & Release Readiness — READY TO PLAN 2026-08-28.** Phases 164-168 cover
+  dependency security, authoritative and efficient CI, clean-checkout engineering quality,
+  documentation/PR reconciliation, and exact approval-gated 0.2.1 release readiness.
+- **v21.0 Adopter Readiness — PARKED AT PHASE 163.1 2026-08-28.** Plans 163.1-08 through
+  163.1-10 remain blocked on the validated private adopter handoff and source-bound physical-device
+  authority. The completed substrate and exact resume context live in
+  `.planning/workstreams/first-b2c-adopter-readiness/`; no adopter facts are inferred.
 - **v21.0 Phase 163 First B2C Adopter Reference Host Integration — COMPLETE 2026-08-27.** The
   generated Phoenix/iOS host, exact foreground learning bundle, scoped replay authority, and
   physical report/evidence producers are verified against the current tree.
