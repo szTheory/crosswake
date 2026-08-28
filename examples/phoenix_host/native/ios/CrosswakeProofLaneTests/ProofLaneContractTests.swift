@@ -3,6 +3,29 @@ import CryptoKit
 @testable import CrosswakeProofLane
 
 final class ProofLaneContractTests: XCTestCase {
+  func testHostLearningBundleProviderRequiresFreshCompleteBundleReconciliation() async throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+
+    let provider = HostLearningBundleProvider(storageRoot: root)
+    let requirement = HostLearningBundleProvider.requirement
+
+    XCTAssertEqual(await provider.status(for: requirement), .notInstalled)
+    guard case .installed = await provider.install(requirement) else {
+      return XCTFail("expected complete bundle installation")
+    }
+    guard case .installed = await provider.status(for: requirement) else {
+      return XCTFail("expected fresh installed status")
+    }
+
+    let manifest = root.appendingPathComponent("learning-bundle/manifest.json")
+    try Data("corrupt".utf8).write(to: manifest)
+    XCTAssertEqual(await provider.status(for: requirement), .failure(.digestMismatch))
+
+    XCTAssertEqual(await provider.invalidate(requirement), .notInstalled)
+    XCTAssertEqual(await HostLearningBundleProvider(storageRoot: root).status(for: requirement), .notInstalled)
+  }
+
   func testNavigationConfigurationAcceptsOnlyTheCurrentNonceBoundReadyTopology() throws {
     let topology = """
     {"topology_schema_version":"1.0.0","manifest_schema_version":"1.0.0","status":"ready","entries":[{"route_id":"route-0123456789abcdef","root_tab_id":"tab-0123456789abcdef","presentation":"root","deep_link_posture":"allow","restoration_posture":"allow"}]}
