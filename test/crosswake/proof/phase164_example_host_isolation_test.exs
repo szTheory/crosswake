@@ -108,6 +108,8 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
     {:ok, _} = Application.ensure_all_started(:ecto_sqlite3)
     {:owned, repo_pid, repo_token} = ExampleHost.start_owned!(repo)
 
+    Logger.disable(self())
+
     result =
       apply(Ecto.Adapters.SQL, :query!, [repo, "PRAGMA journal_mode=WAL", [], [log: false]])
     assert result.rows == [["wal"]]
@@ -125,6 +127,8 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
       [],
       [log: false]
     ])
+
+    Logger.enable(self())
 
     assert File.regular?(database)
     assert File.regular?(wal)

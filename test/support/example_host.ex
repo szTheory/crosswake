@@ -156,7 +156,8 @@ defmodule Crosswake.TestSupport.ExampleHost do
 
   @doc false
   def own_file!(path) do
-    register_cleanup(fn -> File.rm(path) end)
+    owned_paths = [path, path <> "-wal", path <> "-shm"]
+    register_cleanup(fn -> Enum.each(owned_paths, &File.rm/1) end)
   end
 
   @doc false
