@@ -22,7 +22,45 @@ class OutcomeProblem:
 
 
 def evaluate_results(results, required_leaves, irrelevant_leaves):
-    raise NotImplementedError("closed aggregator result policy is not implemented")
+    required = set(required_leaves)
+    irrelevant = set(irrelevant_leaves)
+    declared = set(results)
+
+    unexpected = sorted(declared - required)
+    if unexpected:
+        return Evaluation("fail", "unexpected")
+
+    if irrelevant - required:
+        return Evaluation("fail", "invalid_irrelevance")
+
+    saw_irrelevant_skip = False
+
+    for leaf in sorted(required):
+        if leaf not in results:
+            return Evaluation("fail", "missing")
+
+        value = results[leaf]
+        if value == "success":
+            continue
+        if value == "skipped" and leaf in irrelevant:
+            saw_irrelevant_skip = True
+            continue
+        if value == "":
+            return Evaluation("fail", "empty")
+        if value in {
+            "failure",
+            "cancelled",
+            "skipped",
+            "timed_out",
+            "action_required",
+            "stale",
+        }:
+            return Evaluation("fail", value)
+        return Evaluation("fail", "unknown")
+
+    if saw_irrelevant_skip:
+        return Evaluation("neutral", "irrelevant_skipped")
+    return Evaluation("pass", "success")
 
 
 def expected_workflow_outcomes():
@@ -42,7 +80,49 @@ def expected_workflow_outcomes():
 
 
 def validate_workflow_outcomes(outcomes):
-    return []
+    expected = expected_workflow_outcomes()
+    problems = []
+
+    for name, expected_value in expected.items():
+        if name not in outcomes:
+            problems.append(
+                OutcomeProblem(
+                    "missing_outcome",
+                    name,
+                    "provide every named alls-green step outcome to --assert-outcomes",
+                )
+            )
+            continue
+
+        actual = outcomes[name]
+        if not isinstance(actual, str) or not actual.strip():
+            problems.append(
+                OutcomeProblem(
+                    "empty_outcome",
+                    name,
+                    "capture the step outcome; empty records fail closed",
+                )
+            )
+        elif actual != expected_value:
+            problems.append(
+                OutcomeProblem(
+                    "inverted_outcome",
+                    name,
+                    "expected step outcome '%s', received '%s'"
+                    % (expected_value, actual),
+                )
+            )
+
+    for name in sorted(set(outcomes) - set(expected)):
+        problems.append(
+            OutcomeProblem(
+                "unexpected_outcome",
+                name,
+                "remove undeclared outcome records or add a named policy arm",
+            )
+        )
+
+    return problems
 
 
 class AggregatorResultSemanticsSelfTest(unittest.TestCase):
@@ -82,6 +162,10 @@ class AggregatorResultSemanticsSelfTest(unittest.TestCase):
                 evaluation = evaluate_results(results, {"leaf"}, irrelevant)
                 self.assertEqual(evaluation.disposition, disposition)
                 self.assertEqual(evaluation.classification, classification)
+                print(
+                    "aggregator-policy: case=%s disposition=%s classification=%s"
+                    % (name, evaluation.disposition, evaluation.classification)
+                )
 
     def test_canonical_workflow_outcomes_are_accepted(self):
         self.assertEqual(validate_workflow_outcomes(expected_workflow_outcomes()), [])
@@ -100,6 +184,7 @@ class AggregatorResultSemanticsSelfTest(unittest.TestCase):
                 )
             ],
         )
+        print("aggregator-policy: negative-control=missing_outcome detected=cancelled")
 
     def test_inverted_outcome_negative_control_is_rejected_exactly(self):
         outcomes = expected_workflow_outcomes()
@@ -115,6 +200,7 @@ class AggregatorResultSemanticsSelfTest(unittest.TestCase):
                 )
             ],
         )
+        print("aggregator-policy: negative-control=inverted_outcome detected=failure")
 
     def test_extra_and_empty_outcomes_are_rejected(self):
         outcomes = expected_workflow_outcomes()

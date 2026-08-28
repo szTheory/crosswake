@@ -225,6 +225,39 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
     end
   end
 
+  test "aggregator negative control awaits every closed-policy action outcome" do
+    src = File.read!(@negctl)
+
+    for result_class <- [
+          "success",
+          "failure",
+          "cancelled",
+          "skipped_disallowed",
+          "skipped_irrelevant",
+          "timed_out",
+          "action_required",
+          "stale",
+          "unknown",
+          "empty",
+          "missing"
+        ] do
+      assert String.contains?(src, "id: result_#{result_class}")
+      assert String.contains?(src, "steps.result_#{result_class}.outcome")
+    end
+
+    assert String.contains?(
+             src,
+             ~s(python3 script/check_aggregator_result_semantics.py --assert-outcomes "$OUTCOMES_JSON")
+           )
+
+    assert Regex.scan(~r/^\s+allowed-skips:/m, src) ==
+             [["          allowed-skips:"]]
+
+    for file <- [@negctl, @gate | Enum.map(@siblings, &elem(&1, 0))] do
+      refute File.read!(file) =~ "allowed-failures:"
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # Pure-Elixir structural wiring check (no python/PyYAML — stays hermetic).
   # Scopes to the aggregator's YAML block and returns a list of wiring errors
