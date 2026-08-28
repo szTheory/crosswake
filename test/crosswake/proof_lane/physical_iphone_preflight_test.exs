@@ -9,6 +9,7 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
 
     assert {:ready, contract} =
              PhysicalIphonePreflight.check(
+               adopter_handoff: callback(parent, :adopter_handoff),
                inventory: [eligible_row()],
                config: proof_lane_config(),
                generated_lane: callback(parent, :generated_lane),
@@ -26,6 +27,7 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
 
     assert contract.device_class == :physical_iphone
 
+    assert_receive {:preflight, :adopter_handoff}
     assert_receive {:preflight, :generated_lane}
     assert_receive {:preflight, :destination}
     assert_receive {:preflight, :signing}
@@ -44,6 +46,20 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
 
     assert {:blocked, "PI-PREFLIGHT-INVENTORY"} =
              PhysicalIphonePreflight.check(inventory: [], generated_lane: refute_called)
+  end
+
+  test "a missing or invalid current-run handoff blocks before inventory and every side effect" do
+    refute_called = fn -> flunk("a blocked handoff must not call later callbacks") end
+
+    for handoff <- [nil, fn -> :blocked end, fn -> {:ok, %{source: :fixture}} end] do
+      assert {:blocked, "PI-PREFLIGHT-ADOPTER-HANDOFF"} =
+               PhysicalIphonePreflight.check(
+                 adopter_handoff: handoff,
+                 inventory: [eligible_row()],
+                 config: proof_lane_config(),
+                 generated_lane: refute_called
+               )
+    end
   end
 
   test "readiness reports every safe prerequisite category without echoing host data" do
@@ -142,6 +158,7 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
 
   defp ready_options do
     [
+      adopter_handoff: fn -> {:ok, %{source: :adopter, topology: %{status: :ready}}} end,
       inventory: [eligible_row()],
       config: proof_lane_config(),
       generated_lane: fn -> :ok end,

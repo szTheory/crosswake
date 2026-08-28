@@ -3,6 +3,31 @@ import CryptoKit
 @testable import CrosswakeProofLane
 
 final class ProofLaneContractTests: XCTestCase {
+  func testNavigationConfigurationAcceptsOnlyTheCurrentNonceBoundReadyTopology() throws {
+    let topology = """
+    {"topology_schema_version":"1.0.0","manifest_schema_version":"1.0.0","status":"ready","entries":[{"route_id":"route-0123456789abcdef","root_tab_id":"tab-0123456789abcdef","presentation":"root","deep_link_posture":"allow","restoration_posture":"allow"}]}
+    """
+    let envelope = "{\"schema_version\":1,\"run_binding\":\"current-run\",\"topology\":\(topology)}"
+
+    XCTAssertNotNil(
+      ReferenceHostNavigationConfiguration.decode(
+        envelope: envelope,
+        currentNonce: "current-run",
+        manifestSchemaVersion: "1.0.0"
+      )
+    )
+
+    for invalid in ["", "{}", envelope.replacingOccurrences(of: "current-run", with: "stale-run"), "{\"schema_version\":1,\"run_binding\":\"current-run\",\"topology\":{}}"] {
+      XCTAssertNil(
+        ReferenceHostNavigationConfiguration.decode(
+          envelope: invalid,
+          currentNonce: "current-run",
+          manifestSchemaVersion: "1.0.0"
+        )
+      )
+    }
+  }
+
   func testNavigationRemainsUnavailableWithoutProductionHostObservations() {
     XCTAssertNil(ProofLaneNavigationHostAdapterFactory.make())
     for assertion in ProofLaneNavigationAssertion.allCases {
