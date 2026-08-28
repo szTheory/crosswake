@@ -1,13 +1,13 @@
 {
   "version": "1.0",
-  "timestamp": "2026-08-28T14:38:56.285Z",
+  "timestamp": "2026-08-28T16:11:46.000Z",
   "phase": "163.1",
   "phase_name": "close-gap-v21-physical-adopter-composition",
   "phase_dir": ".planning/phases/163.1-close-gap-v21-physical-adopter-composition",
   "plan": 8,
   "task": 2,
   "total_tasks": 2,
-  "status": "paused",
+  "status": "parked_external_dependency",
   "completed_tasks": [
     {
       "id": 1,
@@ -71,14 +71,7 @@
       "phase": "163.1"
     }
   ],
-  "uncommitted_files": [
-    ".planning/REQUIREMENTS.md",
-    "examples/phoenix_host/native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj",
-    ".planning/debug/",
-    ".planning/phases/163.1-close-gap-v21-physical-adopter-composition/.gitkeep",
-    ".planning/v21.0-MILESTONE-AUDIT.md",
-    "examples/phoenix_host/native/ios/CrosswakeProofLane.xcodeproj/project.xcworkspace/"
-  ],
+  "uncommitted_files": [],
   "next_action": "Confirm a real sanitized adopter handoff exists, place it at the conventional private path, then run $gsd-resume-work. The resumed executor must first validate the handoff and rerun readiness; it must not execute or promote physical evidence unless every check is ready and the fixed evidence destination is absent.",
-  "context_notes": "Phase execution is intentionally paused at Plan 163.1-08 Task 2. Plans 01-07 are complete. Plan 08 evidence schema, transaction contract, and automation-first preflight are committed. Plans 09-10 have not started. No async job or server is running. The ignored .env.local is not an authority source and need not be populated for device or host discovery."
+  "context_notes": "v21 is intentionally parked, not completed or archived, at Plan 163.1-08 Task 2. Plans 01-07 are complete. Plan 08 evidence schema, transaction contract, and automation-first preflight are committed. Plans 09-10 have not started. No async job or server is running. The ignored .env.local is not an authority source and need not be populated for device or host discovery. A separate v22 quality-ratchet workstream may proceed without changing this support gate."
 }

@@ -4,9 +4,9 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 163.1
 current_phase_name: close-gap-v21-physical-adopter-composition
-status: executing
-stopped_at: Completed 163.1-07-PLAN.md
-last_updated: "2026-08-28T13:16:59.678Z"
+status: parked_external_dependency
+stopped_at: Parked at 163.1-08 Task 2 pending real adopter route facts
+last_updated: "2026-08-28T16:11:46.000Z"
 last_activity: 2026-08-28
 last_activity_desc: Plan 163.1-02 installed the pending composition-gap ledger
 progress:
@@ -22,10 +22,10 @@ current_plan: 2
 
 ## Current Position
 
-Phase: 163.1 (close-gap-v21-physical-adopter-composition) — EXECUTING
+Phase: 163.1 (close-gap-v21-physical-adopter-composition) — PARKED
 Plan: 8 of 10
-Status: Ready to execute
-Last activity: 2026-08-28 — Plan 163.1-02 installed the pending composition-gap ledger
+Status: Parked on external product authority
+Last activity: 2026-08-28 — Parked after automation reached the real-adopter handoff gate
 
 ## Active Objective
 
@@ -44,11 +44,11 @@ framework launch.
 
 ## Next Action
 
-Execute the Phase 163.1 composition plans against the audit-derived COMPOSE ledger. Fixture and
-simulator results remain advisory and non-promoting; no physical or support claim advances until
-validated TODO-002 handoff input and a source-bound signed-device run both pass. The work does not
-widen to Android, background replay or sync, generic storage or sync, multiple islands, simulator
-substitution, or every-iPhone coverage.
+Keep v21 resumable without performing more framework work. Resume Phase 163.1 only after real,
+sanitized First B2C Adopter route facts exist and pass the committed handoff validation chain.
+Fixture and simulator results remain advisory and non-promoting; no physical or support claim
+advances until validated TODO-002 input and a source-bound signed-device run both pass. While v21
+is parked, quality work proceeds only in the separate v22 quality-ratchet workstream.
 
 ## Blockers
 

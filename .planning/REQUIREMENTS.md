@@ -79,29 +79,29 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 
 ### NAV — First-adopter iOS navigation shell
 
-- [ ] **NAV-01:** A compiled first-adopter topology declares stable root-tab IDs, root routes,
+- [x] **NAV-01:** A compiled first-adopter topology declares stable root-tab IDs, root routes,
   pushed-detail presentation, and parent relationships without transferring leaf-route ownership
   away from Phoenix, offline islands, or native screens.
 
-- [ ] **NAV-02:** The host-owned iOS shell renders native root tabs and pushed detail navigation
+- [x] **NAV-02:** The host-owned iOS shell renders native root tabs and pushed detail navigation
   with edge-swipe/back behavior while the existing route resolver remains authoritative for each
   destination's runtime owner.
 
-- [ ] **NAV-03:** Web/native stack synchronization is typed, versioned, and fail-closed:
+- [x] **NAV-03:** Web/native stack synchronization is typed, versioned, and fail-closed:
   `push_patch` changes the current web route without growing the native stack, while
   `push_navigate` produces one idempotent native transition.
 
-- [ ] **NAV-04:** The shell publishes live `--cw-safe-area-top`, `--cw-safe-area-right`,
+- [x] **NAV-04:** The shell publishes live `--cw-safe-area-top`, `--cw-safe-area-right`,
   `--cw-safe-area-bottom`, and `--cw-safe-area-left` CSS custom properties across viewport changes;
   keyboard occlusion is represented separately as `--cw-keyboard-inset-bottom`.
 
-- [ ] **NAV-05:** The document root receives a synchronous, declarative native-shell marker before
+- [x] **NAV-05:** The document root receives a synchronous, declarative native-shell marker before
   app CSS evaluates, without a custom user-agent or any account, device, or stable identity value.
 
-- [ ] **NAV-06:** Executable graph, synchronization, simulator, accessibility-focus, and bounded
+- [x] **NAV-06:** Executable graph, synchronization, simulator, accessibility-focus, and bounded
   device checks prove the shell contract without claiming Android parity or generic navigation.
 
-- [ ] **NAV-07:** Canonical and generated support truth says Phoenix-owned confirmation is the
+- [x] **NAV-07:** Canonical and generated support truth says Phoenix-owned confirmation is the
   current required fallback; native alert/confirm remains reversible only after physical-iPhone
   proof, a demonstrated active-adopter route blocker, and an explicit maintainer roadmap decision.
 
