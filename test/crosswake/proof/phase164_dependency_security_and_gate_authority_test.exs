@@ -7,6 +7,8 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
 
   @script "script/check_dependency_security.sh"
   @fixture "test/fixtures/security/advisory-bearing.lock"
+  @workflow ".github/workflows/dependency-security.yml"
+  @security_context "merge-blocking-dependency-security"
 
   @root_targets %{
     "phoenix" => "1.8.13",
@@ -212,6 +214,49 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
       refute Regex.match?(pattern, source),
              "#{@script} uses bash-4-only #{feature}"
     end
+  end
+
+  test "one literal workflow job is the sole dependency-security result producer" do
+    {output, 0} = System.cmd("python3", ["script/list_merge_blocking_checks.py", "--emitters"])
+
+    producers =
+      output
+      |> String.split("\n", trim: true)
+      |> Enum.map(&String.split(&1, "\t"))
+      |> Enum.filter(fn [name, _path, _job] -> name == @security_context end)
+
+    assert producers == [[@security_context, @workflow, @security_context]]
+
+    dynamic_security_names =
+      [".github/workflows/*.yml", ".github/workflows/*.yaml"]
+      |> Enum.flat_map(&Path.wildcard/1)
+      |> Enum.flat_map(fn path ->
+        path
+        |> File.read!()
+        |> String.split("\n")
+        |> Enum.filter(&(String.contains?(&1, "dependency-security") and String.contains?(&1, "${{")))
+        |> Enum.map(&{path, &1})
+      end)
+
+    assert dynamic_security_names == []
+  end
+
+  test "dependency-security workflow directly awaits canonical and negative-control proof" do
+    source = File.read!(@workflow)
+
+    assert source =~ "name: #{@security_context}"
+    assert source =~ "run: script/check_dependency_security.sh\n"
+
+    assert source =~
+             "run: script/check_dependency_security.sh --assert-vulnerable-fixture #{@fixture}"
+
+    assert source =~ "if: always()"
+    assert source =~ "$GITHUB_STEP_SUMMARY"
+
+    refute source =~ "continue-on-error"
+    refute source =~ "script/register_required_checks.sh"
+    refute source =~ "DRY_RUN=0"
+    refute source =~ "actions/cache"
   end
 
   defp lock_versions(path, packages) do
