@@ -640,7 +640,7 @@ source-bound physical evidence transaction; promotion remains blocked until TODO
 signed physical iPhone is available.
 **Requirements**: COMPOSE-01, COMPOSE-02, COMPOSE-03, COMPOSE-04, COMPOSE-05, COMPOSE-06
 **Depends on:** Phase 163
-**Plans:** 5/10 plans executed
+**Plans:** 6/10 plans executed
 
 Plans:
 **Wave 1**
@@ -659,7 +659,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 163.1-05-PLAN.md (Wave 4) — compose the eligible physical study leaf through the delivered iOS shell
+- [x] 163.1-05-PLAN.md (Wave 4) — compose the eligible physical study leaf through the delivered iOS shell
 
 **Wave 5** *(blocked on Wave 4 completion)*
 

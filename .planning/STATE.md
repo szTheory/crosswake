@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 163.1
 current_phase_name: close-gap-v21-physical-adopter-composition
 status: executing
-stopped_at: Completed 163.1-06-PLAN.md
-last_updated: "2026-08-28T04:07:17.474Z"
+stopped_at: Completed 163.1-05-PLAN.md
+last_updated: "2026-08-28T13:07:06.459Z"
 last_activity: 2026-08-28
 last_activity_desc: Plan 163.1-02 installed the pending composition-gap ledger
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 126
-  completed_plans: 121
+  completed_plans: 122
   percent: 88
 current_plan: 2
 ---
@@ -23,7 +23,7 @@ current_plan: 2
 ## Current Position
 
 Phase: 163.1 (close-gap-v21-physical-adopter-composition) — EXECUTING
-Plan: 6 of 10
+Plan: 7 of 10
 Status: Ready to execute
 Last activity: 2026-08-28 — Plan 163.1-02 installed the pending composition-gap ledger
 
@@ -242,6 +242,8 @@ substitution, or every-iPhone coverage.
 - [Phase ?]: Physical readiness is derived only from PackStore reconciliation of a verified host provider.
 - [Phase ?]: Scoped replay idempotency is decided by constraints inside the Ecto transaction; persisted rows are read only after a failed insert.
 - [Phase ?]: Physical case controls prepare and verify nonce-bound closed cases, while only normal replay records a passable outcome.
+- [Phase ?]: Physical shell materializes only from a current-run manifest/topology pair and host activation resolver.
+- [Phase ?]: CrosswakeProofLane reuses the local CrosswakeShellCore package and delivered UIKit shell without a Swift route registry.
 
 ## Deferred Items
 
@@ -270,8 +272,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-28T04:07:17.462Z
-**Stopped at:** Completed 163.1-06-PLAN.md
+**Last session:** 2026-08-28T13:07:06.446Z
+**Stopped at:** Completed 163.1-05-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -369,6 +371,7 @@ this milestone reset.
 | Phase 163.1-close-gap-v21-physical-adopter-composition P03 | 15m | 1 tasks | 4 files |
 | Phase 163.1-close-gap-v21-physical-adopter-composition P04 | 25m | 1 tasks | 4 files |
 | Phase 163.1 P06 | 22min | 2 tasks | 8 files |
+| Phase 163.1-close-gap-v21-physical-adopter-composition P05 | 18m | 1 tasks | 5 files |
 
 ## Accumulated Context
 
