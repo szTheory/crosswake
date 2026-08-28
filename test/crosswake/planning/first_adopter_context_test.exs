@@ -129,7 +129,8 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
   end
 
   test "live registered artifacts scan clean while the Phase 158 review remains discovered" do
-    review_path = ".planning/phases/158-adoption-reset-and-route-map/158-REVIEW.md"
+    review_path =
+      ".planning/workstreams/first-b2c-adopter-readiness/phases/158-adoption-reset-and-route-map/158-REVIEW.md"
 
     assert review_path in FirstAdopterContext.discover_paths(File.cwd!())
     assert FirstAdopterContext.scan(contents_by_path()) == []
@@ -286,7 +287,7 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
 
   test "classifies only the approved physical marker and reference-host AIFF resource" do
     completion_marker =
-      ".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete"
+      ".planning/workstreams/first-b2c-adopter-readiness/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete"
 
     reference_aiff =
       "examples/phoenix_host/native/ios/CrosswakeProofLane/Resources/ReferenceLearningBundle/pronunciation.aiff"
@@ -329,11 +330,15 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
   test "filesystem discovery includes current Phase 158 planning artifacts" do
     discovered = FirstAdopterContext.discover_paths(File.cwd!())
 
-    assert ".planning/phases/158-adoption-reset-and-route-map/158-VALIDATION.md" in discovered
+    assert ".planning/workstreams/first-b2c-adopter-readiness/phases/158-adoption-reset-and-route-map/158-VALIDATION.md" in discovered
 
     for path <-
-          Path.wildcard(".planning/phases/158-adoption-reset-and-route-map/158-*-PLAN.md") ++
-            Path.wildcard(".planning/phases/158-adoption-reset-and-route-map/158-*-SUMMARY.md") do
+          Path.wildcard(
+            ".planning/workstreams/first-b2c-adopter-readiness/phases/158-adoption-reset-and-route-map/158-*-PLAN.md"
+          ) ++
+            Path.wildcard(
+              ".planning/workstreams/first-b2c-adopter-readiness/phases/158-adoption-reset-and-route-map/158-*-SUMMARY.md"
+            ) do
       assert path in discovered
     end
   end
@@ -348,12 +353,14 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     assert adr =~ "web-only"
     assert adr =~ "Android"
 
-    roadmap = File.read!(".planning/ROADMAP.md")
+    roadmap =
+      File.read!(".planning/workstreams/first-b2c-adopter-readiness/ROADMAP.md")
+
     assert roadmap =~ "Physical-iPhone Adoption Proof"
     assert roadmap =~ "2026-08-18"
     assert roadmap =~ "[x] **Phase 158: Adoption Reset and Route Map**"
 
-    state = File.read!(".planning/STATE.md")
+    state = File.read!(".planning/workstreams/first-b2c-adopter-readiness/STATE.md")
     [_, current_phase] = Regex.run(~r/^current_phase:\s*(\d+(?:\.\d+)?)$/m, state)
     assert state =~ "Phase: #{current_phase}"
   end
@@ -367,7 +374,7 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     assert v20_contents =~ "no completion tag"
 
     active_v21 =
-      File.read!(".planning/ROADMAP.md")
+      File.read!(".planning/workstreams/first-b2c-adopter-readiness/ROADMAP.md")
       |> String.split("## Frozen and stopped work", parts: 2)
       |> hd()
 

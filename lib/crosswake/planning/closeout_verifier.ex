@@ -7,6 +7,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
   """
 
   @schema_version "1.0.0"
+  alias Crosswake.Planning.Paths
   @required_closeout_keys ~w(
     milestone
     milestone_name
@@ -256,7 +257,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
   defp requirements_state_check(cwd, opts) do
     closeout = read_file(closeout_path(cwd, opts))
-    requirements = requirements_source(cwd, milestone(parse_frontmatter(closeout)))
+    requirements = requirements_source(cwd, milestone(parse_frontmatter(closeout)), opts)
 
     passed =
       closeout =~ ~r/requirements_state:\s*\n\s*status:\s*(complete|archived)/ and
@@ -283,7 +284,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
   defp roadmap_state_check(cwd, opts) do
     closeout = read_file(closeout_path(cwd, opts))
-    roadmap = read_file(Path.join(cwd, ".planning/ROADMAP.md"))
+    roadmap = read_file(Path.join(Paths.resolve!(cwd, opts), "ROADMAP.md"))
 
     passed =
       closeout =~ ~r/roadmap_parity:\s*\n\s*status:\s*(complete|archived)/ and
@@ -319,7 +320,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
     missing =
       Enum.reject(phases, fn phase ->
-        phase_paths(cwd, ms, phase, "*-VERIFICATION.md") != []
+        phase_paths(cwd, ms, phase, "*-VERIFICATION.md", opts) != []
       end)
 
     passed =
@@ -355,7 +356,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
     summary_paths =
       Enum.flat_map(phases, fn phase ->
-        phase_paths(cwd, ms, phase, "*-SUMMARY.md")
+        phase_paths(cwd, ms, phase, "*-SUMMARY.md", opts)
       end)
 
     malformed =
@@ -396,7 +397,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
     problematic =
       Enum.reject(phases, fn phase ->
-        paths = phase_paths(cwd, ms, phase, "*-VALIDATION.md")
+        paths = phase_paths(cwd, ms, phase, "*-VALIDATION.md", opts)
 
         (paths != [] and Enum.all?(paths, &validation_ledger_evidence?(cwd, &1))) or
           (paths == [] and validation_exception_satisfied?(cwd, ms, phase))
@@ -583,7 +584,8 @@ defmodule Crosswake.Planning.CloseoutVerifier do
   end
 
   defp closeout_path(cwd, opts) do
-    state_path = Path.join(cwd, ".planning/STATE.md")
+    planning_root = Paths.resolve!(cwd, opts)
+    state_path = Path.join(planning_root, "STATE.md")
 
     milestone =
       case File.read(state_path) do
@@ -603,7 +605,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
         Path.join(cwd, ".planning/milestones/#{milestone}-CLOSEOUT.md")
 
       true ->
-        raise "Could not determine milestone from .planning/STATE.md and no :closeout_path provided"
+        raise "Could not determine milestone from #{rel(cwd, state_path)} and no :closeout_path provided"
     end
   end
 
@@ -611,8 +613,8 @@ defmodule Crosswake.Planning.CloseoutVerifier do
   # recreated for the next milestone via /gsd:new-milestone. When it is absent,
   # fall back to the closing milestone's archived snapshot so closeout truth
   # survives the post-close "awaiting next milestone" interlude.
-  defp requirements_source(cwd, milestone) do
-    live = Path.join(cwd, ".planning/REQUIREMENTS.md")
+  defp requirements_source(cwd, milestone, opts) do
+    live = Path.join(Paths.resolve!(cwd, opts), "REQUIREMENTS.md")
 
     archived =
       milestone && Path.join(cwd, ".planning/milestones/#{milestone}-REQUIREMENTS.md")
@@ -700,7 +702,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
   defp format_parse_error(:malformed), do: "expected_phases must be a non-empty inline array"
   defp format_parse_error(reason), do: inspect(reason)
 
-  defp phase_paths(cwd, milestone, phase, suffix) do
+  defp phase_paths(cwd, milestone, phase, suffix, opts) do
     archived =
       if milestone do
         Path.wildcard(
@@ -710,7 +712,11 @@ defmodule Crosswake.Planning.CloseoutVerifier do
         []
       end
 
-    live = Path.wildcard(Path.join(cwd, ".planning/phases/#{phase}-*/#{suffix}"))
+    live =
+      Paths.resolve!(cwd, opts)
+      |> Path.join("phases/#{phase}-*/#{suffix}")
+      |> Path.wildcard()
+
     archived ++ live
   end
 
@@ -933,7 +939,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
             active_entries
             |> Enum.reject(fn _entry ->
               Enum.all?(phases, fn phase ->
-                paths = phase_paths(cwd, ms, phase, "*-VALIDATION.md")
+                paths = phase_paths(cwd, ms, phase, "*-VALIDATION.md", opts)
 
                 (paths != [] and Enum.all?(paths, &validation_ledger_evidence?(cwd, &1))) or
                   (paths == [] and validation_exception_satisfied?(cwd, ms, phase))

@@ -127,7 +127,7 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
 
   test "scans only the approved marker and host AIFF while rejecting arbitrary binary peers" do
     completion_marker =
-      ".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete"
+      ".planning/workstreams/first-b2c-adopter-readiness/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete"
 
     reference_aiff =
       "examples/phoenix_host/native/ios/CrosswakeProofLane/Resources/ReferenceLearningBundle/pronunciation.aiff"

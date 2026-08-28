@@ -34,12 +34,25 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     %{glob: ".planning/FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md", destination: :durable},
     %{glob: ".planning/MILESTONES.md", destination: :durable},
     %{glob: ".planning/PROJECT.md", destination: :durable},
-    %{glob: ".planning/REQUIREMENTS.md", destination: :durable},
-    %{glob: ".planning/ROADMAP.md", destination: :durable},
-    %{glob: ".planning/STATE.md", destination: :durable},
+    %{
+      glob: ".planning/workstreams/first-b2c-adopter-readiness/REQUIREMENTS.md",
+      destination: :durable
+    },
+    %{
+      glob: ".planning/workstreams/first-b2c-adopter-readiness/ROADMAP.md",
+      destination: :durable
+    },
+    %{
+      glob: ".planning/workstreams/first-b2c-adopter-readiness/STATE.md",
+      destination: :durable
+    },
     %{glob: ".planning/milestones/v20.0-REQUIREMENTS.md", destination: :durable},
     %{glob: ".planning/milestones/v20.0-ROADMAP.md", destination: :durable},
-    %{glob: ".planning/phases/158-adoption-reset-and-route-map/158-*.md", destination: :durable},
+    %{
+      glob:
+        ".planning/workstreams/first-b2c-adopter-readiness/phases/158-adoption-reset-and-route-map/158-*.md",
+      destination: :durable
+    },
     %{
       glob: ".planning/todos/TODO-002-first-b2c-adopter-route-inputs.md",
       destination: :fast_changing
@@ -55,7 +68,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     .bak .bat .c .css .eex .ex .exs .gradle .heex .html .java .js .json .kt .kts .lock .md .mjs
     .orig .pbxproj .plist .properties .py .sh .svg .swift .tape .toml .ts .tsx .txt .xcscheme .xml .yaml .yml
   )
-  @physical_evidence_completion_marker ".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete"
+  @physical_evidence_completion_marker ".planning/workstreams/first-b2c-adopter-readiness/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete"
   @reference_host_pronunciation_aiff "examples/phoenix_host/native/ios/CrosswakeProofLane/Resources/ReferenceLearningBundle/pronunciation.aiff"
   @known_excluded_binary_paths ~w(
     .planning/milestones/v10.0-phases/108-consumer-normalization/render/deck-dark.png
