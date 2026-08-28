@@ -51,19 +51,21 @@ simulator substitution, or every-iPhone coverage.
 
 ## Blockers
 
+None. All v21 phase contracts and automated verification gates are complete.
+
+## Deferred Items
+
 - Phase 160 code review WR-01 records a non-blocking browser lifecycle race: fencing during an
   IndexedDB save can leave rating controls owned until reload. The finding remains available for
   `$gsd-code-review 160 --fix`.
 
-- The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
-  auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
+- TODO-002 remains open: adopter-instance promotion still requires adopter-supplied concrete route
+  IDs/paths, mutation actions, staleness, auth sensitivity, expected pronunciation-pack
+  sizes/codecs, and fallbacks. The completed reference-host and physical-device evidence does not
+  infer those adopter-private inputs.
 
 - The canonical historical six product-failure labels were not stored because only a privacy-safe
   proxy audit was authorized.
-
-- TODO-002 remains open: the route inventory still needs adopter-supplied concrete route IDs/paths,
-  mutation actions, staleness, auth sensitivity, expected pronunciation-pack sizes/codecs, and
-  fallbacks before adopter-instance promotion.
 
 ## Decisions
 
