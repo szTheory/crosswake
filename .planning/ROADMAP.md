@@ -640,7 +640,7 @@ source-bound physical evidence transaction; promotion remains blocked until TODO
 signed physical iPhone is available.
 **Requirements**: COMPOSE-01, COMPOSE-02, COMPOSE-03, COMPOSE-04, COMPOSE-05, COMPOSE-06
 **Depends on:** Phase 163
-**Plans:** 2/10 plans executed
+**Plans:** 3/10 plans executed
 
 Plans:
 **Wave 1**
@@ -653,7 +653,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 163.1-03-PLAN.md (Wave 3) — classify only the approved physical marker and reference-host AIFF fixture
+- [x] 163.1-03-PLAN.md (Wave 3) — classify only the approved physical marker and reference-host AIFF fixture
 - [ ] 163.1-04-PLAN.md (Wave 3) — converge physical media on the existing PackProvider/PackStore seam
 - [ ] 163.1-06-PLAN.md (Wave 3) — make scoped replay atomic and backend evidence device-caused
 
