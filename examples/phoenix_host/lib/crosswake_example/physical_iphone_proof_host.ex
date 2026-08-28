@@ -16,7 +16,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
                      @repo_root,
                      ".planning",
                      "phases",
-                     "162-physical-iphone-adoption-proof",
+                     "163.1-close-gap-v21-physical-adopter-composition",
                      "evidence"
                    ])
   @evidence_destination Path.join(@evidence_parent, "physical_iphone")
