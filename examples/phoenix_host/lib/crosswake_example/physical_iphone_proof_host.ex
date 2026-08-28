@@ -21,6 +21,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
                    ])
   @evidence_destination Path.join(@evidence_parent, "physical_iphone")
   @runtime_key {__MODULE__, :ios_runtime_line}
+  @host_url_key {__MODULE__, :physical_host_url}
   @run_key {__MODULE__, :physical_run}
   @destination_key {__MODULE__, :physical_destination}
   @topology_key {__MODULE__, :navigation_topology}
@@ -45,7 +46,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   def preflight_options do
     [
       adopter_handoff: &adopter_handoff_ready?/0,
-      inventory: reference_inventory(),
+      inventory: adopter_inventory(),
       config: Application.get_env(:crosswake, :proof_lane),
       generated_lane: &generated_lane?/0,
       destination: &destination_ready?/0,
@@ -59,6 +60,70 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
       feature_controls: &PhysicalIphoneAuthority.ready?/0,
       destination_parent: &destination_parent_ready?/0
     ]
+  end
+
+  # This runs before `app.start` in the proof task. Overrides remain supported
+  # for CI and remote hosts; absent or placeholder-like values use exactly one
+  # locally discovered LAN interface and bind this reference host to port 4700.
+  # The resolved value lives only in the invoking process and is never emitted.
+  def prepare_for_run do
+    case resolve_host_base_url(&System.get_env/1, &run_tool/2) do
+      {:ok, %{url: url, source: :local}} ->
+        configure_local_endpoint()
+        Process.put(@host_url_key, url)
+        :ok
+
+      {:ok, %{url: url, source: :override}} ->
+        Process.put(@host_url_key, url)
+        :ok
+
+      _ ->
+        :blocked
+    end
+  rescue
+    _ -> :blocked
+  end
+
+  @doc false
+  def resolve_host_base_url(env, runner) when is_function(env, 1) and is_function(runner, 2) do
+    case usable_override(env.("CROSSWAKE_PHYSICAL_IPHONE_HOST_BASE_URL")) do
+      value when is_binary(value) -> valid_host_url(value, :override)
+      nil -> discover_local_host_url(runner)
+    end
+  rescue
+    _ -> {:error, :unavailable}
+  end
+
+  @doc false
+  def resolve_device_destination(env, runner)
+      when is_function(env, 1) and is_function(runner, 2) do
+    with {output, 0} <-
+           runner.("xcodebuild", [
+             "-project",
+             @ios_project,
+             "-scheme",
+             @ios_scheme,
+             "-showdestinations"
+           ]),
+         ids when is_list(ids) <- parse_physical_destination_ids(output),
+         {:ok, id} <-
+           select_device_id(usable_override(env.("CROSSWAKE_PHYSICAL_IPHONE_UDID")), ids),
+         {:ok, runtime_line} <- physical_runtime_line(id, runner) do
+      {:ok, %{id: id, runtime_line: runtime_line}}
+    else
+      _ -> {:error, :unavailable}
+    end
+  rescue
+    _ -> {:error, :unavailable}
+  end
+
+  @doc false
+  def resolve_handoff_path(env, home)
+      when is_function(env, 1) and is_binary(home) and byte_size(home) > 0 do
+    case usable_override(env.("CROSSWAKE_FIRST_ADOPTER_HANDOFF_PATH")) do
+      nil -> Path.join([home, ".config", "crosswake", "first-adopter-handoff.json"])
+      path -> path
+    end
   end
 
   # The device report comes only from the generated XCTest executing on the
@@ -110,6 +175,8 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   # it public makes cleanup mandatory in the host adapter contract; repeated
   # calls are harmless so backend_report/1 can retain its local fallback.
   def cleanup_run do
+    Process.delete(@host_url_key)
+
     case Process.delete(@run_key) do
       run when is_map(run) -> PhysicalIphoneRunProvenance.cleanup(run)
       _ -> :ok
@@ -203,12 +270,22 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   end
 
   defp current_adopter_handoff do
-    with path when is_binary(path) and byte_size(path) > 0 <-
-           System.get_env("CROSSWAKE_FIRST_ADOPTER_HANDOFF_PATH"),
+    with path when is_binary(path) <- handoff_path(),
          {:ok, handoff} <- AdopterHandoff.load(path) do
       {:ok, handoff}
     else
       _ -> {:error, :blocked}
+    end
+  end
+
+  defp handoff_path do
+    resolve_handoff_path(&System.get_env/1, System.user_home!())
+  end
+
+  defp adopter_inventory do
+    case current_adopter_handoff() do
+      {:ok, %{inventory: inventory}} when is_list(inventory) -> inventory
+      _ -> []
     end
   end
 
@@ -237,19 +314,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   end
 
   defp valid_physical_host_url? do
-    case System.get_env("CROSSWAKE_PHYSICAL_IPHONE_HOST_BASE_URL") do
-      value when is_binary(value) ->
-        case URI.parse(value) do
-          %URI{scheme: scheme, host: host} when scheme in ["http", "https"] and is_binary(host) ->
-            true
-
-          _ ->
-            false
-        end
-
-      _ ->
-        false
-    end
+    match?({:ok, %{url: _}}, host_base_url())
   end
 
   defp valid_physical_fixture? do
@@ -305,16 +370,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   end
 
   defp discover_physical_destination do
-    with executable when is_binary(executable) <- System.find_executable("xcodebuild"),
-         {output, 0} <-
-           System.cmd(
-             executable,
-             ["-project", @ios_project, "-scheme", @ios_scheme, "-showdestinations"],
-             stderr_to_stdout: true
-           ),
-         [id] <- parse_physical_destination_ids(output),
-         {:ok, runtime_line} <- physical_runtime_line(id) do
-      destination = %{id: id, runtime_line: runtime_line}
+    with {:ok, destination} <- resolve_device_destination(&System.get_env/1, &run_tool/2) do
       Process.put(@destination_key, destination)
       {:ok, destination}
     else
@@ -330,8 +386,8 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     |> Enum.uniq()
   end
 
-  defp physical_runtime_line(id) do
-    with {bytes, 0} <- System.cmd("xcrun", ["xcdevice", "list"], stderr_to_stdout: true),
+  defp physical_runtime_line(id, runner) do
+    with {bytes, 0} <- runner.("xcrun", ["xcdevice", "list"]),
          {:ok, devices} when is_list(devices) <- Jason.decode(bytes),
          %{"operatingSystemVersion" => version} when is_binary(version) <-
            Enum.find(devices, fn
@@ -344,6 +400,93 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
       _ -> {:error, :unavailable}
     end
   end
+
+  defp select_device_id(nil, [id]), do: {:ok, id}
+
+  defp select_device_id(id, ids) when is_binary(id) and is_list(ids) do
+    if Enum.member?(ids, id), do: {:ok, id}, else: {:error, :unavailable}
+  end
+
+  defp select_device_id(_, _), do: {:error, :unavailable}
+
+  defp host_base_url do
+    case Process.get(@host_url_key) do
+      value when is_binary(value) -> valid_host_url(value, :process)
+      _ -> resolve_host_base_url(&System.get_env/1, &run_tool/2)
+    end
+  end
+
+  defp host_url_value do
+    case host_base_url() do
+      {:ok, %{url: url}} -> url
+      _ -> nil
+    end
+  end
+
+  defp discover_local_host_url(runner) do
+    with {route, 0} <- runner.("route", ["-n", "get", "default"]),
+         [interface] <- Regex.run(~r/interface:\s*([^\s]+)/, route, capture: :all_but_first),
+         {address, 0} <- runner.("ipconfig", ["getifaddr", interface]),
+         address <- String.trim(address),
+         true <- private_ipv4?(address) do
+      valid_host_url("http://" <> address <> ":4700", :local)
+    else
+      _ -> {:error, :unavailable}
+    end
+  end
+
+  defp valid_host_url(value, source) when is_binary(value) do
+    case URI.parse(value) do
+      %URI{scheme: scheme, host: host, path: path, query: nil, fragment: nil}
+      when scheme in ["http", "https"] and is_binary(host) and host != "" and path in [nil, ""] ->
+        {:ok, %{url: value, source: source}}
+
+      _ ->
+        {:error, :unavailable}
+    end
+  end
+
+  defp private_ipv4?(address) do
+    case :inet.parse_ipv4_address(String.to_charlist(address)) do
+      {:ok, {10, _, _, _}} -> true
+      {:ok, {172, second, _, _}} when second in 16..31 -> true
+      {:ok, {192, 168, _, _}} -> true
+      _ -> false
+    end
+  end
+
+  defp usable_override(value) when is_binary(value) do
+    value = String.trim(value)
+    normalized = String.downcase(value)
+
+    if value == "" or
+         String.contains?(normalized, [
+           "placeholder",
+           "your-",
+           "your_",
+           "/absolute/",
+           "example",
+           "<"
+         ]) do
+      nil
+    else
+      value
+    end
+  end
+
+  defp usable_override(_), do: nil
+
+  defp configure_local_endpoint do
+    config = Application.get_env(:crosswake_example, CrosswakeExample.Endpoint, [])
+
+    Application.put_env(
+      :crosswake_example,
+      CrosswakeExample.Endpoint,
+      Keyword.put(config, :http, ip: {0, 0, 0, 0}, port: 4700)
+    )
+  end
+
+  defp run_tool(command, arguments), do: System.cmd(command, arguments, stderr_to_stdout: true)
 
   defp development_team do
     case System.get_env("CROSSWAKE_IOS_DEVELOPMENT_TEAM") do
@@ -520,7 +663,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
            replace_plist_string(
              environment_plist,
              "CROSSWAKE_REFERENCE_HOST_BASE_URL",
-             System.get_env("CROSSWAKE_PHYSICAL_IPHONE_HOST_BASE_URL")
+             host_url_value()
            ),
          :ok <-
            replace_plist_string(
@@ -761,52 +904,5 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     if File.dir?(@evidence_parent) and not File.exists?(@evidence_destination),
       do: :ok,
       else: :blocked
-  end
-
-  defp reference_inventory do
-    [
-      [
-        route_id: "route-1630000000000001",
-        path_pattern: "/study/session",
-        runtime_owner: %{status: :confirmed_sanitized, value: :offline_island},
-        offline_posture: %{status: :confirmed_sanitized, value: :local_first},
-        mutation_categories: %{status: :confirmed_sanitized, value: [:answer_submission]},
-        staleness_class: %{status: :confirmed_sanitized, value: :bounded},
-        auth: %{status: :confirmed_sanitized, value: :authenticated},
-        recent_auth: %{status: :confirmed_sanitized, value: :not_required},
-        scope_posture: %{
-          status: :confirmed_sanitized,
-          value: %{
-            scope: :opaque_partitioned,
-            logout: :stops_replay,
-            account_switch: :stops_replay
-          }
-        },
-        media_requirement: %{
-          status: :confirmed_sanitized,
-          value: %{
-            requirement: :required,
-            size_band: :tiny,
-            codec_family: :aac,
-            integrity: :verified
-          }
-        },
-        fallbacks: %{
-          status: :confirmed_sanitized,
-          value: %{
-            online: :serve,
-            offline: :queue_local,
-            denied: :block,
-            corrupt_pack: :block,
-            disabled: :retain_and_block
-          }
-        },
-        disablement: %{
-          status: :confirmed_sanitized,
-          value: %{entry: :server_enforced, replay: :server_reauthorized}
-        },
-        queued_data_retention: %{status: :confirmed_sanitized, value: :retain_until_resolution}
-      ]
-    ]
   end
 end

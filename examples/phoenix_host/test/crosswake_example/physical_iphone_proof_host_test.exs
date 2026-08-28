@@ -43,6 +43,97 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
     assert Enum.all?(readiness.checks, &(&1.state in [:ready, :blocked]))
   end
 
+  test "automation discovers exactly one physical iPhone and local LAN host without retaining values" do
+    env = fn
+      "CROSSWAKE_PHYSICAL_IPHONE_UDID" -> "your-device-identifier"
+      "CROSSWAKE_PHYSICAL_IPHONE_HOST_BASE_URL" -> "https://your-private-proof-host"
+      "CROSSWAKE_FIRST_ADOPTER_HANDOFF_PATH" -> "/absolute/private/path/to/validated-handoff"
+    end
+
+    runner = fn
+      "xcodebuild", _ ->
+        {"{ platform:iOS, name:Phone, id:ABCDEFAB-CDEF-ABCD-EFAB-CDEFABCDEFAB }", 0}
+
+      "xcrun", ["xcdevice", "list"] ->
+        {Jason.encode!([
+           %{
+             "identifier" => "ABCDEFAB-CDEF-ABCD-EFAB-CDEFABCDEFAB",
+             "simulator" => false,
+             "operatingSystemVersion" => "26.6 (23G1)"
+           }
+         ]), 0}
+
+      "route", _ ->
+        {"interface: en0\n", 0}
+
+      "ipconfig", ["getifaddr", "en0"] ->
+        {"192.168.1.19\n", 0}
+    end
+
+    assert {:ok, %{runtime_line: "26.6"}} =
+             PhysicalIphoneProofHost.resolve_device_destination(env, runner)
+
+    assert {:ok, %{source: :local}} = PhysicalIphoneProofHost.resolve_host_base_url(env, runner)
+
+    assert PhysicalIphoneProofHost.resolve_handoff_path(env, "/safe-home") ==
+             "/safe-home/.config/crosswake/first-adopter-handoff.json"
+  end
+
+  test "automation fails closed on device or LAN ambiguity and never echoes configured values" do
+    private_value = "private-device-or-host-canary"
+    env = fn _ -> private_value end
+
+    ambiguous_devices = fn
+      "xcodebuild", _ ->
+        {"{ platform:iOS, id:ABCDEFAB-CDEF-ABCD-EFAB-CDEFABCDEFAB } { platform:iOS, id:12345678-1234-1234-1234-1234567890AB }",
+         0}
+
+      "route", _ ->
+        {"interface: en0\n", 0}
+
+      "ipconfig", _ ->
+        {"127.0.0.1\n", 0}
+    end
+
+    assert {:error, :unavailable} =
+             PhysicalIphoneProofHost.resolve_device_destination(env, ambiguous_devices)
+
+    assert {:error, :unavailable} =
+             PhysicalIphoneProofHost.resolve_host_base_url(fn _ -> nil end, ambiguous_devices)
+
+    refute inspect(PhysicalIphoneProofHost.resolve_device_destination(env, ambiguous_devices)) =~
+             private_value
+  end
+
+  test "explicit device and host overrides remain deterministic" do
+    id = "ABCDEFAB-CDEF-ABCD-EFAB-CDEFABCDEFAB"
+
+    env = fn
+      "CROSSWAKE_PHYSICAL_IPHONE_UDID" -> id
+      "CROSSWAKE_PHYSICAL_IPHONE_HOST_BASE_URL" -> "https://proof.host.test"
+      "CROSSWAKE_FIRST_ADOPTER_HANDOFF_PATH" -> "/private/handoff.json"
+      _ -> nil
+    end
+
+    runner = fn
+      "xcodebuild", _ ->
+        {"{ platform:iOS, id:#{id} }", 0}
+
+      "xcrun", _ ->
+        {Jason.encode!([
+           %{"identifier" => id, "simulator" => false, "operatingSystemVersion" => "26.6"}
+         ]), 0}
+    end
+
+    assert {:ok, %{id: ^id}} = PhysicalIphoneProofHost.resolve_device_destination(env, runner)
+
+    assert {:ok, %{source: :override}} =
+             PhysicalIphoneProofHost.resolve_host_base_url(env, runner)
+
+    assert PhysicalIphoneProofHost.resolve_handoff_path(env, "/safe-home") ==
+             "/private/handoff.json"
+  end
+
   test "physical replay fixture is a closed host-owned lifecycle contract" do
     assert %{
              scope_ref: scope,

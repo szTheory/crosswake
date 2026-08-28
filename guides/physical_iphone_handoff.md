@@ -22,11 +22,16 @@ each callback is implemented.
 
 When the host wiring is ready, the operator flow is:
 
-1. Connect, unlock, and trust one signed iPhone.
-2. Run `bin/crosswake-physical-iphone` from the host repository.
+1. Connect, unlock, and trust exactly one signed iPhone.
+2. Place the validated private handoff at
+   `~/.config/crosswake/first-adopter-handoff.json` (or set its path override).
+3. Run the physical-proof command from the host repository. It discovers the
+   single connected iPhone and a private LAN endpoint for the local reference
+   host when no explicit overrides are supplied.
 
 The wrapper first prints an aggregate safe readiness report. It contains stable rule
 IDs only, never account references, route paths, tokens, credentials, raw callback
-data, or device identifiers. If readiness succeeds it invokes the existing
+data, or device identifiers. Ambiguous or unreachable local setup remains
+blocked. If readiness succeeds it invokes the existing
 host-owned physical proof and promotion command. A simulator run can never satisfy
 that promotion gate.

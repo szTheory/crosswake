@@ -26,14 +26,18 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
     Application.put_env(:logger, :level, :warning)
     Logger.configure(level: :warning)
 
-    # Host adapters belong to the invoking Mix project. Loading the current app
-    # before resolving callbacks makes a configured host adapter available to a
-    # normal `mix` invocation without turning readiness into an evidence run.
-    Mix.Task.run("app.start")
+    # A local host may derive its private LAN endpoint and configure its endpoint
+    # before the application starts. This remains an optional host capability so
+    # remote hosts and generated adapters keep their existing contract.
+    host = PhysicalIphoneHost.load()
+
+    if prepare_host(host) == :ok do
+      Mix.Task.run("app.start")
+    end
 
     options =
-      case PhysicalIphoneHost.load() do
-        {:ok, host} -> host_options(host)
+      case host do
+        {:ok, loaded} -> host_options(loaded)
         {:error, _} -> []
       end
 
@@ -165,6 +169,15 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
       _ -> []
     end
   end
+
+  defp prepare_host({:ok, host}) do
+    case host[:prepare_for_run].() do
+      :ok -> :ok
+      _ -> :blocked
+    end
+  end
+
+  defp prepare_host({:error, _}), do: :ok
 
   defp promote_if_requested(candidate, options) do
     if Keyword.get(options, :promote, false) do
