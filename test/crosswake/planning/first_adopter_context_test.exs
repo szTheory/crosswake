@@ -284,6 +284,29 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
            ] = FirstAdopterContext.scan_filesystem(missing_root, [])
   end
 
+  test "classifies only the approved physical marker and reference-host AIFF resource" do
+    completion_marker =
+      ".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete"
+
+    reference_aiff =
+      "examples/phoenix_host/native/ios/CrosswakeProofLane/Resources/ReferenceLearningBundle/pronunciation.aiff"
+
+    arbitrary_aiff = "examples/phoenix_host/native/ios/OtherBundle/pronunciation.aiff"
+    unknown_binary = "evidence/capture.opaque"
+
+    with_temporary_repository([completion_marker, reference_aiff], "safe", fn root ->
+      assert FirstAdopterContext.discover_paths(root) == [completion_marker]
+      assert FirstAdopterContext.scan_filesystem(root, []) == []
+    end)
+
+    with_temporary_repository([arbitrary_aiff, unknown_binary], "safe", fn root ->
+      assert [
+               %{rule_id: "routing.unclassified_path", path: ^arbitrary_aiff},
+               %{rule_id: "routing.unclassified_path", path: ^unknown_binary}
+             ] = FirstAdopterContext.scan_filesystem(root, [])
+    end)
+  end
+
   test "filesystem discovery excludes raw fixtures and rejects symlink candidates before reads" do
     private_term = Enum.join(["fixture", "private", "canary"], "-")
 
