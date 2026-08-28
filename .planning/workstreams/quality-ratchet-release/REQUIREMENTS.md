@@ -19,7 +19,7 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 
 ### CI Gate Integrity
 
-- [ ] **CIG-01**: Every merge-blocking check context has exactly one authoritative producer, so a
+- [x] **CIG-01**: Every merge-blocking check context has exactly one authoritative producer, so a
   green duplicate cannot mask a red result.
 
 - [x] **CIG-02**: Every intended ExUnit test file, including example-host-tagged tests, is exercised
@@ -28,7 +28,7 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 - [x] **CIG-03**: Tests that mutate application configuration, code paths, files, or databases
   restore their state and pass both in isolation and in the full suite.
 
-- [ ] **CIG-04**: Required aggregators fail closed for failed, cancelled, or missing required work
+- [x] **CIG-04**: Required aggregators fail closed for failed, cancelled, or missing required work
   while allowing explicitly irrelevant work to report a visible neutral result.
 
 ### CI Efficiency and Maintainability
@@ -135,10 +135,10 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 | SEC-01 | Phase 164 | Complete |
 | SEC-02 | Phase 164 | Complete |
 | SEC-03 | Phase 164 | Complete |
-| CIG-01 | Phase 164 | Pending |
+| CIG-01 | Phase 164 | Complete |
 | CIG-02 | Phase 164 | Complete |
 | CIG-03 | Phase 164 | Complete |
-| CIG-04 | Phase 164 | Pending |
+| CIG-04 | Phase 164 | Complete |
 | CIP-01 | Phase 165 | Pending |
 | CIP-02 | Phase 165 | Pending |
 | CIP-03 | Phase 165 | Pending |
