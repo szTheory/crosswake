@@ -24,11 +24,71 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
     "plug_crypto" => "2.2.0"
   }
 
+  @root_lock_versions %{
+    "cc_precompiler" => "0.1.11",
+    "earmark_parser" => "1.4.44",
+    "elixir_make" => "0.10.0",
+    "ex_doc" => "0.40.3",
+    "fine" => "0.1.6",
+    "jason" => "1.4.5",
+    "lazy_html" => "0.1.12",
+    "makeup" => "1.2.1",
+    "makeup_elixir" => "1.0.1",
+    "makeup_erlang" => "1.1.0",
+    "mime" => "2.0.7",
+    "nimble_options" => "1.1.1",
+    "nimble_parsec" => "1.4.2",
+    "phoenix" => "1.8.13",
+    "phoenix_html" => "4.3.0",
+    "phoenix_live_view" => "1.1.33",
+    "phoenix_pubsub" => "2.2.0",
+    "phoenix_template" => "1.0.4",
+    "plug" => "1.19.5",
+    "plug_crypto" => "2.2.0",
+    "telemetry" => "1.4.2",
+    "websock" => "0.5.3",
+    "websock_adapter" => "0.5.9"
+  }
+
+  @example_lock_versions %{
+    "bandit" => "1.12.5",
+    "cc_precompiler" => "0.1.11",
+    "db_connection" => "2.10.1",
+    "decimal" => "3.1.0",
+    "ecto" => "3.13.6",
+    "ecto_sql" => "3.13.5",
+    "ecto_sqlite3" => "0.23.0",
+    "elixir_make" => "0.9.0",
+    "exqlite" => "0.36.0",
+    "file_system" => "1.1.1",
+    "fine" => "0.1.6",
+    "hpax" => "1.0.4",
+    "jason" => "1.4.5",
+    "lazy_html" => "0.1.12",
+    "mime" => "2.0.7",
+    "nimble_options" => "1.1.1",
+    "phoenix" => "1.8.13",
+    "phoenix_html" => "4.3.0",
+    "phoenix_live_reload" => "1.6.2",
+    "phoenix_live_view" => "1.1.33",
+    "phoenix_pubsub" => "2.2.0",
+    "phoenix_template" => "1.0.4",
+    "plug" => "1.19.5",
+    "plug_crypto" => "2.2.0",
+    "telemetry" => "1.4.2",
+    "thousand_island" => "1.5.0",
+    "websock" => "0.5.3",
+    "websock_adapter" => "0.5.9"
+  }
+
   test "canonical locks resolve the exact patched targets inside unchanged public ranges" do
     assert lock_versions("mix.lock", Map.keys(@root_targets)) == @root_targets
 
     assert lock_versions("examples/phoenix_host/mix.lock", Map.keys(@example_targets)) ==
              @example_targets
+
+    assert all_lock_versions("mix.lock") == @root_lock_versions
+    assert all_lock_versions("examples/phoenix_host/mix.lock") == @example_lock_versions
 
     root_manifest = File.read!("mix.exs")
     example_manifest = File.read!("examples/phoenix_host/mix.exs")
@@ -165,5 +225,11 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
         _ -> flunk("#{path} is missing a literal #{package} Hex tuple")
       end
     end)
+  end
+
+  defp all_lock_versions(path) do
+    ~r/^\s*"([a-z][a-z0-9_]*)":\s*\{:hex,\s*:[a-z][a-z0-9_]*,\s*"([^"]+)"/m
+    |> Regex.scan(File.read!(path), capture: :all_but_first)
+    |> Map.new(fn [package, version] -> {package, version} end)
   end
 end
