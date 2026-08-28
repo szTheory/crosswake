@@ -24,9 +24,12 @@ defmodule CrosswakeProofLaneContractTest do
   alias Crosswake.ProofLane.Evidence
 
   @authority_assertions [
-    "PI-LOGOUT-ACCOUNT-FENCE",
-    "PI-ENTRY-DISABLEMENT",
-    "PI-REPLAY-DISABLEMENT",
+    "PI-RECOVERY-REJECTION-AUTHORITY",
+    "PI-RECOVERY-CONFLICT-AUTHORITY",
+    "PI-LOGOUT-FENCE-AUTHORITY",
+    "PI-ACCOUNT-SWITCH-FENCE-AUTHORITY",
+    "PI-ENTRY-DISABLEMENT-AUTHORITY",
+    "PI-REPLAY-DISABLEMENT-AUTHORITY",
     "PI-EXACTLY-ONCE-EMPTY-OUTBOX"
   ]
 
@@ -99,10 +102,11 @@ defmodule CrosswakeProofLaneContractTest do
     assert %{
              "assertions" => assertions,
              "device_class" => "physical_iphone",
-             "schema_version" => 1
+             "schema_version" => schema_version
            } =
              backend_authority_report()
 
+    assert schema_version == Crosswake.ProofLane.PhysicalIphoneContract.schema_version()
     assert Enum.map(@authority_assertions, &%{"id" => &1, "outcome" => "passed"}) == assertions
 
     emit_backend_authority_report()
@@ -131,7 +135,7 @@ defmodule CrosswakeProofLaneContractTest do
 
   defp backend_authority_report do
     %{
-      "schema_version" => 1,
+      "schema_version" => Crosswake.ProofLane.PhysicalIphoneContract.schema_version(),
       "device_class" => "physical_iphone",
       "assertions" => Enum.map(@authority_assertions, &%{"id" => &1, "outcome" => "passed"})
     }

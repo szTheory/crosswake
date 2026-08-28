@@ -107,8 +107,8 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
     assertions = PhysicalIphoneContract.assertions()
 
     assert PhysicalIphoneContract.device_class() == :physical_iphone
-    assert PhysicalIphoneContract.schema_version() == 1
-    assert length(assertions) == 10
+    assert PhysicalIphoneContract.schema_version() == 2
+    assert length(assertions) == 19
 
     assert Enum.all?(
              assertions,

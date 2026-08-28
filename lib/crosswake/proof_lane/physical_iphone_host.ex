@@ -21,6 +21,7 @@ defmodule Crosswake.ProofLane.PhysicalIphoneHost do
           {:ok,
            [
              host_adapter: adapter,
+             prepare_for_run: fn -> safe_optional(adapter, :prepare_for_run, []) end,
              inventory_and_checks: fn -> safe(adapter, :preflight_options, []) end,
              device_report: fn contract -> safe(adapter, :device_report, [contract]) end,
              backend_report: fn contract -> safe(adapter, :backend_report, [contract]) end,
@@ -45,5 +46,11 @@ defmodule Crosswake.ProofLane.PhysicalIphoneHost do
     catch
       _, _ -> {:error, "PI-HOST-CALLBACK"}
     end
+  end
+
+  defp safe_optional(adapter, name, args) do
+    if function_exported?(adapter, name, length(args)),
+      do: safe(adapter, name, args),
+      else: :ok
   end
 end

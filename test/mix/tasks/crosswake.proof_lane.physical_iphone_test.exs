@@ -65,7 +65,30 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
              )
 
     assert_receive {:device, %{assertion_ids: assertion_ids}}
-    assert length(assertion_ids) == 10
+
+    assert assertion_ids == [
+             "PI-PACK-INSTALL-AUDIO",
+             "PI-OFFLINE-SELECTED-PERSISTENCE",
+             "PI-OFFLINE-FREE-FORM-PERSISTENCE",
+             "PI-RELAUNCH-PERSISTENCE",
+             "PI-RECOVERY-RETAINED",
+             "PI-RECOVERY-REJECTION",
+             "PI-RECOVERY-CONFLICT",
+             "PI-LOGOUT-FENCE",
+             "PI-ACCOUNT-SWITCH-FENCE",
+             "PI-ENTRY-DISABLEMENT",
+             "PI-REPLAY-DISABLEMENT",
+             "PI-RECOVERY-REJECTION-AUTHORITY",
+             "PI-RECOVERY-CONFLICT-AUTHORITY",
+             "PI-LOGOUT-FENCE-AUTHORITY",
+             "PI-ACCOUNT-SWITCH-FENCE-AUTHORITY",
+             "PI-ENTRY-DISABLEMENT-AUTHORITY",
+             "PI-REPLAY-DISABLEMENT-AUTHORITY",
+             "PI-EXACTLY-ONCE-EMPTY-OUTBOX",
+             "PI-REDACTED-PROMOTION"
+           ]
+
+    assert Crosswake.ProofLane.PhysicalIphoneContract.schema_version() == 2
     assert Enum.all?(assertions, &(&1.outcome == :passed))
     refute_received {:device, _}
     assert_receive :cleanup_run
@@ -182,7 +205,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
 
   defp canonical_report(owner) do
     %{
-      "schema_version" => 1,
+      "schema_version" => Crosswake.ProofLane.PhysicalIphoneContract.schema_version(),
       "device_class" => "physical_iphone",
       "assertions" =>
         Crosswake.ProofLane.PhysicalIphoneContract.assertions()

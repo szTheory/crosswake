@@ -1,6 +1,22 @@
 import XCTest
 
 final class ProofLaneUITests: XCTestCase {
+  func testPhysicalNavigationShellContract() throws {
+    let app = XCUIApplication()
+    app.launchEnvironment["CROSSWAKE_REFERENCE_HOST_PHYSICAL_ADAPTER"] = "1"
+    app.launchEnvironment["CROSSWAKE_REFERENCE_HOST_NAVIGATION_NONCE"] = "current-run"
+    app.launchEnvironment["CROSSWAKE_REFERENCE_HOST_NAVIGATION_MANIFEST_SCHEMA_VERSION"] = "1.0.0"
+    app.launchEnvironment["CROSSWAKE_REFERENCE_HOST_NAVIGATION_MANIFEST"] = "{\"compatibility\":{\"native_runtime_version\":\"1.0.0\"},\"routes\":{\"route-0123456789abcdef\":{\"id\":\"route-0123456789abcdef\",\"path\":\"/\",\"runtime\":\"offline_island\",\"entry\":\"root\",\"capabilities\":[],\"packs\":[],\"transfers\":[],\"allowlisted_origins\":[]}}}"
+    app.launchEnvironment["CROSSWAKE_REFERENCE_HOST_NAVIGATION_CONFIGURATION"] = "{\"schema_version\":1,\"run_binding\":\"current-run\",\"topology\":{\"topology_schema_version\":\"1.0.0\",\"manifest_schema_version\":\"1.0.0\",\"status\":\"ready\",\"entries\":[{\"route_id\":\"route-0123456789abcdef\",\"root_tab_id\":\"tab-0123456789abcdef\",\"presentation\":\"root\",\"deep_link_posture\":\"allow\",\"restoration_posture\":\"allow\"}]}}"
+    app.launchEnvironment["CROSSWAKE_REFERENCE_HOST_AUTHORIZED_ROUTE_IDS"] = "route-0123456789abcdef"
+    app.launch()
+
+    XCTAssertTrue(app.otherElements["cw-physical-navigation-shell"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.buttons["reference-pack-install"].exists)
+    XCTAssertFalse(app.staticTexts["proof-lane-ready"].exists)
+    XCTAssertFalse(app.staticTexts["proof-lane-navigation-marker"].exists)
+  }
+
   func testReferenceHostPhysicalStudyContract() throws {
     #if targetEnvironment(simulator)
       throw XCTSkip("PI-PREFLIGHT-DESTINATION")

@@ -594,7 +594,8 @@ defmodule Crosswake.ProofLane.EvidenceTest do
 
   defp physical_candidate do
     %{
-      schema_version: "1",
+      schema_version:
+        Integer.to_string(Crosswake.ProofLane.PhysicalIphoneContract.schema_version()),
       crosswake_version: "1.0.0",
       template_version: "1",
       commit_ref: "git-0123456789abcdef0123456789abcdef01234567",
@@ -616,7 +617,7 @@ defmodule Crosswake.ProofLane.EvidenceTest do
         kind: :physical_iphone_run_contract,
         canonical_bytes:
           Jason.encode!(%{
-            "schema_version" => 1,
+            "schema_version" => Crosswake.ProofLane.PhysicalIphoneContract.schema_version(),
             "device_class" => "physical_iphone",
             "ios_runtime_line" => "18.0",
             "outcome" => "passed",

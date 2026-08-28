@@ -10,52 +10,19 @@ defmodule CrosswakeExample.LocalFirst.Study do
   def apply_one(scope_ref, event, authority) when is_binary(scope_ref) and is_map(event) do
     id = Map.get(event, "client_mutation_id")
 
-    transaction =
+    with :ok <- authorize(authority) do
       Ecto.Multi.new()
-      |> Ecto.Multi.run(:idempotency, fn repo, _changes ->
-        case repo.get_by(ReviewEvent, client_mutation_id: id) do
-          nil -> {:ok, :new}
-          %ReviewEvent{scope_ref: nil} -> {:ok, :scope_conflict}
-          %ReviewEvent{scope_ref: ^scope_ref} -> {:ok, :duplicate}
-          %ReviewEvent{} -> {:ok, :scope_conflict}
+      |> Ecto.Multi.run(:effect, fn repo, _changes ->
+        if Map.get(authority, :rollback) do
+          {:error, :forced_rollback}
+        else
+          %ReviewEvent{}
+          |> ReviewEvent.changeset(persistence_attrs(scope_ref, event))
+          |> repo.insert()
         end
       end)
-      |> Ecto.Multi.run(:effect, fn repo, %{idempotency: state} ->
-        case state do
-          :duplicate ->
-            {:ok, :duplicate}
-
-          :scope_conflict ->
-            {:ok, :scope_conflict}
-
-          :new ->
-            if Map.get(authority, :rollback) do
-              {:error, :forced_rollback}
-            else
-              %ReviewEvent{}
-              |> ReviewEvent.changeset(persistence_attrs(scope_ref, event))
-              |> repo.insert()
-            end
-        end
-      end)
-
-    transaction
-    |> transact(scope_ref, id)
-    |> case do
-      {:race, result} ->
-        result
-
-      {:ok, %{effect: :scope_conflict}} ->
-        {:error, :scope_conflict}
-
-      {:ok, %{effect: :duplicate}} ->
-        current_outcome(scope_ref, id)
-
-      {:ok, %{effect: %ReviewEvent{}}} ->
-        {:ok, %{client_mutation_id: id, outcome: :accepted}}
-
-      {:error, _operation, _reason, _changes} ->
-        current_outcome(scope_ref, id)
+      |> transact(scope_ref, id)
+      |> outcome_after_insert(scope_ref, id)
     end
   end
 
@@ -73,11 +40,28 @@ defmodule CrosswakeExample.LocalFirst.Study do
     |> Map.put("scope_ref", scope_ref)
   end
 
+  defp authorize(%{denied: true}), do: {:error, :authority_denied}
+  defp authorize(_authority), do: :ok
+
   defp transact(transaction, scope_ref, id) do
     Repo.transaction(transaction)
   rescue
     Exqlite.Error -> {:race, race_outcome(scope_ref, id)}
   end
+
+  defp outcome_after_insert({:race, result}, _scope_ref, _id), do: result
+
+  defp outcome_after_insert({:ok, %{effect: %ReviewEvent{}}}, _scope_ref, id),
+    do: {:ok, %{client_mutation_id: id, outcome: :accepted}}
+
+  # Ecto surfaces the named global and scoped uniqueness constraints as a
+  # changeset error. The persisted row is read only after that failed insert,
+  # so the database — not a speculative query — remains idempotency authority.
+  defp outcome_after_insert({:error, :effect, %Ecto.Changeset{}, _changes}, scope_ref, id),
+    do: race_outcome(scope_ref, id)
+
+  defp outcome_after_insert({:error, _operation, _reason, _changes}, scope_ref, id),
+    do: current_outcome(scope_ref, id)
 
   defp current_outcome(scope_ref, id) do
     case Repo.get_by(ReviewEvent, client_mutation_id: id) do

@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import CrosswakeShellCore
 
 @main
 struct CrosswakeProofLaneApp: App {
@@ -29,11 +30,76 @@ struct CrosswakeProofLaneApp: App {
   var body: some Scene {
     WindowGroup {
       if physicalReferenceHost {
-        ReferencePhysicalStudyView()
+        ReferencePhysicalNavigationShell(environment: ProcessInfo.processInfo.environment)
       } else {
         ProofLaneView(adapter: adapter, navigationAdapter: navigationAdapter)
       }
     }
+  }
+}
+
+@MainActor
+final class ReferenceHostShellAuthority: ObservableObject {
+  let coordinator: NavigationCoordinator?
+
+  init(environment: [String: String]) {
+    guard let manifestText = environment["CROSSWAKE_REFERENCE_HOST_NAVIGATION_MANIFEST"],
+          let manifestData = manifestText.data(using: .utf8),
+          let manifest = try? JSONDecoder().decode(ShellManifest.self, from: manifestData),
+          let configuration = ReferenceHostNavigationConfiguration.decode(
+            envelope: environment["CROSSWAKE_REFERENCE_HOST_NAVIGATION_CONFIGURATION"],
+            currentNonce: environment["CROSSWAKE_REFERENCE_HOST_NAVIGATION_NONCE"],
+            manifestSchemaVersion: environment["CROSSWAKE_REFERENCE_HOST_NAVIGATION_MANIFEST_SCHEMA_VERSION"] ?? ""
+          ),
+          configuration.topology.validate(against: manifest) == .valid
+    else {
+      coordinator = nil
+      return
+    }
+
+    let authorizedRouteIDs = Set(
+      (environment["CROSSWAKE_REFERENCE_HOST_AUTHORIZED_ROUTE_IDS"] ?? "")
+        .split(separator: ",")
+        .map(String.init)
+    )
+    guard authorizedRouteIDs.isEmpty == false else {
+      coordinator = nil
+      return
+    }
+
+    coordinator = NavigationCoordinator(
+      topology: configuration.topology,
+      manifest: manifest,
+      resolver: { routeID, _ in
+        authorizedRouteIDs.contains(routeID) ? .authorized(.booting) : .denied
+      }
+    )
+  }
+}
+
+private struct ReferencePhysicalNavigationShell: View {
+  @StateObject private var authority: ReferenceHostShellAuthority
+
+  init(environment: [String: String]) {
+    _authority = StateObject(wrappedValue: ReferenceHostShellAuthority(environment: environment))
+  }
+
+  var body: some View {
+    if let coordinator = authority.coordinator {
+      NavigationShellView(navigationCoordinator: coordinator, makeLeafController: makeStudyLeaf)
+        .accessibilityIdentifier("cw-physical-navigation-shell")
+    } else {
+      ContentUnavailableView("Study unavailable", systemImage: "lock.fill")
+        .accessibilityIdentifier("cw-physical-study-unavailable")
+    }
+  }
+
+  private func makeStudyLeaf(_ presentation: ShellPresentation) -> UIViewController {
+    let controller = UIHostingController(rootView: ReferencePhysicalStudyView())
+    controller.title = "Study"
+    controller.tabBarItem = UITabBarItem(title: "Study", image: UIImage(systemName: "book.closed"), selectedImage: nil)
+    controller.view.accessibilityIdentifier = "cw-physical-study-leaf"
+    return controller
   }
 }
 
@@ -45,11 +111,14 @@ private struct ReferencePhysicalStudyView: View {
   @State private var freeFormReady = false
   @State private var recoveryReady = false
   @State private var freeFormDraft = ""
+  @State private var status = ReferenceStudyStatus.savedLocally
 
   var body: some View {
     VStack(spacing: 16) {
       Text("Offline study")
         .accessibilityIdentifier("reference-study-ready")
+
+      ReferenceStudyStatusView(status: status)
 
       Text(packReady ? "Pronunciation ready offline" : "Pronunciation unavailable")
         .accessibilityIdentifier("reference-pack-state")
@@ -97,6 +166,7 @@ private struct ReferencePhysicalStudyView: View {
       Button("Save selected answer") {
         Task {
           selectedReady = await adapter.submitSelectedAnswerOffline() == .passed
+          if selectedReady { updateStatus(.savedLocally) }
         }
       }
       .disabled(!packReady)
@@ -114,7 +184,12 @@ private struct ReferencePhysicalStudyView: View {
         guard !freeFormDraft.isEmpty else { return }
         Task {
           freeFormReady = await adapter.submitFreeFormAnswerOffline(freeFormDraft) == .passed
-          if freeFormReady { freeFormDraft = "" }
+          if freeFormReady {
+            freeFormDraft = ""
+            updateStatus(.syncPaused)
+          } else {
+            updateStatus(.needsAttention)
+          }
         }
       }
       .disabled(!selectedReady)
@@ -142,9 +217,59 @@ private struct ReferencePhysicalStudyView: View {
       if selectedReady && freeFormReady {
         Task {
           recoveryReady = await adapter.observeRecoveryAndRetainedWork() == .passed
+          if recoveryReady { updateStatus(.syncing) }
         }
       }
     }
+  }
+
+  private func updateStatus(_ value: ReferenceStudyStatus) {
+    guard status != value else { return }
+    status = value
+    UIAccessibility.post(notification: .announcement, argument: value.announcement)
+  }
+}
+
+private enum ReferenceStudyStatus: Equatable {
+  case savedLocally
+  case syncing
+  case needsAttention
+  case syncPaused
+
+  var label: String {
+    switch self {
+    case .savedLocally: "Saved on this iPhone"
+    case .syncing: "Syncing saved answers"
+    case .needsAttention: "Some saved answers need review"
+    case .syncPaused: "Saved answers paused"
+    }
+  }
+
+  var message: String {
+    switch self {
+    case .savedLocally: "It will sync when you’re back online."
+    case .syncing: ""
+    case .needsAttention: "Review saved answers when you’re ready."
+    case .syncPaused: "Your saved answers remain on this iPhone."
+    }
+  }
+
+  var announcement: String { message.isEmpty ? label : "\(label). \(message)" }
+}
+
+private struct ReferenceStudyStatusView: View {
+  let status: ReferenceStudyStatus
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 4) {
+      Text(status.label).font(.headline)
+      if !status.message.isEmpty { Text(status.message).font(.subheadline) }
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(12)
+    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+    .accessibilityElement(children: .combine)
+    .accessibilityIdentifier("reference-study-status")
   }
 }
 
