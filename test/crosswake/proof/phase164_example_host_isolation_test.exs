@@ -119,7 +119,9 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
     assert source =~ "MIX_ENV=test mix compile"
     refute source =~ "--max-cases"
 
-    {output, status} = System.cmd(script, ["--self-test-residue"], stderr_to_stdout: true)
+    {output, status} =
+      System.cmd(Path.expand(script), ["--self-test-residue"], stderr_to_stdout: true)
+
     assert status == 1
     assert output =~ "seed=17"
     assert output =~ "class=tagged"
