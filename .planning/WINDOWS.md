@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 14
+open_count: 15
 waived_count: 0
 fixed_count: 0
-total_count: 14
-last_updated: 2026-08-26T17:41:03.602Z
+total_count: 15
+last_updated: 2026-08-28T03:42:12.753Z
 ---
 
 # Broken Windows Ledger
@@ -29,6 +29,7 @@ last_updated: 2026-08-26T17:41:03.602Z
 | 12 | 162 | deviation | script/verify_physical_iphone_report_contract.sh |  | Plan-named support-matrix Mix task was unavailable; existing support-matrix contract suite was run instead. | open |  | 2026-08-05T02:37:57.808Z |  |
 | 13 | 162 | unrun-verify | .planning/phases/162-physical-iphone-adoption-proof/162-10-PLAN.md |  | Repository-wide adoption-context scan remains non-passing for the evidence completion marker and a pre-existing binary reference asset; it is not a passing verification claim. | open |  | 2026-08-26T17:41:03.526Z |  |
 | 14 | 162 | deviation | lib/crosswake/support_matrix/renderer.ex |  | Used authorized source-bound Evidence.check/2 because Evidence.check/1 deliberately rejects approved hashes without supplied canonical source bytes. | open |  | 2026-08-26T17:41:03.602Z |  |
+| 15 | 163.1 | deviation | examples/phoenix_host/native/ios/CrosswakeProofLane/ProofLaneDriver.swift |  | Reference proof target lacks CrosswakeShellCore linkage; private decoder preserves the closed transport boundary. | open |  | 2026-08-28T03:42:12.753Z |  |
 
 ````json
 [
@@ -198,6 +199,18 @@ last_updated: 2026-08-26T17:41:03.602Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-26T17:41:03.602Z",
+    "resolved_at": null
+  },
+  {
+    "id": 15,
+    "kind": "deviation",
+    "phase": "163.1",
+    "file": "examples/phoenix_host/native/ios/CrosswakeProofLane/ProofLaneDriver.swift",
+    "line": null,
+    "description": "Reference proof target lacks CrosswakeShellCore linkage; private decoder preserves the closed transport boundary.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-28T03:42:12.753Z",
     "resolved_at": null
   }
 ]
