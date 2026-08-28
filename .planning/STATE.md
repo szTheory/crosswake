@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 163.1
 current_phase_name: close-gap-v21-physical-adopter-composition
 status: executing
-stopped_at: Completed 163.1-03-PLAN.md
-last_updated: "2026-08-28T03:47:35.591Z"
+stopped_at: Completed 163.1-04-PLAN.md
+last_updated: "2026-08-28T03:58:21.726Z"
 last_activity: 2026-08-28
 last_activity_desc: Plan 163.1-02 installed the pending composition-gap ledger
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 126
-  completed_plans: 119
+  completed_plans: 120
   percent: 88
 current_plan: 2
 ---
@@ -23,7 +23,7 @@ current_plan: 2
 ## Current Position
 
 Phase: 163.1 (close-gap-v21-physical-adopter-composition) — EXECUTING
-Plan: 4 of 10
+Plan: 5 of 10
 Status: Ready to execute
 Last activity: 2026-08-28 — Plan 163.1-02 installed the pending composition-gap ledger
 
@@ -239,6 +239,7 @@ substitution, or every-iPhone coverage.
 - [Phase ?]: Physical preflight reloads a private handoff and accepts only an adopter-class ready topology.
 - [Phase ?]: The iOS process accepts topology only from the three-key nonce-bound xctestrun envelope.
 - [Phase ?]: D-20 permits only exact approved physical marker and reference-host AIFF paths; unknown binaries remain fail-closed.
+- [Phase ?]: Physical readiness is derived only from PackStore reconciliation of a verified host provider.
 
 ## Deferred Items
 
@@ -267,8 +268,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-28T03:47:35.579Z
-**Stopped at:** Completed 163.1-03-PLAN.md
+**Last session:** 2026-08-28T03:58:21.712Z
+**Stopped at:** Completed 163.1-04-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -364,6 +365,7 @@ this milestone reset.
 | Phase 163.1-close-gap-v21-physical-adopter-composition P02 | 10m | 1 tasks | 9 files |
 | Phase 163.1 P01 | 24m | 1 tasks | 7 files |
 | Phase 163.1-close-gap-v21-physical-adopter-composition P03 | 15m | 1 tasks | 4 files |
+| Phase 163.1-close-gap-v21-physical-adopter-composition P04 | 25m | 1 tasks | 4 files |
 
 ## Accumulated Context
 
