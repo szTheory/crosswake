@@ -74,6 +74,7 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
     refute File.exists?(second)
   end
 
+  @tag :requires_example_host
   test "owned WAL-mode Repo cleanup removes only its primary and exact sidecars" do
     ExampleHost.load!()
 
