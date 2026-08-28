@@ -116,7 +116,11 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
     File.mkdir_p!(fake_bin)
     File.cp!(@script, Path.join(fixture_root, @script))
     File.write!(Path.join(fixture_root, "mix.lock"), "%{fixture: :root}\n")
-    File.write!(Path.join(fixture_root, "examples/phoenix_host/mix.lock"), "%{fixture: :example}\n")
+
+    File.write!(
+      Path.join(fixture_root, "examples/phoenix_host/mix.lock"),
+      "%{fixture: :example}\n"
+    )
 
     fake_mix = Path.join(fake_bin, "mix")
 
@@ -234,7 +238,9 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
         path
         |> File.read!()
         |> String.split("\n")
-        |> Enum.filter(&(String.contains?(&1, "dependency-security") and String.contains?(&1, "${{")))
+        |> Enum.filter(
+          &(String.contains?(&1, "dependency-security") and String.contains?(&1, "${{"))
+        )
         |> Enum.map(&{path, &1})
       end)
 
