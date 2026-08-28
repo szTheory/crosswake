@@ -7,6 +7,7 @@ const HELP = `Usage: node scripts/ci_monitor.cjs <command> [options]
 Commands:
   runs [--branch <name>] [--limit <count>]
   pr-checks <pull-request>
+  pr-failures <pull-request>
   watch <run-id> [--interval <seconds>]
   fail-fast <run-id> [--interval <seconds>]
   log-failed <run-id>
@@ -111,6 +112,89 @@ function prChecks(args) {
   else if (pending.length) process.exitCode = 3;
 }
 
+function prFailures(args) {
+  const pullRequest = positiveInteger(args[0], "pull-request");
+  const { nameWithOwner } = JSON.parse(gh(["repo", "view", "--json", "nameWithOwner"], true));
+  const [owner, name] = nameWithOwner.split("/");
+  const query = `
+    query($owner: String!, $name: String!, $number: Int!) {
+      repository(owner: $owner, name: $name) {
+        pullRequest(number: $number) {
+          commits(last: 1) {
+            nodes {
+              commit {
+                statusCheckRollup {
+                  contexts(first: 100) {
+                    nodes {
+                      ... on CheckRun {
+                        name
+                        conclusion
+                        detailsUrl
+                        title
+                        summary
+                        text
+                        annotations(first: 50) {
+                          nodes { annotationLevel message path title }
+                        }
+                      }
+                      ... on StatusContext {
+                        context
+                        state
+                        targetUrl
+                        description
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+  const output = gh(
+    [
+      "api",
+      "graphql",
+      "-f",
+      `query=${query}`,
+      "-F",
+      `owner=${owner}`,
+      "-F",
+      `name=${name}`,
+      "-F",
+      `number=${pullRequest}`,
+    ],
+    true,
+  );
+  const nodes =
+    JSON.parse(output).data.repository.pullRequest.commits.nodes[0]?.commit.statusCheckRollup?.contexts
+      .nodes || [];
+  const failures = nodes.filter((node) =>
+    ["ACTION_REQUIRED", "CANCELLED", "ERROR", "FAILURE", "STALE", "TIMED_OUT"].includes(
+      node.conclusion || node.state,
+    ),
+  );
+
+  for (const failure of failures) {
+    const title = failure.title || failure.description || "";
+    const summary = failure.summary || failure.text || "";
+    process.stdout.write(
+      `${failure.name || failure.context}\t${failure.conclusion || failure.state}\t${failure.detailsUrl || failure.targetUrl || ""}\n`,
+    );
+    if (title) process.stdout.write(`${title}\n`);
+    if (summary) process.stdout.write(`${summary}\n`);
+    for (const annotation of failure.annotations?.nodes || []) {
+      process.stdout.write(
+        `${annotation.annotationLevel}\t${annotation.path || ""}\t${annotation.title || ""}\t${annotation.message}\n`,
+      );
+    }
+  }
+  process.stdout.write(`${JSON.stringify({ failing: failures.length })}\n`);
+  if (failures.length) process.exitCode = 1;
+}
+
 function watch(args) {
   const id = runId(args[0]);
   const interval = positiveInteger(option(args, "--interval", "10"), "--interval");
@@ -195,6 +279,8 @@ if (!command || command === "--help" || command === "help") {
   runs(args);
 } else if (command === "pr-checks") {
   prChecks(args);
+} else if (command === "pr-failures") {
+  prFailures(args);
 } else if (command === "watch" || command === "fail-fast") {
   watch(args);
 } else if (command === "log-failed") {
