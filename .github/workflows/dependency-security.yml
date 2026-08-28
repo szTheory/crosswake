@@ -27,9 +27,19 @@ jobs:
         with:
           version-file: .tool-versions
           version-type: strict
+          install-hex: false
 
       - name: Install Hex
-        run: mix local.hex --force
+        run: |
+          for attempt in 1 2 3; do
+            if mix local.hex --force; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+            sleep 2
+          done
 
       - name: Install root audit dependencies
         run: mix deps.get
