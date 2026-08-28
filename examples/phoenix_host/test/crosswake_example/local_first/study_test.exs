@@ -139,4 +139,9 @@ defmodule CrosswakeExample.LocalFirst.StudyTest do
     assert Enum.all?(results, &match?({:ok, %{outcome: :accepted}}, &1))
     assert Repo.aggregate(ReviewEvent, :count, :id) == 1
   end
+
+  test "denied authority halts before the event can persist", %{event: event} do
+    assert {:error, :authority_denied} = Study.apply_one(@scope, event, %{denied: true})
+    assert Repo.aggregate(ReviewEvent, :count, :id) == 0
+  end
 end
