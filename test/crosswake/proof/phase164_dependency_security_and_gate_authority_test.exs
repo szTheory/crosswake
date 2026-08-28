@@ -252,9 +252,14 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
 
     assert source =~ "name: #{@security_context}"
     assert source =~ "run: mix local.hex --force"
+    assert length(Regex.scan(~r/^\s*run: mix deps\.get$/m, source)) == 2
+    assert source =~ "working-directory: examples/phoenix_host"
     assert source =~ "run: script/check_dependency_security.sh\n"
 
     assert :binary.match(source, "run: mix local.hex --force") <
+             :binary.match(source, "run: script/check_dependency_security.sh\n")
+
+    assert :binary.match(source, "working-directory: examples/phoenix_host") <
              :binary.match(source, "run: script/check_dependency_security.sh\n")
 
     assert source =~
