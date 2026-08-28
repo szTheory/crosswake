@@ -167,6 +167,38 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
     end
   end
 
+  @tag :tmp_dir
+  test "exact aggregator leaf parity accepts ordering-only differences", %{tmp_dir: tmp_dir} do
+    fixture = Path.join(tmp_dir, "reordered.yml")
+    write_aggregator_fixture!(fixture, ["leaf-b", "leaf-a"])
+
+    assert aggregator_wiring_errors(fixture, "merge-blocking-fixture", ["leaf-a", "leaf-b"]) == []
+  end
+
+  @tag :tmp_dir
+  test "exact aggregator leaf parity reports a removed required leaf", %{tmp_dir: tmp_dir} do
+    fixture = Path.join(tmp_dir, "missing.yml")
+    write_aggregator_fixture!(fixture, ["leaf-a"])
+
+    assert aggregator_wiring_errors(fixture, "merge-blocking-fixture", ["leaf-a", "leaf-b"]) == [
+             "aggregator 'merge-blocking-fixture' in #{fixture} has invalid needs parity: " <>
+               "missing=[\"leaf-b\"] unexpected=[] " <>
+               "expected=[\"leaf-a\", \"leaf-b\"] declared=[\"leaf-a\"]"
+           ]
+  end
+
+  @tag :tmp_dir
+  test "exact aggregator leaf parity reports an undeclared added leaf", %{tmp_dir: tmp_dir} do
+    fixture = Path.join(tmp_dir, "unexpected.yml")
+    write_aggregator_fixture!(fixture, ["leaf-a", "leaf-extra"])
+
+    assert aggregator_wiring_errors(fixture, "merge-blocking-fixture", ["leaf-a"]) == [
+             "aggregator 'merge-blocking-fixture' in #{fixture} has invalid needs parity: " <>
+               "missing=[] unexpected=[\"leaf-extra\"] " <>
+               "expected=[\"leaf-a\"] declared=[\"leaf-a\", \"leaf-extra\"]"
+           ]
+  end
+
   # ---------------------------------------------------------------------------
   # Claim 2 anchor — the negative-control workflow (which proves the rollup
   # semantics) must exist and keep its footgun-1 (skipped-leaf) arm, so it
@@ -193,6 +225,39 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
     end
   end
 
+  test "aggregator negative control awaits every closed-policy action outcome" do
+    src = File.read!(@negctl)
+
+    for result_class <- [
+          "success",
+          "failure",
+          "cancelled",
+          "skipped_disallowed",
+          "skipped_irrelevant",
+          "timed_out",
+          "action_required",
+          "stale",
+          "unknown",
+          "empty",
+          "missing"
+        ] do
+      assert String.contains?(src, "id: result_#{result_class}")
+      assert String.contains?(src, "steps.result_#{result_class}.outcome")
+    end
+
+    assert String.contains?(
+             src,
+             ~s(python3 script/check_aggregator_result_semantics.py --assert-outcomes "$OUTCOMES_JSON")
+           )
+
+    assert Regex.scan(~r/^\s+allowed-skips:/m, src) ==
+             [["          allowed-skips:"]]
+
+    for file <- [@negctl, @gate | Enum.map(@siblings, &elem(&1, 0))] do
+      refute File.read!(file) =~ "allowed-failures:"
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # Pure-Elixir structural wiring check (no python/PyYAML — stays hermetic).
   # Scopes to the aggregator's YAML block and returns a list of wiring errors
@@ -208,14 +273,19 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
         if_errors =
           if Regex.match?(~r/^\s+if:\s*always\(\)\s*(#.*)?$/m, block),
             do: [],
-            else: ["'#{aggregator}' must declare `if: always()` (a skipped dep would else count as success)"]
+            else: [
+              "'#{aggregator}' must declare `if: always()` (a skipped dep would else count as success)"
+            ]
 
         alls_green_errors =
-          if String.contains?(block, "re-actors/alls-green@") and String.contains?(block, "toJSON(needs)"),
-            do: [],
-            else: ["'#{aggregator}' must use re-actors/alls-green with `jobs: ${{ toJSON(needs) }}`"]
+          if String.contains?(block, "re-actors/alls-green@") and
+               String.contains?(block, "toJSON(needs)"),
+             do: [],
+             else: [
+               "'#{aggregator}' must use re-actors/alls-green with `jobs: ${{ toJSON(needs) }}`"
+             ]
 
-        if_errors ++ alls_green_errors ++ missing_needs(block, leaves)
+        if_errors ++ alls_green_errors ++ needs_parity_errors(block, leaves, file, aggregator)
     end
   end
 
@@ -236,17 +306,60 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
     end
   end
 
-  # Each leaf must appear in the block's `needs: [ ... ]` list.
-  defp missing_needs(block, leaves) do
+  defp write_aggregator_fixture!(path, leaves) do
+    File.write!(
+      path,
+      """
+      name: Fixture
+      jobs:
+        decoy:
+          if: always()
+          needs: [leaf-a, leaf-b, leaf-extra]
+          steps:
+            - uses: re-actors/alls-green@release/v1
+              with:
+                jobs: \${{ toJSON(needs) }}
+        merge-blocking-fixture:
+          if: always()
+          needs: [#{Enum.join(leaves, ", ")}]
+          steps:
+            - uses: re-actors/alls-green@release/v1
+              with:
+                jobs: \${{ toJSON(needs) }}
+      """
+    )
+  end
+
+  # The named aggregator's single-line `needs: [ ... ]` list must be exactly the
+  # expected set. Ordering is presentation-only; missing and unexpected leaves
+  # both fail with workflow/aggregator provenance.
+  defp needs_parity_errors(block, leaves, file, aggregator) do
     declared =
       case Regex.run(~r/needs:\s*\[([^\]]*)\]/, block) do
-        [_, inner] -> inner |> String.split(",") |> Enum.map(&String.trim/1)
-        _ -> []
+        [_, inner] ->
+          inner
+          |> String.split(",")
+          |> Enum.map(&String.trim/1)
+          |> Enum.reject(&(&1 == ""))
+          |> Enum.uniq()
+          |> Enum.sort()
+
+        _ ->
+          []
       end
 
-    case Enum.reject(leaves, &(&1 in declared)) do
-      [] -> []
-      missing -> ["needs: is missing #{inspect(missing)} (declared: #{inspect(declared)})"]
+    expected = leaves |> Enum.uniq() |> Enum.sort()
+    missing = expected -- declared
+    unexpected = declared -- expected
+
+    if missing == [] and unexpected == [] do
+      []
+    else
+      [
+        "aggregator '#{aggregator}' in #{file} has invalid needs parity: " <>
+          "missing=#{inspect(missing)} unexpected=#{inspect(unexpected)} " <>
+          "expected=#{inspect(expected)} declared=#{inspect(declared)}"
+      ]
     end
   end
 

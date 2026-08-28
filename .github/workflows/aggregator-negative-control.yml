@@ -3,17 +3,14 @@ name: Aggregator Negative Control
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
-# Hermetically PROVES the re-actors/alls-green rollup pattern — shared byte-for-byte by all three
-# merge-blocking aggregators (native-behavioral-proof, contract-drift, offline-sync-e2e) — actually
-# FAILS on a failed leaf result AND on a SKIPPED leaf result, and PASSES on an all-green result.
-# Single ubuntu job, ~15s. No Android, no macOS, no live PR.
+# Hermetically PROVES the re-actors/alls-green rollup pattern shared by all three named required
+# aggregators against the complete closed result policy. Single ubuntu job; no credentials,
+# Android, macOS, or live PR.
 #
 # This discharges 134-UAT Test #1 claim 2 (rollup semantics) FOREVER, without the live-PR
-# observation it used to require. The skipped-result case is the load-bearing one: it is the only
-# case that distinguishes the correct design (alls-green treats skipped as not-success — which is why
-# the real aggregators carry `if: always()` so they RUN over a skipped leaf and then fail) from
-# "footgun 1" (a naive needs:-only rollup that lets a skipped leaf pass). If a future alls-green pin
-# bump changes skip/failure handling, this lane goes RED.
+# observation it used to require. Undeclared skipped work stays fail-closed; exactly one synthetic
+# leaf is explicitly classified irrelevant and may use allowed-skips. If a future alls-green pin
+# changes any closed-policy result, this lane goes RED.
 #
 # DESIGN: each arm feeds alls-green a literal `{"synthetic-leaf": {"result": "<r>"}}` — the exact
 # shape `${{ toJSON(needs) }}` produces — under `continue-on-error: true`, and the final step asserts
@@ -23,8 +20,7 @@ concurrency:
 # (sibling parity), combined with this proof of alls-green's skipped/failed semantics, is the complete
 # chain: a skipped/failed real leaf fails the real aggregator and blocks the merge.
 #
-# DO NOT set allowed-failures / allowed-skips on alls-green — the empty defaults are exactly what make
-# skipped/failed count as not-success, i.e. the property being proven.
+# Do not add a failure exemption. Only the explicitly irrelevant skipped arm may use allowed-skips.
 
 permissions:
   contents: read
@@ -43,42 +39,92 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: alls-green must FAIL on a failed leaf result
-        id: neg_fail
-        continue-on-error: true
-        uses: re-actors/alls-green@release/v1
-        with:
-          jobs: '{"synthetic-leaf": {"result": "failure"}}'
-
-      - name: alls-green must FAIL on a SKIPPED leaf result (footgun 1)
-        id: neg_skip
-        continue-on-error: true
-        uses: re-actors/alls-green@release/v1
-        with:
-          jobs: '{"synthetic-leaf": {"result": "skipped"}}'
+      - uses: actions/checkout@v7
 
       - name: alls-green must PASS on an all-green leaf result
-        id: pos
+        id: result_success
         continue-on-error: true
         uses: re-actors/alls-green@release/v1
         with:
           jobs: '{"synthetic-leaf": {"result": "success"}}'
 
-      - name: Assert alls-green rollup semantics
+      - name: alls-green must FAIL on a failed leaf result
+        id: result_failure
+        continue-on-error: true
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: '{"synthetic-leaf": {"result": "failure"}}'
+
+      - name: alls-green must FAIL on a cancelled leaf result
+        id: result_cancelled
+        continue-on-error: true
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: '{"synthetic-leaf": {"result": "cancelled"}}'
+
+      - name: alls-green must FAIL on an undeclared skipped leaf result
+        id: result_skipped_disallowed
+        continue-on-error: true
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: '{"synthetic-leaf": {"result": "skipped"}}'
+
+      - name: alls-green must PASS on an explicitly irrelevant skipped leaf result
+        id: result_skipped_irrelevant
+        continue-on-error: true
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: '{"explicitly-irrelevant-leaf": {"result": "skipped"}}'
+          allowed-skips: explicitly-irrelevant-leaf
+
+      - name: alls-green must FAIL on a timed_out result
+        id: result_timed_out
+        continue-on-error: true
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: '{"synthetic-leaf": {"result": "timed_out"}}'
+
+      - name: alls-green must FAIL on an action_required result
+        id: result_action_required
+        continue-on-error: true
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: '{"synthetic-leaf": {"result": "action_required"}}'
+
+      - name: alls-green must FAIL on a stale result
+        id: result_stale
+        continue-on-error: true
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: '{"synthetic-leaf": {"result": "stale"}}'
+
+      - name: alls-green must FAIL on an unknown result
+        id: result_unknown
+        continue-on-error: true
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: '{"synthetic-leaf": {"result": "unknown"}}'
+
+      - name: alls-green must FAIL on an empty result
+        id: result_empty
+        continue-on-error: true
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: '{"synthetic-leaf": {"result": ""}}'
+
+      - name: alls-green must FAIL when a leaf result is missing
+        id: result_missing
+        continue-on-error: true
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: '{"synthetic-leaf": {}}'
+
+      - name: Assert every alls-green outcome through the closed policy harness
+        if: always()
         env:
-          NEG_FAIL: ${{ steps.neg_fail.outcome }}
-          NEG_SKIP: ${{ steps.neg_skip.outcome }}
-          POS: ${{ steps.pos.outcome }}
+          OUTCOMES_JSON: >-
+            {"success":"${{ steps.result_success.outcome }}","failure":"${{ steps.result_failure.outcome }}","cancelled":"${{ steps.result_cancelled.outcome }}","skipped_disallowed":"${{ steps.result_skipped_disallowed.outcome }}","skipped_irrelevant":"${{ steps.result_skipped_irrelevant.outcome }}","timed_out":"${{ steps.result_timed_out.outcome }}","action_required":"${{ steps.result_action_required.outcome }}","stale":"${{ steps.result_stale.outcome }}","unknown":"${{ steps.result_unknown.outcome }}","empty":"${{ steps.result_empty.outcome }}","missing":"${{ steps.result_missing.outcome }}"}
         run: |
           set -euo pipefail
-          echo "alls-green on a failed  leaf result -> step outcome: $NEG_FAIL (expect failure)"
-          echo "alls-green on a skipped leaf result -> step outcome: $NEG_SKIP (expect failure)"
-          echo "alls-green on a green   leaf result -> step outcome: $POS (expect success)"
-          rc=0
-          [ "$NEG_FAIL" = "failure" ] || { echo "::error::BROKEN — alls-green did NOT fail on a FAILED leaf result"; rc=1; }
-          [ "$NEG_SKIP" = "failure" ] || { echo "::error::BROKEN — alls-green did NOT fail on a SKIPPED leaf result (footgun 1 regressed)"; rc=1; }
-          [ "$POS" = "success" ] || { echo "::error::BROKEN — alls-green did NOT pass on an all-green leaf result"; rc=1; }
-          if [ "$rc" -eq 0 ]; then
-            echo "OK — alls-green fails on failed AND skipped, passes on green. Rollup semantics proven." >> "$GITHUB_STEP_SUMMARY"
-          fi
-          exit "$rc"
+          python3 script/check_aggregator_result_semantics.py --assert-outcomes "$OUTCOMES_JSON"
+          echo "OK — complete closed aggregator result policy matched the local harness." >> "$GITHUB_STEP_SUMMARY"
