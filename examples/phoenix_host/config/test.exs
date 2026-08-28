@@ -17,4 +17,4 @@ config :crosswake_example,
 # never a runtime authority source.
 config :crosswake,
        :proof_lane_host_authority,
-       CrosswakeExample.LocalFirst.PhysicalIphoneAuthority
+       CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityFixture
