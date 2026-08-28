@@ -186,6 +186,7 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
 
     scanned_paths = [
       ".github/actions/private-check.yml",
+      "scripts/private-check.cjs",
       "script/private-check.sh",
       ".planning/phases/999-future-proof/999-NOTES.md"
     ]

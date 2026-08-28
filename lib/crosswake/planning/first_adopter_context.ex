@@ -65,7 +65,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
   ]
 
   @scannable_extensions ~w(
-    .bak .bat .c .css .eex .ex .exs .gradle .heex .html .java .js .json .kt .kts .lock .md .mjs
+    .bak .bat .c .cjs .css .eex .ex .exs .gradle .heex .html .java .js .json .kt .kts .lock .md .mjs
     .orig .pbxproj .plist .properties .py .sh .svg .swift .tape .toml .ts .tsx .txt .xcscheme .xml .yaml .yml
   )
   @physical_evidence_completion_marker ".planning/workstreams/first-b2c-adopter-readiness/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete"
