@@ -91,9 +91,9 @@ defmodule Crosswake.Proof.Phase164ExUnitOwnershipTest do
   } do
     path =
       prepare_tree!(tmp, """
-      defmodule AdvisoryOnlyTest do
+      defmodule SkippedOnlyTest do
         use ExUnit.Case
-        @moduletag :advisory_only
+        @moduletag :skip
         test "not in a merge lane", do: assert(true)
       end
       """)
@@ -103,7 +103,7 @@ defmodule Crosswake.Proof.Phase164ExUnitOwnershipTest do
     assert status == 1
     assert out =~ "unowned-exunit-file"
     assert out =~ path
-    assert out =~ "advisory_only"
+    assert out =~ "skip"
     assert out =~ "remove/move the exclusion"
     assert out =~ "add the class to a merge-blocking lane"
   end
@@ -114,7 +114,7 @@ defmodule Crosswake.Proof.Phase164ExUnitOwnershipTest do
       prepare_tree!(tmp, """
       defmodule LexicalLookalikeTest do
         use ExUnit.Case
-        @moduletag :advisory_only
+        @moduletag :skip
         # @tag :requires_example_host
         @message "@moduletag :requires_example_host"
         test "still advisory only", do: assert(@message != "")
