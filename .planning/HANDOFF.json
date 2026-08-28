@@ -1,0 +1,77 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-08-28T16:11:46.000Z",
+  "phase": "163.1",
+  "phase_name": "close-gap-v21-physical-adopter-composition",
+  "phase_dir": ".planning/phases/163.1-close-gap-v21-physical-adopter-composition",
+  "plan": 8,
+  "task": 2,
+  "total_tasks": 2,
+  "status": "parked_external_dependency",
+  "completed_tasks": [
+    {
+      "id": 1,
+      "name": "Version exact device/backend evidence transaction",
+      "status": "done",
+      "commit": "8736683e"
+    },
+    {
+      "id": 2,
+      "name": "Execute source-bound physical proof and record observed truth",
+      "status": "in_progress",
+      "progress": "Automation-first preflight is committed; every prerequisite except the validated private adopter handoff reports ready. No physical transaction or evidence promotion was attempted."
+    }
+  ],
+  "remaining_tasks": [
+    {
+      "id": 2,
+      "name": "Execute source-bound physical proof and record observed truth",
+      "status": "blocked"
+    },
+    {
+      "id": 9,
+      "name": "Refresh Nyquist validations and independently re-audit the milestone",
+      "status": "not_started"
+    },
+    {
+      "id": 10,
+      "name": "Reconcile final requirement, policy, capability, support, and guide truth",
+      "status": "not_started"
+    }
+  ],
+  "blockers": [
+    {
+      "description": "PI-PREFLIGHT-ADOPTER-HANDOFF: no genuinely validated sanitized First B2C Adopter route handoff exists at the conventional private path or an explicit override.",
+      "type": "external",
+      "workaround": "None. Do not substitute fixtures, defaults, guessed route facts, or reference-host data. Resume only when adopter-supplied sanitized route facts exist."
+    }
+  ],
+  "async_jobs": [],
+  "human_actions_pending": [
+    {
+      "action": "Provide a genuinely sanitized adopter route handoff at ~/.config/crosswake/first-adopter-handoff.json, or through CROSSWAKE_FIRST_ADOPTER_HANDOFF_PATH.",
+      "context": "The handoff must be derived from real adopter route facts and validate through AdopterHandoff, RouteInventory, and NavigationTopology. Device discovery and local host setup are automated.",
+      "blocking": true
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Use convention-over-configuration for physical proof setup.",
+      "rationale": "Exactly one connected iPhone and the local reference host are auto-discoverable; environment variables remain optional ambiguity/CI overrides.",
+      "phase": "163.1"
+    },
+    {
+      "decision": "Never synthesize an eligible adopter handoff from repository fixtures or defaults.",
+      "rationale": "Concrete route safety facts are external product authority; fabricating them would invalidate the physical support claim and violate the governing ADR.",
+      "phase": "163.1"
+    },
+    {
+      "decision": "Pause Crosswake when adopter route facts do not exist.",
+      "rationale": "The governing ADR says the public-v1 mobile path is the forcing function and prohibits framework work beyond demonstrated evidence defects.",
+      "phase": "163.1"
+    }
+  ],
+  "uncommitted_files": [],
+  "next_action": "Confirm a real sanitized adopter handoff exists, place it at the conventional private path, then run $gsd-resume-work. The resumed executor must first validate the handoff and rerun readiness; it must not execute or promote physical evidence unless every check is ready and the fixed evidence destination is absent.",
+  "context_notes": "v21 is intentionally parked, not completed or archived, at Plan 163.1-08 Task 2. Plans 01-07 are complete. Plan 08 evidence schema, transaction contract, and automation-first preflight are committed. Plans 09-10 have not started. No async job or server is running. The ignored .env.local is not an authority source and need not be populated for device or host discovery. A separate v22 quality-ratchet workstream may proceed without changing this support gate."
+}
