@@ -4,17 +4,17 @@ milestone: v22.0
 milestone_name: Quality Ratchet & Release Readiness
 current_phase: 164
 current_phase_name: Dependency Security and Gate Authority
-status: ready_to_plan
-stopped_at: Completed 164-01-PLAN.md
-last_updated: "2026-08-28T19:36:01.264Z"
+status: verifying
+stopped_at: Completed 164-05-PLAN.md
+last_updated: "2026-08-28T20:50:56.613Z"
 last_activity: 2026-08-28
-last_activity_desc: v22.0 roadmap created with 26/26 requirements mapped
-state_head: b32c7f0fbd041a93d1aa98ae39b7e9ba98c64845
+last_activity_desc: Plan 164-05 closed SQLite sidecar and default-lane authority gaps
+state_head: 5bf65b9d0c0c670f0ad32148c753dc8a40a3d4cb
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 4
-  completed_plans: 1
+  total_plans: 5
+  completed_plans: 5
   percent: 0
 workstream: quality-ratchet-release
 ---
@@ -32,9 +32,9 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 164 (Dependency Security and Gate Authority) — READY TO EXECUTE
-Plan: Not planned
-Status: Ready to discuss or plan
-Last activity: 2026-08-28 — v22.0 roadmap created with 26/26 requirements mapped
+Plan: 5 of 5
+Status: Phase complete — ready for verification
+Last activity: 2026-08-28 — Plan 164-05 closed SQLite sidecar and default-lane authority gaps
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 164 P01 | 7 min | 2 tasks | 6 files |
+| Phase 164 P05 | 15 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,8 @@ Progress: [░░░░░░░░░░] 0%
 
 - [Phase 164]: Plan 164-01 retained public compatibility declarations and constrained lock changes to the prescribed patched targets plus Plug Crypto 2.2.0.
 - [Phase 164]: Dependency security has one literal producer; required-check registration remains green-first post-main work through the existing registrar.
+- [Phase 164]: Derive owned SQLite cleanup from the unique primary path plus exact -wal and -shm companions; never glob shared temp state.
+- [Phase 164]: Keep default/hermetic and requires-example-host lane manifests conditional and independent so neither execution class can mask the other.
 
 ### Pending Todos
 
@@ -93,6 +96,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-08-28T19:36:01.255Z
-Stopped at: Completed 164-01-PLAN.md
+Last session: 2026-08-28T20:50:12.321Z
+Stopped at: Completed 164-05-PLAN.md
 Resume file: None

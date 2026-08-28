@@ -22,10 +22,10 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 - [ ] **CIG-01**: Every merge-blocking check context has exactly one authoritative producer, so a
   green duplicate cannot mask a red result.
 
-- [ ] **CIG-02**: Every intended ExUnit test file, including example-host-tagged tests, is exercised
+- [x] **CIG-02**: Every intended ExUnit test file, including example-host-tagged tests, is exercised
   by at least one merge-blocking CI path.
 
-- [ ] **CIG-03**: Tests that mutate application configuration, code paths, files, or databases
+- [x] **CIG-03**: Tests that mutate application configuration, code paths, files, or databases
   restore their state and pass both in isolation and in the full suite.
 
 - [ ] **CIG-04**: Required aggregators fail closed for failed, cancelled, or missing required work
@@ -136,8 +136,8 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 | SEC-02 | Phase 164 | Complete |
 | SEC-03 | Phase 164 | Complete |
 | CIG-01 | Phase 164 | Pending |
-| CIG-02 | Phase 164 | Pending |
-| CIG-03 | Phase 164 | Pending |
+| CIG-02 | Phase 164 | Complete |
+| CIG-03 | Phase 164 | Complete |
 | CIG-04 | Phase 164 | Pending |
 | CIP-01 | Phase 165 | Pending |
 | CIP-02 | Phase 165 | Pending |
