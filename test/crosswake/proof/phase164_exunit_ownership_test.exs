@@ -31,6 +31,21 @@ defmodule Crosswake.Proof.Phase164ExUnitOwnershipTest do
       """)
     end
 
+    unless Keyword.get(opts, :without_default_lane, false) do
+      workflow = Path.join(tmp, ".github/workflows/phase130-proof.yml")
+      File.mkdir_p!(Path.dirname(workflow))
+
+      File.write!(workflow, """
+      name: Phase 130 Proof
+      jobs:
+        core-hermetic-proof:
+          name: core hermetic proof (merge-blocking)
+          runs-on: ubuntu-latest
+          steps:
+            - run: mix test --exclude requires_example_host --exclude advisory_only
+      """)
+    end
+
     path
   end
 
@@ -59,6 +74,31 @@ defmodule Crosswake.Proof.Phase164ExUnitOwnershipTest do
 
     assert status == 0, out
     assert out =~ "default/hermetic"
+  end
+
+  @tag :tmp_dir
+  test "the default hermetic class fails closed when its broad merge-blocking lane is missing", %{
+    tmp_dir: tmp
+  } do
+    prepare_tree!(
+      tmp,
+      """
+      defmodule DefaultWithoutLaneTest do
+        use ExUnit.Case
+        test "would be unowned", do: assert(true)
+      end
+      """,
+      without_default_lane: true
+    )
+
+    {out, status} = run_detector(tmp)
+
+    assert status == 1
+    assert out =~ "missing-execution-class"
+    assert out =~ "phase130-proof.yml"
+    assert out =~ "core-hermetic-proof"
+    assert out =~ "core hermetic proof (merge-blocking)"
+    assert out =~ "restore core-hermetic-proof"
   end
 
   @tag :tmp_dir
