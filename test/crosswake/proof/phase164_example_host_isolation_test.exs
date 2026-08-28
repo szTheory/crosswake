@@ -105,6 +105,42 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
     refute source =~ "--max-cases"
   end
 
+  test "the bounded evidence command owns all six seed and execution-class runs" do
+    script = "script/check_example_host_isolation.sh"
+    source = File.read!(script)
+    stat = File.stat!(script)
+
+    assert Bitwise.band(stat.mode, 0o111) != 0
+    assert source =~ ~s(seeds="17 101 1009")
+    assert source =~ ~s(mix test --only requires_example_host --seed "$seed")
+    assert source =~ ~s(CROSSWAKE_INCLUDE_EXAMPLE_HOST=1 mix test --seed "$seed")
+    assert source =~ "MIX_ENV=dev mix deps.get"
+    assert source =~ "MIX_ENV=dev mix compile"
+    assert source =~ "MIX_ENV=test mix compile"
+    refute source =~ "--max-cases"
+
+    {output, status} = System.cmd(script, ["--self-test-residue"], stderr_to_stdout: true)
+    assert status == 1
+    assert output =~ "seed=17"
+    assert output =~ "class=tagged"
+    assert output =~ "crosswake-example-host-self-test.sqlite3"
+  end
+
+  test "the stable example-host lane delegates to the matrix without serial or fixed-count claims" do
+    workflow = File.read!(".github/workflows/requires-example-host-gate.yml")
+
+    assert workflow =~ "merge-blocking-requires-example-host:\n"
+    assert workflow =~ "name: merge-blocking-requires-example-host"
+    assert workflow =~ "runs-on: ubuntu-latest"
+    assert workflow =~ "working-directory: examples/phoenix_host"
+    assert workflow =~ "MIX_ENV: dev"
+    assert workflow =~ "MIX_ENV: test"
+    assert workflow =~ "script/check_example_host_isolation.sh --matrix-only"
+    refute workflow =~ "--max-cases"
+    refute workflow =~ ~r/\b20 test files\b/
+    refute workflow =~ ~r/\b51 tests\b/
+  end
+
   defp unique_atom(prefix) do
     String.to_atom("phase164_#{prefix}_#{System.unique_integer([:positive])}")
   end
