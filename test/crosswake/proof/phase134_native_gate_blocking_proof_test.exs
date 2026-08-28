@@ -252,7 +252,7 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
                "'#{aggregator}' must use re-actors/alls-green with `jobs: ${{ toJSON(needs) }}`"
              ]
 
-        if_errors ++ alls_green_errors ++ missing_needs(block, leaves)
+        if_errors ++ alls_green_errors ++ needs_parity_errors(block, leaves, file, aggregator)
     end
   end
 
@@ -297,17 +297,36 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
     )
   end
 
-  # Each leaf must appear in the block's `needs: [ ... ]` list.
-  defp missing_needs(block, leaves) do
+  # The named aggregator's single-line `needs: [ ... ]` list must be exactly the
+  # expected set. Ordering is presentation-only; missing and unexpected leaves
+  # both fail with workflow/aggregator provenance.
+  defp needs_parity_errors(block, leaves, file, aggregator) do
     declared =
       case Regex.run(~r/needs:\s*\[([^\]]*)\]/, block) do
-        [_, inner] -> inner |> String.split(",") |> Enum.map(&String.trim/1)
-        _ -> []
+        [_, inner] ->
+          inner
+          |> String.split(",")
+          |> Enum.map(&String.trim/1)
+          |> Enum.reject(&(&1 == ""))
+          |> Enum.uniq()
+          |> Enum.sort()
+
+        _ ->
+          []
       end
 
-    case Enum.reject(leaves, &(&1 in declared)) do
-      [] -> []
-      missing -> ["needs: is missing #{inspect(missing)} (declared: #{inspect(declared)})"]
+    expected = leaves |> Enum.uniq() |> Enum.sort()
+    missing = expected -- declared
+    unexpected = declared -- expected
+
+    if missing == [] and unexpected == [] do
+      []
+    else
+      [
+        "aggregator '#{aggregator}' in #{file} has invalid needs parity: " <>
+          "missing=#{inspect(missing)} unexpected=#{inspect(unexpected)} " <>
+          "expected=#{inspect(expected)} declared=#{inspect(declared)}"
+      ]
     end
   end
 
