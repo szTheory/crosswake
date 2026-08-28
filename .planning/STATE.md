@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
-current_phase: 163
-status: completed
-stopped_at: Phase 163 verified and complete
-last_updated: "2026-08-27T21:54:52.566Z"
+current_phase: 163.1
+current_phase_name: "Close gap: v21 physical adopter composition"
+status: planning
+stopped_at: Phase 163.1 context gathered
+last_updated: "2026-08-28T02:31:14.504Z"
 last_activity: 2026-08-27
-last_activity_desc: Phase 163 complete
+last_activity_desc: Phase 163.1 inserted; run $gsd-plan-phase 163.1
 progress:
-  total_phases: 7
+  total_phases: 8
   completed_phases: 7
   total_plans: 116
   completed_plans: 116
-  percent: 100
-current_phase_name: First B2C Adopter Reference Host Integration
+  percent: 88
 current_plan: 1
 ---
 
@@ -22,10 +22,10 @@ current_plan: 1
 
 ## Current Position
 
-Phase: 163
-Plan: 1 of 1 complete
-Status: All phases complete
-Last activity: 2026-08-27 — Phase 163 complete
+Phase: 163.1 — Close gap: v21 physical adopter composition
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-27 — Phase 163.1 inserted; run $gsd-plan-phase 163.1
 
 ## Active Objective
 
@@ -257,9 +257,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-27T19:05:49.873Z
-**Stopped at:** Completed 162-15-PLAN.md
-**Resume file:** None
+**Last session:** 2026-08-28T02:31:14.475Z
+**Stopped at:** Phase 163.1 context gathered
+**Resume file:** .planning/phases/163.1-close-gap-v21-physical-adopter-composition/163.1-CONTEXT.md
 
 ## Performance Metrics
 
@@ -364,3 +364,5 @@ this milestone reset.
 - Phase 163 completed: generated Phoenix/iOS host, exact foreground learning bundle, scoped replay
   authority, and physical report/evidence producers are verified; the final physical record closed
   Phase 162's narrow device-evidence gate.
+
+- Phase 163.1 inserted after Phase 163: Close gap: v21 physical adopter composition (URGENT)
