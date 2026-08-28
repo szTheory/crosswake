@@ -28,6 +28,9 @@ jobs:
           version-file: .tool-versions
           version-type: strict
 
+      - name: Install Hex
+        run: mix local.hex --force
+
       - name: Audit both supported dependency locks
         run: script/check_dependency_security.sh
 
