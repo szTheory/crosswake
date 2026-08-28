@@ -51,6 +51,8 @@ created: 2026-08-28
 | 164-03-02 | 03 | 2 | CIG-03 | T-164-09 | Tagged and complete suites pass for all six seed/class combinations at seeds 17, 101, and 1009 without residue | integration | `script/check_example_host_isolation.sh` | ✅ | ✅ green |
 | 164-04-01 | 04 | 2 | CIG-04 | T-164-02 | Named aggregators reject missing or unexpected leaves through exact parity | structural negative control | `mix test test/crosswake/proof/phase134_native_gate_blocking_proof_test.exs` | ✅ | ✅ green |
 | 164-04-02 | 04 | 2 | CIG-04 | T-164-02, T-164-10 | Credential-free full result vocabulary plus missing/inverted records fail closed, and CI awaits the same outcome assertion | semantic matrix + workflow negative control | `python3 script/check_aggregator_result_semantics.py --self-test` | ✅ | ✅ green |
+| 164-05-01 | 05 | 4 | CIG-03 | T-164-06, T-164-11 | An owned WAL-mode Repo exposes its primary/WAL/SHM resources, then exact owned cleanup removes all three after Repo shutdown while preserving unowned state | behavioral unit + integration | `mix test test/crosswake/proof/phase164_example_host_isolation_test.exs && script/check_example_host_isolation.sh && script/check_phase164_dependency_security_and_gate_authority.sh` | ✅ | ⬜ pending |
+| 164-05-02 | 05 | 4 | CIG-02 | T-164-03 | Default/hermetic ownership requires an explicit existing broad-lane manifest and a missing-lane negative control without workflow changes | structural negative control | `elixir script/check_exunit_ownership.exs && mix test test/crosswake/proof/phase164_exunit_ownership_test.exs` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -68,6 +70,8 @@ created: 2026-08-28
 - [x] `script/check_aggregator_result_semantics.py` with the complete credential-free vocabulary, missing/inverted negative controls, and workflow outcome-assertion mode.
 - [x] Aggregator cancelled, explicit-neutral, unknown, empty, and exact missing-leaf workflow cases.
 - [x] `script/check_phase164_dependency_security_and_gate_authority.sh` as the credential-free aggregate entry point over every focused phase check.
+- [ ] Behavioral SQLite primary/WAL/SHM creation-and-cleanup proof plus the exact six-run and aggregate rerun from Plan 164-05.
+- [ ] Explicit default/hermetic lane manifest and missing-lane negative control in the existing ExUnit ownership detector/test files.
 
 ---
 
