@@ -640,7 +640,7 @@ source-bound physical evidence transaction; promotion remains blocked until TODO
 signed physical iPhone is available.
 **Requirements**: COMPOSE-01, COMPOSE-02, COMPOSE-03, COMPOSE-04, COMPOSE-05, COMPOSE-06
 **Depends on:** Phase 163
-**Plans:** 1/10 plans executed
+**Plans:** 2/10 plans executed
 
 Plans:
 **Wave 1**
@@ -649,7 +649,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 163.1-01-PLAN.md (Wave 2, first production tracer) — trace the current handoff/topology through preflight and the closed host-to-iOS configuration boundary
+- [x] 163.1-01-PLAN.md (Wave 2, first production tracer) — trace the current handoff/topology through preflight and the closed host-to-iOS configuration boundary
 
 **Wave 3** *(blocked on Wave 2 completion)*
 

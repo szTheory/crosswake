@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 163.1
 current_phase_name: close-gap-v21-physical-adopter-composition
 status: executing
-stopped_at: Completed 163.1-02-PLAN.md
-last_updated: "2026-08-28T03:33:28.257Z"
+stopped_at: Completed 163.1-01-PLAN.md
+last_updated: "2026-08-28T03:42:01.359Z"
 last_activity: 2026-08-28
 last_activity_desc: Plan 163.1-02 installed the pending composition-gap ledger
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 126
-  completed_plans: 117
+  completed_plans: 118
   percent: 88
 current_plan: 2
 ---
@@ -23,7 +23,7 @@ current_plan: 2
 ## Current Position
 
 Phase: 163.1 (close-gap-v21-physical-adopter-composition) — EXECUTING
-Plan: 2 of 10
+Plan: 3 of 10
 Status: Ready to execute
 Last activity: 2026-08-28 — Plan 163.1-02 installed the pending composition-gap ledger
 
@@ -236,6 +236,8 @@ substitution, or every-iPhone coverage.
 - [Phase ?]: Compiled production parser/join regressions replace the Xcode-dependent advisory shell gate and remain non-promoting.
 - [Phase ?]: The historical 36/36 ledger remains phase-local completion; COMPOSE-01 through COMPOSE-06 own the audit-proven integration gaps.
 - [Phase ?]: Only a validated TODO-002 handoff plus a source-bound signed-device run may promote physical or support truth.
+- [Phase ?]: Physical preflight reloads a private handoff and accepts only an adopter-class ready topology.
+- [Phase ?]: The iOS process accepts topology only from the three-key nonce-bound xctestrun envelope.
 
 ## Deferred Items
 
@@ -264,9 +266,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-28T03:33:28.228Z
-**Stopped at:** Completed 163.1-02-PLAN.md
-**Resume file:** 163.1-01-PLAN.md
+**Last session:** 2026-08-28T03:42:01.324Z
+**Stopped at:** Completed 163.1-01-PLAN.md
+**Resume file:** None
 
 ## Performance Metrics
 
@@ -359,6 +361,7 @@ this milestone reset.
 | Phase 162 P14 | closeout continuation | 3 tasks | 5 files |
 | Phase 162 P15 | 14m | 2 tasks | 5 files |
 | Phase 163.1-close-gap-v21-physical-adopter-composition P02 | 10m | 1 tasks | 9 files |
+| Phase 163.1 P01 | 24m | 1 tasks | 7 files |
 
 ## Accumulated Context
 
