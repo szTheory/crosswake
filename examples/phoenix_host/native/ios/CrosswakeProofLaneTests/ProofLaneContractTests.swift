@@ -10,7 +10,8 @@ final class ProofLaneContractTests: XCTestCase {
     let provider = HostLearningBundleProvider(storageRoot: root)
     let requirement = HostLearningBundleProvider.requirement
 
-    XCTAssertEqual(await provider.status(for: requirement), .notInstalled)
+    let initialStatus = await provider.status(for: requirement)
+    XCTAssertEqual(initialStatus, .notInstalled)
     guard case .installed = await provider.install(requirement) else {
       return XCTFail("expected complete bundle installation")
     }
@@ -18,12 +19,22 @@ final class ProofLaneContractTests: XCTestCase {
       return XCTFail("expected fresh installed status")
     }
 
+    let failedReplacement = HostLearningBundleProvider(storageRoot: root, source: { _ in nil })
+    let replacementResult = await failedReplacement.install(requirement)
+    XCTAssertEqual(replacementResult, .failure(.digestMismatch))
+    guard case .installed = await provider.status(for: requirement) else {
+      return XCTFail("failed replacement must retain the last known good bundle")
+    }
+
     let manifest = root.appendingPathComponent("learning-bundle/manifest.json")
     try Data("corrupt".utf8).write(to: manifest)
-    XCTAssertEqual(await provider.status(for: requirement), .failure(.digestMismatch))
+    let corruptStatus = await provider.status(for: requirement)
+    XCTAssertEqual(corruptStatus, .failure(.digestMismatch))
 
-    XCTAssertEqual(await provider.invalidate(requirement), .notInstalled)
-    XCTAssertEqual(await HostLearningBundleProvider(storageRoot: root).status(for: requirement), .notInstalled)
+    let invalidated = await provider.invalidate(requirement)
+    XCTAssertEqual(invalidated, .notInstalled)
+    let relaunchedStatus = await HostLearningBundleProvider(storageRoot: root).status(for: requirement)
+    XCTAssertEqual(relaunchedStatus, .notInstalled)
   }
 
   func testNavigationConfigurationAcceptsOnlyTheCurrentNonceBoundReadyTopology() throws {
