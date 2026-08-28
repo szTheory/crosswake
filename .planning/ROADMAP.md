@@ -46,7 +46,10 @@ separately funded business-line mandate.
   and pushed-detail shell with typed stack synchronization, live safe-area values, and a
   declarative shell marker; Android implementation remains frozen.
 
-- [ ] **Phase 162: Physical-iPhone Adoption Proof** — prove offline answers, offline audio,
+- [x] **Phase 163: First B2C Adopter Reference Host Integration** — provide the bounded eligible (completed 2026-08-10)
+  Phoenix/iOS host, exact learning bundle, and independent physical/backend proof producers.
+
+- [x] **Phase 162: Physical-iPhone Adoption Proof** — prove offline answers, offline audio, (completed 2026-08-27)
   kill/relaunch persistence, exactly-once replay, conflict recovery, account isolation, and remote
   disablement on a physical iPhone.
 
@@ -489,11 +492,14 @@ and app CSS can detect the shell synchronously.
 **Effort:** 2-3 focused days plus adopter/backend availability
 **Depends on:** Phase 161.1 and a runnable adopter host
 **Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
-**Plans:** 8/8 plans executed
+**Plans:** 17/17 plans complete
+**Verification:** Internally complete pending fresh independent verification — Plan 16's one
+corrected-code transaction produced the record; Plan 17 repaired post-promotion provenance
+validation and retained the exact pair without another attempt. Android, background or generic
+sync, generic storage, multiple islands, simulator substitution, and every-iPhone support remain
+non-claims.
 
 Plans:
-
-- [x] 162-08-PLAN.md
 
 **Wave 1**
 
@@ -522,6 +528,46 @@ Plans:
 **Wave 7** *(gap closure after verification/review)*
 
 - [x] 162-07-PLAN.md — Fail-close the generated device sequence and physical-report validation before a real host/device proof run.
+
+**Wave 8** *(gap closure after verification/review)*
+
+- [x] 162-08-PLAN.md — Require executed Phoenix authority bytes, fail-closed study-status composition, and server-approved recovery routing.
+
+**Wave 9** *(external physical-proof gap closure; blocked until all D-04 prerequisites are genuinely ready)*
+
+- [x] 162-09-PLAN.md — Execute the real signed physical-iPhone exit test and atomically promote the dated redacted evidence.
+
+**Wave 10** *(blocked on Wave 9 evidence)*
+
+- [x] 162-10-PLAN.md — Derive the narrow one-flow/one-runtime public support truth from the checked physical record.
+
+**Wave 11** *(final-tree reconciliation after Waves 9-10)*
+
+- [x] 162-11-PLAN.md — Reconcile DEVICE requirements, roadmap, state, and validation from fresh final-tree evidence.
+
+**Wave 12** *(CR-01 tracer repair; blocked on Wave 11)*
+
+- [x] 162-12-PLAN.md — Carry the actual free-form value through the scoped journal, relaunch, authorized replay, exactly-one application, and outbox drain.
+
+**Wave 13** *(CR-02 contract repair; blocked on Wave 12)*
+
+- [x] 162-13-PLAN.md — Make advisory serialization executable and exercise the real Elixir parser/join semantics without simulator promotion.
+
+**Wave 14** *(support-truth repair; blocked on Waves 12-13)*
+
+- [x] 162-14-PLAN.md — Withdraw stale support truth and re-earn the narrow claim only through a fresh standard physical proof run.
+
+**Wave 15** *(final reconciliation; blocked on Wave 14)*
+
+- [x] 162-15-PLAN.md — Reconcile requirements, roadmap, state, and validation only after all repaired current-tree gates pass.
+
+**Wave 16** *(stale-provenance gap closure; blocked on Wave 15 and current verifier findings)*
+
+- [x] 162-16-PLAN.md — Withdraw stale authority and replace it with exactly one corrected-code standard physical transaction before independent re-verification.
+
+**Wave 17** *(post-promotion recovery; blocked on the immutable Plan 16 ledger and fresh retained pair)*
+
+- [x] 162-17-PLAN.md — Repair the wrapper-only commit-ref check, retain exactly the already-produced evidence pair through a validated non-rewriting topology, and reconcile narrow truth without another physical attempt.
 
 **Smallest shippable version:** A dated, redacted physical-iPhone artifact proving the ten-step exit
 test in the adopter route-policy map.
@@ -568,18 +614,19 @@ test in the adopter route-policy map.
 The only boundary movement allowed in v21 is privacy-safe envelope constraints, reusable test
 scaffolding, and one host-supplied foreground iOS pack adapter.
 
-### Phase 163: Alpha Reference Host Integration
+### Phase 163: First B2C Adopter Reference Host Integration
 
-**Goal:** Make the bounded Alpha reference host the eligible host for the existing physical-iPhone
+**Goal:** Make the bounded First B2C Adopter reference host the eligible host for the existing physical-iPhone
 proof: one integrity-verified offline card/image/audio bundle, one scoped review replay flow, and
 real host-owned authority without creating a generic content or sync system.
 **Requirements**: ALPHA-01, ALPHA-02, ALPHA-03, ALPHA-04
 **Depends on:** Phase 161.1 and the published `crosswake_sigra` hosted-session interoperability release
-**Plans:** 0 plans
+**Plans:** 1/1 plans complete
 
 Plans:
 
-- [ ] TBD (run /gsd-discuss-phase 163, then /gsd-plan-phase 163 to break down)
+- [x] 163-01-PLAN.md — generate and configure the bounded host, implement exact learning-bundle,
+  device, backend, and evidence producers, and return Phase 162 to its signing gate
 
 ---
 *Roadmap reset: 2026-07-30*

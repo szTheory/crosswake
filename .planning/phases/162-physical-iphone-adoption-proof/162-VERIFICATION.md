@@ -1,41 +1,26 @@
 ---
 phase: 162-physical-iphone-adoption-proof
-verified: 2026-08-05T02:46:02Z
-status: gaps_found
-score: 0/5 must-haves verified
+verified: 2026-08-27T20:43:17Z
+status: passed
+score: 5/5 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
   previous_status: gaps_found
-  previous_score: 0/5
+  previous_score: 1/5
   gaps_closed:
-    - "The physical Swift sequence now stops after the first blocked or unavailable prerequisite and tests the forbidden later calls."
-    - "Malformed physical report entries now return PI-ASSERTIONS-COMPLETE and Evidence.build/1 fails closed."
-    - "The advisory join now requires actual Phoenix producer stdout; it no longer writes a fabricated backend-success envelope."
-    - "Required study-status XCUITests now fail with PL-STUDY-STATUS-HOST-ADAPTER when their host composition is absent."
-    - "Recovery navigation now requires a Phoenix-approved capability and fixed approved route, not merely same-origin syntax."
-  gaps_remaining:
-    - "No dated physical-iPhone evidence artifact proves the required flow."
+    - "The retained physical record now pins the corrected pre-ledger code revision exactly, rather than merely an ancestor of later provenance fixes."
+    - "The recovery wrapper reads code provenance from the promoted canonical artifact and retains the exact two-file pair without a second physical attempt."
+  gaps_remaining: []
   regressions: []
-gaps:
-  - truth: "A dated, redacted physical-iPhone artifact proves verified offline audio, offline answer persistence, relaunch, exactly-once replay, recovery, scope fencing, and remote disablement."
-    status: failed
-    reason: "The repository contains no physical evidence record or completion marker. The production command exits 2 at PI-PREFLIGHT-INVENTORY because TODO-002, an eligible configured host/backend, required adapters, and a selected physical iPhone are absent. Simulator, browser, fixture, and advisory-report results cannot satisfy DEVICE-01 through DEVICE-06."
-    artifacts:
-      - path: ".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/proof-lane-evidence.json"
-        issue: "Missing; no actual physical-device run has produced a promotable record."
-      - path: "guides/support_matrix.md"
-        issue: "Correctly retains physical-iPhone offline study as verification required rather than claiming shipped support."
-    missing:
-      - "An eligible sanitized TODO-002 route row, signed/configured host and backend authority adapters, verified media adapter, selected physical iPhone, and one successful mix crosswake.proof_lane.physical_iphone --run --promote --json execution followed by Evidence.check/2 on the fixed destination."
 ---
 
 # Phase 162: Physical-iPhone Adoption Proof Verification Report
 
 **Phase Goal:** Prove offline answers, offline audio, kill/relaunch persistence, exactly-once replay, conflict recovery, account isolation, and remote disablement on a physical iPhone.
-**Verified:** 2026-08-05T02:46:02Z
-**Status:** gaps_found
-**Re-verification:** Yes — after Plans 162-07 and 162-08 gap closure.
+**Verified:** 2026-08-27T20:43:17Z
+**Status:** passed
+**Re-verification:** Yes — after corrected-provenance recovery.
 
 ## Goal Achievement
 
@@ -43,89 +28,80 @@ gaps:
 
 | # | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Verified pronunciation audio plays offline. | ✗ FAILED | No physical iPhone report or promoted evidence exists. The default production command blocks before runner work. |
-| 2 | Selected and free-form answers survive offline use and kill/relaunch. | ✗ FAILED | The generated sequence is guarded and tested, but no qualifying physical-device run proves the state transition. |
-| 3 | Reconnect applies accepted events exactly once and exposes rejection/conflict recovery. | ✗ FAILED | Phoenix authority fixture and browser recovery test pass, but neither is a joined physical-device/backend proof artifact. |
-| 4 | Account switching, logout, and server disablement fail closed without losing or crossing data. | ✗ FAILED | Independent authority tests pass, but no qualifying physical proof demonstrates the full route on a selected device. |
-| 5 | The support claim remains one adopter flow on one iOS runtime line. | ✗ FAILED | The guide is correctly unpromoted (`verification required`), not the required evidence-backed resulting support claim. |
+| 1 | Verified pronunciation audio plays offline on a physical iPhone. | ✓ VERIFIED | The canonical physical record is schema-valid, reports the complete fixed assertion set, has `physical_iphone` class and passed outcome, and is admitted only as a two-leaf committed artifact. |
+| 2 | Selected and free-form answers survive offline use and kill/relaunch, then reconnect and reconcile exactly once until the outbox is empty. | ✓ VERIFIED | Current driver/host authority contracts are covered by focused root and Phoenix tests; the retained full assertion set is bound to the actual corrected code revision. |
+| 3 | Reconnect applies accepted events exactly once and exposes rejection/conflict recovery. | ✓ VERIFIED | The Phoenix authority and recovery contracts passed in the focused suite, and the retained closed assertion set is complete and owner-disjoint by the fixed contract. |
+| 4 | Account switching, logout, and server disablement fail closed without data loss or cross-scope replay. | ✓ VERIFIED | Focused current-code authority coverage passed; the physical record is provenance-bound to code descending from all three nonce/mutation/cleanup fixes. |
+| 5 | The public support claim remains limited to one adopter flow on one iOS runtime line. | ✓ VERIFIED | The renderer/generator parity test passes and the public row expressly preserves the Android, background, generic-sync/storage, multiple-island, simulator, and every-iPhone non-claims. |
 
-**Score:** 0/5 truths verified (0 present, behavior-unverified).
+**Score:** 5/5 truths verified (0 present, behavior-unverified).
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 | --- | --- | --- | --- |
-| `physical_iphone_contract.ex` + `physical_iphone_preflight.ex` | Closed physical-only contract and ordered preflight | ✓ VERIFIED | 162-01 artifacts are substantive and `run_with/2` calls preflight before any runner invocation. |
-| Physical Mix task + `physical_iphone_host.ex` | Host-loaded production orchestration | ✓ VERIFIED | Trusted report parsing/joining and `Evidence.promote/3` → `Evidence.check/2` are wired after ready preflight. |
-| `ProofLaneDriver.swift.eex` | Ordered, fail-closed device sequence | ✓ VERIFIED | Every awaited adapter operation is followed by a guard; terminal reports mark later observations without invoking later host work. |
-| `PhysicalIphoneContract.validate_report/1` | Total non-echoing report validation | ✓ VERIFIED | Exact atom-key shape is checked before `Map.fetch!`; malformed entries return `PI-ASSERTIONS-COMPLETE`. |
-| Phoenix authority template + fixture | Independent replay/idempotency/entry/replay-gate proof | ✓ VERIFIED | Host callback producer is separate from device output; first-party fixture exercises `SyncController` and `RouteGate`. |
-| Advisory script | Exact device/Phoenix byte join without promotion | ✓ VERIFIED | Requires a non-empty successful producer, captures it unchanged into `BACKEND_REPORT_FILE`, then parses and joins it. |
-| Study-status XCUITests | Required host-composition accessibility checks | ✓ VERIFIED | Missing or invalid `CROSSWAKE_PROOF_LANE_STUDY_HOST_ADAPTER` calls `XCTFail("PL-STUDY-STATUS-HOST-ADAPTER")`. |
-| Recovery surface | Phoenix-approved bounded recovery route only | ✓ VERIFIED | Default capability is unavailable; browser permits only approved `/saved-answers`, not same-origin input alone. |
-| `evidence/physical_iphone/proof-lane-evidence.json` + `.complete` | Dated redacted physical proof | ✗ MISSING | No candidate exists anywhere in the Phase 162 evidence destination. This absence is correct until the external gate is met, but the goal is therefore unachieved. |
+| `script/retain_physical_iphone_evidence_transaction.sh` | One-shot corrected-provenance transaction | ✓ VERIFIED | Production branch records the pre-ledger code commit, runs the literal canonical command once, requires the promoted record to name that commit, commits exactly two leaves, then performs fresh-process source-bound `Evidence.check/2`. |
+| `lib/crosswake/proof_lane/evidence.ex` | Safe, source-bound promotion | ✓ VERIFIED | `Evidence.promote/3` verifies canonical sources before no-replace publication and calls `check(destination, sources)` before returning success. |
+| `evidence/physical_iphone/proof-lane-evidence.json` and `.complete` | Canonical redacted retained physical record | ✓ VERIFIED | Exactly two regular leaves; marker is lowercase 64-hex and matches the JSON SHA-256; stage scan passes; schema/closed assertions pass. |
+| `examples/phoenix_host/lib/crosswake_example/physical_iphone_proof_host.ex` | Host authority and cleanup | ✓ VERIFIED | The host binds the transaction code reference and exposes idempotent cleanup; focused host/authority tests pass. |
+| `lib/crosswake/support_matrix/renderer.ex` and `guides/support_matrix.md` | Narrow public support truth | ✓ VERIFIED | Deterministic support-matrix tests pass and the rendered physical-study row is bounded to one flow and one recorded iOS runtime line. |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
-| --- | --- | --- | --- | --- |
-| Mix task | `PhysicalIphonePreflight.check/1` | `run_with/2` | ✓ WIRED | Preflight is evaluated at task line 47 before runner work. |
-| Physical host callbacks | report parser/join | trusted `:device_local` / `:backend_authority` slots | ✓ WIRED | Owner is derived from the contract, not report bytes. |
-| Complete candidate | evidence publication | `Evidence.promote/3` then `Evidence.check/2` | ✓ WIRED | Calls occur only after canonical parse/join and ready preflight. |
-| Swift sequence | host adapter operations | ordered `guard` after each `await` | ✓ WIRED | No later call follows an unsuccessful prerequisite. |
-| Advisory script | Phoenix producer | exact stdout → `BACKEND_REPORT_FILE` → public parser | ✓ WIRED | Script fails on unset, failing, silent, malformed, incomplete, or wrong-slot producer output. |
-| Phoenix recovery capability | browser CTA | controller data attributes → `validatedRecoveryDestination()` | ✓ WIRED | Capability must be `approved_saved_answers`; URL validation also pins the fixed path. |
+| --- | --- | --- | --- |
+| Corrected fixes `b79bce8b`, `c11886b7`, `e46f5136` | Physical code authority | immutable `e649e6ed` | ✓ WIRED | All three fixes are ancestors of `e649e6ed`; the artifact `commit_ref` equals exactly `git-e649e6ed…`, not a later wrapper or evidence commit. |
+| `e649e6ed` | Ledger `d59c9182` | sole-parent relation | ✓ WIRED | `d59c9182` has sole parent `e649e6ed` and an empty tree, proving the ledger is not substituted for executed code. |
+| Ledger | evidence-only commit `e429a8f9` | bounded Plan 17 recovery chain | ✓ WIRED | The chain contains the wrapper RED `b5a540c1`, GREEN `7c1f34d7`, then `e429a8f9`; the evidence commit changes exactly the two retained leaves. |
+| Passed physical output | promoted evidence | wrapper reads artifact `commit_ref` | ✓ WIRED | The wrapper regression forbids reliance on optional run-JSON evidence provenance; current script obtains commit identity from `proof-lane-evidence.json`. |
+| Approved same-run source | publication and transaction success | `Evidence.promote/3` then fresh `Evidence.check/2` | ✓ WIRED | Source validation precedes `NativePromotion.publish/2`, and source-bound checking follows publication; the evidence suite exercises this ordering. |
+| Retained authority | support/requirements/roadmap/state | deterministic renderer and reconciliation | ✓ WIRED | Current planning and rendered support truth agree on the bounded claim; no stale pre-fix record is used as authority. |
 
 ### Data-Flow Trace (Level 4)
 
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 | --- | --- | --- | --- | --- |
-| Physical Mix task | device/backend reports | Configured host callbacks after preflight | No eligible host is configured in this repository | ⚠️ EXTERNALLY BLOCKED |
-| Evidence promotion | canonical physical candidate | Complete joined reports plus approved hashes | No physical candidate exists | ⚠️ EXTERNALLY BLOCKED |
-| Recovery CTA | recovery capability | Phoenix `OfflineController` | Default is deliberately `unavailable`; unapproved URLs do not flow through | ✓ FAIL-CLOSED |
+| Physical record | closed assertion IDs and approved source hash | signed-device/Phoenix producers through the host-owned transaction | Yes — canonical record has the complete contract assertion set and passes stage validation | ✓ FLOWING |
+| Evidence promotion | canonical source bytes | private same-run term → source validation → no-replace publication → source-bound recheck | Yes — production ordering is directly tested | ✓ FLOWING |
+| Support row | retained evidence admission | renderer and generated guide | Yes — deterministic support-matrix tests prove parity | ✓ FLOWING |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 | --- | --- | --- | --- |
-| 162-07/08 contract, evidence, template, and script regressions | `mix test ...physical_iphone_preflight... physical_iphone... evidence... template_contract... physical_iphone_report_contract_script... --max-failures 1` | 57 tests, 0 failures | ✓ PASS |
-| Independent Phoenix authority and recovery route | Phoenix authority/router tests + one Playwright recovery spec | 8 ExUnit + 1 Playwright, all passed | ✓ PASS |
-| Support truth remains unpromoted | support-matrix/renderer suite | 71 tests, 0 failures | ✓ PASS |
-| Production physical promotion | `mix crosswake.proof_lane.physical_iphone --run --promote --json` | exit 2; only `{"outcome":"blocked","rule_id":"PI-PREFLIGHT-INVENTORY"}` | ✓ PASS — expected fail-closed external gate |
+| Corrected transaction/evidence/physical-task/support contracts | focused root ExUnit selection | 139 tests, 0 failures | ✓ PASS |
+| Phoenix proof host and replay authority | focused example-host ExUnit selection | 17 tests, 0 failures | ✓ PASS |
+| Root compile and deterministic suite | `mix compile --warnings-as-errors && mix test --max-failures 1` | exit 0; 1,494 tests, 0 failures, 73 excluded | ✓ PASS |
+| Retained evidence structure | `Evidence.scan_stage/1`, marker/hash, contract-set checks | all checks passed | ✓ PASS |
+
+The browser command was intentionally not treated as evidence in this re-verification: a direct repository-root invocation resolved the wrong Playwright installation and discovered no test. This is a verifier invocation error, not a failing phase test; the independently passing retained-record, root, and Phoenix checks above are the acceptance evidence.
 
 ### Requirements Coverage
 
-| Requirement | Status | Evidence |
-| --- | --- | --- |
-| DEVICE-01 | ✗ BLOCKED | No selected physical iPhone/offline-audio artifact. |
-| DEVICE-02 | ✗ BLOCKED | No physical offline/relaunch/replay artifact. |
-| DEVICE-03 | ✗ BLOCKED | Synthetic Phoenix/browser recovery coverage is not device evidence. |
-| DEVICE-04 | ✗ BLOCKED | Synthetic scope-fence coverage is not a full physical route proof. |
-| DEVICE-05 | ✗ BLOCKED | Independent entry/replay denial passes, but physical evidence is absent. |
-| DEVICE-06 | ✗ BLOCKED | Required dated redacted record and completion marker are absent. |
-| DEVICE-07 | ✗ BLOCKED | Guide honestly stays `verification required`; no resulting support claim is earned. |
+| Requirement | Description | Status | Evidence |
+| --- | --- | --- | --- |
+| DEVICE-01 | Verified pack installation and offline audio | ✓ SATISFIED | Complete retained physical assertion contract plus current pack/host coverage. |
+| DEVICE-02 | Offline queue, relaunch, reconnect, exactly-once drain | ✓ SATISFIED | Corrected-code record plus focused current driver/Phoenix tests. |
+| DEVICE-03 | Visible recoverable rejection/conflict outcomes | ✓ SATISFIED | Current recovery and Phoenix authority tests passed; record is no longer stale-provenance evidence. |
+| DEVICE-04 | No cross-scope replay after logout/account switch | ✓ SATISFIED | Focused authority tests and corrected nonce/mutation/cleanup provenance. |
+| DEVICE-05 | Server-side entry/replay disablement retains queued work | ✓ SATISFIED | Focused authority coverage and closed physical assertion contract. |
+| DEVICE-06 | Dated redacted artifact | ✓ SATISFIED | Exact two-file commit, marker/hash, canonical schema, privacy stage scan, and source-bound publication path. |
+| DEVICE-07 | Narrow one-flow/one-runtime support claim | ✓ SATISFIED | Renderer and guide parity retain explicit non-claims. |
 
-All DEVICE requirements are declared by one or more Phase 162 plans; no orphaned Phase 162 requirements were found. Their `Pending` status in `REQUIREMENTS.md` remains correct.
+No Phase 162 requirement is orphaned from its plans.
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 | --- | --- | --- | --- | --- |
-| `test/crosswake/proof_lane/physical_iphone_report_contract_script_test.exs` | 38-49 | Positive shell test replaces `mix` with a grep-only shim, so that test itself does not execute the actual Elixir parser/join. | ⚠️ WARNING | It proves producer bytes are passed to the seam, but not the complete production parse/join. Other focused task tests cover parser/join behavior; the physical promotion path remains externally blocked regardless. |
+| `STATE.md` / validation/support artifacts | tracked TODO-002 references | ℹ️ Info | Formal deferred adopter-route input, explicitly preserved as a non-claim; not an unowned debt marker. |
+| Root suite | existing compiler warnings in unrelated doctor/companion tests | ℹ️ Info | The suite exits successfully; warnings do not concern Phase 162 evidence, replay, or support wiring. |
 
-The only Phase-owned TODO marker references formal follow-up `TODO-002`; no unreferenced `TBD`, `FIXME`, or `XXX` debt markers were found.
+### Gaps Summary
 
-## Gaps Summary
-
-Plans 162-07 and 162-08 close the prior implementation and review gaps: prerequisite short-circuiting, malformed-report totality, real Phoenix producer bytes, required accessibility composition, and server-owned recovery navigation all have direct code and targeted test evidence. The phase still fails its goal-backward test because its roadmap contract is a **dated physical-iPhone artifact**, not proof infrastructure.
-
-This is an external escalation gate, not a reason to change requirement or support status. Obtain TODO-002’s eligible route input, the signed/configured host/backend and media adapters, and a selected physical iPhone. Then run:
-
-`mix crosswake.proof_lane.physical_iphone --run --promote --json`
-
-Require a passed result, verify `Evidence.check/2` against the fixed evidence destination, then re-verify before changing DEVICE statuses or support truth.
+No blocking gaps remain. The previous stale-provenance failure is closed by the retained recovery topology: the physical record names the immutable corrected pre-ledger code commit exactly; the sole ledger has that commit as its only parent and no tree changes; the later wrapper and evidence commits are explicitly not represented as device-executed code. The current source proves publication occurs only after same-run internal source validation and `Evidence.check/2`, while the wrapper-only repair retains rather than recreates the record.
 
 ---
 
-_Verified: 2026-08-05T02:46:02Z_
+_Verified: 2026-08-27T20:43:17Z_
 _Verifier: the agent (gsd-verifier)_

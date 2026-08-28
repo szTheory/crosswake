@@ -11,3 +11,10 @@ config :logger, level: :warning
 
 config :crosswake_example,
   offline_study_replay_authority: CrosswakeExample.E2E.ReplayAuthority
+
+# The generated proof-lane contract exercises the same Phoenix transaction
+# fixture used by the physical-proof backend producer. This is test-only; it is
+# never a runtime authority source.
+config :crosswake,
+       :proof_lane_host_authority,
+       CrosswakeExample.LocalFirst.PhysicalIphoneAuthority

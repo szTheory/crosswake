@@ -1,7 +1,11 @@
 defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityTest do
   use ExUnit.Case, async: false
 
+  import Phoenix.ConnTest, only: [build_conn: 0]
+
+  alias CrosswakeExample.LocalFirst.ReviewEvent
   alias CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityFixture
+  alias CrosswakeExample.Repo
 
   test "Phoenix independently returns every closed backend authority observation" do
     assert {:ok, report} = PhysicalIphoneAuthorityFixture.run()
@@ -22,6 +26,30 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityTest do
     for forbidden <- ["fixture-alpha", "fixture-beta", "selected-private", "free-form-private"] do
       refute rendered =~ forbidden
     end
+  end
+
+  test "reference host persists a bounded free-form answer only in an exact admitted mutation" do
+    scope = "v1.fixture_alpha_scope_001"
+
+    event = %{
+      "client_mutation_id" => "00000000-0000-4000-8000-000000000099",
+      "card_id" => 1,
+      "rating" => "good",
+      "free_form_answer" => "neutral-answer"
+    }
+
+    assert {:ok, result} =
+             CrosswakeExample.LocalFirst.SyncController.sync_events(
+               build_conn(),
+               scope,
+               [event],
+               CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityFixture.opts()
+             )
+
+    assert [%{outcome: :accepted}] = result.accepted_records
+
+    assert %ReviewEvent{free_form_answer: "neutral-answer", scope_ref: ^scope} =
+             Repo.get_by(ReviewEvent, client_mutation_id: event["client_mutation_id"])
   end
 end
 
@@ -207,7 +235,7 @@ defmodule CrosswakeExample.LocalFirst.PhysicalIphoneAuthorityFixture do
     end
   end
 
-  defp opts(overrides \\ []) do
+  def opts(overrides \\ []) do
     session_scope = Keyword.get(overrides, :session_scope, @current_scope)
     logged_out? = Keyword.get(overrides, :logged_out, false)
     feature = Keyword.get(overrides, :feature, :allow)

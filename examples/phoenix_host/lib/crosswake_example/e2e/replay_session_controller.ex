@@ -4,8 +4,27 @@ defmodule CrosswakeExample.E2E.ReplaySessionController do
   use Phoenix.Controller, formats: [:json]
 
   import Plug.Conn
+  alias CrosswakeExample.LocalFirst.PhysicalIphoneRunProvenance
 
   @session_key :e2e_replay_session
+
+  def create(conn, %{
+        "action" => "establish",
+        "physical_proof_nonce" => nonce,
+        "client_mutation_id" => mutation_id
+      }) do
+    with :ok <- PhysicalIphoneRunProvenance.claim(nonce, mutation_id) do
+      store(conn, %{
+        "state" => "current",
+        "principal" => "primary",
+        "physical_proof_nonce" => nonce,
+        "client_mutation_id" => mutation_id
+      })
+    else
+      _ ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: %{class: "invalid_request"}})
+    end
+  end
 
   def create(conn, %{"action" => "establish"}),
     do: store(conn, %{"state" => "current", "principal" => "primary"})

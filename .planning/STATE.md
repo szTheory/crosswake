@@ -2,30 +2,30 @@
 gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
-current_phase: 162
-current_phase_name: physical-iphone-adoption-proof
-status: external_gate
-stopped_at: Completed 162-08 gap closure; external physical proof remains blocked
-last_updated: "2026-08-05T03:00:00Z"
-last_activity: 2026-08-05
-last_activity_desc: Plan 162-08 and final verification completed; external physical proof remains blocked
+current_phase: 163
+status: completed
+stopped_at: Phase 163 verified and complete
+last_updated: "2026-08-27T21:54:52.566Z"
+last_activity: 2026-08-27
+last_activity_desc: Phase 163 complete
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 106
-  completed_plans: 106
+  total_phases: 7
+  completed_phases: 7
+  total_plans: 116
+  completed_plans: 116
   percent: 100
-current_plan: 0
+current_phase_name: First B2C Adopter Reference Host Integration
+current_plan: 1
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 162 (physical-iphone-adoption-proof) — EXTERNAL GATE
-Plan: 8 of 8 (fail-closed repairs complete)
-Status: Await TODO-002, eligible host/backend configuration, and a physical iPhone before promotion
-Last activity: 2026-08-05 — Plan 162-08 and final verification completed; no physical evidence was promoted
+Phase: 163
+Plan: 1 of 1 complete
+Status: All phases complete
+Last activity: 2026-08-27 — Phase 163 complete
 
 ## Active Objective
 
@@ -44,27 +44,28 @@ framework launch.
 
 ## Next Action
 
-Obtain the sanitized TODO-002 route-policy handoff, eligible signed host/backend adapters, and a
-physical iPhone, then run `mix crosswake.proof_lane.physical_iphone --run --promote --json`.
-Until then, TODO-002 remains `unknown_blocking`, the command must block at preflight, and no
-physical artifact or support claim may be promoted.
+Phase 162 independent verification passed against the committed recovery topology and current
+truth. Stop here and use `$gsd-progress` for the next explicit routing decision. The evidence does
+not widen to Android, background replay or sync, generic storage or sync, multiple islands,
+simulator substitution, or every-iPhone coverage.
 
 ## Blockers
+
+None. All v21 phase contracts and automated verification gates are complete.
+
+## Deferred Items
 
 - Phase 160 code review WR-01 records a non-blocking browser lifecycle race: fencing during an
   IndexedDB save can leave rating controls owned until reload. The finding remains available for
   `$gsd-code-review 160 --fix`.
 
-- The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
-  auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
+- TODO-002 remains open: adopter-instance promotion still requires adopter-supplied concrete route
+  IDs/paths, mutation actions, staleness, auth sensitivity, expected pronunciation-pack
+  sizes/codecs, and fallbacks. The completed reference-host and physical-device evidence does not
+  infer those adopter-private inputs.
 
-- Phase 162 ultimately needs a runnable adopter host, backend replay endpoint, and physical iPhone.
 - The canonical historical six product-failure labels were not stored because only a privacy-safe
   proxy audit was authorized.
-
-- TODO-002 remains open: the route inventory still needs adopter-supplied concrete route IDs/paths,
-  mutation actions, staleness, auth sensitivity, expected pronunciation-pack sizes/codecs, and
-  fallbacks before adopter-instance promotion.
 
 ## Decisions
 
@@ -78,6 +79,9 @@ physical artifact or support claim may be promoted.
 - Generic sync and generic native storage non-goals remain in force.
 - Automatable acceptance requires executable proof, not conversational verification or manual UAT;
   CI promotion is reserved for recurring contract value.
+
+- Phase 163 uses the sanctioned generated lane plus one host-owned exact manifest/image/audio
+  bundle; device and backend assertion ownership remain independent and promotion remains Phase 162.
 
 - [Phase ?]: Route-local safety posture is represented as a closed status/value pair and never inherits from surface defaults.
 - [Phase ?]: Empty or unknown-blocking inventories are explicitly blocked from promotion.
@@ -212,11 +216,24 @@ physical artifact or support claim may be promoted.
 - [Phase 162]: Physical evidence report entries require exact atom-key shape before semantic validation or canonical evidence acceptance.
 - [Phase ?]: Advisory physical report joins require exact bytes from an executed host-owned Phoenix producer.
 - [Phase ?]: Study-status accessibility tests fail closed without the required host adapter; TODO-002 keeps recovery unavailable.
+- [Phase ?]: Plan 162-09 reconciles physical evidence through authorized source-bound Evidence.check/2; literal Evidence.check/1 lacks approved source bytes by design.
+- [Phase ?]: Public physical support derives from authorized source-bound Evidence.check/2; Evidence.check/1 remains intentionally non-passing without canonical source bytes.
+- [Phase ?]: DEVICE-07 public wording is limited to one first adopter offline-study flow on iOS 26.6 with explicit platform, sync, storage, island, simulator, and all-device non-claims.
+- [Phase ?]: Authorized source-bound Evidence.check/2 remains the physical-record completion authority; Evidence.check/1 is intentionally non-passing without canonical source bytes.
+- [Phase ?]: DEVICE completion is limited to the checked one-flow/one-runtime iOS proof and changes no Android or deferred-work truth.
+- [Phase ?]: Plan 162-12 keeps sensitive journal, opaque scope lifecycle, and foreground replay transport host-owned; Crosswake core remains outside the stored payload boundary.
+- [Phase ?]: Plan 162-12 drains a queued record only after accepted replay, same-ID duplicate confirmation, and exactly one scoped Phoenix domain effect.
+- [Phase ?]: Generated contract tests forward one fixed nonempty value only in Swift process memory; reports remain the three-key owner-free envelope.
+- [Phase ?]: The simulator CLI validates only an exact unavailable device-local envelope and cannot join, promote, or publish physical evidence.
+- [Phase ?]: Only committed post-exit source-bound Task 2 evidence re-earns the narrow physical-study device-evidence row.
+- [Phase ?]: Public physical support remains one first-adopter flow on one recorded iOS runtime line with Android, background, generic-storage, generic-sync, multiple-island, simulator, and every-iPhone non-claims.
+- [Phase ?]: Plan 14 retained standard proof is the sole physical-device authority; Plan 15 performs only non-Xcode current-tree reconciliation.
+- [Phase ?]: Compiled production parser/join regressions replace the Xcode-dependent advisory shell gate and remain non-promoting.
 
 ## Deferred Items
 
 - Phase 156 native menu/action-button planning artifacts are retained but abandoned.
-- Phase 157 hardening/promotion work is not active.
+- The abandoned hardening/promotion track is not active.
 - Brandbook/showcase/profile/launch polish is frozen as business-line investment.
 - Android device/parity work is frozen.
 - Capture/device controls, commerce productionization, dashboard, and broad offline/storage
@@ -240,8 +257,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-05T02:37:43.905Z
-**Stopped at:** Completed 162-08-PLAN.md; external physical proof remains blocked
+**Last session:** 2026-08-27T19:05:49.873Z
+**Stopped at:** Completed 162-15-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -327,6 +344,13 @@ this milestone reset.
 | Phase 161-ios-pronunciation-pack-seam P18 | 15m | 1 tasks | 2 files |
 | Phase 162 P07 | 20m | 2 tasks | 6 files |
 | Phase 162 P08 | 8m | 3 tasks | 9 files |
+| Phase 163 P01 | bounded host integration | 3 tasks | 23 files |
+| Phase 162-physical-iphone-adoption-proof P10 | 12 min | 1 tasks | 3 files |
+| Phase 162-physical-iphone-adoption-proof P11 | 18 min | 1 tasks | 5 files |
+| Phase 162 P12 | closeout continuation | 1 tasks | 14 files |
+| Phase 162 P13 | 10m | 2 tasks | 5 files |
+| Phase 162 P14 | closeout continuation | 3 tasks | 5 files |
+| Phase 162 P15 | 14m | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -334,5 +358,9 @@ this milestone reset.
 
 - Phase 161.1 inserted after Phase 161: First-Adopter iOS Navigation Shell (URGENT)
 - Phase 163 added: Alpha Reference Host Integration. It is the bounded eligible-host build needed
-  to unblock Phase 162's physical-iPhone proof; Phase 162 remains an external device-evidence
-  gate until the resulting host and signed iPhone run are available.
+  to unblock Phase 162's physical-iPhone proof; its device and backend assertion ownership remain
+  independent from Phase 162 promotion.
+
+- Phase 163 completed: generated Phoenix/iOS host, exact foreground learning bundle, scoped replay
+  authority, and physical report/evidence producers are verified; the final physical record closed
+  Phase 162's narrow device-evidence gate.

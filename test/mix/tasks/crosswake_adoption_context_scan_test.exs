@@ -125,6 +125,34 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     refute workflow =~ "require-private-terms"
   end
 
+  test "scans only the approved marker and host AIFF while rejecting arbitrary binary peers" do
+    completion_marker =
+      ".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete"
+
+    reference_aiff =
+      "examples/phoenix_host/native/ios/CrosswakeProofLane/Resources/ReferenceLearningBundle/pronunciation.aiff"
+
+    with_temporary_root(fn root ->
+      write_file(root, completion_marker, "safe")
+      write_file(root, reference_aiff, "safe")
+
+      assert capture_io(fn -> Scan.run(["--root", root]) end) =~ "adoption context scan passed"
+    end)
+
+    for path <- [
+          "examples/phoenix_host/native/ios/OtherBundle/pronunciation.aiff",
+          "artifacts/capture.bin"
+        ] do
+      with_temporary_root(fn root ->
+        write_file(root, path, "safe")
+
+        error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
+
+        assert error.message == "routing.unclassified_path #{path}"
+      end)
+    end
+  end
+
   defp with_temporary_root(fun) do
     root = Path.join(System.tmp_dir!(), "crosswake-scan-#{System.unique_integer([:positive])}")
     File.mkdir_p!(root)

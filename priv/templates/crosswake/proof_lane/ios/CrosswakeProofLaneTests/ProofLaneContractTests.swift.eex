@@ -62,6 +62,15 @@ final class ProofLaneContractTests: XCTestCase {
     XCTAssertTrue(report.assertions.allSatisfy { $0.outcome == .passed })
   }
 
+  func testPhysicalSequenceForwardsContractOnlyFreeFormValue() async throws {
+    let adapter = RecordingPhysicalIphoneAdapter()
+    let report = await PhysicalIphoneSequence.run(adapter: adapter)
+    let data = try JSONEncoder().encode(report)
+
+    XCTAssertEqual(adapter.receivedFreeFormValues, ["contract-only-free-form"])
+    XCTAssertFalse(String(decoding: data, as: UTF8.self).contains("contract-only-free-form"))
+  }
+
   func testPhysicalReportNeverCarriesHostValues() async throws {
     let report = await PhysicalIphoneSequence.run(adapter: nil)
     let data = try JSONEncoder().encode(report)
@@ -75,6 +84,12 @@ final class ProofLaneContractTests: XCTestCase {
   func testPhysicalContractModeEmitsOwnerFreeReport() async throws {
     guard ProcessInfo.processInfo.environment["CROSSWAKE_PHYSICAL_IPHONE_CONTRACT_MODE"] == "1" else { return }
     let report = await PhysicalIphoneSequence.run(adapter: nil)
+
+    XCTAssertEqual(report.schemaVersion, 1)
+    XCTAssertEqual(report.deviceClass, .physicalIphone)
+    XCTAssertEqual(report.assertions.map(\.id), PhysicalIphoneAssertion.allCases.map(\.rawValue))
+    XCTAssertTrue(report.assertions.allSatisfy { $0.outcome == .unavailable })
+
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.sortedKeys]
     print(String(decoding: try encoder.encode(report), as: UTF8.self))
@@ -176,6 +191,7 @@ private enum PhysicalIphoneOperation: CaseIterable {
 
 private final class RecordingPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
   private(set) var calls: [PhysicalIphoneOperation] = []
+  private(set) var receivedFreeFormValues: [String] = []
   private let failing: PhysicalIphoneOperation?
   private let outcome: ProofLaneOutcome
 
@@ -188,7 +204,10 @@ private final class RecordingPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
   func playInstalledAudioOffline() async -> ProofLaneOutcome { record(.audio) }
   func enterAuthorizedStudy() async -> ProofLaneOutcome { record(.entry) }
   func submitSelectedAnswerOffline() async -> ProofLaneOutcome { record(.selected) }
-  func submitFreeFormAnswerOffline() async -> ProofLaneOutcome { record(.freeForm) }
+  func submitFreeFormAnswerOffline(_ value: String) async -> ProofLaneOutcome {
+    receivedFreeFormValues.append(value)
+    return record(.freeForm)
+  }
   func relaunchWithoutResetAndReconnect() async -> ProofLaneOutcome { record(.relaunch) }
   func observeRecoveryAndRetainedWork() async -> ProofLaneOutcome { record(.recovery) }
 

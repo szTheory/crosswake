@@ -12,8 +12,7 @@ config :crosswake_example, CrosswakeExample.Endpoint,
   secret_key_base: String.duplicate("a", 64),
   live_view: [signing_salt: "crosswake"]
 
-config :crosswake_example, CrosswakeExample.Repo,
-  pool_size: 5
+config :crosswake_example, CrosswakeExample.Repo, pool_size: 5
 
 # show_sensitive_data_on_connection_error: true  # dev only — omitted (applies to all Mix envs)
 
@@ -44,6 +43,24 @@ config :crosswake, :rulestead, %{enabled: true}
 # defaults to false (fail-closed) when absent — so registering the module above is
 # necessary but not sufficient; this key must be present too.
 config :crosswake, :sigra, %{enabled: true}
+
+# The bounded first-adopter reference host owns this one proof lane.  Values here
+# are host-local contract coordinates, not a product route registry; the actual
+# route policy remains in the router and host authority callbacks.
+config :crosswake, :proof_lane,
+  route_id: "route-1630000000000001",
+  route_path: "/study/session",
+  indexed_db_database: "crosswake_offline_study",
+  indexed_db_store: "scoped_mutations",
+  mutation_id_path: "client_mutation_id",
+  sync_path: "/study/sync",
+  evidence_path: "/proof/evidence",
+  router: CrosswakeExample.Router,
+  ios_shell_root: "/Users/jon/projects/crosswake/examples/phoenix_host/native/ios"
+
+# The adapter is deliberately host-owned. It derives device observations only
+# from the signed generated lane and backend observations only from Phoenix.
+config :crosswake, :physical_iphone_proof_host, CrosswakeExample.PhysicalIphoneProofHost
 
 # Wire the host's flag source: the Rulestead adapter resolves this at runtime via
 # Application.get_env(:crosswake, :rulestead_flag_source) and calls get_flag/1. The

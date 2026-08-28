@@ -284,6 +284,29 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
            ] = FirstAdopterContext.scan_filesystem(missing_root, [])
   end
 
+  test "classifies only the approved physical marker and reference-host AIFF resource" do
+    completion_marker =
+      ".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete"
+
+    reference_aiff =
+      "examples/phoenix_host/native/ios/CrosswakeProofLane/Resources/ReferenceLearningBundle/pronunciation.aiff"
+
+    arbitrary_aiff = "examples/phoenix_host/native/ios/OtherBundle/pronunciation.aiff"
+    unknown_binary = "artifacts/capture.bin"
+
+    with_temporary_repository([completion_marker, reference_aiff], "safe", fn root ->
+      assert FirstAdopterContext.discover_paths(root) == [completion_marker]
+      assert FirstAdopterContext.scan_filesystem(root, []) == []
+    end)
+
+    with_temporary_repository([arbitrary_aiff, unknown_binary], "safe", fn root ->
+      assert [
+               %{rule_id: "routing.unclassified_path", path: ^unknown_binary},
+               %{rule_id: "routing.unclassified_path", path: ^arbitrary_aiff}
+             ] = FirstAdopterContext.scan_filesystem(root, [])
+    end)
+  end
+
   test "filesystem discovery excludes raw fixtures and rejects symlink candidates before reads" do
     private_term = Enum.join(["fixture", "private", "canary"], "-")
 
@@ -331,7 +354,7 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     assert roadmap =~ "[x] **Phase 158: Adoption Reset and Route Map**"
 
     state = File.read!(".planning/STATE.md")
-    [_, current_phase] = Regex.run(~r/^current_phase:\s*(\d+)$/m, state)
+    [_, current_phase] = Regex.run(~r/^current_phase:\s*(\d+(?:\.\d+)?)$/m, state)
     assert state =~ "Phase: #{current_phase}"
   end
 
