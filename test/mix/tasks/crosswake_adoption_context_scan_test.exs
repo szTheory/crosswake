@@ -141,7 +141,7 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
 
     for path <- [
           "examples/phoenix_host/native/ios/OtherBundle/pronunciation.aiff",
-          "evidence/capture.opaque"
+          "artifacts/capture.bin"
         ] do
       with_temporary_root(fn root ->
         write_file(root, path, "safe")

@@ -55,7 +55,37 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     .bak .bat .c .css .eex .ex .exs .gradle .heex .html .java .js .json .kt .kts .lock .md .mjs
     .orig .pbxproj .plist .properties .py .sh .svg .swift .tape .toml .ts .tsx .txt .xcscheme .xml .yaml .yml
   )
-  @binary_extensions ~w(.a .app .beam .bin .bundle .dylib .gif .gz .ico .jar .jpeg .jpg .mp3 .mp4 .o .pdf .png .so .webp .zip)
+  @physical_evidence_completion_marker ".planning/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete"
+  @reference_host_pronunciation_aiff "examples/phoenix_host/native/ios/CrosswakeProofLane/Resources/ReferenceLearningBundle/pronunciation.aiff"
+  @known_excluded_binary_paths ~w(
+    .planning/milestones/v10.0-phases/108-consumer-normalization/render/deck-dark.png
+    .planning/milestones/v10.0-phases/108-consumer-normalization/render/deck-focus-ring.png
+    .planning/milestones/v10.0-phases/108-consumer-normalization/render/deck-light.png
+    .planning/milestones/v10.0-phases/108-consumer-normalization/render/gen-dark.png
+    .planning/milestones/v10.0-phases/108-consumer-normalization/render/gen-focus-dark.png
+    .planning/milestones/v10.0-phases/108-consumer-normalization/render/gen-light.png
+    .planning/milestones/v10.0-phases/108-consumer-normalization/render/host-dark.png
+    .planning/milestones/v10.0-phases/108-consumer-normalization/render/host-focus-ring.png
+    .planning/milestones/v10.0-phases/108-consumer-normalization/render/host-light.png
+    .planning/milestones/v19.0-phases/147-arc-fixture-and-showcase-foundation/uat-screenshots/desktop-dark-reduced.png
+    .planning/milestones/v19.0-phases/147-arc-fixture-and-showcase-foundation/uat-screenshots/desktop-light.png
+    .planning/milestones/v19.0-phases/147-arc-fixture-and-showcase-foundation/uat-screenshots/mobile-dark-reduced.png
+    .planning/milestones/v19.0-phases/147-arc-fixture-and-showcase-foundation/uat-screenshots/mobile-light.png
+    .planning/milestones/v19.0-phases/148-demo-app-brand-fixture-direction/uat-screenshots/showcase-desktop.png
+    .planning/milestones/v19.0-phases/148-demo-app-brand-fixture-direction/uat-screenshots/showcase-mobile-dark.png
+    brandbook/collateral/apple-touch-icon.png
+    brandbook/collateral/favicon-32.png
+    brandbook/collateral/see-it-run/see-it-run.gif
+    brandbook/collateral/see-it-run/web-bridge-proof.png
+    brandbook/collateral/see-it-run/web-home.png
+    brandbook/collateral/see-it-run/web-offline.png
+    brandbook/collateral/social-card.png
+    crosswake-checkpoint-24c8389.bundle
+    examples/ios_shell_host/CrosswakeShell/Resources/pronunciation-pack-fixture.bin
+    examples/phoenix_host/native/ios/CrosswakeProofLane/Resources/ReferenceLearningBundle/card-image.png
+    examples/phoenix_host/native/ios/CrosswakeProofLane/Resources/pronunciation-pack-fixture.bin
+    packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/pronunciation-pack-fixture.bin
+  )
   @prose_extensions ~w(.html .md .svg .txt .xml)
   @commercial_context ~r/\b(?:amount|cost|dollar|fee|payment|price|revenue|subscription|usd)\b/i
   @commercial_amount ~r/\$\s*\d+(?:\.\d{1,2})?\b/
@@ -306,8 +336,10 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     cond do
       ignored_build_or_dependency_path?(path) -> {:excluded, :forbidden}
       destination = named_destination(path) -> {:scan, destination}
+      path == @physical_evidence_completion_marker -> {:scan, :durable}
+      path == @reference_host_pronunciation_aiff -> {:excluded, :host_private}
+      path in @known_excluded_binary_paths -> {:excluded, :forbidden}
       explicit_exclusion_path?(path) -> {:excluded, :forbidden}
-      binary_path?(path) -> {:excluded, :forbidden}
       phase_artifact_path?(path) -> {:scan, :durable}
       scannable_text_path?(path) -> {:scan, :durable}
       true -> :unclassified
@@ -366,8 +398,6 @@ defmodule Crosswake.Planning.FirstAdopterContext do
 
   defp ignored_build_or_dependency_path?(path),
     do: String.starts_with?(path, ["_build/", "deps/", "node_modules/"])
-
-  defp binary_path?(path), do: Path.extname(path) in @binary_extensions
 
   defp safe_relative_path?(path) do
     Path.type(path) == :relative and path not in ["", "."] and
