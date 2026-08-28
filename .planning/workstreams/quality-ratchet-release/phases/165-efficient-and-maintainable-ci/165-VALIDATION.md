@@ -29,7 +29,7 @@ created: 2026-08-28
 
 - **After every task commit:** Run the smallest affected Python self-test or tagged ExUnit case plus `actionlint` on changed workflows.
 - **After every plan wave:** Run `script/check_phase165_efficient_ci.sh`, the selected Phase 164 foundation tests, `actionlint`, and any touched shell portability tests.
-- **Before `$gsd-verify-work`:** Run the full Phase 165 script, local producer/protection audit, live strict branch-protection audit, documentation-only PR probe, executable PR probe, monotonic cancellation probe, and sanitized evidence validation.
+- **Before `$gsd-verify-work`:** Run the full Phase 165 script, local producer/protection audit, live strict branch-protection audit, documentation-only PR probe, executable PR probe, monotonic cancellation probe, exact post-Plan-12 remote-default SHA/workflow/manifest binding, and sanitized evidence validation.
 - **Max feedback latency:** Record observed duration after Wave 0; do not introduce timing thresholds based on GitHub-hosted queue variance.
 
 ---
@@ -60,6 +60,7 @@ created: 2026-08-28
 - [ ] `test/fixtures/ci/maximum-shape-crosswake-ci.yml` plus `maximum-shape-needs.json` — complete final proof/control union, actionlint-valid checkout-free umbrella, under 256 jobs and 32 KiB serialized-needs safety budget.
 - [ ] `evidence/required-context-baseline.json` — pre-mutation strict exact sorted context set and source digest; every producer migration re-verifies it live.
 - [ ] Live probe and cleanup commands for documentation-only visibility, lower-run-ID cancellation, and additive branch-protection verification.
+- [ ] Final-source probe that accepts only the execute-phase orchestrator's exact post-Plan-12 remote-default SHA and verifies compatibility-free workflow/manifest blob digests before after-cohort collection.
 
 ---
 
@@ -85,6 +86,7 @@ All other phase behavior, including live PR, cancellation, cache, and evidence a
 | T-165-06 | Incompatible or untrusted cache restores artifacts | Partition by complete OS/architecture/toolchain/lock/dependency topology; never loosen hermetic vs dependency-present scope. |
 | T-165-07 | Evidence leaks identities, logs, tokens, adopter facts, or cache keys | Allowlist canonical JSON and Markdown fields; retain only safe IDs, SHAs, stable names, runner class, timestamps, outcomes, and aggregate durations. |
 | T-165-08 | Required-context migration creates a bypass | Additive green-first registration, strict live verification, exact retirement diff, explicit approval, and post-apply audit. |
+| T-165-15 | Final evidence measures an inferred, stale, or pre-compatibility-removal graph | Require the orchestrator-produced exact landed SHA, current-default-tip equality, and remote workflow/manifest blob-digest parity before collection. |
 
 ---
 

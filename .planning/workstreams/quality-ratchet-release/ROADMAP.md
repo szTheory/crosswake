@@ -57,7 +57,7 @@ independent workstream; the numbering does not imply that parked adopter work mu
   4. A documentation-only pull request receives an always-visible merge result without scheduling unrelated build, browser, Android, or Apple proof.
   5. A maintainer can compare reproducible before/after workflow count, runner selection, queue time, and execution time, and can still identify each named proof behind the consolidated reusable orchestration.
 
-**Plans**: 12 plans
+**Plans**: 13 plans
 
 Plans:
 - [ ] 165-01-PLAN.md — Capture the pre-change baseline and prove the documentation-only tracer.
@@ -71,7 +71,8 @@ Plans:
 - [ ] 165-09-PLAN.md — Finish the PR graph and recurring Phase 165 contract gate.
 - [ ] 165-10-PLAN.md — Prove live behavior and add Crosswake CI authority green-first.
 - [ ] 165-11-PLAN.md — Approve or reject the exact legacy-context retirement.
-- [ ] 165-12-PLAN.md — Apply approved retirement and capture matched after evidence.
+- [ ] 165-12-PLAN.md — Apply approved retirement and remove migration-only compatibility conclusions.
+- [ ] 165-13-PLAN.md — Bind the landed final graph to an exact remote SHA and capture matched after evidence.
 
 ### Phase 166: Clean-Checkout Engineering Quality
 
