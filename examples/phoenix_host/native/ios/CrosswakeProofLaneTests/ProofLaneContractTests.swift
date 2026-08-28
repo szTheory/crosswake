@@ -3,6 +3,65 @@ import CryptoKit
 @testable import CrosswakeProofLane
 
 final class ProofLaneContractTests: XCTestCase {
+  func testHostLearningBundleProviderRequiresFreshCompleteBundleReconciliation() async throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+
+    let provider = HostLearningBundleProvider(storageRoot: root)
+    let requirement = HostLearningBundleProvider.requirement
+
+    let initialStatus = await provider.status(for: requirement)
+    XCTAssertEqual(initialStatus, .notInstalled)
+    guard case .installed = await provider.install(requirement) else {
+      return XCTFail("expected complete bundle installation")
+    }
+    guard case .installed = await provider.status(for: requirement) else {
+      return XCTFail("expected fresh installed status")
+    }
+
+    let failedReplacement = HostLearningBundleProvider(storageRoot: root, source: { _ in nil })
+    let replacementResult = await failedReplacement.install(requirement)
+    XCTAssertEqual(replacementResult, .failure(.digestMismatch))
+    guard case .installed = await provider.status(for: requirement) else {
+      return XCTFail("failed replacement must retain the last known good bundle")
+    }
+
+    let manifest = root.appendingPathComponent("learning-bundle/manifest.json")
+    try Data("corrupt".utf8).write(to: manifest)
+    let corruptStatus = await provider.status(for: requirement)
+    XCTAssertEqual(corruptStatus, .failure(.digestMismatch))
+
+    let invalidated = await provider.invalidate(requirement)
+    XCTAssertEqual(invalidated, .notInstalled)
+    let relaunchedStatus = await HostLearningBundleProvider(storageRoot: root).status(for: requirement)
+    XCTAssertEqual(relaunchedStatus, .notInstalled)
+  }
+
+  func testNavigationConfigurationAcceptsOnlyTheCurrentNonceBoundReadyTopology() throws {
+    let topology = """
+    {"topology_schema_version":"1.0.0","manifest_schema_version":"1.0.0","status":"ready","entries":[{"route_id":"route-0123456789abcdef","root_tab_id":"tab-0123456789abcdef","presentation":"root","deep_link_posture":"allow","restoration_posture":"allow"}]}
+    """
+    let envelope = "{\"schema_version\":1,\"run_binding\":\"current-run\",\"topology\":\(topology)}"
+
+    XCTAssertNotNil(
+      ReferenceHostNavigationConfiguration.decode(
+        envelope: envelope,
+        currentNonce: "current-run",
+        manifestSchemaVersion: "1.0.0"
+      )
+    )
+
+    for invalid in ["", "{}", envelope.replacingOccurrences(of: "current-run", with: "stale-run"), "{\"schema_version\":1,\"run_binding\":\"current-run\",\"topology\":{}}"] {
+      XCTAssertNil(
+        ReferenceHostNavigationConfiguration.decode(
+          envelope: invalid,
+          currentNonce: "current-run",
+          manifestSchemaVersion: "1.0.0"
+        )
+      )
+    }
+  }
+
   func testNavigationRemainsUnavailableWithoutProductionHostObservations() {
     XCTAssertNil(ProofLaneNavigationHostAdapterFactory.make())
     for assertion in ProofLaneNavigationAssertion.allCases {

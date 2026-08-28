@@ -2,6 +2,50 @@
 import AVFoundation
 import CryptoKit
 import Foundation
+/// The physical host owns this short-lived configuration seam.  It accepts only
+/// a current invocation's closed topology and never constructs navigation state.
+struct ReferenceHostNavigationConfiguration {
+  private let topology: ReferenceHostNavigationTopology
+
+  static func decode(envelope: String?, currentNonce: String?, manifestSchemaVersion: String) -> ReferenceHostNavigationConfiguration? {
+    guard let envelope, let currentNonce, !currentNonce.isEmpty,
+          let data = envelope.data(using: .utf8),
+          let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+          Set(object.keys) == ["schema_version", "run_binding", "topology"],
+          object["schema_version"] as? Int == 1,
+          object["run_binding"] as? String == currentNonce,
+          let topologyObject = object["topology"] as? [String: Any],
+          Set(topologyObject.keys) == ["topology_schema_version", "manifest_schema_version", "status", "entries"],
+          let topologyData = try? JSONSerialization.data(withJSONObject: object["topology"] as Any),
+          let topology = try? JSONDecoder().decode(ReferenceHostNavigationTopology.self, from: topologyData),
+          topology.status == "ready",
+          !topology.entries.isEmpty,
+          topology.topologySchemaVersion == manifestSchemaVersion,
+          topology.manifestSchemaVersion == manifestSchemaVersion
+    else { return nil }
+
+    return ReferenceHostNavigationConfiguration(topology: topology)
+  }
+}
+
+private struct ReferenceHostNavigationTopology: Decodable {
+  let topologySchemaVersion: String
+  let manifestSchemaVersion: String
+  let status: String
+  let entries: [ReferenceHostNavigationEntry]
+
+  enum CodingKeys: String, CodingKey {
+    case topologySchemaVersion = "topology_schema_version"
+    case manifestSchemaVersion = "manifest_schema_version"
+    case status, entries
+  }
+}
+
+private struct ReferenceHostNavigationEntry: Decodable {
+  let routeID: String
+
+  enum CodingKeys: String, CodingKey { case routeID = "route_id" }
+}
 
 enum ProofLaneOutcome: String, Codable { case passed, blocked, unavailable }
 enum ProofLanePrerequisite: String { case replayAuthorization, packAudio }
@@ -265,6 +309,7 @@ private final class ReferenceStudyReplayTransport {
 }
 
 enum PhysicalIphoneHostAdapterFactory {
+  @MainActor
   static func make() -> PhysicalIphoneHostAdapter? {
     // The reference host opts in explicitly. A normal generated lane never
     // obtains local-study authority merely because it was installed.
@@ -285,6 +330,7 @@ private struct ReferenceLearningAsset {
   let sha256: String
 }
 
+#if false
 private final class ReferenceLearningBundleAdapter {
   private let assets = [
     ReferenceLearningAsset(
@@ -430,8 +476,13 @@ private final class ReferenceLearningBundleAdapter {
   }
 }
 
+#endif
+
+@MainActor
 final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
-  private let pack = ReferenceLearningBundleAdapter()
+  private let packProvider: HostLearningBundleProvider
+  private let packStore: PackStore
+  private var audioPlayer: AVAudioPlayer?
   private let defaults: UserDefaults
   private let prefix = "crosswake.reference-study.v1."
   private let scopeProvider: ReferenceStudyScopeProviding
@@ -442,6 +493,9 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
        scopeProvider: ReferenceStudyScopeProviding = ReferenceHostPhysicalIphoneScopeProvider(),
        journal: ReferenceStudyJournal = ReferenceStudyJournal(),
        environment: [String: String] = ProcessInfo.processInfo.environment) {
+    let provider = HostLearningBundleProvider()
+    self.packProvider = provider
+    self.packStore = PackStore(requirements: [HostLearningBundleProvider.requirement], provider: provider)
     self.defaults = defaults
     self.scopeProvider = scopeProvider
     self.journal = journal
@@ -449,19 +503,35 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
   }
 
   func installAndVerifyPack() async -> ProofLaneOutcome {
-    await pack.installForeground()
+    await packStore.reconcileAll()
+    guard let status = packStore.statuses[HostLearningBundleProvider.requirement.packID] else { return .blocked }
+    await packStore.installRequiredPack(status)
+    return await hasFreshInstalledBundle() ? .passed : .blocked
   }
 
   func packInstallDiagnostic() -> String {
-    pack.lastInstallDiagnostic
+    hasAvailablePackStatus() ? "PI-PACK-INSTALL-AUDIO:PASSED" : "PI-PACK-INSTALL-AUDIO:BLOCKED"
   }
 
   func playInstalledAudioOffline() async -> ProofLaneOutcome {
-    await pack.playInstalledAudioOffline()
+    guard await hasFreshInstalledBundle(),
+          let audioURL = await packProvider.installedAssetURL(named: "pronunciation.aiff", requirement: HostLearningBundleProvider.requirement)
+    else { return .blocked }
+
+    do {
+      try AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio)
+      try AVAudioSession.sharedInstance().setActive(true)
+      let player = try AVAudioPlayer(contentsOf: audioURL)
+      guard player.prepareToPlay(), player.play() else { return .blocked }
+      audioPlayer = player
+      return .passed
+    } catch {
+      return .blocked
+    }
   }
 
   func enterAuthorizedStudy() async -> ProofLaneOutcome {
-    guard pack.observe() == .passed else { return .blocked }
+    guard await hasFreshInstalledBundle() else { return .blocked }
     defaults.set(true, forKey: prefix + "entered")
     return .passed
   }
@@ -478,7 +548,7 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
   }
 
   func relaunchWithoutResetAndReconnect() async -> ProofLaneOutcome {
-    guard pack.observe() == .passed,
+    guard await hasFreshInstalledBundle(),
           defaults.bool(forKey: prefix + "selected"),
           journal.recover(scopeRef: scopeProvider.currentScopeRef()) == .passed
     else { return .blocked }
@@ -503,7 +573,8 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
   }
 
   func installedCardImageURL() -> URL? {
-    pack.installedImageURL()
+    guard hasAvailablePackStatus() else { return nil }
+    return nil
   }
 
   static func resetReferenceStudyPersistenceForTests(defaults: UserDefaults = .standard) {
@@ -512,7 +583,16 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
       defaults.removeObject(forKey: prefix + key)
     }
     ReferenceStudyJournal().reset()
-    ReferenceLearningBundleAdapter.resetForTests()
+    HostLearningBundleProvider.resetForTests()
+  }
+
+  private func hasFreshInstalledBundle() async -> Bool {
+    await packStore.reconcileAll()
+    return hasAvailablePackStatus()
+  }
+
+  private func hasAvailablePackStatus() -> Bool {
+    packStore.statuses[HostLearningBundleProvider.requirement.packID]?.state == .available
   }
 }
 
@@ -652,7 +732,7 @@ private final class ProofLaneDenyingURLProtocol: URLProtocol {
 // This reference is test-only host scaffold. Production hosts supply their own adapter.
 final class ProofLaneReferencePackAdapter: ProofLaneHostAdapter {
   private let requirement = ProofLanePackRequirement(
-    version: PackProviderContract.currentVersion,
+    version: "v1",
     byteCount: 46,
     sha256: "73a51a8229c467dae7e9ad1251daad7df4c17b6e75e7d88d44d26c7e64db3d02"
   )
@@ -662,7 +742,7 @@ final class ProofLaneReferencePackAdapter: ProofLaneHostAdapter {
   private(set) var latestAudioEvidence: [String]?
 
   init(
-    requiredVersion: String = PackProviderContract.currentVersion,
+    requiredVersion: String = "v1",
     fileManager: FileManager = .default,
     networkObservation: @escaping () async -> ProofLaneAudioNetworkObservation = ProofLaneReferencePackAdapter.observeDeniedNetwork
   ) {
@@ -784,8 +864,4 @@ final class ProofLaneReferencePackAdapter: ProofLaneHostAdapter {
 
 private extension SHA256Digest {
   var hexString: String { map { String(format: "%02x", $0) }.joined() }
-}
-
-private enum PackProviderContract {
-  static let currentVersion = "v1"
 }

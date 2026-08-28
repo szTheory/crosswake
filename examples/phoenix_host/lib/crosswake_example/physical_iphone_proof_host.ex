@@ -2,7 +2,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   @moduledoc false
 
   alias Crosswake.ProofLane.{Config, Generator, PhysicalIphoneContract}
-  alias CrosswakeExample.{E2E.ReplayAuthority, LocalFirst.PhysicalIphoneAuthority}
+  alias CrosswakeExample.{AdopterHandoff, E2E.ReplayAuthority, LocalFirst.PhysicalIphoneAuthority}
   alias CrosswakeExample.LocalFirst.PhysicalIphoneRunProvenance
 
   @host_root Path.expand("../..", __DIR__)
@@ -23,6 +23,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   @runtime_key {__MODULE__, :ios_runtime_line}
   @run_key {__MODULE__, :physical_run}
   @destination_key {__MODULE__, :physical_destination}
+  @topology_key {__MODULE__, :navigation_topology}
   @learning_bundle_root Path.join([
                           @host_root,
                           "native",
@@ -43,6 +44,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   # never builds, resets fixtures, runs tests, or creates evidence.
   def preflight_options do
     [
+      adopter_handoff: &adopter_handoff_ready?/0,
       inventory: reference_inventory(),
       config: Application.get_env(:crosswake, :proof_lane),
       generated_lane: &generated_lane?/0,
@@ -64,13 +66,14 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
   # attachment inside the private result bundle; the whole run root is removed
   # before the validated bytes leave this callback.
   def device_report(%{schema_version: 1, device_class: :physical_iphone}) do
-    with {:ok, destination} <- selected_physical_destination(),
+    with {:ok, handoff} <- current_adopter_handoff(),
+         {:ok, destination} <- selected_physical_destination(),
          {:ok, team} <- development_team(),
          true <- codesigning_identity_ready?(),
          {:ok, run} <- PhysicalIphoneRunProvenance.start(),
          :ok <- put_run(run),
          {:ok, root} <- private_run_root(),
-         result <- safely_run_physical_xctest(root, destination, team, run),
+         result <- safely_run_physical_xctest(root, destination, team, run, handoff.topology),
          :ok <- remove_private_run_root(root),
          {:ok, report} <- result do
       Process.put(@runtime_key, destination.runtime_line)
@@ -180,6 +183,30 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
       :ok
     else
       _ -> :blocked
+    end
+  end
+
+  # The test fixture remains useful for deterministic browser/XCTest coverage, but
+  # has no path through this production callback. Every physical invocation reloads
+  # and revalidates a caller-supplied private file.
+  defp adopter_handoff_ready? do
+    case current_adopter_handoff() do
+      {:ok, handoff} ->
+        Process.put(@topology_key, handoff.topology)
+        {:ok, %{source: :adopter, topology: handoff.topology}}
+
+      _ ->
+        :blocked
+    end
+  end
+
+  defp current_adopter_handoff do
+    with path when is_binary(path) and byte_size(path) > 0 <-
+           System.get_env("CROSSWAKE_FIRST_ADOPTER_HANDOFF_PATH"),
+         {:ok, handoff} <- AdopterHandoff.load(path) do
+      {:ok, handoff}
+    else
+      _ -> {:error, :blocked}
     end
   end
 
@@ -397,7 +424,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     end
   end
 
-  defp run_physical_xctest(root, destination, team, run) do
+  defp run_physical_xctest(root, destination, team, run, topology) do
     result_bundle = Path.join(root, "Result.xcresult")
     derived_data = Path.join(root, "DerivedData")
     fixture = ReplayAuthority.physical_fixture()
@@ -427,7 +454,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
 
     with {_output, 0} <- System.cmd("xcodebuild", build_args, stderr_to_stdout: true),
          {:ok, xctestrun} <- exactly_one_xctestrun(derived_data),
-         :ok <- inject_ui_test_environment(xctestrun, fixture, run),
+         :ok <- inject_ui_test_environment(xctestrun, fixture, run, topology),
          {_output, 0} <-
            System.cmd(
              "xcodebuild",
@@ -459,7 +486,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
     end
   end
 
-  defp inject_ui_test_environment(xctestrun, fixture, run) do
+  defp inject_ui_test_environment(xctestrun, fixture, run, topology) do
     environment_plist = xctestrun <> ".environment.plist"
 
     with {_output, 0} <-
@@ -499,6 +526,13 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
              "CROSSWAKE_REFERENCE_HOST_PHYSICAL_PROOF_NONCE",
              run.nonce
            ),
+         {:ok, topology_envelope} <- topology_envelope(topology, run.nonce),
+         :ok <-
+           replace_plist_string(
+             environment_plist,
+             "CROSSWAKE_REFERENCE_HOST_NAVIGATION_TOPOLOGY",
+             topology_envelope
+           ),
          :ok <-
            replace_plist_string(
              environment_plist,
@@ -533,13 +567,22 @@ defmodule CrosswakeExample.PhysicalIphoneProofHost do
 
   defp replace_plist_string(_, _, _), do: {:error, :unavailable}
 
-  defp safely_run_physical_xctest(root, destination, team, run) do
-    run_physical_xctest(root, destination, team, run)
+  defp safely_run_physical_xctest(root, destination, team, run, topology) do
+    run_physical_xctest(root, destination, team, run, topology)
   rescue
     _ -> {:error, :unavailable}
   catch
     _, _ -> {:error, :unavailable}
   end
+
+  defp topology_envelope(%{status: :ready} = topology, nonce)
+       when is_binary(nonce) and byte_size(nonce) > 0 do
+    {:ok, Jason.encode!(%{"schema_version" => 1, "run_binding" => nonce, "topology" => topology})}
+  rescue
+    _ -> {:error, :unavailable}
+  end
+
+  defp topology_envelope(_, _), do: {:error, :unavailable}
 
   defp extract_device_report(root, result_bundle) do
     attachment_root = Path.join(root, "Attachments")

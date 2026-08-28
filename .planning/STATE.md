@@ -2,30 +2,30 @@
 gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
-current_phase: 163
-status: completed
-stopped_at: Phase 163 verified and complete
-last_updated: "2026-08-27T21:54:52.566Z"
-last_activity: 2026-08-27
-last_activity_desc: Phase 163 complete
+current_phase: 163.1
+current_phase_name: close-gap-v21-physical-adopter-composition
+status: executing
+stopped_at: Completed 163.1-04-PLAN.md
+last_updated: "2026-08-28T03:58:21.726Z"
+last_activity: 2026-08-28
+last_activity_desc: Plan 163.1-02 installed the pending composition-gap ledger
 progress:
-  total_phases: 7
+  total_phases: 8
   completed_phases: 7
-  total_plans: 116
-  completed_plans: 116
-  percent: 100
-current_phase_name: First B2C Adopter Reference Host Integration
-current_plan: 1
+  total_plans: 126
+  completed_plans: 120
+  percent: 88
+current_plan: 2
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 163
-Plan: 1 of 1 complete
-Status: All phases complete
-Last activity: 2026-08-27 — Phase 163 complete
+Phase: 163.1 (close-gap-v21-physical-adopter-composition) — EXECUTING
+Plan: 5 of 10
+Status: Ready to execute
+Last activity: 2026-08-28 — Plan 163.1-02 installed the pending composition-gap ledger
 
 ## Active Objective
 
@@ -44,14 +44,19 @@ framework launch.
 
 ## Next Action
 
-Phase 162 independent verification passed against the committed recovery topology and current
-truth. Stop here and use `$gsd-progress` for the next explicit routing decision. The evidence does
-not widen to Android, background replay or sync, generic storage or sync, multiple islands,
-simulator substitution, or every-iPhone coverage.
+Execute the Phase 163.1 composition plans against the audit-derived COMPOSE ledger. Fixture and
+simulator results remain advisory and non-promoting; no physical or support claim advances until
+validated TODO-002 handoff input and a source-bound signed-device run both pass. The work does not
+widen to Android, background replay or sync, generic storage or sync, multiple islands, simulator
+substitution, or every-iPhone coverage.
 
 ## Blockers
 
-None. All v21 phase contracts and automated verification gates are complete.
+- TODO-002 remains open: a validated sanitized adopter handoff is required before adopter binding,
+  physical promotion, evidence publication, or support promotion.
+
+- Signed-device source-bound execution remains required after the handoff validates; fixture and
+  simulator evidence cannot satisfy COMPOSE-06.
 
 ## Deferred Items
 
@@ -229,6 +234,12 @@ None. All v21 phase contracts and automated verification gates are complete.
 - [Phase ?]: Public physical support remains one first-adopter flow on one recorded iOS runtime line with Android, background, generic-storage, generic-sync, multiple-island, simulator, and every-iPhone non-claims.
 - [Phase ?]: Plan 14 retained standard proof is the sole physical-device authority; Plan 15 performs only non-Xcode current-tree reconciliation.
 - [Phase ?]: Compiled production parser/join regressions replace the Xcode-dependent advisory shell gate and remain non-promoting.
+- [Phase ?]: The historical 36/36 ledger remains phase-local completion; COMPOSE-01 through COMPOSE-06 own the audit-proven integration gaps.
+- [Phase ?]: Only a validated TODO-002 handoff plus a source-bound signed-device run may promote physical or support truth.
+- [Phase ?]: Physical preflight reloads a private handoff and accepts only an adopter-class ready topology.
+- [Phase ?]: The iOS process accepts topology only from the three-key nonce-bound xctestrun envelope.
+- [Phase ?]: D-20 permits only exact approved physical marker and reference-host AIFF paths; unknown binaries remain fail-closed.
+- [Phase ?]: Physical readiness is derived only from PackStore reconciliation of a verified host provider.
 
 ## Deferred Items
 
@@ -257,8 +268,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-27T19:05:49.873Z
-**Stopped at:** Completed 162-15-PLAN.md
+**Last session:** 2026-08-28T03:58:21.712Z
+**Stopped at:** Completed 163.1-04-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -351,6 +362,10 @@ this milestone reset.
 | Phase 162 P13 | 10m | 2 tasks | 5 files |
 | Phase 162 P14 | closeout continuation | 3 tasks | 5 files |
 | Phase 162 P15 | 14m | 2 tasks | 5 files |
+| Phase 163.1-close-gap-v21-physical-adopter-composition P02 | 10m | 1 tasks | 9 files |
+| Phase 163.1 P01 | 24m | 1 tasks | 7 files |
+| Phase 163.1-close-gap-v21-physical-adopter-composition P03 | 15m | 1 tasks | 4 files |
+| Phase 163.1-close-gap-v21-physical-adopter-composition P04 | 25m | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -364,3 +379,5 @@ this milestone reset.
 - Phase 163 completed: generated Phoenix/iOS host, exact foreground learning bundle, scoped replay
   authority, and physical report/evidence producers are verified; the final physical record closed
   Phase 162's narrow device-evidence gate.
+
+- Phase 163.1 inserted after Phase 163: Close gap: v21 physical adopter composition (URGENT)
