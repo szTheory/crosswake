@@ -74,6 +74,76 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
     refute File.exists?(second)
   end
 
+  test "owned WAL-mode Repo cleanup removes only its primary and exact sidecars" do
+    ExampleHost.load!()
+
+    repo = CrosswakeExample.Repo
+    database = ExampleHost.unique_database_path()
+    wal = database <> "-wal"
+    shm = database <> "-shm"
+    similarly_prefixed = database <> ".preserve"
+    other_database = database <> ".other.sqlite3"
+    other_wal = other_database <> "-wal"
+    other_shm = other_database <> "-shm"
+
+    preserved = %{
+      similarly_prefixed => "similar-prefix",
+      other_database => "other-primary",
+      other_wal => "other-wal",
+      other_shm => "other-shm"
+    }
+
+    Enum.each(preserved, fn {path, bytes} -> File.write!(path, bytes) end)
+    on_exit(fn -> Enum.each(Map.keys(preserved), &File.rm/1) end)
+
+    file_token = ExampleHost.own_file!(database)
+
+    ExampleHost.put_env_owned!(:crosswake_example, repo,
+      database: database,
+      pool_size: 1,
+      log: false
+    )
+
+    {:ok, _} = Application.ensure_all_started(:ecto_sql)
+    {:ok, _} = Application.ensure_all_started(:ecto_sqlite3)
+    {:owned, repo_pid, repo_token} = ExampleHost.start_owned!(repo)
+
+    result =
+      apply(Ecto.Adapters.SQL, :query!, [repo, "PRAGMA journal_mode=WAL", [], [log: false]])
+    assert result.rows == [["wal"]]
+
+    apply(Ecto.Adapters.SQL, :query!, [
+      repo,
+      "CREATE TABLE owned_probe (value TEXT)",
+      [],
+      [log: false]
+    ])
+
+    apply(Ecto.Adapters.SQL, :query!, [
+      repo,
+      "INSERT INTO owned_probe (value) VALUES ('sidecars-observed')",
+      [],
+      [log: false]
+    ])
+
+    assert File.regular?(database)
+    assert File.regular?(wal)
+    assert File.regular?(shm)
+
+    assert :ok = ExampleHost.cleanup!(repo_token)
+    refute Process.alive?(repo_pid)
+    assert :ok = ExampleHost.cleanup!(file_token)
+
+    refute File.exists?(database)
+    refute File.exists?(wal)
+    refute File.exists?(shm)
+
+    Enum.each(preserved, fn {path, bytes} -> assert File.read!(path) == bytes end)
+
+    assert :ok = ExampleHost.cleanup!(file_token)
+    Enum.each(preserved, fn {path, bytes} -> assert File.read!(path) == bytes end)
+  end
+
   test "owned processes stop while already-started processes remain unowned" do
     pre_existing_name = unique_atom("pre_existing_process")
     owned_name = unique_atom("owned_process")
