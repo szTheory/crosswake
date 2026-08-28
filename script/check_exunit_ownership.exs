@@ -4,6 +4,10 @@ defmodule Crosswake.ExUnitOwnership do
   @moduledoc false
 
   @default_exclusions [:advisory_only, :collateral_binaries, :engine_present]
+  @default_workflow ".github/workflows/phase130-proof.yml"
+  @default_job "core-hermetic-proof"
+  @default_name "core hermetic proof (merge-blocking)"
+  @default_selector "mix test --exclude requires_example_host --exclude advisory_only"
   @example_workflow ".github/workflows/requires-example-host-gate.yml"
   @example_job "merge-blocking-requires-example-host"
 
@@ -26,15 +30,21 @@ defmodule Crosswake.ExUnitOwnership do
     else
       analyses = Enum.map(paths, &analyze_file(&1, root))
       parse_errors = Enum.flat_map(analyses, & &1.errors)
+      default_hermetic? = Enum.any?(analyses, &(:default_hermetic in &1.classes))
       requires_example? = Enum.any?(analyses, &(:requires_example_host in &1.classes))
-      lane_errors = if requires_example?, do: example_lane_errors(root), else: []
+      default_lane_errors = if default_hermetic?, do: default_lane_errors(root), else: []
+      example_lane_errors = if requires_example?, do: example_lane_errors(root), else: []
 
       ownership_errors =
         Enum.flat_map(analyses, fn analysis ->
-          ownership_errors(analysis, lane_errors == [])
+          ownership_errors(
+            analysis,
+            default_lane_errors == [],
+            example_lane_errors == []
+          )
         end)
 
-      errors = parse_errors ++ lane_errors ++ ownership_errors
+      errors = parse_errors ++ default_lane_errors ++ example_lane_errors ++ ownership_errors
 
       if errors == [] do
         IO.puts(
@@ -316,11 +326,11 @@ defmodule Crosswake.ExUnitOwnership do
 
   defp truthy?(value), do: value not in [nil, false]
 
-  defp ownership_errors(%{errors: [_ | _]}, _example_lane?), do: []
+  defp ownership_errors(%{errors: [_ | _]}, _default_lane?, _example_lane?), do: []
 
-  defp ownership_errors(%{path: path, classes: classes}, example_lane?) do
+  defp ownership_errors(%{path: path, classes: classes}, default_lane?, example_lane?) do
     owned? =
-      :default_hermetic in classes or
+      (:default_hermetic in classes and default_lane?) or
         (:requires_example_host in classes and example_lane?)
 
     intended? = classes != MapSet.new([:intentional_advisory])
@@ -350,26 +360,68 @@ defmodule Crosswake.ExUnitOwnership do
   defp class_label(:intentional_advisory), do: "advisory_only/collateral_binaries/engine_present"
   defp class_label(:unowned_skip), do: "skip"
 
+  defp default_lane_errors(root) do
+    lane_errors(
+      root,
+      @default_workflow,
+      @default_job,
+      @default_name,
+      @default_selector,
+      "restore #{@default_job} with literal name #{@default_name} and the broad hermetic selector"
+    )
+  end
+
   defp example_lane_errors(root) do
-    path = Path.join(root, @example_workflow)
+    lane_errors(
+      root,
+      @example_workflow,
+      @example_job,
+      @example_job,
+      [
+        "script/check_example_host_isolation.sh --matrix-only",
+        "mix test --only requires_example_host"
+      ],
+      "restore #{@example_job} with the requires_example_host matrix command"
+    )
+  end
+
+  defp lane_errors(root, workflow, job, name, selectors, remediation) do
+    path = Path.join(root, workflow)
+    selectors = List.wrap(selectors)
 
     with true <- File.regular?(path),
          source <- File.read!(path),
-         true <- Regex.match?(~r/^\s*name:\s*#{@example_job}\s*$/m, source),
+         {:ok, job_source} <- workflow_job_source(source, job),
          true <-
-           String.contains?(source, "script/check_example_host_isolation.sh --matrix-only") or
-             String.contains?(source, "mix test --only requires_example_host") do
+           job_source
+           |> String.split("\n")
+           |> Enum.any?(&(String.trim(&1) == "name: #{name}")),
+         true <- Enum.any?(selectors, &String.contains?(job_source, &1)) do
       []
     else
       _ ->
         [
           diagnostic(
             "missing-execution-class",
-            @example_workflow,
-            "the literal #{@example_job} lane or its executable selector is missing",
-            "restore #{@example_job} with the requires_example_host matrix command"
+            workflow,
+            "the literal #{job} job/name #{name} or its executable selector is missing",
+            remediation
           )
         ]
+    end
+  end
+
+  defp workflow_job_source(source, job) do
+    marker = "  #{job}:"
+    lines = String.split(source, "\n")
+
+    case Enum.split_while(lines, &(&1 != marker)) do
+      {_before, [^marker | rest]} ->
+        body = Enum.take_while(rest, &(not Regex.match?(~r/^  [a-zA-Z0-9_-]+:\s*$/, &1)))
+        {:ok, Enum.join(body, "\n")}
+
+      _ ->
+        :error
     end
   end
 
