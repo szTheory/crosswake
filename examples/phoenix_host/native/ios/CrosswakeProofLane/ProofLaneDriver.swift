@@ -94,6 +94,32 @@ enum PhysicalIphoneAssertion: String, CaseIterable {
   case offlineFreeFormPersistence = "PI-OFFLINE-FREE-FORM-PERSISTENCE"
   case relaunchPersistence = "PI-RELAUNCH-PERSISTENCE"
   case recoveryRetained = "PI-RECOVERY-RETAINED"
+  case rejection = "PI-RECOVERY-REJECTION"
+  case conflict = "PI-RECOVERY-CONFLICT"
+  case logout = "PI-LOGOUT-FENCE"
+  case accountSwitch = "PI-ACCOUNT-SWITCH-FENCE"
+  case entryDisablement = "PI-ENTRY-DISABLEMENT"
+  case replayDisablement = "PI-REPLAY-DISABLEMENT"
+}
+
+enum PhysicalIphoneCase: String, CaseIterable {
+  case rejection
+  case conflict
+  case logout
+  case accountSwitch = "account_switch"
+  case entryDisablement = "entry_disablement"
+  case replayDisablement = "replay_disablement"
+
+  var assertion: PhysicalIphoneAssertion {
+    switch self {
+    case .rejection: .rejection
+    case .conflict: .conflict
+    case .logout: .logout
+    case .accountSwitch: .accountSwitch
+    case .entryDisablement: .entryDisablement
+    case .replayDisablement: .replayDisablement
+    }
+  }
 }
 
 enum PhysicalIphoneDeviceClass: String, Codable { case physicalIphone = "physical_iphone" }
@@ -123,6 +149,10 @@ protocol PhysicalIphoneHostAdapter {
   func submitFreeFormAnswerOffline(_ value: String) async -> ProofLaneOutcome
   func relaunchWithoutResetAndReconnect() async -> ProofLaneOutcome
   func observeRecoveryAndRetainedWork() async -> ProofLaneOutcome
+  func resetCase() async -> ProofLaneOutcome
+  func prepareCase(_ caseRef: PhysicalIphoneCase) async -> ProofLaneOutcome
+  func performCase(_ caseRef: PhysicalIphoneCase) async -> ProofLaneOutcome
+  func verifyCase(_ caseRef: PhysicalIphoneCase) async -> ProofLaneOutcome
 }
 
 // This is intentionally host-private: the reference lane has one scoped study
@@ -250,6 +280,36 @@ private final class ReferenceStudyReplayTransport {
     return .passed
   }
 
+  func physicalCase(
+    _ operation: String,
+    caseRef: PhysicalIphoneCase,
+    binding: (nonce: String, mutationID: String)
+  ) async -> Bool {
+    guard let base = environment["CROSSWAKE_REFERENCE_HOST_BASE_URL"],
+          let baseURL = URL(string: base), baseURL.scheme != nil,
+          operation == "prepare" || operation == "verify"
+    else { return false }
+
+    return await closedOutcome(
+      baseURL,
+      path: "/_e2e/physical-case/\(operation)",
+      body: [
+        "nonce": binding.nonce,
+        "mutation_id": binding.mutationID,
+        "case_ref": caseRef.rawValue
+      ],
+      expected: operation == "prepare" ? "prepared" : "passed"
+    )
+  }
+
+  func session(action: String) async -> Bool {
+    guard let base = environment["CROSSWAKE_REFERENCE_HOST_BASE_URL"],
+          let baseURL = URL(string: base), baseURL.scheme != nil,
+          action == "clear" || action == "switch"
+    else { return false }
+    return await post(baseURL, path: "/_e2e/replay-session", body: ["action": action])
+  }
+
   private func post(_ baseURL: URL, path: String, body: [String: Any]) async -> Bool {
     guard JSONSerialization.isValidJSONObject(body), let data = try? JSONSerialization.data(withJSONObject: body),
           let url = URL(string: path, relativeTo: baseURL) else { return false }
@@ -276,6 +336,21 @@ private final class ReferenceStudyReplayTransport {
           let accepted = dataObject["accepted_records"] as? [[String: Any]], accepted.count == 1,
           accepted.first?["outcome"] as? String == "accepted",
           accepted.first?["client_mutation_id"] as? String == expectedMutationID else { return false }
+    return true
+  }
+
+  private func closedOutcome(_ baseURL: URL, path: String, body: [String: Any], expected: String) async -> Bool {
+    guard JSONSerialization.isValidJSONObject(body), let data = try? JSONSerialization.data(withJSONObject: body),
+          let url = URL(string: path, relativeTo: baseURL) else { return false }
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = data
+    guard let (responseData, response) = try? await session.data(for: request),
+          let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode),
+          let object = try? JSONSerialization.jsonObject(with: responseData) as? [String: Any],
+          object["outcome"] as? String == expected
+    else { return false }
     return true
   }
 
@@ -546,6 +621,55 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
     return journal.remove(record, scopeRef: scopeRef)
   }
 
+  // Case controls stay host-private and closed. The sequence invokes this only
+  // after the uninterrupted journey, and before every independent D-10 case.
+  // It deliberately does not reset pack truth or expose a case name to a learner.
+  func resetCase() async -> ProofLaneOutcome {
+    defaults.removeObject(forKey: prefix + "entered")
+    defaults.removeObject(forKey: prefix + "selected")
+    journal.reset()
+    return .passed
+  }
+
+  func prepareCase(_ caseRef: PhysicalIphoneCase) async -> ProofLaneOutcome {
+    guard let binding = currentRunBinding() else { return .blocked }
+    return await ReferenceStudyReplayTransport().physicalCase(
+      "prepare", caseRef: caseRef, binding: binding
+    ) ? .passed : .blocked
+  }
+
+  // The learner action is intentionally ordinary: save work, then let the
+  // current server/session posture determine replay. A missing or mismatched
+  // host condition remains blocked rather than being synthesized on-device.
+  func performCase(_ caseRef: PhysicalIphoneCase) async -> ProofLaneOutcome {
+    guard let scopeRef = scopeProvider.currentScopeRef(),
+          journal.append(value: "case-work", scopeRef: scopeRef, mutationID: expectedMutationID) == .passed,
+          let record = journal.record(scopeRef: scopeRef)
+    else { return .blocked }
+
+    switch caseRef {
+    case .logout:
+      scopeProvider.didLogout() // Fence before the host makes a new request.
+      guard await ReferenceStudyReplayTransport().session(action: "clear") else { return .blocked }
+      return await ReferenceStudyReplayTransport().replay(record, scopeRef: nil) == .blocked ? .passed : .blocked
+    case .accountSwitch:
+      scopeProvider.didSwitchAccount(to: nil) // Old partition is ineligible first.
+      guard await ReferenceStudyReplayTransport().session(action: "switch") else { return .blocked }
+      return await ReferenceStudyReplayTransport().replay(record, scopeRef: nil) == .blocked ? .passed : .blocked
+    case .rejection, .conflict, .entryDisablement, .replayDisablement:
+      // The prepared Phoenix condition must cause the closed normal-replay
+      // result. An accepted response is never re-labelled as recovery proof.
+      return await ReferenceStudyReplayTransport().replay(record, scopeRef: scopeRef) == .blocked ? .passed : .blocked
+    }
+  }
+
+  func verifyCase(_ caseRef: PhysicalIphoneCase) async -> ProofLaneOutcome {
+    guard let binding = currentRunBinding() else { return .blocked }
+    return await ReferenceStudyReplayTransport().physicalCase(
+      "verify", caseRef: caseRef, binding: binding
+    ) ? .passed : .blocked
+  }
+
   func persistedStudyState() -> (entered: Bool, selected: Bool, freeForm: Bool) {
     (
       defaults.bool(forKey: prefix + "entered"),
@@ -575,6 +699,14 @@ final class ReferenceHostPhysicalIphoneAdapter: PhysicalIphoneHostAdapter {
 
   private func hasAvailablePackStatus() -> Bool {
     packStore.statuses[HostLearningBundleProvider.requirement.packID]?.state == .available
+  }
+
+  private func currentRunBinding() -> (nonce: String, mutationID: String)? {
+    let environment = ProcessInfo.processInfo.environment
+    guard let nonce = environment["CROSSWAKE_REFERENCE_HOST_PHYSICAL_PROOF_NONCE"], !nonce.isEmpty,
+          let mutationID = expectedMutationID, !mutationID.isEmpty
+    else { return nil }
+    return (nonce, mutationID)
   }
 }
 
@@ -648,6 +780,41 @@ enum PhysicalIphoneSequence {
     report(Dictionary(uniqueKeysWithValues: PhysicalIphoneAssertion.allCases.map { assertion in
       (assertion, completed[assertion] ?? outcome)
     }))
+  }
+
+  private static func report(_ outcomes: [PhysicalIphoneAssertion: ProofLaneOutcome]) -> PhysicalIphoneDeviceReport {
+    PhysicalIphoneDeviceReport(
+      schemaVersion: 1,
+      deviceClass: .physicalIphone,
+      assertions: PhysicalIphoneAssertion.allCases.map { assertion in
+        PhysicalIphoneAssertionObservation(id: assertion.rawValue, outcome: outcomes[assertion] ?? .unavailable)
+      }
+    )
+  }
+}
+
+enum PhysicalIphoneCaseSequence {
+  static func run(adapter: PhysicalIphoneHostAdapter?) async -> PhysicalIphoneDeviceReport {
+    let happy = await PhysicalIphoneSequence.run(adapter: adapter)
+    guard let adapter, happy.assertions.allSatisfy({ $0.outcome == .passed }) else { return happy }
+
+    var outcomes = Dictionary(uniqueKeysWithValues: happy.assertions.compactMap { observation in
+      PhysicalIphoneAssertion(rawValue: observation.id).map { ($0, observation.outcome) }
+    })
+
+    for caseRef in PhysicalIphoneCase.allCases {
+      guard await adapter.resetCase() == .passed,
+            await adapter.prepareCase(caseRef) == .passed,
+            await adapter.performCase(caseRef) == .passed,
+            await adapter.verifyCase(caseRef) == .passed
+      else {
+        outcomes[caseRef.assertion] = .blocked
+        return report(outcomes)
+      }
+      outcomes[caseRef.assertion] = .passed
+    }
+
+    return report(outcomes)
   }
 
   private static func report(_ outcomes: [PhysicalIphoneAssertion: ProofLaneOutcome]) -> PhysicalIphoneDeviceReport {
