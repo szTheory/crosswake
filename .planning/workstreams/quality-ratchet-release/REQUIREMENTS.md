@@ -108,8 +108,34 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
+| SEC-01 | Phase 164 | Pending |
+| SEC-02 | Phase 164 | Pending |
+| SEC-03 | Phase 164 | Pending |
+| CIG-01 | Phase 164 | Pending |
+| CIG-02 | Phase 164 | Pending |
+| CIG-03 | Phase 164 | Pending |
+| CIG-04 | Phase 164 | Pending |
+| CIP-01 | Phase 165 | Pending |
+| CIP-02 | Phase 165 | Pending |
+| CIP-03 | Phase 165 | Pending |
+| CIP-04 | Phase 165 | Pending |
+| CIP-05 | Phase 165 | Pending |
+| CIP-06 | Phase 165 | Pending |
+| CIP-07 | Phase 165 | Pending |
+| ENG-01 | Phase 166 | Pending |
+| ENG-02 | Phase 166 | Pending |
+| ENG-03 | Phase 166 | Pending |
+| ENG-04 | Phase 166 | Pending |
+| DOC-01 | Phase 167 | Pending |
+| DOC-02 | Phase 167 | Pending |
+| DOC-03 | Phase 167 | Pending |
+| REL-01 | Phase 168 | Pending |
+| REL-02 | Phase 168 | Pending |
+| REL-03 | Phase 168 | Pending |
+| REL-04 | Phase 168 | Pending |
+| REL-05 | Phase 168 | Pending |
 
-**Coverage:** 0/26 requirements mapped (roadmap pending)
+**Coverage:** 26/26 active v22.0 requirements mapped exactly once
 
 ---
-*Last updated: 2026-08-28 after autonomous milestone scoping*
+*Last updated: 2026-08-28 after v22.0 roadmap creation and traceability mapping*
