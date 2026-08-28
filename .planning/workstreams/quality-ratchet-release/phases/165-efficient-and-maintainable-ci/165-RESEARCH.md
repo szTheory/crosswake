@@ -640,32 +640,29 @@ The planner should create at least five plans matching the waves because Wave 1 
 |---|---|---|---|
 | A1 | The recommended exact filenames and five-plan decomposition are the clearest implementation split. | Recommended Project Structure; Planner Guidance | Planner may choose different names/boundaries, but it must preserve responsibilities and ordering. |
 | A2 | The exact classifier values should be `documentation_only` and `full_proof`, with the suggested versioned JSON field set. | Pattern 2 | Workflow and tests could disagree if naming is locked elsewhere during planning. |
-| A3 | The documentation allowlist should be a small explicit data file covering textual docs roots/root docs and excluding release/code/generated inputs. | Pattern 2 | A too-wide allowlist can skip proof; inventory and negative fixtures must finalize it. |
+| A3 | The documentation allowlist is the exact closed family set recorded under Open Questions (RESOLVED); additions require an explicit owner and adversarial fixtures. | Pattern 2; Open Questions (RESOLVED) | A too-wide allowlist can skip proof, so every unmatched or excluded path remains full proof. |
 | A4 | The trusted controller should use `workflow_run` and ordinary-cancel → bounded-poll → force-cancel sequencing. | Pattern 1 | GitHub permission/event behavior must be validated in a live probe before authority is claimed. |
-| A5 | The umbrella can evaluate the closed manifest using only runner-built-in shell/JSON facilities without checkout. | Pattern 3; Code Examples | Runner image changes or expression size could require a different checkout-free encoding. |
+| A5 | The umbrella uses only runner-built-in shell/JSON facilities without checkout and must pass the maximum-shape syntax/job-count/serialized-needs budget in Plan 02 before any migration cohort begins. | Pattern 3; Open Questions (RESOLVED) | A failed maximum-shape gate blocks Plans 05-09; authority is never split to evade a platform limit. |
 | A6 | A comparable before/after cohort size can be obtained during the phase without manufacturing misleading activity. | Wave 1/5 | Unavailable cohorts must remain `not measured`, leaving part of CIP-06 acceptance open until observed. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **What exact files are documentation-only?**
-   - What we know: the allowlist must be narrow, binary, and full-proof by default; workflow/action/script/dependency/lock/generated-contract changes are excluded. [VERIFIED: D-14 through D-18 in 165-CONTEXT.md]
-   - What's unclear: whether release-facing files such as `CHANGELOG.md` and every `.planning/**` artifact can safely use the bounded docs path. [ASSUMED]
-   - Recommendation: inventory every candidate path family, assign its required privacy/public-doc/planning owner, and lock the allowlist only after adversarial negative fixtures pass. [ASSUMED]
+1. **Exact documentation-only allowlist — resolved as a closed, owner-qualified set.**
+   - `README.md`, `CONTRIBUTING.md`, `SETUP.md`, and `examples/QUICK_START.md` are allowed root/public-document entries and schedule the focused documentation contract.
+   - `guides/**/*.md` schedules ExDoc plus guide/support/capability parity; `brandbook/**/*.md` schedules the literal brand structural/visual owners; `.planning/**/*.md` schedules adopter-codename/privacy scanning plus applicable planning closeout. `docs/**/*.md` is allowed except `docs/COMPANION-PUBLISH-RUNBOOK.md`, `docs/PORT-REGISTRY.md`, and `docs/_contract_snippet.md`, which remain full proof because they are release or generated-contract inputs.
+   - `CHANGELOG.md`, `LICENSE`, `AGENTS.md`, `.github/**`, `script/**`, `scripts/**`, source/test/package trees, prompts, dependency manifests, lockfiles, generated contracts, non-Markdown planning data, mixed changes, and every unmatched path are `full_proof`. Rename/copy records require both endpoints to be allowed. Plan 01 records this exact data contract; Plan 02 rejects any allowlist row without its named D-18 owner. [RESOLVED fail closed per D-14 through D-18]
 
-2. **Can the checkout-free umbrella stay within expression/environment limits for all leaves?**
-   - What we know: it must statically `need` every expected leaf and perform no checkout/fallible setup. [VERIFIED: D-08 and D-09 in 165-CONTEXT.md]
-   - What's unclear: the final serialized `needs` payload size after consolidation. [ASSUMED]
-   - Recommendation: prototype the largest static graph early and add a structural size/syntax test; split only presentation data, never authority, if limits are encountered. [ASSUMED]
+2. **Maximum checkout-free umbrella shape — resolved by a blocking pre-migration contract.**
+   - Plan 02 materializes a fixture with the complete reviewed Phase 165 control-node and proof-leaf ID set, a literal maximum static `needs` list, the production inline evaluator shape, worst-case closed result/reason strings, and no checkout/setup/install step.
+   - Plans 05-09 cannot begin unless actionlint passes, total workflow jobs remain below GitHub's 256-job workflow cap, the worst-case serialized `NEEDS_JSON` remains below the repository safety budget of 32 KiB, and the manifest validator proves `umbrella needs = proof_leaves union required_control_nodes`. A failed bound stops migration; presentation may be shortened, but required authority is never split or omitted. [RESOLVED fail closed per D-08, D-09, and D-32]
 
-3. **Which representative live cohorts are available?**
-   - What we know: matched documentation-only, full-proof executable, and main-bound before/after cohorts are required, with `not measured` for unavailable comparisons. [VERIFIED: D-25 through D-29 in 165-CONTEXT.md]
-   - What's unclear: whether enough recent pre-change examples exist for every cohort. [ASSUMED]
-   - Recommendation: capture current API evidence before changes and, if necessary, use sanitized temporary PR probes whose assertions and cleanup are automated; do not invent unmatched baselines. [ASSUMED]
+3. **Representative live cohorts — resolved as an availability-sensitive acceptance contract.**
+   - Plan 01 captures every comparable pre-change documentation-only, executable, and main-bound cohort available at the frozen source snapshot. Any absent pair is recorded as `not_measured` with a closed reason and is not backfilled from SEED-007 or an unmatched run.
+   - Plan 10 creates bounded sanitized documentation-only and executable PR probes at one verified remote-default SHA; Plan 12 applies the identical baseline criteria to after cohorts. Comparison occurs only for criteria-equal pairs and otherwise remains `not_measured`, with sample count and median/range retained. [RESOLVED fail closed per D-25 through D-30]
 
-4. **What is the final stable required context display name?**
-   - What we know: the locked working context is quoted exactly as `"merge-blocking-crosswake-ci"`, while the contributor summary is `"Crosswake CI"`. [VERIFIED: 165-CONTEXT.md:47-58,142-150]
-   - What's unclear: whether GitHub protection will register the job ID-derived or display-name-derived string in the final YAML shape. [ASSUMED]
-   - Recommendation: prove the emitted check name on a live non-required run before additive registration; then freeze that exact value in the manifest and protection scripts. [ASSUMED]
+4. **Stable required context — resolved as a source-bound observed value, not a guessed string.**
+   - The workflow job ID remains literal `merge-blocking-crosswake-ci` and the intended display name remains `Crosswake CI`. Plan 10 accepts an orchestrator-produced remote-default SHA, verifies that exact SHA contains the Plan 09 Crosswake CI and trusted-controller revisions, then records the check name GitHub actually emits for that SHA.
+   - Additive registration is forbidden unless the emitted value is exactly one stable context and the live observation is green. That observed value is frozen into `required_check_policy.json`; missing, multiple, different, or stale observations stop before any branch-protection write. [RESOLVED fail closed per D-07 and D-10]
 
 ## Environment Availability
 

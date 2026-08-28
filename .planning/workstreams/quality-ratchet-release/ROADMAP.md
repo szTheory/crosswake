@@ -35,7 +35,7 @@ independent workstream; the numbering does not imply that parked adopter work mu
   4. State-mutating tests pass both alone and in the complete suite without leaving changed application configuration, code paths, files, or databases behind.
   5. Required aggregators visibly distinguish irrelevant work from failed, cancelled, or missing work, and only the explicitly irrelevant case is neutral.
 
-**Plans**: TBD
+**Plans**: 5 plans
 
 - [x] 164-05-PLAN.md
 
@@ -122,7 +122,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 164. Dependency Security and Gate Authority | 5/5 | Complete    | 2026-08-28 |
-| 165. Efficient and Maintainable CI | 0/TBD | Not started | - |
+| 165. Efficient and Maintainable CI | 0/12 | Not started | - |
 | 166. Clean-Checkout Engineering Quality | 0/TBD | Not started | - |
 | 167. Documentation and Pull-Request Reconciliation | 0/TBD | Not started | - |
 | 168. 0.2.1 Release Candidate Readiness | 0/TBD | Not started | - |
