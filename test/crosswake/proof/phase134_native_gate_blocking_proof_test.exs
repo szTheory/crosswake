@@ -167,6 +167,38 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
     end
   end
 
+  @tag :tmp_dir
+  test "exact aggregator leaf parity accepts ordering-only differences", %{tmp_dir: tmp_dir} do
+    fixture = Path.join(tmp_dir, "reordered.yml")
+    write_aggregator_fixture!(fixture, ["leaf-b", "leaf-a"])
+
+    assert aggregator_wiring_errors(fixture, "merge-blocking-fixture", ["leaf-a", "leaf-b"]) == []
+  end
+
+  @tag :tmp_dir
+  test "exact aggregator leaf parity reports a removed required leaf", %{tmp_dir: tmp_dir} do
+    fixture = Path.join(tmp_dir, "missing.yml")
+    write_aggregator_fixture!(fixture, ["leaf-a"])
+
+    assert aggregator_wiring_errors(fixture, "merge-blocking-fixture", ["leaf-a", "leaf-b"]) == [
+             "aggregator 'merge-blocking-fixture' in #{fixture} has invalid needs parity: " <>
+               "missing=[\"leaf-b\"] unexpected=[] " <>
+               "expected=[\"leaf-a\", \"leaf-b\"] declared=[\"leaf-a\"]"
+           ]
+  end
+
+  @tag :tmp_dir
+  test "exact aggregator leaf parity reports an undeclared added leaf", %{tmp_dir: tmp_dir} do
+    fixture = Path.join(tmp_dir, "unexpected.yml")
+    write_aggregator_fixture!(fixture, ["leaf-a", "leaf-extra"])
+
+    assert aggregator_wiring_errors(fixture, "merge-blocking-fixture", ["leaf-a"]) == [
+             "aggregator 'merge-blocking-fixture' in #{fixture} has invalid needs parity: " <>
+               "missing=[] unexpected=[\"leaf-extra\"] " <>
+               "expected=[\"leaf-a\"] declared=[\"leaf-a\", \"leaf-extra\"]"
+           ]
+  end
+
   # ---------------------------------------------------------------------------
   # Claim 2 anchor — the negative-control workflow (which proves the rollup
   # semantics) must exist and keep its footgun-1 (skipped-leaf) arm, so it
@@ -208,12 +240,17 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
         if_errors =
           if Regex.match?(~r/^\s+if:\s*always\(\)\s*(#.*)?$/m, block),
             do: [],
-            else: ["'#{aggregator}' must declare `if: always()` (a skipped dep would else count as success)"]
+            else: [
+              "'#{aggregator}' must declare `if: always()` (a skipped dep would else count as success)"
+            ]
 
         alls_green_errors =
-          if String.contains?(block, "re-actors/alls-green@") and String.contains?(block, "toJSON(needs)"),
-            do: [],
-            else: ["'#{aggregator}' must use re-actors/alls-green with `jobs: ${{ toJSON(needs) }}`"]
+          if String.contains?(block, "re-actors/alls-green@") and
+               String.contains?(block, "toJSON(needs)"),
+             do: [],
+             else: [
+               "'#{aggregator}' must use re-actors/alls-green with `jobs: ${{ toJSON(needs) }}`"
+             ]
 
         if_errors ++ alls_green_errors ++ missing_needs(block, leaves)
     end
@@ -234,6 +271,30 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
         |> Enum.take_while(fn l -> not Regex.match?(~r/^ {0,2}\S/, l) end)
         |> Enum.join("\n")
     end
+  end
+
+  defp write_aggregator_fixture!(path, leaves) do
+    File.write!(
+      path,
+      """
+      name: Fixture
+      jobs:
+        decoy:
+          if: always()
+          needs: [leaf-a, leaf-b, leaf-extra]
+          steps:
+            - uses: re-actors/alls-green@release/v1
+              with:
+                jobs: \${{ toJSON(needs) }}
+        merge-blocking-fixture:
+          if: always()
+          needs: [#{Enum.join(leaves, ", ")}]
+          steps:
+            - uses: re-actors/alls-green@release/v1
+              with:
+                jobs: \${{ toJSON(needs) }}
+      """
+    )
   end
 
   # Each leaf must appear in the block's `needs: [ ... ]` list.
