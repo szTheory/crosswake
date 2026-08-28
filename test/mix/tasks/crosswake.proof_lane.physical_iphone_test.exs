@@ -7,7 +7,9 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
     parent = self()
 
     assert {:blocked, %{outcome: "blocked", rule_id: "PI-PREFLIGHT-INVENTORY"}} =
-             PhysicalIphone.run_with(["--run", "--json"],
+             PhysicalIphone.run_with(
+               ["--run", "--json"],
+               adopter_handoff: fn -> {:ok, %{source: :adopter, topology: %{status: :ready}}} end,
                runner: fn _ -> send(parent, :runner) end
              )
 
@@ -23,6 +25,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
              PhysicalIphone.run_with(["--readiness", "--json"], inventory: [])
 
     assert Enum.map(checks, & &1.id) == [
+             "PI-PREFLIGHT-ADOPTER-HANDOFF",
              "PI-PREFLIGHT-INVENTORY",
              "PI-PREFLIGHT-CONFIG",
              "PI-PREFLIGHT-GENERATED-LANE",
@@ -192,6 +195,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
     confirmed = fn value -> %{status: :confirmed_sanitized, value: value} end
 
     [
+      adopter_handoff: fn -> {:ok, %{source: :adopter, topology: %{status: :ready}}} end,
       inventory: [
         [
           route_id: "route-0123456789abcdef",

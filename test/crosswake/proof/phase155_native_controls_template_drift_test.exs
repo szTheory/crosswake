@@ -112,8 +112,8 @@ defmodule Crosswake.Proof.Phase155NativeControlsTemplateDriftTest do
 
     ios_notes = SupportMatrix.canonical().ios |> hd() |> Map.fetch!(:notes)
 
-    assert ios_notes =~ "simulator advisory evidence remains distinct"
-    assert ios_notes =~ "physical-iPhone promotion is Phase 162 only"
+    assert ios_notes =~ "fixture and simulator evidence remain advisory"
+    assert ios_notes =~ "source-bound signed-device composition is required"
   end
 
   test "NAV-07 leaves native alert and confirm outside the bridge command and capability registries" do

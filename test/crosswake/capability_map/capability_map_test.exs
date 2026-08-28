@@ -188,7 +188,7 @@ defmodule Crosswake.CapabilityMapTest do
     end
   end
 
-  test "D-11/D-12 first-adopter navigation truth is bounded, advisory, and Phase-162-only for device promotion" do
+  test "D-11/D-12 first-adopter navigation truth stays advisory pending source-bound composition" do
     rows = canonical_rows()
 
     shell = row!(rows, "first-adopter-ios-navigation-shell")
@@ -200,9 +200,9 @@ defmodule Crosswake.CapabilityMapTest do
     assert shell.route_or_evidence_source =~ "bounded iOS-only"
     assert shell.route_or_evidence_source =~ "typed stack protocol"
     assert shell.route_or_evidence_source =~ "UIKit host composition"
-    assert shell.adoption_implication =~ "simulator advisory"
-    assert shell.adoption_implication =~ "Phase 162"
-    assert shell.adoption_implication =~ "unknown_blocking"
+    assert shell.adoption_implication =~ "validated TODO-002 handoff"
+    assert shell.adoption_implication =~ "source-bound signed-device run"
+    assert shell.adoption_implication =~ "simulator and fixture results remain non-promoting"
 
     for non_claim <- [
           "generic navigation",
@@ -217,7 +217,9 @@ defmodule Crosswake.CapabilityMapTest do
 
     physical_iphone = row!(rows, "first-adopter-physical-iphone")
     assert physical_iphone.proof_posture == :not_yet_proven
-    assert physical_iphone.adoption_implication =~ "Phase 162"
+    assert physical_iphone.adoption_implication =~ "validated TODO-002 input"
+    assert physical_iphone.adoption_implication =~ "one signed iPhone"
+    assert physical_iphone.adoption_implication =~ "source-bound composed route"
 
     confirmation = row!(rows, "native-controls-alert-confirm")
     assert confirmation.denial_fallback =~ "Phoenix-owned confirmation"

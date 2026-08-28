@@ -87,6 +87,7 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
            "expected the uniqueness assertion to fail (exit 1), got #{status}:\n#{out}"
 
     assert out =~ "duplicate-merge-blocking-name"
+
     # Both colliding sources must be named — a failure that does not say WHERE is not actionable.
     assert out =~ "a.yml"
     assert out =~ "b.yml"
@@ -100,7 +101,11 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
     #
     # Guard the constructs that actually bit, not a general lint: mapfile/readarray (4.0),
     # associative arrays (4.0), and case-conversion expansions (4.0).
-    for script <- [@checker, "script/register_required_checks.sh"] do
+    for script <- [
+          @checker,
+          "script/register_required_checks.sh",
+          "script/verify_generated_ios_shell.sh"
+        ] do
       src = File.read!(script)
 
       for {pattern, feature} <- [
