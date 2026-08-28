@@ -31,6 +31,13 @@ jobs:
       - name: Install Hex
         run: mix local.hex --force
 
+      - name: Install root audit dependencies
+        run: mix deps.get
+
+      - name: Install example-host audit dependencies
+        working-directory: examples/phoenix_host
+        run: mix deps.get
+
       - name: Audit both supported dependency locks
         run: script/check_dependency_security.sh
 
