@@ -244,7 +244,10 @@ if [[ "$PROOF_LANE" == "1" ]]; then
   previous_marker_line=0
 
   for marker in "${required_current_run_markers[@]}"; do
-    mapfile -t marker_lines < <(grep -nFx -- "$marker" "$TEST_TRANSCRIPT" | cut -d: -f1 || true)
+    marker_lines=()
+    while IFS= read -r marker_line; do
+      marker_lines+=("$marker_line")
+    done < <(grep -nFx -- "$marker" "$TEST_TRANSCRIPT" | cut -d: -f1 || true)
 
     if [[ "${#marker_lines[@]}" -ne 1 ]] || (( marker_lines[0] <= previous_marker_line )); then
       emit_proof_outcome "blocked" "PL-IOS-TEST-EVIDENCE" "pack_audio_prerequisite"

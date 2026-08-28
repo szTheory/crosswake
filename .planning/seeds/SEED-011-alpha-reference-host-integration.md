@@ -14,8 +14,9 @@ scope: large
 Build one deliberately small, anonymous **Alpha** reference host: a digital twin that exercises
 the Crosswake integration path without duplicating or exposing the adopter product. It should
 make the physical-iPhone proof runnable against a real Phoenix host and a narrowly chosen study
-flow, while preserving the distinction between a reference integration and a feature-complete
-consumer application.
+flow, including a versioned offline learning bundle of card JSON, images, and pronunciation audio,
+while preserving the distinction between a reference integration and a feature-complete consumer
+application.
 
 ## When to Surface
 
@@ -39,7 +40,13 @@ physical-device automation.
   rather than create a second product or a fictitious backend.
 - Derive a sanitized route-policy row from the generic study flow: one opaque account scope, one
   rating/review mutation, one idempotent replay endpoint, a safe offline fallback, and one
-  required foreground pronunciation pack.
+  required foreground learning bundle.
+- Define the bundle as a signed/versioned card manifest plus its exact image and pronunciation
+  audio assets. Verify all bytes before atomic foreground installation; render only from the
+  installed bundle while offline.
+- Prove a bounded lifecycle: install bundle online, enter offline study, kill/relaunch, submit
+  ordered local review mutations, reconnect, replay exactly once, and refresh/revoke the bundle
+  only through host-authorized foreground operations.
 - Add real host-owned session validation, account-switch denial, replay authorization, and
   server-side disablement; never grant authority from return payloads, client input, mock tokens,
   or synthetic organization scope.
@@ -57,6 +64,9 @@ physical-device automation.
 - `examples/phoenix_host/priv/static/offline_study.js` owns browser-side outbox behavior.
 - `lib/crosswake/proof_lane/physical_iphone_preflight.ex` and
   `guides/physical_iphone_handoff.md` define the fail-closed device-proof handoff.
+- `examples/ios_shell_host/` and the existing pack-provider seam supply the bounded iOS adapter
+  pattern; the new work must extend that contract to card/image/audio bundle integrity rather
+  than introduce generic native storage.
 - `.planning/ADR-FIRST-B2C-ADOPTER.md` preserves the non-goals and physical-proof boundary.
 
 ## Guardrails
@@ -66,4 +76,7 @@ physical-device automation.
 - Do not call the host a production app or use it to claim product readiness.
 - Do not bypass physical-device signing, authority validation, or media-byte verification with a
   fake green callback.
+- Do not turn bundle refresh into generic background synchronization. Content availability is
+  foreground, versioned, and host-authorized; only the selected study-review mutation uses the
+  scoped replay path.
 - Android remains frozen.

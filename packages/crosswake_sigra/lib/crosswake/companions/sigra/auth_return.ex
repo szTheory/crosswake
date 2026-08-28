@@ -481,7 +481,7 @@ defmodule Crosswake.Companions.Sigra.AuthReturn do
     |> validate_enum(:kind, record.kind, @kinds)
     |> validate_enum(:state, record.state, @lifecycle_states)
     |> validate_required_string(:subject_ref, record.subject_ref)
-    |> validate_required_string(:org_id, record.org_id)
+    |> validate_optional_string(:org_id, record.org_id)
     |> validate_required_string(:source_session_ref, record.source_session_ref)
     |> validate_non_negative_integer(:expected_session_version, record.expected_session_version)
     |> validate_optional_string(:device_ref, record.device_ref)

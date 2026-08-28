@@ -19,9 +19,25 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
 
   @impl Mix.Task
   def run(args) do
+    # The command's stdout is a machine interface. Load project configuration,
+    # then suppress normal host startup chatter before starting the configured
+    # application; callbacks still fail closed to stable PI rules.
+    Mix.Task.run("app.config")
+    Application.put_env(:logger, :level, :warning)
+    Logger.configure(level: :warning)
+
+    # A local host may derive its private LAN endpoint and configure its endpoint
+    # before the application starts. This remains an optional host capability so
+    # remote hosts and generated adapters keep their existing contract.
+    host = PhysicalIphoneHost.load()
+
+    if prepare_host(host) == :ok do
+      Mix.Task.run("app.start")
+    end
+
     options =
-      case PhysicalIphoneHost.load() do
-        {:ok, host} -> host_options(host)
+      case host do
+        {:ok, loaded} -> host_options(loaded)
         {:error, _} -> []
       end
 
@@ -112,13 +128,38 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
   end
 
   defp invoke_runner(contract, options) do
-    with {:ok, device_report} <- report_from(options, :device_report, contract),
-         {:ok, backend_report} <- report_from(options, :backend_report, contract),
-         {:ok, candidate} <- join_reports(contract, device_report, backend_report),
-         {:ok, result} <- promote_if_requested(candidate, options) do
-      {:passed, result}
-    else
-      {:error, rule_id} -> {:blocked, %{outcome: "blocked", rule_id: rule_id}}
+    try do
+      try do
+        with {:ok, device_report} <- report_from(options, :device_report, contract),
+             {:ok, backend_report} <- report_from(options, :backend_report, contract),
+             {:ok, candidate} <- join_reports(contract, device_report, backend_report),
+             {:ok, result} <- promote_if_requested(candidate, options) do
+          {:passed, result}
+        else
+          {:error, rule_id} -> {:blocked, %{outcome: "blocked", rule_id: rule_id}}
+        end
+      after
+        if cleanup_run(options) != :ok, do: throw(:physical_iphone_cleanup_failed)
+      end
+    catch
+      :throw, :physical_iphone_cleanup_failed ->
+        {:blocked, %{outcome: "blocked", rule_id: "PI-HOST-CLEANUP"}}
+    end
+  end
+
+  defp cleanup_run(options) do
+    case Keyword.get(options, :cleanup_run) do
+      callback when is_function(callback, 0) ->
+        try do
+          if callback.() == :ok, do: :ok, else: :error
+        rescue
+          _ -> :error
+        catch
+          _, _ -> :error
+        end
+
+      _ ->
+        :ok
     end
   end
 
@@ -128,6 +169,15 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
       _ -> []
     end
   end
+
+  defp prepare_host({:ok, host}) do
+    case host[:prepare_for_run].() do
+      :ok -> :ok
+      _ -> :blocked
+    end
+  end
+
+  defp prepare_host({:error, _}), do: :ok
 
   defp promote_if_requested(candidate, options) do
     if Keyword.get(options, :promote, false) do

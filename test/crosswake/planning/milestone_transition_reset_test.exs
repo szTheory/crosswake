@@ -2,7 +2,8 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
   use ExUnit.Case, async: true
 
   # This suite protects the milestone-transition reset invariant: the live
-  # operational planning surfaces (STATE/REQUIREMENTS/ROADMAP/PROJECT) and the
+  # operational workstream surfaces (STATE/REQUIREMENTS/ROADMAP), shared PROJECT,
+  # and the
   # .planning/milestones/ archive must stay consistent with the milestone named
   # in STATE.md frontmatter.
   #
@@ -11,7 +12,7 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
   # whichever milestone happened to be active when the test was written.
   #
   # The project has two legitimate committed states, distinguished by whether a
-  # live .planning/REQUIREMENTS.md exists (see between_milestones?/0):
+  # live workstream REQUIREMENTS.md exists (see between_milestones?/0):
   #
   #   • ACTIVE (mid-flight): a live REQUIREMENTS.md exists and names the active
   #     milestone, ROADMAP/PROJECT name it as the current milestone, and its
@@ -26,11 +27,13 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
   # rollovers without breaking on the legitimate between-milestones checkpoint.
 
   @root File.cwd!()
-  @roadmap Path.join(@root, ".planning/ROADMAP.md")
-  @requirements Path.join(@root, ".planning/REQUIREMENTS.md")
+  @planning_root Path.join(@root, ".planning/workstreams/quality-ratchet-release")
+  @roadmap Path.join(@planning_root, "ROADMAP.md")
+  @requirements Path.join(@planning_root, "REQUIREMENTS.md")
   @project Path.join(@root, ".planning/PROJECT.md")
-  @state Path.join(@root, ".planning/STATE.md")
+  @state Path.join(@planning_root, "STATE.md")
   @milestones_dir Path.join(@root, ".planning/milestones")
+  @milestones_index Path.join(@root, ".planning/MILESTONES.md")
 
   test "live operational surfaces all name the milestone from STATE frontmatter" do
     {version, name} = active_milestone()
@@ -39,8 +42,8 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
     assert File.read!(@roadmap) =~ label,
            "ROADMAP.md does not name the milestone #{inspect(label)}"
 
-    assert File.read!(@project) =~ label,
-           "PROJECT.md does not name the milestone #{inspect(label)}"
+    assert File.read!(@project) =~ "### #{label} (active)",
+           "PROJECT.md does not name active workstream #{inspect(label)}"
 
     assert File.read!(@state) =~ name,
            "STATE.md body does not reference the milestone name #{inspect(name)}"
@@ -49,16 +52,16 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
       # SHIPPED state: complete-milestone removed the live REQUIREMENTS.md.
       # PROJECT.md must no longer advertise it as the current (in-progress)
       # milestone — it is shipped, not active.
-      refute File.read!(@project) =~ "## Current Milestone: #{label}",
-             "PROJECT.md still names shipped milestone #{inspect(label)} as the current milestone"
+      refute File.read!(@project) =~ "### #{label} (active)",
+             "PROJECT.md still names shipped milestone #{inspect(label)} as an active workstream"
     else
       # ACTIVE state: the live REQUIREMENTS.md and PROJECT current-milestone
-      # header must name the active milestone.
+      # marker must name the active workstream.
       assert File.read!(@requirements) =~ label,
              "REQUIREMENTS.md header does not name the active milestone #{inspect(label)}"
 
-      assert File.read!(@project) =~ "## Current Milestone: #{label}",
-             "PROJECT.md `## Current Milestone` is not #{inspect(label)}"
+      assert File.read!(@project) =~ "### #{label} (active)",
+             "PROJECT.md active workstream is not #{inspect(label)}"
     end
   end
 
@@ -135,19 +138,18 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
     {version, name}
   end
 
-  # The last ✅-shipped milestone in ROADMAP.md's `## Milestones` list — the one
-  # the active milestone transitioned away from. Matches only the bold
-  # `✅ **vX.Y …` list entries (not the collapsible `<summary>✅ vX.Y …`
-  # detail blocks), which appear in chronological order.
+  # The newest shipped milestone in the shared MILESTONES index. Workstream
+  # roadmaps intentionally contain only their own phases, so shipped history is
+  # derived from the shared archive index rather than one workstream's roadmap.
   defp previously_shipped_milestone do
     shipped =
-      @roadmap
+      @milestones_index
       |> File.read!()
-      |> then(&Regex.scan(~r/✅\s+\*\*(v\d+\.\d+)\b/u, &1))
+      |> then(&Regex.scan(~r/^##\s+(v\d+\.\d+)\b.*\(Shipped:/mu, &1))
       |> Enum.map(fn [_, v] -> v end)
 
-    case List.last(shipped) do
-      nil -> flunk("expected at least one ✅-shipped milestone in ROADMAP.md")
+    case List.first(shipped) do
+      nil -> flunk("expected at least one shipped milestone in MILESTONES.md")
       version -> version
     end
   end

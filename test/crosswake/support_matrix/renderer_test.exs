@@ -60,6 +60,26 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     refute guide =~ "first-adopter"
   end
 
+  test "first adopter readiness renders only the retained corrected physical evidence claim" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    assert guide =~
+             "| physical-iPhone offline study | device evidence | A committed corrected-provenance physical-device record and deterministic authority gates support one first adopter offline-study flow. |"
+
+    for non_claim <- [
+          "It does not claim Android.",
+          "It does not claim background replay or sync.",
+          "It does not claim generic storage or sync.",
+          "It does not claim multiple offline islands.",
+          "It does not claim simulator substitution.",
+          "It does not claim every iPhone."
+        ] do
+      assert guide =~ non_claim
+    end
+
+    refute guide =~ "First B2C Adopter"
+  end
+
   test "generated guide renders support-truth labels with proof and non-proof meanings" do
     guide = Renderer.render(SupportMatrix.canonical())
 
@@ -372,7 +392,7 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     guide = Renderer.render(SupportMatrix.canonical())
 
     for claim <- [
-          "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; simulator advisory evidence remains distinct, TODO-002/adopter topology is unknown_blocking, and physical-iPhone promotion is Phase 162 only.",
+          "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion.",
           "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority.",
           "Android retains its frozen generator, Maven, JVM, and shared-vector posture.",
           "Android is frozen during first adopter iOS readiness: no new feature, parity, device, template, or release claim."

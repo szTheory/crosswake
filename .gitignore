@@ -30,6 +30,7 @@ erl_crash.dump
 # iOS
 /**/DerivedData/
 /**/build/
+**/xcuserdata/
 **/.build/
 
 # Android

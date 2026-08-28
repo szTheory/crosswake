@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 12
+open_count: 16
 waived_count: 0
 fixed_count: 0
-total_count: 12
-last_updated: 2026-08-05T02:37:57.808Z
+total_count: 16
+last_updated: 2026-08-28T13:07:34.571Z
 ---
 
 # Broken Windows Ledger
@@ -27,6 +27,10 @@ last_updated: 2026-08-05T02:37:57.808Z
 | 10 | 160 | deviation | examples/phoenix_host/e2e/crosswake_proof_lane/proof_lane.spec.ts |  | Generated proof adapter now establishes the existing request-bound test session before online replay | open |  | 2026-08-03T02:58:59.105Z |  |
 | 11 | 160 | deviation | examples/phoenix_host/e2e/offline_sync.spec.ts |  | Activation replay console capture begins after unrelated setup reload teardown | open |  | 2026-08-03T02:58:59.173Z |  |
 | 12 | 162 | deviation | script/verify_physical_iphone_report_contract.sh |  | Plan-named support-matrix Mix task was unavailable; existing support-matrix contract suite was run instead. | open |  | 2026-08-05T02:37:57.808Z |  |
+| 13 | 162 | unrun-verify | .planning/phases/162-physical-iphone-adoption-proof/162-10-PLAN.md |  | Repository-wide adoption-context scan remains non-passing for the evidence completion marker and a pre-existing binary reference asset; it is not a passing verification claim. | open |  | 2026-08-26T17:41:03.526Z |  |
+| 14 | 162 | deviation | lib/crosswake/support_matrix/renderer.ex |  | Used authorized source-bound Evidence.check/2 because Evidence.check/1 deliberately rejects approved hashes without supplied canonical source bytes. | open |  | 2026-08-26T17:41:03.602Z |  |
+| 15 | 163.1 | deviation | examples/phoenix_host/native/ios/CrosswakeProofLane/ProofLaneDriver.swift |  | Reference proof target lacks CrosswakeShellCore linkage; private decoder preserves the closed transport boundary. | open |  | 2026-08-28T03:42:12.753Z |  |
+| 16 | 163.1 | deviation | examples/phoenix_host/native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj |  | Plan 163.1-05 added the local Core package and shared shell controller because physical composition otherwise could not compile. | open |  | 2026-08-28T13:07:34.571Z |  |
 
 ````json
 [
@@ -172,6 +176,54 @@ last_updated: 2026-08-05T02:37:57.808Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-05T02:37:57.808Z",
+    "resolved_at": null
+  },
+  {
+    "id": 13,
+    "kind": "unrun-verify",
+    "phase": "162",
+    "file": ".planning/phases/162-physical-iphone-adoption-proof/162-10-PLAN.md",
+    "line": null,
+    "description": "Repository-wide adoption-context scan remains non-passing for the evidence completion marker and a pre-existing binary reference asset; it is not a passing verification claim.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-26T17:41:03.526Z",
+    "resolved_at": null
+  },
+  {
+    "id": 14,
+    "kind": "deviation",
+    "phase": "162",
+    "file": "lib/crosswake/support_matrix/renderer.ex",
+    "line": null,
+    "description": "Used authorized source-bound Evidence.check/2 because Evidence.check/1 deliberately rejects approved hashes without supplied canonical source bytes.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-26T17:41:03.602Z",
+    "resolved_at": null
+  },
+  {
+    "id": 15,
+    "kind": "deviation",
+    "phase": "163.1",
+    "file": "examples/phoenix_host/native/ios/CrosswakeProofLane/ProofLaneDriver.swift",
+    "line": null,
+    "description": "Reference proof target lacks CrosswakeShellCore linkage; private decoder preserves the closed transport boundary.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-28T03:42:12.753Z",
+    "resolved_at": null
+  },
+  {
+    "id": 16,
+    "kind": "deviation",
+    "phase": "163.1",
+    "file": "examples/phoenix_host/native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj",
+    "line": null,
+    "description": "Plan 163.1-05 added the local Core package and shared shell controller because physical composition otherwise could not compile.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-28T13:07:34.571Z",
     "resolved_at": null
   }
 ]

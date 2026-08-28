@@ -11,9 +11,13 @@ Read these before planning or implementation work:
 3. `.planning/FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md` — first-adopter route owners and
    physical-iPhone exit test
 4. `.planning/PROJECT.md` — project thesis, constraints, history, and decisions
-5. `.planning/REQUIREMENTS.md` — current milestone scope and traceability
-6. `.planning/ROADMAP.md` — active phase ordering, time boxes, and stop date
-7. `.planning/STATE.md` — current position, blockers, and deferred items
+5. `.planning/workstreams/quality-ratchet-release/REQUIREMENTS.md` — active v22 scope and
+   traceability
+6. `.planning/workstreams/quality-ratchet-release/ROADMAP.md` — active quality/release phase
+   ordering
+7. `.planning/workstreams/quality-ratchet-release/STATE.md` — active position and next phase
+8. `.planning/workstreams/first-b2c-adopter-readiness/STATE.md` — parked v21 position, real
+   blocker, and exact resume posture
 
 ## Current Priority
 
@@ -66,9 +70,15 @@ inventory, then pause Crosswake until the public-v1 mobile path is active.
 
 ## Workflow
 
-- Read the current phase from `.planning/STATE.md`; do not use a hard-coded phase number.
-- Start it with `$gsd-discuss-phase <current-phase>`.
-- Use `$gsd-plan-phase <current-phase>` only when discussion is intentionally skipped.
+- Resolve the intended workstream explicitly; never infer one from a removed flat
+  `.planning/STATE.md`.
+- For the active quality lane, read the current phase from
+  `.planning/workstreams/quality-ratchet-release/STATE.md` and start it with
+  `$gsd-discuss-phase <current-phase> --ws quality-ratchet-release`.
+- Use `$gsd-plan-phase <current-phase> --ws quality-ratchet-release` only when discussion is
+  intentionally skipped.
+- Resume adopter work only with `--ws first-b2c-adopter-readiness` after its recorded external
+  gate is genuinely satisfied.
 - Default to zero-human verification and UAT. If a claim can be checked by unit, integration, E2E,
   device automation, or artifact inspection, the agent runs that check and treats its result as the
   gate; do not emit `checkpoint:human-verify` or create a UAT handoff for it.

@@ -27,7 +27,16 @@ team of one out of framework-debugging purgatory.
 
 **Archive:** `.planning/milestones/v19.0-ROADMAP.md`, `.planning/milestones/v19.0-REQUIREMENTS.md`, and `.planning/milestones/v19.0-MILESTONE-AUDIT.md`.
 
-## Current Milestone: v21.0 First B2C Adopter Readiness
+## Active Workstreams
+
+### v22.0 Quality Ratchet & Release Readiness (active)
+
+**Goal:** Make Crosswake safe to change, inexpensive to verify, pleasant to review, and ready for
+an exact approval-gated 0.2.1 release candidate without reopening product or mobile breadth.
+
+**Planning:** `.planning/workstreams/quality-ratchet-release/`
+
+### v21.0 First B2C Adopter Readiness (parked)
 
 **Goal:** Prove one real Phoenix application's offline study flow on one physical iPhone without
 widening Crosswake into a generic sync, storage, native-control, or multi-platform framework.
@@ -56,14 +65,22 @@ separately funded business-line mandate. Durable reasoning is in
 `.planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md`.
 
 ## Current State
-- **v21.0 Adopter Readiness — ACTIVE 2026-07-30.** The roadmap now begins with route ownership and
-  host-reusable proof, then closes privacy/auth, real offline pronunciation media, a bounded iOS
-  native navigation shell, and physical-iPhone evidence. Work stops after the dated device proof
-  except for defects that proof demonstrates.
-- **v21.0 Phase 161 iOS Pronunciation Pack Seam — GAPS FOUND 2026-08-03.** All 18 plans executed,
-  but independent review and verification found one crash-recovery blocker: a stale inventory can
-  create a promotion journal for a retained file that never existed and memoize startup failure.
-  Phase 161 remains current until a gap-closure plan repairs and re-verifies that path.
+- **v22.0 Quality Ratchet & Release Readiness — READY TO PLAN 2026-08-28.** Phases 164-168 cover
+  dependency security, authoritative and efficient CI, clean-checkout engineering quality,
+  documentation/PR reconciliation, and exact approval-gated 0.2.1 release readiness.
+- **v21.0 Adopter Readiness — PARKED AT PHASE 163.1 2026-08-28.** Plans 163.1-08 through
+  163.1-10 remain blocked on the validated private adopter handoff and source-bound physical-device
+  authority. The completed substrate and exact resume context live in
+  `.planning/workstreams/first-b2c-adopter-readiness/`; no adopter facts are inferred.
+- **v21.0 Phase 163 First B2C Adopter Reference Host Integration — COMPLETE 2026-08-27.** The
+  generated Phoenix/iOS host, exact foreground learning bundle, scoped replay authority, and
+  physical report/evidence producers are verified against the current tree.
+- **v21.0 Phase 162 Physical-iPhone Adoption Proof — COMPLETE 2026-08-27.** The retained physical
+  record and corrected provenance topology independently verify the bounded offline study flow,
+  offline pronunciation media, replay, recovery, account isolation, and remote disablement.
+- **v21.0 Phase 161 iOS Pronunciation Pack Seam — COMPLETE 2026-08-04.** Gap closure repaired and
+  re-verified crash recovery, atomic replacement, retained-byte rollback, and foreground provider
+  authority without widening into generic native storage.
 - **v21.0 Phase 161.1 First-Adopter iOS Navigation Shell — INSERTED/URGENT 2026-08-03.** SEED-006
   is triggered for a bounded iOS slice: native root tabs, pushed details and edge-swipe back,
   typed patch/navigate synchronization, live safe-area and separate keyboard values, a synchronous
@@ -431,4 +448,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-08-04 after Phase 161.1 completion.*
+*Last updated: 2026-08-27 after Phase 163 verification recovery and v21 phase completion.*

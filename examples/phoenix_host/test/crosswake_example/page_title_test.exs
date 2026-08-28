@@ -8,6 +8,7 @@ defmodule CrosswakeExample.PageTitleTest do
   alias CrosswakeExample.PageTitle
   alias CrosswakeExample.Router
   alias CrosswakeExample.SelectiveNative.Claims
+  alias CrosswakeExample.SelectiveNative.Fixtures, as: NativeFixtures
   alias CrosswakeExample.Showcase.Reset
 
   @endpoint CrosswakeExample.Endpoint
@@ -50,6 +51,7 @@ defmodule CrosswakeExample.PageTitleTest do
 
   setup do
     Reset.reset!()
+    NativeFixtures.seed()
     :ok
   end
 

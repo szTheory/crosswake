@@ -593,6 +593,12 @@ defmodule CrosswakeExample.Router do
       post("/showcase-reset", ShowcaseResetController, :create)
     end
 
+    scope "/_e2e/physical-case", CrosswakeExample.LocalFirst do
+      pipe_through([:api])
+      post("/prepare", PhysicalIphoneAuthority, :prepare)
+      post("/verify", PhysicalIphoneAuthority, :verify)
+    end
+
     scope "/_e2e", CrosswakeExample.E2E do
       pipe_through([:api, :e2e_session])
       post("/saas-session", SaaSSessionController, :create)

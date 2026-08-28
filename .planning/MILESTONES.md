@@ -1,5 +1,17 @@
 # Project Milestones: Crosswake
 
+## v7.0 (Backfilled: 2026-08-27)
+
+**Note:** Synthesized from archive snapshot by `/gsd-health --backfill`. Original completion date unknown.
+
+---
+
+## v3.6 Roadmap: Crosswake (Backfilled: 2026-08-27)
+
+**Note:** Synthesized from archive snapshot by `/gsd-health --backfill`. Original completion date unknown.
+
+---
+
 ## v20.0 Native Controls Pack 1 (Stopped / Partial: 2026-07-30)
 
 This milestone is recorded for history but is not a shipped release and has no completion tag.

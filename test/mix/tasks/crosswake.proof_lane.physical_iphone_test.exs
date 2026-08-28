@@ -7,7 +7,9 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
     parent = self()
 
     assert {:blocked, %{outcome: "blocked", rule_id: "PI-PREFLIGHT-INVENTORY"}} =
-             PhysicalIphone.run_with(["--run", "--json"],
+             PhysicalIphone.run_with(
+               ["--run", "--json"],
+               adopter_handoff: fn -> {:ok, %{source: :adopter, topology: %{status: :ready}}} end,
                runner: fn _ -> send(parent, :runner) end
              )
 
@@ -23,6 +25,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
              PhysicalIphone.run_with(["--readiness", "--json"], inventory: [])
 
     assert Enum.map(checks, & &1.id) == [
+             "PI-PREFLIGHT-ADOPTER-HANDOFF",
              "PI-PREFLIGHT-INVENTORY",
              "PI-PREFLIGHT-CONFIG",
              "PI-PREFLIGHT-GENERATED-LANE",
@@ -53,14 +56,42 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
                      send(parent, {:device, contract})
                      device_report()
                    end,
-                   backend_report: fn _ -> backend_report() end
+                   backend_report: fn _ -> backend_report() end,
+                   cleanup_run: fn ->
+                     send(parent, :cleanup_run)
+                     :ok
+                   end
                  ]
              )
 
     assert_receive {:device, %{assertion_ids: assertion_ids}}
-    assert length(assertion_ids) == 10
+
+    assert assertion_ids == [
+             "PI-PACK-INSTALL-AUDIO",
+             "PI-OFFLINE-SELECTED-PERSISTENCE",
+             "PI-OFFLINE-FREE-FORM-PERSISTENCE",
+             "PI-RELAUNCH-PERSISTENCE",
+             "PI-RECOVERY-RETAINED",
+             "PI-RECOVERY-REJECTION",
+             "PI-RECOVERY-CONFLICT",
+             "PI-LOGOUT-FENCE",
+             "PI-ACCOUNT-SWITCH-FENCE",
+             "PI-ENTRY-DISABLEMENT",
+             "PI-REPLAY-DISABLEMENT",
+             "PI-RECOVERY-REJECTION-AUTHORITY",
+             "PI-RECOVERY-CONFLICT-AUTHORITY",
+             "PI-LOGOUT-FENCE-AUTHORITY",
+             "PI-ACCOUNT-SWITCH-FENCE-AUTHORITY",
+             "PI-ENTRY-DISABLEMENT-AUTHORITY",
+             "PI-REPLAY-DISABLEMENT-AUTHORITY",
+             "PI-EXACTLY-ONCE-EMPTY-OUTBOX",
+             "PI-REDACTED-PROMOTION"
+           ]
+
+    assert Crosswake.ProofLane.PhysicalIphoneContract.schema_version() == 2
     assert Enum.all?(assertions, &(&1.outcome == :passed))
     refute_received {:device, _}
+    assert_receive :cleanup_run
   end
 
   test "a device report cannot satisfy backend assertions" do
@@ -71,6 +102,70 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
                ["--run", "--json"],
                ready_options() ++
                  [device_report: fn _ -> reports end, backend_report: fn _ -> reports end]
+             )
+  end
+
+  test "runner cleans up after malformed reports and later join exits" do
+    parent = self()
+
+    assert {:blocked, %{outcome: "blocked", rule_id: "PI-REPORT-ENVELOPE"}} =
+             PhysicalIphone.run_with(
+               ["--run", "--json"],
+               ready_options() ++
+                 [
+                   device_report: fn _ -> "not-a-report" end,
+                   cleanup_run: fn ->
+                     send(parent, :malformed_device_cleanup)
+                     :ok
+                   end
+                 ]
+             )
+
+    assert_receive :malformed_device_cleanup
+
+    assert {:blocked, %{outcome: "blocked", rule_id: "PI-REPORT-ENVELOPE"}} =
+             PhysicalIphone.run_with(
+               ["--run", "--json"],
+               ready_options() ++
+                 [
+                   device_report: fn _ -> device_report() end,
+                   backend_report: fn _ -> "not-a-report" end,
+                   cleanup_run: fn ->
+                     send(parent, :malformed_backend_cleanup)
+                     :ok
+                   end
+                 ]
+             )
+
+    assert_receive :malformed_backend_cleanup
+
+    assert {:blocked, %{outcome: "blocked", rule_id: "PI-REPORT-OWNER"}} =
+             PhysicalIphone.run_with(
+               ["--run", "--json"],
+               ready_options() ++
+                 [
+                   device_report: fn _ -> device_report() end,
+                   backend_report: fn _ -> device_report() end,
+                   cleanup_run: fn ->
+                     send(parent, :join_cleanup)
+                     :ok
+                   end
+                 ]
+             )
+
+    assert_receive :join_cleanup
+  end
+
+  test "runner fails closed when its required cleanup callback fails" do
+    assert {:blocked, %{outcome: "blocked", rule_id: "PI-HOST-CLEANUP"}} =
+             PhysicalIphone.run_with(
+               ["--run", "--json"],
+               ready_options() ++
+                 [
+                   device_report: fn _ -> device_report() end,
+                   backend_report: fn _ -> backend_report() end,
+                   cleanup_run: fn -> {:error, :unavailable} end
+                 ]
              )
   end
 
@@ -110,7 +205,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
 
   defp canonical_report(owner) do
     %{
-      "schema_version" => 1,
+      "schema_version" => Crosswake.ProofLane.PhysicalIphoneContract.schema_version(),
       "device_class" => "physical_iphone",
       "assertions" =>
         Crosswake.ProofLane.PhysicalIphoneContract.assertions()
@@ -123,6 +218,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
     confirmed = fn value -> %{status: :confirmed_sanitized, value: value} end
 
     [
+      adopter_handoff: fn -> {:ok, %{source: :adopter, topology: %{status: :ready}}} end,
       inventory: [
         [
           route_id: "route-0123456789abcdef",

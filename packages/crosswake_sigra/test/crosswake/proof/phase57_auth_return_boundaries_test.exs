@@ -212,24 +212,49 @@ defmodule Crosswake.Proof.Phase57AuthReturnBoundariesTest do
     assert %AuthReturn.OAuthEvidence{} = envelope.evidence
     assert envelope.kind == :oauth
 
-    assert {:error, errors} =
-             AuthReturn.new_envelope(
-               oauth_envelope_attrs(%{
-                 access_token: "tok_secret",
-                 passkey_credential_id: "cred_secret",
-                 nonce: "raw_nonce",
-                 pkce_verifier: "raw_verifier",
-                 session_authority_lane: %{state: :active},
-                 return_to: "/admin"
-               })
-             )
+    for key <- [
+          :authorization_code,
+          :access_token,
+          :refresh_token,
+          :id_token,
+          :provider_payload,
+          :credential_id,
+          :passkey_credential_id,
+          :authenticator_data,
+          :client_data_json,
+          :pkce_verifier,
+          :nonce,
+          :csrf_token,
+          :return_to,
+          :session_ref,
+          :session_id,
+          :subject_ref,
+          :actor_id,
+          :org_id,
+          :authority_state,
+          :assurance_level,
+          :authn_methods,
+          :session_authority_lane,
+          :session_version,
+          :access_granted,
+          :grant_access
+        ] do
+      assert {:error, errors} =
+               AuthReturn.new_envelope(oauth_envelope_attrs(%{key => "smuggled"}))
 
-    assert {:auth_return_envelope, {:access_token, :forbidden}} in errors
-    assert {:auth_return_envelope, {:passkey_credential_id, :forbidden}} in errors
-    assert {:auth_return_envelope, {:nonce, :forbidden}} in errors
-    assert {:auth_return_envelope, {:pkce_verifier, :forbidden}} in errors
-    assert {:auth_return_envelope, {:session_authority_lane, :forbidden}} in errors
-    assert {:auth_return_envelope, {:return_to, :forbidden}} in errors
+      assert Enum.member?(errors, {:auth_return_envelope, {key, :forbidden}})
+    end
+
+    assert {:error, errors} =
+             AuthReturn.new_completion(%{
+               auth_return_ref: "support:ret.safe",
+               consumed_at: "2026-06-02T12:01:00Z",
+               session_authority_lane: envelope,
+               session_renewal_instructions: renewal_instructions(),
+               route_target: %{route_id: "billing-settings"}
+             })
+
+    assert {:session_authority_lane, :invalid_contract} in errors
   end
 
   test "backend promotion requires host-owned attempt record SessionAuthorityLane and renewal instructions" do
@@ -280,6 +305,20 @@ defmodule Crosswake.Proof.Phase57AuthReturnBoundariesTest do
              })
 
     assert {:session_authority_lane, :invalid_contract} in errors
+  end
+
+  test "hosted personal-account attempt records allow nil org scope but reject blank or malformed organization scope" do
+    assert {:ok, record} =
+             AuthReturn.new_attempt_record(attempt_record_attrs(%{org_id: nil}))
+
+    assert record.org_id == nil
+
+    for invalid_org_id <- ["", "   ", 42] do
+      assert {:error, errors} =
+               AuthReturn.new_attempt_record(attempt_record_attrs(%{org_id: invalid_org_id}))
+
+      assert Keyword.has_key?(errors, :org_id)
+    end
   end
 
   test "support truth promotes auth-return boundaries without provider or device overclaims" do
@@ -367,6 +406,34 @@ defmodule Crosswake.Proof.Phase57AuthReturnBoundariesTest do
           authorization_code_ref: "code_digest:abc",
           id_token_ref: "id_token_digest:def"
         }
+      },
+      overrides
+    )
+  end
+
+  defp attempt_record_attrs(overrides) do
+    Map.merge(
+      %{
+        attempt_ref: "ret_123",
+        attempt_digest: "sha256:ret",
+        kind: :oauth,
+        state: :issued,
+        subject_ref: "sub_backend",
+        org_id: "org_backend",
+        source_session_ref: "sess_old",
+        expected_session_version: 42,
+        route_id: "oauth-return",
+        return_route_id: "billing-settings",
+        transport: :verified_https_link,
+        link_verification: :verified,
+        state_digest: "sha256:state",
+        nonce_digest: "sha256:nonce",
+        pkce_challenge_digest: "sha256:pkce",
+        pkce_method: :S256,
+        issued_at: "2026-06-02T12:00:00Z",
+        expires_at: "2026-06-02T12:05:00Z",
+        audit_correlation_ref: "support:ret.safe",
+        projected_session_authority_lane: session_authority_lane()
       },
       overrides
     )

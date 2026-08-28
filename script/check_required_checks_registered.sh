@@ -1,20 +1,6 @@
 #!/usr/bin/env bash
-# check_required_checks_registered.sh — fail-closed detector for the "declared merge-blocking but
-# not actually registered" gap. A lane named "...merge-blocking..." that is NOT in the branch's
-# required_status_checks is advisory in practice (a green PR can merge while it is red) — a silent
-# downgrade of a lane that calls itself merge-blocking. This surfaces that gap loudly (PROOF-03
-# follow-on); pairs with register_required_checks.sh which closes it.
-#
-# Exit codes:
-#   0  every declared merge-blocking lane is registered as a required check
-#   1  GAP — one or more declared lanes are NOT registered (fail-closed)
-#   3  UNVERIFIED — branch protection could not be read (needs repo-admin gh auth). NOT a pass.
-#
-# Usage:
-#   script/check_required_checks_registered.sh
-# Run by a maintainer (admin gh auth), or in a scheduled job with an admin-scoped PAT. It is NOT
-# wired as a required PR check itself: a required check that audits required checks is circular,
-# and PR-scoped tokens cannot read branch protection. exit 3 keeps it honest where it can't see.
+# Fail-closed comparison between literal workflow producers and required branch contexts.
+# Local syntax/type/name/cardinality proof always precedes the optional governance read.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -23,63 +9,94 @@ cd "${ROOT_DIR}"
 REPO="${REPO:-szTheory/crosswake}"
 BRANCH="${BRANCH:-main}"
 EP="repos/${REPO}/branches/${BRANCH}/protection/required_status_checks"
+LOCAL_ONLY=0
 
-# NOT `mapfile` — that is bash 4.0+, and macOS ships bash 3.2.57 (frozen at the last GPLv2
-# release). This script is run by maintainers on Macs and by macOS CI runners, where `mapfile`
-# fails with "command not found" and the script exits 127 before checking anything. A gate script
-# that cannot run is indistinguishable from a gate that passes.
-DECLARED=()
-while IFS= read -r _line; do
-  [ -n "$_line" ] && DECLARED+=("$_line")
-done < <(python3 script/list_merge_blocking_checks.py)
-if [ "${#DECLARED[@]}" -eq 0 ]; then
-  echo "[crosswake] No merge-blocking checks declared — nothing to verify."
-  exit 0
+if [ "$#" -gt 1 ] || { [ "$#" -eq 1 ] && [ "$1" != "--local-only" ]; }; then
+  echo "usage: script/check_required_checks_registered.sh [--local-only]" >&2
+  exit 2
 fi
+[ "$#" -eq 1 ] && LOCAL_ONLY=1
 
-# --- Uniqueness (GATE-01) -----------------------------------------------------------------
-# Asserting only that a name is REGISTERED is not enough. Branch protection matches required
-# contexts by STRING, so if two jobs emit the same name, GitHub cannot tell them apart and a red
-# run can be masked by a green one — the gate fails open while looking fully registered. Three
-# such collisions survived in this repo precisely because this script checked presence, not
-# uniqueness.
-#
-# This runs BEFORE the branch-protection read on purpose: it is a pure local check on the
-# workflow files, so it stays meaningful in CI where no repo-admin token exists and the
-# registration half exits 3 UNVERIFIED.
-dupes="$(python3 script/list_merge_blocking_checks.py --emitters \
-           | awk -F'\t' '{c[$1]++; src[$1]=src[$1]"\n      - "$2" ("$3")"} END{for(n in c) if(c[n]>1) printf "%s%s\n", n, src[n]}')"
+PRODUCERS_FILE="$(mktemp "${TMPDIR:-/tmp}/crosswake-producers.XXXXXX")"
+CANDIDATES_FILE="$(mktemp "${TMPDIR:-/tmp}/crosswake-candidates.XXXXXX")"
+trap 'rm -f "$PRODUCERS_FILE" "$CANDIDATES_FILE"' EXIT
 
-if [ -n "$dupes" ]; then
-  echo "[crosswake] FAIL: duplicate-merge-blocking-name - one check name is emitted by more than one job."
-  echo "$dupes" | sed 's/^\([^ ]\)/  - \1/'
-  echo "[crosswake]   Branch protection matches required contexts by string, so these are"
-  echo "[crosswake]   indistinguishable: a red run can be masked by a green one and the gate"
-  echo "[crosswake]   fails open while still reporting as registered."
-  echo "[crosswake]   What to do next: rename the later-phase emitter, keeping the"
-  echo "[crosswake]   'merge-blocking' substring so auto-discovery still finds it."
+# The detector itself owns parse/type/name and merge-blocking cardinality. Capture its exit status
+# directly: set -e does not reliably propagate a failed process substitution on Bash 3.2.
+if ! python3 script/list_merge_blocking_checks.py --producers >"$PRODUCERS_FILE"; then
+  echo "[crosswake] FAIL: local-producer-inventory - strict workflow inventory failed."
+  echo "[crosswake]   What to do next: run python3 script/list_merge_blocking_checks.py --producers and repair every reported source."
   exit 1
 fi
 
-if ! current="$(gh api "${EP}" 2>/dev/null)"; then
+if ! python3 script/list_merge_blocking_checks.py --emitters >"$CANDIDATES_FILE"; then
+  echo "[crosswake] FAIL: local-candidate-inventory - merge-blocking inventory failed."
+  echo "[crosswake]   What to do next: run python3 script/list_merge_blocking_checks.py --emitters and repair every reported source."
+  exit 1
+fi
+
+if [ ! -s "$PRODUCERS_FILE" ]; then
+  echo "[crosswake] FAIL: missing-producer - no literal workflow producers were discovered."
+  echo "[crosswake]   What to do next: restore literal jobs under .github/workflows before auditing branch policy."
+  exit 1
+fi
+
+if [ ! -s "$CANDIDATES_FILE" ]; then
+  echo "[crosswake] FAIL: missing-merge-blocking-producer - no merge-blocking candidates were discovered."
+  echo "[crosswake]   What to do next: restore the stable merge-blocking workflow producers."
+  exit 1
+fi
+
+producer_count="$(wc -l <"$PRODUCERS_FILE" | tr -d ' ')"
+candidate_count="$(wc -l <"$CANDIDATES_FILE" | tr -d ' ')"
+echo "[crosswake] OK: local producer authority verified (${producer_count} literal producers; ${candidate_count} merge-blocking candidates)."
+
+if [ "$LOCAL_ONLY" -eq 1 ]; then
+  exit 0
+fi
+
+if [ -n "${CROSSWAKE_REQUIRED_CHECKS_JSON:-}" ]; then
+  current="${CROSSWAKE_REQUIRED_CHECKS_JSON}"
+elif ! current="$(gh api "${EP}" 2>/dev/null)"; then
   echo "[crosswake] UNVERIFIED (exit 3): cannot read branch protection for ${REPO}@${BRANCH}."
   echo "[crosswake]   Needs gh CLI authenticated with repo-admin scope. This is NOT a pass —"
   echo "[crosswake]   re-run with admin credentials (or from a scheduled job with an admin PAT)."
   exit 3
 fi
 
-registered="$(printf '%s' "$current" | jq -r '.checks[]?.context')"
-missing=()
-for c in "${DECLARED[@]}"; do
-  printf '%s\n' "$registered" | grep -qxF "$c" || missing+=("$c")
-done
-
-if [ "${#missing[@]}" -ne 0 ]; then
-  echo "[crosswake] GAP: declared merge-blocking lane(s) NOT registered as required on ${BRANCH}:"
-  printf '  - %s\n' "${missing[@]}"
-  echo "[crosswake]   These are advisory in practice (a red one does not block merge)."
-  echo "[crosswake]   What to do next: DRY_RUN=0 script/register_required_checks.sh"
+if ! printf '%s' "$current" | jq -e 'type == "object"' >/dev/null 2>&1; then
+  echo "[crosswake] FAIL: malformed-registered-context-input - required-check JSON is not an object."
+  echo "[crosswake]   What to do next: provide the unmodified required_status_checks response."
   exit 1
 fi
 
-echo "[crosswake] OK: all ${#DECLARED[@]} declared merge-blocking lane(s) are registered as required on ${BRANCH}."
+registered="$(printf '%s' "$current" | jq -r '[.checks[]?.context, .contexts[]?] | .[]?' | sort -u)"
+authority_errors=0
+
+while IFS= read -r context; do
+  [ -z "$context" ] && continue
+  count="$(awk -F '\t' -v wanted="$context" '$1 == wanted {n++} END {print n+0}' "$PRODUCERS_FILE")"
+  if [ "$count" -ne 1 ]; then
+    echo "[crosswake] FAIL: registered-without-producer - required context '${context}' has ${count} literal local producers."
+    echo "[crosswake]   What to do next: restore exactly one literal workflow job named '${context}', or remove the stale context through the approved governance path."
+    authority_errors=1
+  fi
+done <<EOF
+$registered
+EOF
+
+while IFS=$'\t' read -r context workflow job_id; do
+  [ -z "$context" ] && continue
+  if ! printf '%s\n' "$registered" | grep -qxF "$context"; then
+    echo "[crosswake] FAIL: candidate-without-registration - '${context}' from ${workflow} (${job_id}) is not required on ${BRANCH}."
+    echo "[crosswake]   What to do next: after it is green on main, run DRY_RUN=0 script/register_required_checks.sh"
+    authority_errors=1
+  fi
+done <"$CANDIDATES_FILE"
+
+if [ "$authority_errors" -ne 0 ]; then
+  exit 1
+fi
+
+registered_count="$(printf '%s\n' "$registered" | sed '/^$/d' | wc -l | tr -d ' ')"
+echo "[crosswake] OK: ${registered_count} registered context(s) each have one producer, and every merge-blocking candidate is registered on ${BRANCH}."

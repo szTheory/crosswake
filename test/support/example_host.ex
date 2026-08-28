@@ -1,16 +1,23 @@
 defmodule Crosswake.TestSupport.ExampleHost do
   @app_root Path.expand("../../examples/phoenix_host", __DIR__)
+  @database_prefix "crosswake-example-host-"
 
   # Private to the proof harness — deliberately NOT CrosswakeExample.PubSub. See
   # start_endpoint!/0.
   @pubsub Crosswake.TestSupport.ExampleHostPubSub
+
+  defmodule Ownership do
+    @moduledoc false
+    @enforce_keys [:state, :cleanup]
+    defstruct [:state, :cleanup]
+  end
 
   def load! do
     @app_root
     |> Path.join("_build/dev/lib/*/ebin")
     |> Path.wildcard()
     |> Enum.reject(&(Path.basename(Path.dirname(&1)) == "crosswake"))
-    |> Enum.each(&Code.prepend_path/1)
+    |> Enum.each(&prepend_path_owned!/1)
 
     :ok
   end
@@ -31,25 +38,28 @@ defmodule Crosswake.TestSupport.ExampleHost do
     repo = CrosswakeExample.Repo
     migrator = Ecto.Migrator
 
-    db =
-      Path.join(System.tmp_dir!(), "cw_saas_proof_#{System.unique_integer([:positive])}.db")
+    case Process.whereis(repo) do
+      pid when is_pid(pid) ->
+        :ok
 
-    Application.put_env(:crosswake_example, repo, database: db, pool_size: 1, log: false)
+      nil ->
+        db = unique_database_path()
+        own_file!(db)
 
-    {:ok, _} = Application.ensure_all_started(:ecto_sql)
-    {:ok, _} = Application.ensure_all_started(:ecto_sqlite3)
+        put_env_owned!(:crosswake_example, repo, database: db, pool_size: 1, log: false)
 
-    case apply(repo, :start_link, []) do
-      {:ok, _pid} -> :ok
-      {:error, {:already_started, _pid}} -> :ok
+        {:ok, _} = Application.ensure_all_started(:ecto_sql)
+        {:ok, _} = Application.ensure_all_started(:ecto_sqlite3)
+
+        _ownership = start_owned!(repo)
+
+        apply(migrator, :run, [
+          repo,
+          Path.join(@app_root, "priv/repo/migrations"),
+          :up,
+          [all: true, log: false]
+        ])
     end
-
-    apply(migrator, :run, [
-      repo,
-      Path.join(@app_root, "priv/repo/migrations"),
-      :up,
-      [all: true, log: false]
-    ])
 
     :ok
   end
@@ -70,6 +80,14 @@ defmodule Crosswake.TestSupport.ExampleHost do
   def start_endpoint! do
     endpoint = CrosswakeExample.Endpoint
 
+    if Process.whereis(endpoint) do
+      :ok
+    else
+      configure_and_start_endpoint!(endpoint)
+    end
+  end
+
+  defp configure_and_start_endpoint!(endpoint) do
     # The example app's own config/*.exs is never loaded in this repo's test env, so
     # the endpoint's configuration has to be supplied here. It mirrors
     # examples/phoenix_host/config/config.exs with two deliberate divergences.
@@ -84,7 +102,7 @@ defmodule Crosswake.TestSupport.ExampleHost do
     # the same name squats it and fails that lane with `:already_started` whenever it
     # runs second. Nothing reachable from these round trips broadcasts, so the
     # endpoint gets a private broker and the app-owned name stays unclaimed.
-    Application.put_env(:crosswake_example, endpoint,
+    put_env_owned!(:crosswake_example, endpoint,
       url: [host: "localhost"],
       server: false,
       secret_key_base: String.duplicate("a", 64),
@@ -94,27 +112,133 @@ defmodule Crosswake.TestSupport.ExampleHost do
 
     {:ok, _} = Application.ensure_all_started(:phoenix)
 
-    start_detached!({Phoenix.PubSub, name: @pubsub})
-    start_detached!(endpoint)
+    _pubsub = start_owned!({Phoenix.PubSub, name: @pubsub})
+    _endpoint = start_owned!(endpoint)
 
     :ok
   end
 
-  # Both the PubSub tree and the Endpoint are supervisors, which shut down when their
-  # starting process exits. Started from a `setup_all` block that would be exactly the
-  # module's lifetime, so unlink and let them outlive any single test module — that is
-  # what makes the `{:error, {:already_started, _}}` branch reachable and this function
-  # genuinely idempotent across proof modules.
-  defp start_detached!(child_spec) do
-    {mod, fun, args} = Supervisor.child_spec(child_spec, []).start
+  @doc false
+  def put_env_owned!(app, key, value) do
+    prior = Application.fetch_env(app, key)
 
-    case apply(mod, fun, args) do
-      {:ok, pid} ->
-        Process.unlink(pid)
-        :ok
+    token =
+      register_cleanup(fn ->
+        case prior do
+          {:ok, previous} -> Application.put_env(app, key, previous)
+          :error -> Application.delete_env(app, key)
+        end
+      end)
 
-      {:error, {:already_started, _pid}} ->
-        :ok
+    Application.put_env(app, key, value)
+    token
+  end
+
+  @doc false
+  def prepend_path_owned!(path) do
+    if path in Enum.map(:code.get_path(), &List.to_string/1) do
+      {:unowned, path}
+    else
+      true = Code.prepend_path(path)
+      token = register_cleanup(fn -> Code.delete_path(path) end)
+      {:owned, token}
     end
+  end
+
+  @doc false
+  def unique_database_path do
+    filename =
+      @database_prefix <>
+        Integer.to_string(System.unique_integer([:positive, :monotonic])) <> ".sqlite3"
+
+    Path.join(System.tmp_dir!(), filename)
+  end
+
+  @doc false
+  def own_file!(path) do
+    owned_paths = [path, path <> "-wal", path <> "-shm"]
+    register_cleanup(fn -> Enum.each(owned_paths, &File.rm/1) end)
+  end
+
+  @doc false
+  def start_owned!(child_spec) do
+    caller = self()
+    ref = make_ref()
+
+    owner =
+      spawn(fn ->
+        result = start_child(child_spec)
+        send(caller, {ref, result, self()})
+
+        case result do
+          {:ok, pid} ->
+            receive do
+              {:cleanup, ^ref} -> stop_owned_process(pid)
+            end
+
+          _ ->
+            :ok
+        end
+      end)
+
+    receive do
+      {^ref, {:ok, pid}, ^owner} ->
+        token =
+          register_cleanup(fn ->
+            monitor = Process.monitor(pid)
+            send(owner, {:cleanup, ref})
+
+            receive do
+              {:DOWN, ^monitor, :process, ^pid, _reason} -> :ok
+            after
+              5_000 -> raise "timed out stopping owned process #{inspect(pid)}"
+            end
+          end)
+
+        {:owned, pid, token}
+
+      {^ref, {:error, {:already_started, pid}}, ^owner} ->
+        {:unowned, pid}
+
+      {^ref, {:error, reason}, ^owner} ->
+        raise "failed to start owned process: #{inspect(reason)}"
+    after
+      5_000 ->
+        Process.exit(owner, :kill)
+        raise "timed out starting owned process"
+    end
+  end
+
+  @doc false
+  def cleanup!(%Ownership{state: state, cleanup: cleanup}) do
+    if :atomics.exchange(state, 1, 0) == 1, do: cleanup.()
+    :ok
+  end
+
+  defp register_cleanup(cleanup) do
+    state = :atomics.new(1, signed: false)
+    :atomics.put(state, 1, 1)
+    token = %Ownership{state: state, cleanup: cleanup}
+    ExUnit.Callbacks.on_exit(fn -> cleanup!(token) end)
+    token
+  end
+
+  defp start_child({module, init, options}) when is_function(init, 0) and is_list(options) do
+    apply(module, :start_link, [init, options])
+  end
+
+  defp start_child(child_spec) do
+    {module, function, arguments} = Supervisor.child_spec(child_spec, []).start
+    apply(module, function, arguments)
+  end
+
+  defp stop_owned_process(pid) do
+    if Process.alive?(pid) do
+      GenServer.stop(pid, :normal, 5_000)
+    end
+
+    :ok
+  catch
+    :exit, {:noproc, _} -> :ok
   end
 end

@@ -5,7 +5,7 @@ defmodule Crosswake.ProofLane.PhysicalIphoneContract do
   It intentionally carries neither device identity nor host/adopter values.
   """
 
-  @schema_version 1
+  @schema_version 2
   @device_class :physical_iphone
   @owners [:device_local, :backend_authority, :evidence_promotion]
   @outcomes [:passed, :blocked, :unavailable]
@@ -15,9 +15,18 @@ defmodule Crosswake.ProofLane.PhysicalIphoneContract do
     %{id: "PI-OFFLINE-FREE-FORM-PERSISTENCE", owner: :device_local},
     %{id: "PI-RELAUNCH-PERSISTENCE", owner: :device_local},
     %{id: "PI-RECOVERY-RETAINED", owner: :device_local},
-    %{id: "PI-LOGOUT-ACCOUNT-FENCE", owner: :backend_authority},
-    %{id: "PI-ENTRY-DISABLEMENT", owner: :backend_authority},
-    %{id: "PI-REPLAY-DISABLEMENT", owner: :backend_authority},
+    %{id: "PI-RECOVERY-REJECTION", owner: :device_local},
+    %{id: "PI-RECOVERY-CONFLICT", owner: :device_local},
+    %{id: "PI-LOGOUT-FENCE", owner: :device_local},
+    %{id: "PI-ACCOUNT-SWITCH-FENCE", owner: :device_local},
+    %{id: "PI-ENTRY-DISABLEMENT", owner: :device_local},
+    %{id: "PI-REPLAY-DISABLEMENT", owner: :device_local},
+    %{id: "PI-RECOVERY-REJECTION-AUTHORITY", owner: :backend_authority},
+    %{id: "PI-RECOVERY-CONFLICT-AUTHORITY", owner: :backend_authority},
+    %{id: "PI-LOGOUT-FENCE-AUTHORITY", owner: :backend_authority},
+    %{id: "PI-ACCOUNT-SWITCH-FENCE-AUTHORITY", owner: :backend_authority},
+    %{id: "PI-ENTRY-DISABLEMENT-AUTHORITY", owner: :backend_authority},
+    %{id: "PI-REPLAY-DISABLEMENT-AUTHORITY", owner: :backend_authority},
     %{id: "PI-EXACTLY-ONCE-EMPTY-OUTBOX", owner: :backend_authority},
     %{id: "PI-REDACTED-PROMOTION", owner: :evidence_promotion}
   ]

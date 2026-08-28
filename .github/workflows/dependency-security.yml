@@ -1,0 +1,61 @@
+name: Dependency Security
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  merge-blocking-dependency-security:
+    name: merge-blocking-dependency-security
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+          install-hex: false
+
+      - name: Install Hex
+        run: |
+          for attempt in 1 2 3; do
+            if mix local.hex --force; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+            sleep 2
+          done
+
+      - name: Install root audit dependencies
+        run: mix deps.get
+
+      - name: Install example-host audit dependencies
+        working-directory: examples/phoenix_host
+        run: mix deps.get
+
+      - name: Audit both supported dependency locks
+        run: script/check_dependency_security.sh
+
+      - name: Prove an advisory-bearing lock fails closed
+        run: script/check_dependency_security.sh --assert-vulnerable-fixture test/fixtures/security/advisory-bearing.lock
+
+      - name: Step summary
+        if: always()
+        run: |
+          echo "Dependency security audits the root and example-host locks independently." >> "$GITHUB_STEP_SUMMARY"
+          echo "The inactive advisory fixture must be rejected by the same bounded security seam." >> "$GITHUB_STEP_SUMMARY"

@@ -26,6 +26,7 @@ defmodule CrosswakePhysicalIphoneProofHost do
 
   def device_report(_contract), do: {:error, :unavailable}
   def backend_report(_contract), do: {:error, :unavailable}
+  def cleanup_run, do: :ok
   def evidence_input(_candidate), do: {:error, :unavailable}
   def destination, do: {:error, :unavailable}
 end

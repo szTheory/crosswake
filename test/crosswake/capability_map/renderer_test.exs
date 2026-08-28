@@ -160,7 +160,9 @@ defmodule Crosswake.CapabilityMap.RendererTest do
     for claim <- [
           "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof",
           "No generic navigation, Android parity, native leaf rendering, arbitrary restoration, modal breadth, or browser-history authority is claimed; invalid input keeps the existing explicit Phoenix denial.",
-          "Phase 161.1 verifies the bounded contract only: simulator advisory, TODO-002/adopter topology unknown_blocking, and physical-iPhone promotion Phase 162 only."
+          "validated TODO-002 handoff",
+          "source-bound signed-device run",
+          "simulator and fixture results remain non-promoting"
         ] do
       assert rendered =~ claim
     end

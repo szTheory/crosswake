@@ -419,12 +419,12 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "No generic navigation, Android parity, native leaf rendering, arbitrary restoration, modal breadth, or browser-history authority is claimed; invalid input keeps the existing explicit Phoenix denial.",
         adoption_implication:
-          "Phase 161.1 verifies the bounded contract only: simulator advisory, TODO-002/adopter topology unknown_blocking, and physical-iPhone promotion Phase 162 only."
+          "The bounded contract is advisory until a validated TODO-002 handoff and source-bound signed-device run compose it; simulator and fixture results remain non-promoting."
       ),
       row(
         id: "first-adopter-physical-iphone",
         surface: "Physical-iPhone offline study and replay evidence",
-        route_or_evidence_source: "First adopter public-release exit test",
+        route_or_evidence_source: "First adopter source-bound physical exit test",
         category: :missing,
         rebuild: :native_required,
         display_label: "Future gap",
@@ -432,9 +432,9 @@ defmodule Crosswake.CapabilityMap do
         package_owner: :native_shell,
         proof_posture: :not_yet_proven,
         denial_fallback:
-          "Simulator, generated-shell, browser, and unit evidence remain explicitly narrower than physical-device proof.",
+          "Simulator, generated-shell, browser, unit, and fixture evidence remain explicitly narrower than source-bound physical-device proof.",
         adoption_implication:
-          "Phase 162 only may promote the first adopter support claim after one physical iPhone proves offline answers, audio, relaunch, replay, account isolation, and remote disablement."
+          "Support remains blocked until validated TODO-002 input and one signed iPhone complete the source-bound composed route, pack, replay, recovery, and evidence exit test."
       ),
       row(
         id: "native-controls-alert-confirm",

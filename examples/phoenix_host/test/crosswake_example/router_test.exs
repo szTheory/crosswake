@@ -35,6 +35,18 @@ defmodule CrosswakeExample.RouterTest do
              ~r/if Mix\.env\(\) in \[:test, :e2e\] do.*post\("\/showcase-reset", ShowcaseResetController, :create\)/s
   end
 
+  test "physical case controls are test-gated and use the closed authority controller" do
+    prepare = route_by_path("/_e2e/physical-case/prepare")
+    verify = route_by_path("/_e2e/physical-case/verify")
+
+    assert prepare.verb == :post
+    assert prepare.plug == CrosswakeExample.LocalFirst.PhysicalIphoneAuthority
+    assert prepare.plug_opts == :prepare
+    assert verify.verb == :post
+    assert verify.plug == CrosswakeExample.LocalFirst.PhysicalIphoneAuthority
+    assert verify.plug_opts == :verify
+  end
+
   test "E2E undeclared-control route (PROOF-01 A2) is present in :test, wired to the LiveView" do
     route = route_by_path("/_e2e/undeclared-control")
 

@@ -114,6 +114,16 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     end)
   end
 
+  test "successful physical-class promotion survives the producing subprocess exit" do
+    with_destination(fn destination ->
+      run_promotion_subprocess!(destination, physical_candidate())
+
+      assert File.regular?(Path.join(destination, "proof-lane-evidence.json"))
+      assert File.regular?(Path.join(destination, ".complete"))
+      assert :ok = Evidence.check(destination, physical_sources())
+    end)
+  end
+
   test "physical iPhone evidence rejects nonphysical classes, incomplete reports, runtime aliases, and unapproved sources" do
     base = physical_candidate()
 
@@ -556,6 +566,23 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     write_complete_marker!(stage)
   end
 
+  # This deliberately starts a separate BEAM.  The parent validates only after
+  # the producer has exited, so an in-process temporary promotion cannot mask a
+  # lifecycle regression in the native no-replace helper.
+  defp run_promotion_subprocess!(destination, candidate) do
+    encoded = candidate |> :erlang.term_to_binary() |> Base.encode64()
+
+    code =
+      "candidate = System.argv() |> hd() |> Base.decode64!() |> :erlang.binary_to_term([:safe]); " <>
+        "destination = System.argv() |> Enum.at(1); " <>
+        "case Crosswake.ProofLane.Evidence.promote(candidate, destination) do :ok -> :ok; _ -> System.halt(2) end"
+
+    assert {_, 0} =
+             System.cmd("mix", ["run", "-e", code, "--", encoded, destination],
+               stderr_to_stdout: true
+             )
+  end
+
   defp write_complete_marker!(stage) do
     artifact = File.read!(Path.join(stage, "proof-lane-evidence.json"))
 
@@ -567,7 +594,8 @@ defmodule Crosswake.ProofLane.EvidenceTest do
 
   defp physical_candidate do
     %{
-      schema_version: "1",
+      schema_version:
+        Integer.to_string(Crosswake.ProofLane.PhysicalIphoneContract.schema_version()),
       crosswake_version: "1.0.0",
       template_version: "1",
       commit_ref: "git-0123456789abcdef0123456789abcdef01234567",
@@ -589,7 +617,7 @@ defmodule Crosswake.ProofLane.EvidenceTest do
         kind: :physical_iphone_run_contract,
         canonical_bytes:
           Jason.encode!(%{
-            "schema_version" => 1,
+            "schema_version" => Crosswake.ProofLane.PhysicalIphoneContract.schema_version(),
             "device_class" => "physical_iphone",
             "ios_runtime_line" => "18.0",
             "outcome" => "passed",

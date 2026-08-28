@@ -69,8 +69,8 @@ defmodule Crosswake.SupportMatrixTest do
     assert ios.notes =~ "compiled topology"
     assert ios.notes =~ "typed stack protocol"
     assert ios.notes =~ "UIKit host composition"
-    assert ios.notes =~ "simulator advisory"
-    assert ios.notes =~ "Phase 162"
+    assert ios.notes =~ "fixture and simulator evidence remain advisory"
+    assert ios.notes =~ "source-bound signed-device composition is required"
     assert ios.notes =~ "unknown_blocking"
 
     [ios_shell] = Enum.filter(matrix.shells, &(&1.target == "ios_shell"))

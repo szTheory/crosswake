@@ -430,7 +430,7 @@ defmodule Crosswake.SupportMatrix do
           proof_status: :supported,
           proof: "script/verify_generated_ios_shell.sh",
           notes:
-            "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; simulator advisory evidence remains distinct, TODO-002/adopter topology is unknown_blocking, and physical-iPhone promotion is Phase 162 only.",
+            "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],

@@ -8,10 +8,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Independent versioning
 
 `crosswake_sigra` is versioned **independently** of core `crosswake` — it is NOT
-in the lockstep `linked-versions` release group. The `{:crosswake, "~> 0.1"}`
+ in the lockstep `linked-versions` release group. The `{:crosswake, "~> 0.2"}`
 requirement declares a compatible-core floor, not a lockstep pin. See
 `guides/companion_compatibility.md` in the core repo for the cross-package
 compatibility matrix.
+
+## [0.1.3](https://github.com/szTheory/crosswake/compare/crosswake_sigra-v0.1.2...crosswake_sigra-v0.1.3) (2026-08-09)
+
+
+### Bug Fixes
+
+* **release:** preserve local companion proof contract ([#117](https://github.com/szTheory/crosswake/issues/117)) ([5597c34](https://github.com/szTheory/crosswake/commit/5597c3455b6fa309d7fa56957f55715549c2045f))
+
+## [0.1.2](https://github.com/szTheory/crosswake/compare/crosswake_sigra-v0.1.1...crosswake_sigra-v0.1.2) (2026-08-09)
+
+
+### Features
+
+* **crosswake-sigra:** support personal hosted returns ([#113](https://github.com/szTheory/crosswake/issues/113)) ([4b202ab](https://github.com/szTheory/crosswake/commit/4b202aba99b5d499823f8be0a60e43ca365cd19f))
+
+
+### Bug Fixes
+
+* align browser proof fixtures with scoped replay ([21dd21b](https://github.com/szTheory/crosswake/commit/21dd21b3dca1550166339c68ea0afd84b95843c3))
 
 ## [0.1.1](https://github.com/szTheory/crosswake/compare/crosswake_sigra-v0.1.0...crosswake_sigra-v0.1.1) (2026-07-03)
 
