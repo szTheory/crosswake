@@ -9,7 +9,12 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
 
     assert {:ready, contract} =
              PhysicalIphonePreflight.check(
-               adopter_handoff: callback(parent, :adopter_handoff),
+               adopter_handoff:
+                 callback(
+                   parent,
+                   :adopter_handoff,
+                   {:ok, %{source: :adopter, topology: %{status: :ready}}}
+                 ),
                inventory: [eligible_row()],
                config: proof_lane_config(),
                generated_lane: callback(parent, :generated_lane),
@@ -45,7 +50,11 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
     refute_called = fn -> flunk("a blocked inventory must not call downstream callbacks") end
 
     assert {:blocked, "PI-PREFLIGHT-INVENTORY"} =
-             PhysicalIphonePreflight.check(inventory: [], generated_lane: refute_called)
+             PhysicalIphonePreflight.check(
+               adopter_handoff: fn -> {:ok, %{source: :adopter, topology: %{status: :ready}}} end,
+               inventory: [],
+               generated_lane: refute_called
+             )
   end
 
   test "a missing or invalid current-run handoff blocks before inventory and every side effect" do
@@ -68,6 +77,7 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
     assert %{
              outcome: :blocked,
              checks: [
+               %{id: "PI-PREFLIGHT-ADOPTER-HANDOFF", state: :blocked},
                %{id: "PI-PREFLIGHT-INVENTORY", state: :blocked},
                %{id: "PI-PREFLIGHT-CONFIG", state: :blocked},
                %{id: "PI-PREFLIGHT-GENERATED-LANE", state: :blocked}

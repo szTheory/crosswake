@@ -2,6 +2,50 @@
 import AVFoundation
 import CryptoKit
 import Foundation
+/// The physical host owns this short-lived configuration seam.  It accepts only
+/// a current invocation's closed topology and never constructs navigation state.
+struct ReferenceHostNavigationConfiguration {
+  private let topology: ReferenceHostNavigationTopology
+
+  static func decode(envelope: String?, currentNonce: String?, manifestSchemaVersion: String) -> ReferenceHostNavigationConfiguration? {
+    guard let envelope, let currentNonce, !currentNonce.isEmpty,
+          let data = envelope.data(using: .utf8),
+          let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+          Set(object.keys) == ["schema_version", "run_binding", "topology"],
+          object["schema_version"] as? Int == 1,
+          object["run_binding"] as? String == currentNonce,
+          let topologyObject = object["topology"] as? [String: Any],
+          Set(topologyObject.keys) == ["topology_schema_version", "manifest_schema_version", "status", "entries"],
+          let topologyData = try? JSONSerialization.data(withJSONObject: object["topology"] as Any),
+          let topology = try? JSONDecoder().decode(ReferenceHostNavigationTopology.self, from: topologyData),
+          topology.status == "ready",
+          !topology.entries.isEmpty,
+          topology.topologySchemaVersion == manifestSchemaVersion,
+          topology.manifestSchemaVersion == manifestSchemaVersion
+    else { return nil }
+
+    return ReferenceHostNavigationConfiguration(topology: topology)
+  }
+}
+
+private struct ReferenceHostNavigationTopology: Decodable {
+  let topologySchemaVersion: String
+  let manifestSchemaVersion: String
+  let status: String
+  let entries: [ReferenceHostNavigationEntry]
+
+  enum CodingKeys: String, CodingKey {
+    case topologySchemaVersion = "topology_schema_version"
+    case manifestSchemaVersion = "manifest_schema_version"
+    case status, entries
+  }
+}
+
+private struct ReferenceHostNavigationEntry: Decodable {
+  let routeID: String
+
+  enum CodingKeys: String, CodingKey { case routeID = "route_id" }
+}
 
 enum ProofLaneOutcome: String, Codable { case passed, blocked, unavailable }
 enum ProofLanePrerequisite: String { case replayAuthorization, packAudio }

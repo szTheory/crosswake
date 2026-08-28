@@ -24,6 +24,7 @@ defmodule CrosswakeExample.PhysicalIphoneProofHostTest do
     readiness = PhysicalIphonePreflight.readiness(PhysicalIphoneProofHost.preflight_options())
 
     assert Enum.map(readiness.checks, & &1.id) == [
+             "PI-PREFLIGHT-ADOPTER-HANDOFF",
              "PI-PREFLIGHT-INVENTORY",
              "PI-PREFLIGHT-CONFIG",
              "PI-PREFLIGHT-GENERATED-LANE",

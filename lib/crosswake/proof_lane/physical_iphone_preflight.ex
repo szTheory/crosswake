@@ -19,12 +19,14 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
   ]
 
   @inventory_rule "PI-PREFLIGHT-INVENTORY"
+  @adopter_handoff_rule "PI-PREFLIGHT-ADOPTER-HANDOFF"
   @config_rule "PI-PREFLIGHT-CONFIG"
 
   @doc "Returns a safe, complete readiness summary without invoking proof reports or promotion."
   @spec readiness(keyword()) :: %{outcome: :ready | :blocked, checks: [map()]}
   def readiness(options) when is_list(options) do
     checks = [
+      readiness_entry(@adopter_handoff_rule, adopter_handoff_ready?(options)),
       readiness_entry(@inventory_rule, inventory_ready?(options)),
       readiness_entry(@config_rule, config_ready?(options))
       | Enum.map(@checks, fn {name, rule} ->
@@ -44,7 +46,8 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
 
   @spec check(keyword()) :: {:ready, map()} | {:blocked, String.t()}
   def check(options) when is_list(options) do
-    with {:ok, rows} <- inventory(options),
+    with :ok <- adopter_handoff(options),
+         {:ok, rows} <- inventory(options),
          {:eligible, _} <- RouteInventory.promotion_status(rows),
          {:ok, _config} <- config(options),
          :ok <- run_checks(options, @checks) do
@@ -55,6 +58,7 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
          assertion_ids: Enum.map(PhysicalIphoneContract.assertions(), & &1.id)
        }}
     else
+      {:adopter_handoff_error, _} -> {:blocked, @adopter_handoff_rule}
       {:inventory_error, _} -> {:blocked, "PI-PREFLIGHT-INVENTORY"}
       {:blocked, _} -> {:blocked, "PI-PREFLIGHT-INVENTORY"}
       {:config_error, _} -> {:blocked, "PI-PREFLIGHT-CONFIG"}
@@ -71,7 +75,7 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
     %{
       outcome: :blocked,
       checks:
-        [@inventory_rule, @config_rule | Enum.map(@checks, &elem(&1, 1))]
+        [@adopter_handoff_rule, @inventory_rule, @config_rule | Enum.map(@checks, &elem(&1, 1))]
         |> Enum.map(&%{id: &1, state: :blocked})
     }
   end
@@ -84,6 +88,15 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
          {:eligible, _} <- RouteInventory.promotion_status(rows),
          do: true,
          else: (_ -> false)
+  end
+
+  defp adopter_handoff_ready?(options), do: adopter_handoff(options) == :ok
+
+  defp adopter_handoff(options) do
+    case callback_result(:adopter_handoff, Keyword.get(options, :adopter_handoff)) do
+      %{source: :adopter, topology: %{status: :ready}} -> :ok
+      _ -> {:adopter_handoff_error, :blocked}
+    end
   end
 
   defp config_ready?(options), do: match?({:ok, _}, config(options))
