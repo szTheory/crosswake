@@ -115,7 +115,7 @@ final class ProofLaneContractTests: XCTestCase {
   func testPhysicalSequenceRequiresAProductionAdapter() async {
     let report = await PhysicalIphoneSequence.run(adapter: nil)
 
-    XCTAssertEqual(report.schemaVersion, 1)
+    XCTAssertEqual(report.schemaVersion, 2)
     XCTAssertEqual(report.deviceClass, .physicalIphone)
     XCTAssertEqual(report.assertions.map(\.id), PhysicalIphoneAssertion.allCases.map(\.rawValue))
     XCTAssertTrue(report.assertions.allSatisfy { $0.outcome == .unavailable })
@@ -245,6 +245,7 @@ final class ProofLaneContractTests: XCTestCase {
     let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
 
     XCTAssertEqual(Set(object.keys), ["schema_version", "device_class", "assertions"])
+    XCTAssertEqual(object["schema_version"] as? Int, 2)
     XCTAssertFalse(String(data: data, encoding: .utf8)!.contains("path"))
     XCTAssertFalse(String(data: data, encoding: .utf8)!.contains("owner"))
   }

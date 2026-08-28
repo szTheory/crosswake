@@ -784,7 +784,7 @@ enum PhysicalIphoneSequence {
 
   private static func report(_ outcomes: [PhysicalIphoneAssertion: ProofLaneOutcome]) -> PhysicalIphoneDeviceReport {
     PhysicalIphoneDeviceReport(
-      schemaVersion: 1,
+      schemaVersion: 2,
       deviceClass: .physicalIphone,
       assertions: PhysicalIphoneAssertion.allCases.map { assertion in
         PhysicalIphoneAssertionObservation(id: assertion.rawValue, outcome: outcomes[assertion] ?? .unavailable)
@@ -819,7 +819,7 @@ enum PhysicalIphoneCaseSequence {
 
   private static func report(_ outcomes: [PhysicalIphoneAssertion: ProofLaneOutcome]) -> PhysicalIphoneDeviceReport {
     PhysicalIphoneDeviceReport(
-      schemaVersion: 1,
+      schemaVersion: 2,
       deviceClass: .physicalIphone,
       assertions: PhysicalIphoneAssertion.allCases.map { assertion in
         PhysicalIphoneAssertionObservation(id: assertion.rawValue, outcome: outcomes[assertion] ?? .unavailable)
