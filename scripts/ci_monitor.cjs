@@ -6,6 +6,7 @@ const HELP = `Usage: node scripts/ci_monitor.cjs <command> [options]
 
 Commands:
   runs [--branch <name>] [--limit <count>]
+  pr-checks <pull-request>
   watch <run-id> [--interval <seconds>]
   fail-fast <run-id> [--interval <seconds>]
   log-failed <run-id>
@@ -79,6 +80,35 @@ function runs(args) {
       ].join("\t") + "\n",
     );
   }
+}
+
+function prChecks(args) {
+  const pullRequest = positiveInteger(args[0], "pull-request");
+  const output = gh(["pr", "view", pullRequest, "--json", "statusCheckRollup"], true);
+  const checks = JSON.parse(output).statusCheckRollup || [];
+
+  const normalized = checks.map((check) => {
+    const name = check.name || check.context || "unnamed-check";
+    const state = check.conclusion || check.state || check.status || "UNKNOWN";
+    return { name, state, url: check.detailsUrl || check.targetUrl || "" };
+  });
+
+  const failing = normalized.filter((check) =>
+    ["ACTION_REQUIRED", "CANCELLED", "ERROR", "FAILURE", "STALE", "TIMED_OUT"].includes(check.state),
+  );
+  const pending = normalized.filter((check) =>
+    ["EXPECTED", "IN_PROGRESS", "PENDING", "QUEUED", "REQUESTED", "WAITING", "UNKNOWN"].includes(check.state),
+  );
+
+  for (const check of normalized) {
+    process.stdout.write(`${check.state}\t${check.name}\t${check.url}\n`);
+  }
+  process.stdout.write(
+    `${JSON.stringify({ total: normalized.length, failing: failing.length, pending: pending.length })}\n`,
+  );
+
+  if (failing.length) process.exitCode = 1;
+  else if (pending.length) process.exitCode = 3;
 }
 
 function watch(args) {
@@ -163,6 +193,8 @@ if (!command || command === "--help" || command === "help") {
   process.stdout.write(HELP);
 } else if (command === "runs") {
   runs(args);
+} else if (command === "pr-checks") {
+  prChecks(args);
 } else if (command === "watch" || command === "fail-fast") {
   watch(args);
 } else if (command === "log-failed") {
