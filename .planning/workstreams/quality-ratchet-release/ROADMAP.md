@@ -60,18 +60,56 @@ independent workstream; the numbering does not imply that parked adopter work mu
 **Plans**: 13 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 165-01-PLAN.md — Capture the pre-change baseline and prove the documentation-only tracer.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 165-02-PLAN.md — Harden classification, manifest, and closed umbrella policy.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 165-03-PLAN.md — Build trusted monotonic obsolete-run cancellation.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 165-04-PLAN.md — Correct runner placement, cache identity, and timeouts.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
 - [ ] 165-05-PLAN.md — Consolidate core, security, hermetic, and commerce PR proof.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
 - [ ] 165-06-PLAN.md — Consolidate the first domain-proof cohort.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
 - [ ] 165-07-PLAN.md — Consolidate the remaining phase-era domain proof.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
 - [ ] 165-08-PLAN.md — Consolidate native, browser, package, and cross-runtime proof.
+
+**Wave 9** *(blocked on Wave 8 completion)*
+
 - [ ] 165-09-PLAN.md — Finish the PR graph and recurring Phase 165 contract gate.
+
+**Wave 10** *(blocked on Wave 9 completion)*
+
 - [ ] 165-10-PLAN.md — Prove live behavior and add Crosswake CI authority green-first.
+
+**Wave 11** *(blocked on Wave 10 completion)*
+
 - [ ] 165-11-PLAN.md — Approve or reject the exact legacy-context retirement.
+
+**Wave 12** *(blocked on Wave 11 completion)*
+
 - [ ] 165-12-PLAN.md — Apply approved retirement and remove migration-only compatibility conclusions.
+
+**Wave 13** *(blocked on Wave 12 completion)*
+
 - [ ] 165-13-PLAN.md — Bind the landed final graph to an exact remote SHA and capture matched after evidence.
 
 ### Phase 166: Clean-Checkout Engineering Quality
