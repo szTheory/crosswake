@@ -26,8 +26,8 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
     assert status == 0, output
     markdown = File.read!(@rendered)
     assert markdown =~ "Sample count"
-    assert markdown =~ "Median"
-    assert markdown =~ "Range"
+    assert markdown =~ "median"
+    assert markdown =~ "range"
     assert markdown =~ "not exposed"
     assert markdown =~ "not measured"
     assert markdown =~ "Source command"
