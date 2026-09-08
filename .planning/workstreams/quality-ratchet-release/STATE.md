@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 165
 current_phase_name: Efficient and Maintainable CI
 status: executing
-stopped_at: Completed 165-08-PLAN.md
-last_updated: "2026-09-08T17:46:04.144Z"
+stopped_at: Completed 165-09-PLAN.md
+last_updated: "2026-09-08T18:35:44.512Z"
 last_activity: 2026-09-08
 last_activity_desc: Plan 165-08 cross-runtime CI migration completed
-state_head: a7e40880585a1403854083334a99f2712183b5de
+state_head: 4e35336e3c2fc0ba8d7d3551becba2bc6d86a7cb
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 13
+  completed_plans: 14
   percent: 20
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 165 (Efficient and Maintainable CI) — EXECUTING
-Plan: 9 of 13
+Plan: 10 of 13
 Status: Ready to execute
 Last activity: 2026-09-08 — Plan 165-08 cross-runtime CI migration completed
 
@@ -66,6 +66,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase 165 P06 | 14 min | 2 tasks | 11 files |
 | Phase 165 P07 | 14 min | 2 tasks | 10 files |
 | Phase 165 P08 | 24 min | 3 tasks | 15 files |
+| Phase 165 P09 | 34 min | 3 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,8 @@ Progress: [██░░░░░░░░] 20%
 - [Phase 165]: Keep Phase 68 emulator execution manual and advisory-only; it is outside manifest, compatibility, and umbrella authority.
 - [Phase 165]: Determine runner class from exact command invocation: iOS mirror parity stays on Linux while Apple tooling stays on macOS.
 - [Phase 165]: Schedule focused Threadline proof only when the validated documentation family includes public_docs.
+- [Phase 165]: Keep brand-visual visibly red but outside proof leaves, required controls, umbrella needs, and compatibility authority.
+- [Phase 165]: Keep live timing and branch-protection mutation outside the recurring Phase 165 structural gate.
 
 ### Pending Todos
 
@@ -123,6 +126,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-08T17:46:04.084Z
-Stopped at: Completed 165-08-PLAN.md
+Last session: 2026-09-08T18:35:44.438Z
+Stopped at: Completed 165-09-PLAN.md
 Resume file: None
