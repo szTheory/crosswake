@@ -15,6 +15,63 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   @phase79 ".github/workflows/phase79-proof.yml"
   @release_please ".github/workflows/release-please.yml"
 
+  @task1_retired_workflows [
+    ".github/workflows/aggregator-negative-control.yml",
+    ".github/workflows/contract-drift-gate.yml",
+    ".github/workflows/dependency-security.yml",
+    ".github/workflows/requires-example-host-gate.yml"
+  ]
+
+  @tag :triggers
+  test "core integrity proof has one pull-request producer in Crosswake CI" do
+    workflow = File.read!(@crosswake_ci)
+
+    for path <- @task1_retired_workflows do
+      refute File.exists?(path), "#{path} must be retired after its PR proof moves"
+    end
+
+    for {job, display_name, command} <- [
+          {"proof-aggregator-negative-control", "proof-aggregator-negative-control",
+           "python3 script/check_aggregator_result_semantics.py --assert-outcomes"},
+          {"guard-01-contract-drift-test", "guard-01-contract-drift-test",
+           "mix test test/crosswake/contract/contract_drift_test.exs"},
+          {"guard-02-generate-and-diff", "guard-02-generate-and-diff",
+           "mix crosswake.contract.gen"},
+          {"proof-dependency-security", "proof-dependency-security",
+           "script/check_dependency_security.sh"},
+          {"proof-requires-example-host", "proof-requires-example-host",
+           "script/check_example_host_isolation.sh --matrix-only"}
+        ] do
+      body = job_body(workflow, job)
+      assert body =~ "name: #{display_name}"
+      assert body =~ "timeout-minutes:"
+      assert body =~ command
+      assert body =~ "Remediation:"
+    end
+
+    for {job, display_name, need} <- [
+          {"compat-aggregator-negative-control", "merge-blocking-aggregator-negative-control",
+           "proof-aggregator-negative-control"},
+          {"compat-contract-drift", "merge-blocking-contract-drift",
+           "guard-01-contract-drift-test"},
+          {"compat-dependency-security", "merge-blocking-dependency-security",
+           "proof-dependency-security"},
+          {"compat-requires-example-host", "merge-blocking-requires-example-host",
+           "proof-requires-example-host"}
+        ] do
+      body = job_body(workflow, job)
+      assert body =~ "name: #{display_name}"
+      assert body =~ "needs:"
+      assert body =~ need
+      refute body =~ "actions/checkout"
+    end
+
+    contract = job_body(workflow, "compat-contract-drift")
+    assert contract =~ "guard-02-generate-and-diff"
+    assert contract =~ "if: always()"
+    assert contract =~ "python3"
+  end
+
   @tag :cancellation_controller
   test "controller is requested-run-only and grants no permission beyond Actions mutation" do
     workflow = File.read!(@controller)
