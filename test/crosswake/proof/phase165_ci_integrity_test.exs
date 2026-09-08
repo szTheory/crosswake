@@ -93,12 +93,12 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     for {job, display_name, command} <- [
           {"phase130-core-hermetic-proof", "phase130-core-hermetic-proof",
            "mix test test/crosswake/proof/phase130_extraction_guards_test.exs"},
-          {"phase130-companion-engine-absent-proof",
-           "phase130-companion-engine-absent-proof", "mix companions.test"},
+          {"phase130-companion-engine-absent-proof", "phase130-companion-engine-absent-proof",
+           "mix companions.test"},
           {"phase132-core-hermetic-proof", "phase132-core-hermetic-proof",
            "phase132_compat_matrix_drift_test.exs"},
-          {"phase132-companion-engine-absent-proof",
-           "phase132-companion-engine-absent-proof", "crosswake_rindle"},
+          {"phase132-companion-engine-absent-proof", "phase132-companion-engine-absent-proof",
+           "crosswake_rindle"},
           {"phase23-commerce-proof", "phase23-commerce-proof",
            "phase23_commerce_support_proof_test.exs"},
           {"phase34-commerce-proof", "phase34-commerce-proof",
@@ -194,8 +194,10 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
     for {job, command} <- [
           {"phase41-gating-proof", "phase41_gating_doctor_test.exs"},
-          {"phase43-rulestead-proof", "mix test --exclude requires_example_host --exclude advisory_only"},
-          {"phase45-rindle-proof", "mix test --exclude requires_example_host --exclude advisory_only"},
+          {"phase43-rulestead-proof",
+           "mix test --exclude requires_example_host --exclude advisory_only"},
+          {"phase45-rindle-proof",
+           "mix test --exclude requires_example_host --exclude advisory_only"},
           {"phase48-provider-adapter-proof", "phase48_provider_adapter_proof_test.exs"}
         ] do
       body = job_body(workflow, job)
@@ -216,10 +218,12 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     end
 
     for {job, display_name} <- [
-          {"compat-phase41-gating-proof", "merge-blocking gating doctor and support matrix proof (hermetic)"},
+          {"compat-phase41-gating-proof",
+           "merge-blocking gating doctor and support matrix proof (hermetic)"},
           {"compat-phase43-rulestead-proof", "merge-blocking rulestead proof (hermetic)"},
           {"compat-phase45-rindle-proof", "merge-blocking rindle proof (hermetic)"},
-          {"compat-phase48-provider-adapter-proof", "merge-blocking provider adapter proof (hermetic)"}
+          {"compat-phase48-provider-adapter-proof",
+           "merge-blocking provider adapter proof (hermetic)"}
         ] do
       body = job_body(workflow, job)
       assert body =~ "name: #{display_name}"
@@ -238,7 +242,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     for {job, command} <- [
           {"phase52-operator-proof", "phase52_operator_truth_test.exs"},
           {"phase58-auth-closeout-proof", "mix closeout.verify --security-only"},
-          {"phase69-closeout-proof", "mix closeout.verify --cwd . --closeout-path .planning/milestones/v4.0-CLOSEOUT.md"},
+          {"phase69-closeout-proof",
+           "mix closeout.verify --cwd . --closeout-path .planning/milestones/v4.0-CLOSEOUT.md"},
           {"phase70-subscription-saas-proof", "phase70_subscription_saas_commerce_proof_test.exs"}
         ] do
       body = job_body(workflow, job)
@@ -257,7 +262,11 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       refute source =~ "grep -Eq"
     end
 
-    for path <- [".github/workflows/phase52-proof.yml", ".github/workflows/phase58-proof.yml", ".github/workflows/phase70-proof.yml"] do
+    for path <- [
+          ".github/workflows/phase52-proof.yml",
+          ".github/workflows/phase58-proof.yml",
+          ".github/workflows/phase70-proof.yml"
+        ] do
       advisory = File.read!(path)
       assert advisory =~ ~r/^  workflow_dispatch:/m
       assert advisory =~ ~r/^  schedule:/m
@@ -268,7 +277,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
           {"compat-phase52-operator-proof", "merge-blocking operator proof (hermetic)"},
           {"compat-phase58-auth-closeout-proof", "merge-blocking auth closeout proof (hermetic)"},
           {"compat-phase69-closeout-proof", "merge-blocking-closeout-proof"},
-          {"compat-phase70-subscription-saas-proof", "merge-blocking subscription SaaS proof (hermetic)"}
+          {"compat-phase70-subscription-saas-proof",
+           "merge-blocking subscription SaaS proof (hermetic)"}
         ] do
       body = job_body(workflow, job)
       assert body =~ "name: #{display_name}"
