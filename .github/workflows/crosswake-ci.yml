@@ -96,46 +96,262 @@ jobs:
             echo 'Remediation: mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs'
           } >> "$GITHUB_STEP_SUMMARY"
 
-  merge-blocking-crosswake-ci:
-    name: Crosswake CI
-    if: always()
-    needs: [classify-change, documentation-contracts]
+  proof-aggregator-negative-control:
+    name: proof-aggregator-negative-control
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Exercise the complete closed result vocabulary
+        id: outcomes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 script/check_aggregator_result_semantics.py --self-test
+          python3 script/check_aggregator_result_semantics.py --assert-outcomes \
+            '{"success":"success","failure":"failure","cancelled":"failure","skipped_disallowed":"failure","skipped_irrelevant":"success","timed_out":"failure","action_required":"failure","stale":"failure","unknown":"failure","empty":"failure","missing":"failure"}'
+      - name: Summarize aggregator negative-control proof
+        if: always()
+        run: |
+          echo 'Closed aggregator semantics exercised success, failure, cancelled, skipped, timed_out, action_required, stale, unknown, empty, and missing outcomes.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: python3 script/check_aggregator_result_semantics.py --self-test' >> "$GITHUB_STEP_SUMMARY"
+
+  guard-01-contract-drift-test:
+    name: guard-01-contract-drift-test
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run contract drift test (GUARD-01)
+        run: mix test test/crosswake/contract/contract_drift_test.exs
+      - name: Summarize contract drift test
+        if: always()
+        run: |
+          echo 'GUARD-01 contract-drift-test: focused ExUnit drift assertion completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/contract/contract_drift_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  guard-02-generate-and-diff:
+    name: guard-02-generate-and-diff
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: dev
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: dev
+      - name: Compile
+        run: mix compile
+      - name: Regenerate contract surfaces
+        run: mix crosswake.contract.gen
+      - name: Assert no uncommitted drift
+        run: |
+          set -euo pipefail
+          git add -A
+          if ! git diff --cached --exit-code; then
+            echo '::error::GUARD-02 FAILED — generated contract surfaces are out of date.'
+            echo "::error::Run 'mix crosswake.contract.gen' and commit the regenerated outputs."
+            git --no-pager diff --cached --stat
+            exit 1
+          fi
+      - name: Summarize generated contract parity
+        if: always()
+        run: |
+          echo 'GUARD-02 generated contract surfaces were regenerated and compared byte-for-byte.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix crosswake.contract.gen && git add -A && git diff --cached --exit-code' >> "$GITHUB_STEP_SUMMARY"
+
+  proof-dependency-security:
+    name: proof-dependency-security
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Conclude the tracer proof graph
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+          install-hex: false
+      - name: Install Hex
+        run: |
+          for attempt in 1 2 3; do
+            if mix local.hex --force; then exit 0; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep 2
+          done
+      - name: Install root audit dependencies
+        run: mix deps.get
+      - name: Install example-host audit dependencies
+        working-directory: examples/phoenix_host
+        run: mix deps.get
+      - name: Audit both supported dependency locks
+        run: script/check_dependency_security.sh
+      - name: Prove an advisory-bearing lock fails closed
+        run: script/check_dependency_security.sh --assert-vulnerable-fixture test/fixtures/security/advisory-bearing.lock
+      - name: Summarize dependency security proof
+        if: always()
+        run: |
+          echo 'Dependency security audits the root and example-host locks independently and rejects the advisory-bearing fixture.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: script/check_dependency_security.sh && script/check_dependency_security.sh --assert-vulnerable-fixture test/fixtures/security/advisory-bearing.lock' >> "$GITHUB_STEP_SUMMARY"
+
+  proof-requires-example-host:
+    name: proof-requires-example-host
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Compile the example Phoenix host (dev env)
+        env:
+          MIX_ENV: dev
+        working-directory: examples/phoenix_host
+        run: |
+          mix deps.get
+          mix compile
+      - name: Install root Mix dependencies
+        env:
+          MIX_ENV: test
+        run: mix deps.get
+      - name: Compile root project
+        env:
+          MIX_ENV: test
+        run: mix compile
+      - name: Run the bounded example-host isolation matrix
+        env:
+          MIX_ENV: test
+        run: script/check_example_host_isolation.sh --matrix-only
+      - name: Summarize example-host isolation proof
+        if: always()
+        run: |
+          tagged_paths="$(find test -name '*_test.exs' -type f -exec grep -El '^[[:space:]]*@(module)?tag[[:space:]]+:requires_example_host' {} + | sort)"
+          tagged_count="$(printf '%s\n' "$tagged_paths" | sed '/^$/d' | wc -l | tr -d ' ')"
+          echo "GATE-03 executed the bounded :requires_example_host isolation matrix across ${tagged_count} tagged files." >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: script/check_example_host_isolation.sh --matrix-only' >> "$GITHUB_STEP_SUMMARY"
+
+  compat-aggregator-negative-control:
+    name: merge-blocking-aggregator-negative-control
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Preserve the legacy required context
+        env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-contract-drift:
+    name: merge-blocking-contract-drift
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Preserve the legacy required context with closed results
+        env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import sys
+          if os.environ.get("RESULT", "") != "success":
+              sys.exit("legacy contract-drift context rejected a non-success guard result")
+          PY
+
+  compat-dependency-security:
+    name: merge-blocking-dependency-security
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Preserve the legacy required context
+        env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-requires-example-host:
+    name: merge-blocking-requires-example-host
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Preserve the legacy required context
+        env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  merge-blocking-crosswake-ci:
+    name: Crosswake CI
+    if: always()
+    needs:
+      - classify-change
+      - documentation-contracts
+      - guard-01-contract-drift-test
+      - guard-02-generate-and-diff
+      - proof-aggregator-negative-control
+      - proof-dependency-security
+      - proof-requires-example-host
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Conclude the governed proof graph
         shell: bash
         env:
           NEEDS_JSON: ${{ toJSON(needs) }}
-          CONTROL_RESULT: ${{ needs.classify-change.result }}
           CLASSIFICATION: ${{ needs.classify-change.outputs.classification }}
           REASON: ${{ needs.classify-change.outputs.reason }}
           SCHEDULED_FAMILIES: ${{ needs.classify-change.outputs.scheduled_families }}
-          IRRELEVANT_LEAVES: ${{ needs.classify-change.outputs.irrelevant_leaves }}
-          DOCUMENTATION_RESULT: ${{ needs.documentation-contracts.result }}
         run: |
-          set -euo pipefail
-          if [ -z "$NEEDS_JSON" ] || [ "$CONTROL_RESULT" != 'success' ]; then
-            echo 'Crosswake CI: required classification control did not succeed.' >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-          case "$CLASSIFICATION" in
-            documentation_only|full_proof) ;;
-            *)
-              echo 'Crosswake CI: classification was missing or unknown.' >> "$GITHUB_STEP_SUMMARY"
-              exit 1
-              ;;
-          esac
-          if [ "$DOCUMENTATION_RESULT" != 'success' ]; then
-            echo 'Crosswake CI: documentation-contracts did not succeed.' >> "$GITHUB_STEP_SUMMARY"
-            echo 'Remediation: mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs' >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+          needs = json.loads(os.environ["NEEDS_JSON"])
+          classification = os.environ.get("CLASSIFICATION", "")
+          if classification not in {"documentation_only", "full_proof"}:
+              sys.exit("Crosswake CI: classification was missing or unknown")
+          explicitly_irrelevant = {
+              "guard-01-contract-drift-test",
+              "guard-02-generate-and-diff",
+              "proof-aggregator-negative-control",
+              "proof-dependency-security",
+              "proof-requires-example-host",
+          } if classification == "documentation_only" else set()
+          for name, value in sorted(needs.items()):
+              result = value.get("result", "")
+              if name == "classify-change" and result != "success":
+                  sys.exit("Crosswake CI: required classification control did not succeed")
+              if name != "classify-change" and result != "success":
+                  if result != "skipped" or name not in explicitly_irrelevant:
+                      sys.exit("Crosswake CI: proof leaf did not reach a closed accepted result: " + name)
+          PY
           {
             echo "Crosswake CI: ${CLASSIFICATION}."
             echo "Reason: ${REASON}."
             echo "Scheduled proof families: ${SCHEDULED_FAMILIES}."
-            echo "Explicitly irrelevant families: ${IRRELEVANT_LEAVES}."
-            echo 'Expected/observed leaves: 1/1.'
-            echo 'Remediation: mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs'
+            echo 'Explicitly irrelevant families: core_integrity, security, example_host.'
+            echo 'Expected proof leaves: 6.'
+            echo 'Remediation: python3 script/check_ci_leaf_manifest.py --self-test'
           } >> "$GITHUB_STEP_SUMMARY"

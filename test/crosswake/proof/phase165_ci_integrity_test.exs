@@ -51,13 +51,13 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
     for {job, display_name, need} <- [
           {"compat-aggregator-negative-control", "merge-blocking-aggregator-negative-control",
-           "proof-aggregator-negative-control"},
+           "merge-blocking-crosswake-ci"},
           {"compat-contract-drift", "merge-blocking-contract-drift",
-           "guard-01-contract-drift-test"},
+           "merge-blocking-crosswake-ci"},
           {"compat-dependency-security", "merge-blocking-dependency-security",
-           "proof-dependency-security"},
+           "merge-blocking-crosswake-ci"},
           {"compat-requires-example-host", "merge-blocking-requires-example-host",
-           "proof-requires-example-host"}
+           "merge-blocking-crosswake-ci"}
         ] do
       body = job_body(workflow, job)
       assert body =~ "name: #{display_name}"
@@ -67,7 +67,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     end
 
     contract = job_body(workflow, "compat-contract-drift")
-    assert contract =~ "guard-02-generate-and-diff"
     assert contract =~ "if: always()"
     assert contract =~ "python3"
   end
