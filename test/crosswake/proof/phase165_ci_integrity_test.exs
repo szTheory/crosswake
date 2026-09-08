@@ -600,6 +600,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert workflow =~ "pagination_complete"
     assert workflow =~ ~s("$GITHUB_EVENT_PATH")
     refute workflow =~ "EVENT_PATH: ${{ github.event_path }}"
+    assert workflow =~ "source_pr_numbers"
+    assert workflow =~ "candidate_pr_numbers == source_pr_numbers"
   end
 
   @tag :cancellation_controller
