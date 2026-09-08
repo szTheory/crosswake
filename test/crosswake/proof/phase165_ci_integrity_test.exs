@@ -14,6 +14,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   @phase18 ".github/workflows/phase18-proof.yml"
   @phase79 ".github/workflows/phase79-proof.yml"
   @release_please ".github/workflows/release-please.yml"
+  @leaf_manifest "script/ci_leaf_manifest.json"
 
   @task1_retired_workflows [
     ".github/workflows/aggregator-negative-control.yml",
@@ -120,6 +121,54 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
           "merge-blocking phase34 commerce support proof (hermetic)"
         ] do
       assert workflow =~ "name: #{display_name}"
+    end
+  end
+
+  @tag :manifest
+  test "first migrated cohort has exact leaf, control, compatibility, and umbrella parity" do
+    manifest = @leaf_manifest |> File.read!() |> Jason.decode!()
+    workflow = File.read!(@crosswake_ci)
+
+    proof_ids = Enum.map(manifest["proof_leaves"], & &1["leaf_id"])
+    control_ids = Enum.map(manifest["required_control_nodes"], & &1["node_id"])
+    compatibility = manifest["legacy_compatibility_contexts"]
+    compatibility_ids = Enum.map(compatibility, & &1["job_id"])
+
+    assert proof_ids == Enum.sort(proof_ids)
+    assert control_ids == ["classify-change"]
+    assert compatibility_ids == Enum.sort(compatibility_ids)
+    assert length(proof_ids) == 12
+    assert length(compatibility_ids) == 10
+
+    umbrella = job_body(workflow, "merge-blocking-crosswake-ci")
+
+    for id <- proof_ids ++ control_ids do
+      assert umbrella =~ ~r/^      - #{Regex.escape(id)}$/m
+    end
+
+    for row <- compatibility do
+      refute umbrella =~ ~r/^      - #{Regex.escape(row["job_id"])}$/m
+      body = job_body(workflow, row["job_id"])
+      assert body =~ "name: #{row["display_context"]}"
+      assert body =~ row["needs_target"]
+      refute body =~ "actions/checkout"
+    end
+  end
+
+  @tag :manifest
+  test "migrated cohort has one PR workflow and no generic push duplicate" do
+    assert File.read!(@crosswake_ci) =~ ~r/^on:\n  pull_request:\s*$/m
+    refute File.read!(@crosswake_ci) =~ ~r/^  push:/m
+
+    for path <- [
+          ".github/workflows/phase130-proof.yml",
+          ".github/workflows/phase132-proof.yml",
+          ".github/workflows/phase23-proof.yml",
+          ".github/workflows/phase34-proof.yml"
+        ] do
+      workflow = File.read!(path)
+      refute workflow =~ ~r/^  pull_request:/m
+      refute workflow =~ ~r/^  push:/m
     end
   end
 
