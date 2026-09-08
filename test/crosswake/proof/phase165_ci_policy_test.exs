@@ -58,7 +58,12 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     names = Enum.map(fixture["cases"], & &1["name"])
     assert names == Enum.sort(names)
     assert Enum.uniq(names) == names
-    assert Enum.all?(fixture["cases"], &(&1["classification"] in ["documentation_only", "full_proof"]))
+
+    assert Enum.all?(
+             fixture["cases"],
+             &(&1["classification"] in ["documentation_only", "full_proof"])
+           )
+
     assert "mixed" in names
     assert "rename_crosses_boundary" in names
     assert "empty" in names
