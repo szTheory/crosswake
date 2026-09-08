@@ -33,13 +33,13 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 
 ### CI Efficiency and Maintainability
 
-- [ ] **CIP-01**: Pure Elixir and Android/JVM proof runs use Linux runners; macOS runners are
+- [x] **CIP-01**: Pure Elixir and Android/JVM proof runs use Linux runners; macOS runners are
   reserved for work that actually invokes Apple tooling.
 
 - [x] **CIP-02**: Pull-request workflows do not duplicate equivalent work through overlapping push
   triggers or superseded cycles.
 
-- [ ] **CIP-03**: Dependency and build caches are keyed by the relevant lockfiles and complete
+- [x] **CIP-03**: Dependency and build caches are keyed by the relevant lockfiles and complete
   OTP/Elixir/JDK/Gradle toolchain identity, and cannot restore incompatible artifacts.
 
 - [x] **CIP-04**: Long-running jobs have bounded timeouts and concurrency rules that cancel obsolete
@@ -139,9 +139,9 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 | CIG-02 | Phase 164 | Complete |
 | CIG-03 | Phase 164 | Complete |
 | CIG-04 | Phase 164 | Complete |
-| CIP-01 | Phase 165 | Pending |
+| CIP-01 | Phase 165 | Complete |
 | CIP-02 | Phase 165 | Complete |
-| CIP-03 | Phase 165 | Pending |
+| CIP-03 | Phase 165 | Complete |
 | CIP-04 | Phase 165 | Complete |
 | CIP-05 | Phase 165 | Complete |
 | CIP-06 | Phase 165 | Pending |

@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 165
 current_phase_name: Efficient and Maintainable CI
 status: executing
-stopped_at: Completed 165-03-PLAN.md
-last_updated: "2026-09-08T00:51:31.135Z"
+stopped_at: Completed 165-04-PLAN.md
+last_updated: "2026-09-08T01:15:17.860Z"
 last_activity: 2026-09-07
 last_activity_desc: Phase 165 execution started
-state_head: aa9f7cca9b167afe9d8c9f8128f0682ac8bf04ab
+state_head: 8d56cbf8a1b898188b8ecc0f5b18b7efa3e5b699
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 8
+  completed_plans: 9
   percent: 20
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 165 (Efficient and Maintainable CI) — EXECUTING
-Plan: 4 of 13
+Plan: 5 of 13
 Status: Ready to execute
 Last activity: 2026-09-07 — Phase 165 execution started
 
@@ -61,6 +61,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase 165 P01 | 15 min | 2 tasks | 10 files |
 | Phase 165 P02 | 18 min | 3 tasks | 11 files |
 | Phase 165 P03 | 9 min | 2 tasks | 5 files |
+| Phase 165 P04 | 16 min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Progress: [██░░░░░░░░] 20%
 - [Phase 165]: Treat every malformed current run, candidate, identity, or incomplete page set as a closed invalid disposition with no selected IDs.
 - [Phase 165]: Keep cancellation authority in a requested workflow_run controller with only actions: write; acquire selector bytes from the controller's immutable default-branch SHA and never check out PR code.
 - [Phase 165]: Keep the controller non-authoritative until Plan 165-10 proves requested-event timing and live inversion behavior.
+- [Phase 165]: Keep Android JVM proof portable by exiting before optional connected provisioning and consuming explicit runner-provided toolchains.
+- [Phase 165]: Keep compiled cache restoration exact across complete BEAM, Gradle, and Swift compatibility identity; expose only closed cache outcomes.
 
 ### Pending Todos
 
@@ -107,6 +110,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-08T00:51:31.103Z
-Stopped at: Completed 165-03-PLAN.md
+Last session: 2026-09-08T01:15:17.826Z
+Stopped at: Completed 165-04-PLAN.md
 Resume file: None
