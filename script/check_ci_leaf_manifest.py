@@ -19,6 +19,56 @@ DEFAULT_MANIFEST = ROOT / "script/ci_leaf_manifest.json"
 DEFAULT_WORKFLOW = ROOT / ".github/workflows/crosswake-ci.yml"
 UMBRELLA_ID = "merge-blocking-crosswake-ci"
 UMBRELLA_NAME = "Crosswake CI"
+JOB_LIMIT = 256
+NEEDS_BYTE_LIMIT = 32 * 1024
+FINAL_PROOF_LEAVES = (
+    "android-generated-shell-unit",
+    "android-package-unit",
+    "brand-structural",
+    "collateral-binaries-guard",
+    "documentation-contracts",
+    "e2e-proof",
+    "guard-01-contract-drift-test",
+    "guard-01-e2e-honesty",
+    "guard-02-generate-and-diff",
+    "guard-02-prod-route-absence",
+    "hex-page-proof",
+    "ios-mirror-parity-proof",
+    "ios-package-unit",
+    "phase10-proof",
+    "phase130-companion-engine-absent-proof",
+    "phase130-core-hermetic-proof",
+    "phase132-companion-engine-absent-proof",
+    "phase132-core-hermetic-proof",
+    "phase18-elixir-android-proof",
+    "phase18-ios-proof",
+    "phase23-commerce-proof",
+    "phase34-commerce-proof",
+    "phase41-gating-proof",
+    "phase43-rulestead-proof",
+    "phase45-rindle-proof",
+    "phase48-provider-adapter-proof",
+    "phase5-proof",
+    "phase52-operator-proof",
+    "phase58-auth-closeout-proof",
+    "phase67-android-jvm-proof",
+    "phase69-closeout-proof",
+    "phase70-subscription-saas-proof",
+    "phase71-notification-workflow-proof",
+    "phase73-auth-sensitive-admin-workflow-proof",
+    "phase74-offline-draft-recovery-proof",
+    "phase75-closeout-gate",
+    "phase79-android-proof",
+    "phase79-ios-proof",
+    "phase96-threadline-docs-contract-proof",
+    "proof-aggregator-negative-control",
+    "proof-dependency-security",
+    "proof-requires-example-host",
+    "release-as-staleness-proof",
+    "route-tour-proof",
+)
+FINAL_CONTROL_NODES = ("classify-change",)
+FINAL_NEEDS = tuple(sorted(FINAL_PROOF_LEAVES + FINAL_CONTROL_NODES))
 
 
 @dataclass(frozen=True)
@@ -155,6 +205,145 @@ def production_producers():
     return inventory()
 
 
+def serialized_needs_bytes(needs_fixture: object) -> int:
+    return len(
+        json.dumps(needs_fixture, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    )
+
+
+def validate_maximum_shape(workflow: object, needs_fixture: object) -> list[Problem]:
+    problems: list[Problem] = []
+    if not isinstance(workflow, dict) or not isinstance(workflow.get("jobs"), dict):
+        return [Problem("missing_jobs", "jobs", "maximum workflow requires literal jobs")]
+    jobs = workflow["jobs"]
+    expected_jobs = set(FINAL_NEEDS) | {UMBRELLA_ID}
+    for member in sorted(expected_jobs - set(jobs)):
+        problems.append(Problem("maximum_missing_job", member, "reviewed final job is absent"))
+    for member in sorted(set(jobs) - expected_jobs):
+        problems.append(Problem("maximum_extra_job", member, "job is outside reviewed final authority"))
+    if len(jobs) >= JOB_LIMIT:
+        problems.append(Problem("job_budget", str(len(jobs)), f"must be below {JOB_LIMIT}"))
+
+    for identifier in FINAL_NEEDS:
+        job = jobs.get(identifier)
+        actual_name = literal_name(identifier, job, problems)
+        if actual_name is not None and actual_name != identifier:
+            problems.append(Problem("maximum_display_name_mismatch", identifier, f"workflow={actual_name!r}"))
+        if isinstance(job, dict) and "strategy" in job:
+            problems.append(Problem("dynamic_matrix_forbidden", identifier, "authority jobs must be literal"))
+
+    umbrella = jobs.get(UMBRELLA_ID)
+    if not isinstance(umbrella, dict):
+        problems.append(Problem("missing_umbrella", UMBRELLA_ID, "maximum umbrella is absent"))
+    else:
+        needs = umbrella.get("needs")
+        if needs != list(FINAL_NEEDS):
+            actual = set(needs) if isinstance(needs, list) else set()
+            for member in sorted(set(FINAL_NEEDS) - actual):
+                problems.append(Problem("maximum_missing_need", member, "reviewed member is absent"))
+            for member in sorted(actual - set(FINAL_NEEDS)):
+                problems.append(Problem("maximum_extra_need", member, "need is undeclared"))
+            if actual == set(FINAL_NEEDS):
+                problems.append(Problem("maximum_needs_order", UMBRELLA_ID, "needs must be deterministically sorted"))
+        if str(umbrella.get("if", "")).replace("${{", "").replace("}}", "").strip() != "always()":
+            problems.append(Problem("umbrella_not_always", UMBRELLA_ID, "if must be always()"))
+        env = umbrella.get("steps", [{}])[0].get("env", {}) if isinstance(umbrella.get("steps"), list) else {}
+        if env.get("NEEDS_JSON") != "${{ toJSON(needs) }}":
+            problems.append(Problem("needs_handoff", "NEEDS_JSON", "must be exact toJSON(needs)"))
+        text = yaml.safe_dump(umbrella, sort_keys=False)
+        if "json.loads" not in text or "classify-change" not in text:
+            problems.append(Problem("inline_evaluator_missing", UMBRELLA_ID, "closed evaluator is absent"))
+        for token in ("actions/checkout", "uses: ./", "setup-", " install ", "pip install", "npm install"):
+            if token in text:
+                problems.append(Problem("maximum_setup_forbidden", token, "umbrella must be checkout-free"))
+
+    if not isinstance(needs_fixture, dict):
+        problems.append(Problem("invalid_needs_fixture", "needs", "fixture must be an object"))
+    else:
+        for member in sorted(set(FINAL_NEEDS) - set(needs_fixture)):
+            problems.append(Problem("needs_fixture_missing", member, "worst-case record is absent"))
+        for member in sorted(set(needs_fixture) - set(FINAL_NEEDS)):
+            problems.append(Problem("needs_fixture_extra", member, "record is outside reviewed authority"))
+        if list(needs_fixture) != list(FINAL_NEEDS):
+            problems.append(Problem("needs_fixture_order", "needs", "records must be deterministically sorted"))
+        for member in FINAL_NEEDS:
+            record = needs_fixture.get(member)
+            if not isinstance(record, dict) or record.get("result") != "action_required":
+                problems.append(Problem("needs_fixture_result", member, "use longest closed result action_required"))
+            elif member != "classify-change" and record.get("outputs", {}).get("irrelevance_reason") != "all_changed_paths_allowlisted":
+                problems.append(Problem("needs_fixture_irrelevance", member, "use longest closed irrelevance reason"))
+        size = serialized_needs_bytes(needs_fixture)
+        if size >= NEEDS_BYTE_LIMIT:
+            problems.append(Problem("needs_payload_budget", str(size), f"must be below {NEEDS_BYTE_LIMIT}"))
+    return problems
+
+
+def maximum_negative_controls(workflow: dict, needs_fixture: dict) -> list[Problem]:
+    observed: list[Problem] = []
+
+    missing_control = copy.deepcopy(workflow)
+    missing_control["jobs"].pop("classify-change")
+    observed.extend(validate_maximum_shape(missing_control, needs_fixture))
+
+    extra_need = copy.deepcopy(workflow)
+    extra_need["jobs"][UMBRELLA_ID]["needs"].append("invented-need")
+    observed.extend(validate_maximum_shape(extra_need, needs_fixture))
+
+    setup = copy.deepcopy(workflow)
+    setup["jobs"][UMBRELLA_ID]["steps"].insert(0, {"uses": "actions/checkout@v7"})
+    observed.extend(validate_maximum_shape(setup, needs_fixture))
+
+    too_many = copy.deepcopy(workflow)
+    while len(too_many["jobs"]) < JOB_LIMIT:
+        identifier = f"budget-probe-{len(too_many['jobs']):03d}"
+        too_many["jobs"][identifier] = {"name": identifier, "runs-on": "ubuntu-latest", "steps": [{"run": "true"}]}
+    observed.extend(validate_maximum_shape(too_many, needs_fixture))
+
+    too_large = copy.deepcopy(needs_fixture)
+    too_large["__padding__"] = {"result": "action_required", "outputs": {"padding": ""}}
+    empty_size = serialized_needs_bytes(too_large)
+    too_large["__padding__"]["outputs"]["padding"] = "x" * (NEEDS_BYTE_LIMIT - empty_size)
+    if serialized_needs_bytes(too_large) != NEEDS_BYTE_LIMIT:
+        raise AssertionError("one-byte budget fixture was not exact")
+    observed.extend(validate_maximum_shape(workflow, too_large))
+    return observed
+
+
+def run_maximum_shape(workflow_path: Path, needs_path: Path) -> int:
+    try:
+        workflow = load_workflow(workflow_path)
+        needs_fixture = load_json(needs_path)
+    except (OSError, json.JSONDecodeError, yaml.YAMLError) as error:
+        print(f"maximum-shape: FAIL: fixture_unavailable detail={error}", file=sys.stderr)
+        return 1
+    lint = __import__("subprocess").run(
+        ["actionlint", str(workflow_path)], capture_output=True, text=True, check=False
+    )
+    problems = validate_maximum_shape(workflow, needs_fixture)
+    if lint.returncode != 0:
+        problems.append(Problem("actionlint", str(workflow_path), lint.stdout.strip() or lint.stderr.strip()))
+    negatives = maximum_negative_controls(workflow, needs_fixture)
+    required_negative_kinds = {
+        "maximum_missing_job",
+        "maximum_extra_need",
+        "maximum_setup_forbidden",
+        "job_budget",
+        "needs_payload_budget",
+    }
+    seen = {problem.kind for problem in negatives}
+    for kind in sorted(required_negative_kinds - seen):
+        problems.append(Problem("missing_negative_control", kind, "mutation did not fail as required"))
+    if problems:
+        for problem in problems:
+            print(problem.render(), file=sys.stderr)
+        return 1
+    print(
+        f"maximum-shape: pass jobs={len(workflow['jobs'])} "
+        f"needs_bytes={serialized_needs_bytes(needs_fixture)}"
+    )
+    return 0
+
+
 class ManifestSelfTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -218,11 +407,16 @@ def run_self_test() -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--self-test", action="store_true")
+    modes = parser.add_mutually_exclusive_group(required=True)
+    modes.add_argument("--self-test", action="store_true")
+    modes.add_argument("--maximum-shape", type=Path)
+    parser.add_argument("--needs-fixture", type=Path)
     args = parser.parse_args()
     if args.self_test:
         return run_self_test()
-    parser.error("--self-test is required")
+    if args.needs_fixture is None:
+        parser.error("--needs-fixture is required with --maximum-shape")
+    return run_maximum_shape(args.maximum_shape, args.needs_fixture)
 
 
 if __name__ == "__main__":
