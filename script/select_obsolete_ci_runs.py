@@ -15,7 +15,7 @@ MAX_RUN_ID = (1 << 63) - 1
 MAX_PR_NUMBER = (1 << 31) - 1
 REPOSITORY_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 CANCELLABLE_STATUSES = {"queued", "in_progress"}
-KNOWN_STATUSES = CANCELLABLE_STATUSES | {"completed"}
+KNOWN_STATUSES = CANCELLABLE_STATUSES | {"completed", "pending", "requested", "waiting"}
 
 
 @dataclass(frozen=True)
