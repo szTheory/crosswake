@@ -38,9 +38,9 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
     select_at = byte_offset(workflow, "id: select")
     gate_at = byte_offset(workflow, "steps.select.outputs.disposition == 'cancel_lower'")
-    cancel_at = byte_offset(workflow, "/cancel")
+    cancel_at = byte_offset(workflow, ~s(actions/runs/$run_id/cancel"))
     poll_at = byte_offset(workflow, "poll_attempt")
-    force_at = byte_offset(workflow, "/force-cancel")
+    force_at = byte_offset(workflow, ~s(actions/runs/$run_id/force-cancel"))
 
     assert select_at < gate_at
     assert gate_at < cancel_at

@@ -1,0 +1,217 @@
+name: Cancel Obsolete Crosswake CI
+
+# This trusted default-branch controller is deliberately non-authoritative until
+# Plan 165-10 proves requested-event timing and live inversion behavior.
+permissions:
+  actions: write
+
+on:
+  workflow_run:
+    workflows: [Crosswake CI]
+    types: [requested]
+
+jobs:
+  cancel-obsolete-pr-runs:
+    name: cancel-obsolete-pr-runs
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.name == 'Crosswake CI' &&
+      github.event.workflow_run.repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Select strict-lower runs with immutable default-branch policy
+        id: select
+        env:
+          EVENT_PATH: ${{ github.event_path }}
+        run: |
+          set -euo pipefail
+
+          emit_closed() {
+            disposition="$1"
+            reason="$2"
+            {
+              echo "disposition=$disposition"
+              echo "reason=$reason"
+              echo 'run_ids=[]'
+            } >> "$GITHUB_OUTPUT"
+            echo "Cancellation controller closed disposition: $disposition ($reason)." >> "$GITHUB_STEP_SUMMARY"
+          }
+
+          if ! [[ "$GITHUB_REPOSITORY" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] ||
+             ! [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            emit_closed invalid invalid_controller_identity
+            exit 0
+          fi
+
+          policy_url="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/script/select_obsolete_ci_runs.py"
+          if ! curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \
+            "$policy_url" --output "$RUNNER_TEMP/select_obsolete_ci_runs.py"; then
+            emit_closed invalid trusted_policy_unavailable
+            exit 0
+          fi
+
+          workflow_id="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["workflow_run"]["workflow_id"])' "$EVENT_PATH" 2>/dev/null || true)"
+          if ! [[ "$workflow_id" =~ ^[1-9][0-9]*$ ]]; then
+            emit_closed invalid invalid_workflow_identity
+            exit 0
+          fi
+
+          pages="$RUNNER_TEMP/workflow-run-pages.json"
+          pagination_complete=true
+          if ! gh api --paginate --slurp \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/$workflow_id/runs?event=pull_request&per_page=100" \
+            > "$pages"; then
+            pagination_complete=false
+            printf '[]\n' > "$pages"
+          fi
+
+          current="$RUNNER_TEMP/current-run.json"
+          candidates="$RUNNER_TEMP/candidate-runs.json"
+          if ! python3 - "$EVENT_PATH" "$pages" "$current" "$candidates" "$pagination_complete" <<'PY'
+          import json
+          import sys
+
+          event_path, pages_path, current_path, candidates_path, complete_text = sys.argv[1:]
+          event = json.load(open(event_path, encoding="utf-8"))
+          source_current = event["workflow_run"]
+
+          def normalize(run, candidate):
+              normalized = {
+                  "id": run.get("id"),
+                  "repository": (run.get("repository") or {}).get("full_name"),
+                  "workflow_id": run.get("workflow_id"),
+                  "workflow_name": run.get("name"),
+                  "event": run.get("event"),
+                  "pull_requests": [
+                      {"number": pull.get("number")}
+                      for pull in run.get("pull_requests", [])
+                      if isinstance(pull, dict)
+                  ],
+              }
+              if candidate:
+                  normalized["status"] = run.get("status")
+              return normalized
+
+          pages = json.load(open(pages_path, encoding="utf-8"))
+          runs = []
+          counts = []
+          pages_valid = isinstance(pages, list)
+          if pages_valid:
+              for page in pages:
+                  if not isinstance(page, dict) or not isinstance(page.get("workflow_runs"), list):
+                      pages_valid = False
+                      break
+                  if type(page.get("total_count")) is not int or page["total_count"] < 0:
+                      pages_valid = False
+                      break
+                  counts.append(page["total_count"])
+                  runs.extend(page["workflow_runs"])
+
+          complete = complete_text == "true" and pages_valid
+          if counts and (len(set(counts)) != 1 or len(runs) < counts[0]):
+              complete = False
+
+          with open(current_path, "w", encoding="utf-8") as handle:
+              json.dump(normalize(source_current, False), handle, sort_keys=True)
+          with open(candidates_path, "w", encoding="utf-8") as handle:
+              json.dump(
+                  {
+                      "pagination_complete": complete,
+                      "runs": [normalize(run, True) for run in runs],
+                  },
+                  handle,
+                  sort_keys=True,
+              )
+          PY
+          then
+            emit_closed invalid malformed_api_state
+            exit 0
+          fi
+
+          selection="$RUNNER_TEMP/cancellation-selection.json"
+          if ! python3 "$RUNNER_TEMP/select_obsolete_ci_runs.py" \
+            --current-run "$current" \
+            --candidates "$candidates" \
+            --repository "$GITHUB_REPOSITORY" \
+            --workflow-name 'Crosswake CI' > "$selection"; then
+            emit_closed invalid policy_execution_failed
+            exit 0
+          fi
+
+          if ! python3 - "$selection" "$GITHUB_OUTPUT" <<'PY'
+          import json
+          import sys
+
+          selection_path, output_path = sys.argv[1:]
+          selection = json.load(open(selection_path, encoding="utf-8"))
+          if set(selection) != {"schema_version", "disposition", "reason", "run_ids"}:
+              raise ValueError("closed selection shape required")
+          if selection["schema_version"] != 1:
+              raise ValueError("unsupported selection schema")
+          if selection["disposition"] not in {"cancel_lower", "no_op", "invalid"}:
+              raise ValueError("unknown selection disposition")
+          if not isinstance(selection["run_ids"], list):
+              raise ValueError("run_ids must be a list")
+          with open(output_path, "a", encoding="utf-8") as handle:
+              handle.write(f"disposition={selection['disposition']}\n")
+              handle.write(f"reason={selection['reason']}\n")
+              handle.write("run_ids=" + json.dumps(selection["run_ids"], separators=(",", ":")) + "\n")
+          PY
+          then
+            emit_closed invalid malformed_policy_result
+          fi
+
+      - name: Cancel selected obsolete runs with bounded force fallback
+        if: >-
+          steps.select.outputs.disposition == 'cancel_lower' &&
+          steps.select.outputs.run_ids != '[]'
+        env:
+          RUN_IDS: ${{ steps.select.outputs.run_ids }}
+        run: |
+          set -euo pipefail
+          python3 -c 'import json,os; [print(value) for value in json.loads(os.environ["RUN_IDS"])]' |
+          while IFS= read -r run_id; do
+            gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/cancel" >/dev/null 2>&1 || true
+
+            still_running=true
+            for _poll_attempt in 1 2 3 4 5 6; do
+              status="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" --jq '.status' 2>/dev/null || printf 'unknown')"
+              case "$status" in
+                completed)
+                  still_running=false
+                  break
+                  ;;
+                queued|in_progress)
+                  sleep 5
+                  ;;
+                *)
+                  echo "Cancellation controller stopped on ambiguous run state." >> "$GITHUB_STEP_SUMMARY"
+                  still_running=false
+                  break
+                  ;;
+              esac
+            done
+
+            if [ "$still_running" = true ]; then
+              gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/force-cancel" >/dev/null
+            fi
+          done
+
+      - name: Record closed controller result
+        if: always()
+        env:
+          DISPOSITION: ${{ steps.select.outputs.disposition || 'invalid' }}
+          REASON: ${{ steps.select.outputs.reason || 'selection_step_failed' }}
+          RUN_IDS: ${{ steps.select.outputs.run_ids || '[]' }}
+        run: |
+          {
+            echo '## Obsolete Crosswake CI controller'
+            echo
+            echo "Closed disposition: ${DISPOSITION}."
+            echo "Reason: ${REASON}."
+            echo "Selected strict-lower run IDs: ${RUN_IDS}."
+            echo 'Authority: deferred until the Plan 165-10 live requested-event timing and inversion probe passes.'
+          } >> "$GITHUB_STEP_SUMMARY"
