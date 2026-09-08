@@ -24,8 +24,6 @@ jobs:
     steps:
       - name: Select strict-lower runs with immutable default-branch policy
         id: select
-        env:
-          EVENT_PATH: ${{ github.event_path }}
         run: |
           set -euo pipefail
 
@@ -53,7 +51,7 @@ jobs:
             exit 0
           fi
 
-          workflow_id="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["workflow_run"]["workflow_id"])' "$EVENT_PATH" 2>/dev/null || true)"
+          workflow_id="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["workflow_run"]["workflow_id"])' "$GITHUB_EVENT_PATH" 2>/dev/null || true)"
           if ! [[ "$workflow_id" =~ ^[1-9][0-9]*$ ]]; then
             emit_closed invalid invalid_workflow_identity
             exit 0
@@ -70,7 +68,7 @@ jobs:
 
           current="$RUNNER_TEMP/current-run.json"
           candidates="$RUNNER_TEMP/candidate-runs.json"
-          if ! python3 - "$EVENT_PATH" "$pages" "$current" "$candidates" "$pagination_complete" <<'PY'
+          if ! python3 - "$GITHUB_EVENT_PATH" "$pages" "$current" "$candidates" "$pagination_complete" <<'PY'
           import json
           import sys
 
