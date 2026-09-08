@@ -594,6 +594,98 @@ jobs:
           echo 'Phase 70 hermetic subscription SaaS commerce proof completed.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Remediation: mix test test/crosswake/proof/phase70_subscription_saas_commerce_proof_test.exs' >> "$GITHUB_STEP_SUMMARY"
 
+  phase71-notification-workflow-proof:
+    name: phase71-notification-workflow-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: dev
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Install crosswake_chimeway dependencies
+        working-directory: packages/crosswake_chimeway
+        run: mix deps.get
+      - name: Run hermetic Phase 71 notification workflow proof
+        working-directory: packages/crosswake_chimeway
+        run: mix test test/crosswake/proof/phase71_notification_workflow_proof_test.exs
+      - name: Summarize notification workflow proof
+        if: always()
+        run: |
+          echo 'Phase 71 notification workflow proof completed without provider or device delivery authority.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd packages/crosswake_chimeway && mix deps.get && mix test test/crosswake/proof/phase71_notification_workflow_proof_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  phase73-auth-sensitive-admin-workflow-proof:
+    name: phase73-auth-sensitive-admin-workflow-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: dev
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Install crosswake_sigra dependencies
+        working-directory: packages/crosswake_sigra
+        run: mix deps.get
+      - name: Run hermetic Phase 73 auth-sensitive admin workflow proof
+        working-directory: packages/crosswake_sigra
+        run: mix test test/crosswake/proof/phase73_auth_sensitive_admin_workflow_proof_test.exs
+      - name: Summarize auth-sensitive admin workflow proof
+        if: always()
+        run: |
+          echo 'Phase 73 auth-sensitive admin proof completed without granting native or backend auth authority.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/proof/phase73_auth_sensitive_admin_workflow_proof_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  phase74-offline-draft-recovery-proof:
+    name: phase74-offline-draft-recovery-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run hermetic Phase 74 offline draft recovery proof
+        run: mix test test/crosswake/proof/phase74_offline_draft_recovery_proof_test.exs
+      - name: Summarize offline draft recovery proof
+        if: always()
+        run: |
+          echo 'Phase 74 offline draft recovery proof completed without widening the local mutation contract.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase74_offline_draft_recovery_proof_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  phase75-closeout-gate:
+    name: phase75-closeout-gate
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: dev
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run closeout verification
+        run: mix closeout.verify
+      - name: Summarize Phase 75 closeout gate
+        if: always()
+        run: |
+          echo 'Phase 75 closeout verification completed under the central fail-closed classifier.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix closeout.verify' >> "$GITHUB_STEP_SUMMARY"
+
   compat-aggregator-negative-control:
     name: merge-blocking-aggregator-negative-control
     needs: [merge-blocking-crosswake-ci]
@@ -802,6 +894,50 @@ jobs:
           RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
         run: test "$RESULT" = success
 
+  compat-phase71-notification-workflow-proof:
+    name: merge-blocking notification workflow proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase73-auth-sensitive-admin-workflow-proof:
+    name: merge-blocking auth-sensitive admin workflow proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase74-offline-draft-recovery-proof:
+    name: merge-blocking offline draft recovery proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase75-closeout-gate:
+    name: merge-blocking phase 75 closeout gate
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
   merge-blocking-crosswake-ci:
     name: Crosswake CI
     if: always()
@@ -824,6 +960,10 @@ jobs:
       - phase58-auth-closeout-proof
       - phase69-closeout-proof
       - phase70-subscription-saas-proof
+      - phase71-notification-workflow-proof
+      - phase73-auth-sensitive-admin-workflow-proof
+      - phase74-offline-draft-recovery-proof
+      - phase75-closeout-gate
       - proof-aggregator-negative-control
       - proof-dependency-security
       - proof-requires-example-host
@@ -865,6 +1005,10 @@ jobs:
               "phase58-auth-closeout-proof",
               "phase69-closeout-proof",
               "phase70-subscription-saas-proof",
+              "phase71-notification-workflow-proof",
+              "phase73-auth-sensitive-admin-workflow-proof",
+              "phase74-offline-draft-recovery-proof",
+              "phase75-closeout-gate",
               "proof-aggregator-negative-control",
               "proof-dependency-security",
               "proof-requires-example-host",
@@ -882,6 +1026,6 @@ jobs:
             echo "Reason: ${REASON}."
             echo "Scheduled proof families: ${SCHEDULED_FAMILIES}."
             echo 'Explicitly irrelevant families: core_integrity, security, example_host.'
-            echo 'Expected proof leaves: 20.'
+            echo 'Expected proof leaves: 24.'
             echo 'Remediation: python3 script/check_ci_leaf_manifest.py --self-test'
           } >> "$GITHUB_STEP_SUMMARY"
