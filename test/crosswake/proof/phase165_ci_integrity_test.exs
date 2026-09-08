@@ -6,13 +6,10 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
   @controller ".github/workflows/cancel-obsolete-crosswake-ci.yml"
   @crosswake_ci ".github/workflows/crosswake-ci.yml"
-  @native_workflow ".github/workflows/native-behavioral-proof-gate.yml"
+  @native_workflow @crosswake_ci
   @android_script "script/verify_generated_android_shell.sh"
   @android_setup ".github/actions/setup-android-jvm/action.yml"
   @elixir_setup ".github/actions/setup-elixir-cache/action.yml"
-  @phase5 ".github/workflows/phase5-proof.yml"
-  @phase18 ".github/workflows/phase18-proof.yml"
-  @phase79 ".github/workflows/phase79-proof.yml"
   @release_please ".github/workflows/release-please.yml"
   @leaf_manifest "script/ci_leaf_manifest.json"
 
@@ -37,12 +34,55 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     ".github/workflows/phase75-closeout-gate.yml"
   ]
 
+  @plan08_task1_sources [
+    ".github/workflows/native-behavioral-proof-gate.yml",
+    ".github/workflows/phase5-proof.yml",
+    ".github/workflows/phase18-proof.yml",
+    ".github/workflows/phase79-proof.yml"
+  ]
+
   @task1_retired_workflows [
     ".github/workflows/aggregator-negative-control.yml",
     ".github/workflows/contract-drift-gate.yml",
     ".github/workflows/dependency-security.yml",
     ".github/workflows/requires-example-host-gate.yml"
   ]
+
+  @tag :triggers
+  @tag :runner_placement
+  test "native and mixed proof moves once with exact platform ownership" do
+    workflow = File.read!(@crosswake_ci)
+
+    for path <- @plan08_task1_sources do
+      refute File.exists?(path), "#{path} must be retired after replacement parity"
+    end
+
+    for {job, runner, command} <- [
+          {"android-package-unit", "ubuntu-latest", "./gradlew test"},
+          {"android-generated-shell-unit", "ubuntu-latest",
+           "script/verify_generated_android_shell.sh"},
+          {"phase5-proof", "ubuntu-latest", "script/verify_phase5_example_hosts.sh"},
+          {"phase18-elixir-android-proof", "ubuntu-latest", "verify_phase18_contract.sh"},
+          {"phase18-ios-proof", "macos-15", "verify_generated_ios_shell.sh"},
+          {"phase79-android-proof", "ubuntu-latest", "verify_generated_android_shell.sh"},
+          {"phase79-ios-proof", "macos-15", "verify_generated_ios_shell.sh"},
+          {"ios-package-unit", "macos-latest", "swift test"}
+        ] do
+      body = job_body(workflow, job)
+      assert body =~ "name: #{job}"
+      assert body =~ "runs-on: #{runner}"
+      assert body =~ command
+      assert body =~ "needs: [classify-change]"
+      assert body =~ "classification == 'full_proof'"
+      assert body =~ "Remediation:"
+    end
+
+    compatibility = job_body(workflow, "compat-native-behavioral-proof")
+    assert compatibility =~ "name: merge-blocking-native-behavioral-proof"
+    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
+    assert compatibility =~ "if: always()"
+    refute compatibility =~ "actions/checkout"
+  end
 
   @tag :triggers
   test "core integrity proof has one pull-request producer in Crosswake CI" do
@@ -456,7 +496,12 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     workflow = File.read!(@native_workflow)
     setup = File.read!(@android_setup)
 
-    for job <- ["android-package-unit", "android-generated-shell-unit"] do
+    for job <- [
+          "android-package-unit",
+          "android-generated-shell-unit",
+          "phase18-elixir-android-proof",
+          "phase79-android-proof"
+        ] do
       body = job_body(workflow, job)
       assert body =~ "runs-on: ubuntu-latest"
       assert body =~ "timeout-minutes:"
@@ -567,23 +612,23 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
   @tag :runner_placement
   test "mixed legacy proof keeps only Apple invocations on macOS" do
-    phase5 = File.read!(@phase5)
-    phase18 = File.read!(@phase18)
-    phase79 = File.read!(@phase79)
+    workflow = File.read!(@crosswake_ci)
 
-    assert job_body(phase5, "phase5-proof") =~ "runs-on: ubuntu-latest"
-    refute phase5 =~ "DEVELOPER_DIR"
+    assert job_body(workflow, "phase5-proof") =~ "runs-on: ubuntu-latest"
+    refute job_body(workflow, "phase5-proof") =~ "DEVELOPER_DIR"
 
-    assert job_body(phase18, "phase18-portable-proof") =~ "runs-on: ubuntu-latest"
-    assert job_body(phase18, "phase18-portable-proof") =~ "verify_generated_android_shell.sh"
-    assert job_body(phase18, "phase18-proof") =~ "runs-on: macos-15"
-    assert job_body(phase18, "phase18-proof") =~ "verify_generated_ios_shell.sh"
-    refute job_body(phase18, "phase18-portable-proof") =~ "DEVELOPER_DIR"
+    assert job_body(workflow, "phase18-elixir-android-proof") =~ "runs-on: ubuntu-latest"
+    assert job_body(workflow, "phase18-elixir-android-proof") =~
+             "verify_generated_android_shell.sh"
 
-    assert job_body(phase79, "v5-android-jvm-proof") =~ "runs-on: ubuntu-latest"
-    assert job_body(phase79, "merge-blocking-v5-proof") =~ "runs-on: macos-15"
-    assert job_body(phase79, "merge-blocking-v5-proof") =~ "verify_generated_ios_shell.sh"
-    refute job_body(phase79, "merge-blocking-v5-proof") =~ "verify_generated_android_shell.sh"
+    assert job_body(workflow, "phase18-ios-proof") =~ "runs-on: macos-15"
+    assert job_body(workflow, "phase18-ios-proof") =~ "verify_generated_ios_shell.sh"
+    refute job_body(workflow, "phase18-elixir-android-proof") =~ "DEVELOPER_DIR"
+
+    assert job_body(workflow, "phase79-android-proof") =~ "runs-on: ubuntu-latest"
+    assert job_body(workflow, "phase79-ios-proof") =~ "runs-on: macos-15"
+    assert job_body(workflow, "phase79-ios-proof") =~ "verify_generated_ios_shell.sh"
+    refute job_body(workflow, "phase79-ios-proof") =~ "verify_generated_android_shell.sh"
   end
 
   @tag :runner_placement
