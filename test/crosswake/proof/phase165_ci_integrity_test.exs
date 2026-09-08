@@ -71,14 +71,15 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   @tag :runner_placement
   test "generated Android JVM proof has a portable branch before connected provisioning" do
     script = File.read!(@android_script)
+    main = between(script, "main() {", ~s(main "$@"))
 
-    portable_at = byte_offset(script, ~s([[ "${RUN_CONNECTED_TESTS}" == "0" ]]))
-    connected_at = byte_offset(script, "install_connected_android_toolchain")
+    portable_at = byte_offset(main, ~s([[ "${RUN_CONNECTED_TESTS}" == "0" ]]))
+    connected_at = byte_offset(main, "install_connected_android_toolchain")
 
     assert portable_at < connected_at
     assert script =~ "run_generated_shell_jvm_proof"
 
-    portable = between(script, "run_generated_shell_jvm_proof() {", "install_connected_android_toolchain() {")
+    portable = function_body(script, "run_generated_shell_jvm_proof")
 
     for forbidden <- [
           "commandlinetools-mac",
@@ -110,7 +111,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
     assert setup =~ "working-directory:"
     assert setup =~ "java-version:"
-    assert setup =~ ~r/java-version:\s*['\"]?17/
+    assert setup =~ ~r/java-version:\n(?:    .*\n)*?    default: "17"/
     assert setup =~ "gradle-version:"
     assert setup =~ "actions/setup-java@v5"
     assert setup =~ "gradle/actions/setup-gradle@v6"
@@ -135,5 +136,12 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     [_prefix, rest] = String.split(workflow, "  #{job}:", parts: 2)
     [body | _] = String.split(rest, ~r/^  [a-z0-9_-]+:/m, parts: 2)
     body
+  end
+
+  defp function_body(script, name) do
+    case Regex.run(~r/^#{name}\(\) \{\n(?<body>.*?)^\}/ms, script, capture: :all_names) do
+      [body] -> body
+      nil -> flunk("expected shell function #{name}")
+    end
   end
 end

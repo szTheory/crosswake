@@ -82,7 +82,8 @@ install_jdk_if_needed() {
 
   mkdir -p "${TOOLCHAIN_ROOT}"
   local archive="${TOOLCHAIN_ROOT}/temurin-17.tar.gz"
-  local url="https://api.adoptium.net/v3/binary/latest/17/ga/mac/$(arch)/jdk/hotspot/normal/eclipse"
+  local url
+  url="https://api.adoptium.net/v3/binary/latest/17/ga/mac/$(arch)/jdk/hotspot/normal/eclipse"
 
   download "${url}" "${archive}"
   rm -rf "${JDK_ROOT}"
@@ -153,6 +154,11 @@ install_android_tools_if_needed() {
   done
 }
 
+install_connected_android_toolchain() {
+  install_jdk_if_needed
+  install_android_tools_if_needed
+}
+
 create_avd_if_needed() {
   local avd_dir="${HOME}/.android/avd/${AVD_NAME}.avd"
   local avd_ini="${HOME}/.android/avd/${AVD_NAME}.ini"
@@ -218,29 +224,20 @@ stop_emulator() {
   fi
 }
 
-main() {
-  echo "Android verification mode: connected_tests=${RUN_CONNECTED_TESTS}"
-
-  install_jdk_if_needed
-  install_android_tools_if_needed
-
-  local tmpdir=""
-  local project_root=""
-  tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-android-shell.XXXXXX")"
-  local emulator_log="${TMPDIR:-/tmp}/crosswake-android-emulator.log"
-  trap 'stop_emulator; [[ -n "${tmpdir:-}" ]] && rm -rf "${tmpdir}"' EXIT
+prepare_generated_shell() {
+  GENERATED_TMPDIR="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-android-shell.XXXXXX")"
 
   if [[ -n "${PROJECT_ROOT_INPUT}" ]]; then
-    project_root="$(cd "${ROOT_DIR}" && cd "${PROJECT_ROOT_INPUT}" && pwd)"
+    GENERATED_PROJECT_ROOT="$(cd "${ROOT_DIR}" && cd "${PROJECT_ROOT_INPUT}" && pwd)"
   else
     cd "${ROOT_DIR}"
-    mix crosswake.gen.shell android --target "${tmpdir}" >/dev/null
-    project_root="${tmpdir}/native/android/crosswake_shell"
+    mix crosswake.gen.shell android --target "${GENERATED_TMPDIR}" >/dev/null
+    GENERATED_PROJECT_ROOT="${GENERATED_TMPDIR}/native/android/crosswake_shell"
   fi
 
-  printf 'sdk.dir=%s\n' "${ANDROID_SDK_ROOT//:/\\:}" > "${project_root}/local.properties"
+  printf 'sdk.dir=%s\n' "${ANDROID_SDK_ROOT//:/\\:}" > "${GENERATED_PROJECT_ROOT}/local.properties"
 
-  cd "${project_root}"
+  cd "${GENERATED_PROJECT_ROOT}"
 
   # Hermetic release-PR resolution: on a version-bump release PR the
   # crosswake-shell-core-android artifact for the CURRENT version is not on Maven
@@ -266,14 +263,42 @@ main() {
     CONNECTED_TEST_TASK="connectedDebugAndroidTest"
   fi
 
-  if [[ "${RUN_CONNECTED_TESTS}" == "0" ]]; then
-    ./gradlew --no-daemon --stacktrace "${UNIT_TEST_TASK}"
-    return
-  fi
+}
+
+run_generated_shell_jvm_proof() {
+  prepare_generated_shell
+  ./gradlew --no-daemon --stacktrace "${UNIT_TEST_TASK}"
+}
+
+run_connected_shell_proof() {
+  local emulator_log="${TMPDIR:-/tmp}/crosswake-android-emulator.log"
+  prepare_generated_shell
 
   create_avd_if_needed
   start_emulator "${emulator_log}"
   ANDROID_SERIAL="${AVD_SERIAL}" ./gradlew --no-daemon --stacktrace "${UNIT_TEST_TASK}" "${CONNECTED_TEST_TASK}"
+}
+
+main() {
+  echo "Android verification mode: connected_tests=${RUN_CONNECTED_TESTS}"
+
+  if [[ "${RUN_CONNECTED_TESTS}" == "0" ]]; then
+    if [[ -z "${JAVA_HOME:-}" || ! -x "${JAVA_HOME}/bin/java" ]]; then
+      echo "error: portable Android JVM proof requires an already configured JAVA_HOME" >&2
+      exit 1
+    fi
+    if [[ -z "${ANDROID_SDK_ROOT:-}" || ! -d "${ANDROID_SDK_ROOT}" ]]; then
+      echo "error: portable Android JVM proof requires an already configured ANDROID_SDK_ROOT" >&2
+      exit 1
+    fi
+    trap '[[ -n "${GENERATED_TMPDIR:-}" ]] && rm -rf "${GENERATED_TMPDIR}"' EXIT
+    run_generated_shell_jvm_proof
+    return
+  fi
+
+  install_connected_android_toolchain
+  trap 'stop_emulator; [[ -n "${GENERATED_TMPDIR:-}" ]] && rm -rf "${GENERATED_TMPDIR}"' EXIT
+  run_connected_shell_proof
 }
 
 main "$@"

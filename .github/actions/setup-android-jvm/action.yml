@@ -1,0 +1,45 @@
+name: Setup Android JVM toolchain
+description: Configure JDK 17 and the wrapper-derived Gradle version with official caching and validation.
+
+inputs:
+  working-directory:
+    description: Directory containing gradle/wrapper/gradle-wrapper.properties.
+    required: true
+  java-version:
+    description: Temurin JDK version used by Android JVM proof.
+    default: "17"
+  gradle-version:
+    description: Optional exact Gradle version; defaults to the version declared by the wrapper.
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: ${{ inputs.java-version }}
+
+    - id: wrapper
+      name: Resolve Gradle wrapper version
+      shell: bash
+      run: |
+        set -euo pipefail
+        wrapper="${{ inputs.working-directory }}/gradle/wrapper/gradle-wrapper.properties"
+        test -f "$wrapper"
+        version="${{ inputs.gradle-version }}"
+        if [ -z "$version" ]; then
+          distribution_url="$(sed -n 's/^distributionUrl=//p' "$wrapper")"
+          version="$(printf '%s\n' "$distribution_url" | sed -E 's#.*gradle-([0-9][0-9.]*)-(bin|all)\.zip#\1#')"
+        fi
+        if ! [[ "$version" =~ ^[0-9]+(\.[0-9]+)+$ ]]; then
+          echo "::error::Could not derive an exact Gradle version from $wrapper"
+          exit 1
+        fi
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+
+    - name: Set up Gradle and validate wrappers
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        gradle-version: ${{ steps.wrapper.outputs.version }}
