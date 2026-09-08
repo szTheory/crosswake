@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 165
 current_phase_name: Efficient and Maintainable CI
 status: executing
-stopped_at: Completed 165-01-PLAN.md
-last_updated: "2026-09-08T00:07:18.004Z"
+stopped_at: Completed 165-02-PLAN.md
+last_updated: "2026-09-08T00:34:00.218Z"
 last_activity: 2026-09-07
 last_activity_desc: Phase 165 execution started
-state_head: f7d9a4fbef5ac0cac5da80e84fabc00e051121a0
+state_head: 3350dc052a1a70457b7d15586ad9a37e54742e20
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 6
+  completed_plans: 7
   percent: 20
 workstream: quality-ratchet-release
 ---
@@ -32,8 +32,8 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 165 (Efficient and Maintainable CI) — EXECUTING
-Plan: 2 of 13
-Status: Executing Phase 165
+Plan: 3 of 13
+Status: Ready to execute
 Last activity: 2026-09-07 — Phase 165 execution started
 
 Progress: [██░░░░░░░░] 20%
@@ -59,6 +59,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase 164 P01 | 7 min | 2 tasks | 6 files |
 | Phase 164 P05 | 15 min | 2 tasks | 5 files |
 | Phase 165 P01 | 15 min | 2 tasks | 10 files |
+| Phase 165 P02 | 18 min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Progress: [██░░░░░░░░] 20%
 - [Phase 164]: Keep default/hermetic and requires-example-host lane manifests conditional and independent so neither execution class can mask the other.
 - [Phase 165]: Exact per-job queue time remains not_exposed and unavailable matched PR cohorts remain not_measured; timing is descriptive only.
 - [Phase 165]: The Crosswake CI tracer remains additive and non-authoritative while the exact 27 legacy contexts stay unchanged.
+- [Phase 165]: Represent documentation eligibility as explicit planning and public_docs families, both owned by documentation-contracts, with release inputs excluded.
+- [Phase 165]: Freeze maximum authority at 44 literal proof leaves plus classify-change; controls are success-only and never irrelevant.
 
 ### Pending Todos
 
@@ -100,6 +103,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-08T00:07:17.971Z
-Stopped at: Completed 165-01-PLAN.md
+Last session: 2026-09-08T00:34:00.185Z
+Stopped at: Completed 165-02-PLAN.md
 Resume file: None

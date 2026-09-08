@@ -45,13 +45,13 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 - [ ] **CIP-04**: Long-running jobs have bounded timeouts and concurrency rules that cancel obsolete
   work without cancelling a newer authoritative run.
 
-- [ ] **CIP-05**: A documentation-only pull request completes an always-visible merge gate without
+- [x] **CIP-05**: A documentation-only pull request completes an always-visible merge gate without
   scheduling unrelated build, browser, Android, or Apple proof jobs.
 
 - [ ] **CIP-06**: Before/after evidence records workflow count, runner selection, queue time, and
   execution time so each optimization claim is reproducible.
 
-- [ ] **CIP-07**: Repeated setup and proof orchestration is consolidated behind a small, readable
+- [x] **CIP-07**: Repeated setup and proof orchestration is consolidated behind a small, readable
   set of reusable workflow or composite-action contracts without erasing named proof evidence.
 
 ### Engineering and Repository Quality
@@ -143,9 +143,9 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 | CIP-02 | Phase 165 | Pending |
 | CIP-03 | Phase 165 | Pending |
 | CIP-04 | Phase 165 | Pending |
-| CIP-05 | Phase 165 | Pending |
+| CIP-05 | Phase 165 | Complete |
 | CIP-06 | Phase 165 | Pending |
-| CIP-07 | Phase 165 | Pending |
+| CIP-07 | Phase 165 | Complete |
 | ENG-01 | Phase 166 | Pending |
 | ENG-02 | Phase 166 | Pending |
 | ENG-03 | Phase 166 | Pending |
