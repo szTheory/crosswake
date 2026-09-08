@@ -23,7 +23,7 @@ snapshot_diff() {
     test/support/example_host.ex \
     test/crosswake/proof/phase164_example_host_isolation_test.exs \
     script/check_example_host_isolation.sh \
-    .github/workflows/requires-example-host-gate.yml
+    .github/workflows/crosswake-ci.yml
 }
 
 report_snapshot_change() {

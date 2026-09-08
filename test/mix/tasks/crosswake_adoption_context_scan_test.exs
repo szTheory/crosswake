@@ -117,7 +117,7 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
   end
 
   test "workflow runs the repository privacy scan without a secret-backed denylist" do
-    workflow = File.read!(".github/workflows/hex-page-proof.yml")
+    workflow = File.read!(".github/workflows/crosswake-ci.yml")
 
     assert workflow =~ "name: Enforce first-adopter privacy gate"
     assert workflow =~ "run: mix crosswake.adoption_context.scan"

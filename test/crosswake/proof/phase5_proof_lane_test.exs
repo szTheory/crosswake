@@ -2,7 +2,7 @@ defmodule Crosswake.Proof.Phase5ProofLaneTest do
   use ExUnit.Case, async: false
 
   # Depends on the checked-in example Phoenix app (CrosswakeExample.*) being
-  # compiled. Run by phase5-proof.yml, which builds the example host first;
+  # compiled. Run by the phase5-proof leaf in crosswake-ci.yml, which builds the host first;
   # excluded from the hermetic hex-page-proof full-suite run via --exclude.
   @moduletag :requires_example_host
 
@@ -90,16 +90,26 @@ defmodule Crosswake.Proof.Phase5ProofLaneTest do
 
   test "phase 5 proof workflow keeps native shell proof delegated to Phase 18" do
     example_script = File.read!("script/verify_phase5_example_hosts.sh")
-    workflow = File.read!(".github/workflows/phase5-proof.yml")
+    workflow = File.read!(".github/workflows/crosswake-ci.yml")
+    phase5 = job_section!(workflow, "phase5-proof")
 
     assert example_script =~ "test/crosswake/proof/phase5_proof_lane_test.exs"
     assert example_script =~ "CROSSWAKE_IOS_PROJECT_ROOT=\"examples/ios_shell_host\""
     assert example_script =~ "CROSSWAKE_ANDROID_PROJECT_ROOT=\"examples/android_shell_host\""
     assert example_script =~ "CROSSWAKE_PHASE5_NATIVE_PROOFS"
 
-    assert workflow =~ "bash script/verify_phase5_example_hosts.sh"
-    assert workflow =~ "CROSSWAKE_PHASE5_NATIVE_PROOFS: \"0\""
-    refute workflow =~ "bash script/verify_generated_ios_shell.sh"
-    refute workflow =~ "bash script/verify_generated_android_shell.sh"
+    assert phase5 =~ "bash script/verify_phase5_example_hosts.sh"
+    assert phase5 =~ "CROSSWAKE_PHASE5_NATIVE_PROOFS: \"0\""
+    refute phase5 =~ "bash script/verify_generated_ios_shell.sh"
+    refute phase5 =~ "bash script/verify_generated_android_shell.sh"
+  end
+
+  defp job_section!(workflow, job_name) do
+    pattern = ~r/^  #{Regex.escape(job_name)}:\r?\n(.*?)(?=^  [a-zA-Z0-9_-]+:\r?\n|\z)/ms
+
+    case Regex.run(pattern, workflow, capture: :all_but_first) do
+      [section] -> section
+      nil -> flunk("missing workflow job #{job_name}")
+    end
   end
 end

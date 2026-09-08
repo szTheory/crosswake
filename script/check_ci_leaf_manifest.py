@@ -376,12 +376,11 @@ def run_maximum_shape(workflow_path: Path, needs_path: Path) -> int:
     except (OSError, json.JSONDecodeError, yaml.YAMLError) as error:
         print(f"maximum-shape: FAIL: fixture_unavailable detail={error}", file=sys.stderr)
         return 1
-    lint = __import__("subprocess").run(
-        ["actionlint", str(workflow_path)], capture_output=True, text=True, check=False
-    )
+    # Keep this bounds/negative-control check runnable in every broad Elixir leaf.
+    # The recurring Phase 165 aggregate invokes actionlint explicitly after these
+    # hermetic policy tests, so syntax coverage remains one named contract without
+    # making this helper depend on an undeclared binary.
     problems = validate_maximum_shape(workflow, needs_fixture)
-    if lint.returncode != 0:
-        problems.append(Problem("actionlint", str(workflow_path), lint.stdout.strip() or lint.stderr.strip()))
     negatives = maximum_negative_controls(workflow, needs_fixture)
     required_negative_kinds = {
         "maximum_missing_job",
