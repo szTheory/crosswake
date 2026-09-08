@@ -9,6 +9,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   @native_workflow ".github/workflows/native-behavioral-proof-gate.yml"
   @android_script "script/verify_generated_android_shell.sh"
   @android_setup ".github/actions/setup-android-jvm/action.yml"
+  @elixir_setup ".github/actions/setup-elixir-cache/action.yml"
 
   @tag :cancellation_controller
   test "controller is requested-run-only and grants no permission beyond Actions mutation" do
@@ -119,6 +120,90 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     refute setup =~ "actions/cache"
   end
 
+  @tag :cache_identity
+  test "compiled cache identity misses when any compatibility dimension changes" do
+    fixtures = %{
+      beam: %{
+        dependency_scope: "root",
+        os: "Linux",
+        architecture: "X64",
+        otp: "27.3",
+        elixir: "1.19.5",
+        mix_env: "test",
+        topology: "Native-android-package-unit",
+        dependency_topology: "mix-exs-a",
+        lock: "mix-lock-a"
+      },
+      gradle: %{
+        jdk: "17",
+        gradle: "8.12.1",
+        os: "Linux",
+        architecture: "X64",
+        wrapper: "wrapper-a",
+        config: "gradle-config-a",
+        lock: "gradle-lock-a"
+      },
+      swift: %{
+        platform: "macOS",
+        architecture: "ARM64",
+        swift_xcode: "toolchain-a",
+        manifest: "package-a",
+        resolved_state: "absent"
+      }
+    }
+
+    for {_cache, fixture} <- fixtures, {dimension, value} <- fixture do
+      changed = Map.put(fixture, dimension, value <> "-changed")
+      refute cache_identity(fixture) == cache_identity(changed), "#{dimension} must miss"
+    end
+  end
+
+  @tag :cache_identity
+  test "Elixir cache keeps topology and inert Hex boundaries with closed outcomes" do
+    action = File.read!(@elixir_setup)
+
+    for dimension <- [
+          "steps.scope.outputs.value",
+          "steps.topology.outputs.value",
+          "runner.os",
+          "runner.arch",
+          "steps.beam.outputs.otp-version",
+          "steps.beam.outputs.elixir-version",
+          "inputs.mix-env",
+          "mix.exs",
+          "mix.lock"
+        ] do
+      assert action =~ dimension
+    end
+
+    assert action =~ "path: ~/.hex/packages"
+    refute action =~ ~r/path:\s*~\/\.hex\s*$/m
+    refute action =~ ~r/^\s*path:.*cache\.ets/m
+    assert action =~ "cache-outcome"
+    assert action =~ ~r/outcome=(exact|partial|miss)/
+  end
+
+  @tag :cache_identity
+  test "Swift cache separates toolchains and present versus absent resolution" do
+    workflow = File.read!(@native_workflow)
+    body = job_body(workflow, "ios-package-unit")
+
+    for dimension <- [
+          "runner.os",
+          "runner.arch",
+          "swift --version",
+          "xcodebuild -version",
+          "Package.swift",
+          "Package.resolved",
+          "resolved-state"
+        ] do
+      assert body =~ dimension
+    end
+
+    assert body =~ ~r/resolved_state="absent"/
+    assert body =~ ~r/resolved_state="present-/
+  end
+
   defp byte_offset(value, needle) do
     case :binary.match(value, needle) do
       {offset, _length} -> offset
@@ -143,5 +228,10 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       [body] -> body
       nil -> flunk("expected shell function #{name}")
     end
+  end
+
+  defp cache_identity(fixture) do
+    encoded = fixture |> Enum.sort() |> :erlang.term_to_binary()
+    :crypto.hash(:sha256, encoded)
   end
 end
