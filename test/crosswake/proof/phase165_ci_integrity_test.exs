@@ -41,6 +41,13 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     ".github/workflows/phase79-proof.yml"
   ]
 
+  @plan08_task2_retired_sources [
+    ".github/workflows/offline-sync-e2e-gate.yml",
+    ".github/workflows/phase67-proof.yml"
+  ]
+
+  @phase68_advisory ".github/workflows/phase68-proof.yml"
+
   @task1_retired_workflows [
     ".github/workflows/aggregator-negative-control.yml",
     ".github/workflows/contract-drift-gate.yml",
@@ -82,6 +89,44 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
     assert compatibility =~ "if: always()"
     refute compatibility =~ "actions/checkout"
+  end
+
+  @tag :triggers
+  @tag :runner_placement
+  test "offline browser and Android JVM proof moves while emulator proof stays advisory" do
+    workflow = File.read!(@crosswake_ci)
+
+    for path <- @plan08_task2_retired_sources do
+      refute File.exists?(path), "#{path} must be retired after replacement parity"
+    end
+
+    for {job, command} <- [
+          {"guard-01-e2e-honesty", "node script/check-e2e-honesty.mjs"},
+          {"guard-02-prod-route-absence", "mix phx.routes CrosswakeExample.Router"},
+          {"e2e-proof", "npx playwright test"},
+          {"route-tour-proof", "npx playwright test e2e/route_tour.spec.ts"},
+          {"phase67-android-jvm-proof", "./gradlew testDebugUnitTest"}
+        ] do
+      body = job_body(workflow, job)
+      assert body =~ "name: #{job}"
+      assert body =~ "runs-on: ubuntu-latest"
+      assert body =~ "needs: [classify-change]"
+      assert body =~ "classification == 'full_proof'"
+      assert body =~ command
+      assert body =~ "Remediation:"
+    end
+
+    compatibility = job_body(workflow, "compat-offline-sync-e2e")
+    assert compatibility =~ "name: merge-blocking-offline-sync-e2e"
+    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
+    assert compatibility =~ "if: always()"
+    refute compatibility =~ "actions/checkout"
+
+    advisory = File.read!(@phase68_advisory)
+    assert advisory =~ ~r/^  workflow_dispatch:/m
+    refute advisory =~ ~r/^  pull_request:/m
+    refute advisory =~ ~r/^  push:/m
+    assert advisory =~ "continue-on-error: true"
   end
 
   @tag :triggers
@@ -198,8 +243,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert proof_ids == Enum.sort(proof_ids)
     assert control_ids == ["classify-change"]
     assert compatibility_ids == Enum.sort(compatibility_ids)
-    assert length(proof_ids) == 32
-    assert length(compatibility_ids) == 23
+    assert length(proof_ids) == 37
+    assert length(compatibility_ids) == 24
 
     for id <- [
           "phase71-notification-workflow-proof",
