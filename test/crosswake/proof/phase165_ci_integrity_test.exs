@@ -267,7 +267,9 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   test "Release Please retains non-cancelling queue and approval-aware publish authority" do
     workflow = File.read!(@release_please)
 
-    assert workflow =~ ~r/concurrency:\n  group: release-please-.*\n  cancel-in-progress: false\n  queue: max/
+    assert workflow =~
+             ~r/concurrency:\n  group: release-please-.*\n  cancel-in-progress: false\n  queue: max/
+
     refute workflow =~ ~r/concurrency:\n(?:  .*\n)*?  cancel-in-progress: true/
     assert workflow =~ "HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
     assert workflow =~ "MAVEN_USERNAME: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}"
@@ -310,7 +312,9 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   end
 
   defp run_scripts(job_body) do
-    Regex.scan(~r/^      run:\s*(?:\|\s*\n(?<block>(?:        .*\n?)*)|(?<inline>.+))$/m, job_body,
+    Regex.scan(
+      ~r/^      run:\s*(?:\|\s*\n(?<block>(?:        .*\n?)*)|(?<inline>.+))$/m,
+      job_body,
       capture: :all_names
     )
     |> Enum.map(fn [block, inline] -> if block == "", do: inline, else: block end)
