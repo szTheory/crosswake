@@ -6,6 +6,9 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
   @controller ".github/workflows/cancel-obsolete-crosswake-ci.yml"
   @crosswake_ci ".github/workflows/crosswake-ci.yml"
+  @native_workflow ".github/workflows/native-behavioral-proof-gate.yml"
+  @android_script "script/verify_generated_android_shell.sh"
+  @android_setup ".github/actions/setup-android-jvm/action.yml"
 
   @tag :cancellation_controller
   test "controller is requested-run-only and grants no permission beyond Actions mutation" do
@@ -65,10 +68,72 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     refute workflow =~ "cancel-in-progress: true"
   end
 
+  @tag :runner_placement
+  test "generated Android JVM proof has a portable branch before connected provisioning" do
+    script = File.read!(@android_script)
+
+    portable_at = byte_offset(script, ~s([[ "${RUN_CONNECTED_TESTS}" == "0" ]]))
+    connected_at = byte_offset(script, "install_connected_android_toolchain")
+
+    assert portable_at < connected_at
+    assert script =~ "run_generated_shell_jvm_proof"
+
+    portable = between(script, "run_generated_shell_jvm_proof() {", "install_connected_android_toolchain() {")
+
+    for forbidden <- [
+          "commandlinetools-mac",
+          "brew",
+          "/Applications",
+          "Contents/Home",
+          "DEVELOPER_DIR",
+          "simulator",
+          "emulator",
+          "adb",
+          "sdkmanager",
+          "avdmanager"
+        ] do
+      refute portable =~ forbidden
+    end
+  end
+
+  @tag :runner_placement
+  test "Android JVM jobs use Ubuntu and the shared JDK 17 Gradle wrapper setup" do
+    workflow = File.read!(@native_workflow)
+    setup = File.read!(@android_setup)
+
+    for job <- ["android-package-unit", "android-generated-shell-unit"] do
+      body = job_body(workflow, job)
+      assert body =~ "runs-on: ubuntu-latest"
+      assert body =~ "timeout-minutes:"
+      assert body =~ "uses: ./.github/actions/setup-android-jvm"
+    end
+
+    assert setup =~ "working-directory:"
+    assert setup =~ "java-version:"
+    assert setup =~ ~r/java-version:\s*['\"]?17/
+    assert setup =~ "gradle-version:"
+    assert setup =~ "actions/setup-java@v5"
+    assert setup =~ "gradle/actions/setup-gradle@v6"
+    assert setup =~ "gradle-wrapper.properties"
+    refute setup =~ "actions/cache"
+  end
+
   defp byte_offset(value, needle) do
     case :binary.match(value, needle) do
       {offset, _length} -> offset
       :nomatch -> flunk("expected workflow marker #{inspect(needle)}")
     end
+  end
+
+  defp between(value, first, last) do
+    [_prefix, rest] = String.split(value, first, parts: 2)
+    [body, _suffix] = String.split(rest, last, parts: 2)
+    body
+  end
+
+  defp job_body(workflow, job) do
+    [_prefix, rest] = String.split(workflow, "  #{job}:", parts: 2)
+    [body | _] = String.split(rest, ~r/^  [a-z0-9_-]+:/m, parts: 2)
+    body
   end
 end
