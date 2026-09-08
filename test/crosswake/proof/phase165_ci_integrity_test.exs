@@ -71,6 +71,58 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert contract =~ "python3"
   end
 
+  @tag :triggers
+  test "hermetic engine and commerce PR proof moves while advisories stay separate" do
+    workflow = File.read!(@crosswake_ci)
+
+    for {job, display_name, command} <- [
+          {"phase130-core-hermetic-proof", "phase130-core-hermetic-proof",
+           "mix test test/crosswake/proof/phase130_extraction_guards_test.exs"},
+          {"phase130-companion-engine-absent-proof",
+           "phase130-companion-engine-absent-proof", "mix companions.test"},
+          {"phase132-core-hermetic-proof", "phase132-core-hermetic-proof",
+           "phase132_compat_matrix_drift_test.exs"},
+          {"phase132-companion-engine-absent-proof",
+           "phase132-companion-engine-absent-proof", "crosswake_rindle"},
+          {"phase23-commerce-proof", "phase23-commerce-proof",
+           "phase23_commerce_support_proof_test.exs"},
+          {"phase34-commerce-proof", "phase34-commerce-proof",
+           "mix test --exclude requires_example_host"}
+        ] do
+      body = job_body(workflow, job)
+      assert body =~ "name: #{display_name}"
+      assert body =~ "runs-on: ubuntu-latest"
+      assert body =~ "timeout-minutes:"
+      assert body =~ command
+      assert body =~ "Remediation:"
+    end
+
+    for path <- [
+          ".github/workflows/phase130-proof.yml",
+          ".github/workflows/phase132-proof.yml",
+          ".github/workflows/phase23-proof.yml",
+          ".github/workflows/phase34-proof.yml"
+        ] do
+      advisory = File.read!(path)
+      refute advisory =~ ~r/^  pull_request:/m
+      refute advisory =~ ~r/^  push:/m
+      assert advisory =~ ~r/^  workflow_dispatch:/m
+      assert advisory =~ ~r/^  schedule:/m
+      assert advisory =~ "continue-on-error: true"
+    end
+
+    for display_name <- [
+          "core hermetic proof (merge-blocking)",
+          "companion engine-absent proof (merge-blocking)",
+          "phase132 core hermetic proof (merge-blocking)",
+          "phase132 companion engine-absent proof (merge-blocking)",
+          "merge-blocking commerce support proof (hermetic)",
+          "merge-blocking phase34 commerce support proof (hermetic)"
+        ] do
+      assert workflow =~ "name: #{display_name}"
+    end
+  end
+
   @tag :cancellation_controller
   test "controller is requested-run-only and grants no permission beyond Actions mutation" do
     workflow = File.read!(@controller)
