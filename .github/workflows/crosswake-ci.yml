@@ -96,6 +96,160 @@ jobs:
             echo 'Remediation: mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs'
           } >> "$GITHUB_STEP_SUMMARY"
 
+  brand-structural:
+    name: brand-structural
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof' || contains(needs.classify-change.outputs.scheduled_families, 'public_docs')
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.x"
+      - name: Install brandbook tool dependencies
+        working-directory: brandbook/tools
+        run: npm ci
+      - name: Size budget (committed brandbook <= 1MB)
+        run: |
+          TOTAL=$(git ls-files brandbook | xargs -I{} stat -c%s {} | awk '{s+=$1} END{print s+0}')
+          echo "Committed brandbook bytes: $TOTAL"
+          if [ "$TOTAL" -gt 1048576 ]; then
+            echo "ERROR: brandbook exceeds 1MB budget ($TOTAL bytes > 1048576)"
+            exit 1
+          fi
+          echo "Size budget OK ($TOTAL / 1048576 bytes)"
+      - name: SVG structural validation - production marks
+        working-directory: brandbook/tools
+        run: node check-production.mjs
+      - name: SVG structural validation - candidate marks
+        working-directory: brandbook/tools
+        run: node check-candidates.mjs
+      - name: Token JSON round-trip
+        working-directory: brandbook/tools
+        run: node --test compile-tokens.test.mjs
+      - name: WCAG contrast matrix
+        working-directory: brandbook/tools
+        run: node --test contrast.test.mjs
+      - name: Consumer drift gate (no hex / no primitives / semantic coverage)
+        working-directory: brandbook/tools
+        run: node check-consumer-drift.mjs
+      - name: Consumer drift gate contract tests
+        working-directory: brandbook/tools
+        run: node --test check-consumer-drift.test.mjs
+      - name: Install brand e2e dependencies
+        working-directory: brandbook/e2e
+        run: npm ci
+      - name: Install Playwright Chromium
+        working-directory: brandbook/e2e
+        run: npx playwright install --with-deps chromium
+      - name: Structural brand checks (DOM, dimensions, source assertions)
+        working-directory: brandbook/e2e
+        run: npm run test:structural
+      - name: Summarize required brand structural proof
+        if: always()
+        run: |
+          echo 'Brand structure, tokens, contrast, consumer drift, and DOM dimensions were checked.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd brandbook/tools && npm ci && node check-production.mjs && node check-candidates.mjs && node --test compile-tokens.test.mjs contrast.test.mjs check-consumer-drift.test.mjs && node check-consumer-drift.mjs && cd ../e2e && npm ci && npx playwright install --with-deps chromium && npm run test:structural' >> "$GITHUB_STEP_SUMMARY"
+
+  brand-visual:
+    name: brand-visual
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof' || contains(needs.classify-change.outputs.scheduled_families, 'public_docs')
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.x"
+      - name: Install brand e2e dependencies
+        working-directory: brandbook/e2e
+        run: npm ci
+      - name: Install Playwright Chromium
+        working-directory: brandbook/e2e
+        run: npx playwright install --with-deps chromium
+      - name: Visual render + pixel-sample checks
+        working-directory: brandbook/e2e
+        run: npm run test:visual
+      - name: Advisory lane notice
+        run: echo 'brand-visual is visible advisory evidence and is intentionally outside Crosswake CI required authority.' >> "$GITHUB_STEP_SUMMARY"
+
+  collateral-binaries-guard:
+    name: collateral-binaries-guard
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof' || contains(needs.classify-change.outputs.scheduled_families, 'public_docs')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: test
+      COLLATERAL_REQUIRE_NATIVE: '0'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Guard collateral binaries (existence + non-empty + size budget)
+        run: bash script/collateral-guard.sh
+      - name: Summarize collateral proof
+        if: always()
+        run: |
+          echo 'Collateral binaries were checked for required presence, non-empty content, and size bounds.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: bash script/collateral-guard.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  hex-page-proof:
+    name: hex-page-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof' || contains(needs.classify-change.outputs.scheduled_families, 'public_docs')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Enforce first-adopter privacy gate
+        run: mix crosswake.adoption_context.scan
+      - name: Run library test suite (hermetic)
+        run: mix test --exclude requires_example_host
+      - name: Build docs (smoke)
+        run: |
+          mix docs
+          test -f doc/index.html
+          test -f doc/see_it_run.html
+      - name: Verify hex tarball contents
+        run: bash script/verify_hex_tarball.sh
+      - name: Hex publish dry-run
+        run: mix hex.publish --dry-run --yes
+      - name: Summarize Hex page proof
+        if: always()
+        run: |
+          echo 'Hex package metadata, rendered docs, tarball contents, and dry-run publish proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix compile --warnings-as-errors && mix crosswake.adoption_context.scan && mix test --exclude requires_example_host && mix docs && bash script/verify_hex_tarball.sh && mix hex.publish --dry-run --yes' >> "$GITHUB_STEP_SUMMARY"
+
+  release-as-staleness-proof:
+    name: release-as-staleness-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Check for stale release-as pins
+        run: ./script/check_release_as_staleness.sh
+      - name: Summarize release-as staleness proof
+        if: always()
+        run: |
+          echo 'Release-as pins were checked against authoritative package release tags.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: ./script/check_release_as_staleness.sh' >> "$GITHUB_STEP_SUMMARY"
+
   proof-aggregator-negative-control:
     name: proof-aggregator-negative-control
     needs: [classify-change]
@@ -1515,6 +1669,17 @@ jobs:
 
   compat-phase96-threadline-docs-contract:
     name: merge-blocking Threadline docs-contract proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-release-as-staleness:
+    name: merge-blocking-release-as-staleness
     needs: [merge-blocking-crosswake-ci]
     if: always()
     runs-on: ubuntu-latest
