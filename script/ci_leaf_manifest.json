@@ -23,6 +23,13 @@
       "irrelevance_reason": null
     },
     {
+      "leaf_id": "e2e-proof",
+      "display_name": "e2e-proof",
+      "family": "offline_browser",
+      "remediation_command": "cd examples/phoenix_host && npx playwright test",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
       "leaf_id": "guard-01-contract-drift-test",
       "display_name": "guard-01-contract-drift-test",
       "family": "contract_drift",
@@ -30,10 +37,24 @@
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
+      "leaf_id": "guard-01-e2e-honesty",
+      "display_name": "guard-01-e2e-honesty",
+      "family": "offline_browser",
+      "remediation_command": "node script/check-e2e-honesty.mjs && node --test test/js/*.mjs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
       "leaf_id": "guard-02-generate-and-diff",
       "display_name": "guard-02-generate-and-diff",
       "family": "contract_drift",
       "remediation_command": "mix crosswake.contract.gen && git add -A && git diff --cached --exit-code",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "guard-02-prod-route-absence",
+      "display_name": "guard-02-prod-route-absence",
+      "family": "offline_browser",
+      "remediation_command": "cd examples/phoenix_host && MIX_ENV=prod mix phx.routes CrosswakeExample.Router",
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
@@ -149,6 +170,13 @@
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
+      "leaf_id": "phase67-android-jvm-proof",
+      "display_name": "phase67-android-jvm-proof",
+      "family": "native_android",
+      "remediation_command": "cd packages/crosswake-shell-core-android && ./gradlew testDebugUnitTest",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
       "leaf_id": "phase69-closeout-proof",
       "display_name": "phase69-closeout-proof",
       "family": "closeout",
@@ -224,6 +252,13 @@
       "family": "example_host",
       "remediation_command": "script/check_example_host_isolation.sh --matrix-only",
       "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "route-tour-proof",
+      "display_name": "route-tour-proof",
+      "family": "offline_browser",
+      "remediation_command": "cd examples/phoenix_host && npx playwright test e2e/route_tour.spec.ts",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
     }
   ],
   "required_control_nodes": [
@@ -252,6 +287,11 @@
     {
       "job_id": "compat-native-behavioral-proof",
       "display_context": "merge-blocking-native-behavioral-proof",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-offline-sync-e2e",
+      "display_context": "merge-blocking-offline-sync-e2e",
       "needs_target": "merge-blocking-crosswake-ci"
     },
     {

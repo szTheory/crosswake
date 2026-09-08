@@ -906,6 +906,241 @@ jobs:
         run: |
           echo 'Remediation: CROSSWAKE_IOS_PROJECT_ROOT=tmp/ios_shell/native/ios/crosswake_shell ./script/verify_generated_ios_shell.sh' >> "$GITHUB_STEP_SUMMARY"
 
+  guard-01-e2e-honesty:
+    name: guard-01-e2e-honesty
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "20"
+      - name: Install example-host Node dependencies
+        run: npm ci --prefix examples/phoenix_host
+      - name: Run E2E honesty check
+        run: node script/check-e2e-honesty.mjs
+      - name: Run bridge hook unit tests
+        run: node --test test/js/*.mjs
+      - name: Summarize E2E honesty proof
+        if: always()
+        run: |
+          echo 'GUARD-01 e2e-honesty structural and bridge-hook proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: node script/check-e2e-honesty.mjs && node --test test/js/*.mjs' >> "$GITHUB_STEP_SUMMARY"
+
+  guard-02-prod-route-absence:
+    name: guard-02-prod-route-absence
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: prod
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Assert no test-only E2E route in a prod compile
+        working-directory: examples/phoenix_host
+        run: |
+          set -euo pipefail
+          rm -rf _build/prod
+          mix deps.get --only prod
+          routes="$(mix phx.routes CrosswakeExample.Router)"
+          echo "$routes"
+          if echo "$routes" | grep -qE '/_e2e(/|$)'; then
+            echo '::error::GUARD-02 FAILED — /_e2e route present in a MIX_ENV=prod compile.'
+            exit 1
+          fi
+      - name: Summarize production route-absence proof
+        if: always()
+        run: |
+          echo 'GUARD-02 production route-absence proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd examples/phoenix_host && MIX_ENV=prod mix phx.routes CrosswakeExample.Router' >> "$GITHUB_STEP_SUMMARY"
+
+  e2e-proof:
+    name: e2e-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+          working-directory: examples/phoenix_host
+      - name: Compile example host with warnings as errors
+        working-directory: examples/phoenix_host
+        run: mix compile --warnings-as-errors
+      - name: Run Phoenix route and controller assertions
+        working-directory: examples/phoenix_host
+        run: mix test test/crosswake_example/router_test.exs test/crosswake_example/e2e/sync_state_controller_test.exs
+      - name: Run scoped replay admission integration
+        working-directory: examples/phoenix_host
+        run: mix test test/crosswake_example/local_first
+      - name: Install Node dependencies
+        working-directory: examples/phoenix_host
+        run: npm ci
+      - name: Install Playwright browsers
+        working-directory: examples/phoenix_host
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        working-directory: examples/phoenix_host
+        run: npx playwright test
+      - name: Run native-controls fallback proof
+        working-directory: examples/phoenix_host
+        run: npx playwright test e2e/native_controls_fallback.spec.ts
+      - name: Upload E2E failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: crosswake-e2e-proof-failure-evidence
+          path: |
+            examples/phoenix_host/playwright-report/
+            examples/phoenix_host/test-results/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Summarize offline E2E proof
+        if: always()
+        run: |
+          echo 'Offline-sync IndexedDB outbox, reconnect flush, and scoped replay proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd examples/phoenix_host && npx playwright test' >> "$GITHUB_STEP_SUMMARY"
+
+  route-tour-proof:
+    name: route-tour-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+          working-directory: examples/phoenix_host
+      - name: Compile example host with warnings as errors
+        working-directory: examples/phoenix_host
+        run: mix compile --warnings-as-errors
+      - name: Resolve Crosswake version
+        id: crosswake-version
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's/^  @version "\(.*\)" #.*/\1/p' mix.exs)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Run Phoenix route assertions
+        working-directory: examples/phoenix_host
+        run: mix test test/crosswake_example/router_test.exs test/crosswake_example/e2e/sync_state_controller_test.exs
+      - name: Install Node dependencies
+        working-directory: examples/phoenix_host
+        run: npm ci
+      - name: Install Chromium
+        working-directory: examples/phoenix_host
+        run: npx playwright install --with-deps chromium
+      - name: Run route-tour Playwright proof
+        working-directory: examples/phoenix_host
+        env:
+          CROSSWAKE_VERSION: ${{ steps.crosswake-version.outputs.version }}
+        run: npx playwright test e2e/route_tour.spec.ts
+      - name: Assert route-tour required evidence files
+        run: |
+          set -euo pipefail
+          route_tour_root="examples/phoenix_host/playwright-artifacts/route-tour"
+          required_route_tour_files=(
+            "$route_tour_root/evidence-manifest.json"
+            "$route_tour_root/screenshots/showcase-hub.png"
+            "$route_tour_root/screenshots/adminpilot-dashboard.png"
+            "$route_tour_root/screenshots/adminpilot-approvals.png"
+            "$route_tour_root/screenshots/adminpilot-approval-approved.png"
+            "$route_tour_root/screenshots/adminpilot-diagnostics.png"
+            "$route_tour_root/screenshots/fieldserv-jobs.png"
+            "$route_tour_root/screenshots/fieldserv-job-detail.png"
+            "$route_tour_root/screenshots/fieldserv-inspection.png"
+            "$route_tour_root/screenshots/fieldserv-capture-handoff.png"
+            "$route_tour_root/screenshots/fieldserv-evidence-review.png"
+            "$route_tour_root/screenshots/learnloop-dashboard.png"
+            "$route_tour_root/screenshots/learnloop-course.png"
+            "$route_tour_root/screenshots/learnloop-subscription.png"
+            "$route_tour_root/screenshots/learnloop-pack.png"
+            "$route_tour_root/screenshots/learnloop-history-diagnostics.png"
+            "$route_tour_root/screenshots/learnloop-route-tour.png"
+            "$route_tour_root/screenshots/library.png"
+            "$route_tour_root/screenshots/bridge-proof.png"
+            "$route_tour_root/screenshots/offline-study-replayed.png"
+            "$route_tour_root/screenshots/selective-native-claim-capture-unavailable.png"
+          )
+          for evidence_file in "${required_route_tour_files[@]}"; do
+            test -s "$evidence_file"
+          done
+      - name: Validate route-tour evidence manifest
+        run: |
+          mix deps.get
+          CROSSWAKE_EVIDENCE_MANIFEST_PATH=examples/phoenix_host/playwright-artifacts/route-tour/evidence-manifest.json mix test test/crosswake/guides/evidence_manifest_test.exs
+      - name: Capture web collateral through the harness
+        env:
+          CI: ""
+          CROSSWAKE_VERSION: ${{ steps.crosswake-version.outputs.version }}
+        run: |
+          set -euo pipefail
+          (
+            cd examples/phoenix_host
+            export MIX_ENV=test
+            mix "do" ecto.drop --quiet + ecto.create --quiet + ecto.migrate --quiet + phx.server
+          ) &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for _ in $(seq 1 60); do
+            curl -sf http://localhost:4700/ >/dev/null 2>&1 && break
+            sleep 2
+          done
+          bin/capture-collateral.sh --web-only
+          test -s brandbook/collateral/see-it-run/web-home.png
+          test -s brandbook/collateral/see-it-run/web-offline.png
+          test -s brandbook/collateral/see-it-run/web-bridge-proof.png
+      - name: Upload route-tour evidence bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: crosswake-route-tour-evidence
+          path: |
+            examples/phoenix_host/playwright-artifacts/route-tour/evidence-manifest.json
+            examples/phoenix_host/playwright-artifacts/route-tour/screenshots/
+            examples/phoenix_host/playwright-report/
+            examples/phoenix_host/test-results/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Summarize route-tour proof
+        if: always()
+        run: |
+          echo 'Route-tour semantic assertions and evidence bundle proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd examples/phoenix_host && npx playwright test e2e/route_tour.spec.ts' >> "$GITHUB_STEP_SUMMARY"
+
+  phase67-android-jvm-proof:
+    name: phase67-android-jvm-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-android-jvm
+        with:
+          working-directory: packages/crosswake-shell-core-android
+      - name: Run Android JVM tests
+        working-directory: packages/crosswake-shell-core-android
+        run: ./gradlew testDebugUnitTest
+      - name: Summarize Phase 67 Android JVM proof
+        if: always()
+        run: |
+          echo 'Phase 67 Android JVM proof completed without device authority.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd packages/crosswake-shell-core-android && ./gradlew testDebugUnitTest' >> "$GITHUB_STEP_SUMMARY"
+
   compat-aggregator-negative-control:
     name: merge-blocking-aggregator-negative-control
     needs: [merge-blocking-crosswake-ci]
@@ -950,6 +1185,17 @@ jobs:
 
   compat-native-behavioral-proof:
     name: merge-blocking-native-behavioral-proof
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-offline-sync-e2e:
+    name: merge-blocking-offline-sync-e2e
     needs: [merge-blocking-crosswake-ci]
     if: always()
     runs-on: ubuntu-latest
@@ -1177,8 +1423,11 @@ jobs:
       - android-package-unit
       - classify-change
       - documentation-contracts
+      - e2e-proof
       - guard-01-contract-drift-test
+      - guard-01-e2e-honesty
       - guard-02-generate-and-diff
+      - guard-02-prod-route-absence
       - ios-package-unit
       - phase18-elixir-android-proof
       - phase18-ios-proof
@@ -1195,6 +1444,7 @@ jobs:
       - phase48-provider-adapter-proof
       - phase52-operator-proof
       - phase58-auth-closeout-proof
+      - phase67-android-jvm-proof
       - phase69-closeout-proof
       - phase70-subscription-saas-proof
       - phase71-notification-workflow-proof
@@ -1206,6 +1456,7 @@ jobs:
       - proof-aggregator-negative-control
       - proof-dependency-security
       - proof-requires-example-host
+      - route-tour-proof
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -1230,8 +1481,11 @@ jobs:
           explicitly_irrelevant = {
               "android-generated-shell-unit",
               "android-package-unit",
+              "e2e-proof",
               "guard-01-contract-drift-test",
+              "guard-01-e2e-honesty",
               "guard-02-generate-and-diff",
+              "guard-02-prod-route-absence",
               "ios-package-unit",
               "phase18-elixir-android-proof",
               "phase18-ios-proof",
@@ -1248,6 +1502,7 @@ jobs:
               "phase5-proof",
               "phase52-operator-proof",
               "phase58-auth-closeout-proof",
+              "phase67-android-jvm-proof",
               "phase69-closeout-proof",
               "phase70-subscription-saas-proof",
               "phase71-notification-workflow-proof",
@@ -1259,6 +1514,7 @@ jobs:
               "proof-aggregator-negative-control",
               "proof-dependency-security",
               "proof-requires-example-host",
+              "route-tour-proof",
           } if classification == "documentation_only" else set()
           for name, value in sorted(needs.items()):
               result = value.get("result", "")
@@ -1272,7 +1528,7 @@ jobs:
             echo "Crosswake CI: ${CLASSIFICATION}."
             echo "Reason: ${REASON}."
             echo "Scheduled proof families: ${SCHEDULED_FAMILIES}."
-            echo 'Explicitly irrelevant families: core_integrity, security, example_host, native_android, native_ios.'
-            echo 'Expected proof leaves: 32.'
+            echo 'Explicitly irrelevant families: core_integrity, security, example_host, native_android, native_ios, offline_browser.'
+            echo 'Expected proof leaves: 37.'
             echo 'Remediation: python3 script/check_ci_leaf_manifest.py --self-test'
           } >> "$GITHUB_STEP_SUMMARY"
