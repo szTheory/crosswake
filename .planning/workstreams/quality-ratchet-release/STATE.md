@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 165
 current_phase_name: Efficient and Maintainable CI
 status: executing
-stopped_at: Completed 165-09-PLAN.md
-last_updated: "2026-09-08T18:35:44.512Z"
+stopped_at: Completed 165-10-PLAN.md
+last_updated: "2026-09-08T22:00:30.630Z"
 last_activity: 2026-09-08
-last_activity_desc: Plan 165-09 final PR orchestration and recurring CI gate completed
-state_head: 4e35336e3c2fc0ba8d7d3551becba2bc6d86a7cb
+last_activity_desc: Plan 165-10 live CI authority migration completed with strict dual protection
+state_head: 2785a795138d2d91dc12fde4aa044ae7ec1a1366
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 14
+  completed_plans: 15
   percent: 20
 workstream: quality-ratchet-release
 ---
@@ -32,9 +32,9 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 165 (Efficient and Maintainable CI) — EXECUTING
-Plan: 10 of 13
+Plan: 11 of 13
 Status: Ready to execute
-Last activity: 2026-09-08 — Plan 165-09 final PR orchestration and recurring CI gate completed
+Last activity: 2026-09-08 — Plan 165-10 live CI authority migration completed with strict dual protection
 
 Progress: [██░░░░░░░░] 20%
 
@@ -67,6 +67,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase 165 P07 | 14 min | 2 tasks | 10 files |
 | Phase 165 P08 | 24 min | 3 tasks | 15 files |
 | Phase 165 P09 | 34 min | 3 tasks | 12 files |
+| Phase 165 P10 | 3h 30m | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -105,6 +106,9 @@ Progress: [██░░░░░░░░] 20%
 - [Phase 165]: Schedule focused Threadline proof only when the validated documentation family includes public_docs.
 - [Phase 165]: Keep brand-visual visibly red but outside proof leaves, required controls, umbrella needs, and compatibility authority.
 - [Phase 165]: Keep live timing and branch-protection mutation outside the recurring Phase 165 structural gate.
+- [Phase 165]: Bind every live probe to the exact orchestrator-landed remote-default SHA and exact local/remote workflow digests before creating a branch.
+- [Phase 165]: Scope cancellation candidates to the current PR before strict fail-closed validation because GitHub removes PR associations from historical runs after cleanup.
+- [Phase 165]: Keep strict dual required-check authority live and leave the exact legacy retirement proposal unapplied for Plan 165-11.
 
 ### Pending Todos
 
@@ -126,6 +130,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-08T18:35:44.438Z
-Stopped at: Completed 165-09-PLAN.md
+Last session: 2026-09-08T22:00:30.594Z
+Stopped at: Completed 165-10-PLAN.md
 Resume file: None
