@@ -57,7 +57,7 @@ independent workstream; the numbering does not imply that parked adopter work mu
   4. A documentation-only pull request receives an always-visible merge result without scheduling unrelated build, browser, Android, or Apple proof.
   5. A maintainer can compare reproducible before/after workflow count, runner selection, queue time, and execution time, and can still identify each named proof behind the consolidated reusable orchestration.
 
-**Plans**: 8/13 plans executed
+**Plans**: 9/13 plans executed
 
 Plans:
 **Wave 1**
@@ -94,7 +94,7 @@ Plans:
 
 **Wave 9** *(blocked on Wave 8 completion)*
 
-- [ ] 165-09-PLAN.md — Finish the PR graph and recurring Phase 165 contract gate.
+- [x] 165-09-PLAN.md — Finish the PR graph and recurring Phase 165 contract gate.
 
 **Wave 10** *(blocked on Wave 9 completion)*
 
@@ -161,7 +161,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 164. Dependency Security and Gate Authority | 5/5 | Complete    | 2026-08-28 |
-| 165. Efficient and Maintainable CI | 8/13 | In Progress | - |
+| 165. Efficient and Maintainable CI | 9/13 | In Progress|  |
 | 166. Clean-Checkout Engineering Quality | 0/TBD | Not started | - |
 | 167. Documentation and Pull-Request Reconciliation | 0/TBD | Not started | - |
 | 168. 0.2.1 Release Candidate Readiness | 0/TBD | Not started | - |
