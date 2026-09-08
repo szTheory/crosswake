@@ -17,7 +17,7 @@ from pathlib import Path, PurePosixPath
 SCHEMA_VERSION = 1
 ZERO_SHA = "0" * 40
 SHA = re.compile(r"^[0-9a-f]{40}$")
-KNOWN_SINGLE = {"A", "M", "D", "T", "U", "X", "B"}
+KNOWN_SINGLE = {"A", "M", "D", "T"}
 KNOWN_DOUBLE = {"R", "C"}
 
 
@@ -43,16 +43,55 @@ def load_allowlist(path: Path) -> dict[str, object]:
         value = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         raise ValueError("allowlist_unavailable") from None
-    if set(value) != {"schema_version", "exact", "trees", "excluded"}:
+    if not isinstance(value, dict) or set(value) != {
+        "schema_version",
+        "families",
+        "excluded",
+    }:
         raise ValueError("allowlist_invalid")
-    if value["schema_version"] != 1:
+    if value["schema_version"] != 2:
         raise ValueError("allowlist_invalid")
-    for key in ("exact", "trees", "excluded"):
-        if not isinstance(value[key], list) or not all(
-            isinstance(item, str) and item for item in value[key]
+    if not isinstance(value["families"], list) or not value["families"]:
+        raise ValueError("allowlist_invalid")
+    family_names: list[str] = []
+    owned_paths: list[str] = []
+    for family in value["families"]:
+        if not isinstance(family, dict) or set(family) != {
+            "family",
+            "exact",
+            "trees",
+            "extensions",
+            "proof_owner",
+        }:
+            raise ValueError("allowlist_invalid")
+        if not all(
+            isinstance(family[key], list)
+            and all(isinstance(item, str) and item for item in family[key])
+            and family[key] == sorted(set(family[key]))
+            for key in ("exact", "trees", "extensions")
         ):
             raise ValueError("allowlist_invalid")
-        if value[key] != sorted(set(value[key])):
+        if not isinstance(family["family"], str) or not family["family"]:
+            raise ValueError("allowlist_invalid")
+        if family["proof_owner"] != "documentation-contracts":
+            raise ValueError("allowlist_invalid")
+        if not family["exact"] and not family["trees"]:
+            raise ValueError("allowlist_invalid")
+        family_names.append(family["family"])
+        owned_paths.extend(family["exact"])
+        owned_paths.extend(family["trees"])
+    if family_names != sorted(set(family_names)):
+        raise ValueError("allowlist_invalid")
+    if len(owned_paths) != len(set(owned_paths)):
+        raise ValueError("allowlist_invalid")
+    if not isinstance(value["excluded"], list) or not all(
+        isinstance(item, str) and item for item in value["excluded"]
+    ):
+        raise ValueError("allowlist_invalid")
+    if value["excluded"] != sorted(set(value["excluded"])):
+        raise ValueError("allowlist_invalid")
+    for path in value["excluded"]:
+        if not any(path_allowed_by_family(path, family) for family in value["families"]):
             raise ValueError("allowlist_invalid")
     return value
 
@@ -102,13 +141,21 @@ def parse_name_status(raw: bytes) -> list[tuple[str, tuple[str, ...]]] | None:
     return records or None
 
 
+def path_allowed_by_family(path: str, family: dict[str, object]) -> bool:
+    if path in family["exact"]:
+        return True
+    parts = PurePosixPath(path).parts
+    return (
+        len(parts) > 1
+        and parts[0] in family["trees"]
+        and any(path.endswith(extension) for extension in family["extensions"])
+    )
+
+
 def is_documentation_path(path: str, allowlist: dict[str, object]) -> bool:
     if path in allowlist["excluded"]:
         return False
-    if path in allowlist["exact"]:
-        return True
-    parts = PurePosixPath(path).parts
-    return len(parts) > 1 and parts[0] in allowlist["trees"] and path.endswith(".md")
+    return any(path_allowed_by_family(path, family) for family in allowlist["families"])
 
 
 def classify_records(
@@ -184,6 +231,19 @@ class ClassifierSelfTest(unittest.TestCase):
         result = classify_records(parse_name_status(raw), self.allowlist)
         self.assertEqual(result["classification"], expected)
 
+    def test_fixture_corpus(self) -> None:
+        fixture_path = Path(__file__).parents[1] / "test/fixtures/ci/classifier/cases.json"
+        fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+        self.assertEqual(fixture["schema_version"], 1)
+        names = [case["name"] for case in fixture["cases"]]
+        self.assertEqual(names, sorted(set(names)))
+        for case in fixture["cases"]:
+            result = classify_records(
+                parse_name_status(bytes.fromhex(case["records_hex"])), self.allowlist
+            )
+            self.assertEqual(result["classification"], case["classification"], case["name"])
+            self.assertEqual(result["reason"], case["reason"], case["name"])
+
     def test_closed_status_arity_and_path_boundaries(self) -> None:
         for raw in (
             b"A\0README.md\0",
@@ -200,6 +260,9 @@ class ClassifierSelfTest(unittest.TestCase):
             b"A\0README.md\0M\0lib/crosswake.ex\0",
             b"A\0docs/PORT-REGISTRY.md\0",
             b"Z\0README.md\0",
+            b"U\0README.md\0",
+            b"X\0README.md\0",
+            b"B\0README.md\0",
             b"R100\0guides/old.md\0",
             b"A\0README.md",
             b"",
