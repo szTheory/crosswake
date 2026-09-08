@@ -65,6 +65,34 @@
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
+      "leaf_id": "phase41-gating-proof",
+      "display_name": "phase41-gating-proof",
+      "family": "gating",
+      "remediation_command": "mix test test/crosswake/proof/phase41_gating_doctor_test.exs && mix test --exclude requires_example_host",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase43-rulestead-proof",
+      "display_name": "phase43-rulestead-proof",
+      "family": "rulestead",
+      "remediation_command": "mix test --exclude requires_example_host --exclude advisory_only",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase45-rindle-proof",
+      "display_name": "phase45-rindle-proof",
+      "family": "rindle",
+      "remediation_command": "mix test --exclude requires_example_host --exclude advisory_only",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase48-provider-adapter-proof",
+      "display_name": "phase48-provider-adapter-proof",
+      "family": "provider_adapter",
+      "remediation_command": "mix test test/crosswake/proof/phase48_provider_adapter_proof_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
       "leaf_id": "proof-aggregator-negative-control",
       "display_name": "proof-aggregator-negative-control",
       "family": "aggregator_integrity",
@@ -137,6 +165,26 @@
     {
       "job_id": "compat-phase34-commerce-proof",
       "display_context": "merge-blocking phase34 commerce support proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase41-gating-proof",
+      "display_context": "merge-blocking gating doctor and support matrix proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase43-rulestead-proof",
+      "display_context": "merge-blocking rulestead proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase45-rindle-proof",
+      "display_context": "merge-blocking rindle proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase48-provider-adapter-proof",
+      "display_context": "merge-blocking provider adapter proof (hermetic)",
       "needs_target": "merge-blocking-crosswake-ci"
     },
     {

@@ -144,8 +144,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert proof_ids == Enum.sort(proof_ids)
     assert control_ids == ["classify-change"]
     assert compatibility_ids == Enum.sort(compatibility_ids)
-    assert length(proof_ids) == 12
-    assert length(compatibility_ids) == 10
+    assert length(proof_ids) == 16
+    assert length(compatibility_ids) == 14
 
     umbrella = job_body(workflow, "merge-blocking-crosswake-ci")
 

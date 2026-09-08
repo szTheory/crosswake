@@ -393,6 +393,92 @@ jobs:
           echo 'Phase 34 broad hermetic commerce proof completed without example-host-tagged tests.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Remediation: mix test --exclude requires_example_host' >> "$GITHUB_STEP_SUMMARY"
 
+  phase41-gating-proof:
+    name: phase41-gating-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 41 gating doctor and support matrix proof
+        run: |
+          mix test test/crosswake/proof/phase41_gating_doctor_test.exs
+          mix test --exclude requires_example_host
+      - name: Summarize Phase 41 gating proof
+        if: always()
+        run: |
+          echo 'Phase 41 gating doctor, support matrix, formatter, and broad hermetic proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase41_gating_doctor_test.exs && mix test --exclude requires_example_host' >> "$GITHUB_STEP_SUMMARY"
+
+  phase43-rulestead-proof:
+    name: phase43-rulestead-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run hermetic Rulestead proof
+        run: mix test --exclude requires_example_host --exclude advisory_only
+      - name: Summarize Rulestead proof
+        if: always()
+        run: |
+          echo 'Rulestead companion proof completed with the optional engine absent.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test --exclude requires_example_host --exclude advisory_only' >> "$GITHUB_STEP_SUMMARY"
+
+  phase45-rindle-proof:
+    name: phase45-rindle-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run hermetic Rindle proof
+        run: mix test --exclude requires_example_host --exclude advisory_only
+      - name: Summarize Rindle proof
+        if: always()
+        run: |
+          echo 'Rindle companion proof completed with the optional engine absent.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test --exclude requires_example_host --exclude advisory_only' >> "$GITHUB_STEP_SUMMARY"
+
+  phase48-provider-adapter-proof:
+    name: phase48-provider-adapter-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 48 provider-adapter proof
+        run: mix test test/crosswake/proof/phase48_provider_adapter_proof_test.exs
+      - name: Summarize provider-adapter proof
+        if: always()
+        run: |
+          echo 'Phase 48 provider-adapter proof completed without provider or device authority.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase48_provider_adapter_proof_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
   compat-aggregator-negative-control:
     name: merge-blocking-aggregator-negative-control
     needs: [merge-blocking-crosswake-ci]
@@ -513,6 +599,50 @@ jobs:
           RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
         run: test "$RESULT" = success
 
+  compat-phase41-gating-proof:
+    name: merge-blocking gating doctor and support matrix proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase43-rulestead-proof:
+    name: merge-blocking rulestead proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase45-rindle-proof:
+    name: merge-blocking rindle proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase48-provider-adapter-proof:
+    name: merge-blocking provider adapter proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
   merge-blocking-crosswake-ci:
     name: Crosswake CI
     if: always()
@@ -527,6 +657,10 @@ jobs:
       - phase132-core-hermetic-proof
       - phase23-commerce-proof
       - phase34-commerce-proof
+      - phase41-gating-proof
+      - phase43-rulestead-proof
+      - phase45-rindle-proof
+      - phase48-provider-adapter-proof
       - proof-aggregator-negative-control
       - proof-dependency-security
       - proof-requires-example-host
@@ -560,6 +694,10 @@ jobs:
               "phase132-core-hermetic-proof",
               "phase23-commerce-proof",
               "phase34-commerce-proof",
+              "phase41-gating-proof",
+              "phase43-rulestead-proof",
+              "phase45-rindle-proof",
+              "phase48-provider-adapter-proof",
               "proof-aggregator-negative-control",
               "proof-dependency-security",
               "proof-requires-example-host",
@@ -577,6 +715,6 @@ jobs:
             echo "Reason: ${REASON}."
             echo "Scheduled proof families: ${SCHEDULED_FAMILIES}."
             echo 'Explicitly irrelevant families: core_integrity, security, example_host.'
-            echo 'Expected proof leaves: 12.'
+            echo 'Expected proof leaves: 16.'
             echo 'Remediation: python3 script/check_ci_leaf_manifest.py --self-test'
           } >> "$GITHUB_STEP_SUMMARY"
