@@ -10,6 +10,10 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   @android_script "script/verify_generated_android_shell.sh"
   @android_setup ".github/actions/setup-android-jvm/action.yml"
   @elixir_setup ".github/actions/setup-elixir-cache/action.yml"
+  @phase5 ".github/workflows/phase5-proof.yml"
+  @phase18 ".github/workflows/phase18-proof.yml"
+  @phase79 ".github/workflows/phase79-proof.yml"
+  @release_please ".github/workflows/release-please.yml"
 
   @tag :cancellation_controller
   test "controller is requested-run-only and grants no permission beyond Actions mutation" do
@@ -206,6 +210,70 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert body =~ ~r/resolved_state="present-/
   end
 
+  @tag :runner_placement
+  test "mixed legacy proof keeps only Apple invocations on macOS" do
+    phase5 = File.read!(@phase5)
+    phase18 = File.read!(@phase18)
+    phase79 = File.read!(@phase79)
+
+    assert job_body(phase5, "phase5-proof") =~ "runs-on: ubuntu-latest"
+    refute phase5 =~ "DEVELOPER_DIR"
+
+    assert job_body(phase18, "phase18-portable-proof") =~ "runs-on: ubuntu-latest"
+    assert job_body(phase18, "phase18-portable-proof") =~ "verify_generated_android_shell.sh"
+    assert job_body(phase18, "phase18-proof") =~ "runs-on: macos-15"
+    assert job_body(phase18, "phase18-proof") =~ "verify_generated_ios_shell.sh"
+    refute job_body(phase18, "phase18-portable-proof") =~ "DEVELOPER_DIR"
+
+    assert job_body(phase79, "v5-android-jvm-proof") =~ "runs-on: ubuntu-latest"
+    assert job_body(phase79, "merge-blocking-v5-proof") =~ "runs-on: macos-15"
+    assert job_body(phase79, "merge-blocking-v5-proof") =~ "verify_generated_ios_shell.sh"
+    refute job_body(phase79, "merge-blocking-v5-proof") =~ "verify_generated_android_shell.sh"
+  end
+
+  @tag :runner_placement
+  @tag :timeout
+  test "every workflow job is bounded and every macOS job invokes native tooling" do
+    for path <- Path.wildcard(".github/workflows/*.{yml,yaml}"),
+        {job, body} <- workflow_jobs(File.read!(path)) do
+      assert body =~ ~r/^    timeout-minutes:\s*[1-9][0-9]*\s*$/m,
+             "#{path}:#{job} must have a positive job timeout"
+
+      if body =~ ~r/^    runs-on:\s*macos/m do
+        assert body =~
+                 ~r/(?:\bswift\b|\bxcodebuild\b|\bxcrun\b|\bcodesign\b|simulator|emulator|verify_generated_ios_shell)/i,
+               "#{path}:#{job} uses macOS without a native tool invocation"
+      end
+    end
+  end
+
+  @tag :timeout
+  test "ordinary CI never retries an assertion command" do
+    assertion =
+      ~r/(?:mix test|swift (?:test|build)|gradlew .*?(?:test|build)|xcodebuild|script\/[^\s]*(?:proof|verify))/
+
+    for path <- Path.wildcard(".github/workflows/*.{yml,yaml}"),
+        path != @release_please,
+        {job, body} <- workflow_jobs(File.read!(path)),
+        script <- run_scripts(body) do
+      retry_loop = script =~ ~r/(?:for\s+[^\n]+;\s*do|while\s+)/
+
+      refute retry_loop and script =~ assertion,
+             "#{path}:#{job} retries a proof/test/assertion command"
+    end
+  end
+
+  @tag :release_trust
+  test "Release Please retains non-cancelling queue and approval-aware publish authority" do
+    workflow = File.read!(@release_please)
+
+    assert workflow =~ ~r/concurrency:\n  group: release-please-.*\n  cancel-in-progress: false\n  queue: max/
+    refute workflow =~ ~r/concurrency:\n(?:  .*\n)*?  cancel-in-progress: true/
+    assert workflow =~ "HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
+    assert workflow =~ "MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}"
+    assert workflow =~ "CROSSWAKE_IOS_MIRROR_DEPLOY_KEY"
+  end
+
   defp byte_offset(value, needle) do
     case :binary.match(value, needle) do
       {offset, _length} -> offset
@@ -230,6 +298,22 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       [body] -> body
       nil -> flunk("expected shell function #{name}")
     end
+  end
+
+  defp workflow_jobs(workflow) do
+    [_prefix, jobs] = String.split(workflow, ~r/^jobs:\s*$/m, parts: 2)
+
+    Regex.scan(~r/^  ([a-zA-Z0-9_-]+):\s*\n(.*?)(?=^  [a-zA-Z0-9_-]+:\s*$|\z)/ms, jobs,
+      capture: :all_but_first
+    )
+    |> Enum.map(fn [job, body] -> {job, body} end)
+  end
+
+  defp run_scripts(job_body) do
+    Regex.scan(~r/^      run:\s*(?:\|\s*\n(?<block>(?:        .*\n?)*)|(?<inline>.+))$/m, job_body,
+      capture: :all_names
+    )
+    |> Enum.map(fn [block, inline] -> if block == "", do: inline, else: block end)
   end
 
   defp cache_identity(fixture) do
