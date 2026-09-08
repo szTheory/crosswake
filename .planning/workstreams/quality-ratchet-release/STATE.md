@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 165
 current_phase_name: Efficient and Maintainable CI
 status: executing
-stopped_at: Phase 165 context gathered
-last_updated: "2026-08-29T01:15:01.119Z"
-last_activity: 2026-08-28
-last_activity_desc: Phase 164 complete, transitioned to Phase 165
-state_head: a944fe77392f8be7d73890ebf1b1e49e2ac5d9ec
+stopped_at: Completed 165-01-PLAN.md
+last_updated: "2026-09-08T00:07:18.004Z"
+last_activity: 2026-09-07
+last_activity_desc: Phase 165 execution started
+state_head: f7d9a4fbef5ac0cac5da80e84fabc00e051121a0
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 5
+  completed_plans: 6
   percent: 20
 workstream: quality-ratchet-release
 ---
@@ -27,16 +27,16 @@ See: `.planning/PROJECT.md` (updated 2026-08-27)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 164 — Dependency Security and Gate Authority
+**Current focus:** Phase 165 — Efficient and Maintainable CI
 
 ## Current Position
 
-Phase: 165 (Efficient and Maintainable CI) — READY TO EXECUTE
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-08-28 — Phase 164 complete, transitioned to Phase 165
+Phase: 165 (Efficient and Maintainable CI) — EXECUTING
+Plan: 2 of 13
+Status: Executing Phase 165
+Last activity: 2026-09-07 — Phase 165 execution started
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 |------|----------|-------|-------|
 | Phase 164 P01 | 7 min | 2 tasks | 6 files |
 | Phase 164 P05 | 15 min | 2 tasks | 5 files |
+| Phase 165 P01 | 15 min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 164]: Dependency security has one literal producer; required-check registration remains green-first post-main work through the existing registrar.
 - [Phase 164]: Derive owned SQLite cleanup from the unique primary path plus exact -wal and -shm companions; never glob shared temp state.
 - [Phase 164]: Keep default/hermetic and requires-example-host lane manifests conditional and independent so neither execution class can mask the other.
+- [Phase 165]: Exact per-job queue time remains not_exposed and unavailable matched PR cohorts remain not_measured; timing is descriptive only.
+- [Phase 165]: The Crosswake CI tracer remains additive and non-authoritative while the exact 27 legacy contexts stay unchanged.
 
 ### Pending Todos
 
@@ -97,6 +100,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-08-28T22:10:58.193Z
-Stopped at: Phase 165 context gathered
-Resume file: .planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/165-CONTEXT.md
+Last session: 2026-09-08T00:07:17.971Z
+Stopped at: Completed 165-01-PLAN.md
+Resume file: None
