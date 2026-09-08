@@ -121,6 +121,34 @@
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
+      "leaf_id": "phase71-notification-workflow-proof",
+      "display_name": "phase71-notification-workflow-proof",
+      "family": "notification_workflow",
+      "remediation_command": "cd packages/crosswake_chimeway && mix deps.get && mix test test/crosswake/proof/phase71_notification_workflow_proof_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase73-auth-sensitive-admin-workflow-proof",
+      "display_name": "phase73-auth-sensitive-admin-workflow-proof",
+      "family": "auth_sensitive_admin",
+      "remediation_command": "cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/proof/phase73_auth_sensitive_admin_workflow_proof_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase74-offline-draft-recovery-proof",
+      "display_name": "phase74-offline-draft-recovery-proof",
+      "family": "offline_draft_recovery",
+      "remediation_command": "mix test test/crosswake/proof/phase74_offline_draft_recovery_proof_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase75-closeout-gate",
+      "display_name": "phase75-closeout-gate",
+      "family": "closeout",
+      "remediation_command": "mix closeout.verify",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
       "leaf_id": "proof-aggregator-negative-control",
       "display_name": "proof-aggregator-negative-control",
       "family": "aggregator_integrity",
@@ -233,6 +261,26 @@
     {
       "job_id": "compat-phase70-subscription-saas-proof",
       "display_context": "merge-blocking subscription SaaS proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase71-notification-workflow-proof",
+      "display_context": "merge-blocking notification workflow proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase73-auth-sensitive-admin-workflow-proof",
+      "display_context": "merge-blocking auth-sensitive admin workflow proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase74-offline-draft-recovery-proof",
+      "display_context": "merge-blocking offline draft recovery proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase75-closeout-gate",
+      "display_context": "merge-blocking phase 75 closeout gate",
       "needs_target": "merge-blocking-crosswake-ci"
     },
     {

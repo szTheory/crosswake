@@ -70,6 +70,7 @@ FINAL_PROOF_LEAVES = (
 )
 FINAL_CONTROL_NODES = ("classify-change",)
 FINAL_NEEDS = tuple(sorted(FINAL_PROOF_LEAVES + FINAL_CONTROL_NODES))
+CLASSIFIER_IRRELEVANCE_REASON = "all_changed_paths_allowlisted"
 
 
 @dataclass(frozen=True)
@@ -148,8 +149,14 @@ def validate(manifest: object, workflow: object, producer_records=None) -> list[
             if not isinstance(row[field], str) or not row[field] or "${{" in row[field]:
                 problems.append(Problem(f"invalid_{field}", leaf_id, "field must be a non-empty literal"))
         reason = row["irrelevance_reason"]
-        if reason is not None and (not isinstance(reason, str) or not reason):
-            problems.append(Problem("invalid_irrelevance_reason", leaf_id, "must be null or non-empty"))
+        if reason is not None and reason != CLASSIFIER_IRRELEVANCE_REASON:
+            problems.append(
+                Problem(
+                    "invalid_irrelevance_reason",
+                    leaf_id,
+                    f"must equal classifier reason {CLASSIFIER_IRRELEVANCE_REASON!r}",
+                )
+            )
     for node_id, row in controls.items():
         if row["required_result"] != "success":
             problems.append(Problem("invalid_control_result", node_id, "control nodes require success"))
@@ -451,6 +458,18 @@ class ManifestSelfTest(unittest.TestCase):
             lambda m, _w: m["legacy_compatibility_contexts"][0].update(needs_target="invented"),
             "compatibility_target_invalid",
             first["job_id"],
+        )
+
+    def test_irrelevance_reason_must_match_classifier_exactly(self) -> None:
+        first_executable = next(
+            row for row in self.manifest["proof_leaves"] if row["irrelevance_reason"] is not None
+        )
+        self.assert_problem(
+            lambda m, _w: next(
+                row for row in m["proof_leaves"] if row["leaf_id"] == first_executable["leaf_id"]
+            ).update(irrelevance_reason="documentation_only"),
+            "invalid_irrelevance_reason",
+            first_executable["leaf_id"],
         )
 
 

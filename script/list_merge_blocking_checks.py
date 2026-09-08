@@ -48,6 +48,18 @@ MIGRATED_SOURCE_WORKFLOWS = {
     ".github/workflows/phase132-proof.yml",
     ".github/workflows/phase23-proof.yml",
     ".github/workflows/phase34-proof.yml",
+    ".github/workflows/phase41-proof.yml",
+    ".github/workflows/phase43-proof.yml",
+    ".github/workflows/phase45-proof.yml",
+    ".github/workflows/phase48-proof.yml",
+    ".github/workflows/phase52-proof.yml",
+    ".github/workflows/phase58-proof.yml",
+    ".github/workflows/phase69-proof.yml",
+    ".github/workflows/phase70-proof.yml",
+    ".github/workflows/phase71-proof.yml",
+    ".github/workflows/phase73-proof.yml",
+    ".github/workflows/phase74-proof.yml",
+    ".github/workflows/phase75-closeout-gate.yml",
 }
 MIGRATED_JOB_IDS = {
     "proof-aggregator-negative-control",
@@ -61,6 +73,18 @@ MIGRATED_JOB_IDS = {
     "phase132-companion-engine-absent-proof",
     "phase23-commerce-proof",
     "phase34-commerce-proof",
+    "phase41-gating-proof",
+    "phase43-rulestead-proof",
+    "phase45-rindle-proof",
+    "phase48-provider-adapter-proof",
+    "phase52-operator-proof",
+    "phase58-auth-closeout-proof",
+    "phase69-closeout-proof",
+    "phase70-subscription-saas-proof",
+    "phase71-notification-workflow-proof",
+    "phase73-auth-sensitive-admin-workflow-proof",
+    "phase74-offline-draft-recovery-proof",
+    "phase75-closeout-gate",
 }
 
 
