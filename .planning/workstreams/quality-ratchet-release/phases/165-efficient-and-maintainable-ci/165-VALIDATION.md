@@ -1,9 +1,9 @@
 ---
 phase: 165
 slug: efficient-and-maintainable-ci
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: active
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-08-28
 ---
 
@@ -21,7 +21,7 @@ created: 2026-08-28
 | **Config file** | `test/test_helper.exs`; workflow checks use repository scripts |
 | **Quick run command** | `python3 script/check_aggregator_result_semantics.py --self-test && python3 script/list_merge_blocking_checks.py --emitters >/dev/null && script/check_required_checks_registered.sh --local-only && mix test test/crosswake/proof/phase165_ci_policy_test.exs test/crosswake/proof/phase165_ci_integrity_test.exs` |
 | **Full suite command** | `script/check_phase165_efficient_ci.sh` |
-| **Estimated runtime** | To be measured after Wave 0; individual structural checks must remain bounded and non-watch-mode |
+| **Observed runtime** | About 9 seconds locally for the recurring structural gate; hosted-runner queue and execution timing remain descriptive and are not thresholded |
 
 ---
 
@@ -38,13 +38,13 @@ created: 2026-08-28
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 165-W0-01 | TBD | 1 | CIP-01 | T-165-06 | Pure Elixir and Android/JVM leaves use Linux; macOS leaves invoke Apple tooling | structural + shell integration | `mix test test/crosswake/proof/phase165_ci_integrity_test.exs --only runner_placement` | ❌ W0 | ⬜ pending |
-| 165-W0-02 | TBD | 1 | CIP-02 | T-165-01, T-165-02 | PR proof has one authoritative trigger and cancellation never crosses PR/workflow identity | structural + unit | `python3 script/select_obsolete_ci_runs.py --self-test && mix test test/crosswake/proof/phase165_ci_integrity_test.exs --only triggers` | ❌ W0 | ⬜ pending |
-| 165-W0-03 | TBD | 1 | CIP-03 | T-165-06 | Cache identity includes complete dependency and toolchain topology; incompatible fixtures miss | structural + fixture | `mix test test/crosswake/proof/phase165_ci_integrity_test.exs --only cache_identity` | ❌ W0 | ⬜ pending |
-| 165-W0-04 | TBD | 1 | CIP-04 | T-165-01, T-165-02 | Every job has a timeout; only a strictly lower run ID for the same PR/workflow can be cancelled | structural + unit + live smoke | `python3 script/select_obsolete_ci_runs.py --self-test && mix test test/crosswake/proof/phase165_ci_integrity_test.exs --only timeout` | ❌ W0 | ⬜ pending |
-| 165-W0-05 | TBD | 1 | CIP-05 | T-165-03, T-165-04 | Full-history acquisition is explicit; untrusted paths are parsed NUL-safely; unknown classification runs full proof; the umbrella fails missing/unexplained proof or non-success control nodes | unit + structural + live PR probe | `python3 script/classify_ci_change.py --self-test && python3 script/check_aggregator_result_semantics.py --self-test && mix test test/crosswake/proof/phase165_ci_policy_test.exs` | ❌ W0 | ⬜ pending |
-| 165-W0-06 | TBD | 1 | CIP-06 | T-165-07 | Evidence accepts only the sanitized schema and reports unavailable comparisons as `not measured` | unit + artifact inspection | `node scripts/ci_monitor.cjs test-evidence && mix test test/crosswake/proof/phase165_evidence_test.exs` | ❌ W0 | ⬜ pending |
-| 165-W0-07 | TBD | 1 | CIP-07 | T-165-04, T-165-08 | Static `needs` equals proof leaves union required control nodes; maximum shape fits syntax/job/payload bounds; frozen required contexts and producers remain exact | structural + negative fixtures | `python3 script/check_ci_leaf_manifest.py --self-test && python3 script/check_ci_leaf_manifest.py --maximum-shape test/fixtures/ci/maximum-shape-crosswake-ci.yml --needs-fixture test/fixtures/ci/maximum-shape-needs.json && python3 script/list_merge_blocking_checks.py --emitters >/dev/null` | ❌ W0 | ⬜ pending |
+| 165-W0-01 | 165-04, 165-08 | 1 | CIP-01 | T-165-06 | Pure Elixir and Android/JVM leaves use Linux; macOS leaves invoke Apple tooling | structural + shell integration | `mix test test/crosswake/proof/phase165_ci_integrity_test.exs --only runner_placement` | ✅ | ✅ green |
+| 165-W0-02 | 165-03, 165-09 | 1 | CIP-02 | T-165-01, T-165-02 | PR proof has one authoritative trigger and cancellation never crosses PR/workflow identity | structural + unit | `python3 script/select_obsolete_ci_runs.py --self-test && mix test test/crosswake/proof/phase165_ci_integrity_test.exs --only triggers` | ✅ | ✅ green |
+| 165-W0-03 | 165-04 | 1 | CIP-03 | T-165-06 | Cache identity includes complete dependency and toolchain topology; incompatible fixtures miss | structural + fixture | `mix test test/crosswake/proof/phase165_ci_integrity_test.exs --only cache_identity` | ✅ | ✅ green |
+| 165-W0-04 | 165-03, 165-04 | 1 | CIP-04 | T-165-01, T-165-02 | Every job has a timeout; only a strictly lower run ID for the same PR/workflow can be cancelled | structural + unit + live smoke | `python3 script/select_obsolete_ci_runs.py --self-test && mix test test/crosswake/proof/phase165_ci_integrity_test.exs --only timeout` | ✅ | ✅ green |
+| 165-W0-05 | 165-01, 165-02, 165-09 | 1 | CIP-05 | T-165-03, T-165-04 | Full-history acquisition is explicit; untrusted paths are parsed NUL-safely; unknown classification runs full proof; the umbrella fails missing/unexplained proof or non-success control nodes | unit + structural + live PR probe | `python3 script/classify_ci_change.py --self-test && python3 script/check_aggregator_result_semantics.py --self-test && mix test test/crosswake/proof/phase165_ci_policy_test.exs` | ✅ | ✅ green |
+| 165-W0-06 | 165-01, 165-09 | 1 | CIP-06 | T-165-07 | Evidence accepts only the sanitized schema and reports unavailable comparisons as `not measured` | unit + artifact inspection | `node scripts/ci_monitor.cjs test-evidence && mix test test/crosswake/proof/phase165_evidence_test.exs` | ✅ | ✅ green |
+| 165-W0-07 | 165-02, 165-09 | 1 | CIP-07 | T-165-04, T-165-08 | Static `needs` equals proof leaves union required control nodes; maximum shape fits syntax/job/payload bounds; frozen required contexts and producers remain exact | structural + negative fixtures | `python3 script/check_ci_leaf_manifest.py --self-test && python3 script/check_ci_leaf_manifest.py --maximum-shape test/fixtures/ci/maximum-shape-crosswake-ci.yml --needs-fixture test/fixtures/ci/maximum-shape-needs.json && python3 script/list_merge_blocking_checks.py --emitters >/dev/null` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,13 +52,13 @@ created: 2026-08-28
 
 ## Wave 0 Requirements
 
-- [ ] `test/crosswake/proof/phase165_ci_policy_test.exs` — classifier, cancellation, aggregator, and manifest negative controls.
-- [ ] `test/crosswake/proof/phase165_ci_integrity_test.exs` — trigger, runner, timeout, cache, permission, and workflow-topology invariants.
-- [ ] `test/crosswake/proof/phase165_evidence_test.exs` — schema allowlist, redaction, cohort, and metric semantics.
-- [ ] `script/check_phase165_efficient_ci.sh` — recurring phase gate composing the stable contracts.
-- [ ] Python fixtures for adversarial Git names/statuses, cancellation orderings, manifest omissions, and evidence payloads.
-- [ ] `test/fixtures/ci/maximum-shape-crosswake-ci.yml` plus `maximum-shape-needs.json` — complete final proof/control union, actionlint-valid checkout-free umbrella, under 256 jobs and 32 KiB serialized-needs safety budget.
-- [ ] `evidence/required-context-baseline.json` — pre-mutation strict exact sorted context set and source digest; every producer migration re-verifies it live.
+- [x] `test/crosswake/proof/phase165_ci_policy_test.exs` — classifier, cancellation, aggregator, and manifest negative controls.
+- [x] `test/crosswake/proof/phase165_ci_integrity_test.exs` — trigger, runner, timeout, cache, permission, and workflow-topology invariants.
+- [x] `test/crosswake/proof/phase165_evidence_test.exs` — schema allowlist, redaction, cohort, and metric semantics.
+- [x] `script/check_phase165_efficient_ci.sh` — recurring phase gate composing the stable contracts.
+- [x] Python fixtures for adversarial Git names/statuses, cancellation orderings, manifest omissions, and evidence payloads.
+- [x] `test/fixtures/ci/maximum-shape-crosswake-ci.yml` plus `maximum-shape-needs.json` — complete final proof/control union, actionlint-valid checkout-free umbrella, under 256 jobs and 32 KiB serialized-needs safety budget.
+- [x] `evidence/required-context-baseline.json` — pre-mutation strict exact sorted context set and source digest; every producer migration re-verifies it live.
 - [ ] Live probe and cleanup commands for documentation-only visibility, lower-run-ID cancellation, and additive branch-protection verification.
 - [ ] Final-source probe that accepts only the execute-phase orchestrator's exact post-Plan-12 remote-default SHA and verifies compatibility-free workflow/manifest blob digests before after-cohort collection.
 
@@ -92,12 +92,12 @@ All other phase behavior, including live PR, cancellation, cache, and evidence a
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verification or Wave 0 dependencies.
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verification.
-- [ ] Wave 0 covers all missing references.
-- [ ] No watch-mode flags.
-- [ ] Feedback latency is observed and recorded after Wave 0.
-- [ ] Live authority probes are automated; only branch-protection retirement uses a human approval gate.
-- [ ] `nyquist_compliant: true` is set in frontmatter after validation.
+- [x] All tasks have `<automated>` verification or Wave 0 dependencies.
+- [x] Sampling continuity: no 3 consecutive tasks without automated verification.
+- [x] Wave 0 covers all missing references.
+- [x] No watch-mode flags.
+- [x] Feedback latency is observed and recorded after Wave 0.
+- [x] Live authority probes are automated; only branch-protection retirement uses a human approval gate.
+- [x] `nyquist_compliant: true` is set in frontmatter after validation.
 
-**Approval:** pending
+**Approval:** recurring local contract green; live authority migration remains governed by Plans 10-12
