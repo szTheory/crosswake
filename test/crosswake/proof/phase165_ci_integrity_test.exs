@@ -160,6 +160,12 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert focused =~ "classification == 'full_proof'"
     assert focused =~ "threadline_docs_contract"
 
+    advisory = File.read!(".github/workflows/phase96-proof-advisory.yml")
+    assert advisory =~ ~r/^  workflow_dispatch:/m
+    assert advisory =~ ~r/^  schedule:/m
+    refute advisory =~ ~r/^  pull_request:/m
+    refute advisory =~ ~r/^  push:/m
+
     for {job, display_name} <- [
           {"compat-ios-mirror-parity", "merge-blocking-ios-mirror-parity"},
           {"compat-phase96-threadline-docs-contract",

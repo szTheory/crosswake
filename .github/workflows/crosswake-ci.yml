@@ -1141,6 +1141,93 @@ jobs:
           echo 'Phase 67 Android JVM proof completed without device authority.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Remediation: cd packages/crosswake-shell-core-android && ./gradlew testDebugUnitTest' >> "$GITHUB_STEP_SUMMARY"
 
+  ios-mirror-parity-proof:
+    name: ios-mirror-parity-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Check iOS SwiftPM mirror parity
+        run: ./script/check_ios_mirror_parity.sh
+      - name: Summarize iOS mirror parity proof
+        if: always()
+        run: |
+          echo 'iOS mirror parity proof completed without Apple tooling or credentials.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: script/check_ios_mirror_parity.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  phase10-proof:
+    name: phase10-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Install Elixir dependencies
+        run: mix deps.get
+      - name: Verify SaaS profile
+        run: bash script/verify_saas_profile.sh
+      - name: Verify selective-native profile
+        run: bash script/verify_selective_native.sh
+      - name: Verify local-first profile
+        run: bash script/verify_local_first.sh
+      - name: Summarize Phase 10 proof
+        if: always()
+        run: |
+          echo 'Phase 10 profile proof completed on its portable Linux owner.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: bash script/verify_saas_profile.sh && bash script/verify_selective_native.sh && bash script/verify_local_first.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  phase96-threadline-docs-contract-proof:
+    name: phase96-threadline-docs-contract-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof' || contains(fromJSON(needs.classify-change.outputs.scheduled_families), 'threadline_docs_contract')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - name: Install Elixir dependencies
+        run: mix deps.get
+      - name: Compile with warnings as errors
+        run: mix compile --warnings-as-errors
+      - name: Run hermetic Threadline docs contract proof
+        run: >-
+          mix test
+          test/crosswake/proof/phase91_threadline_contract_closeout_test.exs
+          test/crosswake/proof/phase92_server_propagation_closeout_test.exs
+          test/crosswake/proof/phase96_threadline_docs_contract_test.exs
+          test/crosswake/plug/threadline_test.exs
+          test/crosswake/live/threadline_test.exs
+          test/crosswake/threadline/telemetry_test.exs
+          test/crosswake/threadline/id_test.exs
+          test/crosswake/doctor/doctor_threadline_test.exs
+          test/mix/tasks/crosswake.gen.audit_test.exs
+          "test/crosswake/support_matrix/support_matrix_test.exs:246"
+      - name: Summarize Threadline docs-contract proof
+        if: always()
+        run: |
+          {
+            echo 'Focused Threadline public documentation and runtime contract proof completed.'
+            echo 'Focused remediation: mix test test/crosswake/proof/phase96_threadline_docs_contract_test.exs test/crosswake/plug/threadline_test.exs test/crosswake/live/threadline_test.exs test/crosswake/threadline/telemetry_test.exs'
+            echo 'Remediation: mix test test/crosswake/proof/phase91_threadline_contract_closeout_test.exs test/crosswake/proof/phase92_server_propagation_closeout_test.exs test/crosswake/proof/phase96_threadline_docs_contract_test.exs test/crosswake/plug/threadline_test.exs test/crosswake/live/threadline_test.exs test/crosswake/threadline/telemetry_test.exs test/crosswake/threadline/id_test.exs test/crosswake/doctor/doctor_threadline_test.exs test/mix/tasks/crosswake.gen.audit_test.exs "test/crosswake/support_matrix/support_matrix_test.exs:246"'
+          } >> "$GITHUB_STEP_SUMMARY"
+
   compat-aggregator-negative-control:
     name: merge-blocking-aggregator-negative-control
     needs: [merge-blocking-crosswake-ci]
@@ -1180,6 +1267,17 @@ jobs:
     steps:
       - name: Preserve the legacy required context
         env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-ios-mirror-parity:
+    name: merge-blocking-ios-mirror-parity
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
           RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
         run: test "$RESULT" = success
 
@@ -1415,6 +1513,17 @@ jobs:
           RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
         run: test "$RESULT" = success
 
+  compat-phase96-threadline-docs-contract:
+    name: merge-blocking Threadline docs-contract proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
   merge-blocking-crosswake-ci:
     name: Crosswake CI
     if: always()
@@ -1428,7 +1537,9 @@ jobs:
       - guard-01-e2e-honesty
       - guard-02-generate-and-diff
       - guard-02-prod-route-absence
+      - ios-mirror-parity-proof
       - ios-package-unit
+      - phase10-proof
       - phase18-elixir-android-proof
       - phase18-ios-proof
       - phase130-companion-engine-absent-proof
@@ -1453,6 +1564,7 @@ jobs:
       - phase75-closeout-gate
       - phase79-android-proof
       - phase79-ios-proof
+      - phase96-threadline-docs-contract-proof
       - proof-aggregator-negative-control
       - proof-dependency-security
       - proof-requires-example-host
@@ -1486,7 +1598,9 @@ jobs:
               "guard-01-e2e-honesty",
               "guard-02-generate-and-diff",
               "guard-02-prod-route-absence",
+              "ios-mirror-parity-proof",
               "ios-package-unit",
+              "phase10-proof",
               "phase18-elixir-android-proof",
               "phase18-ios-proof",
               "phase130-companion-engine-absent-proof",
@@ -1511,6 +1625,7 @@ jobs:
               "phase75-closeout-gate",
               "phase79-android-proof",
               "phase79-ios-proof",
+              "phase96-threadline-docs-contract-proof",
               "proof-aggregator-negative-control",
               "proof-dependency-security",
               "proof-requires-example-host",
@@ -1529,6 +1644,6 @@ jobs:
             echo "Reason: ${REASON}."
             echo "Scheduled proof families: ${SCHEDULED_FAMILIES}."
             echo 'Explicitly irrelevant families: core_integrity, security, example_host, native_android, native_ios, offline_browser.'
-            echo 'Expected proof leaves: 37.'
+            echo 'Expected proof leaves: 40.'
             echo 'Remediation: python3 script/check_ci_leaf_manifest.py --self-test'
           } >> "$GITHUB_STEP_SUMMARY"

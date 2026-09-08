@@ -58,10 +58,24 @@
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
+      "leaf_id": "ios-mirror-parity-proof",
+      "display_name": "ios-mirror-parity-proof",
+      "family": "packaging",
+      "remediation_command": "script/check_ios_mirror_parity.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
       "leaf_id": "ios-package-unit",
       "display_name": "ios-package-unit",
       "family": "native_ios",
       "remediation_command": "cd packages/crosswake-shell-core-ios && swift test",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase10-proof",
+      "display_name": "phase10-proof",
+      "family": "example_host",
+      "remediation_command": "bash script/verify_saas_profile.sh && bash script/verify_selective_native.sh && bash script/verify_local_first.sh",
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
@@ -233,6 +247,13 @@
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
+      "leaf_id": "phase96-threadline-docs-contract-proof",
+      "display_name": "phase96-threadline-docs-contract-proof",
+      "family": "threadline_docs_contract",
+      "remediation_command": "mix test test/crosswake/proof/phase91_threadline_contract_closeout_test.exs test/crosswake/proof/phase92_server_propagation_closeout_test.exs test/crosswake/proof/phase96_threadline_docs_contract_test.exs test/crosswake/plug/threadline_test.exs test/crosswake/live/threadline_test.exs test/crosswake/threadline/telemetry_test.exs test/crosswake/threadline/id_test.exs test/crosswake/doctor/doctor_threadline_test.exs test/mix/tasks/crosswake.gen.audit_test.exs \"test/crosswake/support_matrix/support_matrix_test.exs:246\"",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
       "leaf_id": "proof-aggregator-negative-control",
       "display_name": "proof-aggregator-negative-control",
       "family": "aggregator_integrity",
@@ -282,6 +303,11 @@
     {
       "job_id": "compat-dependency-security",
       "display_context": "merge-blocking-dependency-security",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-ios-mirror-parity",
+      "display_context": "merge-blocking-ios-mirror-parity",
       "needs_target": "merge-blocking-crosswake-ci"
     },
     {
@@ -382,6 +408,11 @@
     {
       "job_id": "compat-phase75-closeout-gate",
       "display_context": "merge-blocking phase 75 closeout gate",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase96-threadline-docs-contract",
+      "display_context": "merge-blocking Threadline docs-contract proof (hermetic)",
       "needs_target": "merge-blocking-crosswake-ci"
     },
     {

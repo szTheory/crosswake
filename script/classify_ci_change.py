@@ -21,13 +21,18 @@ KNOWN_SINGLE = {"A", "M", "D", "T"}
 KNOWN_DOUBLE = {"R", "C"}
 
 
-def closed_result(classification: str, reason: str) -> dict[str, object]:
+def closed_result(
+    classification: str, reason: str, affected_families: set[str] | None = None
+) -> dict[str, object]:
     docs = classification == "documentation_only"
+    scheduled_families = ["documentation_contracts"] if docs else ["full_proof"]
+    if docs and affected_families and "public_docs" in affected_families:
+        scheduled_families.append("threadline_docs_contract")
     return {
         "schema_version": SCHEMA_VERSION,
         "classification": classification,
         "reason": reason,
-        "scheduled_families": ["documentation_contracts"] if docs else ["full_proof"],
+        "scheduled_families": scheduled_families,
         "irrelevant_leaves": (
             ["android", "apple", "browser", "packaging", "root_suite"] if docs else []
         ),
@@ -158,6 +163,15 @@ def is_documentation_path(path: str, allowlist: dict[str, object]) -> bool:
     return any(path_allowed_by_family(path, family) for family in allowlist["families"])
 
 
+def documentation_family(path: str, allowlist: dict[str, object]) -> str | None:
+    if path in allowlist["excluded"]:
+        return None
+    for family in allowlist["families"]:
+        if path_allowed_by_family(path, family):
+            return str(family["family"])
+    return None
+
+
 def classify_records(
     records: list[tuple[str, tuple[str, ...]]] | None, allowlist: dict[str, object]
 ) -> dict[str, object]:
@@ -165,7 +179,12 @@ def classify_records(
         return full_proof("diff_empty_or_malformed")
     paths = sorted(path for _status, record_paths in records for path in record_paths)
     if all(is_documentation_path(path, allowlist) for path in paths):
-        return closed_result("documentation_only", "all_changed_paths_allowlisted")
+        affected_families = {documentation_family(path, allowlist) for path in paths}
+        return closed_result(
+            "documentation_only",
+            "all_changed_paths_allowlisted",
+            {family for family in affected_families if family},
+        )
     return full_proof("unallowlisted_or_mixed_path")
 
 
@@ -270,6 +289,23 @@ class ClassifierSelfTest(unittest.TestCase):
             b"M\0guides/../secret.md\0",
         ):
             self.assert_classification(raw, "full_proof")
+
+    def test_documentation_families_schedule_focused_public_docs_proof(self) -> None:
+        planning = classify_records(parse_name_status(b"M\0.planning/PROJECT.md\0"), self.allowlist)
+        public = classify_records(parse_name_status(b"M\0guides/threadline.md\0"), self.allowlist)
+        mixed_docs = classify_records(
+            parse_name_status(b"M\0.planning/PROJECT.md\0M\0README.md\0"), self.allowlist
+        )
+
+        self.assertEqual(planning["scheduled_families"], ["documentation_contracts"])
+        self.assertEqual(
+            public["scheduled_families"],
+            ["documentation_contracts", "threadline_docs_contract"],
+        )
+        self.assertEqual(
+            mixed_docs["scheduled_families"],
+            ["documentation_contracts", "threadline_docs_contract"],
+        )
 
     def test_record_order_does_not_change_output(self) -> None:
         first = b"A\0README.md\0M\0guides/a.md\0"
