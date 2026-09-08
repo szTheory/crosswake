@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 165
 current_phase_name: Efficient and Maintainable CI
 status: executing
-stopped_at: Completed 165-04-PLAN.md
-last_updated: "2026-09-08T01:15:17.860Z"
-last_activity: 2026-09-07
-last_activity_desc: Phase 165 execution started
-state_head: 8d56cbf8a1b898188b8ecc0f5b18b7efa3e5b699
+stopped_at: Completed 165-05-PLAN.md
+last_updated: "2026-09-08T16:32:24.019Z"
+last_activity: 2026-09-08
+last_activity_desc: Plan 165-05 core and hermetic CI migration completed
+state_head: 36b274be3f58186ef6ea296d0978eafa73890cb9
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 9
+  completed_plans: 10
   percent: 20
 workstream: quality-ratchet-release
 ---
@@ -32,9 +32,9 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 165 (Efficient and Maintainable CI) — EXECUTING
-Plan: 5 of 13
+Plan: 6 of 13
 Status: Ready to execute
-Last activity: 2026-09-07 — Phase 165 execution started
+Last activity: 2026-09-08 — Plan 165-05 core and hermetic CI migration completed
 
 Progress: [██░░░░░░░░] 20%
 
@@ -62,6 +62,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase 165 P02 | 18 min | 3 tasks | 11 files |
 | Phase 165 P03 | 9 min | 2 tasks | 5 files |
 | Phase 165 P04 | 16 min | 3 tasks | 8 files |
+| Phase 165 P05 | 15h 9m | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,8 @@ Progress: [██░░░░░░░░] 20%
 - [Phase 165]: Keep the controller non-authoritative until Plan 165-10 proves requested-event timing and live inversion behavior.
 - [Phase 165]: Keep Android JVM proof portable by exiting before optional connected provisioning and consuming explicit runner-provided toolchains.
 - [Phase 165]: Keep compiled cache restoration exact across complete BEAM, Gradle, and Swift compatibility identity; expose only closed cache outcomes.
+- [Phase 165]: Bind migration-only legacy contexts to the checkout-free Crosswake CI umbrella so documentation-only irrelevance remains compatible and unexplained non-success stays closed. — Preserves frozen required contexts without admitting a skipped executable leaf directly.
+- [Phase 165]: Keep scheduled/manual engine and commerce advisories source-qualified, non-cancelling, and outside PR concurrency. — Their trust and scheduling boundary is distinct from recurring PR product proof.
 
 ### Pending Todos
 
@@ -110,6 +113,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-08T01:15:17.826Z
-Stopped at: Completed 165-04-PLAN.md
+Last session: 2026-09-08T16:32:10.168Z
+Stopped at: Completed 165-05-PLAN.md
 Resume file: None
