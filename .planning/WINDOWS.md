@@ -1,15 +1,15 @@
 ---
 schema_version: 1
-open_count: 16
+open_count: 17
 waived_count: 0
 fixed_count: 0
-total_count: 16
-last_updated: 2026-08-28T13:07:34.571Z
+total_count: 17
+last_updated: 2026-09-08T18:32:27.078Z
 ---
 
 # Broken Windows Ledger
 
-> Cross-phase defect register. `/gsd-ship` blocks while `open_count > 0`.
+> Cross-phase defect register. With `workflow.windows_enforce` enabled, `/gsd-ship` blocks while `open_count > 0`.
 > Waive with `gsd-tools windows waive <id> "<reason>"` (reason required).
 > Mark fixed with `gsd-tools windows fixed <id>`.
 
@@ -31,6 +31,7 @@ last_updated: 2026-08-28T13:07:34.571Z
 | 14 | 162 | deviation | lib/crosswake/support_matrix/renderer.ex |  | Used authorized source-bound Evidence.check/2 because Evidence.check/1 deliberately rejects approved hashes without supplied canonical source bytes. | open |  | 2026-08-26T17:41:03.602Z |  |
 | 15 | 163.1 | deviation | examples/phoenix_host/native/ios/CrosswakeProofLane/ProofLaneDriver.swift |  | Reference proof target lacks CrosswakeShellCore linkage; private decoder preserves the closed transport boundary. | open |  | 2026-08-28T03:42:12.753Z |  |
 | 16 | 163.1 | deviation | examples/phoenix_host/native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj |  | Plan 163.1-05 added the local Core package and shared shell controller because physical composition otherwise could not compile. | open |  | 2026-08-28T13:07:34.571Z |  |
+| 17 | 165 | unrun-verify | .github/workflows/release-please.yml | 27 | Repository-wide actionlint is blocked by the pre-existing unsupported concurrency.queue key and required-checks-audit SC2016 diagnostic; Plan 165-09 changed workflow lint passes. | open |  | 2026-09-08T18:32:27.078Z |  |
 
 ````json
 [
@@ -224,6 +225,18 @@ last_updated: 2026-08-28T13:07:34.571Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-28T13:07:34.571Z",
+    "resolved_at": null
+  },
+  {
+    "id": 17,
+    "kind": "unrun-verify",
+    "phase": "165",
+    "file": ".github/workflows/release-please.yml",
+    "line": 27,
+    "description": "Repository-wide actionlint is blocked by the pre-existing unsupported concurrency.queue key and required-checks-audit SC2016 diagnostic; Plan 165-09 changed workflow lint passes.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-08T18:32:27.078Z",
     "resolved_at": null
   }
 ]
