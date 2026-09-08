@@ -70,6 +70,7 @@ FINAL_PROOF_LEAVES = (
 )
 FINAL_CONTROL_NODES = ("classify-change",)
 FINAL_NEEDS = tuple(sorted(FINAL_PROOF_LEAVES + FINAL_CONTROL_NODES))
+ADVISORY_JOBS = ("brand-visual",)
 CLASSIFIER_IRRELEVANCE_REASON = "all_changed_paths_allowlisted"
 
 
@@ -194,11 +195,23 @@ def validate(manifest: object, workflow: object, producer_records=None) -> list[
         problems.append(Problem("extra_static_need", member, "umbrella need is absent from manifest authority"))
 
     legacy_ids = set(legacy)
-    governed_jobs = set(jobs) - {UMBRELLA_ID} - legacy_ids
+    governed_jobs = set(jobs) - {UMBRELLA_ID} - legacy_ids - set(ADVISORY_JOBS)
     for member in sorted(expected - governed_jobs):
         problems.append(Problem("missing_job", member, "manifest member has no workflow job"))
     for member in sorted(governed_jobs - expected):
         problems.append(Problem("extra_job", member, "workflow job is outside manifest authority"))
+
+    brand_visual = jobs.get("brand-visual")
+    if not isinstance(brand_visual, dict) or literal_name("brand-visual", brand_visual, problems) != "brand-visual":
+        problems.append(Problem("missing_advisory_job", "brand-visual", "literal advisory job is required"))
+    else:
+        visual_text = yaml.safe_dump(brand_visual, sort_keys=False)
+        if "continue-on-error" in visual_text or "|| true" in visual_text:
+            problems.append(Problem("advisory_success_coercion", "brand-visual", "visual failure must remain red"))
+        if "brand-visual" in set(needs):
+            problems.append(Problem("advisory_in_umbrella", "brand-visual", "advisory job cannot affect required authority"))
+        if any(row.get("needs_target") == "brand-visual" for row in legacy.values()):
+            problems.append(Problem("advisory_compatibility_projection", "brand-visual", "advisory job cannot back compatibility authority"))
 
     for identifier, row in {**proofs, **controls}.items():
         actual = literal_name(identifier, jobs.get(identifier), problems)

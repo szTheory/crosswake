@@ -16,6 +16,20 @@
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
+      "leaf_id": "brand-structural",
+      "display_name": "brand-structural",
+      "family": "brand_structural",
+      "remediation_command": "cd brandbook/tools && npm ci && node check-production.mjs && node check-candidates.mjs && node --test compile-tokens.test.mjs contrast.test.mjs check-consumer-drift.test.mjs && node check-consumer-drift.mjs && cd ../e2e && npm ci && npx playwright install --with-deps chromium && npm run test:structural",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "collateral-binaries-guard",
+      "display_name": "collateral-binaries-guard",
+      "family": "public_docs",
+      "remediation_command": "bash script/collateral-guard.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
       "leaf_id": "documentation-contracts",
       "display_name": "documentation-contracts",
       "family": "documentation_contracts",
@@ -55,6 +69,13 @@
       "display_name": "guard-02-prod-route-absence",
       "family": "offline_browser",
       "remediation_command": "cd examples/phoenix_host && MIX_ENV=prod mix phx.routes CrosswakeExample.Router",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "hex-page-proof",
+      "display_name": "hex-page-proof",
+      "family": "public_docs",
+      "remediation_command": "mix compile --warnings-as-errors && mix crosswake.adoption_context.scan && mix test --exclude requires_example_host && mix docs && bash script/verify_hex_tarball.sh && mix hex.publish --dry-run --yes",
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
@@ -275,6 +296,13 @@
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
+      "leaf_id": "release-as-staleness-proof",
+      "display_name": "release-as-staleness-proof",
+      "family": "release_integrity",
+      "remediation_command": "./script/check_release_as_staleness.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
       "leaf_id": "route-tour-proof",
       "display_name": "route-tour-proof",
       "family": "offline_browser",
@@ -413,6 +441,11 @@
     {
       "job_id": "compat-phase96-threadline-docs-contract",
       "display_context": "merge-blocking Threadline docs-contract proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-release-as-staleness",
+      "display_context": "merge-blocking-release-as-staleness",
       "needs_target": "merge-blocking-crosswake-ci"
     },
     {

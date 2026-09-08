@@ -1695,13 +1695,16 @@ jobs:
     needs:
       - android-generated-shell-unit
       - android-package-unit
+      - brand-structural
       - classify-change
+      - collateral-binaries-guard
       - documentation-contracts
       - e2e-proof
       - guard-01-contract-drift-test
       - guard-01-e2e-honesty
       - guard-02-generate-and-diff
       - guard-02-prod-route-absence
+      - hex-page-proof
       - ios-mirror-parity-proof
       - ios-package-unit
       - phase10-proof
@@ -1733,6 +1736,7 @@ jobs:
       - proof-aggregator-negative-control
       - proof-dependency-security
       - proof-requires-example-host
+      - release-as-staleness-proof
       - route-tour-proof
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -1758,11 +1762,14 @@ jobs:
           explicitly_irrelevant = {
               "android-generated-shell-unit",
               "android-package-unit",
+              "brand-structural",
+              "collateral-binaries-guard",
               "e2e-proof",
               "guard-01-contract-drift-test",
               "guard-01-e2e-honesty",
               "guard-02-generate-and-diff",
               "guard-02-prod-route-absence",
+              "hex-page-proof",
               "ios-mirror-parity-proof",
               "ios-package-unit",
               "phase10-proof",
@@ -1794,6 +1801,7 @@ jobs:
               "proof-aggregator-negative-control",
               "proof-dependency-security",
               "proof-requires-example-host",
+              "release-as-staleness-proof",
               "route-tour-proof",
           } if classification == "documentation_only" else set()
           for name, value in sorted(needs.items()):
@@ -1805,10 +1813,11 @@ jobs:
                       sys.exit("Crosswake CI: proof leaf did not reach a closed accepted result: " + name)
           PY
           {
-            echo "Crosswake CI: ${CLASSIFICATION}."
+            echo "Classification: ${CLASSIFICATION}."
             echo "Reason: ${REASON}."
             echo "Scheduled proof families: ${SCHEDULED_FAMILIES}."
-            echo 'Explicitly irrelevant families: core_integrity, security, example_host, native_android, native_ios, offline_browser.'
-            echo 'Expected proof leaves: 40.'
+            echo 'Explicitly irrelevant families: classifier-authorized leaves reported as skipped; unrelated executable families are not scheduled.'
+            echo 'Expected/observed proof leaves: 44/44.'
+            echo 'Observed proof leaves use count units; hosted-runner timing is not measured.'
             echo 'Remediation: python3 script/check_ci_leaf_manifest.py --self-test'
           } >> "$GITHUB_STEP_SUMMARY"

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """Inventory literal GitHub Actions job producers with fail-closed diagnostics.
 
 The default view lists merge-blocking registration candidates. ``--emitters`` emits every
@@ -44,6 +45,10 @@ except ImportError:
 
 CROSSWAKE_CI = ".github/workflows/crosswake-ci.yml"
 MIGRATED_SOURCE_WORKFLOWS = {
+    ".github/workflows/brandbook-verify.yml",
+    ".github/workflows/collateral-guard.yml",
+    ".github/workflows/hex-page-proof.yml",
+    ".github/workflows/release-as-staleness-gate.yml",
     ".github/workflows/phase130-proof.yml",
     ".github/workflows/phase132-proof.yml",
     ".github/workflows/phase23-proof.yml",
@@ -62,6 +67,10 @@ MIGRATED_SOURCE_WORKFLOWS = {
     ".github/workflows/phase75-closeout-gate.yml",
 }
 MIGRATED_JOB_IDS = {
+    "brand-structural",
+    "collateral-binaries-guard",
+    "hex-page-proof",
+    "release-as-staleness-proof",
     "proof-aggregator-negative-control",
     "guard-01-contract-drift-test",
     "guard-02-generate-and-diff",
