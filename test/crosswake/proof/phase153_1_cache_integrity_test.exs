@@ -137,12 +137,10 @@ defmodule Crosswake.Proof.Phase153_1CacheIntegrityTest do
           Path.basename(f) not in @exempt,
           {key, restore, _} <- cache_entries(File.read!(f)),
           is_binary(key) and is_binary(restore) do
-        # Anchored on `${{ hashFiles`, not on a leading `${{` plus a greedy gap.
-        # Two earlier attempts were wrong in opposite directions: `[^}]*` stopped
-        # at the inner brace of hashFiles(format('{0}/mix.lock', ...)), and a
-        # greedy `.*` swallowed everything back to the FIRST `${{` in the key,
-        # leaving just "deps-".
-        expected = Regex.replace(~r/\$\{\{\s*hashFiles.*\}\}\s*$/, key, "")
+        # Split at the final hashFiles expression so earlier identity hashes
+        # (for example mix.exs) remain part of the safe restore prefix.
+        parts = String.split(key, "${{ hashFiles")
+        expected = parts |> Enum.drop(-1) |> Enum.join("${{ hashFiles")
 
         if String.trim(restore) == String.trim(expected) do
           nil

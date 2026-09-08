@@ -7,8 +7,10 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
 
   @script "script/check_dependency_security.sh"
   @fixture "test/fixtures/security/advisory-bearing.lock"
-  @workflow ".github/workflows/dependency-security.yml"
+  @workflow ".github/workflows/crosswake-ci.yml"
   @security_context "merge-blocking-dependency-security"
+  @security_leaf "proof-dependency-security"
+  @security_compatibility "compat-dependency-security"
 
   @root_targets %{
     "phoenix" => "1.8.13",
@@ -229,7 +231,7 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
       |> Enum.map(&String.split(&1, "\t"))
       |> Enum.filter(fn [name, _path, _job] -> name == @security_context end)
 
-    assert producers == [[@security_context, @workflow, @security_context]]
+    assert producers == [[@security_context, @workflow, @security_compatibility]]
 
     dynamic_security_names =
       [".github/workflows/*.yml", ".github/workflows/*.yaml"]
@@ -247,33 +249,51 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
     assert dynamic_security_names == []
   end
 
-  test "dependency-security workflow directly awaits canonical and negative-control proof" do
+  test "dependency-security leaf owns audits and the legacy context projects the umbrella" do
     source = File.read!(@workflow)
+    leaf = job_section!(source, @security_leaf)
+    compatibility = job_section!(source, @security_compatibility)
+    umbrella = job_section!(source, "merge-blocking-crosswake-ci")
 
-    assert source =~ "name: #{@security_context}"
-    assert source =~ "install-hex: false"
-    assert source =~ "for attempt in 1 2 3"
-    assert source =~ "mix local.hex --force"
-    assert length(Regex.scan(~r/^\s*run: mix deps\.get$/m, source)) == 2
-    assert source =~ "working-directory: examples/phoenix_host"
-    assert source =~ "run: script/check_dependency_security.sh\n"
+    assert leaf =~ "name: #{@security_leaf}"
+    assert leaf =~ "install-hex: false"
+    assert leaf =~ "for attempt in 1 2 3"
+    assert leaf =~ "mix local.hex --force"
+    assert length(Regex.scan(~r/^\s*run: mix deps\.get$/m, leaf)) == 2
+    assert leaf =~ "working-directory: examples/phoenix_host"
+    assert leaf =~ "run: script/check_dependency_security.sh\n"
 
-    assert :binary.match(source, "mix local.hex --force") <
-             :binary.match(source, "run: script/check_dependency_security.sh\n")
+    assert :binary.match(leaf, "mix local.hex --force") <
+             :binary.match(leaf, "run: script/check_dependency_security.sh\n")
 
-    assert :binary.match(source, "working-directory: examples/phoenix_host") <
-             :binary.match(source, "run: script/check_dependency_security.sh\n")
+    assert :binary.match(leaf, "working-directory: examples/phoenix_host") <
+             :binary.match(leaf, "run: script/check_dependency_security.sh\n")
 
-    assert source =~
+    assert leaf =~
              "run: script/check_dependency_security.sh --assert-vulnerable-fixture #{@fixture}"
 
-    assert source =~ "if: always()"
-    assert source =~ "$GITHUB_STEP_SUMMARY"
+    assert leaf =~ "$GITHUB_STEP_SUMMARY"
+    assert umbrella =~ ~r/^      - #{@security_leaf}$/m
 
-    refute source =~ "continue-on-error"
-    refute source =~ "script/register_required_checks.sh"
-    refute source =~ "DRY_RUN=0"
-    refute source =~ "actions/cache"
+    assert compatibility =~ "name: #{@security_context}"
+    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
+    assert compatibility =~ "if: always()"
+    assert compatibility =~ ~s(test "$RESULT" = success)
+    refute compatibility =~ "actions/checkout"
+
+    refute leaf =~ "continue-on-error"
+    refute leaf =~ "script/register_required_checks.sh"
+    refute leaf =~ "DRY_RUN=0"
+    refute leaf =~ "actions/cache"
+  end
+
+  defp job_section!(workflow, job_name) do
+    pattern = ~r/^  #{Regex.escape(job_name)}:\r?\n(.*?)(?=^  [a-zA-Z0-9_-]+:\r?\n|\z)/ms
+
+    case Regex.run(pattern, workflow, capture: :all_but_first) do
+      [section] -> section
+      nil -> flunk("missing workflow job #{job_name}")
+    end
   end
 
   defp lock_versions(path, packages) do

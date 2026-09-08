@@ -9,10 +9,6 @@ permissions:
   contents: read
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       lane:
@@ -28,45 +24,6 @@ on:
     - cron: "0 6 * * 1"
 
 jobs:
-  merge-blocking-notification-workflow-proof:
-    name: merge-blocking notification workflow proof (hermetic)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'merge-blocking' || inputs.lane == 'all')) }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
-
-      - name: Setup BEAM and restore Elixir caches
-        uses: ./.github/actions/setup-elixir-cache
-        with:
-          # dev, NOT test — this lane is the exception. Its `mix test` runs in
-          # packages/crosswake_chimeway (working-directory), so the repo-root _build/test is
-          # never created and caching it saved nothing: the entry was skipped at
-          # save time and the lane took a permanent miss on every run. The only
-          # root-level compile here is `mix compile --warnings-as-errors`, which
-          # is dev. Measured: this was 2 of the 2 misses in the 93%-hit-rate run.
-          #
-          # The package's own deps/_build are still uncached — a second cache
-          # scoped to packages/crosswake_chimeway is a follow-up (see 153.1-RESULTS.md).
-          mix-env: dev
-
-      - name: Compile (warnings as errors)
-        run: mix compile --warnings-as-errors
-
-      # Phase 71 notification workflow proof is a chimeway-domain (notification) proof and now
-      # lives in crosswake_chimeway after the CHIME-01 extraction (Phase 138). Run it from the
-      # package (core resolved via path dep). The Phase 137 wiring pointed at crosswake_sigra,
-      # but this notification proof followed chimeway, not sigra — corrected in Phase 140.
-      - name: Install crosswake_chimeway dependencies
-        run: mix deps.get
-        working-directory: packages/crosswake_chimeway
-
-      - name: Run hermetic Phase 71 notification workflow proof
-        run: mix test test/crosswake/proof/phase71_notification_workflow_proof_test.exs
-        working-directory: packages/crosswake_chimeway
-
   advisory-push-provider-device-proof:
     name: advisory push provider/device proof (non-delivery)
     runs-on: ubuntu-24.04

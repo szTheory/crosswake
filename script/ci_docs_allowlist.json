@@ -1,0 +1,29 @@
+{
+  "schema_version": 2,
+  "families": [
+    {
+      "family": "planning",
+      "exact": [],
+      "trees": [".planning"],
+      "extensions": [".md"],
+      "proof_owner": "documentation-contracts"
+    },
+    {
+      "family": "public_docs",
+      "exact": [
+        "CONTRIBUTING.md",
+        "README.md",
+        "SETUP.md",
+        "examples/QUICK_START.md"
+      ],
+      "trees": ["brandbook", "docs", "guides"],
+      "extensions": [".md"],
+      "proof_owner": "documentation-contracts"
+    }
+  ],
+  "excluded": [
+    "docs/COMPANION-PUBLISH-RUNBOOK.md",
+    "docs/PORT-REGISTRY.md",
+    "docs/_contract_snippet.md"
+  ]
+}

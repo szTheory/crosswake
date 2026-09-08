@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """Inventory literal GitHub Actions job producers with fail-closed diagnostics.
 
 The default view lists merge-blocking registration candidates. ``--emitters`` emits every
@@ -12,6 +13,7 @@ fallback. An explicitly empty name or an expression-bearing name has no stable a
 Malformed workflow structure and duplicate merge-blocking producers also fail with provenance.
 """
 
+import argparse
 import glob
 import sys
 from collections import defaultdict
@@ -39,6 +41,60 @@ except ImportError:
     if yaml is None:
         print("[crosswake] FAIL: PyYAML is required (pip install pyyaml)", file=sys.stderr)
         sys.exit(2)
+
+
+CROSSWAKE_CI = ".github/workflows/crosswake-ci.yml"
+MIGRATED_SOURCE_WORKFLOWS = {
+    ".github/workflows/brandbook-verify.yml",
+    ".github/workflows/collateral-guard.yml",
+    ".github/workflows/hex-page-proof.yml",
+    ".github/workflows/release-as-staleness-gate.yml",
+    ".github/workflows/phase130-proof.yml",
+    ".github/workflows/phase132-proof.yml",
+    ".github/workflows/phase23-proof.yml",
+    ".github/workflows/phase34-proof.yml",
+    ".github/workflows/phase41-proof.yml",
+    ".github/workflows/phase43-proof.yml",
+    ".github/workflows/phase45-proof.yml",
+    ".github/workflows/phase48-proof.yml",
+    ".github/workflows/phase52-proof.yml",
+    ".github/workflows/phase58-proof.yml",
+    ".github/workflows/phase69-proof.yml",
+    ".github/workflows/phase70-proof.yml",
+    ".github/workflows/phase71-proof.yml",
+    ".github/workflows/phase73-proof.yml",
+    ".github/workflows/phase74-proof.yml",
+    ".github/workflows/phase75-closeout-gate.yml",
+}
+MIGRATED_JOB_IDS = {
+    "brand-structural",
+    "collateral-binaries-guard",
+    "hex-page-proof",
+    "release-as-staleness-proof",
+    "proof-aggregator-negative-control",
+    "guard-01-contract-drift-test",
+    "guard-02-generate-and-diff",
+    "proof-dependency-security",
+    "proof-requires-example-host",
+    "phase130-core-hermetic-proof",
+    "phase130-companion-engine-absent-proof",
+    "phase132-core-hermetic-proof",
+    "phase132-companion-engine-absent-proof",
+    "phase23-commerce-proof",
+    "phase34-commerce-proof",
+    "phase41-gating-proof",
+    "phase43-rulestead-proof",
+    "phase45-rindle-proof",
+    "phase48-provider-adapter-proof",
+    "phase52-operator-proof",
+    "phase58-auth-closeout-proof",
+    "phase69-closeout-proof",
+    "phase70-subscription-saas-proof",
+    "phase71-notification-workflow-proof",
+    "phase73-auth-sensitive-admin-workflow-proof",
+    "phase74-offline-draft-recovery-proof",
+    "phase75-closeout-gate",
+}
 
 
 def diagnostic(identifier: str, path: str, job: str | None, detail: str, fix: str) -> str:
@@ -106,6 +162,43 @@ def inventory() -> tuple[list[tuple[str, str, str]], list[str]]:
                 )
             )
             continue
+
+        triggers = doc.get("on", doc.get(True, {}))
+        trigger_names = set(triggers) if isinstance(triggers, dict) else set()
+        if path == CROSSWAKE_CI:
+            if trigger_names != {"pull_request"}:
+                errors.append(
+                    diagnostic(
+                        "migrated-authority-trigger",
+                        path,
+                        None,
+                        f"Crosswake CI triggers are {sorted(trigger_names)!r}",
+                        "retain pull_request as the sole recurring product-proof authority.",
+                    )
+                )
+        elif path in MIGRATED_SOURCE_WORKFLOWS:
+            forbidden = trigger_names & {"pull_request", "push"}
+            if forbidden:
+                errors.append(
+                    diagnostic(
+                        "migrated-source-trigger",
+                        path,
+                        None,
+                        f"retained advisory workflow still has {sorted(forbidden)!r}",
+                        "keep only schedule and workflow_dispatch authority.",
+                    )
+                )
+            duplicate_jobs = set(jobs) & MIGRATED_JOB_IDS
+            if duplicate_jobs:
+                errors.append(
+                    diagnostic(
+                        "migrated-job-duplicate",
+                        path,
+                        None,
+                        f"moved jobs remain present: {sorted(duplicate_jobs)!r}",
+                        "remove the PR-owned jobs from the retained advisory workflow.",
+                    )
+                )
 
         if not jobs:
             errors.append(
@@ -197,21 +290,35 @@ def inventory() -> tuple[list[tuple[str, str, str]], list[str]]:
 
 
 def main() -> int:
-    args = sys.argv[1:]
-    allowed = {"--emitters", "--producers"}
-    if len(args) > 1 or any(arg not in allowed for arg in args):
-        print("usage: list_merge_blocking_checks.py [--emitters|--producers]", file=sys.stderr)
-        return 2
-
-    mode = args[0] if args else "--contexts"
+    parser = argparse.ArgumentParser(description=__doc__)
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--emitters", action="store_true")
+    modes.add_argument("--producers", action="store_true")
+    parser.add_argument("--require-display-name")
+    args = parser.parse_args()
+    mode = "--producers" if args.producers else "--emitters" if args.emitters else "--contexts"
     records, errors = inventory()
 
-    if mode == "--producers":
+    if args.require_display_name:
+        matching = [record for record in records if record[0] == args.require_display_name]
+        if len(matching) != 1:
+            errors.append(
+                diagnostic(
+                    "producer-count",
+                    ".github/workflows",
+                    None,
+                    f"literal context {args.require_display_name!r} has {len(matching)} producers",
+                    "retain exactly one literal producer for the target context.",
+                )
+            )
+        records = matching
+
+    if mode == "--producers" or args.require_display_name:
         selected = records
     else:
         selected = [record for record in records if "merge-blocking" in record[0].lower()]
 
-    if mode in {"--emitters", "--producers"}:
+    if mode in {"--emitters", "--producers"} or args.require_display_name:
         for name, path, job_id in selected:
             print(f"{name}\t{path}\t{job_id}")
     else:

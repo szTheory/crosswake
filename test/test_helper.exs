@@ -38,7 +38,7 @@ exclude =
     # was missing here, so local runs silently included tests that no CI lane ever executed —
     # the gap that let a red gate sit on main until it was found by hand (GATE-03).
     #
-    # Their CI home is .github/workflows/requires-example-host-gate.yml. Run them locally with
+    # Their CI home is the proof-requires-example-host leaf in crosswake-ci.yml. Run locally with
     # `mix test --only requires_example_host` (or CROSSWAKE_INCLUDE_EXAMPLE_HOST=1), after
     # `cd examples/phoenix_host && mix deps.get && mix compile`.
     if System.get_env("CROSSWAKE_INCLUDE_EXAMPLE_HOST") == "1",

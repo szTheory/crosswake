@@ -1,0 +1,457 @@
+{
+  "schema_version": 2,
+  "proof_leaves": [
+    {
+      "leaf_id": "android-generated-shell-unit",
+      "display_name": "android-generated-shell-unit",
+      "family": "native_android",
+      "remediation_command": "CROSSWAKE_ANDROID_CONNECTED_TESTS=0 CROSSWAKE_ANDROID_USE_MAVEN_LOCAL=1 script/verify_generated_android_shell.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "android-package-unit",
+      "display_name": "android-package-unit",
+      "family": "native_android",
+      "remediation_command": "cd packages/crosswake-shell-core-android && ./gradlew test",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "brand-structural",
+      "display_name": "brand-structural",
+      "family": "brand_structural",
+      "remediation_command": "cd brandbook/tools && npm ci && node check-production.mjs && node check-candidates.mjs && node --test compile-tokens.test.mjs contrast.test.mjs check-consumer-drift.test.mjs && node check-consumer-drift.mjs && cd ../e2e && npm ci && npx playwright install --with-deps chromium && npm run test:structural",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "collateral-binaries-guard",
+      "display_name": "collateral-binaries-guard",
+      "family": "public_docs",
+      "remediation_command": "bash script/collateral-guard.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "documentation-contracts",
+      "display_name": "documentation-contracts",
+      "family": "documentation_contracts",
+      "remediation_command": "mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs",
+      "irrelevance_reason": null
+    },
+    {
+      "leaf_id": "e2e-proof",
+      "display_name": "e2e-proof",
+      "family": "offline_browser",
+      "remediation_command": "cd examples/phoenix_host && npx playwright test",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "guard-01-contract-drift-test",
+      "display_name": "guard-01-contract-drift-test",
+      "family": "contract_drift",
+      "remediation_command": "mix test test/crosswake/contract/contract_drift_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "guard-01-e2e-honesty",
+      "display_name": "guard-01-e2e-honesty",
+      "family": "offline_browser",
+      "remediation_command": "node script/check-e2e-honesty.mjs && node --test test/js/*.mjs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "guard-02-generate-and-diff",
+      "display_name": "guard-02-generate-and-diff",
+      "family": "contract_drift",
+      "remediation_command": "mix crosswake.contract.gen && git add -A && git diff --cached --exit-code",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "guard-02-prod-route-absence",
+      "display_name": "guard-02-prod-route-absence",
+      "family": "offline_browser",
+      "remediation_command": "cd examples/phoenix_host && MIX_ENV=prod mix phx.routes CrosswakeExample.Router",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "hex-page-proof",
+      "display_name": "hex-page-proof",
+      "family": "public_docs",
+      "remediation_command": "mix compile --warnings-as-errors && mix crosswake.adoption_context.scan && mix test --exclude requires_example_host && mix docs && bash script/verify_hex_tarball.sh && mix hex.publish --dry-run --yes",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "ios-mirror-parity-proof",
+      "display_name": "ios-mirror-parity-proof",
+      "family": "packaging",
+      "remediation_command": "script/check_ios_mirror_parity.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "ios-package-unit",
+      "display_name": "ios-package-unit",
+      "family": "native_ios",
+      "remediation_command": "cd packages/crosswake-shell-core-ios && swift test",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase10-proof",
+      "display_name": "phase10-proof",
+      "family": "example_host",
+      "remediation_command": "bash script/verify_saas_profile.sh && bash script/verify_selective_native.sh && bash script/verify_local_first.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase130-companion-engine-absent-proof",
+      "display_name": "phase130-companion-engine-absent-proof",
+      "family": "companion_engine",
+      "remediation_command": "mix companions.test && bash script/verify_companion_package.sh crosswake_rulestead",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase130-core-hermetic-proof",
+      "display_name": "phase130-core-hermetic-proof",
+      "family": "core_hermetic",
+      "remediation_command": "mix test test/crosswake/proof/phase130_extraction_guards_test.exs test/crosswake/proof/phase130_fail_closed_contract_test.exs && mix test --exclude requires_example_host --exclude advisory_only",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase132-companion-engine-absent-proof",
+      "display_name": "phase132-companion-engine-absent-proof",
+      "family": "companion_engine",
+      "remediation_command": "mix companions.test && CROSSWAKE_RELEASE=1 bash script/verify_companion_package.sh crosswake_rindle",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase132-core-hermetic-proof",
+      "display_name": "phase132-core-hermetic-proof",
+      "family": "core_hermetic",
+      "remediation_command": "mix test test/crosswake/proof/phase130_extraction_guards_test.exs test/crosswake/proof/phase132_compat_matrix_drift_test.exs && mix test --exclude requires_example_host --exclude advisory_only",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase18-elixir-android-proof",
+      "display_name": "phase18-elixir-android-proof",
+      "family": "native_android",
+      "remediation_command": "bash script/verify_phase18_contract.sh && CROSSWAKE_ANDROID_CONNECTED_TESTS=0 bash script/verify_generated_android_shell.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase18-ios-proof",
+      "display_name": "phase18-ios-proof",
+      "family": "native_ios",
+      "remediation_command": "CROSSWAKE_IOS_PROJECT_ROOT=examples/ios_shell_host CROSSWAKE_IOS_USE_LOCAL_CORE=1 bash script/verify_generated_ios_shell.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase23-commerce-proof",
+      "display_name": "phase23-commerce-proof",
+      "family": "commerce",
+      "remediation_command": "mix test test/crosswake/proof/phase23_commerce_support_proof_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/support_matrix test/crosswake/guides/commerce_test.exs test/crosswake/planning/summary_frontmatter_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase34-commerce-proof",
+      "display_name": "phase34-commerce-proof",
+      "family": "commerce",
+      "remediation_command": "mix test --exclude requires_example_host",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase41-gating-proof",
+      "display_name": "phase41-gating-proof",
+      "family": "gating",
+      "remediation_command": "mix test test/crosswake/proof/phase41_gating_doctor_test.exs && mix test --exclude requires_example_host",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase43-rulestead-proof",
+      "display_name": "phase43-rulestead-proof",
+      "family": "rulestead",
+      "remediation_command": "mix test --exclude requires_example_host --exclude advisory_only",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase45-rindle-proof",
+      "display_name": "phase45-rindle-proof",
+      "family": "rindle",
+      "remediation_command": "mix test --exclude requires_example_host --exclude advisory_only",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase48-provider-adapter-proof",
+      "display_name": "phase48-provider-adapter-proof",
+      "family": "provider_adapter",
+      "remediation_command": "mix test test/crosswake/proof/phase48_provider_adapter_proof_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase5-proof",
+      "display_name": "phase5-proof",
+      "family": "example_host",
+      "remediation_command": "CROSSWAKE_PHASE5_NATIVE_PROOFS=0 bash script/verify_phase5_example_hosts.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase52-operator-proof",
+      "display_name": "phase52-operator-proof",
+      "family": "operator",
+      "remediation_command": "mix test test/crosswake/proof/phase52_operator_truth_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase58-auth-closeout-proof",
+      "display_name": "phase58-auth-closeout-proof",
+      "family": "auth_closeout",
+      "remediation_command": "mix closeout.verify --security-only --security-closeout .planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase67-android-jvm-proof",
+      "display_name": "phase67-android-jvm-proof",
+      "family": "native_android",
+      "remediation_command": "cd packages/crosswake-shell-core-android && ./gradlew testDebugUnitTest",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase69-closeout-proof",
+      "display_name": "phase69-closeout-proof",
+      "family": "closeout",
+      "remediation_command": "mix closeout.verify --cwd . --closeout-path .planning/milestones/v4.0-CLOSEOUT.md && mix test test/crosswake/proof/phase69_docs_contract_parity_test.exs test/mix/tasks/closeout_verify_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase70-subscription-saas-proof",
+      "display_name": "phase70-subscription-saas-proof",
+      "family": "subscription_saas",
+      "remediation_command": "mix test test/crosswake/proof/phase70_subscription_saas_commerce_proof_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase71-notification-workflow-proof",
+      "display_name": "phase71-notification-workflow-proof",
+      "family": "notification_workflow",
+      "remediation_command": "cd packages/crosswake_chimeway && mix deps.get && mix test test/crosswake/proof/phase71_notification_workflow_proof_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase73-auth-sensitive-admin-workflow-proof",
+      "display_name": "phase73-auth-sensitive-admin-workflow-proof",
+      "family": "auth_sensitive_admin",
+      "remediation_command": "cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/proof/phase73_auth_sensitive_admin_workflow_proof_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase74-offline-draft-recovery-proof",
+      "display_name": "phase74-offline-draft-recovery-proof",
+      "family": "offline_draft_recovery",
+      "remediation_command": "mix test test/crosswake/proof/phase74_offline_draft_recovery_proof_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase75-closeout-gate",
+      "display_name": "phase75-closeout-gate",
+      "family": "closeout",
+      "remediation_command": "mix closeout.verify",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase79-android-proof",
+      "display_name": "phase79-android-proof",
+      "family": "native_android",
+      "remediation_command": "CROSSWAKE_ANDROID_CONNECTED_TESTS=0 ./script/verify_generated_android_shell.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase79-ios-proof",
+      "display_name": "phase79-ios-proof",
+      "family": "native_ios",
+      "remediation_command": "CROSSWAKE_IOS_PROJECT_ROOT=tmp/ios_shell/native/ios/crosswake_shell ./script/verify_generated_ios_shell.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase96-threadline-docs-contract-proof",
+      "display_name": "phase96-threadline-docs-contract-proof",
+      "family": "threadline_docs_contract",
+      "remediation_command": "mix test test/crosswake/proof/phase91_threadline_contract_closeout_test.exs test/crosswake/proof/phase92_server_propagation_closeout_test.exs test/crosswake/proof/phase96_threadline_docs_contract_test.exs test/crosswake/plug/threadline_test.exs test/crosswake/live/threadline_test.exs test/crosswake/threadline/telemetry_test.exs test/crosswake/threadline/id_test.exs test/crosswake/doctor/doctor_threadline_test.exs test/mix/tasks/crosswake.gen.audit_test.exs \"test/crosswake/support_matrix/support_matrix_test.exs:246\"",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "proof-aggregator-negative-control",
+      "display_name": "proof-aggregator-negative-control",
+      "family": "aggregator_integrity",
+      "remediation_command": "python3 script/check_aggregator_result_semantics.py --self-test",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "proof-dependency-security",
+      "display_name": "proof-dependency-security",
+      "family": "dependency_security",
+      "remediation_command": "script/check_dependency_security.sh && script/check_dependency_security.sh --assert-vulnerable-fixture test/fixtures/security/advisory-bearing.lock",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "proof-requires-example-host",
+      "display_name": "proof-requires-example-host",
+      "family": "example_host",
+      "remediation_command": "script/check_example_host_isolation.sh --matrix-only",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "release-as-staleness-proof",
+      "display_name": "release-as-staleness-proof",
+      "family": "release_integrity",
+      "remediation_command": "./script/check_release_as_staleness.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "route-tour-proof",
+      "display_name": "route-tour-proof",
+      "family": "offline_browser",
+      "remediation_command": "cd examples/phoenix_host && npx playwright test e2e/route_tour.spec.ts",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    }
+  ],
+  "required_control_nodes": [
+    {
+      "node_id": "classify-change",
+      "display_name": "classify-change",
+      "required_result": "success"
+    }
+  ],
+  "legacy_compatibility_contexts": [
+    {
+      "job_id": "compat-aggregator-negative-control",
+      "display_context": "merge-blocking-aggregator-negative-control",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-contract-drift",
+      "display_context": "merge-blocking-contract-drift",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-dependency-security",
+      "display_context": "merge-blocking-dependency-security",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-ios-mirror-parity",
+      "display_context": "merge-blocking-ios-mirror-parity",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-native-behavioral-proof",
+      "display_context": "merge-blocking-native-behavioral-proof",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-offline-sync-e2e",
+      "display_context": "merge-blocking-offline-sync-e2e",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase130-companion-engine-absent-proof",
+      "display_context": "companion engine-absent proof (merge-blocking)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase130-core-hermetic-proof",
+      "display_context": "core hermetic proof (merge-blocking)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase132-companion-engine-absent-proof",
+      "display_context": "phase132 companion engine-absent proof (merge-blocking)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase132-core-hermetic-proof",
+      "display_context": "phase132 core hermetic proof (merge-blocking)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase23-commerce-proof",
+      "display_context": "merge-blocking commerce support proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase34-commerce-proof",
+      "display_context": "merge-blocking phase34 commerce support proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase41-gating-proof",
+      "display_context": "merge-blocking gating doctor and support matrix proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase43-rulestead-proof",
+      "display_context": "merge-blocking rulestead proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase45-rindle-proof",
+      "display_context": "merge-blocking rindle proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase48-provider-adapter-proof",
+      "display_context": "merge-blocking provider adapter proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase52-operator-proof",
+      "display_context": "merge-blocking operator proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase58-auth-closeout-proof",
+      "display_context": "merge-blocking auth closeout proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase69-closeout-proof",
+      "display_context": "merge-blocking-closeout-proof",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase70-subscription-saas-proof",
+      "display_context": "merge-blocking subscription SaaS proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase71-notification-workflow-proof",
+      "display_context": "merge-blocking notification workflow proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase73-auth-sensitive-admin-workflow-proof",
+      "display_context": "merge-blocking auth-sensitive admin workflow proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase74-offline-draft-recovery-proof",
+      "display_context": "merge-blocking offline draft recovery proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase75-closeout-gate",
+      "display_context": "merge-blocking phase 75 closeout gate",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase96-threadline-docs-contract",
+      "display_context": "merge-blocking Threadline docs-contract proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-release-as-staleness",
+      "display_context": "merge-blocking-release-as-staleness",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-requires-example-host",
+      "display_context": "merge-blocking-requires-example-host",
+      "needs_target": "merge-blocking-crosswake-ci"
+    }
+  ]
+}

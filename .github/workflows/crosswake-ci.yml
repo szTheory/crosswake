@@ -1,0 +1,1829 @@
+name: Crosswake CI
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+
+concurrency:
+  group: crosswake-ci-${{ github.repository }}-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  classify-change:
+    name: classify-change
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      schema_version: ${{ steps.classify.outputs.schema_version }}
+      classification: ${{ steps.classify.outputs.classification }}
+      reason: ${{ steps.classify.outputs.reason }}
+      scheduled_families: ${{ steps.classify.outputs.scheduled_families }}
+      irrelevant_leaves: ${{ steps.classify.outputs.irrelevant_leaves }}
+    steps:
+      - name: Check out the synthetic merge with full history
+        id: checkout
+        continue-on-error: true
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Classify the validated base-to-merge diff
+        id: classify
+        if: always()
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
+        run: |
+          set -euo pipefail
+          {
+            echo 'schema_version=1'
+            echo 'classification=full_proof'
+            echo 'reason=checkout_or_object_validation_failed'
+            echo 'scheduled_families=["full_proof"]'
+            echo 'irrelevant_leaves=[]'
+          } >> "$GITHUB_OUTPUT"
+
+          if [ "$CHECKOUT_OUTCOME" != 'success' ]; then
+            echo 'Crosswake CI could not acquire full history. Running the full proof set.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          base_sha="$BASE_SHA"
+          merge_sha="$(git rev-parse HEAD 2>/dev/null || true)"
+          if [ -z "$base_sha" ] || [ -z "$merge_sha" ] || \
+             ! git cat-file -e "$base_sha^{commit}" 2>/dev/null || \
+             ! git cat-file -e "$merge_sha^{commit}" 2>/dev/null; then
+            echo 'Crosswake CI could not validate the comparison base. Running the full proof set.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          python3 script/classify_ci_change.py \
+            --base "$base_sha" \
+            --merge "$merge_sha" \
+            --github-output "$GITHUB_OUTPUT" >/dev/null
+
+  documentation-contracts:
+    name: documentation-contracts
+    needs: [classify-change]
+    if: needs.classify-change.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Run first-adopter privacy and documentation contracts
+        run: |
+          mix crosswake.adoption_context.scan
+          mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs
+      - name: Summarize the documentation contract leaf
+        env:
+          CLASSIFICATION: ${{ needs.classify-change.outputs.classification }}
+          REASON: ${{ needs.classify-change.outputs.reason }}
+        run: |
+          {
+            echo "Classification: ${CLASSIFICATION}."
+            echo "Reason: ${REASON}."
+            echo 'Scheduled proof family: documentation_contracts.'
+            echo 'Expected/observed leaves: 1/1.'
+            echo 'Executable, browser, Android, Apple, and packaging proof are not scheduled for a validated documentation-only change.'
+            echo 'Remediation: mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  brand-structural:
+    name: brand-structural
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof' || contains(needs.classify-change.outputs.scheduled_families, 'public_docs')
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.x"
+      - name: Install brandbook tool dependencies
+        working-directory: brandbook/tools
+        run: npm ci
+      - name: Size budget (committed brandbook <= 1MB)
+        run: |
+          TOTAL=$(git ls-files brandbook | xargs -I{} stat -c%s {} | awk '{s+=$1} END{print s+0}')
+          echo "Committed brandbook bytes: $TOTAL"
+          if [ "$TOTAL" -gt 1048576 ]; then
+            echo "ERROR: brandbook exceeds 1MB budget ($TOTAL bytes > 1048576)"
+            exit 1
+          fi
+          echo "Size budget OK ($TOTAL / 1048576 bytes)"
+      - name: SVG structural validation - production marks
+        working-directory: brandbook/tools
+        run: node check-production.mjs
+      - name: SVG structural validation - candidate marks
+        working-directory: brandbook/tools
+        run: node check-candidates.mjs
+      - name: Token JSON round-trip
+        working-directory: brandbook/tools
+        run: node --test compile-tokens.test.mjs
+      - name: WCAG contrast matrix
+        working-directory: brandbook/tools
+        run: node --test contrast.test.mjs
+      - name: Consumer drift gate (no hex / no primitives / semantic coverage)
+        working-directory: brandbook/tools
+        run: node check-consumer-drift.mjs
+      - name: Consumer drift gate contract tests
+        working-directory: brandbook/tools
+        run: node --test check-consumer-drift.test.mjs
+      - name: Install brand e2e dependencies
+        working-directory: brandbook/e2e
+        run: npm ci
+      - name: Install Playwright Chromium
+        working-directory: brandbook/e2e
+        run: npx playwright install --with-deps chromium
+      - name: Structural brand checks (DOM, dimensions, source assertions)
+        working-directory: brandbook/e2e
+        run: npm run test:structural
+      - name: Summarize required brand structural proof
+        if: always()
+        run: |
+          echo 'Brand structure, tokens, contrast, consumer drift, and DOM dimensions were checked.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd brandbook/tools && npm ci && node check-production.mjs && node check-candidates.mjs && node --test compile-tokens.test.mjs contrast.test.mjs check-consumer-drift.test.mjs && node check-consumer-drift.mjs && cd ../e2e && npm ci && npx playwright install --with-deps chromium && npm run test:structural' >> "$GITHUB_STEP_SUMMARY"
+
+  brand-visual:
+    name: brand-visual
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof' || contains(needs.classify-change.outputs.scheduled_families, 'public_docs')
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.x"
+      - name: Install brand e2e dependencies
+        working-directory: brandbook/e2e
+        run: npm ci
+      - name: Install Playwright Chromium
+        working-directory: brandbook/e2e
+        run: npx playwright install --with-deps chromium
+      - name: Visual render + pixel-sample checks
+        working-directory: brandbook/e2e
+        run: npm run test:visual
+      - name: Advisory lane notice
+        run: echo 'brand-visual is visible advisory evidence and is intentionally outside Crosswake CI required authority.' >> "$GITHUB_STEP_SUMMARY"
+
+  collateral-binaries-guard:
+    name: collateral-binaries-guard
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof' || contains(needs.classify-change.outputs.scheduled_families, 'public_docs')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: test
+      COLLATERAL_REQUIRE_NATIVE: '0'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Guard collateral binaries (existence + non-empty + size budget)
+        run: bash script/collateral-guard.sh
+      - name: Summarize collateral proof
+        if: always()
+        run: |
+          echo 'Collateral binaries were checked for required presence, non-empty content, and size bounds.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: bash script/collateral-guard.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  hex-page-proof:
+    name: hex-page-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof' || contains(needs.classify-change.outputs.scheduled_families, 'public_docs')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # ExDoc is intentionally dev-only. Keep the package/docs lane in dev and
+    # scope test only to the library suite, matching the retired proof lane.
+    env:
+      MIX_ENV: dev
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: dev
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Enforce first-adopter privacy gate
+        run: mix crosswake.adoption_context.scan
+      - name: Run library test suite (hermetic)
+        env:
+          MIX_ENV: test
+        run: mix test --exclude requires_example_host
+      - name: Build docs (smoke)
+        run: |
+          mix docs
+          test -f doc/index.html
+          test -f doc/see_it_run.html
+      - name: Verify hex tarball contents
+        run: bash script/verify_hex_tarball.sh
+      - name: Hex publish dry-run
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+        run: mix hex.publish --dry-run --yes
+      - name: Summarize Hex page proof
+        if: always()
+        run: |
+          echo 'Hex package metadata, rendered docs, tarball contents, and dry-run publish proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix compile --warnings-as-errors && mix crosswake.adoption_context.scan && mix test --exclude requires_example_host && mix docs && bash script/verify_hex_tarball.sh && mix hex.publish --dry-run --yes' >> "$GITHUB_STEP_SUMMARY"
+
+  release-as-staleness-proof:
+    name: release-as-staleness-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Check for stale release-as pins
+        run: ./script/check_release_as_staleness.sh
+      - name: Summarize release-as staleness proof
+        if: always()
+        run: |
+          echo 'Release-as pins were checked against authoritative package release tags.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: ./script/check_release_as_staleness.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  proof-aggregator-negative-control:
+    name: proof-aggregator-negative-control
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Exercise the complete closed result vocabulary
+        id: outcomes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 script/check_aggregator_result_semantics.py --self-test
+          python3 script/check_aggregator_result_semantics.py --assert-outcomes \
+            '{"success":"success","failure":"failure","cancelled":"failure","skipped_disallowed":"failure","skipped_irrelevant":"success","timed_out":"failure","action_required":"failure","stale":"failure","unknown":"failure","empty":"failure","missing":"failure"}'
+      - name: Summarize aggregator negative-control proof
+        if: always()
+        run: |
+          echo 'Closed aggregator semantics exercised success, failure, cancelled, skipped, timed_out, action_required, stale, unknown, empty, and missing outcomes.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: python3 script/check_aggregator_result_semantics.py --self-test' >> "$GITHUB_STEP_SUMMARY"
+
+  guard-01-contract-drift-test:
+    name: guard-01-contract-drift-test
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run contract drift test (GUARD-01)
+        run: mix test test/crosswake/contract/contract_drift_test.exs
+      - name: Summarize contract drift test
+        if: always()
+        run: |
+          echo 'GUARD-01 contract-drift-test: focused ExUnit drift assertion completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/contract/contract_drift_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  guard-02-generate-and-diff:
+    name: guard-02-generate-and-diff
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: dev
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: dev
+      - name: Compile
+        run: mix compile
+      - name: Regenerate contract surfaces
+        run: mix crosswake.contract.gen
+      - name: Assert no uncommitted drift
+        run: |
+          set -euo pipefail
+          git add -A
+          if ! git diff --cached --exit-code; then
+            echo '::error::GUARD-02 FAILED — generated contract surfaces are out of date.'
+            echo "::error::Run 'mix crosswake.contract.gen' and commit the regenerated outputs."
+            git --no-pager diff --cached --stat
+            exit 1
+          fi
+      - name: Summarize generated contract parity
+        if: always()
+        run: |
+          echo 'GUARD-02 generated contract surfaces were regenerated and compared byte-for-byte.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix crosswake.contract.gen && git add -A && git diff --cached --exit-code' >> "$GITHUB_STEP_SUMMARY"
+
+  proof-dependency-security:
+    name: proof-dependency-security
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+          install-hex: false
+      - name: Install Hex
+        run: |
+          for attempt in 1 2 3; do
+            if mix local.hex --force; then exit 0; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep 2
+          done
+      - name: Install root audit dependencies
+        run: mix deps.get
+      - name: Install example-host audit dependencies
+        working-directory: examples/phoenix_host
+        run: mix deps.get
+      - name: Audit both supported dependency locks
+        run: script/check_dependency_security.sh
+      - name: Prove an advisory-bearing lock fails closed
+        run: script/check_dependency_security.sh --assert-vulnerable-fixture test/fixtures/security/advisory-bearing.lock
+      - name: Summarize dependency security proof
+        if: always()
+        run: |
+          echo 'Dependency security audits the root and example-host locks independently and rejects the advisory-bearing fixture.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: script/check_dependency_security.sh && script/check_dependency_security.sh --assert-vulnerable-fixture test/fixtures/security/advisory-bearing.lock' >> "$GITHUB_STEP_SUMMARY"
+
+  proof-requires-example-host:
+    name: proof-requires-example-host
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Compile the example Phoenix host (dev env)
+        env:
+          MIX_ENV: dev
+        working-directory: examples/phoenix_host
+        run: |
+          mix deps.get
+          mix compile
+      - name: Install root Mix dependencies
+        env:
+          MIX_ENV: test
+        run: mix deps.get
+      - name: Compile root project
+        env:
+          MIX_ENV: test
+        run: mix compile
+      - name: Run the bounded example-host isolation matrix
+        env:
+          MIX_ENV: test
+        run: script/check_example_host_isolation.sh --matrix-only
+      - name: Summarize example-host isolation proof
+        if: always()
+        run: |
+          tagged_paths="$(find test -name '*_test.exs' -type f -exec grep -El '^[[:space:]]*@(module)?tag[[:space:]]+:requires_example_host' {} + | sort)"
+          tagged_count="$(printf '%s\n' "$tagged_paths" | sed '/^$/d' | wc -l | tr -d ' ')"
+          echo "GATE-03 executed the bounded :requires_example_host isolation matrix across ${tagged_count} tagged files." >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: script/check_example_host_isolation.sh --matrix-only' >> "$GITHUB_STEP_SUMMARY"
+
+  phase130-core-hermetic-proof:
+    name: phase130-core-hermetic-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 130 extraction and fail-closed proof
+        run: |
+          mix test test/crosswake/proof/phase130_extraction_guards_test.exs
+          mix test test/crosswake/proof/phase130_fail_closed_contract_test.exs
+          mix test --exclude requires_example_host --exclude advisory_only
+      - name: Summarize Phase 130 core proof
+        if: always()
+        run: |
+          echo 'Phase 130 core hermetic extraction, fail-closed contract, and broad suite proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase130_extraction_guards_test.exs test/crosswake/proof/phase130_fail_closed_contract_test.exs && mix test --exclude requires_example_host --exclude advisory_only' >> "$GITHUB_STEP_SUMMARY"
+
+  phase130-companion-engine-absent-proof:
+    name: phase130-companion-engine-absent-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+          cache-scope: companion-rulestead
+          working-directory: packages/crosswake_rulestead
+      - name: Compile companion (warnings as errors, engine absent)
+        working-directory: packages/crosswake_rulestead
+        run: mix compile --warnings-as-errors
+      - name: Run Rulestead companion and release-package proof
+        run: |
+          mix companions.test
+          bash script/verify_companion_package.sh crosswake_rulestead
+      - name: Summarize Phase 130 companion proof
+        if: always()
+        run: |
+          echo 'Phase 130 Rulestead engine-absent and release-package proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix companions.test && bash script/verify_companion_package.sh crosswake_rulestead' >> "$GITHUB_STEP_SUMMARY"
+
+  phase132-core-hermetic-proof:
+    name: phase132-core-hermetic-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 132 compatibility and broad hermetic proof
+        run: |
+          mix test test/crosswake/proof/phase130_extraction_guards_test.exs
+          mix test test/crosswake/proof/phase132_compat_matrix_drift_test.exs
+          mix test --exclude requires_example_host --exclude advisory_only
+      - name: Summarize Phase 132 core proof
+        if: always()
+        run: |
+          echo 'Phase 132 compatibility drift, extraction, and broad hermetic proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase130_extraction_guards_test.exs test/crosswake/proof/phase132_compat_matrix_drift_test.exs && mix test --exclude requires_example_host --exclude advisory_only' >> "$GITHUB_STEP_SUMMARY"
+
+  phase132-companion-engine-absent-proof:
+    name: phase132-companion-engine-absent-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+          cache-scope: companion-rindle
+          working-directory: packages/crosswake_rindle
+      - name: Compile Rindle companion (warnings as errors)
+        working-directory: packages/crosswake_rindle
+        run: mix compile --warnings-as-errors
+      - name: Run companion and Rindle release-package proof
+        run: |
+          mix companions.test
+          CROSSWAKE_RELEASE=1 bash script/verify_companion_package.sh crosswake_rindle
+      - name: Summarize Phase 132 companion proof
+        if: always()
+        run: |
+          echo 'Phase 132 Rindle engine-absent and release-package proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix companions.test && CROSSWAKE_RELEASE=1 bash script/verify_companion_package.sh crosswake_rindle' >> "$GITHUB_STEP_SUMMARY"
+
+  phase23-commerce-proof:
+    name: phase23-commerce-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 23 commerce, support, doctor, guide, and planning proof
+        run: |
+          mix test test/crosswake/proof/phase23_commerce_support_proof_test.exs
+          mix test test/crosswake/doctor/doctor_test.exs test/crosswake/support_matrix/support_matrix_test.exs test/crosswake/support_matrix/renderer_test.exs test/crosswake/guides/commerce_test.exs
+          mix test test/crosswake/planning/summary_frontmatter_test.exs
+      - name: Summarize Phase 23 commerce proof
+        if: always()
+        run: |
+          echo 'Phase 23 hermetic commerce, support, doctor, guide, and planning proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase23_commerce_support_proof_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/support_matrix test/crosswake/guides/commerce_test.exs test/crosswake/planning/summary_frontmatter_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  phase34-commerce-proof:
+    name: phase34-commerce-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 34 broad hermetic commerce proof
+        run: mix test --exclude requires_example_host
+      - name: Summarize Phase 34 commerce proof
+        if: always()
+        run: |
+          echo 'Phase 34 broad hermetic commerce proof completed without example-host-tagged tests.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test --exclude requires_example_host' >> "$GITHUB_STEP_SUMMARY"
+
+  phase41-gating-proof:
+    name: phase41-gating-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 41 gating doctor and support matrix proof
+        run: |
+          mix test test/crosswake/proof/phase41_gating_doctor_test.exs
+          mix test --exclude requires_example_host
+      - name: Summarize Phase 41 gating proof
+        if: always()
+        run: |
+          echo 'Phase 41 gating doctor, support matrix, formatter, and broad hermetic proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase41_gating_doctor_test.exs && mix test --exclude requires_example_host' >> "$GITHUB_STEP_SUMMARY"
+
+  phase43-rulestead-proof:
+    name: phase43-rulestead-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run hermetic Rulestead proof
+        run: mix test --exclude requires_example_host --exclude advisory_only
+      - name: Summarize Rulestead proof
+        if: always()
+        run: |
+          echo 'Rulestead companion proof completed with the optional engine absent.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test --exclude requires_example_host --exclude advisory_only' >> "$GITHUB_STEP_SUMMARY"
+
+  phase45-rindle-proof:
+    name: phase45-rindle-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run hermetic Rindle proof
+        run: mix test --exclude requires_example_host --exclude advisory_only
+      - name: Summarize Rindle proof
+        if: always()
+        run: |
+          echo 'Rindle companion proof completed with the optional engine absent.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test --exclude requires_example_host --exclude advisory_only' >> "$GITHUB_STEP_SUMMARY"
+
+  phase48-provider-adapter-proof:
+    name: phase48-provider-adapter-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 48 provider-adapter proof
+        run: mix test test/crosswake/proof/phase48_provider_adapter_proof_test.exs
+      - name: Summarize provider-adapter proof
+        if: always()
+        run: |
+          echo 'Phase 48 provider-adapter proof completed without provider or device authority.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase48_provider_adapter_proof_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  phase52-operator-proof:
+    name: phase52-operator-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 52 operator truth proof
+        run: mix test test/crosswake/proof/phase52_operator_truth_test.exs
+      - name: Summarize operator proof
+        if: always()
+        run: |
+          echo 'Phase 52 hermetic operator truth proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase52_operator_truth_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  phase58-auth-closeout-proof:
+    name: phase58-auth-closeout-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run closeout verification with Phase 58 security artifact
+        run: mix closeout.verify --security-only --security-closeout .planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md
+      - name: Run layered Sigra auth proof (core-side)
+        run: |
+          mix test --exclude requires_example_host \
+            test/crosswake/proof/phase55_session_handoff_tickets_test.exs \
+            test/crosswake/proof/phase56_step_up_ceremony_test.exs
+      - name: Run Sigra diagnostics parity tests (core-side)
+        run: |
+          mix test \
+            test/crosswake/support_matrix/support_matrix_test.exs \
+            test/crosswake/doctor/doctor_test.exs \
+            test/crosswake/guides/companions_test.exs \
+            test/mix/tasks/closeout_verify_test.exs
+      - name: Install crosswake_sigra dependencies
+        working-directory: packages/crosswake_sigra
+        run: mix deps.get
+      - name: Run layered Sigra auth proof (crosswake_sigra)
+        working-directory: packages/crosswake_sigra
+        run: |
+          mix test --exclude requires_example_host \
+            test/crosswake/proof/phase54_sigra_session_authority_test.exs \
+            test/crosswake/proof/phase57_auth_return_boundaries_test.exs \
+            test/crosswake/proof/phase58_auth_diagnostics_closeout_test.exs
+      - name: Run Sigra diagnostics parity tests (crosswake_sigra)
+        working-directory: packages/crosswake_sigra
+        run: |
+          mix test \
+            test/crosswake/companions/sigra/telemetry_test.exs \
+            test/crosswake/operator_inspection/operator_inspection_test.exs \
+            test/crosswake/doctor/publish_readiness_test.exs
+      - name: Summarize auth closeout proof
+        if: always()
+        run: |
+          echo 'Phase 58 security closeout and layered core/companion auth proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix closeout.verify --security-only --security-closeout .planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md' >> "$GITHUB_STEP_SUMMARY"
+
+  phase69-closeout-proof:
+    name: phase69-closeout-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: dev
+      - name: Compile and check warnings
+        run: mix compile --warnings-as-errors
+      - name: Run v4.0 milestone closeout verification
+        run: mix closeout.verify --cwd . --closeout-path .planning/milestones/v4.0-CLOSEOUT.md
+      - name: Run closeout parity tests
+        run: mix test test/crosswake/proof/phase69_docs_contract_parity_test.exs test/mix/tasks/closeout_verify_test.exs
+      - name: Summarize v4.0 closeout proof
+        if: always()
+        run: |
+          echo 'Phase 69 v4.0 closeout and documentation parity proof completed under the central classifier.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix closeout.verify --cwd . --closeout-path .planning/milestones/v4.0-CLOSEOUT.md && mix test test/crosswake/proof/phase69_docs_contract_parity_test.exs test/mix/tasks/closeout_verify_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  phase70-subscription-saas-proof:
+    name: phase70-subscription-saas-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 70 subscription SaaS proof
+        run: mix test test/crosswake/proof/phase70_subscription_saas_commerce_proof_test.exs
+      - name: Summarize subscription SaaS proof
+        if: always()
+        run: |
+          echo 'Phase 70 hermetic subscription SaaS commerce proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase70_subscription_saas_commerce_proof_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  phase71-notification-workflow-proof:
+    name: phase71-notification-workflow-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: dev
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Install crosswake_chimeway dependencies
+        working-directory: packages/crosswake_chimeway
+        run: mix deps.get
+      - name: Run hermetic Phase 71 notification workflow proof
+        working-directory: packages/crosswake_chimeway
+        run: mix test test/crosswake/proof/phase71_notification_workflow_proof_test.exs
+      - name: Summarize notification workflow proof
+        if: always()
+        run: |
+          echo 'Phase 71 notification workflow proof completed without provider or device delivery authority.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd packages/crosswake_chimeway && mix deps.get && mix test test/crosswake/proof/phase71_notification_workflow_proof_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  phase73-auth-sensitive-admin-workflow-proof:
+    name: phase73-auth-sensitive-admin-workflow-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: dev
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Install crosswake_sigra dependencies
+        working-directory: packages/crosswake_sigra
+        run: mix deps.get
+      - name: Run hermetic Phase 73 auth-sensitive admin workflow proof
+        working-directory: packages/crosswake_sigra
+        run: mix test test/crosswake/proof/phase73_auth_sensitive_admin_workflow_proof_test.exs
+      - name: Summarize auth-sensitive admin workflow proof
+        if: always()
+        run: |
+          echo 'Phase 73 auth-sensitive admin proof completed without granting native or backend auth authority.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/proof/phase73_auth_sensitive_admin_workflow_proof_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  phase74-offline-draft-recovery-proof:
+    name: phase74-offline-draft-recovery-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run hermetic Phase 74 offline draft recovery proof
+        run: mix test test/crosswake/proof/phase74_offline_draft_recovery_proof_test.exs
+      - name: Summarize offline draft recovery proof
+        if: always()
+        run: |
+          echo 'Phase 74 offline draft recovery proof completed without widening the local mutation contract.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase74_offline_draft_recovery_proof_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  phase75-closeout-gate:
+    name: phase75-closeout-gate
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: dev
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run closeout verification
+        run: mix closeout.verify
+      - name: Summarize Phase 75 closeout gate
+        if: always()
+        run: |
+          echo 'Phase 75 closeout verification completed under the central fail-closed classifier.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix closeout.verify' >> "$GITHUB_STEP_SUMMARY"
+
+  android-package-unit:
+    name: android-package-unit
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-android-jvm
+        with:
+          working-directory: packages/crosswake-shell-core-android
+      - name: Run Android JVM tests
+        working-directory: packages/crosswake-shell-core-android
+        run: ./gradlew test
+      - name: Summarize Android package proof
+        if: always()
+        run: |
+          echo 'android-package-unit: Android JVM behavioral proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd packages/crosswake-shell-core-android && ./gradlew test' >> "$GITHUB_STEP_SUMMARY"
+
+  android-generated-shell-unit:
+    name: android-generated-shell-unit
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CROSSWAKE_ANDROID_CONNECTED_TESTS: "0"
+      CROSSWAKE_ANDROID_USE_MAVEN_LOCAL: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - uses: ./.github/actions/setup-android-jvm
+        with:
+          working-directory: packages/crosswake-shell-core-android
+      - name: Install Elixir dependencies
+        run: mix deps.get
+      - name: Publish shell-core to local Maven for hermetic resolution
+        working-directory: packages/crosswake-shell-core-android
+        run: ./gradlew publishToMavenLocal --no-daemon -PcrosswakeSkipSigning=true
+      - name: Run hermetic Android generated-shell verification
+        run: script/verify_generated_android_shell.sh
+      - name: Summarize generated Android proof
+        if: always()
+        run: |
+          echo 'android-generated-shell-unit: generated Android shell JVM proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: CROSSWAKE_ANDROID_CONNECTED_TESTS=0 CROSSWAKE_ANDROID_USE_MAVEN_LOCAL=1 script/verify_generated_android_shell.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  ios-package-unit:
+    name: ios-package-unit
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - id: swift-cache-identity
+        name: Resolve Swift and Xcode cache identity
+        working-directory: packages/crosswake-shell-core-ios
+        run: |
+          set -euo pipefail
+          toolchain="$( { swift --version; xcodebuild -version; } | shasum -a 256 | awk '{print $1}')"
+          resolved_state="absent"
+          if [ -f Package.resolved ]; then
+            resolved_state="present-$(shasum -a 256 Package.resolved | awk '{print $1}')"
+          fi
+          echo "toolchain=$toolchain" >> "$GITHUB_OUTPUT"
+          echo "resolved-state=$resolved_state" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: packages/crosswake-shell-core-ios/.build
+          key: spm-${{ runner.os }}-${{ runner.arch }}-${{ steps.swift-cache-identity.outputs.toolchain }}-${{ hashFiles('packages/crosswake-shell-core-ios/Package.swift') }}-${{ steps.swift-cache-identity.outputs.resolved-state }}
+      - name: Run Swift tests
+        working-directory: packages/crosswake-shell-core-ios
+        run: swift test
+      - name: Summarize Swift package proof
+        if: always()
+        run: |
+          echo 'ios-package-unit: Swift behavioral proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd packages/crosswake-shell-core-ios && swift test' >> "$GITHUB_STEP_SUMMARY"
+
+  phase5-proof:
+    name: phase5-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Install Elixir dependencies
+        run: mix deps.get
+      - name: Verify checked-in example hosts
+        env:
+          CROSSWAKE_PHASE5_NATIVE_PROOFS: "0"
+        run: bash script/verify_phase5_example_hosts.sh
+      - name: Summarize Phase 5 proof
+        if: always()
+        run: |
+          echo 'Remediation: CROSSWAKE_PHASE5_NATIVE_PROOFS=0 bash script/verify_phase5_example_hosts.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  phase18-elixir-android-proof:
+    name: phase18-elixir-android-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - uses: ./.github/actions/setup-android-jvm
+        with:
+          working-directory: packages/crosswake-shell-core-android
+      - name: Install Elixir dependencies
+        run: mix deps.get
+      - name: Verify Phase 18 Elixir contract and proof slices
+        run: bash script/verify_phase18_contract.sh
+      - name: Verify generated local Android shell BridgeChannel proof
+        timeout-minutes: 20
+        run: |
+          android_target="tmp/phase18-android-${GITHUB_RUN_ID}"
+          rm -rf "${android_target}"
+          mix crosswake.gen.shell android --target "${android_target}" --local
+          export CROSSWAKE_ANDROID_PROJECT_ROOT="${android_target}/native/android/crosswake_shell"
+          export CROSSWAKE_ANDROID_CONNECTED_TESTS="0"
+          bash script/verify_generated_android_shell.sh
+      - name: Summarize Phase 18 portable proof
+        if: always()
+        run: |
+          echo 'Remediation: bash script/verify_phase18_contract.sh && CROSSWAKE_ANDROID_CONNECTED_TESTS=0 bash script/verify_generated_android_shell.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  phase18-ios-proof:
+    name: phase18-ios-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Verify checked-in iOS shell bridge and activation proof
+        env:
+          CROSSWAKE_IOS_BUILD_FOR_TESTING: "0"
+          CROSSWAKE_IOS_LAUNCH_SIMULATOR: "0"
+          CROSSWAKE_IOS_USE_LOCAL_CORE: "1"
+          CROSSWAKE_IOS_PROJECT_ROOT: examples/ios_shell_host
+        run: bash script/verify_generated_ios_shell.sh
+      - name: Summarize Phase 18 iOS proof
+        if: always()
+        run: |
+          echo 'Remediation: CROSSWAKE_IOS_PROJECT_ROOT=examples/ios_shell_host CROSSWAKE_IOS_USE_LOCAL_CORE=1 bash script/verify_generated_ios_shell.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  phase79-android-proof:
+    name: phase79-android-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - uses: ./.github/actions/setup-android-jvm
+        with:
+          working-directory: packages/crosswake-shell-core-android
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Generate Android Shell
+        run: mix crosswake.gen.shell android --target tmp/android_shell --local
+      - name: Verify Android Shell
+        run: ./script/verify_generated_android_shell.sh
+        env:
+          CROSSWAKE_ANDROID_PROJECT_ROOT: tmp/android_shell/native/android/crosswake_shell
+          CROSSWAKE_ANDROID_CONNECTED_TESTS: "0"
+      - name: Summarize Phase 79 Android proof
+        if: always()
+        run: |
+          echo 'Remediation: CROSSWAKE_ANDROID_CONNECTED_TESTS=0 ./script/verify_generated_android_shell.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  phase79-ios-proof:
+    name: phase79-ios-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Generate iOS Shell
+        run: mix crosswake.gen.shell ios --target tmp/ios_shell --local
+      - name: Verify iOS Shell
+        run: ./script/verify_generated_ios_shell.sh
+        env:
+          CROSSWAKE_IOS_PROJECT_ROOT: tmp/ios_shell/native/ios/crosswake_shell
+          CROSSWAKE_IOS_LAUNCH_SIMULATOR: "0"
+          CROSSWAKE_IOS_BUILD_FOR_TESTING: "0"
+      - name: Summarize Phase 79 iOS proof
+        if: always()
+        run: |
+          echo 'Remediation: CROSSWAKE_IOS_PROJECT_ROOT=tmp/ios_shell/native/ios/crosswake_shell ./script/verify_generated_ios_shell.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  guard-01-e2e-honesty:
+    name: guard-01-e2e-honesty
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "20"
+      - name: Install example-host Node dependencies
+        run: npm ci --prefix examples/phoenix_host
+      - name: Run E2E honesty check
+        run: node script/check-e2e-honesty.mjs
+      - name: Run bridge hook unit tests
+        run: node --test test/js/*.mjs
+      - name: Summarize E2E honesty proof
+        if: always()
+        run: |
+          echo 'GUARD-01 e2e-honesty structural and bridge-hook proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: node script/check-e2e-honesty.mjs && node --test test/js/*.mjs' >> "$GITHUB_STEP_SUMMARY"
+
+  guard-02-prod-route-absence:
+    name: guard-02-prod-route-absence
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: prod
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Assert no test-only E2E route in a prod compile
+        working-directory: examples/phoenix_host
+        run: |
+          set -euo pipefail
+          rm -rf _build/prod
+          mix deps.get --only prod
+          routes="$(mix phx.routes CrosswakeExample.Router)"
+          echo "$routes"
+          if echo "$routes" | grep -qE '/_e2e(/|$)'; then
+            echo '::error::GUARD-02 FAILED — /_e2e route present in a MIX_ENV=prod compile.'
+            exit 1
+          fi
+      - name: Summarize production route-absence proof
+        if: always()
+        run: |
+          echo 'GUARD-02 production route-absence proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd examples/phoenix_host && MIX_ENV=prod mix phx.routes CrosswakeExample.Router' >> "$GITHUB_STEP_SUMMARY"
+
+  e2e-proof:
+    name: e2e-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+          working-directory: examples/phoenix_host
+      - name: Compile example host with warnings as errors
+        working-directory: examples/phoenix_host
+        run: mix compile --warnings-as-errors
+      - name: Run Phoenix route and controller assertions
+        working-directory: examples/phoenix_host
+        run: mix test test/crosswake_example/router_test.exs test/crosswake_example/e2e/sync_state_controller_test.exs
+      - name: Run scoped replay admission integration
+        working-directory: examples/phoenix_host
+        run: mix test test/crosswake_example/local_first
+      - name: Install Node dependencies
+        working-directory: examples/phoenix_host
+        run: npm ci
+      - name: Install Playwright browsers
+        working-directory: examples/phoenix_host
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        working-directory: examples/phoenix_host
+        run: npx playwright test
+      - name: Run native-controls fallback proof
+        working-directory: examples/phoenix_host
+        run: npx playwright test e2e/native_controls_fallback.spec.ts
+      - name: Upload E2E failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: crosswake-e2e-proof-failure-evidence
+          path: |
+            examples/phoenix_host/playwright-report/
+            examples/phoenix_host/test-results/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Summarize offline E2E proof
+        if: always()
+        run: |
+          echo 'Offline-sync IndexedDB outbox, reconnect flush, and scoped replay proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd examples/phoenix_host && npx playwright test' >> "$GITHUB_STEP_SUMMARY"
+
+  route-tour-proof:
+    name: route-tour-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+          working-directory: examples/phoenix_host
+      - name: Compile example host with warnings as errors
+        working-directory: examples/phoenix_host
+        run: mix compile --warnings-as-errors
+      - name: Resolve Crosswake version
+        id: crosswake-version
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's/^  @version "\(.*\)" #.*/\1/p' mix.exs)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Run Phoenix route assertions
+        working-directory: examples/phoenix_host
+        run: mix test test/crosswake_example/router_test.exs test/crosswake_example/e2e/sync_state_controller_test.exs
+      - name: Install Node dependencies
+        working-directory: examples/phoenix_host
+        run: npm ci
+      - name: Install Chromium
+        working-directory: examples/phoenix_host
+        run: npx playwright install --with-deps chromium
+      - name: Run route-tour Playwright proof
+        working-directory: examples/phoenix_host
+        env:
+          CROSSWAKE_VERSION: ${{ steps.crosswake-version.outputs.version }}
+        run: npx playwright test e2e/route_tour.spec.ts
+      - name: Assert route-tour required evidence files
+        run: |
+          set -euo pipefail
+          route_tour_root="examples/phoenix_host/playwright-artifacts/route-tour"
+          required_route_tour_files=(
+            "$route_tour_root/evidence-manifest.json"
+            "$route_tour_root/screenshots/showcase-hub.png"
+            "$route_tour_root/screenshots/adminpilot-dashboard.png"
+            "$route_tour_root/screenshots/adminpilot-approvals.png"
+            "$route_tour_root/screenshots/adminpilot-approval-approved.png"
+            "$route_tour_root/screenshots/adminpilot-diagnostics.png"
+            "$route_tour_root/screenshots/fieldserv-jobs.png"
+            "$route_tour_root/screenshots/fieldserv-job-detail.png"
+            "$route_tour_root/screenshots/fieldserv-inspection.png"
+            "$route_tour_root/screenshots/fieldserv-capture-handoff.png"
+            "$route_tour_root/screenshots/fieldserv-evidence-review.png"
+            "$route_tour_root/screenshots/learnloop-dashboard.png"
+            "$route_tour_root/screenshots/learnloop-course.png"
+            "$route_tour_root/screenshots/learnloop-subscription.png"
+            "$route_tour_root/screenshots/learnloop-pack.png"
+            "$route_tour_root/screenshots/learnloop-history-diagnostics.png"
+            "$route_tour_root/screenshots/learnloop-route-tour.png"
+            "$route_tour_root/screenshots/library.png"
+            "$route_tour_root/screenshots/bridge-proof.png"
+            "$route_tour_root/screenshots/offline-study-replayed.png"
+            "$route_tour_root/screenshots/selective-native-claim-capture-unavailable.png"
+          )
+          for evidence_file in "${required_route_tour_files[@]}"; do
+            test -s "$evidence_file"
+          done
+      - name: Validate route-tour evidence manifest
+        run: |
+          mix deps.get
+          CROSSWAKE_EVIDENCE_MANIFEST_PATH=examples/phoenix_host/playwright-artifacts/route-tour/evidence-manifest.json mix test test/crosswake/guides/evidence_manifest_test.exs
+      - name: Capture web collateral through the harness
+        env:
+          CI: ""
+          CROSSWAKE_VERSION: ${{ steps.crosswake-version.outputs.version }}
+        run: |
+          set -euo pipefail
+          (
+            cd examples/phoenix_host
+            export MIX_ENV=test
+            mix "do" ecto.drop --quiet + ecto.create --quiet + ecto.migrate --quiet + phx.server
+          ) &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for _ in $(seq 1 60); do
+            curl -sf http://localhost:4700/ >/dev/null 2>&1 && break
+            sleep 2
+          done
+          bin/capture-collateral.sh --web-only
+          test -s brandbook/collateral/see-it-run/web-home.png
+          test -s brandbook/collateral/see-it-run/web-offline.png
+          test -s brandbook/collateral/see-it-run/web-bridge-proof.png
+      - name: Upload route-tour evidence bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: crosswake-route-tour-evidence
+          path: |
+            examples/phoenix_host/playwright-artifacts/route-tour/evidence-manifest.json
+            examples/phoenix_host/playwright-artifacts/route-tour/screenshots/
+            examples/phoenix_host/playwright-report/
+            examples/phoenix_host/test-results/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Summarize route-tour proof
+        if: always()
+        run: |
+          echo 'Route-tour semantic assertions and evidence bundle proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd examples/phoenix_host && npx playwright test e2e/route_tour.spec.ts' >> "$GITHUB_STEP_SUMMARY"
+
+  phase67-android-jvm-proof:
+    name: phase67-android-jvm-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-android-jvm
+        with:
+          working-directory: packages/crosswake-shell-core-android
+      - name: Run Android JVM tests
+        working-directory: packages/crosswake-shell-core-android
+        run: ./gradlew testDebugUnitTest
+      - name: Summarize Phase 67 Android JVM proof
+        if: always()
+        run: |
+          echo 'Phase 67 Android JVM proof completed without device authority.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd packages/crosswake-shell-core-android && ./gradlew testDebugUnitTest' >> "$GITHUB_STEP_SUMMARY"
+
+  ios-mirror-parity-proof:
+    name: ios-mirror-parity-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Check iOS SwiftPM mirror parity
+        run: ./script/check_ios_mirror_parity.sh
+      - name: Summarize iOS mirror parity proof
+        if: always()
+        run: |
+          echo 'iOS mirror parity proof completed without Apple tooling or credentials.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: script/check_ios_mirror_parity.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  phase10-proof:
+    name: phase10-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Install Elixir dependencies
+        run: mix deps.get
+      - name: Verify SaaS profile
+        run: bash script/verify_saas_profile.sh
+      - name: Verify selective-native profile
+        run: bash script/verify_selective_native.sh
+      - name: Verify local-first profile
+        run: bash script/verify_local_first.sh
+      - name: Summarize Phase 10 proof
+        if: always()
+        run: |
+          echo 'Phase 10 profile proof completed on its portable Linux owner.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: bash script/verify_saas_profile.sh && bash script/verify_selective_native.sh && bash script/verify_local_first.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  phase96-threadline-docs-contract-proof:
+    name: phase96-threadline-docs-contract-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof' || contains(fromJSON(needs.classify-change.outputs.scheduled_families), 'threadline_docs_contract')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - name: Install Elixir dependencies
+        run: mix deps.get
+      - name: Compile with warnings as errors
+        run: mix compile --warnings-as-errors
+      - name: Run hermetic Threadline docs contract proof
+        run: >-
+          mix test
+          test/crosswake/proof/phase91_threadline_contract_closeout_test.exs
+          test/crosswake/proof/phase92_server_propagation_closeout_test.exs
+          test/crosswake/proof/phase96_threadline_docs_contract_test.exs
+          test/crosswake/plug/threadline_test.exs
+          test/crosswake/live/threadline_test.exs
+          test/crosswake/threadline/telemetry_test.exs
+          test/crosswake/threadline/id_test.exs
+          test/crosswake/doctor/doctor_threadline_test.exs
+          test/mix/tasks/crosswake.gen.audit_test.exs
+          "test/crosswake/support_matrix/support_matrix_test.exs:246"
+      - name: Summarize Threadline docs-contract proof
+        if: always()
+        run: |
+          {
+            echo 'Focused Threadline public documentation and runtime contract proof completed.'
+            echo 'Focused remediation: mix test test/crosswake/proof/phase96_threadline_docs_contract_test.exs test/crosswake/plug/threadline_test.exs test/crosswake/live/threadline_test.exs test/crosswake/threadline/telemetry_test.exs'
+            echo 'Remediation: mix test test/crosswake/proof/phase91_threadline_contract_closeout_test.exs test/crosswake/proof/phase92_server_propagation_closeout_test.exs test/crosswake/proof/phase96_threadline_docs_contract_test.exs test/crosswake/plug/threadline_test.exs test/crosswake/live/threadline_test.exs test/crosswake/threadline/telemetry_test.exs test/crosswake/threadline/id_test.exs test/crosswake/doctor/doctor_threadline_test.exs test/mix/tasks/crosswake.gen.audit_test.exs "test/crosswake/support_matrix/support_matrix_test.exs:246"'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  compat-aggregator-negative-control:
+    name: merge-blocking-aggregator-negative-control
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Preserve the legacy required context
+        env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-contract-drift:
+    name: merge-blocking-contract-drift
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Preserve the legacy required context with closed results
+        env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import sys
+          if os.environ.get("RESULT", "") != "success":
+              sys.exit("legacy contract-drift context rejected a non-success guard result")
+          PY
+
+  compat-dependency-security:
+    name: merge-blocking-dependency-security
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Preserve the legacy required context
+        env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-ios-mirror-parity:
+    name: merge-blocking-ios-mirror-parity
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-native-behavioral-proof:
+    name: merge-blocking-native-behavioral-proof
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-offline-sync-e2e:
+    name: merge-blocking-offline-sync-e2e
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-requires-example-host:
+    name: merge-blocking-requires-example-host
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Preserve the legacy required context
+        env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase130-core-hermetic-proof:
+    name: core hermetic proof (merge-blocking)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase130-companion-engine-absent-proof:
+    name: companion engine-absent proof (merge-blocking)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase132-core-hermetic-proof:
+    name: phase132 core hermetic proof (merge-blocking)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase132-companion-engine-absent-proof:
+    name: phase132 companion engine-absent proof (merge-blocking)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase23-commerce-proof:
+    name: merge-blocking commerce support proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase34-commerce-proof:
+    name: merge-blocking phase34 commerce support proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase41-gating-proof:
+    name: merge-blocking gating doctor and support matrix proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase43-rulestead-proof:
+    name: merge-blocking rulestead proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase45-rindle-proof:
+    name: merge-blocking rindle proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase48-provider-adapter-proof:
+    name: merge-blocking provider adapter proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase52-operator-proof:
+    name: merge-blocking operator proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase58-auth-closeout-proof:
+    name: merge-blocking auth closeout proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase69-closeout-proof:
+    name: merge-blocking-closeout-proof
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase70-subscription-saas-proof:
+    name: merge-blocking subscription SaaS proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase71-notification-workflow-proof:
+    name: merge-blocking notification workflow proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase73-auth-sensitive-admin-workflow-proof:
+    name: merge-blocking auth-sensitive admin workflow proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase74-offline-draft-recovery-proof:
+    name: merge-blocking offline draft recovery proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase75-closeout-gate:
+    name: merge-blocking phase 75 closeout gate
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase96-threadline-docs-contract:
+    name: merge-blocking Threadline docs-contract proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-release-as-staleness:
+    name: merge-blocking-release-as-staleness
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  merge-blocking-crosswake-ci:
+    name: Crosswake CI
+    if: always()
+    needs:
+      - android-generated-shell-unit
+      - android-package-unit
+      - brand-structural
+      - classify-change
+      - collateral-binaries-guard
+      - documentation-contracts
+      - e2e-proof
+      - guard-01-contract-drift-test
+      - guard-01-e2e-honesty
+      - guard-02-generate-and-diff
+      - guard-02-prod-route-absence
+      - hex-page-proof
+      - ios-mirror-parity-proof
+      - ios-package-unit
+      - phase10-proof
+      - phase18-elixir-android-proof
+      - phase18-ios-proof
+      - phase130-companion-engine-absent-proof
+      - phase130-core-hermetic-proof
+      - phase132-companion-engine-absent-proof
+      - phase132-core-hermetic-proof
+      - phase23-commerce-proof
+      - phase34-commerce-proof
+      - phase5-proof
+      - phase41-gating-proof
+      - phase43-rulestead-proof
+      - phase45-rindle-proof
+      - phase48-provider-adapter-proof
+      - phase52-operator-proof
+      - phase58-auth-closeout-proof
+      - phase67-android-jvm-proof
+      - phase69-closeout-proof
+      - phase70-subscription-saas-proof
+      - phase71-notification-workflow-proof
+      - phase73-auth-sensitive-admin-workflow-proof
+      - phase74-offline-draft-recovery-proof
+      - phase75-closeout-gate
+      - phase79-android-proof
+      - phase79-ios-proof
+      - phase96-threadline-docs-contract-proof
+      - proof-aggregator-negative-control
+      - proof-dependency-security
+      - proof-requires-example-host
+      - release-as-staleness-proof
+      - route-tour-proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Conclude the governed proof graph
+        shell: bash
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          CLASSIFICATION: ${{ needs.classify-change.outputs.classification }}
+          REASON: ${{ needs.classify-change.outputs.reason }}
+          SCHEDULED_FAMILIES: ${{ needs.classify-change.outputs.scheduled_families }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+          needs = json.loads(os.environ["NEEDS_JSON"])
+          classification = os.environ.get("CLASSIFICATION", "")
+          if classification not in {"documentation_only", "full_proof"}:
+              sys.exit("Crosswake CI: classification was missing or unknown")
+          if classification == "documentation_only" and os.environ.get("REASON", "") != "all_changed_paths_allowlisted":
+              sys.exit("Crosswake CI: documentation irrelevance reason was not manifest-authorized")
+          explicitly_irrelevant = {
+              "android-generated-shell-unit",
+              "android-package-unit",
+              "brand-structural",
+              "collateral-binaries-guard",
+              "e2e-proof",
+              "guard-01-contract-drift-test",
+              "guard-01-e2e-honesty",
+              "guard-02-generate-and-diff",
+              "guard-02-prod-route-absence",
+              "hex-page-proof",
+              "ios-mirror-parity-proof",
+              "ios-package-unit",
+              "phase10-proof",
+              "phase18-elixir-android-proof",
+              "phase18-ios-proof",
+              "phase130-companion-engine-absent-proof",
+              "phase130-core-hermetic-proof",
+              "phase132-companion-engine-absent-proof",
+              "phase132-core-hermetic-proof",
+              "phase23-commerce-proof",
+              "phase34-commerce-proof",
+              "phase41-gating-proof",
+              "phase43-rulestead-proof",
+              "phase45-rindle-proof",
+              "phase48-provider-adapter-proof",
+              "phase5-proof",
+              "phase52-operator-proof",
+              "phase58-auth-closeout-proof",
+              "phase67-android-jvm-proof",
+              "phase69-closeout-proof",
+              "phase70-subscription-saas-proof",
+              "phase71-notification-workflow-proof",
+              "phase73-auth-sensitive-admin-workflow-proof",
+              "phase74-offline-draft-recovery-proof",
+              "phase75-closeout-gate",
+              "phase79-android-proof",
+              "phase79-ios-proof",
+              "phase96-threadline-docs-contract-proof",
+              "proof-aggregator-negative-control",
+              "proof-dependency-security",
+              "proof-requires-example-host",
+              "release-as-staleness-proof",
+              "route-tour-proof",
+          } if classification == "documentation_only" else set()
+          for name, value in sorted(needs.items()):
+              result = value.get("result", "")
+              if name == "classify-change" and result != "success":
+                  sys.exit("Crosswake CI: required classification control did not succeed")
+              if name != "classify-change" and result != "success":
+                  if result != "skipped" or name not in explicitly_irrelevant:
+                      sys.exit("Crosswake CI: proof leaf did not reach a closed accepted result: " + name)
+          PY
+          {
+            echo "Classification: ${CLASSIFICATION}."
+            echo "Reason: ${REASON}."
+            echo "Scheduled proof families: ${SCHEDULED_FAMILIES}."
+            echo 'Explicitly irrelevant families: classifier-authorized leaves reported as skipped; unrelated executable families are not scheduled.'
+            echo 'Expected/observed proof leaves: 44/44.'
+            echo 'Observed proof leaves use count units; hosted-runner timing is not measured.'
+            echo 'Remediation: python3 script/check_ci_leaf_manifest.py --self-test'
+          } >> "$GITHUB_STEP_SUMMARY"

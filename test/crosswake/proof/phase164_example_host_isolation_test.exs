@@ -204,18 +204,33 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
   end
 
   test "the stable example-host lane delegates to the matrix without serial or fixed-count claims" do
-    workflow = File.read!(".github/workflows/requires-example-host-gate.yml")
+    workflow = File.read!(".github/workflows/crosswake-ci.yml")
+    leaf = job_section!(workflow, "proof-requires-example-host")
 
-    assert workflow =~ "merge-blocking-requires-example-host:\n"
-    assert workflow =~ "name: merge-blocking-requires-example-host"
-    assert workflow =~ "runs-on: ubuntu-latest"
-    assert workflow =~ "working-directory: examples/phoenix_host"
-    assert workflow =~ "MIX_ENV: dev"
-    assert workflow =~ "MIX_ENV: test"
-    assert workflow =~ "script/check_example_host_isolation.sh --matrix-only"
-    refute workflow =~ "--max-cases"
-    refute workflow =~ ~r/\b20 test files\b/
-    refute workflow =~ ~r/\b51 tests\b/
+    assert leaf =~ "name: proof-requires-example-host"
+    assert leaf =~ "runs-on: ubuntu-latest"
+    assert leaf =~ "working-directory: examples/phoenix_host"
+    assert leaf =~ "MIX_ENV: dev"
+    assert leaf =~ "MIX_ENV: test"
+    assert leaf =~ "script/check_example_host_isolation.sh --matrix-only"
+    refute leaf =~ "--max-cases"
+    refute leaf =~ ~r/\b20 test files\b/
+    refute leaf =~ ~r/\b51 tests\b/
+
+    compatibility = job_section!(workflow, "compat-requires-example-host")
+    assert compatibility =~ "name: merge-blocking-requires-example-host"
+    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
+    assert compatibility =~ "if: always()"
+    refute compatibility =~ "actions/checkout"
+  end
+
+  defp job_section!(workflow, job_name) do
+    pattern = ~r/^  #{Regex.escape(job_name)}:\r?\n(.*?)(?=^  [a-zA-Z0-9_-]+:\r?\n|\z)/ms
+
+    case Regex.run(pattern, workflow, capture: :all_but_first) do
+      [section] -> section
+      nil -> flunk("missing workflow job #{job_name}")
+    end
   end
 
   defp unique_atom(prefix) do

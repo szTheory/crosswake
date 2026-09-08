@@ -35,7 +35,7 @@ independent workstream; the numbering does not imply that parked adopter work mu
   4. State-mutating tests pass both alone and in the complete suite without leaving changed application configuration, code paths, files, or databases behind.
   5. Required aggregators visibly distinguish irrelevant work from failed, cancelled, or missing work, and only the explicitly irrelevant case is neutral.
 
-**Plans**: TBD
+**Plans**: 5 plans
 
 - [x] 164-05-PLAN.md
 
@@ -57,7 +57,60 @@ independent workstream; the numbering does not imply that parked adopter work mu
   4. A documentation-only pull request receives an always-visible merge result without scheduling unrelated build, browser, Android, or Apple proof.
   5. A maintainer can compare reproducible before/after workflow count, runner selection, queue time, and execution time, and can still identify each named proof behind the consolidated reusable orchestration.
 
-**Plans**: TBD
+**Plans**: 9/13 plans executed
+
+Plans:
+**Wave 1**
+
+- [x] 165-01-PLAN.md — Capture the pre-change baseline and prove the documentation-only tracer.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 165-02-PLAN.md — Harden classification, manifest, and closed umbrella policy.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] 165-03-PLAN.md — Build trusted monotonic obsolete-run cancellation.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [x] 165-04-PLAN.md — Correct runner placement, cache identity, and timeouts.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [x] 165-05-PLAN.md — Consolidate core, security, hermetic, and commerce PR proof.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
+- [x] 165-06-PLAN.md — Consolidate the first domain-proof cohort.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
+- [x] 165-07-PLAN.md — Consolidate the remaining phase-era domain proof.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
+- [x] 165-08-PLAN.md — Consolidate native, browser, package, and cross-runtime proof.
+
+**Wave 9** *(blocked on Wave 8 completion)*
+
+- [x] 165-09-PLAN.md — Finish the PR graph and recurring Phase 165 contract gate.
+
+**Wave 10** *(blocked on Wave 9 completion)*
+
+- [ ] 165-10-PLAN.md — Prove live behavior and add Crosswake CI authority green-first.
+
+**Wave 11** *(blocked on Wave 10 completion)*
+
+- [ ] 165-11-PLAN.md — Approve or reject the exact legacy-context retirement.
+
+**Wave 12** *(blocked on Wave 11 completion)*
+
+- [ ] 165-12-PLAN.md — Apply approved retirement and remove migration-only compatibility conclusions.
+
+**Wave 13** *(blocked on Wave 12 completion)*
+
+- [ ] 165-13-PLAN.md — Bind the landed final graph to an exact remote SHA and capture matched after evidence.
 
 ### Phase 166: Clean-Checkout Engineering Quality
 
@@ -108,7 +161,7 @@ independent workstream; the numbering does not imply that parked adopter work mu
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 164. Dependency Security and Gate Authority | 5/5 | Complete    | 2026-08-28 |
-| 165. Efficient and Maintainable CI | 0/TBD | Not started | - |
+| 165. Efficient and Maintainable CI | 9/13 | In Progress|  |
 | 166. Clean-Checkout Engineering Quality | 0/TBD | Not started | - |
 | 167. Documentation and Pull-Request Reconciliation | 0/TBD | Not started | - |
 | 168. 0.2.1 Release Candidate Readiness | 0/TBD | Not started | - |

@@ -1,7 +1,8 @@
 defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
   @moduledoc """
-  Merge-blocking proof that the `android-generated-shell-unit` lane is wired to actually
-  block a PR merge via the `merge-blocking-native-behavioral-proof` aggregator (LIFE-01a).
+  Merge-blocking proof that the `android-generated-shell-unit` lane remains under
+  the `Crosswake CI` umbrella and its checkout-free
+  `merge-blocking-native-behavioral-proof` compatibility projection (LIFE-01a).
 
   This is the shift-left of 134-UAT Test #1 ("Android generated-shell lane actually blocks
   a real PR merge"), which was previously a human verification gated on a live PR against
@@ -9,16 +10,13 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
   file proves CLAIM 1 (wiring) on every PR:
 
     - claim 1 (wiring)            -> THIS file
-    - claim 2 (rollup semantics)  -> .github/workflows/aggregator-negative-control.yml
+    - claim 2 (rollup semantics)  -> script/check_aggregator_result_semantics.py
     - claim 3 (registration)      -> .github/workflows/required-checks-audit.yml (scheduled)
 
   Literal-presence facts are asserted via `File.read!` + `String.contains?`. Structural
-  facts that a substring cannot prove (list membership in `needs:`, `if: always()` on THIS
-  job) are checked in pure Elixir: `aggregator_wiring_errors/3` scopes to the aggregator's
-  YAML block (`job_block/2`) and verifies `if: always()`, `needs:` membership, and
-  alls-green/`toJSON(needs)`. A renamed/removed aggregator yields a "job not found" error
-  (non-vacuity guard). No python/PyYAML — the lane stays hermetic and green everywhere
-  (an earlier python+PyYAML version reddened proof lanes whose runners lacked PyYAML).
+  facts that a substring cannot prove are scoped to exact YAML job blocks. The historical
+  fixture helper still proves exact single-line `needs:` parity; the production contract
+  now checks the central umbrella and compatibility jobs directly.
 
   Untagged. `async: true` — read-only filesystem only; no Application state mutation and
   (per the deferred-items.md flaky-test lesson) no `File.cd!`.
@@ -39,8 +37,8 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
 
   alias Crosswake.TestSupport.ProofAssertions
 
-  @gate ".github/workflows/native-behavioral-proof-gate.yml"
-  @negctl ".github/workflows/aggregator-negative-control.yml"
+  @gate ".github/workflows/crosswake-ci.yml"
+  @negctl ".github/workflows/crosswake-ci.yml"
 
   # ---------------------------------------------------------------------------
   # Claim 1a — literal presence of the load-bearing aggregator tokens.
@@ -56,12 +54,13 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
       {"proof.life_01a.gate.if_always", "if: always()",
        "aggregator must run even when a leaf is skipped/failed",
        "restore `if: always()` on the aggregator — a skipped dep would otherwise count as success (footgun 1)"},
-      {"proof.life_01a.gate.alls_green_action", "re-actors/alls-green@release/v1",
-       "rollup must use the pinned alls-green action",
-       "restore the re-actors/alls-green@release/v1 step"},
+      {"proof.life_01a.gate.alls_green_action",
+       "proof leaf did not reach a closed accepted result",
+       "rollup must reject every non-success proof result that is not explicitly irrelevant",
+       "restore the fail-closed Crosswake CI result evaluation"},
       {"proof.life_01a.gate.tojson_needs", "${{ toJSON(needs) }}",
-       "rollup must feed every needed job's result into alls-green",
-       "restore `jobs: ${{ toJSON(needs) }}` on the alls-green step"}
+       "rollup must inspect every needed job's result",
+       "restore `NEEDS_JSON: ${{ toJSON(needs) }}` on the umbrella"}
     ]
 
     for {id, needle, subject, hint} <- presence do
@@ -79,40 +78,31 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
   end
 
   # ---------------------------------------------------------------------------
-  # Claim 1b — structural wiring: if:always() on THIS job, both leaves in needs:,
-  # alls-green/toJSON(needs). Pure Elixir (scoped to the aggregator's YAML block) —
-  # no python/PyYAML, so the check stays hermetic and green on every merge-blocking
-  # lane. A renamed/removed aggregator job surfaces as "job not found".
+  # Claim 1b — structural wiring through the central umbrella and compatibility context.
   # ---------------------------------------------------------------------------
 
-  test "aggregator structurally gates on both android-package-unit and android-generated-shell-unit" do
-    errors =
-      aggregator_wiring_errors(@gate, "merge-blocking-native-behavioral-proof", [
-        "android-package-unit",
-        "android-generated-shell-unit"
-      ])
+  test "Crosswake CI structurally gates both Android native leaves" do
+    umbrella = @gate |> File.read!() |> job_block("merge-blocking-crosswake-ci")
+    compatibility = @gate |> File.read!() |> job_block("compat-native-behavioral-proof")
 
-    assert errors == [],
-           ProofAssertions.stable_id_message(
-             "proof.life_01a.gate.structural_wiring",
-             "aggregator must have if:always(), needs:{android-package-unit,android-generated-shell-unit}, and alls-green/toJSON(needs)",
-             @gate,
-             "wiring errors: #{inspect(errors)}",
-             @gate,
-             "fix the reported wiring; both leaves must be in needs: and if:always() must be set",
-             :merge_blocking
-           )
+    assert umbrella =~ ~r/^      - android-package-unit$/m
+    assert umbrella =~ ~r/^      - android-generated-shell-unit$/m
+    assert compatibility =~ "name: merge-blocking-native-behavioral-proof"
+    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
+    assert compatibility =~ "if: always()"
+    assert compatibility =~ ~s(test "$RESULT" = success)
+    refute compatibility =~ "actions/checkout"
   end
 
   # ---------------------------------------------------------------------------
   # Claim 1c — the leaf the UAT names exists and runs on the right runner.
   # Guards against an edit that drops the leaf from needs: while leaving the
-  # name elsewhere in the file (the verify script arch()-exit-1s off-mac, so
-  # macos-latest is a hard invariant).
+  # name elsewhere in the file, or moves pure Android/JVM work back to macOS.
   # ---------------------------------------------------------------------------
 
-  test "android-generated-shell-unit leaf exists on macos-latest" do
+  test "android-generated-shell-unit leaf exists on Linux with hermetic JVM setup" do
     src = File.read!(@gate)
+    leaf = job_block(src, "android-generated-shell-unit")
 
     assert String.contains?(src, "android-generated-shell-unit"),
            ProofAssertions.stable_id_message(
@@ -125,45 +115,41 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
              :merge_blocking
            )
 
-    assert String.contains?(src, "runs-on: macos-latest"),
+    assert String.contains?(leaf, "runs-on: ubuntu-latest"),
            ProofAssertions.stable_id_message(
              "proof.life_01a.gate.leaf_macos",
-             "the generated-shell verify script is mac-specific (arch() exits 1 off-mac)",
+             "the pure generated Android shell proof must run on Linux",
              @gate,
-             "no `runs-on: macos-latest` job found in workflow",
+             "android-generated-shell-unit is not on ubuntu-latest",
              @gate,
-             "keep android-generated-shell-unit on macos-latest",
+             "keep pure Android/JVM proof on ubuntu-latest",
              :merge_blocking
            )
+
+    assert leaf =~ "./.github/actions/setup-android-jvm"
+    assert leaf =~ "script/verify_generated_android_shell.sh"
   end
 
   # ---------------------------------------------------------------------------
-  # Claim 1d — sibling-aggregator parity (the reuse payoff). All three gates
-  # share the if:always()+needs+alls-green pattern that the negative-control
-  # workflow proves sound; lock that they each still use it.
+  # Claim 1d — sibling compatibility projections share the checkout-free,
+  # if:always()+single-umbrella-needs pattern.
   # ---------------------------------------------------------------------------
 
   @siblings [
-    {".github/workflows/contract-drift-gate.yml", "merge-blocking-contract-drift",
-     ["guard-01-contract-drift-test", "guard-02-generate-and-diff"]},
-    {".github/workflows/offline-sync-e2e-gate.yml", "merge-blocking-offline-sync-e2e",
-     ["guard-01-e2e-honesty", "guard-02-prod-route-absence", "e2e-proof", "route-tour-proof"]}
+    {"compat-contract-drift", "merge-blocking-contract-drift"},
+    {"compat-offline-sync-e2e", "merge-blocking-offline-sync-e2e"}
   ]
 
   test "sibling merge-blocking aggregators share the same rollup wiring" do
-    for {file, aggregator, leaves} <- @siblings do
-      errors = aggregator_wiring_errors(file, aggregator, leaves)
+    src = File.read!(@gate)
 
-      assert errors == [],
-             ProofAssertions.stable_id_message(
-               "proof.life_01a.gate.sibling_wiring.#{aggregator}",
-               "sibling aggregator #{aggregator} must share the if:always()+needs+alls-green pattern",
-               file,
-               "wiring errors: #{inspect(errors)}",
-               file,
-               "the shared aggregator rollup pattern regressed in #{file}",
-               :merge_blocking
-             )
+    for {job, display_name} <- @siblings do
+      compatibility = job_block(src, job)
+      assert compatibility =~ "name: #{display_name}"
+      assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
+      assert compatibility =~ "if: always()"
+      assert compatibility =~ "RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}"
+      refute compatibility =~ "actions/checkout"
     end
   end
 
@@ -200,33 +186,23 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
   end
 
   # ---------------------------------------------------------------------------
-  # Claim 2 anchor — the negative-control workflow (which proves the rollup
-  # semantics) must exist and keep its footgun-1 (skipped-leaf) arm, so it
-  # cannot be silently deleted or hollowed out.
+  # Claim 2 anchor — the negative-control leaf and legacy projection must remain.
   # ---------------------------------------------------------------------------
 
   test "aggregator negative-control workflow exists with its skipped-leaf arm" do
     src = File.read!(@negctl)
+    leaf = job_block(src, "proof-aggregator-negative-control")
+    compatibility = job_block(src, "compat-aggregator-negative-control")
 
-    for {needle, what} <- [
-          {"merge-blocking-aggregator-negative-control", "the merge-blocking gate job"},
-          {~s({"result": "skipped"}), "the footgun-1 skipped-leaf-result arm"}
-        ] do
-      assert String.contains?(src, needle),
-             ProofAssertions.stable_id_message(
-               "proof.life_01a.negctl.present",
-               "negative-control workflow must retain #{what}",
-               @negctl,
-               "needle not found: #{inspect(needle)}",
-               @negctl,
-               "do not remove #{what} — it proves alls-green fails on a skipped leaf (footgun 1)",
-               :merge_blocking
-             )
-    end
+    assert leaf =~ "name: proof-aggregator-negative-control"
+    assert leaf =~ "python3 script/check_aggregator_result_semantics.py --self-test"
+    assert compatibility =~ "name: merge-blocking-aggregator-negative-control"
+    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
+    assert compatibility =~ "if: always()"
   end
 
   test "aggregator negative control awaits every closed-policy action outcome" do
-    src = File.read!(@negctl)
+    src = File.read!("script/check_aggregator_result_semantics.py")
 
     for result_class <- [
           "success",
@@ -241,21 +217,13 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
           "empty",
           "missing"
         ] do
-      assert String.contains?(src, "id: result_#{result_class}")
-      assert String.contains?(src, "steps.result_#{result_class}.outcome")
+      assert String.contains?(src, ~s("#{result_class}"))
     end
 
-    assert String.contains?(
-             src,
-             ~s(python3 script/check_aggregator_result_semantics.py --assert-outcomes "$OUTCOMES_JSON")
-           )
-
-    assert Regex.scan(~r/^\s+allowed-skips:/m, src) ==
-             [["          allowed-skips:"]]
-
-    for file <- [@negctl, @gate | Enum.map(@siblings, &elem(&1, 0))] do
-      refute File.read!(file) =~ "allowed-failures:"
-    end
+    assert src =~ "--assert-outcomes"
+    assert src =~ "negative-control=missing_outcome"
+    assert src =~ "negative-control=inverted_outcome"
+    refute src =~ "allowed-failures"
   end
 
   # ---------------------------------------------------------------------------

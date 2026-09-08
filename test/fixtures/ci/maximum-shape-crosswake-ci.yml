@@ -1,0 +1,363 @@
+name: Crosswake CI Maximum Shape
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+
+jobs:
+  android-generated-shell-unit:
+    name: android-generated-shell-unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+  android-package-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: android-package-unit
+  brand-structural:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: brand-structural
+  classify-change:
+    name: classify-change
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      classification: ${{ steps.classify.outputs.classification }}
+      reason: ${{ steps.classify.outputs.reason }}
+      irrelevant_leaves: ${{ steps.classify.outputs.irrelevant_leaves }}
+    steps:
+      - id: classify
+        run: |
+          {
+            echo 'classification=full_proof'
+            echo 'reason=maximum_shape_fixture'
+            echo 'irrelevant_leaves=[]'
+          } >> "$GITHUB_OUTPUT"
+  collateral-binaries-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: collateral-binaries-guard
+  documentation-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: documentation-contracts
+  e2e-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: e2e-proof
+  guard-01-contract-drift-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: guard-01-contract-drift-test
+  guard-01-e2e-honesty:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: guard-01-e2e-honesty
+  guard-02-generate-and-diff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: guard-02-generate-and-diff
+  guard-02-prod-route-absence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: guard-02-prod-route-absence
+  hex-page-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: hex-page-proof
+  ios-mirror-parity-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: ios-mirror-parity-proof
+  ios-package-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: ios-package-unit
+  phase10-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase10-proof
+  phase130-companion-engine-absent-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase130-companion-engine-absent-proof
+  phase130-core-hermetic-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase130-core-hermetic-proof
+  phase132-companion-engine-absent-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase132-companion-engine-absent-proof
+  phase132-core-hermetic-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase132-core-hermetic-proof
+  phase18-elixir-android-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase18-elixir-android-proof
+  phase18-ios-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase18-ios-proof
+  phase23-commerce-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase23-commerce-proof
+  phase34-commerce-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase34-commerce-proof
+  phase41-gating-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase41-gating-proof
+  phase43-rulestead-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase43-rulestead-proof
+  phase45-rindle-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase45-rindle-proof
+  phase48-provider-adapter-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase48-provider-adapter-proof
+  phase5-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase5-proof
+  phase52-operator-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase52-operator-proof
+  phase58-auth-closeout-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase58-auth-closeout-proof
+  phase67-android-jvm-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase67-android-jvm-proof
+  phase69-closeout-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase69-closeout-proof
+  phase70-subscription-saas-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase70-subscription-saas-proof
+  phase71-notification-workflow-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase71-notification-workflow-proof
+  phase73-auth-sensitive-admin-workflow-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase73-auth-sensitive-admin-workflow-proof
+  phase74-offline-draft-recovery-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase74-offline-draft-recovery-proof
+  phase75-closeout-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase75-closeout-gate
+  phase79-android-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase79-android-proof
+  phase79-ios-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase79-ios-proof
+  phase96-threadline-docs-contract-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: phase96-threadline-docs-contract-proof
+  proof-aggregator-negative-control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: proof-aggregator-negative-control
+  proof-dependency-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: proof-dependency-security
+  proof-requires-example-host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: proof-requires-example-host
+  release-as-staleness-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: release-as-staleness-proof
+  route-tour-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: route-tour-proof
+
+  merge-blocking-crosswake-ci:
+    name: Crosswake CI
+    if: always()
+    needs:
+      - android-generated-shell-unit
+      - android-package-unit
+      - brand-structural
+      - classify-change
+      - collateral-binaries-guard
+      - documentation-contracts
+      - e2e-proof
+      - guard-01-contract-drift-test
+      - guard-01-e2e-honesty
+      - guard-02-generate-and-diff
+      - guard-02-prod-route-absence
+      - hex-page-proof
+      - ios-mirror-parity-proof
+      - ios-package-unit
+      - phase10-proof
+      - phase130-companion-engine-absent-proof
+      - phase130-core-hermetic-proof
+      - phase132-companion-engine-absent-proof
+      - phase132-core-hermetic-proof
+      - phase18-elixir-android-proof
+      - phase18-ios-proof
+      - phase23-commerce-proof
+      - phase34-commerce-proof
+      - phase41-gating-proof
+      - phase43-rulestead-proof
+      - phase45-rindle-proof
+      - phase48-provider-adapter-proof
+      - phase5-proof
+      - phase52-operator-proof
+      - phase58-auth-closeout-proof
+      - phase67-android-jvm-proof
+      - phase69-closeout-proof
+      - phase70-subscription-saas-proof
+      - phase71-notification-workflow-proof
+      - phase73-auth-sensitive-admin-workflow-proof
+      - phase74-offline-draft-recovery-proof
+      - phase75-closeout-gate
+      - phase79-android-proof
+      - phase79-ios-proof
+      - phase96-threadline-docs-contract-proof
+      - proof-aggregator-negative-control
+      - proof-dependency-security
+      - proof-requires-example-host
+      - release-as-staleness-proof
+      - route-tour-proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Conclude the complete proof graph
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          CLASSIFICATION: ${{ needs.classify-change.outputs.classification }}
+          CLASSIFIER_REASON: ${{ needs.classify-change.outputs.reason }}
+          IRRELEVANT_LEAVES: ${{ needs.classify-change.outputs.irrelevant_leaves }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+          needs = json.loads(os.environ["NEEDS_JSON"])
+          irrelevant = set(json.loads(os.environ["IRRELEVANT_LEAVES"]))
+          for name, value in sorted(needs.items()):
+              result = value.get("result", "")
+              if name == "classify-change" and result != "success":
+                  sys.exit("required classifier control did not succeed")
+              if name != "classify-change" and result != "success":
+                  if result != "skipped" or name not in irrelevant:
+                      sys.exit("proof leaf did not reach a closed accepted result: " + name)
+          PY

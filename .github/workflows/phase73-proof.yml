@@ -9,10 +9,6 @@ permissions:
   contents: read
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       lane:
@@ -28,43 +24,6 @@ on:
     - cron: "0 6 * * 1"
 
 jobs:
-  merge-blocking-auth-sensitive-admin-workflow-proof:
-    name: merge-blocking auth-sensitive admin workflow proof (hermetic)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'merge-blocking' || inputs.lane == 'all')) }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
-
-      - name: Setup BEAM and restore Elixir caches
-        uses: ./.github/actions/setup-elixir-cache
-        with:
-          # dev, NOT test — this lane is the exception. Its `mix test` runs in
-          # packages/crosswake_sigra (working-directory), so the repo-root _build/test is
-          # never created and caching it saved nothing: the entry was skipped at
-          # save time and the lane took a permanent miss on every run. The only
-          # root-level compile here is `mix compile --warnings-as-errors`, which
-          # is dev. Measured: this was 2 of the 2 misses in the 93%-hit-rate run.
-          #
-          # The package's own deps/_build are still uncached — a second cache
-          # scoped to packages/crosswake_sigra is a follow-up (see 153.1-RESULTS.md).
-          mix-env: dev
-
-      - name: Compile (warnings as errors)
-        run: mix compile --warnings-as-errors
-
-      # Phase 73 auth-sensitive admin workflow proof moved into crosswake_sigra during the
-      # SIGRA-01 extraction (Phase 137). Run it from the package (crosswake resolves via path dep).
-      - name: Install crosswake_sigra dependencies
-        run: mix deps.get
-        working-directory: packages/crosswake_sigra
-
-      - name: Run hermetic Phase 73 auth-sensitive admin workflow proof
-        run: mix test test/crosswake/proof/phase73_auth_sensitive_admin_workflow_proof_test.exs
-        working-directory: packages/crosswake_sigra
-
   advisory-native-auth-device-audit-proof:
     name: advisory native auth/device/audit proof (non-promoting)
     runs-on: ubuntu-24.04

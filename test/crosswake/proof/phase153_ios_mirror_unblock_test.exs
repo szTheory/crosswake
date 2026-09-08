@@ -29,7 +29,8 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
   @scanner "script/check_release_workflow_integrity.exs"
   @workflow ".github/workflows/release-please.yml"
   @parity_script "script/check_ios_mirror_parity.sh"
-  @parity_workflow ".github/workflows/merge-blocking-ios-mirror-parity.yml"
+  @parity_workflow ".github/workflows/crosswake-ci.yml"
+  @parity_leaf "ios-mirror-parity-proof"
   @parity_context "merge-blocking-ios-mirror-parity"
   @version "0.2.0"
   @source_ref "refs/tags/ios-core-v0.2.0"
@@ -297,18 +298,25 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
   @tag :phase153_ios_mirror_unblock
   test "the parity workflow satisfies the merge-blocking naming and checkout contract" do
     workflow = File.read!(@parity_workflow)
+    parity = job_section!(workflow, @parity_leaf)
 
-    # Job key AND literal name: - both required for auto-discovery + registration.
-    assert workflow =~ "  #{@parity_context}:\n"
-    assert workflow =~ "name: #{@parity_context}\n"
-    # An unresolved expression in `name:` is skipped by list_merge_blocking_checks.py.
-    refute workflow =~ ~r/name:.*\$\{\{/
+    # The executable leaf is literal and the legacy required context remains a
+    # checkout-free projection of the single Crosswake CI authority.
+    assert workflow =~ "  #{@parity_leaf}:\n"
+    assert parity =~ "name: #{@parity_leaf}\n"
+    refute parity =~ ~r/name:.*\$\{\{/
     # The LOCAL side enumerates ios-core-v* tags; a shallow clone would not have them.
-    assert workflow =~ "fetch-depth: 0"
-    assert workflow =~ "fetch-tags: true"
+    assert parity =~ "fetch-depth: 0"
+    assert parity =~ "fetch-tags: true"
     # This repo's dominant discipline is SHA-pin + version comment.
-    assert workflow =~ "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0"
-    assert workflow =~ "./script/check_ios_mirror_parity.sh"
+    assert parity =~ "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0"
+    assert parity =~ "./script/check_ios_mirror_parity.sh"
+
+    compatibility = job_section!(workflow, "compat-ios-mirror-parity")
+    assert compatibility =~ "name: #{@parity_context}"
+    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
+    assert compatibility =~ "if: always()"
+    refute compatibility =~ "actions/checkout"
   end
 
   @tag :phase153_ios_mirror_unblock
@@ -318,6 +326,15 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
 
     assert exit_code == 0, output
     assert @parity_context in String.split(output, "\n", trim: true)
+  end
+
+  defp job_section!(workflow, job_name) do
+    pattern = ~r/^  #{Regex.escape(job_name)}:\r?\n(.*?)(?=^  [a-zA-Z0-9_-]+:\r?\n|\z)/ms
+
+    case Regex.run(pattern, workflow, capture: :all_but_first) do
+      [section] -> section
+      nil -> flunk("missing workflow job #{job_name}")
+    end
   end
 
   defp parity_fixture(local_versions, mirror_versions) do

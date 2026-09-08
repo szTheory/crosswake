@@ -1,0 +1,340 @@
+{
+  "schema_version": 1,
+  "repository_sha": "e8efdb474af802b9ee1daf3450615eabbf9e1419",
+  "captured_at": "2026-09-07T23:55:54.753Z",
+  "historical_provenance": "SEED-007 is historical context only",
+  "source_commands": [
+    "gh api repos/szTheory/crosswake/actions/runs?branch=main&per_page=20",
+    "gh api repos/szTheory/crosswake/actions/runs/{run_id}/jobs?per_page=100"
+  ],
+  "cohorts": [
+    {
+      "name": "documentation_only_pr",
+      "criteria": "pull_request run at the captured source SHA whose validated diff is documentation_only",
+      "sample_count": 0,
+      "status": "not_measured",
+      "reason": "cohort_unavailable",
+      "observations": [],
+      "aggregates": {
+        "workflow_start_delay_ms": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        },
+        "job_execution_ms": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        },
+        "critical_path_ms": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        },
+        "aggregate_runner_seconds": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        }
+      }
+    },
+    {
+      "name": "full_proof_executable_pr",
+      "criteria": "pull_request run at the captured source SHA whose validated diff includes executable content",
+      "sample_count": 0,
+      "status": "not_measured",
+      "reason": "cohort_unavailable",
+      "observations": [],
+      "aggregates": {
+        "workflow_start_delay_ms": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        },
+        "job_execution_ms": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        },
+        "critical_path_ms": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        },
+        "aggregate_runner_seconds": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        }
+      }
+    },
+    {
+      "name": "main_bound_automation",
+      "criteria": "push, schedule, or workflow_dispatch run on the captured default-branch source SHA before Phase 165 topology mutation",
+      "sample_count": 10,
+      "status": "observed",
+      "observations": [
+        {
+          "repository_sha": "e8efdb474af802b9ee1daf3450615eabbf9e1419",
+          "run_id": 34090662289,
+          "attempt": 1,
+          "event": "schedule",
+          "workflow_name": "Phase 34 Proof",
+          "runner_class": "linux_hosted",
+          "created_at": "2026-09-07T06:24:07Z",
+          "run_started_at": "2026-09-07T06:24:07Z",
+          "completed_at": "2026-09-07T06:24:26Z",
+          "outcome": "success",
+          "job_count": 2,
+          "check_count": 2,
+          "workflow_start_delay_ms": 0,
+          "job_execution_ms": 16000,
+          "critical_path_ms": 19000,
+          "aggregate_runner_seconds": 16,
+          "job_queue_time": "not_exposed",
+          "cache": {
+            "status": "not_measured",
+            "reason": "cache_outcome_unavailable"
+          }
+        },
+        {
+          "repository_sha": "e8efdb474af802b9ee1daf3450615eabbf9e1419",
+          "run_id": 34090728300,
+          "attempt": 1,
+          "event": "schedule",
+          "workflow_name": "Phase 52 Proof",
+          "runner_class": "linux_hosted",
+          "created_at": "2026-09-07T06:24:59Z",
+          "run_started_at": "2026-09-07T06:24:59Z",
+          "completed_at": "2026-09-07T06:25:58Z",
+          "outcome": "success",
+          "job_count": 2,
+          "check_count": 2,
+          "workflow_start_delay_ms": 0,
+          "job_execution_ms": 55000,
+          "critical_path_ms": 59000,
+          "aggregate_runner_seconds": 55,
+          "job_queue_time": "not_exposed",
+          "cache": {
+            "status": "not_measured",
+            "reason": "cache_outcome_unavailable"
+          }
+        },
+        {
+          "repository_sha": "e8efdb474af802b9ee1daf3450615eabbf9e1419",
+          "run_id": 34091099757,
+          "attempt": 1,
+          "event": "schedule",
+          "workflow_name": "Phase 43 Proof",
+          "runner_class": "linux_hosted",
+          "created_at": "2026-09-07T06:29:54Z",
+          "run_started_at": "2026-09-07T06:29:54Z",
+          "completed_at": "2026-09-07T06:31:11Z",
+          "outcome": "success",
+          "job_count": 2,
+          "check_count": 2,
+          "workflow_start_delay_ms": 0,
+          "job_execution_ms": 73000,
+          "critical_path_ms": 77000,
+          "aggregate_runner_seconds": 73,
+          "job_queue_time": "not_exposed",
+          "cache": {
+            "status": "not_measured",
+            "reason": "cache_outcome_unavailable"
+          }
+        },
+        {
+          "repository_sha": "e8efdb474af802b9ee1daf3450615eabbf9e1419",
+          "run_id": 34091409181,
+          "attempt": 1,
+          "event": "schedule",
+          "workflow_name": "Phase 71 Proof",
+          "runner_class": "linux_hosted",
+          "created_at": "2026-09-07T06:33:57Z",
+          "run_started_at": "2026-09-07T06:33:57Z",
+          "completed_at": "2026-09-07T06:34:05Z",
+          "outcome": "success",
+          "job_count": 2,
+          "check_count": 2,
+          "workflow_start_delay_ms": 0,
+          "job_execution_ms": 5000,
+          "critical_path_ms": 8000,
+          "aggregate_runner_seconds": 5,
+          "job_queue_time": "not_exposed",
+          "cache": {
+            "status": "not_measured",
+            "reason": "cache_outcome_unavailable"
+          }
+        },
+        {
+          "repository_sha": "e8efdb474af802b9ee1daf3450615eabbf9e1419",
+          "run_id": 34091922005,
+          "attempt": 1,
+          "event": "schedule",
+          "workflow_name": "Phase 45 Proof",
+          "runner_class": "linux_hosted",
+          "created_at": "2026-09-07T06:40:57Z",
+          "run_started_at": "2026-09-07T06:40:57Z",
+          "completed_at": "2026-09-07T06:42:10Z",
+          "outcome": "success",
+          "job_count": 2,
+          "check_count": 2,
+          "workflow_start_delay_ms": 0,
+          "job_execution_ms": 71000,
+          "critical_path_ms": 73000,
+          "aggregate_runner_seconds": 71,
+          "job_queue_time": "not_exposed",
+          "cache": {
+            "status": "not_measured",
+            "reason": "cache_outcome_unavailable"
+          }
+        },
+        {
+          "repository_sha": "e8efdb474af802b9ee1daf3450615eabbf9e1419",
+          "run_id": 34091987409,
+          "attempt": 1,
+          "event": "schedule",
+          "workflow_name": "Phase 23 Proof",
+          "runner_class": "linux_hosted",
+          "created_at": "2026-09-07T06:41:53Z",
+          "run_started_at": "2026-09-07T06:41:53Z",
+          "completed_at": "2026-09-07T06:42:11Z",
+          "outcome": "success",
+          "job_count": 2,
+          "check_count": 2,
+          "workflow_start_delay_ms": 0,
+          "job_execution_ms": 15000,
+          "critical_path_ms": 18000,
+          "aggregate_runner_seconds": 15,
+          "job_queue_time": "not_exposed",
+          "cache": {
+            "status": "not_measured",
+            "reason": "cache_outcome_unavailable"
+          }
+        },
+        {
+          "repository_sha": "e8efdb474af802b9ee1daf3450615eabbf9e1419",
+          "run_id": 34092837505,
+          "attempt": 1,
+          "event": "schedule",
+          "workflow_name": "See It Run Collateral",
+          "runner_class": "mixed",
+          "created_at": "2026-09-07T06:53:27Z",
+          "run_started_at": "2026-09-07T06:53:27Z",
+          "completed_at": "2026-09-07T07:29:18Z",
+          "outcome": "cancelled",
+          "job_count": 3,
+          "check_count": 3,
+          "workflow_start_delay_ms": 0,
+          "job_execution_ms": 2475000,
+          "critical_path_ms": 2151000,
+          "aggregate_runner_seconds": 2475,
+          "job_queue_time": "not_exposed",
+          "cache": {
+            "status": "not_measured",
+            "reason": "cache_outcome_unavailable"
+          }
+        },
+        {
+          "repository_sha": "e8efdb474af802b9ee1daf3450615eabbf9e1419",
+          "run_id": 34096301374,
+          "attempt": 1,
+          "event": "schedule",
+          "workflow_name": "Required Checks Audit",
+          "runner_class": "linux_hosted",
+          "created_at": "2026-09-07T07:36:32Z",
+          "run_started_at": "2026-09-07T07:36:32Z",
+          "completed_at": "2026-09-07T07:36:43Z",
+          "outcome": "failure",
+          "job_count": 1,
+          "check_count": 1,
+          "workflow_start_delay_ms": 0,
+          "job_execution_ms": 9000,
+          "critical_path_ms": 11000,
+          "aggregate_runner_seconds": 9,
+          "job_queue_time": "not_exposed",
+          "cache": {
+            "status": "not_measured",
+            "reason": "cache_outcome_unavailable"
+          }
+        },
+        {
+          "repository_sha": "e8efdb474af802b9ee1daf3450615eabbf9e1419",
+          "run_id": 34098891390,
+          "attempt": 1,
+          "event": "schedule",
+          "workflow_name": "Phase 130 Proof",
+          "runner_class": "linux_hosted",
+          "created_at": "2026-09-07T08:07:13Z",
+          "run_started_at": "2026-09-07T08:07:13Z",
+          "completed_at": "2026-09-07T08:09:37Z",
+          "outcome": "success",
+          "job_count": 3,
+          "check_count": 3,
+          "workflow_start_delay_ms": 0,
+          "job_execution_ms": 140000,
+          "critical_path_ms": 144000,
+          "aggregate_runner_seconds": 140,
+          "job_queue_time": "not_exposed",
+          "cache": {
+            "status": "not_measured",
+            "reason": "cache_outcome_unavailable"
+          }
+        },
+        {
+          "repository_sha": "e8efdb474af802b9ee1daf3450615eabbf9e1419",
+          "run_id": 34100540476,
+          "attempt": 1,
+          "event": "schedule",
+          "workflow_name": "Phase 132 Proof",
+          "runner_class": "linux_hosted",
+          "created_at": "2026-09-07T08:25:51Z",
+          "run_started_at": "2026-09-07T08:25:51Z",
+          "completed_at": "2026-09-07T08:27:23Z",
+          "outcome": "success",
+          "job_count": 3,
+          "check_count": 3,
+          "workflow_start_delay_ms": 0,
+          "job_execution_ms": 88000,
+          "critical_path_ms": 92000,
+          "aggregate_runner_seconds": 88,
+          "job_queue_time": "not_exposed",
+          "cache": {
+            "status": "not_measured",
+            "reason": "cache_outcome_unavailable"
+          }
+        }
+      ],
+      "aggregates": {
+        "workflow_start_delay_ms": {
+          "status": "observed",
+          "sample_count": 10,
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "job_execution_ms": {
+          "status": "observed",
+          "sample_count": 10,
+          "median": 63000,
+          "min": 5000,
+          "max": 2475000
+        },
+        "critical_path_ms": {
+          "status": "observed",
+          "sample_count": 10,
+          "median": 66000,
+          "min": 8000,
+          "max": 2151000
+        },
+        "aggregate_runner_seconds": {
+          "status": "observed",
+          "sample_count": 10,
+          "median": 63,
+          "min": 5,
+          "max": 2475
+        }
+      }
+    }
+  ]
+}

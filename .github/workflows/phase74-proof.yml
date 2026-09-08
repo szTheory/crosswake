@@ -8,10 +8,6 @@ permissions:
   contents: read
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       lane:
@@ -27,11 +23,12 @@ on:
     - cron: "0 6 * * 1"
 
 jobs:
-  merge-blocking-offline-draft-recovery-proof:
-    name: merge-blocking offline draft recovery proof (hermetic)
+  advisory-offline-draft-recovery-proof:
+    name: advisory offline draft recovery proof (non-promoting)
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'merge-blocking' || inputs.lane == 'all')) }}
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'advisory' || inputs.lane == 'all')) }}
+    continue-on-error: true
 
     steps:
       - name: Checkout

@@ -16,35 +16,33 @@ defmodule Crosswake.Proof.Phase164ExUnitOwnershipTest do
     File.mkdir_p!(Path.dirname(full_path))
     File.write!(full_path, source)
 
-    unless Keyword.get(opts, :without_example_lane, false) do
-      workflow = Path.join(tmp, ".github/workflows/requires-example-host-gate.yml")
-      File.mkdir_p!(Path.dirname(workflow))
+    workflow = Path.join(tmp, ".github/workflows/crosswake-ci.yml")
+    File.mkdir_p!(Path.dirname(workflow))
 
-      File.write!(workflow, """
-      name: Requires Example Host Gate
-      jobs:
-        merge-blocking-requires-example-host:
-          name: merge-blocking-requires-example-host
-          runs-on: ubuntu-latest
-          steps:
-            - run: script/check_example_host_isolation.sh --matrix-only
-      """)
-    end
+    default_lane =
+      unless Keyword.get(opts, :without_default_lane, false) do
+        """
+          phase130-core-hermetic-proof:
+            name: phase130-core-hermetic-proof
+            runs-on: ubuntu-latest
+            steps:
+              - run: mix test --exclude requires_example_host --exclude advisory_only
+        """
+      end
 
-    unless Keyword.get(opts, :without_default_lane, false) do
-      workflow = Path.join(tmp, ".github/workflows/phase130-proof.yml")
-      File.mkdir_p!(Path.dirname(workflow))
+    example_lane =
+      unless Keyword.get(opts, :without_example_lane, false) do
+        """
+          proof-requires-example-host:
+            name: proof-requires-example-host
+            runs-on: ubuntu-latest
+            steps:
+              - run: script/check_example_host_isolation.sh --matrix-only
+              - run: mix test --only requires_example_host
+        """
+      end
 
-      File.write!(workflow, """
-      name: Phase 130 Proof
-      jobs:
-        core-hermetic-proof:
-          name: core hermetic proof (merge-blocking)
-          runs-on: ubuntu-latest
-          steps:
-            - run: mix test --exclude requires_example_host --exclude advisory_only
-      """)
-    end
+    File.write!(workflow, "name: Crosswake CI\njobs:\n#{default_lane}#{example_lane}")
 
     path
   end
@@ -95,10 +93,9 @@ defmodule Crosswake.Proof.Phase164ExUnitOwnershipTest do
 
     assert status == 1
     assert out =~ "missing-execution-class"
-    assert out =~ "phase130-proof.yml"
-    assert out =~ "core-hermetic-proof"
-    assert out =~ "core hermetic proof (merge-blocking)"
-    assert out =~ "restore core-hermetic-proof"
+    assert out =~ "crosswake-ci.yml"
+    assert out =~ "phase130-core-hermetic-proof"
+    assert out =~ "restore phase130-core-hermetic-proof"
   end
 
   @tag :tmp_dir
@@ -203,7 +200,7 @@ defmodule Crosswake.Proof.Phase164ExUnitOwnershipTest do
 
     assert status == 1
     assert out =~ "missing-execution-class"
-    assert out =~ "requires-example-host-gate.yml"
-    assert out =~ "merge-blocking-requires-example-host"
+    assert out =~ "crosswake-ci.yml"
+    assert out =~ "proof-requires-example-host"
   end
 end

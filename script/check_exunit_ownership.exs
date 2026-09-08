@@ -4,12 +4,12 @@ defmodule Crosswake.ExUnitOwnership do
   @moduledoc false
 
   @default_exclusions [:advisory_only, :collateral_binaries, :engine_present]
-  @default_workflow ".github/workflows/phase130-proof.yml"
-  @default_job "core-hermetic-proof"
-  @default_name "core hermetic proof (merge-blocking)"
+  @default_workflow ".github/workflows/crosswake-ci.yml"
+  @default_job "phase130-core-hermetic-proof"
+  @default_name "phase130-core-hermetic-proof"
   @default_selector "mix test --exclude requires_example_host --exclude advisory_only"
-  @example_workflow ".github/workflows/requires-example-host-gate.yml"
-  @example_job "merge-blocking-requires-example-host"
+  @example_workflow ".github/workflows/crosswake-ci.yml"
+  @example_job "proof-requires-example-host"
 
   def run(root) do
     paths =

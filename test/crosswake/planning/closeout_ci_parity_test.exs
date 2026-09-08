@@ -1,11 +1,11 @@
 defmodule Crosswake.Planning.CloseoutCIParityTest do
   use ExUnit.Case, async: true
 
-  @workflow Path.join(File.cwd!(), ".github/workflows/phase69-proof.yml")
+  @workflow Path.join(File.cwd!(), ".github/workflows/crosswake-ci.yml")
 
   test "phase 69 merge-blocking proof lane runs milestone closeout checks" do
     workflow = File.read!(@workflow)
-    merge_blocking = job_section!(workflow, "merge-blocking-closeout-proof")
+    merge_blocking = job_section!(workflow, "phase69-closeout-proof")
 
     assert merge_blocking =~ "mix compile --warnings-as-errors"
     assert merge_blocking =~ "mix closeout.verify --cwd . --closeout-path .planning/milestones/v4.0-CLOSEOUT.md"
