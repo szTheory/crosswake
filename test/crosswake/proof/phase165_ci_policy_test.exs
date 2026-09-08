@@ -11,6 +11,7 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
   @workflow ".github/workflows/crosswake-ci.yml"
   @cancellation_fixture "test/fixtures/ci/cancellation/cases.json"
   @cancellation_selector "script/select_obsolete_ci_runs.py"
+  @aggregate "script/check_phase165_efficient_ci.sh"
 
   @moduletag :classifier
 
@@ -208,5 +209,31 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     assert inversion["expected"]["older_controller_ids"] == []
     assert inversion["expected"]["newer_controller_ids"] == [100]
     assert inversion["expected"]["authoritative_run_id"] == 101
+  end
+
+  test "one credential-free aggregate composes every recurring Phase 165 contract" do
+    aggregate = File.read!(@aggregate)
+
+    for command <- [
+          "python3 script/classify_ci_change.py --self-test",
+          "python3 script/select_obsolete_ci_runs.py --self-test",
+          "python3 script/check_aggregator_result_semantics.py --self-test",
+          "python3 script/check_ci_leaf_manifest.py --self-test",
+          "python3 script/list_merge_blocking_checks.py --emitters",
+          "script/check_required_checks_registered.sh --local-only",
+          "node scripts/ci_monitor.cjs test-evidence",
+          "mix test test/crosswake/proof/phase165_ci_policy_test.exs",
+          "mix test test/crosswake/proof/phase165_ci_integrity_test.exs",
+          "mix test test/crosswake/proof/phase165_evidence_test.exs",
+          "actionlint .github/workflows/crosswake-ci.yml"
+        ] do
+      assert aggregate =~ command
+    end
+
+    refute aggregate =~ "register_required_checks.sh"
+    refute aggregate =~ "--apply"
+    refute aggregate =~ "capture-evidence"
+    refute aggregate =~ ~r/(queue|execution)[_-]time.*(?:limit|threshold)/i
+    refute aggregate =~ ~r/\b(retry|rerun|re-run)\b.*\b(proof|test|assert)/i
   end
 end
