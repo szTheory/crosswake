@@ -2,7 +2,7 @@ name: Phase 130 Proof
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 # Phase 130 closes out the companion extraction mechanics for v16.0 by splitting
 # proof lanes into:
@@ -34,10 +34,6 @@ concurrency:
 #   checks on the main branch.
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
   workflow_dispatch:
   schedule:
     # Run the advisory engine-present lane weekly (Monday 08:00 UTC) so absence
@@ -45,85 +41,6 @@ on:
     - cron: "0 8 * * 1"
 
 jobs:
-  core-hermetic-proof:
-    # Required branch check. Runs on every PR and push to main. Hermetic — no
-    # companion Hex dep, no rulestead Hex dep. Covers all core proof files:
-    #   - phase130_extraction_guards_test.exs (EXTRACT-01/03/04, D-27)
-    #   - phase130_fail_closed_contract_test.exs (COMPAT-01)
-    # and the broad hermetic suite (excludes requires_example_host / advisory_only).
-    #
-    # Intentionally skipped on the weekly `schedule` trigger (advisory lane only).
-    name: core hermetic proof (merge-blocking)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Setup BEAM
-        uses: erlef/setup-beam@v1
-        with:
-          elixir-version: "1.19.5"
-          otp-version: "27.3"
-
-      - name: Install Elixir dependencies
-        run: mix deps.get
-
-      - name: Compile (warnings as errors)
-        run: mix compile --warnings-as-errors
-
-      - name: Run Phase 130 extraction guard proof (EXTRACT-01/03/04, D-27)
-        run: mix test test/crosswake/proof/phase130_extraction_guards_test.exs
-
-      - name: Run Phase 130 fail-closed contract proof (COMPAT-01)
-        run: mix test test/crosswake/proof/phase130_fail_closed_contract_test.exs
-
-      - name: Run broad hermetic suite (excludes requires_example_host + advisory_only)
-        run: mix test --exclude requires_example_host --exclude advisory_only
-
-  companion-engine-absent-proof:
-    # Required branch check. Runs mix companions.test in the engine-ABSENT default
-    # state — no Rulestead Hex dep, Code.ensure_loaded?(Rulestead) == false.
-    # Merge-blocking. Covers the adapter behavior tests (SC#1) moved to the
-    # companion lane and the dress-rehearsal verify script (SC#2 / EXTRACT-02).
-    #
-    # Intentionally skipped on the weekly `schedule` trigger (advisory lane only).
-    name: companion engine-absent proof (merge-blocking)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Setup BEAM
-        uses: erlef/setup-beam@v1
-        with:
-          elixir-version: "1.19.5"
-          otp-version: "27.3"
-
-      - name: Install Elixir dependencies (companion)
-        working-directory: packages/crosswake_rulestead
-        run: mix deps.get
-
-      - name: Compile companion (warnings as errors, engine-absent)
-        working-directory: packages/crosswake_rulestead
-        run: mix compile --warnings-as-errors
-
-      - name: Run companion engine-absent tests (merge-blocking)
-        # mix companions.test runs: cmd --cd packages/crosswake_rulestead mix test
-        # Default tag exclusions from test_helper.exs apply — engine_present tests
-        # are excluded automatically. This is the hermetic, fail-closed lane (D-33).
-        run: mix companions.test
-
-      - name: Run verify_companion_package.sh (EXTRACT-02 dress-rehearsal)
-        # Confirms: test/ excluded from files: allowlist, lib/ source present,
-        # compile --warnings-as-errors in engine-absent state (D-24, SC#2).
-        run: bash script/verify_companion_package.sh crosswake_rulestead
-
   companion-engine-present-proof:
     # Advisory lane. Runs on schedule (weekly) and on workflow_dispatch only.
     # Does NOT run on pull_request or push to main — cannot gate merges even if

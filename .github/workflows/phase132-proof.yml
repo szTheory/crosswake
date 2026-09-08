@@ -2,7 +2,7 @@ name: Phase 132 Proof
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 # Phase 132 generalizes the companion extraction recipe to a SECOND companion
 # (rindle) and adds the COMPAT compatibility-matrix drift lane. Proof lanes mirror
@@ -34,10 +34,6 @@ concurrency:
 #   on the main branch.
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
   workflow_dispatch:
   schedule:
     # Run the advisory engine-present lane weekly (Monday 08:00 UTC) so absence of
@@ -45,90 +41,6 @@ on:
     - cron: "0 8 * * 1"
 
 jobs:
-  core-hermetic-proof:
-    # Required branch check. Runs on every PR and push to main. Hermetic — no
-    # companion Hex dep. Covers:
-    #   - phase130_extraction_guards_test.exs (EXTRACT-03 guard, now incl. Rindle)
-    #   - phase132_compat_matrix_drift_test.exs (COMPAT-03, added in 132-02)
-    #   - the broad hermetic suite (excludes requires_example_host / advisory_only).
-    #
-    # Intentionally skipped on the weekly `schedule` trigger (advisory lane only).
-    name: phase132 core hermetic proof (merge-blocking)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Setup BEAM
-        uses: erlef/setup-beam@v1
-        with:
-          elixir-version: "1.19.5"
-          otp-version: "27.3"
-
-      - name: Install Elixir dependencies
-        run: mix deps.get
-
-      - name: Compile (warnings as errors)
-        run: mix compile --warnings-as-errors
-
-      - name: Run extraction guard proof (EXTRACT-03 — CompanionGuard MapSet incl. Rindle)
-        run: mix test test/crosswake/proof/phase130_extraction_guards_test.exs
-
-      - name: Run compat-matrix drift proof (COMPAT-03)
-        # The drift test is created in 132-02. Skip gracefully if not yet present so
-        # this workflow can land in 132-03 ahead of the 132-02 merge.
-        run: |
-          if [ -f test/crosswake/proof/phase132_compat_matrix_drift_test.exs ]; then
-            mix test test/crosswake/proof/phase132_compat_matrix_drift_test.exs
-          else
-            echo "::notice title=COMPAT-03::phase132_compat_matrix_drift_test.exs not present yet (lands in 132-02) — skipping."
-          fi
-
-      - name: Run broad hermetic suite (excludes requires_example_host + advisory_only)
-        run: mix test --exclude requires_example_host --exclude advisory_only
-
-  companion-engine-absent-proof:
-    # Required branch check. Runs the rindle (and rulestead) companion lanes plus the
-    # parameterized verify script for crosswake_rindle. Merge-blocking.
-    #
-    # Intentionally skipped on the weekly `schedule` trigger (advisory lane only).
-    name: phase132 companion engine-absent proof (merge-blocking)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Setup BEAM
-        uses: erlef/setup-beam@v1
-        with:
-          elixir-version: "1.19.5"
-          otp-version: "27.3"
-
-      - name: Install Elixir dependencies (rindle companion)
-        working-directory: packages/crosswake_rindle
-        run: mix deps.get
-
-      - name: Compile rindle companion (warnings as errors)
-        working-directory: packages/crosswake_rindle
-        run: mix compile --warnings-as-errors
-
-      - name: Run companion lanes (rulestead + rindle)
-        # mix companions.test chains both lanes. Default tag exclusions from each
-        # test_helper.exs apply — :engine_present and :requires_example_host tests are
-        # excluded automatically (the hermetic, merge-blocking default lane).
-        run: mix companions.test
-
-      - name: Run verify_companion_package.sh for crosswake_rindle (EXTRACT-02 dress-rehearsal)
-        # Confirms: test/ excluded from files: allowlist, lib/ source present
-        # (parameterized rindle.ex check), compile --warnings-as-errors clean.
-        run: CROSSWAKE_RELEASE=1 bash script/verify_companion_package.sh crosswake_rindle
-
   companion-engine-present-proof:
     # Advisory lane. Runs on schedule (weekly) and on workflow_dispatch only.
     # Does NOT run on pull_request or push to main — cannot gate merges even if every

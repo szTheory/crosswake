@@ -248,6 +248,151 @@ jobs:
           echo "GATE-03 executed the bounded :requires_example_host isolation matrix across ${tagged_count} tagged files." >> "$GITHUB_STEP_SUMMARY"
           echo 'Remediation: script/check_example_host_isolation.sh --matrix-only' >> "$GITHUB_STEP_SUMMARY"
 
+  phase130-core-hermetic-proof:
+    name: phase130-core-hermetic-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 130 extraction and fail-closed proof
+        run: |
+          mix test test/crosswake/proof/phase130_extraction_guards_test.exs
+          mix test test/crosswake/proof/phase130_fail_closed_contract_test.exs
+          mix test --exclude requires_example_host --exclude advisory_only
+      - name: Summarize Phase 130 core proof
+        if: always()
+        run: |
+          echo 'Phase 130 core hermetic extraction, fail-closed contract, and broad suite proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase130_extraction_guards_test.exs test/crosswake/proof/phase130_fail_closed_contract_test.exs && mix test --exclude requires_example_host --exclude advisory_only' >> "$GITHUB_STEP_SUMMARY"
+
+  phase130-companion-engine-absent-proof:
+    name: phase130-companion-engine-absent-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+          cache-scope: companion-rulestead
+          working-directory: packages/crosswake_rulestead
+      - name: Compile companion (warnings as errors, engine absent)
+        working-directory: packages/crosswake_rulestead
+        run: mix compile --warnings-as-errors
+      - name: Run Rulestead companion and release-package proof
+        run: |
+          mix companions.test
+          bash script/verify_companion_package.sh crosswake_rulestead
+      - name: Summarize Phase 130 companion proof
+        if: always()
+        run: |
+          echo 'Phase 130 Rulestead engine-absent and release-package proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix companions.test && bash script/verify_companion_package.sh crosswake_rulestead' >> "$GITHUB_STEP_SUMMARY"
+
+  phase132-core-hermetic-proof:
+    name: phase132-core-hermetic-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 132 compatibility and broad hermetic proof
+        run: |
+          mix test test/crosswake/proof/phase130_extraction_guards_test.exs
+          mix test test/crosswake/proof/phase132_compat_matrix_drift_test.exs
+          mix test --exclude requires_example_host --exclude advisory_only
+      - name: Summarize Phase 132 core proof
+        if: always()
+        run: |
+          echo 'Phase 132 compatibility drift, extraction, and broad hermetic proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase130_extraction_guards_test.exs test/crosswake/proof/phase132_compat_matrix_drift_test.exs && mix test --exclude requires_example_host --exclude advisory_only' >> "$GITHUB_STEP_SUMMARY"
+
+  phase132-companion-engine-absent-proof:
+    name: phase132-companion-engine-absent-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+          cache-scope: companion-rindle
+          working-directory: packages/crosswake_rindle
+      - name: Compile Rindle companion (warnings as errors)
+        working-directory: packages/crosswake_rindle
+        run: mix compile --warnings-as-errors
+      - name: Run companion and Rindle release-package proof
+        run: |
+          mix companions.test
+          CROSSWAKE_RELEASE=1 bash script/verify_companion_package.sh crosswake_rindle
+      - name: Summarize Phase 132 companion proof
+        if: always()
+        run: |
+          echo 'Phase 132 Rindle engine-absent and release-package proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix companions.test && CROSSWAKE_RELEASE=1 bash script/verify_companion_package.sh crosswake_rindle' >> "$GITHUB_STEP_SUMMARY"
+
+  phase23-commerce-proof:
+    name: phase23-commerce-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 23 commerce, support, doctor, guide, and planning proof
+        run: |
+          mix test test/crosswake/proof/phase23_commerce_support_proof_test.exs
+          mix test test/crosswake/doctor/doctor_test.exs test/crosswake/support_matrix/support_matrix_test.exs test/crosswake/support_matrix/renderer_test.exs test/crosswake/guides/commerce_test.exs
+          mix test test/crosswake/planning/summary_frontmatter_test.exs
+      - name: Summarize Phase 23 commerce proof
+        if: always()
+        run: |
+          echo 'Phase 23 hermetic commerce, support, doctor, guide, and planning proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase23_commerce_support_proof_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/support_matrix test/crosswake/guides/commerce_test.exs test/crosswake/planning/summary_frontmatter_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  phase34-commerce-proof:
+    name: phase34-commerce-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 34 broad hermetic commerce proof
+        run: mix test --exclude requires_example_host
+      - name: Summarize Phase 34 commerce proof
+        if: always()
+        run: |
+          echo 'Phase 34 broad hermetic commerce proof completed without example-host-tagged tests.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test --exclude requires_example_host' >> "$GITHUB_STEP_SUMMARY"
+
   compat-aggregator-negative-control:
     name: merge-blocking-aggregator-negative-control
     needs: [merge-blocking-crosswake-ci]
@@ -302,6 +447,72 @@ jobs:
           RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
         run: test "$RESULT" = success
 
+  compat-phase130-core-hermetic-proof:
+    name: core hermetic proof (merge-blocking)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase130-companion-engine-absent-proof:
+    name: companion engine-absent proof (merge-blocking)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase132-core-hermetic-proof:
+    name: phase132 core hermetic proof (merge-blocking)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase132-companion-engine-absent-proof:
+    name: phase132 companion engine-absent proof (merge-blocking)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase23-commerce-proof:
+    name: merge-blocking commerce support proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase34-commerce-proof:
+    name: merge-blocking phase34 commerce support proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
   merge-blocking-crosswake-ci:
     name: Crosswake CI
     if: always()
@@ -310,6 +521,12 @@ jobs:
       - documentation-contracts
       - guard-01-contract-drift-test
       - guard-02-generate-and-diff
+      - phase130-companion-engine-absent-proof
+      - phase130-core-hermetic-proof
+      - phase132-companion-engine-absent-proof
+      - phase132-core-hermetic-proof
+      - phase23-commerce-proof
+      - phase34-commerce-proof
       - proof-aggregator-negative-control
       - proof-dependency-security
       - proof-requires-example-host
@@ -335,6 +552,12 @@ jobs:
           explicitly_irrelevant = {
               "guard-01-contract-drift-test",
               "guard-02-generate-and-diff",
+              "phase130-companion-engine-absent-proof",
+              "phase130-core-hermetic-proof",
+              "phase132-companion-engine-absent-proof",
+              "phase132-core-hermetic-proof",
+              "phase23-commerce-proof",
+              "phase34-commerce-proof",
               "proof-aggregator-negative-control",
               "proof-dependency-security",
               "proof-requires-example-host",
@@ -352,6 +575,6 @@ jobs:
             echo "Reason: ${REASON}."
             echo "Scheduled proof families: ${SCHEDULED_FAMILIES}."
             echo 'Explicitly irrelevant families: core_integrity, security, example_host.'
-            echo 'Expected proof leaves: 6.'
+            echo 'Expected proof leaves: 12.'
             echo 'Remediation: python3 script/check_ci_leaf_manifest.py --self-test'
           } >> "$GITHUB_STEP_SUMMARY"
