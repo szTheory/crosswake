@@ -1,118 +1,127 @@
 #!/usr/bin/env bash
-# register_required_checks.sh — parametric, idempotent registration of ALL merge-blocking CI
-# lanes as required status checks on the protected branch. Supersedes the per-gate
-# register-*-gate.sh scripts (contract / e2e / native): adding a new merge-blocking lane now
-# needs ZERO new registration code — this discovers it automatically (PROOF-03 follow-on).
-#
-# Registration changes branch protection and is therefore an admin-only, harness-blocked action
-# (the legitimate human gate — like merging a Release PR). This script removes the *recurring
-# toil* (one parametric command instead of N hand-written gh api one-liners) but keeps the
-# privileged apply behind the maintainer's own admin-scoped gh auth.
-#
-# Usage (maintainer, from a shell with gh CLI authenticated at repo-admin scope):
-#   script/register_required_checks.sh                 # DRY-RUN, ALL green declared lanes
-#   DRY_RUN=0 script/register_required_checks.sh       # apply (ALL green declared lanes)
-#   DRY_RUN=0 script/register_required_checks.sh "merge-blocking-contract-drift" "..."  # subset
-#
-# Optional positional args = an ALLOWLIST: only these exact contexts (intersected with the
-# discovered merge-blocking lanes) are considered. Use this to require just the lanes you trust
-# as hard gates and leave known-flaky lanes advisory — blanket-requiring every lane can let a
-# flaky proof block all PRs. With no args, all discovered merge-blocking lanes are candidates.
-#
-# Safety properties:
-#   - Green-first preflight per check (mirrors register-contract-gate.sh): only registers a lane
-#     that has ALREADY gone green on the branch at least once, avoiding the "Expected — Waiting
-#     for status" deadlock that freezes every open PR when a never-seen check is required.
-#   - Granular required_status_checks endpoint (not full PUT .../protection): enforce_admins and
-#     review requirements are left untouched.
-#   - Preserves strict + ALL existing required checks; appends; unique_by(.context) → idempotent.
+# Exact green-first required-check migration. Add mode is the only Plan 165-10 write;
+# retire mode defaults to a canonical dry-run and requires a later approved proposal to apply.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "${ROOT_DIR}"
-
+cd "$ROOT_DIR"
 REPO="${REPO:-szTheory/crosswake}"
 BRANCH="${BRANCH:-main}"
 ACTIONS_APP_ID="${ACTIONS_APP_ID:-15368}"
-DRY_RUN="${DRY_RUN:-1}"
 EP="repos/${REPO}/branches/${BRANCH}/protection/required_status_checks"
+BASELINE=".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/required-context-baseline.json"
+OBSERVATION=".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/live-observation.json"
 
-# NOT `mapfile` — that is bash 4.0+, and macOS ships bash 3.2.57. See the same note in
-# check_required_checks_registered.sh: this is run by maintainers on Macs, where `mapfile` fails
-# with "command not found" and the script exits 127 before registering anything.
-ALL_DECLARED=()
-while IFS= read -r _line; do
-  [ -n "$_line" ] && ALL_DECLARED+=("$_line")
-done < <(python3 script/list_merge_blocking_checks.py)
-if [ "${#ALL_DECLARED[@]}" -eq 0 ]; then
-  echo "[crosswake] No merge-blocking checks declared in .github/workflows — nothing to register."
-  exit 0
-fi
-
-# Optional allowlist (positional args): intersect with discovered lanes. Unknown args are an error
-# (typo guard — never silently register nothing / something unintended).
-if [ "$#" -gt 0 ]; then
-  DECLARED=()
-  for want in "$@"; do
-    if printf '%s\n' "${ALL_DECLARED[@]}" | grep -qxF "$want"; then
-      DECLARED+=("$want")
-    else
-      echo "[crosswake] FAIL: '$want' is not a discovered merge-blocking lane. Run script/list_merge_blocking_checks.py to see valid names." >&2
-      exit 1
-    fi
-  done
-else
-  DECLARED=("${ALL_DECLARED[@]}")
-fi
-
-echo "[crosswake] Candidate merge-blocking lanes (${#DECLARED[@]} of ${#ALL_DECLARED[@]} declared):"
-printf '  - %s\n' "${DECLARED[@]}"
-
-echo ""
-echo "[crosswake] Fetching live required_status_checks for ${REPO}@${BRANCH} ..."
-current="$(gh api "${EP}")"
-
-# Names of all currently-successful check-runs on the branch HEAD. MUST paginate: this repo
-# has ~70 lanes and re-runs push the total over the 100/page cap, so a single page silently
-# drops green lanes onto page 2 → they'd be wrongly skipped. --paginate applies the --jq filter
-# per page and concatenates, so this collects successes across every page.
-green_names="$(gh api --paginate "repos/${REPO}/commits/${BRANCH}/check-runs?per_page=100" \
-                 --jq '.check_runs[] | select(.conclusion=="success") | .name' | sort -u)"
-
-green=()
-for c in "${DECLARED[@]}"; do
-  if printf '%s\n' "$green_names" | grep -qxF "$c"; then
-    green+=("$c")
-  else
-    echo "[crosswake] SKIP (no green run on ${BRANCH} yet — register after it passes once): $c"
-  fi
+POLICY=""; MODE=""; ACTION="dry-run"; OUTPUT=""; VERIFY_OUTPUT=""; APPROVED_PROPOSAL=""
+usage() {
+  echo "usage: script/register_required_checks.sh --policy <file> --mode add|retire [--dry-run|--apply] [--output <file>] [--verify-output <file>] [--approved-proposal <file>]" >&2
+  exit 2
+}
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --policy) [ "$#" -ge 2 ] || usage; POLICY="$2"; shift 2 ;;
+    --mode) [ "$#" -ge 2 ] || usage; MODE="$2"; shift 2 ;;
+    --dry-run) [ "$ACTION" = "dry-run" ] || usage; ACTION="dry-run"; shift ;;
+    --apply) [ "$ACTION" = "dry-run" ] || usage; ACTION="apply"; shift ;;
+    --output) [ "$#" -ge 2 ] || usage; OUTPUT="$2"; shift 2 ;;
+    --verify-output) [ "$#" -ge 2 ] || usage; VERIFY_OUTPUT="$2"; shift 2 ;;
+    --approved-proposal) [ "$#" -ge 2 ] || usage; APPROVED_PROPOSAL="$2"; shift 2 ;;
+    *) usage ;;
+  esac
 done
+[ -n "$POLICY" ] && [ -f "$POLICY" ] || usage
+case "$MODE" in add|retire) ;; *) usage ;; esac
+[ -f "$BASELINE" ] && [ -f "$OBSERVATION" ] || { echo "[crosswake] FAIL: required migration evidence is missing." >&2; exit 1; }
 
-if [ "${#green[@]}" -eq 0 ]; then
-  echo "[crosswake] None of the declared lanes are green on ${BRANCH} yet — nothing to register."
-  exit 0
+if ! jq -e --slurpfile baseline "$BASELINE" '
+  (keys | sort) == (["dual_contexts","legacy_contexts","schema_version","source_digest","strict","target_contexts","umbrella_context"] | sort) and
+  .schema_version == 1 and .strict == true and .umbrella_context == "Crosswake CI" and
+  (.legacy_contexts | type == "array" and length > 0 and . == (sort | unique)) and
+  (.dual_contexts == ((.legacy_contexts + [.umbrella_context]) | sort | unique)) and
+  (.target_contexts == [.umbrella_context]) and
+  (.legacy_contexts == $baseline[0].required_contexts) and
+  (.source_digest == $baseline[0].source_digest) and $baseline[0].strict == true
+' "$POLICY" >/dev/null; then
+  echo "[crosswake] FAIL: policy does not exactly match the frozen Plan 01 authority snapshot." >&2
+  exit 1
+fi
+umbrella="$(jq -r '.umbrella_context' "$POLICY")"
+if ! python3 script/list_merge_blocking_checks.py --require-display-name "$umbrella" >/dev/null; then
+  echo "[crosswake] FAIL: umbrella must have exactly one literal local producer." >&2
+  exit 1
+fi
+if ! jq -e --arg umbrella "$umbrella" '
+  .umbrella_context == $umbrella and .full_probe.umbrella_result == "success" and
+  .docs_probe.umbrella_result == "success" and .cleanup.pull_requests_closed == true and
+  .cleanup.branches_deleted == true and .cancellation.lower_run_cancelled == true and
+  .cancellation.newer_run_authoritative == true
+' "$OBSERVATION" >/dev/null; then
+  echo "[crosswake] FAIL: source-bound green umbrella observation is absent or incomplete." >&2
+  exit 1
 fi
 
-add="$(printf '%s\n' "${green[@]}" | jq -R . | jq -s --argjson app "$ACTIONS_APP_ID" \
-        'map({context: ., app_id: $app})')"
-desired="$(jq -n --argjson cur "$current" --argjson add "$add" \
-  '{ strict: $cur.strict,
-     checks: (($cur.checks // []) + $add | unique_by(.context)) }')"
-
-echo ""
-echo "[crosswake] Desired required_status_checks:"
-printf '%s' "$desired" | jq .
-
-if [ "$DRY_RUN" = "1" ]; then
-  echo ""
-  echo "[crosswake] DRY_RUN=1 (default) — not writing. Re-run with DRY_RUN=0 to apply."
-  exit 0
+current_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-current.XXXXXX")"
+desired_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-desired.XXXXXX")"
+after_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-after.XXXXXX")"
+proposal_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-proposal.XXXXXX")"
+trap 'rm -f "$current_file" "$desired_file" "$after_file" "$proposal_file"' EXIT
+gh api "$EP" >"$current_file"
+current_contexts="$(jq -c '[.checks[]?.context, .contexts[]?] | map(select(type == "string" and length > 0)) | sort | unique' "$current_file")"
+current_strict="$(jq -r '.strict == true' "$current_file")"
+expected_contexts="$(jq -c --arg mode "$MODE" 'if $mode == "add" then .legacy_contexts else .dual_contexts end' "$POLICY")"
+if [ "$current_strict" != "true" ] || [ "$current_contexts" != "$expected_contexts" ]; then
+  echo "[crosswake] FAIL: live required checks drifted from the policy source state for mode ${MODE}." >&2
+  exit 1
 fi
 
-echo ""
-echo "[crosswake] Applying PATCH ..."
-gh api -X PATCH "${EP}" --input <(printf '%s' "$desired")
-echo ""
-echo "[crosswake] Resulting required_status_checks:"
-gh api "${EP}" | jq '{strict, checks}'
-echo "[crosswake] Done — ${#green[@]} merge-blocking lane(s) ensured required on ${BRANCH}."
+if [ "$MODE" = "add" ]; then
+  jq --arg umbrella "$umbrella" --argjson app "$ACTIONS_APP_ID" \
+    '{strict:true,checks:(((.checks // []) + [{context:$umbrella,app_id:$app}]) | unique_by(.context) | sort_by(.context))}' \
+    "$current_file" >"$desired_file"
+else
+  jq --arg umbrella "$umbrella" \
+    '{strict:true,checks:[(.checks // [])[] | select(.context == $umbrella)] | sort_by(.context)}' \
+    "$current_file" >"$desired_file"
+fi
+before_semantic="$(jq -cS '{strict:(.strict == true),checks:[.checks[]? | {context,app_id}]|sort_by(.context)}' "$current_file")"
+after_semantic="$(jq -cS '{strict,checks:[.checks[]? | {context,app_id}]|sort_by(.context)}' "$desired_file")"
+source_digest="$(printf '%s' "$before_semantic" | shasum -a 256 | awk '{print $1}')"
+
+if [ "$MODE" = "retire" ]; then
+  jq -nS --arg repository "$REPO" --arg branch "$BRANCH" --arg digest "$source_digest" \
+    --arg observation "live-observation.json" --arg generated "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+    --arg command "script/register_required_checks.sh --policy script/required_check_policy.json --mode retire --apply --approved-proposal .planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/required-context-retirement.json" \
+    --slurpfile policy "$POLICY" \
+    '{schema_version:1,repository:$repository,default_branch:$branch,source_protection_digest:$digest,
+      strict_before:true,strict_after:true,added_contexts:[],removed_contexts:$policy[0].legacy_contexts,
+      retained_contexts:$policy[0].target_contexts,producer_verification:"unique",
+      live_observation_reference:$observation,generated_at:$generated,apply_command:$command}' >"$proposal_file"
+  if [ -n "$OUTPUT" ]; then mkdir -p "$(dirname "$OUTPUT")"; cp "$proposal_file" "$OUTPUT"; fi
+  if [ -n "$VERIFY_OUTPUT" ] && ! jq -e --slurpfile expected "$VERIFY_OUTPUT" \
+      'del(.generated_at) == ($expected[0] | del(.generated_at))' "$proposal_file" >/dev/null; then
+    echo "[crosswake] FAIL: retirement proposal differs from the approved canonical output." >&2
+    exit 1
+  fi
+fi
+
+if [ "$ACTION" = "dry-run" ]; then
+  echo "[crosswake] DRY-RUN: mode=${MODE}; no branch-protection mutation applied."
+  jq '{strict,checks}' "$desired_file"
+  exit 0
+fi
+if [ "$MODE" = "retire" ]; then
+  [ -n "$APPROVED_PROPOSAL" ] && [ -f "$APPROVED_PROPOSAL" ] || { echo "[crosswake] FAIL: retire apply requires --approved-proposal." >&2; exit 1; }
+  if ! jq -e --slurpfile approved "$APPROVED_PROPOSAL" \
+      'del(.generated_at) == ($approved[0] | del(.generated_at))' "$proposal_file" >/dev/null; then
+    echo "[crosswake] FAIL: approved retirement proposal is stale." >&2
+    exit 1
+  fi
+fi
+gh api --method PATCH "$EP" --input "$desired_file" >/dev/null
+gh api "$EP" >"$after_file"
+actual_after="$(jq -cS '{strict:(.strict == true),checks:[.checks[]? | {context,app_id}]|sort_by(.context)}' "$after_file")"
+if [ "$actual_after" != "$after_semantic" ]; then
+  echo "[crosswake] FAIL: post-apply branch protection does not equal the exact desired state." >&2
+  exit 1
+fi
+echo "[crosswake] OK: mode=${MODE} applied and exact post-write authority verified."
