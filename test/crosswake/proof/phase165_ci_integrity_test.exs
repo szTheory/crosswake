@@ -91,6 +91,16 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert body =~ "Remediation:"
     end
 
+    hex_page = job_body(workflow, "hex-page-proof")
+    assert hex_page =~ "env:\n      MIX_ENV: dev"
+    assert hex_page =~ "mix-env: dev"
+
+    assert hex_page =~
+             "name: Run library test suite (hermetic)\n        env:\n          MIX_ENV: test"
+
+    assert hex_page =~ "name: Build docs (smoke)"
+    assert hex_page =~ "mix docs"
+
     compatibility = job_body(workflow, "compat-release-as-staleness")
     assert compatibility =~ "name: merge-blocking-release-as-staleness"
     assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"

@@ -203,18 +203,22 @@ jobs:
     if: needs.classify-change.outputs.classification == 'full_proof' || contains(needs.classify-change.outputs.scheduled_families, 'public_docs')
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # ExDoc is intentionally dev-only. Keep the package/docs lane in dev and
+    # scope test only to the library suite, matching the retired proof lane.
     env:
-      MIX_ENV: test
+      MIX_ENV: dev
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-elixir-cache
         with:
-          mix-env: test
+          mix-env: dev
       - name: Compile (warnings as errors)
         run: mix compile --warnings-as-errors
       - name: Enforce first-adopter privacy gate
         run: mix crosswake.adoption_context.scan
       - name: Run library test suite (hermetic)
+        env:
+          MIX_ENV: test
         run: mix test --exclude requires_example_host
       - name: Build docs (smoke)
         run: |
