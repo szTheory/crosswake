@@ -354,8 +354,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert proof_ids == Enum.sort(proof_ids)
     assert control_ids == ["classify-change"]
     assert compatibility_ids == Enum.sort(compatibility_ids)
-    assert length(proof_ids) == 40
-    assert length(compatibility_ids) == 26
+    assert length(proof_ids) == 44
+    assert length(compatibility_ids) == 27
 
     for id <- [
           "phase71-notification-workflow-proof",

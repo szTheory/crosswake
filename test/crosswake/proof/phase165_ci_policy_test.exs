@@ -93,7 +93,7 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     assert documentation["family"] == "documentation_contracts"
     assert documentation["irrelevance_reason"] == nil
     assert documentation["remediation_command"] =~ "mix crosswake.adoption_context.scan"
-    assert length(executable) == 39
+    assert length(executable) == 43
 
     assert Enum.all?(executable, fn leaf ->
              leaf["irrelevance_reason"] in [
@@ -110,7 +110,7 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
              }
            ]
 
-    assert length(manifest["legacy_compatibility_contexts"]) == 26
+    assert length(manifest["legacy_compatibility_contexts"]) == 27
   end
 
   @tag :manifest
@@ -151,6 +151,18 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     refute umbrella =~ "uses: ./"
     refute umbrella =~ "pip install"
     refute umbrella =~ ~r/^\s+run:\s+mix /m
+
+    for field <- [
+          "Classification:",
+          "Reason:",
+          "Scheduled proof families:",
+          "Explicitly irrelevant families:",
+          "Expected/observed proof leaves:",
+          "Observed proof leaves use count units; hosted-runner timing is not measured.",
+          "Remediation: python3 script/check_ci_leaf_manifest.py --self-test"
+        ] do
+      assert umbrella =~ field
+    end
   end
 
   @tag :maximum_shape
