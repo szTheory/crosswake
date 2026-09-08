@@ -23,6 +23,13 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     ".github/workflows/phase48-proof.yml"
   ]
 
+  @plan06_task2_sources [
+    ".github/workflows/phase52-proof.yml",
+    ".github/workflows/phase58-proof.yml",
+    ".github/workflows/phase69-proof.yml",
+    ".github/workflows/phase70-proof.yml"
+  ]
+
   @task1_retired_workflows [
     ".github/workflows/aggregator-negative-control.yml",
     ".github/workflows/contract-drift-gate.yml",
@@ -213,6 +220,55 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
           {"compat-phase43-rulestead-proof", "merge-blocking rulestead proof (hermetic)"},
           {"compat-phase45-rindle-proof", "merge-blocking rindle proof (hermetic)"},
           {"compat-phase48-provider-adapter-proof", "merge-blocking provider adapter proof (hermetic)"}
+        ] do
+      body = job_body(workflow, job)
+      assert body =~ "name: #{display_name}"
+      assert body =~ "needs: [merge-blocking-crosswake-ci]"
+      assert body =~ "if: always()"
+      refute body =~ "actions/checkout"
+    end
+  end
+
+  @tag :triggers
+  test "operator, auth, closeout, and subscription proof use only central classification" do
+    workflow = File.read!(@crosswake_ci)
+
+    refute File.exists?(".github/workflows/phase69-proof.yml")
+
+    for {job, command} <- [
+          {"phase52-operator-proof", "phase52_operator_truth_test.exs"},
+          {"phase58-auth-closeout-proof", "mix closeout.verify --security-only"},
+          {"phase69-closeout-proof", "mix closeout.verify --cwd . --closeout-path .planning/milestones/v4.0-CLOSEOUT.md"},
+          {"phase70-subscription-saas-proof", "phase70_subscription_saas_commerce_proof_test.exs"}
+        ] do
+      body = job_body(workflow, job)
+      assert body =~ "name: #{job}"
+      assert body =~ "runs-on: ubuntu-latest"
+      assert body =~ "timeout-minutes:"
+      assert body =~ command
+      assert body =~ "Remediation:"
+    end
+
+    for path <- @plan06_task2_sources, File.exists?(path) do
+      source = File.read!(path)
+      refute source =~ ~r/^  pull_request:/m
+      refute source =~ ~r/^  push:/m
+      refute source =~ "git diff --name-only"
+      refute source =~ "grep -Eq"
+    end
+
+    for path <- [".github/workflows/phase52-proof.yml", ".github/workflows/phase58-proof.yml", ".github/workflows/phase70-proof.yml"] do
+      advisory = File.read!(path)
+      assert advisory =~ ~r/^  workflow_dispatch:/m
+      assert advisory =~ ~r/^  schedule:/m
+      assert advisory =~ "continue-on-error: true"
+    end
+
+    for {job, display_name} <- [
+          {"compat-phase52-operator-proof", "merge-blocking operator proof (hermetic)"},
+          {"compat-phase58-auth-closeout-proof", "merge-blocking auth closeout proof (hermetic)"},
+          {"compat-phase69-closeout-proof", "merge-blocking-closeout-proof"},
+          {"compat-phase70-subscription-saas-proof", "merge-blocking subscription SaaS proof (hermetic)"}
         ] do
       body = job_body(workflow, job)
       assert body =~ "name: #{display_name}"
