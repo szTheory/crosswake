@@ -30,6 +30,13 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     ".github/workflows/phase70-proof.yml"
   ]
 
+  @plan07_sources [
+    ".github/workflows/phase71-proof.yml",
+    ".github/workflows/phase73-proof.yml",
+    ".github/workflows/phase74-proof.yml",
+    ".github/workflows/phase75-closeout-gate.yml"
+  ]
+
   @task1_retired_workflows [
     ".github/workflows/aggregator-negative-control.yml",
     ".github/workflows/contract-drift-gate.yml",
@@ -286,6 +293,64 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert body =~ "if: always()"
       refute body =~ "actions/checkout"
     end
+  end
+
+  @tag :triggers
+  test "notification, auth-sensitive, recovery, and closeout proof use central classification" do
+    workflow = File.read!(@crosswake_ci)
+
+    refute File.exists?(List.last(@plan07_sources))
+
+    for {job, command} <- [
+          {"phase71-notification-workflow-proof", "phase71_notification_workflow_proof_test.exs"},
+          {"phase73-auth-sensitive-admin-workflow-proof",
+           "phase73_auth_sensitive_admin_workflow_proof_test.exs"},
+          {"phase74-offline-draft-recovery-proof",
+           "phase74_offline_draft_recovery_proof_test.exs"},
+          {"phase75-closeout-gate", "mix closeout.verify"}
+        ] do
+      body = job_body(workflow, job)
+      assert body =~ "name: #{job}"
+      assert body =~ "runs-on: ubuntu-latest"
+      assert body =~ "timeout-minutes:"
+      assert body =~ command
+      assert body =~ "Remediation:"
+      assert body =~ "needs: [classify-change]"
+      assert body =~ "classification == 'full_proof'"
+    end
+
+    for path <- Enum.take(@plan07_sources, 3) do
+      advisory = File.read!(path)
+      refute advisory =~ ~r/^  pull_request:/m
+      refute advisory =~ ~r/^  push:/m
+      assert advisory =~ ~r/^  workflow_dispatch:/m
+      assert advisory =~ ~r/^  schedule:/m
+      assert advisory =~ "continue-on-error: true"
+      refute advisory =~ "Determine closeout relevance"
+      refute advisory =~ "git diff --name-only"
+      refute advisory =~ "grep -Eq"
+    end
+
+    for {job, display_name} <- [
+          {"compat-phase71-notification-workflow-proof",
+           "merge-blocking notification workflow proof (hermetic)"},
+          {"compat-phase73-auth-sensitive-admin-workflow-proof",
+           "merge-blocking auth-sensitive admin workflow proof (hermetic)"},
+          {"compat-phase74-offline-draft-recovery-proof",
+           "merge-blocking offline draft recovery proof (hermetic)"},
+          {"compat-phase75-closeout-gate", "merge-blocking phase 75 closeout gate"}
+        ] do
+      body = job_body(workflow, job)
+      assert body =~ "name: #{display_name}"
+      assert body =~ "needs: [merge-blocking-crosswake-ci]"
+      assert body =~ "if: always()"
+      refute body =~ "actions/checkout"
+    end
+
+    documentation = job_body(workflow, "documentation-contracts")
+    assert documentation =~ "mix crosswake.adoption_context.scan"
+    assert workflow =~ "classification=full_proof"
+    assert workflow =~ "checkout_or_object_validation_failed"
   end
 
   @tag :cancellation_controller
