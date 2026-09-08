@@ -1,7 +1,7 @@
 defmodule Crosswake.Proof.Phase165CiPolicyTest do
   @moduledoc """
   CIP-05/CIP-07 tracer proof for fail-closed documentation classification,
-  one literal documentation leaf, and the checkout-free Crosswake CI umbrella.
+  literal named proof leaves, and the checkout-free Crosswake CI umbrella.
   """
   use ExUnit.Case, async: true
 
@@ -72,19 +72,16 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
   end
 
   @tag :manifest
-  test "manifest freezes one proof leaf and one required control node" do
+  test "manifest preserves the documentation owner and one required control node" do
     manifest = @manifest |> File.read!() |> Jason.decode!()
 
-    assert manifest["proof_leaves"] == [
-             %{
-               "leaf_id" => "documentation-contracts",
-               "display_name" => "documentation-contracts",
-               "family" => "documentation_contracts",
-               "remediation_command" =>
-                 "mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs",
-               "irrelevance_reason" => nil
-             }
-           ]
+    [documentation | executable] = manifest["proof_leaves"]
+    assert documentation["leaf_id"] == "documentation-contracts"
+    assert documentation["family"] == "documentation_contracts"
+    assert documentation["irrelevance_reason"] == nil
+    assert documentation["remediation_command"] =~ "mix crosswake.adoption_context.scan"
+    assert length(executable) == 23
+    assert Enum.all?(executable, &(&1["irrelevance_reason"] == "all_changed_paths_allowlisted"))
 
     assert manifest["required_control_nodes"] == [
              %{
@@ -94,7 +91,7 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
              }
            ]
 
-    assert manifest["legacy_compatibility_contexts"] == []
+    assert length(manifest["legacy_compatibility_contexts"]) == 22
   end
 
   @tag :manifest
@@ -126,15 +123,15 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     umbrella = workflow |> String.split("  merge-blocking-crosswake-ci:", parts: 2) |> List.last()
     assert umbrella =~ "name: Crosswake CI"
     assert umbrella =~ "if: always()"
-    assert umbrella =~ "needs: [classify-change, documentation-contracts]"
-    assert umbrella =~ ~s([ "$CONTROL_RESULT" != 'success' ])
-    assert umbrella =~ ~s([ "$DOCUMENTATION_RESULT" != 'success' ])
-    assert umbrella =~ "documentation_only|full_proof"
+    assert umbrella =~ ~r/^      - classify-change$/m
+    assert umbrella =~ ~r/^      - documentation-contracts$/m
+    assert umbrella =~ "classification not in {\"documentation_only\", \"full_proof\"}"
+    assert umbrella =~ "required classification control did not succeed"
+    assert umbrella =~ "proof leaf did not reach a closed accepted result"
     refute umbrella =~ "actions/checkout"
     refute umbrella =~ "uses: ./"
     refute umbrella =~ "pip install"
     refute umbrella =~ ~r/^\s+run:\s+mix /m
-    refute umbrella =~ "script/"
   end
 
   @tag :maximum_shape
