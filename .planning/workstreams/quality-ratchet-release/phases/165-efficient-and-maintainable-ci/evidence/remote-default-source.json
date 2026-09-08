@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "repository_sha": "9107cef628fdb1952dddb22243d91a4003b6bff4",
+  "default_branch": "main",
+  "workflow_digests": {
+    ".github/workflows/cancel-obsolete-crosswake-ci.yml": "5c59dec80f3f57ac065a488ca622bd382fbc1f62e03236d073860f5452fe8ea4",
+    ".github/workflows/crosswake-ci.yml": "6f445a846fdf766a8d8250a77321212749a22ac231c15b316733abcd81a9e947"
+  },
+  "verified_at": "2026-09-08T21:31:30.481Z",
+  "source_command": "gh api repos/szTheory/crosswake/git/ref/heads/main"
+}
