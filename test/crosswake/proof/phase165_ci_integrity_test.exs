@@ -54,12 +54,73 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     ".github/workflows/phase96-proof.yml"
   ]
 
+  @plan09_retired_sources [
+    ".github/workflows/brandbook-verify.yml",
+    ".github/workflows/collateral-guard.yml",
+    ".github/workflows/hex-page-proof.yml",
+    ".github/workflows/release-as-staleness-gate.yml"
+  ]
+
   @task1_retired_workflows [
     ".github/workflows/aggregator-negative-control.yml",
     ".github/workflows/contract-drift-gate.yml",
     ".github/workflows/dependency-security.yml",
     ".github/workflows/requires-example-host-gate.yml"
   ]
+
+  @tag :triggers
+  @tag :release_trust
+  test "brand, collateral, Hex-page, and staleness PR proof have one explicit owner" do
+    workflow = File.read!(@crosswake_ci)
+
+    for path <- @plan09_retired_sources do
+      refute File.exists?(path), "#{path} must be retired after replacement parity"
+    end
+
+    for {job, command} <- [
+          {"brand-structural", "npm run test:structural"},
+          {"collateral-binaries-guard", "bash script/collateral-guard.sh"},
+          {"hex-page-proof", "mix hex.publish --dry-run --yes"},
+          {"release-as-staleness-proof", "./script/check_release_as_staleness.sh"}
+        ] do
+      body = job_body(workflow, job)
+      assert body =~ "name: #{job}"
+      assert body =~ "needs: [classify-change]"
+      assert body =~ "timeout-minutes:"
+      assert body =~ command
+      assert body =~ "Remediation:"
+    end
+
+    compatibility = job_body(workflow, "compat-release-as-staleness")
+    assert compatibility =~ "name: merge-blocking-release-as-staleness"
+    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
+    assert compatibility =~ "if: always()"
+    refute compatibility =~ "actions/checkout"
+  end
+
+  @tag :triggers
+  test "brand visual proof stays visibly red and outside required authority" do
+    workflow = File.read!(@crosswake_ci)
+    manifest = @leaf_manifest |> File.read!() |> Jason.decode!()
+    visual = job_body(workflow, "brand-visual")
+    umbrella = job_body(workflow, "merge-blocking-crosswake-ci")
+
+    assert visual =~ "name: brand-visual"
+    assert visual =~ "needs: [classify-change]"
+    assert visual =~ "npm run test:visual"
+    refute visual =~ "continue-on-error"
+    refute visual =~ ~r/\|\|\s*true/
+    refute visual =~ "if: always()"
+
+    refute Enum.any?(manifest["proof_leaves"], &(&1["leaf_id"] == "brand-visual"))
+    refute Enum.any?(manifest["required_control_nodes"], &(&1["node_id"] == "brand-visual"))
+
+    refute Enum.any?(manifest["legacy_compatibility_contexts"], fn row ->
+             row["job_id"] == "brand-visual" or row["needs_target"] == "brand-visual"
+           end)
+
+    refute umbrella =~ ~r/^      - brand-visual$/m
+  end
 
   @tag :triggers
   @tag :runner_placement
