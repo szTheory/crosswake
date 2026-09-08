@@ -15,7 +15,7 @@ MAX_RUN_ID = (1 << 63) - 1
 MAX_PR_NUMBER = (1 << 31) - 1
 REPOSITORY_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 CANCELLABLE_STATUSES = {"queued", "in_progress"}
-KNOWN_STATUSES = CANCELLABLE_STATUSES | {"completed"}
+KNOWN_STATUSES = CANCELLABLE_STATUSES | {"completed", "pending", "requested", "waiting"}
 
 
 @dataclass(frozen=True)
@@ -185,6 +185,20 @@ class CancellationSelectorSelfTest(unittest.TestCase):
             ),
             closed("invalid", "unexpected_repository"),
         )
+
+    def test_pending_peer_is_valid_but_not_cancellable(self):
+        fixture = json.loads(fixture_path().read_text(encoding="utf-8"))
+        case = next(item for item in fixture["cases"] if item["name"] == "lower_adjacent_is_selected")
+        candidates = json.loads(json.dumps(case["candidates"]))
+        pending = json.loads(json.dumps(candidates["runs"][0]))
+        pending["id"] = case["current"]["id"] + 1
+        pending["status"] = "pending"
+        candidates["runs"].append(pending)
+
+        selection = select_obsolete_runs(case["current"], candidates)
+        self.assertEqual(selection.disposition, "cancel_lower")
+        self.assertEqual(list(selection.run_ids), case["expected"]["run_ids"])
+        self.assertNotIn(pending["id"], selection.run_ids)
 
     def test_selection_is_permutation_invariant_and_never_selects_maximum(self):
         fixture = json.loads(fixture_path().read_text(encoding="utf-8"))
