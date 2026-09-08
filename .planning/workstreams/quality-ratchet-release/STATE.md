@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 165
 current_phase_name: Efficient and Maintainable CI
 status: executing
-stopped_at: Completed 165-02-PLAN.md
-last_updated: "2026-09-08T00:34:00.218Z"
+stopped_at: Completed 165-03-PLAN.md
+last_updated: "2026-09-08T00:51:31.135Z"
 last_activity: 2026-09-07
 last_activity_desc: Phase 165 execution started
-state_head: 3350dc052a1a70457b7d15586ad9a37e54742e20
+state_head: aa9f7cca9b167afe9d8c9f8128f0682ac8bf04ab
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 7
+  completed_plans: 8
   percent: 20
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 165 (Efficient and Maintainable CI) — EXECUTING
-Plan: 3 of 13
+Plan: 4 of 13
 Status: Ready to execute
 Last activity: 2026-09-07 — Phase 165 execution started
 
@@ -60,6 +60,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase 164 P05 | 15 min | 2 tasks | 5 files |
 | Phase 165 P01 | 15 min | 2 tasks | 10 files |
 | Phase 165 P02 | 18 min | 3 tasks | 11 files |
+| Phase 165 P03 | 9 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,9 @@ Progress: [██░░░░░░░░] 20%
 - [Phase 165]: The Crosswake CI tracer remains additive and non-authoritative while the exact 27 legacy contexts stay unchanged.
 - [Phase 165]: Represent documentation eligibility as explicit planning and public_docs families, both owned by documentation-contracts, with release inputs excluded.
 - [Phase 165]: Freeze maximum authority at 44 literal proof leaves plus classify-change; controls are success-only and never irrelevant.
+- [Phase 165]: Treat every malformed current run, candidate, identity, or incomplete page set as a closed invalid disposition with no selected IDs.
+- [Phase 165]: Keep cancellation authority in a requested workflow_run controller with only actions: write; acquire selector bytes from the controller's immutable default-branch SHA and never check out PR code.
+- [Phase 165]: Keep the controller non-authoritative until Plan 165-10 proves requested-event timing and live inversion behavior.
 
 ### Pending Todos
 
@@ -103,6 +107,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-08T00:34:00.185Z
-Stopped at: Completed 165-02-PLAN.md
+Last session: 2026-09-08T00:51:31.103Z
+Stopped at: Completed 165-03-PLAN.md
 Resume file: None
