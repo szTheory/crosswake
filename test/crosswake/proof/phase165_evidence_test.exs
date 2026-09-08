@@ -12,6 +12,7 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
 
   @remote_source ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/remote-default-source.json"
   @live_observation ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/live-observation.json"
+  @required_policy "script/required_check_policy.json"
 
   test "monitor evidence self-test covers closed schema and timing boundaries" do
     {output, status} = System.cmd("node", [@monitor, "test-evidence"], stderr_to_stdout: true)
@@ -94,5 +95,25 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
 
       assert status == 0, output
     end
+  end
+
+  test "required-check policy and scripts enforce additive dual authority" do
+    policy = @required_policy |> File.read!() |> Jason.decode!()
+    registrar = File.read!("script/register_required_checks.sh")
+    audit = File.read!("script/check_required_checks_registered.sh")
+
+    assert policy["strict"] == true
+    assert policy["umbrella_context"] == "Crosswake CI"
+    assert policy["dual_contexts"] == Enum.sort(policy["legacy_contexts"] ++ ["Crosswake CI"])
+    assert policy["target_contexts"] == ["Crosswake CI"]
+    assert policy["source_digest"] =~ ~r/^[0-9a-f]{64}$/
+    assert registrar =~ "--mode"
+    assert registrar =~ "add|retire"
+    assert registrar =~ "--dry-run"
+    assert registrar =~ "--apply"
+    assert registrar =~ "--policy"
+    assert audit =~ "--state"
+    assert audit =~ "dual|target"
+    assert audit =~ "--live"
   end
 end
