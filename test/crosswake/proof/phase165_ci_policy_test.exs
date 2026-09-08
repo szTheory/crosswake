@@ -20,6 +20,14 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     assert output =~ "classifier self-test: pass"
   end
 
+  test "classifier schedules focused Threadline proof only for public documentation" do
+    classifier = File.read!(@classifier)
+
+    assert classifier =~ "threadline_docs_contract"
+    assert classifier =~ "public_docs"
+    assert classifier =~ "affected_families"
+  end
+
   test "allowlist is the exact narrow documentation contract" do
     allowlist = @allowlist |> File.read!() |> Jason.decode!()
 
@@ -75,13 +83,24 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
   test "manifest preserves the documentation owner and one required control node" do
     manifest = @manifest |> File.read!() |> Jason.decode!()
 
-    [documentation | executable] = manifest["proof_leaves"]
+    documentation =
+      Enum.find(manifest["proof_leaves"], &(&1["leaf_id"] == "documentation-contracts"))
+
+    executable =
+      Enum.reject(manifest["proof_leaves"], &(&1["leaf_id"] == "documentation-contracts"))
+
     assert documentation["leaf_id"] == "documentation-contracts"
     assert documentation["family"] == "documentation_contracts"
     assert documentation["irrelevance_reason"] == nil
     assert documentation["remediation_command"] =~ "mix crosswake.adoption_context.scan"
-    assert length(executable) == 23
-    assert Enum.all?(executable, &(&1["irrelevance_reason"] == "all_changed_paths_allowlisted"))
+    assert length(executable) == 39
+
+    assert Enum.all?(executable, fn leaf ->
+             leaf["irrelevance_reason"] in [
+               "all_changed_paths_allowlisted",
+               "public_docs_unaffected"
+             ]
+           end)
 
     assert manifest["required_control_nodes"] == [
              %{
@@ -91,7 +110,7 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
              }
            ]
 
-    assert length(manifest["legacy_compatibility_contexts"]) == 22
+    assert length(manifest["legacy_compatibility_contexts"]) == 26
   end
 
   @tag :manifest

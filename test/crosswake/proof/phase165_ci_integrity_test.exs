@@ -48,6 +48,12 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
   @phase68_advisory ".github/workflows/phase68-proof.yml"
 
+  @plan08_task3_sources [
+    ".github/workflows/merge-blocking-ios-mirror-parity.yml",
+    ".github/workflows/phase10-proof.yml",
+    ".github/workflows/phase96-proof.yml"
+  ]
+
   @task1_retired_workflows [
     ".github/workflows/aggregator-negative-control.yml",
     ".github/workflows/contract-drift-gate.yml",
@@ -127,6 +133,44 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     refute advisory =~ ~r/^  pull_request:/m
     refute advisory =~ ~r/^  push:/m
     assert advisory =~ "continue-on-error: true"
+  end
+
+  @tag :triggers
+  test "mirror package and focused docs-contract proof move to one PR graph" do
+    workflow = File.read!(@crosswake_ci)
+
+    for path <- @plan08_task3_sources do
+      refute File.exists?(path), "#{path} must be retired after replacement parity"
+    end
+
+    for {job, runner, command} <- [
+          {"ios-mirror-parity-proof", "ubuntu-latest", "script/check_ios_mirror_parity.sh"},
+          {"phase10-proof", "ubuntu-latest", "script/verify_saas_profile.sh"},
+          {"phase96-threadline-docs-contract-proof", "ubuntu-latest",
+           "phase96_threadline_docs_contract_test.exs"}
+        ] do
+      body = job_body(workflow, job)
+      assert body =~ "name: #{job}"
+      assert body =~ "runs-on: #{runner}"
+      assert body =~ command
+      assert body =~ "Remediation:"
+    end
+
+    focused = job_body(workflow, "phase96-threadline-docs-contract-proof")
+    assert focused =~ "classification == 'full_proof'"
+    assert focused =~ "threadline_docs_contract"
+
+    for {job, display_name} <- [
+          {"compat-ios-mirror-parity", "merge-blocking-ios-mirror-parity"},
+          {"compat-phase96-threadline-docs-contract",
+           "merge-blocking Threadline docs-contract proof (hermetic)"}
+        ] do
+      compatibility = job_body(workflow, job)
+      assert compatibility =~ "name: #{display_name}"
+      assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
+      assert compatibility =~ "if: always()"
+      refute compatibility =~ "actions/checkout"
+    end
   end
 
   @tag :triggers
@@ -243,8 +287,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert proof_ids == Enum.sort(proof_ids)
     assert control_ids == ["classify-change"]
     assert compatibility_ids == Enum.sort(compatibility_ids)
-    assert length(proof_ids) == 37
-    assert length(compatibility_ids) == 24
+    assert length(proof_ids) == 40
+    assert length(compatibility_ids) == 26
 
     for id <- [
           "phase71-notification-workflow-proof",
