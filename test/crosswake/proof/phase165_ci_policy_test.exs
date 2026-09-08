@@ -10,6 +10,8 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
   @manifest "script/ci_leaf_manifest.json"
   @workflow ".github/workflows/crosswake-ci.yml"
 
+  @moduletag :classifier
+
   test "classifier adversarial and shallow-history integration fixtures pass" do
     {output, status} = System.cmd("python3", [@classifier, "--self-test"], stderr_to_stdout: true)
     assert status == 0, output
@@ -20,15 +22,46 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     allowlist = @allowlist |> File.read!() |> Jason.decode!()
 
     assert allowlist == %{
-             "schema_version" => 1,
-             "exact" => ["CONTRIBUTING.md", "README.md", "SETUP.md", "examples/QUICK_START.md"],
-             "trees" => [".planning", "brandbook", "docs", "guides"],
+             "schema_version" => 2,
+             "families" => [
+               %{
+                 "family" => "planning",
+                 "exact" => [],
+                 "trees" => [".planning"],
+                 "extensions" => [".md"],
+                 "proof_owner" => "documentation-contracts"
+               },
+               %{
+                 "family" => "public_docs",
+                 "exact" => [
+                   "CONTRIBUTING.md",
+                   "README.md",
+                   "SETUP.md",
+                   "examples/QUICK_START.md"
+                 ],
+                 "trees" => ["brandbook", "docs", "guides"],
+                 "extensions" => [".md"],
+                 "proof_owner" => "documentation-contracts"
+               }
+             ],
              "excluded" => [
                "docs/COMPANION-PUBLISH-RUNBOOK.md",
                "docs/PORT-REGISTRY.md",
                "docs/_contract_snippet.md"
              ]
            }
+  end
+
+  test "fixture corpus is closed, adversarial, and deterministic" do
+    fixture = "test/fixtures/ci/classifier/cases.json" |> File.read!() |> Jason.decode!()
+    assert fixture["schema_version"] == 1
+    names = Enum.map(fixture["cases"], & &1["name"])
+    assert names == Enum.sort(names)
+    assert Enum.uniq(names) == names
+    assert Enum.all?(fixture["cases"], &(&1["classification"] in ["documentation_only", "full_proof"]))
+    assert "mixed" in names
+    assert "rename_crosses_boundary" in names
+    assert "empty" in names
   end
 
   test "manifest freezes one proof leaf and one required control node" do
