@@ -56,6 +56,18 @@
       "expected": {"disposition": "invalid", "reason": "invalid_current", "run_ids": []}
     },
     {
+      "name": "missing_workflow_identity",
+      "current": {"id": 101, "repository": "szTheory/crosswake", "workflow_name": "Crosswake CI", "event": "pull_request", "pull_requests": [{"number": 42}]},
+      "candidates": {"pagination_complete": true, "runs": []},
+      "expected": {"disposition": "invalid", "reason": "invalid_current", "run_ids": []}
+    },
+    {
+      "name": "multiple_candidate_prs_are_invalid",
+      "current": {"id": 101, "repository": "szTheory/crosswake", "workflow_id": 77, "workflow_name": "Crosswake CI", "event": "pull_request", "pull_requests": [{"number": 42}]},
+      "candidates": {"pagination_complete": true, "runs": [{"id": 100, "repository": "szTheory/crosswake", "workflow_id": 77, "workflow_name": "Crosswake CI", "event": "pull_request", "pull_requests": [{"number": 42}, {"number": 43}], "status": "in_progress"}]},
+      "expected": {"disposition": "invalid", "reason": "invalid_candidate", "run_ids": []}
+    },
+    {
       "name": "permutations_sort_once",
       "current": {"id": 105, "repository": "szTheory/crosswake", "workflow_id": 77, "workflow_name": "Crosswake CI", "event": "pull_request", "pull_requests": [{"number": 42}]},
       "candidates": {"pagination_complete": true, "runs": [{"id": 103, "repository": "szTheory/crosswake", "workflow_id": 77, "workflow_name": "Crosswake CI", "event": "pull_request", "pull_requests": [{"number": 42}], "status": "queued"}, {"id": 101, "repository": "szTheory/crosswake", "workflow_id": 77, "workflow_name": "Crosswake CI", "event": "pull_request", "pull_requests": [{"number": 42}], "status": "in_progress"}, {"id": 102, "repository": "szTheory/crosswake", "workflow_id": 77, "workflow_name": "Crosswake CI", "event": "pull_request", "pull_requests": [{"number": 42}], "status": "completed"}]},
