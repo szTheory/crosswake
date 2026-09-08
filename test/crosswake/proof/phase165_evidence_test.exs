@@ -10,6 +10,9 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
   @rendered ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/baseline.md"
   @contexts ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/required-context-baseline.json"
 
+  @remote_source ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/remote-default-source.json"
+  @live_observation ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/live-observation.json"
+
   test "monitor evidence self-test covers closed schema and timing boundaries" do
     {output, status} = System.cmd("node", [@monitor, "test-evidence"], stderr_to_stdout: true)
     assert status == 0, output
@@ -62,6 +65,34 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
           ~s("url")
         ] do
       refute evidence =~ forbidden
+    end
+  end
+
+  test "live probe commands bind the immutable remote source and sanitize observations" do
+    monitor = File.read!(@monitor)
+
+    assert monitor =~ "verify-remote-default-source"
+    assert monitor =~ "probe-phase165"
+    assert monitor =~ "PHASE165_REMOTE_DEFAULT_SHA"
+    assert monitor =~ "remote-default-source.json"
+    assert monitor =~ "lower_run_cancelled"
+    assert monitor =~ "newer_run_authoritative"
+    assert monitor =~ "Crosswake CI"
+
+    if File.exists?(@remote_source) do
+      {output, status} =
+        System.cmd("node", [@monitor, "verify-remote-default-source", "--source", @remote_source],
+          stderr_to_stdout: true
+        )
+
+      assert status == 0, output
+    end
+
+    if File.exists?(@live_observation) do
+      {output, status} =
+        System.cmd("node", [@monitor, "validate-evidence", @live_observation], stderr_to_stdout: true)
+
+      assert status == 0, output
     end
   end
 end

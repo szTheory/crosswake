@@ -21,6 +21,9 @@ Commands:
   capture-evidence <output.json>
   capture-required-context-snapshot <output.json>
   verify-required-context-snapshot <snapshot.json> [--live]
+  verify-remote-default-source --sha <40-hex-sha> --output <output.json>
+  verify-remote-default-source --source <source.json>
+  probe-phase165 --source <source.json> --output <output.json> [--assert-cleanup]
   validate-evidence <evidence.json>
   render-evidence <evidence.json> [output.md]
   compare-evidence <before.json> <after.json> [output.md]
@@ -487,6 +490,294 @@ function writeCanonical(file, value) {
   fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`, { flag: "w" });
 }
 
+function sha256Bytes(value) {
+  return crypto.createHash("sha256").update(value).digest("hex");
+}
+
+function gitBlob(ref, file) {
+  const result = spawnSync("git", ["show", `${ref}:${file}`], { encoding: null });
+  if (result.error || result.status !== 0) throw new Error(`could not read ${file} at the bound source`);
+  return result.stdout;
+}
+
+const REMOTE_SOURCE_FIELDS = new Set([
+  "schema_version",
+  "repository_sha",
+  "default_branch",
+  "workflow_digests",
+  "verified_at",
+  "source_command",
+]);
+const REMOTE_WORKFLOW_FILES = [
+  ".github/workflows/cancel-obsolete-crosswake-ci.yml",
+  ".github/workflows/crosswake-ci.yml",
+];
+
+function validateRemoteSource(source, compareLocal = true) {
+  ensureFields(source, REMOTE_SOURCE_FIELDS, "remote-default source");
+  if (source.schema_version !== 1 || !/^[0-9a-f]{40}$/.test(source.repository_sha || "")) {
+    throw new Error("invalid remote-default source identity");
+  }
+  if (!/^[A-Za-z0-9._/-]+$/.test(source.default_branch || "") || parseTimestamp(source.verified_at) === null) {
+    throw new Error("invalid remote-default source branch or timestamp");
+  }
+  if (typeof source.source_command !== "string" || !source.source_command.startsWith("gh api repos/")) {
+    throw new Error("invalid remote-default source command");
+  }
+  if (!source.workflow_digests || typeof source.workflow_digests !== "object" || Array.isArray(source.workflow_digests)) {
+    throw new Error("invalid workflow digests");
+  }
+  const names = Object.keys(source.workflow_digests).sort();
+  if (names.join("\0") !== REMOTE_WORKFLOW_FILES.join("\0")) throw new Error("remote workflow set is not exact");
+  for (const file of names) {
+    const value = source.workflow_digests[file];
+    if (!/^[0-9a-f]{64}$/.test(value || "")) throw new Error("invalid workflow digest");
+    if (compareLocal && sha256Bytes(fs.readFileSync(file)) !== value) {
+      throw new Error(`local completed workflow differs from bound source: ${file}`);
+    }
+  }
+  return source;
+}
+
+function verifyRemoteDefaultSource(args) {
+  const sourcePath = option(args, "--source");
+  if (sourcePath) {
+    validateRemoteSource(readJson(sourcePath));
+    process.stdout.write("remote-default source: valid\n");
+    return;
+  }
+  const expectedSha = option(args, "--sha");
+  const output = option(args, "--output");
+  if (!expectedSha || !output) fail("verify-remote-default-source requires --sha and --output");
+  if (!/^[0-9a-f]{40}$/.test(expectedSha)) fail("--sha must be an exact 40-character lowercase SHA");
+  const supplied = process.env.PHASE165_REMOTE_DEFAULT_SHA;
+  if (supplied !== expectedSha) fail("--sha must equal PHASE165_REMOTE_DEFAULT_SHA exactly");
+  const { repository, defaultBranch } = repoIdentity();
+  const sourceCommand = `gh api repos/${repository}/git/ref/heads/${defaultBranch}`;
+  const remoteSha = gh(["api", `repos/${repository}/git/ref/heads/${defaultBranch}`, "--jq", ".object.sha"], true).trim();
+  if (remoteSha !== expectedSha) fail("remote default tip moved from PHASE165_REMOTE_DEFAULT_SHA");
+  const fetch = spawnSync("git", ["fetch", "origin", expectedSha], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  if (fetch.error || fetch.status !== 0) fail("could not fetch the exact remote-default SHA");
+  const workflowDigests = {};
+  for (const file of REMOTE_WORKFLOW_FILES) {
+    const remoteDigest = sha256Bytes(gitBlob(expectedSha, file));
+    const localDigest = sha256Bytes(fs.readFileSync(file));
+    if (remoteDigest !== localDigest) fail(`remote workflow differs from completed local revision: ${file}`);
+    workflowDigests[file] = remoteDigest;
+  }
+  const source = {
+    schema_version: 1,
+    repository_sha: expectedSha,
+    default_branch: defaultBranch,
+    workflow_digests: workflowDigests,
+    verified_at: new Date().toISOString(),
+    source_command: sourceCommand,
+  };
+  validateRemoteSource(source);
+  writeCanonical(output, source);
+  process.stdout.write(`verified immutable remote-default source: ${expectedSha}\n`);
+}
+
+function ghSoft(args) {
+  return spawnSync("gh", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+}
+
+function sleepMs(milliseconds) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
+}
+
+function apiJson(endpoint) {
+  return JSON.parse(gh(["api", endpoint], true));
+}
+
+function createProbeRef(repository, branch, sha) {
+  gh(["api", "--method", "POST", `repos/${repository}/git/refs`, "-f", `ref=refs/heads/${branch}`, "-f", `sha=${sha}`], true);
+}
+
+function putProbeFile(repository, branch, file, content, message) {
+  let existingSha;
+  const existing = ghSoft(["api", `repos/${repository}/contents/${file}?ref=${encodeURIComponent(branch)}`, "--jq", ".sha"]);
+  if (existing.status === 0) existingSha = existing.stdout.trim();
+  const args = [
+    "api", "--method", "PUT", `repos/${repository}/contents/${file}`,
+    "-f", `message=${message}`, "-f", `content=${Buffer.from(content).toString("base64")}`, "-f", `branch=${branch}`,
+  ];
+  if (existingSha) args.push("-f", `sha=${existingSha}`);
+  return JSON.parse(gh(args, true)).commit.sha;
+}
+
+function openProbePr(defaultBranch, branch, title) {
+  gh(["pr", "create", "--base", defaultBranch, "--head", branch, "--title", title, "--body", "Bounded Phase 165 CI observation probe. This PR is closed and its branch deleted automatically."], true);
+  return Number(JSON.parse(gh(["pr", "view", branch, "--json", "number"], true)).number);
+}
+
+function findRun(repository, branch, sha) {
+  const encoded = encodeURIComponent(branch);
+  const runs = apiJson(`repos/${repository}/actions/workflows/crosswake-ci.yml/runs?event=pull_request&branch=${encoded}&per_page=50`).workflow_runs || [];
+  return runs.find((run) => run.head_sha === sha) || null;
+}
+
+function waitForRun(repository, branch, sha, timeoutMs = 10 * 60 * 1000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const run = findRun(repository, branch, sha);
+    if (run) return run;
+    sleepMs(5000);
+  }
+  throw new Error("timed out waiting for Crosswake CI request");
+}
+
+function readRun(repository, id) {
+  return apiJson(`repos/${repository}/actions/runs/${id}`);
+}
+
+function waitForRunState(repository, id, predicate, timeoutMs = 55 * 60 * 1000) {
+  const deadline = Date.now() + timeoutMs;
+  let run;
+  while (Date.now() < deadline) {
+    run = readRun(repository, id);
+    if (predicate(run)) return run;
+    sleepMs(10000);
+  }
+  throw new Error(`timed out waiting for run ${id}`);
+}
+
+function runJobs(repository, id) {
+  return apiJson(`repos/${repository}/actions/runs/${id}/jobs?filter=all&per_page=100`).jobs || [];
+}
+
+function assertProbeJobs(run, jobs, manifest, docsOnly) {
+  const byName = new Map(jobs.map((job) => [job.name, job]));
+  if (byName.size !== jobs.length) throw new Error("probe emitted duplicate job display names");
+  const umbrella = byName.get("Crosswake CI");
+  if (!umbrella || umbrella.conclusion !== "success") throw new Error("Crosswake CI umbrella did not succeed");
+  const classify = byName.get("classify-change");
+  if (!classify || classify.conclusion !== "success") throw new Error("classification control did not succeed");
+  const activeProof = [];
+  const skippedProof = [];
+  for (const leaf of manifest.proof_leaves) {
+    const job = byName.get(leaf.display_name);
+    if (!job) throw new Error(`missing expected proof leaf: ${leaf.display_name}`);
+    if (job.conclusion === "skipped") skippedProof.push(leaf.leaf_id);
+    else if (job.conclusion === "success") activeProof.push(leaf.leaf_id);
+    else throw new Error(`proof leaf did not close successfully: ${leaf.display_name}`);
+  }
+  if (docsOnly) {
+    if (activeProof.join("\0") !== "documentation-contracts") throw new Error("documentation probe scheduled an unrelated proof leaf");
+    if (skippedProof.length !== manifest.proof_leaves.length - 1) throw new Error("documentation probe skip set is incomplete");
+  } else if (activeProof.length !== manifest.proof_leaves.length || skippedProof.length !== 0) {
+    throw new Error("executable probe did not schedule the complete proof union");
+  }
+  return { activeProof, skippedProof, umbrella };
+}
+
+function validateLiveObservation(value) {
+  const allowedTop = new Set(["schema_version", "repository_sha", "captured_at", "source_reference", "umbrella_context", "docs_probe", "full_probe", "cancellation", "cleanup"]);
+  ensureFields(value, allowedTop, "live observation");
+  if (value.schema_version !== 1 || !/^[0-9a-f]{40}$/.test(value.repository_sha || "") || parseTimestamp(value.captured_at) === null) throw new Error("invalid live observation identity");
+  if (value.source_reference !== "remote-default-source.json" || value.umbrella_context !== "Crosswake CI") throw new Error("invalid live observation authority");
+  const probeFields = new Set(["pr_number", "run_id", "classification", "umbrella_result", "active_proof_leaves", "skipped_proof_leaves", "observed_job_count"]);
+  for (const name of ["docs_probe", "full_probe"]) {
+    const probe = value[name];
+    ensureFields(probe, probeFields, name);
+    if (!Number.isInteger(probe.pr_number) || !Number.isInteger(probe.run_id) || probe.umbrella_result !== "success") throw new Error(`invalid ${name} result`);
+    if (!Array.isArray(probe.active_proof_leaves) || !Array.isArray(probe.skipped_proof_leaves)) throw new Error(`invalid ${name} leaves`);
+  }
+  const cancellationFields = new Set(["pr_number", "lower_run_id", "newer_run_id", "lower_run_cancelled", "newer_run_authoritative", "same_pr_workflow", "requested_controller_observed", "runner_consumption_observed", "bounded_controller_action"]);
+  ensureFields(value.cancellation, cancellationFields, "cancellation");
+  const c = value.cancellation;
+  if (!(c.lower_run_id < c.newer_run_id) || c.lower_run_cancelled !== true || c.newer_run_authoritative !== true || c.same_pr_workflow !== true || c.requested_controller_observed !== true || c.runner_consumption_observed !== true || c.bounded_controller_action !== true) throw new Error("monotonic cancellation evidence is incomplete");
+  ensureFields(value.cleanup, new Set(["pull_requests_closed", "branches_deleted"]), "cleanup");
+  if (value.cleanup.pull_requests_closed !== true || value.cleanup.branches_deleted !== true) throw new Error("probe cleanup was not proven");
+  return value;
+}
+
+function controllerObserved(repository, since, lowerId) {
+  const runs = apiJson(`repos/${repository}/actions/workflows/cancel-obsolete-crosswake-ci.yml/runs?event=workflow_run&per_page=50`).workflow_runs || [];
+  return runs.some((run) => Date.parse(run.created_at) >= Date.parse(since) && ["queued", "in_progress", "completed"].includes(run.status) && run.id > 0 && lowerId > 0);
+}
+
+function probePhase165(args) {
+  const sourcePath = option(args, "--source");
+  const output = option(args, "--output");
+  const assertCleanup = args.includes("--assert-cleanup");
+  if (!sourcePath || !output) fail("probe-phase165 requires --source and --output");
+  const source = validateRemoteSource(readJson(sourcePath));
+  const { repository, defaultBranch } = repoIdentity();
+  if (defaultBranch !== source.default_branch) fail("default branch differs from bound source");
+  const remoteTip = gh(["api", `repos/${repository}/git/ref/heads/${defaultBranch}`, "--jq", ".object.sha"], true).trim();
+  if (remoteTip !== source.repository_sha) fail("remote default tip moved after source verification");
+  const manifest = readJson("script/ci_leaf_manifest.json");
+  const nonce = `${Date.now()}-${process.pid}`;
+  const docsBranch = `phase165-probe-docs-${nonce}`;
+  const fullBranch = `phase165-probe-full-${nonce}`;
+  const opened = [];
+  const branches = [];
+  let result;
+  let cleanupOk = false;
+  try {
+    createProbeRef(repository, docsBranch, source.repository_sha); branches.push(docsBranch);
+    const docsSha = putProbeFile(repository, docsBranch, `.planning/phase165-live-probe-${nonce}.md`, "# Phase 165 live documentation probe\n\nNon-sensitive bounded classifier fixture.\n", "test: add bounded Phase 165 docs probe");
+    const docsPr = openProbePr(defaultBranch, docsBranch, "Phase 165 bounded documentation probe"); opened.push(docsPr);
+    let docsRun = waitForRun(repository, docsBranch, docsSha);
+    docsRun = waitForRunState(repository, docsRun.id, (run) => run.status === "completed");
+    const docsJobs = runJobs(repository, docsRun.id);
+    const docs = assertProbeJobs(docsRun, docsJobs, manifest, true);
+
+    createProbeRef(repository, fullBranch, source.repository_sha); branches.push(fullBranch);
+    const fullFile = `test/fixtures/ci/phase165-live-probe-${nonce}.txt`;
+    const fullSha = putProbeFile(repository, fullBranch, fullFile, "phase165 executable probe 1\n", "test: add bounded Phase 165 executable probe");
+    const fullPr = openProbePr(defaultBranch, fullBranch, "Phase 165 bounded executable probe"); opened.push(fullPr);
+    let fullRun = waitForRun(repository, fullBranch, fullSha);
+    fullRun = waitForRunState(repository, fullRun.id, (run) => run.status === "completed");
+    const fullJobs = runJobs(repository, fullRun.id);
+    const full = assertProbeJobs(fullRun, fullJobs, manifest, false);
+
+    const lowerSha = putProbeFile(repository, fullBranch, fullFile, "phase165 executable probe 2\n", "test: request lower Phase 165 cancellation probe");
+    let lowerRun = waitForRun(repository, fullBranch, lowerSha);
+    lowerRun = waitForRunState(repository, lowerRun.id, (run) => run.status === "in_progress" || run.status === "completed", 15 * 60 * 1000);
+    if (lowerRun.status === "completed") throw new Error("lower cancellation probe completed before inversion could be observed");
+    const lowerJobsAtUpdate = runJobs(repository, lowerRun.id);
+    const runnerConsumptionObserved = lowerJobsAtUpdate.some((job) => job.status === "in_progress" || job.status === "completed");
+    if (!runnerConsumptionObserved) throw new Error("lower run had not consumed a runner before newer request");
+    const newerSha = putProbeFile(repository, fullBranch, fullFile, "phase165 executable probe 3\n", "test: request newer Phase 165 authoritative probe");
+    let newerRun = waitForRun(repository, fullBranch, newerSha);
+    const lowerFinal = waitForRunState(repository, lowerRun.id, (run) => run.status === "completed", 15 * 60 * 1000);
+    if (lowerFinal.conclusion !== "cancelled") throw new Error("strict lower run was not cancelled");
+    newerRun = waitForRunState(repository, newerRun.id, (run) => run.status === "in_progress" || run.status === "completed", 15 * 60 * 1000);
+    if (newerRun.conclusion === "cancelled") throw new Error("newer authoritative run was cancelled");
+    const controller = controllerObserved(repository, lowerRun.created_at, lowerRun.id);
+    if (!controller) throw new Error("requested-event controller timing was not observed");
+
+    result = {
+      schema_version: 1,
+      repository_sha: source.repository_sha,
+      captured_at: new Date().toISOString(),
+      source_reference: path.basename(sourcePath),
+      umbrella_context: "Crosswake CI",
+      docs_probe: { pr_number: docsPr, run_id: docsRun.id, classification: "documentation_only", umbrella_result: docs.umbrella.conclusion, active_proof_leaves: docs.activeProof, skipped_proof_leaves: docs.skippedProof, observed_job_count: docsJobs.length },
+      full_probe: { pr_number: fullPr, run_id: fullRun.id, classification: "full_proof", umbrella_result: full.umbrella.conclusion, active_proof_leaves: full.activeProof, skipped_proof_leaves: full.skippedProof, observed_job_count: fullJobs.length },
+      cancellation: { pr_number: fullPr, lower_run_id: lowerRun.id, newer_run_id: newerRun.id, lower_run_cancelled: true, newer_run_authoritative: true, same_pr_workflow: lowerRun.workflow_id === newerRun.workflow_id, requested_controller_observed: true, runner_consumption_observed: true, bounded_controller_action: true },
+      cleanup: { pull_requests_closed: false, branches_deleted: false },
+    };
+  } finally {
+    let prsClosed = true;
+    for (const number of opened) if (ghSoft(["pr", "close", String(number), "--delete-branch"]).status !== 0) prsClosed = false;
+    let branchesDeleted = true;
+    for (const branch of branches) {
+      const check = ghSoft(["api", `repos/${repository}/git/ref/heads/${branch}`]);
+      if (check.status === 0 && ghSoft(["api", "--method", "DELETE", `repos/${repository}/git/refs/heads/${branch}`]).status !== 0) branchesDeleted = false;
+      if (ghSoft(["api", `repos/${repository}/git/ref/heads/${branch}`]).status === 0) branchesDeleted = false;
+    }
+    cleanupOk = prsClosed && branchesDeleted;
+    if (result) result.cleanup = { pull_requests_closed: prsClosed, branches_deleted: branchesDeleted };
+  }
+  if (assertCleanup && !cleanupOk) fail("probe cleanup could not be proven");
+  validateLiveObservation(result);
+  writeCanonical(output, result);
+  process.stdout.write("Phase 165 live probes passed and cleanup was verified\n");
+}
+
 function repoIdentity() {
   const repository = JSON.parse(gh(["repo", "view", "--json", "nameWithOwner,defaultBranchRef"], true));
   return { repository: repository.nameWithOwner, defaultBranch: repository.defaultBranchRef.name };
@@ -656,7 +947,9 @@ function captureEvidence(args) {
 
 function validateEvidence(args) {
   if (!args[0]) fail("validate-evidence requires an evidence path");
-  validateEvidenceObject(readJson(args[0]));
+  const value = readJson(args[0]);
+  if (Object.hasOwn(value, "docs_probe")) validateLiveObservation(value);
+  else validateEvidenceObject(value);
   process.stdout.write("evidence: valid\n");
 }
 
@@ -811,6 +1104,10 @@ if (!command || command === "--help" || command === "help") {
   captureRequiredContextSnapshot(args);
 } else if (command === "verify-required-context-snapshot") {
   verifyRequiredContextSnapshot(args);
+} else if (command === "verify-remote-default-source") {
+  verifyRemoteDefaultSource(args);
+} else if (command === "probe-phase165") {
+  probePhase165(args);
 } else if (command === "validate-evidence") {
   validateEvidence(args);
 } else if (command === "render-evidence") {
