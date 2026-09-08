@@ -64,22 +64,41 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     assert "empty" in names
   end
 
+  @tag :manifest
   test "manifest freezes one proof leaf and one required control node" do
     manifest = @manifest |> File.read!() |> Jason.decode!()
 
     assert manifest["proof_leaves"] == [
              %{
-               "id" => "documentation-contracts",
-               "name" => "documentation-contracts",
+               "leaf_id" => "documentation-contracts",
+               "display_name" => "documentation-contracts",
                "family" => "documentation_contracts",
-               "remediation" =>
+               "remediation_command" =>
                  "mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs",
-               "irrelevant_when" => nil
+               "irrelevance_reason" => nil
              }
            ]
 
-    assert manifest["required_control_nodes"] == ["classify-change"]
+    assert manifest["required_control_nodes"] == [
+             %{
+               "node_id" => "classify-change",
+               "display_name" => "classify-change",
+               "required_result" => "success"
+             }
+           ]
+
     assert manifest["legacy_compatibility_contexts"] == []
+  end
+
+  @tag :manifest
+  test "manifest, workflow, static needs, and producers have exact parity" do
+    {output, status} =
+      System.cmd("python3", ["script/check_ci_leaf_manifest.py", "--self-test"],
+        stderr_to_stdout: true
+      )
+
+    assert status == 0, output
+    assert output =~ "ci leaf manifest self-test: pass"
   end
 
   test "workflow is PR-only and umbrella is static, always, and checkout-free" do
