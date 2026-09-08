@@ -129,4 +129,23 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     refute umbrella =~ ~r/^\s+run:\s+mix /m
     refute umbrella =~ "script/"
   end
+
+  @tag :maximum_shape
+  test "reviewed maximum umbrella graph fits the static checkout-free bounds" do
+    {output, status} =
+      System.cmd(
+        "python3",
+        [
+          "script/check_ci_leaf_manifest.py",
+          "--maximum-shape",
+          "test/fixtures/ci/maximum-shape-crosswake-ci.yml",
+          "--needs-fixture",
+          "test/fixtures/ci/maximum-shape-needs.json"
+        ],
+        stderr_to_stdout: true
+      )
+
+    assert status == 0, output
+    assert output =~ ~r/maximum-shape: pass jobs=\d+ needs_bytes=\d+/
+  end
 end
