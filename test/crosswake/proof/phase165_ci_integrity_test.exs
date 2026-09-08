@@ -198,8 +198,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert proof_ids == Enum.sort(proof_ids)
     assert control_ids == ["classify-change"]
     assert compatibility_ids == Enum.sort(compatibility_ids)
-    assert length(proof_ids) == 24
-    assert length(compatibility_ids) == 22
+    assert length(proof_ids) == 32
+    assert length(compatibility_ids) == 23
 
     for id <- [
           "phase71-notification-workflow-proof",
@@ -618,6 +618,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     refute job_body(workflow, "phase5-proof") =~ "DEVELOPER_DIR"
 
     assert job_body(workflow, "phase18-elixir-android-proof") =~ "runs-on: ubuntu-latest"
+
     assert job_body(workflow, "phase18-elixir-android-proof") =~
              "verify_generated_android_shell.sh"
 
