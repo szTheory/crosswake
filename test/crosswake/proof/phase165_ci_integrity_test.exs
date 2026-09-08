@@ -16,6 +16,13 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   @release_please ".github/workflows/release-please.yml"
   @leaf_manifest "script/ci_leaf_manifest.json"
 
+  @plan06_task1_sources [
+    ".github/workflows/phase41-proof.yml",
+    ".github/workflows/phase43-proof.yml",
+    ".github/workflows/phase45-proof.yml",
+    ".github/workflows/phase48-proof.yml"
+  ]
+
   @task1_retired_workflows [
     ".github/workflows/aggregator-negative-control.yml",
     ".github/workflows/contract-drift-gate.yml",
@@ -169,6 +176,49 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       workflow = File.read!(path)
       refute workflow =~ ~r/^  pull_request:/m
       refute workflow =~ ~r/^  push:/m
+    end
+  end
+
+  @tag :triggers
+  test "gating, Rulestead, Rindle, and provider PR proof moves without advisory authority" do
+    workflow = File.read!(@crosswake_ci)
+
+    refute File.exists?(hd(@plan06_task1_sources))
+
+    for {job, command} <- [
+          {"phase41-gating-proof", "phase41_gating_doctor_test.exs"},
+          {"phase43-rulestead-proof", "mix test --exclude requires_example_host --exclude advisory_only"},
+          {"phase45-rindle-proof", "mix test --exclude requires_example_host --exclude advisory_only"},
+          {"phase48-provider-adapter-proof", "phase48_provider_adapter_proof_test.exs"}
+        ] do
+      body = job_body(workflow, job)
+      assert body =~ "name: #{job}"
+      assert body =~ "runs-on: ubuntu-latest"
+      assert body =~ "timeout-minutes:"
+      assert body =~ command
+      assert body =~ "Remediation:"
+    end
+
+    for path <- tl(@plan06_task1_sources) do
+      advisory = File.read!(path)
+      refute advisory =~ ~r/^  pull_request:/m
+      refute advisory =~ ~r/^  push:/m
+      assert advisory =~ ~r/^  workflow_dispatch:/m
+      assert advisory =~ ~r/^  schedule:/m
+      assert advisory =~ "continue-on-error: true"
+    end
+
+    for {job, display_name} <- [
+          {"compat-phase41-gating-proof", "merge-blocking gating doctor and support matrix proof (hermetic)"},
+          {"compat-phase43-rulestead-proof", "merge-blocking rulestead proof (hermetic)"},
+          {"compat-phase45-rindle-proof", "merge-blocking rindle proof (hermetic)"},
+          {"compat-phase48-provider-adapter-proof", "merge-blocking provider adapter proof (hermetic)"}
+        ] do
+      body = job_body(workflow, job)
+      assert body =~ "name: #{display_name}"
+      assert body =~ "needs: [merge-blocking-crosswake-ci]"
+      assert body =~ "if: always()"
+      refute body =~ "actions/checkout"
     end
   end
 
