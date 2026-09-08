@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import re
 import sys
 import unittest
 from dataclasses import dataclass
@@ -130,10 +131,13 @@ def validate(manifest: object, workflow: object, producer_records=None) -> list[
 
     proofs = record_map(manifest["proof_leaves"], "leaf_id", {"leaf_id", "display_name", "family", "remediation_command", "irrelevance_reason"}, "proof_leaves", problems)
     controls = record_map(manifest["required_control_nodes"], "node_id", {"node_id", "display_name", "required_result"}, "required_control_nodes", problems)
-    legacy = manifest["legacy_compatibility_contexts"]
-    if not isinstance(legacy, list):
-        problems.append(Problem("invalid_legacy_compatibility_contexts", "legacy", "must be an array"))
-        legacy = []
+    legacy = record_map(
+        manifest["legacy_compatibility_contexts"],
+        "job_id",
+        {"job_id", "display_context", "needs_target"},
+        "legacy_compatibility_contexts",
+        problems,
+    )
     if "classify-change" not in controls:
         problems.append(Problem("missing_classifier_control", "classify-change", "required control is absent"))
     for member in sorted(set(proofs) & set(controls)):
@@ -159,6 +163,17 @@ def validate(manifest: object, workflow: object, producer_records=None) -> list[
         problems.append(Problem("missing_umbrella", UMBRELLA_ID, "literal umbrella job is required"))
         return problems
 
+    for leaf_id, row in proofs.items():
+        job_text = yaml.safe_dump(jobs.get(leaf_id, {}), sort_keys=False)
+        normalized_job = re.sub(r"\s+", " ", job_text)
+        normalized_command = re.sub(r"\s+", " ", row["remediation_command"])
+        if normalized_command not in normalized_job:
+            problems.append(Problem("remediation_mismatch", leaf_id, "literal remediation command is absent from job"))
+        if row["irrelevance_reason"] is not None:
+            condition = str(jobs.get(leaf_id, {}).get("if", ""))
+            if "classification == 'full_proof'" not in condition:
+                problems.append(Problem("executable_leaf_condition", leaf_id, "leaf is not closed on full_proof"))
+
     expected = set(proofs) | set(controls)
     needs = umbrella.get("needs")
     if not isinstance(needs, list) or not needs or not all(isinstance(item, str) for item in needs):
@@ -171,7 +186,7 @@ def validate(manifest: object, workflow: object, producer_records=None) -> list[
     for member in sorted(set(needs) - expected):
         problems.append(Problem("extra_static_need", member, "umbrella need is absent from manifest authority"))
 
-    legacy_ids = {row.get("job_id") for row in legacy if isinstance(row, dict) and isinstance(row.get("job_id"), str)}
+    legacy_ids = set(legacy)
     governed_jobs = set(jobs) - {UMBRELLA_ID} - legacy_ids
     for member in sorted(expected - governed_jobs):
         problems.append(Problem("missing_job", member, "manifest member has no workflow job"))
@@ -191,6 +206,31 @@ def validate(manifest: object, workflow: object, producer_records=None) -> list[
     for token in ("actions/checkout", "uses: ./", "pip install", "setup-", "npm install", "mix deps.get"):
         if token in umbrella_text:
             problems.append(Problem("umbrella_setup_forbidden", token, "umbrella must remain checkout-free"))
+
+    for leaf_id, row in proofs.items():
+        reason = row["irrelevance_reason"]
+        if reason is not None and (leaf_id not in umbrella_text or reason not in umbrella_text):
+            problems.append(Problem("umbrella_irrelevance_missing", leaf_id, "leaf and manifest reason must be explicit"))
+
+    for job_id, row in legacy.items():
+        job = jobs.get(job_id)
+        if not isinstance(job, dict):
+            problems.append(Problem("missing_compatibility_job", job_id, "manifest context has no workflow job"))
+            continue
+        actual = literal_name(job_id, job, problems)
+        if actual is not None and actual != row["display_context"]:
+            problems.append(Problem("compatibility_display_mismatch", job_id, f"workflow={actual!r}"))
+        target = row["needs_target"]
+        if target not in set(proofs) | {UMBRELLA_ID}:
+            problems.append(Problem("compatibility_target_invalid", job_id, f"target={target!r}"))
+        if job.get("needs") != [target]:
+            problems.append(Problem("compatibility_needs_mismatch", job_id, f"expected={[target]!r}"))
+        if str(job.get("if", "")).replace("${{", "").replace("}}", "").strip() != "always()":
+            problems.append(Problem("compatibility_not_always", job_id, "if must be always()"))
+        text = yaml.safe_dump(job, sort_keys=False)
+        for token in ("actions/checkout", "uses: ./", "setup-", "mix deps.get"):
+            if token in text:
+                problems.append(Problem("compatibility_setup_forbidden", job_id, f"contains {token}"))
 
     if producer_records is not None:
         producers = [row for row in producer_records if row[0] == UMBRELLA_NAME]
@@ -394,6 +434,24 @@ class ManifestSelfTest(unittest.TestCase):
         workflow["jobs"][UMBRELLA_ID]["needs"].reverse()
         meaningful = [p for p in validate(manifest, workflow) if not p.kind.startswith("unordered_")]
         self.assertEqual(meaningful, [])
+
+    def test_compatibility_missing_duplicate_and_wrong_target_fail(self) -> None:
+        first = self.manifest["legacy_compatibility_contexts"][0]
+        self.assert_problem(
+            lambda m, _w: m["legacy_compatibility_contexts"].append(copy.deepcopy(first)),
+            "duplicate_legacy_compatibility_contexts",
+            first["job_id"],
+        )
+        self.assert_problem(
+            lambda _m, w: w["jobs"].pop(first["job_id"]),
+            "missing_compatibility_job",
+            first["job_id"],
+        )
+        self.assert_problem(
+            lambda m, _w: m["legacy_compatibility_contexts"][0].update(needs_target="invented"),
+            "compatibility_target_invalid",
+            first["job_id"],
+        )
 
 
 def run_self_test() -> int:

@@ -7,6 +7,83 @@
       "family": "documentation_contracts",
       "remediation_command": "mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs",
       "irrelevance_reason": null
+    },
+    {
+      "leaf_id": "guard-01-contract-drift-test",
+      "display_name": "guard-01-contract-drift-test",
+      "family": "contract_drift",
+      "remediation_command": "mix test test/crosswake/contract/contract_drift_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "guard-02-generate-and-diff",
+      "display_name": "guard-02-generate-and-diff",
+      "family": "contract_drift",
+      "remediation_command": "mix crosswake.contract.gen && git add -A && git diff --cached --exit-code",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase130-companion-engine-absent-proof",
+      "display_name": "phase130-companion-engine-absent-proof",
+      "family": "companion_engine",
+      "remediation_command": "mix companions.test && bash script/verify_companion_package.sh crosswake_rulestead",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase130-core-hermetic-proof",
+      "display_name": "phase130-core-hermetic-proof",
+      "family": "core_hermetic",
+      "remediation_command": "mix test test/crosswake/proof/phase130_extraction_guards_test.exs test/crosswake/proof/phase130_fail_closed_contract_test.exs && mix test --exclude requires_example_host --exclude advisory_only",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase132-companion-engine-absent-proof",
+      "display_name": "phase132-companion-engine-absent-proof",
+      "family": "companion_engine",
+      "remediation_command": "mix companions.test && CROSSWAKE_RELEASE=1 bash script/verify_companion_package.sh crosswake_rindle",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase132-core-hermetic-proof",
+      "display_name": "phase132-core-hermetic-proof",
+      "family": "core_hermetic",
+      "remediation_command": "mix test test/crosswake/proof/phase130_extraction_guards_test.exs test/crosswake/proof/phase132_compat_matrix_drift_test.exs && mix test --exclude requires_example_host --exclude advisory_only",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase23-commerce-proof",
+      "display_name": "phase23-commerce-proof",
+      "family": "commerce",
+      "remediation_command": "mix test test/crosswake/proof/phase23_commerce_support_proof_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/support_matrix test/crosswake/guides/commerce_test.exs test/crosswake/planning/summary_frontmatter_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase34-commerce-proof",
+      "display_name": "phase34-commerce-proof",
+      "family": "commerce",
+      "remediation_command": "mix test --exclude requires_example_host",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "proof-aggregator-negative-control",
+      "display_name": "proof-aggregator-negative-control",
+      "family": "aggregator_integrity",
+      "remediation_command": "python3 script/check_aggregator_result_semantics.py --self-test",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "proof-dependency-security",
+      "display_name": "proof-dependency-security",
+      "family": "dependency_security",
+      "remediation_command": "script/check_dependency_security.sh && script/check_dependency_security.sh --assert-vulnerable-fixture test/fixtures/security/advisory-bearing.lock",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "proof-requires-example-host",
+      "display_name": "proof-requires-example-host",
+      "family": "example_host",
+      "remediation_command": "script/check_example_host_isolation.sh --matrix-only",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
     }
   ],
   "required_control_nodes": [
@@ -16,5 +93,56 @@
       "required_result": "success"
     }
   ],
-  "legacy_compatibility_contexts": []
+  "legacy_compatibility_contexts": [
+    {
+      "job_id": "compat-aggregator-negative-control",
+      "display_context": "merge-blocking-aggregator-negative-control",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-contract-drift",
+      "display_context": "merge-blocking-contract-drift",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-dependency-security",
+      "display_context": "merge-blocking-dependency-security",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase130-companion-engine-absent-proof",
+      "display_context": "companion engine-absent proof (merge-blocking)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase130-core-hermetic-proof",
+      "display_context": "core hermetic proof (merge-blocking)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase132-companion-engine-absent-proof",
+      "display_context": "phase132 companion engine-absent proof (merge-blocking)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase132-core-hermetic-proof",
+      "display_context": "phase132 core hermetic proof (merge-blocking)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase23-commerce-proof",
+      "display_context": "merge-blocking commerce support proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase34-commerce-proof",
+      "display_context": "merge-blocking phase34 commerce support proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-requires-example-host",
+      "display_context": "merge-blocking-requires-example-host",
+      "needs_target": "merge-blocking-crosswake-ci"
+    }
+  ]
 }

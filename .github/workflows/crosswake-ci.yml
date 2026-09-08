@@ -549,6 +549,8 @@ jobs:
           classification = os.environ.get("CLASSIFICATION", "")
           if classification not in {"documentation_only", "full_proof"}:
               sys.exit("Crosswake CI: classification was missing or unknown")
+          if classification == "documentation_only" and os.environ.get("REASON", "") != "all_changed_paths_allowlisted":
+              sys.exit("Crosswake CI: documentation irrelevance reason was not manifest-authorized")
           explicitly_irrelevant = {
               "guard-01-contract-drift-test",
               "guard-02-generate-and-diff",

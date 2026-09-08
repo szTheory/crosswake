@@ -42,6 +42,28 @@ except ImportError:
         sys.exit(2)
 
 
+CROSSWAKE_CI = ".github/workflows/crosswake-ci.yml"
+MIGRATED_SOURCE_WORKFLOWS = {
+    ".github/workflows/phase130-proof.yml",
+    ".github/workflows/phase132-proof.yml",
+    ".github/workflows/phase23-proof.yml",
+    ".github/workflows/phase34-proof.yml",
+}
+MIGRATED_JOB_IDS = {
+    "proof-aggregator-negative-control",
+    "guard-01-contract-drift-test",
+    "guard-02-generate-and-diff",
+    "proof-dependency-security",
+    "proof-requires-example-host",
+    "phase130-core-hermetic-proof",
+    "phase130-companion-engine-absent-proof",
+    "phase132-core-hermetic-proof",
+    "phase132-companion-engine-absent-proof",
+    "phase23-commerce-proof",
+    "phase34-commerce-proof",
+}
+
+
 def diagnostic(identifier: str, path: str, job: str | None, detail: str, fix: str) -> str:
     source = path if job is None else f"{path} ({job})"
     return (
@@ -107,6 +129,43 @@ def inventory() -> tuple[list[tuple[str, str, str]], list[str]]:
                 )
             )
             continue
+
+        triggers = doc.get("on", doc.get(True, {}))
+        trigger_names = set(triggers) if isinstance(triggers, dict) else set()
+        if path == CROSSWAKE_CI:
+            if trigger_names != {"pull_request"}:
+                errors.append(
+                    diagnostic(
+                        "migrated-authority-trigger",
+                        path,
+                        None,
+                        f"Crosswake CI triggers are {sorted(trigger_names)!r}",
+                        "retain pull_request as the sole recurring product-proof authority.",
+                    )
+                )
+        elif path in MIGRATED_SOURCE_WORKFLOWS:
+            forbidden = trigger_names & {"pull_request", "push"}
+            if forbidden:
+                errors.append(
+                    diagnostic(
+                        "migrated-source-trigger",
+                        path,
+                        None,
+                        f"retained advisory workflow still has {sorted(forbidden)!r}",
+                        "keep only schedule and workflow_dispatch authority.",
+                    )
+                )
+            duplicate_jobs = set(jobs) & MIGRATED_JOB_IDS
+            if duplicate_jobs:
+                errors.append(
+                    diagnostic(
+                        "migrated-job-duplicate",
+                        path,
+                        None,
+                        f"moved jobs remain present: {sorted(duplicate_jobs)!r}",
+                        "remove the PR-owned jobs from the retained advisory workflow.",
+                    )
+                )
 
         if not jobs:
             errors.append(
