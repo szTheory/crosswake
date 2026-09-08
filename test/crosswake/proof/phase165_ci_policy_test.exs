@@ -9,6 +9,8 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
   @allowlist "script/ci_docs_allowlist.json"
   @manifest "script/ci_leaf_manifest.json"
   @workflow ".github/workflows/crosswake-ci.yml"
+  @cancellation_fixture "test/fixtures/ci/cancellation/cases.json"
+  @cancellation_selector "script/select_obsolete_ci_runs.py"
 
   @moduletag :classifier
 
@@ -152,5 +154,31 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
 
     assert status == 0, output
     assert output =~ ~r/maximum-shape: pass jobs=\d+ needs_bytes=\d+/
+  end
+
+  @tag :cancellation
+  test "cancellation selector closes every fixture and preserves deterministic ordering" do
+    fixture = @cancellation_fixture |> File.read!() |> Jason.decode!()
+
+    assert fixture["schema_version"] == 1
+    names = Enum.map(fixture["cases"], & &1["name"])
+    assert names == Enum.sort(names)
+    assert Enum.uniq(names) == names
+
+    {output, status} =
+      System.cmd("python3", [@cancellation_selector, "--self-test"], stderr_to_stdout: true)
+
+    assert status == 0, output
+    assert output =~ "cancellation selector self-test: pass"
+  end
+
+  @tag :cancellation
+  test "older controller perspective can never select a newer authoritative run" do
+    fixture = @cancellation_fixture |> File.read!() |> Jason.decode!()
+    inversion = Enum.find(fixture["cases"], &(&1["name"] == "two_controller_inversion"))
+
+    assert inversion["expected"]["older_controller_ids"] == []
+    assert inversion["expected"]["newer_controller_ids"] == [100]
+    assert inversion["expected"]["authoritative_run_id"] == 101
   end
 end
