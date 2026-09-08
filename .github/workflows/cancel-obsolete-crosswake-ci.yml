@@ -76,6 +76,15 @@ jobs:
           event = json.load(open(event_path, encoding="utf-8"))
           source_current = event["workflow_run"]
 
+          def pull_numbers(run):
+              return [
+                  pull.get("number")
+                  for pull in run.get("pull_requests", [])
+                  if isinstance(pull, dict)
+              ]
+
+          source_pr_numbers = pull_numbers(source_current)
+
           def normalize(run, candidate):
               normalized = {
                   "id": run.get("id"),
@@ -111,6 +120,13 @@ jobs:
           complete = complete_text == "true" and pages_valid
           if counts and (len(set(counts)) != 1 or len(runs) < counts[0]):
               complete = False
+
+          scoped_runs = []
+          for run in runs:
+              candidate_pr_numbers = pull_numbers(run)
+              if candidate_pr_numbers == source_pr_numbers:
+                  scoped_runs.append(run)
+          runs = scoped_runs
 
           with open(current_path, "w", encoding="utf-8") as handle:
               json.dump(normalize(source_current, False), handle, sort_keys=True)
