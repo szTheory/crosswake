@@ -77,6 +77,18 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
+      - id: swift-cache-identity
+        name: Resolve Swift and Xcode cache identity
+        working-directory: packages/crosswake-shell-core-ios
+        run: |
+          set -euo pipefail
+          toolchain="$( { swift --version; xcodebuild -version; } | shasum -a 256 | awk '{print $1}')"
+          resolved_state="absent"
+          if [ -f Package.resolved ]; then
+            resolved_state="present-$(shasum -a 256 Package.resolved | awk '{print $1}')"
+          fi
+          echo "toolchain=$toolchain" >> "$GITHUB_OUTPUT"
+          echo "resolved-state=$resolved_state" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v6
         with:
           path: packages/crosswake-shell-core-ios/.build
@@ -85,7 +97,7 @@ jobs:
           # unusable artifacts. This job is macos-latest today, but the key must
           # not depend on that staying true — Phase 153.1 moved 13 jobs between
           # runner classes and an unqualified key would have followed them.
-          key: spm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('packages/crosswake-shell-core-ios/Package.swift') }}
+          key: spm-${{ runner.os }}-${{ runner.arch }}-${{ steps.swift-cache-identity.outputs.toolchain }}-${{ hashFiles('packages/crosswake-shell-core-ios/Package.swift') }}-${{ steps.swift-cache-identity.outputs.resolved-state }}
       - name: Run Swift tests
         working-directory: packages/crosswake-shell-core-ios
         run: swift test

@@ -179,6 +179,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert action =~ "path: ~/.hex/packages"
     refute action =~ ~r/path:\s*~\/\.hex\s*$/m
     refute action =~ ~r/^\s*path:.*cache\.ets/m
+    build_cache = between(action, "    - id: build-cache", "    # Hex TARBALL cache")
+    refute build_cache =~ "restore-keys"
     assert action =~ "cache-outcome"
     assert action =~ ~r/outcome=(exact|partial|miss)/
   end

@@ -48,11 +48,14 @@ inputs:
 
 outputs:
   deps-cache-hit:
-    description: "true when deps/ was restored"
-    value: ${{ steps.deps-cache.outputs.cache-hit }}
+    description: "closed true/false result for an exact deps/ restore"
+    value: ${{ steps.cache-outcome.outputs.deps-cache-hit }}
   build-cache-hit:
-    description: "true when _build/<mix-env> was restored"
-    value: ${{ steps.build-cache.outputs.cache-hit }}
+    description: "closed true/false result for an exact _build/<mix-env> restore"
+    value: ${{ steps.cache-outcome.outputs.build-cache-hit }}
+  cache-outcome:
+    description: "closed exact, partial, or miss result without exposing cache keys"
+    value: ${{ steps.cache-outcome.outputs.outcome }}
 
 runs:
   using: composite
@@ -69,34 +72,34 @@ runs:
 
     - id: scope
       shell: bash
-      # Resolved here, not in a default:, because ${{ github.* }} is not
-      # available in an inputs default expression.
       run: |
         scope="${{ inputs.cache-scope }}"
         if [ -z "$scope" ]; then
-          scope="${{ github.workflow }}-${{ github.job }}"
+          scope="${{ inputs.working-directory }}"
         fi
-        # Cache keys are matched literally; normalise anything shell- or
-        # path-hostile so a workflow rename cannot produce an unmatchable key.
         scope="$(printf '%s' "$scope" | tr -c '[:alnum:]._-' '-')"
         echo "value=${scope}" >> "$GITHUB_OUTPUT"
+
+    - id: topology
+      shell: bash
+      run: |
+        topology="${{ github.workflow }}-${{ github.job }}"
+        topology="$(printf '%s' "$topology" | tr -c '[:alnum:]._-' '-')"
+        echo "value=${topology}" >> "$GITHUB_OUTPUT"
 
     - id: deps-cache
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ inputs.working-directory }}/deps
-        key: deps-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-${{ hashFiles(format('{0}/mix.lock', inputs.working-directory)) }}
+        key: deps-${{ steps.scope.outputs.value }}-${{ steps.topology.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-${{ hashFiles(format('{0}/mix.exs', inputs.working-directory)) }}-${{ hashFiles(format('{0}/mix.lock', inputs.working-directory)) }}
         restore-keys: |
-          deps-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-
+          deps-${{ steps.scope.outputs.value }}-${{ steps.topology.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-${{ hashFiles(format('{0}/mix.exs', inputs.working-directory)) }}-
 
     - id: build-cache
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ inputs.working-directory }}/_build/${{ inputs.mix-env }}
-        key: build-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-${{ hashFiles(format('{0}/mix.lock', inputs.working-directory)) }}
-        restore-keys: |
-          build-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-
-
+        key: build-${{ steps.scope.outputs.value }}-${{ steps.topology.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-${{ hashFiles(format('{0}/mix.exs', inputs.working-directory)) }}-${{ hashFiles(format('{0}/mix.lock', inputs.working-directory)) }}
     # Hex TARBALL cache, deliberately NOT scoped per workflow+job the way
     # deps/_build are.
     #
@@ -137,6 +140,24 @@ runs:
         key: hex-packages-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(format('{0}/mix.lock', inputs.working-directory)) }}
         restore-keys: |
           hex-packages-${{ runner.os }}-${{ runner.arch }}-
+
+    - id: cache-outcome
+      shell: bash
+      run: |
+        deps_hit="${{ steps.deps-cache.outputs.cache-hit }}"
+        build_hit="${{ steps.build-cache.outputs.cache-hit }}"
+        [ "$deps_hit" = "true" ] || deps_hit="false"
+        [ "$build_hit" = "true" ] || build_hit="false"
+        if [ "$deps_hit" = "true" ] && [ "$build_hit" = "true" ]; then
+          outcome=exact
+        elif [ "$deps_hit" = "true" ] || [ "$build_hit" = "true" ]; then
+          outcome=partial
+        else
+          outcome=miss
+        fi
+        echo "deps-cache-hit=$deps_hit" >> "$GITHUB_OUTPUT"
+        echo "build-cache-hit=$build_hit" >> "$GITHUB_OUTPUT"
+        echo "outcome=$outcome" >> "$GITHUB_OUTPUT"
 
     - name: Install Elixir dependencies
       shell: bash
