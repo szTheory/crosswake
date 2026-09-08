@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "proof_leaves": [
+    {
+      "id": "documentation-contracts",
+      "name": "documentation-contracts",
+      "family": "documentation_contracts",
+      "remediation": "mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs",
+      "irrelevant_when": null
+    }
+  ],
+  "required_control_nodes": [
+    "classify-change"
+  ],
+  "legacy_compatibility_contexts": []
+}

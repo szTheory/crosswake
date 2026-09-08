@@ -41,7 +41,7 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
                "family" => "documentation_contracts",
                "remediation" =>
                  "mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs",
-               "irrelevant_when" => "full_proof_tracer_not_scheduled"
+               "irrelevant_when" => nil
              }
            ]
 
@@ -55,7 +55,10 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     assert workflow =~ ~r/^on:\n  pull_request:\s*$/m
     refute workflow =~ ~r/^\s+push:/m
     refute workflow =~ ~r/^\s+paths(?:-ignore)?:/m
-    assert workflow =~ "group: crosswake-ci-${{ github.repository }}-pr-${{ github.event.pull_request.number }}"
+
+    assert workflow =~
+             "group: crosswake-ci-${{ github.repository }}-pr-${{ github.event.pull_request.number }}"
+
     assert workflow =~ "cancel-in-progress: false"
     assert workflow =~ "fetch-depth: 0"
     assert workflow =~ "git cat-file -e \"$base_sha^{commit}\""
@@ -65,10 +68,13 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     assert umbrella =~ "name: Crosswake CI"
     assert umbrella =~ "if: always()"
     assert umbrella =~ "needs: [classify-change, documentation-contracts]"
+    assert umbrella =~ ~s([ "$CONTROL_RESULT" != 'success' ])
+    assert umbrella =~ ~s([ "$DOCUMENTATION_RESULT" != 'success' ])
+    assert umbrella =~ "documentation_only|full_proof"
     refute umbrella =~ "actions/checkout"
     refute umbrella =~ "uses: ./"
     refute umbrella =~ "pip install"
-    refute umbrella =~ "mix "
+    refute umbrella =~ ~r/^\s+run:\s+mix /m
     refute umbrella =~ "script/"
   end
 end

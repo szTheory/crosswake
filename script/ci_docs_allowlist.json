@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "exact": [
+    "CONTRIBUTING.md",
+    "README.md",
+    "SETUP.md",
+    "examples/QUICK_START.md"
+  ],
+  "trees": [
+    ".planning",
+    "brandbook",
+    "docs",
+    "guides"
+  ],
+  "excluded": [
+    "docs/COMPANION-PUBLISH-RUNBOOK.md",
+    "docs/PORT-REGISTRY.md",
+    "docs/_contract_snippet.md"
+  ]
+}

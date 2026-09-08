@@ -1,0 +1,141 @@
+name: Crosswake CI
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+
+concurrency:
+  group: crosswake-ci-${{ github.repository }}-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  classify-change:
+    name: classify-change
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      schema_version: ${{ steps.classify.outputs.schema_version }}
+      classification: ${{ steps.classify.outputs.classification }}
+      reason: ${{ steps.classify.outputs.reason }}
+      scheduled_families: ${{ steps.classify.outputs.scheduled_families }}
+      irrelevant_leaves: ${{ steps.classify.outputs.irrelevant_leaves }}
+    steps:
+      - name: Check out the synthetic merge with full history
+        id: checkout
+        continue-on-error: true
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Classify the validated base-to-merge diff
+        id: classify
+        if: always()
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
+        run: |
+          set -euo pipefail
+          {
+            echo 'schema_version=1'
+            echo 'classification=full_proof'
+            echo 'reason=checkout_or_object_validation_failed'
+            echo 'scheduled_families=["full_proof"]'
+            echo 'irrelevant_leaves=[]'
+          } >> "$GITHUB_OUTPUT"
+
+          if [ "$CHECKOUT_OUTCOME" != 'success' ]; then
+            echo 'Crosswake CI could not acquire full history. Running the full proof set.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          base_sha="$BASE_SHA"
+          merge_sha="$(git rev-parse HEAD 2>/dev/null || true)"
+          if [ -z "$base_sha" ] || [ -z "$merge_sha" ] || \
+             ! git cat-file -e "$base_sha^{commit}" 2>/dev/null || \
+             ! git cat-file -e "$merge_sha^{commit}" 2>/dev/null; then
+            echo 'Crosswake CI could not validate the comparison base. Running the full proof set.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          python3 script/classify_ci_change.py \
+            --base "$base_sha" \
+            --merge "$merge_sha" \
+            --github-output "$GITHUB_OUTPUT" >/dev/null
+
+  documentation-contracts:
+    name: documentation-contracts
+    needs: [classify-change]
+    if: needs.classify-change.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Run first-adopter privacy and documentation contracts
+        run: |
+          mix crosswake.adoption_context.scan
+          mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs
+      - name: Summarize the documentation contract leaf
+        env:
+          CLASSIFICATION: ${{ needs.classify-change.outputs.classification }}
+          REASON: ${{ needs.classify-change.outputs.reason }}
+        run: |
+          {
+            echo "Classification: ${CLASSIFICATION}."
+            echo "Reason: ${REASON}."
+            echo 'Scheduled proof family: documentation_contracts.'
+            echo 'Expected/observed leaves: 1/1.'
+            echo 'Executable, browser, Android, Apple, and packaging proof are not scheduled for a validated documentation-only change.'
+            echo 'Remediation: mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  merge-blocking-crosswake-ci:
+    name: Crosswake CI
+    if: always()
+    needs: [classify-change, documentation-contracts]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Conclude the tracer proof graph
+        shell: bash
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          CONTROL_RESULT: ${{ needs.classify-change.result }}
+          CLASSIFICATION: ${{ needs.classify-change.outputs.classification }}
+          REASON: ${{ needs.classify-change.outputs.reason }}
+          SCHEDULED_FAMILIES: ${{ needs.classify-change.outputs.scheduled_families }}
+          IRRELEVANT_LEAVES: ${{ needs.classify-change.outputs.irrelevant_leaves }}
+          DOCUMENTATION_RESULT: ${{ needs.documentation-contracts.result }}
+        run: |
+          set -euo pipefail
+          if [ -z "$NEEDS_JSON" ] || [ "$CONTROL_RESULT" != 'success' ]; then
+            echo 'Crosswake CI: required classification control did not succeed.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          case "$CLASSIFICATION" in
+            documentation_only|full_proof) ;;
+            *)
+              echo 'Crosswake CI: classification was missing or unknown.' >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
+          if [ "$DOCUMENTATION_RESULT" != 'success' ]; then
+            echo 'Crosswake CI: documentation-contracts did not succeed.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Remediation: mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          {
+            echo "Crosswake CI: ${CLASSIFICATION}."
+            echo "Reason: ${REASON}."
+            echo "Scheduled proof families: ${SCHEDULED_FAMILIES}."
+            echo "Explicitly irrelevant families: ${IRRELEVANT_LEAVES}."
+            echo 'Expected/observed leaves: 1/1.'
+            echo 'Remediation: mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs'
+          } >> "$GITHUB_STEP_SUMMARY"
