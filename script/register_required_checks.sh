@@ -68,8 +68,15 @@ trap 'rm -f "$current_file" "$desired_file" "$after_file" "$proposal_file"' EXIT
 gh api "$EP" >"$current_file"
 current_contexts="$(jq -c '[.checks[]?.context, .contexts[]?] | map(select(type == "string" and length > 0)) | sort | unique' "$current_file")"
 current_strict="$(jq -r '.strict == true' "$current_file")"
-expected_contexts="$(jq -c --arg mode "$MODE" 'if $mode == "add" then .legacy_contexts else .dual_contexts end' "$POLICY")"
-if [ "$current_strict" != "true" ] || [ "$current_contexts" != "$expected_contexts" ]; then
+legacy_contexts="$(jq -c '.legacy_contexts' "$POLICY")"
+dual_contexts="$(jq -c '.dual_contexts' "$POLICY")"
+source_state_matches=false
+if [ "$MODE" = "add" ] && { [ "$current_contexts" = "$legacy_contexts" ] || [ "$current_contexts" = "$dual_contexts" ]; }; then
+  source_state_matches=true
+elif [ "$MODE" = "retire" ] && [ "$current_contexts" = "$dual_contexts" ]; then
+  source_state_matches=true
+fi
+if [ "$current_strict" != "true" ] || [ "$source_state_matches" != "true" ]; then
   echo "[crosswake] FAIL: live required checks drifted from the policy source state for mode ${MODE}." >&2
   exit 1
 fi

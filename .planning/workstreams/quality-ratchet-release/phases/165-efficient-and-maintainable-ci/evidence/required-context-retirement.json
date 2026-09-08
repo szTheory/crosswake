@@ -2,7 +2,7 @@
   "added_contexts": [],
   "apply_command": "script/register_required_checks.sh --policy script/required_check_policy.json --mode retire --apply --approved-proposal .planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/required-context-retirement.json",
   "default_branch": "main",
-  "generated_at": "2026-09-08T21:56:09Z",
+  "generated_at": "2026-09-08T21:57:14Z",
   "live_observation_reference": "live-observation.json",
   "producer_verification": "unique",
   "removed_contexts": [
