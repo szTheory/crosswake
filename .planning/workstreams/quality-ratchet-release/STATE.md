@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 165
 current_phase_name: Efficient and Maintainable CI
 status: executing
-stopped_at: Completed 165-05-PLAN.md
-last_updated: "2026-09-08T16:32:24.019Z"
+stopped_at: Completed 165-06-PLAN.md
+last_updated: "2026-09-08T16:53:47.091Z"
 last_activity: 2026-09-08
-last_activity_desc: Plan 165-05 core and hermetic CI migration completed
-state_head: 36b274be3f58186ef6ea296d0978eafa73890cb9
+last_activity_desc: Plan 165-06 domain proof CI migration completed
+state_head: 2ef34204b7c780e3ca52a98c46828bd797f2c5a6
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 10
+  completed_plans: 11
   percent: 20
 workstream: quality-ratchet-release
 ---
@@ -32,9 +32,9 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 165 (Efficient and Maintainable CI) — EXECUTING
-Plan: 6 of 13
+Plan: 7 of 13
 Status: Ready to execute
-Last activity: 2026-09-08 — Plan 165-05 core and hermetic CI migration completed
+Last activity: 2026-09-08 — Plan 165-06 domain proof CI migration completed
 
 Progress: [██░░░░░░░░] 20%
 
@@ -42,7 +42,7 @@ Progress: [██░░░░░░░░] 20%
 
 **Velocity:**
 
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: N/A
 - Total execution time: 0 hours
 
@@ -63,6 +63,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase 165 P03 | 9 min | 2 tasks | 5 files |
 | Phase 165 P04 | 16 min | 3 tasks | 8 files |
 | Phase 165 P05 | 15h 9m | 3 tasks | 13 files |
+| Phase 165 P06 | 14 min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,8 @@ Progress: [██░░░░░░░░] 20%
 - [Phase 165]: Keep compiled cache restoration exact across complete BEAM, Gradle, and Swift compatibility identity; expose only closed cache outcomes.
 - [Phase 165]: Bind migration-only legacy contexts to the checkout-free Crosswake CI umbrella so documentation-only irrelevance remains compatible and unexplained non-success stays closed. — Preserves frozen required contexts without admitting a skipped executable leaf directly.
 - [Phase 165]: Keep scheduled/manual engine and commerce advisories source-qualified, non-cancelling, and outside PR concurrency. — Their trust and scheduling boundary is distinct from recurring PR product proof.
+- [Phase 165]: Keep all eight migrated domain proofs explicitly irrelevant only for the manifest-authorized documentation-only classification; unknown classification runs full proof.
+- [Phase 165]: Bind frozen legacy domain contexts to the checkout-free Crosswake CI umbrella while compatibility jobs stay outside umbrella authority.
 
 ### Pending Todos
 
@@ -113,6 +116,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-08T16:32:10.168Z
-Stopped at: Completed 165-05-PLAN.md
+Last session: 2026-09-08T16:53:47.040Z
+Stopped at: Completed 165-06-PLAN.md
 Resume file: None
