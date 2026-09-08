@@ -11,7 +11,9 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   test "controller is requested-run-only and grants no permission beyond Actions mutation" do
     workflow = File.read!(@controller)
 
-    assert workflow =~ ~r/^on:\n  workflow_run:\n    workflows: \[Crosswake CI\]\n    types: \[requested\]$/m
+    assert workflow =~
+             ~r/^on:\n  workflow_run:\n    workflows: \[Crosswake CI\]\n    types: \[requested\]$/m
+
     assert workflow =~ ~r/^permissions:\n  actions: write$/m
     refute workflow =~ "pull_request_target"
     refute workflow =~ ~r/^\s+(contents|issues|pull-requests|checks|packages): write$/m
