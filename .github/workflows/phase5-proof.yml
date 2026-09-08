@@ -11,12 +11,9 @@ on:
       - main
   workflow_dispatch:
 
-env:
-  DEVELOPER_DIR: /Applications/Xcode_26.0.app/Contents/Developer
-
 jobs:
   phase5-proof:
-    runs-on: macos-15
+    runs-on: ubuntu-latest
     timeout-minutes: 35
 
     steps:

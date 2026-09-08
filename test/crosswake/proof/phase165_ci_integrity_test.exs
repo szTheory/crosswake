@@ -232,7 +232,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   end
 
   @tag :runner_placement
-  @tag :timeout
+  @tag timeout: 60_000
   test "every workflow job is bounded and every macOS job invokes native tooling" do
     for path <- Path.wildcard(".github/workflows/*.{yml,yaml}"),
         {job, body} <- workflow_jobs(File.read!(path)) do
@@ -247,7 +247,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     end
   end
 
-  @tag :timeout
+  @tag timeout: 60_000
   test "ordinary CI never retries an assertion command" do
     assertion =
       ~r/(?:mix test|swift (?:test|build)|gradlew .*?(?:test|build)|xcodebuild|script\/[^\s]*(?:proof|verify))/
@@ -270,8 +270,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert workflow =~ ~r/concurrency:\n  group: release-please-.*\n  cancel-in-progress: false\n  queue: max/
     refute workflow =~ ~r/concurrency:\n(?:  .*\n)*?  cancel-in-progress: true/
     assert workflow =~ "HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
-    assert workflow =~ "MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}"
-    assert workflow =~ "CROSSWAKE_IOS_MIRROR_DEPLOY_KEY"
+    assert workflow =~ "MAVEN_USERNAME: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}"
+    assert workflow =~ "MIRROR_DEPLOY_KEY: ${{ secrets.MIRROR_DEPLOY_KEY }}"
   end
 
   defp byte_offset(value, needle) do

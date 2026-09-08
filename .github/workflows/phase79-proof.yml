@@ -40,6 +40,28 @@ jobs:
           CROSSWAKE_IOS_LAUNCH_SIMULATOR: 0
           CROSSWAKE_IOS_BUILD_FOR_TESTING: 0
 
+  v5-android-jvm-proof:
+    name: Hermetic v5.0 Android JVM Shell Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.19.5'
+          otp-version: '27.3'
+
+      - name: Set up Android JVM toolchain
+        uses: ./.github/actions/setup-android-jvm
+        with:
+          working-directory: packages/crosswake-shell-core-android
+
+      - name: Get dependencies
+        run: mix deps.get
+
       - name: Generate Android Shell (Local)
         run: mix crosswake.gen.shell android --target tmp/android_shell --local
 
