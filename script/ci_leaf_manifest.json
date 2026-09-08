@@ -1,16 +1,20 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "proof_leaves": [
     {
-      "id": "documentation-contracts",
-      "name": "documentation-contracts",
+      "leaf_id": "documentation-contracts",
+      "display_name": "documentation-contracts",
       "family": "documentation_contracts",
-      "remediation": "mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs",
-      "irrelevant_when": null
+      "remediation_command": "mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs",
+      "irrelevance_reason": null
     }
   ],
   "required_control_nodes": [
-    "classify-change"
+    {
+      "node_id": "classify-change",
+      "display_name": "classify-change",
+      "required_result": "success"
+    }
   ],
   "legacy_compatibility_contexts": []
 }

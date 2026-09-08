@@ -12,6 +12,7 @@ fallback. An explicitly empty name or an expression-bearing name has no stable a
 Malformed workflow structure and duplicate merge-blocking producers also fail with provenance.
 """
 
+import argparse
 import glob
 import sys
 from collections import defaultdict
@@ -197,21 +198,35 @@ def inventory() -> tuple[list[tuple[str, str, str]], list[str]]:
 
 
 def main() -> int:
-    args = sys.argv[1:]
-    allowed = {"--emitters", "--producers"}
-    if len(args) > 1 or any(arg not in allowed for arg in args):
-        print("usage: list_merge_blocking_checks.py [--emitters|--producers]", file=sys.stderr)
-        return 2
-
-    mode = args[0] if args else "--contexts"
+    parser = argparse.ArgumentParser(description=__doc__)
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--emitters", action="store_true")
+    modes.add_argument("--producers", action="store_true")
+    parser.add_argument("--require-display-name")
+    args = parser.parse_args()
+    mode = "--producers" if args.producers else "--emitters" if args.emitters else "--contexts"
     records, errors = inventory()
 
-    if mode == "--producers":
+    if args.require_display_name:
+        matching = [record for record in records if record[0] == args.require_display_name]
+        if len(matching) != 1:
+            errors.append(
+                diagnostic(
+                    "producer-count",
+                    ".github/workflows",
+                    None,
+                    f"literal context {args.require_display_name!r} has {len(matching)} producers",
+                    "retain exactly one literal producer for the target context.",
+                )
+            )
+        records = matching
+
+    if mode == "--producers" or args.require_display_name:
         selected = records
     else:
         selected = [record for record in records if "merge-blocking" in record[0].lower()]
 
-    if mode in {"--emitters", "--producers"}:
+    if mode in {"--emitters", "--producers"} or args.require_display_name:
         for name, path, job_id in selected:
             print(f"{name}\t{path}\t{job_id}")
     else:

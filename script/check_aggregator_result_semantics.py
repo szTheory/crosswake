@@ -21,16 +21,18 @@ class OutcomeProblem:
     remediation: str
 
 
-def evaluate_results(results, required_leaves, irrelevant_leaves):
-    required = set(required_leaves)
-    irrelevant = set(irrelevant_leaves)
+def evaluate_results(
+    results, required_leaves, required_controls, irrelevant_reasons, classifier_reason
+):
+    required = set(required_leaves) | set(required_controls)
+    irrelevant = set(irrelevant_reasons)
     declared = set(results)
 
     unexpected = sorted(declared - required)
     if unexpected:
         return Evaluation("fail", "unexpected")
 
-    if irrelevant - required:
+    if irrelevant - set(required_leaves):
         return Evaluation("fail", "invalid_irrelevance")
 
     saw_irrelevant_skip = False
@@ -42,7 +44,11 @@ def evaluate_results(results, required_leaves, irrelevant_leaves):
         value = results[leaf]
         if value == "success":
             continue
-        if value == "skipped" and leaf in irrelevant:
+        if (
+            value == "skipped"
+            and leaf in irrelevant
+            and irrelevant_reasons[leaf] == classifier_reason
+        ):
             saw_irrelevant_skip = True
             continue
         if value == "":
@@ -159,7 +165,16 @@ class AggregatorResultSemanticsSelfTest(unittest.TestCase):
 
         for name, results, irrelevant, disposition, classification in matrix:
             with self.subTest(result_class=name):
-                evaluation = evaluate_results(results, {"leaf"}, irrelevant)
+                irrelevant_reasons = {
+                    leaf: "documentation_only" for leaf in irrelevant
+                }
+                evaluation = evaluate_results(
+                    results,
+                    {"leaf"},
+                    set(),
+                    irrelevant_reasons,
+                    "documentation_only",
+                )
                 self.assertEqual(evaluation.disposition, disposition)
                 self.assertEqual(evaluation.classification, classification)
                 print(
@@ -222,6 +237,26 @@ class AggregatorResultSemanticsSelfTest(unittest.TestCase):
                 ),
             ],
         )
+
+    def test_irrelevance_reason_must_match_classifier_exactly(self):
+        evaluation = evaluate_results(
+            {"leaf": "skipped", "classify-change": "success"},
+            {"leaf"},
+            {"classify-change"},
+            {"leaf": "documentation_only"},
+            "different_reason",
+        )
+        self.assertEqual(evaluation, Evaluation("fail", "skipped"))
+
+    def test_control_node_can_never_be_irrelevant(self):
+        evaluation = evaluate_results(
+            {"leaf": "success", "classify-change": "skipped"},
+            {"leaf"},
+            {"classify-change"},
+            {"classify-change": "documentation_only"},
+            "documentation_only",
+        )
+        self.assertEqual(evaluation, Evaluation("fail", "invalid_irrelevance"))
 
 
 def run_self_test():

@@ -9,7 +9,8 @@ concurrency:
 #
 # This discharges 134-UAT Test #1 claim 2 (rollup semantics) FOREVER, without the live-PR
 # observation it used to require. Undeclared skipped work stays fail-closed; exactly one synthetic
-# leaf is explicitly classified irrelevant and may use allowed-skips. If a future alls-green pin
+# proof leaf is explicitly classified irrelevant with the manifest-issued `documentation_only`
+# reason and may use allowed-skips. Control nodes never receive an irrelevance reason. If a future alls-green pin
 # changes any closed-policy result, this lane goes RED.
 #
 # DESIGN: each arm feeds alls-green a literal `{"synthetic-leaf": {"result": "<r>"}}` — the exact
