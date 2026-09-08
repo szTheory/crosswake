@@ -686,6 +686,226 @@ jobs:
           echo 'Phase 75 closeout verification completed under the central fail-closed classifier.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Remediation: mix closeout.verify' >> "$GITHUB_STEP_SUMMARY"
 
+  android-package-unit:
+    name: android-package-unit
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-android-jvm
+        with:
+          working-directory: packages/crosswake-shell-core-android
+      - name: Run Android JVM tests
+        working-directory: packages/crosswake-shell-core-android
+        run: ./gradlew test
+      - name: Summarize Android package proof
+        if: always()
+        run: |
+          echo 'android-package-unit: Android JVM behavioral proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd packages/crosswake-shell-core-android && ./gradlew test' >> "$GITHUB_STEP_SUMMARY"
+
+  android-generated-shell-unit:
+    name: android-generated-shell-unit
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CROSSWAKE_ANDROID_CONNECTED_TESTS: "0"
+      CROSSWAKE_ANDROID_USE_MAVEN_LOCAL: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - uses: ./.github/actions/setup-android-jvm
+        with:
+          working-directory: packages/crosswake-shell-core-android
+      - name: Install Elixir dependencies
+        run: mix deps.get
+      - name: Publish shell-core to local Maven for hermetic resolution
+        working-directory: packages/crosswake-shell-core-android
+        run: ./gradlew publishToMavenLocal --no-daemon -PcrosswakeSkipSigning=true
+      - name: Run hermetic Android generated-shell verification
+        run: script/verify_generated_android_shell.sh
+      - name: Summarize generated Android proof
+        if: always()
+        run: |
+          echo 'android-generated-shell-unit: generated Android shell JVM proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: CROSSWAKE_ANDROID_CONNECTED_TESTS=0 CROSSWAKE_ANDROID_USE_MAVEN_LOCAL=1 script/verify_generated_android_shell.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  ios-package-unit:
+    name: ios-package-unit
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - id: swift-cache-identity
+        name: Resolve Swift and Xcode cache identity
+        working-directory: packages/crosswake-shell-core-ios
+        run: |
+          set -euo pipefail
+          toolchain="$( { swift --version; xcodebuild -version; } | shasum -a 256 | awk '{print $1}')"
+          resolved_state="absent"
+          if [ -f Package.resolved ]; then
+            resolved_state="present-$(shasum -a 256 Package.resolved | awk '{print $1}')"
+          fi
+          echo "toolchain=$toolchain" >> "$GITHUB_OUTPUT"
+          echo "resolved-state=$resolved_state" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: packages/crosswake-shell-core-ios/.build
+          key: spm-${{ runner.os }}-${{ runner.arch }}-${{ steps.swift-cache-identity.outputs.toolchain }}-${{ hashFiles('packages/crosswake-shell-core-ios/Package.swift') }}-${{ steps.swift-cache-identity.outputs.resolved-state }}
+      - name: Run Swift tests
+        working-directory: packages/crosswake-shell-core-ios
+        run: swift test
+      - name: Summarize Swift package proof
+        if: always()
+        run: |
+          echo 'ios-package-unit: Swift behavioral proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: cd packages/crosswake-shell-core-ios && swift test' >> "$GITHUB_STEP_SUMMARY"
+
+  phase5-proof:
+    name: phase5-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Install Elixir dependencies
+        run: mix deps.get
+      - name: Verify checked-in example hosts
+        env:
+          CROSSWAKE_PHASE5_NATIVE_PROOFS: "0"
+        run: bash script/verify_phase5_example_hosts.sh
+      - name: Summarize Phase 5 proof
+        if: always()
+        run: |
+          echo 'Remediation: CROSSWAKE_PHASE5_NATIVE_PROOFS=0 bash script/verify_phase5_example_hosts.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  phase18-elixir-android-proof:
+    name: phase18-elixir-android-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - uses: ./.github/actions/setup-android-jvm
+        with:
+          working-directory: packages/crosswake-shell-core-android
+      - name: Install Elixir dependencies
+        run: mix deps.get
+      - name: Verify Phase 18 Elixir contract and proof slices
+        run: bash script/verify_phase18_contract.sh
+      - name: Verify generated local Android shell BridgeChannel proof
+        timeout-minutes: 20
+        run: |
+          android_target="tmp/phase18-android-${GITHUB_RUN_ID}"
+          rm -rf "${android_target}"
+          mix crosswake.gen.shell android --target "${android_target}" --local
+          export CROSSWAKE_ANDROID_PROJECT_ROOT="${android_target}/native/android/crosswake_shell"
+          export CROSSWAKE_ANDROID_CONNECTED_TESTS="0"
+          bash script/verify_generated_android_shell.sh
+      - name: Summarize Phase 18 portable proof
+        if: always()
+        run: |
+          echo 'Remediation: bash script/verify_phase18_contract.sh && CROSSWAKE_ANDROID_CONNECTED_TESTS=0 bash script/verify_generated_android_shell.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  phase18-ios-proof:
+    name: phase18-ios-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Verify checked-in iOS shell bridge and activation proof
+        env:
+          CROSSWAKE_IOS_BUILD_FOR_TESTING: "0"
+          CROSSWAKE_IOS_LAUNCH_SIMULATOR: "0"
+          CROSSWAKE_IOS_USE_LOCAL_CORE: "1"
+          CROSSWAKE_IOS_PROJECT_ROOT: examples/ios_shell_host
+        run: bash script/verify_generated_ios_shell.sh
+      - name: Summarize Phase 18 iOS proof
+        if: always()
+        run: |
+          echo 'Remediation: CROSSWAKE_IOS_PROJECT_ROOT=examples/ios_shell_host CROSSWAKE_IOS_USE_LOCAL_CORE=1 bash script/verify_generated_ios_shell.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  phase79-android-proof:
+    name: phase79-android-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - uses: ./.github/actions/setup-android-jvm
+        with:
+          working-directory: packages/crosswake-shell-core-android
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Generate Android Shell
+        run: mix crosswake.gen.shell android --target tmp/android_shell --local
+      - name: Verify Android Shell
+        run: ./script/verify_generated_android_shell.sh
+        env:
+          CROSSWAKE_ANDROID_PROJECT_ROOT: tmp/android_shell/native/android/crosswake_shell
+          CROSSWAKE_ANDROID_CONNECTED_TESTS: "0"
+      - name: Summarize Phase 79 Android proof
+        if: always()
+        run: |
+          echo 'Remediation: CROSSWAKE_ANDROID_CONNECTED_TESTS=0 ./script/verify_generated_android_shell.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  phase79-ios-proof:
+    name: phase79-ios-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Generate iOS Shell
+        run: mix crosswake.gen.shell ios --target tmp/ios_shell --local
+      - name: Verify iOS Shell
+        run: ./script/verify_generated_ios_shell.sh
+        env:
+          CROSSWAKE_IOS_PROJECT_ROOT: tmp/ios_shell/native/ios/crosswake_shell
+          CROSSWAKE_IOS_LAUNCH_SIMULATOR: "0"
+          CROSSWAKE_IOS_BUILD_FOR_TESTING: "0"
+      - name: Summarize Phase 79 iOS proof
+        if: always()
+        run: |
+          echo 'Remediation: CROSSWAKE_IOS_PROJECT_ROOT=tmp/ios_shell/native/ios/crosswake_shell ./script/verify_generated_ios_shell.sh' >> "$GITHUB_STEP_SUMMARY"
+
   compat-aggregator-negative-control:
     name: merge-blocking-aggregator-negative-control
     needs: [merge-blocking-crosswake-ci]
@@ -725,6 +945,17 @@ jobs:
     steps:
       - name: Preserve the legacy required context
         env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-native-behavioral-proof:
+    name: merge-blocking-native-behavioral-proof
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
           RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
         run: test "$RESULT" = success
 
@@ -942,16 +1173,22 @@ jobs:
     name: Crosswake CI
     if: always()
     needs:
+      - android-generated-shell-unit
+      - android-package-unit
       - classify-change
       - documentation-contracts
       - guard-01-contract-drift-test
       - guard-02-generate-and-diff
+      - ios-package-unit
+      - phase18-elixir-android-proof
+      - phase18-ios-proof
       - phase130-companion-engine-absent-proof
       - phase130-core-hermetic-proof
       - phase132-companion-engine-absent-proof
       - phase132-core-hermetic-proof
       - phase23-commerce-proof
       - phase34-commerce-proof
+      - phase5-proof
       - phase41-gating-proof
       - phase43-rulestead-proof
       - phase45-rindle-proof
@@ -964,6 +1201,8 @@ jobs:
       - phase73-auth-sensitive-admin-workflow-proof
       - phase74-offline-draft-recovery-proof
       - phase75-closeout-gate
+      - phase79-android-proof
+      - phase79-ios-proof
       - proof-aggregator-negative-control
       - proof-dependency-security
       - proof-requires-example-host
@@ -989,8 +1228,13 @@ jobs:
           if classification == "documentation_only" and os.environ.get("REASON", "") != "all_changed_paths_allowlisted":
               sys.exit("Crosswake CI: documentation irrelevance reason was not manifest-authorized")
           explicitly_irrelevant = {
+              "android-generated-shell-unit",
+              "android-package-unit",
               "guard-01-contract-drift-test",
               "guard-02-generate-and-diff",
+              "ios-package-unit",
+              "phase18-elixir-android-proof",
+              "phase18-ios-proof",
               "phase130-companion-engine-absent-proof",
               "phase130-core-hermetic-proof",
               "phase132-companion-engine-absent-proof",
@@ -1001,6 +1245,7 @@ jobs:
               "phase43-rulestead-proof",
               "phase45-rindle-proof",
               "phase48-provider-adapter-proof",
+              "phase5-proof",
               "phase52-operator-proof",
               "phase58-auth-closeout-proof",
               "phase69-closeout-proof",
@@ -1009,6 +1254,8 @@ jobs:
               "phase73-auth-sensitive-admin-workflow-proof",
               "phase74-offline-draft-recovery-proof",
               "phase75-closeout-gate",
+              "phase79-android-proof",
+              "phase79-ios-proof",
               "proof-aggregator-negative-control",
               "proof-dependency-security",
               "proof-requires-example-host",
@@ -1025,7 +1272,7 @@ jobs:
             echo "Crosswake CI: ${CLASSIFICATION}."
             echo "Reason: ${REASON}."
             echo "Scheduled proof families: ${SCHEDULED_FAMILIES}."
-            echo 'Explicitly irrelevant families: core_integrity, security, example_host.'
-            echo 'Expected proof leaves: 24.'
+            echo 'Explicitly irrelevant families: core_integrity, security, example_host, native_android, native_ios.'
+            echo 'Expected proof leaves: 32.'
             echo 'Remediation: python3 script/check_ci_leaf_manifest.py --self-test'
           } >> "$GITHUB_STEP_SUMMARY"

@@ -2,6 +2,20 @@
   "schema_version": 2,
   "proof_leaves": [
     {
+      "leaf_id": "android-generated-shell-unit",
+      "display_name": "android-generated-shell-unit",
+      "family": "native_android",
+      "remediation_command": "CROSSWAKE_ANDROID_CONNECTED_TESTS=0 CROSSWAKE_ANDROID_USE_MAVEN_LOCAL=1 script/verify_generated_android_shell.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "android-package-unit",
+      "display_name": "android-package-unit",
+      "family": "native_android",
+      "remediation_command": "cd packages/crosswake-shell-core-android && ./gradlew test",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
       "leaf_id": "documentation-contracts",
       "display_name": "documentation-contracts",
       "family": "documentation_contracts",
@@ -20,6 +34,13 @@
       "display_name": "guard-02-generate-and-diff",
       "family": "contract_drift",
       "remediation_command": "mix crosswake.contract.gen && git add -A && git diff --cached --exit-code",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "ios-package-unit",
+      "display_name": "ios-package-unit",
+      "family": "native_ios",
+      "remediation_command": "cd packages/crosswake-shell-core-ios && swift test",
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
@@ -48,6 +69,20 @@
       "display_name": "phase132-core-hermetic-proof",
       "family": "core_hermetic",
       "remediation_command": "mix test test/crosswake/proof/phase130_extraction_guards_test.exs test/crosswake/proof/phase132_compat_matrix_drift_test.exs && mix test --exclude requires_example_host --exclude advisory_only",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase18-elixir-android-proof",
+      "display_name": "phase18-elixir-android-proof",
+      "family": "native_android",
+      "remediation_command": "bash script/verify_phase18_contract.sh && CROSSWAKE_ANDROID_CONNECTED_TESTS=0 bash script/verify_generated_android_shell.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase18-ios-proof",
+      "display_name": "phase18-ios-proof",
+      "family": "native_ios",
+      "remediation_command": "CROSSWAKE_IOS_PROJECT_ROOT=examples/ios_shell_host CROSSWAKE_IOS_USE_LOCAL_CORE=1 bash script/verify_generated_ios_shell.sh",
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
@@ -90,6 +125,13 @@
       "display_name": "phase48-provider-adapter-proof",
       "family": "provider_adapter",
       "remediation_command": "mix test test/crosswake/proof/phase48_provider_adapter_proof_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase5-proof",
+      "display_name": "phase5-proof",
+      "family": "example_host",
+      "remediation_command": "CROSSWAKE_PHASE5_NATIVE_PROOFS=0 bash script/verify_phase5_example_hosts.sh",
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
@@ -149,6 +191,20 @@
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
+      "leaf_id": "phase79-android-proof",
+      "display_name": "phase79-android-proof",
+      "family": "native_android",
+      "remediation_command": "CROSSWAKE_ANDROID_CONNECTED_TESTS=0 ./script/verify_generated_android_shell.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase79-ios-proof",
+      "display_name": "phase79-ios-proof",
+      "family": "native_ios",
+      "remediation_command": "CROSSWAKE_IOS_PROJECT_ROOT=tmp/ios_shell/native/ios/crosswake_shell ./script/verify_generated_ios_shell.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
       "leaf_id": "proof-aggregator-negative-control",
       "display_name": "proof-aggregator-negative-control",
       "family": "aggregator_integrity",
@@ -191,6 +247,11 @@
     {
       "job_id": "compat-dependency-security",
       "display_context": "merge-blocking-dependency-security",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-native-behavioral-proof",
+      "display_context": "merge-blocking-native-behavioral-proof",
       "needs_target": "merge-blocking-crosswake-ci"
     },
     {
