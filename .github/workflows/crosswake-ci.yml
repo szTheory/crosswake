@@ -479,6 +479,121 @@ jobs:
           echo 'Phase 48 provider-adapter proof completed without provider or device authority.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Remediation: mix test test/crosswake/proof/phase48_provider_adapter_proof_test.exs' >> "$GITHUB_STEP_SUMMARY"
 
+  phase52-operator-proof:
+    name: phase52-operator-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 52 operator truth proof
+        run: mix test test/crosswake/proof/phase52_operator_truth_test.exs
+      - name: Summarize operator proof
+        if: always()
+        run: |
+          echo 'Phase 52 hermetic operator truth proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase52_operator_truth_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  phase58-auth-closeout-proof:
+    name: phase58-auth-closeout-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run closeout verification with Phase 58 security artifact
+        run: mix closeout.verify --security-only --security-closeout .planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md
+      - name: Run layered Sigra auth proof (core-side)
+        run: |
+          mix test --exclude requires_example_host \
+            test/crosswake/proof/phase55_session_handoff_tickets_test.exs \
+            test/crosswake/proof/phase56_step_up_ceremony_test.exs
+      - name: Run Sigra diagnostics parity tests (core-side)
+        run: |
+          mix test \
+            test/crosswake/support_matrix/support_matrix_test.exs \
+            test/crosswake/doctor/doctor_test.exs \
+            test/crosswake/guides/companions_test.exs \
+            test/mix/tasks/closeout_verify_test.exs
+      - name: Install crosswake_sigra dependencies
+        working-directory: packages/crosswake_sigra
+        run: mix deps.get
+      - name: Run layered Sigra auth proof (crosswake_sigra)
+        working-directory: packages/crosswake_sigra
+        run: |
+          mix test --exclude requires_example_host \
+            test/crosswake/proof/phase54_sigra_session_authority_test.exs \
+            test/crosswake/proof/phase57_auth_return_boundaries_test.exs \
+            test/crosswake/proof/phase58_auth_diagnostics_closeout_test.exs
+      - name: Run Sigra diagnostics parity tests (crosswake_sigra)
+        working-directory: packages/crosswake_sigra
+        run: |
+          mix test \
+            test/crosswake/companions/sigra/telemetry_test.exs \
+            test/crosswake/operator_inspection/operator_inspection_test.exs \
+            test/crosswake/doctor/publish_readiness_test.exs
+      - name: Summarize auth closeout proof
+        if: always()
+        run: |
+          echo 'Phase 58 security closeout and layered core/companion auth proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix closeout.verify --security-only --security-closeout .planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md' >> "$GITHUB_STEP_SUMMARY"
+
+  phase69-closeout-proof:
+    name: phase69-closeout-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: dev
+      - name: Compile and check warnings
+        run: mix compile --warnings-as-errors
+      - name: Run v4.0 milestone closeout verification
+        run: mix closeout.verify --cwd . --closeout-path .planning/milestones/v4.0-CLOSEOUT.md
+      - name: Run closeout parity tests
+        run: mix test test/crosswake/proof/phase69_docs_contract_parity_test.exs test/mix/tasks/closeout_verify_test.exs
+      - name: Summarize v4.0 closeout proof
+        if: always()
+        run: |
+          echo 'Phase 69 v4.0 closeout and documentation parity proof completed under the central classifier.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix closeout.verify --cwd . --closeout-path .planning/milestones/v4.0-CLOSEOUT.md && mix test test/crosswake/proof/phase69_docs_contract_parity_test.exs test/mix/tasks/closeout_verify_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
+  phase70-subscription-saas-proof:
+    name: phase70-subscription-saas-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run Phase 70 subscription SaaS proof
+        run: mix test test/crosswake/proof/phase70_subscription_saas_commerce_proof_test.exs
+      - name: Summarize subscription SaaS proof
+        if: always()
+        run: |
+          echo 'Phase 70 hermetic subscription SaaS commerce proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix test test/crosswake/proof/phase70_subscription_saas_commerce_proof_test.exs' >> "$GITHUB_STEP_SUMMARY"
+
   compat-aggregator-negative-control:
     name: merge-blocking-aggregator-negative-control
     needs: [merge-blocking-crosswake-ci]
@@ -643,6 +758,50 @@ jobs:
           RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
         run: test "$RESULT" = success
 
+  compat-phase52-operator-proof:
+    name: merge-blocking operator proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase58-auth-closeout-proof:
+    name: merge-blocking auth closeout proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase69-closeout-proof:
+    name: merge-blocking-closeout-proof
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
+  compat-phase70-subscription-saas-proof:
+    name: merge-blocking subscription SaaS proof (hermetic)
+    needs: [merge-blocking-crosswake-ci]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - env:
+          RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}
+        run: test "$RESULT" = success
+
   merge-blocking-crosswake-ci:
     name: Crosswake CI
     if: always()
@@ -661,6 +820,10 @@ jobs:
       - phase43-rulestead-proof
       - phase45-rindle-proof
       - phase48-provider-adapter-proof
+      - phase52-operator-proof
+      - phase58-auth-closeout-proof
+      - phase69-closeout-proof
+      - phase70-subscription-saas-proof
       - proof-aggregator-negative-control
       - proof-dependency-security
       - proof-requires-example-host
@@ -698,6 +861,10 @@ jobs:
               "phase43-rulestead-proof",
               "phase45-rindle-proof",
               "phase48-provider-adapter-proof",
+              "phase52-operator-proof",
+              "phase58-auth-closeout-proof",
+              "phase69-closeout-proof",
+              "phase70-subscription-saas-proof",
               "proof-aggregator-negative-control",
               "proof-dependency-security",
               "proof-requires-example-host",
@@ -715,6 +882,6 @@ jobs:
             echo "Reason: ${REASON}."
             echo "Scheduled proof families: ${SCHEDULED_FAMILIES}."
             echo 'Explicitly irrelevant families: core_integrity, security, example_host.'
-            echo 'Expected proof leaves: 16.'
+            echo 'Expected proof leaves: 20.'
             echo 'Remediation: python3 script/check_ci_leaf_manifest.py --self-test'
           } >> "$GITHUB_STEP_SUMMARY"

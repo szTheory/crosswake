@@ -93,6 +93,34 @@
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
+      "leaf_id": "phase52-operator-proof",
+      "display_name": "phase52-operator-proof",
+      "family": "operator",
+      "remediation_command": "mix test test/crosswake/proof/phase52_operator_truth_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase58-auth-closeout-proof",
+      "display_name": "phase58-auth-closeout-proof",
+      "family": "auth_closeout",
+      "remediation_command": "mix closeout.verify --security-only --security-closeout .planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase69-closeout-proof",
+      "display_name": "phase69-closeout-proof",
+      "family": "closeout",
+      "remediation_command": "mix closeout.verify --cwd . --closeout-path .planning/milestones/v4.0-CLOSEOUT.md && mix test test/crosswake/proof/phase69_docs_contract_parity_test.exs test/mix/tasks/closeout_verify_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
+      "leaf_id": "phase70-subscription-saas-proof",
+      "display_name": "phase70-subscription-saas-proof",
+      "family": "subscription_saas",
+      "remediation_command": "mix test test/crosswake/proof/phase70_subscription_saas_commerce_proof_test.exs",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
       "leaf_id": "proof-aggregator-negative-control",
       "display_name": "proof-aggregator-negative-control",
       "family": "aggregator_integrity",
@@ -185,6 +213,26 @@
     {
       "job_id": "compat-phase48-provider-adapter-proof",
       "display_context": "merge-blocking provider adapter proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase52-operator-proof",
+      "display_context": "merge-blocking operator proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase58-auth-closeout-proof",
+      "display_context": "merge-blocking auth closeout proof (hermetic)",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase69-closeout-proof",
+      "display_context": "merge-blocking-closeout-proof",
+      "needs_target": "merge-blocking-crosswake-ci"
+    },
+    {
+      "job_id": "compat-phase70-subscription-saas-proof",
+      "display_context": "merge-blocking subscription SaaS proof (hermetic)",
       "needs_target": "merge-blocking-crosswake-ci"
     },
     {
