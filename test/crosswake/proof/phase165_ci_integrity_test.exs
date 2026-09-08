@@ -146,7 +146,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   end
 
   @tag :manifest
-  test "first migrated cohort has exact leaf, control, compatibility, and umbrella parity" do
+  test "migrated domain cohorts have exact leaf, control, compatibility, and umbrella parity" do
     manifest = @leaf_manifest |> File.read!() |> Jason.decode!()
     workflow = File.read!(@crosswake_ci)
 
@@ -158,8 +158,19 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert proof_ids == Enum.sort(proof_ids)
     assert control_ids == ["classify-change"]
     assert compatibility_ids == Enum.sort(compatibility_ids)
-    assert length(proof_ids) == 20
-    assert length(compatibility_ids) == 18
+    assert length(proof_ids) == 24
+    assert length(compatibility_ids) == 22
+
+    for id <- [
+          "phase71-notification-workflow-proof",
+          "phase73-auth-sensitive-admin-workflow-proof",
+          "phase74-offline-draft-recovery-proof",
+          "phase75-closeout-gate"
+        ] do
+      row = Enum.find(manifest["proof_leaves"], &(&1["leaf_id"] == id))
+      assert row["irrelevance_reason"] == "all_changed_paths_allowlisted"
+      assert is_binary(row["remediation_command"])
+    end
 
     umbrella = job_body(workflow, "merge-blocking-crosswake-ci")
 
