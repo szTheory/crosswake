@@ -39,7 +39,27 @@ runs:
         fi
         echo "version=$version" >> "$GITHUB_OUTPUT"
 
+    - id: compatibility
+      name: Resolve Gradle configuration identity
+      shell: bash
+      run: |
+        set -euo pipefail
+        root="${{ inputs.working-directory }}"
+        config_hash="$(
+          find "$root" -type f \( \
+            -name '*.gradle' -o -name '*.gradle.kts' -o \
+            -name 'gradle-wrapper.properties' -o -name 'gradle.lockfile' -o \
+            -name '*.versions.toml' -o -name 'versions.properties' \
+          \) -print0 |
+            LC_ALL=C sort -z |
+            xargs -0 shasum -a 256 |
+            shasum -a 256 |
+            awk '{print $1}'
+        )"
+        echo "digest=$config_hash" >> "$GITHUB_OUTPUT"
+
     - name: Set up Gradle and validate wrappers
       uses: gradle/actions/setup-gradle@v6
       with:
         gradle-version: ${{ steps.wrapper.outputs.version }}
+        workflow-job-context: ${{ github.workflow }}-${{ github.job }}-${{ runner.arch }}-jdk${{ inputs.java-version }}-gradle${{ steps.wrapper.outputs.version }}-${{ steps.compatibility.outputs.digest }}
