@@ -101,6 +101,9 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert hex_page =~ "name: Build docs (smoke)"
     assert hex_page =~ "mix docs"
 
+    assert hex_page =~
+             "name: Hex publish dry-run\n        env:\n          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
+
     compatibility = job_body(workflow, "compat-release-as-staleness")
     assert compatibility =~ "name: merge-blocking-release-as-staleness"
     assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"

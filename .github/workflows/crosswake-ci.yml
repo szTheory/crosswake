@@ -228,6 +228,8 @@ jobs:
       - name: Verify hex tarball contents
         run: bash script/verify_hex_tarball.sh
       - name: Hex publish dry-run
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
         run: mix hex.publish --dry-run --yes
       - name: Summarize Hex page proof
         if: always()
