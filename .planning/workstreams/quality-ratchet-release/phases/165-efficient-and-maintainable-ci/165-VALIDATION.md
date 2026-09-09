@@ -1,10 +1,11 @@
 ---
 phase: 165
 slug: efficient-and-maintainable-ci
-status: active
+status: validated
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-08-28
+validated: 2026-09-08
 ---
 
 # Phase 165 — Validation Strategy
@@ -59,8 +60,8 @@ created: 2026-08-28
 - [x] Python fixtures for adversarial Git names/statuses, cancellation orderings, manifest omissions, and evidence payloads.
 - [x] `test/fixtures/ci/maximum-shape-crosswake-ci.yml` plus `maximum-shape-needs.json` — complete final proof/control union, actionlint-valid checkout-free umbrella, under 256 jobs and 32 KiB serialized-needs safety budget.
 - [x] `evidence/required-context-baseline.json` — pre-mutation strict exact sorted context set and source digest; every producer migration re-verifies it live.
-- [ ] Live probe and cleanup commands for documentation-only visibility, lower-run-ID cancellation, and additive branch-protection verification.
-- [ ] Final-source probe that accepts only the execute-phase orchestrator's exact post-Plan-12 remote-default SHA and verifies compatibility-free workflow/manifest blob digests before after-cohort collection.
+- [x] Live probe and cleanup commands for documentation-only visibility, lower-run-ID cancellation, and additive branch-protection verification.
+- [x] Final-source probe accepts only the execute-phase orchestrator's exact post-Plan-12 remote-default SHA and verifies compatibility-free workflow/manifest blob digests before after-cohort collection.
 
 ---
 
@@ -68,7 +69,7 @@ created: 2026-08-28
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Remove legacy required contexts after the green umbrella is additively registered and both authorities are verified | CIP-02, CIP-07 | Mutating branch-protection trust is an irreversible external approval boundary | Produce an exact dry-run old/new context diff; verify strict protection and both producer sets automatically; request explicit maintainer approval before applying retirement; re-read branch protection and prove the umbrella remains authoritative before deleting old producers. |
+| Approve removal of the exact legacy required-context set after dual authority is verified | CIP-02, CIP-07 | The one-way trust decision requires explicit maintainer authorization | Completed in Plan 165-11: the maintainer replied `approve-exact-retirement` for source digest `55bf0c829e1933ac596585979145073beacc9f03a2c0f5bf6e03b3dfb75b3e51`; Plan 165-12 separately applied and automatically verified the exact transition. |
 
 All other phase behavior, including live PR, cancellation, cache, and evidence assertions, remains automated. Human approval does not replace those assertions.
 
@@ -100,4 +101,45 @@ All other phase behavior, including live PR, cancellation, cache, and evidence a
 - [x] Live authority probes are automated; only branch-protection retirement uses a human approval gate.
 - [x] `nyquist_compliant: true` is set in frontmatter after validation.
 
-**Approval:** recurring local contract green; live authority migration remains governed by Plans 10-12
+**Approval:** validated after Plans 10-13; recurring contracts, exact landed-source binding, evidence schemas, and live target authority are green.
+
+---
+
+## Final Nyquist Audit — 2026-09-08
+
+### Requirement-to-Test Map
+
+| Requirement | Observable behavior | Behavioral test / command | Result |
+|-------------|---------------------|---------------------------|--------|
+| CIP-01 | Pure Elixir and Android/JVM proof runs on Linux; macOS jobs invoke Apple tooling | `mix test test/crosswake/proof/phase165_ci_integrity_test.exs --only runner_placement` plus `bash -n` and `shellcheck` on `script/verify_generated_android_shell.sh` | green |
+| CIP-02 | One PR authority; cancellation is strict-lower, same-repository/workflow/PR, and final protection has one target context | `python3 script/select_obsolete_ci_runs.py --self-test`; integrity trigger/controller tests; live target audit | green |
+| CIP-03 | BEAM, Gradle, and Swift cache identities miss on incompatible dimensions | `mix test test/crosswake/proof/phase165_ci_integrity_test.exs --only cache_identity` | green |
+| CIP-04 | Every workflow job is bounded; assertion retry is forbidden; newer authority is never cancelled | integrity timeout/controller/release-trust tests and cancellation selector self-test | green |
+| CIP-05 | Unknown/mixed/malformed changes fail closed; documentation-only changes retain an always-visible gate | classifier adversarial corpus, policy ExUnit suite, and committed live observation | green |
+| CIP-06 | Evidence is allowlisted, privacy-safe, reproducible, and candid about unavailable timing/cohorts | monitor self-test, 8 evidence ExUnit tests, baseline/after validation, generated comparison inspection | green |
+| CIP-07 | Forty-four literal proof leaves plus one control exactly match static umbrella needs; compatibility producers are absent | manifest self-test, maximum-shape fixture, producer audit, and final remote-source digest verification | green |
+
+### Plan Task Contract Coverage
+
+| Plans | Task contracts exercised | Result |
+|-------|--------------------------|--------|
+| 165-01–02 | evidence schema; classifier; aggregator; manifest parity; maximum graph capacity | green |
+| 165-03–04 | cancellation policy/controller; runners; caches; timeouts; release trust | green |
+| 165-05–09 | retired-source absence; literal leaf commands; trigger separation; manifest/producer authority; recurring aggregate | green |
+| 165-10 | source-bound docs/full/live cancellation probes; dual-authority registration; exact retirement proposal | green (committed live evidence) |
+| 165-11 | digest-bound explicit maintainer decision | green (manual-only authorization completed) |
+| 165-12 | exact target protection; compatibility-free workflow and manifest | green (live audit) |
+| 165-13 | exact remote-default SHA/blob binding; canonical after evidence and honest comparison | green (live re-verification) |
+
+### Current Verification Evidence
+
+- `ASDF_ELIXIR_VERSION=1.19.5-otp-28 ASDF_ERLANG_VERSION=28.4.1 script/check_phase165_efficient_ci.sh` — pass: 11 policy, 26 integrity, and 8 evidence ExUnit tests; classifier, cancellation, aggregator, manifest, maximum-shape, producer, local-authority, schema, and workflow-syntax checks all passed.
+- `actionlint .github/workflows/*.yml` — pass.
+- `bash -n script/verify_generated_android_shell.sh && shellcheck script/verify_generated_android_shell.sh` — pass.
+- `PHASE165_FINAL_REMOTE_DEFAULT_SHA=cec20fbd71ca3319c7d7dfbeb439d1f74545e9c8 node scripts/ci_monitor.cjs verify-final-remote-default-source --source .planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/final-remote-default-source.json` — pass; exact remote workflow and manifest blobs remain bound to the recorded default-branch source.
+- `script/check_required_checks_registered.sh --policy script/required_check_policy.json --state target --live` — pass; strict target authority is exact and every required context has one producer.
+- Both `baseline.json` and `after.json` pass `node scripts/ci_monitor.cjs validate-evidence`.
+
+### Gap Disposition
+
+No uncovered automatable behavior remained after the adversarial rerun. No tests or fixtures were added, no implementation file was modified, and no requirement was skipped. The only manual-only item was the completed Plan 165-11 authorization; all assertions before and after that decision remained automated.
