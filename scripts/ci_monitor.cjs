@@ -19,10 +19,13 @@ Commands:
   wait-for <run-id> <job> --keyword <text>
   check-actions [workflow-file]
   capture-evidence <output.json>
+  capture-evidence --source <final-source.json> --cohorts matched --output <output.json>
   capture-required-context-snapshot <output.json>
   verify-required-context-snapshot <snapshot.json> [--live]
   verify-remote-default-source --sha <40-hex-sha> --output <output.json>
   verify-remote-default-source --source <source.json>
+  verify-final-remote-default-source --sha <40-hex-sha> --workflow <file> --manifest <file> --output <output.json>
+  verify-final-remote-default-source --source <source.json>
   probe-phase165 --source <source.json> --output <output.json> [--assert-cleanup]
   validate-evidence <evidence.json>
   render-evidence <evidence.json> [output.md]
@@ -578,6 +581,113 @@ function verifyRemoteDefaultSource(args) {
   process.stdout.write(`verified immutable remote-default source: ${expectedSha}\n`);
 }
 
+const FINAL_SOURCE_FIELDS = new Set([
+  "schema_version",
+  "repository_sha",
+  "default_branch",
+  "workflow_digest",
+  "manifest_digest",
+  "verified_at",
+  "source_command",
+]);
+
+function validateFinalRemoteSource(source) {
+  ensureFields(source, FINAL_SOURCE_FIELDS, "final remote-default source");
+  if (source.schema_version !== 1 || !/^[0-9a-f]{40}$/.test(source.repository_sha || "")) {
+    throw new Error("invalid final remote-default source identity");
+  }
+  if (!/^[A-Za-z0-9._/-]+$/.test(source.default_branch || "") || parseTimestamp(source.verified_at) === null) {
+    throw new Error("invalid final remote-default source branch or timestamp");
+  }
+  if (![source.workflow_digest, source.manifest_digest].every((value) => /^[0-9a-f]{64}$/.test(value || ""))) {
+    throw new Error("invalid final remote-default blob digest");
+  }
+  if (typeof source.source_command !== "string" || !source.source_command.startsWith("gh api repos/")) {
+    throw new Error("invalid final remote-default source command");
+  }
+  return source;
+}
+
+function runFinalStructureChecks(workflowPath, manifestPath) {
+  if (workflowPath !== ".github/workflows/crosswake-ci.yml" || manifestPath !== "script/ci_leaf_manifest.json") {
+    throw new Error("final source verification requires the canonical workflow and manifest paths");
+  }
+  const manifest = readJson(manifestPath);
+  if (!Array.isArray(manifest.legacy_compatibility_contexts) || manifest.legacy_compatibility_contexts.length !== 0) {
+    throw new Error("legacy compatibility manifest authority survives in final source");
+  }
+  const proofIds = new Set((manifest.proof_leaves || []).map((leaf) => leaf.leaf_id));
+  const controlIds = new Set((manifest.required_control_nodes || []).map((node) => node.node_id));
+  if (!proofIds.has("brand-structural") || proofIds.has("brand-visual") || controlIds.has("brand-visual")) {
+    throw new Error("final brand authority is not exact");
+  }
+  const workflowText = fs.readFileSync(workflowPath, "utf8");
+  if (!workflowText.includes("brand-visual") || /\n\s+compat-[^:]+:/m.test(workflowText)) {
+    throw new Error("final workflow compatibility/advisory structure is not exact");
+  }
+  const checker = spawnSync("python3", ["script/check_ci_leaf_manifest.py", "--self-test"], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (checker.error || checker.status !== 0) throw new Error("final workflow/manifest structure validation failed");
+  const protection = spawnSync(
+    "script/check_required_checks_registered.sh",
+    ["--policy", "script/required_check_policy.json", "--state", "target", "--live"],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+  );
+  if (protection.error || protection.status !== 0) throw new Error("live target branch protection is not exact");
+}
+
+function verifyFinalRemoteDefaultSource(args) {
+  const sourcePath = option(args, "--source");
+  const workflowPath = option(args, "--workflow", ".github/workflows/crosswake-ci.yml");
+  const manifestPath = option(args, "--manifest", "script/ci_leaf_manifest.json");
+  const source = sourcePath ? validateFinalRemoteSource(readJson(sourcePath)) : null;
+  const expectedSha = source ? source.repository_sha : option(args, "--sha");
+  const output = option(args, "--output");
+  if (!expectedSha || (!sourcePath && !output)) {
+    fail("verify-final-remote-default-source requires --source or --sha and --output");
+  }
+  if (!/^[0-9a-f]{40}$/.test(expectedSha)) fail("final --sha must be an exact 40-character lowercase SHA");
+  if (process.env.PHASE165_FINAL_REMOTE_DEFAULT_SHA !== expectedSha) {
+    fail("final source SHA must equal PHASE165_FINAL_REMOTE_DEFAULT_SHA exactly");
+  }
+
+  const { repository, defaultBranch } = repoIdentity();
+  const sourceCommand = `gh api repos/${repository}/git/ref/heads/${defaultBranch}`;
+  const remoteSha = gh(["api", `repos/${repository}/git/ref/heads/${defaultBranch}`, "--jq", ".object.sha"], true).trim();
+  if (remoteSha !== expectedSha) fail("remote default tip moved from PHASE165_FINAL_REMOTE_DEFAULT_SHA");
+  if (source && source.default_branch !== defaultBranch) fail("final source default branch changed");
+
+  const fetch = spawnSync("git", ["fetch", "origin", expectedSha], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (fetch.error || fetch.status !== 0) fail("could not fetch the exact final remote-default SHA");
+  const workflowDigest = sha256Bytes(gitBlob(expectedSha, workflowPath));
+  const manifestDigest = sha256Bytes(gitBlob(expectedSha, manifestPath));
+  if (workflowDigest !== sha256Bytes(fs.readFileSync(workflowPath))) fail("final remote workflow differs from local Plan 12 state");
+  if (manifestDigest !== sha256Bytes(fs.readFileSync(manifestPath))) fail("final remote manifest differs from local Plan 12 state");
+  if (source && (source.workflow_digest !== workflowDigest || source.manifest_digest !== manifestDigest)) {
+    fail("final source record digests no longer match the exact remote blobs");
+  }
+  runFinalStructureChecks(workflowPath, manifestPath);
+
+  if (!sourcePath) {
+    const record = validateFinalRemoteSource({
+      schema_version: 1,
+      repository_sha: expectedSha,
+      default_branch: defaultBranch,
+      workflow_digest: workflowDigest,
+      manifest_digest: manifestDigest,
+      verified_at: new Date().toISOString(),
+      source_command: sourceCommand,
+    });
+    writeCanonical(output, record);
+  }
+  process.stdout.write(`verified final immutable remote-default source: ${expectedSha}\n`);
+}
+
 function ghSoft(args) {
   return spawnSync("gh", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
 }
@@ -867,6 +977,7 @@ function verifyRequiredContextSnapshot(args) {
 }
 
 function captureEvidence(args) {
+  if (args.includes("--source")) return captureMatchedFinalEvidence(args);
   const output = args[0];
   if (!output) fail("capture-evidence requires an output path");
   const { repository, defaultBranch } = repoIdentity();
@@ -945,6 +1056,102 @@ function captureEvidence(args) {
   process.stdout.write(`captured sanitized evidence: ${observations.length} observations\n`);
 }
 
+function sanitizedRunObservation(repository, sha, run) {
+  const jobs = apiJson(`repos/${repository}/actions/runs/${run.id}/jobs?per_page=100`).jobs || [];
+  const durations = jobs.map((job) => durationMetric(job.started_at, job.completed_at));
+  const integerDurations = durations.filter(Number.isInteger);
+  const runnerClasses = [...new Set(jobs.map((job) => runnerClass(job.labels)))].sort();
+  return {
+    repository_sha: sha,
+    run_id: run.id,
+    attempt: run.run_attempt || 1,
+    event: run.event,
+    workflow_name: run.name || run.path || "unknown_workflow",
+    runner_class: runnerClasses.length === 1 ? runnerClasses[0] : runnerClasses.length > 1 ? "mixed" : "not_measured",
+    created_at: run.created_at,
+    run_started_at: run.run_started_at,
+    completed_at: run.updated_at,
+    outcome: run.conclusion || run.status || "unknown",
+    job_count: jobs.length,
+    check_count: jobs.length,
+    workflow_start_delay_ms: durationMetric(run.created_at, run.run_started_at),
+    job_execution_ms: integerDurations.length
+      ? integerDurations.reduce((sum, value) => sum + value, 0)
+      : { status: "not_measured", reason: "cohort_unavailable" },
+    critical_path_ms: durationMetric(run.run_started_at, run.updated_at),
+    aggregate_runner_seconds: integerDurations.length
+      ? Math.trunc(integerDurations.reduce((sum, value) => sum + value, 0) / 1000)
+      : { status: "not_measured", reason: "cohort_unavailable" },
+    job_queue_time: NOT_EXPOSED,
+    cache: { status: "not_measured", reason: "cache_outcome_unavailable" },
+  };
+}
+
+function unavailableCohort(name, criteria) {
+  return {
+    name,
+    criteria,
+    sample_count: 0,
+    status: "not_measured",
+    reason: "cohort_unavailable",
+    observations: [],
+    aggregates: aggregateObservations([]),
+  };
+}
+
+function captureMatchedFinalEvidence(args) {
+  const sourcePath = option(args, "--source");
+  const cohortsMode = option(args, "--cohorts");
+  const output = option(args, "--output");
+  if (!sourcePath || cohortsMode !== "matched" || !output) {
+    fail("final capture-evidence requires --source, --cohorts matched, and --output");
+  }
+  verifyFinalRemoteDefaultSource(["--source", sourcePath]);
+  const source = validateFinalRemoteSource(readJson(sourcePath));
+  const { repository, defaultBranch } = repoIdentity();
+  if (source.default_branch !== defaultBranch) fail("final evidence default branch differs from bound source");
+  const runsCommand = `gh api repos/${repository}/actions/runs?branch=${defaultBranch}&per_page=20`;
+  const runs = apiJson(`repos/${repository}/actions/runs?branch=${defaultBranch}&per_page=20`).workflow_runs || [];
+  const observations = runs
+    .filter((run) => ["push", "schedule", "workflow_dispatch"].includes(run.event) && run.head_sha === source.repository_sha)
+    .slice(0, 10)
+    .map((run) => sanitizedRunObservation(repository, source.repository_sha, run))
+    .sort((left, right) => left.run_id - right.run_id);
+  const mainCriteria =
+    "push, schedule, or workflow_dispatch run on the captured default-branch source SHA after Phase 165 topology mutation";
+  const cohorts = [
+    unavailableCohort(
+      "documentation_only_pr",
+      "pull_request run at the captured source SHA whose validated diff is documentation_only",
+    ),
+    unavailableCohort(
+      "full_proof_executable_pr",
+      "pull_request run at the captured source SHA whose validated diff includes executable content",
+    ),
+    observations.length
+      ? {
+          name: "main_bound_automation",
+          criteria: mainCriteria,
+          sample_count: observations.length,
+          status: "observed",
+          observations,
+          aggregates: aggregateObservations(observations),
+        }
+      : unavailableCohort("main_bound_automation", mainCriteria),
+  ];
+  const evidence = {
+    schema_version: EVIDENCE_SCHEMA_VERSION,
+    repository_sha: source.repository_sha,
+    captured_at: new Date().toISOString(),
+    historical_provenance: "SEED-007 is historical context only",
+    source_commands: [runsCommand, `gh api repos/${repository}/actions/runs/{run_id}/jobs?per_page=100`],
+    cohorts,
+  };
+  validateEvidenceObject(evidence);
+  writeCanonical(output, evidence);
+  process.stdout.write(`captured matched final evidence: ${observations.length} main-bound observations\n`);
+}
+
 function validateEvidence(args) {
   if (!args[0]) fail("validate-evidence requires an evidence path");
   const value = readJson(args[0]);
@@ -1003,16 +1210,81 @@ function compareEvidence(args) {
   if (!args[0] || !args[1]) fail("compare-evidence requires before and after evidence paths");
   const before = validateEvidenceObject(readJson(args[0]));
   const after = validateEvidenceObject(readJson(args[1]));
-  const output = args[2];
-  const text = [
+  const output = option(args, "--output", args[2] && !args[2].startsWith("--") ? args[2] : undefined);
+  const lines = [
     "# Phase 165 descriptive CI comparison",
     "",
     `Before source: \`${before.repository_sha}\``,
     `After source: \`${after.repository_sha}\``,
     "",
     "Results are descriptive. Unmatched cohorts remain not measured; exact per-job queue time is not exposed.",
+    "No causal conclusion is supported by these observations, and no timing value is a merge threshold.",
     "",
-  ].join("\n");
+    "## Source commands",
+    "",
+    ...before.source_commands.map((command) => `- Before source command: \`${command}\``),
+    ...after.source_commands.map((command) => `- After source command: \`${command}\``),
+  ];
+  const afterByName = new Map(after.cohorts.map((cohort) => [cohort.name, cohort]));
+  for (const prior of before.cohorts) {
+    const current = afterByName.get(prior.name);
+    if (!current) throw new Error(`after evidence omits cohort ${prior.name}`);
+    const criteriaMatch = prior.criteria === current.criteria;
+    const comparisonStatus = !criteriaMatch
+      ? "not measured (`not_measured`: criteria_mismatch)"
+      : prior.status === "observed" && current.status === "observed"
+        ? "observed matched cohorts"
+        : "not measured (`not_measured`: cohort_unavailable)";
+    const countMetric = (cohort, field) => aggregateMetric(cohort.observations.map((row) => row[field]));
+    const workflows = (cohort) => [...new Set(cohort.observations.map((row) => row.workflow_name))].sort();
+    const runners = (cohort) => [...new Set(cohort.observations.map((row) => row.runner_class))].sort();
+    const cacheSummary = (cohort) => {
+      if (cohort.observations.length === 0) return "not measured (cohort_unavailable)";
+      const outcomes = [...new Set(cohort.observations.map((row) => `${row.cache.status} (${row.cache.reason})`))].sort();
+      return outcomes.join(", ");
+    };
+    lines.push(
+      "",
+      `## ${prior.name}`,
+      "",
+      `Comparison status: **${comparisonStatus}**.`,
+      "",
+      `Before criteria: ${prior.criteria}`,
+      "",
+      `After criteria: ${current.criteria}`,
+      "",
+      `Sample count: before ${prior.sample_count}; after ${current.sample_count}.`,
+      "",
+      "### Workflow/job/check counts",
+      "",
+      `- Before workflows: ${workflows(prior).length} (${workflows(prior).join(", ") || "not measured"})`,
+      `- After workflows: ${workflows(current).length} (${workflows(current).join(", ") || "not measured"})`,
+      `- Before jobs: ${displayMetric(countMetric(prior, "job_count"), "jobs")}`,
+      `- After jobs: ${displayMetric(countMetric(current, "job_count"), "jobs")}`,
+      `- Before checks: ${displayMetric(countMetric(prior, "check_count"), "checks")}`,
+      `- After checks: ${displayMetric(countMetric(current, "check_count"), "checks")}`,
+      "",
+      "### Runner classes",
+      "",
+      `- Before: ${runners(prior).join(", ") || "not measured (cohort_unavailable)"}`,
+      `- After: ${runners(current).join(", ") || "not measured (cohort_unavailable)"}`,
+      "",
+      "### Timing",
+      "",
+      "| Metric | Before | After |",
+      "| --- | --- | --- |",
+      `| Workflow delay | ${displayMetric(prior.aggregates.workflow_start_delay_ms, "ms")} | ${displayMetric(current.aggregates.workflow_start_delay_ms, "ms")} |`,
+      `| Job execution | ${displayMetric(prior.aggregates.job_execution_ms, "ms")} | ${displayMetric(current.aggregates.job_execution_ms, "ms")} |`,
+      `| Critical path | ${displayMetric(prior.aggregates.critical_path_ms, "ms")} | ${displayMetric(current.aggregates.critical_path_ms, "ms")} |`,
+      `| Runner time | ${displayMetric(prior.aggregates.aggregate_runner_seconds, "s")} | ${displayMetric(current.aggregates.aggregate_runner_seconds, "s")} |`,
+      "",
+      "### Cache outcomes",
+      "",
+      `- Before: ${cacheSummary(prior)}`,
+      `- After: ${cacheSummary(current)}`,
+    );
+  }
+  const text = `${lines.join("\n")}\n`;
   if (output) {
     fs.mkdirSync(path.dirname(output), { recursive: true });
     fs.writeFileSync(output, text);
@@ -1073,6 +1345,30 @@ function testEvidence() {
     }
     if (!rejected) throw new Error("required-context negative fixture was accepted");
   }
+  const finalSource = {
+    schema_version: 1,
+    repository_sha: "a".repeat(40),
+    default_branch: "main",
+    workflow_digest: "b".repeat(64),
+    manifest_digest: "c".repeat(64),
+    verified_at: "2026-01-01T00:00:00Z",
+    source_command: "gh api repos/example/project/git/ref/heads/main",
+  };
+  validateFinalRemoteSource(finalSource);
+  for (const changed of [
+    { ...finalSource, repository_sha: "moving-branch" },
+    { ...finalSource, workflow_digest: "short" },
+    { ...finalSource, actor: "SENSITIVE-FIXTURE-VALUE" },
+  ]) {
+    let rejected = false;
+    try {
+      validateFinalRemoteSource(changed);
+    } catch (error) {
+      rejected = true;
+      if (error.message.includes("SENSITIVE-FIXTURE-VALUE")) throw new Error("final source rejection echoed a field value");
+    }
+    if (!rejected) throw new Error("invalid final source fixture was accepted");
+  }
   process.stdout.write("evidence self-test: pass\n");
 }
 
@@ -1106,6 +1402,8 @@ if (!command || command === "--help" || command === "help") {
   verifyRequiredContextSnapshot(args);
 } else if (command === "verify-remote-default-source") {
   verifyRemoteDefaultSource(args);
+} else if (command === "verify-final-remote-default-source") {
+  verifyFinalRemoteDefaultSource(args);
 } else if (command === "probe-phase165") {
   probePhase165(args);
 } else if (command === "validate-evidence") {

@@ -75,7 +75,7 @@
       "leaf_id": "hex-page-proof",
       "display_name": "hex-page-proof",
       "family": "public_docs",
-      "remediation_command": "mix compile --warnings-as-errors && mix crosswake.adoption_context.scan && mix test --exclude requires_example_host && mix docs && bash script/verify_hex_tarball.sh && mix hex.publish --dry-run --yes",
+      "remediation_command": "mix compile --warnings-as-errors && mix crosswake.adoption_context.scan && mix test --exclude requires_example_host && mix docs && bash script/verify_hex_tarball.sh && bash script/verify_hex_publish_dry_run.sh",
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {

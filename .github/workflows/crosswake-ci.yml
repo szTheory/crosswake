@@ -227,15 +227,13 @@ jobs:
           test -f doc/see_it_run.html
       - name: Verify hex tarball contents
         run: bash script/verify_hex_tarball.sh
-      - name: Hex publish dry-run
-        env:
-          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --dry-run --yes
+      - name: Hex publish dry-run (credential-free)
+        run: bash script/verify_hex_publish_dry_run.sh
       - name: Summarize Hex page proof
         if: always()
         run: |
-          echo 'Hex package metadata, rendered docs, tarball contents, and dry-run publish proof completed.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Remediation: mix compile --warnings-as-errors && mix crosswake.adoption_context.scan && mix test --exclude requires_example_host && mix docs && bash script/verify_hex_tarball.sh && mix hex.publish --dry-run --yes' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Hex package metadata, rendered docs, tarball contents, and credential-free dry-run publish proof completed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: mix compile --warnings-as-errors && mix crosswake.adoption_context.scan && mix test --exclude requires_example_host && mix docs && bash script/verify_hex_tarball.sh && bash script/verify_hex_publish_dry_run.sh' >> "$GITHUB_STEP_SUMMARY"
 
   release-as-staleness-proof:
     name: release-as-staleness-proof
