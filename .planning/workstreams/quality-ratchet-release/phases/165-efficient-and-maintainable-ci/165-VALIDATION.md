@@ -136,8 +136,9 @@ All other phase behavior, including live PR, cancellation, cache, and evidence a
 - `ASDF_ELIXIR_VERSION=1.19.5-otp-28 ASDF_ERLANG_VERSION=28.4.1 script/check_phase165_efficient_ci.sh` — pass: 11 policy, 26 integrity, and 8 evidence ExUnit tests; classifier, cancellation, aggregator, manifest, maximum-shape, producer, local-authority, schema, and workflow-syntax checks all passed.
 - `actionlint .github/workflows/*.yml` — pass.
 - `bash -n script/verify_generated_android_shell.sh && shellcheck script/verify_generated_android_shell.sh` — pass.
-- `PHASE165_FINAL_REMOTE_DEFAULT_SHA=cec20fbd71ca3319c7d7dfbeb439d1f74545e9c8 node scripts/ci_monitor.cjs verify-final-remote-default-source --source .planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/final-remote-default-source.json` — pass; exact remote workflow and manifest blobs remain bound to the recorded default-branch source.
-- `script/check_required_checks_registered.sh --policy script/required_check_policy.json --state target --live` — pass; strict target authority is exact and every required context has one producer.
+- `PHASE165_FINAL_REMOTE_DEFAULT_SHA=0b59224bbabc3f0b40038d0c1c4dc7ecae81de4c node scripts/ci_monitor.cjs verify-final-remote-default-source --source .planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/final-remote-default-source.json` — pass; exact remote workflow and manifest blobs remain bound to PR #144's current default-branch merge SHA.
+- `script/check_required_checks_registered.sh --policy script/required_check_policy.json --state target --live` — pass; strict target authority is exactly `Crosswake CI` with `app_id: 15368`, and the context has one producer.
+- `node scripts/ci_monitor.cjs check-actions` — pass; 100 required workflow/composite action uses contain zero mutable third-party references.
 - Both `baseline.json` and `after.json` pass `node scripts/ci_monitor.cjs validate-evidence`.
 
 ### Gap Disposition
