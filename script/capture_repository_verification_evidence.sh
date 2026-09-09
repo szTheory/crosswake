@@ -23,6 +23,15 @@ sha256_file() {
   fi
 }
 
+emit_bounded_failure() {
+  local stdout_log="$1" stderr_log="$2" emitted=0
+  if grep -E '^(PASS|FAIL|BLOCKED) [a-z0-9-]+$' "$stdout_log" >&2; then emitted=1; fi
+  if grep -E '^\[crosswake\] (FAIL|BLOCKED) [^;]+; corrective-command=[A-Za-z0-9_./ -]+$' "$stderr_log" >&2; then emitted=1; fi
+  if [[ "$emitted" -eq 0 ]]; then
+    printf '%s\n' '[crosswake] FAIL repository-evidence-capture; corrective-command=script/verify_repository.sh --all' >&2
+  fi
+}
+
 validate_evidence() {
   local evidence="$1"
   node -e '
@@ -154,7 +163,8 @@ capture() {
   (cd "$checkout" && script/verify_repository.sh --all) >"$run_root/verify.stdout" 2>"$run_root/verify.stderr" || status=$?
   git -C "$checkout" status --porcelain=v1 -z --untracked-files=all >"$final_snapshot" || status=1
   index_after="$(sha256_file "$checkout/.git/index")" || status=1
-  [[ "$status" -eq 0 && ! -s "$final_snapshot" && "$index_before" = "$index_after" ]] || return 1
+  if [[ "$status" -ne 0 ]]; then emit_bounded_failure "$run_root/verify.stdout" "$run_root/verify.stderr"; return 1; fi
+  [[ ! -s "$final_snapshot" && "$index_before" = "$index_after" ]] || return 1
   cmp -s "$baseline_snapshot" "$final_snapshot" || return 1
   [[ "$(wc -l <"$run_root/verify.stdout" | tr -d ' ')" = "${#STAGE_IDS[@]}" ]] || return 1
   for stage in "${STAGE_IDS[@]}"; do grep -Fxq "PASS $stage" "$run_root/verify.stdout" || return 1; done
