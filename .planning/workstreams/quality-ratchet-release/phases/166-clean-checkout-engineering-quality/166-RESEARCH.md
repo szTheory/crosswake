@@ -364,20 +364,25 @@ The ownership ledger should record each path's existing owner and disposition, t
 
 | # | Claim | Section | Risk if Wrong |
 |---|-------|---------|---------------|
-| A1 | Node 22.14.0 should become the runner/tool pin; the line is currently an uncommitted working-tree change, not committed `HEAD` authority. | Standard Stack | Runner choice or pin may conflict with concurrent maintainer work; planner must inspect the final tree before tasking. |
+| A1 | Node 22.14.0 is the runner/tool pin; its current working-tree line becomes tracked authority in Plan 01 by committing those exact existing bytes without rewriting any other `.tool-versions` bytes. | Standard Stack | The executor must fail closed if the observed one-line diff changes before Plan 01 rather than replacing concurrent maintainer work. |
 | A2 | A shell facade plus Node runner is the best internal split. | Architecture | Bash-only may be preferred, but must still meet manifest, argv, dependency, and output tests. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Will the current `.tool-versions` Node pin land before Phase 166 execution?**
-   - What we know: the working tree quotes `nodejs 22.14.0`; committed `HEAD` contains only Erlang and Elixir.
-   - Recommendation: make toolchain identity the first implementation task and preserve concurrent work rather than overwriting it.
-2. **Which existing CI leaf should own the recurring Phase 166 contract?**
-   - What we know: Phase 165 requires every stage owner to remain literal and manifest-governed; Phase 166 must not redesign umbrella authority.
-   - Recommendation: extend the smallest existing repository-policy leaf if its behavior matches; add a new literal leaf only if the manifest/needs/producer migration is atomic and all parity controls prove it.
-3. **How much dependency output should the complete run remove?**
-   - What we know: D-04 allows lock-governed dependencies in ignored locations, while D-18 forbids removing pre-existing state.
-   - Recommendation: delete only locations the invocation created; preserve a pre-existing ignored cache and prove it was not mutated unless the package manager requires mutation, in which case route the operation to the run root.
+1. **Tracked Node authority:** Plan 01 owns the atomic transition. It verifies that the sole
+   working-tree delta in `.tool-versions` is the exact existing `nodejs 22.14.0` line, includes
+   that unchanged file in the implementation commit, and halts if any unrelated byte differs.
+   Neither planning nor execution reconstructs or overwrites the maintainer's line.
+2. **Recurring CI-leaf ownership:** reuse the smallest existing literal repository-policy owner
+   whose invariant matches the stage. If none matches, Plan 05 may add one literal leaf only as an
+   atomic manifest/workflow/producer/static-needs migration. The `Crosswake CI` umbrella and all
+   protected leaf identities remain unchanged.
+3. **Dependency-output cleanup:** an invocation removes only exact paths it created and recorded in
+   its ownership ledger. Pre-existing ignored state is preserved byte-for-byte; any package-manager
+   state that cannot satisfy that rule is redirected beneath the invocation-owned run root. The
+   canonical evidence path uses a tool-managed, invocation-local environment plus an isolated
+   checkout of an explicit commit, so the dirty source worktree is neither a prerequisite nor an
+   evidence input.
 
 ## Environment Availability
 
@@ -392,7 +397,13 @@ The ownership ledger should record each path's existing owner and disposition, t
 | Xcode | iOS | ✓ | 26.6 (17F113) | — |
 | actionlint | workflow edits | ✓ | 1.7.12 | — |
 
-The present checkout cannot produce canonical complete-run evidence: it is dirty, lacks exact BEAM tools, and lacks Java. That is an environment observation, not an ENG-01 product failure; the planner should include deterministic preflight negative proof and defer the final full evidence until an isolated exact-commit checkout has all declared tools. [VERIFIED: environment probes and `git status --porcelain=v1 -z` on 2026-09-09]
+The present checkout cannot itself serve as canonical evidence because it is dirty and its active
+BEAM/Java tools do not match the declared policy. That is an environment observation, not an
+ENG-01 product failure. Plans 07-08 therefore commit the capture tool first, then use its
+invocation-local tool environment on the Apple-capable host to verify an isolated checkout of one
+explicit supported-code commit. The route installs nothing globally, requires no secrets, and
+does not copy source-worktree changes. [VERIFIED: environment probes and
+`git status --porcelain=v1 -z` on 2026-09-09]
 
 ## Validation Architecture
 
