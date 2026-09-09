@@ -631,8 +631,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   defp concurrency_queue_max(workflow) do
     check(
       "release.concurrency.queue_max",
-      includes?(workflow, ~r/^\s*queue:\s*max\s*$/m),
-      "release workflow concurrency must preserve pending runs with queue: max; run elixir script/check_release_workflow_integrity.exs"
+      not includes?(workflow, ~r/^\s*queue:/m),
+      "release workflow concurrency must use only GitHub-supported keys; run elixir script/check_release_workflow_integrity.exs"
     )
   end
 
@@ -647,8 +647,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   defp workflow_concurrency_queue_max(workflow) do
     check(
       "release.workflow.concurrency_queue_max",
-      includes?(workflow, ~r/^\s*queue:\s*max\s*$/m),
-      ".github/workflows/release-please.yml concurrency must keep queue: max so pending release runs are preserved; rerun elixir script/check_release_workflow_integrity.exs"
+      not includes?(workflow, ~r/^\s*queue:/m),
+      ".github/workflows/release-please.yml concurrency must use only supported group and cancel-in-progress keys; rerun elixir script/check_release_workflow_integrity.exs"
     )
   end
 

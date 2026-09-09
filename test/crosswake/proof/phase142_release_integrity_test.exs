@@ -522,12 +522,14 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   end
 
   @tag :phase144_release_integrity
-  test "phase 144 queue and cancellation regressions fail consolidated concurrency ids" do
-    missing_queue =
+  test "phase 144 unsupported queue and cancellation regressions fail consolidated concurrency ids" do
+    unsupported_queue =
       real_workflow()
-      |> String.replace(~r/^\s+queue:\s*max\n/m, "")
+      |> String.replace("cancel-in-progress: false", "cancel-in-progress: false\n  queue: max",
+        global: false
+      )
 
-    assert_failure!("release.workflow.concurrency_queue_max", missing_queue)
+    assert_failure!("release.workflow.concurrency_queue_max", unsupported_queue)
 
     true_cancel =
       real_workflow()
@@ -537,12 +539,15 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   end
 
   @tag :phase144_release_integrity
-  test "phase 144 comment-only queue decoy cannot satisfy consolidated concurrency id" do
+  test "phase 144 comment-only queue text does not violate consolidated concurrency id" do
     workflow =
       real_workflow()
-      |> String.replace("  queue: max", "  # queue: max", global: false)
+      |> String.replace("  cancel-in-progress: false", "  # queue: max\n  cancel-in-progress: false",
+        global: false
+      )
 
-    assert_failure!("release.workflow.concurrency_queue_max", workflow)
+    {_output, exit_code} = run_fixture(workflow)
+    assert exit_code == 0
   end
 
   @tag :phase144_cleanroom
@@ -683,10 +688,12 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     )
   end
 
-  test "missing queue max fails with stable check id" do
+  test "unsupported queue key fails with stable check id" do
     workflow =
       real_workflow()
-      |> String.replace(~r/^\s+queue:\s*max\n/m, "")
+      |> String.replace("cancel-in-progress: false", "cancel-in-progress: false\n  queue: max",
+        global: false
+      )
 
     assert_failure!("release.concurrency.queue_max", workflow)
   end
@@ -715,9 +722,12 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   test "full-line comments cannot satisfy or violate semantic checks" do
     commented_queue =
       real_workflow()
-      |> String.replace("  queue: max", "  # queue: max", global: false)
+      |> String.replace("  cancel-in-progress: false", "  # queue: max\n  cancel-in-progress: false",
+        global: false
+      )
 
-    assert_failure!("release.concurrency.queue_max", commented_queue)
+    {queue_output, queue_exit_code} = run_fixture(commented_queue)
+    assert queue_exit_code == 0, queue_output
 
     aggregate_comment =
       real_workflow()

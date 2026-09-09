@@ -278,7 +278,7 @@ defmodule Crosswake.ReleaseStatus do
       scanner_check(
         :ok,
         "release.governance_queue_max",
-        "release workflow queues pending runs with queue: max and cancel-in-progress: false",
+        "release workflow uses only supported concurrency keys and does not cancel in-progress runs",
         "release workflow must preserve pending release runs",
         workflow_integrity,
         @governance_queue_ids,
@@ -306,7 +306,7 @@ defmodule Crosswake.ReleaseStatus do
   end
 
   defp governance_queue_max?(workflow) do
-    includes?(workflow, ~r/^\s*queue:\s*max\s*$/m) and
+    not includes?(workflow, ~r/^\s*queue:\s*/m) and
       includes?(workflow, ~r/^\s*cancel-in-progress:\s*false\s*$/m) and
       not includes?(workflow, ~r/^\s*cancel-in-progress:\s*true\s*$/m)
   end
