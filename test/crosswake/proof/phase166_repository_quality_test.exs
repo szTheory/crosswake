@@ -200,6 +200,31 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     assert workflow =~ "    if: always()"
   end
 
+  @tag :ci_parity
+  @tag :generated_contracts
+  test "generated and browser owners invoke shared non-staging repository stages" do
+    stage_manifest = decode!("script/repository_verification_stages.json")
+    leaf_manifest = decode!(@ci_manifest_path)
+    workflow = File.read!(@ci_workflow_path)
+
+    for stage <- stage_manifest["stages"], owner <- stage["ci_owners"] do
+      assert owner["command"] == "script/verify_repository.sh --stage #{stage["stage_id"]}"
+      assert workflow =~ owner["command"]
+    end
+
+    guard = Enum.find(leaf_manifest["proof_leaves"], &(&1["leaf_id"] == "guard-02-generate-and-diff"))
+    e2e = Enum.find(leaf_manifest["proof_leaves"], &(&1["leaf_id"] == "e2e-proof"))
+    route_tour = Enum.find(leaf_manifest["proof_leaves"], &(&1["leaf_id"] == "route-tour-proof"))
+
+    assert guard["remediation_command"] ==
+             "script/verify_repository.sh --stage repository-cleanliness"
+
+    assert e2e["remediation_command"] == "script/verify_repository.sh --stage browser-proof"
+    assert route_tour["remediation_command"] == "script/verify_repository.sh --stage browser-proof"
+    refute workflow =~ "git add -A"
+    refute workflow =~ "git diff --cached --exit-code"
+  end
+
   defp decode!(path), do: path |> File.read!() |> Jason.decode!()
 
   defp valid_policy?(policy),
