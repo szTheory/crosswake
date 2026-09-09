@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /* Fixed argv, closed records, literal CI ownership, and redacted failures enforce D-01–D-06. */
 import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -91,7 +92,12 @@ export function runPreflight(_manifest, selected, options = {}) {
     else tools.set(tool.tool, { rule: tool, required_by: [stage.stage_id] });
   }
   for (const { rule: tool, required_by } of tools.values()) {
-    const result = probe(tool);
+    let result;
+    try {
+      result = probe(tool);
+    } catch {
+      result = { kind: "failed-to-start" };
+    }
     const output = String(result?.stdout ?? "");
     if (result?.kind || result?.status !== undefined && result.status !== 0 || !new RegExp(tool.version_regex).test(output)) {
       records.push({ result: "FAIL", purpose: "repository-preflight", tool: tool.tool, required_by, remediation_command: tool.remediation_command });
@@ -100,45 +106,157 @@ export function runPreflight(_manifest, selected, options = {}) {
   return { status: records.length ? "FAIL" : "PASS", records };
 }
 
+function renderSummary(records) {
+  const byPurpose = new Map();
+  for (const record of records) byPurpose.set(record.purpose, record);
+  return [...byPurpose.values()].map(record => record.result === "PASS"
+    ? `PASS ${record.purpose}`
+    : `${record.result} ${record.purpose}; corrective-command=${record.remediation_command}`).join("\n");
+}
+
+function validateRunRoot(runRoot, root) {
+  if (!path.isAbsolute(runRoot) || !path.basename(runRoot).startsWith("crosswake-repository-verify.")) throw new Error("invalid invocation root");
+  if (lstatSync(runRoot).isSymbolicLink()) throw new Error("invocation root may not be a symlink");
+  if (isInside(root, runRoot) || realpathSync(path.dirname(runRoot)) !== realpathSync(tmpdir())) throw new Error("invocation root has an invalid parent");
+  chmodSync(runRoot, 0o700);
+}
+
+function gitSnapshot(root, destination) {
+  const result = spawnSync("git", ["status", "--porcelain=v1", "-z", "--untracked-files=all"], { cwd: root, encoding: null, maxBuffer: 16 * 1024 * 1024 });
+  if (result.error || result.status !== 0 || !Buffer.isBuffer(result.stdout)) throw new Error("Git status snapshot failed");
+  writeFileSync(destination, result.stdout, { mode: 0o600 });
+  return result.stdout;
+}
+
+function isInside(root, candidate) {
+  return candidate === root || candidate.startsWith(`${root}${path.sep}`);
+}
+
+function nearestExistingParent(candidate) {
+  let current = path.dirname(candidate);
+  while (!existsSync(current)) {
+    const parent = path.dirname(current);
+    if (parent === current) throw new Error("owned output has no existing parent");
+    current = parent;
+  }
+  return current;
+}
+
+function cleanupCreatedOutputs(root, createdOutputs) {
+  const canonicalRoot = realpathSync(root);
+  for (const output of createdOutputs) {
+    if (!existsSync(output)) continue;
+    if (!isInside(canonicalRoot, output)) throw new Error("owned output escaped repository");
+    const parent = realpathSync(nearestExistingParent(output));
+    if (!isInside(canonicalRoot, parent)) throw new Error("owned output parent escaped repository");
+    if (lstatSync(output).isSymbolicLink()) throw new Error("owned output may not be a symlink");
+    rmSync(output, { recursive: true, force: true });
+  }
+}
+
+function setResult(records, purpose, result, remediation_command) {
+  const current = records.find(record => record.purpose === purpose);
+  if (current) {
+    current.result = result;
+    current.remediation_command = remediation_command;
+  } else records.push({ purpose, result, remediation_command });
+}
+
 export function runVerification(options = {}) {
   const manifest = validateStageManifest(options.manifest ?? loadStageManifest());
   validateCiParity(manifest, options.workflowSource ?? readFileSync(workflowPath, "utf8"));
-  const selected = selectStages(manifest, options.selection ?? "all");
+  const selection = options.selection ?? "all";
+  const selected = selectStages(manifest, selection);
+  const root = realpathSync(options.repoRoot ?? repoRoot);
+  const suppliedRunRoot = Boolean(options.runRoot);
+  const runRoot = options.runRoot ?? mkdtempSync(path.join(tmpdir(), "crosswake-repository-verify."));
+  const records = [];
+  const cleanliness = manifest.stages.find(stage => stage.stage_id === "repository-cleanliness");
+  let before;
+  let exitStatus = 0;
+
+  try {
+    validateRunRoot(runRoot, root);
+    mkdirSync(path.join(runRoot, "logs"), { recursive: true, mode: 0o700 });
+    before = gitSnapshot(root, path.join(runRoot, "git-before.z"));
+  } catch {
+    const record = { result: "FAIL", purpose: "repository-preflight", remediation_command: "node --test test/js/repository_verification.test.mjs" };
+    return { status: 1, output: renderSummary([record]), records: [record] };
+  }
+
+  if (selection === "all" && before.length > 0) {
+    const record = { result: "FAIL", purpose: "repository-cleanliness", remediation_command: "git status --short" };
+    try { gitSnapshot(root, path.join(runRoot, "git-final.z")); } catch { /* The same fail-closed result applies. */ }
+    if (!suppliedRunRoot) rmSync(runRoot, { recursive: true, force: true });
+    return { status: 1, output: renderSummary([record]), records: [record] };
+  }
+
+  const createdOutputs = new Set();
+  for (const stage of selected) for (const output of stage.owned_outputs) {
+    const absolute = path.resolve(root, output);
+    if (!isInside(root, absolute)) throw new Error("owned output escaped repository");
+    if (!existsSync(absolute)) createdOutputs.add(absolute);
+  }
+
   const preflight = runPreflight(manifest, selected, options);
-  const lines = preflight.records.length
-    ? preflight.records.map(record => `FAIL repository-preflight tool=${record.tool}; corrective-command=${record.remediation_command}`)
-    : ["PASS repository-preflight"];
+  const preflightRemediation = preflight.records[0]?.remediation_command ?? manifest.stages[0].remediation_command;
+  records.push({ result: preflight.status, purpose: "repository-preflight", remediation_command: preflightRemediation });
   const nonpassing = new Set();
   const globallyBlocked = preflight.records.some(record => record.required_by.includes("repository-preflight"));
   const preflightBlocked = new Set(preflight.records.flatMap(record => record.required_by));
   const spawn = options.spawn ?? ((command, args, spawnOptions) => spawnSync(command, args, { ...spawnOptions, encoding: "utf8" }));
-  const runRoot = options.runRoot;
-  if (runRoot) mkdirSync(path.join(runRoot, "logs"), { recursive: true, mode: 0o700 });
-  let exitStatus = preflight.status === "FAIL" ? 1 : 0;
-  for (const stage of selected) {
-    if (stage.stage_id === "repository-preflight") continue;
-    const blocked = stage.stage_id !== "repository-cleanliness" && (globallyBlocked || preflightBlocked.has(stage.stage_id) || stage.dependencies.some(dep => dep !== "repository-preflight" && nonpassing.has(dep)));
-    if (blocked) { nonpassing.add(stage.stage_id); lines.push(`BLOCKED ${stage.stage_id}; corrective-command=${stage.remediation_command}`); exitStatus = 1; continue; }
-    let result;
-    try {
-      result = spawn(stage.argv[0], stage.argv.slice(1), {
-        cwd: path.join(options.repoRoot ?? repoRoot, stage.cwd),
-        env: { ...process.env, ...stage.env },
-        timeout: stage.timeout_ms,
-        killSignal: "SIGTERM"
-      });
-    } catch (error) {
-      result = { error, status: null, stdout: "", stderr: "" };
-    }
-    if (runRoot) {
+  exitStatus = preflight.status === "FAIL" ? 1 : 0;
+
+  try {
+    for (const stage of selected) {
+      if (stage.stage_id === "repository-preflight") continue;
+      const blocked = stage.stage_id !== "repository-cleanliness" && (globallyBlocked || preflightBlocked.has(stage.stage_id) || stage.dependencies.some(dep => dep !== "repository-preflight" && nonpassing.has(dep)));
+      if (blocked) {
+        nonpassing.add(stage.stage_id);
+        records.push({ result: "BLOCKED", purpose: stage.stage_id, remediation_command: stage.remediation_command });
+        exitStatus = 1;
+        continue;
+      }
+      let result;
+      try {
+        result = spawn(stage.argv[0], stage.argv.slice(1), {
+          cwd: path.join(root, stage.cwd),
+          env: { ...process.env, ...stage.env },
+          timeout: stage.timeout_ms,
+          killSignal: "SIGTERM"
+        });
+      } catch (error) {
+        result = { error, status: null, stdout: "", stderr: "" };
+      }
       const outcome = result?.error ? `error=${result.error.code ?? result.error.name ?? "unknown"}` : result?.signal ? `signal=${result.signal}` : `status=${String(result?.status)}`;
       writeFileSync(path.join(runRoot, "logs", `${stage.stage_id}.log`), `${outcome}\n${String(result?.stdout ?? "")}${String(result?.stderr ?? "")}`, { mode: 0o600 });
+      const passed = result && !result.error && result.signal == null && Number.isInteger(result.status) && result.status === 0;
+      const stageResult = passed ? "PASS" : "FAIL";
+      records.push({ result: stageResult, purpose: stage.stage_id, remediation_command: stage.remediation_command });
+      if (!passed) { nonpassing.add(stage.stage_id); exitStatus = 1; }
     }
-    const passed = result && !result.error && result.signal == null && Number.isInteger(result.status) && result.status === 0;
-    if (!passed) { nonpassing.add(stage.stage_id); lines.push(`FAIL ${stage.stage_id}; corrective-command=${stage.remediation_command}`); exitStatus = 1; }
-    else lines.push(`PASS ${stage.stage_id}`);
+  } finally {
+    try {
+      cleanupCreatedOutputs(root, createdOutputs);
+    } catch {
+      setResult(records, "repository-cleanliness", "FAIL", cleanliness.remediation_command);
+      exitStatus = 1;
+    }
+    try {
+      const final = gitSnapshot(root, path.join(runRoot, "git-final.z"));
+      if (!final.equals(before)) {
+        setResult(records, "repository-cleanliness", "FAIL", cleanliness.remediation_command);
+        exitStatus = 1;
+      }
+    } catch {
+      setResult(records, "repository-cleanliness", "FAIL", cleanliness.remediation_command);
+      exitStatus = 1;
+    }
   }
-  return { status: exitStatus, output: lines.join("\n"), records: lines };
+
+  const output = renderSummary(records);
+  if (!suppliedRunRoot) rmSync(runRoot, { recursive: true, force: true });
+  return { status: exitStatus, output, records };
 }
 
 function parseArgs(argv) {

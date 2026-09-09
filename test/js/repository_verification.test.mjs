@@ -164,25 +164,30 @@ test("every required identity has exact missing, wrong-version, and failed-start
 
 test("complete-run Apple absence blocks only iOS and keeps independent stages observable", () => {
   const manifest = loadStageManifest();
+  const repository = makeRepository();
   const started = [];
-  const result = runVerification({
-    manifest,
-    selection: "all",
-    probe: tool => ["swift", "xcodebuild"].includes(tool.tool)
-      ? { kind: "missing", stdout: fixture.secret_sentinel }
-      : { stdout: fixture.tool_versions[tool.tool] },
-    spawn: (command, argv) => { started.push([command, ...argv].join(" ")); return { status: 0, stdout: "", stderr: "" }; },
-    repoRoot: new URL(".", root).pathname,
-    workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8")
-  });
+  try {
+    const result = runVerification({
+      manifest,
+      selection: "all",
+      probe: tool => ["swift", "xcodebuild"].includes(tool.tool)
+        ? { kind: "missing", stdout: fixture.secret_sentinel }
+        : { stdout: fixture.tool_versions[tool.tool] },
+      spawn: (command, argv) => { started.push([command, ...argv].join(" ")); return { status: 0, stdout: "", stderr: "" }; },
+      repoRoot: repository,
+      workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8")
+    });
 
-  assert.equal(result.status, 1);
-  assert.match(result.output, /FAIL repository-preflight tool=swift/);
-  assert.match(result.output, /BLOCKED ios-package-proof/);
-  assert.match(result.output, /PASS root-proof/);
-  assert.match(result.output, /PASS repository-cleanliness/);
-  assert(!started.includes("swift test"));
-  assert(!result.output.includes(fixture.secret_sentinel));
+    assert.equal(result.status, 1);
+    assert.match(result.output, /FAIL repository-preflight; corrective-command=xcode-select --install/);
+    assert.match(result.output, /BLOCKED ios-package-proof/);
+    assert.match(result.output, /PASS root-proof/);
+    assert.match(result.output, /PASS repository-cleanliness/);
+    assert(!started.includes("swift test"));
+    assert(!result.output.includes(fixture.secret_sentinel));
+  } finally {
+    rmSync(repository, { recursive: true, force: true });
+  }
 });
 
 test("focused independent selections do not probe unrelated Apple or Android tools", () => {
@@ -196,33 +201,38 @@ test("focused independent selections do not probe unrelated Apple or Android too
 
 test("dependency failure recursively blocks descendants while independent stages continue", () => {
   const manifest = clone(loadStageManifest());
+  const repository = makeRepository();
   manifest.stages.find(stage => stage.stage_id === "example-host-proof").dependencies = ["root-proof"];
   manifest.stages.find(stage => stage.stage_id === "browser-proof").dependencies = ["example-host-proof"];
   const started = [];
 
-  const result = runVerification({
-    manifest,
-    selection: "all",
-    probe: tool => ({ stdout: fixture.tool_versions[tool.tool] }),
-    spawn: (command, argv) => {
-      const stage = manifest.stages.find(candidate => candidate.argv[0] === command && candidate.argv.slice(1).join("\0") === argv.join("\0"));
-      started.push(stage.stage_id);
-      return stage.stage_id === fixture.dependency_case.failed
-        ? { status: 9, stdout: "root detail", stderr: "root error" }
-        : { status: 0, stdout: "ok", stderr: "" };
-    },
-    repoRoot: new URL(".", root).pathname,
-    workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8")
-  });
+  try {
+    const result = runVerification({
+      manifest,
+      selection: "all",
+      probe: tool => ({ stdout: fixture.tool_versions[tool.tool] }),
+      spawn: (command, argv) => {
+        const stage = manifest.stages.find(candidate => candidate.argv[0] === command && candidate.argv.slice(1).join("\0") === argv.join("\0"));
+        started.push(stage.stage_id);
+        return stage.stage_id === fixture.dependency_case.failed
+          ? { status: 9, stdout: "root detail", stderr: "root error" }
+          : { status: 0, stdout: "ok", stderr: "" };
+      },
+      repoRoot: repository,
+      workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8")
+    });
 
-  assert.equal(result.status, 1);
-  for (const stageId of fixture.dependency_case.blocked) {
-    assert.match(result.output, new RegExp(`BLOCKED ${stageId}`));
-    assert(!started.includes(stageId));
-  }
-  for (const stageId of fixture.dependency_case.independent) {
-    assert.match(result.output, new RegExp(`PASS ${stageId}`));
-    assert(started.includes(stageId));
+    assert.equal(result.status, 1);
+    for (const stageId of fixture.dependency_case.blocked) {
+      assert.match(result.output, new RegExp(`BLOCKED ${stageId}`));
+      assert(!started.includes(stageId));
+    }
+    for (const stageId of fixture.dependency_case.independent) {
+      assert.match(result.output, new RegExp(`PASS ${stageId}`));
+      assert(started.includes(stageId));
+    }
+  } finally {
+    rmSync(repository, { recursive: true, force: true });
   }
 });
 
@@ -374,21 +384,26 @@ test("cleanup refuses symlink escape and invalid run-root prefix", () => {
 
 test("summary reports one bounded remediation per non-pass purpose without secrets", () => {
   const manifest = clone(loadStageManifest());
+  const repository = makeRepository();
   manifest.stages.find(stage => stage.stage_id === "example-host-proof").dependencies = ["root-proof"];
-  const result = runVerification({
-    ...verificationOptions(new URL(".", root).pathname),
-    manifest,
-    selection: "all",
-    probe: tool => ["node", "elixir"].includes(tool.tool)
-      ? { kind: "missing", stdout: fixture.secret_sentinel }
-      : { stdout: fixture.tool_versions[tool.tool] },
-    spawn: () => ({ status: 0, stdout: fixture.secret_sentinel.repeat(1000), stderr: "" })
-  });
+  try {
+    const result = runVerification({
+      ...verificationOptions(repository),
+      manifest,
+      selection: "all",
+      probe: tool => ["node", "elixir"].includes(tool.tool)
+        ? { kind: "missing", stdout: fixture.secret_sentinel }
+        : { stdout: fixture.tool_versions[tool.tool] },
+      spawn: () => ({ status: 0, stdout: fixture.secret_sentinel.repeat(1000), stderr: "" })
+    });
 
-  const nonPass = result.output.split("\n").filter(line => /^(FAIL|BLOCKED) /.test(line));
-  assert(nonPass.length > 0);
-  assert(nonPass.every(line => (line.match(/corrective-command=/g) ?? []).length === 1));
-  assert.equal(new Set(nonPass.map(line => line.split(/[ ;]/, 2).join(" "))).size, nonPass.length);
-  assert(result.output.length < 4096);
-  assert(!result.output.includes(fixture.secret_sentinel));
+    const nonPass = result.output.split("\n").filter(line => /^(FAIL|BLOCKED) /.test(line));
+    assert(nonPass.length > 0);
+    assert(nonPass.every(line => (line.match(/corrective-command=/g) ?? []).length === 1));
+    assert.equal(new Set(nonPass.map(line => line.split(/[ ;]/, 2).join(" "))).size, nonPass.length);
+    assert(result.output.length < 4096);
+    assert(!result.output.includes(fixture.secret_sentinel));
+  } finally {
+    rmSync(repository, { recursive: true, force: true });
+  }
 });
