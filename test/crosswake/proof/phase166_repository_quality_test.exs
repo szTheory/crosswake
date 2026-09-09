@@ -21,6 +21,27 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     assert formatter == [inputs: [".formatter.exs"]]
   end
 
+  test "dependency-security fixture proof resolves the repository through physical paths", %{tmp_dir: tmp} do
+    source = File.cwd!()
+    link = Path.join(tmp, "crosswake-link")
+    File.ln_s!(source, link)
+
+    {output, status} =
+      System.cmd(
+        "bash",
+        [
+          Path.join(link, "script/check_dependency_security.sh"),
+          "--assert-vulnerable-fixture",
+          "test/fixtures/security/advisory-bearing.lock"
+        ],
+        cd: link,
+        stderr_to_stdout: true
+      )
+
+    assert status == 0, output
+    assert output =~ "EXPECTED-REJECTION dependency-security"
+  end
+
   @tag :artifact_policy
   test "artifact policy is closed, ordered, non-overlapping, and narrow" do
     policy = decode!(@policy_path)
