@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 166
 current_phase_name: Clean-Checkout Engineering Quality
 status: executing
-stopped_at: Completed 166-01-PLAN.md
-last_updated: "2026-09-09T16:46:29.630Z"
+stopped_at: Completed 166-02-PLAN.md
+last_updated: "2026-09-09T17:02:26.691Z"
 last_activity: 2026-09-09
 last_activity_desc: Phase 166 execution started
-state_head: 7f27c6811248a5e07e27f5b467b3f9f2be790c45
+state_head: 90076883d9bf93face711402c2bdb887d100ce64
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 26
-  completed_plans: 19
+  completed_plans: 20
   percent: 40
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 166 (Clean-Checkout Engineering Quality) — EXECUTING
-Plan: 2 of 8
+Plan: 3 of 8
 Status: Ready to execute
 Last activity: 2026-09-09 — Phase 166 execution started
 
@@ -73,6 +73,7 @@ Progress: [████░░░░░░] 40%
 | Phase 165 P12 | 18 min | 2 tasks | 8 files |
 | Phase 165 P13 | 9 min | 2 tasks | 5 files |
 | Phase 166 P01 | 7 min | 2 tasks | 6 files |
+| Phase 166 P02 | 11 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -122,6 +123,9 @@ Progress: [████░░░░░░] 40%
 - [Phase 165]: Report the pre/post main-bound cohort as not_measured because its explicit criteria differ, despite retaining each sanitized observation descriptively.
 - [Phase 166]: Keep mix verify narrow and invoke it only as the root-proof stage command.
 - [Phase 166]: Attribute tool failures to dependent stages so unsupported Apple tooling blocks iOS without hiding independent proof.
+- [Phase 166]: Propagate every non-pass result through dependency edges while preserving manifest-order execution for independent stages.
+- [Phase 166]: Treat only exact declared outputs absent at invocation start as cleanup-owned, and refuse symlink or repository-prefix escapes.
+- [Phase 166]: Keep Git porcelain bytes in private NUL-delimited snapshot files and expose only bounded purpose-level results and remediations.
 
 ### Pending Todos
 
@@ -143,6 +147,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-09T16:46:29.546Z
-Stopped at: Completed 166-01-PLAN.md
+Last session: 2026-09-09T17:02:26.623Z
+Stopped at: Completed 166-02-PLAN.md
 Resume file: None

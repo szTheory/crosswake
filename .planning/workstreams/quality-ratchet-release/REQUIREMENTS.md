@@ -62,7 +62,7 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 - [ ] **ENG-02**: Code touched by the milestone has explicit ownership boundaries, focused modules,
   and no known dead branches, accidental duplication, or misleading compatibility fallbacks.
 
-- [ ] **ENG-03**: Generated, temporary, secret-bearing, editor, and local-only artifacts are either
+- [x] **ENG-03**: Generated, temporary, secret-bearing, editor, and local-only artifacts are either
   ignored or intentionally tracked, and a clean verification run leaves Git clean.
 
 - [x] **ENG-04**: Repository quality checks emit concise, actionable failures without stale phase
@@ -148,7 +148,7 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 | CIP-07 | Phase 165 | Complete |
 | ENG-01 | Phase 166 | Complete |
 | ENG-02 | Phase 166 | Pending |
-| ENG-03 | Phase 166 | Pending |
+| ENG-03 | Phase 166 | Complete |
 | ENG-04 | Phase 166 | Complete |
 | DOC-01 | Phase 167 | Pending |
 | DOC-02 | Phase 167 | Pending |

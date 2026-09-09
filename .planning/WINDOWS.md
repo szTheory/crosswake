@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 17
+open_count: 18
 waived_count: 0
 fixed_count: 0
-total_count: 17
-last_updated: 2026-09-08T18:32:27.078Z
+total_count: 18
+last_updated: 2026-09-09T17:00:42.334Z
 ---
 
 # Broken Windows Ledger
@@ -32,6 +32,7 @@ last_updated: 2026-09-08T18:32:27.078Z
 | 15 | 163.1 | deviation | examples/phoenix_host/native/ios/CrosswakeProofLane/ProofLaneDriver.swift |  | Reference proof target lacks CrosswakeShellCore linkage; private decoder preserves the closed transport boundary. | open |  | 2026-08-28T03:42:12.753Z |  |
 | 16 | 163.1 | deviation | examples/phoenix_host/native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj |  | Plan 163.1-05 added the local Core package and shared shell controller because physical composition otherwise could not compile. | open |  | 2026-08-28T13:07:34.571Z |  |
 | 17 | 165 | unrun-verify | .github/workflows/release-please.yml | 27 | Repository-wide actionlint is blocked by the pre-existing unsupported concurrency.queue key and required-checks-audit SC2016 diagnostic; Plan 165-09 changed workflow lint passes. | open |  | 2026-09-08T18:32:27.078Z |  |
+| 18 | 166 | deviation | test/fixtures/repository_quality/stage-cases.json |  | Corrected Java fixture quoting and added the missing Xcode version so exact preflight controls exercise intended scheduler behavior | open |  | 2026-09-09T17:00:42.334Z |  |
 
 ````json
 [
@@ -237,6 +238,18 @@ last_updated: 2026-09-08T18:32:27.078Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-08T18:32:27.078Z",
+    "resolved_at": null
+  },
+  {
+    "id": 18,
+    "kind": "deviation",
+    "phase": "166",
+    "file": "test/fixtures/repository_quality/stage-cases.json",
+    "line": null,
+    "description": "Corrected Java fixture quoting and added the missing Xcode version so exact preflight controls exercise intended scheduler behavior",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-09T17:00:42.334Z",
     "resolved_at": null
   }
 ]
