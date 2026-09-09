@@ -2,6 +2,8 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
   use ExUnit.Case, async: true
 
   @policy_path "script/repository_artifact_policy.json"
+  @ci_manifest_path "script/ci_leaf_manifest.json"
+  @ci_workflow_path ".github/workflows/crosswake-ci.yml"
   @fixture_path "test/fixtures/repository_quality/artifact-cases.json"
   @allowed_policy_keys ~w(schema_version ignored_transient intentionally_tracked generated_contracts forbidden_tracked safe_fixtures)
   @record_keys %{
@@ -154,6 +156,48 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
         ] do
       assert output =~ "PASS #{mutation}"
     end
+  end
+
+  @tag :ci_parity
+  test "CI authority validator rejects every stage ownership drift mutation" do
+    {output, status} =
+      System.cmd("python3", ["script/check_ci_leaf_manifest.py", "--self-test"],
+        stderr_to_stdout: true
+      )
+
+    assert status == 0, output
+    assert output =~ "ci leaf manifest self-test: pass"
+
+    for mutation <- [
+          "missing_stage_owner",
+          "extra_stage_owner",
+          "divergent_stage_command",
+          "divergent_stage_cwd",
+          "divergent_stage_env",
+          "duplicate_stage_owner",
+          "copied_stage_command"
+        ] do
+      assert output =~ "PASS #{mutation}"
+    end
+  end
+
+  @tag :ci_parity
+  test "stage parity preserves the literal Phase 165 authority graph" do
+    manifest = decode!(@ci_manifest_path)
+    workflow = File.read!(@ci_workflow_path)
+
+    assert length(manifest["proof_leaves"]) == 44
+    assert manifest["required_control_nodes"] == [
+             %{
+               "node_id" => "classify-change",
+               "display_name" => "classify-change",
+               "required_result" => "success"
+             }
+           ]
+
+    assert workflow =~ "  merge-blocking-crosswake-ci:"
+    assert workflow =~ "    name: Crosswake CI"
+    assert workflow =~ "    if: always()"
   end
 
   defp decode!(path), do: path |> File.read!() |> Jason.decode!()
