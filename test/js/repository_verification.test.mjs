@@ -116,3 +116,54 @@ test("single selected stage renders normal PASS records", () => {
   assert.equal(result.status, 0);
   assert.match(result.output, /PASS repository-cleanliness/);
 });
+
+test("every required identity has exact missing, wrong-version, and failed-start controls", () => {
+  const manifest = loadStageManifest();
+  const selected = selectStages(manifest, "all");
+  const tools = [...new Set(selected.flatMap(stage => stage.required_tools.map(tool => tool.tool)))];
+  assert.deepEqual(tools.sort(), ["bash", "elixir", "erl", "git", "gradle-wrapper", "java", "node", "npm", "swift", "xcodebuild"]);
+
+  for (const target of tools) {
+    for (const kind of fixture.failure_kinds) {
+      const result = runPreflight(manifest, selected, {
+        probe: tool => tool.tool === target
+          ? kind === "wrong-version" ? { stdout: "version 0.0-secretless" } : { kind }
+          : { stdout: fixture.tool_versions[tool.tool] }
+      });
+      assert.equal(result.status, "FAIL", `${target} ${kind}`);
+      assert(result.records.some(record => record.tool === target), `${target} is named`);
+    }
+  }
+});
+
+test("complete-run Apple absence blocks only iOS and keeps independent stages observable", () => {
+  const manifest = loadStageManifest();
+  const started = [];
+  const result = runVerification({
+    manifest,
+    selection: "all",
+    probe: tool => ["swift", "xcodebuild"].includes(tool.tool)
+      ? { kind: "missing", stdout: fixture.secret_sentinel }
+      : { stdout: fixture.tool_versions[tool.tool] },
+    spawn: (command, argv) => { started.push([command, ...argv].join(" ")); return { status: 0, stdout: "", stderr: "" }; },
+    repoRoot: new URL(".", root).pathname,
+    workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8")
+  });
+
+  assert.equal(result.status, 1);
+  assert.match(result.output, /FAIL repository-preflight tool=swift/);
+  assert.match(result.output, /BLOCKED ios-package-proof/);
+  assert.match(result.output, /PASS root-proof/);
+  assert.match(result.output, /PASS repository-cleanliness/);
+  assert(!started.includes("swift test"));
+  assert(!result.output.includes(fixture.secret_sentinel));
+});
+
+test("focused independent selections do not probe unrelated Apple or Android tools", () => {
+  const manifest = loadStageManifest();
+  const probed = [];
+  runPreflight(manifest, selectStages(manifest, "root-proof"), {
+    probe: tool => { probed.push(tool.tool); return { stdout: fixture.tool_versions[tool.tool] }; }
+  });
+  assert.deepEqual(probed, ["bash", "git", "node", "elixir", "erl"]);
+});
