@@ -51,8 +51,11 @@ if ! python3 script/list_merge_blocking_checks.py --require-display-name "$umbre
   exit 1
 fi
 if ! jq -e --arg umbrella "$umbrella" '
-  .umbrella_context == $umbrella and .full_probe.umbrella_result == "success" and
-  .docs_probe.umbrella_result == "success" and .cleanup.pull_requests_closed == true and
+  .schema_version == 2 and .umbrella_context == $umbrella and
+  .full_probe.umbrella_result == "success" and
+  .planning_probe.umbrella_result == "success" and
+  .public_docs_probe.umbrella_result == "success" and
+  .cleanup.pull_requests_closed == true and
   .cleanup.branches_deleted == true and .cancellation.lower_run_cancelled == true and
   .cancellation.newer_run_authoritative == true
 ' "$OBSERVATION" >/dev/null; then

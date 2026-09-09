@@ -125,6 +125,9 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
     assert monitor =~ "lower_run_cancelled"
     assert monitor =~ "newer_run_authoritative"
     assert monitor =~ "Crosswake CI"
+    assert monitor =~ "planning_probe"
+    assert monitor =~ "public_docs_probe"
+    assert monitor =~ "public_docs"
 
     if File.exists?(@remote_source) do
       source = @remote_source |> File.read!() |> Jason.decode!()

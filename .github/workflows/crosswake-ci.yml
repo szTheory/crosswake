@@ -99,7 +99,7 @@ jobs:
   brand-structural:
     name: brand-structural
     needs: [classify-change]
-    if: needs.classify-change.outputs.classification == 'full_proof' || contains(needs.classify-change.outputs.scheduled_families, 'public_docs')
+    if: needs.classify-change.outputs.classification == 'full_proof' || contains(fromJSON(needs.classify-change.outputs.scheduled_families), 'public_docs')
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -155,7 +155,7 @@ jobs:
   brand-visual:
     name: brand-visual
     needs: [classify-change]
-    if: needs.classify-change.outputs.classification == 'full_proof' || contains(needs.classify-change.outputs.scheduled_families, 'public_docs')
+    if: needs.classify-change.outputs.classification == 'full_proof' || contains(fromJSON(needs.classify-change.outputs.scheduled_families), 'public_docs')
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -178,7 +178,7 @@ jobs:
   collateral-binaries-guard:
     name: collateral-binaries-guard
     needs: [classify-change]
-    if: needs.classify-change.outputs.classification == 'full_proof' || contains(needs.classify-change.outputs.scheduled_families, 'public_docs')
+    if: needs.classify-change.outputs.classification == 'full_proof' || contains(fromJSON(needs.classify-change.outputs.scheduled_families), 'public_docs')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -200,7 +200,7 @@ jobs:
   hex-page-proof:
     name: hex-page-proof
     needs: [classify-change]
-    if: needs.classify-change.outputs.classification == 'full_proof' || contains(needs.classify-change.outputs.scheduled_families, 'public_docs')
+    if: needs.classify-change.outputs.classification == 'full_proof' || contains(fromJSON(needs.classify-change.outputs.scheduled_families), 'public_docs')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # ExDoc is intentionally dev-only. Keep the package/docs lane in dev and
