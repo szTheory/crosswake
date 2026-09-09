@@ -57,6 +57,9 @@ script/check_required_checks_registered.sh --local-only
 section "evidence-schema" "node scripts/ci_monitor.cjs test-evidence"
 node scripts/ci_monitor.cjs test-evidence
 
+section "immutable-required-actions" "node scripts/ci_monitor.cjs check-actions"
+node scripts/ci_monitor.cjs check-actions
+
 section "policy-contracts" "mix test test/crosswake/proof/phase165_ci_policy_test.exs"
 mix test test/crosswake/proof/phase165_ci_policy_test.exs
 

@@ -17,7 +17,7 @@ Commands:
   test-summary <run-id>
   grep <run-id> --pattern <regex>
   wait-for <run-id> <job> --keyword <text>
-  check-actions [workflow-file]
+  check-actions [workflow-or-action-file ...]
   capture-evidence <output.json>
   capture-evidence --source <final-source.json> --cohorts matched --output <output.json>
   capture-required-context-snapshot <output.json>
@@ -267,7 +267,11 @@ function waitFor(args) {
 }
 
 function checkActions(args) {
-  const paths = args[0] ? [args[0]] : [".github/workflows"];
+  const paths = args.length ? args : [
+    ".github/workflows/crosswake-ci.yml",
+    ".github/actions/setup-android-jvm/action.yml",
+    ".github/actions/setup-elixir-cache/action.yml",
+  ];
   const output = spawnSync("rg", ["-n", "uses:\\s*[^#[:space:]]+", ...paths], {
     encoding: "utf8",
   });
@@ -284,7 +288,10 @@ function checkActions(args) {
 
   process.stdout.write(lines.join("\n") + (lines.length ? "\n" : ""));
   process.stdout.write(`actions=${lines.length} mutable_refs=${mutable.length}\n`);
-  if (mutable.length) process.stdout.write("mutable action refs should be reviewed against upstream releases\n");
+  if (mutable.length) {
+    process.stderr.write("mutable third-party action refs are forbidden in required CI authority\n");
+    process.exitCode = 1;
+  }
 }
 
 const EVIDENCE_SCHEMA_VERSION = 1;

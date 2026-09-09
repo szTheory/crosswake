@@ -12,6 +12,7 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
   @cancellation_fixture "test/fixtures/ci/cancellation/cases.json"
   @cancellation_selector "script/select_obsolete_ci_runs.py"
   @aggregate "script/check_phase165_efficient_ci.sh"
+  @monitor "scripts/ci_monitor.cjs"
 
   @moduletag :classifier
 
@@ -19,6 +20,19 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     {output, status} = System.cmd("python3", [@classifier, "--self-test"], stderr_to_stdout: true)
     assert status == 0, output
     assert output =~ "classifier self-test: pass"
+  end
+
+  @tag :tmp_dir
+  test "required action audit rejects mutable third-party refs", %{tmp_dir: tmp} do
+    fixture = Path.join(tmp, "mutable-action.yml")
+    File.write!(fixture, "steps:\n  - uses: actions/checkout@v7\n")
+
+    {output, status} =
+      System.cmd("node", [@monitor, "check-actions", fixture], stderr_to_stdout: true)
+
+    assert status != 0
+    assert output =~ "mutable_refs=1"
+    assert File.read!(@aggregate) =~ "node scripts/ci_monitor.cjs check-actions"
   end
 
   test "classifier schedules focused Threadline proof only for public documentation" do
