@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 165
 current_phase_name: Efficient and Maintainable CI
 status: executing
-stopped_at: Completed 165-10-PLAN.md
-last_updated: "2026-09-08T22:00:30.630Z"
+stopped_at: Completed 165-11-PLAN.md
+last_updated: "2026-09-09T00:07:16.718Z"
 last_activity: 2026-09-08
-last_activity_desc: Plan 165-10 live CI authority migration completed with strict dual protection
-state_head: 2785a795138d2d91dc12fde4aa044ae7ec1a1366
+last_activity_desc: Plan 165-11 exact required-context retirement approved without applying the mutation
+state_head: e22c2392c4926055b1fa6f3714afc512fe82fbef
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 15
+  completed_plans: 16
   percent: 20
 workstream: quality-ratchet-release
 ---
@@ -32,9 +32,9 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 165 (Efficient and Maintainable CI) — EXECUTING
-Plan: 11 of 13
+Plan: 12 of 13
 Status: Ready to execute
-Last activity: 2026-09-08 — Plan 165-10 live CI authority migration completed with strict dual protection
+Last activity: 2026-09-08 — Plan 165-11 exact required-context retirement approved without applying the mutation
 
 Progress: [██░░░░░░░░] 20%
 
@@ -68,6 +68,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase 165 P08 | 24 min | 3 tasks | 15 files |
 | Phase 165 P09 | 34 min | 3 tasks | 12 files |
 | Phase 165 P10 | 3h 30m | 3 tasks | 11 files |
+| Phase 165 P11 | 6 min | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,8 @@ Progress: [██░░░░░░░░] 20%
 - [Phase 165]: Bind every live probe to the exact orchestrator-landed remote-default SHA and exact local/remote workflow digests before creating a branch.
 - [Phase 165]: Scope cancellation candidates to the current PR before strict fail-closed validation because GitHub removes PR associations from historical runs after cleanup.
 - [Phase 165]: Keep strict dual required-check authority live and leave the exact legacy retirement proposal unapplied for Plan 165-11.
+- [Phase 165]: Approve only source_protection_digest 55bf0c829e1933ac596585979145073beacc9f03a2c0f5bf6e03b3dfb75b3e51, its exact twenty-seven legacy-context removal set, retained Crosswake CI context, and strict true before and after.
+- [Phase 165]: Plan 165-11 records approval only; Plan 165-12 owns the separately verified branch-protection write.
 
 ### Pending Todos
 
@@ -130,6 +133,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-08T22:00:30.594Z
-Stopped at: Completed 165-10-PLAN.md
+Last session: 2026-09-09T00:07:16.682Z
+Stopped at: Completed 165-11-PLAN.md
 Resume file: None
