@@ -1,6 +1,7 @@
 /* Repository verification is a closed purpose inventory, never a shell-command API (D-01–D-06). */
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -32,6 +33,29 @@ const expectedIds = [
 
 function clone(value) {
   return structuredClone(value);
+}
+
+function makeRepository() {
+  const directory = mkdtempSync(path.join(tmpdir(), "crosswake-repository-quality-test-"));
+  execFileSync("git", ["init", "--quiet"], { cwd: directory });
+  execFileSync("git", ["config", "user.email", "repository-quality@example.invalid"], { cwd: directory });
+  execFileSync("git", ["config", "user.name", "Repository Quality Test"], { cwd: directory });
+  writeFileSync(path.join(directory, "tracked.txt"), "tracked\n");
+  execFileSync("git", ["add", "tracked.txt"], { cwd: directory });
+  execFileSync("git", ["commit", "--quiet", "-m", "fixture"], { cwd: directory });
+  return directory;
+}
+
+function verificationOptions(repoRoot, overrides = {}) {
+  return {
+    manifest: loadStageManifest(),
+    selection: "repository-cleanliness",
+    probe: tool => ({ stdout: fixture.tool_versions[tool.tool] }),
+    spawn: () => ({ status: 0, stdout: "", stderr: "" }),
+    repoRoot,
+    workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8"),
+    ...overrides
+  };
 }
 
 test("production manifest is closed, ordered, fixed, and has literal CI owners", () => {
@@ -233,4 +257,138 @@ test("timeout and malformed process outcomes fail closed and retain full logs", 
       rmSync(runRoot, { recursive: true, force: true });
     }
   }
+});
+
+test("git complete mode rejects a dirty baseline before proof work", () => {
+  const repository = makeRepository();
+  const started = [];
+  try {
+    writeFileSync(path.join(repository, "dirty.txt"), "dirty\n");
+    const result = runVerification(verificationOptions(repository, {
+      selection: "all",
+      spawn: (...args) => { started.push(args); return { status: 0, stdout: "", stderr: "" }; }
+    }));
+
+    assert.equal(result.status, 1);
+    assert.deepEqual(started, []);
+    assert.equal(result.output, "FAIL repository-cleanliness; corrective-command=git status --short");
+    assert.doesNotMatch(result.output, /clean baseline/i);
+  } finally {
+    rmSync(repository, { recursive: true, force: true });
+  }
+});
+
+test("git focused mode preserves dirty unusual-byte state and NUL snapshots", () => {
+  const repository = makeRepository();
+  const runRoot = mkdtempSync(path.join(tmpdir(), "crosswake-repository-verify."));
+  try {
+    for (const name of [" leading-space", "-leading-dash", "line\nbreak", "utf8-λ"]) {
+      writeFileSync(path.join(repository, name), fixture.secret_sentinel);
+    }
+    execFileSync("git", ["add", "tracked.txt"], { cwd: repository });
+    const indexBefore = readFileSync(path.join(repository, ".git/index"));
+    const result = runVerification(verificationOptions(repository, { runRoot }));
+
+    assert.equal(result.status, 0);
+    const before = readFileSync(path.join(runRoot, "git-before.z"));
+    const final = readFileSync(path.join(runRoot, "git-final.z"));
+    assert(before.includes(0));
+    assert.deepEqual(final, before);
+    assert.deepEqual(readFileSync(path.join(repository, ".git/index")), indexBefore);
+    assert(!result.output.includes(fixture.secret_sentinel));
+  } finally {
+    rmSync(runRoot, { recursive: true, force: true });
+    rmSync(repository, { recursive: true, force: true });
+  }
+});
+
+test("cleanup removes only outputs created by this invocation on failure and interruption", () => {
+  for (const outcome of [{ status: 4 }, { status: null, signal: "SIGINT" }]) {
+    const repository = makeRepository();
+    const manifest = clone(loadStageManifest());
+    manifest.stages.find(stage => stage.stage_id === "repository-cleanliness").owned_outputs = ["owned-cache"];
+    try {
+      const result = runVerification(verificationOptions(repository, {
+        manifest,
+        spawn: () => {
+          mkdirSync(path.join(repository, "owned-cache"));
+          writeFileSync(path.join(repository, "owned-cache/detail"), fixture.secret_sentinel);
+          return { ...outcome, stdout: "", stderr: "" };
+        }
+      }));
+      assert.equal(result.status, 1);
+      assert.equal(existsSync(path.join(repository, "owned-cache")), false);
+      assert(!result.output.includes(fixture.secret_sentinel));
+    } finally {
+      rmSync(repository, { recursive: true, force: true });
+    }
+  }
+});
+
+test("cleanup preserves pre-existing caches byte-for-byte", () => {
+  const repository = makeRepository();
+  const manifest = clone(loadStageManifest());
+  manifest.stages.find(stage => stage.stage_id === "repository-cleanliness").owned_outputs = ["owned-cache"];
+  try {
+    mkdirSync(path.join(repository, "owned-cache"));
+    writeFileSync(path.join(repository, "owned-cache/existing"), "preserve-exactly\n");
+    const result = runVerification(verificationOptions(repository, { manifest }));
+    assert.equal(result.status, 0);
+    assert.equal(readFileSync(path.join(repository, "owned-cache/existing"), "utf8"), "preserve-exactly\n");
+  } finally {
+    rmSync(repository, { recursive: true, force: true });
+  }
+});
+
+test("cleanup refuses symlink escape and invalid run-root prefix", () => {
+  const repository = makeRepository();
+  const outside = mkdtempSync(path.join(tmpdir(), "crosswake-repository-outside-"));
+  const manifest = clone(loadStageManifest());
+  manifest.stages.find(stage => stage.stage_id === "repository-cleanliness").owned_outputs = ["owned-cache"];
+  try {
+    const symlinkResult = runVerification(verificationOptions(repository, {
+      manifest,
+      spawn: () => {
+        symlinkSync(outside, path.join(repository, "owned-cache"));
+        return { status: 0, stdout: "", stderr: "" };
+      }
+    }));
+    assert.equal(symlinkResult.status, 1);
+    assert.equal(existsSync(path.join(repository, "owned-cache")), true);
+    assert.match(symlinkResult.output, /FAIL repository-cleanliness/);
+
+    const invalidRoot = mkdtempSync(path.join(tmpdir(), "invalid-repository-root."));
+    try {
+      const invalidResult = runVerification(verificationOptions(repository, { runRoot: invalidRoot }));
+      assert.equal(invalidResult.status, 1);
+      assert.match(invalidResult.output, /FAIL repository-preflight/);
+    } finally {
+      rmSync(invalidRoot, { recursive: true, force: true });
+    }
+  } finally {
+    rmSync(path.join(repository, "owned-cache"), { force: true });
+    rmSync(outside, { recursive: true, force: true });
+    rmSync(repository, { recursive: true, force: true });
+  }
+});
+
+test("summary reports one bounded remediation per non-pass purpose without secrets", () => {
+  const manifest = clone(loadStageManifest());
+  manifest.stages.find(stage => stage.stage_id === "example-host-proof").dependencies = ["root-proof"];
+  const result = runVerification({
+    ...verificationOptions(new URL(".", root).pathname),
+    manifest,
+    selection: "all",
+    probe: tool => ["node", "elixir"].includes(tool.tool)
+      ? { kind: "missing", stdout: fixture.secret_sentinel }
+      : { stdout: fixture.tool_versions[tool.tool] },
+    spawn: () => ({ status: 0, stdout: fixture.secret_sentinel.repeat(1000), stderr: "" })
+  });
+
+  const nonPass = result.output.split("\n").filter(line => /^(FAIL|BLOCKED) /.test(line));
+  assert(nonPass.length > 0);
+  assert(nonPass.every(line => (line.match(/corrective-command=/g) ?? []).length === 1));
+  assert.equal(new Set(nonPass.map(line => line.split(/[ ;]/, 2).join(" "))).size, nonPass.length);
+  assert(result.output.length < 4096);
+  assert(!result.output.includes(fixture.secret_sentinel));
 });
