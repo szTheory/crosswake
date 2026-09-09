@@ -131,6 +131,16 @@ capture() {
   [[ "$status" -eq 0 ]] || return "$status"
   [[ "$(git -C "$checkout" rev-parse HEAD)" = "$resolved" ]] || return 1
 
+  if [[ -f "$checkout/mix.exs" ]]; then
+    [[ "${CROSSWAKE_REPOSITORY_EVIDENCE_ENVIRONMENT:-}" = "1" && -n "${CROSSWAKE_REPOSITORY_EVIDENCE_TOOL_ROOT:-}" ]] || return 1
+    case "${MIX_HOME:-}" in "${CROSSWAKE_REPOSITORY_EVIDENCE_TOOL_ROOT}"/*) ;; *) return 1 ;; esac
+    case "${HEX_HOME:-}" in "${CROSSWAKE_REPOSITORY_EVIDENCE_TOOL_ROOT}"/*) ;; *) return 1 ;; esac
+    case "${NPM_CONFIG_CACHE:-}" in "${CROSSWAKE_REPOSITORY_EVIDENCE_TOOL_ROOT}"/*) ;; *) return 1 ;; esac
+    case "${PLAYWRIGHT_BROWSERS_PATH:-}" in "${CROSSWAKE_REPOSITORY_EVIDENCE_TOOL_ROOT}"/*) ;; *) return 1 ;; esac
+    (cd "$checkout" && mix local.hex --force && mix local.rebar --force && MIX_ENV=test mix deps.get) >"$run_root/bootstrap-root.log" 2>&1 || return 1
+    (cd "$checkout/examples/phoenix_host" && MIX_ENV=test mix deps.get && npm ci && npx playwright install chromium) >"$run_root/bootstrap-host.log" 2>&1 || return 1
+  fi
+
   baseline_snapshot="$run_root/git-before.z"
   final_snapshot="$run_root/git-final.z"
   git -C "$checkout" status --porcelain=v1 -z --untracked-files=all >"$baseline_snapshot"

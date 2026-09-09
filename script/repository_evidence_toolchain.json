@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "os": "Darwin",
+  "architecture": "arm64",
+  "artifacts": [
+    {
+      "id": "erlang",
+      "version": "27.3",
+      "url": "https://github.com/erlef/otp_builds/releases/download/OTP-27.3/OTP-27.3-macos-arm64.tar.gz",
+      "authority_repository": "erlef/otp_builds",
+      "authority_tag": "OTP-27.3",
+      "asset": "OTP-27.3-macos-arm64.tar.gz",
+      "sha256": "a76eb513202c7131bcd62ee516f8498098b8adadd417bd90e30ae3a2e3f6762d",
+      "archive_format": "tar.gz",
+      "archive_root": ".",
+      "executable_relative_path": "bin/erl",
+      "version_probe": ["bin/erl", "-noshell", "-eval", "io:format(\"~s\", [erlang:system_info(otp_release)]), halt()."],
+      "version_regex": "^27$"
+    },
+    {
+      "id": "elixir",
+      "version": "1.19.5-otp-27",
+      "url": "https://github.com/elixir-lang/elixir/releases/download/v1.19.5/elixir-otp-27.zip",
+      "authority_repository": "elixir-lang/elixir",
+      "authority_tag": "v1.19.5",
+      "asset": "elixir-otp-27.zip",
+      "sha256": "1ab3154ec19adcd4b764cf96badecbe44df5ec6f358dc0fbe29c3749ff6c08de",
+      "archive_format": "zip",
+      "archive_root": ".",
+      "executable_relative_path": "bin/elixir",
+      "version_probe": ["bin/elixir", "--version"],
+      "version_regex": "Elixir 1\\.19\\.5"
+    },
+    {
+      "id": "node",
+      "version": "22.14.0",
+      "url": "https://nodejs.org/dist/v22.14.0/node-v22.14.0-darwin-arm64.tar.gz",
+      "authority_repository": "nodejs/node",
+      "authority_tag": "v22.14.0",
+      "asset": "node-v22.14.0-darwin-arm64.tar.gz",
+      "sha256": "e9404633bc02a5162c5c573b1e2490f5fb44648345d64a958b17e325729a5e42",
+      "archive_format": "tar.gz",
+      "archive_root": "node-v22.14.0-darwin-arm64",
+      "executable_relative_path": "bin/node",
+      "version_probe": ["bin/node", "--version"],
+      "version_regex": "^v22\\.14\\.0$"
+    },
+    {
+      "id": "java",
+      "version": "17.0.20.1+1",
+      "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.20.1_1.tar.gz",
+      "authority_repository": "adoptium/temurin17-binaries",
+      "authority_tag": "jdk-17.0.20.1+1",
+      "asset": "OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.20.1_1.tar.gz",
+      "sha256": "196d13ba5f10414bef7f6a05a9b3f00edacb18ebacef2b99485db9e2ee18f0e8",
+      "archive_format": "tar.gz",
+      "archive_root": "jdk-17.0.20.1+1/Contents/Home",
+      "executable_relative_path": "bin/java",
+      "version_probe": ["bin/java", "-version"],
+      "version_regex": "version \\\"17\\.0\\.20\\.1\\\""
+    }
+  ]
+}
