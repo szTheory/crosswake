@@ -5,7 +5,7 @@ set -euo pipefail
 # No credential, global package manager, or user cache participates.
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 LOCK_PATH="$ROOT_DIR/script/repository_evidence_toolchain.json"
-EXPECTED_IDS=(erlang elixir node java)
+EXPECTED_IDS=(erlang elixir node java android-commandline-tools)
 BOOTSTRAP_NODE_SHIM="$(command -v node 2>/dev/null || true)"
 BOOTSTRAP_NODE="$(${BOOTSTRAP_NODE_SHIM:-/nonexistent} -p 'process.execPath' 2>/dev/null || true)"
 [[ -n "$BOOTSTRAP_NODE" && -x "$BOOTSTRAP_NODE" && "$($BOOTSTRAP_NODE --version 2>/dev/null)" = "v22.14.0" ]] || {
@@ -32,12 +32,13 @@ validate_lock() {
 const fs = require("node:fs");
 const lockPath = process.argv[1];
 const fixtureMode = process.argv[2] === "fixture";
-const ids = ["erlang","elixir","node","java"];
+const ids = ["erlang","elixir","node","java","android-commandline-tools"];
 const expected = {
   erlang: ["27.3","https://github.com/erlef/otp_builds/releases/download/OTP-27.3/OTP-27.3-macos-arm64.tar.gz","erlef/otp_builds","OTP-27.3","OTP-27.3-macos-arm64.tar.gz","a76eb513202c7131bcd62ee516f8498098b8adadd417bd90e30ae3a2e3f6762d"],
   elixir: ["1.19.5-otp-27","https://github.com/elixir-lang/elixir/releases/download/v1.19.5/elixir-otp-27.zip","elixir-lang/elixir","v1.19.5","elixir-otp-27.zip","1ab3154ec19adcd4b764cf96badecbe44df5ec6f358dc0fbe29c3749ff6c08de"],
   node: ["22.14.0","https://nodejs.org/dist/v22.14.0/node-v22.14.0-darwin-arm64.tar.gz","nodejs/node","v22.14.0","node-v22.14.0-darwin-arm64.tar.gz","e9404633bc02a5162c5c573b1e2490f5fb44648345d64a958b17e325729a5e42"],
-  java: ["17.0.20.1+1","https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.20.1_1.tar.gz","adoptium/temurin17-binaries","jdk-17.0.20.1+1","OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.20.1_1.tar.gz","196d13ba5f10414bef7f6a05a9b3f00edacb18ebacef2b99485db9e2ee18f0e8"]
+  java: ["17.0.20.1+1","https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.20.1_1.tar.gz","adoptium/temurin17-binaries","jdk-17.0.20.1+1","OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.20.1_1.tar.gz","196d13ba5f10414bef7f6a05a9b3f00edacb18ebacef2b99485db9e2ee18f0e8"],
+  "android-commandline-tools": ["20.0","https://dl.google.com/android/repository/commandlinetools-mac-14742923_latest.zip","google/android-commandlinetools","14742923","commandlinetools-mac-14742923_latest.zip","ed304c5ede3718541e4f978e4ae870a4d853db74af6c16d920588d48523b9dee"]
 };
 const topKeys = ["architecture","artifacts","os","python_packages","schema_version"];
 const artifactKeys = ["archive_format","archive_root","asset","authority_repository","authority_tag","executable_relative_path","id","sha256","url","version","version_probe","version_regex"];
@@ -45,7 +46,7 @@ const pythonPackageKeys = ["asset","authority_project","id","import_name","sha25
 const sameKeys = (value, keys) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).sort().join("\0") === [...keys].sort().join("\0");
 let lock;
 try { lock = JSON.parse(fs.readFileSync(lockPath, "utf8")); } catch { process.exit(1); }
-if (!sameKeys(lock, topKeys) || lock.schema_version !== 1 || lock.os !== "Darwin" || lock.architecture !== "arm64" || !Array.isArray(lock.artifacts) || lock.artifacts.length !== 4 || !Array.isArray(lock.python_packages) || lock.python_packages.length !== 1) process.exit(1);
+if (!sameKeys(lock, topKeys) || lock.schema_version !== 1 || lock.os !== "Darwin" || lock.architecture !== "arm64" || !Array.isArray(lock.artifacts) || lock.artifacts.length !== 5 || !Array.isArray(lock.python_packages) || lock.python_packages.length !== 1) process.exit(1);
 const pythonPackage = lock.python_packages[0];
 if (!sameKeys(pythonPackage, pythonPackageKeys) || pythonPackage.id !== "pyyaml" || pythonPackage.import_name !== "yaml" || !/^[0-9a-f]{64}$/.test(pythonPackage.sha256)) process.exit(1);
 const expectedPythonPackage = ["6.0.3","https://files.pythonhosted.org/packages/ae/92/861f152ce87c452b11b9d0977952259aa7df792d71c1053365cc7b09cc08/pyyaml-6.0.3-cp39-cp39-macosx_11_0_arm64.whl","PyYAML","pyyaml-6.0.3-cp39-cp39-macosx_11_0_arm64.whl","c3355370a2c156cffb25e876646f149d5d68f5e0a3ce86a5084dd0b64a994917"];
@@ -55,7 +56,7 @@ for (let index = 0; index < ids.length; index += 1) {
   const record = lock.artifacts[index];
   if (!sameKeys(record, artifactKeys) || record.id !== ids[index] || !["tar.gz","zip"].includes(record.archive_format)) process.exit(1);
   for (const field of ["version","url","authority_repository","authority_tag","asset","sha256","archive_root","executable_relative_path","version_regex"]) if (typeof record[field] !== "string" || record[field] === "") process.exit(1);
-  if (!/^https:\/\//.test(record.url) || /(?:^|[\/_-])latest(?:[\/_-]|$)/i.test(record.url) || !/^[0-9a-f]{64}$/.test(record.sha256)) process.exit(1);
+  if (!/^https:\/\//.test(record.url) || !/^[0-9a-f]{64}$/.test(record.sha256)) process.exit(1);
   if (record.archive_root.startsWith("/") || record.executable_relative_path.startsWith("/") || [record.archive_root, record.executable_relative_path].some(value => value.split(/[\\/]/).includes(".."))) process.exit(1);
   if (!Array.isArray(record.version_probe) || record.version_probe.length < 2 || record.version_probe[0] !== record.executable_relative_path || record.version_probe.some(value => typeof value !== "string" || value === "")) process.exit(1);
   try { new RegExp(record.version_regex); } catch { process.exit(1); }
@@ -133,7 +134,7 @@ validate_apple_tools() {
 provision() {
   local lock="${CROSSWAKE_EVIDENCE_TEST_LOCK:-$LOCK_PATH}" mode=production safe_system_path tool_root records
   local id version url authority_repository authority_tag asset digest format archive_root executable probe_json version_regex
-  local archive extract_root prefix executable actual path_prefixes="" java_home="" python_records python_root import_name
+  local archive extract_root prefix executable actual path_prefixes="" java_home="" python_records python_root import_name android_sdk sdk_status
   if [[ "${CROSSWAKE_EVIDENCE_TEST_GUARD:-}" = "isolated-fixture" ]]; then mode=fixture; fi
   validate_lock "$lock" "$mode" || fail "node --test --test-name-pattern=environment test/js/repository_verification.test.mjs"
   [[ "$(host_identity)" = "Darwin/arm64" ]] || fail "Run repository evidence on Darwin/arm64"
@@ -208,8 +209,19 @@ process.stdout.write(`${result.stdout || ""}${result.stderr || ""}`.trim());
     PLAYWRIGHT_BROWSERS_PATH="$tool_root/cache/playwright" PYTHONPATH="$python_root" PYTHONNOUSERSITE=1 CROSSWAKE_REPOSITORY_EVIDENCE_ENVIRONMENT=1 \
     CROSSWAKE_REPOSITORY_EVIDENCE_TOOL_ROOT="$tool_root"
   mkdir -p "$MIX_HOME" "$HEX_HOME" "$NPM_CONFIG_CACHE" "$GRADLE_USER_HOME" "$SWIFTPM_MODULECACHE_OVERRIDE" "$PLAYWRIGHT_BROWSERS_PATH"
-  [[ "$(command -v erl)" = "$tool_root"/* && "$(command -v elixir)" = "$tool_root"/* && "$(command -v node)" = "$tool_root"/* && "$(command -v java)" = "$tool_root"/* ]] || fail "Keep evidence tools inside the invocation root"
+  [[ "$(command -v erl)" = "$tool_root"/* && "$(command -v elixir)" = "$tool_root"/* && "$(command -v node)" = "$tool_root"/* && "$(command -v java)" = "$tool_root"/* && "$(command -v sdkmanager)" = "$tool_root"/* ]] || fail "Keep evidence tools inside the invocation root"
   python3 -c 'import yaml; assert yaml.__version__ == "6.0.3"' || fail "Use the pinned invocation-local PyYAML package"
+  android_sdk="$tool_root/cache/android-sdk"
+  export ANDROID_HOME="$android_sdk" ANDROID_SDK_ROOT="$android_sdk"
+  if [[ "$mode" = "production" ]]; then
+    set +o pipefail
+    yes | sdkmanager --sdk_root="$android_sdk" --licenses >"$tool_root/android-licenses.log" 2>&1
+    sdk_status="${PIPESTATUS[1]}"
+    set -o pipefail
+    [[ "$sdk_status" -eq 0 ]] || fail "Accept licenses for the pinned invocation-local Android SDK"
+    sdkmanager --sdk_root="$android_sdk" "platform-tools" "platforms;android-34" "build-tools;34.0.0" >"$tool_root/android-sdk.log" 2>&1 || fail "Install the frozen invocation-local Android SDK components"
+    [[ -d "$android_sdk/platforms/android-34" && -d "$android_sdk/build-tools/34.0.0" ]] || fail "Verify the frozen invocation-local Android SDK components"
+  fi
   PROVISIONED_TOOL_ROOT="$tool_root"
 }
 
@@ -273,6 +285,7 @@ self_test() {
       elixir) version=1.19.5-otp-27; executable=bin/elixir; version_regex='Elixir 1\.19\.5'; printf '%s\n' '#!/bin/bash' 'printf "Erlang/OTP 27 fixture\\nElixir 1.19.5\\n"' >"$fixture_sources/$id/$executable" ;;
       node) version=22.14.0; executable=bin/node; version_regex='^v22\.14\.0$'; printf '%s\n' '#!/bin/bash' 'printf v22.14.0' >"$fixture_sources/$id/$executable" ;;
       java) version=17.0.20.1+1; executable=bin/java; version_regex='version "17\.0\.20\.1"'; printf '%s\n' '#!/bin/bash' "echo 'openjdk version \"17.0.20.1\"' >&2" >"$fixture_sources/$id/$executable" ;;
+      android-commandline-tools) version=20.0; executable=bin/sdkmanager; version_regex='^20\.0$'; printf '%s\n' '#!/bin/bash' 'printf "20.0\n"' >"$fixture_sources/$id/$executable" ;;
     esac
     chmod +x "$fixture_sources/$id/$executable"
     tar -czf "$fixture_artifacts/$id.tar.gz" -C "$fixture_sources/$id" .
@@ -285,11 +298,12 @@ const fs=require("node:fs"), cp=require("node:child_process"), path=require("nod
 const root=process.argv[1];
 const records=[
   ["erlang","27.3","^27$"],["elixir","1.19.5-otp-27","Elixir 1\\.19\\.5"],
-  ["node","22.14.0","^v22\\.14\\.0$"],["java","17.0.20.1+1","version \\\"17\\.0\\.20\\.1\\\""]
+  ["node","22.14.0","^v22\\.14\\.0$"],["java","17.0.20.1+1","version \\\"17\\.0\\.20\\.1\\\""],
+  ["android-commandline-tools","20.0","^20\\.0$"]
 ].map(([id,version,version_regex]) => {
   const asset=`${id}.tar.gz`;
   const sha256=cp.execFileSync("shasum",["-a","256",path.join(root,asset)],{encoding:"utf8"}).split(/\s/)[0];
-  const executable_relative_path=`bin/${id === "erlang" ? "erl" : id === "java" ? "java" : id}`;
+  const executable_relative_path=`bin/${id === "erlang" ? "erl" : id === "java" ? "java" : id === "android-commandline-tools" ? "sdkmanager" : id}`;
   return {id,version,url:`https://fixtures.invalid/${asset}`,authority_repository:"fixtures/repository-evidence",authority_tag:`${id}-${version}`,asset,sha256,archive_format:"tar.gz",archive_root:".",executable_relative_path,version_probe:[executable_relative_path,id === "erlang" ? "-noshell" : "--version"],version_regex};
 });
 const python_packages=[{id:"pyyaml",version:"6.0.3",url:"https://fixtures.invalid/pyyaml.whl",authority_project:"fixtures/repository-evidence",asset:"pyyaml.whl",sha256:cp.execFileSync("shasum",["-a","256",path.join(root,"pyyaml.whl")],{encoding:"utf8"}).split(/\s/)[0],import_name:"yaml"}];

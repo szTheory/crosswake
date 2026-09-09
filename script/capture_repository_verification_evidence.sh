@@ -52,9 +52,9 @@ for (let index = 0; index < ids.length; index += 1) {
 if (!sameKeys(value.repository_state, ["baseline_empty","final_empty","index_unchanged","snapshots_equal"]) ||
     Object.values(value.repository_state).some(item => item !== true)) process.exit(1);
 if (!sameKeys(value.cleanup, ["status"]) || value.cleanup.status !== "PASS") process.exit(1);
-if (!sameKeys(value.tool_policy, ["apple","elixir","erlang","java","node","pyyaml"]) ||
+if (!sameKeys(value.tool_policy, ["android_sdk","apple","elixir","erlang","java","node","pyyaml"]) ||
     value.tool_policy.erlang !== "27.3" || value.tool_policy.elixir !== "1.19.5-otp-27" ||
-    value.tool_policy.node !== "22.14.0" || value.tool_policy.java !== "17" || value.tool_policy.pyyaml !== "6.0.3" || value.tool_policy.apple !== "host-validated") process.exit(1);
+    value.tool_policy.node !== "22.14.0" || value.tool_policy.java !== "17" || value.tool_policy.pyyaml !== "6.0.3" || value.tool_policy.android_sdk !== "platform-34/build-tools-34.0.0" || value.tool_policy.apple !== "host-validated") process.exit(1);
 const forbidden = new Set(["account_identifier","credential","device_identifier","environment","log","media","payload","raw_answer","secret","stable_device_identifier","token","transcript","url"]);
 const visit = item => {
   if (Array.isArray(item)) return item.every(visit);
@@ -185,7 +185,7 @@ const value = {
   stages: ids.map(stage_id => ({stage_id, result: "PASS"})),
   repository_state: {baseline_empty: true, final_empty: true, snapshots_equal: true, index_unchanged: true},
   cleanup: {status: "PASS"},
-  tool_policy: {erlang: "27.3", elixir: "1.19.5-otp-27", node: "22.14.0", java: "17", pyyaml: "6.0.3", apple: "host-validated"}
+  tool_policy: {erlang: "27.3", elixir: "1.19.5-otp-27", node: "22.14.0", java: "17", pyyaml: "6.0.3", android_sdk: "platform-34/build-tools-34.0.0", apple: "host-validated"}
 };
 const markdown = [
   "# Clean-checkout repository verification", "", `- Supported code: \`${sha}\``,

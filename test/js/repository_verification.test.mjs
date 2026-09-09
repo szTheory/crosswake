@@ -584,7 +584,8 @@ test("evidence environment self-test locks Darwin arm64 tools and confinement", 
     ["erlang", "27.3"],
     ["elixir", "1.19.5-otp-27"],
     ["node", "22.14.0"],
-    ["java", "17.0.20.1+1"]
+    ["java", "17.0.20.1+1"],
+    ["android-commandline-tools", "20.0"]
   ]);
   assert.deepEqual(lock.python_packages, [
     {

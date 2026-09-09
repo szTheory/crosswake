@@ -69,6 +69,20 @@
       "executable_relative_path": "bin/java",
       "version_probe": ["bin/java", "-version"],
       "version_regex": "version \\\"17\\.0\\.20\\.1\\\""
+    },
+    {
+      "id": "android-commandline-tools",
+      "version": "20.0",
+      "url": "https://dl.google.com/android/repository/commandlinetools-mac-14742923_latest.zip",
+      "authority_repository": "google/android-commandlinetools",
+      "authority_tag": "14742923",
+      "asset": "commandlinetools-mac-14742923_latest.zip",
+      "sha256": "ed304c5ede3718541e4f978e4ae870a4d853db74af6c16d920588d48523b9dee",
+      "archive_format": "zip",
+      "archive_root": "cmdline-tools",
+      "executable_relative_path": "bin/sdkmanager",
+      "version_probe": ["bin/sdkmanager", "--sdk_root=/tmp", "--version"],
+      "version_regex": "^20\\.0$"
     }
   ]
 }
