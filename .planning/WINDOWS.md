@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 18
+open_count: 19
 waived_count: 0
 fixed_count: 0
-total_count: 18
-last_updated: 2026-09-09T17:00:42.334Z
+total_count: 19
+last_updated: 2026-09-09T17:23:36.661Z
 ---
 
 # Broken Windows Ledger
@@ -33,6 +33,7 @@ last_updated: 2026-09-09T17:00:42.334Z
 | 16 | 163.1 | deviation | examples/phoenix_host/native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj |  | Plan 163.1-05 added the local Core package and shared shell controller because physical composition otherwise could not compile. | open |  | 2026-08-28T13:07:34.571Z |  |
 | 17 | 165 | unrun-verify | .github/workflows/release-please.yml | 27 | Repository-wide actionlint is blocked by the pre-existing unsupported concurrency.queue key and required-checks-audit SC2016 diagnostic; Plan 165-09 changed workflow lint passes. | open |  | 2026-09-08T18:32:27.078Z |  |
 | 18 | 166 | deviation | test/fixtures/repository_quality/stage-cases.json |  | Corrected Java fixture quoting and added the missing Xcode version so exact preflight controls exercise intended scheduler behavior | open |  | 2026-09-09T17:00:42.334Z |  |
+| 19 | 166 | deviation | script/verify_repository.mjs |  | Escaped hostile artifact paths and kept them out of remediation command text | open |  | 2026-09-09T17:23:36.661Z |  |
 
 ````json
 [
@@ -250,6 +251,18 @@ last_updated: 2026-09-09T17:00:42.334Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-09T17:00:42.334Z",
+    "resolved_at": null
+  },
+  {
+    "id": 19,
+    "kind": "deviation",
+    "phase": "166",
+    "file": "script/verify_repository.mjs",
+    "line": null,
+    "description": "Escaped hostile artifact paths and kept them out of remediation command text",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-09T17:23:36.661Z",
     "resolved_at": null
   }
 ]
