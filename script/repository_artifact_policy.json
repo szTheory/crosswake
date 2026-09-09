@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "ignored_transient": [
+    {
+      "category": "ignored_android_build",
+      "matchers": [
+        {"kind": "segment", "value": ".gradle"}
+      ],
+      "remediation_command": "Remove only invocation-created Android build roots"
+    },
+    {
+      "category": "ignored_beam_build",
+      "matchers": [
+        {"kind": "segment", "value": ".elixir_ls"},
+        {"kind": "segment", "value": ".mix"},
+        {"kind": "segment", "value": "_build"},
+        {"kind": "segment", "value": "deps"}
+      ],
+      "remediation_command": "Remove only invocation-created Mix build roots"
+    },
+    {
+      "category": "ignored_browser_build",
+      "matchers": [
+        {"kind": "segment", "value": "node_modules"},
+        {"kind": "segment", "value": "playwright-artifacts"},
+        {"kind": "segment", "value": "playwright-report"},
+        {"kind": "segment", "value": "test-results"}
+      ],
+      "remediation_command": "Remove only invocation-created browser output roots"
+    },
+    {
+      "category": "ignored_docs_package",
+      "matchers": [
+        {"kind": "exact", "value": "doc"},
+        {"kind": "suffix", "value": ".tar"}
+      ],
+      "remediation_command": "Remove only invocation-created documentation or package outputs"
+    },
+    {
+      "category": "ignored_example_runtime",
+      "matchers": [
+        {"kind": "exact", "value": "examples/phoenix_host/crosswake_example.db"},
+        {"kind": "exact", "value": "examples/phoenix_host/crosswake_example.db-shm"},
+        {"kind": "exact", "value": "examples/phoenix_host/crosswake_example.db-wal"}
+      ],
+      "remediation_command": "Remove only invocation-created example-host database files"
+    },
+    {
+      "category": "ignored_ios_build",
+      "matchers": [
+        {"kind": "segment", "value": ".build"},
+        {"kind": "segment", "value": "DerivedData"},
+        {"kind": "segment", "value": "xcuserdata"}
+      ],
+      "remediation_command": "Remove only invocation-created Apple build roots"
+    },
+    {
+      "category": "ignored_local_tooling",
+      "matchers": [
+        {"kind": "tree", "value": ".bg-shell"},
+        {"kind": "tree", "value": ".claude"},
+        {"kind": "tree", "value": ".gsd"},
+        {"kind": "tree", "value": "tmp"}
+      ],
+      "remediation_command": "Remove only invocation-created repository-local tooling state"
+    }
+  ],
+  "intentionally_tracked": [
+    {
+      "category": "tracked_example_configuration",
+      "paths": [
+        "examples/phoenix_host/.env"
+      ],
+      "purpose": "Non-secret Compose project and fixed local port fixture"
+    },
+    {
+      "category": "tracked_package_source",
+      "paths": [
+        "CHANGELOG.md",
+        "LICENSE",
+        "README.md",
+        "guides",
+        "lib",
+        "mix.exs",
+        "priv"
+      ],
+      "purpose": "Source and documentation explicitly included in the Hex package"
+    },
+    {
+      "category": "tracked_repository_contracts",
+      "paths": [
+        ".github",
+        ".gitignore",
+        ".tool-versions",
+        "examples",
+        "packages",
+        "script",
+        "scripts",
+        "test"
+      ],
+      "purpose": "Repository-owned verification, examples, package sources, and test contracts"
+    }
+  ],
+  "generated_contracts": [],
+  "forbidden_tracked": [
+    {
+      "category": "forbidden_crash",
+      "matchers": [
+        {"kind": "suffix", "value": "erl_crash.dump"}
+      ],
+      "remediation_command": "git rm --cached -- <repository-relative-path>"
+    },
+    {
+      "category": "forbidden_editor",
+      "matchers": [
+        {"kind": "segment", "value": ".idea"},
+        {"kind": "segment", "value": ".vscode"},
+        {"kind": "suffix", "value": ".swp"}
+      ],
+      "remediation_command": "git rm --cached -- <repository-relative-path>"
+    },
+    {
+      "category": "forbidden_local_only",
+      "matchers": [
+        {"kind": "suffix", "value": "local.properties"}
+      ],
+      "remediation_command": "git rm --cached -- <repository-relative-path>"
+    },
+    {
+      "category": "forbidden_secret",
+      "matchers": [
+        {"kind": "suffix", "value": ".asc"},
+        {"kind": "suffix", "value": ".env"},
+        {"kind": "suffix", "value": ".gpg"},
+        {"kind": "suffix", "value": ".p12"},
+        {"kind": "suffix", "value": ".pem"}
+      ],
+      "remediation_command": "git rm --cached -- <repository-relative-path>"
+    }
+  ],
+  "safe_fixtures": [
+    {
+      "path": "examples/phoenix_host/.env",
+      "forbidden_category": "forbidden_secret",
+      "purpose": "Non-secret Compose project and fixed local port fixture"
+    }
+  ]
+}
