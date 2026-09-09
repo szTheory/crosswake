@@ -13,6 +13,47 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
   @remote_source ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/remote-default-source.json"
   @live_observation ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/live-observation.json"
   @required_policy "script/required_check_policy.json"
+  @final_source ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/final-remote-default-source.json"
+  @after_evidence ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/after.json"
+  @comparison ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/comparison.md"
+
+  @tag :final_source
+  test "final source binding covers the compatibility-free workflow and manifest" do
+    monitor = File.read!(@monitor)
+
+    assert monitor =~ "verify-final-remote-default-source"
+    assert monitor =~ "PHASE165_FINAL_REMOTE_DEFAULT_SHA"
+    assert monitor =~ ".github/workflows/crosswake-ci.yml"
+    assert monitor =~ "script/ci_leaf_manifest.json"
+
+    if File.exists?(@final_source) do
+      source = @final_source |> File.read!() |> Jason.decode!()
+
+      assert Map.keys(source) |> Enum.sort() ==
+               ~w(default_branch manifest_digest repository_sha schema_version source_command verified_at workflow_digest)
+               |> Enum.sort()
+
+      assert source["repository_sha"] =~ ~r/^[0-9a-f]{40}$/
+      assert source["workflow_digest"] =~ ~r/^[0-9a-f]{64}$/
+      assert source["manifest_digest"] =~ ~r/^[0-9a-f]{64}$/
+    end
+  end
+
+  test "final comparison is generated from canonical matched evidence" do
+    if File.exists?(@after_evidence) and File.exists?(@comparison) do
+      after_evidence = @after_evidence |> File.read!() |> Jason.decode!()
+      source = @final_source |> File.read!() |> Jason.decode!()
+      comparison = File.read!(@comparison)
+
+      assert after_evidence["repository_sha"] == source["repository_sha"]
+      assert comparison =~ "Workflow/job/check counts"
+      assert comparison =~ "Runner classes"
+      assert comparison =~ "not measured"
+      assert comparison =~ "not exposed"
+      assert comparison =~ "No causal conclusion"
+      refute comparison =~ "improvement"
+    end
+  end
 
   test "monitor evidence self-test covers closed schema and timing boundaries" do
     {output, status} = System.cmd("node", [@monitor, "test-evidence"], stderr_to_stdout: true)
