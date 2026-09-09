@@ -6,10 +6,11 @@
     "erl": "27",
     "git": "git version 2.51.0",
     "gradle-wrapper": "Gradle 8.7",
-    "java": "openjdk version 17.0.16",
+    "java": "openjdk version \"17.0.16\"",
     "node": "v22.14.0",
     "npm": "10.9.2",
-    "swift": "Swift version 6.1.2"
+    "swift": "Swift version 6.1.2",
+    "xcodebuild": "Xcode 26.0"
   },
   "failure_kinds": ["missing", "wrong-version", "failed-to-start"],
   "process_failures": ["ordinary-nonzero", "spawn-error", "signal", "timeout", "malformed-result"],

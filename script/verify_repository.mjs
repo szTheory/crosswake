@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* Fixed argv, closed records, literal CI ownership, and redacted failures enforce D-01–D-06. */
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -10,7 +10,7 @@ const manifestPath = path.join(repoRoot, "script/repository_verification_stages.
 const workflowPath = path.join(repoRoot, ".github/workflows/crosswake-ci.yml");
 const stageIds = ["repository-preflight", "root-proof", "example-host-proof", "browser-proof", "ios-package-proof", "android-package-proof", "format-proof", "warnings-proof", "repository-cleanliness"];
 const manifestKeys = ["schema_version", "stages"];
-const stageKeys = ["argv", "ci_owners", "cwd", "dependencies", "env", "owned_outputs", "remediation_command", "required_tools", "stage_id"];
+const stageKeys = ["argv", "ci_owners", "cwd", "dependencies", "env", "owned_outputs", "remediation_command", "required_tools", "stage_id", "timeout_ms"];
 const toolKeys = ["argv", "remediation_command", "tool", "version_regex"];
 const ownerKeys = ["command", "job_id"];
 
@@ -36,6 +36,7 @@ export function validateStageManifest(manifest) {
   for (const stage of manifest.stages) {
     sameKeys(stage, stageKeys, `stage ${stage?.stage_id ?? "null"}`);
     if (!Array.isArray(stage.dependencies) || !Array.isArray(stage.required_tools) || !Array.isArray(stage.argv) || stage.argv.length === 0 || !Array.isArray(stage.ci_owners) || stage.ci_owners.length === 0 || !Array.isArray(stage.owned_outputs)) throw new Error(`${stage.stage_id} contains an empty or non-array field`);
+    if (!Number.isSafeInteger(stage.timeout_ms) || stage.timeout_ms < 1000 || stage.timeout_ms > 3600000) throw new Error(`${stage.stage_id} timeout must be between one second and one hour`);
     if (stage.argv.some(part => typeof part !== "string" || part === "" || /[;&|`\n\r]/.test(part))) throw new Error(`${stage.stage_id} argv must be fixed strings without shell syntax`);
     safeRelative(stage.cwd, `${stage.stage_id} cwd`);
     sameKeys(stage.env, Object.keys(stage.env), `${stage.stage_id} env`);
@@ -107,17 +108,34 @@ export function runVerification(options = {}) {
   const lines = preflight.records.length
     ? preflight.records.map(record => `FAIL repository-preflight tool=${record.tool}; corrective-command=${record.remediation_command}`)
     : ["PASS repository-preflight"];
-  const failed = new Set();
+  const nonpassing = new Set();
   const globallyBlocked = preflight.records.some(record => record.required_by.includes("repository-preflight"));
   const preflightBlocked = new Set(preflight.records.flatMap(record => record.required_by));
-  const spawn = options.spawn ?? ((command, args, spawnOptions) => spawnSync(command, args, { ...spawnOptions, encoding: "utf8", stdio: "inherit" }));
+  const spawn = options.spawn ?? ((command, args, spawnOptions) => spawnSync(command, args, { ...spawnOptions, encoding: "utf8" }));
+  const runRoot = options.runRoot;
+  if (runRoot) mkdirSync(path.join(runRoot, "logs"), { recursive: true, mode: 0o700 });
   let exitStatus = preflight.status === "FAIL" ? 1 : 0;
   for (const stage of selected) {
     if (stage.stage_id === "repository-preflight") continue;
-    const blocked = stage.stage_id !== "repository-cleanliness" && (globallyBlocked || preflightBlocked.has(stage.stage_id) || stage.dependencies.some(dep => dep !== "repository-preflight" && failed.has(dep)));
-    if (blocked) { lines.push(`BLOCKED ${stage.stage_id}; corrective-command=${stage.remediation_command}`); exitStatus = 1; continue; }
-    const result = spawn(stage.argv[0], stage.argv.slice(1), { cwd: path.join(options.repoRoot ?? repoRoot, stage.cwd), env: { ...process.env, ...stage.env } });
-    if (result?.error || result?.status !== 0) { failed.add(stage.stage_id); lines.push(`FAIL ${stage.stage_id}; corrective-command=${stage.remediation_command}`); exitStatus = 1; }
+    const blocked = stage.stage_id !== "repository-cleanliness" && (globallyBlocked || preflightBlocked.has(stage.stage_id) || stage.dependencies.some(dep => dep !== "repository-preflight" && nonpassing.has(dep)));
+    if (blocked) { nonpassing.add(stage.stage_id); lines.push(`BLOCKED ${stage.stage_id}; corrective-command=${stage.remediation_command}`); exitStatus = 1; continue; }
+    let result;
+    try {
+      result = spawn(stage.argv[0], stage.argv.slice(1), {
+        cwd: path.join(options.repoRoot ?? repoRoot, stage.cwd),
+        env: { ...process.env, ...stage.env },
+        timeout: stage.timeout_ms,
+        killSignal: "SIGTERM"
+      });
+    } catch (error) {
+      result = { error, status: null, stdout: "", stderr: "" };
+    }
+    if (runRoot) {
+      const outcome = result?.error ? `error=${result.error.code ?? result.error.name ?? "unknown"}` : result?.signal ? `signal=${result.signal}` : `status=${String(result?.status)}`;
+      writeFileSync(path.join(runRoot, "logs", `${stage.stage_id}.log`), `${outcome}\n${String(result?.stdout ?? "")}${String(result?.stderr ?? "")}`, { mode: 0o600 });
+    }
+    const passed = result && !result.error && result.signal == null && Number.isInteger(result.status) && result.status === 0;
+    if (!passed) { nonpassing.add(stage.stage_id); lines.push(`FAIL ${stage.stage_id}; corrective-command=${stage.remediation_command}`); exitStatus = 1; }
     else lines.push(`PASS ${stage.stage_id}`);
   }
   return { status: exitStatus, output: lines.join("\n"), records: lines };

@@ -10,6 +10,7 @@
         {"tool": "node", "argv": ["node", "--version"], "version_regex": "^v22\\.14\\.0$", "remediation_command": "asdf install"}
       ],
       "argv": ["node", "--version"],
+      "timeout_ms": 15000,
       "cwd": ".",
       "env": {},
       "ci_owners": [{"job_id": "proof-requires-example-host", "command": "mix deps.get"}],
@@ -24,6 +25,7 @@
         {"tool": "erl", "argv": ["erl", "-noshell", "-eval", "io:format(\\\"~s\\\", [erlang:system_info(otp_release)]), halt()."], "version_regex": "^27$", "remediation_command": "asdf install"}
       ],
       "argv": ["mix", "verify"],
+      "timeout_ms": 1800000,
       "cwd": ".",
       "env": {"MIX_ENV": "test"},
       "ci_owners": [{"job_id": "phase130-core-hermetic-proof", "command": "mix test --exclude requires_example_host --exclude advisory_only"}],
@@ -35,6 +37,7 @@
       "dependencies": ["repository-preflight"],
       "required_tools": [{"tool": "elixir", "argv": ["elixir", "--version"], "version_regex": "Elixir 1\\.19\\.5", "remediation_command": "asdf install"}],
       "argv": ["script/check_example_host_isolation.sh", "--matrix-only"],
+      "timeout_ms": 1800000,
       "cwd": ".",
       "env": {"MIX_ENV": "test"},
       "ci_owners": [{"job_id": "proof-requires-example-host", "command": "script/check_example_host_isolation.sh --matrix-only"}],
@@ -48,6 +51,7 @@
         {"tool": "npm", "argv": ["npm", "--version"], "version_regex": "^10\\.9\\.2$", "remediation_command": "asdf install"}
       ],
       "argv": ["npx", "playwright", "test"],
+      "timeout_ms": 1800000,
       "cwd": "examples/phoenix_host",
       "env": {"CI": "1"},
       "ci_owners": [{"job_id": "e2e-proof", "command": "npx playwright test"}],
@@ -62,6 +66,7 @@
         {"tool": "xcodebuild", "argv": ["xcodebuild", "-version"], "version_regex": "^Xcode (1[5-9]|[2-9][0-9])\\.", "remediation_command": "xcode-select --install"}
       ],
       "argv": ["swift", "test"],
+      "timeout_ms": 1800000,
       "cwd": "packages/crosswake-shell-core-ios",
       "env": {},
       "ci_owners": [{"job_id": "ios-package-unit", "command": "swift test"}],
@@ -76,6 +81,7 @@
         {"tool": "gradle-wrapper", "argv": ["packages/crosswake-shell-core-android/gradlew", "--version"], "version_regex": "Gradle 8\\.7", "remediation_command": "cd packages/crosswake-shell-core-android && ./gradlew --version"}
       ],
       "argv": ["./gradlew", "test"],
+      "timeout_ms": 1800000,
       "cwd": "packages/crosswake-shell-core-android",
       "env": {"CROSSWAKE_ANDROID_CONNECTED_TESTS": "0"},
       "ci_owners": [{"job_id": "android-package-unit", "command": "./gradlew test"}],
@@ -87,6 +93,7 @@
       "dependencies": ["repository-preflight"],
       "required_tools": [{"tool": "elixir", "argv": ["elixir", "--version"], "version_regex": "Elixir 1\\.19\\.5", "remediation_command": "asdf install"}],
       "argv": ["mix", "format", "--check-formatted"],
+      "timeout_ms": 300000,
       "cwd": ".",
       "env": {"MIX_ENV": "test"},
       "ci_owners": [{"job_id": "phase41-gating-proof", "command": "mix compile --warnings-as-errors"}],
@@ -98,6 +105,7 @@
       "dependencies": ["repository-preflight"],
       "required_tools": [{"tool": "elixir", "argv": ["elixir", "--version"], "version_regex": "Elixir 1\\.19\\.5", "remediation_command": "asdf install"}],
       "argv": ["mix", "compile", "--warnings-as-errors"],
+      "timeout_ms": 900000,
       "cwd": ".",
       "env": {"MIX_ENV": "test"},
       "ci_owners": [{"job_id": "phase41-gating-proof", "command": "mix compile --warnings-as-errors"}],
@@ -109,6 +117,7 @@
       "dependencies": [],
       "required_tools": [],
       "argv": ["git", "diff", "--check"],
+      "timeout_ms": 60000,
       "cwd": ".",
       "env": {},
       "ci_owners": [{"job_id": "guard-02-generate-and-diff", "command": "git diff --cached --exit-code"}],
