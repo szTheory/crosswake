@@ -163,7 +163,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     end
 
     for {job, runner, command} <- [
-          {"android-package-unit", "ubuntu-latest", "./gradlew test"},
+          {"android-package-unit", "ubuntu-latest",
+           "script/verify_repository.sh --stage android-package-proof"},
           {"android-generated-shell-unit", "ubuntu-latest",
            "script/verify_generated_android_shell.sh"},
           {"phase5-proof", "ubuntu-latest", "script/verify_phase5_example_hosts.sh"},
@@ -171,7 +172,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
           {"phase18-ios-proof", "macos-15", "verify_generated_ios_shell.sh"},
           {"phase79-android-proof", "ubuntu-latest", "verify_generated_android_shell.sh"},
           {"phase79-ios-proof", "macos-15", "verify_generated_ios_shell.sh"},
-          {"ios-package-unit", "macos-latest", "swift test"}
+          {"ios-package-unit", "macos-latest",
+           "script/verify_repository.sh --stage ios-package-proof"}
         ] do
       body = job_body(workflow, job)
       assert body =~ "name: #{job}"
@@ -196,8 +198,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     for {job, command} <- [
           {"guard-01-e2e-honesty", "node script/check-e2e-honesty.mjs"},
           {"guard-02-prod-route-absence", "mix phx.routes CrosswakeExample.Router"},
-          {"e2e-proof", "npx playwright test"},
-          {"route-tour-proof", "npx playwright test e2e/route_tour.spec.ts"},
+          {"e2e-proof", "script/verify_repository.sh --stage browser-proof"},
+          {"route-tour-proof", "script/verify_repository.sh --stage browser-proof"},
           {"phase67-android-jvm-proof", "./gradlew testDebugUnitTest"}
         ] do
       body = job_body(workflow, job)
@@ -262,13 +264,13 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
           {"proof-aggregator-negative-control", "proof-aggregator-negative-control",
            "python3 script/check_aggregator_result_semantics.py --assert-outcomes"},
           {"guard-01-contract-drift-test", "guard-01-contract-drift-test",
-           "mix test test/crosswake/contract/contract_drift_test.exs"},
+           "script/verify_repository.sh --stage format-proof"},
           {"guard-02-generate-and-diff", "guard-02-generate-and-diff",
-           "mix crosswake.contract.gen"},
+           "script/verify_repository.sh --stage repository-cleanliness"},
           {"proof-dependency-security", "proof-dependency-security",
-           "script/check_dependency_security.sh"},
+           "script/verify_repository.sh --stage repository-preflight"},
           {"proof-requires-example-host", "proof-requires-example-host",
-           "script/check_example_host_isolation.sh --matrix-only"}
+           "script/verify_repository.sh --stage example-host-proof"}
         ] do
       body = job_body(workflow, job)
       assert body =~ "name: #{display_name}"
@@ -285,7 +287,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
     for {job, display_name, command} <- [
           {"phase130-core-hermetic-proof", "phase130-core-hermetic-proof",
-           "mix test test/crosswake/proof/phase130_extraction_guards_test.exs"},
+           "script/verify_repository.sh --stage root-proof"},
           {"phase130-companion-engine-absent-proof", "phase130-companion-engine-absent-proof",
            "mix companions.test"},
           {"phase132-core-hermetic-proof", "phase132-core-hermetic-proof",
@@ -390,7 +392,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     refute File.exists?(hd(@plan06_task1_sources))
 
     for {job, command} <- [
-          {"phase41-gating-proof", "phase41_gating_doctor_test.exs"},
+          {"phase41-gating-proof", "script/verify_repository.sh --stage warnings-proof"},
           {"phase43-rulestead-proof",
            "mix test --exclude requires_example_host --exclude advisory_only"},
           {"phase45-rindle-proof",

@@ -242,10 +242,10 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
       assert gate =~ command
     end
 
-    assert gate =~ "section=repository-runner-contract"
-    assert gate =~ "section=browser-determinism-contract"
-    assert gate =~ "section=repository-quality-contracts"
-    assert gate =~ "section=ci-authority-contract"
+    assert gate =~ ~s|"repository-runner-contract"|
+    assert gate =~ ~s|"browser-determinism-contract"|
+    assert gate =~ ~s|"repository-quality-contracts"|
+    assert gate =~ ~s|"ci-authority-contract"|
     assert gate =~ "PASS clean-checkout-engineering-quality"
 
     refute gate =~ "register_required_checks.sh"
