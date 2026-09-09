@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "repository_sha": "cec20fbd71ca3319c7d7dfbeb439d1f74545e9c8",
+  "repository_sha": "71732ad4393de60a99cc2fec7316c0651ae6e96b",
   "default_branch": "main",
-  "workflow_digest": "30d50596ed9c21c3c38531165eba9b35900846c432dd9406cc52729df6b88c14",
-  "manifest_digest": "926d901bf1173ad7dec296e835a2fe4b338170b124c40571dd170d49cd0154bd",
-  "verified_at": "2026-09-09T01:09:59.164Z",
+  "workflow_digest": "a479a1ef7f2032df958edcc8e34e0460e52108ba447fc50264a444d3890834ac",
+  "manifest_digest": "ca09c328e96fe931b89c85875b2e788636ae751ae50429a92ff92787b0f0cf9a",
+  "verified_at": "2026-09-09T01:57:49.297Z",
   "source_command": "gh api repos/szTheory/crosswake/git/ref/heads/main"
 }

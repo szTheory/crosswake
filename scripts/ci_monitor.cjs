@@ -17,7 +17,7 @@ Commands:
   test-summary <run-id>
   grep <run-id> --pattern <regex>
   wait-for <run-id> <job> --keyword <text>
-  check-actions [workflow-file]
+  check-actions [workflow-or-action-file ...]
   capture-evidence <output.json>
   capture-evidence --source <final-source.json> --cohorts matched --output <output.json>
   capture-required-context-snapshot <output.json>
@@ -267,14 +267,25 @@ function waitFor(args) {
 }
 
 function checkActions(args) {
-  const paths = args[0] ? [args[0]] : [".github/workflows"];
-  const output = spawnSync("rg", ["-n", "uses:\\s*[^#[:space:]]+", ...paths], {
-    encoding: "utf8",
-  });
-  if (output.error) fail(`could not run rg: ${output.error.message}`);
-  if (output.status !== 0 && output.status !== 1) process.exit(output.status);
+  const paths = args.length ? args : [
+    ".github/workflows/crosswake-ci.yml",
+    ".github/actions/setup-android-jvm/action.yml",
+    ".github/actions/setup-elixir-cache/action.yml",
+  ];
+  const lines = paths.flatMap((file) => {
+    let source;
+    try {
+      source = fs.readFileSync(file, "utf8");
+    } catch (_error) {
+      fail(`could not read required action source: ${file}`);
+    }
 
-  const lines = output.stdout.trim().split("\n").filter(Boolean);
+    return source
+      .split("\n")
+      .map((line, index) => ({ line, index: index + 1 }))
+      .filter(({ line }) => /uses:\s*[^#\s]+/.test(line))
+      .map(({ line, index }) => `${file}:${index}:${line}`);
+  });
   const mutable = lines.filter((line) => {
     const match = line.match(/uses:\s*([^\s#]+)/);
     if (!match || match[1].startsWith("./") || !match[1].includes("@")) return false;
@@ -284,7 +295,10 @@ function checkActions(args) {
 
   process.stdout.write(lines.join("\n") + (lines.length ? "\n" : ""));
   process.stdout.write(`actions=${lines.length} mutable_refs=${mutable.length}\n`);
-  if (mutable.length) process.stdout.write("mutable action refs should be reviewed against upstream releases\n");
+  if (mutable.length) {
+    process.stderr.write("mutable third-party action refs are forbidden in required CI authority\n");
+    process.exitCode = 1;
+  }
 }
 
 const EVIDENCE_SCHEMA_VERSION = 1;
@@ -756,7 +770,7 @@ function runJobs(repository, id) {
   return apiJson(`repos/${repository}/actions/runs/${id}/jobs?filter=all&per_page=100`).jobs || [];
 }
 
-function assertProbeJobs(run, jobs, manifest, docsOnly) {
+function assertProbeJobs(run, jobs, manifest, expectedFamilies) {
   const byName = new Map(jobs.map((job) => [job.name, job]));
   if (byName.size !== jobs.length) throw new Error("probe emitted duplicate job display names");
   const umbrella = byName.get("Crosswake CI");
@@ -772,9 +786,12 @@ function assertProbeJobs(run, jobs, manifest, docsOnly) {
     else if (job.conclusion === "success") activeProof.push(leaf.leaf_id);
     else throw new Error(`proof leaf did not close successfully: ${leaf.display_name}`);
   }
-  if (docsOnly) {
-    if (activeProof.join("\0") !== "documentation-contracts") throw new Error("documentation probe scheduled an unrelated proof leaf");
-    if (skippedProof.length !== manifest.proof_leaves.length - 1) throw new Error("documentation probe skip set is incomplete");
+  if (expectedFamilies) {
+    const expectedActive = manifest.proof_leaves
+      .filter((leaf) => expectedFamilies.has(leaf.family))
+      .map((leaf) => leaf.leaf_id);
+    if (activeProof.join("\0") !== expectedActive.join("\0")) throw new Error("documentation probe scheduled the wrong proof leaves");
+    if (skippedProof.length !== manifest.proof_leaves.length - expectedActive.length) throw new Error("documentation probe skip set is incomplete");
   } else if (activeProof.length !== manifest.proof_leaves.length || skippedProof.length !== 0) {
     throw new Error("executable probe did not schedule the complete proof union");
   }
@@ -782,29 +799,62 @@ function assertProbeJobs(run, jobs, manifest, docsOnly) {
 }
 
 function validateLiveObservation(value) {
-  const allowedTop = new Set(["schema_version", "repository_sha", "captured_at", "source_reference", "umbrella_context", "docs_probe", "full_probe", "cancellation", "cleanup"]);
+  const probeNames = value.schema_version === 1
+    ? ["docs_probe", "full_probe"]
+    : ["planning_probe", "public_docs_probe", "full_probe"];
+  const allowedTop = new Set(["schema_version", "repository_sha", "captured_at", "source_reference", "umbrella_context", ...probeNames, "cancellation", "cleanup"]);
   ensureFields(value, allowedTop, "live observation");
-  if (value.schema_version !== 1 || !/^[0-9a-f]{40}$/.test(value.repository_sha || "") || parseTimestamp(value.captured_at) === null) throw new Error("invalid live observation identity");
+  if (![1, 2].includes(value.schema_version) || !/^[0-9a-f]{40}$/.test(value.repository_sha || "") || parseTimestamp(value.captured_at) === null) throw new Error("invalid live observation identity");
   if (value.source_reference !== "remote-default-source.json" || value.umbrella_context !== "Crosswake CI") throw new Error("invalid live observation authority");
   const probeFields = new Set(["pr_number", "run_id", "classification", "umbrella_result", "active_proof_leaves", "skipped_proof_leaves", "observed_job_count"]);
-  for (const name of ["docs_probe", "full_probe"]) {
+  for (const name of probeNames) {
     const probe = value[name];
     ensureFields(probe, probeFields, name);
     if (!Number.isInteger(probe.pr_number) || !Number.isInteger(probe.run_id) || probe.umbrella_result !== "success") throw new Error(`invalid ${name} result`);
     if (!Array.isArray(probe.active_proof_leaves) || !Array.isArray(probe.skipped_proof_leaves)) throw new Error(`invalid ${name} leaves`);
   }
-  const cancellationFields = new Set(["pr_number", "lower_run_id", "newer_run_id", "lower_run_cancelled", "newer_run_authoritative", "same_pr_workflow", "requested_controller_observed", "runner_consumption_observed", "bounded_controller_action"]);
+  const cancellationFields = value.schema_version === 1
+    ? new Set(["pr_number", "lower_run_id", "newer_run_id", "lower_run_cancelled", "newer_run_authoritative", "same_pr_workflow", "requested_controller_observed", "runner_consumption_observed", "bounded_controller_action"])
+    : new Set(["pr_number", "lower_run_id", "newer_run_id", "controller_run_id", "controller_source_run_id", "selected_lower_run_ids", "lower_run_cancelled", "newer_run_authoritative", "same_pr_workflow", "requested_controller_observed", "runner_consumption_observed", "bounded_controller_action"]);
   ensureFields(value.cancellation, cancellationFields, "cancellation");
   const c = value.cancellation;
+  if (value.schema_version === 2 && (!Number.isInteger(c.controller_run_id) || c.controller_source_run_id !== c.newer_run_id || !Array.isArray(c.selected_lower_run_ids) || !c.selected_lower_run_ids.includes(c.lower_run_id) || !c.selected_lower_run_ids.every((id) => Number.isInteger(id) && id > 0 && id < c.newer_run_id))) throw new Error("controller correlation evidence is incomplete");
   if (!(c.lower_run_id < c.newer_run_id) || c.lower_run_cancelled !== true || c.newer_run_authoritative !== true || c.same_pr_workflow !== true || c.requested_controller_observed !== true || c.runner_consumption_observed !== true || c.bounded_controller_action !== true) throw new Error("monotonic cancellation evidence is incomplete");
   ensureFields(value.cleanup, new Set(["pull_requests_closed", "branches_deleted"]), "cleanup");
   if (value.cleanup.pull_requests_closed !== true || value.cleanup.branches_deleted !== true) throw new Error("probe cleanup was not proven");
   return value;
 }
 
-function controllerObserved(repository, since, lowerId) {
-  const runs = apiJson(`repos/${repository}/actions/workflows/cancel-obsolete-crosswake-ci.yml/runs?event=workflow_run&per_page=50`).workflow_runs || [];
-  return runs.some((run) => Date.parse(run.created_at) >= Date.parse(since) && ["queued", "in_progress", "completed"].includes(run.status) && run.id > 0 && lowerId > 0);
+function controllerResult(repository, run) {
+  if (run.status !== "completed" || run.conclusion !== "success") return null;
+  const logs = ghSoft(["run", "view", String(run.id), "--repo", repository, "--log"]);
+  if (logs.status !== 0) return null;
+  for (const line of logs.stdout.split("\n")) {
+    const marker = line.indexOf("CROSSWAKE_CONTROLLER_RESULT=");
+    if (marker === -1) continue;
+    try {
+      const parsed = JSON.parse(line.slice(marker + "CROSSWAKE_CONTROLLER_RESULT=".length).trim());
+      ensureFields(parsed, new Set(["schema_version", "source_run_id", "disposition", "reason", "selected_run_ids"]), "controller result");
+      if (parsed.schema_version === 1 && Number.isInteger(parsed.source_run_id) && Array.isArray(parsed.selected_run_ids)) return parsed;
+    } catch (_error) {
+      // Ignore malformed or unrelated log lines and keep searching this run.
+    }
+  }
+  return null;
+}
+
+function waitForControllerResult(repository, sourceRunId, since, timeoutMs = 15 * 60 * 1000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const runs = apiJson(`repos/${repository}/actions/workflows/cancel-obsolete-crosswake-ci.yml/runs?event=workflow_run&per_page=50`).workflow_runs || [];
+    for (const run of runs) {
+      if (Date.parse(run.created_at) < Date.parse(since)) continue;
+      const result = controllerResult(repository, run);
+      if (result && result.source_run_id === sourceRunId) return { run, result };
+    }
+    sleepMs(10000);
+  }
+  throw new Error(`timed out waiting for controller result for source run ${sourceRunId}`);
 }
 
 function probePhase165(args) {
@@ -819,20 +869,29 @@ function probePhase165(args) {
   if (remoteTip !== source.repository_sha) fail("remote default tip moved after source verification");
   const manifest = readJson("script/ci_leaf_manifest.json");
   const nonce = `${Date.now()}-${process.pid}`;
-  const docsBranch = `phase165-probe-docs-${nonce}`;
+  const planningBranch = `phase165-probe-planning-${nonce}`;
+  const publicDocsBranch = `phase165-probe-public-docs-${nonce}`;
   const fullBranch = `phase165-probe-full-${nonce}`;
   const opened = [];
   const branches = [];
   let result;
   let cleanupOk = false;
   try {
-    createProbeRef(repository, docsBranch, source.repository_sha); branches.push(docsBranch);
-    const docsSha = putProbeFile(repository, docsBranch, `.planning/phase165-live-probe-${nonce}.md`, "# Phase 165 live documentation probe\n\nNon-sensitive bounded classifier fixture.\n", "test: add bounded Phase 165 docs probe");
-    const docsPr = openProbePr(defaultBranch, docsBranch, "Phase 165 bounded documentation probe"); opened.push(docsPr);
-    let docsRun = waitForRun(repository, docsBranch, docsSha);
-    docsRun = waitForRunState(repository, docsRun.id, (run) => run.status === "completed");
-    const docsJobs = runJobs(repository, docsRun.id);
-    const docs = assertProbeJobs(docsRun, docsJobs, manifest, true);
+    createProbeRef(repository, planningBranch, source.repository_sha); branches.push(planningBranch);
+    const planningSha = putProbeFile(repository, planningBranch, `.planning/phase165-live-probe-${nonce}.md`, "# Phase 165 live planning probe\n\nNon-sensitive bounded classifier fixture.\n", "test: add bounded Phase 165 planning probe");
+    const planningPr = openProbePr(defaultBranch, planningBranch, "Phase 165 bounded planning probe"); opened.push(planningPr);
+    let planningRun = waitForRun(repository, planningBranch, planningSha);
+    planningRun = waitForRunState(repository, planningRun.id, (run) => run.status === "completed");
+    const planningJobs = runJobs(repository, planningRun.id);
+    const planning = assertProbeJobs(planningRun, planningJobs, manifest, new Set(["documentation_contracts"]));
+
+    createProbeRef(repository, publicDocsBranch, source.repository_sha); branches.push(publicDocsBranch);
+    const publicDocsSha = putProbeFile(repository, publicDocsBranch, `guides/phase165-live-probe-${nonce}.md`, "# Phase 165 live public documentation probe\n\nNon-sensitive bounded classifier fixture.\n", "test: add bounded Phase 165 public docs probe");
+    const publicDocsPr = openProbePr(defaultBranch, publicDocsBranch, "Phase 165 bounded public docs probe"); opened.push(publicDocsPr);
+    let publicDocsRun = waitForRun(repository, publicDocsBranch, publicDocsSha);
+    publicDocsRun = waitForRunState(repository, publicDocsRun.id, (run) => run.status === "completed");
+    const publicDocsJobs = runJobs(repository, publicDocsRun.id);
+    const publicDocs = assertProbeJobs(publicDocsRun, publicDocsJobs, manifest, new Set(["documentation_contracts", "brand_structural", "public_docs", "threadline_docs_contract"]));
 
     createProbeRef(repository, fullBranch, source.repository_sha); branches.push(fullBranch);
     const fullFile = `test/fixtures/ci/phase165-live-probe-${nonce}.txt`;
@@ -841,7 +900,7 @@ function probePhase165(args) {
     let fullRun = waitForRun(repository, fullBranch, fullSha);
     fullRun = waitForRunState(repository, fullRun.id, (run) => run.status === "completed");
     const fullJobs = runJobs(repository, fullRun.id);
-    const full = assertProbeJobs(fullRun, fullJobs, manifest, false);
+    const full = assertProbeJobs(fullRun, fullJobs, manifest, null);
 
     const lowerSha = putProbeFile(repository, fullBranch, fullFile, "phase165 executable probe 2\n", "test: request lower Phase 165 cancellation probe");
     let lowerRun = waitForRun(repository, fullBranch, lowerSha);
@@ -854,20 +913,21 @@ function probePhase165(args) {
     let newerRun = waitForRun(repository, fullBranch, newerSha);
     const lowerFinal = waitForRunState(repository, lowerRun.id, (run) => run.status === "completed", 15 * 60 * 1000);
     if (lowerFinal.conclusion !== "cancelled") throw new Error("strict lower run was not cancelled");
-    newerRun = waitForRunState(repository, newerRun.id, (run) => run.status === "in_progress" || run.status === "completed", 15 * 60 * 1000);
-    if (newerRun.conclusion === "cancelled") throw new Error("newer authoritative run was cancelled");
-    const controller = controllerObserved(repository, lowerRun.created_at, lowerRun.id);
-    if (!controller) throw new Error("requested-event controller timing was not observed");
+    const controller = waitForControllerResult(repository, newerRun.id, newerRun.created_at);
+    if (controller.result.disposition !== "cancel_lower" || !controller.result.selected_run_ids.includes(lowerRun.id)) throw new Error("controller did not select the observed strict-lower run");
+    newerRun = waitForRunState(repository, newerRun.id, (run) => run.status === "completed");
+    if (!newerRun.conclusion || newerRun.conclusion === "cancelled") throw new Error("newer authoritative run did not reach a terminal non-cancelled result");
 
     result = {
-      schema_version: 1,
+      schema_version: 2,
       repository_sha: source.repository_sha,
       captured_at: new Date().toISOString(),
       source_reference: path.basename(sourcePath),
       umbrella_context: "Crosswake CI",
-      docs_probe: { pr_number: docsPr, run_id: docsRun.id, classification: "documentation_only", umbrella_result: docs.umbrella.conclusion, active_proof_leaves: docs.activeProof, skipped_proof_leaves: docs.skippedProof, observed_job_count: docsJobs.length },
+      planning_probe: { pr_number: planningPr, run_id: planningRun.id, classification: "documentation_only", umbrella_result: planning.umbrella.conclusion, active_proof_leaves: planning.activeProof, skipped_proof_leaves: planning.skippedProof, observed_job_count: planningJobs.length },
+      public_docs_probe: { pr_number: publicDocsPr, run_id: publicDocsRun.id, classification: "documentation_only", umbrella_result: publicDocs.umbrella.conclusion, active_proof_leaves: publicDocs.activeProof, skipped_proof_leaves: publicDocs.skippedProof, observed_job_count: publicDocsJobs.length },
       full_probe: { pr_number: fullPr, run_id: fullRun.id, classification: "full_proof", umbrella_result: full.umbrella.conclusion, active_proof_leaves: full.activeProof, skipped_proof_leaves: full.skippedProof, observed_job_count: fullJobs.length },
-      cancellation: { pr_number: fullPr, lower_run_id: lowerRun.id, newer_run_id: newerRun.id, lower_run_cancelled: true, newer_run_authoritative: true, same_pr_workflow: lowerRun.workflow_id === newerRun.workflow_id, requested_controller_observed: true, runner_consumption_observed: true, bounded_controller_action: true },
+      cancellation: { pr_number: fullPr, lower_run_id: lowerRun.id, newer_run_id: newerRun.id, controller_run_id: controller.run.id, controller_source_run_id: controller.result.source_run_id, selected_lower_run_ids: controller.result.selected_run_ids, lower_run_cancelled: lowerFinal.conclusion === "cancelled", newer_run_authoritative: newerRun.status === "completed" && newerRun.conclusion !== "cancelled", same_pr_workflow: lowerRun.workflow_id === newerRun.workflow_id, requested_controller_observed: controller.run.conclusion === "success", runner_consumption_observed: runnerConsumptionObserved, bounded_controller_action: controller.result.disposition === "cancel_lower" && controller.result.selected_run_ids.includes(lowerRun.id) && controller.result.selected_run_ids.every((id) => id < newerRun.id) },
       cleanup: { pull_requests_closed: false, branches_deleted: false },
     };
   } finally {
@@ -1317,6 +1377,51 @@ function testEvidence() {
     }
     if (!rejected) throw new Error("forbidden evidence fixture was accepted");
   }
+  const probe = {
+    pr_number: 7,
+    run_id: 100,
+    classification: "documentation_only",
+    umbrella_result: "success",
+    active_proof_leaves: ["documentation-contracts"],
+    skipped_proof_leaves: [],
+    observed_job_count: 2,
+  };
+  const liveObservation = {
+    schema_version: 2,
+    repository_sha: "a".repeat(40),
+    captured_at: "2026-01-01T00:00:00Z",
+    source_reference: "remote-default-source.json",
+    umbrella_context: "Crosswake CI",
+    planning_probe: probe,
+    public_docs_probe: { ...probe, run_id: 101 },
+    full_probe: { ...probe, run_id: 102, classification: "full_proof" },
+    cancellation: {
+      pr_number: 7,
+      lower_run_id: 103,
+      newer_run_id: 104,
+      controller_run_id: 105,
+      controller_source_run_id: 104,
+      selected_lower_run_ids: [103],
+      lower_run_cancelled: true,
+      newer_run_authoritative: true,
+      same_pr_workflow: true,
+      requested_controller_observed: true,
+      runner_consumption_observed: true,
+      bounded_controller_action: true,
+    },
+    cleanup: { pull_requests_closed: true, branches_deleted: true },
+  };
+  validateLiveObservation(liveObservation);
+  let rejectedControllerMismatch = false;
+  try {
+    validateLiveObservation({
+      ...liveObservation,
+      cancellation: { ...liveObservation.cancellation, controller_source_run_id: 999 },
+    });
+  } catch (_error) {
+    rejectedControllerMismatch = true;
+  }
+  if (!rejectedControllerMismatch) throw new Error("mismatched controller source fixture was accepted");
   const authority = {
     schema_version: 1,
     repository_sha: "a".repeat(40),

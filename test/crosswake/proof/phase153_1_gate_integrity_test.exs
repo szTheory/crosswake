@@ -15,12 +15,14 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
 
   @discover "script/list_merge_blocking_checks.py"
   @checker "script/check_required_checks_registered.sh"
+  @normalizer "script/normalize_required_checks.py"
 
   defp prepare_fixture!(tmp, workflows) do
     File.mkdir_p!(Path.join(tmp, "script"))
     File.mkdir_p!(Path.join(tmp, ".github/workflows"))
     File.cp!(@discover, Path.join(tmp, @discover))
     File.cp!(@checker, Path.join(tmp, @checker))
+    File.cp!(@normalizer, Path.join(tmp, @normalizer))
 
     Enum.each(workflows, fn {name, source} ->
       File.write!(Path.join(tmp, ".github/workflows/#{name}"), source)
@@ -229,7 +231,8 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
     ])
 
     json =
-      ~s({"strict":true,"checks":[{"context":"merge-blocking-one"},{"context":"stale-required"}]})
+      ~s({"strict":true,"checks":[{"context":"merge-blocking-one","app_id":15368},{"context":"stale-required","app_id":15368}],"contexts":["merge-blocking-one","stale-required"]})
+
     {out, status} = run_checker(tmp, json)
 
     assert status == 1
@@ -244,7 +247,10 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
        "name: One\njobs:\n  gate:\n    name: merge-blocking-one\n    runs-on: ubuntu-latest\n"}
     ])
 
-    {out, status} = run_checker(tmp, ~s({"strict":true,"checks":[]}))
+    json =
+      ~s({"strict":true,"checks":[{"context":"stale-required","app_id":15368}],"contexts":["stale-required"]})
+
+    {out, status} = run_checker(tmp, json)
 
     assert status == 1
     assert out =~ "merge-blocking-one"

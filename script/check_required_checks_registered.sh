@@ -51,15 +51,25 @@ elif ! current="$(gh api "$EP" 2>/dev/null)"; then
   echo "[crosswake] UNVERIFIED (exit 3): cannot read branch protection for ${REPO}@${BRANCH}." >&2
   exit 3
 fi
-printf '%s' "$current" | jq -e 'type == "object" and (.strict | type == "boolean")' >/dev/null || {
-  echo "[crosswake] FAIL: malformed required-check response." >&2; exit 1;
-}
-registered="$(printf '%s' "$current" | jq -r '[.checks[]?.context, .contexts[]?] | .[]?' | sort -u)"
+if ! normalized="$(printf '%s' "$current" | python3 script/normalize_required_checks.py --input -)"; then
+  echo "[crosswake] FAIL: malformed, non-strict, or ambiguous required-check response." >&2
+  exit 1
+fi
+registered_checks="$(printf '%s' "$normalized" | jq -cS '.checks')"
+registered="$(printf '%s' "$normalized" | jq -r '.checks[].context')"
 
 if [ -n "$POLICY" ]; then
   expected="$(jq -r --arg state "$STATE" 'if $state == "dual" then .dual_contexts[] else .target_contexts[] end' "$POLICY")"
   strict_expected="$(jq -r '.strict' "$POLICY")"
-  if [ "$(printf '%s' "$current" | jq -r '.strict')" != "$strict_expected" ] || [ "$registered" != "$expected" ]; then
+  target_check="$(jq -cS '.target_check' "$POLICY")"
+  target_matches="$(printf '%s' "$normalized" | jq -cS --argjson target "$target_check" '[.checks[] | select(. == $target)] | length')"
+  record_matches=true
+  if [ "$STATE" = "target" ] && [ "$registered_checks" != "[$target_check]" ]; then
+    record_matches=false
+  elif [ "$STATE" = "dual" ] && [ "$target_matches" -ne 1 ]; then
+    record_matches=false
+  fi
+  if [ "$(printf '%s' "$normalized" | jq -r '.strict')" != "$strict_expected" ] || [ "$registered" != "$expected" ] || [ "$record_matches" != true ]; then
     echo "[crosswake] FAIL: live branch protection does not equal exact ${STATE} policy state." >&2
     exit 1
   fi

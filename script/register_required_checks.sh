@@ -7,7 +7,6 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 REPO="${REPO:-szTheory/crosswake}"
 BRANCH="${BRANCH:-main}"
-ACTIONS_APP_ID="${ACTIONS_APP_ID:-15368}"
 EP="repos/${REPO}/branches/${BRANCH}/protection/required_status_checks"
 BASELINE=".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/required-context-baseline.json"
 OBSERVATION=".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/live-observation.json"
@@ -34,11 +33,12 @@ case "$MODE" in add|retire) ;; *) usage ;; esac
 [ -f "$BASELINE" ] && [ -f "$OBSERVATION" ] || { echo "[crosswake] FAIL: required migration evidence is missing." >&2; exit 1; }
 
 if ! jq -e --slurpfile baseline "$BASELINE" '
-  (keys | sort) == (["dual_contexts","legacy_contexts","schema_version","source_digest","strict","target_contexts","umbrella_context"] | sort) and
+  (keys | sort) == (["dual_contexts","legacy_contexts","schema_version","source_digest","strict","target_check","target_contexts","umbrella_context"] | sort) and
   .schema_version == 1 and .strict == true and .umbrella_context == "Crosswake CI" and
   (.legacy_contexts | type == "array" and length > 0 and . == (sort | unique)) and
   (.dual_contexts == ((.legacy_contexts + [.umbrella_context]) | sort | unique)) and
   (.target_contexts == [.umbrella_context]) and
+  (.target_check == {context:.umbrella_context,app_id:15368}) and
   (.legacy_contexts == $baseline[0].required_contexts) and
   (.source_digest == $baseline[0].source_digest) and $baseline[0].strict == true
 ' "$POLICY" >/dev/null; then
@@ -51,10 +51,20 @@ if ! python3 script/list_merge_blocking_checks.py --require-display-name "$umbre
   exit 1
 fi
 if ! jq -e --arg umbrella "$umbrella" '
-  .umbrella_context == $umbrella and .full_probe.umbrella_result == "success" and
-  .docs_probe.umbrella_result == "success" and .cleanup.pull_requests_closed == true and
+  .schema_version == 2 and .umbrella_context == $umbrella and
+  .full_probe.umbrella_result == "success" and
+  .planning_probe.umbrella_result == "success" and
+  .public_docs_probe.umbrella_result == "success" and
+  .cleanup.pull_requests_closed == true and
   .cleanup.branches_deleted == true and .cancellation.lower_run_cancelled == true and
-  .cancellation.newer_run_authoritative == true
+  .cancellation.newer_run_authoritative == true and
+  (.cancellation.controller_run_id | type == "number") and
+  .cancellation.controller_source_run_id == .cancellation.newer_run_id and
+  (.cancellation.lower_run_id as $lower |
+    (.cancellation.selected_lower_run_ids | index($lower)) != null) and
+  .cancellation.requested_controller_observed == true and
+  .cancellation.runner_consumption_observed == true and
+  .cancellation.bounded_controller_action == true
 ' "$OBSERVATION" >/dev/null; then
   echo "[crosswake] FAIL: source-bound green umbrella observation is absent or incomplete." >&2
   exit 1
@@ -64,16 +74,26 @@ current_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-current.XXXXXX")"
 desired_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-desired.XXXXXX")"
 after_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-after.XXXXXX")"
 proposal_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-proposal.XXXXXX")"
-trap 'rm -f "$current_file" "$desired_file" "$after_file" "$proposal_file"' EXIT
+normalized_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-normalized.XXXXXX")"
+after_normalized_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-after-normalized.XXXXXX")"
+trap 'rm -f "$current_file" "$desired_file" "$after_file" "$proposal_file" "$normalized_file" "$after_normalized_file"' EXIT
 gh api "$EP" >"$current_file"
-current_contexts="$(jq -c '[.checks[]?.context, .contexts[]?] | map(select(type == "string" and length > 0)) | sort | unique' "$current_file")"
-current_strict="$(jq -r '.strict == true' "$current_file")"
+if ! python3 script/normalize_required_checks.py --input "$current_file" >"$normalized_file"; then
+  echo "[crosswake] FAIL: live required checks are malformed, non-strict, or ambiguous." >&2
+  exit 1
+fi
+current_contexts="$(jq -c '[.checks[].context]' "$normalized_file")"
+current_strict="$(jq -r '.strict == true' "$normalized_file")"
 legacy_contexts="$(jq -c '.legacy_contexts' "$POLICY")"
 dual_contexts="$(jq -c '.dual_contexts' "$POLICY")"
+target_check="$(jq -cS '.target_check' "$POLICY")"
+target_matches="$(jq -cS --argjson target "$target_check" '[.checks[] | select(. == $target)] | length' "$normalized_file")"
 source_state_matches=false
-if [ "$MODE" = "add" ] && { [ "$current_contexts" = "$legacy_contexts" ] || [ "$current_contexts" = "$dual_contexts" ]; }; then
+if [ "$MODE" = "add" ] && [ "$current_contexts" = "$legacy_contexts" ] && [ "$target_matches" -eq 0 ]; then
   source_state_matches=true
-elif [ "$MODE" = "retire" ] && [ "$current_contexts" = "$dual_contexts" ]; then
+elif [ "$MODE" = "add" ] && [ "$current_contexts" = "$dual_contexts" ] && [ "$target_matches" -eq 1 ]; then
+  source_state_matches=true
+elif [ "$MODE" = "retire" ] && [ "$current_contexts" = "$dual_contexts" ] && [ "$target_matches" -eq 1 ]; then
   source_state_matches=true
 fi
 if [ "$current_strict" != "true" ] || [ "$source_state_matches" != "true" ]; then
@@ -82,15 +102,15 @@ if [ "$current_strict" != "true" ] || [ "$source_state_matches" != "true" ]; the
 fi
 
 if [ "$MODE" = "add" ]; then
-  jq --arg umbrella "$umbrella" --argjson app "$ACTIONS_APP_ID" \
-    '{strict:true,checks:(((.checks // []) + [{context:$umbrella,app_id:$app}]) | unique_by(.context) | sort_by(.context))}' \
-    "$current_file" >"$desired_file"
+  jq --argjson target "$target_check" \
+    '{strict:true,checks:((.checks + [$target]) | sort_by(.context))}' \
+    "$normalized_file" >"$desired_file"
 else
-  jq --arg umbrella "$umbrella" \
-    '{strict:true,checks:[(.checks // [])[] | select(.context == $umbrella)] | sort_by(.context)}' \
-    "$current_file" >"$desired_file"
+  jq --argjson target "$target_check" \
+    '{strict:true,checks:[$target]}' \
+    "$normalized_file" >"$desired_file"
 fi
-before_semantic="$(jq -cS '{strict:(.strict == true),checks:[.checks[]? | {context,app_id}]|sort_by(.context)}' "$current_file")"
+before_semantic="$(jq -cS '{strict,checks}' "$normalized_file")"
 after_semantic="$(jq -cS '{strict,checks:[.checks[]? | {context,app_id}]|sort_by(.context)}' "$desired_file")"
 source_digest="$(printf '%s' "$before_semantic" | shasum -a 256 | awk '{print $1}')"
 
@@ -101,7 +121,7 @@ if [ "$MODE" = "retire" ]; then
     --slurpfile policy "$POLICY" \
     '{schema_version:1,repository:$repository,default_branch:$branch,source_protection_digest:$digest,
       strict_before:true,strict_after:true,added_contexts:[],removed_contexts:$policy[0].legacy_contexts,
-      retained_contexts:$policy[0].target_contexts,producer_verification:"unique",
+      retained_contexts:$policy[0].target_contexts,retained_checks:[$policy[0].target_check],producer_verification:"unique",
       live_observation_reference:$observation,generated_at:$generated,apply_command:$command}' >"$proposal_file"
   if [ -n "$OUTPUT" ]; then mkdir -p "$(dirname "$OUTPUT")"; cp "$proposal_file" "$OUTPUT"; fi
   if [ -n "$VERIFY_OUTPUT" ] && ! jq -e --slurpfile expected "$VERIFY_OUTPUT" \
@@ -126,7 +146,11 @@ if [ "$MODE" = "retire" ]; then
 fi
 gh api --method PATCH "$EP" --input "$desired_file" >/dev/null
 gh api "$EP" >"$after_file"
-actual_after="$(jq -cS '{strict:(.strict == true),checks:[.checks[]? | {context,app_id}]|sort_by(.context)}' "$after_file")"
+if ! python3 script/normalize_required_checks.py --input "$after_file" >"$after_normalized_file"; then
+  echo "[crosswake] FAIL: post-apply branch protection response is malformed or ambiguous." >&2
+  exit 1
+fi
+actual_after="$(jq -cS '{strict,checks}' "$after_normalized_file")"
 if [ "$actual_after" != "$after_semantic" ]; then
   echo "[crosswake] FAIL: post-apply branch protection does not equal the exact desired state." >&2
   exit 1

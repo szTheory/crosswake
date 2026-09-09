@@ -54,8 +54,14 @@ python3 script/list_merge_blocking_checks.py --emitters >/dev/null
 section "required-context-local-audit" "script/check_required_checks_registered.sh --local-only"
 script/check_required_checks_registered.sh --local-only
 
+section "required-context-response-shape" "python3 script/normalize_required_checks.py --self-test"
+python3 script/normalize_required_checks.py --self-test
+
 section "evidence-schema" "node scripts/ci_monitor.cjs test-evidence"
 node scripts/ci_monitor.cjs test-evidence
+
+section "immutable-required-actions" "node scripts/ci_monitor.cjs check-actions"
+node scripts/ci_monitor.cjs check-actions
 
 section "policy-contracts" "mix test test/crosswake/proof/phase165_ci_policy_test.exs"
 mix test test/crosswake/proof/phase165_ci_policy_test.exs

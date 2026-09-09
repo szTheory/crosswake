@@ -27,7 +27,7 @@ def closed_result(
     docs = classification == "documentation_only"
     scheduled_families = ["documentation_contracts"] if docs else ["full_proof"]
     if docs and affected_families and "public_docs" in affected_families:
-        scheduled_families.append("threadline_docs_contract")
+        scheduled_families.extend(["public_docs", "threadline_docs_contract"])
     return {
         "schema_version": SCHEMA_VERSION,
         "classification": classification,
@@ -262,6 +262,12 @@ class ClassifierSelfTest(unittest.TestCase):
             )
             self.assertEqual(result["classification"], case["classification"], case["name"])
             self.assertEqual(result["reason"], case["reason"], case["name"])
+            if "scheduled_families" in case:
+                self.assertEqual(
+                    result["scheduled_families"],
+                    case["scheduled_families"],
+                    case["name"],
+                )
 
     def test_closed_status_arity_and_path_boundaries(self) -> None:
         for raw in (
@@ -300,11 +306,11 @@ class ClassifierSelfTest(unittest.TestCase):
         self.assertEqual(planning["scheduled_families"], ["documentation_contracts"])
         self.assertEqual(
             public["scheduled_families"],
-            ["documentation_contracts", "threadline_docs_contract"],
+            ["documentation_contracts", "public_docs", "threadline_docs_contract"],
         )
         self.assertEqual(
             mixed_docs["scheduled_families"],
-            ["documentation_contracts", "threadline_docs_contract"],
+            ["documentation_contracts", "public_docs", "threadline_docs_contract"],
         )
 
     def test_record_order_does_not_change_output(self) -> None:

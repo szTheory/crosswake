@@ -16,6 +16,7 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
   @final_source ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/final-remote-default-source.json"
   @after_evidence ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/after.json"
   @comparison ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/comparison.md"
+  @required_check_cases "test/fixtures/ci/required-checks/cases.json"
 
   @tag :final_source
   test "final source binding covers the compatibility-free workflow and manifest" do
@@ -124,7 +125,14 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
     assert monitor =~ "remote-default-source.json"
     assert monitor =~ "lower_run_cancelled"
     assert monitor =~ "newer_run_authoritative"
+    assert monitor =~ "controller_run_id"
+    assert monitor =~ "controller_source_run_id"
+    assert monitor =~ "selected_lower_run_ids"
+    assert monitor =~ "waitForControllerResult"
     assert monitor =~ "Crosswake CI"
+    assert monitor =~ "planning_probe"
+    assert monitor =~ "public_docs_probe"
+    assert monitor =~ "public_docs"
 
     if File.exists?(@remote_source) do
       source = @remote_source |> File.read!() |> Jason.decode!()
@@ -153,6 +161,7 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
 
     assert policy["strict"] == true
     assert policy["umbrella_context"] == "Crosswake CI"
+    assert policy["target_check"] == %{"context" => "Crosswake CI", "app_id" => 15_368}
     assert policy["dual_contexts"] == Enum.sort(policy["legacy_contexts"] ++ ["Crosswake CI"])
     assert policy["target_contexts"] == ["Crosswake CI"]
     assert policy["source_digest"] =~ ~r/^[0-9a-f]{64}$/
@@ -164,5 +173,39 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
     assert audit =~ "--state"
     assert audit =~ "dual|target"
     assert audit =~ "--live"
+  end
+
+  test "required-check audit binds sole authority to the GitHub Actions app" do
+    cases = @required_check_cases |> File.read!() |> Jason.decode!()
+    assert cases["schema_version"] == 1
+    by_name = Map.new(cases["cases"], &{&1["name"], &1})
+
+    run = fn protection ->
+      System.cmd(
+        "bash",
+        ["script/check_required_checks_registered.sh", "--policy", @required_policy, "--state", "target", "--live"],
+        env: [{"CROSSWAKE_REQUIRED_CHECKS_JSON", protection}],
+        stderr_to_stdout: true
+      )
+    end
+
+    assert {_output, 0} = run.(Jason.encode!(by_name["real_target_mirror"]["protection"]))
+    assert {wrong_output, 1} = run.(Jason.encode!(by_name["wrong_target_app"]["protection"]))
+    assert wrong_output =~ "does not equal exact target policy state"
+
+    for name <- [
+          "extra_legacy_context",
+          "different_legacy_context",
+          "missing_app_id",
+          "duplicate_check_authority",
+          "duplicate_context_authority",
+          "non_strict"
+        ] do
+      assert {output, 1} = run.(Jason.encode!(by_name[name]["protection"]))
+      assert output =~ "required-check response"
+    end
+
+    registrar = File.read!("script/register_required_checks.sh")
+    assert registrar =~ "normalize_required_checks.py"
   end
 end

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {"name": "real_target_mirror", "valid_shape": true, "protection": {"strict": true, "contexts": ["Crosswake CI"], "checks": [{"context": "Crosswake CI", "app_id": 15368}]}},
+    {"name": "wrong_target_app", "valid_shape": true, "protection": {"strict": true, "contexts": ["Crosswake CI"], "checks": [{"context": "Crosswake CI", "app_id": 99}]}},
+    {"name": "extra_legacy_context", "valid_shape": false, "protection": {"strict": true, "contexts": ["Crosswake CI", "legacy proof"], "checks": [{"context": "Crosswake CI", "app_id": 15368}]}},
+    {"name": "different_legacy_context", "valid_shape": false, "protection": {"strict": true, "contexts": ["legacy proof"], "checks": [{"context": "Crosswake CI", "app_id": 15368}]}},
+    {"name": "missing_app_id", "valid_shape": false, "protection": {"strict": true, "contexts": ["Crosswake CI"], "checks": [{"context": "Crosswake CI"}]}},
+    {"name": "duplicate_check_authority", "valid_shape": false, "protection": {"strict": true, "contexts": ["Crosswake CI"], "checks": [{"context": "Crosswake CI", "app_id": 15368}, {"context": "Crosswake CI", "app_id": 15368}]}},
+    {"name": "duplicate_context_authority", "valid_shape": false, "protection": {"strict": true, "contexts": ["Crosswake CI", "Crosswake CI"], "checks": [{"context": "Crosswake CI", "app_id": 15368}]}},
+    {"name": "non_strict", "valid_shape": false, "protection": {"strict": false, "contexts": ["Crosswake CI"], "checks": [{"context": "Crosswake CI", "app_id": 15368}]}}
+  ]
+}

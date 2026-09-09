@@ -54,7 +54,13 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
     current_main = fixture.preexisting_sha
 
     {output, exit_code} =
-      atomic_push(fixture.release, fixture.mirror, current_main, fixture.split_sha, "v#{@version}")
+      atomic_push(
+        fixture.release,
+        fixture.mirror,
+        current_main,
+        fixture.split_sha,
+        "v#{@version}"
+      )
 
     assert exit_code == 0, output
     assert mirror_ref_sha(fixture.mirror, "refs/heads/main") == fixture.split_sha
@@ -140,7 +146,14 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
     # "already points at ... no push needed" - reproducing the exact state
     # after D-21 step 4 (the tag push) when step 5 (the main re-baseline) is
     # dispatched as its own separate run.
-    git!(["-C", fixture.release, "push", fixture.mirror, "#{fixture.split_sha}:refs/tags/v#{@version}"])
+    git!([
+      "-C",
+      fixture.release,
+      "push",
+      fixture.mirror,
+      "#{fixture.split_sha}:refs/tags/v#{@version}"
+    ])
+
     assert mirror_ref_sha(fixture.mirror, "refs/heads/main") == fixture.preexisting_sha
 
     {output, exit_code} = run_script(fixture, ["--apply", "--update-main"])
@@ -306,8 +319,8 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
     # The LOCAL side enumerates ios-core-v* tags; a shallow clone would not have them.
     assert parity =~ "fetch-depth: 0"
     assert parity =~ "fetch-tags: true"
-    # This repo's dominant discipline is SHA-pin + version comment.
-    assert parity =~ "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0"
+    # This repo's dominant discipline is an immutable SHA pin plus its reviewed version comment.
+    assert parity =~ "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2"
     assert parity =~ "./script/check_ios_mirror_parity.sh"
 
     umbrella = job_section!(workflow, "merge-blocking-crosswake-ci")
@@ -378,7 +391,12 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
   end
 
   defp backfill_fixture do
-    root = Path.join(System.tmp_dir!(), "crosswake-phase153-ios-mirror-#{System.unique_integer([:positive])}")
+    root =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-phase153-ios-mirror-#{System.unique_integer([:positive])}"
+      )
+
     release = Path.join(root, "release")
     mirror = Path.join(root, "mirror.git")
     File.mkdir_p!(release)
@@ -391,8 +409,16 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
 
     File.mkdir_p!(Path.join(release, "packages/crosswake-shell-core-ios"))
     File.mkdir_p!(Path.join(release, "packages/crosswake-shell-core-android"))
-    File.write!(Path.join(release, "packages/crosswake-shell-core-ios/Package.swift"), "// swift package\n")
-    File.write!(Path.join(release, "packages/crosswake-shell-core-android/build.gradle.kts"), "// gradle\n")
+
+    File.write!(
+      Path.join(release, "packages/crosswake-shell-core-ios/Package.swift"),
+      "// swift package\n"
+    )
+
+    File.write!(
+      Path.join(release, "packages/crosswake-shell-core-android/build.gradle.kts"),
+      "// gradle\n"
+    )
 
     File.write!(
       Path.join(release, ".release-please-manifest.json"),
@@ -472,7 +498,9 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
   end
 
   defp mirror_ref_sha(mirror, ref) do
-    case System.cmd("git", ["--git-dir", mirror, "show-ref", "--verify", "-s", ref], stderr_to_stdout: true) do
+    case System.cmd("git", ["--git-dir", mirror, "show-ref", "--verify", "-s", ref],
+           stderr_to_stdout: true
+         ) do
       {output, 0} -> String.trim(output)
       {_output, _exit_code} -> nil
     end

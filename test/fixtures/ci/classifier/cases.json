@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "cases": [
-    {"name": "allowed_add", "records_hex": "4100524541444d452e6d6400", "classification": "documentation_only", "reason": "all_changed_paths_allowlisted"},
+    {"name": "allowed_add", "records_hex": "4100524541444d452e6d6400", "classification": "documentation_only", "reason": "all_changed_paths_allowlisted", "scheduled_families": ["documentation_contracts", "public_docs", "threadline_docs_contract"]},
     {"name": "allowed_copy", "records_hex": "43373500646f63732f736f757263652e6d6400646f63732f636f70792e6d6400", "classification": "documentation_only", "reason": "all_changed_paths_allowlisted"},
     {"name": "allowed_delete", "records_hex": "44006775696465732f726574697265642e6d6400", "classification": "documentation_only", "reason": "all_changed_paths_allowlisted"},
     {"name": "allowed_rename", "records_hex": "52313030006775696465732f6f6c642e6d64006775696465732f6e65772e6d6400", "classification": "documentation_only", "reason": "all_changed_paths_allowlisted"},
@@ -12,6 +12,7 @@
     {"name": "literal_newline", "records_hex": "41006775696465732f6e65776c696e650a6e616d652e6d6400", "classification": "documentation_only", "reason": "all_changed_paths_allowlisted"},
     {"name": "missing_nul", "records_hex": "4100524541444d452e6d64", "classification": "full_proof", "reason": "diff_empty_or_malformed"},
     {"name": "mixed", "records_hex": "4100524541444d452e6d64004d006c69622f63726f737377616b652e657800", "classification": "full_proof", "reason": "unallowlisted_or_mixed_path"},
+    {"name": "planning_add", "records_hex": "41002e706c616e6e696e672f50524f4a4543542e6d6400", "classification": "documentation_only", "reason": "all_changed_paths_allowlisted", "scheduled_families": ["documentation_contracts"]},
     {"name": "release_input", "records_hex": "4d00646f63732f434f4d50414e494f4e2d5055424c4953482d52554e424f4f4b2e6d6400", "classification": "full_proof", "reason": "unallowlisted_or_mixed_path"},
     {"name": "rename_crosses_boundary", "records_hex": "52313030006775696465732f6f6c642e6d64006c69622f6e65772e657800", "classification": "full_proof", "reason": "unallowlisted_or_mixed_path"},
     {"name": "truncated_rename", "records_hex": "52313030006775696465732f6f6c642e6d6400", "classification": "full_proof", "reason": "diff_empty_or_malformed"},

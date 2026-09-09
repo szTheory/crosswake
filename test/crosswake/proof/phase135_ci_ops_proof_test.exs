@@ -486,14 +486,16 @@ defmodule Crosswake.Proof.Phase135CiOpsProofTest do
              :merge_blocking
            )
 
-    assert String.contains?(register_source, "unique_by(.context)"),
+    assert String.contains?(register_source, "normalize_required_checks.py") and
+             String.contains?(register_source, "actual_after") and
+             String.contains?(register_source, "after_semantic"),
            ProofAssertions.stable_id_message(
              "proof.sc5.register.idempotent",
-             "register_required_checks.sh must use 'unique_by(.context)' (idempotent)",
+             "register_required_checks.sh must normalize and verify the exact desired state (idempotent)",
              "script/register_required_checks.sh",
-             "unique_by(.context) not found",
+             "exact normalized post-write verification not found",
              "script/register_required_checks.sh",
-             "the jq pipeline must deduplicate by context so re-runs are idempotent",
+             "the registrar must reject ambiguous inputs and verify the exact normalized post-write state",
              :merge_blocking
            )
 
@@ -536,9 +538,7 @@ defmodule Crosswake.Proof.Phase135CiOpsProofTest do
     # 1) exits 0 (no PyYAML missing, no YAML parse errors)
     # 2) the sole required umbrella context appears in the output
     {discovery_output, discovery_exit} =
-      System.cmd("python3", ["script/list_merge_blocking_checks.py"],
-        stderr_to_stdout: true
-      )
+      System.cmd("python3", ["script/list_merge_blocking_checks.py"], stderr_to_stdout: true)
 
     assert discovery_exit == 0,
            ProofAssertions.stable_id_message(
