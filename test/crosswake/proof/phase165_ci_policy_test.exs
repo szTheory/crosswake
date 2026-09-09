@@ -47,7 +47,7 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     classifier = File.read!(@classifier)
     workflow = File.read!(@workflow)
 
-    assert classifier =~ ~s(scheduled_families.extend(["public_docs", "threadline_docs_contract"]))
+    assert classifier =~ ~s|scheduled_families.extend(["public_docs", "threadline_docs_contract"])|
 
     for job <- ["brand-structural", "brand-visual", "collateral-binaries-guard", "hex-page-proof"] do
       body = workflow |> String.split("  #{job}:", parts: 2) |> List.last()
