@@ -13,9 +13,9 @@ provides:
   - Reproducible descriptive comparison without causal overclaim
 affects: [phase-165-verification, release-readiness, ci-evidence]
 actuals:
-  tokens: 8059
+  tokens: 9937
   tasks: 2
-  commits: 4
+  commits: 5
 tech-stack:
   added: []
   patterns:
@@ -67,7 +67,7 @@ coverage:
         ref: script/check_phase165_efficient_ci.sh
         status: pass
     human_judgment: false
-duration: 9 min
+duration: 51 min
 completed: 2026-09-08
 status: complete
 ---
@@ -78,16 +78,17 @@ status: complete
 
 ## Performance
 
-- **Duration:** 9 min
+- **Duration:** 51 min
 - **Started:** 2026-09-09T01:07:12Z
-- **Completed:** 2026-09-09T01:16:15Z
+- **Completed:** 2026-09-09T01:58:40Z
 - **Tasks:** 2
 - **Files modified:** 5
 
 ## Accomplishments
 
-- Bound the final record to remote-default SHA `cec20fbd71ca3319c7d7dfbeb439d1f74545e9c8`, with exact matching workflow and manifest digests and no compatibility authority.
+- Rebound the final record after the credential-boundary fix to remote-default SHA `71732ad4393de60a99cc2fec7316c0651ae6e96b`, with exact matching workflow and manifest digests and no compatibility authority.
 - Proved live target protection remains strict and requires exactly `Crosswake CI` before and after collection.
+- Proved the pull-request workflow contains no repository secret expressions or named release/recovery credentials while retaining all 44 proof leaves.
 - Captured one sanitized main-bound automation observation; exact-SHA documentation-only and executable PR cohorts were unavailable and remain `not_measured`.
 - Generated a reproducible comparison containing workflow/job/check counts, runner classes, timing medians/ranges, closed cache outcomes, and explicit `not_exposed` queue timing.
 
@@ -97,6 +98,7 @@ status: complete
 2. **Task 1 GREEN: bind final evidence to landed source** — `32da4858`
 3. **Task 2 RED: require honest matched comparison** — `6b87e7a8`
 4. **Task 2 GREEN: capture honest final CI evidence** — `9dfde452`
+5. **Security rebind: recapture final evidence after credential-boundary fix** — `2a7d82d6`
 
 ## Files Created/Modified
 
@@ -134,6 +136,7 @@ status: complete
 
 - An initial manual digest spot-check used ambiguous zsh `$name:suffix` expansion. Re-running with braced expansion proved both blobs match exactly; the production verifier passes SHA and path as separate process arguments and is unaffected.
 - The final exact SHA has no qualifying documentation-only or executable PR runs. Those cohorts remain closed as unavailable.
+- Security review required a new landed source after removing repository credentials from pull-request Hex dry-run proof. The evidence was rebound rather than treating the earlier source record as final.
 
 ## Known Stubs
 
@@ -155,8 +158,8 @@ None.
 ## Self-Check: PASSED
 
 - All five plan files exist.
-- Commits `742436f5`, `32da4858`, `6b87e7a8`, and `9dfde452` exist.
-- Exact-source verification, all 8 evidence tests, the recurring Phase 165 gate, and live strict target protection pass.
+- Commits `742436f5`, `32da4858`, `6b87e7a8`, `9dfde452`, and `2a7d82d6` exist.
+- Exact-source verification, 34 focused evidence/integrity tests, the recurring Phase 165 gate, credential-free PR workflow scan, and live strict target protection pass.
 
 ---
 *Phase: 165-efficient-and-maintainable-ci*
