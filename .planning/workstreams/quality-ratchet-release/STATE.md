@@ -4,17 +4,17 @@ milestone: v22.0
 milestone_name: Quality Ratchet & Release Readiness
 current_phase: 165
 current_phase_name: Efficient and Maintainable CI
-status: executing
-stopped_at: Completed 165-12-PLAN.md
-last_updated: "2026-09-09T00:24:51.810Z"
+status: verifying
+stopped_at: Completed 165-13-PLAN.md
+last_updated: "2026-09-09T01:17:44.142Z"
 last_activity: 2026-09-08
 last_activity_desc: Plan 165-12 exact authority retirement applied and compatibility-only producers removed
-state_head: 1c4f129d4436af62d4a764f84897050ce55fc2a4
+state_head: 9dfde452c9eeb3d1f496b483c8bd97a7b4051408
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 18
-  completed_plans: 17
+  completed_plans: 18
   percent: 20
 workstream: quality-ratchet-release
 ---
@@ -33,7 +33,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 
 Phase: 165 (Efficient and Maintainable CI) — EXECUTING
 Plan: 13 of 13
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-09-08 — Plan 165-12 exact authority retirement applied and compatibility-only producers removed
 
 Progress: [██░░░░░░░░] 20%
@@ -70,6 +70,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase 165 P10 | 3h 30m | 3 tasks | 11 files |
 | Phase 165 P11 | 6 min | 1 tasks | 3 files |
 | Phase 165 P12 | 18 min | 2 tasks | 8 files |
+| Phase 165 P13 | 9 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,8 @@ Progress: [██░░░░░░░░] 20%
 - [Phase 165]: Plan 165-11 records approval only; Plan 165-12 owns the separately verified branch-protection write.
 - [Phase 165]: Apply only the approved source-protection digest and immediately require strict target authority containing exactly Crosswake CI.
 - [Phase 165]: Keep all forty-four meaningful proof leaves and classify-change while removing every migration-only compatibility conclusion.
+- [Phase 165]: Reject final evidence unless the exact supplied SHA remains the remote default tip and both authoritative blobs match locally.
+- [Phase 165]: Report the pre/post main-bound cohort as not_measured because its explicit criteria differ, despite retaining each sanitized observation descriptively.
 
 ### Pending Todos
 
@@ -136,6 +139,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-09T00:24:51.773Z
-Stopped at: Completed 165-12-PLAN.md
+Last session: 2026-09-09T01:17:44.108Z
+Stopped at: Completed 165-13-PLAN.md
 Resume file: None

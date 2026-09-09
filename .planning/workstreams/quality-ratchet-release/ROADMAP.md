@@ -57,7 +57,7 @@ independent workstream; the numbering does not imply that parked adopter work mu
   4. A documentation-only pull request receives an always-visible merge result without scheduling unrelated build, browser, Android, or Apple proof.
   5. A maintainer can compare reproducible before/after workflow count, runner selection, queue time, and execution time, and can still identify each named proof behind the consolidated reusable orchestration.
 
-**Plans**: 12/13 plans executed
+**Plans**: 13/13 plans executed
 
 Plans:
 **Wave 1**
@@ -110,7 +110,7 @@ Plans:
 
 **Wave 13** *(blocked on Wave 12 completion)*
 
-- [ ] 165-13-PLAN.md — Bind the landed final graph to an exact remote SHA and capture matched after evidence.
+- [x] 165-13-PLAN.md — Bind the landed final graph to an exact remote SHA and capture matched after evidence.
 
 ### Phase 166: Clean-Checkout Engineering Quality
 
@@ -161,7 +161,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 164. Dependency Security and Gate Authority | 5/5 | Complete    | 2026-08-28 |
-| 165. Efficient and Maintainable CI | 12/13 | In Progress|  |
+| 165. Efficient and Maintainable CI | 13/13 | In Progress|  |
 | 166. Clean-Checkout Engineering Quality | 0/TBD | Not started | - |
 | 167. Documentation and Pull-Request Reconciliation | 0/TBD | Not started | - |
 | 168. 0.2.1 Release Candidate Readiness | 0/TBD | Not started | - |
