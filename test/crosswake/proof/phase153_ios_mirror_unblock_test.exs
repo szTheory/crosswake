@@ -31,7 +31,6 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
   @parity_script "script/check_ios_mirror_parity.sh"
   @parity_workflow ".github/workflows/crosswake-ci.yml"
   @parity_leaf "ios-mirror-parity-proof"
-  @parity_context "merge-blocking-ios-mirror-parity"
   @version "0.2.0"
   @source_ref "refs/tags/ios-core-v0.2.0"
 
@@ -300,8 +299,7 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
     workflow = File.read!(@parity_workflow)
     parity = job_section!(workflow, @parity_leaf)
 
-    # The executable leaf is literal and the legacy required context remains a
-    # checkout-free projection of the single Crosswake CI authority.
+    # The executable leaf is literal and remains under the single Crosswake CI authority.
     assert workflow =~ "  #{@parity_leaf}:\n"
     assert parity =~ "name: #{@parity_leaf}\n"
     refute parity =~ ~r/name:.*\$\{\{/
@@ -312,20 +310,17 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
     assert parity =~ "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0"
     assert parity =~ "./script/check_ios_mirror_parity.sh"
 
-    compatibility = job_section!(workflow, "compat-ios-mirror-parity")
-    assert compatibility =~ "name: #{@parity_context}"
-    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
-    assert compatibility =~ "if: always()"
-    refute compatibility =~ "actions/checkout"
+    umbrella = job_section!(workflow, "merge-blocking-crosswake-ci")
+    assert umbrella =~ ~r/^      - #{@parity_leaf}$/m
   end
 
   @tag :phase153_ios_mirror_unblock
-  test "list_merge_blocking_checks.py auto-discovers the parity lane as a required-check context" do
+  test "required-check discovery returns only the target Crosswake CI context" do
     {output, exit_code} =
       System.cmd("python3", ["script/list_merge_blocking_checks.py"], stderr_to_stdout: true)
 
     assert exit_code == 0, output
-    assert @parity_context in String.split(output, "\n", trim: true)
+    assert String.split(output, "\n", trim: true) == ["Crosswake CI"]
   end
 
   defp job_section!(workflow, job_name) do

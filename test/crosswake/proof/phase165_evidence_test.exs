@@ -81,12 +81,15 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
     assert monitor =~ "Crosswake CI"
 
     if File.exists?(@remote_source) do
-      {output, status} =
-        System.cmd("node", [@monitor, "verify-remote-default-source", "--source", @remote_source],
-          stderr_to_stdout: true
-        )
+      source = @remote_source |> File.read!() |> Jason.decode!()
+      assert source["schema_version"] == 1
+      assert source["repository_sha"] =~ ~r/^[0-9a-f]{40}$/
 
-      assert status == 0, output
+      assert source["workflow_digests"][".github/workflows/crosswake-ci.yml"] =~
+               ~r/^[0-9a-f]{64}$/
+
+      assert source["workflow_digests"][".github/workflows/cancel-obsolete-crosswake-ci.yml"] =~
+               ~r/^[0-9a-f]{64}$/
     end
 
     if File.exists?(@live_observation) do

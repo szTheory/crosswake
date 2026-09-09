@@ -1,8 +1,7 @@
 defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
   @moduledoc """
   Merge-blocking proof that the `android-generated-shell-unit` lane remains under
-  the `Crosswake CI` umbrella and its checkout-free
-  `merge-blocking-native-behavioral-proof` compatibility projection (LIFE-01a).
+  the single required `Crosswake CI` umbrella (LIFE-01a).
 
   This is the shift-left of 134-UAT Test #1 ("Android generated-shell lane actually blocks
   a real PR merge"), which was previously a human verification gated on a live PR against
@@ -16,7 +15,7 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
   Literal-presence facts are asserted via `File.read!` + `String.contains?`. Structural
   facts that a substring cannot prove are scoped to exact YAML job blocks. The historical
   fixture helper still proves exact single-line `needs:` parity; the production contract
-  now checks the central umbrella and compatibility jobs directly.
+  now checks the central umbrella directly.
 
   Untagged. `async: true` — read-only filesystem only; no Application state mutation and
   (per the deferred-items.md flaky-test lesson) no `File.cd!`.
@@ -48,9 +47,9 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
     src = File.read!(@gate)
 
     presence = [
-      {"proof.life_01a.gate.aggregator_job", "merge-blocking-native-behavioral-proof",
+      {"proof.life_01a.gate.aggregator_job", "merge-blocking-crosswake-ci",
        "the merge-blocking aggregator job must be named in the workflow",
-       "rename/restore the merge-blocking-native-behavioral-proof job"},
+       "rename/restore the merge-blocking-crosswake-ci job"},
       {"proof.life_01a.gate.if_always", "if: always()",
        "aggregator must run even when a leaf is skipped/failed",
        "restore `if: always()` on the aggregator — a skipped dep would otherwise count as success (footgun 1)"},
@@ -78,20 +77,16 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
   end
 
   # ---------------------------------------------------------------------------
-  # Claim 1b — structural wiring through the central umbrella and compatibility context.
+  # Claim 1b — structural wiring through the central umbrella.
   # ---------------------------------------------------------------------------
 
   test "Crosswake CI structurally gates both Android native leaves" do
     umbrella = @gate |> File.read!() |> job_block("merge-blocking-crosswake-ci")
-    compatibility = @gate |> File.read!() |> job_block("compat-native-behavioral-proof")
 
     assert umbrella =~ ~r/^      - android-package-unit$/m
     assert umbrella =~ ~r/^      - android-generated-shell-unit$/m
-    assert compatibility =~ "name: merge-blocking-native-behavioral-proof"
-    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
-    assert compatibility =~ "if: always()"
-    assert compatibility =~ ~s(test "$RESULT" = success)
-    refute compatibility =~ "actions/checkout"
+    assert umbrella =~ "name: Crosswake CI"
+    assert umbrella =~ "if: always()"
   end
 
   # ---------------------------------------------------------------------------
@@ -131,25 +126,23 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
   end
 
   # ---------------------------------------------------------------------------
-  # Claim 1d — sibling compatibility projections share the checkout-free,
-  # if:always()+single-umbrella-needs pattern.
+  # Claim 1d — sibling proof leaves remain direct umbrella dependencies.
   # ---------------------------------------------------------------------------
 
   @siblings [
-    {"compat-contract-drift", "merge-blocking-contract-drift"},
-    {"compat-offline-sync-e2e", "merge-blocking-offline-sync-e2e"}
+    {"guard-01-contract-drift-test", "guard-01-contract-drift-test"},
+    {"e2e-proof", "e2e-proof"}
   ]
 
   test "sibling merge-blocking aggregators share the same rollup wiring" do
     src = File.read!(@gate)
 
+    umbrella = job_block(src, "merge-blocking-crosswake-ci")
+
     for {job, display_name} <- @siblings do
-      compatibility = job_block(src, job)
-      assert compatibility =~ "name: #{display_name}"
-      assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
-      assert compatibility =~ "if: always()"
-      assert compatibility =~ "RESULT: ${{ needs.merge-blocking-crosswake-ci.result }}"
-      refute compatibility =~ "actions/checkout"
+      leaf = job_block(src, job)
+      assert leaf =~ "name: #{display_name}"
+      assert umbrella =~ ~r/^      - #{Regex.escape(job)}$/m
     end
   end
 
@@ -186,19 +179,17 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
   end
 
   # ---------------------------------------------------------------------------
-  # Claim 2 anchor — the negative-control leaf and legacy projection must remain.
+  # Claim 2 anchor — the negative-control leaf remains under the umbrella.
   # ---------------------------------------------------------------------------
 
   test "aggregator negative-control workflow exists with its skipped-leaf arm" do
     src = File.read!(@negctl)
     leaf = job_block(src, "proof-aggregator-negative-control")
-    compatibility = job_block(src, "compat-aggregator-negative-control")
+    umbrella = job_block(src, "merge-blocking-crosswake-ci")
 
     assert leaf =~ "name: proof-aggregator-negative-control"
     assert leaf =~ "python3 script/check_aggregator_result_semantics.py --self-test"
-    assert compatibility =~ "name: merge-blocking-aggregator-negative-control"
-    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
-    assert compatibility =~ "if: always()"
+    assert umbrella =~ ~r/^      - proof-aggregator-negative-control$/m
   end
 
   test "aggregator negative control awaits every closed-policy action outcome" do

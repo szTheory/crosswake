@@ -8,9 +8,7 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
   @script "script/check_dependency_security.sh"
   @fixture "test/fixtures/security/advisory-bearing.lock"
   @workflow ".github/workflows/crosswake-ci.yml"
-  @security_context "merge-blocking-dependency-security"
   @security_leaf "proof-dependency-security"
-  @security_compatibility "compat-dependency-security"
 
   @root_targets %{
     "phoenix" => "1.8.13",
@@ -222,16 +220,16 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
     end
   end
 
-  test "one literal workflow job is the sole dependency-security result producer" do
-    {output, 0} = System.cmd("python3", ["script/list_merge_blocking_checks.py", "--emitters"])
+  test "one literal workflow job is the sole dependency-security proof producer" do
+    {output, 0} = System.cmd("python3", ["script/list_merge_blocking_checks.py", "--producers"])
 
     producers =
       output
       |> String.split("\n", trim: true)
       |> Enum.map(&String.split(&1, "\t"))
-      |> Enum.filter(fn [name, _path, _job] -> name == @security_context end)
+      |> Enum.filter(fn [name, _path, _job] -> name == @security_leaf end)
 
-    assert producers == [[@security_context, @workflow, @security_compatibility]]
+    assert producers == [[@security_leaf, @workflow, @security_leaf]]
 
     dynamic_security_names =
       [".github/workflows/*.yml", ".github/workflows/*.yaml"]
@@ -249,10 +247,9 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
     assert dynamic_security_names == []
   end
 
-  test "dependency-security leaf owns audits and the legacy context projects the umbrella" do
+  test "dependency-security leaf owns audits under the target umbrella" do
     source = File.read!(@workflow)
     leaf = job_section!(source, @security_leaf)
-    compatibility = job_section!(source, @security_compatibility)
     umbrella = job_section!(source, "merge-blocking-crosswake-ci")
 
     assert leaf =~ "name: #{@security_leaf}"
@@ -274,12 +271,6 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
 
     assert leaf =~ "$GITHUB_STEP_SUMMARY"
     assert umbrella =~ ~r/^      - #{@security_leaf}$/m
-
-    assert compatibility =~ "name: #{@security_context}"
-    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
-    assert compatibility =~ "if: always()"
-    assert compatibility =~ ~s(test "$RESULT" = success)
-    refute compatibility =~ "actions/checkout"
 
     refute leaf =~ "continue-on-error"
     refute leaf =~ "script/register_required_checks.sh"

@@ -217,11 +217,8 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
     refute leaf =~ ~r/\b20 test files\b/
     refute leaf =~ ~r/\b51 tests\b/
 
-    compatibility = job_section!(workflow, "compat-requires-example-host")
-    assert compatibility =~ "name: merge-blocking-requires-example-host"
-    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
-    assert compatibility =~ "if: always()"
-    refute compatibility =~ "actions/checkout"
+    umbrella = job_section!(workflow, "merge-blocking-crosswake-ci")
+    assert umbrella =~ ~r/^      - proof-requires-example-host$/m
   end
 
   defp job_section!(workflow, job_name) do

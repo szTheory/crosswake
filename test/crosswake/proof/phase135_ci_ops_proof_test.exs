@@ -464,14 +464,14 @@ defmodule Crosswake.Proof.Phase135CiOpsProofTest do
   test "SC5: registration tooling is dry-run-default, parametric, idempotent and detector is fail-closed" do
     register_source = File.read!("script/register_required_checks.sh")
 
-    assert String.contains?(register_source, ~s(DRY_RUN="${DRY_RUN:-1}")),
+    assert String.contains?(register_source, ~s(ACTION="dry-run")),
            ProofAssertions.stable_id_message(
              "proof.sc5.register.dry_run_default",
-             "register_required_checks.sh must default DRY_RUN to 1",
+             "register_required_checks.sh must default its action to dry-run",
              "script/register_required_checks.sh",
-             "DRY_RUN default not found",
+             "ACTION dry-run default not found",
              "script/register_required_checks.sh",
-             "add DRY_RUN=\"${DRY_RUN:-1}\" so the script is safe-by-default (never mutates in CI)",
+             "keep ACTION=\"dry-run\" so mutation requires an explicit --apply flag",
              :merge_blocking
            )
 
@@ -534,8 +534,7 @@ defmodule Crosswake.Proof.Phase135CiOpsProofTest do
 
     # Live discovery: run the parametric discovery script and assert:
     # 1) exits 0 (no PyYAML missing, no YAML parse errors)
-    # 2) merge-blocking-release-as-staleness appears in the output
-    # DO NOT hardcode all 20 lane names — this would require a test edit on every future lane.
+    # 2) the sole required umbrella context appears in the output
     {discovery_output, discovery_exit} =
       System.cmd("python3", ["script/list_merge_blocking_checks.py"],
         stderr_to_stdout: true
@@ -552,14 +551,14 @@ defmodule Crosswake.Proof.Phase135CiOpsProofTest do
              :merge_blocking
            )
 
-    assert String.contains?(discovery_output, "merge-blocking-release-as-staleness"),
+    assert String.trim(discovery_output) == "Crosswake CI",
            ProofAssertions.stable_id_message(
              "proof.sc5.discovery.staleness_lane",
-             "list_merge_blocking_checks.py must emit 'merge-blocking-release-as-staleness'",
+             "list_merge_blocking_checks.py must emit only the required 'Crosswake CI' umbrella",
              "script/list_merge_blocking_checks.py",
              "output was: #{discovery_output}",
              "script/list_merge_blocking_checks.py",
-             "check that the release-as-staleness-gate.yml job name contains 'merge-blocking-release-as-staleness'",
+             "restore the exact strict required context 'Crosswake CI' without compatibility contexts",
              :merge_blocking
            )
   end
