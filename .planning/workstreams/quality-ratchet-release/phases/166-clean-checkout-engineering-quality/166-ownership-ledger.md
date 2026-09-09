@@ -121,7 +121,7 @@ Disposition is closed to `retained`, `changed`, `removed-with-proof`, and `unpro
 
 | source candidate | target | edge kind | evidence | owner | disposition |
 | --- | --- | --- | --- | --- | --- |
-| .github/workflows/crosswake-ci.yml | examples/phoenix_host/playwright.config.ts | include | e2e-proof and route-tour-proof invoke the host Playwright project | browser proof owner | changed |
+| .github/workflows/crosswake-ci.yml | examples/phoenix_host/playwright.config.ts | include | real-config repository, local, and CI modes pass test/js/playwright_repository_mode.test.mjs | browser proof owner | changed |
 | .github/workflows/crosswake-ci.yml | lib/mix/tasks/crosswake.contract.gen.ex | caller | guard-02-generate-and-diff invokes the Mix task | generated-contract owner | retained |
 | lib/mix/tasks/crosswake.contract.gen.ex | docs/_contract_snippet.md | generator | default argv writes the registered documentation output | generated-contract owner | retained |
 | lib/mix/tasks/crosswake.contract.gen.ex | examples/android_shell_host/app/src/dev/assets/route_activation.json | generator | dev argv writes the registered Android fixture | generated-contract owner | retained |
@@ -167,4 +167,3 @@ No compatibility path was proven both migration-only and absent from every suppo
 ## D-12 extraction review
 
 No candidate presented a responsibility, side-effect, or trust-boundary split that requires extraction. File length, age, phase labels, and textual similarity were not used as evidence.
-
