@@ -1,7 +1,7 @@
 # Phase 165 descriptive CI comparison
 
 Before source: `e8efdb474af802b9ee1daf3450615eabbf9e1419`
-After source: `cec20fbd71ca3319c7d7dfbeb439d1f74545e9c8`
+After source: `71732ad4393de60a99cc2fec7316c0651ae6e96b`
 
 Results are descriptive. Unmatched cohorts remain not measured; exact per-job queue time is not exposed.
 No causal conclusion is supported by these observations, and no timing value is a merge threshold.
@@ -104,23 +104,23 @@ Sample count: before 10; after 1.
 - Before workflows: 10 (Phase 130 Proof, Phase 132 Proof, Phase 23 Proof, Phase 34 Proof, Phase 43 Proof, Phase 45 Proof, Phase 52 Proof, Phase 71 Proof, Required Checks Audit, See It Run Collateral)
 - After workflows: 1 (Release Please)
 - Before jobs: observed; sample count 10; median 2 jobs; range 1-3 jobs
-- After jobs: observed; sample count 1; median 21 jobs; range 21-21 jobs
+- After jobs: observed; sample count 1; median 3 jobs; range 3-3 jobs
 - Before checks: observed; sample count 10; median 2 checks; range 1-3 checks
-- After checks: observed; sample count 1; median 21 checks; range 21-21 checks
+- After checks: observed; sample count 1; median 3 checks; range 3-3 checks
 
 ### Runner classes
 
 - Before: linux_hosted, mixed
-- After: mixed
+- After: linux_hosted
 
 ### Timing
 
 | Metric | Before | After |
 | --- | --- | --- |
 | Workflow delay | observed; sample count 10; median 0 ms; range 0-0 ms | observed; sample count 1; median 0 ms; range 0-0 ms |
-| Job execution | observed; sample count 10; median 63000 ms; range 5000-2475000 ms | observed; sample count 1; median 171000 ms; range 171000-171000 ms |
-| Critical path | observed; sample count 10; median 66000 ms; range 8000-2151000 ms | observed; sample count 1; median 217000 ms; range 217000-217000 ms |
-| Runner time | observed; sample count 10; median 63 s; range 5-2475 s | observed; sample count 1; median 171 s; range 171-171 s |
+| Job execution | observed; sample count 10; median 63000 ms; range 5000-2475000 ms | not measured (cohort_unavailable) |
+| Critical path | observed; sample count 10; median 66000 ms; range 8000-2151000 ms | observed; sample count 1; median 3000 ms; range 3000-3000 ms |
+| Runner time | observed; sample count 10; median 63 s; range 5-2475 s | not measured (cohort_unavailable) |
 
 ### Cache outcomes
 

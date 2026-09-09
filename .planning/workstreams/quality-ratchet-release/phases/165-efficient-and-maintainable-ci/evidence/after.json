@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "repository_sha": "cec20fbd71ca3319c7d7dfbeb439d1f74545e9c8",
-  "captured_at": "2026-09-09T01:15:25.076Z",
+  "repository_sha": "71732ad4393de60a99cc2fec7316c0651ae6e96b",
+  "captured_at": "2026-09-09T01:58:08.379Z",
   "historical_provenance": "SEED-007 is historical context only",
   "source_commands": [
     "gh api repos/szTheory/crosswake/actions/runs?branch=main&per_page=20",
@@ -75,22 +75,28 @@
       "status": "observed",
       "observations": [
         {
-          "repository_sha": "cec20fbd71ca3319c7d7dfbeb439d1f74545e9c8",
-          "run_id": 34297635605,
+          "repository_sha": "71732ad4393de60a99cc2fec7316c0651ae6e96b",
+          "run_id": 34301144214,
           "attempt": 1,
           "event": "push",
           "workflow_name": "Release Please",
-          "runner_class": "mixed",
-          "created_at": "2026-09-09T01:03:49Z",
-          "run_started_at": "2026-09-09T01:03:49Z",
-          "completed_at": "2026-09-09T01:07:26Z",
-          "outcome": "success",
-          "job_count": 21,
-          "check_count": 21,
+          "runner_class": "linux_hosted",
+          "created_at": "2026-09-09T01:55:41Z",
+          "run_started_at": "2026-09-09T01:55:41Z",
+          "completed_at": "2026-09-09T01:55:44Z",
+          "outcome": "in_progress",
+          "job_count": 3,
+          "check_count": 3,
           "workflow_start_delay_ms": 0,
-          "job_execution_ms": 171000,
-          "critical_path_ms": 217000,
-          "aggregate_runner_seconds": 171,
+          "job_execution_ms": {
+            "status": "not_measured",
+            "reason": "cohort_unavailable"
+          },
+          "critical_path_ms": 3000,
+          "aggregate_runner_seconds": {
+            "status": "not_measured",
+            "reason": "cohort_unavailable"
+          },
           "job_queue_time": "not_exposed",
           "cache": {
             "status": "not_measured",
@@ -107,25 +113,21 @@
           "max": 0
         },
         "job_execution_ms": {
-          "status": "observed",
-          "sample_count": 1,
-          "median": 171000,
-          "min": 171000,
-          "max": 171000
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
         },
         "critical_path_ms": {
           "status": "observed",
           "sample_count": 1,
-          "median": 217000,
-          "min": 217000,
-          "max": 217000
+          "median": 3000,
+          "min": 3000,
+          "max": 3000
         },
         "aggregate_runner_seconds": {
-          "status": "observed",
-          "sample_count": 1,
-          "median": 171,
-          "min": 171,
-          "max": 171
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
         }
       }
     }
