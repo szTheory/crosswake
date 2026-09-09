@@ -248,6 +248,27 @@ test("browser stage supplies explicit repository mode and invocation-owned outpu
   }
 });
 
+test("capture-owned runner roots preserve private stage logs for their owner", () => {
+  const repository = makeRepository();
+  const captureRoot = mkdtempSync(path.join(tmpdir(), "crosswake-repository-capture.test-"));
+  const runRoot = path.join(captureRoot, "crosswake-repository-verify.capture");
+  mkdirSync(runRoot, { mode: 0o700 });
+
+  try {
+    const result = runVerification(verificationOptions(repository, {
+      selection: "repository-cleanliness",
+      runRoot,
+      captureRoot
+    }));
+
+    assert.equal(result.status, 0);
+    assert(existsSync(path.join(runRoot, "logs", "repository-cleanliness.log")));
+  } finally {
+    rmSync(captureRoot, { recursive: true, force: true });
+    rmSync(repository, { recursive: true, force: true });
+  }
+});
+
 test("dependency failure recursively blocks descendants while independent stages continue", () => {
   const manifest = clone(loadStageManifest());
   const repository = makeRepository();

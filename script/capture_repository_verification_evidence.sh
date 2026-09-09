@@ -102,7 +102,7 @@ resolve_output_dir() {
 capture() {
   local source_repository="$1" commit="$2" requested_output="$3"
   local source_root resolved output_dir output_created=0 run_root checkout status=0
-  local baseline_snapshot final_snapshot index_before index_after stage
+  local baseline_snapshot final_snapshot index_before index_after stage repository_run_root
 
   [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || fail "git rev-parse <commit>^{commit}"
   [[ -d "$source_repository" && ! -L "$source_repository" ]] || fail "git -C <source-repository> rev-parse --show-toplevel"
@@ -159,11 +159,13 @@ capture() {
 
   baseline_snapshot="$run_root/git-before.z"
   final_snapshot="$run_root/git-final.z"
+  repository_run_root="$run_root/crosswake-repository-verify.capture"
+  mkdir -m 700 "$repository_run_root"
   git -C "$checkout" status --porcelain=v1 -z --untracked-files=all >"$baseline_snapshot"
   [[ ! -s "$baseline_snapshot" ]] || return 1
   index_before="$(sha256_file "$checkout/.git/index")"
 
-  (cd "$checkout" && script/verify_repository.sh --all) >"$run_root/verify.stdout" 2>"$run_root/verify.stderr" || status=$?
+  (cd "$checkout" && CROSSWAKE_REPOSITORY_RUN_ROOT="$repository_run_root" CROSSWAKE_REPOSITORY_CAPTURE_ROOT="$run_root" script/verify_repository.sh --all) >"$run_root/verify.stdout" 2>"$run_root/verify.stderr" || status=$?
   git -C "$checkout" status --porcelain=v1 -z --untracked-files=all >"$final_snapshot" || status=1
   index_after="$(sha256_file "$checkout/.git/index")" || status=1
   if [[ "$status" -ne 0 ]]; then emit_bounded_failure "$run_root/verify.stdout" "$run_root/verify.stderr"; return 1; fi

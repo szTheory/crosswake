@@ -170,10 +170,12 @@ function renderSummary(records) {
     : `${record.result} ${record.purpose}${record.category ? ` category=${record.category}` : ""}${record.path ? ` path=${JSON.stringify(record.path)}` : ""}; corrective-command=${record.remediation_command}`).join("\n");
 }
 
-function validateRunRoot(runRoot, root) {
+function validateRunRoot(runRoot, root, captureRoot) {
   if (!path.isAbsolute(runRoot) || !path.basename(runRoot).startsWith("crosswake-repository-verify.")) throw new Error("invalid invocation root");
   if (lstatSync(runRoot).isSymbolicLink()) throw new Error("invocation root may not be a symlink");
-  if (isInside(root, runRoot) || realpathSync(path.dirname(runRoot)) !== realpathSync(tmpdir())) throw new Error("invocation root has an invalid parent");
+  const parent = realpathSync(path.dirname(runRoot));
+  const validParent = parent === realpathSync(tmpdir()) || (captureRoot && parent === realpathSync(captureRoot));
+  if (isInside(root, runRoot) || !validParent) throw new Error("invocation root has an invalid parent");
   chmodSync(runRoot, 0o700);
 }
 
@@ -323,7 +325,7 @@ export function runVerification(options = {}) {
   let exitStatus = 0;
 
   try {
-    validateRunRoot(runRoot, root);
+    validateRunRoot(runRoot, root, options.captureRoot);
     mkdirSync(path.join(runRoot, "logs"), { recursive: true, mode: 0o700 });
     before = gitSnapshot(root, path.join(runRoot, "git-before.z"));
   } catch {
@@ -439,7 +441,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       if (result.status !== 0) process.exit(result.status ?? 1);
       console.log("PASS repository-preflight self-test");
     } else {
-      const result = runVerification({ selection: args.selection });
+      const runRoot = process.env.CROSSWAKE_REPOSITORY_RUN_ROOT;
+      const captureRoot = process.env.CROSSWAKE_REPOSITORY_CAPTURE_ROOT;
+      const result = runVerification({ selection: args.selection, ...(runRoot ? { runRoot, captureRoot } : {}) });
       console.log(result.output);
       process.exitCode = result.status;
     }
