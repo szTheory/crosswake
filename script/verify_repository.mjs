@@ -83,13 +83,17 @@ function defaultProbe(tool) {
 
 export function runPreflight(_manifest, selected, options = {}) {
   const probe = options.probe ?? defaultProbe;
-  const seen = new Set(); const records = [];
+  const tools = new Map(); const records = [];
   for (const stage of selected) for (const tool of stage.required_tools) {
-    if (seen.has(tool.tool)) continue; seen.add(tool.tool);
+    const current = tools.get(tool.tool);
+    if (current) current.required_by.push(stage.stage_id);
+    else tools.set(tool.tool, { rule: tool, required_by: [stage.stage_id] });
+  }
+  for (const { rule: tool, required_by } of tools.values()) {
     const result = probe(tool);
     const output = String(result?.stdout ?? "");
     if (result?.kind || result?.status !== undefined && result.status !== 0 || !new RegExp(tool.version_regex).test(output)) {
-      records.push({ result: "FAIL", purpose: "repository-preflight", tool: tool.tool, remediation_command: tool.remediation_command });
+      records.push({ result: "FAIL", purpose: "repository-preflight", tool: tool.tool, required_by, remediation_command: tool.remediation_command });
     }
   }
   return { status: records.length ? "FAIL" : "PASS", records };
@@ -100,13 +104,17 @@ export function runVerification(options = {}) {
   validateCiParity(manifest, options.workflowSource ?? readFileSync(workflowPath, "utf8"));
   const selected = selectStages(manifest, options.selection ?? "all");
   const preflight = runPreflight(manifest, selected, options);
-  const lines = [`${preflight.status} repository-preflight${preflight.records[0] ? ` tool=${preflight.records[0].tool}; corrective-command=${preflight.records[0].remediation_command}` : ""}`];
-  const failed = new Set(preflight.status === "FAIL" ? ["repository-preflight"] : []);
+  const lines = preflight.records.length
+    ? preflight.records.map(record => `FAIL repository-preflight tool=${record.tool}; corrective-command=${record.remediation_command}`)
+    : ["PASS repository-preflight"];
+  const failed = new Set();
+  const globallyBlocked = preflight.records.some(record => record.required_by.includes("repository-preflight"));
+  const preflightBlocked = new Set(preflight.records.flatMap(record => record.required_by));
   const spawn = options.spawn ?? ((command, args, spawnOptions) => spawnSync(command, args, { ...spawnOptions, encoding: "utf8", stdio: "inherit" }));
   let exitStatus = preflight.status === "FAIL" ? 1 : 0;
   for (const stage of selected) {
     if (stage.stage_id === "repository-preflight") continue;
-    const blocked = stage.stage_id !== "repository-cleanliness" && stage.dependencies.some(dep => failed.has(dep));
+    const blocked = stage.stage_id !== "repository-cleanliness" && (globallyBlocked || preflightBlocked.has(stage.stage_id) || stage.dependencies.some(dep => dep !== "repository-preflight" && failed.has(dep)));
     if (blocked) { lines.push(`BLOCKED ${stage.stage_id}; corrective-command=${stage.remediation_command}`); exitStatus = 1; continue; }
     const result = spawn(stage.argv[0], stage.argv.slice(1), { cwd: path.join(options.repoRoot ?? repoRoot, stage.cwd), env: { ...process.env, ...stage.env } });
     if (result?.error || result?.status !== 0) { failed.add(stage.stage_id); lines.push(`FAIL ${stage.stage_id}; corrective-command=${stage.remediation_command}`); exitStatus = 1; }
