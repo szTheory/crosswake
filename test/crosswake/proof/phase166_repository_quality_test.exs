@@ -77,6 +77,9 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     for artifact <- fixture["cases"] do
       assert classify(policy, artifact) == artifact["expected"]
     end
+
+    hostile = Enum.find(fixture["cases"], &(&1["name"] == "hostile-forbidden-path"))
+    assert Jason.encode!(hostile["path"]) == ~S("config/line\nbreak.pem")
   end
 
   @tag :artifact_policy

@@ -167,7 +167,7 @@ function renderSummary(records) {
   for (const record of records) byPurpose.set(record.purpose, record);
   return [...byPurpose.values()].map(record => record.result === "PASS"
     ? `PASS ${record.purpose}`
-    : `${record.result} ${record.purpose}${record.category ? ` category=${record.category}` : ""}${record.path ? ` path=${record.path}` : ""}; corrective-command=${record.remediation_command}`).join("\n");
+    : `${record.result} ${record.purpose}${record.category ? ` category=${record.category}` : ""}${record.path ? ` path=${JSON.stringify(record.path)}` : ""}; corrective-command=${record.remediation_command}`).join("\n");
 }
 
 function validateRunRoot(runRoot, root) {
@@ -217,7 +217,7 @@ function artifactFailure(policy, root) {
     if (safe.has(relativePath)) continue;
     for (const record of policy.forbidden_tracked) {
       if (record.matchers.some(matcher => matcherApplies(matcher, relativePath))) {
-        return { category: record.category, path: relativePath, remediation_command: record.remediation_command.replace("<repository-relative-path>", relativePath) };
+        return { category: record.category, path: relativePath, remediation_command: record.remediation_command };
       }
     }
   }

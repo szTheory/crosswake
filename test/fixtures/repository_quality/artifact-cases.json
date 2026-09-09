@@ -16,6 +16,13 @@
       "expected": "forbidden_secret"
     },
     {
+      "name": "hostile-forbidden-path",
+      "path": "config/line\nbreak.pem",
+      "tracked": true,
+      "ignored": false,
+      "expected": "forbidden_secret"
+    },
+    {
       "name": "ignored-source-concealment",
       "path": "lib/crosswake/hidden.ex",
       "tracked": false,
