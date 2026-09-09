@@ -166,6 +166,20 @@ The sole queue item was implemented test-first in Plan 04 (`ceca6427` RED, `12c2
 Plan 06 reran the exact focused command against the current supported tree and observed 3/3 passing
 tests. No additional source correction is authorized, and the queue contains no removal candidate.
 
+## Plan 06 verification results
+
+| command | result |
+| --- | --- |
+| `node --test test/js/playwright_repository_mode.test.mjs` | PASS (3 tests) |
+| `python3 script/check_phase166_ownership_ledger.py --self-test` | PASS (12 mutation and queue controls) |
+| `python3 script/check_phase166_ownership_ledger.py --verify-remediations .planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-ownership-ledger.md` | PASS (1 exact remediation) |
+| `ASDF_ELIXIR_VERSION=1.19.5-otp-28 ASDF_ERLANG_VERSION=28.4.1 script/check_phase166_clean_checkout_engineering_quality.sh` | PASS |
+
+The Plan 06 implementation delta is limited to this ledger plus the validator and its paired ExUnit
+contract required to restore the missing fail-closed queue seam. The allowlisted browser source and
+Node regression remain byte-identical to their test-first Plan 04 commits; rewriting either solely
+to manufacture a Plan 06 diff is not authorized. No uncertain candidate or direct expansion changed.
+
 ## D-10 duplicate review
 
 Literal proof identities, platform-specific implementations, fixtures, validators, and negative sentinels have distinct owners or failure semantics and are retained. No pair in this cone was proven to implement the same invariant over the same input, output, authority, and failure semantics.
