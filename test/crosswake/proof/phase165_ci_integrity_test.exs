@@ -355,6 +355,15 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   end
 
   @tag :manifest
+  test "approved retirement removes every migration-only compatibility conclusion" do
+    workflow = File.read!(@crosswake_ci)
+    manifest = @leaf_manifest |> File.read!() |> Jason.decode!()
+
+    refute workflow =~ ~r/^  compat-/m
+    assert manifest["legacy_compatibility_contexts"] == []
+  end
+
+  @tag :manifest
   test "migrated domain cohorts have exact leaf, control, compatibility, and umbrella parity" do
     manifest = @leaf_manifest |> File.read!() |> Jason.decode!()
     workflow = File.read!(@crosswake_ci)
