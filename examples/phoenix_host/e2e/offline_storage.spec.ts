@@ -56,10 +56,13 @@ test.describe('Offline Storage Quota Enforcement', () => {
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'storage', {
         value: {
-          estimate: async () => ({
-            quota: 100000000,
-            usage: 10000000
-          })
+          estimate: async () => {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            return {
+              quota: 100000000,
+              usage: 10000000
+            };
+          }
         },
         configurable: true
       });

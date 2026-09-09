@@ -33,6 +33,10 @@ let activeEpoch = 0;
 let legacyRecoveryRequired = false;
 let reviewSubmissionOwned = false;
 let currentStudyStatus = null;
+let resolveInitialization;
+const initialization = new Promise((resolve) => {
+  resolveInitialization = resolve;
+});
 
 function isScopeRef(value) {
   return typeof value === 'string' && SCOPE_REF_PATTERN.test(value);
@@ -59,6 +63,10 @@ function activeLeaseOrNull() {
 async function activateScope(scopeRef) {
   if (!isScopeRef(scopeRef)) {
     throw new Error('CW-OFFLINE-SCOPE-REF');
+  }
+
+  if (!(await initialization)) {
+    throw new Error('CW-OFFLINE-INITIALIZATION');
   }
 
   const lifecycle = await readLifecycle();
@@ -139,6 +147,8 @@ function configuredSyncEndpoint() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  let initialized = false;
+
   try {
     const reserveForJournalStr = document.body.dataset.reserveForJournal;
     const reserveForJournal = parseInt(reserveForJournalStr, 10);
@@ -169,9 +179,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     await resetLifecycleOnLaunch();
     renderStudyStatus(legacyRecoveryRequired ? 'needs_attention' : 'sync_paused');
     updateProofCompatibilityStatus(legacyRecoveryRequired ? 'Saved changes need attention' : 'Sync is paused');
+    initialized = true;
   } catch (error) {
     renderStudyStatus('sync_paused');
     updateProofCompatibilityStatus('Sync is paused');
+  } finally {
+    resolveInitialization(initialized);
   }
 });
 
