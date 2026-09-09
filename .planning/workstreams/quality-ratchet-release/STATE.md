@@ -27,7 +27,7 @@ See: `.planning/PROJECT.md` (updated 2026-08-27)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 165 — Efficient and Maintainable CI
+**Current focus:** Phase 166 — Clean-Checkout Engineering Quality
 
 ## Current Position
 
