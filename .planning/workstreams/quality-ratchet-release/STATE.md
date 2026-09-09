@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 166
 current_phase_name: Clean-Checkout Engineering Quality
 status: executing
-stopped_at: Completed 166-05-PLAN.md
-last_updated: "2026-09-09T18:05:23.887Z"
+stopped_at: Completed 166-06-PLAN.md
+last_updated: "2026-09-09T18:30:03.226Z"
 last_activity: 2026-09-09
 last_activity_desc: Phase 166 execution started
-state_head: 6cad3dd7372739dbc7287f8318358aa788c11441
+state_head: 94c25591dae2ba79161984b599d39a5ce5ae504d
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 26
-  completed_plans: 23
+  completed_plans: 24
   percent: 40
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 166 (Clean-Checkout Engineering Quality) — EXECUTING
-Plan: 6 of 8
+Plan: 7 of 8
 Status: Ready to execute
 Last activity: 2026-09-09 — Phase 166 execution started
 
@@ -77,6 +77,7 @@ Progress: [████░░░░░░] 40%
 | Phase 166 P03 | 15min | 2 tasks | 6 files |
 | Phase 166 P04 | 10min | 2 tasks | 5 files |
 | Phase 166 P05 | 21min | 3 tasks | 10 files |
+| Phase 166 P06 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -137,6 +138,8 @@ Progress: [████░░░░░░] 40%
 - [Phase 166]: Extend the existing CI authority validator with stage parity instead of introducing a second CI engine.
 - [Phase 166]: Use invocation-owned browser output paths locally while preserving checked-out example-host artifact paths in GitHub Actions.
 - [Phase 166]: Keep the recurring quality gate contract-only; Plan 08 retains isolated exact-commit canonical proof.
+- [Phase 166]: Treat every changed or removed-with-proof ledger disposition as an exact remediation-queue obligation; an empty set emits an explicit passing count of zero. — Prevents evidence-proven findings from disappearing by omission while keeping zero-finding runs explicit.
+- [Phase 166]: Preserve the sole browser correction and its Plan 04 RED/GREEN history rather than manufacture a no-op Plan 06 source diff. — The bounded queue authorizes verification of the existing correction, not unrelated or cosmetic source churn.
 
 ### Pending Todos
 
@@ -158,6 +161,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-09T18:05:23.819Z
-Stopped at: Completed 166-05-PLAN.md
+Last session: 2026-09-09T18:29:48.969Z
+Stopped at: Completed 166-06-PLAN.md
 Resume file: None
