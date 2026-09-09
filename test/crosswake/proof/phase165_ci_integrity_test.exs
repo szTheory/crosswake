@@ -616,8 +616,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert setup =~ "java-version:"
     assert setup =~ ~r/java-version:\n(?:    .*\n)*?    default: "17"/
     assert setup =~ "gradle-version:"
-    assert setup =~ "actions/setup-java@v5"
-    assert setup =~ "gradle/actions/setup-gradle@v6"
+    assert setup =~ ~r|actions/setup-java@[0-9a-f]{40} # v5|
+    assert setup =~ ~r|gradle/actions/setup-gradle@[0-9a-f]{40} # v6|
     assert setup =~ "gradle-wrapper.properties"
     assert setup =~ "runner.arch"
     assert setup =~ "inputs.java-version"
