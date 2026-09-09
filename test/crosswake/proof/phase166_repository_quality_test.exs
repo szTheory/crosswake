@@ -4,6 +4,7 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
   @policy_path "script/repository_artifact_policy.json"
   @ci_manifest_path "script/ci_leaf_manifest.json"
   @ci_workflow_path ".github/workflows/crosswake-ci.yml"
+  @quality_gate_path "script/check_phase166_clean_checkout_engineering_quality.sh"
   @fixture_path "test/fixtures/repository_quality/artifact-cases.json"
   @allowed_policy_keys ~w(schema_version ignored_transient intentionally_tracked generated_contracts forbidden_tracked safe_fixtures)
   @record_keys %{
@@ -223,6 +224,37 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     assert route_tour["remediation_command"] == "script/verify_repository.sh --stage browser-proof"
     refute workflow =~ "git add -A"
     refute workflow =~ "git diff --cached --exit-code"
+  end
+
+  @tag :quality_gate
+  test "recurring repository quality gate is credential-free and purpose-led" do
+    gate = File.read!(@quality_gate_path)
+
+    for command <- [
+          "script/verify_repository.sh --self-test",
+          "node --test test/js/repository_verification.test.mjs",
+          "node --test test/js/playwright_repository_mode.test.mjs",
+          "mix test test/crosswake/proof/phase166_repository_quality_test.exs",
+          "python3 script/check_ci_leaf_manifest.py --self-test",
+          "script/check_phase165_efficient_ci.sh",
+          "actionlint .github/workflows/crosswake-ci.yml"
+        ] do
+      assert gate =~ command
+    end
+
+    assert gate =~ "section=repository-runner-contract"
+    assert gate =~ "section=browser-determinism-contract"
+    assert gate =~ "section=repository-quality-contracts"
+    assert gate =~ "section=ci-authority-contract"
+    assert gate =~ "PASS clean-checkout-engineering-quality"
+
+    refute gate =~ "register_required_checks.sh"
+    refute gate =~ "--apply"
+    refute gate =~ "git clean"
+    refute gate =~ "git add"
+    refute gate =~ "capture-evidence"
+    refute gate =~ "script/verify_repository.sh --all"
+    refute gate =~ "PHASE-166 section="
   end
 
   defp decode!(path), do: path |> File.read!() |> Jason.decode!()
