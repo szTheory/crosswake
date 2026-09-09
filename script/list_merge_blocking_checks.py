@@ -310,6 +310,7 @@ def main() -> int:
             with open(REQUIRED_CHECK_POLICY, encoding="utf-8") as handle:
                 policy = json.load(handle)
             target_names = policy.get("target_contexts")
+            target_check = policy.get("target_check")
             if (
                 not isinstance(target_names, list)
                 or not target_names
@@ -317,6 +318,10 @@ def main() -> int:
                 or target_names != sorted(set(target_names))
             ):
                 raise ValueError("target_contexts must be a sorted non-empty unique string array")
+            if target_check != {"context": "Crosswake CI", "app_id": 15368}:
+                raise ValueError("target_check must bind Crosswake CI to GitHub Actions app 15368")
+            if target_names != [target_check["context"]]:
+                raise ValueError("target_contexts must exactly project target_check context")
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             errors.append(
                 diagnostic(

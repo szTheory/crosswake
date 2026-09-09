@@ -160,6 +160,7 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
 
     assert policy["strict"] == true
     assert policy["umbrella_context"] == "Crosswake CI"
+    assert policy["target_check"] == %{"context" => "Crosswake CI", "app_id" => 15_368}
     assert policy["dual_contexts"] == Enum.sort(policy["legacy_contexts"] ++ ["Crosswake CI"])
     assert policy["target_contexts"] == ["Crosswake CI"]
     assert policy["source_digest"] =~ ~r/^[0-9a-f]{64}$/
@@ -171,5 +172,26 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
     assert audit =~ "--state"
     assert audit =~ "dual|target"
     assert audit =~ "--live"
+  end
+
+  test "required-check audit binds sole authority to the GitHub Actions app" do
+    good = Jason.encode!(%{"strict" => true, "contexts" => [], "checks" => [%{"context" => "Crosswake CI", "app_id" => 15_368}]})
+    wrong_app = Jason.encode!(%{"strict" => true, "contexts" => [], "checks" => [%{"context" => "Crosswake CI", "app_id" => 99}]})
+    legacy_context = Jason.encode!(%{"strict" => true, "contexts" => ["Crosswake CI"], "checks" => []})
+
+    run = fn protection ->
+      System.cmd(
+        "bash",
+        ["script/check_required_checks_registered.sh", "--policy", @required_policy, "--state", "target", "--live"],
+        env: [{"CROSSWAKE_REQUIRED_CHECKS_JSON", protection}],
+        stderr_to_stdout: true
+      )
+    end
+
+    assert {_output, 0} = run.(good)
+    assert {wrong_output, 1} = run.(wrong_app)
+    assert wrong_output =~ "does not equal exact target policy state"
+    assert {legacy_output, 1} = run.(legacy_context)
+    assert legacy_output =~ "legacy contexts entries are not permitted"
   end
 end

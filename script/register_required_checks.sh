@@ -7,7 +7,6 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 REPO="${REPO:-szTheory/crosswake}"
 BRANCH="${BRANCH:-main}"
-ACTIONS_APP_ID="${ACTIONS_APP_ID:-15368}"
 EP="repos/${REPO}/branches/${BRANCH}/protection/required_status_checks"
 BASELINE=".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/required-context-baseline.json"
 OBSERVATION=".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/live-observation.json"
@@ -34,11 +33,12 @@ case "$MODE" in add|retire) ;; *) usage ;; esac
 [ -f "$BASELINE" ] && [ -f "$OBSERVATION" ] || { echo "[crosswake] FAIL: required migration evidence is missing." >&2; exit 1; }
 
 if ! jq -e --slurpfile baseline "$BASELINE" '
-  (keys | sort) == (["dual_contexts","legacy_contexts","schema_version","source_digest","strict","target_contexts","umbrella_context"] | sort) and
+  (keys | sort) == (["dual_contexts","legacy_contexts","schema_version","source_digest","strict","target_check","target_contexts","umbrella_context"] | sort) and
   .schema_version == 1 and .strict == true and .umbrella_context == "Crosswake CI" and
   (.legacy_contexts | type == "array" and length > 0 and . == (sort | unique)) and
   (.dual_contexts == ((.legacy_contexts + [.umbrella_context]) | sort | unique)) and
   (.target_contexts == [.umbrella_context]) and
+  (.target_check == {context:.umbrella_context,app_id:15368}) and
   (.legacy_contexts == $baseline[0].required_contexts) and
   (.source_digest == $baseline[0].source_digest) and $baseline[0].strict == true
 ' "$POLICY" >/dev/null; then
@@ -76,14 +76,28 @@ after_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-after.XXXXXX")"
 proposal_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-proposal.XXXXXX")"
 trap 'rm -f "$current_file" "$desired_file" "$after_file" "$proposal_file"' EXIT
 gh api "$EP" >"$current_file"
-current_contexts="$(jq -c '[.checks[]?.context, .contexts[]?] | map(select(type == "string" and length > 0)) | sort | unique' "$current_file")"
+if ! jq -e '
+  ((.contexts // []) | length == 0) and (.checks | type == "array") and
+  all(.checks[]; (keys | sort) == ["app_id", "context"] and
+    (.context | type == "string" and length > 0) and
+    (.app_id | type == "number" and . > 0)) and
+  ([.checks[].context] | length == (unique | length))
+' "$current_file" >/dev/null; then
+  echo "[crosswake] FAIL: live required checks must be unique app-bound records without legacy contexts entries." >&2
+  exit 1
+fi
+current_contexts="$(jq -c '[.checks[].context] | sort | unique' "$current_file")"
 current_strict="$(jq -r '.strict == true' "$current_file")"
 legacy_contexts="$(jq -c '.legacy_contexts' "$POLICY")"
 dual_contexts="$(jq -c '.dual_contexts' "$POLICY")"
+target_check="$(jq -cS '.target_check' "$POLICY")"
+target_matches="$(jq -cS --argjson target "$target_check" '[.checks[] | {context,app_id} | select(. == $target)] | length' "$current_file")"
 source_state_matches=false
-if [ "$MODE" = "add" ] && { [ "$current_contexts" = "$legacy_contexts" ] || [ "$current_contexts" = "$dual_contexts" ]; }; then
+if [ "$MODE" = "add" ] && [ "$current_contexts" = "$legacy_contexts" ] && [ "$target_matches" -eq 0 ]; then
   source_state_matches=true
-elif [ "$MODE" = "retire" ] && [ "$current_contexts" = "$dual_contexts" ]; then
+elif [ "$MODE" = "add" ] && [ "$current_contexts" = "$dual_contexts" ] && [ "$target_matches" -eq 1 ]; then
+  source_state_matches=true
+elif [ "$MODE" = "retire" ] && [ "$current_contexts" = "$dual_contexts" ] && [ "$target_matches" -eq 1 ]; then
   source_state_matches=true
 fi
 if [ "$current_strict" != "true" ] || [ "$source_state_matches" != "true" ]; then
@@ -92,12 +106,12 @@ if [ "$current_strict" != "true" ] || [ "$source_state_matches" != "true" ]; the
 fi
 
 if [ "$MODE" = "add" ]; then
-  jq --arg umbrella "$umbrella" --argjson app "$ACTIONS_APP_ID" \
-    '{strict:true,checks:(((.checks // []) + [{context:$umbrella,app_id:$app}]) | unique_by(.context) | sort_by(.context))}' \
+  jq --argjson target "$target_check" \
+    '{strict:true,checks:((.checks + [$target]) | sort_by(.context))}' \
     "$current_file" >"$desired_file"
 else
-  jq --arg umbrella "$umbrella" \
-    '{strict:true,checks:[(.checks // [])[] | select(.context == $umbrella)] | sort_by(.context)}' \
+  jq --argjson target "$target_check" \
+    '{strict:true,checks:[$target]}' \
     "$current_file" >"$desired_file"
 fi
 before_semantic="$(jq -cS '{strict:(.strict == true),checks:[.checks[]? | {context,app_id}]|sort_by(.context)}' "$current_file")"
@@ -111,7 +125,7 @@ if [ "$MODE" = "retire" ]; then
     --slurpfile policy "$POLICY" \
     '{schema_version:1,repository:$repository,default_branch:$branch,source_protection_digest:$digest,
       strict_before:true,strict_after:true,added_contexts:[],removed_contexts:$policy[0].legacy_contexts,
-      retained_contexts:$policy[0].target_contexts,producer_verification:"unique",
+      retained_contexts:$policy[0].target_contexts,retained_checks:[$policy[0].target_check],producer_verification:"unique",
       live_observation_reference:$observation,generated_at:$generated,apply_command:$command}' >"$proposal_file"
   if [ -n "$OUTPUT" ]; then mkdir -p "$(dirname "$OUTPUT")"; cp "$proposal_file" "$OUTPUT"; fi
   if [ -n "$VERIFY_OUTPUT" ] && ! jq -e --slurpfile expected "$VERIFY_OUTPUT" \

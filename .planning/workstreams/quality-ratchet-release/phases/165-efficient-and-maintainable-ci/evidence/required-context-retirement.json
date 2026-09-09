@@ -38,6 +38,12 @@
   "retained_contexts": [
     "Crosswake CI"
   ],
+  "retained_checks": [
+    {
+      "app_id": 15368,
+      "context": "Crosswake CI"
+    }
+  ],
   "schema_version": 1,
   "source_protection_digest": "55bf0c829e1933ac596585979145073beacc9f03a2c0f5bf6e03b3dfb75b3e51",
   "strict_after": true,
