@@ -272,13 +272,20 @@ function checkActions(args) {
     ".github/actions/setup-android-jvm/action.yml",
     ".github/actions/setup-elixir-cache/action.yml",
   ];
-  const output = spawnSync("rg", ["-n", "uses:\\s*[^#[:space:]]+", ...paths], {
-    encoding: "utf8",
-  });
-  if (output.error) fail(`could not run rg: ${output.error.message}`);
-  if (output.status !== 0 && output.status !== 1) process.exit(output.status);
+  const lines = paths.flatMap((file) => {
+    let source;
+    try {
+      source = fs.readFileSync(file, "utf8");
+    } catch (_error) {
+      fail(`could not read required action source: ${file}`);
+    }
 
-  const lines = output.stdout.trim().split("\n").filter(Boolean);
+    return source
+      .split("\n")
+      .map((line, index) => ({ line, index: index + 1 }))
+      .filter(({ line }) => /uses:\s*[^#\s]+/.test(line))
+      .map(({ line, index }) => `${file}:${index}:${line}`);
+  });
   const mutable = lines.filter((line) => {
     const match = line.match(/uses:\s*([^\s#]+)/);
     if (!match || match[1].startsWith("./") || !match[1].includes("@")) return false;

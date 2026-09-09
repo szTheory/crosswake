@@ -35,6 +35,25 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     assert File.read!(@aggregate) =~ "node scripts/ci_monitor.cjs check-actions"
   end
 
+  @tag :tmp_dir
+  test "required action audit is self-contained when ripgrep is unavailable", %{tmp_dir: tmp} do
+    fixture = Path.join(tmp, "pinned-action.yml")
+
+    File.write!(
+      fixture,
+      "steps:\n  - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2\n"
+    )
+
+    {output, status} =
+      System.cmd(System.find_executable("node"), [@monitor, "check-actions", fixture],
+        env: [{"PATH", tmp}],
+        stderr_to_stdout: true
+      )
+
+    assert status == 0, output
+    assert output =~ "actions=1 mutable_refs=0"
+  end
+
   test "classifier schedules focused Threadline proof only for public documentation" do
     classifier = File.read!(@classifier)
 
@@ -47,11 +66,14 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     classifier = File.read!(@classifier)
     workflow = File.read!(@workflow)
 
-    assert classifier =~ ~s|scheduled_families.extend(["public_docs", "threadline_docs_contract"])|
+    assert classifier =~
+             ~s|scheduled_families.extend(["public_docs", "threadline_docs_contract"])|
 
     for job <- ["brand-structural", "brand-visual", "collateral-binaries-guard", "hex-page-proof"] do
       body = workflow |> String.split("  #{job}:", parts: 2) |> List.last()
-      assert body =~ "contains(fromJSON(needs.classify-change.outputs.scheduled_families), 'public_docs')"
+
+      assert body =~
+               "contains(fromJSON(needs.classify-change.outputs.scheduled_families), 'public_docs')"
     end
   end
 
