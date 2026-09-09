@@ -131,6 +131,31 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
              "mix crosswake.contract.gen && mix crosswake.contract.gen --dev"
   end
 
+  @tag :ownership_ledger
+  test "ownership ledger rejects incomplete scope, open edges, dispositions, and removal proof" do
+    {output, status} =
+      System.cmd("python3", ["script/check_phase166_ownership_ledger.py", "--self-test"],
+        stderr_to_stdout: true
+      )
+
+    assert status == 0, output
+
+    for mutation <- [
+          "missing_candidate",
+          "extra_candidate",
+          "open_edge",
+          "unknown_disposition",
+          "missing_supported_entrypoint",
+          "missing_workflow_config",
+          "missing_dependency",
+          "missing_dynamic_dispatch",
+          "missing_focused_regression",
+          "missing_complete_clean_gate"
+        ] do
+      assert output =~ "PASS #{mutation}"
+    end
+  end
+
   defp decode!(path), do: path |> File.read!() |> Jason.decode!()
 
   defp valid_policy?(policy),
