@@ -25,8 +25,8 @@ sha256_file() {
 
 emit_bounded_failure() {
   local stdout_log="$1" stderr_log="$2" emitted=0
-  if grep -E '^(PASS|FAIL|BLOCKED) [a-z0-9-]+$' "$stdout_log" >&2; then emitted=1; fi
-  if grep -E '^\[crosswake\] (FAIL|BLOCKED) [^;]+; corrective-command=[A-Za-z0-9_./ -]+$' "$stderr_log" >&2; then emitted=1; fi
+  if awk '/^(PASS|FAIL|BLOCKED) [a-z0-9-]+/ { print $1, $2; found=1 } END { exit found ? 0 : 1 }' "$stdout_log" >&2; then emitted=1; fi
+  if awk '/^\[crosswake\] (FAIL|BLOCKED) [a-z0-9-]+/ { print $1, $2, $3; found=1 } END { exit found ? 0 : 1 }' "$stderr_log" >&2; then emitted=1; fi
   if [[ "$emitted" -eq 0 ]]; then
     printf '%s\n' '[crosswake] FAIL repository-evidence-capture; corrective-command=script/verify_repository.sh --all' >&2
   fi
