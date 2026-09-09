@@ -5,7 +5,7 @@ status: validated
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-08-28
-validated: 2026-09-08
+validated: 2026-09-09
 ---
 
 # Phase 165 — Validation Strategy
@@ -105,7 +105,7 @@ All other phase behavior, including live PR, cancellation, cache, and evidence a
 
 ---
 
-## Final Nyquist Audit — 2026-09-08
+## Final Nyquist Audit — 2026-09-09
 
 ### Requirement-to-Test Map
 
@@ -133,13 +133,14 @@ All other phase behavior, including live PR, cancellation, cache, and evidence a
 
 ### Current Verification Evidence
 
-- `ASDF_ELIXIR_VERSION=1.19.5-otp-28 ASDF_ERLANG_VERSION=28.4.1 script/check_phase165_efficient_ci.sh` — pass: 11 policy, 26 integrity, and 8 evidence ExUnit tests; classifier, cancellation, aggregator, manifest, maximum-shape, producer, local-authority, schema, and workflow-syntax checks all passed.
+- `ASDF_ELIXIR_VERSION=1.19.5-otp-28 ASDF_ERLANG_VERSION=28.4.1 script/check_phase165_efficient_ci.sh` — pass: 14 policy, 26 integrity, and 9 evidence ExUnit tests; classifier, cancellation, aggregator, manifest, maximum-shape, producer, local-authority, app-bound required-check normalization, immutable-action, schema, and workflow-syntax checks all passed.
 - `actionlint .github/workflows/*.yml` — pass.
 - `bash -n script/verify_generated_android_shell.sh && shellcheck script/verify_generated_android_shell.sh` — pass.
 - `PHASE165_FINAL_REMOTE_DEFAULT_SHA=0b59224bbabc3f0b40038d0c1c4dc7ecae81de4c node scripts/ci_monitor.cjs verify-final-remote-default-source --source .planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/final-remote-default-source.json` — pass; exact remote workflow and manifest blobs remain bound to PR #144's current default-branch merge SHA.
 - `script/check_required_checks_registered.sh --policy script/required_check_policy.json --state target --live` — pass; strict target authority is exactly `Crosswake CI` with `app_id: 15368`, and the context has one producer.
 - `node scripts/ci_monitor.cjs check-actions` — pass; 100 required workflow/composite action uses contain zero mutable third-party references.
 - Both `baseline.json` and `after.json` pass `node scripts/ci_monitor.cjs validate-evidence`.
+- Hosted-repair regressions are behavioral and green: public documentation schedules the complete focused proof family; cancellation evidence requires a successful exact-source controller record and terminal newer authority; wrong/missing app IDs and mismatched context mirrors fail closed; and the immutable-action audit runs without a hosted `rg` dependency.
 
 ### Gap Disposition
 
