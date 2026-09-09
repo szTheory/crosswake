@@ -36,17 +36,21 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
   end
 
   @tag :tmp_dir
-  test "required action audit is self-contained when ripgrep is unavailable", %{tmp_dir: tmp} do
+  test "required action audit is self-contained and does not invoke ripgrep", %{tmp_dir: tmp} do
     fixture = Path.join(tmp, "pinned-action.yml")
+    fake_rg = Path.join(tmp, "rg")
 
     File.write!(
       fixture,
       "steps:\n  - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2\n"
     )
 
+    File.write!(fake_rg, "#!/bin/sh\nexit 99\n")
+    File.chmod!(fake_rg, 0o755)
+
     {output, status} =
       System.cmd(System.find_executable("node"), [@monitor, "check-actions", fixture],
-        env: [{"PATH", Enum.join([tmp, "/usr/bin", "/bin"], ":")}],
+        env: [{"PATH", tmp <> ":" <> System.get_env("PATH")}],
         stderr_to_stdout: true
       )
 
