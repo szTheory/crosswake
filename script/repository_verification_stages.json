@@ -13,7 +13,7 @@
       "timeout_ms": 15000,
       "cwd": ".",
       "env": {},
-      "ci_owners": [{"job_id": "proof-requires-example-host", "command": "mix deps.get"}],
+      "ci_owners": [{"job_id": "proof-dependency-security", "command": "script/check_dependency_security.sh"}],
       "remediation_command": "asdf install",
       "owned_outputs": []
     },
@@ -54,7 +54,10 @@
       "timeout_ms": 1800000,
       "cwd": "examples/phoenix_host",
       "env": {"CI": "1"},
-      "ci_owners": [{"job_id": "e2e-proof", "command": "npx playwright test"}],
+      "ci_owners": [
+        {"job_id": "e2e-proof", "command": "npx playwright test"},
+        {"job_id": "route-tour-proof", "command": "npx playwright test e2e/route_tour.spec.ts"}
+      ],
       "remediation_command": "cd examples/phoenix_host && npx playwright test",
       "owned_outputs": ["examples/phoenix_host/playwright-report", "examples/phoenix_host/test-results"]
     },
@@ -96,7 +99,7 @@
       "timeout_ms": 300000,
       "cwd": ".",
       "env": {"MIX_ENV": "test"},
-      "ci_owners": [{"job_id": "phase41-gating-proof", "command": "mix compile --warnings-as-errors"}],
+      "ci_owners": [{"job_id": "guard-01-contract-drift-test", "command": "mix test test/crosswake/contract/contract_drift_test.exs"}],
       "remediation_command": "MIX_ENV=test mix format --check-formatted",
       "owned_outputs": []
     },
