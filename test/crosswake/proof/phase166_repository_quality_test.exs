@@ -15,6 +15,12 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
   @matcher_keys ~w(kind value)
   @matcher_kinds ~w(exact segment suffix tree)
 
+  test "root formatter contract is explicit and minimally bounded" do
+    {formatter, _binding} = Code.eval_file(".formatter.exs")
+
+    assert formatter == [inputs: [".formatter.exs"]]
+  end
+
   @tag :artifact_policy
   test "artifact policy is closed, ordered, non-overlapping, and narrow" do
     policy = decode!(@policy_path)
