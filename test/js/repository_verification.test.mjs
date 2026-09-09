@@ -560,3 +560,40 @@ test("capture self-test proves exact-commit isolation, dirty source success, and
   }
   assert.match(output, /PASS capture-self-test complete cases=8/);
 });
+
+test("evidence environment self-test locks Darwin arm64 tools and confinement", () => {
+  const lockPath = new URL("../../script/repository_evidence_toolchain.json", import.meta.url);
+  const script = new URL("../../script/run_repository_evidence_environment.sh", import.meta.url).pathname;
+  const result = spawnSync(script, ["--self-test"], {
+    cwd: new URL("../..", import.meta.url),
+    encoding: "utf8",
+    timeout: 120_000
+  });
+  const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+
+  assert.equal(result.status, 0, output);
+  const lock = JSON.parse(readFileSync(lockPath, "utf8"));
+  assert.deepEqual(Object.keys(lock).sort(), ["architecture", "artifacts", "os", "schema_version"].sort());
+  assert.equal(lock.os, "Darwin");
+  assert.equal(lock.architecture, "arm64");
+  assert.deepEqual(lock.artifacts.map(artifact => [artifact.id, artifact.version]), [
+    ["erlang", "27.3"],
+    ["elixir", "1.19.5-otp-27"],
+    ["node", "22.14.0"],
+    ["java", "17.0.20.1+1"]
+  ]);
+  for (const fixtureName of [
+    "exact-version-selection",
+    "checksum-rejection",
+    "source-pin-rejection",
+    "archive-entry-escape",
+    "path-containment",
+    "failure-cleanup",
+    "forbidden-global-write",
+    "missing-apple-tool",
+    "cleanup-escape"
+  ]) {
+    assert.match(output, new RegExp(`PASS evidence-environment-self-test ${fixtureName}`));
+  }
+  assert.match(output, /PASS evidence-environment-self-test complete cases=9/);
+});
