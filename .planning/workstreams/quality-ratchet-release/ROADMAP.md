@@ -127,13 +127,36 @@ Plans:
 **Plans**: 8 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 166-01-PLAN.md — Prove the fixed stage inventory and local/CI parity with a production tracer and deterministic negative preflight controls.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 166-02-PLAN.md — Add dependency-aware execution, unconditional cleanup, NUL-safe repository snapshots, and concise summaries.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 166-03-PLAN.md — Enforce the closed artifact policy and regenerate every tracked contract without staging changes.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 166-04-PLAN.md — Validate the complete bounded ownership cone and make repository-mode browser proof deterministic.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
 - [ ] 166-05-PLAN.md — Bind CI owners to shared stage commands and publish the recurring aggregate quality gate.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
 - [ ] 166-06-PLAN.md — Remediate every evidence-proven ENG-02 finding with exact source ownership and focused regressions.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
 - [ ] 166-07-PLAN.md — Commit capture tooling and a qualified invocation-local evidence environment before evidence is produced.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
 - [ ] 166-08-PLAN.md — Capture the supported-code commit and close ownership and validation with an explicit evidence-only delta.
 
 ### Phase 167: Documentation and Pull-Request Reconciliation
