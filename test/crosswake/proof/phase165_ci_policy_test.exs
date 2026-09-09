@@ -46,7 +46,7 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
 
     {output, status} =
       System.cmd(System.find_executable("node"), [@monitor, "check-actions", fixture],
-        env: [{"PATH", tmp}],
+        env: [{"PATH", Enum.join([tmp, "/usr/bin", "/bin"], ":")}],
         stderr_to_stdout: true
       )
 
