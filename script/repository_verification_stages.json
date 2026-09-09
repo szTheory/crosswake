@@ -83,12 +83,12 @@
         {"tool": "java", "argv": ["java", "-version"], "version_regex": "version \"17\\.", "remediation_command": "asdf install"},
         {"tool": "gradle-wrapper", "argv": ["packages/crosswake-shell-core-android/gradlew", "--version"], "version_regex": "Gradle 8\\.7", "remediation_command": "cd packages/crosswake-shell-core-android && ./gradlew --version"}
       ],
-      "argv": ["./gradlew", "test"],
+      "argv": ["./gradlew", "--no-daemon", "test"],
       "timeout_ms": 1800000,
       "cwd": "packages/crosswake-shell-core-android",
       "env": {"CROSSWAKE_ANDROID_CONNECTED_TESTS": "0"},
       "ci_owners": [{"job_id": "android-package-unit", "command": "script/verify_repository.sh --stage android-package-proof"}],
-      "remediation_command": "cd packages/crosswake-shell-core-android && ./gradlew test",
+      "remediation_command": "cd packages/crosswake-shell-core-android && ./gradlew --no-daemon test",
       "owned_outputs": ["packages/crosswake-shell-core-android/.gradle", "packages/crosswake-shell-core-android/build"]
     },
     {

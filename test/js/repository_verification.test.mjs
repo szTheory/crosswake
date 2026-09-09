@@ -600,8 +600,15 @@ test("evidence environment self-test locks Darwin arm64 tools and confinement", 
   const stages = JSON.parse(readFileSync(stagesPath, "utf8")).stages;
   const rootProbe = stages.find(stage => stage.stage_id === "root-proof").required_tools.find(tool => tool.tool === "erl");
   const androidProbe = stages.find(stage => stage.stage_id === "android-package-proof").required_tools.find(tool => tool.tool === "java");
+  const androidStage = stages.find(stage => stage.stage_id === "android-package-proof");
   assert.equal(rootProbe.argv[3], 'io:format("~s", [erlang:system_info(otp_release)]), halt().');
   assert.equal(androidProbe.version_regex, 'version "17\\.');
+  assert.deepEqual(androidStage.argv, ["./gradlew", "--no-daemon", "test"]);
+
+  const captureSource = readFileSync(new URL("../../script/capture_repository_verification_evidence.sh", import.meta.url), "utf8");
+  const environmentSource = readFileSync(new URL("../../script/run_repository_evidence_environment.sh", import.meta.url), "utf8");
+  assert.match(captureSource, /gradlew --no-daemon --version[^\n]*bootstrap-gradle\.log/);
+  assert.match(environmentSource, /gradlew --no-daemon --version[^\n]*preflight-bootstrap\.log/);
   for (const fixtureName of [
     "exact-version-selection",
     "checksum-rejection",

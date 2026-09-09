@@ -154,6 +154,7 @@ capture() {
     [[ "${PYTHONNOUSERSITE:-}" = "1" ]] || return 1
     (cd "$checkout" && mix local.hex --force && mix local.rebar --force && MIX_ENV=test mix deps.get) >"$run_root/bootstrap-root.log" 2>&1 || return 1
     (cd "$checkout/examples/phoenix_host" && MIX_ENV=test mix deps.get && npm ci && npx playwright install chromium) >"$run_root/bootstrap-host.log" 2>&1 || return 1
+    (cd "$checkout" && packages/crosswake-shell-core-android/gradlew --no-daemon --version) >"$run_root/bootstrap-gradle.log" 2>&1 || return 1
   fi
 
   baseline_snapshot="$run_root/git-before.z"

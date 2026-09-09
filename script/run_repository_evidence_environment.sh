@@ -225,7 +225,7 @@ prepare_preflight() {
   git clone --quiet --no-local "$source_root" "$checkout" >"$tool_root/preflight-clone.log" 2>&1 || status=$?
   [[ "$status" -eq 0 ]] || fail "Clone the explicit repository commit"
   git -C "$checkout" checkout --quiet --detach "$resolved" || fail "Check out the explicit repository commit"
-  (cd "$checkout" && mix local.hex --force && mix local.rebar --force && MIX_ENV=test mix deps.get) >"$tool_root/preflight-bootstrap.log" 2>&1 || fail "Bootstrap lock-governed preflight dependencies"
+  (cd "$checkout" && mix local.hex --force && mix local.rebar --force && MIX_ENV=test mix deps.get && packages/crosswake-shell-core-android/gradlew --no-daemon --version) >"$tool_root/preflight-bootstrap.log" 2>&1 || fail "Bootstrap lock-governed preflight dependencies"
   (cd "$checkout" && script/verify_repository.sh --stage repository-preflight) >"$tool_root/preflight.log" 2>&1 || fail "Run the production repository preflight"
   grep -Fxq 'PASS repository-preflight' "$tool_root/preflight.log" || fail "Run the production repository preflight"
   grep -Fxq 'PASS repository-cleanliness' "$tool_root/preflight.log" || fail "Run the production repository preflight"
