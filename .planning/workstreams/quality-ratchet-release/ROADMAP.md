@@ -124,7 +124,15 @@ Plans:
   3. Generated, temporary, secret-bearing, editor, and local-only artifacts are either intentionally tracked or excluded, and a complete clean verification run leaves Git clean.
   4. Repository quality failures name a current, actionable correction without stale phase labels, contradictory comments, or unactionable warning noise.
 
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+- [ ] 166-01-PLAN.md — Prove the fixed stage inventory and local/CI parity with a production tracer and deterministic negative preflight controls.
+- [ ] 166-02-PLAN.md — Add dependency-aware execution, unconditional cleanup, NUL-safe repository snapshots, and concise summaries.
+- [ ] 166-03-PLAN.md — Enforce the closed artifact policy and regenerate every tracked contract without staging changes.
+- [ ] 166-04-PLAN.md — Reconcile the bounded v22 ownership cone and make repository-mode browser proof deterministic.
+- [ ] 166-05-PLAN.md — Bind CI owners to shared stage commands and publish the recurring aggregate quality gate.
+- [ ] 166-06-PLAN.md — Capture exact-commit clean-checkout evidence and close the ownership and validation ledgers.
 
 ### Phase 167: Documentation and Pull-Request Reconciliation
 
