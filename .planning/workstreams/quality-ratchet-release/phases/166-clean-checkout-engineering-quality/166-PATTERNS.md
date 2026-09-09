@@ -1,8 +1,8 @@
 # Phase 166: Clean-Checkout Engineering Quality - Pattern Map
 
 **Mapped:** 2026-09-09
-**Files analyzed:** 20 new/modified files or file families
-**Analogs found:** 20 / 20
+**Files analyzed:** 23 new/modified files or file families
+**Analogs found:** 23 / 23
 
 ## Scope Interpretation
 
@@ -42,6 +42,9 @@ the change.
 | `.github/workflows/crosswake-ci.yml` | config / CI workflow | event-driven | existing literal leaf jobs in the same workflow | extend in place |
 | `examples/phoenix_host/playwright.config.ts` | config | request-response | existing config with explicit repository-mode override | extend in place |
 | `test/crosswake/contract/contract_drift_test.exs` | test | file-I/O, transform | existing generated-surface registry in the same test | extend only if needed |
+| `.planning/.../evidence/clean-checkout-run.json` | evidence / canonical JSON | batch, file-I/O | `.planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/after.json` | closed allowlisted evidence shape |
+| `.planning/.../evidence/clean-checkout-run.md` | evidence / generated presentation | transform | `.planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/comparison.md` | deterministic bounded rendering |
+| `.planning/.../166-VALIDATION.md` | validation ledger | batch, transform | `.planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/165-VALIDATION.md` | exact role + completed reconciliation |
 
 All named analog paths above are Git-tracked (`git ls-files -- <path>` returned each path).
 
@@ -294,6 +297,25 @@ release URL, authority repository/tag, archive SHA-256, archive root, executable
 probe for Erlang 27.3, Elixir 1.19.5-otp-27, Node 22.14.0, and Temurin 17.0.20.1+1. Erlang precedes
 Elixir on PATH; the Elixir OTP-27 archive is validated against that runtime before use. Xcode and
 Swift are validated in place and are never installed.
+
+### Canonical JSON/Markdown evidence and validation reconciliation
+
+**JSON evidence analog:**
+`.planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/after.json`.
+Reuse its closed, allowlisted, source-SHA-bound evidence shape while keeping the Phase 166 schema
+limited to supported-stage results, repository/index snapshots, and owned-cleanup facts.
+
+**Markdown rendering analog:**
+`.planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/comparison.md`.
+Follow its deterministic, bounded maintainer presentation: render only canonical JSON fields,
+label status explicitly, and keep source identity visible without copying logs or environment data.
+
+**Validation reconciliation analog:**
+`.planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/165-VALIDATION.md`.
+Follow its completed-row and final Nyquist audit pattern: replace planned placeholders with exact
+commands and observed results, record measured runtime, and flip frontmatter/sign-off only after
+every required verification is green. Preserve Phase 166's unresolved assumptions and bespoke
+prohibitions rather than inheriting Phase 165 conclusions.
 
 ### `.tool-versions`
 
