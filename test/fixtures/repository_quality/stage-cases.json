@@ -12,5 +12,11 @@
     "swift": "Swift version 6.1.2"
   },
   "failure_kinds": ["missing", "wrong-version", "failed-to-start"],
+  "process_failures": ["ordinary-nonzero", "spawn-error", "signal", "timeout", "malformed-result"],
+  "dependency_case": {
+    "failed": "root-proof",
+    "blocked": ["example-host-proof", "browser-proof"],
+    "independent": ["ios-package-proof", "android-package-proof", "format-proof", "warnings-proof", "repository-cleanliness"]
+  },
   "secret_sentinel": "CROSSWAKE_SECRET_DO_NOT_PRINT_8f70d9"
 }

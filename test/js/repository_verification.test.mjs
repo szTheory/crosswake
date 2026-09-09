@@ -1,6 +1,8 @@
 /* Repository verification is a closed purpose inventory, never a shell-command API (D-01–D-06). */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 
 import {
@@ -166,4 +168,69 @@ test("focused independent selections do not probe unrelated Apple or Android too
     probe: tool => { probed.push(tool.tool); return { stdout: fixture.tool_versions[tool.tool] }; }
   });
   assert.deepEqual(probed, ["bash", "git", "node", "elixir", "erl"]);
+});
+
+test("dependency failure recursively blocks descendants while independent stages continue", () => {
+  const manifest = clone(loadStageManifest());
+  manifest.stages.find(stage => stage.stage_id === "example-host-proof").dependencies = ["root-proof"];
+  manifest.stages.find(stage => stage.stage_id === "browser-proof").dependencies = ["example-host-proof"];
+  const started = [];
+
+  const result = runVerification({
+    manifest,
+    selection: "all",
+    probe: tool => ({ stdout: fixture.tool_versions[tool.tool] }),
+    spawn: (command, argv) => {
+      const stage = manifest.stages.find(candidate => candidate.argv[0] === command && candidate.argv.slice(1).join("\0") === argv.join("\0"));
+      started.push(stage.stage_id);
+      return stage.stage_id === fixture.dependency_case.failed
+        ? { status: 9, stdout: "root detail", stderr: "root error" }
+        : { status: 0, stdout: "ok", stderr: "" };
+    },
+    repoRoot: new URL(".", root).pathname,
+    workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8")
+  });
+
+  assert.equal(result.status, 1);
+  for (const stageId of fixture.dependency_case.blocked) {
+    assert.match(result.output, new RegExp(`BLOCKED ${stageId}`));
+    assert(!started.includes(stageId));
+  }
+  for (const stageId of fixture.dependency_case.independent) {
+    assert.match(result.output, new RegExp(`PASS ${stageId}`));
+    assert(started.includes(stageId));
+  }
+});
+
+test("timeout and malformed process outcomes fail closed and retain full logs", () => {
+  const cases = new Map([
+    ["ordinary-nonzero", { status: 7, stdout: "ordinary output", stderr: "ordinary error" }],
+    ["spawn-error", { error: Object.assign(new Error("spawn refused"), { code: "EACCES" }), status: null, stdout: "", stderr: "" }],
+    ["signal", { status: null, signal: "SIGTERM", stdout: "signal output", stderr: "" }],
+    ["timeout", { error: Object.assign(new Error("timed out"), { code: "ETIMEDOUT" }), status: null, stdout: "timeout output", stderr: "" }],
+    ["malformed-result", null]
+  ]);
+
+  for (const kind of fixture.process_failures) {
+    const runRoot = mkdtempSync(path.join(tmpdir(), "crosswake-repository-verify.test-"));
+    try {
+      const result = runVerification({
+        manifest: loadStageManifest(),
+        selection: "repository-cleanliness",
+        probe: tool => ({ stdout: fixture.tool_versions[tool.tool] }),
+        spawn: () => cases.get(kind),
+        repoRoot: new URL(".", root).pathname,
+        runRoot,
+        workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8")
+      });
+
+      assert.equal(result.status, 1, kind);
+      assert.match(result.output, /FAIL repository-cleanliness/, kind);
+      const log = readFileSync(path.join(runRoot, "logs/repository-cleanliness.log"), "utf8");
+      if (cases.get(kind)?.stdout) assert.match(log, new RegExp(cases.get(kind).stdout), kind);
+      if (cases.get(kind)?.stderr) assert.match(log, new RegExp(cases.get(kind).stderr), kind);
+    } finally {
+      rmSync(runRoot, { recursive: true, force: true });
+    }
+  }
 });
