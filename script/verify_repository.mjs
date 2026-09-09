@@ -366,11 +366,21 @@ export function runVerification(options = {}) {
       }
       let result;
       try {
+        const stageEnv = { ...process.env, ...stage.env };
+        if (stage.stage_id === "browser-proof") {
+          const browserOutputRoot = process.env.GITHUB_ACTIONS === "true"
+            ? path.join(root, "examples/phoenix_host")
+            : runRoot;
+          stageEnv.CROSSWAKE_REPOSITORY_VERIFY = "1";
+          stageEnv.CROSSWAKE_PLAYWRIGHT_REPORT_DIR = path.join(browserOutputRoot, "playwright-report");
+          stageEnv.CROSSWAKE_PLAYWRIGHT_RESULT_DIR = path.join(browserOutputRoot, "test-results");
+          stageEnv.CROSSWAKE_PLAYWRIGHT_ARTIFACT_DIR = path.join(browserOutputRoot, "playwright-artifacts");
+        }
         result = stage.stage_id === "repository-cleanliness" && enforceArtifactPolicy
           ? runRepositoryCleanliness(artifactPolicy, root, options)
           : spawn(stage.argv[0], stage.argv.slice(1), {
               cwd: path.join(root, stage.cwd),
-              env: { ...process.env, ...stage.env },
+              env: stageEnv,
               timeout: stage.timeout_ms,
               killSignal: "SIGTERM"
             });

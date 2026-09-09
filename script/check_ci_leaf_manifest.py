@@ -174,8 +174,18 @@ def validate_stage_parity(stage_manifest: object, workflow: object) -> list[Prob
                 if step.get("working-directory") not in (None, "."):
                     stage_id = command.removeprefix(STAGE_COMMAND_PREFIX)
                     problems.append(Problem("divergent_stage_cwd", stage_id, "run the facade from repository root"))
-                if step.get("env") not in (None, {}):
-                    stage_id = command.removeprefix(STAGE_COMMAND_PREFIX)
+                stage_id = command.removeprefix(STAGE_COMMAND_PREFIX)
+                step_env = step.get("env")
+                declared_stage = next(
+                    (
+                        stage
+                        for stage in stage_manifest.get("stages", [])
+                        if isinstance(stage, dict) and stage.get("stage_id") == stage_id
+                    ),
+                    {},
+                )
+                stage_env = declared_stage.get("env", {}) if isinstance(declared_stage, dict) else {}
+                if isinstance(step_env, dict) and set(step_env) & set(stage_env):
                     problems.append(Problem("divergent_stage_env", stage_id, "keep stage environment in the shared manifest"))
                 raw_command = stage_argv.get(command.removeprefix(STAGE_COMMAND_PREFIX))
                 if raw_command and raw_command in lines:
@@ -363,6 +373,7 @@ def validate(manifest: object, workflow: object, producer_records=None) -> list[
         producers = [row for row in producer_records if row[0] == UMBRELLA_NAME]
         if len(producers) != 1 or producers[0][2] != UMBRELLA_ID:
             problems.append(Problem("umbrella_producer_count", UMBRELLA_NAME, f"observed={len(producers)}"))
+    problems.extend(validate_stage_parity(load_json(DEFAULT_STAGES), workflow))
     return problems
 
 

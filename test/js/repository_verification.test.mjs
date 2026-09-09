@@ -223,6 +223,31 @@ test("focused independent selections do not probe unrelated Apple or Android too
   assert.deepEqual(probed, ["bash", "git", "node", "elixir", "erl"]);
 });
 
+test("browser stage supplies explicit repository mode and invocation-owned outputs", () => {
+  const repository = makeRepository();
+  const runRoot = mkdtempSync(path.join(tmpdir(), "crosswake-repository-verify.test-"));
+  let browserEnvironment;
+  try {
+    const result = runVerification(verificationOptions(repository, {
+      selection: "browser-proof",
+      runRoot,
+      spawn: (command, argv, options) => {
+        if ([command, ...argv].join(" ") === "npx playwright test") browserEnvironment = options.env;
+        return { status: 0, stdout: "", stderr: "" };
+      }
+    }));
+
+    assert.equal(result.status, 0);
+    assert.equal(browserEnvironment.CROSSWAKE_REPOSITORY_VERIFY, "1");
+    assert.equal(browserEnvironment.CROSSWAKE_PLAYWRIGHT_REPORT_DIR, path.join(runRoot, "playwright-report"));
+    assert.equal(browserEnvironment.CROSSWAKE_PLAYWRIGHT_RESULT_DIR, path.join(runRoot, "test-results"));
+    assert.equal(browserEnvironment.CROSSWAKE_PLAYWRIGHT_ARTIFACT_DIR, path.join(runRoot, "playwright-artifacts"));
+  } finally {
+    rmSync(runRoot, { recursive: true, force: true });
+    rmSync(repository, { recursive: true, force: true });
+  }
+});
+
 test("dependency failure recursively blocks descendants while independent stages continue", () => {
   const manifest = clone(loadStageManifest());
   const repository = makeRepository();

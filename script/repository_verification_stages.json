@@ -13,7 +13,7 @@
       "timeout_ms": 15000,
       "cwd": ".",
       "env": {},
-      "ci_owners": [{"job_id": "proof-dependency-security", "command": "script/check_dependency_security.sh"}],
+      "ci_owners": [{"job_id": "proof-dependency-security", "command": "script/verify_repository.sh --stage repository-preflight"}],
       "remediation_command": "asdf install",
       "owned_outputs": []
     },
@@ -28,7 +28,7 @@
       "timeout_ms": 1800000,
       "cwd": ".",
       "env": {"MIX_ENV": "test"},
-      "ci_owners": [{"job_id": "phase130-core-hermetic-proof", "command": "mix test --exclude requires_example_host --exclude advisory_only"}],
+      "ci_owners": [{"job_id": "phase130-core-hermetic-proof", "command": "script/verify_repository.sh --stage root-proof"}],
       "remediation_command": "MIX_ENV=test mix verify",
       "owned_outputs": ["_build", "deps"]
     },
@@ -40,7 +40,7 @@
       "timeout_ms": 1800000,
       "cwd": ".",
       "env": {"MIX_ENV": "test"},
-      "ci_owners": [{"job_id": "proof-requires-example-host", "command": "script/check_example_host_isolation.sh --matrix-only"}],
+      "ci_owners": [{"job_id": "proof-requires-example-host", "command": "script/verify_repository.sh --stage example-host-proof"}],
       "remediation_command": "MIX_ENV=test script/check_example_host_isolation.sh --matrix-only",
       "owned_outputs": ["examples/phoenix_host/_build", "examples/phoenix_host/deps"]
     },
@@ -53,13 +53,13 @@
       "argv": ["npx", "playwright", "test"],
       "timeout_ms": 1800000,
       "cwd": "examples/phoenix_host",
-      "env": {"CI": "1"},
+      "env": {"CI": "1", "CROSSWAKE_REPOSITORY_VERIFY": "1"},
       "ci_owners": [
-        {"job_id": "e2e-proof", "command": "npx playwright test"},
-        {"job_id": "route-tour-proof", "command": "npx playwright test e2e/route_tour.spec.ts"}
+        {"job_id": "e2e-proof", "command": "script/verify_repository.sh --stage browser-proof"},
+        {"job_id": "route-tour-proof", "command": "script/verify_repository.sh --stage browser-proof"}
       ],
-      "remediation_command": "cd examples/phoenix_host && npx playwright test",
-      "owned_outputs": ["examples/phoenix_host/playwright-report", "examples/phoenix_host/test-results"]
+      "remediation_command": "script/verify_repository.sh --stage browser-proof",
+      "owned_outputs": []
     },
     {
       "stage_id": "ios-package-proof",
@@ -72,7 +72,7 @@
       "timeout_ms": 1800000,
       "cwd": "packages/crosswake-shell-core-ios",
       "env": {},
-      "ci_owners": [{"job_id": "ios-package-unit", "command": "swift test"}],
+      "ci_owners": [{"job_id": "ios-package-unit", "command": "script/verify_repository.sh --stage ios-package-proof"}],
       "remediation_command": "cd packages/crosswake-shell-core-ios && swift test",
       "owned_outputs": ["packages/crosswake-shell-core-ios/.build"]
     },
@@ -87,7 +87,7 @@
       "timeout_ms": 1800000,
       "cwd": "packages/crosswake-shell-core-android",
       "env": {"CROSSWAKE_ANDROID_CONNECTED_TESTS": "0"},
-      "ci_owners": [{"job_id": "android-package-unit", "command": "./gradlew test"}],
+      "ci_owners": [{"job_id": "android-package-unit", "command": "script/verify_repository.sh --stage android-package-proof"}],
       "remediation_command": "cd packages/crosswake-shell-core-android && ./gradlew test",
       "owned_outputs": ["packages/crosswake-shell-core-android/.gradle", "packages/crosswake-shell-core-android/build"]
     },
@@ -99,7 +99,7 @@
       "timeout_ms": 300000,
       "cwd": ".",
       "env": {"MIX_ENV": "test"},
-      "ci_owners": [{"job_id": "guard-01-contract-drift-test", "command": "mix test test/crosswake/contract/contract_drift_test.exs"}],
+      "ci_owners": [{"job_id": "guard-01-contract-drift-test", "command": "script/verify_repository.sh --stage format-proof"}],
       "remediation_command": "MIX_ENV=test mix format --check-formatted",
       "owned_outputs": []
     },
@@ -111,7 +111,7 @@
       "timeout_ms": 900000,
       "cwd": ".",
       "env": {"MIX_ENV": "test"},
-      "ci_owners": [{"job_id": "phase41-gating-proof", "command": "mix compile --warnings-as-errors"}],
+      "ci_owners": [{"job_id": "phase41-gating-proof", "command": "script/verify_repository.sh --stage warnings-proof"}],
       "remediation_command": "MIX_ENV=test mix compile --warnings-as-errors",
       "owned_outputs": ["_build"]
     },
@@ -123,7 +123,7 @@
       "timeout_ms": 60000,
       "cwd": ".",
       "env": {},
-      "ci_owners": [{"job_id": "guard-02-generate-and-diff", "command": "git diff --cached --exit-code"}],
+      "ci_owners": [{"job_id": "guard-02-generate-and-diff", "command": "script/verify_repository.sh --stage repository-cleanliness"}],
       "remediation_command": "script/verify_repository.sh --stage repository-cleanliness",
       "owned_outputs": []
     }

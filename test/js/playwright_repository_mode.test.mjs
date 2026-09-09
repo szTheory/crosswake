@@ -66,7 +66,7 @@ test('ordinary local mode preserves zero retries and existing-server reuse', () 
   assert.equal(config.snapshotPathTemplate, undefined);
 });
 
-test('current CI mode preserves retry and fresh-server behavior before owner migration', () => {
+test('generic CI mode remains distinct from explicit repository verification', () => {
   const config = evaluateConfig({ CI: '1' });
   assert.equal(config.retries, 2);
   assert.equal(config.reuseExistingServer, false);
