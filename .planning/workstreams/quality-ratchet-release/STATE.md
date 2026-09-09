@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 166
 current_phase_name: Clean-Checkout Engineering Quality
 status: executing
-stopped_at: Completed 166-02-PLAN.md
-last_updated: "2026-09-09T17:02:26.691Z"
+stopped_at: Completed 166-03-PLAN.md
+last_updated: "2026-09-09T17:23:10.354Z"
 last_activity: 2026-09-09
 last_activity_desc: Phase 166 execution started
-state_head: 90076883d9bf93face711402c2bdb887d100ce64
+state_head: 4c303c6960c49650170faea5bc596b052c6c1658
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 26
-  completed_plans: 20
+  completed_plans: 21
   percent: 40
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 166 (Clean-Checkout Engineering Quality) — EXECUTING
-Plan: 3 of 8
+Plan: 4 of 8
 Status: Ready to execute
 Last activity: 2026-09-09 — Phase 166 execution started
 
@@ -74,6 +74,7 @@ Progress: [████░░░░░░] 40%
 | Phase 165 P13 | 9 min | 2 tasks | 5 files |
 | Phase 166 P01 | 7 min | 2 tasks | 6 files |
 | Phase 166 P02 | 11 min | 2 tasks | 4 files |
+| Phase 166 P03 | 15min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,9 @@ Progress: [████░░░░░░] 40%
 - [Phase 166]: Propagate every non-pass result through dependency edges while preserving manifest-order execution for independent stages.
 - [Phase 166]: Treat only exact declared outputs absent at invocation start as cleanup-owned, and refuse symlink or repository-prefix escapes.
 - [Phase 166]: Keep Git porcelain bytes in private NUL-delimited snapshot files and expose only bounded purpose-level results and remediations.
+- [Phase 166]: Generated contracts remain a registry within intentionally tracked artifact intent. — This preserves the closed three-class policy while making regeneration ownership executable.
+- [Phase 166]: Generated drift restores only registered output snapshots and uses read-only Git inspection. — Focused verification must preserve user bytes and index state on success and failure.
+- [Phase 166]: Suspicious artifact paths are escaped data and never remediation command text. — Hostile filenames must not shape terminal output or become executable correction input.
 
 ### Pending Todos
 
@@ -147,6 +151,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-09T17:02:26.623Z
-Stopped at: Completed 166-02-PLAN.md
+Last session: 2026-09-09T17:22:53.789Z
+Stopped at: Completed 166-03-PLAN.md
 Resume file: None

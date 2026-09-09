@@ -124,7 +124,7 @@ Plans:
   3. Generated, temporary, secret-bearing, editor, and local-only artifacts are either intentionally tracked or excluded, and a complete clean verification run leaves Git clean.
   4. Repository quality failures name a current, actionable correction without stale phase labels, contradictory comments, or unactionable warning noise.
 
-**Plans**: 2/8 plans executed
+**Plans**: 3/8 plans executed
 
 Plans:
 **Wave 1**
@@ -137,7 +137,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 166-03-PLAN.md — Enforce the closed artifact policy and regenerate every tracked contract without staging changes.
+- [x] 166-03-PLAN.md — Enforce the closed artifact policy and regenerate every tracked contract without staging changes.
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -195,7 +195,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 164. Dependency Security and Gate Authority | 5/5 | Complete    | 2026-08-28 |
 | 165. Efficient and Maintainable CI | 13/13 | Complete    | 2026-09-09 |
-| 166. Clean-Checkout Engineering Quality | 2/8 | In Progress|  |
+| 166. Clean-Checkout Engineering Quality | 3/8 | In Progress|  |
 | 167. Documentation and Pull-Request Reconciliation | 0/TBD | Not started | - |
 | 168. 0.2.1 Release Candidate Readiness | 0/TBD | Not started | - |
 
