@@ -76,13 +76,14 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
            """
   end
 
-  test "auto-discovery still finds every emitter (the 'merge-blocking' substring is intact)" do
-    # A rename that drops the substring silently stops the check being required — the exact
-    # failure mode GATE-01's fix could have introduced.
-    for %{name: name, path: path} <- emitters() do
-      assert String.contains?(String.downcase(name), "merge-blocking"),
-             "#{path}: #{inspect(name)} was discovered but lacks the 'merge-blocking' substring"
-    end
+  test "production discovery follows the exact target policy" do
+    assert emitters() == [
+             %{
+               name: "Crosswake CI",
+               path: ".github/workflows/crosswake-ci.yml",
+               job: "merge-blocking-crosswake-ci"
+             }
+           ]
   end
 
   @tag :tmp_dir
@@ -227,13 +228,13 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
        "name: One\njobs:\n  gate:\n    name: merge-blocking-one\n    runs-on: ubuntu-latest\n"}
     ])
 
-    json = ~s({"checks":[{"context":"merge-blocking-one"},{"context":"stale-required"}]})
+    json =
+      ~s({"strict":true,"checks":[{"context":"merge-blocking-one"},{"context":"stale-required"}]})
     {out, status} = run_checker(tmp, json)
 
     assert status == 1
-    assert out =~ "registered-without-producer"
     assert out =~ "stale-required"
-    assert out =~ "What to do next"
+    assert out =~ "0 literal producers"
   end
 
   @tag :tmp_dir
@@ -243,12 +244,11 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
        "name: One\njobs:\n  gate:\n    name: merge-blocking-one\n    runs-on: ubuntu-latest\n"}
     ])
 
-    {out, status} = run_checker(tmp, ~s({"checks":[]}))
+    {out, status} = run_checker(tmp, ~s({"strict":true,"checks":[]}))
 
     assert status == 1
-    assert out =~ "candidate-without-registration"
     assert out =~ "merge-blocking-one"
-    assert out =~ "DRY_RUN=0 script/register_required_checks.sh"
+    assert out =~ "is not required on main"
   end
 
   @tag :tmp_dir

@@ -137,6 +137,8 @@ jobs:
               close_if_open "$ISSUE_TITLE_UNVERIFIED"
               ;;
             1)
+              # Backticks are intentional Markdown in the issue body.
+              # shellcheck disable=SC2016
               body="$(printf '%s\n\n- Run: %s\n- Commit: %s\n\nRemediation: an admin runs `DRY_RUN=0 script/register_required_checks.sh`.\nThis issue auto-closes when the detector next reports exit 0.' "$REPORT" "$RUN_URL" "$SHA")"
               open_or_update "$ISSUE_TITLE_GAP" "$body"
               echo "::error::GAP — declared merge-blocking lanes are not registered as required. See tracking issue."

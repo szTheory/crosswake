@@ -111,7 +111,7 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
              }
            ]
 
-    assert length(manifest["legacy_compatibility_contexts"]) == 27
+    assert manifest["legacy_compatibility_contexts"] == []
   end
 
   @tag :manifest

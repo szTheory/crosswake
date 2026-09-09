@@ -2,8 +2,10 @@
 from __future__ import annotations
 """Inventory literal GitHub Actions job producers with fail-closed diagnostics.
 
-The default view lists merge-blocking registration candidates. ``--emitters`` emits every
-candidate record, while ``--producers`` emits every literal job producer. Records are stable TSV:
+The default view lists exact target contexts from ``script/required_check_policy.json``.
+``--emitters`` emits those target producer records, while ``--producers`` emits every literal job
+producer. Isolated fixtures without a policy retain substring discovery for detector self-tests.
+Records are stable TSV:
 ``<display name>\t<workflow path>\t<job id>``. The full view lets the branch-protection audit
 prove registered contexts have a local producer without confusing registration policy with local
 workflow truth.
@@ -15,6 +17,8 @@ Malformed workflow structure and duplicate merge-blocking producers also fail wi
 
 import argparse
 import glob
+import json
+import os
 import sys
 from collections import defaultdict
 
@@ -44,6 +48,7 @@ except ImportError:
 
 
 CROSSWAKE_CI = ".github/workflows/crosswake-ci.yml"
+REQUIRED_CHECK_POLICY = "script/required_check_policy.json"
 MIGRATED_SOURCE_WORKFLOWS = {
     ".github/workflows/brandbook-verify.yml",
     ".github/workflows/collateral-guard.yml",
@@ -299,6 +304,31 @@ def main() -> int:
     mode = "--producers" if args.producers else "--emitters" if args.emitters else "--contexts"
     records, errors = inventory()
 
+    target_names = None
+    if os.path.isfile(REQUIRED_CHECK_POLICY):
+        try:
+            with open(REQUIRED_CHECK_POLICY, encoding="utf-8") as handle:
+                policy = json.load(handle)
+            target_names = policy.get("target_contexts")
+            if (
+                not isinstance(target_names, list)
+                or not target_names
+                or any(not isinstance(name, str) or not name for name in target_names)
+                or target_names != sorted(set(target_names))
+            ):
+                raise ValueError("target_contexts must be a sorted non-empty unique string array")
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            errors.append(
+                diagnostic(
+                    "invalid-required-check-policy",
+                    REQUIRED_CHECK_POLICY,
+                    None,
+                    str(exc),
+                    "restore the exact manifest-declared target context policy.",
+                )
+            )
+            target_names = []
+
     if args.require_display_name:
         matching = [record for record in records if record[0] == args.require_display_name]
         if len(matching) != 1:
@@ -315,6 +345,8 @@ def main() -> int:
 
     if mode == "--producers" or args.require_display_name:
         selected = records
+    elif target_names is not None:
+        selected = [record for record in records if record[0] in target_names]
     else:
         selected = [record for record in records if "merge-blocking" in record[0].lower()]
 

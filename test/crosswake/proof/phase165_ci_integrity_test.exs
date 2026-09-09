@@ -104,11 +104,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert hex_page =~
              "name: Hex publish dry-run\n        env:\n          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
 
-    compatibility = job_body(workflow, "compat-release-as-staleness")
-    assert compatibility =~ "name: merge-blocking-release-as-staleness"
-    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
-    assert compatibility =~ "if: always()"
-    refute compatibility =~ "actions/checkout"
   end
 
   @tag :triggers
@@ -164,11 +159,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert body =~ "Remediation:"
     end
 
-    compatibility = job_body(workflow, "compat-native-behavioral-proof")
-    assert compatibility =~ "name: merge-blocking-native-behavioral-proof"
-    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
-    assert compatibility =~ "if: always()"
-    refute compatibility =~ "actions/checkout"
   end
 
   @tag :triggers
@@ -196,11 +186,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert body =~ "Remediation:"
     end
 
-    compatibility = job_body(workflow, "compat-offline-sync-e2e")
-    assert compatibility =~ "name: merge-blocking-offline-sync-e2e"
-    assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
-    assert compatibility =~ "if: always()"
-    refute compatibility =~ "actions/checkout"
 
     advisory = File.read!(@phase68_advisory)
     assert advisory =~ ~r/^  workflow_dispatch:/m
@@ -240,17 +225,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     refute advisory =~ ~r/^  pull_request:/m
     refute advisory =~ ~r/^  push:/m
 
-    for {job, display_name} <- [
-          {"compat-ios-mirror-parity", "merge-blocking-ios-mirror-parity"},
-          {"compat-phase96-threadline-docs-contract",
-           "merge-blocking Threadline docs-contract proof (hermetic)"}
-        ] do
-      compatibility = job_body(workflow, job)
-      assert compatibility =~ "name: #{display_name}"
-      assert compatibility =~ "needs: [merge-blocking-crosswake-ci]"
-      assert compatibility =~ "if: always()"
-      refute compatibility =~ "actions/checkout"
-    end
   end
 
   @tag :triggers
@@ -280,26 +254,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert body =~ "Remediation:"
     end
 
-    for {job, display_name, need} <- [
-          {"compat-aggregator-negative-control", "merge-blocking-aggregator-negative-control",
-           "merge-blocking-crosswake-ci"},
-          {"compat-contract-drift", "merge-blocking-contract-drift",
-           "merge-blocking-crosswake-ci"},
-          {"compat-dependency-security", "merge-blocking-dependency-security",
-           "merge-blocking-crosswake-ci"},
-          {"compat-requires-example-host", "merge-blocking-requires-example-host",
-           "merge-blocking-crosswake-ci"}
-        ] do
-      body = job_body(workflow, job)
-      assert body =~ "name: #{display_name}"
-      assert body =~ "needs:"
-      assert body =~ need
-      refute body =~ "actions/checkout"
-    end
-
-    contract = job_body(workflow, "compat-contract-drift")
-    assert contract =~ "if: always()"
-    assert contract =~ "python3"
   end
 
   @tag :triggers
@@ -342,16 +296,15 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert advisory =~ "continue-on-error: true"
     end
 
-    for display_name <- [
-          "core hermetic proof (merge-blocking)",
-          "companion engine-absent proof (merge-blocking)",
-          "phase132 core hermetic proof (merge-blocking)",
-          "phase132 companion engine-absent proof (merge-blocking)",
-          "merge-blocking commerce support proof (hermetic)",
-          "merge-blocking phase34 commerce support proof (hermetic)"
-        ] do
-      assert workflow =~ "name: #{display_name}"
-    end
+  end
+
+  @tag :manifest
+  test "approved retirement removes every migration-only compatibility conclusion" do
+    workflow = File.read!(@crosswake_ci)
+    manifest = @leaf_manifest |> File.read!() |> Jason.decode!()
+
+    refute workflow =~ ~r/^  compat-/m
+    assert manifest["legacy_compatibility_contexts"] == []
   end
 
   @tag :manifest
@@ -366,9 +319,9 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
     assert proof_ids == Enum.sort(proof_ids)
     assert control_ids == ["classify-change"]
-    assert compatibility_ids == Enum.sort(compatibility_ids)
+    assert compatibility_ids == []
     assert length(proof_ids) == 44
-    assert length(compatibility_ids) == 27
+    assert length(compatibility_ids) == 0
 
     for id <- [
           "phase71-notification-workflow-proof",
@@ -387,13 +340,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert umbrella =~ ~r/^      - #{Regex.escape(id)}$/m
     end
 
-    for row <- compatibility do
-      refute umbrella =~ ~r/^      - #{Regex.escape(row["job_id"])}$/m
-      body = job_body(workflow, row["job_id"])
-      assert body =~ "name: #{row["display_context"]}"
-      assert body =~ row["needs_target"]
-      refute body =~ "actions/checkout"
-    end
+    assert compatibility == []
   end
 
   @tag :manifest
@@ -444,20 +391,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert advisory =~ "continue-on-error: true"
     end
 
-    for {job, display_name} <- [
-          {"compat-phase41-gating-proof",
-           "merge-blocking gating doctor and support matrix proof (hermetic)"},
-          {"compat-phase43-rulestead-proof", "merge-blocking rulestead proof (hermetic)"},
-          {"compat-phase45-rindle-proof", "merge-blocking rindle proof (hermetic)"},
-          {"compat-phase48-provider-adapter-proof",
-           "merge-blocking provider adapter proof (hermetic)"}
-        ] do
-      body = job_body(workflow, job)
-      assert body =~ "name: #{display_name}"
-      assert body =~ "needs: [merge-blocking-crosswake-ci]"
-      assert body =~ "if: always()"
-      refute body =~ "actions/checkout"
-    end
   end
 
   @tag :triggers
@@ -500,19 +433,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert advisory =~ "continue-on-error: true"
     end
 
-    for {job, display_name} <- [
-          {"compat-phase52-operator-proof", "merge-blocking operator proof (hermetic)"},
-          {"compat-phase58-auth-closeout-proof", "merge-blocking auth closeout proof (hermetic)"},
-          {"compat-phase69-closeout-proof", "merge-blocking-closeout-proof"},
-          {"compat-phase70-subscription-saas-proof",
-           "merge-blocking subscription SaaS proof (hermetic)"}
-        ] do
-      body = job_body(workflow, job)
-      assert body =~ "name: #{display_name}"
-      assert body =~ "needs: [merge-blocking-crosswake-ci]"
-      assert body =~ "if: always()"
-      refute body =~ "actions/checkout"
-    end
   end
 
   @tag :triggers
@@ -549,22 +469,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       refute advisory =~ "Determine closeout relevance"
       refute advisory =~ "git diff --name-only"
       refute advisory =~ "grep -Eq"
-    end
-
-    for {job, display_name} <- [
-          {"compat-phase71-notification-workflow-proof",
-           "merge-blocking notification workflow proof (hermetic)"},
-          {"compat-phase73-auth-sensitive-admin-workflow-proof",
-           "merge-blocking auth-sensitive admin workflow proof (hermetic)"},
-          {"compat-phase74-offline-draft-recovery-proof",
-           "merge-blocking offline draft recovery proof (hermetic)"},
-          {"compat-phase75-closeout-gate", "merge-blocking phase 75 closeout gate"}
-        ] do
-      body = job_body(workflow, job)
-      assert body =~ "name: #{display_name}"
-      assert body =~ "needs: [merge-blocking-crosswake-ci]"
-      assert body =~ "if: always()"
-      refute body =~ "actions/checkout"
     end
 
     documentation = job_body(workflow, "documentation-contracts")
@@ -838,13 +742,14 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   end
 
   @tag :release_trust
-  test "Release Please retains non-cancelling queue and approval-aware publish authority" do
+  test "Release Please retains non-cancelling and approval-aware publish authority" do
     workflow = File.read!(@release_please)
 
     assert workflow =~
-             ~r/concurrency:\n  group: release-please-.*\n  cancel-in-progress: false\n  queue: max/
+             ~r/concurrency:\n  group: release-please-.*\n  cancel-in-progress: false/
 
     refute workflow =~ ~r/concurrency:\n(?:  .*\n)*?  cancel-in-progress: true/
+    refute workflow =~ ~r/^  queue:/m
     assert workflow =~ "HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
     assert workflow =~ "MAVEN_USERNAME: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}"
     assert workflow =~ "MIRROR_DEPLOY_KEY: ${{ secrets.MIRROR_DEPLOY_KEY }}"

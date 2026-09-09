@@ -24,7 +24,6 @@ permissions:
 concurrency:
   group: release-please-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
-  queue: max
 
 jobs:
   release-please:
