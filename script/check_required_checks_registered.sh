@@ -51,38 +51,25 @@ elif ! current="$(gh api "$EP" 2>/dev/null)"; then
   echo "[crosswake] UNVERIFIED (exit 3): cannot read branch protection for ${REPO}@${BRANCH}." >&2
   exit 3
 fi
-printf '%s' "$current" | jq -e 'type == "object" and (.strict | type == "boolean")' >/dev/null || {
-  echo "[crosswake] FAIL: malformed required-check response." >&2; exit 1;
-}
-if [ "$(printf '%s' "$current" | jq -r '(.contexts // []) | length')" -ne 0 ]; then
-  echo "[crosswake] FAIL: legacy contexts entries are not permitted; exact app-bound checks are required." >&2
+if ! normalized="$(printf '%s' "$current" | python3 script/normalize_required_checks.py --input -)"; then
+  echo "[crosswake] FAIL: malformed, non-strict, or ambiguous required-check response." >&2
   exit 1
 fi
-if ! printf '%s' "$current" | jq -e '
-  (.checks | type == "array") and
-  all(.checks[]; (keys | sort) == ["app_id", "context"] and
-    (.context | type == "string" and length > 0) and
-    (.app_id | type == "number" and . > 0)) and
-  ([.checks[].context] | length == (unique | length))
-' >/dev/null; then
-  echo "[crosswake] FAIL: malformed or duplicate app-bound required checks." >&2
-  exit 1
-fi
-registered_checks="$(printf '%s' "$current" | jq -cS '[.checks[] | {context,app_id}] | sort_by(.context)')"
-registered="$(printf '%s' "$current" | jq -r '.checks[].context' | sort -u)"
+registered_checks="$(printf '%s' "$normalized" | jq -cS '.checks')"
+registered="$(printf '%s' "$normalized" | jq -r '.checks[].context')"
 
 if [ -n "$POLICY" ]; then
   expected="$(jq -r --arg state "$STATE" 'if $state == "dual" then .dual_contexts[] else .target_contexts[] end' "$POLICY")"
   strict_expected="$(jq -r '.strict' "$POLICY")"
   target_check="$(jq -cS '.target_check' "$POLICY")"
-  target_matches="$(printf '%s' "$current" | jq -cS --argjson target "$target_check" '[.checks[] | {context,app_id} | select(. == $target)] | length')"
+  target_matches="$(printf '%s' "$normalized" | jq -cS --argjson target "$target_check" '[.checks[] | select(. == $target)] | length')"
   record_matches=true
   if [ "$STATE" = "target" ] && [ "$registered_checks" != "[$target_check]" ]; then
     record_matches=false
   elif [ "$STATE" = "dual" ] && [ "$target_matches" -ne 1 ]; then
     record_matches=false
   fi
-  if [ "$(printf '%s' "$current" | jq -r '.strict')" != "$strict_expected" ] || [ "$registered" != "$expected" ] || [ "$record_matches" != true ]; then
+  if [ "$(printf '%s' "$normalized" | jq -r '.strict')" != "$strict_expected" ] || [ "$registered" != "$expected" ] || [ "$record_matches" != true ]; then
     echo "[crosswake] FAIL: live branch protection does not equal exact ${STATE} policy state." >&2
     exit 1
   fi

@@ -16,6 +16,7 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
   @final_source ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/final-remote-default-source.json"
   @after_evidence ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/after.json"
   @comparison ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/comparison.md"
+  @required_check_cases "test/fixtures/ci/required-checks/cases.json"
 
   @tag :final_source
   test "final source binding covers the compatibility-free workflow and manifest" do
@@ -175,9 +176,9 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
   end
 
   test "required-check audit binds sole authority to the GitHub Actions app" do
-    good = Jason.encode!(%{"strict" => true, "contexts" => [], "checks" => [%{"context" => "Crosswake CI", "app_id" => 15_368}]})
-    wrong_app = Jason.encode!(%{"strict" => true, "contexts" => [], "checks" => [%{"context" => "Crosswake CI", "app_id" => 99}]})
-    legacy_context = Jason.encode!(%{"strict" => true, "contexts" => ["Crosswake CI"], "checks" => []})
+    cases = @required_check_cases |> File.read!() |> Jason.decode!()
+    assert cases["schema_version"] == 1
+    by_name = Map.new(cases["cases"], &{&1["name"], &1})
 
     run = fn protection ->
       System.cmd(
@@ -188,10 +189,23 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
       )
     end
 
-    assert {_output, 0} = run.(good)
-    assert {wrong_output, 1} = run.(wrong_app)
+    assert {_output, 0} = run.(Jason.encode!(by_name["real_target_mirror"]["protection"]))
+    assert {wrong_output, 1} = run.(Jason.encode!(by_name["wrong_target_app"]["protection"]))
     assert wrong_output =~ "does not equal exact target policy state"
-    assert {legacy_output, 1} = run.(legacy_context)
-    assert legacy_output =~ "legacy contexts entries are not permitted"
+
+    for name <- [
+          "extra_legacy_context",
+          "different_legacy_context",
+          "missing_app_id",
+          "duplicate_check_authority",
+          "duplicate_context_authority",
+          "non_strict"
+        ] do
+      assert {output, 1} = run.(Jason.encode!(by_name[name]["protection"]))
+      assert output =~ "required-check response"
+    end
+
+    registrar = File.read!("script/register_required_checks.sh")
+    assert registrar =~ "normalize_required_checks.py"
   end
 end

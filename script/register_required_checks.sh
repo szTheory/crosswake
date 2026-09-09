@@ -74,24 +74,20 @@ current_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-current.XXXXXX")"
 desired_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-desired.XXXXXX")"
 after_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-after.XXXXXX")"
 proposal_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-proposal.XXXXXX")"
-trap 'rm -f "$current_file" "$desired_file" "$after_file" "$proposal_file"' EXIT
+normalized_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-normalized.XXXXXX")"
+after_normalized_file="$(mktemp "${TMPDIR:-/tmp}/crosswake-required-after-normalized.XXXXXX")"
+trap 'rm -f "$current_file" "$desired_file" "$after_file" "$proposal_file" "$normalized_file" "$after_normalized_file"' EXIT
 gh api "$EP" >"$current_file"
-if ! jq -e '
-  ((.contexts // []) | length == 0) and (.checks | type == "array") and
-  all(.checks[]; (keys | sort) == ["app_id", "context"] and
-    (.context | type == "string" and length > 0) and
-    (.app_id | type == "number" and . > 0)) and
-  ([.checks[].context] | length == (unique | length))
-' "$current_file" >/dev/null; then
-  echo "[crosswake] FAIL: live required checks must be unique app-bound records without legacy contexts entries." >&2
+if ! python3 script/normalize_required_checks.py --input "$current_file" >"$normalized_file"; then
+  echo "[crosswake] FAIL: live required checks are malformed, non-strict, or ambiguous." >&2
   exit 1
 fi
-current_contexts="$(jq -c '[.checks[].context] | sort | unique' "$current_file")"
-current_strict="$(jq -r '.strict == true' "$current_file")"
+current_contexts="$(jq -c '[.checks[].context]' "$normalized_file")"
+current_strict="$(jq -r '.strict == true' "$normalized_file")"
 legacy_contexts="$(jq -c '.legacy_contexts' "$POLICY")"
 dual_contexts="$(jq -c '.dual_contexts' "$POLICY")"
 target_check="$(jq -cS '.target_check' "$POLICY")"
-target_matches="$(jq -cS --argjson target "$target_check" '[.checks[] | {context,app_id} | select(. == $target)] | length' "$current_file")"
+target_matches="$(jq -cS --argjson target "$target_check" '[.checks[] | select(. == $target)] | length' "$normalized_file")"
 source_state_matches=false
 if [ "$MODE" = "add" ] && [ "$current_contexts" = "$legacy_contexts" ] && [ "$target_matches" -eq 0 ]; then
   source_state_matches=true
@@ -108,13 +104,13 @@ fi
 if [ "$MODE" = "add" ]; then
   jq --argjson target "$target_check" \
     '{strict:true,checks:((.checks + [$target]) | sort_by(.context))}' \
-    "$current_file" >"$desired_file"
+    "$normalized_file" >"$desired_file"
 else
   jq --argjson target "$target_check" \
     '{strict:true,checks:[$target]}' \
-    "$current_file" >"$desired_file"
+    "$normalized_file" >"$desired_file"
 fi
-before_semantic="$(jq -cS '{strict:(.strict == true),checks:[.checks[]? | {context,app_id}]|sort_by(.context)}' "$current_file")"
+before_semantic="$(jq -cS '{strict,checks}' "$normalized_file")"
 after_semantic="$(jq -cS '{strict,checks:[.checks[]? | {context,app_id}]|sort_by(.context)}' "$desired_file")"
 source_digest="$(printf '%s' "$before_semantic" | shasum -a 256 | awk '{print $1}')"
 
@@ -150,7 +146,11 @@ if [ "$MODE" = "retire" ]; then
 fi
 gh api --method PATCH "$EP" --input "$desired_file" >/dev/null
 gh api "$EP" >"$after_file"
-actual_after="$(jq -cS '{strict:(.strict == true),checks:[.checks[]? | {context,app_id}]|sort_by(.context)}' "$after_file")"
+if ! python3 script/normalize_required_checks.py --input "$after_file" >"$after_normalized_file"; then
+  echo "[crosswake] FAIL: post-apply branch protection response is malformed or ambiguous." >&2
+  exit 1
+fi
+actual_after="$(jq -cS '{strict,checks}' "$after_normalized_file")"
 if [ "$actual_after" != "$after_semantic" ]; then
   echo "[crosswake] FAIL: post-apply branch protection does not equal the exact desired state." >&2
   exit 1
