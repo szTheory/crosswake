@@ -12,6 +12,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   @elixir_setup ".github/actions/setup-elixir-cache/action.yml"
   @release_please ".github/workflows/release-please.yml"
   @leaf_manifest "script/ci_leaf_manifest.json"
+  @hex_publish_dry_run "script/verify_hex_publish_dry_run.sh"
 
   @plan06_task1_sources [
     ".github/workflows/phase41-proof.yml",
@@ -80,7 +81,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     for {job, command} <- [
           {"brand-structural", "npm run test:structural"},
           {"collateral-binaries-guard", "bash script/collateral-guard.sh"},
-          {"hex-page-proof", "mix hex.publish --dry-run --yes"},
+          {"hex-page-proof", "bash script/verify_hex_publish_dry_run.sh"},
           {"release-as-staleness-proof", "./script/check_release_as_staleness.sh"}
         ] do
       body = job_body(workflow, job)
@@ -101,8 +102,30 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert hex_page =~ "name: Build docs (smoke)"
     assert hex_page =~ "mix docs"
 
-    assert hex_page =~
-             "name: Hex publish dry-run\n        env:\n          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
+    assert hex_page =~ "name: Hex publish dry-run (credential-free)"
+    assert hex_page =~ "bash script/verify_hex_publish_dry_run.sh"
+
+    # Crosswake CI executes the pull request's code, so it must never receive
+    # release or recovery authority. The helper supplies only a local sentinel
+    # in an isolated Hex home so Hex can exercise its dry-run path offline.
+    refute workflow =~ ~r/\$\{\{\s*secrets\./
+
+    for credential <- [
+          "HEX_API_KEY",
+          "MIRROR_DEPLOY_KEY",
+          "RELEASE_PLEASE_TOKEN",
+          "ORG_GRADLE_PROJECT_mavenCentralPassword",
+          "ORG_GRADLE_PROJECT_signingInMemoryKey"
+        ] do
+      refute workflow =~ credential
+    end
+
+    helper = File.read!(@hex_publish_dry_run)
+    assert helper =~ ~s(env -u HEX_API_KEY)
+    assert helper =~ ~s(HEX_OFFLINE=1)
+    assert helper =~ ~s(mix hex.publish --dry-run --yes)
+    assert helper =~ ~s(mix hex.config api_key "$sentinel")
+    refute helper =~ "${{ secrets."
 
   end
 
