@@ -57,7 +57,14 @@ if ! jq -e --arg umbrella "$umbrella" '
   .public_docs_probe.umbrella_result == "success" and
   .cleanup.pull_requests_closed == true and
   .cleanup.branches_deleted == true and .cancellation.lower_run_cancelled == true and
-  .cancellation.newer_run_authoritative == true
+  .cancellation.newer_run_authoritative == true and
+  (.cancellation.controller_run_id | type == "number") and
+  .cancellation.controller_source_run_id == .cancellation.newer_run_id and
+  (.cancellation.lower_run_id as $lower |
+    (.cancellation.selected_lower_run_ids | index($lower)) != null) and
+  .cancellation.requested_controller_observed == true and
+  .cancellation.runner_consumption_observed == true and
+  .cancellation.bounded_controller_action == true
 ' "$OBSERVATION" >/dev/null; then
   echo "[crosswake] FAIL: source-bound green umbrella observation is absent or incomplete." >&2
   exit 1

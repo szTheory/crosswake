@@ -548,6 +548,10 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert workflow =~ "timeout-minutes: 10"
     assert workflow =~ "steps.select.outputs.run_ids != '[]'"
     assert workflow =~ "closed disposition"
+    assert workflow =~ "CROSSWAKE_CONTROLLER_RESULT="
+    assert workflow =~ "github.event.workflow_run.id"
+    assert workflow =~ ~s("source_run_id")
+    assert workflow =~ ~s("selected_run_ids")
     refute workflow =~ ~r/\b(retry|rerun|re-run)\b.*\b(test|proof|assert)/i
   end
 

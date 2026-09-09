@@ -217,15 +217,38 @@ jobs:
       - name: Record closed controller result
         if: always()
         env:
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
           DISPOSITION: ${{ steps.select.outputs.disposition || 'invalid' }}
           REASON: ${{ steps.select.outputs.reason || 'selection_step_failed' }}
           RUN_IDS: ${{ steps.select.outputs.run_ids || '[]' }}
         run: |
+          controller_result="$(python3 - <<'PY'
+          import json
+          import os
+
+          source_run_id = int(os.environ["SOURCE_RUN_ID"])
+          selected_run_ids = json.loads(os.environ["RUN_IDS"])
+          if not isinstance(selected_run_ids, list) or not all(
+              type(run_id) is int and 0 < run_id < source_run_id
+              for run_id in selected_run_ids
+          ):
+              raise ValueError("closed strict-lower run IDs required")
+          print(json.dumps({
+              "schema_version": 1,
+              "source_run_id": source_run_id,
+              "disposition": os.environ["DISPOSITION"],
+              "reason": os.environ["REASON"],
+              "selected_run_ids": selected_run_ids,
+          }, sort_keys=True, separators=(",", ":")))
+          PY
+          )"
           {
             echo '## Obsolete Crosswake CI controller'
             echo
             echo "Closed disposition: ${DISPOSITION}."
             echo "Reason: ${REASON}."
             echo "Selected strict-lower run IDs: ${RUN_IDS}."
+            echo "CROSSWAKE_CONTROLLER_RESULT=${controller_result}"
             echo 'Authority: deferred until the Plan 165-10 live requested-event timing and inversion probe passes.'
           } >> "$GITHUB_STEP_SUMMARY"
+          echo "CROSSWAKE_CONTROLLER_RESULT=${controller_result}"

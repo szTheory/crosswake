@@ -799,18 +799,48 @@ function validateLiveObservation(value) {
     if (!Number.isInteger(probe.pr_number) || !Number.isInteger(probe.run_id) || probe.umbrella_result !== "success") throw new Error(`invalid ${name} result`);
     if (!Array.isArray(probe.active_proof_leaves) || !Array.isArray(probe.skipped_proof_leaves)) throw new Error(`invalid ${name} leaves`);
   }
-  const cancellationFields = new Set(["pr_number", "lower_run_id", "newer_run_id", "lower_run_cancelled", "newer_run_authoritative", "same_pr_workflow", "requested_controller_observed", "runner_consumption_observed", "bounded_controller_action"]);
+  const cancellationFields = value.schema_version === 1
+    ? new Set(["pr_number", "lower_run_id", "newer_run_id", "lower_run_cancelled", "newer_run_authoritative", "same_pr_workflow", "requested_controller_observed", "runner_consumption_observed", "bounded_controller_action"])
+    : new Set(["pr_number", "lower_run_id", "newer_run_id", "controller_run_id", "controller_source_run_id", "selected_lower_run_ids", "lower_run_cancelled", "newer_run_authoritative", "same_pr_workflow", "requested_controller_observed", "runner_consumption_observed", "bounded_controller_action"]);
   ensureFields(value.cancellation, cancellationFields, "cancellation");
   const c = value.cancellation;
+  if (value.schema_version === 2 && (!Number.isInteger(c.controller_run_id) || c.controller_source_run_id !== c.newer_run_id || !Array.isArray(c.selected_lower_run_ids) || !c.selected_lower_run_ids.includes(c.lower_run_id) || !c.selected_lower_run_ids.every((id) => Number.isInteger(id) && id > 0 && id < c.newer_run_id))) throw new Error("controller correlation evidence is incomplete");
   if (!(c.lower_run_id < c.newer_run_id) || c.lower_run_cancelled !== true || c.newer_run_authoritative !== true || c.same_pr_workflow !== true || c.requested_controller_observed !== true || c.runner_consumption_observed !== true || c.bounded_controller_action !== true) throw new Error("monotonic cancellation evidence is incomplete");
   ensureFields(value.cleanup, new Set(["pull_requests_closed", "branches_deleted"]), "cleanup");
   if (value.cleanup.pull_requests_closed !== true || value.cleanup.branches_deleted !== true) throw new Error("probe cleanup was not proven");
   return value;
 }
 
-function controllerObserved(repository, since, lowerId) {
-  const runs = apiJson(`repos/${repository}/actions/workflows/cancel-obsolete-crosswake-ci.yml/runs?event=workflow_run&per_page=50`).workflow_runs || [];
-  return runs.some((run) => Date.parse(run.created_at) >= Date.parse(since) && ["queued", "in_progress", "completed"].includes(run.status) && run.id > 0 && lowerId > 0);
+function controllerResult(repository, run) {
+  if (run.status !== "completed" || run.conclusion !== "success") return null;
+  const logs = ghSoft(["run", "view", String(run.id), "--repo", repository, "--log"]);
+  if (logs.status !== 0) return null;
+  for (const line of logs.stdout.split("\n")) {
+    const marker = line.indexOf("CROSSWAKE_CONTROLLER_RESULT=");
+    if (marker === -1) continue;
+    try {
+      const parsed = JSON.parse(line.slice(marker + "CROSSWAKE_CONTROLLER_RESULT=".length).trim());
+      ensureFields(parsed, new Set(["schema_version", "source_run_id", "disposition", "reason", "selected_run_ids"]), "controller result");
+      if (parsed.schema_version === 1 && Number.isInteger(parsed.source_run_id) && Array.isArray(parsed.selected_run_ids)) return parsed;
+    } catch (_error) {
+      // Ignore malformed or unrelated log lines and keep searching this run.
+    }
+  }
+  return null;
+}
+
+function waitForControllerResult(repository, sourceRunId, since, timeoutMs = 15 * 60 * 1000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const runs = apiJson(`repos/${repository}/actions/workflows/cancel-obsolete-crosswake-ci.yml/runs?event=workflow_run&per_page=50`).workflow_runs || [];
+    for (const run of runs) {
+      if (Date.parse(run.created_at) < Date.parse(since)) continue;
+      const result = controllerResult(repository, run);
+      if (result && result.source_run_id === sourceRunId) return { run, result };
+    }
+    sleepMs(10000);
+  }
+  throw new Error(`timed out waiting for controller result for source run ${sourceRunId}`);
 }
 
 function probePhase165(args) {
@@ -869,10 +899,10 @@ function probePhase165(args) {
     let newerRun = waitForRun(repository, fullBranch, newerSha);
     const lowerFinal = waitForRunState(repository, lowerRun.id, (run) => run.status === "completed", 15 * 60 * 1000);
     if (lowerFinal.conclusion !== "cancelled") throw new Error("strict lower run was not cancelled");
-    newerRun = waitForRunState(repository, newerRun.id, (run) => run.status === "in_progress" || run.status === "completed", 15 * 60 * 1000);
-    if (newerRun.conclusion === "cancelled") throw new Error("newer authoritative run was cancelled");
-    const controller = controllerObserved(repository, lowerRun.created_at, lowerRun.id);
-    if (!controller) throw new Error("requested-event controller timing was not observed");
+    const controller = waitForControllerResult(repository, newerRun.id, newerRun.created_at);
+    if (controller.result.disposition !== "cancel_lower" || !controller.result.selected_run_ids.includes(lowerRun.id)) throw new Error("controller did not select the observed strict-lower run");
+    newerRun = waitForRunState(repository, newerRun.id, (run) => run.status === "completed");
+    if (!newerRun.conclusion || newerRun.conclusion === "cancelled") throw new Error("newer authoritative run did not reach a terminal non-cancelled result");
 
     result = {
       schema_version: 2,
@@ -883,7 +913,7 @@ function probePhase165(args) {
       planning_probe: { pr_number: planningPr, run_id: planningRun.id, classification: "documentation_only", umbrella_result: planning.umbrella.conclusion, active_proof_leaves: planning.activeProof, skipped_proof_leaves: planning.skippedProof, observed_job_count: planningJobs.length },
       public_docs_probe: { pr_number: publicDocsPr, run_id: publicDocsRun.id, classification: "documentation_only", umbrella_result: publicDocs.umbrella.conclusion, active_proof_leaves: publicDocs.activeProof, skipped_proof_leaves: publicDocs.skippedProof, observed_job_count: publicDocsJobs.length },
       full_probe: { pr_number: fullPr, run_id: fullRun.id, classification: "full_proof", umbrella_result: full.umbrella.conclusion, active_proof_leaves: full.activeProof, skipped_proof_leaves: full.skippedProof, observed_job_count: fullJobs.length },
-      cancellation: { pr_number: fullPr, lower_run_id: lowerRun.id, newer_run_id: newerRun.id, lower_run_cancelled: true, newer_run_authoritative: true, same_pr_workflow: lowerRun.workflow_id === newerRun.workflow_id, requested_controller_observed: true, runner_consumption_observed: true, bounded_controller_action: true },
+      cancellation: { pr_number: fullPr, lower_run_id: lowerRun.id, newer_run_id: newerRun.id, controller_run_id: controller.run.id, controller_source_run_id: controller.result.source_run_id, selected_lower_run_ids: controller.result.selected_run_ids, lower_run_cancelled: lowerFinal.conclusion === "cancelled", newer_run_authoritative: newerRun.status === "completed" && newerRun.conclusion !== "cancelled", same_pr_workflow: lowerRun.workflow_id === newerRun.workflow_id, requested_controller_observed: controller.run.conclusion === "success", runner_consumption_observed: runnerConsumptionObserved, bounded_controller_action: controller.result.disposition === "cancel_lower" && controller.result.selected_run_ids.includes(lowerRun.id) && controller.result.selected_run_ids.every((id) => id < newerRun.id) },
       cleanup: { pull_requests_closed: false, branches_deleted: false },
     };
   } finally {
@@ -1333,6 +1363,51 @@ function testEvidence() {
     }
     if (!rejected) throw new Error("forbidden evidence fixture was accepted");
   }
+  const probe = {
+    pr_number: 7,
+    run_id: 100,
+    classification: "documentation_only",
+    umbrella_result: "success",
+    active_proof_leaves: ["documentation-contracts"],
+    skipped_proof_leaves: [],
+    observed_job_count: 2,
+  };
+  const liveObservation = {
+    schema_version: 2,
+    repository_sha: "a".repeat(40),
+    captured_at: "2026-01-01T00:00:00Z",
+    source_reference: "remote-default-source.json",
+    umbrella_context: "Crosswake CI",
+    planning_probe: probe,
+    public_docs_probe: { ...probe, run_id: 101 },
+    full_probe: { ...probe, run_id: 102, classification: "full_proof" },
+    cancellation: {
+      pr_number: 7,
+      lower_run_id: 103,
+      newer_run_id: 104,
+      controller_run_id: 105,
+      controller_source_run_id: 104,
+      selected_lower_run_ids: [103],
+      lower_run_cancelled: true,
+      newer_run_authoritative: true,
+      same_pr_workflow: true,
+      requested_controller_observed: true,
+      runner_consumption_observed: true,
+      bounded_controller_action: true,
+    },
+    cleanup: { pull_requests_closed: true, branches_deleted: true },
+  };
+  validateLiveObservation(liveObservation);
+  let rejectedControllerMismatch = false;
+  try {
+    validateLiveObservation({
+      ...liveObservation,
+      cancellation: { ...liveObservation.cancellation, controller_source_run_id: 999 },
+    });
+  } catch (_error) {
+    rejectedControllerMismatch = true;
+  }
+  if (!rejectedControllerMismatch) throw new Error("mismatched controller source fixture was accepted");
   const authority = {
     schema_version: 1,
     repository_sha: "a".repeat(40),
