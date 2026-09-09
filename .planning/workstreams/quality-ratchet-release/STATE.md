@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 166
 current_phase_name: Clean-Checkout Engineering Quality
 status: executing
-stopped_at: Completed 166-04-PLAN.md
-last_updated: "2026-09-09T17:37:58.236Z"
+stopped_at: Completed 166-05-PLAN.md
+last_updated: "2026-09-09T18:05:23.887Z"
 last_activity: 2026-09-09
 last_activity_desc: Phase 166 execution started
-state_head: 12c2c54828e298b25915d6bee27bd018a39b131c
+state_head: 6cad3dd7372739dbc7287f8318358aa788c11441
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 26
-  completed_plans: 22
+  completed_plans: 23
   percent: 40
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 166 (Clean-Checkout Engineering Quality) — EXECUTING
-Plan: 5 of 8
+Plan: 6 of 8
 Status: Ready to execute
 Last activity: 2026-09-09 — Phase 166 execution started
 
@@ -76,6 +76,7 @@ Progress: [████░░░░░░] 40%
 | Phase 166 P02 | 11 min | 2 tasks | 4 files |
 | Phase 166 P03 | 15min | 2 tasks | 6 files |
 | Phase 166 P04 | 10min | 2 tasks | 5 files |
+| Phase 166 P05 | 21min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,9 @@ Progress: [████░░░░░░] 40%
 - [Phase 166]: Suspicious artifact paths are escaped data and never remediation command text. — Hostile filenames must not shape terminal output or become executable correction input.
 - [Phase 166]: Freeze each ownership audit at its declared immutable tree while preserving the exact v22 base and NUL-safe candidate rule.
 - [Phase 166]: Use CROSSWAKE_REPOSITORY_VERIFY rather than generic CI truthiness for zero retries, fresh-server ownership, and explicit output roots.
+- [Phase 166]: Extend the existing CI authority validator with stage parity instead of introducing a second CI engine.
+- [Phase 166]: Use invocation-owned browser output paths locally while preserving checked-out example-host artifact paths in GitHub Actions.
+- [Phase 166]: Keep the recurring quality gate contract-only; Plan 08 retains isolated exact-commit canonical proof.
 
 ### Pending Todos
 
@@ -154,6 +158,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-09T17:37:58.158Z
-Stopped at: Completed 166-04-PLAN.md
+Last session: 2026-09-09T18:05:23.819Z
+Stopped at: Completed 166-05-PLAN.md
 Resume file: None
