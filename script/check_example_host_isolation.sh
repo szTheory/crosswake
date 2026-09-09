@@ -111,16 +111,20 @@ if [ -n "${mode}" ] && [ "${mode}" != "--matrix-only" ]; then
   exit 2
 fi
 
+(
+  cd "${EXAMPLE_DIR}"
+  MIX_ENV=dev mix deps.get
+  MIX_ENV=dev mix compile
+)
+
+(
+  cd "${ROOT_DIR}"
+  MIX_ENV=test mix compile
+)
+
 if [ "${mode}" != "--matrix-only" ]; then
   (
-    cd "${EXAMPLE_DIR}"
-    MIX_ENV=dev mix deps.get
-    MIX_ENV=dev mix compile
-  )
-
-  (
     cd "${ROOT_DIR}"
-    MIX_ENV=test mix compile
     MIX_ENV=test mix test test/crosswake/proof/phase164_example_host_isolation_test.exs
   )
 fi

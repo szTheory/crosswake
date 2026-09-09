@@ -192,6 +192,9 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
     assert source =~ "MIX_ENV=dev mix deps.get"
     assert source =~ "MIX_ENV=dev mix compile"
     assert source =~ "MIX_ENV=test mix compile"
+    assert source =~
+             ~r/MIX_ENV=dev mix deps\.get\s+MIX_ENV=dev mix compile\s+\)\s+\(\s+cd "\$\{ROOT_DIR\}"\s+MIX_ENV=test mix compile\s+\)\s+if \[ "\$\{mode\}" != "--matrix-only" \]/s
+
     refute source =~ "--max-cases"
 
     {output, status} =
