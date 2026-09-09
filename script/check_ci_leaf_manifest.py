@@ -103,8 +103,8 @@ def literal_name(job_id: str, job: object, problems: list[Problem]) -> str | Non
     return name
 
 
-def record_map(rows, id_key, exact_keys, kind, problems):
-    if not isinstance(rows, list) or not rows:
+def record_map(rows, id_key, exact_keys, kind, problems, allow_empty=False):
+    if not isinstance(rows, list) or (not rows and not allow_empty):
         problems.append(Problem(f"empty_{kind}", kind, "authority array must be non-empty"))
         return {}
     result = {}
@@ -139,7 +139,16 @@ def validate(manifest: object, workflow: object, producer_records=None) -> list[
         {"job_id", "display_context", "needs_target"},
         "legacy_compatibility_contexts",
         problems,
+        allow_empty=True,
     )
+    for job_id in legacy:
+        problems.append(
+            Problem(
+                "retired_compatibility_context",
+                job_id,
+                "legacy compatibility conclusions are forbidden after authority retirement",
+            )
+        )
     if "classify-change" not in controls:
         problems.append(Problem("missing_classifier_control", "classify-change", "required control is absent"))
     for member in sorted(set(proofs) & set(controls)):
@@ -454,22 +463,16 @@ class ManifestSelfTest(unittest.TestCase):
         meaningful = [p for p in validate(manifest, workflow) if not p.kind.startswith("unordered_")]
         self.assertEqual(meaningful, [])
 
-    def test_compatibility_missing_duplicate_and_wrong_target_fail(self) -> None:
-        first = self.manifest["legacy_compatibility_contexts"][0]
+    def test_retired_compatibility_contexts_fail(self) -> None:
+        retired = {
+            "job_id": "compat-retired",
+            "display_context": "merge-blocking-retired",
+            "needs_target": UMBRELLA_ID,
+        }
         self.assert_problem(
-            lambda m, _w: m["legacy_compatibility_contexts"].append(copy.deepcopy(first)),
-            "duplicate_legacy_compatibility_contexts",
-            first["job_id"],
-        )
-        self.assert_problem(
-            lambda _m, w: w["jobs"].pop(first["job_id"]),
-            "missing_compatibility_job",
-            first["job_id"],
-        )
-        self.assert_problem(
-            lambda m, _w: m["legacy_compatibility_contexts"][0].update(needs_target="invented"),
-            "compatibility_target_invalid",
-            first["job_id"],
+            lambda m, _w: m["legacy_compatibility_contexts"].append(copy.deepcopy(retired)),
+            "retired_compatibility_context",
+            retired["job_id"],
         )
 
     def test_irrelevance_reason_must_match_classifier_exactly(self) -> None:
