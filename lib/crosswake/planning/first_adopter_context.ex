@@ -390,6 +390,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
       Path.basename(path) in [
         ".dockerignore",
         ".env",
+        ".gitignore",
         ".gitkeep",
         "Dockerfile",
         "gradlew",

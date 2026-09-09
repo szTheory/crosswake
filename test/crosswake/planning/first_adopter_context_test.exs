@@ -251,6 +251,18 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     end)
   end
 
+  test "filesystem scanning classifies nested gitignore policy files as durable text" do
+    private_term = Enum.join(["nested", "gitignore", "canary"], "-")
+    path = ".planning/ui-reviews/.gitignore"
+
+    with_temporary_repository([path], private_term, fn root ->
+      assert path in FirstAdopterContext.discover_paths(root)
+
+      assert [%{rule_id: "privacy.private_term", path: ^path}] =
+               FirstAdopterContext.scan_filesystem(root, [private_term])
+    end)
+  end
+
   test "single-digit commercial amounts are prose-aware while positional placeholders are preserved" do
     prose_paths = ["notes/price.md", "notes/price.html", "notes/price.svg"]
     shell_path = "script/positional-placeholder.sh"
