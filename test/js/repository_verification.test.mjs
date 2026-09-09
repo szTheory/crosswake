@@ -7,11 +7,13 @@ import path from "node:path";
 import { test } from "node:test";
 
 import {
+  loadArtifactPolicy,
   loadStageManifest,
   runPreflight,
   runVerification,
   selectStages,
   validateCiParity,
+  validateArtifactPolicy,
   validateStageManifest
 } from "../../script/verify_repository.mjs";
 
@@ -403,6 +405,83 @@ test("summary reports one bounded remediation per non-pass purpose without secre
     assert.equal(new Set(nonPass.map(line => line.split(/[ ;]/, 2).join(" "))).size, nonPass.length);
     assert(result.output.length < 4096);
     assert(!result.output.includes(fixture.secret_sentinel));
+  } finally {
+    rmSync(repository, { recursive: true, force: true });
+  }
+});
+
+test("generated-contract production runner preserves index and restores bytes", () => {
+  const repository = makeRepository();
+  const generator = `
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+const dev = process.argv.includes("--dev");
+const source = readFileSync("source.txt", "utf8").trim();
+writeFileSync(dev ? "out-dev.txt" : "out-default.txt", source + (dev ? ":dev\\n" : ":default\\n"));
+if (existsSync("fail-generator")) process.exit(7);
+`;
+
+  const artifactPolicy = {
+    schema_version: 1,
+    ignored_transient: [{
+      category: "ignored_test",
+      matchers: [{ kind: "tree", value: "ignored" }],
+      remediation_command: "Remove only invocation-created test output"
+    }],
+    intentionally_tracked: [{
+      category: "tracked_test",
+      paths: ["generate.mjs", "source.txt"],
+      purpose: "Generated-contract production-runner fixture"
+    }],
+    generated_contracts: [{
+      canonical_source: "source.txt",
+      regeneration_argv: [["node", "generate.mjs"], ["node", "generate.mjs", "--dev"]],
+      output_paths: ["out-default.txt", "out-dev.txt"],
+      remediation_command: "node generate.mjs && node generate.mjs --dev"
+    }],
+    forbidden_tracked: [{
+      category: "forbidden_test",
+      matchers: [{ kind: "suffix", value: ".secret" }],
+      remediation_command: "git rm --cached -- <repository-relative-path>"
+    }],
+    safe_fixtures: []
+  };
+
+  try {
+    writeFileSync(path.join(repository, "generate.mjs"), generator);
+    writeFileSync(path.join(repository, "source.txt"), "v1\n");
+    writeFileSync(path.join(repository, "out-default.txt"), "v1:default\n");
+    writeFileSync(path.join(repository, "out-dev.txt"), "v1:dev\n");
+    execFileSync("git", ["add", "generate.mjs", "source.txt", "out-default.txt", "out-dev.txt"], { cwd: repository });
+    execFileSync("git", ["commit", "--quiet", "-m", "generated fixture"], { cwd: repository });
+
+    writeFileSync(path.join(repository, "tracked.txt"), "staged-preserved\n");
+    execFileSync("git", ["add", "tracked.txt"], { cwd: repository });
+    const indexBefore = readFileSync(path.join(repository, ".git/index"));
+    const stagedBefore = execFileSync("git", ["diff", "--cached", "--raw", "-z"], { cwd: repository });
+
+    const passing = runVerification(verificationOptions(repository, { artifactPolicy }));
+    assert.equal(passing.status, 0);
+    assert.deepEqual(readFileSync(path.join(repository, "out-default.txt")), Buffer.from("v1:default\n"));
+    assert.deepEqual(readFileSync(path.join(repository, ".git/index")), indexBefore);
+    assert.deepEqual(execFileSync("git", ["diff", "--cached", "--raw", "-z"], { cwd: repository }), stagedBefore);
+
+    writeFileSync(path.join(repository, "source.txt"), "v2\n");
+    const drifted = runVerification(verificationOptions(repository, { artifactPolicy }));
+    assert.equal(drifted.status, 1);
+    assert.match(drifted.output, /generated_contract_drift/);
+    assert.match(drifted.output, /out-default\.txt/);
+    assert.doesNotMatch(drifted.output, /v2/);
+    assert.deepEqual(readFileSync(path.join(repository, "out-default.txt")), Buffer.from("v1:default\n"));
+    assert.deepEqual(readFileSync(path.join(repository, "out-dev.txt")), Buffer.from("v1:dev\n"));
+    assert.deepEqual(readFileSync(path.join(repository, ".git/index")), indexBefore);
+
+    writeFileSync(path.join(repository, "fail-generator"), "trigger\n");
+    const failed = runVerification(verificationOptions(repository, { artifactPolicy }));
+    assert.equal(failed.status, 1);
+    assert.deepEqual(readFileSync(path.join(repository, "out-default.txt")), Buffer.from("v1:default\n"));
+    assert.deepEqual(readFileSync(path.join(repository, "out-dev.txt")), Buffer.from("v1:dev\n"));
+    assert.deepEqual(readFileSync(path.join(repository, ".git/index")), indexBefore);
+    assert.deepEqual(execFileSync("git", ["diff", "--cached", "--raw", "-z"], { cwd: repository }), stagedBefore);
   } finally {
     rmSync(repository, { recursive: true, force: true });
   }

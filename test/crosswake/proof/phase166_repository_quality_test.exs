@@ -99,6 +99,33 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     refute no_duplicate_matchers?(overlap)
   end
 
+  @tag :generated_contracts
+  test "generated contract registry names one source, two argv calls, and eight exact outputs" do
+    policy = decode!(@policy_path)
+
+    assert [registry] = policy["generated_contracts"]
+    assert valid_generated_contract?(registry)
+    assert registry["canonical_source"] == "lib/mix/tasks/crosswake.contract.gen.ex"
+    assert registry["regeneration_argv"] == [
+             ["mix", "crosswake.contract.gen"],
+             ["mix", "crosswake.contract.gen", "--dev"]
+           ]
+
+    assert registry["output_paths"] == [
+             "docs/_contract_snippet.md",
+             "examples/android_shell_host/app/src/dev/assets/route_activation.json",
+             "examples/android_shell_host/app/src/main/assets/route_activation.json",
+             "examples/ios_shell_host/Fixtures/route_activation-dev.json",
+             "examples/ios_shell_host/Fixtures/route_activation.json",
+             "packages/crosswake-shell-core-android/src/test/resources/bridge_contract_vectors.json",
+             "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/bridge_contract_vectors.json",
+             "test/fixtures/bridge_contract_vectors.json"
+           ]
+
+    assert registry["remediation_command"] ==
+             "mix crosswake.contract.gen && mix crosswake.contract.gen --dev"
+  end
+
   defp decode!(path), do: path |> File.read!() |> Jason.decode!()
 
   defp valid_policy?(policy),
@@ -108,8 +135,13 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     Map.keys(record) |> Enum.sort() ==
       ~w(canonical_source output_paths regeneration_argv remediation_command) and
       is_binary(record["canonical_source"]) and record["canonical_source"] != "" and
-      is_list(record["regeneration_argv"]) and record["regeneration_argv"] != [] and
+      is_list(record["regeneration_argv"]) and length(record["regeneration_argv"]) == 2 and
+      Enum.all?(record["regeneration_argv"], fn argv ->
+        is_list(argv) and argv != [] and Enum.all?(argv, &(is_binary(&1) and &1 != ""))
+      end) and
       is_list(record["output_paths"]) and record["output_paths"] != [] and
+      record["output_paths"] == Enum.sort(record["output_paths"]) and
+      Enum.all?(record["output_paths"], &valid_repo_path?/1) and
       is_binary(record["remediation_command"]) and record["remediation_command"] != ""
   end
 
