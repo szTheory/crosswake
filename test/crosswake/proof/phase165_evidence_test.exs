@@ -40,6 +40,11 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
   end
 
   test "final comparison is generated from canonical matched evidence" do
+    monitor = File.read!(@monitor)
+    assert monitor =~ "--cohorts"
+    assert monitor =~ "criteria_mismatch"
+    assert monitor =~ "No causal conclusion"
+
     if File.exists?(@after_evidence) and File.exists?(@comparison) do
       after_evidence = @after_evidence |> File.read!() |> Jason.decode!()
       source = @final_source |> File.read!() |> Jason.decode!()
