@@ -23,6 +23,8 @@ Commands:
   verify-required-context-snapshot <snapshot.json> [--live]
   verify-remote-default-source --sha <40-hex-sha> --output <output.json>
   verify-remote-default-source --source <source.json>
+  verify-final-remote-default-source --sha <40-hex-sha> --workflow <file> --manifest <file> --output <output.json>
+  verify-final-remote-default-source --source <source.json>
   probe-phase165 --source <source.json> --output <output.json> [--assert-cleanup]
   validate-evidence <evidence.json>
   render-evidence <evidence.json> [output.md]
@@ -578,6 +580,113 @@ function verifyRemoteDefaultSource(args) {
   process.stdout.write(`verified immutable remote-default source: ${expectedSha}\n`);
 }
 
+const FINAL_SOURCE_FIELDS = new Set([
+  "schema_version",
+  "repository_sha",
+  "default_branch",
+  "workflow_digest",
+  "manifest_digest",
+  "verified_at",
+  "source_command",
+]);
+
+function validateFinalRemoteSource(source) {
+  ensureFields(source, FINAL_SOURCE_FIELDS, "final remote-default source");
+  if (source.schema_version !== 1 || !/^[0-9a-f]{40}$/.test(source.repository_sha || "")) {
+    throw new Error("invalid final remote-default source identity");
+  }
+  if (!/^[A-Za-z0-9._/-]+$/.test(source.default_branch || "") || parseTimestamp(source.verified_at) === null) {
+    throw new Error("invalid final remote-default source branch or timestamp");
+  }
+  if (![source.workflow_digest, source.manifest_digest].every((value) => /^[0-9a-f]{64}$/.test(value || ""))) {
+    throw new Error("invalid final remote-default blob digest");
+  }
+  if (typeof source.source_command !== "string" || !source.source_command.startsWith("gh api repos/")) {
+    throw new Error("invalid final remote-default source command");
+  }
+  return source;
+}
+
+function runFinalStructureChecks(workflowPath, manifestPath) {
+  if (workflowPath !== ".github/workflows/crosswake-ci.yml" || manifestPath !== "script/ci_leaf_manifest.json") {
+    throw new Error("final source verification requires the canonical workflow and manifest paths");
+  }
+  const manifest = readJson(manifestPath);
+  if (!Array.isArray(manifest.legacy_compatibility_contexts) || manifest.legacy_compatibility_contexts.length !== 0) {
+    throw new Error("legacy compatibility manifest authority survives in final source");
+  }
+  const proofIds = new Set((manifest.proof_leaves || []).map((leaf) => leaf.leaf_id));
+  const controlIds = new Set((manifest.required_control_nodes || []).map((node) => node.node_id));
+  if (!proofIds.has("brand-structural") || proofIds.has("brand-visual") || controlIds.has("brand-visual")) {
+    throw new Error("final brand authority is not exact");
+  }
+  const workflowText = fs.readFileSync(workflowPath, "utf8");
+  if (!workflowText.includes("brand-visual") || /\n\s+compat-[^:]+:/m.test(workflowText)) {
+    throw new Error("final workflow compatibility/advisory structure is not exact");
+  }
+  const checker = spawnSync("python3", ["script/check_ci_leaf_manifest.py", "--self-test"], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (checker.error || checker.status !== 0) throw new Error("final workflow/manifest structure validation failed");
+  const protection = spawnSync(
+    "script/check_required_checks_registered.sh",
+    ["--policy", "script/required_check_policy.json", "--state", "target", "--live"],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+  );
+  if (protection.error || protection.status !== 0) throw new Error("live target branch protection is not exact");
+}
+
+function verifyFinalRemoteDefaultSource(args) {
+  const sourcePath = option(args, "--source");
+  const workflowPath = option(args, "--workflow", ".github/workflows/crosswake-ci.yml");
+  const manifestPath = option(args, "--manifest", "script/ci_leaf_manifest.json");
+  const source = sourcePath ? validateFinalRemoteSource(readJson(sourcePath)) : null;
+  const expectedSha = source ? source.repository_sha : option(args, "--sha");
+  const output = option(args, "--output");
+  if (!expectedSha || (!sourcePath && !output)) {
+    fail("verify-final-remote-default-source requires --source or --sha and --output");
+  }
+  if (!/^[0-9a-f]{40}$/.test(expectedSha)) fail("final --sha must be an exact 40-character lowercase SHA");
+  if (process.env.PHASE165_FINAL_REMOTE_DEFAULT_SHA !== expectedSha) {
+    fail("final source SHA must equal PHASE165_FINAL_REMOTE_DEFAULT_SHA exactly");
+  }
+
+  const { repository, defaultBranch } = repoIdentity();
+  const sourceCommand = `gh api repos/${repository}/git/ref/heads/${defaultBranch}`;
+  const remoteSha = gh(["api", `repos/${repository}/git/ref/heads/${defaultBranch}`, "--jq", ".object.sha"], true).trim();
+  if (remoteSha !== expectedSha) fail("remote default tip moved from PHASE165_FINAL_REMOTE_DEFAULT_SHA");
+  if (source && source.default_branch !== defaultBranch) fail("final source default branch changed");
+
+  const fetch = spawnSync("git", ["fetch", "origin", expectedSha], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (fetch.error || fetch.status !== 0) fail("could not fetch the exact final remote-default SHA");
+  const workflowDigest = sha256Bytes(gitBlob(expectedSha, workflowPath));
+  const manifestDigest = sha256Bytes(gitBlob(expectedSha, manifestPath));
+  if (workflowDigest !== sha256Bytes(fs.readFileSync(workflowPath))) fail("final remote workflow differs from local Plan 12 state");
+  if (manifestDigest !== sha256Bytes(fs.readFileSync(manifestPath))) fail("final remote manifest differs from local Plan 12 state");
+  if (source && (source.workflow_digest !== workflowDigest || source.manifest_digest !== manifestDigest)) {
+    fail("final source record digests no longer match the exact remote blobs");
+  }
+  runFinalStructureChecks(workflowPath, manifestPath);
+
+  if (!sourcePath) {
+    const record = validateFinalRemoteSource({
+      schema_version: 1,
+      repository_sha: expectedSha,
+      default_branch: defaultBranch,
+      workflow_digest: workflowDigest,
+      manifest_digest: manifestDigest,
+      verified_at: new Date().toISOString(),
+      source_command: sourceCommand,
+    });
+    writeCanonical(output, record);
+  }
+  process.stdout.write(`verified final immutable remote-default source: ${expectedSha}\n`);
+}
+
 function ghSoft(args) {
   return spawnSync("gh", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
 }
@@ -1106,6 +1215,8 @@ if (!command || command === "--help" || command === "help") {
   verifyRequiredContextSnapshot(args);
 } else if (command === "verify-remote-default-source") {
   verifyRemoteDefaultSource(args);
+} else if (command === "verify-final-remote-default-source") {
+  verifyFinalRemoteDefaultSource(args);
 } else if (command === "probe-phase165") {
   probePhase165(args);
 } else if (command === "validate-evidence") {
