@@ -18,6 +18,10 @@ fail() {
   exit 1
 }
 
+current_shell_pid() {
+  printf '%s\n' "$$"
+}
+
 sha256_file() {
   if command -v shasum >/dev/null 2>&1; then shasum -a 256 "$1" | awk '{print $1}'; else sha256sum "$1" | awk '{print $1}'; fi
 }
@@ -124,10 +128,10 @@ provision() {
 
   tool_root="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-repository-evidence-tools.XXXXXX")"
   chmod 700 "$tool_root"
-  EVIDENCE_TOOL_OWNER_PID="$BASHPID"
+  EVIDENCE_TOOL_OWNER_PID="$(current_shell_pid)"
   EVIDENCE_TOOL_ROOT="$tool_root"
   cleanup_tools() {
-    [[ "$BASHPID" = "$EVIDENCE_TOOL_OWNER_PID" ]] || return 0
+    [[ "$(current_shell_pid)" = "$EVIDENCE_TOOL_OWNER_PID" ]] || return 0
     case "$EVIDENCE_TOOL_ROOT" in "${TMPDIR:-/tmp}"/crosswake-repository-evidence-tools.*) rm -rf -- "$EVIDENCE_TOOL_ROOT" ;; *) return 1 ;; esac
   }
   trap cleanup_tools EXIT HUP INT TERM
@@ -215,10 +219,10 @@ self_test() {
   local self_root bad_lock entries outside candidate status source_text fixture_artifacts fixture_sources fixture_bin fixture_lock id version archive_root executable version_regex digest
   self_root="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-repository-evidence-self-test.XXXXXX")"
   chmod 700 "$self_root"
-  EVIDENCE_SELF_TEST_OWNER_PID="$BASHPID"
+  EVIDENCE_SELF_TEST_OWNER_PID="$(current_shell_pid)"
   EVIDENCE_SELF_TEST_ROOT="$self_root"
   cleanup_self_test() {
-    [[ "$BASHPID" = "$EVIDENCE_SELF_TEST_OWNER_PID" ]] || return 0
+    [[ "$(current_shell_pid)" = "$EVIDENCE_SELF_TEST_OWNER_PID" ]] || return 0
     case "$EVIDENCE_SELF_TEST_ROOT" in "${TMPDIR:-/tmp}"/crosswake-repository-evidence-self-test.*) rm -rf -- "$EVIDENCE_SELF_TEST_ROOT" ;; *) return 1 ;; esac
   }
   trap cleanup_self_test EXIT HUP INT TERM
@@ -259,6 +263,7 @@ const records=[
 fs.writeFileSync(process.argv[2],JSON.stringify({schema_version:1,os:"Darwin",architecture:"arm64",artifacts:records},null,2)+"\n");
 ' "$fixture_artifacts" "$fixture_lock"
   (
+    trap - EXIT HUP INT TERM
     export CROSSWAKE_EVIDENCE_TEST_GUARD=isolated-fixture CROSSWAKE_EVIDENCE_TEST_LOCK="$fixture_lock" CROSSWAKE_EVIDENCE_TEST_SYSTEM_PATH="$fixture_bin:/usr/bin:/bin:/usr/sbin:/sbin" CROSSWAKE_EVIDENCE_FIXTURE_ARTIFACTS="$fixture_artifacts"
     export PATH="$fixture_bin:$PATH"
     provision
@@ -268,6 +273,7 @@ fs.writeFileSync(process.argv[2],JSON.stringify({schema_version:1,os:"Darwin",ar
   "$BOOTSTRAP_NODE" -e 'const fs=require("node:fs"); const value=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); value.artifacts[2].version_regex="^v0$"; fs.writeFileSync(process.argv[2],JSON.stringify(value));' "$fixture_lock" "$bad_lock"
   status=0
   (
+    trap - EXIT HUP INT TERM
     export CROSSWAKE_EVIDENCE_TEST_GUARD=isolated-fixture CROSSWAKE_EVIDENCE_TEST_LOCK="$bad_lock" CROSSWAKE_EVIDENCE_TEST_SYSTEM_PATH="$fixture_bin:/usr/bin:/bin:/usr/sbin:/sbin" CROSSWAKE_EVIDENCE_FIXTURE_ARTIFACTS="$fixture_artifacts"
     export PATH="$fixture_bin:$PATH"
     provision
@@ -295,7 +301,7 @@ fs.writeFileSync(process.argv[2],JSON.stringify({schema_version:1,os:"Darwin",ar
 
   candidate="$self_root/crosswake-repository-evidence-tools.fixture"
   mkdir "$candidate"
-  EVIDENCE_TOOL_OWNER_PID="$BASHPID"
+  EVIDENCE_TOOL_OWNER_PID="$(current_shell_pid)"
   EVIDENCE_TOOL_ROOT="$candidate"
   cleanup_tools() { case "$EVIDENCE_TOOL_ROOT" in "$self_root"/crosswake-repository-evidence-tools.*) rm -rf -- "$EVIDENCE_TOOL_ROOT" ;; *) return 1 ;; esac; }
   cleanup_tools

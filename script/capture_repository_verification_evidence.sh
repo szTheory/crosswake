@@ -11,6 +11,10 @@ fail() {
   exit 1
 }
 
+current_shell_pid() {
+  printf '%s\n' "$$"
+}
+
 sha256_file() {
   if command -v shasum >/dev/null 2>&1; then
     shasum -a 256 "$1" | awk '{print $1}'
@@ -106,13 +110,13 @@ capture() {
   run_root="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-repository-capture.XXXXXX")"
   chmod 700 "$run_root"
   checkout="$run_root/checkout"
-  CAPTURE_OWNER_PID="$BASHPID"
+  CAPTURE_OWNER_PID="$(current_shell_pid)"
   CAPTURE_RUN_ROOT="$run_root"
   CAPTURE_OUTPUT_DIR="$output_dir"
   CAPTURE_OUTPUT_CREATED="$output_created"
   CAPTURE_SUCCEEDED=0
   cleanup_capture() {
-    [[ "$BASHPID" = "$CAPTURE_OWNER_PID" ]] || return 0
+    [[ "$(current_shell_pid)" = "$CAPTURE_OWNER_PID" ]] || return 0
     case "$CAPTURE_RUN_ROOT" in
       "${TMPDIR:-/tmp}"/crosswake-repository-capture.*) rm -rf -- "$CAPTURE_RUN_ROOT" ;;
       *) return 1 ;;
@@ -192,10 +196,10 @@ self_test() {
   local self_root fixture outside commit unreachable case_sha case_dir status
   self_root="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-repository-capture-self-test.XXXXXX")"
   chmod 700 "$self_root"
-  SELF_TEST_OWNER_PID="$BASHPID"
+  SELF_TEST_OWNER_PID="$(current_shell_pid)"
   SELF_TEST_ROOT="$self_root"
   cleanup_self_test() {
-    [[ "$BASHPID" = "$SELF_TEST_OWNER_PID" ]] || return 0
+    [[ "$(current_shell_pid)" = "$SELF_TEST_OWNER_PID" ]] || return 0
     case "$SELF_TEST_ROOT" in "${TMPDIR:-/tmp}"/crosswake-repository-capture-self-test.*) rm -rf -- "$SELF_TEST_ROOT" ;; *) return 1 ;; esac
   }
   trap cleanup_self_test EXIT HUP INT TERM
