@@ -52,9 +52,9 @@ for (let index = 0; index < ids.length; index += 1) {
 if (!sameKeys(value.repository_state, ["baseline_empty","final_empty","index_unchanged","snapshots_equal"]) ||
     Object.values(value.repository_state).some(item => item !== true)) process.exit(1);
 if (!sameKeys(value.cleanup, ["status"]) || value.cleanup.status !== "PASS") process.exit(1);
-if (!sameKeys(value.tool_policy, ["apple","elixir","erlang","java","node"]) ||
+if (!sameKeys(value.tool_policy, ["apple","elixir","erlang","java","node","pyyaml"]) ||
     value.tool_policy.erlang !== "27.3" || value.tool_policy.elixir !== "1.19.5-otp-27" ||
-    value.tool_policy.node !== "22.14.0" || value.tool_policy.java !== "17" || value.tool_policy.apple !== "host-validated") process.exit(1);
+    value.tool_policy.node !== "22.14.0" || value.tool_policy.java !== "17" || value.tool_policy.pyyaml !== "6.0.3" || value.tool_policy.apple !== "host-validated") process.exit(1);
 const forbidden = new Set(["account_identifier","credential","device_identifier","environment","log","media","payload","raw_answer","secret","stable_device_identifier","token","transcript","url"]);
 const visit = item => {
   if (Array.isArray(item)) return item.every(visit);
@@ -150,6 +150,8 @@ capture() {
     case "${HEX_HOME:-}" in "${CROSSWAKE_REPOSITORY_EVIDENCE_TOOL_ROOT}"/*) ;; *) return 1 ;; esac
     case "${NPM_CONFIG_CACHE:-}" in "${CROSSWAKE_REPOSITORY_EVIDENCE_TOOL_ROOT}"/*) ;; *) return 1 ;; esac
     case "${PLAYWRIGHT_BROWSERS_PATH:-}" in "${CROSSWAKE_REPOSITORY_EVIDENCE_TOOL_ROOT}"/*) ;; *) return 1 ;; esac
+    case "${PYTHONPATH:-}" in "${CROSSWAKE_REPOSITORY_EVIDENCE_TOOL_ROOT}"/*) ;; *) return 1 ;; esac
+    [[ "${PYTHONNOUSERSITE:-}" = "1" ]] || return 1
     (cd "$checkout" && mix local.hex --force && mix local.rebar --force && MIX_ENV=test mix deps.get) >"$run_root/bootstrap-root.log" 2>&1 || return 1
     (cd "$checkout/examples/phoenix_host" && MIX_ENV=test mix deps.get && npm ci && npx playwright install chromium) >"$run_root/bootstrap-host.log" 2>&1 || return 1
   fi
@@ -182,7 +184,7 @@ const value = {
   stages: ids.map(stage_id => ({stage_id, result: "PASS"})),
   repository_state: {baseline_empty: true, final_empty: true, snapshots_equal: true, index_unchanged: true},
   cleanup: {status: "PASS"},
-  tool_policy: {erlang: "27.3", elixir: "1.19.5-otp-27", node: "22.14.0", java: "17", apple: "host-validated"}
+  tool_policy: {erlang: "27.3", elixir: "1.19.5-otp-27", node: "22.14.0", java: "17", pyyaml: "6.0.3", apple: "host-validated"}
 };
 const markdown = [
   "# Clean-checkout repository verification", "", `- Supported code: \`${sha}\``,

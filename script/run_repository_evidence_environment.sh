@@ -39,12 +39,18 @@ const expected = {
   node: ["22.14.0","https://nodejs.org/dist/v22.14.0/node-v22.14.0-darwin-arm64.tar.gz","nodejs/node","v22.14.0","node-v22.14.0-darwin-arm64.tar.gz","e9404633bc02a5162c5c573b1e2490f5fb44648345d64a958b17e325729a5e42"],
   java: ["17.0.20.1+1","https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.20.1_1.tar.gz","adoptium/temurin17-binaries","jdk-17.0.20.1+1","OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.20.1_1.tar.gz","196d13ba5f10414bef7f6a05a9b3f00edacb18ebacef2b99485db9e2ee18f0e8"]
 };
-const topKeys = ["architecture","artifacts","os","schema_version"];
+const topKeys = ["architecture","artifacts","os","python_packages","schema_version"];
 const artifactKeys = ["archive_format","archive_root","asset","authority_repository","authority_tag","executable_relative_path","id","sha256","url","version","version_probe","version_regex"];
+const pythonPackageKeys = ["asset","authority_project","id","import_name","sha256","url","version"];
 const sameKeys = (value, keys) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).sort().join("\0") === [...keys].sort().join("\0");
 let lock;
 try { lock = JSON.parse(fs.readFileSync(lockPath, "utf8")); } catch { process.exit(1); }
-if (!sameKeys(lock, topKeys) || lock.schema_version !== 1 || lock.os !== "Darwin" || lock.architecture !== "arm64" || !Array.isArray(lock.artifacts) || lock.artifacts.length !== 4) process.exit(1);
+if (!sameKeys(lock, topKeys) || lock.schema_version !== 1 || lock.os !== "Darwin" || lock.architecture !== "arm64" || !Array.isArray(lock.artifacts) || lock.artifacts.length !== 4 || !Array.isArray(lock.python_packages) || lock.python_packages.length !== 1) process.exit(1);
+const pythonPackage = lock.python_packages[0];
+if (!sameKeys(pythonPackage, pythonPackageKeys) || pythonPackage.id !== "pyyaml" || pythonPackage.import_name !== "yaml" || !/^[0-9a-f]{64}$/.test(pythonPackage.sha256)) process.exit(1);
+const expectedPythonPackage = ["6.0.3","https://files.pythonhosted.org/packages/ae/92/861f152ce87c452b11b9d0977952259aa7df792d71c1053365cc7b09cc08/pyyaml-6.0.3-cp39-cp39-macosx_11_0_arm64.whl","PyYAML","pyyaml-6.0.3-cp39-cp39-macosx_11_0_arm64.whl","c3355370a2c156cffb25e876646f149d5d68f5e0a3ce86a5084dd0b64a994917"];
+if (!fixtureMode && (!/^https:\/\/files\.pythonhosted\.org\//.test(pythonPackage.url) || JSON.stringify([pythonPackage.version,pythonPackage.url,pythonPackage.authority_project,pythonPackage.asset,pythonPackage.sha256]) !== JSON.stringify(expectedPythonPackage))) process.exit(1);
+if (fixtureMode && !pythonPackage.url.startsWith("https://fixtures.invalid/")) process.exit(1);
 for (let index = 0; index < ids.length; index += 1) {
   const record = lock.artifacts[index];
   if (!sameKeys(record, artifactKeys) || record.id !== ids[index] || !["tar.gz","zip"].includes(record.archive_format)) process.exit(1);
@@ -66,6 +72,14 @@ emit_lock_records() {
   "$BOOTSTRAP_NODE" -e '
 const lock = JSON.parse(require("node:fs").readFileSync(process.argv[1], "utf8"));
 for (const value of lock.artifacts) console.log([value.id,value.version,value.url,value.authority_repository,value.authority_tag,value.asset,value.sha256,value.archive_format,value.archive_root,value.executable_relative_path,JSON.stringify(value.version_probe),value.version_regex].join("\t"));
+' "$lock"
+}
+
+emit_python_package_records() {
+  local lock="$1"
+  "$BOOTSTRAP_NODE" -e '
+const lock = JSON.parse(require("node:fs").readFileSync(process.argv[1], "utf8"));
+for (const value of lock.python_packages) console.log([value.id,value.version,value.url,value.authority_project,value.asset,value.sha256,value.import_name].join("\t"));
 ' "$lock"
 }
 
@@ -119,7 +133,7 @@ validate_apple_tools() {
 provision() {
   local lock="${CROSSWAKE_EVIDENCE_TEST_LOCK:-$LOCK_PATH}" mode=production safe_system_path tool_root records
   local id version url authority_repository authority_tag asset digest format archive_root executable probe_json version_regex
-  local archive extract_root prefix executable actual path_prefixes="" java_home=""
+  local archive extract_root prefix executable actual path_prefixes="" java_home="" python_records python_root import_name
   if [[ "${CROSSWAKE_EVIDENCE_TEST_GUARD:-}" = "isolated-fixture" ]]; then mode=fixture; fi
   validate_lock "$lock" "$mode" || fail "node --test --test-name-pattern=environment test/js/repository_verification.test.mjs"
   [[ "$(host_identity)" = "Darwin/arm64" ]] || fail "Run repository evidence on Darwin/arm64"
@@ -174,13 +188,28 @@ process.stdout.write(`${result.stdout || ""}${result.stderr || ""}`.trim());
     if [[ "$id" = "java" ]]; then java_home="$prefix"; fi
   done <"$records"
 
+  python_root="$tool_root/python"
+  python_records="$tool_root/python-records.tsv"
+  mkdir -p "$python_root"
+  emit_python_package_records "$lock" >"$python_records"
+  while IFS=$'\t' read -r id version url authority_project asset digest import_name; do
+    archive="$tool_root/downloads/$asset"
+    curl --proto '=https' --tlsv1.2 --fail --location --retry 3 --retry-delay 2 --retry-all-errors "$url" -o "$archive" >"$tool_root/downloads/$id.log" 2>&1 || fail "Retry the pinned $id package download"
+    [[ "$(sha256_file "$archive")" = "$digest" ]] || fail "Verify the tracked $id SHA-256 pin"
+    unzip -Z1 "$archive" >"$tool_root/$id.entries" || fail "Inspect the pinned $id package"
+    validate_archive_entries "$tool_root/$id.entries" || fail "Reject unsafe $id package entries"
+    unzip -q "$archive" -d "$python_root" || fail "Extract the pinned $id package"
+    PYTHONPATH="$python_root" PYTHONNOUSERSITE=1 PATH="$safe_system_path" python3 -c "import $import_name; assert $import_name.__version__ == '$version'" || fail "Import the pinned $id package"
+  done <"$python_records"
+
   PATH="$path_prefixes:$safe_system_path"
   export PATH JAVA_HOME="$java_home" HOME="$tool_root/home" MIX_HOME="$tool_root/cache/mix" HEX_HOME="$tool_root/cache/hex" \
     NPM_CONFIG_CACHE="$tool_root/cache/npm" GRADLE_USER_HOME="$tool_root/cache/gradle" SWIFTPM_MODULECACHE_OVERRIDE="$tool_root/cache/swift" \
-    PLAYWRIGHT_BROWSERS_PATH="$tool_root/cache/playwright" CROSSWAKE_REPOSITORY_EVIDENCE_ENVIRONMENT=1 \
+    PLAYWRIGHT_BROWSERS_PATH="$tool_root/cache/playwright" PYTHONPATH="$python_root" PYTHONNOUSERSITE=1 CROSSWAKE_REPOSITORY_EVIDENCE_ENVIRONMENT=1 \
     CROSSWAKE_REPOSITORY_EVIDENCE_TOOL_ROOT="$tool_root"
   mkdir -p "$MIX_HOME" "$HEX_HOME" "$NPM_CONFIG_CACHE" "$GRADLE_USER_HOME" "$SWIFTPM_MODULECACHE_OVERRIDE" "$PLAYWRIGHT_BROWSERS_PATH"
   [[ "$(command -v erl)" = "$tool_root"/* && "$(command -v elixir)" = "$tool_root"/* && "$(command -v node)" = "$tool_root"/* && "$(command -v java)" = "$tool_root"/* ]] || fail "Keep evidence tools inside the invocation root"
+  python3 -c 'import yaml; assert yaml.__version__ == "6.0.3"' || fail "Use the pinned invocation-local PyYAML package"
   PROVISIONED_TOOL_ROOT="$tool_root"
 }
 
@@ -248,6 +277,9 @@ self_test() {
     chmod +x "$fixture_sources/$id/$executable"
     tar -czf "$fixture_artifacts/$id.tar.gz" -C "$fixture_sources/$id" .
   done
+  mkdir -p "$fixture_sources/pyyaml/yaml"
+  printf '%s\n' '__version__ = "6.0.3"' >"$fixture_sources/pyyaml/yaml/__init__.py"
+  (cd "$fixture_sources/pyyaml" && zip -qr "$fixture_artifacts/pyyaml.whl" .)
   "$BOOTSTRAP_NODE" -e '
 const fs=require("node:fs"), cp=require("node:child_process"), path=require("node:path");
 const root=process.argv[1];
@@ -260,7 +292,8 @@ const records=[
   const executable_relative_path=`bin/${id === "erlang" ? "erl" : id === "java" ? "java" : id}`;
   return {id,version,url:`https://fixtures.invalid/${asset}`,authority_repository:"fixtures/repository-evidence",authority_tag:`${id}-${version}`,asset,sha256,archive_format:"tar.gz",archive_root:".",executable_relative_path,version_probe:[executable_relative_path,id === "erlang" ? "-noshell" : "--version"],version_regex};
 });
-fs.writeFileSync(process.argv[2],JSON.stringify({schema_version:1,os:"Darwin",architecture:"arm64",artifacts:records},null,2)+"\n");
+const python_packages=[{id:"pyyaml",version:"6.0.3",url:"https://fixtures.invalid/pyyaml.whl",authority_project:"fixtures/repository-evidence",asset:"pyyaml.whl",sha256:cp.execFileSync("shasum",["-a","256",path.join(root,"pyyaml.whl")],{encoding:"utf8"}).split(/\s/)[0],import_name:"yaml"}];
+fs.writeFileSync(process.argv[2],JSON.stringify({schema_version:1,os:"Darwin",architecture:"arm64",python_packages,artifacts:records},null,2)+"\n");
 ' "$fixture_artifacts" "$fixture_lock"
   (
     trap - EXIT HUP INT TERM
@@ -268,7 +301,9 @@ fs.writeFileSync(process.argv[2],JSON.stringify({schema_version:1,os:"Darwin",ar
     export PATH="$fixture_bin:$PATH"
     provision
     [[ "$(command -v erl)" = "$PROVISIONED_TOOL_ROOT"/* && "$(command -v elixir)" = "$PROVISIONED_TOOL_ROOT"/* && "$(command -v node)" = "$PROVISIONED_TOOL_ROOT"/* && "$(command -v java)" = "$PROVISIONED_TOOL_ROOT"/* ]]
+    python3 -c 'import yaml; assert yaml.__version__ == "6.0.3"'
   )
+  printf '%s\n' 'PASS evidence-environment-self-test pinned-python-package'
   bad_lock="$self_root/bad-lock.json"
   "$BOOTSTRAP_NODE" -e 'const fs=require("node:fs"); const value=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); value.artifacts[2].version_regex="^v0$"; fs.writeFileSync(process.argv[2],JSON.stringify(value));' "$fixture_lock" "$bad_lock"
   status=0
@@ -318,7 +353,7 @@ fs.writeFileSync(process.argv[2],JSON.stringify({schema_version:1,os:"Darwin",ar
   EVIDENCE_TOOL_ROOT="$outside"
   status=0; cleanup_tools >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 && -d "$outside" ]] || return 1
   printf '%s\n' 'PASS evidence-environment-self-test cleanup-escape'
-  printf '%s\n' 'PASS evidence-environment-self-test complete cases=9'
+  printf '%s\n' 'PASS evidence-environment-self-test complete cases=10'
   trap - EXIT HUP INT TERM
   cleanup_self_test
 }

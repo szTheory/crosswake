@@ -574,7 +574,10 @@ test("evidence environment self-test locks Darwin arm64 tools and confinement", 
 
   assert.equal(result.status, 0, output);
   const lock = JSON.parse(readFileSync(lockPath, "utf8"));
-  assert.deepEqual(Object.keys(lock).sort(), ["architecture", "artifacts", "os", "schema_version"].sort());
+  assert.deepEqual(
+    Object.keys(lock).sort(),
+    ["architecture", "artifacts", "os", "python_packages", "schema_version"].sort()
+  );
   assert.equal(lock.os, "Darwin");
   assert.equal(lock.architecture, "arm64");
   assert.deepEqual(lock.artifacts.map(artifact => [artifact.id, artifact.version]), [
@@ -582,6 +585,17 @@ test("evidence environment self-test locks Darwin arm64 tools and confinement", 
     ["elixir", "1.19.5-otp-27"],
     ["node", "22.14.0"],
     ["java", "17.0.20.1+1"]
+  ]);
+  assert.deepEqual(lock.python_packages, [
+    {
+      id: "pyyaml",
+      version: "6.0.3",
+      url: "https://files.pythonhosted.org/packages/ae/92/861f152ce87c452b11b9d0977952259aa7df792d71c1053365cc7b09cc08/pyyaml-6.0.3-cp39-cp39-macosx_11_0_arm64.whl",
+      authority_project: "PyYAML",
+      asset: "pyyaml-6.0.3-cp39-cp39-macosx_11_0_arm64.whl",
+      sha256: "c3355370a2c156cffb25e876646f149d5d68f5e0a3ce86a5084dd0b64a994917",
+      import_name: "yaml"
+    }
   ]);
   const stages = JSON.parse(readFileSync(stagesPath, "utf8")).stages;
   const rootProbe = stages.find(stage => stage.stage_id === "root-proof").required_tools.find(tool => tool.tool === "erl");
@@ -601,5 +615,13 @@ test("evidence environment self-test locks Darwin arm64 tools and confinement", 
   ]) {
     assert.match(output, new RegExp(`PASS evidence-environment-self-test ${fixtureName}`));
   }
-  assert.match(output, /PASS evidence-environment-self-test complete cases=9/);
+  assert.match(output, /PASS evidence-environment-self-test pinned-python-package/);
+  assert.match(output, /PASS evidence-environment-self-test complete cases=10/);
+});
+
+test("CI inventory requires declared PyYAML and never performs an unpinned runtime install", () => {
+  const source = readFileSync(new URL("../../script/list_merge_blocking_checks.py", import.meta.url), "utf8");
+
+  assert.doesNotMatch(source, /pip[^\n]*(?:install|pyyaml)/i);
+  assert.match(source, /PyYAML is required/);
 });
