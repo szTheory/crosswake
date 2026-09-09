@@ -22,7 +22,7 @@
       "dependencies": ["repository-preflight"],
       "required_tools": [
         {"tool": "elixir", "argv": ["elixir", "--version"], "version_regex": "Elixir 1\\.19\\.5", "remediation_command": "asdf install"},
-        {"tool": "erl", "argv": ["erl", "-noshell", "-eval", "io:format(\\\"~s\\\", [erlang:system_info(otp_release)]), halt()."], "version_regex": "^27$", "remediation_command": "asdf install"}
+        {"tool": "erl", "argv": ["erl", "-noshell", "-eval", "io:format(\"~s\", [erlang:system_info(otp_release)]), halt()."], "version_regex": "^27$", "remediation_command": "asdf install"}
       ],
       "argv": ["mix", "verify"],
       "timeout_ms": 1800000,
@@ -80,7 +80,7 @@
       "stage_id": "android-package-proof",
       "dependencies": ["repository-preflight"],
       "required_tools": [
-        {"tool": "java", "argv": ["java", "-version"], "version_regex": "version \\\"17\\.", "remediation_command": "asdf install"},
+        {"tool": "java", "argv": ["java", "-version"], "version_regex": "version \"17\\.", "remediation_command": "asdf install"},
         {"tool": "gradle-wrapper", "argv": ["packages/crosswake-shell-core-android/gradlew", "--version"], "version_regex": "Gradle 8\\.7", "remediation_command": "cd packages/crosswake-shell-core-android && ./gradlew --version"}
       ],
       "argv": ["./gradlew", "test"],

@@ -563,6 +563,7 @@ test("capture self-test proves exact-commit isolation, dirty source success, and
 
 test("evidence environment self-test locks Darwin arm64 tools and confinement", () => {
   const lockPath = new URL("../../script/repository_evidence_toolchain.json", import.meta.url);
+  const stagesPath = new URL("../../script/repository_verification_stages.json", import.meta.url);
   const script = new URL("../../script/run_repository_evidence_environment.sh", import.meta.url).pathname;
   const result = spawnSync(script, ["--self-test"], {
     cwd: new URL("../..", import.meta.url),
@@ -582,6 +583,11 @@ test("evidence environment self-test locks Darwin arm64 tools and confinement", 
     ["node", "22.14.0"],
     ["java", "17.0.20.1+1"]
   ]);
+  const stages = JSON.parse(readFileSync(stagesPath, "utf8")).stages;
+  const rootProbe = stages.find(stage => stage.stage_id === "root-proof").required_tools.find(tool => tool.tool === "erl");
+  const androidProbe = stages.find(stage => stage.stage_id === "android-package-proof").required_tools.find(tool => tool.tool === "java");
+  assert.equal(rootProbe.argv[3], 'io:format("~s", [erlang:system_info(otp_release)]), halt().');
+  assert.equal(androidProbe.version_regex, 'version "17\\.');
   for (const fixtureName of [
     "exact-version-selection",
     "checksum-rejection",
