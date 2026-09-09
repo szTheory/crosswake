@@ -189,6 +189,34 @@ defmodule Crosswake.DoctorTest do
            )
   end
 
+  test "a pre-shell host stays green without making native support claims", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    report =
+      Doctor.run(
+        route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target,
+        native_targets: :auto,
+        ios_shell_root: "native/ios/not_generated",
+        android_shell_root: "native/android/not_generated",
+        ios_proof_hook_path: "script/not_generated_ios.sh",
+        android_proof_hook_path: "script/not_generated_android.sh"
+      )
+
+    assert report.status == :ok
+    assert report.support.status == :not_claimed
+    assert report.support.blocking_platforms == []
+    assert report.shells == %{}
+
+    assert Enum.any?(report.findings, fn finding ->
+             finding.code == "support_claim_not_claimed" and finding.severity == :advisory
+           end)
+
+    refute Enum.any?(report.findings, &(&1.code in ["proof_hook_missing", "proof_hook_failed"]))
+  end
+
   test "doctor reports status :error when a shell proof hook exits non-zero (:failed posture)",
        %{target: target, install_manifest_path: install_manifest_path} do
     # Compensating assertion: a :failed shell (exit_status 1) must produce status: :error.

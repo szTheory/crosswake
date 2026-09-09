@@ -113,9 +113,12 @@ Use the current host-owned path:
 ```bash
 mix deps.get
 mix crosswake.install
+mix crosswake.doctor
+
+# Add native targets only when this host starts claiming them.
 mix crosswake.gen.shell ios
 mix crosswake.gen.shell android
-mix crosswake.doctor --router Elixir.YourAppWeb.Router
+mix crosswake.doctor --native-checks
 ```
 
 Then run the checked-in proof lane:
@@ -185,7 +188,8 @@ surface.
 - The checked-in `examples/ios_shell_host` and `examples/android_shell_host` hosts are `checked-in public-coordinate proof`; use `--local` only for maintainer/local-dev proof.
 - `bash script/verify_phase5_example_hosts.sh` is the primary checked-in proof lane.
 - The route-tour evidence path uses `merge-blocking proof` for browser semantic assertions, manifest labels for artifacts, and `advisory evidence` for native simulator/emulator collateral.
-- `mix crosswake.doctor --router Elixir.YourAppWeb.Router --native-checks` reruns the local generated-shell verification hooks.
+- `mix crosswake.doctor` discovers the installed router and stays green with native support `not_claimed` before a shell exists; `--native-targets none` makes that CI posture explicit.
+- `mix crosswake.doctor --native-checks` reruns verification hooks for generated or explicitly claimed native targets.
 
 Crosswake stays deliberately narrow and explicit. Unsupported or incompatible routes
 fail closed onto explicit denial behavior instead of silently degrading into a generic

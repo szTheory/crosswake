@@ -59,9 +59,13 @@ defmodule Mix.Tasks.Crosswake.InstallTest do
     router_contents = File.read!(router_path)
     assert router_contents =~ "# crosswake:install:start"
     assert router_contents =~ "import Phoenix.Router, except: [get: 3, get: 4"
+
+    assert router_contents =~
+             "import Phoenix.LiveView.Router, except: [live: 2, live: 3, live: 4]"
+
     assert router_contents =~ "import Crosswake.Router"
-    refute router_contents =~ "import Phoenix.LiveView.Router"
     assert router_contents =~ "@crosswake_policy_module DemoWeb.Crosswake.Policy"
+    assert router_contents =~ "_ = @crosswake_policy_module"
 
     policy_path = Path.join(target, "lib/demo_web/crosswake/policy.ex")
     assert File.exists?(policy_path)
@@ -71,6 +75,8 @@ defmodule Mix.Tasks.Crosswake.InstallTest do
     manifest_path = Path.join(target, "priv/crosswake/install_manifest.json")
     manifest_contents = File.read!(manifest_path)
     assert manifest_contents =~ "\"policy_module\": \"DemoWeb.Crosswake.Policy\""
+    assert manifest_contents =~ "\"router_module\": \"DemoWeb.Router\""
+    assert manifest_contents =~ "\"crosswake_version\": \"#{Application.spec(:crosswake, :vsn)}\""
 
     assert manifest_contents =~
              "\"markers\": [\"# crosswake:install:start\", \"# crosswake:install:end\"]"
@@ -114,6 +120,8 @@ defmodule Mix.Tasks.Crosswake.InstallTest do
     assert first =~ "import {CrosswakeBridge} from \"/crosswake/crosswake.esm.js\";"
     assert first =~ "hooks: {CrosswakeBridge}"
     assert first =~ "phx-hook=\"CrosswakeBridge\""
+    assert first =~ "--external:/crosswake/* --format=esm"
+    assert first =~ "guides/install.md#live-dashboard-in-development"
 
     # The brand-new install-time failure surface every adopter hits exactly once.
     assert first =~ "NotMountedError"
@@ -130,6 +138,68 @@ defmodule Mix.Tasks.Crosswake.InstallTest do
 
     # The printed half is not patchable, so the installer says it every time.
     assert second =~ "import {CrosswakeBridge} from \"/crosswake/crosswake.esm.js\";"
+  end
+
+  test "derives the declared web module instead of camelizing the OTP app path", %{target: target} do
+    router_path = Path.join(target, "lib/getfluent_web/router.ex")
+    File.mkdir_p!(Path.dirname(router_path))
+
+    File.write!(router_path, """
+    defmodule GetFluentWeb.Router do
+      use GetFluentWeb, :router
+    end
+    """)
+
+    output =
+      capture_io(fn ->
+        Mix.Task.reenable(@task)
+        Mix.Task.run(@task, ["--target", target, "--router", router_path])
+      end)
+
+    assert output =~ "policy module: lib/getfluent_web/crosswake/policy.ex"
+
+    assert File.read!(Path.join(target, "lib/getfluent_web/crosswake/policy.ex")) =~
+             "defmodule GetFluentWeb.Crosswake.Policy"
+
+    assert File.read!(Path.join(target, "lib/getfluent_web/crosswake/policy.ex")) =~
+             "@router GetFluentWeb.Router"
+
+    manifest =
+      Jason.decode!(File.read!(Path.join(target, "priv/crosswake/install_manifest.json")))
+
+    assert manifest["web_module"] == "GetFluentWeb"
+    assert manifest["router_module"] == "GetFluentWeb.Router"
+    assert manifest["policy_module"] == "GetFluentWeb.Crosswake.Policy"
+  end
+
+  test "scopes Crosswake macro exclusions beside a Phoenix LiveDashboard import", %{
+    target: target,
+    router_path: router_path
+  } do
+    File.write!(router_path, """
+    defmodule DemoWeb.Router do
+      use DemoWeb, :router
+
+      if Application.compile_env(:demo, :dev_routes) do
+        import Phoenix.LiveDashboard.Router
+
+        scope "/dev" do
+          live_dashboard "/dashboard"
+        end
+      end
+    end
+    """)
+
+    output =
+      capture_io(fn ->
+        Mix.Task.reenable(@task)
+        Mix.Task.run(@task, ["--target", target])
+      end)
+
+    router = File.read!(router_path)
+    assert output =~ "live_dashboard_import_scoped"
+    assert router =~ "import Phoenix.LiveDashboard.Router"
+    assert router =~ "import Crosswake.Router, except: [get: 4, live: 4], warn: false"
   end
 
   test "a host with no resolvable endpoint is guidance, not an install failure", %{

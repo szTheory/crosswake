@@ -10,10 +10,11 @@ Phoenix host and one scaffold-once path for host-owned native shells.
 > See [guides/adoption.md](adoption.md) for offline-sync architecture context and the rationale for the generated shell pattern.
 
 1. `mix crosswake.install`
-2. `mix crosswake.gen.shell ios|android`
-3. `mix crosswake.doctor --router Elixir.YourAppWeb.Router`
-4. `bash script/verify_phase5_example_hosts.sh`
-5. `mix crosswake.doctor --router Elixir.YourAppWeb.Router --native-checks`
+2. Declare at least one Phoenix route with `crosswake: [...]` policy metadata
+3. `mix crosswake.doctor`
+4. `mix crosswake.gen.shell ios|android` when the host starts claiming a native target
+5. `bash script/verify_phase5_example_hosts.sh`
+6. `mix crosswake.doctor --native-checks`
 
 The generated Phoenix and native files are `host-owned`, reviewable, and editable
 after generation. Crosswake owns the DSL, manifest contract, doctor surface, support
@@ -71,6 +72,31 @@ What it does:
 Repeated installer runs are idempotent. Existing marker blocks are reused instead
 of duplicating router edits, and existing host-owned policy files are left alone.
 
+The installer reads the declared `MyAppWeb.Router` module from the router source. It
+does not derive module capitalization from the OTP app name, so an app created with
+`--module GetFluent` keeps `GetFluentWeb.Router` and
+`GetFluentWeb.Crosswake.Policy` even when its OTP app is `:getfluent`.
+
+### LiveDashboard in development
+
+Crosswake and `Phoenix.LiveDashboard.Router` both wrap Phoenix route macros. The
+dashboard macro imports its own `get/4` and `live/4` inside the development block, so
+exclude the two conflicting Crosswake arities in that same lexical block:
+
+```elixir
+if Application.compile_env(:my_app, :dev_routes) do
+  import Crosswake.Router, except: [get: 4, live: 4], warn: false
+
+  scope "/dev" do
+    pipe_through :browser
+    live_dashboard "/dashboard", metrics: MyAppWeb.Telemetry
+  end
+end
+```
+
+The exclusion is local to the dashboard block. Product routes outside it continue to
+use Crosswake's route macros and policy metadata.
+
 ## Step 1b: Wire The Bridge Hook
 
 The client half of the bridge is one dependency-free ESM file that ships from
@@ -102,6 +128,18 @@ plug(Plug.Static,
 import {CrosswakeBridge} from "/crosswake/crosswake.esm.js";
 const liveSocket = new LiveSocket("/live", Socket, {params, hooks: {CrosswakeBridge}});
 ```
+
+Phoenix's esbuild profile must preserve that application-served absolute import and
+emit ESM. Add both arguments to the existing `args` list in `config/config.exs`:
+
+```elixir
+~w(js/app.js --bundle --target=es2022 --outdir=../priv/static/assets \
+   --external:/crosswake/* --format=esm)
+```
+
+Without `--external:/crosswake/*`, esbuild tries to resolve the URL as a source file.
+Without `--format=esm`, the external absolute import cannot remain in the emitted
+module in the form the browser expects.
 
 ```heex
 <%!-- ONE element per page. Client events broadcast to EVERY mounted hook, so a
@@ -177,14 +215,24 @@ for the bounded bridge contract.
 
 ## Step 3: Verify Host And Manifest Truth
 
-Run:
+Run after installation and the first managed route declaration:
 
 ```sh
-mix crosswake.doctor --router Elixir.YourAppWeb.Router
+mix crosswake.doctor
 ```
 
-This checks install state, manifest truth, shell generation posture, bounded bridge
-truth, release policy posture, and fail-closed denial vocabulary.
+Doctor discovers the router from `priv/crosswake/install_manifest.json`. `--router`
+remains an override for nonstandard or pre-installer hosts.
+
+Before a native shell exists, doctor automatically reports native support as
+`not_claimed`; missing iOS/Android proof hooks do not fail the command. Use
+`--native-targets none` to make that posture explicit in CI. Once a shell directory or
+proof hook exists, `auto` treats that platform as claimed and proof becomes blocking.
+You can also select the claim directly with `--native-targets ios`, `android`, or
+`all`.
+
+Doctor still checks install state, manifest truth, bounded bridge truth, release
+policy posture, and fail-closed denial vocabulary in the pre-shell posture.
 
 ## Step 4: Run The Public Proof Lane
 
@@ -201,7 +249,7 @@ This is the primary proof artifact class Crosswake publishes for adopters.
 Run:
 
 ```sh
-mix crosswake.doctor --router Elixir.YourAppWeb.Router --native-checks
+mix crosswake.doctor --native-checks
 ```
 
 With `--native-checks`, doctor executes the generated-host verification hooks:
