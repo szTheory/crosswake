@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 166
 current_phase_name: Clean-Checkout Engineering Quality
 status: executing
-stopped_at: Phase 166 context gathered
-last_updated: "2026-09-09T16:27:18.895Z"
+stopped_at: Completed 166-01-PLAN.md
+last_updated: "2026-09-09T16:46:29.630Z"
 last_activity: 2026-09-09
-last_activity_desc: Phase 165 complete, transitioned to Phase 166
-state_head: 9a3b51a600a527b602a17a1bd3d7ae2fbab92c26
+last_activity_desc: Phase 166 execution started
+state_head: 7f27c6811248a5e07e27f5b467b3f9f2be790c45
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 26
-  completed_plans: 18
+  completed_plans: 19
   percent: 40
 workstream: quality-ratchet-release
 ---
@@ -31,10 +31,10 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 
 ## Current Position
 
-Phase: 166 (Clean-Checkout Engineering Quality) — READY TO EXECUTE
-Plan: Not started
+Phase: 166 (Clean-Checkout Engineering Quality) — EXECUTING
+Plan: 2 of 8
 Status: Ready to execute
-Last activity: 2026-09-09 — Phase 165 complete, transitioned to Phase 166
+Last activity: 2026-09-09 — Phase 166 execution started
 
 Progress: [████░░░░░░] 40%
 
@@ -72,6 +72,7 @@ Progress: [████░░░░░░] 40%
 | Phase 165 P11 | 6 min | 1 tasks | 3 files |
 | Phase 165 P12 | 18 min | 2 tasks | 8 files |
 | Phase 165 P13 | 9 min | 2 tasks | 5 files |
+| Phase 166 P01 | 7 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -119,6 +120,8 @@ Progress: [████░░░░░░] 40%
 - [Phase 165]: Keep all forty-four meaningful proof leaves and classify-change while removing every migration-only compatibility conclusion.
 - [Phase 165]: Reject final evidence unless the exact supplied SHA remains the remote default tip and both authoritative blobs match locally.
 - [Phase 165]: Report the pre/post main-bound cohort as not_measured because its explicit criteria differ, despite retaining each sanitized observation descriptively.
+- [Phase 166]: Keep mix verify narrow and invoke it only as the root-proof stage command.
+- [Phase 166]: Attribute tool failures to dependent stages so unsupported Apple tooling blocks iOS without hiding independent proof.
 
 ### Pending Todos
 
@@ -140,6 +143,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-09T14:07:29.111Z
-Stopped at: Phase 166 context gathered
-Resume file: .planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-CONTEXT.md
+Last session: 2026-09-09T16:46:29.546Z
+Stopped at: Completed 166-01-PLAN.md
+Resume file: None

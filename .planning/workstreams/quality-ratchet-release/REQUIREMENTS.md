@@ -56,7 +56,7 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 
 ### Engineering and Repository Quality
 
-- [ ] **ENG-01**: The root suite, example host, browser proof, iOS package, Android package, format,
+- [x] **ENG-01**: The root suite, example host, browser proof, iOS package, Android package, format,
   and warnings-as-errors checks are deterministic from a clean checkout.
 
 - [ ] **ENG-02**: Code touched by the milestone has explicit ownership boundaries, focused modules,
@@ -65,7 +65,7 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 - [ ] **ENG-03**: Generated, temporary, secret-bearing, editor, and local-only artifacts are either
   ignored or intentionally tracked, and a clean verification run leaves Git clean.
 
-- [ ] **ENG-04**: Repository quality checks emit concise, actionable failures without stale phase
+- [x] **ENG-04**: Repository quality checks emit concise, actionable failures without stale phase
   labels, contradictory comments, or unactionable warning noise.
 
 ### Documentation and Pull-Request Hygiene
@@ -146,10 +146,10 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 | CIP-05 | Phase 165 | Complete |
 | CIP-06 | Phase 165 | Complete |
 | CIP-07 | Phase 165 | Complete |
-| ENG-01 | Phase 166 | Pending |
+| ENG-01 | Phase 166 | Complete |
 | ENG-02 | Phase 166 | Pending |
 | ENG-03 | Phase 166 | Pending |
-| ENG-04 | Phase 166 | Pending |
+| ENG-04 | Phase 166 | Complete |
 | DOC-01 | Phase 167 | Pending |
 | DOC-02 | Phase 167 | Pending |
 | DOC-03 | Phase 167 | Pending |
