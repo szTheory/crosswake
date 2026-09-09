@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 166
 current_phase_name: Clean-Checkout Engineering Quality
 status: executing
-stopped_at: Completed 166-03-PLAN.md
-last_updated: "2026-09-09T17:23:10.354Z"
+stopped_at: Completed 166-04-PLAN.md
+last_updated: "2026-09-09T17:37:58.236Z"
 last_activity: 2026-09-09
 last_activity_desc: Phase 166 execution started
-state_head: 4c303c6960c49650170faea5bc596b052c6c1658
+state_head: 12c2c54828e298b25915d6bee27bd018a39b131c
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 26
-  completed_plans: 21
+  completed_plans: 22
   percent: 40
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 166 (Clean-Checkout Engineering Quality) — EXECUTING
-Plan: 4 of 8
+Plan: 5 of 8
 Status: Ready to execute
 Last activity: 2026-09-09 — Phase 166 execution started
 
@@ -75,6 +75,7 @@ Progress: [████░░░░░░] 40%
 | Phase 166 P01 | 7 min | 2 tasks | 6 files |
 | Phase 166 P02 | 11 min | 2 tasks | 4 files |
 | Phase 166 P03 | 15min | 2 tasks | 6 files |
+| Phase 166 P04 | 10min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -130,6 +131,8 @@ Progress: [████░░░░░░] 40%
 - [Phase 166]: Generated contracts remain a registry within intentionally tracked artifact intent. — This preserves the closed three-class policy while making regeneration ownership executable.
 - [Phase 166]: Generated drift restores only registered output snapshots and uses read-only Git inspection. — Focused verification must preserve user bytes and index state on success and failure.
 - [Phase 166]: Suspicious artifact paths are escaped data and never remediation command text. — Hostile filenames must not shape terminal output or become executable correction input.
+- [Phase 166]: Freeze each ownership audit at its declared immutable tree while preserving the exact v22 base and NUL-safe candidate rule.
+- [Phase 166]: Use CROSSWAKE_REPOSITORY_VERIFY rather than generic CI truthiness for zero retries, fresh-server ownership, and explicit output roots.
 
 ### Pending Todos
 
@@ -151,6 +154,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-09T17:22:53.789Z
-Stopped at: Completed 166-03-PLAN.md
+Last session: 2026-09-09T17:37:58.158Z
+Stopped at: Completed 166-04-PLAN.md
 Resume file: None
