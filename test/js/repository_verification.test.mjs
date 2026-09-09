@@ -1,7 +1,7 @@
 /* Repository verification is a closed purpose inventory, never a shell-command API (D-01–D-06). */
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -534,4 +534,29 @@ if (existsSync("fail-generator")) process.exit(7);
   } finally {
     rmSync(repository, { recursive: true, force: true });
   }
+});
+
+test("capture self-test proves exact-commit isolation, dirty source success, and evidence rejection", () => {
+  const script = new URL("../../script/capture_repository_verification_evidence.sh", import.meta.url).pathname;
+  const result = spawnSync(script, ["--self-test"], {
+    cwd: new URL("../..", import.meta.url),
+    encoding: "utf8",
+    timeout: 120_000
+  });
+  const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+
+  assert.equal(result.status, 0, output);
+  for (const fixtureName of [
+    "wrong-sha",
+    "untracked-object",
+    "failing-child",
+    "altered-index",
+    "residue",
+    "forbidden-evidence-key",
+    "symlink-escape",
+    "dirty-source-success"
+  ]) {
+    assert.match(output, new RegExp(`PASS capture-self-test ${fixtureName}`));
+  }
+  assert.match(output, /PASS capture-self-test complete cases=8/);
 });
