@@ -156,6 +156,12 @@ Disposition is closed to `retained`, `changed`, `removed-with-proof`, and `unpro
 
 No removal is authorized at this declared tree. A future `removed-with-proof` row must fill all six D-09 evidence classes; static reachability alone is never sufficient.
 
+## Remediation queue
+
+| source path | owner | finding class | focused regression | focused command | result |
+| --- | --- | --- | --- | --- | --- |
+| examples/phoenix_host/playwright.config.ts | browser proof owner | misleading-fallback | test/js/playwright_repository_mode.test.mjs | node --test test/js/playwright_repository_mode.test.mjs | pass |
+
 ## D-10 duplicate review
 
 Literal proof identities, platform-specific implementations, fixtures, validators, and negative sentinels have distinct owners or failure semantics and are retained. No pair in this cone was proven to implement the same invariant over the same input, output, authority, and failure semantics.

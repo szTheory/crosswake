@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 import tempfile
@@ -23,6 +24,21 @@ REMOVAL_FIELDS = (
     "focused-regression",
     "complete-clean-gate",
 )
+REMEDIATION_COLUMNS = (
+    "source path",
+    "owner",
+    "finding class",
+    "focused regression",
+    "focused command",
+    "result",
+)
+FINDING_CLASSES = {
+    "dead-branch",
+    "accidental-duplicate",
+    "misleading-fallback",
+    "responsibility-extraction",
+}
+REMEDIATION_RESULTS = {"pending", "pass"}
 
 
 @dataclass(frozen=True)
@@ -170,6 +186,69 @@ def validate_text(text: str, root: Path) -> list[Problem]:
     return problems
 
 
+def remediation_queue(text: str, root: Path) -> tuple[list[dict[str, str]], list[Problem]]:
+    problems = validate_text(text, root)
+    if problems:
+        return [], problems
+
+    candidates_rows = table(text, "Candidates", ["candidate", "evidence", "owner", "disposition"])
+    edge_rows = table(
+        text,
+        "Direct expansions",
+        ["source candidate", "target", "edge kind", "evidence", "owner", "disposition"],
+    )
+    queue_rows = table(text, "Remediation queue", list(REMEDIATION_COLUMNS))
+    if candidates_rows is None or edge_rows is None or queue_rows is None:
+        return [], [Problem("invalid_remediation_schema", "remediation queue", "exact remediation columns are required")]
+
+    expected_paths = {
+        row["candidate"] for row in candidates_rows if row["disposition"] in {"changed", "removed-with-proof"}
+    }
+    expected_paths.update(
+        row["target"] for row in edge_rows if row["disposition"] in {"changed", "removed-with-proof"}
+    )
+    observed_paths = [row["source path"] for row in queue_rows]
+
+    for path in sorted(expected_paths - set(observed_paths)):
+        problems.append(Problem("missing_remediation", path, "changed path has no remediation row"))
+    for path in sorted(set(observed_paths) - expected_paths):
+        problems.append(Problem("extra_remediation", path, "row is not backed by a changed disposition"))
+    for path in sorted({path for path in observed_paths if observed_paths.count(path) > 1}):
+        problems.append(Problem("duplicate_remediation", path, "source path occurs more than once"))
+    if observed_paths != sorted(observed_paths):
+        problems.append(Problem("unordered_remediations", "remediation queue", "rows must be sorted by source path"))
+
+    for row in queue_rows:
+        source = row["source path"]
+        regression = row["focused regression"]
+        for field in REMEDIATION_COLUMNS:
+            if not valid_value(row[field]):
+                problems.append(Problem("incomplete_remediation", source, f"{field} is required"))
+        if row["finding class"] not in FINDING_CLASSES:
+            problems.append(Problem("unknown_finding_class", source, row["finding class"]))
+        if row["result"] not in REMEDIATION_RESULTS:
+            problems.append(Problem("unknown_remediation_result", source, row["result"]))
+        for kind, path in (("source", source), ("regression", regression)):
+            if path.startswith("/") or ".." in Path(path).parts or path.startswith(".planning/"):
+                problems.append(Problem(f"invalid_{kind}_path", source, path))
+                continue
+            try:
+                git("ls-files", "--error-unmatch", "--", path, cwd=root)
+            except subprocess.CalledProcessError:
+                problems.append(Problem(f"untracked_{kind}_path", source, path))
+
+    return queue_rows, problems
+
+
+def render_remediation_queue(rows: list[dict[str, str]]) -> str:
+    lines = [f"phase166-remediations: PASS count={len(rows)}"]
+    lines.extend(
+        "phase166-remediation: " + json.dumps(row, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+        for row in rows
+    )
+    return "\n".join(lines)
+
+
 def render_ledger(base: str, tree: str, rows: list[str], edge_rows: list[list[str]], removal_rows: list[list[str]] | None = None) -> str:
     candidate_lines = ["| candidate | evidence | owner | disposition |", "| --- | --- | --- | --- |", *rows]
     edge_lines = ["| source candidate | target | edge kind | evidence | owner | disposition |", "| --- | --- | --- | --- | --- | --- |", *("| " + " | ".join(row) + " |" for row in edge_rows)]
@@ -200,6 +279,14 @@ def self_test() -> int:
         edges = [["a.txt", "direct.txt", "caller", "literal call", "direct-owner", "retained"]]
         proof = ["b.txt", "entrypoint search", "config search", "dependency trace", "dispatch review", "focused test", "complete gate"]
         valid = render_ledger(base, tree, rows, edges, [proof])
+        remediation_header = "\n".join([
+            "## Remediation queue",
+            "",
+            "| " + " | ".join(REMEDIATION_COLUMNS) + " |",
+            "| " + " | ".join("---" for _ in REMEDIATION_COLUMNS) + " |",
+        ])
+        remediation_row = "| b.txt | owner-b | dead-branch | a.txt | test -f a.txt | pass |"
+        valid = valid + remediation_header + "\n" + remediation_row + "\n"
         mutations = {
             "missing_candidate": valid.replace(rows[1] + "\n", ""),
             "extra_candidate": valid.replace(rows[1], rows[1] + "\n| extra.txt | evidence | owner | retained |"),
@@ -217,6 +304,22 @@ def self_test() -> int:
                 print(f"FAIL {name}")
                 return 1
             print(f"PASS {name}")
+        queue, queue_problems = remediation_queue(valid, root)
+        if queue_problems or render_remediation_queue(queue) != (
+            'phase166-remediations: PASS count=1\n'
+            'phase166-remediation: {"finding class":"dead-branch","focused command":"test -f a.txt",'
+            '"focused regression":"a.txt","owner":"owner-b","result":"pass","source path":"b.txt"}'
+        ):
+            print("FAIL deterministic_remediation_queue")
+            return 1
+        print("PASS deterministic_remediation_queue")
+
+        empty = render_ledger(base, base, [], [], []) + remediation_header + "\n"
+        empty_queue, empty_problems = remediation_queue(empty, root)
+        if empty_problems or render_remediation_queue(empty_queue) != "phase166-remediations: PASS count=0":
+            print("FAIL empty_remediation_queue")
+            return 1
+        print("PASS empty_remediation_queue")
     return 0
 
 
@@ -225,9 +328,20 @@ def main() -> int:
     parser.add_argument("--ledger", type=Path, default=DEFAULT_LEDGER)
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--verify-remediations", type=Path)
     args = parser.parse_args()
     if args.self_test:
         return self_test()
+    if args.verify_remediations:
+        queue, problems = remediation_queue(
+            args.verify_remediations.read_text(encoding="utf-8"), args.root.resolve()
+        )
+        if problems:
+            for problem in sorted(problems, key=lambda item: (item.kind, item.member, item.detail)):
+                print(problem.render())
+            return 1
+        print(render_remediation_queue(queue))
+        return 0
     problems = validate_text(args.ledger.read_text(encoding="utf-8"), args.root.resolve())
     if problems:
         for problem in sorted(problems, key=lambda item: (item.kind, item.member, item.detail)):

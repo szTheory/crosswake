@@ -157,6 +157,29 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
         ] do
       assert output =~ "PASS #{mutation}"
     end
+
+    assert output =~ "PASS deterministic_remediation_queue"
+    assert output =~ "PASS empty_remediation_queue"
+  end
+
+  @tag :ownership_remediation
+  test "ownership validator emits the exact deterministic remediation queue" do
+    ledger =
+      ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-ownership-ledger.md"
+
+    {output, status} =
+      System.cmd(
+        "python3",
+        ["script/check_phase166_ownership_ledger.py", "--verify-remediations", ledger],
+        stderr_to_stdout: true
+      )
+
+    assert status == 0, output
+
+    assert String.split(output, "\n", trim: true) == [
+             "phase166-remediations: PASS count=1",
+             ~S(phase166-remediation: {"finding class":"misleading-fallback","focused command":"node --test test/js/playwright_repository_mode.test.mjs","focused regression":"test/js/playwright_repository_mode.test.mjs","owner":"browser proof owner","result":"pass","source path":"examples/phoenix_host/playwright.config.ts"})
+           ]
   end
 
   @tag :ci_parity
