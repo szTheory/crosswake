@@ -13,6 +13,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   @release_please ".github/workflows/release-please.yml"
   @leaf_manifest "script/ci_leaf_manifest.json"
   @hex_publish_dry_run "script/verify_hex_publish_dry_run.sh"
+  @setup_java_v6_oid "de7274f081f381c8f8158605e0321c36c376e2e6"
 
   @plan06_task1_sources [
     ".github/workflows/phase41-proof.yml",
@@ -616,7 +617,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert setup =~ "java-version:"
     assert setup =~ ~r/java-version:\n(?:    .*\n)*?    default: "17"/
     assert setup =~ "gradle-version:"
-    assert setup =~ ~r|actions/setup-java@[0-9a-f]{40} # v5|
+    assert setup =~ ~r|actions/setup-java@[0-9a-f]{40} # v6|
     assert setup =~ ~r|gradle/actions/setup-gradle@[0-9a-f]{40} # v6|
     assert setup =~ "gradle-wrapper.properties"
     assert setup =~ "runner.arch"
@@ -626,6 +627,19 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert setup =~ "gradle.lockfile"
     assert setup =~ "*.gradle"
     refute setup =~ "actions/cache"
+  end
+
+  @tag :runner_placement
+  test "all setup-java uses share the official immutable v6 commit" do
+    {matches, 0} =
+      System.cmd("git", ["grep", "-n", "actions/setup-java@", "--", ".github"],
+        stderr_to_stdout: true
+      )
+
+    pins = Regex.scan(~r/actions\/setup-java@([0-9a-f]{40}) # v6(?:\.\d+\.\d+)?/, matches)
+
+    assert length(pins) == 7
+    assert pins |> Enum.map(&Enum.at(&1, 1)) |> Enum.uniq() == [@setup_java_v6_oid]
   end
 
   @tag :cache_identity
