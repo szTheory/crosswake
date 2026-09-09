@@ -101,7 +101,26 @@
       "purpose": "Repository-owned verification, examples, package sources, and test contracts"
     }
   ],
-  "generated_contracts": [],
+  "generated_contracts": [
+    {
+      "canonical_source": "lib/mix/tasks/crosswake.contract.gen.ex",
+      "regeneration_argv": [
+        ["mix", "crosswake.contract.gen"],
+        ["mix", "crosswake.contract.gen", "--dev"]
+      ],
+      "output_paths": [
+        "docs/_contract_snippet.md",
+        "examples/android_shell_host/app/src/dev/assets/route_activation.json",
+        "examples/android_shell_host/app/src/main/assets/route_activation.json",
+        "examples/ios_shell_host/Fixtures/route_activation-dev.json",
+        "examples/ios_shell_host/Fixtures/route_activation.json",
+        "packages/crosswake-shell-core-android/src/test/resources/bridge_contract_vectors.json",
+        "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/bridge_contract_vectors.json",
+        "test/fixtures/bridge_contract_vectors.json"
+      ],
+      "remediation_command": "mix crosswake.contract.gen && mix crosswake.contract.gen --dev"
+    }
+  ],
   "forbidden_tracked": [
     {
       "category": "forbidden_crash",

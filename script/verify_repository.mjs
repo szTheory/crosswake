@@ -8,12 +8,16 @@ import path from "node:path";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const manifestPath = path.join(repoRoot, "script/repository_verification_stages.json");
+const artifactPolicyPath = path.join(repoRoot, "script/repository_artifact_policy.json");
 const workflowPath = path.join(repoRoot, ".github/workflows/crosswake-ci.yml");
 const stageIds = ["repository-preflight", "root-proof", "example-host-proof", "browser-proof", "ios-package-proof", "android-package-proof", "format-proof", "warnings-proof", "repository-cleanliness"];
 const manifestKeys = ["schema_version", "stages"];
 const stageKeys = ["argv", "ci_owners", "cwd", "dependencies", "env", "owned_outputs", "remediation_command", "required_tools", "stage_id", "timeout_ms"];
 const toolKeys = ["argv", "remediation_command", "tool", "version_regex"];
 const ownerKeys = ["command", "job_id"];
+const artifactPolicyKeys = ["schema_version", "ignored_transient", "intentionally_tracked", "generated_contracts", "forbidden_tracked", "safe_fixtures"];
+const matcherKeys = ["kind", "value"];
+const generatedContractKeys = ["canonical_source", "output_paths", "regeneration_argv", "remediation_command"];
 
 function sameKeys(value, expected, label) {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(`${label} must be a record`);
@@ -27,6 +31,58 @@ function safeRelative(value, label) {
 
 export function loadStageManifest(source = manifestPath) {
   return JSON.parse(readFileSync(source, "utf8"));
+}
+
+export function loadArtifactPolicy(source = artifactPolicyPath) {
+  return JSON.parse(readFileSync(source, "utf8"));
+}
+
+function validateMatchers(records, label) {
+  if (!Array.isArray(records) || records.length === 0) throw new Error(`${label} must be non-empty`);
+  const categories = records.map(record => record?.category);
+  if (categories.join("\0") !== [...categories].sort().join("\0") || new Set(categories).size !== categories.length) throw new Error(`${label} categories must be unique and ordered`);
+  for (const record of records) {
+    sameKeys(record, ["category", "matchers", "remediation_command"], `${label} record`);
+    if (typeof record.category !== "string" || !record.category || !Array.isArray(record.matchers) || record.matchers.length === 0 || typeof record.remediation_command !== "string" || !record.remediation_command) throw new Error(`${label} record is empty`);
+    for (const matcher of record.matchers) {
+      sameKeys(matcher, matcherKeys, `${label} matcher`);
+      if (!["exact", "segment", "suffix", "tree"].includes(matcher.kind)) throw new Error(`${label} matcher kind is unknown`);
+      safeRelative(matcher.value, `${label} matcher`);
+    }
+  }
+}
+
+export function validateArtifactPolicy(policy) {
+  sameKeys(policy, artifactPolicyKeys, "artifact policy");
+  if (policy.schema_version !== 1) throw new Error("artifact policy schema is unsupported");
+  validateMatchers(policy.ignored_transient, "ignored transient");
+  validateMatchers(policy.forbidden_tracked, "forbidden tracked");
+  if (!Array.isArray(policy.intentionally_tracked) || policy.intentionally_tracked.length === 0 || !Array.isArray(policy.generated_contracts) || policy.generated_contracts.length === 0 || !Array.isArray(policy.safe_fixtures)) throw new Error("artifact policy classes must be non-empty arrays");
+
+  const matcherIds = [];
+  for (const records of [policy.ignored_transient, policy.forbidden_tracked]) for (const record of records) for (const matcher of record.matchers) matcherIds.push(`${matcher.kind}\0${matcher.value}`);
+  if (new Set(matcherIds).size !== matcherIds.length) throw new Error("artifact policy matchers overlap");
+
+  const trackedCategories = policy.intentionally_tracked.map(record => record?.category);
+  if (trackedCategories.join("\0") !== [...trackedCategories].sort().join("\0") || new Set(trackedCategories).size !== trackedCategories.length) throw new Error("intentionally tracked categories must be unique and ordered");
+  for (const record of policy.intentionally_tracked) {
+    sameKeys(record, ["category", "paths", "purpose"], "intentionally tracked record");
+    if (!record.category || !record.purpose || !Array.isArray(record.paths) || record.paths.length === 0 || record.paths.join("\0") !== [...record.paths].sort().join("\0")) throw new Error("intentionally tracked record is empty or unordered");
+    for (const trackedPath of record.paths) safeRelative(trackedPath, "intentionally tracked path");
+  }
+  for (const fixture of policy.safe_fixtures) {
+    sameKeys(fixture, ["forbidden_category", "path", "purpose"], "safe fixture");
+    safeRelative(fixture.path, "safe fixture path");
+    if (!fixture.forbidden_category || !fixture.purpose) throw new Error("safe fixture is empty");
+  }
+  for (const contract of policy.generated_contracts) {
+    sameKeys(contract, generatedContractKeys, "generated contract");
+    safeRelative(contract.canonical_source, "generated canonical source");
+    if (!Array.isArray(contract.regeneration_argv) || contract.regeneration_argv.length !== 2 || !Array.isArray(contract.output_paths) || contract.output_paths.length === 0 || contract.output_paths.join("\0") !== [...contract.output_paths].sort().join("\0") || !contract.remediation_command) throw new Error("generated contract record is empty or unordered");
+    for (const argv of contract.regeneration_argv) if (!Array.isArray(argv) || argv.length === 0 || argv.some(part => typeof part !== "string" || !part || /[;&|`\n\r]/.test(part))) throw new Error("generated contract argv must be fixed");
+    for (const output of contract.output_paths) safeRelative(output, "generated output");
+  }
+  return policy;
 }
 
 export function validateStageManifest(manifest) {
@@ -111,7 +167,7 @@ function renderSummary(records) {
   for (const record of records) byPurpose.set(record.purpose, record);
   return [...byPurpose.values()].map(record => record.result === "PASS"
     ? `PASS ${record.purpose}`
-    : `${record.result} ${record.purpose}; corrective-command=${record.remediation_command}`).join("\n");
+    : `${record.result} ${record.purpose}${record.category ? ` category=${record.category}` : ""}${record.path ? ` path=${record.path}` : ""}; corrective-command=${record.remediation_command}`).join("\n");
 }
 
 function validateRunRoot(runRoot, root) {
@@ -122,10 +178,99 @@ function validateRunRoot(runRoot, root) {
 }
 
 function gitSnapshot(root, destination) {
-  const result = spawnSync("git", ["status", "--porcelain=v1", "-z", "--untracked-files=all"], { cwd: root, encoding: null, maxBuffer: 16 * 1024 * 1024 });
+  const result = spawnSync("git", ["status", "--porcelain=v1", "-z", "--untracked-files=all"], { cwd: root, env: { ...process.env, GIT_OPTIONAL_LOCKS: "0" }, encoding: null, maxBuffer: 16 * 1024 * 1024 });
   if (result.error || result.status !== 0 || !Buffer.isBuffer(result.stdout)) throw new Error("Git status snapshot failed");
   writeFileSync(destination, result.stdout, { mode: 0o600 });
   return result.stdout;
+}
+
+function gitPathSet(root) {
+  const result = spawnSync("git", ["status", "--porcelain=v1", "-z", "--untracked-files=all"], { cwd: root, env: { ...process.env, GIT_OPTIONAL_LOCKS: "0" }, encoding: null, maxBuffer: 16 * 1024 * 1024 });
+  if (result.error || result.status !== 0 || !Buffer.isBuffer(result.stdout)) throw new Error("Git path inspection failed");
+  const fields = result.stdout.toString("utf8").split("\0").filter(Boolean);
+  const paths = new Set();
+  for (let index = 0; index < fields.length; index += 1) {
+    const field = fields[index];
+    if (field.length < 4) throw new Error("Git path record is malformed");
+    paths.add(field.slice(3));
+    if (field[0] === "R" || field[0] === "C" || field[1] === "R" || field[1] === "C") index += 1;
+  }
+  return paths;
+}
+
+function matcherApplies(matcher, relativePath) {
+  if (matcher.kind === "exact") return relativePath === matcher.value;
+  if (matcher.kind === "suffix") return relativePath.endsWith(matcher.value);
+  if (matcher.kind === "segment") return relativePath.split("/").includes(matcher.value);
+  return relativePath === matcher.value || relativePath.startsWith(`${matcher.value}/`);
+}
+
+function trackedPaths(root) {
+  const result = spawnSync("git", ["ls-files", "-z"], { cwd: root, env: { ...process.env, GIT_OPTIONAL_LOCKS: "0" }, encoding: null, maxBuffer: 16 * 1024 * 1024 });
+  if (result.error || result.status !== 0 || !Buffer.isBuffer(result.stdout)) throw new Error("Git tracked-path inspection failed");
+  return result.stdout.toString("utf8").split("\0").filter(Boolean).sort();
+}
+
+function artifactFailure(policy, root) {
+  const safe = new Set(policy.safe_fixtures.map(fixture => fixture.path));
+  for (const relativePath of trackedPaths(root)) {
+    if (safe.has(relativePath)) continue;
+    for (const record of policy.forbidden_tracked) {
+      if (record.matchers.some(matcher => matcherApplies(matcher, relativePath))) {
+        return { category: record.category, path: relativePath, remediation_command: record.remediation_command.replace("<repository-relative-path>", relativePath) };
+      }
+    }
+  }
+  return null;
+}
+
+function generatedContractFailure(policy, root, options = {}) {
+  const generatorSpawn = options.generatorSpawn ?? ((command, args, spawnOptions) => spawnSync(command, args, { ...spawnOptions, encoding: "utf8" }));
+  for (const contract of policy.generated_contracts) {
+    const snapshots = new Map();
+    const beforePaths = gitPathSet(root);
+    for (const relativePath of contract.output_paths) {
+      const absolute = path.resolve(root, relativePath);
+      if (!isInside(root, absolute) || !existsSync(absolute) || lstatSync(absolute).isSymbolicLink()) return { category: "generated_contract_missing", path: relativePath, remediation_command: contract.remediation_command };
+      snapshots.set(relativePath, readFileSync(absolute));
+    }
+
+    let failure = null;
+    try {
+      for (const argv of contract.regeneration_argv) {
+        const result = generatorSpawn(argv[0], argv.slice(1), { cwd: root, env: process.env, timeout: 300000 });
+        if (!result || result.error || result.signal != null || result.status !== 0) {
+          failure = { category: "generated_contract_generation_failed", path: contract.canonical_source, remediation_command: contract.remediation_command };
+          break;
+        }
+      }
+      if (!failure) {
+        for (const [relativePath, original] of snapshots) {
+          const absolute = path.join(root, relativePath);
+          if (!existsSync(absolute) || !readFileSync(absolute).equals(original)) {
+            failure = { category: "generated_contract_drift", path: relativePath, remediation_command: contract.remediation_command };
+            break;
+          }
+        }
+      }
+      if (!failure) {
+        const allowed = new Set(contract.output_paths);
+        const extra = [...gitPathSet(root)].filter(relativePath => !beforePaths.has(relativePath) && !allowed.has(relativePath)).sort()[0];
+        if (extra) failure = { category: "generated_contract_unregistered", path: extra, remediation_command: contract.remediation_command };
+      }
+    } finally {
+      for (const [relativePath, original] of snapshots) writeFileSync(path.join(root, relativePath), original);
+    }
+    if (failure) return failure;
+  }
+  return null;
+}
+
+function runRepositoryCleanliness(policy, root, options = {}) {
+  const forbidden = artifactFailure(policy, root);
+  if (forbidden) return { status: 1, ...forbidden };
+  const generated = generatedContractFailure(policy, root, options);
+  return generated ? { status: 1, ...generated } : { status: 0 };
 }
 
 function isInside(root, candidate) {
@@ -165,6 +310,8 @@ function setResult(records, purpose, result, remediation_command) {
 export function runVerification(options = {}) {
   const manifest = validateStageManifest(options.manifest ?? loadStageManifest());
   validateCiParity(manifest, options.workflowSource ?? readFileSync(workflowPath, "utf8"));
+  const enforceArtifactPolicy = options.enforceArtifactPolicy !== false;
+  const artifactPolicy = enforceArtifactPolicy ? validateArtifactPolicy(options.artifactPolicy ?? loadArtifactPolicy()) : null;
   const selection = options.selection ?? "all";
   const selected = selectStages(manifest, selection);
   const root = realpathSync(options.repoRoot ?? repoRoot);
@@ -219,12 +366,14 @@ export function runVerification(options = {}) {
       }
       let result;
       try {
-        result = spawn(stage.argv[0], stage.argv.slice(1), {
-          cwd: path.join(root, stage.cwd),
-          env: { ...process.env, ...stage.env },
-          timeout: stage.timeout_ms,
-          killSignal: "SIGTERM"
-        });
+        result = stage.stage_id === "repository-cleanliness" && enforceArtifactPolicy
+          ? runRepositoryCleanliness(artifactPolicy, root, options)
+          : spawn(stage.argv[0], stage.argv.slice(1), {
+              cwd: path.join(root, stage.cwd),
+              env: { ...process.env, ...stage.env },
+              timeout: stage.timeout_ms,
+              killSignal: "SIGTERM"
+            });
       } catch (error) {
         result = { error, status: null, stdout: "", stderr: "" };
       }
@@ -232,7 +381,13 @@ export function runVerification(options = {}) {
       writeFileSync(path.join(runRoot, "logs", `${stage.stage_id}.log`), `${outcome}\n${String(result?.stdout ?? "")}${String(result?.stderr ?? "")}`, { mode: 0o600 });
       const passed = result && !result.error && result.signal == null && Number.isInteger(result.status) && result.status === 0;
       const stageResult = passed ? "PASS" : "FAIL";
-      records.push({ result: stageResult, purpose: stage.stage_id, remediation_command: stage.remediation_command });
+      records.push({
+        result: stageResult,
+        purpose: stage.stage_id,
+        remediation_command: result?.remediation_command ?? stage.remediation_command,
+        category: result?.category,
+        path: result?.path
+      });
       if (!passed) { nonpassing.add(stage.stage_id); exitStatus = 1; }
     }
   } finally {

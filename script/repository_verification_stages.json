@@ -121,7 +121,7 @@
       "cwd": ".",
       "env": {},
       "ci_owners": [{"job_id": "guard-02-generate-and-diff", "command": "git diff --cached --exit-code"}],
-      "remediation_command": "git diff --check",
+      "remediation_command": "script/verify_repository.sh --stage repository-cleanliness",
       "owned_outputs": []
     }
   ]

@@ -55,6 +55,7 @@ function verificationOptions(repoRoot, overrides = {}) {
     probe: tool => ({ stdout: fixture.tool_versions[tool.tool] }),
     spawn: () => ({ status: 0, stdout: "", stderr: "" }),
     repoRoot,
+    enforceArtifactPolicy: false,
     workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8"),
     ...overrides
   };
@@ -62,9 +63,11 @@ function verificationOptions(repoRoot, overrides = {}) {
 
 test("production manifest is closed, ordered, fixed, and has literal CI owners", () => {
   const manifest = loadStageManifest();
+  const artifactPolicy = loadArtifactPolicy();
   assert.deepEqual(manifest.stages.map(stage => stage.stage_id), expectedIds);
   assert.equal(validateStageManifest(manifest), manifest);
   assert.equal(validateCiParity(manifest), manifest);
+  assert.equal(validateArtifactPolicy(artifactPolicy), artifactPolicy);
 
   for (const stage of manifest.stages) {
     assert(Array.isArray(stage.argv) && stage.argv.length > 0);
@@ -72,6 +75,23 @@ test("production manifest is closed, ordered, fixed, and has literal CI owners",
     assert.equal(Array.isArray(stage.ci_owners), true);
     assert(stage.ci_owners.length > 0);
     assert(!stage.argv.some(part => /[;&|`]/.test(part)));
+  }
+});
+
+test("artifact policy rejects unknown, empty, unordered, duplicate, and overlapping records", () => {
+  const mutations = [
+    policy => { policy.future_class = []; },
+    policy => { policy.ignored_transient = []; },
+    policy => { policy.intentionally_tracked.reverse(); },
+    policy => { policy.forbidden_tracked.push(clone(policy.forbidden_tracked[0])); },
+    policy => { policy.forbidden_tracked[0].matchers.push(clone(policy.ignored_transient[0].matchers[0])); },
+    policy => { policy.generated_contracts[0].output_paths.reverse(); }
+  ];
+
+  for (const mutate of mutations) {
+    const policy = clone(loadArtifactPolicy());
+    mutate(policy);
+    assert.throws(() => validateArtifactPolicy(policy));
   }
 });
 
@@ -139,6 +159,7 @@ test("single selected stage renders normal PASS records", () => {
     probe: tool => ({ stdout: fixture.tool_versions[tool.tool] }),
     spawn: () => ({ status: 0, stdout: "", stderr: "" }),
     repoRoot: new URL(".", root).pathname,
+    enforceArtifactPolicy: false,
     workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8")
   });
   assert.equal(result.status, 0);
@@ -177,6 +198,7 @@ test("complete-run Apple absence blocks only iOS and keeps independent stages ob
         : { stdout: fixture.tool_versions[tool.tool] },
       spawn: (command, argv) => { started.push([command, ...argv].join(" ")); return { status: 0, stdout: "", stderr: "" }; },
       repoRoot: repository,
+      enforceArtifactPolicy: false,
       workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8")
     });
 
@@ -221,6 +243,7 @@ test("dependency failure recursively blocks descendants while independent stages
           : { status: 0, stdout: "ok", stderr: "" };
       },
       repoRoot: repository,
+      enforceArtifactPolicy: false,
       workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8")
     });
 
@@ -256,6 +279,7 @@ test("timeout and malformed process outcomes fail closed and retain full logs", 
         probe: tool => ({ stdout: fixture.tool_versions[tool.tool] }),
         spawn: () => cases.get(kind),
         repoRoot: new URL(".", root).pathname,
+        enforceArtifactPolicy: false,
         runRoot,
         workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8")
       });
@@ -459,14 +483,14 @@ if (existsSync("fail-generator")) process.exit(7);
     const indexBefore = readFileSync(path.join(repository, ".git/index"));
     const stagedBefore = execFileSync("git", ["diff", "--cached", "--raw", "-z"], { cwd: repository });
 
-    const passing = runVerification(verificationOptions(repository, { artifactPolicy }));
+    const passing = runVerification(verificationOptions(repository, { artifactPolicy, enforceArtifactPolicy: true }));
     assert.equal(passing.status, 0);
     assert.deepEqual(readFileSync(path.join(repository, "out-default.txt")), Buffer.from("v1:default\n"));
     assert.deepEqual(readFileSync(path.join(repository, ".git/index")), indexBefore);
     assert.deepEqual(execFileSync("git", ["diff", "--cached", "--raw", "-z"], { cwd: repository }), stagedBefore);
 
     writeFileSync(path.join(repository, "source.txt"), "v2\n");
-    const drifted = runVerification(verificationOptions(repository, { artifactPolicy }));
+    const drifted = runVerification(verificationOptions(repository, { artifactPolicy, enforceArtifactPolicy: true }));
     assert.equal(drifted.status, 1);
     assert.match(drifted.output, /generated_contract_drift/);
     assert.match(drifted.output, /out-default\.txt/);
@@ -476,7 +500,7 @@ if (existsSync("fail-generator")) process.exit(7);
     assert.deepEqual(readFileSync(path.join(repository, ".git/index")), indexBefore);
 
     writeFileSync(path.join(repository, "fail-generator"), "trigger\n");
-    const failed = runVerification(verificationOptions(repository, { artifactPolicy }));
+    const failed = runVerification(verificationOptions(repository, { artifactPolicy, enforceArtifactPolicy: true }));
     assert.equal(failed.status, 1);
     assert.deepEqual(readFileSync(path.join(repository, "out-default.txt")), Buffer.from("v1:default\n"));
     assert.deepEqual(readFileSync(path.join(repository, "out-dev.txt")), Buffer.from("v1:dev\n"));

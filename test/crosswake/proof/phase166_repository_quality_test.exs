@@ -50,6 +50,7 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     end
 
     safe_fixtures = policy["safe_fixtures"]
+
     assert safe_fixtures == [
              %{
                "path" => "examples/phoenix_host/.env",
@@ -106,6 +107,7 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     assert [registry] = policy["generated_contracts"]
     assert valid_generated_contract?(registry)
     assert registry["canonical_source"] == "lib/mix/tasks/crosswake.contract.gen.ex"
+
     assert registry["regeneration_argv"] == [
              ["mix", "crosswake.contract.gen"],
              ["mix", "crosswake.contract.gen", "--dev"]
