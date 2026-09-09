@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "repository_sha": "cec20fbd71ca3319c7d7dfbeb439d1f74545e9c8",
+  "captured_at": "2026-09-09T01:15:25.076Z",
+  "historical_provenance": "SEED-007 is historical context only",
+  "source_commands": [
+    "gh api repos/szTheory/crosswake/actions/runs?branch=main&per_page=20",
+    "gh api repos/szTheory/crosswake/actions/runs/{run_id}/jobs?per_page=100"
+  ],
+  "cohorts": [
+    {
+      "name": "documentation_only_pr",
+      "criteria": "pull_request run at the captured source SHA whose validated diff is documentation_only",
+      "sample_count": 0,
+      "status": "not_measured",
+      "reason": "cohort_unavailable",
+      "observations": [],
+      "aggregates": {
+        "workflow_start_delay_ms": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        },
+        "job_execution_ms": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        },
+        "critical_path_ms": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        },
+        "aggregate_runner_seconds": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        }
+      }
+    },
+    {
+      "name": "full_proof_executable_pr",
+      "criteria": "pull_request run at the captured source SHA whose validated diff includes executable content",
+      "sample_count": 0,
+      "status": "not_measured",
+      "reason": "cohort_unavailable",
+      "observations": [],
+      "aggregates": {
+        "workflow_start_delay_ms": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        },
+        "job_execution_ms": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        },
+        "critical_path_ms": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        },
+        "aggregate_runner_seconds": {
+          "status": "not_measured",
+          "sample_count": 0,
+          "reason": "cohort_unavailable"
+        }
+      }
+    },
+    {
+      "name": "main_bound_automation",
+      "criteria": "push, schedule, or workflow_dispatch run on the captured default-branch source SHA after Phase 165 topology mutation",
+      "sample_count": 1,
+      "status": "observed",
+      "observations": [
+        {
+          "repository_sha": "cec20fbd71ca3319c7d7dfbeb439d1f74545e9c8",
+          "run_id": 34297635605,
+          "attempt": 1,
+          "event": "push",
+          "workflow_name": "Release Please",
+          "runner_class": "mixed",
+          "created_at": "2026-09-09T01:03:49Z",
+          "run_started_at": "2026-09-09T01:03:49Z",
+          "completed_at": "2026-09-09T01:07:26Z",
+          "outcome": "success",
+          "job_count": 21,
+          "check_count": 21,
+          "workflow_start_delay_ms": 0,
+          "job_execution_ms": 171000,
+          "critical_path_ms": 217000,
+          "aggregate_runner_seconds": 171,
+          "job_queue_time": "not_exposed",
+          "cache": {
+            "status": "not_measured",
+            "reason": "cache_outcome_unavailable"
+          }
+        }
+      ],
+      "aggregates": {
+        "workflow_start_delay_ms": {
+          "status": "observed",
+          "sample_count": 1,
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "job_execution_ms": {
+          "status": "observed",
+          "sample_count": 1,
+          "median": 171000,
+          "min": 171000,
+          "max": 171000
+        },
+        "critical_path_ms": {
+          "status": "observed",
+          "sample_count": 1,
+          "median": 217000,
+          "min": 217000,
+          "max": 217000
+        },
+        "aggregate_runner_seconds": {
+          "status": "observed",
+          "sample_count": 1,
+          "median": 171,
+          "min": 171,
+          "max": 171
+        }
+      }
+    }
+  ]
+}

@@ -19,6 +19,7 @@ Commands:
   wait-for <run-id> <job> --keyword <text>
   check-actions [workflow-file]
   capture-evidence <output.json>
+  capture-evidence --source <final-source.json> --cohorts matched --output <output.json>
   capture-required-context-snapshot <output.json>
   verify-required-context-snapshot <snapshot.json> [--live]
   verify-remote-default-source --sha <40-hex-sha> --output <output.json>
@@ -976,6 +977,7 @@ function verifyRequiredContextSnapshot(args) {
 }
 
 function captureEvidence(args) {
+  if (args.includes("--source")) return captureMatchedFinalEvidence(args);
   const output = args[0];
   if (!output) fail("capture-evidence requires an output path");
   const { repository, defaultBranch } = repoIdentity();
@@ -1054,6 +1056,102 @@ function captureEvidence(args) {
   process.stdout.write(`captured sanitized evidence: ${observations.length} observations\n`);
 }
 
+function sanitizedRunObservation(repository, sha, run) {
+  const jobs = apiJson(`repos/${repository}/actions/runs/${run.id}/jobs?per_page=100`).jobs || [];
+  const durations = jobs.map((job) => durationMetric(job.started_at, job.completed_at));
+  const integerDurations = durations.filter(Number.isInteger);
+  const runnerClasses = [...new Set(jobs.map((job) => runnerClass(job.labels)))].sort();
+  return {
+    repository_sha: sha,
+    run_id: run.id,
+    attempt: run.run_attempt || 1,
+    event: run.event,
+    workflow_name: run.name || run.path || "unknown_workflow",
+    runner_class: runnerClasses.length === 1 ? runnerClasses[0] : runnerClasses.length > 1 ? "mixed" : "not_measured",
+    created_at: run.created_at,
+    run_started_at: run.run_started_at,
+    completed_at: run.updated_at,
+    outcome: run.conclusion || run.status || "unknown",
+    job_count: jobs.length,
+    check_count: jobs.length,
+    workflow_start_delay_ms: durationMetric(run.created_at, run.run_started_at),
+    job_execution_ms: integerDurations.length
+      ? integerDurations.reduce((sum, value) => sum + value, 0)
+      : { status: "not_measured", reason: "cohort_unavailable" },
+    critical_path_ms: durationMetric(run.run_started_at, run.updated_at),
+    aggregate_runner_seconds: integerDurations.length
+      ? Math.trunc(integerDurations.reduce((sum, value) => sum + value, 0) / 1000)
+      : { status: "not_measured", reason: "cohort_unavailable" },
+    job_queue_time: NOT_EXPOSED,
+    cache: { status: "not_measured", reason: "cache_outcome_unavailable" },
+  };
+}
+
+function unavailableCohort(name, criteria) {
+  return {
+    name,
+    criteria,
+    sample_count: 0,
+    status: "not_measured",
+    reason: "cohort_unavailable",
+    observations: [],
+    aggregates: aggregateObservations([]),
+  };
+}
+
+function captureMatchedFinalEvidence(args) {
+  const sourcePath = option(args, "--source");
+  const cohortsMode = option(args, "--cohorts");
+  const output = option(args, "--output");
+  if (!sourcePath || cohortsMode !== "matched" || !output) {
+    fail("final capture-evidence requires --source, --cohorts matched, and --output");
+  }
+  verifyFinalRemoteDefaultSource(["--source", sourcePath]);
+  const source = validateFinalRemoteSource(readJson(sourcePath));
+  const { repository, defaultBranch } = repoIdentity();
+  if (source.default_branch !== defaultBranch) fail("final evidence default branch differs from bound source");
+  const runsCommand = `gh api repos/${repository}/actions/runs?branch=${defaultBranch}&per_page=20`;
+  const runs = apiJson(`repos/${repository}/actions/runs?branch=${defaultBranch}&per_page=20`).workflow_runs || [];
+  const observations = runs
+    .filter((run) => ["push", "schedule", "workflow_dispatch"].includes(run.event) && run.head_sha === source.repository_sha)
+    .slice(0, 10)
+    .map((run) => sanitizedRunObservation(repository, source.repository_sha, run))
+    .sort((left, right) => left.run_id - right.run_id);
+  const mainCriteria =
+    "push, schedule, or workflow_dispatch run on the captured default-branch source SHA after Phase 165 topology mutation";
+  const cohorts = [
+    unavailableCohort(
+      "documentation_only_pr",
+      "pull_request run at the captured source SHA whose validated diff is documentation_only",
+    ),
+    unavailableCohort(
+      "full_proof_executable_pr",
+      "pull_request run at the captured source SHA whose validated diff includes executable content",
+    ),
+    observations.length
+      ? {
+          name: "main_bound_automation",
+          criteria: mainCriteria,
+          sample_count: observations.length,
+          status: "observed",
+          observations,
+          aggregates: aggregateObservations(observations),
+        }
+      : unavailableCohort("main_bound_automation", mainCriteria),
+  ];
+  const evidence = {
+    schema_version: EVIDENCE_SCHEMA_VERSION,
+    repository_sha: source.repository_sha,
+    captured_at: new Date().toISOString(),
+    historical_provenance: "SEED-007 is historical context only",
+    source_commands: [runsCommand, `gh api repos/${repository}/actions/runs/{run_id}/jobs?per_page=100`],
+    cohorts,
+  };
+  validateEvidenceObject(evidence);
+  writeCanonical(output, evidence);
+  process.stdout.write(`captured matched final evidence: ${observations.length} main-bound observations\n`);
+}
+
 function validateEvidence(args) {
   if (!args[0]) fail("validate-evidence requires an evidence path");
   const value = readJson(args[0]);
@@ -1112,16 +1210,81 @@ function compareEvidence(args) {
   if (!args[0] || !args[1]) fail("compare-evidence requires before and after evidence paths");
   const before = validateEvidenceObject(readJson(args[0]));
   const after = validateEvidenceObject(readJson(args[1]));
-  const output = args[2];
-  const text = [
+  const output = option(args, "--output", args[2] && !args[2].startsWith("--") ? args[2] : undefined);
+  const lines = [
     "# Phase 165 descriptive CI comparison",
     "",
     `Before source: \`${before.repository_sha}\``,
     `After source: \`${after.repository_sha}\``,
     "",
     "Results are descriptive. Unmatched cohorts remain not measured; exact per-job queue time is not exposed.",
+    "No causal conclusion is supported by these observations, and no timing value is a merge threshold.",
     "",
-  ].join("\n");
+    "## Source commands",
+    "",
+    ...before.source_commands.map((command) => `- Before source command: \`${command}\``),
+    ...after.source_commands.map((command) => `- After source command: \`${command}\``),
+  ];
+  const afterByName = new Map(after.cohorts.map((cohort) => [cohort.name, cohort]));
+  for (const prior of before.cohorts) {
+    const current = afterByName.get(prior.name);
+    if (!current) throw new Error(`after evidence omits cohort ${prior.name}`);
+    const criteriaMatch = prior.criteria === current.criteria;
+    const comparisonStatus = !criteriaMatch
+      ? "not measured (`not_measured`: criteria_mismatch)"
+      : prior.status === "observed" && current.status === "observed"
+        ? "observed matched cohorts"
+        : "not measured (`not_measured`: cohort_unavailable)";
+    const countMetric = (cohort, field) => aggregateMetric(cohort.observations.map((row) => row[field]));
+    const workflows = (cohort) => [...new Set(cohort.observations.map((row) => row.workflow_name))].sort();
+    const runners = (cohort) => [...new Set(cohort.observations.map((row) => row.runner_class))].sort();
+    const cacheSummary = (cohort) => {
+      if (cohort.observations.length === 0) return "not measured (cohort_unavailable)";
+      const outcomes = [...new Set(cohort.observations.map((row) => `${row.cache.status} (${row.cache.reason})`))].sort();
+      return outcomes.join(", ");
+    };
+    lines.push(
+      "",
+      `## ${prior.name}`,
+      "",
+      `Comparison status: **${comparisonStatus}**.`,
+      "",
+      `Before criteria: ${prior.criteria}`,
+      "",
+      `After criteria: ${current.criteria}`,
+      "",
+      `Sample count: before ${prior.sample_count}; after ${current.sample_count}.`,
+      "",
+      "### Workflow/job/check counts",
+      "",
+      `- Before workflows: ${workflows(prior).length} (${workflows(prior).join(", ") || "not measured"})`,
+      `- After workflows: ${workflows(current).length} (${workflows(current).join(", ") || "not measured"})`,
+      `- Before jobs: ${displayMetric(countMetric(prior, "job_count"), "jobs")}`,
+      `- After jobs: ${displayMetric(countMetric(current, "job_count"), "jobs")}`,
+      `- Before checks: ${displayMetric(countMetric(prior, "check_count"), "checks")}`,
+      `- After checks: ${displayMetric(countMetric(current, "check_count"), "checks")}`,
+      "",
+      "### Runner classes",
+      "",
+      `- Before: ${runners(prior).join(", ") || "not measured (cohort_unavailable)"}`,
+      `- After: ${runners(current).join(", ") || "not measured (cohort_unavailable)"}`,
+      "",
+      "### Timing",
+      "",
+      "| Metric | Before | After |",
+      "| --- | --- | --- |",
+      `| Workflow delay | ${displayMetric(prior.aggregates.workflow_start_delay_ms, "ms")} | ${displayMetric(current.aggregates.workflow_start_delay_ms, "ms")} |`,
+      `| Job execution | ${displayMetric(prior.aggregates.job_execution_ms, "ms")} | ${displayMetric(current.aggregates.job_execution_ms, "ms")} |`,
+      `| Critical path | ${displayMetric(prior.aggregates.critical_path_ms, "ms")} | ${displayMetric(current.aggregates.critical_path_ms, "ms")} |`,
+      `| Runner time | ${displayMetric(prior.aggregates.aggregate_runner_seconds, "s")} | ${displayMetric(current.aggregates.aggregate_runner_seconds, "s")} |`,
+      "",
+      "### Cache outcomes",
+      "",
+      `- Before: ${cacheSummary(prior)}`,
+      `- After: ${cacheSummary(current)}`,
+    );
+  }
+  const text = `${lines.join("\n")}\n`;
   if (output) {
     fs.mkdirSync(path.dirname(output), { recursive: true });
     fs.writeFileSync(output, text);
@@ -1181,6 +1344,30 @@ function testEvidence() {
       rejected = true;
     }
     if (!rejected) throw new Error("required-context negative fixture was accepted");
+  }
+  const finalSource = {
+    schema_version: 1,
+    repository_sha: "a".repeat(40),
+    default_branch: "main",
+    workflow_digest: "b".repeat(64),
+    manifest_digest: "c".repeat(64),
+    verified_at: "2026-01-01T00:00:00Z",
+    source_command: "gh api repos/example/project/git/ref/heads/main",
+  };
+  validateFinalRemoteSource(finalSource);
+  for (const changed of [
+    { ...finalSource, repository_sha: "moving-branch" },
+    { ...finalSource, workflow_digest: "short" },
+    { ...finalSource, actor: "SENSITIVE-FIXTURE-VALUE" },
+  ]) {
+    let rejected = false;
+    try {
+      validateFinalRemoteSource(changed);
+    } catch (error) {
+      rejected = true;
+      if (error.message.includes("SENSITIVE-FIXTURE-VALUE")) throw new Error("final source rejection echoed a field value");
+    }
+    if (!rejected) throw new Error("invalid final source fixture was accepted");
   }
   process.stdout.write("evidence self-test: pass\n");
 }
