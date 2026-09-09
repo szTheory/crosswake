@@ -21,6 +21,7 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     assert formatter == [inputs: [".formatter.exs"]]
   end
 
+  @tag :tmp_dir
   test "dependency-security fixture proof resolves the repository through physical paths", %{tmp_dir: tmp} do
     source = File.cwd!()
     link = Path.join(tmp, "crosswake-link")
