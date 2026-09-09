@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 166
 current_phase_name: Clean-Checkout Engineering Quality
 status: executing
-stopped_at: Completed 166-06-PLAN.md
-last_updated: "2026-09-09T18:30:03.226Z"
+stopped_at: Completed 166-07-PLAN.md
+last_updated: "2026-09-09T20:32:40.064Z"
 last_activity: 2026-09-09
 last_activity_desc: Phase 166 execution started
-state_head: 94c25591dae2ba79161984b599d39a5ce5ae504d
+state_head: d4212d1b4c822b788b06cce8b1e88f56c67d3725
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 26
-  completed_plans: 24
+  completed_plans: 25
   percent: 40
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 166 (Clean-Checkout Engineering Quality) — EXECUTING
-Plan: 7 of 8
+Plan: 8 of 8
 Status: Ready to execute
 Last activity: 2026-09-09 — Phase 166 execution started
 
@@ -78,6 +78,7 @@ Progress: [████░░░░░░] 40%
 | Phase 166 P04 | 10min | 2 tasks | 5 files |
 | Phase 166 P05 | 21min | 3 tasks | 10 files |
 | Phase 166 P06 | 3min | 2 tasks | 3 files |
+| Phase 166 P07 | 25min | 2 tasks | 24 files |
 
 ## Accumulated Context
 
@@ -140,6 +141,9 @@ Progress: [████░░░░░░] 40%
 - [Phase 166]: Keep the recurring quality gate contract-only; Plan 08 retains isolated exact-commit canonical proof.
 - [Phase 166]: Treat every changed or removed-with-proof ledger disposition as an exact remediation-queue obligation; an empty set emits an explicit passing count of zero. — Prevents evidence-proven findings from disappearing by omission while keeping zero-finding runs explicit.
 - [Phase 166]: Preserve the sole browser correction and its Plan 04 RED/GREEN history rather than manufacture a no-op Plan 06 source diff. — The bounded queue authorizes verification of the existing correction, not unrelated or cosmetic source churn.
+- [Phase 166]: Resolve evidence input only from an explicit tracked commit and never copy source worktree or index state.
+- [Phase 166]: Materialize the declared Darwin/arm64 toolchain beneath one invocation-owned root with literal upstream authorities and SHA-256 pins.
+- [Phase 166]: Commit the authorized install/doctor correction set separately before binding exact-commit verification to the new supported HEAD.
 
 ### Pending Todos
 
@@ -161,6 +165,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-09T18:29:48.969Z
-Stopped at: Completed 166-06-PLAN.md
+Last session: 2026-09-09T20:32:39.987Z
+Stopped at: Completed 166-07-PLAN.md
 Resume file: None
