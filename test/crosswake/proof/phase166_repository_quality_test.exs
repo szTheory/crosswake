@@ -42,6 +42,14 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     assert output =~ "EXPECTED-REJECTION dependency-security"
   end
 
+  test "fresh-checkout companion verification refuses lockfile drift" do
+    aliases = File.read!("mix.exs")
+
+    for package <- ~w(crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline) do
+      assert aliases =~ "cmd --cd packages/#{package} mix deps.get --check-locked"
+    end
+  end
+
   @tag :artifact_policy
   test "artifact policy is closed, ordered, non-overlapping, and narrow" do
     policy = decode!(@policy_path)
