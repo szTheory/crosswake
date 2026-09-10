@@ -670,14 +670,21 @@ test("evidence environment self-test locks Darwin arm64 tools and confinement", 
     "forbidden-global-write",
     "missing-apple-tool",
     "cleanup-escape",
+    "otp-style-contained-symlink",
+    "contained-hardlink",
     "tar-symlink-rejection",
-    "tar-hardlink-rejection",
+    "absolute-link-rejection",
+    "normalized-link-escape-rejection",
+    "hardlink-escape-rejection",
+    "link-cycle-rejection",
+    "unsafe-link-chain-rejection",
+    "zip-contained-symlink",
     "zip-symlink-rejection"
   ]) {
     assert.match(output, new RegExp(`PASS evidence-environment-self-test ${fixtureName}`));
   }
   assert.match(output, /PASS evidence-environment-self-test pinned-python-package/);
-  assert.match(output, /PASS evidence-environment-self-test complete cases=13/);
+  assert.match(output, /PASS evidence-environment-self-test complete cases=20/);
 });
 
 test("CI inventory requires declared PyYAML and never performs an unpinned runtime install", () => {

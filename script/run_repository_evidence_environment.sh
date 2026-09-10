@@ -94,11 +94,108 @@ for (const entry of entries) {
   if (entry.startsWith("/") || entry.includes("\\") || entry.split("/").includes("..") || entry.includes("\0")) process.exit(1);
 }
 ' "$entries" || return 1
-  if [[ "$format" = "tar.gz" ]]; then
-    ! tar -tvzf "$archive" | awk 'substr($1, 1, 1) ~ /^[lh]$/ { found=1 } END { exit(found ? 0 : 1) }'
-  else
-    ! unzip -Z -l "$archive" | awk '$1 ~ /^l/ { found=1 } END { exit(found ? 0 : 1) }'
-  fi
+  python3 - "$format" "$archive" <<'PY'
+import posixpath
+import stat
+import sys
+import tarfile
+import zipfile
+
+
+def normalize_path(value, *, base=""):
+    if not isinstance(value, str) or not value or "\0" in value or "\\" in value:
+        raise ValueError("invalid archive path")
+    if value.startswith("/"):
+        raise ValueError("absolute archive path")
+    normalized = posixpath.normpath(posixpath.join(base, value))
+    if normalized == ".." or normalized.startswith("../") or normalized.startswith("/"):
+        raise ValueError("archive path escape")
+    return normalized
+
+
+archive_format, archive_path = sys.argv[1:]
+members = {}
+
+if archive_format == "tar.gz":
+    with tarfile.open(archive_path, mode="r:gz") as archive:
+        for member in archive.getmembers():
+            name = normalize_path(member.name)
+            if name in members:
+                raise ValueError("duplicate normalized archive member")
+            if member.issym():
+                target = normalize_path(member.linkname, base=posixpath.dirname(name))
+                kind = "symlink"
+            elif member.islnk():
+                target = normalize_path(member.linkname)
+                kind = "hardlink"
+            elif member.isfile():
+                target = None
+                kind = "file"
+            elif member.isdir():
+                target = None
+                kind = "directory"
+            else:
+                raise ValueError("unsupported archive member type")
+            members[name] = (kind, target)
+else:
+    with zipfile.ZipFile(archive_path) as archive:
+        for member in archive.infolist():
+            name = normalize_path(member.filename)
+            if name in members:
+                raise ValueError("duplicate normalized archive member")
+            mode = member.external_attr >> 16
+            if stat.S_ISLNK(mode):
+                raw_target = archive.read(member)
+                if len(raw_target) > 4096:
+                    raise ValueError("oversized link target")
+                try:
+                    link_target = raw_target.decode("utf-8")
+                except UnicodeDecodeError as error:
+                    raise ValueError("non-UTF-8 link target") from error
+                target = normalize_path(link_target, base=posixpath.dirname(name))
+                kind = "symlink"
+            elif member.is_dir():
+                target = None
+                kind = "directory"
+            elif stat.S_ISREG(mode) or mode == 0:
+                target = None
+                kind = "file"
+            else:
+                raise ValueError("unsupported archive member type")
+            members[name] = (kind, target)
+
+if not members:
+    raise ValueError("empty archive")
+
+
+def resolve(path, seen=()):
+    path = normalize_path(path)
+    while True:
+        parts = [] if path == "." else path.split("/")
+        linked_prefix = None
+        for index in range(1, len(parts) + 1):
+            prefix = "/".join(parts[:index])
+            record = members.get(prefix)
+            if record and record[0] in {"symlink", "hardlink"}:
+                linked_prefix = (prefix, record[1], parts[index:])
+                break
+        if linked_prefix is None:
+            return path
+        prefix, target, remainder = linked_prefix
+        if prefix in seen:
+            raise ValueError("archive link cycle")
+        path = normalize_path(posixpath.join(target, *remainder))
+        seen = (*seen, prefix)
+
+
+for name, (kind, _) in members.items():
+    terminal = resolve(name)
+    terminal_record = members.get(terminal)
+    if kind in {"symlink", "hardlink"} and terminal_record is None:
+        raise ValueError("archive link target is not a member")
+    if kind == "hardlink" and terminal_record[0] != "file":
+        raise ValueError("archive hardlink target is not a regular file")
+PY
 }
 
 validate_owned_root() {
@@ -349,24 +446,82 @@ fs.writeFileSync(process.argv[2],JSON.stringify({schema_version:1,os:"Darwin",ar
   printf '%s\n' 'PASS evidence-environment-self-test archive-entry-escape'
 
   link_root="$self_root/link-source"
-  mkdir -p "$link_root"
+  mkdir -p "$link_root/bin" "$link_root/erts-15.2.3/bin"
   printf '%s\n' 'target' >"$link_root/target"
-  ln -s ../outside "$link_root/safe-link"
+  printf '%s\n' 'epmd' >"$link_root/erts-15.2.3/bin/epmd"
+  ln -s ../erts-15.2.3/bin/epmd "$link_root/bin/epmd"
+  link_archive="$self_root/otp-style-symlink.tar.gz"
+  tar -czf "$link_archive" -C "$link_root" .
+  tar -tzf "$link_archive" >"$entries"
+  validate_archive_entries "tar.gz" "$link_archive" "$entries"
+  printf '%s\n' 'PASS evidence-environment-self-test otp-style-contained-symlink'
+
+  ln "$link_root/target" "$link_root/contained-hardlink"
+  link_archive="$self_root/contained-hardlink.tar.gz"
+  tar -czf "$link_archive" -C "$link_root" target contained-hardlink
+  tar -tzf "$link_archive" >"$entries"
+  validate_archive_entries "tar.gz" "$link_archive" "$entries"
+  printf '%s\n' 'PASS evidence-environment-self-test contained-hardlink'
+
+  rm "$link_root/bin/epmd"
+  ln -s ../../outside "$link_root/bin/epmd"
   link_archive="$self_root/symlink.tar.gz"
   tar -czf "$link_archive" -C "$link_root" .
   tar -tzf "$link_archive" >"$entries"
   status=0; validate_archive_entries "tar.gz" "$link_archive" "$entries" >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 ]] || return 1
   printf '%s\n' 'PASS evidence-environment-self-test tar-symlink-rejection'
 
-  ln "$link_root/target" "$link_root/safe-hardlink"
-  link_archive="$self_root/hardlink.tar.gz"
-  tar -czf "$link_archive" -C "$link_root" target safe-hardlink
+  rm "$link_root/bin/epmd"
+  ln -s /outside "$link_root/bin/epmd"
+  link_archive="$self_root/absolute-symlink.tar.gz"
+  tar -czf "$link_archive" -C "$link_root" .
   tar -tzf "$link_archive" >"$entries"
   status=0; validate_archive_entries "tar.gz" "$link_archive" "$entries" >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 ]] || return 1
-  printf '%s\n' 'PASS evidence-environment-self-test tar-hardlink-rejection'
+  printf '%s\n' 'PASS evidence-environment-self-test absolute-link-rejection'
 
+  rm "$link_root/bin/epmd"
+  ln -s ../erts-15.2.3/bin/../../../outside "$link_root/bin/epmd"
+  link_archive="$self_root/normalized-escape.tar.gz"
+  tar -czf "$link_archive" -C "$link_root" .
+  tar -tzf "$link_archive" >"$entries"
+  status=0; validate_archive_entries "tar.gz" "$link_archive" "$entries" >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 ]] || return 1
+  printf '%s\n' 'PASS evidence-environment-self-test normalized-link-escape-rejection'
+
+  rm "$link_root/bin/epmd"
+  python3 -c 'import io,sys,tarfile; archive=tarfile.open(sys.argv[1],"w:gz"); data=b"target\n"; item=tarfile.TarInfo("target"); item.size=len(data); archive.addfile(item,io.BytesIO(data)); link=tarfile.TarInfo("unsafe-hardlink"); link.type=tarfile.LNKTYPE; link.linkname="../outside"; archive.addfile(link); archive.close()' "$self_root/escaping-hardlink.tar.gz"
+  tar -tzf "$self_root/escaping-hardlink.tar.gz" >"$entries"
+  status=0; validate_archive_entries "tar.gz" "$self_root/escaping-hardlink.tar.gz" "$entries" >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 ]] || return 1
+  printf '%s\n' 'PASS evidence-environment-self-test hardlink-escape-rejection'
+
+  ln -s cycle-b "$link_root/bin/cycle-a"
+  ln -s cycle-a "$link_root/bin/cycle-b"
+  link_archive="$self_root/cyclic-symlink.tar.gz"
+  tar -czf "$link_archive" -C "$link_root" .
+  tar -tzf "$link_archive" >"$entries"
+  status=0; validate_archive_entries "tar.gz" "$link_archive" "$entries" >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 ]] || return 1
+  printf '%s\n' 'PASS evidence-environment-self-test link-cycle-rejection'
+
+  rm "$link_root/bin/cycle-a" "$link_root/bin/cycle-b"
+  ln -s chain-b "$link_root/bin/chain-a"
+  ln -s ../../outside "$link_root/bin/chain-b"
+  link_archive="$self_root/unsafe-chain.tar.gz"
+  tar -czf "$link_archive" -C "$link_root" .
+  tar -tzf "$link_archive" >"$entries"
+  status=0; validate_archive_entries "tar.gz" "$link_archive" "$entries" >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 ]] || return 1
+  printf '%s\n' 'PASS evidence-environment-self-test unsafe-link-chain-rejection'
+
+  rm "$link_root/bin/chain-a" "$link_root/bin/chain-b"
+  ln -s ../erts-15.2.3/bin/epmd "$link_root/bin/epmd"
   link_archive="$self_root/symlink.zip"
-  (cd "$link_root" && zip -qy "$link_archive" safe-link)
+  (cd "$link_root" && zip -qry "$link_archive" bin erts-15.2.3)
+  unzip -Z1 "$link_archive" >"$entries"
+  validate_archive_entries "zip" "$link_archive" "$entries"
+  printf '%s\n' 'PASS evidence-environment-self-test zip-contained-symlink'
+
+  rm "$link_root/bin/epmd"
+  ln -s ../../outside "$link_root/bin/epmd"
+  link_archive="$self_root/escaping-symlink.zip"
+  (cd "$link_root" && zip -qry "$link_archive" bin erts-15.2.3)
   unzip -Z1 "$link_archive" >"$entries"
   status=0; validate_archive_entries "zip" "$link_archive" "$entries" >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 ]] || return 1
   printf '%s\n' 'PASS evidence-environment-self-test zip-symlink-rejection'
@@ -395,7 +550,7 @@ fs.writeFileSync(process.argv[2],JSON.stringify({schema_version:1,os:"Darwin",ar
   EVIDENCE_TOOL_ROOT="$outside"
   status=0; cleanup_tools >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 && -d "$outside" ]] || return 1
   printf '%s\n' 'PASS evidence-environment-self-test cleanup-escape'
-  printf '%s\n' 'PASS evidence-environment-self-test complete cases=13'
+  printf '%s\n' 'PASS evidence-environment-self-test complete cases=20'
   trap - EXIT HUP INT TERM
   cleanup_self_test
 }
