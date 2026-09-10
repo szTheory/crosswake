@@ -52,6 +52,12 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
   alias CrosswakeExample.Commerce.MockBackend
 
   @group_id "sub_pro_monthly"
+  @allowed_require_file_paths [
+    "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex",
+    "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex",
+    "../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex",
+    "../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_backend.ex"
+  ]
 
   # ---------------------------------------------------------------------------
   # SC#1 — four derived states (PROOF-01, D-04)
@@ -159,46 +165,22 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
 
   describe "hermeticity self-scan guard (SC#4 / D-03)" do
     test "no runtime-path Code.require_file lines; only the four allowed pure-commerce modules" do
-      source = File.read!(__ENV__.file) |> String.downcase()
+      assert :ok = validate_require_file_contract(File.read!(__ENV__.file))
+    end
 
-      require_paths =
-        Regex.scan(~r/code\.require_file\(\s*"([^"]+)"/, source, capture: :all_but_first)
-        |> List.flatten()
+    test "a computed fifth Code.require_file call is counted and rejected" do
+      allowed_calls =
+        Enum.map_join(@allowed_require_file_paths, "\n", fn path ->
+          "Code.require_file(" <> inspect(path) <> ", __DIR__)"
+        end)
 
-      # The ONLY allowed pure commerce modules — any other path is a runtime/server leak
-      allowed_modules = [
-        "reconciliation_keys.ex",
-        "reconciliation_inbox.ex",
-        "entitlement_projection.ex",
-        "mock_backend.ex"
-      ]
+      source =
+        allowed_calls <>
+          "\nruntime_path = Path.join(__DIR__, \"runtime.ex\")" <>
+          "\nCode.require_file(runtime_path, __DIR__)\n"
 
-      # Must have exactly 4 require_file paths
-      assert length(require_paths) == 4,
-             "expected exactly 4 Code.require_file paths (one per pure commerce module); found #{length(require_paths)}: #{inspect(require_paths)}"
-
-      # Each require line must point at one of the allowed pure-commerce modules
-      for path <- require_paths do
-        assert Enum.any?(allowed_modules, &String.contains?(path, &1)),
-               "proof requires file not in the allowed pure-commerce module list: #{inspect(path)}"
-      end
-
-      # No require line may contain a forbidden runtime-path substring
-      forbidden_runtime_substrings = [
-        "_live",
-        "endpoint",
-        "application",
-        "router",
-        "repo",
-        "_web"
-      ]
-
-      for path <- require_paths do
-        for forbidden <- forbidden_runtime_substrings do
-          refute String.contains?(path, forbidden),
-                 "proof requires a runtime-path file containing #{inspect(forbidden)}: #{inspect(path)}"
-        end
-      end
+      assert {:error, {:unexpected_require_file_count, 5}} =
+               validate_require_file_contract(source)
     end
 
     test "no process-start or server tokens in the proof body" do
@@ -245,6 +227,43 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
                "proof must not have @moduletag :requires_example_host directive; found: #{inspect(line)}"
       end
     end
+  end
+
+  defp validate_require_file_contract(source) do
+    with {:ok, ast} <- Code.string_to_quoted(source) do
+      require_file_arguments = collect_require_file_arguments(ast)
+
+      cond do
+        length(require_file_arguments) != 4 ->
+          {:error, {:unexpected_require_file_count, length(require_file_arguments)}}
+
+        not Enum.all?(require_file_arguments, &is_binary/1) ->
+          {:error, :non_literal_require_file_path}
+
+        Enum.sort(require_file_arguments) != Enum.sort(@allowed_require_file_paths) ->
+          {:error, :unexpected_require_file_paths}
+
+        true ->
+          :ok
+      end
+    else
+      {:error, _parse_error} -> {:error, :invalid_elixir_source}
+    end
+  end
+
+  defp collect_require_file_arguments(ast) do
+    {_ast, arguments} =
+      Macro.prewalk(ast, [], fn
+        {{:., _dot_meta, [{:__aliases__, _alias_meta, [:Code]}, :require_file]}, _call_meta,
+         [first_argument | _rest]} = node,
+        arguments ->
+          {node, [first_argument | arguments]}
+
+        node, arguments ->
+          {node, arguments}
+      end)
+
+    Enum.reverse(arguments)
   end
 
   # ---------------------------------------------------------------------------
