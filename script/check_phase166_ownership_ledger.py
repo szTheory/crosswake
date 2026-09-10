@@ -154,10 +154,19 @@ def validate_text(text: str, root: Path) -> list[Problem]:
     edge_keys = [(row["source candidate"], row["target"]) for row in edges]
     closure_map = {(row["source candidate"], row["target"]): row["terminal result"] for row in closures}
     expansion_sources = set(expected)
+    while True:
+        expanded = expansion_sources | {
+            row["target"]
+            for row in edges
+            if row["source candidate"] in expansion_sources and valid_value(row["target"])
+        }
+        if expanded == expansion_sources:
+            break
+        expansion_sources = expanded
     for row in edges:
         key = (row["source candidate"], row["target"])
         if row["source candidate"] not in expansion_sources:
-            problems.append(Problem("invalid_edge_source", row["source candidate"], "source is neither a Git candidate nor an earlier direct expansion"))
+            problems.append(Problem("invalid_edge_source", row["source candidate"], "source is not reachable from a Git candidate"))
         if row["edge kind"] not in EDGE_KINDS:
             problems.append(Problem("invalid_edge_kind", " -> ".join(key), row["edge kind"]))
         if not all(valid_value(row[field]) for field in ("target", "evidence", "owner")):
@@ -168,7 +177,6 @@ def validate_text(text: str, root: Path) -> list[Problem]:
             problems.append(Problem("open_edge", " -> ".join(key), "terminal closure is absent"))
         elif closure_map[key] != row["disposition"]:
             problems.append(Problem("closure_mismatch", " -> ".join(key), closure_map[key]))
-        expansion_sources.add(row["target"])
     for key in sorted(set(closure_map) - set(edge_keys)):
         problems.append(Problem("extra_closure", " -> ".join(key), "closure has no expansion row"))
     if len(edge_keys) != len(set(edge_keys)) or len(closure_map) != len(closures):
@@ -313,13 +321,18 @@ def self_test() -> int:
         git("add", "a.txt", cwd=root); git("commit", "-qm", "base", cwd=root)
         base = git("rev-parse", "HEAD", cwd=root).decode().strip()
         (root / "a.txt").write_text("changed\n"); (root / "b.txt").write_text("b\n")
-        git("add", "a.txt", "b.txt", cwd=root); git("commit", "-qm", "tree", cwd=root)
+        (root / "z.txt").write_text("z\n")
+        git("add", "a.txt", "b.txt", "z.txt", cwd=root); git("commit", "-qm", "tree", cwd=root)
         tree = git("rev-parse", "HEAD", cwd=root).decode().strip()
         rows = [
             "| a.txt | focused test | owner-a | retained |",
             "| b.txt | workflow search | owner-b | removed-with-proof |",
+            "| z.txt | dependency trace | owner-z | retained |",
         ]
-        edges = [["a.txt", "direct.txt", "caller", "literal call", "direct-owner", "retained"]]
+        edges = [
+            ["m-expanded", "a-expanded", "caller", "literal call", "deep-owner", "retained"],
+            ["z.txt", "m-expanded", "caller", "literal call", "middle-owner", "retained"],
+        ]
         proof = ["b.txt", "entrypoint search", "config search", "dependency trace", "dispatch review", "focused test", "complete gate"]
         valid = render_ledger(base, tree, rows, edges, [proof])
         remediation_header = "\n".join([
@@ -333,7 +346,7 @@ def self_test() -> int:
         mutations = {
             "missing_candidate": valid.replace(rows[1] + "\n", ""),
             "extra_candidate": valid.replace(rows[1], rows[1] + "\n| extra.txt | evidence | owner | retained |"),
-            "open_edge": valid.replace("| a.txt | direct.txt | retained |\n", ""),
+            "open_edge": valid.replace("| m-expanded | a-expanded | retained |\n", ""),
             "unknown_disposition": valid.replace("| a.txt | focused test | owner-a | retained |", "| a.txt | focused test | owner-a | mystery |"),
         }
         for index, field in enumerate(REMOVAL_FIELDS, 1):
@@ -342,6 +355,7 @@ def self_test() -> int:
         if validate_text(valid, root):
             print("FAIL valid_fixture")
             return 1
+        print("PASS reverse_lexical_multihop")
         for name, mutation in mutations.items():
             if not validate_text(mutation, root):
                 print(f"FAIL {name}")
