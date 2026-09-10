@@ -170,7 +170,7 @@ Plans:
   2. A maintainer can resume the First B2C Adopter workstream from its parked state without reconstruction; its durable content remains codename-only and its status names only the real external route/device authority.
   3. Every open pull request has an unambiguous current disposition: merged, rebased, superseded, closed, or explicitly deferred with a current reason.
 
-**Plans**: 1/8 plans executed
+**Plans**: 2/8 plans executed
 
 Plans:
 **Wave 1**
@@ -179,7 +179,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 167-02-PLAN.md — Add no-write documentation synchronization and register it in the existing artifact policy.
+- [x] 167-02-PLAN.md — Add no-write documentation synchronization and register it in the existing artifact policy.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -229,7 +229,7 @@ Plans:
 | 164. Dependency Security and Gate Authority | 5/5 | Complete    | 2026-08-28 |
 | 165. Efficient and Maintainable CI | 13/13 | Complete    | 2026-09-09 |
 | 166. Clean-Checkout Engineering Quality | 8/8 | Complete    | 2026-09-10 |
-| 167. Documentation and Pull-Request Reconciliation | 1/8 | In Progress|  |
+| 167. Documentation and Pull-Request Reconciliation | 2/8 | In Progress|  |
 | 168. 0.2.1 Release Candidate Readiness | 0/TBD | Not started | - |
 
 ---

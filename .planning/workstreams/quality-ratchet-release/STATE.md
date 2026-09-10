@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 167
 current_phase_name: Documentation and Pull-Request Reconciliation
 status: executing
-stopped_at: Completed 167-01-PLAN.md
-last_updated: "2026-09-10T20:46:42.443Z"
+stopped_at: Completed 167-02-PLAN.md
+last_updated: "2026-09-10T20:57:55.737Z"
 last_activity: 2026-09-10
 last_activity_desc: Phase 167 execution started
-state_head: 712892d0c4e60d7c5676ecd68cfa79d99d62c08e
+state_head: 4aa4e29df7e021dbf5fbfb2c482435fbe65fd32d
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 34
-  completed_plans: 27
+  completed_plans: 28
   percent: 60
 workstream: quality-ratchet-release
 ---
@@ -32,8 +32,8 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 167 (Documentation and Pull-Request Reconciliation) — EXECUTING
-Plan: 2 of 8
-Status: Executing Phase 167
+Plan: 3 of 8
+Status: Ready to execute
 Last activity: 2026-09-10 — Phase 167 execution started
 
 Progress: [██████░░░░] 60%
@@ -82,6 +82,7 @@ Progress: [██████░░░░] 60%
 | Phase 166 P07 | 25min | 2 tasks | 24 files |
 | Phase 166 P08 | 7h 10m | 2 tasks | 24 files |
 | Phase 167 P01 | 10min | 3 tasks | 13 files |
+| Phase 167 P02 | 7min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -152,6 +153,9 @@ Progress: [██████░░░░] 60%
 - [Phase 167]: Keep the three current claim layers in Crosswake.CapabilityMap and require both generated projections to consume the validated set.
 - [Phase 167]: Bind retained reference evidence to 2026-08-27 and iOS 26.6 without transferring it to first adopter activation.
 - [Phase 167]: Keep public recovery copy generic while durable state retains the exact codename, TODO-002, and Phase 163.1 resume point.
+- [Phase 167]: Keep docs synchronization fixed to exactly default write mode and one --check form; invalid or combined argv fails closed without echoing input.
+- [Phase 167]: Validate all generated-artifact records through the existing registry while preserving the legacy contract-generator record byte-for-byte.
+- [Phase 167]: Require generated canonical sources to be tracked at execution and reject duplicate or nested output authority across records.
 
 ### Pending Todos
 
@@ -172,6 +176,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-10T20:46:42.304Z
-Stopped at: Completed 167-01-PLAN.md
+Last session: 2026-09-10T20:57:55.584Z
+Stopped at: Completed 167-02-PLAN.md
 Resume file: None
