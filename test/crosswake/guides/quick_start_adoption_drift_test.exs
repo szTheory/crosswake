@@ -4,6 +4,8 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
   @quick_start_path "examples/QUICK_START.md"
   @adoption_path "guides/adoption.md"
   @readme_path "README.md"
+  @physical_handoff_path "guides/physical_iphone_handoff.md"
+  @parked_state_path ".planning/workstreams/first-b2c-adopter-readiness/STATE.md"
   @see_it_run_path "guides/see_it_run.md"
   @hero_command_path "bin/see-it-run.sh"
   @phoenix_host_readme_path "examples/phoenix_host/README.md"
@@ -57,6 +59,32 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
     failures = Enum.flat_map(docs, &scan_showcase_first_run_doc/1)
 
     assert_no_drift_failures(failures)
+  end
+
+  test "D-18/D-19 public first-read copy and durable parked state share the blocked activation boundary" do
+    public_docs = [File.read!(@readme_path), File.read!(@physical_handoff_path)]
+    recovery =
+      "Blocked — sanitized route policy and signed-device proof are required before this host can be promoted."
+
+    for contents <- public_docs do
+      assert contents =~ recovery
+      assert contents =~ "first adopter"
+      assert contents =~ "guides/support_matrix.md" or contents =~ "support_matrix.md"
+      refute contents =~ "First B2C Adopter"
+      refute contents =~ "TODO-002"
+    end
+
+    parked = File.read!(@parked_state_path)
+
+    assert parked =~ "status: parked_external_dependency"
+    assert parked =~ "Parked at 163.1-08 Task 2 pending real adopter route facts"
+    assert parked =~ "Plan: 8 of 10"
+    assert parked =~ "First B2C Adopter"
+    assert parked =~ "first_b2c_adopter"
+    assert parked =~ "TODO-002"
+    assert parked =~ "validated sanitized adopter handoff"
+    assert parked =~ "fresh source-bound signed-device run"
+    assert parked =~ "retained source-bound reference-host evidence remains non-transferable"
   end
 
   test "showcase-first scanner names missing categories separately" do
