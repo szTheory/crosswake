@@ -23,11 +23,11 @@ workstream: quality-ratchet-release
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-08-27)
+See: `.planning/PROJECT.md` (updated 2026-09-10)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 166 — Clean-Checkout Engineering Quality
+**Current focus:** Phase 167 — Documentation and Pull-Request Reconciliation
 
 ## Current Position
 
@@ -146,7 +146,7 @@ Progress: [██████░░░░] 60%
 - [Phase 166]: Resolve evidence input only from an explicit tracked commit and never copy source worktree or index state.
 - [Phase 166]: Materialize the declared Darwin/arm64 toolchain beneath one invocation-owned root with literal upstream authorities and SHA-256 pins.
 - [Phase 166]: Commit the authorized install/doctor correction set separately before binding exact-commit verification to the new supported HEAD.
-- [Phase 166]: Supported-code identity is 1ddf3357973d1cfdff4f2b6140115bdb2f424fd2; later evidence-only records do not redefine it.
+- [Phase 166]: Supported-code identity is d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b; later evidence-only and planning records do not redefine it.
 - [Phase 166]: Keep isolated proof dependencies, private logs, temporary roots, and cleanup invocation-owned.
 
 ### Pending Todos
@@ -155,7 +155,6 @@ None in this workstream yet.
 
 ### Blockers/Concerns
 
-- No blocker to Phase 164 planning.
 - The First B2C Adopter work remains parked separately at Phase 163.1 pending external route/device
   authority; do not copy or infer adopter facts into v22 artifacts.
 
@@ -169,6 +168,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-10T04:16:29.157Z
+Last session: 2026-09-10T14:00:03.001Z
 Stopped at: Phase 166 complete, ready to plan Phase 167
 Resume file: None

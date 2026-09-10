@@ -162,4 +162,4 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 **Coverage:** 26/26 active v22.0 requirements mapped exactly once
 
 ---
-*Last updated: 2026-08-28 after v22.0 roadmap creation and traceability mapping*
+*Last updated: 2026-09-10 after Phase 166 verified ENG-01 through ENG-04*
