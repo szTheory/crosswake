@@ -5,6 +5,11 @@ decision. Crosswake failures are meant to stay explicit: the shell, bridge,
 offline island, or backend seam should say why a route could not continue instead
 of falling through to a generic web container.
 
+**Current recovery answer:** Run `mix crosswake.doctor`, match its textual finding to
+the index below, and follow one named owner and one bounded action. Do not copy raw
+payloads, credentials, account identifiers, tokens, or stable device identifiers into
+diagnostics or proof artifacts.
+
 Use this guide with [route_policy.md](route_policy.md), [bridge.md](bridge.md),
 [offline.md](offline.md), [adoption.md](adoption.md),
 [native_shell.md](native_shell.md), and the support-truth labels in

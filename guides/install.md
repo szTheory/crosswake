@@ -4,6 +4,11 @@ Crosswake keeps one primary package surface: `crosswake`. Companion-ready and
 docs-only surfaces stay explicit, but there is still one primary install path for the
 Phoenix host and one scaffold-once path for host-owned native shells.
 
+**Current setup answer:** `mix.exs` owns the package version and dependency ranges;
+the generated [support matrix](support_matrix.md) is the canonical public projection
+of support and proof posture. Install the package, declare one route owner, and run
+doctor before claiming a native target.
+
 > Start with [guides/route_policy.md](route_policy.md) for route-owner decisions and
 > [guides/web_to_mobile_migration.md](web_to_mobile_migration.md) for an operational
 > Phoenix route inventory pass.

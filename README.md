@@ -97,8 +97,7 @@ For the full proof command reference: [examples/QUICK_START.md](https://github.c
 
 **Current answer:** Crosswake is a Phoenix-first route-policy and runtime-contract system;
 it assigns one explicit owner to each managed route and fails closed when that contract
-cannot be satisfied. Start with the architecture guide for the model, then use the
-[canonical support matrix](guides/support_matrix.md) for current support and proof detail.
+cannot be satisfied. Start with the architecture guide for the model.
 
 Use this map:
 
@@ -110,6 +109,8 @@ Use this map:
 - [guides/install.md](guides/install.md) for the public install and proof path
 - [guides/support_matrix.md](guides/support_matrix.md) for the current supported baseline
 - [examples/phoenix_host/README.md](https://github.com/szTheory/crosswake/blob/main/examples/phoenix_host/README.md) for the shared exemplar host contract
+
+Use the [canonical support matrix](guides/support_matrix.md) for current support and proof detail.
 
 ### Integrating Crosswake
 
