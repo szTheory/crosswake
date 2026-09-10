@@ -1,9 +1,9 @@
 # Phase 166 Ownership Ledger
 
 - Base commit: `8383aaea2a2b2e10bbe61dd843b51f4129a5d447`
-- Tree commit: `57f465321761f9fed868c79fcab79f0b66f6eada`
+- Tree commit: `1ddf3357973d1cfdff4f2b6140115bdb2f424fd2`
 - Candidate rule: NUL-safe `git diff --name-only -z <base> <tree>`, excluding `.planning/`
-- Unresolved flag: `FA-ENG-02` remains unresolved until the Plan 06 source corrections and Plan 08 final-tree reconciliation pass.
+- Unresolved flags: all five flagged assumptions, including `FA-ENG-02`, and both bespoke prohibitions remain unresolved by design. Plan 08 closes the mechanical final-tree reconciliation without reclassifying those planning assumptions.
 
 This ledger is deliberately bounded at the declared immutable tree. Expansion follows only a literal caller, import, include, generator, mutator, test, or shared-authority edge and stops at the last recorded direct edge. Paths, low-cardinality ownership, and dispositions are recorded; file contents, payloads, credentials, adopter facts, and environment values are excluded.
 
@@ -13,6 +13,7 @@ Disposition is closed to `retained`, `changed`, `removed-with-proof`, and `unpro
 
 | candidate | evidence | owner | disposition |
 | --- | --- | --- | --- |
+| .formatter.exs | deterministic root format contract and canonical format stage | toolchain and formatting owner | retained |
 | .github/actions/setup-android-jvm/action.yml | literal Phase 165 workflow and manifest authority | shared CI setup owner | retained |
 | .github/actions/setup-elixir-cache/action.yml | literal Phase 165 workflow and manifest authority | shared CI setup owner | retained |
 | .github/workflows/aggregator-negative-control.yml | literal Phase 165 workflow and manifest authority | Crosswake CI workflow owner | retained |
@@ -54,12 +55,33 @@ Disposition is closed to `retained`, `changed`, `removed-with-proof`, and `unpro
 | .github/workflows/requires-example-host-gate.yml | literal Phase 165 workflow and manifest authority | Crosswake CI workflow owner | retained |
 | .tool-versions | exact repository preflight identity | toolchain and dependency owners | retained |
 | AGENTS.md | repository execution policy | repository maintainers | retained |
+| CHANGELOG.md | tracked release and support truth | documentation owner | retained |
+| README.md | tracked public support truth | documentation owner | retained |
+| examples/phoenix_host/e2e/offline_storage.spec.ts | focused browser regression and complete browser stage | browser proof owner | retained |
+| examples/phoenix_host/e2e/offline_sync.spec.ts | focused scoped-replay regressions and complete browser stage | browser proof owner | retained |
 | examples/phoenix_host/mix.lock | lock-governed dependency resolution | toolchain and dependency owners | retained |
+| examples/phoenix_host/playwright.config.ts | repository-mode browser regression and CI owner | browser proof owner | changed |
+| examples/phoenix_host/priv/static/offline_study.js | focused scoped lifecycle and replay regressions | offline island owner | retained |
+| guides/companion_compatibility.md | tracked compatibility support truth | documentation owner | retained |
+| guides/install.md | tracked installation support truth | documentation owner | retained |
+| guides/route_policy.md | tracked route-policy support truth | documentation owner | retained |
+| lib/crosswake/doctor/doctor.ex | focused doctor tests and supported Mix entrypoint | diagnostics owner | retained |
+| lib/crosswake/doctor/finding_policy.ex | focused finding-policy tests and doctor authority | diagnostics owner | retained |
+| lib/crosswake/install/patcher.ex | focused installer tests and supported Mix entrypoint | installation owner | retained |
+| lib/crosswake/manifest/builder.ex | focused manifest tests and supported runtime entrypoints | manifest owner | retained |
 | lib/crosswake/planning/closeout_verifier.ex | focused module tests and supported Mix/runtime entrypoints | planning contract owner | retained |
 | lib/crosswake/planning/first_adopter_context.ex | focused module tests and supported Mix/runtime entrypoints | planning contract owner | retained |
 | lib/crosswake/planning/paths.ex | focused module tests and supported Mix/runtime entrypoints | planning contract owner | retained |
 | lib/crosswake/release_status.ex | focused module tests and supported Mix/runtime entrypoints | Crosswake runtime owner | retained |
+| lib/mix/tasks/crosswake.doctor.ex | supported doctor Mix entrypoint and focused regression | diagnostics owner | retained |
+| lib/mix/tasks/crosswake.install.ex | supported install Mix entrypoint and focused regression | installation owner | retained |
+| mix.exs | root alias and dependency contract | toolchain and dependency owners | retained |
 | mix.lock | lock-governed dependency resolution | toolchain and dependency owners | retained |
+| packages/crosswake_chimeway/mix.lock | lock-governed companion dependency resolution | companion package owner | retained |
+| packages/crosswake_rindle/mix.lock | lock-governed companion dependency resolution | companion package owner | retained |
+| packages/crosswake_rulestead/mix.lock | lock-governed companion dependency resolution | companion package owner | retained |
+| priv/templates/crosswake/install_manifest.json.eex | generated installer manifest authority | installation owner | retained |
+| script/capture_repository_verification_evidence.sh | exact-commit capture and closed evidence validator | repository verification owner | retained |
 | script/check_aggregator_result_semantics.py | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/check_ci_leaf_manifest.py | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/check_dependency_security.sh | tracked caller, manifest, or focused regression | repository verification owner | retained |
@@ -67,6 +89,8 @@ Disposition is closed to `retained`, `changed`, `removed-with-proof`, and `unpro
 | script/check_exunit_ownership.exs | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/check_phase164_dependency_security_and_gate_authority.sh | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/check_phase165_efficient_ci.sh | tracked caller, manifest, or focused regression | repository verification owner | retained |
+| script/check_phase166_clean_checkout_engineering_quality.sh | recurring Phase 166 contract | repository verification owner | retained |
+| script/check_phase166_ownership_ledger.py | NUL-safe scope and canonical evidence binding | repository verification owner | retained |
 | script/check_release_workflow_integrity.exs | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/check_required_checks_registered.sh | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/ci_docs_allowlist.json | tracked caller, manifest, or focused regression | repository verification owner | retained |
@@ -76,15 +100,20 @@ Disposition is closed to `retained`, `changed`, `removed-with-proof`, and `unpro
 | script/normalize_required_checks.py | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/register_required_checks.sh | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/repository_artifact_policy.json | tracked caller, manifest, or focused regression | repository verification owner | retained |
+| script/repository_evidence_toolchain.json | pinned isolated evidence tool policy | toolchain and dependency owners | retained |
 | script/repository_verification_stages.json | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/required_check_policy.json | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/retain_physical_iphone_evidence_transaction.sh | tracked caller, manifest, or focused regression | repository verification owner | retained |
+| script/run_repository_evidence_environment.sh | pinned invocation-local environment bootstrap | repository verification owner | retained |
 | script/select_obsolete_ci_runs.py | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/verify_generated_android_shell.sh | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/verify_hex_publish_dry_run.sh | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/verify_repository.mjs | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/verify_repository.sh | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | scripts/ci_monitor.cjs | tracked caller, manifest, or focused regression | CI evidence owner | retained |
+| test/crosswake/doctor/doctor_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/guides/route_policy_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/offline/proof_lane_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/planning/closeout_ci_parity_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/planning/first_adopter_context_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/planning/milestone_transition_reset_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
@@ -109,11 +138,16 @@ Disposition is closed to `retained`, `changed`, `removed-with-proof`, and `unpro
 | test/fixtures/ci/maximum-shape-crosswake-ci.yml | named negative-control consumer | paired proof fixture owner | retained |
 | test/fixtures/ci/maximum-shape-needs.json | named negative-control consumer | paired proof fixture owner | retained |
 | test/fixtures/ci/required-checks/cases.json | named negative-control consumer | paired proof fixture owner | retained |
+| test/fixtures/proof/phase52_publish_readiness.json | named closed proof fixture | paired proof fixture owner | retained |
 | test/fixtures/repository_quality/artifact-cases.json | named negative-control consumer | paired proof fixture owner | retained |
 | test/fixtures/repository_quality/stage-cases.json | named negative-control consumer | paired proof fixture owner | retained |
 | test/fixtures/security/advisory-bearing.lock | named negative-control consumer | paired proof fixture owner | retained |
+| test/js/playwright_repository_mode.test.mjs | focused repository-mode browser regression | browser proof owner | retained |
 | test/js/repository_verification.test.mjs | focused test path and owning production contract | repository runner proof owner | retained |
 | test/mix/tasks/crosswake_adoption_context_scan_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/mix/tasks/crosswake_doctor_router_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/mix/tasks/crosswake_doctor_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/mix/tasks/crosswake_install_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/support/example_host.ex | focused test path and owning production contract | ExUnit support owner | retained |
 | test/test_helper.exs | focused test path and owning production contract | ExUnit harness owner | retained |
 
@@ -179,6 +213,15 @@ The Plan 06 implementation delta is limited to this ledger plus the validator an
 contract required to restore the missing fail-closed queue seam. The allowlisted browser source and
 Node regression remain byte-identical to their test-first Plan 04 commits; rewriting either solely
 to manufacture a Plan 06 diff is not authorized. No uncertain candidate or direct expansion changed.
+
+## Evidence-only delta
+
+- `.planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/evidence/clean-checkout-run.json`
+- `.planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/evidence/clean-checkout-run.md`
+- `.planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-ownership-ledger.md`
+- `.planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-VALIDATION.md`
+
+These four planning paths are written after the supported-code commit. Their later commit is intentionally excluded from the supported-code identity and does not require evidence to capture itself.
 
 ## D-10 duplicate review
 

@@ -1,77 +1,79 @@
 ---
 phase: "166"
 slug: "clean-checkout-engineering-quality"
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: "2026-09-09"
+completed: "2026-09-10"
+supported_code_sha: "1ddf3357973d1cfdff4f2b6140115bdb2f424fd2"
 ---
 
 # Phase 166 — Validation Strategy
 
-> Per-phase validation contract for feedback sampling during execution.
-
----
+> Final validation contract and observed evidence for the supported-code commit.
 
 ## Test Infrastructure
 
-| Property | Value |
-|----------|-------|
-| **Framework** | ExUnit, Node built-in test runner, existing Python self-tests, and package-native Swift/Gradle test runners |
-| **Config file** | `test/test_helper.exs`; package-native configs remain package-owned |
-| **Quick run command** | `node --test test/js/repository_verification.test.mjs && mix test test/crosswake/proof/phase166_repository_quality_test.exs` |
-| **Full suite command** | `script/verify_repository.sh` from an isolated clean exact-commit checkout |
-| **Estimated runtime** | Measured during execution; complete run is bounded by per-stage timeouts |
+| Property | Observed value |
+| --- | --- |
+| Frameworks | ExUnit, Node built-in test runner, Python self-tests, Swift Package Manager, Gradle |
+| Root contract | `script/verify_repository.sh` |
+| Recurring gate | `script/check_phase166_clean_checkout_engineering_quality.sh` |
+| Canonical capture | `script/run_repository_evidence_environment.sh` through the committed Plan 166-07 capture route |
+| Supported-code identity | `1ddf3357973d1cfdff4f2b6140115bdb2f424fd2` |
+| Canonical result | PASS: nine supported stages, empty and identical NUL-safe snapshots, unchanged index, owned cleanup PASS |
+| Measured canonical runtime | approximately 16 minutes on the declared Darwin/arm64 evidence environment |
 
----
+## Per-Requirement Results
 
-## Sampling Rate
+| Requirement | Threat coverage | Exact evidence | Result |
+| --- | --- | --- | --- |
+| ENG-01 | T-166-01, T-166-28, T-166-30 | Exact-commit capture ran repository preflight, root, example host, browser, iOS, Android, format, warnings, and cleanliness stages through invocation-local declared tools. | ✅ green |
+| ENG-02 | T-166-02, T-166-31 | Production ownership validator closed every candidate/direct edge, preserved uncertainty, and bound D-09 proof to the canonical complete run. | ✅ green |
+| ENG-03 | T-166-10, T-166-31 | Canonical evidence records empty initial/final NUL-safe state, byte-identical snapshots, unchanged index, and exact owned cleanup. | ✅ green |
+| ENG-04 | T-166-04, T-166-32 | Capture verifier accepted the closed privacy-safe JSON allowlist and deterministic bounded Markdown rendering with no retained private stage logs. | ✅ green |
 
-- **After every task commit:** Run the focused new test and the existing detector or test directly touched.
-- **After every plan wave:** Run `script/check_phase165_efficient_ci.sh`, both Phase 166 quick tests, `actionlint` for workflow changes, and every stage changed in the wave.
-- **Before `$gsd-verify-work`:** Run `script/verify_repository.sh` from an isolated clean exact-commit checkout; the full summary must contain no `FAIL` or `BLOCKED` result.
-- **Max feedback latency:** Focused checks stay below the complete facade's bounded per-stage timeout; record measured latency during execution.
+## Fresh Commands and Observed Results
 
----
+| Command | Observed result |
+| --- | --- |
+| `script/capture_repository_verification_evidence.sh --self-test` | PASS (8/8 controls) |
+| `script/run_repository_evidence_environment.sh --self-test` | PASS (10/10 controls) |
+| `python3 script/check_phase166_ownership_ledger.py --self-test` | PASS (15 controls) |
+| `node --test test/js/repository_verification.test.mjs` | PASS (59/59 tests) |
+| `mix verify` | PASS (1,597 tests plus companion verification) |
+| `script/run_repository_evidence_environment.sh --source-repository . --commit 1ddf3357973d1cfdff4f2b6140115bdb2f424fd2 --output-dir .planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/evidence` | PASS; canonical JSON and Markdown created for the exact supported commit |
+| `script/capture_repository_verification_evidence.sh --verify .planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/evidence/clean-checkout-run.json` | PASS |
+| `python3 script/check_phase166_ownership_ledger.py --ledger .planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-ownership-ledger.md --evidence .planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/evidence/clean-checkout-run.json` | PASS |
+| `ASDF_ELIXIR_VERSION=1.19.5-otp-28 ASDF_ERLANG_VERSION=28.4.1 script/check_phase166_clean_checkout_engineering_quality.sh` | PASS |
 
-## Per-Task Verification Map
+## Evidence-Only Reconciliation
 
-| Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 166-W0-01 | TBD | 0 | ENG-01 | T-166-01 | Fixed argv execution and dependency blocking cannot be bypassed by missing tools. | unit + integration | `script/verify_repository.sh --self-test` | ❌ W0 | ⬜ pending |
-| 166-W0-02 | TBD | 0 | ENG-02 | T-166-02 | Ownership-cone dispositions remain bounded and evidence-backed. | structural + focused regression | `mix test test/crosswake/proof/phase166_repository_quality_test.exs` | ❌ W0 | ⬜ pending |
-| 166-W0-03 | TBD | 0 | ENG-03 | T-166-10 | NUL-safe status parsing, exact cleanup prefixes, and non-staging drift checks preserve repository state. | unit + integration | `node --test test/js/repository_verification.test.mjs` | ❌ W0 | ⬜ pending |
-| 166-W0-04 | TBD | 0 | ENG-04 | T-166-04 | Diagnostics expose no contents or environment secrets and emit one bounded remediation command. | golden + negative output | `script/verify_repository.sh --self-test` | ❌ W0 | ⬜ pending |
-| 166-03-02 | 166-03 | 3 | ENG-03 | T-166-10 | The production Node runner detects generated drift, restores exact bytes, and preserves the Git index through one distinctly named behavioral test. | integration | `node --test test/js/repository_verification.test.mjs --test-name-pattern='^generated-contract production runner preserves index and restores bytes$'` with a nonzero-pass assertion | ❌ W0 | ⬜ pending |
-| 166-07-02 | 166-07 | 7 | ENG-01 | T-166-28 | The real Darwin/arm64 route verifies locked artifact checksums, composes OTP 27 plus Elixir 1.19.5, and passes exact production preflight before capture. | integration + host smoke | `script/run_repository_evidence_environment.sh --prepare-and-preflight --source-repository . --commit "$(git rev-parse HEAD)"` | ❌ W0 | ⬜ pending |
+The canonical JSON, deterministic Markdown rendering, ownership ledger, and this validation record are the exact planning-only delta written after the supported-code commit. Their later commit is intentionally excluded from the supported-code identity; it records evidence for `1ddf3357973d1cfdff4f2b6140115bdb2f424fd2` and does not recursively claim to evidence itself.
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+## Unresolved Flagged Assumptions
 
----
+These five assumptions remain unresolved by design and are not promoted into repository proof claims:
 
-## Wave 0 Requirements
+- FA-ENG-01
+- FA-ENG-02
+- FA-ENG-03
+- FA-ENG-04-EMPTY
+- FA-ENG-04-ENCODING
 
-- [ ] `test/js/repository_verification.test.mjs` — dependency graph, hostile filenames, cleanup-on-failure, bounded summary, and remediation safety.
-- [ ] `test/crosswake/proof/phase166_repository_quality_test.exs` — stage/CI parity, artifact-policy closure, generated-output registry, and ownership-ledger structure.
-- [ ] `test/fixtures/repository_quality/` — missing tools, failed/blocked chains, malicious filenames, forbidden artifacts, safe `.env` fixture, generated drift, and cleanup failure.
-- [ ] `script/check_phase166_clean_checkout_engineering_quality.sh` — recurring credential-free contract after focused controls exist.
-- [ ] `script/repository_evidence_toolchain.json` — closed Darwin/arm64 release URL, authority, archive-layout, version-probe, and SHA-256 records used by the real preflight smoke test.
+## Unresolved Bespoke Prohibitions
 
----
+- ENG-01 transparency: local PASS does not prove GitHub permissions, branch protection, runner control-plane state, product capability, or first-adopter readiness.
+- ENG-04 values: diagnostics must not become contributor blame, adopter inference, or a new public support claim.
 
-## Manual-Only Verifications
+## Sampling and Sign-Off
 
-All phase behaviors have automated verification. A maintainer may need to install declared local toolchain versions, but installation is a prerequisite action rather than acceptance evidence.
+- [x] Every task has automated verification.
+- [x] Sampling continuity remained below three consecutive tasks without automated verification.
+- [x] Wave 0 fixtures and contracts exist and pass.
+- [x] No watch-mode flags are used.
+- [x] Feedback latency was measured and bounded by per-stage timeouts.
+- [x] Canonical capture, capture verifier, ownership validator, recurring gate, and evidence-only classification pass.
 
----
-
-## Validation Sign-Off
-
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency is measured and bounded
-- [ ] `nyquist_compliant: true` set in frontmatter
-
-**Approval:** pending
+**Approval:** automated evidence complete
