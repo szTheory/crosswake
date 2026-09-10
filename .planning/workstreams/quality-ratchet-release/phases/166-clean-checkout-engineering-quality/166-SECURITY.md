@@ -68,6 +68,7 @@ No accepted risks.
 | Audit Date | Threats Total | Closed | Open | Run By |
 |------------|---------------|--------|------|--------|
 | 2026-09-10 | 28 | 28 | 0 | gsd-security-auditor |
+| 2026-09-10 | 28 | 28 | 0 | gsd-security-auditor final re-audit |
 
 ## Verification Observed
 
@@ -77,8 +78,10 @@ No accepted risks.
 - Ownership validator: 16 controls plus production evidence binding passed.
 - CI authority and stage-parity validation passed.
 - Playwright repository mode: 3/3 tests passed.
-- Canonical evidence verifier passed for `f9bf7eb2d7395599c6234ff618fc3589c95bd541`.
+- Canonical evidence verifier passed for `d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b`.
 - The evidence-only delta contains exactly the four declared planning/evidence paths.
+- Final UI remediation keeps initialization errors private, retains first-failure traces only in invocation-owned paths, and exposes recovery-oriented copy without exception names.
+- Final ownership validation covers 244 exact candidates and a three-record remediation queue.
 
 ## Sign-Off
 
