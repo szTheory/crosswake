@@ -439,9 +439,9 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert job_body(workflow, job) =~ "classification == 'full_proof'", job
     end
 
-    for rejected <- ["failure", "cancelled", "timed_out", "action_required", "missing"] do
-      assert umbrella =~ ~s("#{rejected}":"failure")
-    end
+    assert umbrella =~ ~s(result != "success")
+    assert umbrella =~ ~s(result != "skipped" or name not in explicitly_irrelevant)
+    assert umbrella =~ "proof leaf did not reach a closed accepted result"
   end
 
   @tag :triggers
