@@ -126,7 +126,7 @@ Each task was committed atomically using RED/GREEN TDD commits where behavior ch
 
 **1. [Rule 3 - Blocking] Corrected a pre-existing privacy-scan false positive in the Phase 167 pattern map**
 - **Found during:** Task 3 verification
-- **Issue:** Swift shorthand tuple parameters `$0.0` and `$0.1` in a fenced example matched the commercial-dollar detector, blocking the required repository privacy scan.
+- **Issue:** Swift dollar-prefixed shorthand tuple parameters in a fenced example matched the commercial-detail detector, blocking the required repository privacy scan.
 - **Fix:** With orchestrator authorization, replaced only the shorthand parameters with semantically equivalent named `waiter` parameters; the scanner was not weakened and no adopter fact changed.
 - **Files modified:** `.planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-PATTERNS.md`
 - **Verification:** `mix crosswake.adoption_context.scan` passed, followed by 29 focused privacy/guide tests.
