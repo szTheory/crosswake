@@ -631,6 +631,7 @@ test("evidence environment self-test locks Darwin arm64 tools and confinement", 
   const environmentSource = readFileSync(new URL("../../script/run_repository_evidence_environment.sh", import.meta.url), "utf8");
   assert.match(captureSource, /gradlew --no-daemon --version[^\n]*bootstrap-gradle\.log/);
   assert.match(captureSource, /GIT_OPTIONAL_LOCKS=0[^\n]*verify_repository\.sh --all/);
+  assert.equal((captureSource.match(/GIT_OPTIONAL_LOCKS=0 git -C "\$checkout" status/g) ?? []).length, 2);
   assert.match(environmentSource, /gradlew --no-daemon --version[^\n]*preflight-bootstrap\.log/);
   for (const fixtureName of [
     "exact-version-selection",

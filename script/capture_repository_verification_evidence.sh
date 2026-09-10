@@ -161,12 +161,12 @@ capture() {
   final_snapshot="$run_root/git-final.z"
   repository_run_root="$run_root/crosswake-repository-verify.capture"
   mkdir -m 700 "$repository_run_root"
-  git -C "$checkout" status --porcelain=v1 -z --untracked-files=all >"$baseline_snapshot"
+  GIT_OPTIONAL_LOCKS=0 git -C "$checkout" status --porcelain=v1 -z --untracked-files=all >"$baseline_snapshot"
   [[ ! -s "$baseline_snapshot" ]] || return 1
   index_before="$(sha256_file "$checkout/.git/index")"
 
   (cd "$checkout" && GIT_OPTIONAL_LOCKS=0 CROSSWAKE_REPOSITORY_RUN_ROOT="$repository_run_root" CROSSWAKE_REPOSITORY_CAPTURE_ROOT="$run_root" script/verify_repository.sh --all) >"$run_root/verify.stdout" 2>"$run_root/verify.stderr" || status=$?
-  git -C "$checkout" status --porcelain=v1 -z --untracked-files=all >"$final_snapshot" || status=1
+  GIT_OPTIONAL_LOCKS=0 git -C "$checkout" status --porcelain=v1 -z --untracked-files=all >"$final_snapshot" || status=1
   index_after="$(sha256_file "$checkout/.git/index")" || status=1
   if [[ "$status" -ne 0 ]]; then emit_bounded_failure "$run_root/verify.stdout" "$run_root/verify.stderr"; return 1; fi
   [[ ! -s "$final_snapshot" && "$index_before" = "$index_after" ]] || return 1
