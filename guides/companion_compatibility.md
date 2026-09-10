@@ -21,8 +21,8 @@ cell drifts from the package source in either direction.
      Use mix crosswake.release.status --live for public registry presence. -->
 | Hex Package | Companion ID | Current Version | Requires `crosswake` | Engine Dependency | hexdocs |
 |---|---|---|---|---|---|
-| `crosswake_rulestead` | `:rulestead` | `unpublished` | `~> 0.1` | `{:rulestead, "~> 0.1", optional: true}` | not yet on hexdocs |
-| `crosswake_rindle` | `:rindle` | `unpublished` | `~> 0.1` | `{:rindle, "~> 0.1", optional: true}` | not yet on hexdocs |
+| `crosswake_rulestead` | `:rulestead` | `unpublished` | `~> 0.2` | `{:rulestead, "~> 0.1", optional: true}` | not yet on hexdocs |
+| `crosswake_rindle` | `:rindle` | `unpublished` | `~> 0.2` | `{:rindle, "~> 0.1", optional: true}` | not yet on hexdocs |
 | `crosswake_sigra` | `:sigra` | `0.1.3` | `~> 0.2` | none (pure-Elixir auth machinery) | [hexdocs.pm/crosswake_sigra](https://hexdocs.pm/crosswake_sigra) |
 | `crosswake_chimeway` | `:chimeway` | `0.1.0` | `~> 0.2` | none (pure-Elixir notification machinery) | [hexdocs.pm/crosswake_chimeway](https://hexdocs.pm/crosswake_chimeway) |
 | `crosswake_threadline` | N/A (observer — not a `:companions` registrant) | `0.1.0` | `~> 0.2` | none (optional `:plug` + `:phoenix_live_view` for surface modules) | [hexdocs.pm/crosswake_threadline](https://hexdocs.pm/crosswake_threadline) |
