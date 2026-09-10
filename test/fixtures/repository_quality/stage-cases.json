@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "tool_versions": {
+    "bash": "GNU bash, version 5.2.37",
+    "elixir": "Elixir 1.19.5 (compiled with Erlang/OTP 27)",
+    "erl": "27",
+    "git": "git version 2.51.0",
+    "gradle-wrapper": "Gradle 8.7",
+    "java": "openjdk version \"17.0.16\"",
+    "node": "v22.14.0",
+    "npm": "10.9.2",
+    "swift": "Swift version 6.1.2",
+    "xcodebuild": "Xcode 26.0"
+  },
+  "failure_kinds": ["missing", "wrong-version", "failed-to-start"],
+  "process_failures": ["ordinary-nonzero", "spawn-error", "signal", "timeout", "malformed-result"],
+  "dependency_case": {
+    "failed": "root-proof",
+    "blocked": ["example-host-proof", "browser-proof"],
+    "independent": ["ios-package-proof", "android-package-proof", "format-proof", "warnings-proof", "repository-cleanliness"]
+  },
+  "secret_sentinel": "CROSSWAKE_SECRET_DO_NOT_PRINT_8f70d9"
+}

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "name": "ambiguous-overlap",
+      "path": "tmp/editor.swp",
+      "tracked": true,
+      "ignored": true,
+      "expected": "ambiguous"
+    },
+    {
+      "name": "forbidden-credential",
+      "path": "config/deploy.pem",
+      "tracked": true,
+      "ignored": false,
+      "expected": "forbidden_secret"
+    },
+    {
+      "name": "hostile-forbidden-path",
+      "path": "config/line\nbreak.pem",
+      "tracked": true,
+      "ignored": false,
+      "expected": "forbidden_secret"
+    },
+    {
+      "name": "ignored-source-concealment",
+      "path": "lib/crosswake/hidden.ex",
+      "tracked": false,
+      "ignored": true,
+      "expected": "unknown"
+    },
+    {
+      "name": "safe-example-env",
+      "path": "examples/phoenix_host/.env",
+      "tracked": true,
+      "ignored": false,
+      "expected": "safe_fixture"
+    },
+    {
+      "name": "unknown-class-key",
+      "path": "notes/local.private",
+      "tracked": true,
+      "ignored": false,
+      "expected": "unknown"
+    }
+  ],
+  "secret_sentinel": "ARTIFACT_FIXTURE_SECRET_DO_NOT_PRINT"
+}
