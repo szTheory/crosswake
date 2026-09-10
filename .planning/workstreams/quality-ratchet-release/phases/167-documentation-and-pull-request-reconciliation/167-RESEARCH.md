@@ -498,20 +498,23 @@ The phase context reports the existing privacy/guide suite passed 171 tests on 2
 | A5 | A small phase-local evidence schema validator is worthwhile. | Validation | Low; context permits JSON or Markdown, but reproduction/privacy fields must be exact. |
 | A6 | Local toolchain installation/selection is required rather than relying only on CI. | Environment | Medium; execution environment may be repaired externally before implementation. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Exact new closed atom vocabulary**
    - Known: semantics must cover evidence subject, source binding, and activation state without new public labels. [VERIFIED: 167-CONTEXT.md D-16]
    - Unknown: exact atoms and whether they live on every capability row or a focused current-claim struct. [ASSUMED]
    - Recommendation: choose the smallest typed owner that both renderers can consume; quote exact values in tests before updating prose. [ASSUMED]
+   - **RESOLVED:** Plan 167-01 owns the bounded selection. It must place the three closed dimensions on the smallest typed `Crosswake.CapabilityMap` claim owner consumed by both renderers, and its deciding invariant is that all three D-17 claims plus every D-20 invalid combination are representable and table-tested without changing public labels. Exact internal atoms remain an implementation choice because they are not mutable external facts.
 2. **Current action pin at execution time**
    - Known: all seven uses must be coherent and immutably pinned. [VERIFIED: 167-CONTEXT.md D-22]
    - Unknown: latest suitable v6 SHA may change after this research snapshot. [ASSUMED]
    - Recommendation: resolve from the official `actions/setup-java` release immediately before editing, then assert that exact SHA repository-wide. [CITED: https://github.com/actions/setup-java/releases]
+   - **RESOLVED:** Plan 167-05 owns selection at execution time. It must resolve the suitable official v6 release immediately before editing, accept only a full immutable commit OID, and require all seven live uses plus the repository assertion to equal that OID. Research snapshots and mutable tags are never write authority.
 3. **PR supersession necessity**
    - Known: #121/#110 may be superseded only if their existing branches cannot carry coherent completion. [VERIFIED: 167-CONTEXT.md D-22,D-23]
    - Unknown: current branch permissions and post-rebase reviewability. [ASSUMED]
    - Recommendation: attempt the locked rebase/expansion path first; record the reason if supersession becomes necessary. [VERIFIED: 167-CONTEXT.md D-22,D-23]
+   - **RESOLVED:** Plans 167-05 and 167-06 each own the decision for their PR after a fresh head/base/permission/reviewability read. The original branch is mandatory when it can carry the complete locked transaction; exactly one replacement is authorized only when that invariant fails. Any replacement number and relationship are captured as bounded execution evidence, never pinned during planning.
 
 ## Sources
 
