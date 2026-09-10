@@ -79,7 +79,8 @@ async function activateScope(scopeRef) {
   await writeLifecycle({ key: 'active', state: 'active', scope_ref: scopeRef, epoch: activeEpoch });
   renderStudyStatus('sync_paused');
   updateProofCompatibilityStatus('Sync is paused');
-  if (navigator.onLine) replayOnOnline();
+  const queuedMutationCount = await countScopeMutations(scopeRef);
+  if (queuedMutationCount > 0 && navigator.onLine) replayOnOnline();
 }
 
 async function fenceScope() {
