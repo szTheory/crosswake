@@ -29,6 +29,39 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
   @doc_path Path.join([File.cwd!(), "guides", "companion_compatibility.md"])
   @package_glob "packages/crosswake_*/mix.exs"
 
+  test "both extracted companion manifests and READMEs match the current core floor" do
+    expected_floor = expected_core_floor()
+
+    for mix_exs_path <- extracted_companion_mix_files() do
+      package = package_name(mix_exs_path)
+      readme_path = Path.join(Path.dirname(mix_exs_path), "README.md")
+      manifest = File.read!(mix_exs_path)
+      readme = File.read!(readme_path)
+
+      assert compatibility_surface_errors(manifest, readme, package, expected_floor) == []
+    end
+  end
+
+  test "the companion package contract detects manifest-only and README-only floor drift" do
+    expected_floor = expected_core_floor()
+    manifest = File.read!("packages/crosswake_rulestead/mix.exs")
+    readme = File.read!("packages/crosswake_rulestead/README.md")
+
+    assert compatibility_surface_errors(
+             String.replace(manifest, expected_floor, "~> 0.1", global: false),
+             readme,
+             "crosswake_rulestead",
+             expected_floor
+           ) == [:manifest_core_floor, :manifest_readme_core_floor]
+
+    assert compatibility_surface_errors(
+             manifest,
+             String.replace(readme, expected_floor, "~> 0.1", global: false),
+             "crosswake_rulestead",
+             expected_floor
+           ) == [:manifest_readme_core_floor]
+  end
+
   # ---------------------------------------------------------------------------
   # SC#1 — the doc exists (distinct failure from a row being wrong)
   # ---------------------------------------------------------------------------
@@ -261,6 +294,69 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
        do: req
 
   defp extract_hex_req_from_if(_), do: nil
+
+  defp expected_core_floor do
+    [_, major, minor] = Regex.run(~r/@version\s+"(\d+)\.(\d+)\.\d+"/, File.read!("mix.exs"))
+    "~> #{major}.#{minor}"
+  end
+
+  defp extracted_companion_mix_files do
+    ~w(crosswake_rulestead crosswake_rindle)
+    |> Enum.map(&Path.join(["packages", &1, "mix.exs"]))
+  end
+
+  defp compatibility_surface_errors(manifest, readme, package, expected_floor) do
+    manifest_floor = extract_crosswake_requirement_from_source(manifest)
+    readme_core_floor = readme_dependency_requirement(readme, "crosswake")
+    companion_version = package_version(manifest)
+    readme_companion_floor = readme_dependency_requirement(readme, package)
+
+    []
+    |> maybe_error(manifest_floor != expected_floor, :manifest_core_floor)
+    |> maybe_error(readme_core_floor != manifest_floor, :manifest_readme_core_floor)
+    |> maybe_error(readme_companion_floor != version_floor(companion_version), :independent_companion_version)
+    |> maybe_error(not String.contains?(manifest, "{:crosswake, path: \"../..\"}"), :development_path_dependency)
+    |> Enum.reverse()
+  end
+
+  defp extract_crosswake_requirement_from_source(source) do
+    {:ok, ast} = Code.string_to_quoted(source, [])
+
+    {_ast, req} =
+      Macro.prewalk(ast, nil, fn
+        {:defp, _, [{:crosswake_dep, _, _}, [do: if_expr]]} = node, _acc ->
+          {node, extract_hex_req_from_if(if_expr)}
+
+        node, acc ->
+          {node, acc}
+      end)
+
+    req
+  end
+
+  defp readme_dependency_requirement(readme, package) do
+    case Regex.run(~r/\{:\Q#{package}\E,\s*"([^"]+)"\}/, readme) do
+      [_, requirement] -> requirement
+      _ -> nil
+    end
+  end
+
+  defp package_version(manifest) do
+    case Regex.run(~r/@version\s+"(\d+\.\d+\.\d+)"/, manifest) do
+      [_, version] -> version
+      _ -> nil
+    end
+  end
+
+  defp version_floor(version) do
+    case String.split(to_string(version), ".") do
+      [major, minor, _patch] -> "~> #{major}.#{minor}"
+      _ -> nil
+    end
+  end
+
+  defp maybe_error(errors, true, error), do: [error | errors]
+  defp maybe_error(errors, false, _error), do: errors
 
   defp package_name(mix_exs_path) do
     mix_exs_path
