@@ -29,6 +29,8 @@ defmodule Crosswake.SupportMatrix.RendererTest do
   test "generated guide renders the exact public support statuses from canonical truth" do
     guide = Renderer.render(SupportMatrix.canonical())
 
+    assert guide =~ "Canonical owner: `Crosswake.CapabilityMap`"
+    assert guide =~ "Regenerate with `mix crosswake.docs.sync`."
     assert guide =~ "supported"
     assert guide =~ "verification required"
     assert guide =~ "unsupported"
