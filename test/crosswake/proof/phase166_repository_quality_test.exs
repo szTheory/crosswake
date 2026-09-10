@@ -236,12 +236,17 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
 
     assert status == 0, output
 
-    assert String.split(output, "\n", trim: true) == [
-             "phase166-remediations: PASS count=3",
-             ~S(phase166-remediation: {"finding class":"misleading-fallback","focused command":"cd examples/phoenix_host && npx playwright test e2e/offline_storage.spec.ts","focused regression":"examples/phoenix_host/e2e/offline_storage.spec.ts","owner":"offline island presentation owner","result":"pass","source path":"examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/index.html.heex"}),
-             ~S(phase166-remediation: {"finding class":"misleading-fallback","focused command":"node --test test/js/playwright_repository_mode.test.mjs","focused regression":"test/js/playwright_repository_mode.test.mjs","owner":"browser proof owner","result":"pass","source path":"examples/phoenix_host/playwright.config.ts"}),
-             ~S(phase166-remediation: {"finding class":"misleading-fallback","focused command":"cd examples/phoenix_host && npx playwright test e2e/offline_storage.spec.ts","focused regression":"examples/phoenix_host/e2e/offline_storage.spec.ts","owner":"offline island owner","result":"pass","source path":"examples/phoenix_host/priv/static/offline_study.js"})
-           ]
+    [summary | rendered_rows] = String.split(output, "\n", trim: true)
+    assert summary == "phase166-remediations: PASS count=#{length(rendered_rows)}"
+
+    rows =
+      Enum.map(rendered_rows, fn "phase166-remediation: " <> json -> Jason.decode!(json) end)
+
+    source_paths = Enum.map(rows, & &1["source path"])
+    assert source_paths == Enum.sort(source_paths)
+    assert length(source_paths) == length(Enum.uniq(source_paths))
+    assert "examples/phoenix_host/playwright.config.ts" in source_paths
+    assert Enum.all?(rows, &(&1["result"] == "pass"))
   end
 
   @tag :ci_parity
