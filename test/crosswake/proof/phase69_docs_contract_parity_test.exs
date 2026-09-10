@@ -126,4 +126,25 @@ defmodule Crosswake.Proof.Phase69DocsContractParityTest do
     # We will just ensure "diagnostics" is tested
     # assert String.contains?(ctx.doctor_json, "diagnostic"), message
   end
+
+  @tag :proof_01
+  test "current generated documentation stays byte-identical to both semantic owners" do
+    capability_guide = File.read!("guides/capability_map.md")
+    support_guide = File.read!("guides/support_matrix.md")
+
+    assert capability_guide ==
+             Crosswake.CapabilityMap.Renderer.render(Crosswake.CapabilityMap.canonical())
+
+    assert support_guide == Crosswake.SupportMatrix.Renderer.render(SupportMatrix.canonical())
+
+    for guide <- [capability_guide, support_guide] do
+      assert guide =~ "Canonical owner: `Crosswake.CapabilityMap`"
+      assert guide =~ "Regenerate with `mix crosswake.docs.sync`."
+      assert guide =~
+               "Blocked — sanitized route policy and signed-device proof are required before this host can be promoted."
+
+      refute guide =~ "First B2C Adopter"
+      refute guide =~ "support one first adopter offline-study flow"
+    end
+  end
 end

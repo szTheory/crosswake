@@ -336,6 +336,31 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     refute workflow =~ "git diff --cached --exit-code"
   end
 
+  @tag :ci_parity
+  @tag :generated_contracts
+  test "documentation owner checks generated projections without write or staging authority" do
+    manifest = decode!(@ci_manifest_path)
+    workflow = File.read!(@ci_workflow_path)
+
+    [_, documentation_job] =
+      Regex.run(
+        ~r/^  documentation-contracts:\n(?<body>.*?)(?=^  brand-structural:)/ms,
+        workflow
+      )
+
+    assert documentation_job =~ "mix crosswake.docs.sync --check"
+    assert documentation_job =~ "test/crosswake/capability_map/capability_map_test.exs"
+    assert documentation_job =~ "test/crosswake/support_matrix/renderer_test.exs"
+    refute documentation_job =~ ~r/^\s*mix crosswake\.docs\.sync\s*$/m
+    refute documentation_job =~ ~r/\bgit add\b|git diff --cached/
+
+    documentation_leaf =
+      Enum.find(manifest["proof_leaves"], &(&1["leaf_id"] == "documentation-contracts"))
+
+    assert documentation_leaf["remediation_command"] ==
+             "mix crosswake.docs.sync --check && mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/capability_map/capability_map_test.exs test/crosswake/support_matrix/renderer_test.exs test/crosswake/proof/phase69_docs_contract_parity_test.exs"
+  end
+
   @tag :quality_gate
   test "recurring repository quality gate is credential-free and purpose-led" do
     gate = File.read!(@quality_gate_path)
