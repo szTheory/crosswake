@@ -2,6 +2,20 @@
 
 Thank you for contributing to Crosswake. This guide covers the conventions you need to follow when authoring changelog entries and choosing upgrade-impact labels.
 
+## Documentation authority
+
+Current documentation follows one compact ownership path:
+
+| Executable owner | Checked-in public projection | Regeneration and review |
+|---|---|---|
+| `Crosswake.SupportMatrix` | [`guides/support_matrix.md`](guides/support_matrix.md), the canonical public support projection | Run `mix crosswake.docs.sync`; CI and review use the no-write `mix crosswake.docs.sync --check`. |
+| `Crosswake.CapabilityMap` | [`guides/capability_map.md`](guides/capability_map.md) | Run `mix crosswake.docs.sync`; CI and review use the no-write `mix crosswake.docs.sync --check`. |
+
+Change a volatile support or capability fact at its executable owner, regenerate both projections,
+and review the resulting bytes. Do not edit generated guides as independent truth. **Authored semantic guidance**—README, architecture, installation, compatibility, troubleshooting, and release guidance—
+keeps the reader's current answer and recovery path concise, links to the generated projection for
+detail, and is protected by focused semantic tests rather than broad prose snapshots.
+
 ## Upgrade Impact Labels
 
 Every published `## [x.y.z]` release in `CHANGELOG.md` must carry an `### Upgrade Impact` subsection as the **first subsection** under the release heading (before `### Added`, `### Fixed`, `### Notes`, or any other subsections). This subsection tells adopters whether they need to rebuild and resubmit their native host app before deploying the Crosswake update.

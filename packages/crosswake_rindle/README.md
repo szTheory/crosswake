@@ -11,7 +11,7 @@ Add `crosswake_rindle` to your `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:crosswake, "~> 0.1"},
+    {:crosswake, "~> 0.2"},
     {:crosswake_rindle, "~> 0.1"},
     {:rindle, "~> 0.1"}   # the engine (optional; companion probes at runtime)
   ]

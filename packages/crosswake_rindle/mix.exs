@@ -1,7 +1,7 @@
 defmodule CrosswakeRindle.MixProject do
   use Mix.Project
 
-  @version "0.1.0" # x-release-please-version — D-22: separate from core 0.1.2; do NOT touch core release-please config/manifest
+  @version "0.1.0" # x-release-please-version — independently versioned from core 0.2.0
   @source_url "https://github.com/szTheory/crosswake"
 
   def project do
@@ -80,7 +80,7 @@ defmodule CrosswakeRindle.MixProject do
   # it does NOT represent an active bare path dep in deps/0.
   defp crosswake_dep do
     if System.get_env("CROSSWAKE_RELEASE") == "1",
-      do: {:crosswake, "~> 0.1"},
+      do: {:crosswake, "~> 0.2"},
       else: {:crosswake, path: "../.."}
   end
 

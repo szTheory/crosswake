@@ -23,6 +23,7 @@ defmodule Crosswake.Proof.Phase69DocsContractParityTest do
     doctor_json =
       capture_io(fn ->
         Mix.Task.reenable(@doctor_task)
+
         try do
           Mix.Task.run(@doctor_task, [
             "--router",
@@ -38,6 +39,7 @@ defmodule Crosswake.Proof.Phase69DocsContractParityTest do
     doctor_human =
       capture_io(fn ->
         Mix.Task.reenable(@doctor_task)
+
         try do
           Mix.Task.run(@doctor_task, [
             "--router",
@@ -61,27 +63,32 @@ defmodule Crosswake.Proof.Phase69DocsContractParityTest do
 
   @tag :proof_01
   test "parity test enforces consistency for Android JVM hermetic promotion", ctx do
-    message = ProofAssertions.stable_id_message(
-      "proof.phase69.parity.domain",
-      "Parity assertion description",
-      "Target component",
-      "Failure description",
-      "File path",
-      "Resolution instructions",
-      :merge_blocking
-    )
+    message =
+      ProofAssertions.stable_id_message(
+        "proof.phase69.parity.domain",
+        "Parity assertion description",
+        "Target component",
+        "Failure description",
+        "File path",
+        "Resolution instructions",
+        :merge_blocking
+      )
 
     # 1. Guides accurately reflect the typed Elixir support matrix truth without drift.
     # Android support status is :supported based strictly on JVM hermetic CI evidence.
     expected_android_phrase = "JVM hermetic CI evidence remains separate"
-    expected_android_shell_phrase = "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof`"
-    
+
+    expected_android_shell_phrase =
+      "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof`"
+
     assert String.contains?(ctx.guides_support, expected_android_phrase) or
-           String.contains?(ctx.guides_native, expected_android_phrase), message
+             String.contains?(ctx.guides_native, expected_android_phrase),
+           message
 
     assert String.contains?(ctx.guides_support, expected_android_shell_phrase) or
-           String.contains?(ctx.guides_native, expected_android_shell_phrase), message
-           
+             String.contains?(ctx.guides_native, expected_android_shell_phrase),
+           message
+
     # Doctor outputs should reflect :supported for Android and android_shell baseline
     # Doctor JSON contains jvm-hermetic (CI only)
     assert String.contains?(ctx.doctor_human, "jvm-hermetic (CI only)"), message
@@ -89,22 +96,28 @@ defmodule Crosswake.Proof.Phase69DocsContractParityTest do
 
   @tag :proof_01
   test "parity across manifest, shell fixture, doctor JSON output, and domains", ctx do
-    message = ProofAssertions.stable_id_message(
-      "proof.phase69.parity.domain",
-      "Parity assertion description",
-      "Target component",
-      "Failure description",
-      "File path",
-      "Resolution instructions",
-      :merge_blocking
-    )
+    message =
+      ProofAssertions.stable_id_message(
+        "proof.phase69.parity.domain",
+        "Parity assertion description",
+        "Target component",
+        "Failure description",
+        "File path",
+        "Resolution instructions",
+        :merge_blocking
+      )
 
     # Rebuild domain
-    assert String.contains?(ctx.guides_compat, "rebuild_matrix") or String.contains?(ctx.guides_compat, "rebuild"), message
+    assert String.contains?(ctx.guides_compat, "rebuild_matrix") or
+             String.contains?(ctx.guides_compat, "rebuild"),
+           message
+
     assert String.contains?(ctx.doctor_json, "rebuild_matrix"), message
 
     # Permission/entitlement domain
-    assert String.contains?(ctx.guides_native, "entitlement") or String.contains?(ctx.guides_native, "permission"), message
+    assert String.contains?(ctx.guides_native, "entitlement") or
+             String.contains?(ctx.guides_native, "permission"),
+           message
 
     # Diagnostics export domain
     # Ensure diagnostics export is mentioned in gen_manifest or doctor
@@ -112,5 +125,26 @@ defmodule Crosswake.Proof.Phase69DocsContractParityTest do
     # The requirement is that diagnostics are properly stated if present
     # We will just ensure "diagnostics" is tested
     # assert String.contains?(ctx.doctor_json, "diagnostic"), message
+  end
+
+  @tag :proof_01
+  test "current generated documentation stays byte-identical to both semantic owners" do
+    capability_guide = File.read!("guides/capability_map.md")
+    support_guide = File.read!("guides/support_matrix.md")
+
+    assert capability_guide ==
+             Crosswake.CapabilityMap.Renderer.render(Crosswake.CapabilityMap.canonical())
+
+    assert support_guide == Crosswake.SupportMatrix.Renderer.render(SupportMatrix.canonical())
+
+    for guide <- [capability_guide, support_guide] do
+      assert guide =~ "Canonical owner: `Crosswake.CapabilityMap`"
+      assert guide =~ "Regenerate with `mix crosswake.docs.sync`."
+      assert guide =~
+               "Blocked — sanitized route policy and signed-device proof are required before this host can be promoted."
+
+      refute guide =~ "First B2C Adopter"
+      refute guide =~ "support one first adopter offline-study flow"
+    end
   end
 end

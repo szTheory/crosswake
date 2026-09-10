@@ -4,6 +4,15 @@ This runbook describes the current package-family release operating model for
 Crosswake Hex packages. The publish path is now guarded CI automation, not a
 maintainer's local `mix hex.publish` loop.
 
+## Phase 167 review boundary
+
+This phase permits reversible preparation only: inspect checked-in release owners,
+run read-only status and proof commands, and review the Release Please threads. Phase 168
+owns exact `0.2.1` candidate proof and requires explicit maintainer approval before any
+immutable action. Do not merge a Release Please PR, publish a package, create or move a tag,
+update the SwiftPM mirror, or treat a stale release-PR head as the candidate during
+Phase 167.
+
 ## Current Operating Model
 
 The Release Please Release PR merge is the human approval boundary. After that
@@ -117,18 +126,18 @@ repair only the missing SwiftPM mirror tag.
 
 ## Companion Floors
 
-Mixed floors are intentional release truth:
+Each companion owns its core floor independently. The current set agrees on the
+published core line, but that does not put companion package versions in lockstep:
 
 | Hex package | Requires `crosswake` |
 |---|---|
-| `crosswake_rulestead` | `~> 0.1` |
-| `crosswake_rindle` | `~> 0.1` |
+| `crosswake_rulestead` | `~> 0.2` |
+| `crosswake_rindle` | `~> 0.2` |
 | `crosswake_sigra` | `~> 0.2` |
 | `crosswake_chimeway` | `~> 0.2` |
 | `crosswake_threadline` | `~> 0.2` |
 
 A companion that needs a newer core API bumps its own floor in its own release.
-Do not preemptively constrain older-compatible companions to a newer core line.
 
 ## Release Status
 

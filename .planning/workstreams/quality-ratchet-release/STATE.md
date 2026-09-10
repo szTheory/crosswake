@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v22.0
 milestone_name: Quality Ratchet & Release Readiness
-current_phase: 165
-current_phase_name: Efficient and Maintainable CI
-status: verifying
-stopped_at: Completed 165-13-PLAN.md
-last_updated: "2026-09-09T01:17:44.142Z"
-last_activity: 2026-09-08
-last_activity_desc: Plan 165-12 exact authority retirement applied and compatibility-only producers removed
-state_head: 9dfde452c9eeb3d1f496b483c8bd97a7b4051408
+current_phase: 167
+current_phase_name: Documentation and Pull-Request Reconciliation
+status: executing
+stopped_at: Completed 167-05-PLAN.md
+last_updated: "2026-09-10T21:42:03.446Z"
+last_activity: 2026-09-10
+last_activity_desc: Phase 167 execution started
+state_head: f748621b11a1233a5e36c52e0769b52d7cc4549b
 progress:
   total_phases: 5
-  completed_phases: 1
-  total_plans: 18
-  completed_plans: 18
-  percent: 20
+  completed_phases: 3
+  total_plans: 34
+  completed_plans: 31
+  percent: 60
 workstream: quality-ratchet-release
 ---
 
@@ -23,26 +23,26 @@ workstream: quality-ratchet-release
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-08-27)
+See: `.planning/PROJECT.md` (updated 2026-09-10)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 165 — Efficient and Maintainable CI
+**Current focus:** Phase 167 — Documentation and Pull-Request Reconciliation
 
 ## Current Position
 
-Phase: 165 (Efficient and Maintainable CI) — EXECUTING
-Plan: 13 of 13
-Status: Phase complete — ready for verification
-Last activity: 2026-09-08 — Plan 165-12 exact authority retirement applied and compatibility-only producers removed
+Phase: 167 (Documentation and Pull-Request Reconciliation) — EXECUTING
+Plan: 6 of 8
+Status: Ready to execute
+Last activity: 2026-09-10 — Phase 167 execution started
 
-Progress: [██░░░░░░░░] 20%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 6
+- Total plans completed: 26
 - Average duration: N/A
 - Total execution time: 0 hours
 
@@ -52,6 +52,8 @@ Progress: [██░░░░░░░░] 20%
 |-------|-------|-------|----------|
 | 164-168 | 0 | 0 min | N/A |
 | 164 | 5 | - | - |
+| 165 | 13 | - | - |
+| 166 | 8 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -71,6 +73,19 @@ Progress: [██░░░░░░░░] 20%
 | Phase 165 P11 | 6 min | 1 tasks | 3 files |
 | Phase 165 P12 | 18 min | 2 tasks | 8 files |
 | Phase 165 P13 | 9 min | 2 tasks | 5 files |
+| Phase 166 P01 | 7 min | 2 tasks | 6 files |
+| Phase 166 P02 | 11 min | 2 tasks | 4 files |
+| Phase 166 P03 | 15min | 2 tasks | 6 files |
+| Phase 166 P04 | 10min | 2 tasks | 5 files |
+| Phase 166 P05 | 21min | 3 tasks | 10 files |
+| Phase 166 P06 | 3min | 2 tasks | 3 files |
+| Phase 166 P07 | 25min | 2 tasks | 24 files |
+| Phase 166 P08 | 7h 10m | 2 tasks | 24 files |
+| Phase 167 P01 | 10min | 3 tasks | 13 files |
+| Phase 167 P02 | 7min | 2 tasks | 6 files |
+| Phase 167 P03 | 7min | 2 tasks | 7 files |
+| Phase 167 P04 | 7min | 3 tasks | 12 files |
+| Phase 167 P05 | 20min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -118,6 +133,39 @@ Progress: [██░░░░░░░░] 20%
 - [Phase 165]: Keep all forty-four meaningful proof leaves and classify-change while removing every migration-only compatibility conclusion.
 - [Phase 165]: Reject final evidence unless the exact supplied SHA remains the remote default tip and both authoritative blobs match locally.
 - [Phase 165]: Report the pre/post main-bound cohort as not_measured because its explicit criteria differ, despite retaining each sanitized observation descriptively.
+- [Phase 166]: Keep mix verify narrow and invoke it only as the root-proof stage command.
+- [Phase 166]: Attribute tool failures to dependent stages so unsupported Apple tooling blocks iOS without hiding independent proof.
+- [Phase 166]: Propagate every non-pass result through dependency edges while preserving manifest-order execution for independent stages.
+- [Phase 166]: Treat only exact declared outputs absent at invocation start as cleanup-owned, and refuse symlink or repository-prefix escapes.
+- [Phase 166]: Keep Git porcelain bytes in private NUL-delimited snapshot files and expose only bounded purpose-level results and remediations.
+- [Phase 166]: Generated contracts remain a registry within intentionally tracked artifact intent. — This preserves the closed three-class policy while making regeneration ownership executable.
+- [Phase 166]: Generated drift restores only registered output snapshots and uses read-only Git inspection. — Focused verification must preserve user bytes and index state on success and failure.
+- [Phase 166]: Suspicious artifact paths are escaped data and never remediation command text. — Hostile filenames must not shape terminal output or become executable correction input.
+- [Phase 166]: Freeze each ownership audit at its declared immutable tree while preserving the exact v22 base and NUL-safe candidate rule.
+- [Phase 166]: Use CROSSWAKE_REPOSITORY_VERIFY rather than generic CI truthiness for zero retries, fresh-server ownership, and explicit output roots.
+- [Phase 166]: Extend the existing CI authority validator with stage parity instead of introducing a second CI engine.
+- [Phase 166]: Use invocation-owned browser output paths locally while preserving checked-out example-host artifact paths in GitHub Actions.
+- [Phase 166]: Keep the recurring quality gate contract-only; Plan 08 retains isolated exact-commit canonical proof.
+- [Phase 166]: Treat every changed or removed-with-proof ledger disposition as an exact remediation-queue obligation; an empty set emits an explicit passing count of zero. — Prevents evidence-proven findings from disappearing by omission while keeping zero-finding runs explicit.
+- [Phase 166]: Preserve the sole browser correction and its Plan 04 RED/GREEN history rather than manufacture a no-op Plan 06 source diff. — The bounded queue authorizes verification of the existing correction, not unrelated or cosmetic source churn.
+- [Phase 166]: Resolve evidence input only from an explicit tracked commit and never copy source worktree or index state.
+- [Phase 166]: Materialize the declared Darwin/arm64 toolchain beneath one invocation-owned root with literal upstream authorities and SHA-256 pins.
+- [Phase 166]: Commit the authorized install/doctor correction set separately before binding exact-commit verification to the new supported HEAD.
+- [Phase 166]: Supported-code identity is d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b; later evidence-only and planning records do not redefine it.
+- [Phase 166]: Keep isolated proof dependencies, private logs, temporary roots, and cleanup invocation-owned.
+- [Phase 167]: Keep the three current claim layers in Crosswake.CapabilityMap and require both generated projections to consume the validated set.
+- [Phase 167]: Bind retained reference evidence to 2026-08-27 and iOS 26.6 without transferring it to first adopter activation.
+- [Phase 167]: Keep public recovery copy generic while durable state retains the exact codename, TODO-002, and Phase 163.1 resume point.
+- [Phase 167]: Keep docs synchronization fixed to exactly default write mode and one --check form; invalid or combined argv fails closed without echoing input.
+- [Phase 167]: Validate all generated-artifact records through the existing registry while preserving the legacy contract-generator record byte-for-byte.
+- [Phase 167]: Require generated canonical sources to be tracked at execution and reject duplicate or nested output authority across records.
+- [Phase 167]: Run no-write documentation synchronization and focused semantic owner tests inside the existing documentation-contracts leaf.
+- [Phase 167]: Route generated guide projections through public_docs while executable owners, release inputs, workflow changes, and unknown paths retain full proof.
+- [Phase 167]: Keep authored guidance answer-first and link volatile detail to Crosswake.SupportMatrix, Crosswake.CapabilityMap, and their generated projections.
+- [Phase 167]: Treat Phase 167 release review as reversible preparation only; Phase 168 retains exact 0.2.1 proof and immutable publication approval.
+- [Phase 167]: Pin all setup-java uses to the execution-time official immutable v6 commit. — One full SHA and exact count assertion remove mutable-tag and partial-update ambiguity.
+- [Phase 167]: Retain PR #121 as the candidate because it accepted the complete five-path transaction. — The authorized supersession fallback was unnecessary after the exact guarded branch update succeeded.
+- [Phase 167]: Gate PR mutations on exact head, base, named check, scope, and fresh-default authority. — This closes the mutable GitHub TOCTOU boundary before push and merge.
 
 ### Pending Todos
 
@@ -125,7 +173,6 @@ None in this workstream yet.
 
 ### Blockers/Concerns
 
-- No blocker to Phase 164 planning.
 - The First B2C Adopter work remains parked separately at Phase 163.1 pending external route/device
   authority; do not copy or infer adopter facts into v22 artifacts.
 
@@ -139,6 +186,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-09T01:17:44.108Z
-Stopped at: Completed 165-13-PLAN.md
+Last session: 2026-09-10T21:42:03.314Z
+Stopped at: Completed 167-05-PLAN.md
 Resume file: None

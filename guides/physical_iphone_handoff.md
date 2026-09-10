@@ -1,5 +1,18 @@
 # iPhone rehearsal and physical proof
 
+**Blocked — sanitized route policy and signed-device proof are required before this host can be promoted.**
+Retained reference evidence is dated, source-bound, and does not verify the first adopter's host.
+See the [current first adopter claim layers](support_matrix.md#first-adopter-readiness) before
+starting host-specific proof.
+
+**Reference rehearsal:** retained source-bound evidence records one bounded reference-host
+flow from 2026-08-27 on iOS 26.6. It is past-tense evidence for that source and runtime
+line only; it cannot be transferred to another host.
+
+**First adopter activation:** remains blocked until sanitized route policy validates and
+a fresh source-bound signed-device run passes for that host. Reference, fixture, and
+simulator evidence cannot satisfy this activation gate.
+
 Run the reference rehearsal first:
 
 ```bash

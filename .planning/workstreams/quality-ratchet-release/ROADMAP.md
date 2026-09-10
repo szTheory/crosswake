@@ -15,8 +15,8 @@ of this roadmap.
 independent workstream; the numbering does not imply that parked adopter work must resume first.
 
 - [x] **Phase 164: Dependency Security and Gate Authority** - Establish patched dependencies and one fail-closed authoritative path for every required result. (completed 2026-08-28)
-- [ ] **Phase 165: Efficient and Maintainable CI** - Reduce runner cost and duplicate work while preserving visible, named proof.
-- [ ] **Phase 166: Clean-Checkout Engineering Quality** - Make the supported repository verification surfaces deterministic, focused, and clean.
+- [x] **Phase 165: Efficient and Maintainable CI** - Reduce runner cost and duplicate work while preserving visible, named proof. (completed 2026-09-09)
+- [x] **Phase 166: Clean-Checkout Engineering Quality** - Make the supported repository verification surfaces deterministic, focused, and clean. (completed 2026-09-10)
 - [ ] **Phase 167: Documentation and Pull-Request Reconciliation** - Align public truth, preserve the parked lane, and resolve ambiguous open PR state.
 - [ ] **Phase 168: 0.2.1 Release Candidate Readiness** - Prove package-family consistency and prepare an exact, approval-gated release candidate.
 
@@ -124,7 +124,40 @@ Plans:
   3. Generated, temporary, secret-bearing, editor, and local-only artifacts are either intentionally tracked or excluded, and a complete clean verification run leaves Git clean.
   4. Repository quality failures name a current, actionable correction without stale phase labels, contradictory comments, or unactionable warning noise.
 
-**Plans**: TBD
+**Plans**: 8/8 plans executed
+
+Plans:
+**Wave 1**
+
+- [x] 166-01-PLAN.md — Prove the fixed stage inventory and local/CI parity with a production tracer and deterministic negative preflight controls.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 166-02-PLAN.md — Add dependency-aware execution, unconditional cleanup, NUL-safe repository snapshots, and concise summaries.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] 166-03-PLAN.md — Enforce the closed artifact policy and regenerate every tracked contract without staging changes.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [x] 166-04-PLAN.md — Validate the complete bounded ownership cone and make repository-mode browser proof deterministic.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [x] 166-05-PLAN.md — Bind CI owners to shared stage commands and publish the recurring aggregate quality gate.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
+- [x] 166-06-PLAN.md — Remediate every evidence-proven ENG-02 finding with exact source ownership and focused regressions.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
+- [x] 166-07-PLAN.md — Commit capture tooling and a qualified invocation-local evidence environment before evidence is produced.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
+- [x] 166-08-PLAN.md — Capture the supported-code commit and close ownership and validation with an explicit evidence-only delta.
 
 ### Phase 167: Documentation and Pull-Request Reconciliation
 
@@ -137,7 +170,40 @@ Plans:
   2. A maintainer can resume the First B2C Adopter workstream from its parked state without reconstruction; its durable content remains codename-only and its status names only the real external route/device authority.
   3. Every open pull request has an unambiguous current disposition: merged, rebased, superseded, closed, or explicitly deferred with a current reason.
 
-**Plans**: TBD
+**Plans**: 5/8 plans executed
+
+Plans:
+**Wave 1**
+
+- [x] 167-01-PLAN.md — Establish the typed current-claim tracer and atomically reconcile generated/public/parked adopter truth.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 167-02-PLAN.md — Add no-write documentation synchronization and register it in the existing artifact policy.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] 167-03-PLAN.md — Extend existing documentation/package CI owners while preserving the docs-only route.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [x] 167-04-PLAN.md — Reconcile authored reader-job guidance, authority discovery, accessibility, and release boundaries.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [x] 167-05-PLAN.md — Rebase and resolve setup-java PR #121 across all seven immutable uses.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
+- [ ] 167-06-PLAN.md — Rebase and resolve companion compatibility PR #110 across every affected package/doc/fixture surface.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
+- [ ] 167-07-PLAN.md — Rebase, squash, verify, and merge PackStore cleanup PR #105.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
+- [ ] 167-08-PLAN.md — Defer release PRs #115/#57 and seal bounded five-PR plus final documentation evidence.
 
 ### Phase 168: 0.2.1 Release Candidate Readiness
 
@@ -161,9 +227,9 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 164. Dependency Security and Gate Authority | 5/5 | Complete    | 2026-08-28 |
-| 165. Efficient and Maintainable CI | 13/13 | In Progress|  |
-| 166. Clean-Checkout Engineering Quality | 0/TBD | Not started | - |
-| 167. Documentation and Pull-Request Reconciliation | 0/TBD | Not started | - |
+| 165. Efficient and Maintainable CI | 13/13 | Complete    | 2026-09-09 |
+| 166. Clean-Checkout Engineering Quality | 8/8 | Complete    | 2026-09-10 |
+| 167. Documentation and Pull-Request Reconciliation | 5/8 | In Progress|  |
 | 168. 0.2.1 Release Candidate Readiness | 0/TBD | Not started | - |
 
 ---
