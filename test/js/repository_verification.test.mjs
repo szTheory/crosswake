@@ -37,6 +37,19 @@ function clone(value) {
   return structuredClone(value);
 }
 
+function multiRecordArtifactPolicy() {
+  const policy = clone(loadArtifactPolicy());
+  if (policy.generated_contracts.length === 1) {
+    policy.generated_contracts.push({
+      canonical_source: "lib/mix/tasks/crosswake.docs.sync.ex",
+      regeneration_argv: [["mix", "crosswake.docs.sync"]],
+      output_paths: ["guides/capability_map.md", "guides/support_matrix.md"],
+      remediation_command: "mix crosswake.docs.sync"
+    });
+  }
+  return policy;
+}
+
 function makeRepository() {
   const directory = mkdtempSync(path.join(tmpdir(), "crosswake-repository-quality-test-"));
   execFileSync("git", ["init", "--quiet"], { cwd: directory });
@@ -85,11 +98,31 @@ test("artifact policy rejects unknown, empty, unordered, duplicate, and overlapp
     policy => { policy.intentionally_tracked.reverse(); },
     policy => { policy.forbidden_tracked.push(clone(policy.forbidden_tracked[0])); },
     policy => { policy.forbidden_tracked[0].matchers.push(clone(policy.ignored_transient[0].matchers[0])); },
-    policy => { policy.generated_contracts[0].output_paths.reverse(); }
+    policy => { policy.generated_contracts[0].output_paths.reverse(); },
+    policy => { policy.generated_contracts[0].regeneration_argv = []; },
+    policy => { policy.generated_contracts[0].regeneration_argv[0] = []; },
+    policy => { policy.generated_contracts[0].regeneration_argv[0].push("unsafe;argument"); }
   ];
 
   for (const mutate of mutations) {
     const policy = clone(loadArtifactPolicy());
+    mutate(policy);
+    assert.throws(() => validateArtifactPolicy(policy));
+  }
+});
+
+test("artifact policy validates records independently and rejects cross-record collisions", () => {
+  assert.equal(validateArtifactPolicy(multiRecordArtifactPolicy()).generated_contracts.length, 2);
+
+  const mutations = [
+    policy => { policy.generated_contracts[1].canonical_source = policy.generated_contracts[0].canonical_source; },
+    policy => { policy.generated_contracts[1].output_paths[0] = policy.generated_contracts[0].output_paths[0]; },
+    policy => { policy.generated_contracts[1].output_paths[0] = `${policy.generated_contracts[0].output_paths[0]}/nested`; },
+    policy => { policy.generated_contracts[1].output_paths.reverse(); }
+  ];
+
+  for (const mutate of mutations) {
+    const policy = multiRecordArtifactPolicy();
     mutate(policy);
     assert.throws(() => validateArtifactPolicy(policy));
   }
@@ -507,9 +540,15 @@ test("generated-contract production runner preserves index and restores bytes", 
   const generator = `
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 const dev = process.argv.includes("--dev");
-const source = readFileSync("source.txt", "utf8").trim();
-writeFileSync(dev ? "out-dev.txt" : "out-default.txt", source + (dev ? ":dev\\n" : ":default\\n"));
-if (existsSync("fail-generator")) process.exit(7);
+const docs = process.argv.includes("--docs");
+const source = readFileSync(docs ? "source-docs.txt" : "source.txt", "utf8").trim();
+if (docs) {
+  writeFileSync("docs-a.txt", source + ":docs-a\\n");
+  writeFileSync("docs-b.txt", source + ":docs-b\\n");
+} else {
+  writeFileSync(dev ? "out-dev.txt" : "out-default.txt", source + (dev ? ":dev\\n" : ":default\\n"));
+}
+if (docs && existsSync("fail-generator")) process.exit(7);
 `;
 
   const artifactPolicy = {
@@ -524,12 +563,20 @@ if (existsSync("fail-generator")) process.exit(7);
       paths: ["generate.mjs", "source.txt"],
       purpose: "Generated-contract production-runner fixture"
     }],
-    generated_contracts: [{
-      canonical_source: "source.txt",
-      regeneration_argv: [["node", "generate.mjs"], ["node", "generate.mjs", "--dev"]],
-      output_paths: ["out-default.txt", "out-dev.txt"],
-      remediation_command: "node generate.mjs && node generate.mjs --dev"
-    }],
+    generated_contracts: [
+      {
+        canonical_source: "source.txt",
+        regeneration_argv: [["node", "generate.mjs"], ["node", "generate.mjs", "--dev"]],
+        output_paths: ["out-default.txt", "out-dev.txt"],
+        remediation_command: "node generate.mjs && node generate.mjs --dev"
+      },
+      {
+        canonical_source: "source-docs.txt",
+        regeneration_argv: [["node", "generate.mjs", "--docs"]],
+        output_paths: ["docs-a.txt", "docs-b.txt"],
+        remediation_command: "node generate.mjs --docs"
+      }
+    ],
     forbidden_tracked: [{
       category: "forbidden_test",
       matchers: [{ kind: "suffix", value: ".secret" }],
@@ -541,9 +588,12 @@ if (existsSync("fail-generator")) process.exit(7);
   try {
     writeFileSync(path.join(repository, "generate.mjs"), generator);
     writeFileSync(path.join(repository, "source.txt"), "v1\n");
+    writeFileSync(path.join(repository, "source-docs.txt"), "v1\n");
     writeFileSync(path.join(repository, "out-default.txt"), "v1:default\n");
     writeFileSync(path.join(repository, "out-dev.txt"), "v1:dev\n");
-    execFileSync("git", ["add", "generate.mjs", "source.txt", "out-default.txt", "out-dev.txt"], { cwd: repository });
+    writeFileSync(path.join(repository, "docs-a.txt"), "v1:docs-a\n");
+    writeFileSync(path.join(repository, "docs-b.txt"), "v1:docs-b\n");
+    execFileSync("git", ["add", "generate.mjs", "source.txt", "source-docs.txt", "out-default.txt", "out-dev.txt", "docs-a.txt", "docs-b.txt"], { cwd: repository });
     execFileSync("git", ["commit", "--quiet", "-m", "generated fixture"], { cwd: repository });
 
     writeFileSync(path.join(repository, "tracked.txt"), "staged-preserved\n");
@@ -554,17 +604,21 @@ if (existsSync("fail-generator")) process.exit(7);
     const passing = runVerification(verificationOptions(repository, { artifactPolicy, enforceArtifactPolicy: true }));
     assert.equal(passing.status, 0);
     assert.deepEqual(readFileSync(path.join(repository, "out-default.txt")), Buffer.from("v1:default\n"));
+    assert.deepEqual(readFileSync(path.join(repository, "docs-a.txt")), Buffer.from("v1:docs-a\n"));
+    assert.deepEqual(readFileSync(path.join(repository, "docs-b.txt")), Buffer.from("v1:docs-b\n"));
     assert.deepEqual(readFileSync(path.join(repository, ".git/index")), indexBefore);
     assert.deepEqual(execFileSync("git", ["diff", "--cached", "--raw", "-z"], { cwd: repository }), stagedBefore);
 
-    writeFileSync(path.join(repository, "source.txt"), "v2\n");
+    writeFileSync(path.join(repository, "source-docs.txt"), "v2\n");
     const drifted = runVerification(verificationOptions(repository, { artifactPolicy, enforceArtifactPolicy: true }));
     assert.equal(drifted.status, 1);
     assert.match(drifted.output, /generated_contract_drift/);
-    assert.match(drifted.output, /out-default\.txt/);
+    assert.match(drifted.output, /docs-a\.txt/);
     assert.doesNotMatch(drifted.output, /v2/);
     assert.deepEqual(readFileSync(path.join(repository, "out-default.txt")), Buffer.from("v1:default\n"));
     assert.deepEqual(readFileSync(path.join(repository, "out-dev.txt")), Buffer.from("v1:dev\n"));
+    assert.deepEqual(readFileSync(path.join(repository, "docs-a.txt")), Buffer.from("v1:docs-a\n"));
+    assert.deepEqual(readFileSync(path.join(repository, "docs-b.txt")), Buffer.from("v1:docs-b\n"));
     assert.deepEqual(readFileSync(path.join(repository, ".git/index")), indexBefore);
 
     writeFileSync(path.join(repository, "fail-generator"), "trigger\n");
@@ -572,6 +626,8 @@ if (existsSync("fail-generator")) process.exit(7);
     assert.equal(failed.status, 1);
     assert.deepEqual(readFileSync(path.join(repository, "out-default.txt")), Buffer.from("v1:default\n"));
     assert.deepEqual(readFileSync(path.join(repository, "out-dev.txt")), Buffer.from("v1:dev\n"));
+    assert.deepEqual(readFileSync(path.join(repository, "docs-a.txt")), Buffer.from("v1:docs-a\n"));
+    assert.deepEqual(readFileSync(path.join(repository, "docs-b.txt")), Buffer.from("v1:docs-b\n"));
     assert.deepEqual(readFileSync(path.join(repository, ".git/index")), indexBefore);
     assert.deepEqual(execFileSync("git", ["diff", "--cached", "--raw", "-z"], { cwd: repository }), stagedBefore);
   } finally {

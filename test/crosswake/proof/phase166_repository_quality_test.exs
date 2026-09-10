@@ -164,19 +164,19 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
   end
 
   @tag :generated_contracts
-  test "generated contract registry names one source, two argv calls, and eight exact outputs" do
+  test "generated contract registry retains legacy generation and adds exact docs sync ownership" do
     policy = decode!(@policy_path)
 
-    assert [registry] = policy["generated_contracts"]
-    assert valid_generated_contract?(registry)
-    assert registry["canonical_source"] == "lib/mix/tasks/crosswake.contract.gen.ex"
+    assert [legacy, docs] = policy["generated_contracts"]
+    assert Enum.all?([legacy, docs], &valid_generated_contract?/1)
+    assert legacy["canonical_source"] == "lib/mix/tasks/crosswake.contract.gen.ex"
 
-    assert registry["regeneration_argv"] == [
+    assert legacy["regeneration_argv"] == [
              ["mix", "crosswake.contract.gen"],
              ["mix", "crosswake.contract.gen", "--dev"]
            ]
 
-    assert registry["output_paths"] == [
+    assert legacy["output_paths"] == [
              "docs/_contract_snippet.md",
              "examples/android_shell_host/app/src/dev/assets/route_activation.json",
              "examples/android_shell_host/app/src/main/assets/route_activation.json",
@@ -187,8 +187,15 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
              "test/fixtures/bridge_contract_vectors.json"
            ]
 
-    assert registry["remediation_command"] ==
+    assert legacy["remediation_command"] ==
              "mix crosswake.contract.gen && mix crosswake.contract.gen --dev"
+
+    assert docs == %{
+             "canonical_source" => "lib/mix/tasks/crosswake.docs.sync.ex",
+             "regeneration_argv" => [["mix", "crosswake.docs.sync"]],
+             "output_paths" => ["guides/capability_map.md", "guides/support_matrix.md"],
+             "remediation_command" => "mix crosswake.docs.sync"
+           }
   end
 
   @tag :ownership_ledger
@@ -362,7 +369,7 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     Map.keys(record) |> Enum.sort() ==
       ~w(canonical_source output_paths regeneration_argv remediation_command) and
       is_binary(record["canonical_source"]) and record["canonical_source"] != "" and
-      is_list(record["regeneration_argv"]) and length(record["regeneration_argv"]) == 2 and
+      is_list(record["regeneration_argv"]) and record["regeneration_argv"] != [] and
       Enum.all?(record["regeneration_argv"], fn argv ->
         is_list(argv) and argv != [] and Enum.all?(argv, &(is_binary(&1) and &1 != ""))
       end) and
