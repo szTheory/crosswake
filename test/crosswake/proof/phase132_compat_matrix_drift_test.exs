@@ -28,6 +28,12 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
 
   @doc_path Path.join([File.cwd!(), "guides", "companion_compatibility.md"])
   @package_glob "packages/crosswake_*/mix.exs"
+  @install_path "guides/install.md"
+  @runbook_path "docs/COMPANION-PUBLISH-RUNBOOK.md"
+  @published_versions %{
+    "crosswake_rulestead" => "0.1.0",
+    "crosswake_rindle" => "unpublished"
+  }
 
   test "both extracted companion manifests and READMEs match the current core floor" do
     expected_floor = expected_core_floor()
@@ -60,6 +66,52 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
              "crosswake_rulestead",
              expected_floor
            ) == [:manifest_readme_core_floor]
+  end
+
+  test "the complete extracted-companion transaction matches install, matrix, and runbook truth" do
+    expected_floor = expected_core_floor()
+    guide = File.read!(@doc_path)
+    install = File.read!(@install_path)
+    runbook = File.read!(@runbook_path)
+
+    assert readme_dependency_requirement(install, "crosswake") == expected_floor
+
+    for mix_exs_path <- extracted_companion_mix_files() do
+      package = package_name(mix_exs_path)
+      manifest_floor = extract_crosswake_requirement(mix_exs_path)
+
+      assert package_row_cell(guide, package, "Requires `crosswake`") == "`#{manifest_floor}`"
+      assert package_row_cell(guide, package, "Current Version") == "`#{@published_versions[package]}`"
+      assert runbook_floor(runbook, package) == manifest_floor
+    end
+  end
+
+  test "the complete transaction rejects the old two-manifest-only patch" do
+    expected_floor = expected_core_floor()
+    guide = File.read!(@doc_path)
+    install = File.read!(@install_path)
+    runbook = File.read!(@runbook_path)
+
+    stale_guide =
+      Enum.reduce(Map.keys(@published_versions), guide, fn package, text ->
+        replace_package_row_floor(text, package, "~> 0.1")
+      end)
+
+    stale_install = String.replace(install, expected_floor, "~> 0.1", global: false)
+
+    stale_runbook =
+      Enum.reduce(Map.keys(@published_versions), runbook, fn package, text ->
+        replace_package_row_floor(text, package, "~> 0.1")
+      end)
+
+    refute readme_dependency_requirement(stale_install, "crosswake") == expected_floor
+
+    for package <- Map.keys(@published_versions) do
+      refute package_row_cell(stale_guide, package, "Requires `crosswake`") ==
+               "`#{expected_floor}`"
+
+      refute runbook_floor(stale_runbook, package) == expected_floor
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -357,6 +409,32 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
 
   defp maybe_error(errors, true, error), do: [error | errors]
   defp maybe_error(errors, false, _error), do: errors
+
+  defp package_row_cell(doc, package, header) do
+    with cells when is_list(cells) <- header_row_cells(doc),
+         index when is_integer(index) <- Enum.find_index(cells, &(&1 == header)),
+         line when is_binary(line) <- package_row_line(doc, package) do
+      line |> row_cells() |> Enum.at(index)
+    else
+      _ -> nil
+    end
+  end
+
+  defp runbook_floor(runbook, package) do
+    case Regex.run(~r/^\|\s*`#{Regex.escape(package)}`\s*\|\s*`([^`]+)`\s*\|$/m, runbook) do
+      [_, floor] -> floor
+      _ -> nil
+    end
+  end
+
+  defp replace_package_row_floor(doc, package, floor) do
+    Regex.replace(
+      ~r/^(\|\s*`#{Regex.escape(package)}`\s*\|.*?\|\s*)`~> 0\.2`(\s*\|.*)$/m,
+      doc,
+      "\\1`#{floor}`\\2",
+      global: false
+    )
+  end
 
   defp package_name(mix_exs_path) do
     mix_exs_path
