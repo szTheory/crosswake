@@ -196,6 +196,13 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
              "output_paths" => ["guides/capability_map.md", "guides/support_matrix.md"],
              "remediation_command" => "mix crosswake.docs.sync"
            }
+
+    tracked = System.cmd("git", ["ls-files", "-z"]) |> elem(0) |> String.split("\0")
+
+    for registry <- [legacy, docs] do
+      assert registry["canonical_source"] in tracked
+      assert File.regular?(registry["canonical_source"])
+    end
   end
 
   @tag :ownership_ledger

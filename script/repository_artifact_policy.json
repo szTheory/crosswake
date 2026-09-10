@@ -119,6 +119,17 @@
         "test/fixtures/bridge_contract_vectors.json"
       ],
       "remediation_command": "mix crosswake.contract.gen && mix crosswake.contract.gen --dev"
+    },
+    {
+      "canonical_source": "lib/mix/tasks/crosswake.docs.sync.ex",
+      "regeneration_argv": [
+        ["mix", "crosswake.docs.sync"]
+      ],
+      "output_paths": [
+        "guides/capability_map.md",
+        "guides/support_matrix.md"
+      ],
+      "remediation_command": "mix crosswake.docs.sync"
     }
   ],
   "forbidden_tracked": [

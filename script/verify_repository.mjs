@@ -52,6 +52,10 @@ function validateMatchers(records, label) {
   }
 }
 
+function pathsOverlap(left, right) {
+  return left === right || left.startsWith(`${right}/`) || right.startsWith(`${left}/`);
+}
+
 export function validateArtifactPolicy(policy) {
   sameKeys(policy, artifactPolicyKeys, "artifact policy");
   if (policy.schema_version !== 1) throw new Error("artifact policy schema is unsupported");
@@ -75,13 +79,20 @@ export function validateArtifactPolicy(policy) {
     safeRelative(fixture.path, "safe fixture path");
     if (!fixture.forbidden_category || !fixture.purpose) throw new Error("safe fixture is empty");
   }
+  const canonicalSources = [];
+  const generatedOutputs = [];
   for (const contract of policy.generated_contracts) {
     sameKeys(contract, generatedContractKeys, "generated contract");
     safeRelative(contract.canonical_source, "generated canonical source");
-    if (!Array.isArray(contract.regeneration_argv) || contract.regeneration_argv.length !== 2 || !Array.isArray(contract.output_paths) || contract.output_paths.length === 0 || contract.output_paths.join("\0") !== [...contract.output_paths].sort().join("\0") || !contract.remediation_command) throw new Error("generated contract record is empty or unordered");
+    if (!Array.isArray(contract.regeneration_argv) || contract.regeneration_argv.length === 0 || !Array.isArray(contract.output_paths) || contract.output_paths.length === 0 || contract.output_paths.join("\0") !== [...contract.output_paths].sort().join("\0") || new Set(contract.output_paths).size !== contract.output_paths.length || typeof contract.remediation_command !== "string" || !contract.remediation_command) throw new Error("generated contract record is empty, duplicated, or unordered");
     for (const argv of contract.regeneration_argv) if (!Array.isArray(argv) || argv.length === 0 || argv.some(part => typeof part !== "string" || !part || /[;&|`\n\r]/.test(part))) throw new Error("generated contract argv must be fixed");
     for (const output of contract.output_paths) safeRelative(output, "generated output");
+    canonicalSources.push(contract.canonical_source);
+    generatedOutputs.push(...contract.output_paths);
   }
+  if (new Set(canonicalSources).size !== canonicalSources.length) throw new Error("generated canonical sources must be unique");
+  for (let index = 0; index < generatedOutputs.length; index += 1) for (let other = index + 1; other < generatedOutputs.length; other += 1) if (pathsOverlap(generatedOutputs[index], generatedOutputs[other])) throw new Error("generated outputs must be unique and non-overlapping");
+  for (const source of canonicalSources) for (const output of generatedOutputs) if (pathsOverlap(source, output)) throw new Error("generated sources and outputs must not overlap");
   return policy;
 }
 
@@ -228,9 +239,12 @@ function artifactFailure(policy, root) {
 
 function generatedContractFailure(policy, root, options = {}) {
   const generatorSpawn = options.generatorSpawn ?? ((command, args, spawnOptions) => spawnSync(command, args, { ...spawnOptions, encoding: "utf8" }));
+  const tracked = new Set(trackedPaths(root));
   for (const contract of policy.generated_contracts) {
     const snapshots = new Map();
     const beforePaths = gitPathSet(root);
+    const source = path.resolve(root, contract.canonical_source);
+    if (!tracked.has(contract.canonical_source) || !isInside(root, source) || !existsSync(source) || lstatSync(source).isSymbolicLink()) return { category: "generated_contract_missing", path: contract.canonical_source, remediation_command: contract.remediation_command };
     for (const relativePath of contract.output_paths) {
       const absolute = path.resolve(root, relativePath);
       if (!isInside(root, absolute) || !existsSync(absolute) || lstatSync(absolute).isSymbolicLink()) return { category: "generated_contract_missing", path: relativePath, remediation_command: contract.remediation_command };
@@ -320,10 +334,10 @@ export function runVerification(options = {}) {
   const manifest = validateStageManifest(options.manifest ?? loadStageManifest());
   validateCiParity(manifest, options.workflowSource ?? readFileSync(workflowPath, "utf8"));
   const enforceArtifactPolicy = options.enforceArtifactPolicy !== false;
+  const root = realpathSync(options.repoRoot ?? repoRoot);
   const artifactPolicy = enforceArtifactPolicy ? validateArtifactPolicy(options.artifactPolicy ?? loadArtifactPolicy()) : null;
   const selection = options.selection ?? "all";
   const selected = selectStages(manifest, selection);
-  const root = realpathSync(options.repoRoot ?? repoRoot);
   const suppliedRunRoot = Boolean(options.runRoot);
   const runRoot = options.runRoot ?? mkdtempSync(path.join(tmpdir(), "crosswake-repository-verify."));
   const records = [];
