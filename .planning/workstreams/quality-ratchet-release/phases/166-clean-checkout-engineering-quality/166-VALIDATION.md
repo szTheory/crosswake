@@ -8,7 +8,7 @@ created: "2026-09-09"
 completed: "2026-09-10"
 validated: "2026-09-10"
 supported_code_sha: "d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b"
-audited_head_sha: "f9bf7eb2d7395599c6234ff618fc3589c95bd541"
+audited_head_sha: "d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b"
 ---
 
 # Phase 166 — Validation Strategy
@@ -24,7 +24,9 @@ audited_head_sha: "f9bf7eb2d7395599c6234ff618fc3589c95bd541"
 | Recurring gate | `script/check_phase166_clean_checkout_engineering_quality.sh` |
 | Canonical capture | `script/run_repository_evidence_environment.sh` through the committed Plan 166-07 capture route |
 | Supported-code identity | `d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b` |
+| Evidence reconciliation commit | `66530c882ba81e8a362f93bc3dc8d8534136be8d` |
 | Canonical result | PASS: nine supported stages, empty and identical NUL-safe snapshots, unchanged index, owned cleanup PASS |
+| Ownership scope | 244 non-planning candidates, with 244 closed ledger rows |
 | Measured final capture runtime | approximately 15 minutes on the declared Darwin/arm64 evidence environment |
 
 ## Per-Requirement Results
@@ -56,7 +58,7 @@ audited_head_sha: "f9bf7eb2d7395599c6234ff618fc3589c95bd541"
 
 ## Evidence-Only Reconciliation
 
-The canonical JSON, deterministic Markdown rendering, ownership ledger, and this validation record are the exact planning-only delta written after the supported-code commit. Their later commit is intentionally excluded from the supported-code identity; it records evidence for `d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b` and does not recursively claim to evidence itself.
+The canonical JSON, deterministic Markdown rendering, ownership ledger, and this validation record are the exact planning-only delta written after the supported-code commit. Repository commit `66530c882ba81e8a362f93bc3dc8d8534136be8d` contains exactly those four paths. It is intentionally excluded from the supported-code identity; it records evidence for `d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b` and does not recursively claim to evidence itself.
 
 ## Unresolved Flagged Assumptions
 
@@ -125,3 +127,22 @@ later evidence-only ledger row count.
 The code/security audit identity above remains `f9bf7eb2...` because `166-REVIEW.md` and
 `166-SECURITY.md` were intentionally not rewritten. The replacement exact-commit capture is the
 current validation authority for the bounded UI-review source delta.
+
+## Post-UI Nyquist Re-Audit
+
+**Audit target:** `d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b`
+
+The production evidence verifier and ownership validator both pass against the replacement
+supported-code SHA. Repository history resolves `66530c88` to
+`66530c882ba81e8a362f93bc3dc8d8534136be8d`, whose delta from the supported-code commit contains
+exactly the canonical JSON, deterministic Markdown, ownership ledger, and validation record. The
+base-to-supported-code diff contains 244 non-planning candidates, and the ledger contains exactly
+244 candidate rows. The canonical evidence records all nine stages as `PASS`, empty and equal
+initial/final snapshots, an unchanged index, and cleanup `PASS`.
+
+| Requirement | Behavioral command | Observed result | Coverage |
+| --- | --- | --- | --- |
+| ENG-01 | `node --test test/js/repository_verification.test.mjs` and canonical evidence verification | PASS: 25/25 behavioral tests and all nine canonical stages green. | FILLED |
+| ENG-02 | `python3 script/check_phase166_ownership_ledger.py --ledger <ledger> --evidence <canonical-json>` | PASS: exact SHA/evidence binding and all 244 candidates closed. | FILLED |
+| ENG-03 | `script/capture_repository_verification_evidence.sh --verify <canonical-json>` | PASS: empty/equal snapshots, unchanged index, and owned cleanup green. | FILLED |
+| ENG-04 | `ASDF_ELIXIR_VERSION=1.19.5-otp-28 ASDF_ERLANG_VERSION=28.4.1 script/check_phase166_clean_checkout_engineering_quality.sh` | PASS: bounded evidence, privacy controls, CI authority, browser mode, and repository-quality contracts. | FILLED |
