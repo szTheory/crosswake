@@ -95,7 +95,12 @@ For the full proof command reference: [examples/QUICK_START.md](https://github.c
 
 ### Evaluating Crosswake
 
-Start with:
+**Current answer:** Crosswake is a Phoenix-first route-policy and runtime-contract system;
+it assigns one explicit owner to each managed route and fails closed when that contract
+cannot be satisfied. Start with the architecture guide for the model, then use the
+[canonical support matrix](guides/support_matrix.md) for current support and proof detail.
+
+Use this map:
 
 - [guides/architecture.md](guides/architecture.md) for the system mental model from route declaration to runtime owner or denial
 - [guides/route_policy.md](guides/route_policy.md) for the start-here route-owner map
@@ -108,7 +113,9 @@ Start with:
 
 ### Integrating Crosswake
 
-Use the current host-owned path:
+**Current answer:** your Phoenix router owns route declarations and each generated shell is host-owned.
+Crosswake owns compilation, compatibility checks, and bounded diagnostics. Use this current path,
+then let `mix crosswake.doctor` name the exact owner or action when proof cannot proceed:
 
 ```bash
 mix deps.get
