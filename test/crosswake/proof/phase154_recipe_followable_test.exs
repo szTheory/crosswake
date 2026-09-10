@@ -138,7 +138,9 @@ defmodule Crosswake.Proof.Phase154RecipeFollowableTest do
   # ---------------------------------------------------------------------------
 
   describe "following the recipe turns the gate GREEN" do
-    test "a synthetic control added by every followable step passes the real raiser", %{root: root} do
+    test "a synthetic control added by every followable step passes the real raiser", %{
+      root: root
+    } do
       assert run_guard(root, @all_steps) == :ok
     end
 
@@ -450,7 +452,11 @@ defmodule Crosswake.Proof.Phase154RecipeFollowableTest do
 
     File.mkdir_p!(Path.join(root, "lib/crosswake"))
     File.cp_r!(Path.join(cwd, "lib/crosswake/bridge"), Path.join(root, "lib/crosswake/bridge"))
-    File.cp!(Path.join(cwd, "lib/crosswake/bridge.ex"), Path.join(root, "lib/crosswake/bridge.ex"))
+
+    File.cp!(
+      Path.join(cwd, "lib/crosswake/bridge.ex"),
+      Path.join(root, "lib/crosswake/bridge.ex")
+    )
 
     for relative <- @native_relative_paths do
       target = Path.join(root, relative)

@@ -56,9 +56,7 @@ defmodule Crosswake.Proof.Phase65DiagnosticExportSeamTest do
   @tag :diag_01
   test "DiagnosticExport module source contains no HTTP-client reference" do
     source =
-      File.read!(
-        Path.expand("lib/crosswake/shell/diagnostic_export.ex", File.cwd!())
-      )
+      File.read!(Path.expand("lib/crosswake/shell/diagnostic_export.ex", File.cwd!()))
 
     http_clients = ["Req.", "Finch.", "HTTPoison.", "Mint.", ":httpc"]
 
@@ -164,7 +162,17 @@ defmodule Crosswake.Proof.Phase65DiagnosticExportSeamTest do
   @tag :diag_02
   test "DiagnosticExport.exit_reasons/0 covers the required closed set" do
     exit_reasons = DiagnosticExport.exit_reasons()
-    required = [:crash, :anr, :low_memory, :user_requested, :hang, :cpu_resource_limit, :abnormal_exit, :other]
+
+    required = [
+      :crash,
+      :anr,
+      :low_memory,
+      :user_requested,
+      :hang,
+      :cpu_resource_limit,
+      :abnormal_exit,
+      :other
+    ]
 
     for reason <- required do
       assert reason in exit_reasons,
@@ -257,7 +265,8 @@ defmodule Crosswake.Proof.Phase65DiagnosticExportSeamTest do
 
   @tag :diag_02
   test "fixture native_android_anr normalizes against to_map/1 output" do
-    {:ok, nd} = DiagnosticExport.new_native_diagnostic(%{source: :app_exit_info, exit_reason: :anr})
+    {:ok, nd} =
+      DiagnosticExport.new_native_diagnostic(%{source: :app_exit_info, exit_reason: :anr})
 
     json =
       DiagnosticExport.new_envelope!(%{
@@ -639,7 +648,8 @@ defmodule Crosswake.Proof.Phase65DiagnosticExportSeamTest do
     result = DiagnosticExport.sanitize(valid_attrs)
 
     assert match?(
-             {:ok, %DiagnosticExport.Envelope{native_diagnostic: %DiagnosticExport.NativeDiagnostic{}}},
+             {:ok,
+              %DiagnosticExport.Envelope{native_diagnostic: %DiagnosticExport.NativeDiagnostic{}}},
              result
            ),
            ProofAssertions.stable_id_message(
@@ -700,7 +710,12 @@ defmodule Crosswake.Proof.Phase65DiagnosticExportSeamTest do
   @tag :diag_04
   test "diagnostic_export_support_truth/0 entry deferred contains the 3 required atoms" do
     [entry | _] = SupportMatrix.diagnostic_export_support_truth()
-    required_deferred = [:native_diagnostic_export, :metrickit_capture, :application_exit_info_capture]
+
+    required_deferred = [
+      :native_diagnostic_export,
+      :metrickit_capture,
+      :application_exit_info_capture
+    ]
 
     for atom <- required_deferred do
       assert atom in entry.deferred,

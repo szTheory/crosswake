@@ -74,6 +74,8 @@ defmodule Crosswake.Bridge.Commands.PermissionsStatus do
     }
   end
 
-  defp normalize_alias(permission_alias) when is_atom(permission_alias), do: Atom.to_string(permission_alias)
+  defp normalize_alias(permission_alias) when is_atom(permission_alias),
+    do: Atom.to_string(permission_alias)
+
   defp normalize_alias(permission_alias) when is_binary(permission_alias), do: permission_alias
 end

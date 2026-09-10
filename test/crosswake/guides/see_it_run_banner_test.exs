@@ -81,7 +81,13 @@ defmodule Crosswake.Guides.SeeItRunBannerTest do
 
     [
       # Derived URL
-      require_contains(path, contents, url, :wrong_port, "banner must contain derived URL #{url}"),
+      require_contains(
+        path,
+        contents,
+        url,
+        :wrong_port,
+        "banner must contain derived URL #{url}"
+      ),
 
       # Route list — home, offline, bridge-proof
       require_contains(

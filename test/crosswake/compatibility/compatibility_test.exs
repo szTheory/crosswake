@@ -298,7 +298,8 @@ defmodule Crosswake.CompatibilityTest do
 
   test "commerce corridor finding axes map to canonical denial codes with recovery payloads" do
     scenarios = [
-      {:commerce_corridor_undeclared, "commerce.corridor.undeclared", %{corridor_ref: "subscription_default"}},
+      {:commerce_corridor_undeclared, "commerce.corridor.undeclared",
+       %{corridor_ref: "subscription_default"}},
       {:commerce_corridor_unsupported, "commerce.corridor.unsupported", %{}},
       {:commerce_corridor_prerequisite_missing, "commerce.corridor.prerequisite_missing",
        %{prerequisite: "backend_entitlement_contract"}},
@@ -316,9 +317,12 @@ defmodule Crosswake.CompatibilityTest do
         %Compatibility.Finding{
           axis: axis,
           route_id: "billing",
-          required: expected_details[:policy] || expected_details[:required_runtime] || "required",
-          available: expected_details[:available] || expected_details[:available_runtime] || "available",
-          subject: expected_details[:corridor_ref] || expected_details[:prerequisite] || "subject",
+          required:
+            expected_details[:policy] || expected_details[:required_runtime] || "required",
+          available:
+            expected_details[:available] || expected_details[:available_runtime] || "available",
+          subject:
+            expected_details[:corridor_ref] || expected_details[:prerequisite] || "subject",
           message: "commerce corridor denied",
           hint: "explicit remediation"
         }
@@ -562,7 +566,8 @@ defmodule Crosswake.CompatibilityTest do
             path: "/billing",
             runtime: route_runtime,
             offline: :unavailable,
-            commerce: Types.new_route_commerce(corridor_ref: "subscription_default", role: route_role),
+            commerce:
+              Types.new_route_commerce(corridor_ref: "subscription_default", role: route_role),
             allowlisted_origins: [Types.default_origin()]
           )
       }

@@ -132,8 +132,26 @@ defmodule Crosswake.Commerce.Contracts do
             }
     end
 
-    @enforce_keys [:group_id, :authority, :access, :reconciliation, :freshness, :effective, :evidence, :as_of]
-    defstruct [:group_id, :authority, :access, :reconciliation, :freshness, :effective, :evidence, :as_of]
+    @enforce_keys [
+      :group_id,
+      :authority,
+      :access,
+      :reconciliation,
+      :freshness,
+      :effective,
+      :evidence,
+      :as_of
+    ]
+    defstruct [
+      :group_id,
+      :authority,
+      :access,
+      :reconciliation,
+      :freshness,
+      :effective,
+      :evidence,
+      :as_of
+    ]
 
     @type t :: %__MODULE__{
             group_id: String.t(),
@@ -207,9 +225,9 @@ defmodule Crosswake.Commerce.Contracts do
   @freshness_vocabulary [:fresh, :stale, :unknown]
   @reconciliation_evidence_source_vocabulary [:device, :storefront, :webhook, :support]
   @reconciliation_evidence_source_by_string Map.new(
-                                           @reconciliation_evidence_source_vocabulary,
-                                           &{Atom.to_string(&1), &1}
-                                         )
+                                              @reconciliation_evidence_source_vocabulary,
+                                              &{Atom.to_string(&1), &1}
+                                            )
 
   @spec authority_vocabulary() :: [EntitlementSnapshot.AuthorityLane.state()]
   def authority_vocabulary, do: @authority_vocabulary

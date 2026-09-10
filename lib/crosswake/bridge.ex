@@ -379,7 +379,9 @@ defmodule Crosswake.Bridge do
 
   defp handle_bridge_event(@reply_event, payload, socket) do
     {:halt,
-     resolve_and_deliver(socket, correlation_id_from(payload), fn -> decode_wire_reply(payload) end)}
+     resolve_and_deliver(socket, correlation_id_from(payload), fn ->
+       decode_wire_reply(payload)
+     end)}
   end
 
   defp handle_bridge_event(@unreachable_event, payload, socket) do
@@ -803,14 +805,18 @@ defmodule Crosswake.Bridge do
 
   defp normalize_details(details) when is_map(details) do
     Enum.reduce(details, %{}, fn
-      {"failing_moment", value}, acc -> Map.put(acc, :failing_moment, normalize_failing_moment(value))
-      {key, value}, acc -> Map.put(acc, key, value)
+      {"failing_moment", value}, acc ->
+        Map.put(acc, :failing_moment, normalize_failing_moment(value))
+
+      {key, value}, acc ->
+        Map.put(acc, key, value)
     end)
   end
 
   defp normalize_details(_other), do: %{}
 
-  defp normalize_failing_moment(value) when is_atom(value) and value in @failing_moments, do: value
+  defp normalize_failing_moment(value) when is_atom(value) and value in @failing_moments,
+    do: value
 
   defp normalize_failing_moment(value) when is_binary(value) do
     if value in Enum.map(@failing_moments, &Atom.to_string/1) do

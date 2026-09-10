@@ -19,19 +19,19 @@ defmodule Crosswake.Proof.Phase129CompanionContractFreezeTest do
   # both additions AND removals fail. Change this attribute AND the @callback defs
   # in companion.ex in the SAME PR to signal intentional shape change (D-12, D-17).
   @expected_callbacks MapSet.new([
-    {:companion_id, 0},
-    {:enabled?, 1},
-    {:route_gated?, 2},
-    {:kill_switch_active?, 1},
-    {:validate_dependency, 0},
-    {:report_state, 0},
-    {:telemetry_events, 0},
-    # Added in Phase 136 (DECOUPLE):
-    {:forbidden_metadata_keys, 0},
-    {:denial_codes, 0},
-    {:evaluate_auth, 3},
-    {:auth_authority?, 0}
-  ])
+                        {:companion_id, 0},
+                        {:enabled?, 1},
+                        {:route_gated?, 2},
+                        {:kill_switch_active?, 1},
+                        {:validate_dependency, 0},
+                        {:report_state, 0},
+                        {:telemetry_events, 0},
+                        # Added in Phase 136 (DECOUPLE):
+                        {:forbidden_metadata_keys, 0},
+                        {:denial_codes, 0},
+                        {:evaluate_auth, 3},
+                        {:auth_authority?, 0}
+                      ])
 
   # Struct-bearing contract modules for the typedoc assertion (SEAM-01).
   @struct_contract_modules [
@@ -48,12 +48,12 @@ defmodule Crosswake.Proof.Phase129CompanionContractFreezeTest do
   # Change this attribute AND the mix.exs group in the SAME PR for an intentional
   # surface change.
   @expected_contract_modules MapSet.new([
-    Crosswake.Companion,
-    Crosswake.Companion.State,
-    Crosswake.Compatibility.Finding,
-    Crosswake.Compatibility.Target,
-    Crosswake.Manifest.Types.RouteEntry
-  ])
+                               Crosswake.Companion,
+                               Crosswake.Companion.State,
+                               Crosswake.Compatibility.Finding,
+                               Crosswake.Compatibility.Target,
+                               Crosswake.Manifest.Types.RouteEntry
+                             ])
 
   # Derives the "Companion Contract" module list from the single source of truth
   # in mix.exs docs/0 groups_for_modules (D-15). Returns [] until plan 129-02 lands.

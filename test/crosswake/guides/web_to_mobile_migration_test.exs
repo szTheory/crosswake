@@ -66,7 +66,8 @@ defmodule Crosswake.Guides.WebToMobileMigrationTest do
       assert guide =~ pass
     end
 
-    assert guide =~ "| Route | User job | Initial owner | Promotion reason | Required seams | Evidence |"
+    assert guide =~
+             "| Route | User job | Initial owner | Promotion reason | Required seams | Evidence |"
   end
 
   test "migration guide rejects common over-migration mistakes" do
@@ -86,7 +87,9 @@ defmodule Crosswake.Guides.WebToMobileMigrationTest do
       assert guide =~ link
     end
 
-    refute guide =~ "| Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |"
+    refute guide =~
+             "| Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |"
+
     refute guide =~ "Crosswake.mutate"
     refute guide =~ "Sync Engine (Bridge)"
     refute guide =~ "XCLocalSwiftPackageReference"

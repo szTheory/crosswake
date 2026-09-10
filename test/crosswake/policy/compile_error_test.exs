@@ -64,7 +64,12 @@ defmodule Crosswake.Policy.CompileErrorTest do
       route("/invalid-offline",
         helper: "page",
         source: [file: "test/fixtures/router_b.ex", line: 30],
-        crosswake: [id: "invalid", runtime: :offline_island, offline: :unavailable, security: :standard]
+        crosswake: [
+          id: "invalid",
+          runtime: :offline_island,
+          offline: :unavailable,
+          security: :standard
+        ]
       )
     ]
 

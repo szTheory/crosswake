@@ -1,7 +1,22 @@
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_backend.ex", __DIR__)
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_backend.ex",
+  __DIR__
+)
 
 defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
   @moduledoc """
@@ -49,7 +64,9 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
     end
 
     test ":pending — fresh + :awaiting_verification reconciliation" do
-      snap = phase34_snapshot(%{reconciliation: phase34_reconciliation_lane(:awaiting_verification)})
+      snap =
+        phase34_snapshot(%{reconciliation: phase34_reconciliation_lane(:awaiting_verification)})
+
       assert EntitlementProjection.derived_state(snap) == :pending
     end
 
@@ -57,6 +74,7 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
       # Base defaults: freshness :fresh, reconciliation :projection_refreshed, access :denied
       # granted_snapshot? returns false (access :denied) -> fallthrough to :denied
       snap = phase34_snapshot()
+
       assert EntitlementProjection.derived_state(snap) == :denied,
              "base snapshot with access :denied and reconciliation :projection_refreshed should fall through to :denied"
     end
@@ -80,7 +98,9 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
     end
 
     test ":pending origin — derived_state on :awaiting_verification + fresh snapshot == :pending" do
-      snap = phase34_snapshot(%{reconciliation: phase34_reconciliation_lane(:awaiting_verification)})
+      snap =
+        phase34_snapshot(%{reconciliation: phase34_reconciliation_lane(:awaiting_verification)})
+
       assert EntitlementProjection.derived_state(snap) == :pending
     end
 
@@ -100,12 +120,14 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
     test "D-06.1: authority_mutation_allowed_from_evidence?/1 returns false for mock evidence (lib contract)" do
       evidence = phase34_mock_evidence()
 
-      assert Crosswake.Commerce.Reconciliation.authority_mutation_allowed_from_evidence?(evidence) == false,
+      assert Crosswake.Commerce.Reconciliation.authority_mutation_allowed_from_evidence?(evidence) ==
+               false,
              "authority_mutation_allowed_from_evidence?/1 returns false unconditionally for any ReconciliationEvidence — this is the lib contract and the anti-grant fence anchor"
     end
 
     test "D-06.2: project_snapshot/2 rejects unverified (:awaiting_verification) reconciliation state" do
-      unverified = phase34_snapshot(%{reconciliation: phase34_reconciliation_lane(:awaiting_verification)})
+      unverified =
+        phase34_snapshot(%{reconciliation: phase34_reconciliation_lane(:awaiting_verification)})
 
       assert {:error, :unverified_reconciliation_outcome} =
                EntitlementProjection.project_snapshot(nil, unverified),
@@ -163,7 +185,14 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
       end
 
       # No require line may contain a forbidden runtime-path substring
-      forbidden_runtime_substrings = ["_live", "endpoint", "application", "router", "repo", "_web"]
+      forbidden_runtime_substrings = [
+        "_live",
+        "endpoint",
+        "application",
+        "router",
+        "repo",
+        "_web"
+      ]
 
       for line <- require_call_lines do
         for forbidden <- forbidden_runtime_substrings do
@@ -192,12 +221,14 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
 
     test "proof uses async: false (required for hermetic determinism)" do
       source = File.read!(__ENV__.file)
+
       assert String.contains?(source, "async: false"),
              "proof must use ExUnit.Case, async: false for hermetic determinism"
     end
 
     test "proof is untagged — no @moduletag :requires_example_host (merge-blocking lane)" do
       source = File.read!(__ENV__.file) |> String.downcase()
+
       # A real @moduletag directive always appears at the start of a line (after optional whitespace).
       # The moduledoc prose mentioning it is embedded mid-line inside documentation text, not at line start.
       # Use a line-by-line scan: filter lines that are actual @moduletag directives (start of line),

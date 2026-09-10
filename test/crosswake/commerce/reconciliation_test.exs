@@ -7,14 +7,14 @@ defmodule Crosswake.Commerce.ReconciliationTest do
   describe "reconciliation outcome vocabulary" do
     test "distinguishes evidence processing outcomes from authority semantics" do
       assert Reconciliation.outcome_vocabulary() == [
-        :pending_purchase,
-        :pending_restore,
-        :awaiting_verification,
-        :projection_refreshed,
-        :conflict,
-        :verification_failed,
-        :stale_authority
-      ]
+               :pending_purchase,
+               :pending_restore,
+               :awaiting_verification,
+               :projection_refreshed,
+               :conflict,
+               :verification_failed,
+               :stale_authority
+             ]
 
       assert Reconciliation.reconciliation_outcome?(:pending_purchase)
       assert Reconciliation.reconciliation_outcome?(:pending_restore)
@@ -95,7 +95,9 @@ defmodule Crosswake.Commerce.ReconciliationTest do
     test "rejects invalid source vocabulary before creating evidence results" do
       evidence = sample_evidence(%{source: :device_callback})
 
-      assert {:error, [source: {:invalid_source, details}]} = Reconciliation.ingest_evidence(evidence)
+      assert {:error, [source: {:invalid_source, details}]} =
+               Reconciliation.ingest_evidence(evidence)
+
       assert Keyword.fetch!(details, :source) == :device_callback
     end
 

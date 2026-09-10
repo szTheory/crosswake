@@ -119,7 +119,16 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
       assert File.exists?(path), "ExDoc extra #{path} must exist"
     end
 
-    assert Keyword.keys(groups) == [:Start, :Adopt, :"Runtime Owners", :Truth, :Telemetry, :"Extension Authors", :"Advanced/Companions"]
+    assert Keyword.keys(groups) == [
+             :Start,
+             :Adopt,
+             :"Runtime Owners",
+             :Truth,
+             :Telemetry,
+             :"Extension Authors",
+             :"Advanced/Companions"
+           ]
+
     assert "guides/route_policy.md" in groups[:Start]
     assert "guides/web_to_mobile_migration.md" in groups[:Adopt]
     assert "guides/support_matrix.md" in groups[:Truth]
@@ -642,7 +651,8 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
       Enum.reduce(lines, {[], nil, []}, fn line, {sections, heading, acc_lines} ->
         trimmed = String.trim(line)
 
-        if historical_changelog_line?(trimmed) and Regex.match?(~r/^## \[\d+\.\d+\.\d+\]/, trimmed) do
+        if historical_changelog_line?(trimmed) and
+             Regex.match?(~r/^## \[\d+\.\d+\.\d+\]/, trimmed) do
           completed = if heading, do: [{heading, Enum.reverse(acc_lines)}], else: []
           {sections ++ completed, line, []}
         else

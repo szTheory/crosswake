@@ -21,7 +21,8 @@ defmodule Crosswake.Sync.EventLogTest do
       assert entry.sync_seam == "seam-1"
       assert entry.operation == :create
       assert entry.status == :queued
-      assert entry.payload == %{} # default empty map
+      # default empty map
+      assert entry.payload == %{}
     end
 
     test "enforces required keys" do

@@ -16,16 +16,21 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
   @matcher_kinds ~w(exact segment suffix tree)
 
   @tag :tmp_dir
-  test "root formatter contract covers repository Elixir sources and rejects unformatted input", %{
-    tmp_dir: tmp
-  } do
+  test "root formatter contract covers repository Elixir sources and rejects unformatted input",
+       %{
+         tmp_dir: tmp
+       } do
     {formatter, _binding} = Code.eval_file(".formatter.exs")
 
     assert formatter == [inputs: ["{mix,.formatter}.exs", "{config,lib,test}/**/*.{ex,exs}"]]
 
     File.write!(Path.join(tmp, ".formatter.exs"), inspect(formatter, pretty: true))
     File.mkdir_p!(Path.join(tmp, "lib"))
-    File.write!(Path.join(tmp, "lib/unformatted.ex"), "defmodule Unformatted do\n def value,do: :ok\nend\n")
+
+    File.write!(
+      Path.join(tmp, "lib/unformatted.ex"),
+      "defmodule Unformatted do\n def value,do: :ok\nend\n"
+    )
 
     {output, status} =
       System.cmd("mix", ["format", "--check-formatted"], cd: tmp, stderr_to_stdout: true)
@@ -35,7 +40,9 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
   end
 
   @tag :tmp_dir
-  test "dependency-security fixture proof resolves the repository through physical paths", %{tmp_dir: tmp} do
+  test "dependency-security fixture proof resolves the repository through physical paths", %{
+    tmp_dir: tmp
+  } do
     source = File.cwd!()
     link = Path.join(tmp, "crosswake-link")
     File.ln_s!(source, link)
@@ -59,7 +66,8 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
   test "fresh-checkout companion verification refuses lockfile drift" do
     aliases = File.read!("mix.exs")
 
-    for package <- ~w(crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline) do
+    for package <-
+          ~w(crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline) do
       assert aliases =~ "cmd --cd packages/#{package} mix deps.get --check-locked"
     end
   end
@@ -263,6 +271,7 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     workflow = File.read!(@ci_workflow_path)
 
     assert length(manifest["proof_leaves"]) == 44
+
     assert manifest["required_control_nodes"] == [
              %{
                "node_id" => "classify-change",
@@ -288,7 +297,9 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
       assert workflow =~ owner["command"]
     end
 
-    guard = Enum.find(leaf_manifest["proof_leaves"], &(&1["leaf_id"] == "guard-02-generate-and-diff"))
+    guard =
+      Enum.find(leaf_manifest["proof_leaves"], &(&1["leaf_id"] == "guard-02-generate-and-diff"))
+
     e2e = Enum.find(leaf_manifest["proof_leaves"], &(&1["leaf_id"] == "e2e-proof"))
     route_tour = Enum.find(leaf_manifest["proof_leaves"], &(&1["leaf_id"] == "route-tour-proof"))
 
@@ -296,7 +307,10 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
              "script/verify_repository.sh --stage repository-cleanliness"
 
     assert e2e["remediation_command"] == "script/verify_repository.sh --stage browser-proof"
-    assert route_tour["remediation_command"] == "script/verify_repository.sh --stage browser-proof"
+
+    assert route_tour["remediation_command"] ==
+             "script/verify_repository.sh --stage browser-proof"
+
     refute workflow =~ "git add -A"
     refute workflow =~ "git diff --cached --exit-code"
   end

@@ -38,7 +38,8 @@ defmodule Crosswake.Companions.StoreKit.Evidence do
     with :ok <- require_present(attrs, :original_transaction_id),
          :ok <- require_evidence_identity(attrs),
          {:ok, event_kind} <- ProviderEvidence.canonical_event_kind(Map.get(attrs, :event_kind)),
-         {:ok, source} <- Contracts.canonical_reconciliation_evidence_source(Map.get(attrs, :source)),
+         {:ok, source} <-
+           Contracts.canonical_reconciliation_evidence_source(Map.get(attrs, :source)),
          {:ok, environment} <- normalize_environment(Map.get(attrs, :environment)),
          {:ok, evidence} <- build(attrs, event_kind, source, environment) do
       {:ok, evidence}
@@ -47,7 +48,8 @@ defmodule Crosswake.Companions.StoreKit.Evidence do
 
   def new(_attrs), do: {:error, :invalid_attrs}
 
-  @spec to_reconciliation_evidence(t()) :: {:ok, Contracts.ReconciliationEvidence.t()} | {:error, term()}
+  @spec to_reconciliation_evidence(t()) ::
+          {:ok, Contracts.ReconciliationEvidence.t()} | {:error, term()}
   def to_reconciliation_evidence(%__MODULE__{} = evidence) do
     with {:ok, evidence_ref} <- evidence_ref(evidence) do
       {:ok,
@@ -91,7 +93,8 @@ defmodule Crosswake.Companions.StoreKit.Evidence do
       value when is_binary(value) ->
         if byte_size(String.trim(value)) > 0, do: :ok, else: {:error, {:missing_field, key}}
 
-      _ -> {:error, {:missing_field, key}}
+      _ ->
+        {:error, {:missing_field, key}}
     end
   end
 
@@ -104,13 +107,19 @@ defmodule Crosswake.Companions.StoreKit.Evidence do
     end
   end
 
-  defp normalize_environment(environment) when environment in [:sandbox, :production], do: {:ok, environment}
+  defp normalize_environment(environment) when environment in [:sandbox, :production],
+    do: {:ok, environment}
 
   defp normalize_environment(environment),
-    do: {:error, {:invalid_environment, [environment: environment, allowed: [:sandbox, :production]]}}
+    do:
+      {:error,
+       {:invalid_environment, [environment: environment, allowed: [:sandbox, :production]]}}
 
-  defp evidence_ref(%__MODULE__{transaction_id: value}) when is_binary(value) and byte_size(value) > 0, do: {:ok, value}
-  defp evidence_ref(%__MODULE__{notification_uuid: value}) when is_binary(value) and byte_size(value) > 0, do: {:ok, value}
+  defp evidence_ref(%__MODULE__{transaction_id: value})
+       when is_binary(value) and byte_size(value) > 0, do: {:ok, value}
+
+  defp evidence_ref(%__MODULE__{notification_uuid: value})
+       when is_binary(value) and byte_size(value) > 0, do: {:ok, value}
 
   defp evidence_ref(%__MODULE__{signed_transaction_info_digest: value})
        when is_binary(value) and byte_size(value) > 0,

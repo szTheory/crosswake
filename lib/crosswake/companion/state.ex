@@ -17,8 +17,23 @@ defmodule Crosswake.Companion.State do
   """
   @moduledoc since: "0.1.0"
 
-  @enforce_keys [:companion_id, :enabled, :dependency_status, :gate_status, :kill_switch_status, :checked_at]
-  defstruct [:companion_id, :enabled, :dependency_status, :gate_status, :kill_switch_status, :checked_at, details: %{}]
+  @enforce_keys [
+    :companion_id,
+    :enabled,
+    :dependency_status,
+    :gate_status,
+    :kill_switch_status,
+    :checked_at
+  ]
+  defstruct [
+    :companion_id,
+    :enabled,
+    :dependency_status,
+    :gate_status,
+    :kill_switch_status,
+    :checked_at,
+    details: %{}
+  ]
 
   @type dependency_status :: :present | {:missing, [module()]}
   @type gate_status :: :active | :inactive | :unconfigured | {:rolling_out, non_neg_integer()}

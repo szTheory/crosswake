@@ -183,27 +183,30 @@ defmodule Crosswake.Proof.Phase41GatingDoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/gated-known", Crosswake.TestSupport.StudySessionLive,
+        live("/gated-known", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "gated_known",
             runtime: :live_view,
             gated_by: :test_gating_companion
           ]
+        )
 
-        live "/gated-unknown", Crosswake.TestSupport.StudySessionLive,
+        live("/gated-unknown", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "gated_unknown",
             runtime: :live_view,
             gated_by: :unregistered_companion
           ]
+        )
 
-        live "/gated-fallback-missing", Crosswake.TestSupport.StudySessionLive,
+        live("/gated-fallback-missing", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "gated_fallback_missing",
             runtime: :live_view,
             gated_by: :test_gating_companion,
             on_unavailable: {:fallback_phoenix, :missing_route}
           ]
+        )
       end
     end
   end
@@ -214,8 +217,9 @@ defmodule Crosswake.Proof.Phase41GatingDoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
-        live "/home", Crosswake.TestSupport.StudySessionLive,
+        live("/home", Crosswake.TestSupport.StudySessionLive,
           crosswake: [id: "home", runtime: :live_view]
+        )
       end
     end
   end
@@ -320,6 +324,7 @@ defmodule Crosswake.Proof.Phase41GatingDoctorTest do
 
     route_ids_found = Enum.map(advisory_findings, & &1.details.route_id) |> MapSet.new()
     expected_ids = MapSet.new(["gated_known", "gated_unknown", "gated_fallback_missing"])
+
     assert route_ids_found == expected_ids,
            "expected advisory findings for #{inspect(MapSet.to_list(expected_ids))}, got #{inspect(MapSet.to_list(route_ids_found))}"
   end
@@ -439,7 +444,8 @@ defmodule Crosswake.Proof.Phase41GatingDoctorTest do
 
     warning_finding =
       Enum.find(report.findings, fn f ->
-        f.code == "gating.fallback_route_unknown" && f.details[:route_id] == "gated_fallback_missing"
+        f.code == "gating.fallback_route_unknown" &&
+          f.details[:route_id] == "gated_fallback_missing"
       end)
 
     assert warning_finding != nil,

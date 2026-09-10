@@ -113,6 +113,7 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
 
     result =
       apply(Ecto.Adapters.SQL, :query!, [repo, "PRAGMA journal_mode=WAL", [], [log: false]])
+
     assert result.rows == [["wal"]]
 
     apply(Ecto.Adapters.SQL, :query!, [
@@ -194,6 +195,7 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
     assert source =~ "MIX_ENV=test mix compile"
     assert source =~ ~s(OWNED_TMP_DIR="${snapshot_dir}/runtime")
     assert source =~ ~s(export TMPDIR="${OWNED_TMP_DIR}")
+
     assert source =~
              ~r/MIX_ENV=dev mix deps\.get\s+MIX_ENV=dev mix compile\s+\)\s+\(\s+export TMPDIR="\$\{OWNED_TMP_DIR\}"\s+cd "\$\{ROOT_DIR\}"\s+MIX_ENV=test mix compile\s+\)\s+if \[ "\$\{mode\}" != "--matrix-only" \]/s
 

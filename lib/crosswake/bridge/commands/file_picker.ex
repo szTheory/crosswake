@@ -61,7 +61,8 @@ defmodule Crosswake.Bridge.Commands.FilePicker do
      %Request{
        transfer_id: attrs |> Keyword.fetch!(:transfer_id) |> normalize_identifier("transfer_id"),
        media_types: attrs |> Keyword.get(:media_types, []) |> normalize_media_types(),
-       multiple_allowed: attrs |> Keyword.get(:multiple_allowed, false) |> normalize_boolean("multiple_allowed")
+       multiple_allowed:
+         attrs |> Keyword.get(:multiple_allowed, false) |> normalize_boolean("multiple_allowed")
      }}
   end
 
@@ -130,6 +131,7 @@ defmodule Crosswake.Bridge.Commands.FilePicker do
   defp normalize_optional_size_bytes(value) when is_integer(value) and value >= 0, do: value
 
   defp normalize_optional_size_bytes(value) do
-    raise ArgumentError, "size_bytes must be a non-negative integer or nil, got: #{inspect(value)}"
+    raise ArgumentError,
+          "size_bytes must be a non-negative integer or nil, got: #{inspect(value)}"
   end
 end

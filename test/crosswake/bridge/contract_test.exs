@@ -163,12 +163,13 @@ defmodule Crosswake.Bridge.ContractTest do
 
     assert is_nil(request.thread_id)
 
-    reply = Contract.new_reply(
-      command: "haptics.impact",
-      route_id: "dashboard",
-      correlation_id: "corr-1",
-      status: :ok
-    )
+    reply =
+      Contract.new_reply(
+        command: "haptics.impact",
+        route_id: "dashboard",
+        correlation_id: "corr-1",
+        status: :ok
+      )
 
     assert is_nil(reply.thread_id)
 
@@ -179,12 +180,13 @@ defmodule Crosswake.Bridge.ContractTest do
         message: "origin mismatch"
       )
 
-    denial = Denial.new(
-      command: "haptics.impact",
-      route_id: "dashboard",
-      correlation_id: "corr-1",
-      denial: shell_denial
-    )
+    denial =
+      Denial.new(
+        command: "haptics.impact",
+        route_id: "dashboard",
+        correlation_id: "corr-1",
+        denial: shell_denial
+      )
 
     assert is_nil(denial.thread_id)
   end
@@ -313,12 +315,13 @@ defmodule Crosswake.Bridge.ContractTest do
         message: "origin mismatch"
       )
 
-    denial_nil = Denial.new(
-      command: "haptics.impact",
-      route_id: "dashboard",
-      correlation_id: "corr-d1",
-      denial: shell_denial
-    )
+    denial_nil =
+      Denial.new(
+        command: "haptics.impact",
+        route_id: "dashboard",
+        correlation_id: "corr-d1",
+        denial: shell_denial
+      )
 
     map_nil = Denial.to_map(denial_nil)
     refute Map.has_key?(map_nil, "thread_id")

@@ -119,39 +119,94 @@ defmodule Crosswake.Guides.ReadmeSeeItRunTest do
 
     [
       # Hero command
-      require_contains(path, contents, @hero_command, :missing_command,
-        "section must front the hero command #{@hero_command}"),
+      require_contains(
+        path,
+        contents,
+        @hero_command,
+        :missing_command,
+        "section must front the hero command #{@hero_command}"
+      ),
 
       # Source-derived URL — catches stale port
-      require_contains(path, contents, "http://localhost:#{port}", :wrong_port,
-        "section must reference the source-derived URL http://localhost:#{port}"),
+      require_contains(
+        path,
+        contents,
+        "http://localhost:#{port}",
+        :wrong_port,
+        "section must reference the source-derived URL http://localhost:#{port}"
+      ),
 
       # Well-formed hero image — straight-quote src delimiter + canonical URL.
       # A smart-quote src=”...” breaks rendering and fails this check.
-      require_contains(path, contents, ~s(src="#{@hero_image_url}"), :broken_image,
-        "hero <img> must use a straight-quote src=\"#{@hero_image_url}\" (no smart quotes)"),
+      require_contains(
+        path,
+        contents,
+        ~s(src="#{@hero_image_url}"),
+        :broken_image,
+        "hero <img> must use a straight-quote src=\"#{@hero_image_url}\" (no smart quotes)"
+      ),
 
       # Three route owners from router.ex
-      require_contains(path, contents, "`/offline`", :missing_route,
-        "section must name the /offline route"),
-      require_contains(path, contents, "`/bridge-proof`", :missing_route,
-        "section must name the /bridge-proof route"),
-      require_regex(path, contents, ~r/`\/`\s+—\s+home/, :missing_route,
-        "section must name the `/` home route owner"),
+      require_contains(
+        path,
+        contents,
+        "`/offline`",
+        :missing_route,
+        "section must name the /offline route"
+      ),
+      require_contains(
+        path,
+        contents,
+        "`/bridge-proof`",
+        :missing_route,
+        "section must name the /bridge-proof route"
+      ),
+      require_regex(
+        path,
+        contents,
+        ~r/`\/`\s+—\s+home/,
+        :missing_route,
+        "section must name the `/` home route owner"
+      ),
 
       # Honest native posture labels (D-15, D-06)
-      require_contains(path, contents, "advisory", :missing_native_label,
-        "section must carry the 'advisory' posture word"),
-      require_contains(path, contents, "emulator evidence", :missing_native_label,
-        "section must use the canonical 'emulator evidence' label"),
-      require_contains(path, contents, @legend_anchor, :missing_native_label,
-        "advisory blockquote must link to #{@legend_anchor}"),
+      require_contains(
+        path,
+        contents,
+        "advisory",
+        :missing_native_label,
+        "section must carry the 'advisory' posture word"
+      ),
+      require_contains(
+        path,
+        contents,
+        "emulator evidence",
+        :missing_native_label,
+        "section must use the canonical 'emulator evidence' label"
+      ),
+      require_contains(
+        path,
+        contents,
+        @legend_anchor,
+        :missing_native_label,
+        "advisory blockquote must link to #{@legend_anchor}"
+      ),
 
       # Forward links — never duplicate the guide, link to it
-      require_contains(path, contents, @guide_path, :missing_link,
-        "section must forward-link to #{@guide_path}"),
-      require_contains(path, contents, @quick_start_path, :missing_link,
-        "section must forward-link to #{@quick_start_path}")
+      require_contains(
+        path,
+        contents,
+        @guide_path,
+        :missing_link,
+        "section must forward-link to #{@guide_path}"
+      ),
+      require_contains(
+        path,
+        contents,
+        @quick_start_path,
+        :missing_link,
+        "section must forward-link to #{@quick_start_path}"
+      )
     ]
     |> List.flatten()
     |> Kernel.++(wrong_port_failures(path, contents, port))

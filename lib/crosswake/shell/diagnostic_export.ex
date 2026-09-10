@@ -188,8 +188,7 @@ defmodule Crosswake.Shell.DiagnosticExport do
             kind: kind(),
             correlation_id: String.t(),
             observed_at: String.t(),
-            native_diagnostic:
-              Crosswake.Shell.DiagnosticExport.NativeDiagnostic.t() | nil
+            native_diagnostic: Crosswake.Shell.DiagnosticExport.NativeDiagnostic.t() | nil
           }
   end
 
@@ -276,8 +275,11 @@ defmodule Crosswake.Shell.DiagnosticExport do
   @spec new_envelope!(map() | keyword()) :: Envelope.t()
   def new_envelope!(attrs) do
     case new_envelope(attrs) do
-      {:ok, envelope} -> envelope
-      {:error, errors} -> raise ArgumentError, "invalid DiagnosticExport envelope: #{inspect(errors)}"
+      {:ok, envelope} ->
+        envelope
+
+      {:error, errors} ->
+        raise ArgumentError, "invalid DiagnosticExport envelope: #{inspect(errors)}"
     end
   end
 
@@ -387,8 +389,12 @@ defmodule Crosswake.Shell.DiagnosticExport do
   # passes through unchanged.
   defp coerce_native_diagnostic(attrs) do
     case Map.get(attrs, :native_diagnostic) do
-      nil -> {:ok, attrs}
-      %NativeDiagnostic{} -> {:ok, attrs}
+      nil ->
+        {:ok, attrs}
+
+      %NativeDiagnostic{} ->
+        {:ok, attrs}
+
       nested when is_map(nested) ->
         case new_native_diagnostic(nested) do
           {:ok, nd} -> {:ok, Map.put(attrs, :native_diagnostic, nd)}

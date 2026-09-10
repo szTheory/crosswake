@@ -1,7 +1,22 @@
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/storefront_adapter.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex", __DIR__)
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/storefront_adapter.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex",
+  __DIR__
+)
 
 defmodule Crosswake.Proof.Phase34MockStorefrontTest do
   @moduledoc """
@@ -44,14 +59,16 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
         |> String.downcase()
 
       for token <- forbidden do
-        refute String.contains?(content, token), "mock_storefront.ex leaked provider token #{token}"
+        refute String.contains?(content, token),
+               "mock_storefront.ex leaked provider token #{token}"
       end
     end
   end
 
   describe "swap-target documentation (MOCK-03)" do
     test "source names both swap-target functions" do
-      source = File.read!("examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex")
+      source =
+        File.read!("examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex")
 
       assert String.contains?(source, "simulate_purchase"),
              "mock_storefront.ex must document simulate_purchase"
@@ -94,7 +111,11 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
 
     test "provider_reference and evidence_ref are identical when entry_id is same but correlation_id differs" do
       intent1 = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
-      intent2 = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c2_different"}
+
+      intent2 = %Contracts.PurchaseIntent{
+        entry_id: "sub_pro_monthly",
+        correlation_id: "c2_different"
+      }
 
       ev1 = MockStorefront.simulate_purchase(intent1, [])
       ev2 = MockStorefront.simulate_purchase(intent2, [])
@@ -167,7 +188,11 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
     end
 
     test "restore shares same provider_reference as purchase for the same product" do
-      purchase_intent = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
+      purchase_intent = %Contracts.PurchaseIntent{
+        entry_id: "sub_pro_monthly",
+        correlation_id: "c1"
+      }
+
       restore_intent = %Contracts.RestoreIntent{correlation_id: "c2"}
 
       purchase_ev = MockStorefront.simulate_purchase(purchase_intent, [])
@@ -231,7 +256,11 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
     end
 
     test "restore shares subject_key with purchase of the canonical product (D-06)" do
-      purchase_intent = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
+      purchase_intent = %Contracts.PurchaseIntent{
+        entry_id: "sub_pro_monthly",
+        correlation_id: "c1"
+      }
+
       restore_intent = %Contracts.RestoreIntent{correlation_id: "c2"}
 
       purchase_ev = MockStorefront.simulate_purchase(purchase_intent, [])

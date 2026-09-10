@@ -13,7 +13,15 @@ defmodule Crosswake.NativeEscape.Contract do
   defmodule Request do
     @moduledoc false
 
-    @enforce_keys [:protocol, :version, :route_id, :route_runtime, :purpose, :transfer_id, :permission_posture]
+    @enforce_keys [
+      :protocol,
+      :version,
+      :route_id,
+      :route_runtime,
+      :purpose,
+      :transfer_id,
+      :permission_posture
+    ]
     defstruct [
       :protocol,
       :version,
@@ -97,7 +105,8 @@ defmodule Crosswake.NativeEscape.Contract do
     defstruct [:reason, :message]
 
     @type t :: %__MODULE__{
-            reason: :native_screen_required | :undeclared_transfer_seam | :invalid_transfer_result,
+            reason:
+              :native_screen_required | :undeclared_transfer_seam | :invalid_transfer_result,
             message: String.t()
           }
   end

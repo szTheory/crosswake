@@ -34,7 +34,8 @@ defmodule Crosswake.Planning.ReleasePleaseConfigTest do
 
     assert [
              %{"type" => "generic", "path" => @android_gradle_path}
-           ] == get_in(config, ["packages", "packages/crosswake-shell-core-android", "extra-files"])
+           ] ==
+             get_in(config, ["packages", "packages/crosswake-shell-core-android", "extra-files"])
   end
 
   defp release_please_version(contents, regex) do

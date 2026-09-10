@@ -48,7 +48,6 @@ defmodule Crosswake.Bridge.PushTest do
     |> Plug.Test.init_test_session(session)
   end
 
-
   defp dispatch!(view, params) do
     render_click(view, "dispatch", params)
     assert_push_event(view, "crosswake:bridge", envelope)
@@ -204,7 +203,8 @@ defmodule Crosswake.Bridge.PushTest do
 
       render_click(view, "read_dispatched", %{"ref" => "never_pushed"})
 
-      assert reply_element(view, "dispatched-envelope") == "<div id=\"dispatched-envelope\"></div>"
+      assert reply_element(view, "dispatched-envelope") ==
+               "<div id=\"dispatched-envelope\"></div>"
     end
   end
 
@@ -345,6 +345,7 @@ defmodule Crosswake.Bridge.PushTest do
       {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
 
       correlation_id = dispatch!(view, %{"ref" => "tap"})
+
       render_hook(view, "crosswake:bridge_unreachable", %{
         "correlation_id" => correlation_id,
         "moment" => "no_transport"
@@ -359,6 +360,7 @@ defmodule Crosswake.Bridge.PushTest do
       {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
 
       correlation_id = dispatch!(view, %{"ref" => "tap"})
+
       render_hook(view, "crosswake:bridge_unreachable", %{
         "correlation_id" => correlation_id,
         "moment" => "transport_error"
@@ -695,7 +697,9 @@ defmodule Crosswake.Bridge.PushTest do
     test "the dropped-reply event fires once for a duplicate delivery and once for a foreign-epoch delivery" do
       {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
 
-      ref = :telemetry_test.attach_event_handlers(self(), [[:crosswake, :bridge, :dropped, :stop]])
+      ref =
+        :telemetry_test.attach_event_handlers(self(), [[:crosswake, :bridge, :dropped, :stop]])
+
       on_exit(fn -> :telemetry.detach(ref) end)
 
       correlation_id = dispatch!(view, %{"ref" => "tap"})
@@ -708,25 +712,33 @@ defmodule Crosswake.Bridge.PushTest do
       render_click(view, "remount", %{})
       render_hook(view, "crosswake:bridge_reply", ok_wire_reply(stale_correlation_id))
 
-      assert_received {[:crosswake, :bridge, :dropped, :stop], ^ref, _m2, %{reason: :foreign_epoch}}
+      assert_received {[:crosswake, :bridge, :dropped, :stop], ^ref, _m2,
+                       %{reason: :foreign_epoch}}
     end
 
     test "the hook-missing event fires when the wiring deadline expires with no ack" do
       {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
 
-      ref = :telemetry_test.attach_event_handlers(self(), [[:crosswake, :bridge, :hook_missing, :stop]])
+      ref =
+        :telemetry_test.attach_event_handlers(self(), [
+          [:crosswake, :bridge, :hook_missing, :stop]
+        ])
+
       on_exit(fn -> :telemetry.detach(ref) end)
 
       dispatch!(view, %{"ref" => "tap"})
       Process.sleep(100)
 
-      assert_received {[:crosswake, :bridge, :hook_missing, :stop], ^ref, _measurements, _metadata}
+      assert_received {[:crosswake, :bridge, :hook_missing, :stop], ^ref, _measurements,
+                       _metadata}
     end
 
     test "the hook-ack event fires when the bridge hook's acknowledgement arrives" do
       {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
 
-      ref = :telemetry_test.attach_event_handlers(self(), [[:crosswake, :bridge, :hook_ack, :stop]])
+      ref =
+        :telemetry_test.attach_event_handlers(self(), [[:crosswake, :bridge, :hook_ack, :stop]])
+
       on_exit(fn -> :telemetry.detach(ref) end)
 
       correlation_id = dispatch!(view, %{"ref" => "tap"})

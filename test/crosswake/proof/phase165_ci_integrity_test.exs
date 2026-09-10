@@ -126,7 +126,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert helper =~ ~s(mix hex.publish --dry-run --yes)
     assert helper =~ ~s(mix hex.config api_key "$sentinel")
     refute helper =~ "${{ secrets."
-
   end
 
   @tag :triggers
@@ -183,7 +182,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert body =~ "classification == 'full_proof'"
       assert body =~ "Remediation:"
     end
-
   end
 
   @tag :triggers
@@ -210,7 +208,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert body =~ command
       assert body =~ "Remediation:"
     end
-
 
     advisory = File.read!(@phase68_advisory)
     assert advisory =~ ~r/^  workflow_dispatch:/m
@@ -249,7 +246,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert advisory =~ ~r/^  schedule:/m
     refute advisory =~ ~r/^  pull_request:/m
     refute advisory =~ ~r/^  push:/m
-
   end
 
   @tag :triggers
@@ -278,7 +274,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert body =~ command
       assert body =~ "Remediation:"
     end
-
   end
 
   @tag :triggers
@@ -320,7 +315,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert advisory =~ ~r/^  schedule:/m
       assert advisory =~ "continue-on-error: true"
     end
-
   end
 
   @tag :manifest
@@ -415,7 +409,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert advisory =~ ~r/^  schedule:/m
       assert advisory =~ "continue-on-error: true"
     end
-
   end
 
   @tag :triggers
@@ -457,7 +450,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert advisory =~ ~r/^  schedule:/m
       assert advisory =~ "continue-on-error: true"
     end
-
   end
 
   @tag :triggers

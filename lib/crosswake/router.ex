@@ -11,6 +11,7 @@ defmodule Crosswake.Router do
   defmacro __using__(_opts) do
     quote do
       use Phoenix.Router
+
       import Phoenix.Router,
         except: [
           get: 3,
@@ -31,7 +32,6 @@ defmodule Crosswake.Router do
 
       import Phoenix.LiveView.Router, except: [live: 2, live: 3, live: 4]
       import Crosswake.Router
-
     end
   end
 
@@ -127,7 +127,8 @@ defmodule Crosswake.Router do
     if Keyword.keyword?(value) do
       value
     else
-      raise ArgumentError, "expected a keyword list for Crosswake router options, got: #{inspect(value)}"
+      raise ArgumentError,
+            "expected a keyword list for Crosswake router options, got: #{inspect(value)}"
     end
   end
 

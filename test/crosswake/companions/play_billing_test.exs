@@ -13,7 +13,12 @@ defmodule Crosswake.Companions.PlayBillingTest do
       assert %State{} = state = PlayBilling.report_state()
       assert state.companion_id == :play_billing
       assert is_boolean(state.enabled)
-      assert state.details == %{surface: :commerce_provider, provider: :play_billing, mode: :evidence_adapter}
+
+      assert state.details == %{
+               surface: :commerce_provider,
+               provider: :play_billing,
+               mode: :evidence_adapter
+             }
     end
   end
 
@@ -29,7 +34,9 @@ defmodule Crosswake.Companions.PlayBillingTest do
       }
 
       assert {:ok, evidence} = Evidence.new(attrs)
-      assert {:ok, %Contracts.ReconciliationEvidence{} = normalized} = Evidence.to_reconciliation_evidence(evidence)
+
+      assert {:ok, %Contracts.ReconciliationEvidence{} = normalized} =
+               Evidence.to_reconciliation_evidence(evidence)
 
       assert normalized.provider == "play_billing"
       assert normalized.provider_reference == "play-token-123"
@@ -54,9 +61,12 @@ defmodule Crosswake.Companions.PlayBillingTest do
         assert {:ok, evidence} =
                  Evidence.new(%{
                    purchase_token: "play-token-123",
-                   rtdn_message_id: if(String.starts_with?(evidence_ref, "rtdn-"), do: evidence_ref, else: nil),
-                   order_id: if(String.starts_with?(evidence_ref, "order-"), do: evidence_ref, else: nil),
-                   payload_digest: if(String.starts_with?(evidence_ref, "sha256:"), do: evidence_ref, else: nil),
+                   rtdn_message_id:
+                     if(String.starts_with?(evidence_ref, "rtdn-"), do: evidence_ref, else: nil),
+                   order_id:
+                     if(String.starts_with?(evidence_ref, "order-"), do: evidence_ref, else: nil),
+                   payload_digest:
+                     if(String.starts_with?(evidence_ref, "sha256:"), do: evidence_ref, else: nil),
                    event_kind: event_kind,
                    environment: :production,
                    source: source,
@@ -143,7 +153,9 @@ defmodule Crosswake.Companions.PlayBillingTest do
       assert result.status in [:awaiting_verification, :verification_failed]
       assert result.status != :projection_refreshed
 
-      assert {:ok, projected} = Reconciliation.ingest_evidence(normalized, verified_projection: true)
+      assert {:ok, projected} =
+               Reconciliation.ingest_evidence(normalized, verified_projection: true)
+
       assert projected.status == :projection_refreshed
     end
   end

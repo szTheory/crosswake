@@ -18,11 +18,12 @@ defmodule Crosswake.Shell.DenialTest do
 
   describe "new/1" do
     test "can create a denial with :notification_open_denied reason" do
-      denial = Denial.new(
-        reason: :notification_open_denied,
-        code: "notification.open.expired",
-        message: "The notification has expired."
-      )
+      denial =
+        Denial.new(
+          reason: :notification_open_denied,
+          code: "notification.open.expired",
+          message: "The notification has expired."
+        )
 
       assert denial.reason == :notification_open_denied
       assert denial.code == "notification.open.expired"

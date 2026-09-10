@@ -31,8 +31,9 @@ defmodule Crosswake.Proof.Phase39RoutePolicyGatingTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/checkout", Crosswake.TestSupport.StudySessionLive,
+        live("/checkout", Crosswake.TestSupport.StudySessionLive,
           crosswake: [id: "checkout", runtime: :live_view, gated_by: :feature_payment_v2]
+        )
       end
     end
   end
@@ -42,13 +43,14 @@ defmodule Crosswake.Proof.Phase39RoutePolicyGatingTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/premium", Crosswake.TestSupport.StudySessionLive,
+        live("/premium", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "premium",
             runtime: :live_view,
             gated_by: :feature_premium,
             on_unavailable: {:fallback_phoenix, :home}
           ]
+        )
       end
     end
   end
@@ -58,8 +60,9 @@ defmodule Crosswake.Proof.Phase39RoutePolicyGatingTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/home", Crosswake.TestSupport.StudySessionLive,
+        live("/home", Crosswake.TestSupport.StudySessionLive,
           crosswake: [id: "home", runtime: :live_view]
+        )
       end
     end
   end
@@ -321,6 +324,7 @@ defmodule Crosswake.Proof.Phase39RoutePolicyGatingTest do
     test "to_map of non-gated RouteEntry omits gated_by and on_unavailable keys entirely" do
       assert {:ok, %{manifest: manifest}} = Manifest.compile(NonGatedRouter)
       route_map = Types.to_map(manifest.routes["home"])
+
       refute Map.has_key?(route_map, "gated_by"),
              "non-gated route must not emit a 'gated_by' key in to_map (D-08 nil-omission)"
 

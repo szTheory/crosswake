@@ -35,8 +35,9 @@ defmodule Crosswake.Proof.Phase38CompanionContractTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
-        live "/home", Crosswake.TestSupport.StudySessionLive,
+        live("/home", Crosswake.TestSupport.StudySessionLive,
           crosswake: [id: "home", runtime: :live_view]
+        )
       end
     end
   end
@@ -131,7 +132,10 @@ defmodule Crosswake.Proof.Phase38CompanionContractTest do
     assert Crosswake.TestSupport.StubCompanion.validate_dependency() == :ok
 
     # report_state/0 — returns a Crosswake.Companion.State struct
-    assert match?(%Crosswake.Companion.State{}, Crosswake.TestSupport.StubCompanion.report_state())
+    assert match?(
+             %Crosswake.Companion.State{},
+             Crosswake.TestSupport.StubCompanion.report_state()
+           )
 
     state = Crosswake.TestSupport.StubCompanion.report_state()
     assert state.companion_id == :stub_companion

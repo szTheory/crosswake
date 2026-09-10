@@ -200,11 +200,12 @@ defmodule Crosswake.Proof.Phase136DecoupleProofTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/auth-predicated/stub", Crosswake.TestSupport.StudySessionLive,
+        live("/auth-predicated/stub", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "auth-predicated-stub-route",
             auth_min_level: :mfa
           ]
+        )
       end
     end
   end
@@ -454,6 +455,7 @@ defmodule Crosswake.Proof.Phase136DecoupleProofTest do
 
     # Intercept the log to check PII scrubbing — use a test telemetry handler for the emitted event
     emitted_event = [:crosswake, :companion, :dependency_check, :start]
+
     :telemetry.attach(
       handler_id,
       emitted_event,
@@ -486,7 +488,9 @@ defmodule Crosswake.Proof.Phase136DecoupleProofTest do
     # Alternative approach: verify the handler was registered with a config map containing
     # a :forbidden_keys entry (proving it was built at attach time, not per-event).
     telemetry_handlers = :telemetry.list_handlers(emitted_event)
-    default_logger_handler = Enum.find(telemetry_handlers, fn h -> h.id == "crosswake-default-logger" end)
+
+    default_logger_handler =
+      Enum.find(telemetry_handlers, fn h -> h.id == "crosswake-default-logger" end)
 
     assert default_logger_handler != nil,
            "crosswake-default-logger handler must be attached after attach_default_logger/1"

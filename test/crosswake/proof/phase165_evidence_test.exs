@@ -148,7 +148,9 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
 
     if File.exists?(@live_observation) do
       {output, status} =
-        System.cmd("node", [@monitor, "validate-evidence", @live_observation], stderr_to_stdout: true)
+        System.cmd("node", [@monitor, "validate-evidence", @live_observation],
+          stderr_to_stdout: true
+        )
 
       assert status == 0, output
     end
@@ -183,7 +185,14 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
     run = fn protection ->
       System.cmd(
         "bash",
-        ["script/check_required_checks_registered.sh", "--policy", @required_policy, "--state", "target", "--live"],
+        [
+          "script/check_required_checks_registered.sh",
+          "--policy",
+          @required_policy,
+          "--state",
+          "target",
+          "--live"
+        ],
         env: [{"CROSSWAKE_REQUIRED_CHECKS_JSON", protection}],
         stderr_to_stdout: true
       )

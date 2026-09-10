@@ -1,4 +1,3 @@
-
 defmodule Crosswake.Proof.Phase18BoundedFamilyLaneTest do
   use ExUnit.Case, async: true
 
@@ -15,7 +14,9 @@ defmodule Crosswake.Proof.Phase18BoundedFamilyLaneTest do
     assert {:ok, token} = Registry.lookup(manifest, "dashboard", "notifications.token.get")
 
     assert {:ok, picker} =
-             Registry.lookup(manifest, "library", "files.pick", %{"transfer_id" => "lesson_import"})
+             Registry.lookup(manifest, "library", "files.pick", %{
+               "transfer_id" => "lesson_import"
+             })
 
     assert app_info.capability == "app_info"
     assert haptics.capability == "haptics"
@@ -24,7 +25,9 @@ defmodule Crosswake.Proof.Phase18BoundedFamilyLaneTest do
     assert picker.capability == "file_picker"
 
     assert {:error, :undeclared_capability} =
-             Registry.lookup(manifest, "library", "files.pick", %{"transfer_id" => "lesson_export"})
+             Registry.lookup(manifest, "library", "files.pick", %{
+               "transfer_id" => "lesson_export"
+             })
 
     assert {:error, :unsupported_command} =
              Registry.lookup(manifest, "dashboard", "deep_link")

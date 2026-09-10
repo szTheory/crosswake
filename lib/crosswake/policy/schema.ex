@@ -509,7 +509,8 @@ defmodule Crosswake.Policy.Schema do
   end
 
   def validate_notification_open(_value),
-    do: {:error, "expected notification_open declaration to be a boolean, a keyword list, or a map"}
+    do:
+      {:error, "expected notification_open declaration to be a boolean, a keyword list, or a map"}
 
   defp validate_auth_return_kind(nil), do: {:ok, nil}
 

@@ -12,7 +12,12 @@ defmodule Crosswake.Companions.StoreKitTest do
       assert %State{} = state = StoreKit.report_state()
       assert state.companion_id == :storekit
       assert is_boolean(state.enabled)
-      assert state.details == %{surface: :commerce_provider, provider: :storekit, mode: :evidence_adapter}
+
+      assert state.details == %{
+               surface: :commerce_provider,
+               provider: :storekit,
+               mode: :evidence_adapter
+             }
     end
   end
 
@@ -28,7 +33,9 @@ defmodule Crosswake.Companions.StoreKitTest do
       }
 
       assert {:ok, evidence} = Evidence.new(attrs)
-      assert {:ok, %Contracts.ReconciliationEvidence{} = normalized} = Evidence.to_reconciliation_evidence(evidence)
+
+      assert {:ok, %Contracts.ReconciliationEvidence{} = normalized} =
+               Evidence.to_reconciliation_evidence(evidence)
 
       assert normalized.provider == "storekit"
       assert normalized.provider_reference == "1000000123456789"
