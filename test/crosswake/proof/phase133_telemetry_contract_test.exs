@@ -638,12 +638,12 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
              :merge_blocking
            )
 
-    assert String.contains?(mix_exs, ~s("Telemetry")),
+    assert String.contains?(mix_exs, "Telemetry:"),
            ProofAssertions.stable_id_message(
              "proof.telem_02.mix_group.telemetry_group",
              "mix.exs must contain a \"Telemetry\" group in groups_for_modules or groups_for_extras",
              "mix.exs",
-             "\"Telemetry\" group token not found in mix.exs",
+             "Telemetry group token not found in mix.exs",
              "mix.exs",
              "add a \"Telemetry\" group to groups_for_modules and groups_for_extras in mix.exs (plan 04 Task 2)",
              :merge_blocking

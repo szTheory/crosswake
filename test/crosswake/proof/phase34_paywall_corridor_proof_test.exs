@@ -161,10 +161,9 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
     test "no runtime-path Code.require_file lines; only the four allowed pure-commerce modules" do
       source = File.read!(__ENV__.file) |> String.downcase()
 
-      require_call_lines =
-        source
-        |> String.split("\n")
-        |> Enum.filter(&Regex.match?(~r/^\s*code\.require_file\s*\(/, &1))
+      require_paths =
+        Regex.scan(~r/code\.require_file\(\s*"([^"]+)"/, source, capture: :all_but_first)
+        |> List.flatten()
 
       # The ONLY allowed pure commerce modules — any other path is a runtime/server leak
       allowed_modules = [
@@ -174,14 +173,14 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
         "mock_backend.ex"
       ]
 
-      # Must have exactly 4 require_file lines
-      assert length(require_call_lines) == 4,
-             "expected exactly 4 Code.require_file lines (one per pure commerce module); found #{length(require_call_lines)}: #{inspect(require_call_lines)}"
+      # Must have exactly 4 require_file paths
+      assert length(require_paths) == 4,
+             "expected exactly 4 Code.require_file paths (one per pure commerce module); found #{length(require_paths)}: #{inspect(require_paths)}"
 
       # Each require line must point at one of the allowed pure-commerce modules
-      for line <- require_call_lines do
-        assert Enum.any?(allowed_modules, &String.contains?(line, &1)),
-               "proof requires file not in the allowed pure-commerce module list: #{inspect(line)}"
+      for path <- require_paths do
+        assert Enum.any?(allowed_modules, &String.contains?(path, &1)),
+               "proof requires file not in the allowed pure-commerce module list: #{inspect(path)}"
       end
 
       # No require line may contain a forbidden runtime-path substring
@@ -194,10 +193,10 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
         "_web"
       ]
 
-      for line <- require_call_lines do
+      for path <- require_paths do
         for forbidden <- forbidden_runtime_substrings do
-          refute String.contains?(line, forbidden),
-                 "proof requires a runtime-path file containing #{inspect(forbidden)}: #{inspect(line)}"
+          refute String.contains?(path, forbidden),
+                 "proof requires a runtime-path file containing #{inspect(forbidden)}: #{inspect(path)}"
         end
       end
     end

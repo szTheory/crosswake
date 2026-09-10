@@ -17,7 +17,7 @@ defmodule Crosswake.Planning.ReleasePleaseConfigTest do
     mix_version =
       release_please_version(
         File.read!(@mix_path),
-        ~r/@version\s+"(?<version>[^"]+)"\s+# x-release-please-version/
+        ~r/# x-release-please-version\s+@version\s+"(?<version>[^"]+)"/
       )
 
     android_version =
