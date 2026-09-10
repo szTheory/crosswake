@@ -1,7 +1,7 @@
 # Phase 166 Ownership Ledger
 
 - Base commit: `8383aaea2a2b2e10bbe61dd843b51f4129a5d447`
-- Tree commit: `f9bf7eb2d7395599c6234ff618fc3589c95bd541`
+- Tree commit: `d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b`
 - Candidate rule: NUL-safe `git diff --name-only -z <base> <tree>`, excluding `.planning/`
 - Unresolved flags: all five flagged assumptions, including `FA-ENG-02`, and both bespoke prohibitions remain unresolved by design. Plan 08 closes the mechanical final-tree reconciliation without reclassifying those planning assumptions.
 
@@ -59,9 +59,10 @@ Disposition is closed to `retained`, `changed`, `removed-with-proof`, and `unpro
 | README.md | tracked public support truth | documentation owner | retained |
 | examples/phoenix_host/e2e/offline_storage.spec.ts | focused browser regression and complete browser stage | browser proof owner | retained |
 | examples/phoenix_host/e2e/offline_sync.spec.ts | focused scoped-replay regressions and complete browser stage | browser proof owner | retained |
+| examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/index.html.heex | focused initialization-failure presentation regression and complete browser stage | offline island presentation owner | changed |
 | examples/phoenix_host/mix.lock | lock-governed dependency resolution | toolchain and dependency owners | retained |
 | examples/phoenix_host/playwright.config.ts | repository-mode browser regression and CI owner | browser proof owner | changed |
-| examples/phoenix_host/priv/static/offline_study.js | focused scoped lifecycle and replay regressions | offline island owner | retained |
+| examples/phoenix_host/priv/static/offline_study.js | focused initialization, storage, scoped lifecycle, and replay regressions | offline island owner | changed |
 | guides/companion_compatibility.md | tracked compatibility support truth | documentation owner | retained |
 | guides/install.md | tracked installation support truth | documentation owner | retained |
 | guides/route_policy.md | tracked route-policy support truth | documentation owner | retained |
@@ -300,11 +301,17 @@ No removal is authorized at this declared tree. A future `removed-with-proof` ro
 
 | source path | owner | finding class | focused regression | focused command | result |
 | --- | --- | --- | --- | --- | --- |
+| examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/index.html.heex | offline island presentation owner | misleading-fallback | examples/phoenix_host/e2e/offline_storage.spec.ts | cd examples/phoenix_host && npx playwright test e2e/offline_storage.spec.ts | pass |
 | examples/phoenix_host/playwright.config.ts | browser proof owner | misleading-fallback | test/js/playwright_repository_mode.test.mjs | node --test test/js/playwright_repository_mode.test.mjs | pass |
+| examples/phoenix_host/priv/static/offline_study.js | offline island owner | misleading-fallback | examples/phoenix_host/e2e/offline_storage.spec.ts | cd examples/phoenix_host && npx playwright test e2e/offline_storage.spec.ts | pass |
 
-The sole queue item was implemented test-first in Plan 04 (`ceca6427` RED, `12c2c548` GREEN).
-Plan 06 reran the exact focused command against the current supported tree and observed 3/3 passing
-tests. No additional source correction is authorized, and the queue contains no removal candidate.
+The original repository-mode queue item was implemented test-first in Plan 04 (`ceca6427` RED,
+`12c2c548` GREEN). The Phase 166 UI review then demonstrated two additional misleading fallback
+surfaces plus missing first-failure trace retention. Commit `5f56084f` locked all three findings in
+focused RED tests and `a4e8be47` implemented the bounded correction. The focused storage suite
+passed 4/4, the configuration suite passed 3/3, and the complete browser suite passed 60/60. The
+queue contract was then decoupled from the later evidence-only row count in `d8e7cf3f`; the queue
+contains no removal candidate.
 
 ## Plan 06 verification results
 

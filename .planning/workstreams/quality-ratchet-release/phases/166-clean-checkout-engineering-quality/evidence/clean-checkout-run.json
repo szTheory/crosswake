@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "supported_code_sha": "f9bf7eb2d7395599c6234ff618fc3589c95bd541",
+  "supported_code_sha": "d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b",
   "stages": [
     {
       "stage_id": "repository-preflight",

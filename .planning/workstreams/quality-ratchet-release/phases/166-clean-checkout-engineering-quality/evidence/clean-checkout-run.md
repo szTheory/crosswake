@@ -1,6 +1,6 @@
 # Clean-checkout repository verification
 
-- Supported code: `f9bf7eb2d7395599c6234ff618fc3589c95bd541`
+- Supported code: `d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b`
 - Repository baseline: empty
 - Repository final state: empty
 - Git index: unchanged
