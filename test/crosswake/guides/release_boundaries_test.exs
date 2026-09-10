@@ -46,6 +46,26 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert example_host =~ "not a separate supported runtime package"
   end
 
+  test "install compatibility and troubleshooting lead to executable owners" do
+    install = File.read!("guides/install.md")
+    compatibility = File.read!("guides/compatibility.md")
+    troubleshooting = File.read!("guides/troubleshooting.md")
+
+    assert install =~ "**Current setup answer:**"
+    assert install =~ "`mix.exs` owns the package version and dependency ranges"
+    assert install =~ "[support matrix](support_matrix.md)"
+
+    assert compatibility =~ "**Current rebuild answer:**"
+    assert compatibility =~ "`Crosswake.SupportMatrix.change_class_entries/0`"
+    assert compatibility =~ "Package versions alone do not decide rebuild posture"
+
+    assert troubleshooting =~ "**Current recovery answer:**"
+    assert troubleshooting =~ "Run `mix crosswake.doctor`"
+    assert troubleshooting =~ "one named owner and one bounded action"
+
+    refute troubleshooting =~ ~r/(?:token|credential|account identifier|device identifier):\s*\S+/i
+  end
+
   test "guide surfaces link rebuild guidance to canonical promotion and non-claim truth" do
     guide_paths = [
       "guides/install.md",
