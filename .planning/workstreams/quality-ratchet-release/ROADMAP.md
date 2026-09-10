@@ -170,7 +170,18 @@ Plans:
   2. A maintainer can resume the First B2C Adopter workstream from its parked state without reconstruction; its durable content remains codename-only and its status names only the real external route/device authority.
   3. Every open pull request has an unambiguous current disposition: merged, rebased, superseded, closed, or explicitly deferred with a current reason.
 
-**Plans**: TBD
+**Plans**: 8 plans
+
+Plans:
+
+- [ ] 167-01-PLAN.md — Establish the typed current-claim tracer and atomically reconcile generated/public/parked adopter truth.
+- [ ] 167-02-PLAN.md — Add no-write documentation synchronization and register it in the existing artifact policy.
+- [ ] 167-03-PLAN.md — Extend existing documentation/package CI owners while preserving the docs-only route.
+- [ ] 167-04-PLAN.md — Reconcile authored reader-job guidance, authority discovery, accessibility, and release boundaries.
+- [ ] 167-05-PLAN.md — Rebase and resolve setup-java PR #121 across all seven immutable uses.
+- [ ] 167-06-PLAN.md — Rebase and resolve companion compatibility PR #110 across every affected package/doc/fixture surface.
+- [ ] 167-07-PLAN.md — Rebase, squash, verify, and merge PackStore cleanup PR #105.
+- [ ] 167-08-PLAN.md — Defer release PRs #115/#57 and seal bounded five-PR plus final documentation evidence.
 
 ### Phase 168: 0.2.1 Release Candidate Readiness
 
