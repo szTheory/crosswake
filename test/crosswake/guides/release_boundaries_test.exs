@@ -56,7 +56,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert install =~ "[support matrix](support_matrix.md)"
 
     assert compatibility =~ "**Current rebuild answer:**"
-    assert compatibility =~ "`Crosswake.SupportMatrix.change_class_entries/0`"
+    assert compatibility =~ "`Crosswake.SupportMatrix` owns the four change classes"
     assert compatibility =~ "Package versions alone do not decide rebuild posture"
 
     assert troubleshooting =~ "**Current recovery answer:**"

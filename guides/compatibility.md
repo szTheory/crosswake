@@ -1,7 +1,7 @@
 # Crosswake Compatibility Boundaries
 
-**Current rebuild answer:** `Crosswake.SupportMatrix.change_class_entries/0` owns the
-four change classes projected below. Package versions alone do not decide rebuild posture;
+**Current rebuild answer:** `Crosswake.SupportMatrix` owns the four change classes
+projected below. Package versions alone do not decide rebuild posture;
 use the changed compatibility axis and its class to choose the proof or rebuild action.
 
 ## Do I need to rebuild? (start here)
