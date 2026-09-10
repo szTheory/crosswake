@@ -39,6 +39,12 @@ FINDING_CLASSES = {
     "responsibility-extraction",
 }
 REMEDIATION_RESULTS = {"pending", "pass"}
+EVIDENCE_ONLY_PATHS = {
+    ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/evidence/clean-checkout-run.json",
+    ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/evidence/clean-checkout-run.md",
+    ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-ownership-ledger.md",
+    ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-VALIDATION.md",
+}
 
 
 @dataclass(frozen=True)
@@ -186,6 +192,43 @@ def validate_text(text: str, root: Path) -> list[Problem]:
     return problems
 
 
+def validate_evidence_binding(text: str, evidence_path: Path) -> list[Problem]:
+    problems: list[Problem] = []
+    tree = metadata(text, "Tree commit")
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        return [Problem("invalid_evidence", str(evidence_path), type(error).__name__)]
+
+    evidence_sha = evidence.get("supported_code_sha")
+    if evidence_sha != tree:
+        problems.append(
+            Problem("evidence_sha_mismatch", str(evidence_path), f"expected={tree} actual={evidence_sha}")
+        )
+
+    section = re.search(r"^## Evidence-only delta\n\n(.*?)(?=^## |\Z)", text, re.MULTILINE | re.DOTALL)
+    observed_paths = set(re.findall(r"`([^`]+)`", section.group(1))) if section else set()
+    for path in sorted(EVIDENCE_ONLY_PATHS - observed_paths):
+        problems.append(Problem("missing_evidence_only_path", path, "path is absent from evidence-only delta"))
+    for path in sorted(observed_paths - EVIDENCE_ONLY_PATHS):
+        problems.append(Problem("extra_evidence_only_path", path, "path is outside the closed evidence-only delta"))
+
+    stages = evidence.get("stages")
+    if not isinstance(stages, list) or len(stages) != 9 or any(
+        not isinstance(stage, dict) or stage.get("result") != "PASS" for stage in stages
+    ):
+        problems.append(Problem("incomplete_clean_gate", str(evidence_path), "all nine stages must pass"))
+    repository_state = evidence.get("repository_state")
+    if not isinstance(repository_state, dict) or any(
+        repository_state.get(key) is not True
+        for key in ("baseline_empty", "final_empty", "snapshots_equal", "index_unchanged")
+    ):
+        problems.append(Problem("unclean_repository_state", str(evidence_path), "repository state is not closed"))
+    if evidence.get("cleanup") != {"status": "PASS"}:
+        problems.append(Problem("incomplete_cleanup", str(evidence_path), "owned cleanup did not pass"))
+    return problems
+
+
 def remediation_queue(text: str, root: Path) -> tuple[list[dict[str, str]], list[Problem]]:
     problems = validate_text(text, root)
     if problems:
@@ -320,6 +363,49 @@ def self_test() -> int:
             print("FAIL empty_remediation_queue")
             return 1
         print("PASS empty_remediation_queue")
+
+        evidence_only = "\n".join(
+            ["", "## Evidence-only delta", ""]
+            + [f"- `{path}`" for path in sorted(EVIDENCE_ONLY_PATHS)]
+            + [""]
+        )
+        evidence = {
+            "supported_code_sha": tree,
+            "stages": [{"stage_id": f"stage-{index}", "result": "PASS"} for index in range(9)],
+            "repository_state": {
+                "baseline_empty": True,
+                "final_empty": True,
+                "snapshots_equal": True,
+                "index_unchanged": True,
+            },
+            "cleanup": {"status": "PASS"},
+        }
+        evidence_path = root / "evidence.json"
+        evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+        if validate_evidence_binding(valid + evidence_only, evidence_path):
+            print("FAIL evidence_binding")
+            return 1
+        print("PASS evidence_binding")
+
+        evidence["supported_code_sha"] = base
+        evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+        if not any(
+            problem.kind == "evidence_sha_mismatch"
+            for problem in validate_evidence_binding(valid + evidence_only, evidence_path)
+        ):
+            print("FAIL evidence_sha_mismatch")
+            return 1
+        print("PASS evidence_sha_mismatch")
+
+        evidence["supported_code_sha"] = tree
+        evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+        if not any(
+            problem.kind == "missing_evidence_only_path"
+            for problem in validate_evidence_binding(valid, evidence_path)
+        ):
+            print("FAIL missing_evidence_only_path")
+            return 1
+        print("PASS missing_evidence_only_path")
     return 0
 
 
@@ -329,6 +415,7 @@ def main() -> int:
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--verify-remediations", type=Path)
+    parser.add_argument("--evidence", type=Path)
     args = parser.parse_args()
     if args.self_test:
         return self_test()
@@ -342,7 +429,10 @@ def main() -> int:
             return 1
         print(render_remediation_queue(queue))
         return 0
-    problems = validate_text(args.ledger.read_text(encoding="utf-8"), args.root.resolve())
+    ledger_text = args.ledger.read_text(encoding="utf-8")
+    problems = validate_text(ledger_text, args.root.resolve())
+    if args.evidence:
+        problems.extend(validate_evidence_binding(ledger_text, args.evidence))
     if problems:
         for problem in sorted(problems, key=lambda item: (item.kind, item.member, item.detail)):
             print(problem.render())

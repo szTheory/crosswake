@@ -196,6 +196,9 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
 
     assert output =~ "PASS deterministic_remediation_queue"
     assert output =~ "PASS empty_remediation_queue"
+    assert output =~ "PASS evidence_binding"
+    assert output =~ "PASS evidence_sha_mismatch"
+    assert output =~ "PASS missing_evidence_only_path"
   end
 
   @tag :ownership_remediation
