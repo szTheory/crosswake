@@ -268,7 +268,14 @@ function generatedContractFailure(policy, root, options = {}) {
   return null;
 }
 
-function runRepositoryCleanliness(policy, root, options = {}) {
+function runRepositoryCleanliness(stage, policy, root, spawn, options = {}) {
+  const declared = spawn(stage.argv[0], stage.argv.slice(1), {
+    cwd: path.join(root, stage.cwd),
+    env: { ...process.env, ...stage.env },
+    timeout: stage.timeout_ms,
+    killSignal: "SIGTERM"
+  });
+  if (!declared || declared.error || declared.signal != null || declared.status !== 0) return declared;
   const forbidden = artifactFailure(policy, root);
   if (forbidden) return { status: 1, ...forbidden };
   const generated = generatedContractFailure(policy, root, options);
@@ -379,7 +386,7 @@ export function runVerification(options = {}) {
           stageEnv.CROSSWAKE_PLAYWRIGHT_ARTIFACT_DIR = path.join(browserOutputRoot, "playwright-artifacts");
         }
         result = stage.stage_id === "repository-cleanliness" && enforceArtifactPolicy
-          ? runRepositoryCleanliness(artifactPolicy, root, options)
+          ? runRepositoryCleanliness(stage, artifactPolicy, root, spawn, options)
           : spawn(stage.argv[0], stage.argv.slice(1), {
               cwd: path.join(root, stage.cwd),
               env: stageEnv,

@@ -166,6 +166,28 @@ test("single selected stage renders normal PASS records", () => {
   assert.match(result.output, /PASS repository-cleanliness/);
 });
 
+test("repository cleanliness executes its declared git diff check before policy checks", () => {
+  const repository = makeRepository();
+  const started = [];
+  try {
+    writeFileSync(path.join(repository, "tracked.txt"), "trailing whitespace   \n");
+    const result = runVerification(verificationOptions(repository, {
+      artifactPolicy: loadArtifactPolicy(),
+      enforceArtifactPolicy: true,
+      spawn: (command, argv, options) => {
+        started.push([command, ...argv]);
+        return spawnSync(command, argv, { ...options, encoding: "utf8" });
+      }
+    }));
+
+    assert.equal(result.status, 1);
+    assert.deepEqual(started, [["git", "diff", "--check"]]);
+    assert.match(result.output, /FAIL repository-cleanliness/);
+  } finally {
+    rmSync(repository, { recursive: true, force: true });
+  }
+});
+
 test("every required identity has exact missing, wrong-version, and failed-start controls", () => {
   const manifest = loadStageManifest();
   const selected = selectStages(manifest, "all");
