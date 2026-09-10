@@ -20,6 +20,9 @@ defmodule Crosswake.CapabilityMap do
       :package_owner,
       :proof_posture,
       :rebuild,
+      :evidence_subject,
+      :source_binding,
+      :activation_state,
       :denial_fallback,
       :adoption_implication
     ]
@@ -36,6 +39,9 @@ defmodule Crosswake.CapabilityMap do
             package_owner: Crosswake.CapabilityMap.package_owner(),
             proof_posture: Crosswake.CapabilityMap.proof_posture(),
             rebuild: Crosswake.CapabilityMap.rebuild(),
+            evidence_subject: Crosswake.CapabilityMap.evidence_subject(),
+            source_binding: Crosswake.CapabilityMap.source_binding(),
+            activation_state: Crosswake.CapabilityMap.activation_state(),
             denial_fallback: String.t(),
             adoption_implication: String.t()
           }
@@ -54,6 +60,12 @@ defmodule Crosswake.CapabilityMap do
 
   @package_owners [:core, :native_shell, :first_party_companion, :example_docs_only, :deferred]
   @proof_postures [:merge_blocking, :advisory, :not_yet_proven, :unsupported]
+  @evidence_subjects [:crosswake_contract, :reference_host, :first_adopter]
+  @source_bindings [:repository_bound, :source_bound, :required_missing]
+  @activation_states [:available, :reference_evidence, :blocked]
+
+  @reference_evidence_date ~D[2026-08-27]
+  @reference_ios_runtime_line "26.6"
 
   # D-53 (Phase 154, CTRL-05): mirrors Crosswake.Manifest.Types.Capability.rebuild/0's
   # three-value vocabulary — the guide adopters read to CHOOSE controls must show
@@ -79,6 +91,10 @@ defmodule Crosswake.CapabilityMap do
 
   @type proof_posture :: :merge_blocking | :advisory | :not_yet_proven | :unsupported
 
+  @type evidence_subject :: :crosswake_contract | :reference_host | :first_adopter
+  @type source_binding :: :repository_bound | :source_bound | :required_missing
+  @type activation_state :: :available | :reference_evidence | :blocked
+
   @type rebuild :: :none | :native_required | :companion_required
 
   @type route_runtime_owner ::
@@ -101,6 +117,15 @@ defmodule Crosswake.CapabilityMap do
 
   @spec proof_postures() :: [proof_posture()]
   def proof_postures, do: @proof_postures
+
+  @spec evidence_subjects() :: [evidence_subject()]
+  def evidence_subjects, do: @evidence_subjects
+
+  @spec source_bindings() :: [source_binding()]
+  def source_bindings, do: @source_bindings
+
+  @spec activation_states() :: [activation_state()]
+  def activation_states, do: @activation_states
 
   @spec rebuild_classes() :: [rebuild()]
   def rebuild_classes, do: @rebuild_classes
@@ -484,9 +509,141 @@ defmodule Crosswake.CapabilityMap do
     ]
   end
 
+  @doc """
+  Returns the validated current claim layers used by public first-adopter projections.
+
+  Retained physical evidence is deliberately pinned to its recorded date and low-cardinality
+  runtime line. It is reference-host evidence, never transferable activation authority.
+  """
+  @spec first_adopter_claims() :: [map()]
+  def first_adopter_claims do
+    [
+      %{
+        id: :reusable_contracts,
+        evidence_subject: :crosswake_contract,
+        source_binding: :repository_bound,
+        activation_state: :available,
+        proof_source: :repository_contract,
+        recorded_on: nil,
+        ios_runtime_line: nil,
+        support_promotion: false,
+        statement: "Available — reusable contracts verified.",
+        boundary:
+          "Route policy, scoped replay, pack, and shell contracts are reusable; contract proof alone does not verify a host."
+      },
+      %{
+        id: :retained_reference_evidence,
+        evidence_subject: :reference_host,
+        source_binding: :source_bound,
+        activation_state: :reference_evidence,
+        proof_source: :physical_device,
+        recorded_on: @reference_evidence_date,
+        ios_runtime_line: @reference_ios_runtime_line,
+        support_promotion: false,
+        statement:
+          "Reference evidence — one source-bound physical-iPhone run was recorded on 2026-08-27 on iOS 26.6; it does not verify your host.",
+        boundary:
+          "Past evidence stays bound to that reference host, date, runtime line, and one bounded offline-study flow."
+      },
+      %{
+        id: :first_adopter_activation,
+        evidence_subject: :first_adopter,
+        source_binding: :required_missing,
+        activation_state: :blocked,
+        proof_source: :required_missing,
+        recorded_on: nil,
+        ios_runtime_line: nil,
+        support_promotion: false,
+        statement:
+          "Blocked — sanitized route policy and signed-device proof are required before this host can be promoted.",
+        boundary:
+          "No retained reference, simulator, fixture, package-version, or policy-contract evidence transfers to this host."
+      }
+    ]
+    |> Enum.map(&validate_adoption_claim!/1)
+  end
+
+  @doc """
+  Validates a current adoption claim without echoing claim data in failures.
+  """
+  @spec validate_adoption_claim!(map()) :: map()
+  def validate_adoption_claim!(claim) when is_map(claim) do
+    violations =
+      []
+      |> require_closed(claim, :evidence_subject, @evidence_subjects)
+      |> require_closed(claim, :source_binding, @source_bindings)
+      |> require_closed(claim, :activation_state, @activation_states)
+      |> validate_reference_evidence(claim)
+      |> validate_blocked_promotion(claim)
+
+    case violations do
+      [] ->
+        claim
+
+      rules ->
+        raise ArgumentError,
+              "invalid adoption claim: #{rules |> Enum.reverse() |> Enum.join(", ")}"
+    end
+  end
+
+  def validate_adoption_claim!(_claim),
+    do: raise(ArgumentError, "invalid adoption claim: expected_map")
+
   defp row(attrs) do
     attrs
     |> Map.new()
+    |> Map.put_new(:evidence_subject, :crosswake_contract)
+    |> Map.put_new(:source_binding, :repository_bound)
+    |> Map.put_new(:activation_state, default_activation_state(attrs))
     |> then(&struct!(Row, &1))
   end
+
+  defp default_activation_state(attrs) do
+    case Keyword.fetch!(attrs, :category) do
+      :shipped -> :available
+      :demoed -> :reference_evidence
+      _other -> :blocked
+    end
+  end
+
+  defp require_closed(violations, claim, field, allowed) do
+    if Map.get(claim, field) in allowed,
+      do: violations,
+      else: ["unsupported_#{field}" | violations]
+  end
+
+  defp validate_reference_evidence(violations, %{activation_state: :reference_evidence} = claim) do
+    violations
+    |> require_rule(
+      Map.get(claim, :evidence_subject) == :reference_host,
+      "reference_subject_mismatch"
+    )
+    |> require_rule(
+      Map.get(claim, :source_binding) == :source_bound,
+      "reference_source_binding_missing"
+    )
+    |> require_rule(
+      Map.get(claim, :proof_source) == :physical_device,
+      "reference_physical_source_required"
+    )
+    |> require_rule(
+      Map.get(claim, :recorded_on) == @reference_evidence_date and
+        Map.get(claim, :ios_runtime_line) == @reference_ios_runtime_line,
+      "reference_authority_changed"
+    )
+    |> require_rule(
+      Map.get(claim, :support_promotion) == false,
+      "reference_evidence_non_transferable"
+    )
+  end
+
+  defp validate_reference_evidence(violations, _claim), do: violations
+
+  defp validate_blocked_promotion(violations, %{activation_state: :blocked} = claim),
+    do: require_rule(violations, Map.get(claim, :support_promotion) == false, "blocked_promotion")
+
+  defp validate_blocked_promotion(violations, _claim), do: violations
+
+  defp require_rule(violations, true, _rule), do: violations
+  defp require_rule(violations, false, rule), do: [rule | violations]
 end
