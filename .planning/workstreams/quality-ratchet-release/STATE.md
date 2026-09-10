@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 167
 current_phase_name: Documentation and Pull-Request Reconciliation
 status: executing
-stopped_at: Completed 167-04-PLAN.md
-last_updated: "2026-09-10T21:18:35.387Z"
+stopped_at: Completed 167-05-PLAN.md
+last_updated: "2026-09-10T21:42:03.446Z"
 last_activity: 2026-09-10
 last_activity_desc: Phase 167 execution started
-state_head: 0da39ba2c16797dfe63e877f0a1a526f0cd43e47
+state_head: f748621b11a1233a5e36c52e0769b52d7cc4549b
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 34
-  completed_plans: 30
+  completed_plans: 31
   percent: 60
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 167 (Documentation and Pull-Request Reconciliation) — EXECUTING
-Plan: 5 of 8
+Plan: 6 of 8
 Status: Ready to execute
 Last activity: 2026-09-10 — Phase 167 execution started
 
@@ -85,6 +85,7 @@ Progress: [██████░░░░] 60%
 | Phase 167 P02 | 7min | 2 tasks | 6 files |
 | Phase 167 P03 | 7min | 2 tasks | 7 files |
 | Phase 167 P04 | 7min | 3 tasks | 12 files |
+| Phase 167 P05 | 20min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -162,6 +163,9 @@ Progress: [██████░░░░] 60%
 - [Phase 167]: Route generated guide projections through public_docs while executable owners, release inputs, workflow changes, and unknown paths retain full proof.
 - [Phase 167]: Keep authored guidance answer-first and link volatile detail to Crosswake.SupportMatrix, Crosswake.CapabilityMap, and their generated projections.
 - [Phase 167]: Treat Phase 167 release review as reversible preparation only; Phase 168 retains exact 0.2.1 proof and immutable publication approval.
+- [Phase 167]: Pin all setup-java uses to the execution-time official immutable v6 commit. — One full SHA and exact count assertion remove mutable-tag and partial-update ambiguity.
+- [Phase 167]: Retain PR #121 as the candidate because it accepted the complete five-path transaction. — The authorized supersession fallback was unnecessary after the exact guarded branch update succeeded.
+- [Phase 167]: Gate PR mutations on exact head, base, named check, scope, and fresh-default authority. — This closes the mutable GitHub TOCTOU boundary before push and merge.
 
 ### Pending Todos
 
@@ -182,6 +186,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-10T21:18:35.046Z
-Stopped at: Completed 167-04-PLAN.md
+Last session: 2026-09-10T21:42:03.314Z
+Stopped at: Completed 167-05-PLAN.md
 Resume file: None
