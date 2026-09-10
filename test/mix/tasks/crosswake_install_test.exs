@@ -197,6 +197,39 @@ defmodule Mix.Tasks.Crosswake.InstallTest do
     assert manifest["web_module"] == "DemoWeb"
   end
 
+  test "infers the real router declaration instead of comment, moduledoc, or string decoys", %{
+    target: target,
+    router_path: router_path
+  } do
+    File.write!(router_path, ~S'''
+    # defmodule Comment.Decoy do
+    @moduledoc """
+    Example only: defmodule Moduledoc.Decoy do
+    """
+    _example = "defmodule String.Decoy do"
+
+    defmodule DemoWeb.Routes do
+      use DemoWeb, :router
+    end
+    ''')
+
+    capture_io(fn ->
+      Mix.Task.reenable(@task)
+      Mix.Task.run(@task, ["--target", target, "--web-module", "DemoWeb"])
+    end)
+
+    policy = File.read!(Path.join(target, "lib/demo_web/crosswake/policy.ex"))
+
+    manifest =
+      Jason.decode!(File.read!(Path.join(target, "priv/crosswake/install_manifest.json")))
+
+    assert policy =~ "@router DemoWeb.Routes"
+    refute policy =~ "Comment.Decoy"
+    refute policy =~ "Moduledoc.Decoy"
+    refute policy =~ "String.Decoy"
+    assert manifest["router_module"] == "DemoWeb.Routes"
+  end
+
   test "scopes Crosswake macro exclusions beside a Phoenix LiveDashboard import", %{
     target: target,
     router_path: router_path

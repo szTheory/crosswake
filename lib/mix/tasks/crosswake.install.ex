@@ -193,18 +193,43 @@ defmodule Mix.Tasks.Crosswake.Install do
   defp infer_router_module!(router_path) do
     contents = File.read!(router_path)
 
-    case Regex.run(
-           ~r/\bdefmodule\s+([A-Z][A-Za-z0-9_]*(?:\.[A-Z][A-Za-z0-9_]*)*)\s+do\b/,
-           contents
-         ) do
-      [_match, router_module] ->
-        router_module
-
-      nil ->
+    with {:ok, ast} <- Code.string_to_quoted(contents),
+         [router_module] <- top_level_module_names(ast) do
+      router_module
+    else
+      {:error, _parse_error} ->
         Mix.raise(
-          "could not infer the router module from #{router_path}; ensure --router names a file containing defmodule"
+          "could not parse the router module from #{router_path}; ensure --router names valid Elixir source"
+        )
+
+      [] ->
+        Mix.raise(
+          "could not infer the router module from #{router_path}; ensure --router names a file containing one top-level defmodule"
+        )
+
+      router_modules when is_list(router_modules) ->
+        Mix.raise(
+          "could not infer one router module from #{router_path}; ensure --router names a file containing exactly one top-level defmodule"
         )
     end
+  end
+
+  defp top_level_module_names({:__block__, _meta, forms}), do: module_names(forms)
+  defp top_level_module_names(form), do: module_names([form])
+
+  defp module_names(forms) do
+    Enum.flat_map(forms, fn
+      {:defmodule, _meta, [{:__aliases__, _alias_meta, parts}, body]}
+      when is_list(parts) and is_list(body) ->
+        if Enum.all?(parts, &is_atom/1) do
+          [Enum.map_join(parts, ".", &Atom.to_string/1)]
+        else
+          []
+        end
+
+      _other ->
+        []
+    end)
   end
 
   defp infer_web_module!(router_module) do
