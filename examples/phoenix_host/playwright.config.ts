@@ -39,7 +39,7 @@ export default defineConfig({
     : {}),
   use: {
     baseURL: 'http://localhost:4700',
-    trace: 'on-first-retry',
+    trace: repositoryVerify ? 'retain-on-failure' : 'on-first-retry',
     serviceWorkers: 'block', // Prevent service worker caching from masking test results
   },
   projects: [

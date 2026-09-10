@@ -23,6 +23,7 @@ const STUDY_STATUS_PRESENTATIONS = Object.freeze({
   syncing: Object.freeze({ label: 'Syncing saved answers…', message: '', icon: '↻' }),
   needs_attention: Object.freeze({ label: 'Some saved answers need review.', message: '', icon: '▲' }),
   sync_paused: Object.freeze({ label: 'Saved answers paused', message: 'Your saved answers remain on this iPhone.', icon: 'Ⅱ' }),
+  initialization_failed: Object.freeze({ label: 'Offline study unavailable.', message: 'Reload this page to try again.', icon: '!' }),
 });
 
 let db;
@@ -181,9 +182,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderStudyStatus(legacyRecoveryRequired ? 'needs_attention' : 'sync_paused');
     updateProofCompatibilityStatus(legacyRecoveryRequired ? 'Saved changes need attention' : 'Sync is paused');
     initialized = true;
-  } catch (error) {
-    renderStudyStatus('sync_paused');
-    updateProofCompatibilityStatus('Sync is paused');
+  } catch (_error) {
+    setStudyControlsDisabled(true);
+    renderStudyStatus('initialization_failed');
+    updateProofCompatibilityStatus('Offline study unavailable. Reload this page to try again.');
   } finally {
     resolveInitialization(initialized);
   }
@@ -626,7 +628,8 @@ function setupEventListeners() {
   // Retained work stays inert until the host calls activateScope with fresh authority.
 }
 
-function setReviewControlsDisabled(disabled) {
+function setStudyControlsDisabled(disabled) {
+  document.getElementById('btn-flip').disabled = disabled;
   document.getElementById('btn-good').disabled = disabled;
   document.getElementById('btn-hard').disabled = disabled;
 }
@@ -638,7 +641,7 @@ async function handleReview(rating) {
   if (!card) return;
 
   reviewSubmissionOwned = true;
-  setReviewControlsDisabled(true);
+  setStudyControlsDisabled(true);
 
   const mutation = {
     client_mutation_id: crypto.randomUUID(),
@@ -657,13 +660,13 @@ async function handleReview(rating) {
     currentCardIndex++;
     renderCurrentCard();
     reviewSubmissionOwned = false;
-    setReviewControlsDisabled(false);
+    setStudyControlsDisabled(false);
     if (navigator.onLine) {
       replayOnOnline();
     }
   } catch (error) {
     reviewSubmissionOwned = false;
-    setReviewControlsDisabled(false);
+    setStudyControlsDisabled(false);
 
     if (error && error.name === 'QuotaExceededError') {
       const container = document.getElementById('flashcard-container');
@@ -674,7 +677,7 @@ async function handleReview(rating) {
       errorMsg.textContent = 'Device storage limit reached! Cannot save more progress. Please free up space on your device.';
       container.prepend(errorMsg);
       renderStudyStatus('sync_paused');
-      updateProofCompatibilityStatus('QuotaExceededError handled gracefully.');
+      updateProofCompatibilityStatus('Free up space on this device, then try saving again.');
     } else {
       renderStudyStatus('sync_paused');
     }
