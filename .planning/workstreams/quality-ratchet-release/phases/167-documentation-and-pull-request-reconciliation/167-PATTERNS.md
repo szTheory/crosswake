@@ -557,9 +557,9 @@ private actor ControlledPackProvider: PackProvider {
     private var invalidationWaiters: [(Int, CheckedContinuation<Void, Never>)] = []
 
     private func resumeStatusWaiters() {
-        let ready = statusWaiters.filter { $0.0 <= statusEntries }
-        statusWaiters.removeAll { $0.0 <= statusEntries }
-        ready.forEach { $0.1.resume() }
+        let ready = statusWaiters.filter { waiter in waiter.0 <= statusEntries }
+        statusWaiters.removeAll { waiter in waiter.0 <= statusEntries }
+        ready.forEach { waiter in waiter.1.resume() }
     }
 }
 ```
