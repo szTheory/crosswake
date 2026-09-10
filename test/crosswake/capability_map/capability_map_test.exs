@@ -17,6 +17,9 @@ defmodule Crosswake.CapabilityMapTest do
   @package_owners [:core, :native_shell, :first_party_companion, :example_docs_only, :deferred]
   @proof_postures [:merge_blocking, :advisory, :not_yet_proven, :unsupported]
   @rebuild_classes [:none, :native_required, :companion_required]
+  @evidence_subjects [:crosswake_contract, :reference_host, :first_adopter]
+  @source_bindings [:repository_bound, :source_bound, :required_missing]
+  @activation_states [:available, :reference_evidence, :blocked]
 
   @route_runtime_owners [
     :live_view,
@@ -38,6 +41,9 @@ defmodule Crosswake.CapabilityMapTest do
     :package_owner,
     :proof_posture,
     :rebuild,
+    :evidence_subject,
+    :source_binding,
+    :activation_state,
     :denial_fallback,
     :adoption_implication
   ]
@@ -80,6 +86,57 @@ defmodule Crosswake.CapabilityMapTest do
 
   test "D-53 rebuild vocabulary mirrors Crosswake.Manifest.Types.Capability.rebuild/0 exactly (Phase 154, CTRL-05)" do
     assert CapabilityMap.rebuild_classes() == @rebuild_classes
+  end
+
+  test "D-16 adoption-claim vocabularies are closed without changing public labels" do
+    assert CapabilityMap.evidence_subjects() == @evidence_subjects
+    assert CapabilityMap.source_bindings() == @source_bindings
+    assert CapabilityMap.activation_states() == @activation_states
+  end
+
+  test "D-17 current claims separate reusable contracts, retained reference evidence, and blocked activation" do
+    [contracts, reference, activation] = CapabilityMap.first_adopter_claims()
+
+    assert contracts.evidence_subject == :crosswake_contract
+    assert contracts.source_binding == :repository_bound
+    assert contracts.activation_state == :available
+
+    assert reference.evidence_subject == :reference_host
+    assert reference.source_binding == :source_bound
+    assert reference.activation_state == :reference_evidence
+    assert reference.proof_source == :physical_device
+    assert reference.recorded_on == ~D[2026-08-27]
+    assert reference.ios_runtime_line == "26.6"
+    refute reference.support_promotion
+
+    assert activation.evidence_subject == :first_adopter
+    assert activation.source_binding == :required_missing
+    assert activation.activation_state == :blocked
+    refute activation.support_promotion
+  end
+
+  test "D-20 impossible adoption claims fail closed with bounded non-echoing errors" do
+    [_contracts, reference, activation] = CapabilityMap.first_adopter_claims()
+
+    invalid_claims = [
+      {:adopter_bound_reference, %{reference | evidence_subject: :first_adopter}},
+      {:simulator_physical_proof, %{reference | proof_source: :simulator}},
+      {:missing_source_binding, %{reference | source_binding: nil}},
+      {:silently_advanced_evidence, %{reference | recorded_on: ~D[2026-09-10]}},
+      {:promotion_while_blocked, %{activation | support_promotion: true}}
+    ]
+
+    for {case_name, claim} <- invalid_claims do
+      error =
+        assert_raise ArgumentError, fn ->
+          CapabilityMap.validate_adoption_claim!(claim)
+        end
+
+      assert error.message =~ "invalid adoption claim"
+      refute error.message =~ inspect(case_name)
+      refute error.message =~ "26.6"
+      refute error.message =~ "2026-09-10"
+    end
   end
 
   test "D-53 every canonical row declares an explicit rebuild class from the locked vocabulary" do

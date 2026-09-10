@@ -60,11 +60,21 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     refute guide =~ "first-adopter"
   end
 
-  test "first adopter readiness renders only the retained corrected physical evidence claim" do
+  test "first adopter readiness separates retained reference evidence from blocked activation" do
     guide = Renderer.render(SupportMatrix.canonical())
 
     assert guide =~
-             "| physical-iPhone offline study | device evidence | A committed corrected-provenance physical-device record and deterministic authority gates support one first adopter offline-study flow. |"
+             "Available — reusable contracts verified."
+
+    assert guide =~ "Reference evidence —"
+    assert guide =~ "2026-08-27"
+    assert guide =~ "iOS 26.6"
+    assert guide =~ "does not verify your host"
+
+    assert guide =~
+             "Blocked — sanitized route policy and signed-device proof are required before this host can be promoted."
+
+    refute guide =~ "support one first adopter offline-study flow"
 
     for non_claim <- [
           "It does not claim Android.",
