@@ -630,6 +630,10 @@ test("evidence environment self-test locks Darwin arm64 tools and confinement", 
   const captureSource = readFileSync(new URL("../../script/capture_repository_verification_evidence.sh", import.meta.url), "utf8");
   const environmentSource = readFileSync(new URL("../../script/run_repository_evidence_environment.sh", import.meta.url), "utf8");
   assert.match(captureSource, /gradlew --no-daemon --version[^\n]*bootstrap-gradle\.log/);
+  for (const companion of ["crosswake_rulestead", "crosswake_rindle", "crosswake_sigra", "crosswake_chimeway", "crosswake_threadline"]) {
+    assert.match(captureSource, new RegExp(`for companion in [^\\n]*${companion}`));
+  }
+  assert.match(captureSource, /packages\/\$companion[^\n]*mix deps\.get --check-locked/);
   assert.match(captureSource, /GIT_OPTIONAL_LOCKS=0[^\n]*verify_repository\.sh --all/);
   assert.equal((captureSource.match(/GIT_OPTIONAL_LOCKS=0 git -C "\$checkout" status/g) ?? []).length, 2);
   assert.match(environmentSource, /gradlew --no-daemon --version[^\n]*preflight-bootstrap\.log/);

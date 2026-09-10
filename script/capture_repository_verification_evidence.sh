@@ -153,6 +153,9 @@ capture() {
     case "${PYTHONPATH:-}" in "${CROSSWAKE_REPOSITORY_EVIDENCE_TOOL_ROOT}"/*) ;; *) return 1 ;; esac
     [[ "${PYTHONNOUSERSITE:-}" = "1" ]] || return 1
     (cd "$checkout" && mix local.hex --force && mix local.rebar --force && MIX_ENV=test mix deps.get) >"$run_root/bootstrap-root.log" 2>&1 || return 1
+    for companion in crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline; do
+      (cd "$checkout/packages/$companion" && MIX_ENV=test mix deps.get --check-locked) >>"$run_root/bootstrap-root.log" 2>&1 || return 1
+    done
     (cd "$checkout/examples/phoenix_host" && MIX_ENV=test mix deps.get && npm ci && npx playwright install chromium) >"$run_root/bootstrap-host.log" 2>&1 || return 1
     (cd "$checkout" && packages/crosswake-shell-core-android/gradlew --no-daemon --version) >"$run_root/bootstrap-gradle.log" 2>&1 || return 1
   fi
