@@ -126,18 +126,18 @@ repair only the missing SwiftPM mirror tag.
 
 ## Companion Floors
 
-Mixed floors are intentional release truth:
+Each companion owns its core floor independently. The current set agrees on the
+published core line, but that does not put companion package versions in lockstep:
 
 | Hex package | Requires `crosswake` |
 |---|---|
-| `crosswake_rulestead` | `~> 0.1` |
-| `crosswake_rindle` | `~> 0.1` |
+| `crosswake_rulestead` | `~> 0.2` |
+| `crosswake_rindle` | `~> 0.2` |
 | `crosswake_sigra` | `~> 0.2` |
 | `crosswake_chimeway` | `~> 0.2` |
 | `crosswake_threadline` | `~> 0.2` |
 
 A companion that needs a newer core API bumps its own floor in its own release.
-Do not preemptively constrain older-compatible companions to a newer core line.
 
 ## Release Status
 

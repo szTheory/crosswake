@@ -75,6 +75,7 @@ SCOPE_PROFILES = {
         "packages/crosswake_rulestead/mix.exs",
         "script/ci_docs_allowlist.json",
         "script/ci_leaf_manifest.json",
+        "script/check_release_workflow_integrity.exs",
         "script/repository_artifact_policy.json",
         "script/verify_repository.mjs",
         "test/crosswake/capability_map/capability_map_test.exs",

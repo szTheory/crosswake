@@ -81,7 +81,10 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
       manifest_floor = extract_crosswake_requirement(mix_exs_path)
 
       assert package_row_cell(guide, package, "Requires `crosswake`") == "`#{manifest_floor}`"
-      assert package_row_cell(guide, package, "Current Version") == "`#{@published_versions[package]}`"
+
+      assert package_row_cell(guide, package, "Current Version") ==
+               "`#{@published_versions[package]}`"
+
       assert runbook_floor(runbook, package) == manifest_floor
     end
   end
@@ -101,7 +104,7 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
 
     stale_runbook =
       Enum.reduce(Map.keys(@published_versions), runbook, fn package, text ->
-        replace_package_row_floor(text, package, "~> 0.1")
+        replace_runbook_floor(text, package, "~> 0.1")
       end)
 
     refute readme_dependency_requirement(stale_install, "crosswake") == expected_floor
@@ -366,8 +369,14 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
     []
     |> maybe_error(manifest_floor != expected_floor, :manifest_core_floor)
     |> maybe_error(readme_core_floor != manifest_floor, :manifest_readme_core_floor)
-    |> maybe_error(readme_companion_floor != version_floor(companion_version), :independent_companion_version)
-    |> maybe_error(not String.contains?(manifest, "{:crosswake, path: \"../..\"}"), :development_path_dependency)
+    |> maybe_error(
+      readme_companion_floor != version_floor(companion_version),
+      :independent_companion_version
+    )
+    |> maybe_error(
+      not String.contains?(manifest, "{:crosswake, path: \"../..\"}"),
+      :development_path_dependency
+    )
     |> Enum.reverse()
   end
 
@@ -432,6 +441,15 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
       ~r/^(\|\s*`#{Regex.escape(package)}`\s*\|.*?\|\s*)`~> 0\.2`(\s*\|.*)$/m,
       doc,
       "\\1`#{floor}`\\2",
+      global: false
+    )
+  end
+
+  defp replace_runbook_floor(runbook, package, floor) do
+    Regex.replace(
+      ~r/^(\|\s*`#{Regex.escape(package)}`\s*\|\s*)`~> 0\.2`/m,
+      runbook,
+      "\\1`#{floor}`",
       global: false
     )
   end

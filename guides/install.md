@@ -45,7 +45,7 @@ Add `crosswake` to the deps in your Phoenix host's `mix.exs`:
 ```elixir
 def deps do
   [
-    {:crosswake, "~> 0.1"}
+    {:crosswake, "~> 0.2"}
   ]
 end
 ```
