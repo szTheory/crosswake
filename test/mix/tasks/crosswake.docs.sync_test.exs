@@ -100,7 +100,9 @@ defmodule Mix.Tasks.Crosswake.Docs.SyncTest do
     assert count(error.message, @remediation) == 1
   end
 
-  test "unknown, repeated, and combined options fail closed without echoing arguments", %{root: root} do
+  test "unknown, repeated, and combined options fail closed without echoing arguments", %{
+    root: root
+  } do
     for args <- [["--unknown-secret"], ["--check", "--check"], ["--check", "extra-secret"]] do
       error = assert_raise Mix.Error, fn -> in_root(root, fn -> run(args) end) end
 
@@ -134,7 +136,7 @@ defmodule Mix.Tasks.Crosswake.Docs.SyncTest do
 
   defp metadata(paths) do
     Map.new(paths, fn path ->
-      stat = File.stat!(path, time: :nanosecond)
+      stat = File.stat!(path)
       {path, Map.take(stat, [:size, :mode, :mtime, :ctime, :inode])}
     end)
   end
