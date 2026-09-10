@@ -1,5 +1,8 @@
 # Crosswake Support Matrix
 
+Canonical owner: `Crosswake.CapabilityMap` for the first adopter claim layers.
+Regenerate with `mix crosswake.docs.sync`.
+
 This guide stays narrow and proof-oriented. Generated-shell coordinate support is
 backed by release-time clean-room proof plus generated-shell verification hooks.
 The checked-in native hosts are `checked-in public-coordinate proof`; the explicit
@@ -93,7 +96,7 @@ Example-host, simulator, package-version, and policy-contract evidence do not pr
 |-------------|---------------|----------|
 | Reusable contracts | Available — reusable contracts verified. | Route policy, scoped replay, pack, and shell contracts are reusable; contract proof alone does not verify a host. |
 | Retained reference evidence | Reference evidence — one source-bound physical-iPhone run was recorded on 2026-08-27 on iOS 26.6; it does not verify your host. | Past evidence stays bound to that reference host, date, runtime line, and one bounded offline-study flow. |
-| First-adopter activation | Blocked — sanitized route policy and signed-device proof are required before this host can be promoted. | No retained reference, simulator, fixture, package-version, or policy-contract evidence transfers to this host. |
+| First adopter activation | Blocked — sanitized route policy and signed-device proof are required before this host can be promoted. | No retained reference, simulator, fixture, package-version, or policy-contract evidence transfers to this host. |
 
 ### Supporting boundaries
 

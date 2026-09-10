@@ -21,6 +21,9 @@ defmodule Crosswake.SupportMatrix.Renderer do
     [
       "# Crosswake Support Matrix",
       "",
+      "Canonical owner: `Crosswake.CapabilityMap` for the first adopter claim layers.",
+      "Regenerate with `mix crosswake.docs.sync`.",
+      "",
       "This guide stays narrow and proof-oriented. Generated-shell coordinate support is",
       "backed by release-time clean-room proof plus generated-shell verification hooks.",
       "The checked-in native hosts are `checked-in public-coordinate proof`; the explicit",
@@ -362,7 +365,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
 
   defp claim_label(:available), do: "Reusable contracts"
   defp claim_label(:reference_evidence), do: "Retained reference evidence"
-  defp claim_label(:blocked), do: "First-adopter activation"
+  defp claim_label(:blocked), do: "First adopter activation"
 
   defp public_non_claims_section do
     [
