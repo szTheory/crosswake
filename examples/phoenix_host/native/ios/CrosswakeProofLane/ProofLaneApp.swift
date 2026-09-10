@@ -1,9 +1,116 @@
 import SwiftUI
 import UIKit
 import CrosswakeShellCore
+import UserNotifications
+
+@MainActor
+final class ChimewayNotificationAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate, ObservableObject {
+  @Published private(set) var status = "Preparing notification proof"
+
+  private var configuration: (hostURL: URL, sessionAuth: String)? {
+    let environment = ProcessInfo.processInfo.environment
+    guard environment["CROSSWAKE_CHIMEWAY_PHYSICAL_PROOF"] == "1",
+          let host = environment["CROSSWAKE_CHIMEWAY_HOST_URL"],
+          let hostURL = URL(string: host),
+          let sessionAuth = environment["CROSSWAKE_CHIMEWAY_SESSION_AUTH"],
+          sessionAuth.isEmpty == false
+    else { return nil }
+    return (hostURL, sessionAuth)
+  }
+
+  func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+  ) -> Bool {
+    guard configuration != nil else { return true }
+
+    let center = UNUserNotificationCenter.current()
+    center.delegate = self
+    center.requestAuthorization(options: [.alert, .sound]) { [weak self] granted, _ in
+      guard let self else { return }
+      let outcome = granted ? "passed" : "blocked"
+      self.post(path: "permission", body: ["outcome": outcome])
+      Task { @MainActor in
+        self.status = granted ? "Permission granted; registering with APNs" : "Notification permission unavailable"
+        if granted { application.registerForRemoteNotifications() }
+      }
+    }
+    return true
+  }
+
+  func application(
+    _ application: UIApplication,
+    didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+  ) {
+    let token = deviceToken.map { String(format: "%02x", $0) }.joined()
+    guard token.isEmpty == false else { return }
+    status = "Registered; waiting for Chimeway alert"
+    post(path: "register", body: ["provider": "apns", "token": token])
+  }
+
+  func application(
+    _ application: UIApplication,
+    didFailToRegisterForRemoteNotificationsWithError error: Error
+  ) {
+    status = "APNs registration unavailable"
+    post(path: "registration-failed", body: ["outcome": "blocked"])
+  }
+
+  func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+  ) {
+    status = "Alert received; tap the banner"
+    post(path: "received", body: openReferenceBody(notification.request.content.userInfo))
+    completionHandler([.banner, .list, .sound])
+  }
+
+  func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping () -> Void
+  ) {
+    let body = openReferenceBody(response.notification.request.content.userInfo)
+    status = body.isEmpty ? "Notification open unavailable" : "Notification opened; verifying authority"
+    post(path: "activate", body: body) { [weak self] accepted in
+      Task { @MainActor in
+        self?.status = accepted ? "Protected activation accepted once" : "Protected activation rejected"
+      }
+      completionHandler()
+    }
+  }
+
+  private func openReferenceBody(_ userInfo: [AnyHashable: Any]) -> [String: String] {
+    guard let value = userInfo["chimeway_open_ref"] as? String, value.isEmpty == false else { return [:] }
+    return ["open_ref": value]
+  }
+
+  private func post(path: String, body: [String: String], completion: ((Bool) -> Void)? = nil) {
+    guard let configuration,
+          let url = URL(string: path, relativeTo: configuration.hostURL)
+    else {
+      completion?(false)
+      return
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.timeoutInterval = 10
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(configuration.sessionAuth)", forHTTPHeaderField: "Authorization")
+    request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+    URLSession.shared.dataTask(with: request) { _, response, _ in
+      let status = (response as? HTTPURLResponse)?.statusCode
+      completion?(status.map { (200..<300).contains($0) } ?? false)
+    }.resume()
+  }
+}
 
 @main
 struct CrosswakeProofLaneApp: App {
+  @UIApplicationDelegateAdaptor(ChimewayNotificationAppDelegate.self) private var notificationDelegate
   private let adapter: ProofLaneHostAdapter?
   private let navigationAdapter: ProofLaneNavigationHostAdapter?
   private let physicalReferenceHost: Bool
@@ -29,12 +136,35 @@ struct CrosswakeProofLaneApp: App {
 
   var body: some Scene {
     WindowGroup {
-      if physicalReferenceHost {
+      if ProcessInfo.processInfo.environment["CROSSWAKE_CHIMEWAY_PHYSICAL_PROOF"] == "1" {
+        ChimewayNotificationProofView(delegate: notificationDelegate)
+      } else if physicalReferenceHost {
         ReferencePhysicalNavigationShell(environment: ProcessInfo.processInfo.environment)
       } else {
         ProofLaneView(adapter: adapter, navigationAdapter: navigationAdapter)
       }
     }
+  }
+}
+
+private struct ChimewayNotificationProofView: View {
+  @ObservedObject var delegate: ChimewayNotificationAppDelegate
+
+  var body: some View {
+    VStack(spacing: 16) {
+      Image(systemName: "bell.badge.fill")
+        .font(.system(size: 54))
+      Text("Chimeway physical proof")
+        .font(.title2.bold())
+      Text(delegate.status)
+        .multilineTextAlignment(.center)
+        .accessibilityIdentifier("chimeway-notification-proof-status")
+      Text("Keep this app open and tap the notification banner when it appears.")
+        .font(.footnote)
+        .foregroundStyle(.secondary)
+        .multilineTextAlignment(.center)
+    }
+    .padding(24)
   }
 }
 

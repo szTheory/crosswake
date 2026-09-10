@@ -29,13 +29,19 @@ defmodule Crosswake.ProofLane.Evidence do
   @device_classes [:ios, :simulator, :unknown, :physical_iphone]
   @artifact_name "proof-lane-evidence.json"
   @complete_name ".complete"
-  @approved_kinds [:evidence_json, :navigation_shell_advisory, :physical_iphone_run_contract]
+  @approved_kinds [
+    :evidence_json,
+    :navigation_shell_advisory,
+    :physical_iphone_run_contract,
+    :chimeway_notification_run_contract
+  ]
   @phase_160_assertion_ids ~w(scope_partition lifecycle_fence per_event_reauthorization atomic_idempotency safe_observation disablement)
   @physical_assertion_ids PhysicalIphoneContract.assertions() |> Enum.map(& &1.id)
+  @notification_assertion_ids ~w(permission_observed authenticated_registration protected_activation_once)
   @assertion_ids ~w(browser_offline_island shell_boot auth_continuity relaunch_persistence replay_prerequisite pack_audio_prerequisite) ++
                    @phase_160_assertion_ids ++
                    ~w(PL-IOS-NAV-TOPOLOGY PL-IOS-NAV-PATCH-DEPTH PL-IOS-NAV-NAVIGATE-ONCE PL-IOS-NAV-RESTORE PL-IOS-NAV-TABS-BACK PL-IOS-NAV-MARKER-INSETS PL-IOS-NAV-FOCUS) ++
-                   @physical_assertion_ids
+                   @physical_assertion_ids ++ @notification_assertion_ids
 
   @sensitive_terms ~w(
     answer selected payload account customer credential password secret token transcript media
@@ -104,6 +110,9 @@ defmodule Crosswake.ProofLane.Evidence do
     do: Crosswake.ProofLane.NavigationShellAdvisory.scan(bytes)
 
   defp scan_source(:physical_iphone_run_contract, bytes), do: scan_physical_run_contract(bytes)
+
+  defp scan_source(:chimeway_notification_run_contract, bytes),
+    do: scan_chimeway_notification_run_contract(bytes)
 
   @spec check(Path.t()) :: :ok | {:error, Error.t()}
   def check(path) when is_binary(path) do
@@ -294,12 +303,10 @@ defmodule Crosswake.ProofLane.Evidence do
   end
 
   defp valid_physical_fields(input) do
-    physical_ids = PhysicalIphoneContract.assertions() |> Enum.map(& &1.id)
-
     case input[:device_class] do
       :physical_iphone ->
         with :ok <- runtime_line(input[:ios_runtime_line]),
-             true <- input[:assertion_ids] == physical_ids,
+             true <- physical_assertion_contract?(input),
              true <- input[:status] == :passed and input[:outcome] == :passed,
              true <- physical_hashes?(input[:approved_hashes]) do
           :ok
@@ -333,7 +340,24 @@ defmodule Crosswake.ProofLane.Evidence do
   defp physical_hashes?([%{kind: :physical_iphone_run_contract, digest: digest}]),
     do: is_binary(digest) and String.match?(digest, ~r/^[a-f0-9]{64}$/)
 
+  defp physical_hashes?([%{kind: :chimeway_notification_run_contract, digest: digest}]),
+    do: is_binary(digest) and String.match?(digest, ~r/^[a-f0-9]{64}$/)
+
   defp physical_hashes?(_), do: false
+
+  defp physical_assertion_contract?(%{
+         assertion_ids: @physical_assertion_ids,
+         approved_hashes: [%{kind: :physical_iphone_run_contract}]
+       }),
+       do: true
+
+  defp physical_assertion_contract?(%{
+         assertion_ids: @notification_assertion_ids,
+         approved_hashes: [%{kind: :chimeway_notification_run_contract}]
+       }),
+       do: true
+
+  defp physical_assertion_contract?(_), do: false
 
   defp enum(value, allowed, path) do
     if value in allowed,
@@ -590,6 +614,55 @@ defmodule Crosswake.ProofLane.Evidence do
       _ -> error("PL-EVIDENCE-HASH", "approved_hashes", "use an approved physical run contract")
     end
   end
+
+  defp scan_chimeway_notification_run_contract(bytes) do
+    with {:ok, decoded} <- Jason.decode(bytes),
+         :ok <- no_sensitive_value(decoded, "notification_run_contract"),
+         {:ok, canonical} <- decode_chimeway_notification_run_contract(decoded),
+         true <- Jason.encode!(canonical) == bytes do
+      :ok
+    else
+      _ ->
+        error(
+          "PL-EVIDENCE-HASH",
+          "approved_hashes",
+          "use an approved Chimeway notification run contract"
+        )
+    end
+  end
+
+  defp decode_chimeway_notification_run_contract(
+         %{
+           "schema_version" => 1,
+           "device_class" => "physical_iphone",
+           "ios_runtime_line" => runtime_line,
+           "outcome" => "passed",
+           "assertions" => assertions
+         } = input
+       )
+       when map_size(input) == 5 and is_list(assertions) do
+    expected = [
+      %{"id" => "permission_observed", "owner" => "device_local", "outcome" => "passed"},
+      %{
+        "id" => "authenticated_registration",
+        "owner" => "backend_authority",
+        "outcome" => "passed"
+      },
+      %{
+        "id" => "protected_activation_once",
+        "owner" => "backend_authority",
+        "outcome" => "passed"
+      }
+    ]
+
+    with :ok <- runtime_line(runtime_line), true <- assertions == expected do
+      {:ok, input}
+    else
+      _ -> :error
+    end
+  end
+
+  defp decode_chimeway_notification_run_contract(_), do: :error
 
   defp decode_physical_run_contract(
          %{

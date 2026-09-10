@@ -65,6 +65,37 @@ defmodule Crosswake.ProofLane.ChimewayNotificationPhysicalProofTest do
     end)
   end
 
+  test "the source-owned task promotes a closed notification result" do
+    root =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-chimeway-notification-task-#{System.unique_integer([:positive])}"
+      )
+
+    destination = Path.join(root, "physical_iphone")
+    File.mkdir_p!(root)
+
+    try do
+      assert {:ok, result} =
+               Mix.Tasks.Crosswake.ProofLane.ChimewayNotificationPhysical.run_with([
+                 "--input",
+                 @fixture,
+                 "--destination",
+                 destination,
+                 "--ios-runtime-line",
+                 "26.6",
+                 "--json"
+               ])
+
+      assert result.outcome == "passed"
+      assert result.owner == "crosswake"
+      assert result.run_ref == "cw-physical-fixture-0001"
+      assert :ok = Contract.validate_source_bound(fixture_report(), destination)
+    after
+      File.rm_rf(root)
+    end
+  end
+
   defp fixture_report do
     %{"assertions" => assertions} = @fixture |> File.read!() |> Jason.decode!()
 
@@ -98,7 +129,7 @@ defmodule Crosswake.ProofLane.ChimewayNotificationPhysicalProofTest do
       template_version: "1",
       commit_ref: "git-0123456789abcdef0123456789abcdef01234567",
       route_id: "route-0123456789abcdef",
-      assertion_ids: Crosswake.ProofLane.PhysicalIphoneContract.assertions() |> Enum.map(& &1.id),
+      assertion_ids: Enum.map(@expected, & &1.id),
       status: :passed,
       outcome: :passed,
       captured_at: "2026-08-26T12:00:00Z",
@@ -106,19 +137,22 @@ defmodule Crosswake.ProofLane.ChimewayNotificationPhysicalProofTest do
       device_class: :physical_iphone,
       ios_runtime_line: "18.0",
       approved_hashes: [
-        %{kind: :physical_iphone_run_contract, canonical_bytes: canonical_physical_run_contract()}
+        %{
+          kind: :chimeway_notification_run_contract,
+          canonical_bytes: canonical_notification_run_contract()
+        }
       ]
     }
   end
 
-  defp canonical_physical_run_contract do
+  defp canonical_notification_run_contract do
     Jason.encode!(%{
       "schema_version" => 1,
       "device_class" => "physical_iphone",
       "ios_runtime_line" => "18.0",
       "outcome" => "passed",
       "assertions" =>
-        Crosswake.ProofLane.PhysicalIphoneContract.assertions()
+        @expected
         |> Enum.map(fn %{id: id, owner: owner} ->
           %{"id" => id, "owner" => Atom.to_string(owner), "outcome" => "passed"}
         end)

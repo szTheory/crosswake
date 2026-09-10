@@ -16,22 +16,6 @@ defmodule Crosswake.ProofLane.ChimewayNotificationPhysicalProof do
     %{id: "protected_activation_once", owner: :backend_authority}
   ]
 
-  @canonical_physical_run_contract Jason.encode!(%{
-                                     "schema_version" => 1,
-                                     "device_class" => "physical_iphone",
-                                     "ios_runtime_line" => "18.0",
-                                     "outcome" => "passed",
-                                     "assertions" =>
-                                       PhysicalIphoneContract.assertions()
-                                       |> Enum.map(fn %{id: id, owner: owner} ->
-                                         %{
-                                           "id" => id,
-                                           "owner" => Atom.to_string(owner),
-                                           "outcome" => "passed"
-                                         }
-                                       end)
-                                   })
-
   @spec schema_version() :: pos_integer()
   def schema_version, do: @schema_version
 
@@ -68,7 +52,8 @@ defmodule Crosswake.ProofLane.ChimewayNotificationPhysicalProof do
   @spec validate_source_bound(term(), Path.t()) :: :ok | {:error, String.t()}
   def validate_source_bound(report, evidence_path) when is_binary(evidence_path) do
     with :ok <- validate_report(report),
-         :ok <- Evidence.check(evidence_path, [canonical_source()]) do
+         {:ok, runtime_line} <- evidence_runtime_line(evidence_path),
+         :ok <- Evidence.check(evidence_path, [canonical_source(report, runtime_line)]) do
       :ok
     else
       {:error, rule} when is_binary(rule) -> {:error, rule}
@@ -78,8 +63,34 @@ defmodule Crosswake.ProofLane.ChimewayNotificationPhysicalProof do
 
   def validate_source_bound(_, _), do: {:error, "CW-NOTIFICATION-SOURCE-BOUND"}
 
-  defp canonical_source do
-    %{kind: :physical_iphone_run_contract, canonical_bytes: @canonical_physical_run_contract}
+  defp canonical_source(report, runtime_line) do
+    canonical_bytes =
+      Jason.encode!(%{
+        "schema_version" => @schema_version,
+        "device_class" => "physical_iphone",
+        "ios_runtime_line" => runtime_line,
+        "outcome" => "passed",
+        "assertions" =>
+          Enum.map(report, fn %{id: id, owner: owner, outcome: outcome} ->
+            %{
+              "id" => id,
+              "owner" => Atom.to_string(owner),
+              "outcome" => Atom.to_string(outcome)
+            }
+          end)
+      })
+
+    %{kind: :chimeway_notification_run_contract, canonical_bytes: canonical_bytes}
+  end
+
+  defp evidence_runtime_line(evidence_path) do
+    with {:ok, bytes} <- File.read(Path.join(evidence_path, "proof-lane-evidence.json")),
+         {:ok, %{"ios_runtime_line" => runtime_line}} <- Jason.decode(bytes),
+         {:ok, runtime_line} <- PhysicalIphoneContract.ios_runtime_line(runtime_line) do
+      {:ok, runtime_line}
+    else
+      _ -> {:error, "CW-NOTIFICATION-SOURCE-BOUND"}
+    end
   end
 
   defp exact_entry_shape?(entry) when is_map(entry),
