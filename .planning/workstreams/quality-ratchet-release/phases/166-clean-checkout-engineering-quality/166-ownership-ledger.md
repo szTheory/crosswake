@@ -1,7 +1,7 @@
 # Phase 166 Ownership Ledger
 
 - Base commit: `8383aaea2a2b2e10bbe61dd843b51f4129a5d447`
-- Tree commit: `1ddf3357973d1cfdff4f2b6140115bdb2f424fd2`
+- Tree commit: `f9bf7eb2d7395599c6234ff618fc3589c95bd541`
 - Candidate rule: NUL-safe `git diff --name-only -z <base> <tree>`, excluding `.planning/`
 - Unresolved flags: all five flagged assumptions, including `FA-ENG-02`, and both bespoke prohibitions remain unresolved by design. Plan 08 closes the mechanical final-tree reconciliation without reclassifying those planning assumptions.
 
@@ -65,16 +65,52 @@ Disposition is closed to `retained`, `changed`, `removed-with-proof`, and `unpro
 | guides/companion_compatibility.md | tracked compatibility support truth | documentation owner | retained |
 | guides/install.md | tracked installation support truth | documentation owner | retained |
 | guides/route_policy.md | tracked route-policy support truth | documentation owner | retained |
+| lib/crosswake/bridge.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/bridge/commands/file_picker.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/bridge/commands/permissions_status.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/bridge/registry.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/commerce.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/commerce/contracts.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/commerce/provider_evidence.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/commerce/reconciliation.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/companion/state.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/companion_guard.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/companions/play_billing/evidence.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/companions/play_billing/result.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/companions/store_kit/evidence.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/companions/store_kit/result.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/compatibility/compatibility.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/compatibility/route_gate.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
 | lib/crosswake/doctor/doctor.ex | focused doctor tests and supported Mix entrypoint | diagnostics owner | retained |
 | lib/crosswake/doctor/finding_policy.ex | focused finding-policy tests and doctor authority | diagnostics owner | retained |
+| lib/crosswake/doctor/formatter.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/doctor/publish_readiness.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
 | lib/crosswake/install/patcher.ex | focused installer tests and supported Mix entrypoint | installation owner | retained |
 | lib/crosswake/manifest/builder.ex | focused manifest tests and supported runtime entrypoints | manifest owner | retained |
+| lib/crosswake/native_escape/contract.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/native_escape/runtime.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/offline/contracts.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/operator_inspection.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/packs/runtime.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
 | lib/crosswake/planning/closeout_verifier.ex | focused module tests and supported Mix/runtime entrypoints | planning contract owner | retained |
 | lib/crosswake/planning/first_adopter_context.ex | focused module tests and supported Mix/runtime entrypoints | planning contract owner | retained |
 | lib/crosswake/planning/paths.ex | focused module tests and supported Mix/runtime entrypoints | planning contract owner | retained |
+| lib/crosswake/policy/schema.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/policy/validator.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
 | lib/crosswake/release_status.ex | focused module tests and supported Mix/runtime entrypoints | Crosswake runtime owner | retained |
+| lib/crosswake/router.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/router/scope_defaults.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/runtime_line/rebuild_policy.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/shell/diagnostic_export.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/crosswake/transfer/contracts.ex | focused tests and supported runtime entrypoint | production contract owner | retained |
+| lib/mix/tasks/closeout.verify.ex | supported Mix entrypoint and focused regression | Mix task owner | retained |
+| lib/mix/tasks/crosswake.contract.gen.ex | supported Mix entrypoint and focused regression | Mix task owner | retained |
 | lib/mix/tasks/crosswake.doctor.ex | supported doctor Mix entrypoint and focused regression | diagnostics owner | retained |
+| lib/mix/tasks/crosswake.gen.offline_ui.ex | supported Mix entrypoint and focused regression | Mix task owner | retained |
+| lib/mix/tasks/crosswake.gen.shell.ex | supported Mix entrypoint and focused regression | Mix task owner | retained |
+| lib/mix/tasks/crosswake.gen.sync.ex | supported Mix entrypoint and focused regression | Mix task owner | retained |
 | lib/mix/tasks/crosswake.install.ex | supported install Mix entrypoint and focused regression | installation owner | retained |
+| lib/mix/tasks/crosswake.shell.status.ex | supported Mix entrypoint and focused regression | Mix task owner | retained |
 | mix.exs | root alias and dependency contract | toolchain and dependency owners | retained |
 | mix.lock | lock-governed dependency resolution | toolchain and dependency owners | retained |
 | packages/crosswake_chimeway/mix.lock | lock-governed companion dependency resolution | companion package owner | retained |
@@ -111,19 +147,57 @@ Disposition is closed to `retained`, `changed`, `removed-with-proof`, and `unpro
 | script/verify_repository.mjs | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | script/verify_repository.sh | tracked caller, manifest, or focused regression | repository verification owner | retained |
 | scripts/ci_monitor.cjs | tracked caller, manifest, or focused regression | CI evidence owner | retained |
+| test/crosswake/bridge/bridge_behavioral_vector_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/bridge/contract_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/bridge/push_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/bridge/registry_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/commerce/reconciliation_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/companions/play_billing_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/companions/store_kit_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/compatibility/compatibility_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/doctor/doctor_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/doctor/doctor_threadline_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/doctor/formatter_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/guides/adopter_profiles_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/guides/capabilities_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/guides/capture_collateral_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/guides/collateral_table_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/guides/native_dev_wiring_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/guides/port_registry_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/guides/readme_see_it_run_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/guides/release_boundaries_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/guides/route_policy_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/guides/see_it_run_banner_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/guides/user_flows_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/guides/web_to_mobile_migration_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/hex_page_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/manifest/manifest_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/offline/contracts_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/offline/proof_lane_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/planning/closeout_ci_parity_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/planning/first_adopter_context_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/planning/milestone_transition_reset_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/planning/paths_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/planning/release_please_config_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/policy/compile_error_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/policy/compiler_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/policy/route_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/policy/schema_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/policy/warning_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase129_companion_contract_freeze_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase130_extraction_guards_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase130_fail_closed_contract_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase133_telemetry_contract_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/proof/phase134_native_gate_blocking_proof_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/proof/phase135_ci_ops_proof_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase136_decouple_proof_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/proof/phase142_release_integrity_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase145_ios_backfill_script_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/proof/phase153_1_cache_integrity_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/proof/phase153_1_gate_integrity_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/proof/phase153_ios_mirror_unblock_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase154_advisory_actionability_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase154_recipe_followable_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/proof/phase164_dependency_security_and_gate_authority_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/proof/phase164_example_host_isolation_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/proof/phase164_exunit_ownership_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
@@ -131,8 +205,34 @@ Disposition is closed to `retained`, `changed`, `removed-with-proof`, and `unpro
 | test/crosswake/proof/phase165_ci_policy_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/proof/phase165_evidence_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/proof/phase166_repository_quality_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase18_bounded_family_lane_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase18_deep_link_activation_lane_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase21_reconciliation_example_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase23_commerce_support_proof_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase33_commerce_corridor_routes_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase34_mock_storefront_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase34_paywall_corridor_proof_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase38_companion_contract_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase39_route_policy_gating_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase40_gate_evaluation_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase41_gating_doctor_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase42_rulestead_companion_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase48_provider_adapter_proof_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/proof/phase5_proof_lane_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase63_advisory_proof_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase65_diagnostic_export_seam_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase68_android_uat_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase69_docs_contract_parity_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof/phase8_selective_native_lane_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/proof_lane/ios_verifier_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/crosswake/proof_lane/physical_iphone_evidence_transaction_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/router_defaults_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/router_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/shell/activation_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/shell/denial_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/shell/diagnostic_export_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/sync/event_log_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/crosswake/transfer/contracts_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/fixtures/ci/cancellation/cases.json | named negative-control consumer | paired proof fixture owner | retained |
 | test/fixtures/ci/classifier/cases.json | named negative-control consumer | paired proof fixture owner | retained |
 | test/fixtures/ci/maximum-shape-crosswake-ci.yml | named negative-control consumer | paired proof fixture owner | retained |
@@ -144,11 +244,17 @@ Disposition is closed to `retained`, `changed`, `removed-with-proof`, and `unpro
 | test/fixtures/security/advisory-bearing.lock | named negative-control consumer | paired proof fixture owner | retained |
 | test/js/playwright_repository_mode.test.mjs | focused repository-mode browser regression | browser proof owner | retained |
 | test/js/repository_verification.test.mjs | focused test path and owning production contract | repository runner proof owner | retained |
+| test/mix/tasks/crosswake.gen.native_controls_ui_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/mix/tasks/crosswake.gen.offline_ui_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/mix/tasks/crosswake.gen.sync_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/mix/tasks/crosswake_adoption_context_scan_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/mix/tasks/crosswake_doctor_router_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/mix/tasks/crosswake_doctor_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
 | test/mix/tasks/crosswake_install_test.exs | focused test path and owning production contract | paired ExUnit proof owner | retained |
+| test/support/bridge_live_view_case.ex | focused test support and owning production contract | ExUnit support owner | retained |
+| test/support/compile_router_case.ex | focused test support and owning production contract | ExUnit support owner | retained |
 | test/support/example_host.ex | focused test path and owning production contract | ExUnit support owner | retained |
+| test/support/router_fixtures.ex | focused test support and owning production contract | ExUnit support owner | retained |
 | test/test_helper.exs | focused test path and owning production contract | ExUnit harness owner | retained |
 
 ## Direct expansions
@@ -205,7 +311,7 @@ tests. No additional source correction is authorized, and the queue contains no 
 | command | result |
 | --- | --- |
 | `node --test test/js/playwright_repository_mode.test.mjs` | PASS (3 tests) |
-| `python3 script/check_phase166_ownership_ledger.py --self-test` | PASS (12 mutation and queue controls) |
+| `python3 script/check_phase166_ownership_ledger.py --self-test` | PASS (15 mutation and queue controls) |
 | `python3 script/check_phase166_ownership_ledger.py --verify-remediations .planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-ownership-ledger.md` | PASS (1 exact remediation) |
 | `ASDF_ELIXIR_VERSION=1.19.5-otp-28 ASDF_ERLANG_VERSION=28.4.1 script/check_phase166_clean_checkout_engineering_quality.sh` | PASS |
 
