@@ -66,6 +66,22 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     refute troubleshooting =~ ~r/(?:token|credential|account identifier|device identifier):\s*\S+/i
   end
 
+  test "publish runbook stops before the 0.2.1 candidate and immutable release actions" do
+    runbook = File.read!("docs/COMPANION-PUBLISH-RUNBOOK.md")
+
+    boundary =
+      section_between(runbook, "## Phase 167 review boundary", "## Current Operating Model")
+
+    assert boundary =~ "reversible preparation only"
+    assert boundary =~ "Phase 168"
+    assert boundary =~ "exact `0.2.1` candidate proof"
+    assert boundary =~ "explicit maintainer approval"
+    assert boundary =~ "Do not merge a Release Please PR"
+    assert boundary =~ "publish a package"
+    assert boundary =~ "create or move a tag"
+    assert boundary =~ "update the SwiftPM mirror"
+  end
+
   test "guide surfaces link rebuild guidance to canonical promotion and non-claim truth" do
     guide_paths = [
       "guides/install.md",
@@ -728,5 +744,11 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
 
   defp normalize_whitespace(contents) do
     Regex.replace(~r/\s+/, contents, " ")
+  end
+
+  defp section_between(contents, start_heading, next_heading) do
+    [_, rest] = String.split(contents, start_heading, parts: 2)
+    [section | _] = String.split(rest, next_heading, parts: 2)
+    section
   end
 end

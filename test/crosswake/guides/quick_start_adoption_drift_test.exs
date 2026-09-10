@@ -90,6 +90,20 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
              ~r/retained\s+source-bound reference-host evidence (?:is|remains) non-transferable/i
   end
 
+  test "physical handoff keeps reference rehearsal separate from adopter activation" do
+    handoff = File.read!(@physical_handoff_path)
+
+    assert handoff =~ "**Reference rehearsal:**"
+    assert handoff =~ "2026-08-27"
+    assert handoff =~ "iOS 26.6"
+    assert handoff =~ "**First adopter activation:**"
+    assert handoff =~ "sanitized route policy"
+    assert handoff =~ "fresh source-bound signed-device run"
+
+    refute handoff =~ "First B2C Adopter"
+    refute handoff =~ "TODO-002"
+  end
+
   test "showcase-first scanner names missing categories separately" do
     port = phoenix_host_port()
 
