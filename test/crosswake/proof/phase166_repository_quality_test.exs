@@ -237,8 +237,10 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     assert status == 0, output
 
     assert String.split(output, "\n", trim: true) == [
-             "phase166-remediations: PASS count=1",
-             ~S(phase166-remediation: {"finding class":"misleading-fallback","focused command":"node --test test/js/playwright_repository_mode.test.mjs","focused regression":"test/js/playwright_repository_mode.test.mjs","owner":"browser proof owner","result":"pass","source path":"examples/phoenix_host/playwright.config.ts"})
+             "phase166-remediations: PASS count=3",
+             ~S(phase166-remediation: {"finding class":"misleading-fallback","focused command":"cd examples/phoenix_host && npx playwright test e2e/offline_storage.spec.ts","focused regression":"examples/phoenix_host/e2e/offline_storage.spec.ts","owner":"offline island presentation owner","result":"pass","source path":"examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/index.html.heex"}),
+             ~S(phase166-remediation: {"finding class":"misleading-fallback","focused command":"node --test test/js/playwright_repository_mode.test.mjs","focused regression":"test/js/playwright_repository_mode.test.mjs","owner":"browser proof owner","result":"pass","source path":"examples/phoenix_host/playwright.config.ts"}),
+             ~S(phase166-remediation: {"finding class":"misleading-fallback","focused command":"cd examples/phoenix_host && npx playwright test e2e/offline_storage.spec.ts","focused regression":"examples/phoenix_host/e2e/offline_storage.spec.ts","owner":"offline island owner","result":"pass","source path":"examples/phoenix_host/priv/static/offline_study.js"})
            ]
   end
 
