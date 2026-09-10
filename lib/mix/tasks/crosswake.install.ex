@@ -194,21 +194,27 @@ defmodule Mix.Tasks.Crosswake.Install do
     contents = File.read!(router_path)
 
     case Regex.run(
-           ~r/\bdefmodule\s+([A-Z][A-Za-z0-9_]*(?:\.[A-Z][A-Za-z0-9_]*)*)\.Router\s+do\b/,
+           ~r/\bdefmodule\s+([A-Z][A-Za-z0-9_]*(?:\.[A-Z][A-Za-z0-9_]*)*)\s+do\b/,
            contents
          ) do
-      [_match, web_module] ->
-        "#{web_module}.Router"
+      [_match, router_module] ->
+        router_module
 
       nil ->
         Mix.raise(
-          "could not infer the router module from #{router_path}; pass --web-module explicitly"
+          "could not infer the router module from #{router_path}; ensure --router names a file containing defmodule"
         )
     end
   end
 
   defp infer_web_module!(router_module) do
-    String.replace_suffix(router_module, ".Router", "")
+    if String.ends_with?(router_module, ".Router") do
+      String.replace_suffix(router_module, ".Router", "")
+    else
+      Mix.raise(
+        "could not infer the web module from router module #{router_module}; pass --web-module explicitly"
+      )
+    end
   end
 
   defp policy_path(target, router_path) do

@@ -172,6 +172,31 @@ defmodule Mix.Tasks.Crosswake.InstallTest do
     assert manifest["policy_module"] == "GetFluentWeb.Crosswake.Policy"
   end
 
+  test "accepts a nonstandard router module when the web module is explicit", %{
+    target: target,
+    router_path: router_path
+  } do
+    File.write!(router_path, """
+    defmodule DemoWeb.Routes do
+      use DemoWeb, :router
+    end
+    """)
+
+    capture_io(fn ->
+      Mix.Task.reenable(@task)
+      Mix.Task.run(@task, ["--target", target, "--web-module", "DemoWeb"])
+    end)
+
+    policy = File.read!(Path.join(target, "lib/demo_web/crosswake/policy.ex"))
+
+    manifest =
+      Jason.decode!(File.read!(Path.join(target, "priv/crosswake/install_manifest.json")))
+
+    assert policy =~ "@router DemoWeb.Routes"
+    assert manifest["router_module"] == "DemoWeb.Routes"
+    assert manifest["web_module"] == "DemoWeb"
+  end
+
   test "scopes Crosswake macro exclusions beside a Phoenix LiveDashboard import", %{
     target: target,
     router_path: router_path
