@@ -69,15 +69,15 @@ defmodule Crosswake.MixProject do
       "companions.test": [
         # deps.get each package first so the alias is self-sufficient on a fresh checkout
         # (the lanes only fetch one package's deps; `mix test` does not auto-fetch).
-        "cmd --cd packages/crosswake_rulestead mix deps.get",
+        "cmd --cd packages/crosswake_rulestead mix deps.get --check-locked",
         "cmd --cd packages/crosswake_rulestead mix test",
-        "cmd --cd packages/crosswake_rindle mix deps.get",
+        "cmd --cd packages/crosswake_rindle mix deps.get --check-locked",
         "cmd --cd packages/crosswake_rindle mix test",
-        "cmd --cd packages/crosswake_sigra mix deps.get",
+        "cmd --cd packages/crosswake_sigra mix deps.get --check-locked",
         "cmd --cd packages/crosswake_sigra mix test",
-        "cmd --cd packages/crosswake_chimeway mix deps.get",
+        "cmd --cd packages/crosswake_chimeway mix deps.get --check-locked",
         "cmd --cd packages/crosswake_chimeway mix test",
-        "cmd --cd packages/crosswake_threadline mix deps.get",
+        "cmd --cd packages/crosswake_threadline mix deps.get --check-locked",
         "cmd --cd packages/crosswake_threadline mix test"
       ],
       verify: [

@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "stages": [
+    {
+      "stage_id": "repository-preflight",
+      "dependencies": [],
+      "required_tools": [
+        {"tool": "bash", "argv": ["bash", "--version"], "version_regex": "version (5\\.|3\\.2)", "remediation_command": "asdf install"},
+        {"tool": "git", "argv": ["git", "--version"], "version_regex": "git version [2-9]\\.", "remediation_command": "asdf install"},
+        {"tool": "node", "argv": ["node", "--version"], "version_regex": "^v22\\.14\\.0$", "remediation_command": "asdf install"}
+      ],
+      "argv": ["node", "--version"],
+      "timeout_ms": 15000,
+      "cwd": ".",
+      "env": {},
+      "ci_owners": [{"job_id": "proof-dependency-security", "command": "script/verify_repository.sh --stage repository-preflight"}],
+      "remediation_command": "asdf install",
+      "owned_outputs": []
+    },
+    {
+      "stage_id": "root-proof",
+      "dependencies": ["repository-preflight"],
+      "required_tools": [
+        {"tool": "elixir", "argv": ["elixir", "--version"], "version_regex": "Elixir 1\\.19\\.5", "remediation_command": "asdf install"},
+        {"tool": "erl", "argv": ["erl", "-noshell", "-eval", "io:format(\"~s\", [erlang:system_info(otp_release)]), halt()."], "version_regex": "^27$", "remediation_command": "asdf install"}
+      ],
+      "argv": ["mix", "verify"],
+      "timeout_ms": 1800000,
+      "cwd": ".",
+      "env": {"MIX_ENV": "test"},
+      "ci_owners": [{"job_id": "phase130-core-hermetic-proof", "command": "script/verify_repository.sh --stage root-proof"}],
+      "remediation_command": "MIX_ENV=test mix verify",
+      "owned_outputs": ["_build", "deps"]
+    },
+    {
+      "stage_id": "example-host-proof",
+      "dependencies": ["repository-preflight"],
+      "required_tools": [{"tool": "elixir", "argv": ["elixir", "--version"], "version_regex": "Elixir 1\\.19\\.5", "remediation_command": "asdf install"}],
+      "argv": ["script/check_example_host_isolation.sh", "--matrix-only"],
+      "timeout_ms": 1800000,
+      "cwd": ".",
+      "env": {"MIX_ENV": "test"},
+      "ci_owners": [{"job_id": "proof-requires-example-host", "command": "script/verify_repository.sh --stage example-host-proof"}],
+      "remediation_command": "MIX_ENV=test script/check_example_host_isolation.sh --matrix-only",
+      "owned_outputs": ["examples/phoenix_host/_build", "examples/phoenix_host/deps"]
+    },
+    {
+      "stage_id": "browser-proof",
+      "dependencies": ["repository-preflight"],
+      "required_tools": [
+        {"tool": "npm", "argv": ["npm", "--version"], "version_regex": "^10\\.9\\.2$", "remediation_command": "asdf install"}
+      ],
+      "argv": ["npx", "playwright", "test"],
+      "timeout_ms": 1800000,
+      "cwd": "examples/phoenix_host",
+      "env": {"CI": "1", "CROSSWAKE_REPOSITORY_VERIFY": "1"},
+      "ci_owners": [
+        {"job_id": "e2e-proof", "command": "script/verify_repository.sh --stage browser-proof"},
+        {"job_id": "route-tour-proof", "command": "script/verify_repository.sh --stage browser-proof"}
+      ],
+      "remediation_command": "script/verify_repository.sh --stage browser-proof",
+      "owned_outputs": []
+    },
+    {
+      "stage_id": "ios-package-proof",
+      "dependencies": ["repository-preflight"],
+      "required_tools": [
+        {"tool": "swift", "argv": ["swift", "--version"], "version_regex": "Swift version (5\\.9|6\\.)", "remediation_command": "xcode-select --install"},
+        {"tool": "xcodebuild", "argv": ["xcodebuild", "-version"], "version_regex": "^Xcode (1[5-9]|[2-9][0-9])\\.", "remediation_command": "xcode-select --install"}
+      ],
+      "argv": ["swift", "test"],
+      "timeout_ms": 1800000,
+      "cwd": "packages/crosswake-shell-core-ios",
+      "env": {},
+      "ci_owners": [{"job_id": "ios-package-unit", "command": "script/verify_repository.sh --stage ios-package-proof"}],
+      "remediation_command": "cd packages/crosswake-shell-core-ios && swift test",
+      "owned_outputs": ["packages/crosswake-shell-core-ios/.build"]
+    },
+    {
+      "stage_id": "android-package-proof",
+      "dependencies": ["repository-preflight"],
+      "required_tools": [
+        {"tool": "java", "argv": ["java", "-version"], "version_regex": "version \"17\\.", "remediation_command": "asdf install"},
+        {"tool": "gradle-wrapper", "argv": ["packages/crosswake-shell-core-android/gradlew", "--version"], "version_regex": "Gradle 8\\.7", "remediation_command": "cd packages/crosswake-shell-core-android && ./gradlew --version"}
+      ],
+      "argv": ["./gradlew", "--no-daemon", "test"],
+      "timeout_ms": 1800000,
+      "cwd": "packages/crosswake-shell-core-android",
+      "env": {"CROSSWAKE_ANDROID_CONNECTED_TESTS": "0"},
+      "ci_owners": [{"job_id": "android-package-unit", "command": "script/verify_repository.sh --stage android-package-proof"}],
+      "remediation_command": "cd packages/crosswake-shell-core-android && ./gradlew --no-daemon test",
+      "owned_outputs": ["packages/crosswake-shell-core-android/.gradle", "packages/crosswake-shell-core-android/build"]
+    },
+    {
+      "stage_id": "format-proof",
+      "dependencies": ["repository-preflight"],
+      "required_tools": [{"tool": "elixir", "argv": ["elixir", "--version"], "version_regex": "Elixir 1\\.19\\.5", "remediation_command": "asdf install"}],
+      "argv": ["mix", "format", "--check-formatted"],
+      "timeout_ms": 300000,
+      "cwd": ".",
+      "env": {"MIX_ENV": "test"},
+      "ci_owners": [{"job_id": "guard-01-contract-drift-test", "command": "script/verify_repository.sh --stage format-proof"}],
+      "remediation_command": "MIX_ENV=test mix format --check-formatted",
+      "owned_outputs": []
+    },
+    {
+      "stage_id": "warnings-proof",
+      "dependencies": ["repository-preflight"],
+      "required_tools": [{"tool": "elixir", "argv": ["elixir", "--version"], "version_regex": "Elixir 1\\.19\\.5", "remediation_command": "asdf install"}],
+      "argv": ["mix", "compile", "--warnings-as-errors"],
+      "timeout_ms": 900000,
+      "cwd": ".",
+      "env": {"MIX_ENV": "test"},
+      "ci_owners": [{"job_id": "phase41-gating-proof", "command": "script/verify_repository.sh --stage warnings-proof"}],
+      "remediation_command": "MIX_ENV=test mix compile --warnings-as-errors",
+      "owned_outputs": ["_build"]
+    },
+    {
+      "stage_id": "repository-cleanliness",
+      "dependencies": [],
+      "required_tools": [],
+      "argv": ["git", "diff", "--check"],
+      "timeout_ms": 60000,
+      "cwd": ".",
+      "env": {},
+      "ci_owners": [{"job_id": "guard-02-generate-and-diff", "command": "script/verify_repository.sh --stage repository-cleanliness"}],
+      "remediation_command": "script/verify_repository.sh --stage repository-cleanliness",
+      "owned_outputs": []
+    }
+  ]
+}
