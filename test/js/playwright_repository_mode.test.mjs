@@ -13,6 +13,7 @@ const inspectedFields = `
     outputDir: config.outputDir,
     snapshotPathTemplate: config.snapshotPathTemplate,
     reuseExistingServer: config.webServer.reuseExistingServer,
+    trace: config.use.trace,
     serviceWorkers: config.use.serviceWorkers,
     projectNames: config.projects.map((project) => project.name),
   }));
@@ -54,6 +55,7 @@ test('repository mode owns first-attempt server and output state', () => {
   assert.equal(config.snapshotPathTemplate, '/invocation/artifacts/{testFilePath}/{arg}{ext}');
   assert.equal(config.workers, 1);
   assert.equal(config.serviceWorkers, 'block');
+  assert.equal(config.trace, 'retain-on-failure');
   assert.deepEqual(config.projectNames, ['chromium', 'chromium-light', 'chromium-dark']);
 });
 
@@ -64,6 +66,7 @@ test('ordinary local mode preserves zero retries and existing-server reuse', () 
   assert.equal(config.reporter, 'html');
   assert.equal(config.outputDir, undefined);
   assert.equal(config.snapshotPathTemplate, undefined);
+  assert.equal(config.trace, 'on-first-retry');
 });
 
 test('generic CI mode remains distinct from explicit repository verification', () => {
@@ -73,4 +76,5 @@ test('generic CI mode remains distinct from explicit repository verification', (
   assert.equal(config.reporter, 'html');
   assert.equal(config.outputDir, undefined);
   assert.equal(config.snapshotPathTemplate, undefined);
+  assert.equal(config.trace, 'on-first-retry');
 });
