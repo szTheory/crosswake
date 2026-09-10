@@ -181,6 +181,11 @@ For the fastest "how would I actually use this in my app?" pass, start with
 Crosswake treats diagnostics, support truth, and proof lanes as part of the product
 surface.
 
+**Blocked — sanitized route policy and signed-device proof are required before this host can be promoted.**
+Retained reference evidence is dated, source-bound, and does not verify the first adopter's host.
+See the [current first adopter claim layers](guides/support_matrix.md#first-adopter-readiness) for
+the executable support boundary.
+
 - [guides/support_matrix.md](guides/support_matrix.md) is the canonical support-status surface.
 - [guides/support_matrix.md#support-truth-label-legend](guides/support_matrix.md#support-truth-label-legend) defines support-truth labels: merge-blocking proof, advisory evidence, checked-in public-coordinate proof, local-dev proof, generated public-coordinate proof, JVM hermetic proof, emulator evidence, device evidence, verification-required, and rebuild-required.
 - [guides/troubleshooting.md](guides/troubleshooting.md) maps doctor findings, denial reasons, route-unavailable states, offline replay outcomes, and native evidence labels to route-owner fixes.

@@ -510,7 +510,7 @@ defmodule Crosswake.CapabilityMap do
   end
 
   @doc """
-  Returns the validated current claim layers used by public first-adopter projections.
+  Returns the validated current claim layers used by public first adopter projections.
 
   Retained physical evidence is deliberately pinned to its recorded date and low-cardinality
   runtime line. It is reference-host evidence, never transferable activation authority.

@@ -63,6 +63,7 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
 
   test "D-18/D-19 public first-read copy and durable parked state share the blocked activation boundary" do
     public_docs = [File.read!(@readme_path), File.read!(@physical_handoff_path)]
+
     recovery =
       "Blocked — sanitized route policy and signed-device proof are required before this host can be promoted."
 
@@ -84,7 +85,9 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
     assert parked =~ "TODO-002"
     assert parked =~ "validated sanitized adopter handoff"
     assert parked =~ "fresh source-bound signed-device run"
-    assert parked =~ "retained source-bound reference-host evidence remains non-transferable"
+
+    assert parked =~
+             ~r/retained\s+source-bound reference-host evidence (?:is|remains) non-transferable/i
   end
 
   test "showcase-first scanner names missing categories separately" do

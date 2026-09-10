@@ -1,5 +1,10 @@
 # iPhone rehearsal and physical proof
 
+**Blocked — sanitized route policy and signed-device proof are required before this host can be promoted.**
+Retained reference evidence is dated, source-bound, and does not verify the first adopter's host.
+See the [current first adopter claim layers](support_matrix.md#first-adopter-readiness) before
+starting host-specific proof.
+
 Run the reference rehearsal first:
 
 ```bash
