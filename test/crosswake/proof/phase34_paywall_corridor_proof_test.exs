@@ -183,6 +183,23 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
                validate_require_file_contract(source)
     end
 
+    test "a fully qualified computed load is counted while comments and strings are ignored" do
+      allowed_calls =
+        Enum.map_join(@allowed_require_file_paths, "\n", fn path ->
+          "Code.require_file(" <> inspect(path) <> ", __DIR__)"
+        end)
+
+      source =
+        allowed_calls <>
+          "\n# Elixir.Code.require_file(comment_path, __DIR__)" <>
+          "\ndecoy = \"Elixir.Code.require_file(string_path, __DIR__)\"" <>
+          "\nruntime_path = Path.join(__DIR__, \"runtime.ex\")" <>
+          "\nElixir.Code.require_file(runtime_path, __DIR__)\n"
+
+      assert {:error, {:unexpected_require_file_count, 5}} =
+               validate_require_file_contract(source)
+    end
+
     test "no process-start or server tokens in the proof body" do
       source = File.read!(__ENV__.file) |> String.downcase()
 
@@ -254,10 +271,13 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
   defp collect_require_file_arguments(ast) do
     {_ast, arguments} =
       Macro.prewalk(ast, [], fn
-        {{:., _dot_meta, [{:__aliases__, _alias_meta, [:Code]}, :require_file]}, _call_meta,
-         [first_argument | _rest]} = node,
+        {{:., _dot_meta, [receiver, :require_file]}, _call_meta, [first_argument | _rest]} = node,
         arguments ->
-          {node, [first_argument | arguments]}
+          if code_module?(receiver) do
+            {node, [first_argument | arguments]}
+          else
+            {node, arguments}
+          end
 
         node, arguments ->
           {node, arguments}
@@ -265,6 +285,9 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
 
     Enum.reverse(arguments)
   end
+
+  defp code_module?({:__aliases__, _meta, segments}), do: Module.concat(segments) == Code
+  defp code_module?(_receiver), do: false
 
   # ---------------------------------------------------------------------------
   # Private inline fixture builders (phase34_-prefixed; phase21 pattern, D-07)
