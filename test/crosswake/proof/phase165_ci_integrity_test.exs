@@ -379,6 +379,71 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     end
   end
 
+  @tag :classifier
+  @tag :manifest
+  @tag :triggers
+  test "generated guides keep the inexpensive documentation route while release inputs fail closed" do
+    allowlist = "script/ci_docs_allowlist.json" |> File.read!() |> Jason.decode!()
+    workflow = File.read!(@crosswake_ci)
+    public_docs = Enum.find(allowlist["families"], &(&1["family"] == "public_docs"))
+
+    assert public_docs["exact"] == [
+             "CONTRIBUTING.md",
+             "README.md",
+             "SETUP.md",
+             "examples/QUICK_START.md",
+             "guides/capability_map.md",
+             "guides/support_matrix.md"
+           ]
+
+    for path <- ["guides/capability_map.md", "guides/support_matrix.md"] do
+      result = classify_path(path)
+      assert result["classification"] == "documentation_only"
+      assert result["reason"] == "all_changed_paths_allowlisted"
+
+      assert result["scheduled_families"] == [
+               "documentation_contracts",
+               "public_docs",
+               "threadline_docs_contract"
+             ]
+    end
+
+    for path <- [
+          "lib/mix/tasks/crosswake.docs.sync.ex",
+          "script/repository_artifact_policy.json",
+          "docs/COMPANION-PUBLISH-RUNBOOK.md",
+          ".github/workflows/crosswake-ci.yml",
+          "future/unknown.md"
+        ] do
+      result = classify_path(path)
+      assert result["classification"] == "full_proof", path
+      assert result["scheduled_families"] == ["full_proof"], path
+    end
+
+    documentation = job_body(workflow, "documentation-contracts")
+    umbrella = job_body(workflow, "merge-blocking-crosswake-ci")
+
+    assert documentation =~ "needs: [classify-change]"
+    assert documentation =~ "if: needs.classify-change.result == 'success'"
+    assert umbrella =~ "if: always()"
+
+    for job <- [
+          "android-generated-shell-unit",
+          "android-package-unit",
+          "e2e-proof",
+          "ios-package-unit",
+          "phase10-proof",
+          "phase23-commerce-proof",
+          "route-tour-proof"
+        ] do
+      assert job_body(workflow, job) =~ "classification == 'full_proof'", job
+    end
+
+    for rejected <- ["failure", "cancelled", "timed_out", "action_required", "missing"] do
+      assert umbrella =~ ~s("#{rejected}":"failure")
+    end
+  end
+
   @tag :triggers
   test "gating, Rulestead, Rindle, and provider PR proof moves without advisory authority" do
     workflow = File.read!(@crosswake_ci)
@@ -818,6 +883,20 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       capture: :all_names
     )
     |> Enum.map(fn [block, inline] -> if block == "", do: inline, else: block end)
+  end
+
+  defp classify_path(path) do
+    code = """
+    import json
+    from pathlib import Path
+    from script.classify_ci_change import classify_records, load_allowlist, parse_name_status
+    allowlist = load_allowlist(Path('script/ci_docs_allowlist.json'))
+    raw = b'M\\0' + #{inspect(path)}.encode('utf-8') + b'\\0'
+    print(json.dumps(classify_records(parse_name_status(raw), allowlist)))
+    """
+
+    {output, 0} = System.cmd("python3", ["-c", code], stderr_to_stdout: true)
+    Jason.decode!(output)
   end
 
   defp cache_identity(fixture) do
