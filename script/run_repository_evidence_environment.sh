@@ -85,7 +85,7 @@ for (const value of lock.python_packages) console.log([value.id,value.version,va
 }
 
 validate_archive_entries() {
-  local entries="$1"
+  local format="$1" archive="$2" entries="$3"
   "$BOOTSTRAP_NODE" -e '
 const fs = require("node:fs");
 const entries = fs.readFileSync(process.argv[1], "utf8").split(/\n/).filter(Boolean);
@@ -93,7 +93,12 @@ if (entries.length === 0) process.exit(1);
 for (const entry of entries) {
   if (entry.startsWith("/") || entry.includes("\\") || entry.split("/").includes("..") || entry.includes("\0")) process.exit(1);
 }
-' "$entries"
+' "$entries" || return 1
+  if [[ "$format" = "tar.gz" ]]; then
+    ! tar -tvzf "$archive" | awk 'substr($1, 1, 1) ~ /^[lh]$/ { found=1 } END { exit(found ? 0 : 1) }'
+  else
+    ! unzip -Z -l "$archive" | awk '$1 ~ /^l/ { found=1 } END { exit(found ? 0 : 1) }'
+  fi
 }
 
 validate_owned_root() {
@@ -166,7 +171,7 @@ provision() {
     else
       unzip -Z1 "$archive" >"$tool_root/$id.entries" || fail "Inspect the pinned $id archive"
     fi
-    validate_archive_entries "$tool_root/$id.entries" || fail "Reject unsafe $id archive entries"
+    validate_archive_entries "$format" "$archive" "$tool_root/$id.entries" || fail "Reject unsafe $id archive entries"
     if [[ "$format" = "tar.gz" ]]; then tar -xzf "$archive" -C "$extract_root"; else unzip -q "$archive" -d "$extract_root"; fi
     if [[ "$archive_root" = "." ]]; then prefix="$extract_root"; else prefix="$extract_root/$archive_root"; fi
     [[ -d "$prefix" && ! -L "$prefix" ]] || fail "Verify the pinned $id archive layout"
@@ -198,7 +203,7 @@ process.stdout.write(`${result.stdout || ""}${result.stderr || ""}`.trim());
     curl --proto '=https' --tlsv1.2 --fail --location --retry 3 --retry-delay 2 --retry-all-errors "$url" -o "$archive" >"$tool_root/downloads/$id.log" 2>&1 || fail "Retry the pinned $id package download"
     [[ "$(sha256_file "$archive")" = "$digest" ]] || fail "Verify the tracked $id SHA-256 pin"
     unzip -Z1 "$archive" >"$tool_root/$id.entries" || fail "Inspect the pinned $id package"
-    validate_archive_entries "$tool_root/$id.entries" || fail "Reject unsafe $id package entries"
+    validate_archive_entries "zip" "$archive" "$tool_root/$id.entries" || fail "Reject unsafe $id package entries"
     unzip -q "$archive" -d "$python_root" || fail "Extract the pinned $id package"
     PYTHONPATH="$python_root" PYTHONNOUSERSITE=1 PATH="$safe_system_path" python3 -c "import $import_name; assert $import_name.__version__ == '$version'" || fail "Import the pinned $id package"
   done <"$python_records"
@@ -257,7 +262,7 @@ run_capture() {
 }
 
 self_test() {
-  local self_root bad_lock entries outside candidate status source_text fixture_artifacts fixture_sources fixture_bin fixture_lock id version archive_root executable version_regex digest
+  local self_root bad_lock entries outside candidate status source_text fixture_artifacts fixture_sources fixture_bin fixture_lock id version archive_root executable version_regex digest link_root link_archive
   self_root="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-repository-evidence-self-test.XXXXXX")"
   chmod 700 "$self_root"
   EVIDENCE_SELF_TEST_OWNER_PID="$(current_shell_pid)"
@@ -340,8 +345,31 @@ fs.writeFileSync(process.argv[2],JSON.stringify({schema_version:1,os:"Darwin",ar
 
   entries="$self_root/entries"
   printf '%s\n' '../escape' >"$entries"
-  status=0; validate_archive_entries "$entries" >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 ]] || return 1
+  status=0; validate_archive_entries "tar.gz" "$fixture_artifacts/erlang.tar.gz" "$entries" >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 ]] || return 1
   printf '%s\n' 'PASS evidence-environment-self-test archive-entry-escape'
+
+  link_root="$self_root/link-source"
+  mkdir -p "$link_root"
+  printf '%s\n' 'target' >"$link_root/target"
+  ln -s ../outside "$link_root/safe-link"
+  link_archive="$self_root/symlink.tar.gz"
+  tar -czf "$link_archive" -C "$link_root" .
+  tar -tzf "$link_archive" >"$entries"
+  status=0; validate_archive_entries "tar.gz" "$link_archive" "$entries" >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 ]] || return 1
+  printf '%s\n' 'PASS evidence-environment-self-test tar-symlink-rejection'
+
+  ln "$link_root/target" "$link_root/safe-hardlink"
+  link_archive="$self_root/hardlink.tar.gz"
+  tar -czf "$link_archive" -C "$link_root" target safe-hardlink
+  tar -tzf "$link_archive" >"$entries"
+  status=0; validate_archive_entries "tar.gz" "$link_archive" "$entries" >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 ]] || return 1
+  printf '%s\n' 'PASS evidence-environment-self-test tar-hardlink-rejection'
+
+  link_archive="$self_root/symlink.zip"
+  (cd "$link_root" && zip -qy "$link_archive" safe-link)
+  unzip -Z1 "$link_archive" >"$entries"
+  status=0; validate_archive_entries "zip" "$link_archive" "$entries" >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 ]] || return 1
+  printf '%s\n' 'PASS evidence-environment-self-test zip-symlink-rejection'
 
   outside="$self_root/not-owned"
   mkdir "$outside"
@@ -367,7 +395,7 @@ fs.writeFileSync(process.argv[2],JSON.stringify({schema_version:1,os:"Darwin",ar
   EVIDENCE_TOOL_ROOT="$outside"
   status=0; cleanup_tools >/dev/null 2>&1 || status=$?; [[ "$status" -ne 0 && -d "$outside" ]] || return 1
   printf '%s\n' 'PASS evidence-environment-self-test cleanup-escape'
-  printf '%s\n' 'PASS evidence-environment-self-test complete cases=10'
+  printf '%s\n' 'PASS evidence-environment-self-test complete cases=13'
   trap - EXIT HUP INT TERM
   cleanup_self_test
 }
