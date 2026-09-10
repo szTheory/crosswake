@@ -4,17 +4,17 @@ milestone: v22.0
 milestone_name: Quality Ratchet & Release Readiness
 current_phase: 166
 current_phase_name: Clean-Checkout Engineering Quality
-status: executing
-stopped_at: Completed 166-07-PLAN.md
-last_updated: "2026-09-09T20:32:40.064Z"
+status: verifying
+stopped_at: Completed 166-08-PLAN.md
+last_updated: "2026-09-10T04:16:29.235Z"
 last_activity: 2026-09-09
 last_activity_desc: Phase 166 execution started
-state_head: d4212d1b4c822b788b06cce8b1e88f56c67d3725
+state_head: 8b51616d77354d68bfbc969d14e270afb02bff73
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 26
-  completed_plans: 25
+  completed_plans: 26
   percent: 40
 workstream: quality-ratchet-release
 ---
@@ -33,7 +33,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 
 Phase: 166 (Clean-Checkout Engineering Quality) — EXECUTING
 Plan: 8 of 8
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-09-09 — Phase 166 execution started
 
 Progress: [████░░░░░░] 40%
@@ -79,6 +79,7 @@ Progress: [████░░░░░░] 40%
 | Phase 166 P05 | 21min | 3 tasks | 10 files |
 | Phase 166 P06 | 3min | 2 tasks | 3 files |
 | Phase 166 P07 | 25min | 2 tasks | 24 files |
+| Phase 166 P08 | 7h 10m | 2 tasks | 24 files |
 
 ## Accumulated Context
 
@@ -144,6 +145,8 @@ Progress: [████░░░░░░] 40%
 - [Phase 166]: Resolve evidence input only from an explicit tracked commit and never copy source worktree or index state.
 - [Phase 166]: Materialize the declared Darwin/arm64 toolchain beneath one invocation-owned root with literal upstream authorities and SHA-256 pins.
 - [Phase 166]: Commit the authorized install/doctor correction set separately before binding exact-commit verification to the new supported HEAD.
+- [Phase 166]: Supported-code identity is 1ddf3357973d1cfdff4f2b6140115bdb2f424fd2; later evidence-only records do not redefine it.
+- [Phase 166]: Keep isolated proof dependencies, private logs, temporary roots, and cleanup invocation-owned.
 
 ### Pending Todos
 
@@ -165,6 +168,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-09T20:32:39.987Z
-Stopped at: Completed 166-07-PLAN.md
+Last session: 2026-09-10T04:16:29.157Z
+Stopped at: Completed 166-08-PLAN.md
 Resume file: None

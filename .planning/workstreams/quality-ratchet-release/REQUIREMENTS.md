@@ -59,7 +59,7 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 - [x] **ENG-01**: The root suite, example host, browser proof, iOS package, Android package, format,
   and warnings-as-errors checks are deterministic from a clean checkout.
 
-- [ ] **ENG-02**: Code touched by the milestone has explicit ownership boundaries, focused modules,
+- [x] **ENG-02**: Code touched by the milestone has explicit ownership boundaries, focused modules,
   and no known dead branches, accidental duplication, or misleading compatibility fallbacks.
 
 - [x] **ENG-03**: Generated, temporary, secret-bearing, editor, and local-only artifacts are either
@@ -147,7 +147,7 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 | CIP-06 | Phase 165 | Complete |
 | CIP-07 | Phase 165 | Complete |
 | ENG-01 | Phase 166 | Complete |
-| ENG-02 | Phase 166 | Pending |
+| ENG-02 | Phase 166 | Complete |
 | ENG-03 | Phase 166 | Complete |
 | ENG-04 | Phase 166 | Complete |
 | DOC-01 | Phase 167 | Pending |
