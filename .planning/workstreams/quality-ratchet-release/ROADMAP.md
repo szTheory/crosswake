@@ -173,14 +173,36 @@ Plans:
 **Plans**: 8 plans
 
 Plans:
+**Wave 1**
 
 - [ ] 167-01-PLAN.md — Establish the typed current-claim tracer and atomically reconcile generated/public/parked adopter truth.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 167-02-PLAN.md — Add no-write documentation synchronization and register it in the existing artifact policy.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 167-03-PLAN.md — Extend existing documentation/package CI owners while preserving the docs-only route.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 167-04-PLAN.md — Reconcile authored reader-job guidance, authority discovery, accessibility, and release boundaries.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
 - [ ] 167-05-PLAN.md — Rebase and resolve setup-java PR #121 across all seven immutable uses.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
 - [ ] 167-06-PLAN.md — Rebase and resolve companion compatibility PR #110 across every affected package/doc/fixture surface.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
 - [ ] 167-07-PLAN.md — Rebase, squash, verify, and merge PackStore cleanup PR #105.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
 - [ ] 167-08-PLAN.md — Defer release PRs #115/#57 and seal bounded five-PR plus final documentation evidence.
 
 ### Phase 168: 0.2.1 Release Candidate Readiness
