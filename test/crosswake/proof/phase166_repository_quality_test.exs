@@ -15,10 +15,23 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
   @matcher_keys ~w(kind value)
   @matcher_kinds ~w(exact segment suffix tree)
 
-  test "root formatter contract is explicit and minimally bounded" do
+  @tag :tmp_dir
+  test "root formatter contract covers repository Elixir sources and rejects unformatted input", %{
+    tmp_dir: tmp
+  } do
     {formatter, _binding} = Code.eval_file(".formatter.exs")
 
-    assert formatter == [inputs: [".formatter.exs"]]
+    assert formatter == [inputs: ["{mix,.formatter}.exs", "{config,lib,test}/**/*.{ex,exs}"]]
+
+    File.write!(Path.join(tmp, ".formatter.exs"), inspect(formatter, pretty: true))
+    File.mkdir_p!(Path.join(tmp, "lib"))
+    File.write!(Path.join(tmp, "lib/unformatted.ex"), "defmodule Unformatted do\n def value,do: :ok\nend\n")
+
+    {output, status} =
+      System.cmd("mix", ["format", "--check-formatted"], cd: tmp, stderr_to_stdout: true)
+
+    assert status != 0
+    assert output =~ "mix format failed"
   end
 
   @tag :tmp_dir
