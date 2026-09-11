@@ -638,26 +638,28 @@ test("cleanup preserves pre-existing caches byte-for-byte", () => {
   }
 });
 
-test("root and example child stages remove only newly created exact Python bytecode status residue", () => {
-  const residues = [
-    "script/__pycache__/classify_ci_change.cpython-314.pyc",
-    "script/__pycache__/list_merge_blocking_checks.cpython-314.pyc"
-  ];
-
+test("root and example child stages prevent version-independent Python bytecode residue", () => {
   for (const selection of ["root-proof", "example-host-proof"]) {
     const repository = makeRepository();
     try {
+      const scriptRoot = path.join(repository, "script");
+      mkdirSync(scriptRoot, { recursive: true });
+      writeFileSync(path.join(scriptRoot, "phase167_import_probe.py"), "VALUE = 167\n");
       const result = runVerification(verificationOptions(repository, {
         selection,
-        spawn: (command, argv) => {
+        spawn: (command, argv, options) => {
           const invocation = [command, ...argv].join(" ");
           const selectedStage = loadStageManifest().stages.find(stage => stage.stage_id === selection);
           if (invocation === selectedStage.argv.join(" ")) {
-            for (const residue of residues) {
-              const destination = path.join(repository, residue);
-              mkdirSync(path.dirname(destination), { recursive: true });
-              writeFileSync(destination, `${selection}\n`);
-            }
+            return spawnSync("python3", ["-c", [
+              "import pathlib, sys",
+              "import phase167_import_probe",
+              "cache = pathlib.Path('__pycache__')",
+              "if not sys.dont_write_bytecode:",
+              "    cache.mkdir(exist_ok=True)",
+              "    (cache / 'phase167_import_probe.cpython-313.pyc').write_bytes(b'synthetic-313')",
+              "    (cache / 'phase167_import_probe.cpython-314.pyc').write_bytes(b'synthetic-314')"
+            ].join("\n")], { cwd: scriptRoot, env: options.env, encoding: "utf8" });
           }
           return { status: 0, stdout: "", stderr: "" };
         }
@@ -666,17 +668,19 @@ test("root and example child stages remove only newly created exact Python bytec
       assert.equal(result.records.find(record => record.purpose === selection).result, "PASS");
       assert.equal(result.records.find(record => record.purpose === "repository-cleanliness").result, "PASS");
       assert.equal(result.status, 0);
-      for (const residue of residues) assert.equal(existsSync(path.join(repository, residue)), false);
+      for (const cacheTag of ["cpython-313", "cpython-314"]) {
+        assert.equal(existsSync(path.join(scriptRoot, `__pycache__/phase167_import_probe.${cacheTag}.pyc`)), false);
+      }
     } finally {
       rmSync(repository, { recursive: true, force: true });
     }
   }
 });
 
-test("Python bytecode status cleanup preserves pre-existing files and exposes unexpected residue", () => {
+test("Python bytecode prevention preserves pre-existing files and exposes unexpected residue", () => {
   const repository = makeRepository();
-  const exactResidue = "script/__pycache__/classify_ci_change.cpython-314.pyc";
-  const unexpectedResidue = "script/__pycache__/unexpected.cpython-314.pyc";
+  const exactResidue = "script/__pycache__/preexisting.cpython-399.pyc";
+  const unexpectedResidue = "script/__pycache__/unexpected.cpython-399.pyc";
   const preservedBytes = Buffer.from("preserve exact pre-existing bytes\n");
 
   try {
@@ -704,6 +708,38 @@ test("Python bytecode status cleanup preserves pre-existing files and exposes un
     assert.equal(existsSync(path.join(repository, unexpectedResidue)), true);
   } finally {
     rmSync(repository, { recursive: true, force: true });
+  }
+});
+
+test("browser stage bounds hosted scheduler contention for both browser proof owners", () => {
+  for (const job of ["e2e-proof", "route-tour-proof"]) {
+    const repository = makeRepository();
+    const runRoot = mkdtempSync(path.join(tmpdir(), "crosswake-repository-verify.test-"));
+    try {
+      const result = runVerification(verificationOptions(repository, {
+        selection: "browser-proof",
+        runRoot,
+        spawn: (command, argv, options) => {
+          if ([command, ...argv].join(" ") !== "npx playwright test") {
+            return { status: 0, stdout: "", stderr: "" };
+          }
+          const fixtureResult = spawnSync(process.execPath, ["-e", [
+            "const bounded = process.env.ERL_FLAGS === '+S 2:2';",
+            "setTimeout(() => process.stdout.write(bounded ? 'bounded' : 'contended'), bounded ? 5 : 250);"
+          ].join("\n")], { env: options.env, encoding: "utf8", timeout: 100 });
+          if (fixtureResult.error?.code === "ETIMEDOUT") {
+            fixtureResult.stderr = `Test timeout under hosted scheduler contention (${job})`;
+          }
+          return fixtureResult;
+        }
+      }));
+
+      assert.equal(result.status, 0, `${job} must complete without browser_test_timeout`);
+      assert.equal(result.records.find(record => record.purpose === "browser-proof").result, "PASS");
+    } finally {
+      rmSync(runRoot, { recursive: true, force: true });
+      rmSync(repository, { recursive: true, force: true });
+    }
   }
 });
 
