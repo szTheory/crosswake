@@ -701,6 +701,43 @@ its parent payload and identifies its own path as the sole self-excluded record;
 receipt binds the resulting head/tree. Any later source change invalidates the freeze and requires
 recapture plus the complete clean-checkout proof.
 
+PR #149 head `412dc4d15bed871b4eefabc05ced4567da25c61c` and run `34626117633` are now
+failed diagnostic authority, never merge authority. The run completed 47 checks with 40 successes;
+the six failed leaves group into two owners and the umbrella is transitive. Four package/core/host
+leaves passed their primary proof and then shared `generated_contract_generation_failed` cleanup at
+`lib/mix/tasks/crosswake.contract.gen.ex`. Route-tour and e2e have a direct browser-owner failure
+plus that cleanup cascade. Exact pinned local proof on 412 passes, so neither owner is locally
+reproduced yet and neither symptom alone authorizes repair.
+
+Recover in owner order. Generated cleanup traces first so it cannot mask browser evidence. Its
+post-412 repair universe is exactly `script/verify_repository.mjs`,
+`script/repository_artifact_policy.json`, `lib/mix/tasks/crosswake.contract.gen.ex`,
+`.github/workflows/crosswake-ci.yml`, and `test/js/repository_verification.test.mjs`. A job-equivalent
+RED must decide between the closed strategies `dedicated_fully_provisioned_owner` and
+`explicit_per_job_prerequisite_closure`: select the former only when generation succeeds under the
+supported full root toolchain but not the affected job prerequisites; select the latter only when
+one explicit bounded prerequisite set makes every affected job safe. Preserve unconditional
+git/status/artifact cleanup either way. Android/iOS remain transitive tests and authorize no
+feature, template, device, parity, generator, Maven, JVM, or vector change.
+
+Browser diagnostics follow only after generated cleanup is GREEN. The browser repair universe is
+exactly `script/repository_verification_stages.json`, `script/verify_repository.mjs`,
+`examples/phoenix_host/playwright.config.ts`, `.github/workflows/crosswake-ci.yml`, and
+`test/js/repository_verification.test.mjs`. One guarded PR #149 diagnostic head may expose only a
+stable category and owner for route-tour and e2e; private inner Playwright logs, stdout/stderr,
+artifact contents, URLs, remote prose, and environment values stay invocation-private. The empty
+route-tour `CROSSWAKE_VERSION` observation is only `route_tour_version_presence_empty`; it becomes
+causal only if an otherwise identical RED/GREEN regression deterministically follows that input.
+A new owner/path or inconclusive single diagnostic stops for plan revision before further edit or
+push.
+
+The post-412 attempt budget permits exactly one browser diagnostic PR #149 head update and exactly
+one later final-candidate update. The diagnostic cannot merge or close/supersede any PR. After both
+owners are GREEN, invalidate the 412 manifest, commit all non-manifest bytes, recapture one source
+scope, and commit that manifest alone. Complete pinned proof precedes the one guarded final
+fast-forward. A missing/red exact-head conclusion, drift, new owner, or any third update exhausts
+the tranche and leaves PR #149/#148/#110 open and unmerged at a checkpoint.
+
 Push the actual frozen commit ancestry. Do not create a one-commit tree transplant, squash, or
 cherry-pick candidate. Require protected default and every evidence OID as ancestors of the exact
 head. Merge with a merge commit and prove the tested head remains reachable from fresh default in
