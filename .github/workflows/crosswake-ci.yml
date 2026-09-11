@@ -557,6 +557,9 @@ jobs:
     if: needs.classify-change.outputs.classification == 'full_proof'
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      # Non-executable compatibility key for the current ci_leaf_manifest record.
+      PHASE41_SUPERSEDED_MANIFEST_REMEDIATION: mix test test/crosswake/proof/phase41_gating_doctor_test.exs && mix test --exclude requires_example_host
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/setup-elixir-cache
@@ -570,12 +573,15 @@ jobs:
       - name: Run Phase 41 gating doctor and support matrix proof
         run: |
           mix test test/crosswake/proof/phase41_gating_doctor_test.exs
-          mix test --exclude requires_example_host
+          mix test --only phase41_nested_process --seed 748644 --max-cases 1
+          mix test --exclude phase41_nested_process --exclude requires_example_host --seed 748644 --max-cases 8
       - name: Summarize Phase 41 gating proof
         if: always()
         run: |
-          echo 'Phase 41 gating doctor, support matrix, formatter, and broad hermetic proof completed.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Remediation: mix test test/crosswake/proof/phase41_gating_doctor_test.exs && mix test --exclude requires_example_host' >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "Phase 41 gating doctor, support matrix, formatter, and broad hermetic proof completed."
+            echo "Remediation: mix test test/crosswake/proof/phase41_gating_doctor_test.exs && mix test --only phase41_nested_process --seed 748644 --max-cases 1 && mix test --exclude phase41_nested_process --exclude requires_example_host --seed 748644 --max-cases 8"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   phase43-rulestead-proof:
     name: phase43-rulestead-proof

@@ -23,6 +23,7 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
   )
 
   @tag :tmp_dir
+  @tag :phase41_nested_process
   test "a zero-exit host run with passed names cannot promote without every ordered marker", %{
     tmp_dir: tmp
   } do
