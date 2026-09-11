@@ -751,9 +751,14 @@ All Phase 167 execution and evidence commits use the dedicated unprotected branc
 `agent-phase167-fixforward`; `origin/main` remains protected authority, and
 `git.allow_default_branch_commits` remains unchanged. Remote PR branches may be handled only in
 isolated worktrees. After each protected-default merge, first commit the bounded receipt on the
-phase branch. Only when no executor commit is pending and that branch is clean may the local `main`
-ref be advanced to freshly fetched remote default, without checking out `main`. Remain on the phase
-branch for every subsequent executor commit.
+phase branch. If that merge introduced source bytes needed by a later phase candidate, fetch and
+validate protected default again, then run exactly `git merge --no-ff --no-edit FETCH_HEAD` on the
+still-checked-out phase branch. The integration commit must retain the receipt as first parent and
+fresh protected default as second parent, preserve all prior phase ancestry, carry the exact
+protected-default source blob, and leave tracked/index/runtime state clean. Only after this
+integration proof, when no executor commit is pending and the phase branch is clean, may the local
+`main` ref be advanced to that same protected-default OID without checking out `main`. Remain on the
+integrated phase branch for every subsequent executor commit and candidate freeze.
 
 After the closeout merge and immediately before local reconciliation, record the exact phase-branch
 tip in the post-merge resolution receipt and commit that receipt alone on the phase branch. Reconcile
