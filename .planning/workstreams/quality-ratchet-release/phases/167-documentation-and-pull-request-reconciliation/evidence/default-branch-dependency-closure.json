@@ -5,8 +5,8 @@
   "kind": "fix_forward_candidate_scope",
   "manifest_mode": "100644",
   "manifest_path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-dependency-closure.json",
-  "payload_source_oid": "cce8314ef9ace164f42699236f830193d28c521a",
-  "payload_source_tree_oid": "ddde632ad591e0e88d0f624b378c7afee462c5e5",
+  "payload_source_oid": "43b607c75be57d58c5c68812f22fe36242b71eb0",
+  "payload_source_tree_oid": "480ce4415a224e4be335f3f93889307733df06e3",
   "proof_argv": [
     [
       "python3",
@@ -724,7 +724,7 @@
       },
       "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/fix-forward-failure-ledger.json",
       "payload": {
-        "blob": "af354d505be193bb6960fd00c49cde3b6f898c41",
+        "blob": "23d7296a0f1d9b7055432d35d765e347db0fec17",
         "mode": "100644"
       }
     },
@@ -1582,7 +1582,7 @@
       },
       "path": "script/check_phase167_default_reconciliation.py",
       "payload": {
-        "blob": "0230fd5c8a7bd71db790a83ed3996d9c0f6d53b2",
+        "blob": "86f3eadb42f59b6a3a97fa18b58041fea03a9e41",
         "mode": "100644"
       }
     },
@@ -1659,7 +1659,7 @@
       },
       "path": "script/verify_repository.mjs",
       "payload": {
-        "blob": "f658dc3a02fbb0d125ac5912a4a6489d0ac6fe53",
+        "blob": "9eea6dd3cbf81632c3be6d48bb163c7f66de6d22",
         "mode": "100755"
       }
     },
@@ -2572,7 +2572,7 @@
       },
       "path": "test/js/repository_verification.test.mjs",
       "payload": {
-        "blob": "43cad3f5f8fa8c8a5c831507eeef364d33b4ce52",
+        "blob": "af19147302bc3d9a4793e264dfa2ec4705a69818",
         "mode": "100644"
       }
     },
@@ -2698,7 +2698,7 @@
       }
     }
   ],
-  "records_digest": "04a629a67eee63d4609cffbf94601658615c0ceb3c4826555256595fc4ddac6a",
+  "records_digest": "3b71400d4c7328f594a535e91c23dc79a6e0aaa55d7ea1ebdfdc919eb1680cb7",
   "required_ancestor_oids": [
     "367f5b5491384594a652d137a03933fa3a89418a",
     "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
