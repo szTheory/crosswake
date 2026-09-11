@@ -177,7 +177,7 @@
     "second_boundary_path_count": 11,
     "status": "diagnostic_only"
   },
-  "reproduction_source_oid": "7d8c37323db69b8771484f9bdc22da52dc442844",
+  "reproduction_source_oid": "bef6ddcbcacf29291c8d23acacc00bb12fbb2580",
   "required_ancestor_oids": [
     "367f5b5491384594a652d137a03933fa3a89418a",
     "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
@@ -247,6 +247,11 @@
           "deps.get"
         ],
         [
+          "node",
+          "--test",
+          "test/js/repository_verification.test.mjs"
+        ],
+        [
           "script/verify_repository.sh",
           "--stage",
           "repository-preflight"
@@ -258,7 +263,8 @@
         "test/js/repository_verification.test.mjs"
       ],
       "repair_paths": [
-        ".github/workflows/crosswake-ci.yml"
+        ".github/workflows/crosswake-ci.yml",
+        "script/verify_repository.mjs"
       ],
       "reproduction_result": "failed_as_expected"
     },

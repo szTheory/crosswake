@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+export const STAGE_MAX_BUFFER_BYTES = 16 * 1024 * 1024;
 const manifestPath = path.join(repoRoot, "script/repository_verification_stages.json");
 const artifactPolicyPath = path.join(repoRoot, "script/repository_artifact_policy.json");
 const workflowPath = path.join(repoRoot, ".github/workflows/crosswake-ci.yml");
@@ -18,6 +19,14 @@ const ownerKeys = ["command", "job_id"];
 const artifactPolicyKeys = ["schema_version", "ignored_transient", "intentionally_tracked", "generated_contracts", "forbidden_tracked", "safe_fixtures"];
 const matcherKeys = ["kind", "value"];
 const generatedContractKeys = ["canonical_source", "output_paths", "regeneration_argv", "remediation_command"];
+
+export function spawnStage(command, args, options) {
+  return spawnSync(command, args, {
+    ...options,
+    encoding: "utf8",
+    maxBuffer: STAGE_MAX_BUFFER_BYTES
+  });
+}
 
 function sameKeys(value, expected, label) {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(`${label} must be a record`);
@@ -374,7 +383,7 @@ export function runVerification(options = {}) {
   const nonpassing = new Set();
   const globallyBlocked = preflight.records.some(record => record.required_by.includes("repository-preflight"));
   const preflightBlocked = new Set(preflight.records.flatMap(record => record.required_by));
-  const spawn = options.spawn ?? ((command, args, spawnOptions) => spawnSync(command, args, { ...spawnOptions, encoding: "utf8" }));
+  const spawn = options.spawn ?? spawnStage;
   exitStatus = preflight.status === "FAIL" ? 1 : 0;
 
   try {

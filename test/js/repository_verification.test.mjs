@@ -11,6 +11,8 @@ import {
   loadStageManifest,
   runPreflight,
   runVerification,
+  spawnStage,
+  STAGE_MAX_BUFFER_BYTES,
   selectStages,
   validateCiParity,
   validateArtifactPolicy,
@@ -322,6 +324,18 @@ test("capture-owned runner roots preserve private stage logs for their owner", (
     rmSync(captureRoot, { recursive: true, force: true });
     rmSync(repository, { recursive: true, force: true });
   }
+});
+
+test("stage subprocesses use a bounded multi-megabyte output buffer", () => {
+  assert.equal(STAGE_MAX_BUFFER_BYTES, 16 * 1024 * 1024);
+  const result = spawnStage(
+    process.execPath,
+    ["-e", "process.stdout.write('x'.repeat(2 * 1024 * 1024))"],
+    {}
+  );
+
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout.length, 2 * 1024 * 1024);
 });
 
 test("dependency failure recursively blocks descendants while independent stages continue", () => {
