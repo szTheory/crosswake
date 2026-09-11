@@ -339,8 +339,6 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: "22.14.0"
-      - name: Verify repository prerequisites
-        run: script/verify_repository.sh --stage repository-preflight
       - name: Install Hex
         run: |
           for attempt in 1 2 3; do
@@ -350,6 +348,8 @@ jobs:
           done
       - name: Install root audit dependencies
         run: mix deps.get
+      - name: Verify repository prerequisites
+        run: script/verify_repository.sh --stage repository-preflight
       - name: Install example-host audit dependencies
         working-directory: examples/phoenix_host
         run: mix deps.get
