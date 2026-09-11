@@ -694,12 +694,16 @@ handoff, record their closed path set, and assign their first landing to Phase 1
 reversible planning/evidence transaction. This is the non-self-referential boundary; it does not
 authorize release publication or permit non-evidence source code to remain local-only.
 
-After the closeout merge, reconcile local `main` fail closed: require fresh remote default and all
-expected local phase/evidence commits to be ancestors of local `HEAD`, preserve the real empty
-index, compare the three runtime files to pre-merge SHA-256 records without exposing their bytes,
-reject tracked residue, and allow only those runtime paths plus declared post-closeout evidence as
-untracked. Implement this as a fixed-argv, no-write validator mode; never normalize state with
-reset, clean, stash, branch switching, or runtime-file rewrites.
+After the closeout merge and immediately before local reconciliation, record the exact local tip in
+the post-merge resolution receipt and commit that receipt alone. Reconcile local `main` fail closed:
+require fresh remote default, all scope-recorded commits, and that receipt-recorded tip to be
+ancestors of local `HEAD`; preserve the real empty index; compare the three runtime files to
+pre-merge SHA-256 records without exposing their bytes; reject tracked residue; and require exactly
+those three runtime paths as untracked. The scope and resolution receipts must already exist as
+tracked handoff artifacts. Phase 167 verification and `167-08-SUMMARY.md` belong to a later lifecycle
+and must not be required to exist during this check. Implement this as a fixed-argv, no-write
+validator mode; never normalize state with reset, clean, stash, branch switching, or runtime-file
+rewrites.
 
 ## Shared Patterns
 
