@@ -749,3 +749,33 @@ test("CI inventory requires declared PyYAML and never performs an unpinned runti
   assert.doesNotMatch(source, /pip[^\n]*(?:install|pyyaml)/i);
   assert.match(source, /PyYAML is required/);
 });
+
+test("Phase 166 remediation queue remains verifiable from a depth-one checkout", () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "crosswake-phase166-shallow-"));
+  const checkout = path.join(directory, "checkout");
+
+  try {
+    execFileSync(
+      "git",
+      ["clone", "--quiet", "--depth", "1", `file://${new URL("../..", import.meta.url).pathname}`, checkout],
+      { encoding: "utf8" }
+    );
+    const result = spawnSync(
+      "python3",
+      [
+        "script/check_phase166_ownership_ledger.py",
+        "--root",
+        checkout,
+        "--verify-remediations",
+        ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-ownership-ledger.md"
+      ],
+      { cwd: checkout, encoding: "utf8" }
+    );
+    const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+
+    assert.equal(result.status, 0, output);
+    assert.match(output, /^phase166-remediations: PASS count=4/m);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
