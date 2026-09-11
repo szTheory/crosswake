@@ -66,9 +66,11 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
       |> Enum.flat_map(fn path ->
         path
         |> File.read!()
-        |> then(&Regex.scan(~r/@tag\s+:phase41_nested_process\s+test\s+"([^"]+)"/, &1,
-          capture: :all_but_first
-        ))
+        |> then(
+          &Regex.scan(~r/@tag\s+:phase41_nested_process\s+test\s+"([^"]+)"/, &1,
+            capture: :all_but_first
+          )
+        )
         |> List.flatten()
       end)
       |> Enum.sort()
