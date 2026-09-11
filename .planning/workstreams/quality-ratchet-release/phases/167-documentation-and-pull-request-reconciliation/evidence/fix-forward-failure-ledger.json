@@ -171,6 +171,15 @@
   ],
   "kind": "fix_forward_failure_ledger",
   "post_412_recovery": {
+    "cleanup_repair": {
+      "category": "python_bytecode_status_residue",
+      "green_commit_oid": "c8e69c32d69a49b955e196c1c7b2f56d4357e7a9",
+      "owner_path": "script/verify_repository.mjs",
+      "preexisting": "preserved",
+      "status": "green",
+      "strategy": "python_child_environment_prevention",
+      "unexpected": "fails_cleanliness"
+    },
     "failed_diagnostic": {
       "failed_leaves": [
         {
@@ -233,7 +242,7 @@
       },
       "replacement_diagnostic": {
         "allowed": 1,
-        "used": 0
+        "used": 1
       }
     },
     "kind": "post_412_recovery",
@@ -271,10 +280,7 @@
                 }
               ],
               "python_producer_owner": false,
-              "residue_paths": [
-                "script/__pycache__/classify_ci_change.cpython-314.pyc",
-                "script/__pycache__/list_merge_blocking_checks.cpython-314.pyc"
-              ]
+              "residue_scope": "python_cache_tag_independent"
             },
             {
               "accepted_category": false,
@@ -311,7 +317,12 @@
           }
         },
         "repair": {
-          "status": "not_started"
+          "category": "browser_test_timeout",
+          "green_commit_oid": "c8e69c32d69a49b955e196c1c7b2f56d4357e7a9",
+          "ordinary_authority": "restored",
+          "owner_path": "script/repository_verification_stages.json",
+          "status": "green",
+          "strategy": "browser_child_scheduler_cap"
         },
         "repair_universe": [
           ".github/workflows/crosswake-ci.yml",
@@ -321,9 +332,51 @@
           "test/js/repository_verification.test.mjs"
         ],
         "replacement_diagnostic": {
-          "status": "not_pushed"
+          "artifact": "structured_category_only",
+          "classifications": [
+            {
+              "category": "browser_test_timeout",
+              "job": "e2e-proof",
+              "owner": "browser",
+              "schema_version": 1
+            },
+            {
+              "category": "browser_test_timeout",
+              "job": "route-tour-proof",
+              "owner": "browser",
+              "schema_version": 1
+            }
+          ],
+          "cleanup_recurrence": {
+            "affected_jobs": [
+              "phase130-core-hermetic-proof",
+              "proof-requires-example-host"
+            ],
+            "category": "python_bytecode_status_residue",
+            "cleanliness_result": "FAILURE",
+            "primary_result": "SUCCESS"
+          },
+          "failed_checks": 6,
+          "head_oid": "81834a5cdc72c8afecac8d0628c4b2c22257a582",
+          "phase41": {
+            "broad_max_cases": 8,
+            "broad_seed": 480367,
+            "category": "nested_process_timeout_only",
+            "dedicated_result": "SUCCESS",
+            "dedicated_tests": 12,
+            "semantic_error": false,
+            "timed_out_tests": 2
+          },
+          "playwright_artifacts": "suppressed_for_diagnostic",
+          "redaction": "passed",
+          "run_id": 34640820161,
+          "status": "failed_as_expected",
+          "successful_checks": 41,
+          "suppression": "PASS",
+          "total_checks": 47,
+          "tree_oid": "75f8b6d54712a497cf78ec737dc2d99e147e6348"
         },
-        "status": "pending_replacement_diagnostic"
+        "status": "green"
       },
       "generated_contract_cleanup": {
         "green": {
@@ -354,7 +407,17 @@
         "strategy": "dedicated_fully_provisioned_owner"
       }
     },
-    "schema_version": 2
+    "phase41_repair": {
+      "broad_tests": 1625,
+      "category": "nested_process_timeout_only",
+      "dedicated_tests": 12,
+      "green_commit_oid": "b4d981037bc0df072d20ffa5f2993039e859035a",
+      "max_cases": 8,
+      "red_commit_oid": "62fcfcea08cb57660830a8faf97585e94b2fe433",
+      "seed": 480367,
+      "status": "green"
+    },
+    "schema_version": 3
   },
   "red_tracer_oid": "367f5b5491384594a652d137a03933fa3a89418a",
   "rejected_topology": {
@@ -363,7 +426,7 @@
     "second_boundary_path_count": 11,
     "status": "diagnostic_only"
   },
-  "reproduction_source_oid": "60d77d61fa28593f5f1b725f7d643d94f2e6db1e",
+  "reproduction_source_oid": "c8e69c32d69a49b955e196c1c7b2f56d4357e7a9",
   "required_ancestor_oids": [
     "367f5b5491384594a652d137a03933fa3a89418a",
     "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
