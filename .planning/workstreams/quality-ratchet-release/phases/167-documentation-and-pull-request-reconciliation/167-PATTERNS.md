@@ -720,14 +720,20 @@ one explicit bounded prerequisite set makes every affected job safe. Preserve un
 git/status/artifact cleanup either way. Android/iOS remain transitive tests and authorize no
 feature, template, device, parity, generator, Maven, JVM, or vector change.
 
-Browser diagnostics follow only after generated cleanup is GREEN. The browser repair universe is
+Generated cleanup is complete at RED `24fac450`, GREEN `60d77d61`, and ledger `5a132620`; do not
+rerun or recommit that tracer. Browser diagnostics follow only after that GREEN. The browser repair universe is
 exactly `script/repository_verification_stages.json`, `script/verify_repository.mjs`,
 `examples/phoenix_host/playwright.config.ts`, `.github/workflows/crosswake-ci.yml`, and
-`test/js/repository_verification.test.mjs`. The sequence is fixed: commit a local-only failing
-regression against generic browser output and unsafe diagnostic-path Playwright publication; commit
-separate diagnostic instrumentation and make its negative/redaction controls GREEN locally; push
-that instrumented, still-browser-red head once; then implement browser repair GREEN from the hosted
-category without another diagnostic push. Instrumentation is not repair GREEN. Its exact closed
+`test/js/repository_verification.test.mjs`. Local RED `1e3469dd` and instrumentation `a35e81ef` are
+completed and must not be rerun/recommitted. The first hosted diagnostic run 34635587034 is invalid:
+step-scoped activation was unavailable to the later upload condition, E2E failure evidence uploaded,
+and no category is accepted; its allowance remains consumed 1/1. One user-authorized replacement
+diagnostic remains. Its focused fixture first fails on that exact scope defect, then moves the closed
+activation and fixed job identity to each browser job's `env`, which later steps inherit. Before the
+replacement push, `actionlint` and positive/negative fixtures prove the later condition sees the
+mode, diagnostic failure artifacts are suppressed, normal failure artifacts remain published,
+browser proof still runs/fails, and only the closed signal can surface. The replacement remains
+diagnostic-only; browser repair GREEN follows the hosted category without another push. Its exact closed
 diagnostic mode retains each ordinary route-tour/e2e command and failing exit while exposing only
 schema version, fixed browser owner, allowlisted low-cardinality category, and fixed job identity.
 Unknown modes/categories/fields fail closed. On only that diagnostic path the workflow must suppress
@@ -738,14 +744,19 @@ candidate capture, remove the one-head activation/upload diversion and re-prove 
 browser proof authority; a safe recurring closed mapper/redaction assertion may remain. The empty
 route-tour `CROSSWAKE_VERSION` observation is only `route_tour_version_presence_empty`; it becomes
 causal only if an otherwise identical RED/GREEN regression deterministically follows that input. A
-new owner/path, unsafe/inconclusive diagnostic, or exhausted single diagnostic stops for plan
+Phase41 is pre-existing hosted nondeterminism, not a35 fallout or a new owner: its unchanged observed
+test surfaces authorize no edit. It remains mandatory in the 47-check gate; recurrence on replacement
+or final head checkpoints without silent ignore or an extra retry. A new owner/path, failed suppression,
+unsafe/inconclusive replacement diagnostic, or exhausted replacement allowance stops for plan
 revision before further edit or push.
 
-The post-412 attempt budget permits exactly one browser diagnostic PR #149 head update and exactly
-one later final-candidate update. The diagnostic cannot merge or close/supersede any PR. After both
+The post-412 ledger records the invalid original diagnostic as used 1/1 and permits exactly one
+replacement browser diagnostic PR #149 head update plus exactly one later final-candidate update.
+Neither diagnostic can merge or close/supersede any PR. After both
 owners are GREEN, invalidate the 412 manifest, commit all non-manifest bytes, recapture one source
 scope, and commit that manifest alone. Complete pinned proof precedes the one guarded final
-fast-forward. A missing/red exact-head conclusion, drift, new owner, or any third update exhausts
+fast-forward. A missing/red exact-head conclusion, Phase41 recurrence, drift, new owner, or any update
+beyond the consumed original plus one replacement plus one final exhausts
 the tranche and leaves PR #149/#148/#110 open and unmerged at a checkpoint.
 
 Push the actual frozen commit ancestry. Do not create a one-commit tree transplant, squash, or
