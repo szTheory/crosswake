@@ -739,41 +739,44 @@ the existing five-path browser universe. Do not hide failures, retry blindly, in
 timeouts, or reduce coverage. Remove all diagnostic job mode/upload diversion before final freeze and
 re-prove ordinary failure artifact publication plus required proof failure direction.
 
-Recovery 3F and 3G are completed, immutable evidence: Phase41 RED `62fcfcea`, lock GREEN `b4d98103`,
-cleanup/browser RED `f1b45b69`, cleanup/browser GREEN `c8e69c32`, and ledger `232958ab`. Failed final
-candidate `072250e3` and run `34649577077` then proved the browser, e2e, route-tour, mobile, cleanup,
-root, and example leaves GREEN; only Phase41 plus the transitive umbrella failed. Do not redo or
-reinterpret those GREEN owners.
+Recovery 3F/3G and the completed Phase41 workflow partition are immutable evidence. Preserve RED
+`0a0e1907`, GREEN `90a984d0`, formatter follow-up `dfe1f8cb`, failed-attempt ledger `cbf996e7`, and
+source/ledger receipt `e5f75d26`, as well as the earlier browser/cleanup commits. Failed final
+candidate `072250e3` and run `34649577077` proved browser, e2e, route-tour, mobile, cleanup, root,
+and example leaves GREEN; do not redo or reinterpret those owners.
 
-The remaining Phase41 authority is still exactly
-`test/crosswake/proof_lane/evidence_test.exs`,
-`test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs`,
-`scripts/verify_phase_161_1.sh`, and `.github/workflows/crosswake-ci.yml`. Hosted broad seed 748644
-with max-cases 8 timed out at the unchanged 60 seconds in the negative-marker test's second nested
-verifier call. That test is untagged, while the existing global lock covers only the physical-class
-promotion and positive ordered-marker tests; two-test locking therefore cannot isolate the observed
-three-test nested-process class. Fair local default/max-cases-8, `+S 2`/max-cases-8, and
-default/max-cases-4 comparisons were all green, so scheduler caps and max-cases reduction are not
-evidence-backed repairs.
+The first exact e5 nine-stage run later failed only root-proof while its other eight stages passed,
+but the bounded contract destroyed the raw root log. It therefore supplies no seed, test, leaf, or
+stable category. Both a valid invocation-owned pinned root-only run and a direct asdf-pinned source
+run passed the same five companion counts (11, 55, 139, 53, 98), root 1625 with 74 excluded, and
+clean status with no residue. Record the original result only as nondeterministic and unreproduced;
+do not invent causality or authorize retries from it.
 
-Lead with deterministic metadata and workflow-command RED: the negative-marker test is absent from
-the tag selection and remains in the broad command. GREEN gives exactly those three tests
-`:phase41_nested_process`, runs all three with `mix test --only phase41_nested_process --seed 748644
---max-cases 1`, then runs `mix test --exclude phase41_nested_process --exclude
-requires_example_host --seed 748644 --max-cases 8`. Both commands fail closed independently. Their
-counted union must contain every non-host test exactly once while retaining exactly the 74
-`requires_example_host` exclusions. Preserve assertions, the default timeout, markers, exits,
-toolchain, global concurrency, and the existing doctor proof. Existing ad-hoc locks may be reduced
-only when the partition proof establishes redundancy; do not add another lock. `.tool-versions`,
-`test/test_helper.exs`, setup action, production libraries, and other nested-process tests remain
-read-only; any need for them checkpoints before edit.
+There is nonetheless a separately proven scheduling-contract defect: `mix.exs` alias `verify`
+still sends all 1625 root tests through one broad command, so it admits the exact three
+`:phase41_nested_process` tests and bypasses the completed hosted partition. Pending edit authority
+widens only to `mix.exs`; the existing
+`test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs` owns the regression. RED parses
+the alias and proves the missing dedicated command plus tag-admitting broad command. GREEN preserves
+all five companion command groups and `companions.test`, then runs `test --only
+phase41_nested_process --seed 748644 --max-cases 1` before `test --exclude
+phase41_nested_process --exclude requires_example_host --exclude advisory_only --seed 748644
+--max-cases 8`. The existing `advisory_only` exclusion remains alias-specific; every other partition
+field must agree with hosted CI.
 
-Both diagnostic allowances and the failed 072 prior-final update are consumed 1/1. After the tag
-partition and complete clean local proof, invalidate 072's manifest and commit one freshly captured
-manifest alone. Exactly one replacement-final PR #149 fast-forward from 072 is authorized; require
-all 47 checks green on the first exact-head run. Any Phase41 recurrence, cleanup/browser regression,
-missing/red check, drift, or new owner checkpoints without rerun or another head update;
-#149/#148/#110 remain open and unmerged until that gate passes.
+Static mutations must reject a missing, duplicate, reordered, or silently skipped tag/command. The
+dedicated-three and broad-1622 sets must cover the existing root union exactly once while preserving
+the 74 host exclusions, assertions, default 60-second timeout, companion order, and fail-closed
+behavior. No scheduler, toolchain, global concurrency, timeout, retry, product, workflow, harness,
+or other test edit is authorized.
+
+Both diagnostic allowances and the failed 072 prior-final update are consumed 1/1. Because the
+alias repair changes source, e5 becomes pre-candidate and every old manifest is invalid. Only after
+the complete invocation-owned nine-stage proof passes may execution commit one fresh manifest alone
+and fast-forward PR #149 exactly once from remote 072. Require all 47 checks green on the first
+exact-head run; any root/Phase41 recurrence, cleanup/browser regression, missing/red check, drift, or
+new owner checkpoints without rerun or another update. #149/#148/#110 remain open and unmerged until
+that gate passes.
 
 Push the actual frozen commit ancestry. Do not create a one-commit tree transplant, squash, or
 cherry-pick candidate. Require protected default and every evidence OID as ancestors of the exact
