@@ -223,11 +223,15 @@
       }
     },
     "head_update_budget": {
-      "diagnostic": {
+      "final_candidate": {
         "allowed": 1,
         "used": 0
       },
-      "final_candidate": {
+      "original_diagnostic": {
+        "allowed": 1,
+        "used": 1
+      },
+      "replacement_diagnostic": {
         "allowed": 1,
         "used": 0
       }
@@ -239,8 +243,72 @@
     ],
     "owners": {
       "browser": {
-        "diagnostic": {
-          "status": "not_pushed"
+        "invalid_diagnostic": {
+          "accepted_category": false,
+          "artifact_upload": "executed",
+          "classifications": [
+            {
+              "affected_jobs": [
+                "phase130-core-hermetic-proof",
+                "proof-requires-example-host"
+              ],
+              "broad_imports": "exercised",
+              "category": "python_bytecode_status_residue",
+              "final_result": "FAILURE",
+              "final_stage": "repository-cleanliness",
+              "observed_test_owner": false,
+              "owner_id": "repository_verifier_child_cleanup",
+              "primary_results": [
+                {
+                  "job": "phase130-core-hermetic-proof",
+                  "result": "PASS",
+                  "stage": "root-proof"
+                },
+                {
+                  "job": "proof-requires-example-host",
+                  "result": "PASS",
+                  "stage": "example-host-proof"
+                }
+              ],
+              "python_producer_owner": false,
+              "residue_paths": [
+                "script/__pycache__/classify_ci_change.cpython-314.pyc",
+                "script/__pycache__/list_merge_blocking_checks.cpython-314.pyc"
+              ]
+            },
+            {
+              "accepted_category": false,
+              "affected_jobs": [
+                "e2e-proof",
+                "route-tour-proof"
+              ],
+              "category": "invalid_suppression_scope",
+              "owner_id": "browser"
+            },
+            {
+              "affected_jobs": [
+                "phase41-gating-proof"
+              ],
+              "category": "pre_existing_hosted_nondeterminism",
+              "causal": false,
+              "edit_authority": false,
+              "owner_id": "none",
+              "retry_authority": false
+            }
+          ],
+          "diagnostic_scope": "proof_step_only",
+          "head_oid": "a35e81efae2f8a6e6c9448111ab756df9bfd58e5",
+          "pr_number": 149,
+          "run_id": 34635587034,
+          "status": "invalid_suppression_scope",
+          "successful_checks": 41,
+          "total_checks": 47,
+          "tree_oid": "d94a93c33821c800c091cb5ca3efafe58cc0d9f8",
+          "umbrella": {
+            "category": "transitive_failure",
+            "job": "Crosswake CI",
+            "owner_id": "transitive_umbrella"
+          }
         },
         "repair": {
           "status": "not_started"
@@ -252,7 +320,10 @@
           "script/verify_repository.mjs",
           "test/js/repository_verification.test.mjs"
         ],
-        "status": "pending_diagnostic"
+        "replacement_diagnostic": {
+          "status": "not_pushed"
+        },
+        "status": "pending_replacement_diagnostic"
       },
       "generated_contract_cleanup": {
         "green": {
@@ -283,7 +354,7 @@
         "strategy": "dedicated_fully_provisioned_owner"
       }
     },
-    "schema_version": 1
+    "schema_version": 2
   },
   "red_tracer_oid": "367f5b5491384594a652d137a03933fa3a89418a",
   "rejected_topology": {

@@ -29,6 +29,15 @@ FAILED_DIAGNOSTIC = {
 }
 GENERATED_RED = "24fac450ffba5af764ab4be10d8c4aef034780d4"
 GENERATED_GREEN = "60d77d61fa28593f5f1b725f7d643d94f2e6db1e"
+INVALID_BROWSER_DIAGNOSTIC = {
+    "head_oid": "a35e81efae2f8a6e6c9448111ab756df9bfd58e5",
+    "tree_oid": "d94a93c33821c800c091cb5ca3efafe58cc0d9f8",
+    "run_id": 34635587034,
+}
+BYTECODE_RESIDUE_PATHS = [
+    "script/__pycache__/classify_ci_change.cpython-314.pyc",
+    "script/__pycache__/list_merge_blocking_checks.cpython-314.pyc",
+]
 FULL_OID = re.compile(r"^[0-9a-f]{40}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 MODES = {"100644", "100755", "120000", "160000"}
@@ -146,7 +155,7 @@ def runtime_clean() -> None:
 
 def post_412_recovery() -> dict[str, Any]:
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "kind": "post_412_recovery",
         "failed_diagnostic": {
             **FAILED_DIAGNOSTIC,
@@ -182,22 +191,69 @@ def post_412_recovery() -> dict[str, Any]:
                 },
             },
             "browser": {
-                "status": "pending_diagnostic",
+                "status": "pending_replacement_diagnostic",
                 "repair_universe": BROWSER_REPAIR_UNIVERSE,
-                "diagnostic": {"status": "not_pushed"},
+                "invalid_diagnostic": invalid_browser_diagnostic(),
+                "replacement_diagnostic": {"status": "not_pushed"},
                 "repair": {"status": "not_started"},
             },
         },
         "head_update_budget": {
-            "diagnostic": {"allowed": 1, "used": 0},
+            "original_diagnostic": {"allowed": 1, "used": 1},
+            "replacement_diagnostic": {"allowed": 1, "used": 0},
             "final_candidate": {"allowed": 1, "used": 0},
         },
     }
 
 
+def invalid_browser_diagnostic() -> dict[str, Any]:
+    return {
+        **INVALID_BROWSER_DIAGNOSTIC,
+        "pr_number": 149,
+        "total_checks": 47,
+        "successful_checks": 41,
+        "status": "invalid_suppression_scope",
+        "diagnostic_scope": "proof_step_only",
+        "artifact_upload": "executed",
+        "accepted_category": False,
+        "classifications": [
+            {
+                "affected_jobs": ["phase130-core-hermetic-proof", "proof-requires-example-host"],
+                "category": "python_bytecode_status_residue",
+                "owner_id": "repository_verifier_child_cleanup",
+                "primary_results": [
+                    {"job": "phase130-core-hermetic-proof", "stage": "root-proof", "result": "PASS"},
+                    {"job": "proof-requires-example-host", "stage": "example-host-proof", "result": "PASS"},
+                ],
+                "final_stage": "repository-cleanliness",
+                "final_result": "FAILURE",
+                "residue_paths": BYTECODE_RESIDUE_PATHS,
+                "broad_imports": "exercised",
+                "python_producer_owner": False,
+                "observed_test_owner": False,
+            },
+            {
+                "affected_jobs": ["e2e-proof", "route-tour-proof"],
+                "category": "invalid_suppression_scope",
+                "owner_id": "browser",
+                "accepted_category": False,
+            },
+            {
+                "affected_jobs": ["phase41-gating-proof"],
+                "category": "pre_existing_hosted_nondeterminism",
+                "owner_id": "none",
+                "causal": False,
+                "edit_authority": False,
+                "retry_authority": False,
+            },
+        ],
+        "umbrella": {"job": "Crosswake CI", "owner_id": "transitive_umbrella", "category": "transitive_failure"},
+    }
+
+
 def validate_post_412(value: Any, owner: str | None = None, live: bool = False) -> None:
     keys(value, {"schema_version", "kind", "failed_diagnostic", "owner_order", "owners", "head_update_budget"}, "post_412_schema")
-    require(value["schema_version"] == 1 and value["kind"] == "post_412_recovery", "post_412_authority")
+    require(value["schema_version"] == 2 and value["kind"] == "post_412_recovery", "post_412_authority")
     failed = value["failed_diagnostic"]
     keys(failed, {"head_oid", "tree_oid", "run_id", "pr_number", "total_checks", "successful_checks", "failed_leaves", "umbrella"}, "post_412_failed_schema")
     require({k: failed[k] for k in FAILED_DIAGNOSTIC} == FAILED_DIAGNOSTIC, "post_412_failed_identity")
@@ -213,15 +269,16 @@ def validate_post_412(value: Any, owner: str | None = None, live: bool = False) 
     require(generated["red"] == post_412_recovery()["owners"]["generated_contract_cleanup"]["red"] and generated["green"] == post_412_recovery()["owners"]["generated_contract_cleanup"]["green"], "generated_owner_receipts")
     require(git("merge-base", "--is-ancestor", GENERATED_RED, GENERATED_GREEN).strip() == "", "generated_commit_order")
     browser = value["owners"]["browser"]
-    keys(browser, {"status", "repair_universe", "diagnostic", "repair"}, "browser_owner_schema")
+    keys(browser, {"status", "repair_universe", "invalid_diagnostic", "replacement_diagnostic", "repair"}, "browser_owner_schema")
     require(browser["repair_universe"] == BROWSER_REPAIR_UNIVERSE, "browser_repair_universe")
-    keys(value["head_update_budget"], {"diagnostic", "final_candidate"}, "head_update_budget_schema")
-    for name in ["diagnostic", "final_candidate"]:
+    require(browser["invalid_diagnostic"] == invalid_browser_diagnostic(), "invalid_browser_diagnostic")
+    keys(value["head_update_budget"], {"original_diagnostic", "replacement_diagnostic", "final_candidate"}, "head_update_budget_schema")
+    for name in ["original_diagnostic", "replacement_diagnostic", "final_candidate"]:
         keys(value["head_update_budget"][name], {"allowed", "used"}, "head_update_counter_schema")
         require(value["head_update_budget"][name]["allowed"] == 1 and value["head_update_budget"][name]["used"] in {0, 1}, "head_update_counter")
-    if browser["status"] == "pending_diagnostic":
-        require(browser["diagnostic"] == {"status": "not_pushed"} and browser["repair"] == {"status": "not_started"}, "browser_pending")
-        require(value["head_update_budget"] == {"diagnostic": {"allowed": 1, "used": 0}, "final_candidate": {"allowed": 1, "used": 0}}, "browser_pending_budget")
+    if browser["status"] == "pending_replacement_diagnostic":
+        require(browser["replacement_diagnostic"] == {"status": "not_pushed"} and browser["repair"] == {"status": "not_started"}, "browser_pending")
+        require(value["head_update_budget"] == {"original_diagnostic": {"allowed": 1, "used": 1}, "replacement_diagnostic": {"allowed": 1, "used": 0}, "final_candidate": {"allowed": 1, "used": 0}}, "browser_pending_budget")
     elif browser["status"] == "green":
         validate_browser_recovery(browser, value["head_update_budget"])
     else:
@@ -232,20 +289,20 @@ def validate_post_412(value: Any, owner: str | None = None, live: bool = False) 
         require(browser["status"] == "green", "browser_not_green")
         if live:
             snapshot = pr(149)
-            require(snapshot["state"] == "OPEN" and snapshot["head_oid"] == browser["diagnostic"]["head_oid"] and snapshot["base_oid"] == BASE, "browser_diagnostic_live")
+            require(snapshot["state"] == "OPEN" and snapshot["head_oid"] == browser["replacement_diagnostic"]["head_oid"] and snapshot["base_oid"] == BASE, "browser_diagnostic_live")
     privacy(value)
 
 
 def validate_browser_recovery(browser: dict[str, Any], budget: dict[str, Any]) -> None:
-    keys(browser["diagnostic"], {"status", "head_oid", "tree_oid", "run_id", "category", "owner_path", "affected_jobs", "artifact", "redaction", "playwright_artifacts"}, "browser_diagnostic_schema")
-    diagnostic = browser["diagnostic"]
+    keys(browser["replacement_diagnostic"], {"status", "head_oid", "tree_oid", "run_id", "category", "owner_path", "affected_jobs", "artifact", "redaction", "playwright_artifacts"}, "browser_diagnostic_schema")
+    diagnostic = browser["replacement_diagnostic"]
     require(diagnostic["status"] == "failed_as_expected" and FULL_OID.fullmatch(diagnostic["head_oid"]) is not None and FULL_OID.fullmatch(diagnostic["tree_oid"]) is not None and isinstance(diagnostic["run_id"], int), "browser_diagnostic_identity")
     require(diagnostic["affected_jobs"] == ["e2e-proof", "route-tour-proof"] and diagnostic["owner_path"] in BROWSER_REPAIR_UNIVERSE, "browser_diagnostic_owner")
     require(diagnostic["artifact"] == "structured_category_only" and diagnostic["redaction"] == "passed" and diagnostic["playwright_artifacts"] == "suppressed_for_diagnostic", "browser_diagnostic_safety")
     keys(browser["repair"], {"status", "category", "owner_path", "green_commit_oid", "ordinary_authority"}, "browser_repair_schema")
     repair = browser["repair"]
     require(repair["status"] == "green" and repair["category"] == diagnostic["category"] and repair["owner_path"] == diagnostic["owner_path"] and FULL_OID.fullmatch(repair["green_commit_oid"]) is not None and repair["ordinary_authority"] == "restored", "browser_repair_receipt")
-    require(budget["diagnostic"] == {"allowed": 1, "used": 1} and budget["final_candidate"] == {"allowed": 1, "used": 0}, "browser_green_budget")
+    require(budget["original_diagnostic"] == {"allowed": 1, "used": 1} and budget["replacement_diagnostic"] == {"allowed": 1, "used": 1} and budget["final_candidate"] == {"allowed": 1, "used": 0}, "browser_green_budget")
 
 
 def failure_ledger() -> dict[str, Any]:
