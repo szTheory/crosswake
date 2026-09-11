@@ -170,6 +170,121 @@
     "test/crosswake/proof/phase69_docs_contract_parity_test.exs"
   ],
   "kind": "fix_forward_failure_ledger",
+  "post_412_recovery": {
+    "failed_diagnostic": {
+      "failed_leaves": [
+        {
+          "cleanup_cascade": true,
+          "job": "android-package-unit",
+          "owner_id": "generated_contract_cleanup",
+          "primary_result": "SUCCESS"
+        },
+        {
+          "cleanup_cascade": true,
+          "job": "ios-package-unit",
+          "owner_id": "generated_contract_cleanup",
+          "primary_result": "SUCCESS"
+        },
+        {
+          "cleanup_cascade": true,
+          "job": "phase130-core-hermetic-proof",
+          "owner_id": "generated_contract_cleanup",
+          "primary_result": "SUCCESS"
+        },
+        {
+          "cleanup_cascade": true,
+          "job": "proof-requires-example-host",
+          "owner_id": "generated_contract_cleanup",
+          "primary_result": "SUCCESS"
+        },
+        {
+          "cleanup_cascade": true,
+          "job": "e2e-proof",
+          "owner_id": "browser",
+          "primary_result": "FAILURE"
+        },
+        {
+          "cleanup_cascade": true,
+          "job": "route-tour-proof",
+          "owner_id": "browser",
+          "primary_result": "FAILURE"
+        }
+      ],
+      "head_oid": "412dc4d15bed871b4eefabc05ced4567da25c61c",
+      "pr_number": 149,
+      "run_id": 34626117633,
+      "successful_checks": 40,
+      "total_checks": 47,
+      "tree_oid": "919cbf8dd6ed72c18650291b3d3f285eede2a06a",
+      "umbrella": {
+        "category": "transitive_failure",
+        "job": "Crosswake CI",
+        "owner_id": "transitive_umbrella"
+      }
+    },
+    "head_update_budget": {
+      "diagnostic": {
+        "allowed": 1,
+        "used": 0
+      },
+      "final_candidate": {
+        "allowed": 1,
+        "used": 0
+      }
+    },
+    "kind": "post_412_recovery",
+    "owner_order": [
+      "generated_contract_cleanup",
+      "browser"
+    ],
+    "owners": {
+      "browser": {
+        "diagnostic": {
+          "status": "not_pushed"
+        },
+        "repair": {
+          "status": "not_started"
+        },
+        "repair_universe": [
+          ".github/workflows/crosswake-ci.yml",
+          "examples/phoenix_host/playwright.config.ts",
+          "script/repository_verification_stages.json",
+          "script/verify_repository.mjs",
+          "test/js/repository_verification.test.mjs"
+        ],
+        "status": "pending_diagnostic"
+      },
+      "generated_contract_cleanup": {
+        "green": {
+          "commit_oid": "60d77d61fa28593f5f1b725f7d643d94f2e6db1e",
+          "owner_selection": "repository-cleanliness",
+          "result": "passed"
+        },
+        "red": {
+          "affected_jobs": [
+            "android-package-unit",
+            "ios-package-unit",
+            "phase130-core-hermetic-proof",
+            "proof-requires-example-host"
+          ],
+          "category": "generated_contract_generation_failed",
+          "commit_oid": "24fac450ffba5af764ab4be10d8c4aef034780d4",
+          "owner_path": "lib/mix/tasks/crosswake.contract.gen.ex",
+          "result": "failed_as_expected"
+        },
+        "repair_universe": [
+          ".github/workflows/crosswake-ci.yml",
+          "lib/mix/tasks/crosswake.contract.gen.ex",
+          "script/repository_artifact_policy.json",
+          "script/verify_repository.mjs",
+          "test/js/repository_verification.test.mjs"
+        ],
+        "status": "green",
+        "strategy": "dedicated_fully_provisioned_owner"
+      }
+    },
+    "schema_version": 1
+  },
   "red_tracer_oid": "367f5b5491384594a652d137a03933fa3a89418a",
   "rejected_topology": {
     "first_boundary_path_count": 232,
@@ -177,7 +292,7 @@
     "second_boundary_path_count": 11,
     "status": "diagnostic_only"
   },
-  "reproduction_source_oid": "9c1fbfe6324c05c7766c6d9f6c8f0b5d8f307771",
+  "reproduction_source_oid": "60d77d61fa28593f5f1b725f7d643d94f2e6db1e",
   "required_ancestor_oids": [
     "367f5b5491384594a652d137a03933fa3a89418a",
     "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
@@ -318,5 +433,5 @@
     ".planning/workstreams/quality-ratchet-release/milestone.lock": "fd4c22c0f07449f02acc487c3100eed7a10edb1382d63807dd4003a54bfd2943",
     ".planning/workstreams/quality-ratchet-release/state.json": "6cf0413c5cc52eb4f9c10ba497f82614608a54659e10bd48172bad2d9765dff4"
   },
-  "schema_version": 2
+  "schema_version": 3
 }
