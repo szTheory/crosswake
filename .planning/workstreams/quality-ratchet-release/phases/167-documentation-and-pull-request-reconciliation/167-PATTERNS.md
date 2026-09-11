@@ -721,55 +721,43 @@ git/status/artifact cleanup either way. Android/iOS remain transitive tests and 
 feature, template, device, parity, generator, Maven, JVM, or vector change.
 
 Generated cleanup is complete at RED `24fac450`, GREEN `60d77d61`, and ledger `5a132620`; do not
-rerun or recommit that tracer. The two additional a35 leaves share the existing cleanliness owner:
-`phase130-core-hermetic-proof` passes preflight/root proof and `proof-requires-example-host` passes
-preflight/example-host proof, then both fail on exactly
-`script/__pycache__/classify_ci_change.cpython-314.pyc` and
-`script/__pycache__/list_merge_blocking_checks.cpython-314.pyc` from a clean baseline. Classify both
-as `python_bytecode_status_residue`, not as producer/root/example failures. Before replacement push,
-one local RED/GREEN must evidence-select the least-authority existing verifier-runner or artifact-policy
-mechanism, remove/restore only newly created exact owned residues, preserve pre-existing/unowned files,
-and retain failure for any real unexpected residue. Never blanket-ignore `__pycache__` or edit Python
-producers and observed tests; paths stay within `script/verify_repository.mjs`,
-`script/repository_artifact_policy.json`, `.github/workflows/crosswake-ci.yml`, and the JS regression.
-Browser diagnostics follow only after that GREEN. The browser repair universe is
-exactly `script/repository_verification_stages.json`, `script/verify_repository.mjs`,
-`examples/phoenix_host/playwright.config.ts`, `.github/workflows/crosswake-ci.yml`, and
-`test/js/repository_verification.test.mjs`. Local RED `1e3469dd` and instrumentation `a35e81ef` are
-completed and must not be rerun/recommitted. The first hosted diagnostic run 34635587034 is invalid:
-step-scoped activation was unavailable to the later upload condition, E2E failure evidence uploaded,
-and no category is accepted; its allowance remains consumed 1/1. One user-authorized replacement
-diagnostic remains. Its focused fixture first fails on that exact scope defect, then moves the closed
-activation and fixed job identity to each browser job's `env`, which later steps inherit. Before the
-replacement push, `actionlint` and positive/negative fixtures prove the later condition sees the
-mode, diagnostic failure artifacts are suppressed, normal failure artifacts remain published,
-browser proof still runs/fails, and only the closed signal can surface. The replacement remains
-diagnostic-only; browser repair GREEN follows the hosted category without another push. Its exact closed
-diagnostic mode retains each ordinary route-tour/e2e command and failing exit while exposing only
-schema version, fixed browser owner, allowlisted low-cardinality category, and fixed job identity.
-Unknown modes/categories/fields fail closed. On only that diagnostic path the workflow must suppress
-Playwright report/test-result/trace/screenshot/video publication; it may not create a general skip or
-weaken the required check. Private inner logs, stdout/stderr, payloads, artifact contents, URLs,
-filesystem absolutes, remote prose, and environment values stay invocation-private. Before final
-candidate capture, remove the one-head activation/upload diversion and re-prove ordinary required
-browser proof authority; a safe recurring closed mapper/redaction assertion may remain. The empty
-route-tour `CROSSWAKE_VERSION` observation is only `route_tour_version_presence_empty`; it becomes
-causal only if an otherwise identical RED/GREEN regression deterministically follows that input. A
-Together, `python_bytecode_status_residue`, invalid E2E suppression scope, and the Phase41 disposition
-classify every a35 failed leaf. Phase41 is pre-existing hosted nondeterminism, not a35 fallout or a new owner: its unchanged observed
-test surfaces authorize no edit. It remains mandatory in the 47-check gate; recurrence on replacement
-or final head checkpoints without silent ignore or an extra retry. A new owner/path, failed suppression,
-unsafe/inconclusive replacement diagnostic, or exhausted replacement allowance stops for plan
-revision before further edit or push.
+rerun or recommit it. The a35 clean-baseline residue tracer and 818 replacement run prove the later
+cpython-314 filename deletion is not recurring authority: root/example primary owners pass, then
+repository cleanliness recurs, and hosted evidence exposes no versioned path. Replace deletion with
+version-independent prevention at the repository-verifier Python child boundary, preferring scoped
+`PYTHONDONTWRITEBYTECODE=1`. Actual imports and synthetic CPython tags must create no residue;
+pre-existing files remain untouched and an unexpected residue still fails. Never ignore/delete
+`__pycache__`, edit Python producers, or widen beyond the existing verifier/policy/JS-test authority.
 
-The post-412 ledger records the invalid original diagnostic as used 1/1 and permits exactly one
-replacement browser diagnostic PR #149 head update plus exactly one later final-candidate update.
-Neither diagnostic can merge or close/supersede any PR. After both
-owners are GREEN, invalidate the 412 manifest, commit all non-manifest bytes, recapture one source
-scope, and commit that manifest alone. Complete pinned proof precedes the one guarded final
-fast-forward. A missing/red exact-head conclusion, Phase41 recurrence, drift, new owner, or any update
-beyond the consumed original plus one replacement plus one final exhausts
-the tranche and leaves PR #149/#148/#110 open and unmerged at a checkpoint.
+PR #149 replacement diagnostic head `81834a5c` and run `34640820161` are conclusive diagnostic
+authority, never candidate authority. Both diagnostic allowances are consumed 1/1. Artifact
+suppression passed for both jobs: job envs were correct, upload conditions were false, and no upload
+action, marker, or private artifact path appeared. Both route-tour and e2e emitted only schema 1,
+fixed browser owner, and `browser_test_timeout`. No further diagnostic push is allowed. A local
+hosted-like timeout RED must reproduce that category causally before the least-authority GREEN inside
+the existing five-path browser universe. Do not hide failures, retry blindly, inflate infinite/global
+timeouts, or reduce coverage. Remove all diagnostic job mode/upload diversion before final freeze and
+re-prove ordinary failure artifact publication plus required proof failure direction.
+
+Phase41 now has explicit stabilization authority, but only for
+`test/crosswake/proof_lane/evidence_test.exs`,
+`test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs`,
+`scripts/verify_phase_161_1.sh`, and the existing Phase41 workflow. The dedicated 12/12 proof passed;
+the broad hosted run timed out only the physical-promotion and ordered-marker nested-process tests,
+while exact local broad seed 480367/max-cases 8 passed 1625/1625. Lead with deterministic adversarial
+contention RED, distinguish resource/order pressure from semantic assertion behavior, then choose
+only module-local serialization or harness-local lifecycle isolation proven by that RED. Preserve
+timeouts, assertions, exits, markers, privacy, max-cases, and proof breadth. `.tool-versions`,
+`test/test_helper.exs`, setup action, and production libraries are read-only; OTP/global ownership
+checkpoints before edit. GREEN requires repeated adversarial runs, dedicated seed 280497, and the
+exact broad seed/max-cases.
+
+Only the final-candidate budget remains 0/1. After Phase41, bytecode prevention, and browser timeout
+are locally GREEN, remove diagnostic diversion, commit all non-manifest bytes, invalidate prior
+manifests, run complete clean proof, and commit one freshly captured manifest alone. Fast-forward PR
+#149 once from exact 81834a5c and require 47/47 green. Any Phase41 timeout, cleanup residue, browser
+timeout, missing/red check, drift, or new owner checkpoints without rerun or another head update;
+#149/#148/#110 remain open and unmerged.
 
 Push the actual frozen commit ancestry. Do not create a one-commit tree transplant, squash, or
 cherry-pick candidate. Require protected default and every evidence OID as ancestors of the exact
