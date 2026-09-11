@@ -49,6 +49,7 @@ FAILED_FINAL_ATTEMPT = {
 }
 PHASE41_PARTITION_RED = "0a0e190739f5f82e4c324ee7ecb3eaad3b611a60"
 PHASE41_PARTITION_GREEN = "90a984d0c51b7a92eb6fe79eb94b1a07c266791d"
+PHASE41_PARTITION_FORMAT = "dfe1f8cb7694faa8b4763fcc8dba1def426857ec"
 FULL_OID = re.compile(r"^[0-9a-f]{40}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 MODES = {"100644", "100755", "120000", "160000"}
@@ -280,6 +281,7 @@ def post_412_recovery() -> dict[str, Any]:
             "prior_green_commit_oid": PHASE41_GREEN,
             "partition_red_commit_oid": PHASE41_PARTITION_RED,
             "partition_green_commit_oid": PHASE41_PARTITION_GREEN,
+            "partition_format_commit_oid": PHASE41_PARTITION_FORMAT,
             "tagged_membership_sha256": digest(PHASE41_TAGGED_TESTS),
             "dedicated_tests": 3,
             "dedicated_repetitions": 7,
@@ -411,6 +413,7 @@ def validate_post_412(value: Any, owner: str | None = None, live: bool = False, 
     require(value["phase41_repair"] == post_412_recovery()["phase41_repair"], "phase41_repair_receipt")
     require(git("merge-base", "--is-ancestor", PHASE41_RED, PHASE41_GREEN).strip() == "", "phase41_commit_order")
     require(git("merge-base", "--is-ancestor", PHASE41_PARTITION_RED, PHASE41_PARTITION_GREEN).strip() == "", "phase41_partition_commit_order")
+    require(git("merge-base", "--is-ancestor", PHASE41_PARTITION_GREEN, PHASE41_PARTITION_FORMAT).strip() == "", "phase41_partition_format_order")
     browser = value["owners"]["browser"]
     keys(browser, {"status", "repair_universe", "invalid_diagnostic", "replacement_diagnostic", "repair"}, "browser_owner_schema")
     require(browser["repair_universe"] == BROWSER_REPAIR_UNIVERSE, "browser_repair_universe")
