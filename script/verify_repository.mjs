@@ -301,6 +301,7 @@ function runRepositoryCleanliness(stage, policy, root, spawn, options = {}) {
   if (!declared || declared.error || declared.signal != null || declared.status !== 0) return declared;
   const forbidden = artifactFailure(policy, root);
   if (forbidden) return { status: 1, ...forbidden };
+  if (!options.verifyGeneratedContracts) return { status: 0 };
   const generated = generatedContractFailure(policy, root, options);
   return generated ? { status: 1, ...generated } : { status: 0 };
 }
@@ -347,6 +348,7 @@ export function runVerification(options = {}) {
   const artifactPolicy = enforceArtifactPolicy ? validateArtifactPolicy(options.artifactPolicy ?? loadArtifactPolicy()) : null;
   const selection = options.selection ?? "all";
   const selected = selectStages(manifest, selection);
+  const verifyGeneratedContracts = selection === "all" || selection === "repository-cleanliness";
   const suppliedRunRoot = Boolean(options.runRoot);
   const runRoot = options.runRoot ?? mkdtempSync(path.join(tmpdir(), "crosswake-repository-verify."));
   const records = [];
@@ -409,7 +411,10 @@ export function runVerification(options = {}) {
           stageEnv.CROSSWAKE_PLAYWRIGHT_ARTIFACT_DIR = path.join(browserOutputRoot, "playwright-artifacts");
         }
         result = stage.stage_id === "repository-cleanliness" && enforceArtifactPolicy
-          ? runRepositoryCleanliness(stage, artifactPolicy, root, spawn, options)
+          ? runRepositoryCleanliness(stage, artifactPolicy, root, spawn, {
+              ...options,
+              verifyGeneratedContracts
+            })
           : spawn(stage.argv[0], stage.argv.slice(1), {
               cwd: path.join(root, stage.cwd),
               env: stageEnv,
