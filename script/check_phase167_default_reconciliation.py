@@ -74,6 +74,9 @@ AUTHORIZED = sorted([
     "script/list_merge_blocking_checks.py", "script/repository_artifact_policy.json",
     "script/repository_verification_stages.json", "script/run_repository_evidence_environment.sh",
     "script/verify_repository.mjs", "examples/phoenix_host/playwright.config.ts",
+    "scripts/verify_phase_161_1.sh",
+    "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+    "test/crosswake/proof_lane/evidence_test.exs",
     "test/js/repository_verification.test.mjs",
     "test/crosswake/proof/phase166_repository_quality_test.exs",
     "test/crosswake/doctor/doctor_threadline_test.exs",
@@ -117,6 +120,9 @@ PROOF_ARGV = [
     ["mix", "format", "--check-formatted"],
     ["mix", "test", "test/crosswake/proof/phase69_docs_contract_parity_test.exs", "test/crosswake/guides/architecture_code_walkthrough_test.exs", "test/crosswake/guides/release_boundaries_test.exs"],
     ["node", "--test", "test/js/repository_verification.test.mjs"],
+    *[["mix", "test", "test/crosswake/proof_lane/evidence_test.exs", "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs", "--seed", "480367", "--max-cases", "8"] for _ in range(7)],
+    ["mix", "test", "test/crosswake/proof/phase41_gating_doctor_test.exs", "--seed", "280497"],
+    ["mix", "test", "--exclude", "requires_example_host", "--seed", "480367", "--max-cases", "8"],
     ["python3", "script/check_phase166_ownership_ledger.py", "--ledger", ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-ownership-ledger.md", "--evidence", ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/evidence/clean-checkout-run.json"],
 ]
 FORBIDDEN = ("http://", "https://", "bearer ", "ghp_", "raw_answer", "transcript", "credential", "stable_device", "founder_identity")

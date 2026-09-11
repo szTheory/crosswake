@@ -15,12 +15,15 @@
     "script/repository_verification_stages.json",
     "script/run_repository_evidence_environment.sh",
     "script/verify_repository.mjs",
+    "scripts/verify_phase_161_1.sh",
     "test/crosswake/doctor/doctor_threadline_test.exs",
     "test/crosswake/guides/architecture_code_walkthrough_test.exs",
     "test/crosswake/guides/release_boundaries_test.exs",
+    "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
     "test/crosswake/proof/phase166_repository_quality_test.exs",
     "test/crosswake/proof/phase43_rulestead_advisory_test.exs",
     "test/crosswake/proof/phase69_docs_contract_parity_test.exs",
+    "test/crosswake/proof_lane/evidence_test.exs",
     "test/crosswake/telemetry_test.exs",
     "test/js/repository_verification.test.mjs",
     "test/mix/tasks/crosswake.docs.sync_test.exs"
@@ -426,7 +429,7 @@
     "second_boundary_path_count": 11,
     "status": "diagnostic_only"
   },
-  "reproduction_source_oid": "c8e69c32d69a49b955e196c1c7b2f56d4357e7a9",
+  "reproduction_source_oid": "232958abd92ca8e3b7ec225f25dc141015d61919",
   "required_ancestor_oids": [
     "367f5b5491384594a652d137a03933fa3a89418a",
     "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
