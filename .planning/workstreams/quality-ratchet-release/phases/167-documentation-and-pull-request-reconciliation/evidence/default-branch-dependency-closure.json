@@ -5,8 +5,8 @@
   "kind": "fix_forward_candidate_scope",
   "manifest_mode": "100644",
   "manifest_path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-dependency-closure.json",
-  "payload_source_oid": "7625d3c1ab0b8d2ae2971e0daafb0e1f8ad4ef56",
-  "payload_source_tree_oid": "75f249788390162cf7013c3a3049c77319f3bbb4",
+  "payload_source_oid": "cce8314ef9ace164f42699236f830193d28c521a",
+  "payload_source_tree_oid": "ddde632ad591e0e88d0f624b378c7afee462c5e5",
   "proof_argv": [
     [
       "python3",
@@ -53,7 +53,7 @@
       },
       "path": ".github/workflows/crosswake-ci.yml",
       "payload": {
-        "blob": "c6668c6af3430cba67f5265a15bb056736e5bcd5",
+        "blob": "192cd0c1a704474fa1f74402042a2194b85aede7",
         "mode": "100644"
       }
     },
@@ -724,7 +724,7 @@
       },
       "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/fix-forward-failure-ledger.json",
       "payload": {
-        "blob": "f60fb41a75cc09519a99c0c57c8ba4893b7468df",
+        "blob": "af354d505be193bb6960fd00c49cde3b6f898c41",
         "mode": "100644"
       }
     },
@@ -1582,7 +1582,7 @@
       },
       "path": "script/check_phase167_default_reconciliation.py",
       "payload": {
-        "blob": "01d78ec60970ab0f24339463e95c53e96a6d18cf",
+        "blob": "0230fd5c8a7bd71db790a83ed3996d9c0f6d53b2",
         "mode": "100644"
       }
     },
@@ -2698,7 +2698,7 @@
       }
     }
   ],
-  "records_digest": "7ae57919b66ae23ed348ae73df25cb3e1df018bc7f8653b9a65f8295756a52a7",
+  "records_digest": "04a629a67eee63d4609cffbf94601658615c0ceb3c4826555256595fc4ddac6a",
   "required_ancestor_oids": [
     "367f5b5491384594a652d137a03933fa3a89418a",
     "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
