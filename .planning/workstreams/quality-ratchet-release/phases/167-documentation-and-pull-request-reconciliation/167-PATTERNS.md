@@ -721,7 +721,18 @@ git/status/artifact cleanup either way. Android/iOS remain transitive tests and 
 feature, template, device, parity, generator, Maven, JVM, or vector change.
 
 Generated cleanup is complete at RED `24fac450`, GREEN `60d77d61`, and ledger `5a132620`; do not
-rerun or recommit that tracer. Browser diagnostics follow only after that GREEN. The browser repair universe is
+rerun or recommit that tracer. The two additional a35 leaves share the existing cleanliness owner:
+`phase130-core-hermetic-proof` passes preflight/root proof and `proof-requires-example-host` passes
+preflight/example-host proof, then both fail on exactly
+`script/__pycache__/classify_ci_change.cpython-314.pyc` and
+`script/__pycache__/list_merge_blocking_checks.cpython-314.pyc` from a clean baseline. Classify both
+as `python_bytecode_status_residue`, not as producer/root/example failures. Before replacement push,
+one local RED/GREEN must evidence-select the least-authority existing verifier-runner or artifact-policy
+mechanism, remove/restore only newly created exact owned residues, preserve pre-existing/unowned files,
+and retain failure for any real unexpected residue. Never blanket-ignore `__pycache__` or edit Python
+producers and observed tests; paths stay within `script/verify_repository.mjs`,
+`script/repository_artifact_policy.json`, `.github/workflows/crosswake-ci.yml`, and the JS regression.
+Browser diagnostics follow only after that GREEN. The browser repair universe is
 exactly `script/repository_verification_stages.json`, `script/verify_repository.mjs`,
 `examples/phoenix_host/playwright.config.ts`, `.github/workflows/crosswake-ci.yml`, and
 `test/js/repository_verification.test.mjs`. Local RED `1e3469dd` and instrumentation `a35e81ef` are
@@ -744,7 +755,8 @@ candidate capture, remove the one-head activation/upload diversion and re-prove 
 browser proof authority; a safe recurring closed mapper/redaction assertion may remain. The empty
 route-tour `CROSSWAKE_VERSION` observation is only `route_tour_version_presence_empty`; it becomes
 causal only if an otherwise identical RED/GREEN regression deterministically follows that input. A
-Phase41 is pre-existing hosted nondeterminism, not a35 fallout or a new owner: its unchanged observed
+Together, `python_bytecode_status_residue`, invalid E2E suppression scope, and the Phase41 disposition
+classify every a35 failed leaf. Phase41 is pre-existing hosted nondeterminism, not a35 fallout or a new owner: its unchanged observed
 test surfaces authorize no edit. It remains mandatory in the 47-check gate; recurrence on replacement
 or final head checkpoints without silent ignore or an extra retry. A new owner/path, failed suppression,
 unsafe/inconclusive replacement diagnostic, or exhausted replacement allowance stops for plan
