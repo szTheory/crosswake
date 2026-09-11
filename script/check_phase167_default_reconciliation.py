@@ -86,6 +86,12 @@ def gh_json(*args: str) -> Any:
     return run_json(["gh", *args])
 
 
+def repository_name() -> str:
+    value = run(["gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"]).strip()
+    require(bool(value) and "/" in value, "repository_name")
+    return value
+
+
 def require(condition: bool, rule: str) -> None:
     if not condition:
         raise ProofError(rule)
@@ -228,9 +234,14 @@ def repository_snapshot() -> tuple[str, str, str]:
 
 
 def pr_snapshot(number: int) -> dict[str, Any]:
-    return gh_json("pr", "view", str(number), "--json",
-                   "number,state,headRefOid,baseRefOid,mergeCommit,files,commits",
-                   "--jq", "{number:.number,state:.state,head_oid:.headRefOid,base_oid:.baseRefOid,merge_oid:(.mergeCommit.oid // null),paths:[.files[].path]|sort,commit_count:(.commits|length)}")
+    snapshot = gh_json("pr", "view", str(number), "--json",
+                       "number,state,headRefOid,baseRefOid,mergeCommit,commits",
+                       "--jq", "{number:.number,state:.state,head_oid:.headRefOid,base_oid:.baseRefOid,merge_oid:(.mergeCommit.oid // null),commit_count:(.commits|length)}")
+    endpoint = f"repos/{repository_name()}/pulls/{number}/files?per_page=100"
+    output = run(["gh", "api", "--paginate", "-H", "Accept: application/vnd.github+json", endpoint,
+                  "--jq", ".[].filename"])
+    snapshot["paths"] = sorted(line for line in output.splitlines() if line)
+    return snapshot
 
 
 def verify_pr(manifest: dict[str, Any], number: int, kind: str) -> dict[str, Any]:
