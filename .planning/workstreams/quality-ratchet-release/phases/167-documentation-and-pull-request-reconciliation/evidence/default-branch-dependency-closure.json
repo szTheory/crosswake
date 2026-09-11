@@ -5,8 +5,8 @@
   "kind": "fix_forward_candidate_scope",
   "manifest_mode": "100644",
   "manifest_path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-dependency-closure.json",
-  "payload_source_oid": "4e3dc9269ea27cbf50d0490b0abc4ffc7def2b8b",
-  "payload_source_tree_oid": "9320d4ce2f82651f94d9350ef7a3d58a87c89b09",
+  "payload_source_oid": "327d824da3545c099fbba149985def15100cfdbd",
+  "payload_source_tree_oid": "3ca2711dc0f91cd95ca7ae374628b53caf21bc3a",
   "proof_argv": [
     [
       "python3",
@@ -53,7 +53,7 @@
       },
       "path": ".github/workflows/crosswake-ci.yml",
       "payload": {
-        "blob": "b7abfce488c734b43e6e0100807df67b7a3a1c7d",
+        "blob": "f589499f6da705699586ff951fe048da558ae10a",
         "mode": "100644"
       }
     },
@@ -2583,7 +2583,7 @@
       },
       "path": "test/js/repository_verification.test.mjs",
       "payload": {
-        "blob": "999732e92317c4b49a09a72b09ffe2b2b22cf8ed",
+        "blob": "f61569825fccac4ef0c7dc31330974c20791fa94",
         "mode": "100644"
       }
     },
@@ -2709,7 +2709,7 @@
       }
     }
   ],
-  "records_digest": "2ba254d3bd0867d59deb4664ed9fdffe39ead9c4fa7cb8941830af4bbc525174",
+  "records_digest": "2facb66da64ea0283ea2c628bbadc3c581491cb2f6d0725aa3136daca4974935",
   "required_ancestor_oids": [
     "367f5b5491384594a652d137a03933fa3a89418a",
     "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
