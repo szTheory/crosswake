@@ -323,6 +323,45 @@ test("browser stage supplies explicit repository mode and invocation-owned outpu
   }
 });
 
+test("hosted diagnostic emits a closed browser owner and suppresses private failure artifacts", () => {
+  const repository = makeRepository();
+  const runRoot = mkdtempSync(path.join(tmpdir(), "crosswake-repository-verify.test-"));
+  const privateFailure = "private stdout payload https://invalid.example /private/runner/test-results trace.zip screenshot.png video.webm";
+  try {
+    const result = runVerification(verificationOptions(repository, {
+      selection: "browser-proof",
+      runRoot,
+      processEnvironment: {
+        ...process.env,
+        CROSSWAKE_BROWSER_DIAGNOSTIC_MODE: "phase167_post_412",
+        CROSSWAKE_BROWSER_DIAGNOSTIC_JOB: "e2e-proof"
+      },
+      spawn: (command, argv) => [command, ...argv].join(" ") === "npx playwright test"
+        ? { status: 1, stdout: privateFailure, stderr: privateFailure }
+        : { status: 0, stdout: "", stderr: "" }
+    }));
+    const workflowSource = readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8");
+    const e2eStart = workflowSource.indexOf("  e2e-proof:");
+    const routeTourStart = workflowSource.indexOf("  route-tour-proof:");
+    const e2eBlock = workflowSource.slice(e2eStart, routeTourStart);
+
+    assert.deepEqual({
+      closedSignal: result.output.includes('BROWSER_DIAGNOSTIC {"schema_version":1,"owner":"browser","category":"browser_process_exit_nonzero","job":"e2e-proof"}'),
+      privateFailureRedacted: !result.output.includes(privateFailure),
+      diagnosticModeClosed: e2eBlock.includes("CROSSWAKE_BROWSER_DIAGNOSTIC_MODE: phase167_post_412"),
+      privateArtifactUploadSuppressed: e2eBlock.includes("if: failure() && env.CROSSWAKE_BROWSER_DIAGNOSTIC_MODE != 'phase167_post_412'")
+    }, {
+      closedSignal: true,
+      privateFailureRedacted: true,
+      diagnosticModeClosed: true,
+      privateArtifactUploadSuppressed: true
+    });
+  } finally {
+    rmSync(runRoot, { recursive: true, force: true });
+    rmSync(repository, { recursive: true, force: true });
+  }
+});
+
 test("capture-owned runner roots preserve private stage logs for their owner", () => {
   const repository = makeRepository();
   const captureRoot = mkdtempSync(path.join(tmpdir(), "crosswake-repository-capture.test-"));
