@@ -366,6 +366,35 @@ test("hosted diagnostic emits a closed browser owner and suppresses private fail
   }
 });
 
+test("hosted diagnostic activation is job-visible to later artifact conditions", () => {
+  const workflowSource = readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8");
+  const e2eStart = workflowSource.indexOf("  e2e-proof:");
+  const routeTourStart = workflowSource.indexOf("  route-tour-proof:");
+  const nextJobStart = workflowSource.indexOf("\n  phase67-android-jvm-proof:", routeTourStart);
+  assert(e2eStart >= 0 && routeTourStart > e2eStart && nextJobStart > routeTourStart);
+
+  const jobs = [
+    { id: "e2e-proof", block: workflowSource.slice(e2eStart, routeTourStart) },
+    { id: "route-tour-proof", block: workflowSource.slice(routeTourStart, nextJobStart) }
+  ];
+
+  for (const { id, block } of jobs) {
+    const stepsStart = block.indexOf("\n    steps:");
+    const jobEnvironment = block.slice(0, stepsStart);
+    assert.match(jobEnvironment, /\n    env:\n/);
+    assert.match(jobEnvironment, /CROSSWAKE_BROWSER_DIAGNOSTIC_MODE: phase167_post_412/);
+    assert.match(jobEnvironment, new RegExp(`CROSSWAKE_BROWSER_DIAGNOSTIC_JOB: ${id}`));
+
+    const proofStart = block.indexOf(id === "e2e-proof" ? "      - name: Run Playwright tests" : "      - name: Run route-tour Playwright proof");
+    const proofEnd = block.indexOf("\n      - name:", proofStart + 8);
+    const proofStep = block.slice(proofStart, proofEnd);
+    assert.doesNotMatch(proofStep, /CROSSWAKE_BROWSER_DIAGNOSTIC_(?:MODE|JOB):/);
+  }
+
+  assert.match(jobs[0].block, /if: failure\(\) && env\.CROSSWAKE_BROWSER_DIAGNOSTIC_MODE != 'phase167_post_412'/);
+  assert.match(jobs[1].block, /if: env\.CROSSWAKE_BROWSER_DIAGNOSTIC_MODE != 'phase167_post_412'/);
+});
+
 test("hosted browser diagnostic redaction rejects unknown values and private child failure data", () => {
   assert.throws(() => browserDiagnosticContext({ CROSSWAKE_BROWSER_DIAGNOSTIC_MODE: "unknown", CROSSWAKE_BROWSER_DIAGNOSTIC_JOB: "e2e-proof" }), /mode is unknown/);
   assert.throws(() => browserDiagnosticContext({ CROSSWAKE_BROWSER_DIAGNOSTIC_MODE: BROWSER_DIAGNOSTIC_MODE, CROSSWAKE_BROWSER_DIAGNOSTIC_JOB: "unknown" }), /job is unknown/);
