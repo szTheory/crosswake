@@ -79,9 +79,7 @@ jobs:
         with:
           mix-env: test
       - name: Run first-adopter privacy and documentation contracts
-        run: |
-          mix crosswake.adoption_context.scan
-          mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs
+        run: mix crosswake.docs.sync --check && mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/capability_map/capability_map_test.exs test/crosswake/support_matrix/renderer_test.exs test/crosswake/proof/phase69_docs_contract_parity_test.exs
       - name: Summarize the documentation contract leaf
         env:
           CLASSIFICATION: ${{ needs.classify-change.outputs.classification }}
@@ -93,7 +91,7 @@ jobs:
             echo 'Scheduled proof family: documentation_contracts.'
             echo 'Expected/observed leaves: 1/1.'
             echo 'Executable, browser, Android, Apple, and packaging proof are not scheduled for a validated documentation-only change.'
-            echo 'Remediation: mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs'
+            echo 'Remediation: mix crosswake.docs.sync --check && mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/capability_map/capability_map_test.exs test/crosswake/support_matrix/renderer_test.exs test/crosswake/proof/phase69_docs_contract_parity_test.exs'
           } >> "$GITHUB_STEP_SUMMARY"
 
   brand-structural:
@@ -289,6 +287,11 @@ jobs:
       - uses: ./.github/actions/setup-elixir-cache
         with:
           mix-env: test
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22.14.0"
+      - name: Verify repository formatting
+        run: script/verify_repository.sh --stage format-proof
       - name: Compile (warnings as errors)
         run: mix compile --warnings-as-errors
       - name: Run contract drift test (GUARD-01)
@@ -312,25 +315,13 @@ jobs:
       - uses: ./.github/actions/setup-elixir-cache
         with:
           mix-env: dev
-      - name: Compile
-        run: mix compile
-      - name: Regenerate contract surfaces
-        run: mix crosswake.contract.gen
-      - name: Assert no uncommitted drift
-        run: |
-          set -euo pipefail
-          git add -A
-          if ! git diff --cached --exit-code; then
-            echo '::error::GUARD-02 FAILED — generated contract surfaces are out of date.'
-            echo "::error::Run 'mix crosswake.contract.gen' and commit the regenerated outputs."
-            git --no-pager diff --cached --stat
-            exit 1
-          fi
+      - name: Verify generated contracts without staging
+        run: script/verify_repository.sh --stage repository-cleanliness
       - name: Summarize generated contract parity
         if: always()
         run: |
           echo 'GUARD-02 generated contract surfaces were regenerated and compared byte-for-byte.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Remediation: mix crosswake.contract.gen && git add -A && git diff --cached --exit-code' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: script/verify_repository.sh --stage repository-cleanliness' >> "$GITHUB_STEP_SUMMARY"
 
   proof-dependency-security:
     name: proof-dependency-security
@@ -345,6 +336,11 @@ jobs:
           version-file: .tool-versions
           version-type: strict
           install-hex: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22.14.0"
+      - name: Verify repository prerequisites
+        run: script/verify_repository.sh --stage repository-preflight
       - name: Install Hex
         run: |
           for attempt in 1 2 3; do
@@ -379,6 +375,9 @@ jobs:
         with:
           version-file: .tool-versions
           version-type: strict
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22.14.0"
       - name: Compile the example Phoenix host (dev env)
         env:
           MIX_ENV: dev
@@ -395,9 +394,7 @@ jobs:
           MIX_ENV: test
         run: mix compile
       - name: Run the bounded example-host isolation matrix
-        env:
-          MIX_ENV: test
-        run: script/check_example_host_isolation.sh --matrix-only
+        run: script/verify_repository.sh --stage example-host-proof
       - name: Summarize example-host isolation proof
         if: always()
         run: |
@@ -417,13 +414,11 @@ jobs:
       - uses: ./.github/actions/setup-elixir-cache
         with:
           mix-env: test
-      - name: Compile (warnings as errors)
-        run: mix compile --warnings-as-errors
-      - name: Run Phase 130 extraction and fail-closed proof
-        run: |
-          mix test test/crosswake/proof/phase130_extraction_guards_test.exs
-          mix test test/crosswake/proof/phase130_fail_closed_contract_test.exs
-          mix test --exclude requires_example_host --exclude advisory_only
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22.14.0"
+      - name: Run root and companion proof
+        run: script/verify_repository.sh --stage root-proof
       - name: Summarize Phase 130 core proof
         if: always()
         run: |
@@ -562,8 +557,11 @@ jobs:
       - uses: ./.github/actions/setup-elixir-cache
         with:
           mix-env: test
-      - name: Compile (warnings as errors)
-        run: mix compile --warnings-as-errors
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22.14.0"
+      - name: Compile with repository warning policy
+        run: script/verify_repository.sh --stage warnings-proof
       - name: Run Phase 41 gating doctor and support matrix proof
         run: |
           mix test test/crosswake/proof/phase41_gating_doctor_test.exs
@@ -855,9 +853,11 @@ jobs:
       - uses: ./.github/actions/setup-android-jvm
         with:
           working-directory: packages/crosswake-shell-core-android
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22.14.0"
       - name: Run Android JVM tests
-        working-directory: packages/crosswake-shell-core-android
-        run: ./gradlew test
+        run: script/verify_repository.sh --stage android-package-proof
       - name: Summarize Android package proof
         if: always()
         run: |
@@ -903,6 +903,9 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22.14.0"
       - id: swift-cache-identity
         name: Resolve Swift and Xcode cache identity
         working-directory: packages/crosswake-shell-core-ios
@@ -920,8 +923,7 @@ jobs:
           path: packages/crosswake-shell-core-ios/.build
           key: spm-${{ runner.os }}-${{ runner.arch }}-${{ steps.swift-cache-identity.outputs.toolchain }}-${{ hashFiles('packages/crosswake-shell-core-ios/Package.swift') }}-${{ steps.swift-cache-identity.outputs.resolved-state }}
       - name: Run Swift tests
-        working-directory: packages/crosswake-shell-core-ios
-        run: swift test
+        run: script/verify_repository.sh --stage ios-package-proof
       - name: Summarize Swift package proof
         if: always()
         run: |
@@ -1133,6 +1135,9 @@ jobs:
         with:
           mix-env: test
           working-directory: examples/phoenix_host
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22.14.0"
       - name: Compile example host with warnings as errors
         working-directory: examples/phoenix_host
         run: mix compile --warnings-as-errors
@@ -1149,11 +1154,7 @@ jobs:
         working-directory: examples/phoenix_host
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        working-directory: examples/phoenix_host
-        run: npx playwright test
-      - name: Run native-controls fallback proof
-        working-directory: examples/phoenix_host
-        run: npx playwright test e2e/native_controls_fallback.spec.ts
+        run: script/verify_repository.sh --stage browser-proof
       - name: Upload E2E failure evidence
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -1168,7 +1169,7 @@ jobs:
         if: always()
         run: |
           echo 'Offline-sync IndexedDB outbox, reconnect flush, and scoped replay proof completed.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Remediation: cd examples/phoenix_host && npx playwright test' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: script/verify_repository.sh --stage browser-proof' >> "$GITHUB_STEP_SUMMARY"
 
   route-tour-proof:
     name: route-tour-proof
@@ -1184,6 +1185,9 @@ jobs:
         with:
           mix-env: test
           working-directory: examples/phoenix_host
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22.14.0"
       - name: Compile example host with warnings as errors
         working-directory: examples/phoenix_host
         run: mix compile --warnings-as-errors
@@ -1203,10 +1207,9 @@ jobs:
         working-directory: examples/phoenix_host
         run: npx playwright install --with-deps chromium
       - name: Run route-tour Playwright proof
-        working-directory: examples/phoenix_host
         env:
           CROSSWAKE_VERSION: ${{ steps.crosswake-version.outputs.version }}
-        run: npx playwright test e2e/route_tour.spec.ts
+        run: script/verify_repository.sh --stage browser-proof
       - name: Assert route-tour required evidence files
         run: |
           set -euo pipefail
@@ -1277,7 +1280,7 @@ jobs:
         if: always()
         run: |
           echo 'Route-tour semantic assertions and evidence bundle proof completed.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Remediation: cd examples/phoenix_host && npx playwright test e2e/route_tour.spec.ts' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: script/verify_repository.sh --stage browser-proof' >> "$GITHUB_STEP_SUMMARY"
 
   phase67-android-jvm-proof:
     name: phase67-android-jvm-proof

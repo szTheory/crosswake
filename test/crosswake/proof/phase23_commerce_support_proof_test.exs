@@ -1,4 +1,3 @@
-
 defmodule Crosswake.Proof.Phase23CommerceSupportProofTest do
   @moduledoc """
   Hermetic merge-blocking proof lane for Phase 23 commerce support truth.
@@ -44,12 +43,13 @@ defmodule Crosswake.Proof.Phase23CommerceSupportProofTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
-        live "/paywall", Crosswake.TestSupport.StudySessionLive,
+        live("/paywall", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "paywall",
             runtime: :live_view,
             commerce: [corridor: :subscription_default, role: :paywall_entry]
           ]
+        )
       end
     end
   end
@@ -59,12 +59,13 @@ defmodule Crosswake.Proof.Phase23CommerceSupportProofTest do
 
     scope "/" do
       crosswake_defaults runtime: :native_screen, offline: :unavailable, security: :sensitive do
-        live "/buy", Crosswake.TestSupport.StudySessionLive,
+        live("/buy", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "buy",
             runtime: :native_screen,
             commerce: [corridor: :subscription_default, role: :purchase_intent]
           ]
+        )
       end
     end
   end
@@ -74,20 +75,24 @@ defmodule Crosswake.Proof.Phase23CommerceSupportProofTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
-        live "/billing", Crosswake.TestSupport.StudySessionLive,
+        live("/billing", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "billing",
             runtime: :live_view,
             capabilities: ["purchase_intent"],
             commerce: [corridor: :subscription_default, role: :purchase_intent]
           ]
+        )
       end
     end
   end
 
   setup do
     target =
-      Path.join(System.tmp_dir!(), "crosswake-phase23-proof-#{System.unique_integer([:positive])}")
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-phase23-proof-#{System.unique_integer([:positive])}"
+      )
 
     router_path = Path.join(target, "lib/demo_web/router.ex")
     policy_path = Path.join(target, "lib/demo_web/crosswake/policy.ex")
@@ -165,10 +170,11 @@ defmodule Crosswake.Proof.Phase23CommerceSupportProofTest do
     assert is_list(summary.rebuild_requirements)
   end
 
-  test "every merge-blocking commerce finding carries proof_class :merge_blocking in its details", %{
-    target: target,
-    install_manifest_path: install_manifest_path
-  } do
+  test "every merge-blocking commerce finding carries proof_class :merge_blocking in its details",
+       %{
+         target: target,
+         install_manifest_path: install_manifest_path
+       } do
     report =
       Doctor.run(
         route_source: PaywallCorridorRouter,

@@ -25,6 +25,7 @@ defmodule Crosswake.Install.Patcher do
           | :marker_inserted
           | :endpoint_static_plug_added
           | :live_view_import_replaced
+          | :live_dashboard_import_scoped
           | :crosswake_import_added
 
   @type patch_result :: %{
@@ -37,14 +38,21 @@ defmodule Crosswake.Install.Patcher do
   def patch_router(router_path, policy_module) do
     case File.read(router_path) do
       {:ok, contents} ->
-        with {:ok, patched_contents, actions} <- ensure_install_block(contents, policy_module) do
+        with {:ok, installed_contents, actions} <- ensure_install_block(contents, policy_module),
+             {patched_contents, dashboard_actions} <-
+               ensure_live_dashboard_compat(installed_contents) do
           changed? = patched_contents != contents
 
           if changed? do
             File.write!(router_path, patched_contents)
           end
 
-          {:ok, %{router_file: router_path, changed?: changed?, actions: actions}}
+          {:ok,
+           %{
+             router_file: router_path,
+             changed?: changed?,
+             actions: actions ++ dashboard_actions
+           }}
         end
 
       {:error, reason} ->
@@ -269,10 +277,44 @@ defmodule Crosswake.Install.Patcher do
     [
       "#{indentation}#{@marker_start}",
       "#{indentation}import Phoenix.Router, except: [get: 3, get: 4, post: 3, post: 4, put: 3, put: 4, patch: 3, patch: 4, delete: 3, delete: 4, options: 3, options: 4, head: 3, head: 4]",
+      "#{indentation}import Phoenix.LiveView.Router, except: [live: 2, live: 3, live: 4]",
       "#{indentation}import Crosswake.Router",
       "#{indentation}@crosswake_policy_module #{policy_module}",
+      "#{indentation}_ = @crosswake_policy_module",
       "#{indentation}#{@marker_end}"
     ]
     |> Enum.join("\n")
+  end
+
+  defp ensure_live_dashboard_compat(contents) do
+    compatibility_import =
+      "import Crosswake.Router, except: [get: 4, live: 4], warn: false"
+
+    legacy_compatibility_import =
+      "import Crosswake.Router, except: [get: 4, live: 4]"
+
+    cond do
+      String.contains?(contents, compatibility_import) ->
+        {contents, []}
+
+      String.contains?(contents, legacy_compatibility_import) ->
+        {String.replace(contents, legacy_compatibility_import, compatibility_import,
+           global: false
+         ), [:live_dashboard_import_scoped]}
+
+      Regex.match?(~r/^\s*import\s+Phoenix\.LiveDashboard\.Router\s*$/m, contents) ->
+        patched =
+          Regex.replace(
+            ~r/^(\s*)import\s+Phoenix\.LiveDashboard\.Router\s*$/m,
+            contents,
+            "\\1import Phoenix.LiveDashboard.Router\n\\1#{compatibility_import}",
+            global: false
+          )
+
+        {patched, [:live_dashboard_import_scoped]}
+
+      true ->
+        {contents, []}
+    end
   end
 end

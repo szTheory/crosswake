@@ -65,9 +65,10 @@ separately funded business-line mandate. Durable reasoning is in
 `.planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md`.
 
 ## Current State
-- **v22.0 Quality Ratchet & Release Readiness — READY TO PLAN 2026-08-28.** Phases 164-168 cover
-  dependency security, authoritative and efficient CI, clean-checkout engineering quality,
-  documentation/PR reconciliation, and exact approval-gated 0.2.1 release readiness.
+- **v22.0 Quality Ratchet & Release Readiness — PHASE 166 COMPLETE 2026-09-10.** Dependency
+  security, authoritative and efficient CI, and deterministic clean-checkout repository proof are
+  verified. Phase 167 documentation/PR reconciliation is ready to plan before the exact,
+  approval-gated 0.2.1 release-candidate phase.
 - **v21.0 Adopter Readiness — PARKED AT PHASE 163.1 2026-08-28.** Plans 163.1-08 through
   163.1-10 remain blocked on the validated private adopter handoff and source-bound physical-device
   authority. The completed substrate and exact resume context live in
@@ -429,6 +430,7 @@ After v19.0, Crosswake has a product-shaped proof surface: a Crosswake-owned sho
 | Use v19.0 to build product-shaped showcase apps before v20.0 native-control breadth | The highest-impact DX gap is not only missing controls; Crosswake needs vivid, seeded examples that make route ownership, offline posture, native pressure, diagnostics, and capability gaps obvious before the next controls pack is implemented | ✓ Validated in v19.0 — showcase hub, three product lanes, capability map, route-tour proof, and v20 handoff shipped |
 | Give each v19 demo app a separate fictional micro-brand inside the Crosswake showcase | Realistic product identities and dense fixtures make the examples feel credible while keeping Crosswake positioned as the parent route-policy/runtime-contract system, not one demo app | ✓ Validated in v19.0 — AdminPilot, Fieldserv, and LearnLoop are distinct fictional brands under Crosswake-owned framing |
 | Treat SEED-002 as a multi-milestone arc, not a single broad feature dump | Native controls, capture/device flows, and commerce/paywall support should be sequenced from examples and capability-map evidence so Crosswake stays Phoenix-first and does not drift into a generic WebView plugin catalog | ✓ Validated in v19.0 — v20 Native Controls Pack 1 is scoped from capability-map evidence; capture/device and commerce breadth remain later arcs |
+| Bind complete repository proof to a fixed nine-stage facade and an exact supported-code commit | Maintainers need one deterministic clean-checkout result without widening `mix verify`, hiding independent failures, leaking diagnostic state, or letting evidence commits redefine supported code | ✓ Validated in Phase 166 — all nine stages pass for `d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b`; recurring CI parity remains contract-tested |
 
 ## Evolution
 
@@ -448,4 +450,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-08-27 after Phase 163 verification recovery and v21 phase completion.*
+*Last updated: 2026-09-10 after Phase 166 verification and transition to Phase 167.*

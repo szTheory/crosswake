@@ -21,6 +21,7 @@ defmodule Crosswake.Transfer.ContractsTest do
     assert declaration.source == :native_picker
     assert declaration.destination == nil
     assert declaration.verification == :required
+
     assert Contracts.transfer_states() == [
              :queued,
              :preparing,
@@ -72,8 +73,12 @@ defmodule Crosswake.Transfer.ContractsTest do
 
     assert :ok = Contracts.validate_picker_declaration(import_transfer)
     assert :ok = Contracts.validate_picker_declaration(upload_transfer)
-    assert {:error, :invalid_picker_intent} = Contracts.validate_picker_declaration(export_transfer)
-    assert {:error, :invalid_picker_source} = Contracts.validate_picker_declaration(capture_transfer)
+
+    assert {:error, :invalid_picker_intent} =
+             Contracts.validate_picker_declaration(export_transfer)
+
+    assert {:error, :invalid_picker_source} =
+             Contracts.validate_picker_declaration(capture_transfer)
   end
 
   test "file picker item metadata stays normalized and nullable" do

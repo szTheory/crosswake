@@ -23,7 +23,7 @@ cell drifts from the package source in either direction.
 |---|---|---|---|---|---|
 | `crosswake_rulestead` | `:rulestead` | `unpublished` | `~> 0.1` | `{:rulestead, "~> 0.1", optional: true}` | not yet on hexdocs |
 | `crosswake_rindle` | `:rindle` | `unpublished` | `~> 0.1` | `{:rindle, "~> 0.1", optional: true}` | not yet on hexdocs |
-| `crosswake_sigra` | `:sigra` | `0.1.1` | `~> 0.2` | none (pure-Elixir auth machinery) | [hexdocs.pm/crosswake_sigra](https://hexdocs.pm/crosswake_sigra) |
+| `crosswake_sigra` | `:sigra` | `0.1.3` | `~> 0.2` | none (pure-Elixir auth machinery) | [hexdocs.pm/crosswake_sigra](https://hexdocs.pm/crosswake_sigra) |
 | `crosswake_chimeway` | `:chimeway` | `0.1.0` | `~> 0.2` | none (pure-Elixir notification machinery) | [hexdocs.pm/crosswake_chimeway](https://hexdocs.pm/crosswake_chimeway) |
 | `crosswake_threadline` | N/A (observer — not a `:companions` registrant) | `0.1.0` | `~> 0.2` | none (optional `:plug` + `:phoenix_live_view` for surface modules) | [hexdocs.pm/crosswake_threadline](https://hexdocs.pm/crosswake_threadline) |
 
@@ -82,7 +82,15 @@ is a status concern, not a reason to normalize older-compatible companion floors
 
 ## Engine Dependencies
 
-Each companion declares its engine as `optional: true`. An optional dependency is
+`crosswake_sigra` is the exception to the engine-dependency pattern: version `0.1.3`
+has no dependency on the `sigra` Hex package. It supplies Crosswake's pure-Elixir auth
+projection seam, while the host projects its verified Sigra session into that seam.
+Consequently it does not constrain Sigra's package version: a host on Sigra `1.4.x`,
+or on a separately sourced `1.5.0`, has no Mix-solver conflict with
+`crosswake_sigra`. This is version decoupling, not a claim that the companion replaces
+or directly exercises every Sigra release.
+
+Companions that do declare an engine use `optional: true`. An optional dependency is
 **not** pulled transitively into an adopter's project — adding `crosswake_rindle`
 does not install `rindle`. You add the engine yourself only when you want the
 engine-present behavior; absent it, the companion fails closed and

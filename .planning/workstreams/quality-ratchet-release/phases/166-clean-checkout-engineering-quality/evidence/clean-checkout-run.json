@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "supported_code_sha": "d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b",
+  "stages": [
+    {
+      "stage_id": "repository-preflight",
+      "result": "PASS"
+    },
+    {
+      "stage_id": "root-proof",
+      "result": "PASS"
+    },
+    {
+      "stage_id": "example-host-proof",
+      "result": "PASS"
+    },
+    {
+      "stage_id": "browser-proof",
+      "result": "PASS"
+    },
+    {
+      "stage_id": "ios-package-proof",
+      "result": "PASS"
+    },
+    {
+      "stage_id": "android-package-proof",
+      "result": "PASS"
+    },
+    {
+      "stage_id": "format-proof",
+      "result": "PASS"
+    },
+    {
+      "stage_id": "warnings-proof",
+      "result": "PASS"
+    },
+    {
+      "stage_id": "repository-cleanliness",
+      "result": "PASS"
+    }
+  ],
+  "repository_state": {
+    "baseline_empty": true,
+    "final_empty": true,
+    "snapshots_equal": true,
+    "index_unchanged": true
+  },
+  "cleanup": {
+    "status": "PASS"
+  },
+  "tool_policy": {
+    "erlang": "27.3",
+    "elixir": "1.19.5-otp-27",
+    "node": "22.14.0",
+    "java": "17",
+    "pyyaml": "6.0.3",
+    "android_sdk": "platform-34/build-tools-34.0.0",
+    "apple": "host-validated"
+  }
+}

@@ -155,8 +155,12 @@ defmodule Crosswake.TestSupport.Bridge.TracerLive do
     {:noreply, refresh_in_flight_count(socket)}
   end
 
-  defp maybe_put_timeout(opts, %{"timeout" => "infinity"}), do: Keyword.put(opts, :timeout, :infinity)
-  defp maybe_put_timeout(opts, %{"timeout" => timeout}) when is_integer(timeout), do: Keyword.put(opts, :timeout, timeout)
+  defp maybe_put_timeout(opts, %{"timeout" => "infinity"}),
+    do: Keyword.put(opts, :timeout, :infinity)
+
+  defp maybe_put_timeout(opts, %{"timeout" => timeout}) when is_integer(timeout),
+    do: Keyword.put(opts, :timeout, timeout)
+
   defp maybe_put_timeout(opts, _params), do: opts
 
   defp refresh_in_flight_count(socket) do

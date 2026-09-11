@@ -16,13 +16,18 @@ defmodule Crosswake.Router.ScopeDefaults do
     {:__block__, meta, Enum.map(expressions, &rewrite(&1, defaults, caller))}
   end
 
-  defp rewrite({:crosswake_defaults, meta, [nested_defaults_ast, [do: nested_block]]}, defaults, caller) do
+  defp rewrite(
+         {:crosswake_defaults, meta, [nested_defaults_ast, [do: nested_block]]},
+         defaults,
+         caller
+       ) do
     nested_defaults =
       nested_defaults_ast
       |> Crosswake.Router.__eval_keyword!(caller)
       |> Merge.route_defaults(defaults)
 
-    {:crosswake_defaults, meta, [nested_defaults, [do: rewrite(nested_block, nested_defaults, caller)]]}
+    {:crosswake_defaults, meta,
+     [nested_defaults, [do: rewrite(nested_block, nested_defaults, caller)]]}
   end
 
   defp rewrite({verb, meta, args}, defaults, caller) when verb in @http_verbs do

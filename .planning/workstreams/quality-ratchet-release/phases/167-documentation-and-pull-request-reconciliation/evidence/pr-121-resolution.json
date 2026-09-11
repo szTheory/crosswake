@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "original_number": 121,
+  "candidate_number": 121,
+  "tested_head_oid": "0e96dbfda96eb3f8193dc23df281d4e070f9d080",
+  "tested_base_oid": "0b59224bbabc3f0b40038d0c1c4dc7ecae81de4c",
+  "merge_commit_oid": "159eebd7f68572ad5ab19f598ce1fb068e7b03b2",
+  "fresh_default_oid": "159eebd7f68572ad5ab19f598ce1fb068e7b03b2",
+  "crosswake_ci": "SUCCESS",
+  "scope_profile": "setup_java_v6",
+  "intent_commit_count": 1,
+  "disposition": "merged",
+  "replacement_for": null,
+  "supersession_receipt": false
+}

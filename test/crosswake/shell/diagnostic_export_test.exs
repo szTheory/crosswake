@@ -193,6 +193,7 @@ defmodule Crosswake.Shell.DiagnosticExportTest do
 
       for forbidden_key <- fk do
         attrs = Map.put(@valid_attrs, forbidden_key, "injected")
+
         assert {:error, :redaction_failed} = DiagnosticExport.sanitize(attrs),
                "Expected :redaction_failed when #{forbidden_key} is present"
       end

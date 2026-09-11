@@ -16,8 +16,11 @@ defmodule Mix.Tasks.Crosswake.Gen.NativeControlsUiTest do
     :ok
   end
 
-  defp component_path(dir), do: Path.join([dir, "lib", "demo_web", "components", "crosswake_fallbacks.ex"])
-  defp stylesheet_path(dir), do: Path.join([dir, "priv", "static", "assets", "crosswake_fallback.css"])
+  defp component_path(dir),
+    do: Path.join([dir, "lib", "demo_web", "components", "crosswake_fallbacks.ex"])
+
+  defp stylesheet_path(dir),
+    do: Path.join([dir, "priv", "static", "assets", "crosswake_fallback.css"])
 
   defp drain_shell_messages do
     Stream.repeatedly(fn ->
@@ -112,7 +115,9 @@ defmodule Mix.Tasks.Crosswake.Gen.NativeControlsUiTest do
     run(["--dir", @tmp_dir, "--app", "Demo"])
     messages = Enum.join(drain_shell_messages(), "\n")
 
-    assert messages =~ ~s|handle_event("crosswake_fallback_answer", %{"answer" => "confirm"}, socket)|
+    assert messages =~
+             ~s|handle_event("crosswake_fallback_answer", %{"answer" => "confirm"}, socket)|
+
     assert messages =~ ~s|handle_event("crosswake_fallback_dismiss", _params, socket)|
     assert messages =~ ~s|handle_event("crosswake_fallback_answer", _params, socket)|
 

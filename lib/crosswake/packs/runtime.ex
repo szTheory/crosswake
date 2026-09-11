@@ -45,9 +45,13 @@ defmodule Crosswake.Packs.Runtime do
         Contracts.from_inventory(record)
         |> Contracts.invalidate(
           reason: record.invalidation_reason || :invalidated,
-          invalidated_at: record.invalidated_at || DateTime.utc_now() |> DateTime.truncate(:second)
+          invalidated_at:
+            record.invalidated_at || DateTime.utc_now() |> DateTime.truncate(:second)
         )
-        |> Map.put(:last_known_state, record.last_known_state || %{state: :available, version: record.installed_version})
+        |> Map.put(
+          :last_known_state,
+          record.last_known_state || %{state: :available, version: record.installed_version}
+        )
 
       record.integrity_status != :verified or is_nil(record.verified_at) ->
         Contracts.failed(

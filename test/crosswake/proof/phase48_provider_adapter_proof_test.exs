@@ -1,10 +1,37 @@
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/storefront_adapter.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/provider_adapter_storefront.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_backend.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex", __DIR__)
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/storefront_adapter.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/provider_adapter_storefront.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_backend.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex",
+  __DIR__
+)
 
 defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
   use ExUnit.Case, async: true
@@ -52,17 +79,29 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
   end
 
   test "provider facade fails closed when provider selection is missing or invalid" do
-    intent = %Contracts.PurchaseIntent{entry_id: @group_id, correlation_id: "corr-missing-provider"}
+    intent = %Contracts.PurchaseIntent{
+      entry_id: @group_id,
+      correlation_id: "corr-missing-provider"
+    }
 
     Application.delete_env(:crosswake_example, :paywall_storefront_provider)
-    assert {:error, :provider_not_configured} = ProviderAdapterStorefront.simulate_purchase(intent)
+
+    assert {:error, :provider_not_configured} =
+             ProviderAdapterStorefront.simulate_purchase(intent)
 
     Application.put_env(:crosswake_example, :paywall_storefront_provider, :revenue_cat)
-    assert {:error, {:invalid_provider, :revenue_cat}} = ProviderAdapterStorefront.simulate_purchase(intent)
+
+    assert {:error, {:invalid_provider, :revenue_cat}} =
+             ProviderAdapterStorefront.simulate_purchase(intent)
   end
 
   test "storekit facade works as the configured paywall swap target without granting authority early" do
-    Application.put_env(:crosswake_example, :paywall_storefront_adapter, ProviderAdapterStorefront)
+    Application.put_env(
+      :crosswake_example,
+      :paywall_storefront_adapter,
+      ProviderAdapterStorefront
+    )
+
     Application.put_env(:crosswake_example, :paywall_storefront_provider, :storekit)
 
     adapter = Application.fetch_env!(:crosswake_example, :paywall_storefront_adapter)
@@ -77,6 +116,7 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
 
     pending_snapshot = pending_snapshot(attempt.event_key)
     assert EntitlementProjection.derived_state(pending_snapshot) == :pending
+
     assert {:error, :unverified_reconciliation_outcome} =
              EntitlementProjection.project_snapshot(nil, pending_snapshot)
 
@@ -86,7 +126,12 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
   end
 
   test "play billing facade works as the configured paywall swap target for restore" do
-    Application.put_env(:crosswake_example, :paywall_storefront_adapter, ProviderAdapterStorefront)
+    Application.put_env(
+      :crosswake_example,
+      :paywall_storefront_adapter,
+      ProviderAdapterStorefront
+    )
+
     Application.put_env(:crosswake_example, :paywall_storefront_provider, :play_billing)
 
     adapter = Application.fetch_env!(:crosswake_example, :paywall_storefront_adapter)
@@ -101,13 +146,19 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
 
     pending_snapshot = pending_snapshot(attempt.event_key)
     assert EntitlementProjection.derived_state(pending_snapshot) == :pending
+
     assert {:error, :unverified_reconciliation_outcome} =
              EntitlementProjection.project_snapshot(nil, pending_snapshot)
   end
 
   test "storekit purchase evidence uses provider-neutral inbox/projection path" do
     intent = %Contracts.PurchaseIntent{entry_id: @group_id, correlation_id: "corr-storekit"}
-    assert {:ok, evidence} = ProviderAdapterStorefront.simulate_storekit_purchase(intent, captured_at: "2026-06-01T00:00:00Z")
+
+    assert {:ok, evidence} =
+             ProviderAdapterStorefront.simulate_storekit_purchase(intent,
+               captured_at: "2026-06-01T00:00:00Z"
+             )
+
     assert evidence.provider == "storekit"
     assert evidence.event_kind == "purchase"
 
@@ -121,7 +172,12 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
 
   test "play billing restore evidence remains non-authoritative until projection refreshes" do
     intent = %Contracts.RestoreIntent{correlation_id: "corr-play-restore"}
-    assert {:ok, evidence} = ProviderAdapterStorefront.simulate_play_billing_restore(intent, captured_at: "2026-06-01T00:00:00Z")
+
+    assert {:ok, evidence} =
+             ProviderAdapterStorefront.simulate_play_billing_restore(intent,
+               captured_at: "2026-06-01T00:00:00Z"
+             )
+
     assert evidence.provider == "play_billing"
     assert evidence.event_kind == "restore"
 
@@ -155,12 +211,17 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
       })
 
     assert EntitlementProjection.derived_state(pending_snapshot) == :pending
+
     assert {:error, :unverified_reconciliation_outcome} =
              EntitlementProjection.project_snapshot(nil, pending_snapshot)
   end
 
   test "provider evidence stays in canonical event vocabulary and event/subject identity is stable" do
-    purchase_intent = %Contracts.PurchaseIntent{entry_id: @group_id, correlation_id: "corr-storekit-keys"}
+    purchase_intent = %Contracts.PurchaseIntent{
+      entry_id: @group_id,
+      correlation_id: "corr-storekit-keys"
+    }
+
     restore_intent = %Contracts.RestoreIntent{correlation_id: "corr-play-keys"}
 
     assert {:ok, storekit_evidence} =
@@ -257,7 +318,10 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
 
     ProofAssertions.assert_normalized_json_fixture(
       "proof.provider_adapters.readiness.json_contract",
-      Jason.encode!(PublishReadiness.to_map(report)["checks"] |> Enum.find(&(&1["id"] == "provider.adapter_readiness"))),
+      Jason.encode!(
+        PublishReadiness.to_map(report)["checks"]
+        |> Enum.find(&(&1["id"] == "provider.adapter_readiness"))
+      ),
       @readiness_fixture,
       source: "Crosswake.Doctor.PublishReadiness.run/1 provider.adapter_readiness check",
       path: @readiness_fixture,

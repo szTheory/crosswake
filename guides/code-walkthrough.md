@@ -609,6 +609,16 @@ The manifest registry and the mounted native session therefore supply independen
 checks: declaration alone is not enough, and a stale page cannot borrow another route's
 capability.
 
+## Current source trail
+
+Use executable owners when a current claim changes. `Crosswake.CapabilityMap` owns the
+typed capability and first-adopter claim dimensions; `Crosswake.SupportMatrix` owns the
+public support and rebuild vocabulary. Their renderers produce the checked-in capability
+and support guides. Run `mix crosswake.docs.sync` after an intentional owner change, and
+run `mix crosswake.docs.sync --check` when reviewing or diagnosing projection drift.
+Authored guides explain the reader's decision and link back to those projections; they do
+not become another store for volatile support facts.
+
 ## Tests that state the architecture
 
 The most useful tests read like executable design notes:

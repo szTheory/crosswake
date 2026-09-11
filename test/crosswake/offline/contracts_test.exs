@@ -43,16 +43,18 @@ defmodule Crosswake.Offline.ContractsTest do
   end
 
   test "new_study_session_island/2 strictly validates the eviction policy (accepts only :volatile or :manual)" do
-    assert_raise ArgumentError, "invalid eviction policy: :invalid_policy. Allowed: :volatile or :manual", fn ->
-      Contracts.new_study_session_island(
-        "study_session_v1",
-        route_id: "study-session",
-        sync_seam: "study_reviews",
-        storage_budget: {:mb, 50},
-        reserve_for_journal: {:mb, 5},
-        eviction: :invalid_policy
-      )
-    end
+    assert_raise ArgumentError,
+                 "invalid eviction policy: :invalid_policy. Allowed: :volatile or :manual",
+                 fn ->
+                   Contracts.new_study_session_island(
+                     "study_session_v1",
+                     route_id: "study-session",
+                     sync_seam: "study_reviews",
+                     storage_budget: {:mb, 50},
+                     reserve_for_journal: {:mb, 5},
+                     eviction: :invalid_policy
+                   )
+                 end
   end
 
   test "creating a contract without these new required fields raises an error" do

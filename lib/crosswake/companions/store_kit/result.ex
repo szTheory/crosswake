@@ -43,10 +43,15 @@ defmodule Crosswake.Companions.StoreKit.Result do
 
   defp validate(%__MODULE__{} = result) do
     errors = []
-    errors = if result.status in ProviderEvidence.result_status_vocabulary(), do: errors, else: [{:status, {:invalid_status, result.status}} | errors]
 
     errors =
-      if is_nil(result.lifecycle_hint) or result.lifecycle_hint in ProviderEvidence.lifecycle_hint_vocabulary() do
+      if result.status in ProviderEvidence.result_status_vocabulary(),
+        do: errors,
+        else: [{:status, {:invalid_status, result.status}} | errors]
+
+    errors =
+      if is_nil(result.lifecycle_hint) or
+           result.lifecycle_hint in ProviderEvidence.lifecycle_hint_vocabulary() do
         errors
       else
         [{:lifecycle_hint, {:invalid_lifecycle_hint, result.lifecycle_hint}} | errors]

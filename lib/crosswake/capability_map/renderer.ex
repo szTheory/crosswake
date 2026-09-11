@@ -34,6 +34,9 @@ defmodule Crosswake.CapabilityMap.Renderer do
     [
       "# Crosswake Capability Map",
       "",
+      "Canonical owner: `Crosswake.CapabilityMap`.",
+      "Regenerate with `mix crosswake.docs.sync`.",
+      "",
       "This guide is rendered from `Crosswake.CapabilityMap`. It classifies what Crosswake supports today, what existing proof demonstrates, what the first adopter pressures, and what remains a future gap.",
       "",
       what_works_today_section(rows),
@@ -42,11 +45,36 @@ defmodule Crosswake.CapabilityMap.Renderer do
       "",
       adoption_priority_section(rows),
       "",
+      current_claims_section(),
+      "",
       detailed_rows_section(rows),
       ""
     ]
     |> Enum.join("\n")
   end
+
+  defp current_claims_section do
+    rows =
+      CapabilityMap.first_adopter_claims()
+      |> Enum.map_join("\n", fn claim ->
+        "| #{claim_layer(claim.activation_state)} | #{escape_cell(claim.statement)} | #{escape_cell(claim.boundary)} |"
+      end)
+
+    [
+      "## Current first adopter claim layers",
+      "",
+      "These claims are independent: reusable contracts and dated reference evidence do not promote another host.",
+      "",
+      "| Claim layer | Current truth | Boundary |",
+      "|-------------|---------------|----------|",
+      rows
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp claim_layer(:available), do: "Reusable contracts"
+  defp claim_layer(:reference_evidence), do: "Retained reference evidence"
+  defp claim_layer(:blocked), do: "First adopter activation"
 
   @spec write(String.t()) :: {:ok, action()}
   def write(path) do

@@ -8,7 +8,9 @@ defmodule Crosswake.Planning.CloseoutCIParityTest do
     merge_blocking = job_section!(workflow, "phase69-closeout-proof")
 
     assert merge_blocking =~ "mix compile --warnings-as-errors"
-    assert merge_blocking =~ "mix closeout.verify --cwd . --closeout-path .planning/milestones/v4.0-CLOSEOUT.md"
+
+    assert merge_blocking =~
+             "mix closeout.verify --cwd . --closeout-path .planning/milestones/v4.0-CLOSEOUT.md"
 
     assert merge_blocking =~ "test/crosswake/proof/phase69_docs_contract_parity_test.exs"
     assert merge_blocking =~ "test/mix/tasks/closeout_verify_test.exs"

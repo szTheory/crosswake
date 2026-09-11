@@ -40,6 +40,39 @@ Every owner choice should make four downstream truths inspectable:
 - **Rough edge:** the limitation Crosswake keeps visible instead of hiding behind a
   broad mobile claim.
 
+## Mixed hosts and same-origin reverse proxies
+
+Crosswake policy describes routes that enter the Phoenix router. A path prefix that an
+endpoint plug, ingress proxy, or front server sends directly to a Vite development
+server or static build is outside that route inventory. Do not label it a
+`backend/provider seam`: that owner class describes backend authority for a managed
+route. Do not label it an `explicit defer` either: a defer is a manifest-known route
+that intentionally fails closed until its prerequisites are proven.
+
+For a strangler host, the canonical initial shape is:
+
+```elixir
+# Phoenix-routed Settings/Account LiveViews carry Crosswake metadata.
+live "/settings", SettingsLive,
+  crosswake: [id: "settings", runtime: :live_view, offline: :unavailable]
+
+live "/account", AccountLive,
+  crosswake: [id: "account", runtime: :live_view, offline: :unavailable]
+```
+
+Keep prefixes such as `/study/**`, `/api/study/**`, and the Vite-owned asset prefix in
+the host's proxy configuration, without synthetic Crosswake routes. Crosswake neither
+configures nor claims those paths, and same-origin delivery does not make them
+Phoenix-rendered.
+
+If the proxy short-circuits before `Phoenix.Router`, Crosswake cannot include those
+paths in the runtime manifest today. That explicit external-route declaration is an
+unsupported gap, not a hidden owner class. When the study client becomes an
+`:offline_island`, either route its activation through a Phoenix-visible route carrying
+the island policy or add a future external-route policy seam before claiming Crosswake
+ownership. Do not declare `:offline_island` during the proxy-only phase: cached/static
+client delivery is not proof of local mutation, scoped replay, or offline authority.
+
 ## plain `:live_view`
 
 Use a plain LiveView route when Phoenix owns the whole user job. Most SaaS routes

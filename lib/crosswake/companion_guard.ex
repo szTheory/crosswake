@@ -56,8 +56,8 @@ defmodule Crosswake.CompanionGuard do
   # The guard matches these lists against {:__aliases__, _meta, parts} AST nodes.
   # This stays in sync with @extracted_companion_names — not a blanket Companions.* ban (D-14).
   @banned_alias_parts Enum.map(@extracted_companion_names, fn name ->
-    name |> String.split(".") |> Enum.map(&String.to_atom/1)
-  end)
+                        name |> String.split(".") |> Enum.map(&String.to_atom/1)
+                      end)
 
   @doc """
   Returns the frozen MapSet of extracted companion modules.
@@ -153,8 +153,8 @@ defmodule Crosswake.CompanionGuard do
     {_, ensure_nodes} =
       Macro.prewalk(ast, [], fn
         {{:., _dot_meta, [{:__aliases__, _, [:Code]}, :ensure_loaded?]}, _call_meta, _args} =
-          node,
-          acc ->
+            node,
+        acc ->
           {node, [node | acc]}
 
         node, acc ->

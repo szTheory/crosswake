@@ -114,7 +114,9 @@ defmodule Crosswake.Proof.Phase154AdvisoryActionabilityTest do
       assert finding.details.family_capability_id == "media_capture"
     end
 
-    test "route:fieldserv-job-capture carries a native-rebuild-required advisory", %{report: report} do
+    test "route:fieldserv-job-capture carries a native-rebuild-required advisory", %{
+      report: report
+    } do
       assert [finding] = findings(report, @rebuild_code, @rebuild_subject)
       assert finding.details.route_id == "fieldserv-job-capture"
       assert finding.details.rebuild == "native_required"
@@ -122,7 +124,9 @@ defmodule Crosswake.Proof.Phase154AdvisoryActionabilityTest do
   end
 
   describe "severity — both advisories are :warning" do
-    test "every Phase 154 advisory in the real report is :warning, never :error", %{report: report} do
+    test "every Phase 154 advisory in the real report is :warning, never :error", %{
+      report: report
+    } do
       advisories = Enum.filter(report.findings, &(&1.code in @phase_154_codes))
 
       # Non-vacuity: an empty list would satisfy every assertion below.

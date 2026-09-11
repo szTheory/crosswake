@@ -157,7 +157,9 @@ defmodule Crosswake.RuntimeLine.RebuildPolicy do
   # Detect capability-axis change classes by comparing capability registries.
   # Returns [{change_class(), Capability.t() | nil}] pairs.
   defp capability_changes(%Root{} = root_a, %Root{} = root_b) do
-    added_capabilities = added_capabilities(root_a.capability_registry, root_b.capability_registry)
+    added_capabilities =
+      added_capabilities(root_a.capability_registry, root_b.capability_registry)
+
     sdk_changes = sdk_floor_changes(root_a.compatibility, root_b.compatibility)
     privacy_changes = privacy_manifest_changes(root_a, root_b)
 

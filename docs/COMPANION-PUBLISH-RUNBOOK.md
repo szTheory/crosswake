@@ -4,6 +4,15 @@ This runbook describes the current package-family release operating model for
 Crosswake Hex packages. The publish path is now guarded CI automation, not a
 maintainer's local `mix hex.publish` loop.
 
+## Phase 167 review boundary
+
+This phase permits reversible preparation only: inspect checked-in release owners,
+run read-only status and proof commands, and review the Release Please threads. Phase 168
+owns exact `0.2.1` candidate proof and requires explicit maintainer approval before any
+immutable action. Do not merge a Release Please PR, publish a package, create or move a tag,
+update the SwiftPM mirror, or treat a stale release-PR head as the candidate during
+Phase 167.
+
 ## Current Operating Model
 
 The Release Please Release PR merge is the human approval boundary. After that

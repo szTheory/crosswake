@@ -1,4 +1,3 @@
-
 defmodule Crosswake.ManifestTest do
   use ExUnit.Case, async: true
 
@@ -103,15 +102,19 @@ defmodule Crosswake.ManifestTest do
     assert file_picker.package_class == :core
     assert file_picker.proof_class == :merge_blocking
     assert file_picker.rebuild == :native_required
+
     assert file_picker.prerequisites == [
              "declared transfer_id",
              "bounded bridge support",
              "inbound native_picker transfer seam",
              "copy-first staged handle plus transfer verification"
            ]
+
     assert file_picker.denial == "undeclared_capability"
+
     assert file_picker.fallback ==
              "keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified"
+
     assert file_picker.legacy_ids == ["files.pick"]
 
     assert media_capture.family == "media_capture"
@@ -128,15 +131,19 @@ defmodule Crosswake.ManifestTest do
     assert notification_token.owner == :bounded_bridge
     assert notification_token.package_class == :companion
     assert notification_token.rebuild == :companion_required
+
     assert notification_token.prerequisites == [
              "declared route capability",
              "bounded bridge support",
              "notification authorization already resolved",
              "provider token snapshot available"
            ]
+
     assert notification_token.denial == "unavailable_capability"
+
     assert notification_token.fallback ==
              "treat notification token replies as provider-tagged evidence instead of backend registration truth"
+
     assert notification_token.legacy_ids == ["push.notifications"]
   end
 
@@ -180,8 +187,14 @@ defmodule Crosswake.ManifestTest do
 
     assert Enum.map(library_transfers, & &1.version) == ["1.0.0", "1.0.0", "1.0.0", "1.0.0"]
     assert Enum.map(library_transfers, & &1.intent) == [:import, :upload, :export, :download]
-    assert Enum.map(Enum.take(library_transfers, 2), & &1.source) == [:native_picker, :native_picker]
+
+    assert Enum.map(Enum.take(library_transfers, 2), & &1.source) == [
+             :native_picker,
+             :native_picker
+           ]
+
     assert Enum.map(Enum.take(library_transfers, 2), & &1.verification) == [:required, :required]
+
     assert Enum.map(library_transfers, & &1.states) ==
              List.duplicate(Crosswake.Transfer.Contracts.transfer_states(), 4)
 
@@ -196,6 +209,7 @@ defmodule Crosswake.ManifestTest do
              )
            ]
   end
+
   test "manifest capability registry includes normalized commerce vocabulary" do
     assert {:ok, %{manifest: manifest}} = Manifest.compile(ManagedRouter)
 
@@ -251,8 +265,12 @@ defmodule Crosswake.ManifestTest do
     assert manifest.commerce_corridors["subscription_default"].fallback == canonical.fallback
     assert manifest.routes["paywall"].commerce.corridor_ref == "subscription_default"
     assert manifest.routes["paywall"].commerce.role == :paywall_entry
-    assert Types.to_map(manifest)["commerce_corridors"]["subscription_default"]["id"] == "subscription_default"
-    assert Types.to_map(manifest)["routes"]["paywall"]["commerce"]["corridor_ref"] == "subscription_default"
+
+    assert Types.to_map(manifest)["commerce_corridors"]["subscription_default"]["id"] ==
+             "subscription_default"
+
+    assert Types.to_map(manifest)["routes"]["paywall"]["commerce"]["corridor_ref"] ==
+             "subscription_default"
   end
 
   defp route(path, opts) do

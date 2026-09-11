@@ -36,12 +36,13 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/telemetry/stub", Crosswake.TestSupport.StudySessionLive,
+        live("/telemetry/stub", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "telemetry-stub-route",
             gated_by: :stub_telemetry,
             on_unavailable: :deny
           ]
+        )
       end
     end
   end
@@ -121,8 +122,7 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
     import Phoenix.ConnTest
     import Phoenix.LiveViewTest
 
-    Application.put_env(:crosswake, :companions,
-      [Crosswake.TestSupport.StubTelemetryCompanion])
+    Application.put_env(:crosswake, :companions, [Crosswake.TestSupport.StubTelemetryCompanion])
     Application.put_env(:crosswake, :stub_telemetry, %{enabled: true})
 
     # Derive :active event names from events/0 at runtime (D-05 — never hardcode the catalog).
@@ -164,11 +164,13 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
       %{system_time: System.system_time()},
       %{thread_id: "phase133-test-id", source: :minted}
     )
+
     :telemetry.execute(
       [:crosswake, :threadline, :request, :stop],
       %{duration: 0},
       %{thread_id: "phase133-test-id", source: :minted}
     )
+
     :telemetry.execute(
       [:crosswake, :threadline, :request, :exception],
       %{duration: 0},
@@ -229,7 +231,9 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
 
     # companion dependency_check :start — measurement :system_time; metadata :companion_id, :route_id
     # (:telemetry.span/3 puts the span context map into METADATA, not measurements — Keathley convention)
-    assert_received {[:crosswake, :companion, :dependency_check, :start], ^ref, dep_start_m, dep_start_meta}
+    assert_received {[:crosswake, :companion, :dependency_check, :start], ^ref, dep_start_m,
+                     dep_start_meta}
+
     assert Map.has_key?(dep_start_m, :system_time),
            ProofAssertions.stable_id_message(
              "proof.telem_04.sideA.dependency_check.start.system_time",
@@ -240,17 +244,22 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
              "check that :telemetry.span/3 is called with system_time in the start measurements",
              :merge_blocking
            )
+
     assert Map.has_key?(dep_start_meta, :companion_id)
     assert Map.has_key?(dep_start_meta, :route_id)
 
     # companion dependency_check :stop — measurement :duration; metadata :companion_id, :route_id
-    assert_received {[:crosswake, :companion, :dependency_check, :stop], ^ref, dep_stop_m, dep_stop_meta}
+    assert_received {[:crosswake, :companion, :dependency_check, :stop], ^ref, dep_stop_m,
+                     dep_stop_meta}
+
     assert Map.has_key?(dep_stop_m, :duration)
     assert Map.has_key?(dep_stop_meta, :companion_id)
     assert Map.has_key?(dep_stop_meta, :route_id)
 
     # companion kill_switch :start
-    assert_received {[:crosswake, :companion, :kill_switch, :start], ^ref, ks_start_m, ks_start_meta}
+    assert_received {[:crosswake, :companion, :kill_switch, :start], ^ref, ks_start_m,
+                     ks_start_meta}
+
     assert Map.has_key?(ks_start_m, :system_time)
     assert Map.has_key?(ks_start_meta, :companion_id)
     assert Map.has_key?(ks_start_meta, :route_id)
@@ -261,7 +270,9 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
     assert Map.has_key?(ks_stop_meta, :companion_id)
 
     # companion route_gate :start
-    assert_received {[:crosswake, :companion, :route_gate, :start], ^ref, rg_start_m, rg_start_meta}
+    assert_received {[:crosswake, :companion, :route_gate, :start], ^ref, rg_start_m,
+                     rg_start_meta}
+
     assert Map.has_key?(rg_start_m, :system_time)
     assert Map.has_key?(rg_start_meta, :companion_id)
 
@@ -271,12 +282,16 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
     assert Map.has_key?(rg_stop_meta, :companion_id)
 
     # companion validate_dependency :start (Doctor path)
-    assert_received {[:crosswake, :companion, :validate_dependency, :start], ^ref, vd_start_m, vd_start_meta}
+    assert_received {[:crosswake, :companion, :validate_dependency, :start], ^ref, vd_start_m,
+                     vd_start_meta}
+
     assert Map.has_key?(vd_start_m, :system_time)
     assert Map.has_key?(vd_start_meta, :companion_id)
 
     # companion validate_dependency :stop — stop metadata also carries :result (D-doctor contract)
-    assert_received {[:crosswake, :companion, :validate_dependency, :stop], ^ref, vd_stop_m, vd_stop_meta}
+    assert_received {[:crosswake, :companion, :validate_dependency, :stop], ^ref, vd_stop_m,
+                     vd_stop_meta}
+
     assert Map.has_key?(vd_stop_m, :duration)
     assert Map.has_key?(vd_stop_meta, :companion_id)
     assert Map.has_key?(vd_stop_meta, :result)
@@ -284,6 +299,7 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
     # threadline :start — metadata includes thread_id, correlation_id, route_id, source
     assert_received {[:crosswake, :threadline, :request, :start], ^ref, tl_start_m, tl_start_meta}
     assert Map.has_key?(tl_start_m, :system_time)
+
     assert Map.has_key?(tl_start_meta, :thread_id),
            ProofAssertions.stable_id_message(
              "proof.telem_04.sideA.threadline.start.thread_id",
@@ -294,6 +310,7 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
              "check that Threadline.Telemetry.execute/3 passes thread_id in metadata",
              :merge_blocking
            )
+
     assert Map.has_key?(tl_start_meta, :source)
 
     # threadline :stop — metadata includes thread_id, source
@@ -313,11 +330,15 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
     assert Map.has_key?(push_stop_m, :duration)
 
     # bridge hook_ack :start/:stop
-    assert_received {[:crosswake, :bridge, :hook_ack, :start], ^ref, hook_ack_start_m, hook_ack_start_meta}
+    assert_received {[:crosswake, :bridge, :hook_ack, :start], ^ref, hook_ack_start_m,
+                     hook_ack_start_meta}
+
     assert Map.has_key?(hook_ack_start_m, :system_time)
     assert Map.has_key?(hook_ack_start_meta, :route_id)
 
-    assert_received {[:crosswake, :bridge, :hook_ack, :stop], ^ref, hook_ack_stop_m, _hook_ack_stop_meta}
+    assert_received {[:crosswake, :bridge, :hook_ack, :stop], ^ref, hook_ack_stop_m,
+                     _hook_ack_stop_meta}
+
     assert Map.has_key?(hook_ack_stop_m, :duration)
 
     # bridge reply :start/:stop — the ok reply resolved above
@@ -331,20 +352,28 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
     assert Map.has_key?(reply_stop_m, :duration)
 
     # bridge dropped :start/:stop — the duplicate delivery of the same correlation id
-    assert_received {[:crosswake, :bridge, :dropped, :start], ^ref, dropped_start_m, dropped_start_meta}
+    assert_received {[:crosswake, :bridge, :dropped, :start], ^ref, dropped_start_m,
+                     dropped_start_meta}
+
     assert Map.has_key?(dropped_start_m, :system_time)
     assert Map.has_key?(dropped_start_meta, :route_id)
     assert Map.has_key?(dropped_start_meta, :reason)
 
-    assert_received {[:crosswake, :bridge, :dropped, :stop], ^ref, dropped_stop_m, _dropped_stop_meta}
+    assert_received {[:crosswake, :bridge, :dropped, :stop], ^ref, dropped_stop_m,
+                     _dropped_stop_meta}
+
     assert Map.has_key?(dropped_stop_m, :duration)
 
     # bridge hook_missing :start/:stop — the second ask that never acked, past the deadline
-    assert_received {[:crosswake, :bridge, :hook_missing, :start], ^ref, hook_missing_start_m, hook_missing_start_meta}
+    assert_received {[:crosswake, :bridge, :hook_missing, :start], ^ref, hook_missing_start_m,
+                     hook_missing_start_meta}
+
     assert Map.has_key?(hook_missing_start_m, :system_time)
     assert Map.has_key?(hook_missing_start_meta, :route_id)
 
-    assert_received {[:crosswake, :bridge, :hook_missing, :stop], ^ref, hook_missing_stop_m, _hook_missing_stop_meta}
+    assert_received {[:crosswake, :bridge, :hook_missing, :stop], ^ref, hook_missing_stop_m,
+                     _hook_missing_stop_meta}
+
     assert Map.has_key?(hook_missing_stop_m, :duration)
   end
 
@@ -355,8 +384,7 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
   # ---------------------------------------------------------------------------
 
   test "TELEM-04 Side B: every [:crosswake,...] event emitted is in events/0" do
-    Application.put_env(:crosswake, :companions,
-      [Crosswake.TestSupport.StubTelemetryCompanion])
+    Application.put_env(:crosswake, :companions, [Crosswake.TestSupport.StubTelemetryCompanion])
     Application.put_env(:crosswake, :stub_telemetry, %{enabled: true})
 
     all_declared_names =
@@ -389,11 +417,13 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
       %{system_time: System.system_time()},
       %{thread_id: "phase133-sideb-id", source: :minted}
     )
+
     :telemetry.execute(
       [:crosswake, :threadline, :request, :stop],
       %{duration: 0},
       %{thread_id: "phase133-sideb-id", source: :minted}
     )
+
     :telemetry.execute(
       [:crosswake, :threadline, :request, :exception],
       %{duration: 0},
@@ -431,8 +461,7 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
   # ---------------------------------------------------------------------------
 
   test "TELEM-01 companion merge: stub companion's declared events appear in events/0" do
-    Application.put_env(:crosswake, :companions,
-      [Crosswake.TestSupport.StubTelemetryCompanion])
+    Application.put_env(:crosswake, :companions, [Crosswake.TestSupport.StubTelemetryCompanion])
 
     # events/0 probes companions via function_exported?/3 (D-08: NOT Code.ensure_loaded? —
     # EXTRACT-04-safe). function_exported?/3 returns false for a not-yet-loaded module, so a
@@ -609,12 +638,12 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
              :merge_blocking
            )
 
-    assert String.contains?(mix_exs, ~s("Telemetry")),
+    assert String.contains?(mix_exs, "Telemetry:"),
            ProofAssertions.stable_id_message(
              "proof.telem_02.mix_group.telemetry_group",
              "mix.exs must contain a \"Telemetry\" group in groups_for_modules or groups_for_extras",
              "mix.exs",
-             "\"Telemetry\" group token not found in mix.exs",
+             "Telemetry group token not found in mix.exs",
              "mix.exs",
              "add a \"Telemetry\" group to groups_for_modules and groups_for_extras in mix.exs (plan 04 Task 2)",
              :merge_blocking

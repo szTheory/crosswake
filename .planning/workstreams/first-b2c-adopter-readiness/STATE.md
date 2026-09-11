@@ -46,17 +46,19 @@ framework launch.
 
 Keep v21 resumable without performing more framework work. Resume Phase 163.1 only after real,
 sanitized First B2C Adopter route facts exist and pass the committed handoff validation chain.
-Fixture and simulator results remain advisory and non-promoting; no physical or support claim
-advances until validated TODO-002 input and a source-bound signed-device run both pass. While v21
-is parked, quality work proceeds only in the separate v22 quality-ratchet workstream.
+Resume at Plan 163.1-08 Task 2; do not reconstruct or advance the parked plans. The retained
+source-bound reference-host evidence remains non-transferable. First B2C Adopter physical and
+support promotion remains blocked until validated TODO-002 input and a fresh source-bound
+signed-device run both pass. Fixture and simulator results remain advisory and non-promoting.
+While v21 is parked, quality work proceeds only in the separate v22 quality-ratchet workstream.
 
 ## Blockers
 
 - TODO-002 remains open: a validated sanitized adopter handoff is required before adopter binding,
   physical promotion, evidence publication, or support promotion.
 
-- Signed-device source-bound execution remains required after the handoff validates; fixture and
-  simulator evidence cannot satisfy COMPOSE-06.
+- A fresh source-bound signed-device run remains required after the handoff validates; fixture and
+  simulator evidence cannot satisfy COMPOSE-06 or promote the First B2C Adopter.
 
 ## Deferred Items
 
@@ -66,8 +68,8 @@ is parked, quality work proceeds only in the separate v22 quality-ratchet workst
 
 - TODO-002 remains open: adopter-instance promotion still requires adopter-supplied concrete route
   IDs/paths, mutation actions, staleness, auth sensitivity, expected pronunciation-pack
-  sizes/codecs, and fallbacks. The completed reference-host and physical-device evidence does not
-  infer those adopter-private inputs.
+  sizes/codecs, and fallbacks. The retained source-bound reference-host evidence is non-transferable
+  and does not infer those adopter-private inputs.
 
 - The canonical historical six product-failure labels were not stored because only a privacy-safe
   proxy audit was authorized.

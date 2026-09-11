@@ -29,7 +29,7 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUi do
     dir = Path.expand(opts[:dir] || File.cwd!())
 
     web_dir = Path.join([dir, "lib", "#{app_snake}_web"])
-    
+
     controller_dest = Path.join([web_dir, "controllers", "offline_controller.ex"])
     root_layout_dest = Path.join([web_dir, "components", "layouts", "offline_root.html.heex"])
     page_dest = Path.join([web_dir, "controllers", "offline_html", "offline_page.html.heex"])
@@ -80,6 +80,7 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUi do
 
   defp get_template_path(filename) do
     path = Application.app_dir(:crosswake, "priv/templates/crosswake/offline_ui/#{filename}")
+
     if File.exists?(path) do
       path
     else
@@ -89,6 +90,7 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUi do
 
   defp get_offline_css_path do
     path = Application.app_dir(:crosswake, "priv/static/crosswake/offline.css")
+
     if File.exists?(path) do
       path
     else

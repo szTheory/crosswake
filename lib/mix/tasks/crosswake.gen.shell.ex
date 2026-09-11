@@ -307,22 +307,51 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     basename = Path.basename(relative_path)
 
     cond do
-      basename == "Info.plist" -> {:rebuild_required, :native_shell}
-      basename == "PrivacyInfo.xcprivacy" -> {:rebuild_required, :native_shell}
-      String.ends_with?(basename, ".entitlements") -> {:rebuild_required, :native_shell}
-      basename == "AndroidManifest.xml" -> {:rebuild_required, :native_shell}
-      relative_path == "app/build.gradle" -> {:rebuild_required, :native_shell}
-      basename == "build.gradle" -> {:rebuild_required, :native_shell}
-      relative_path == "gradle/wrapper/gradle-wrapper.properties" -> {:rebuild_required, :native_shell}
-      String.ends_with?(basename, ".swift") -> :ota_safe
-      String.ends_with?(basename, ".kt") -> :ota_safe
-      basename == "gradlew" -> :ota_safe
-      basename == "gradlew.bat" -> :ota_safe
-      basename == "settings.gradle" -> :ota_safe
-      basename == "gradle.properties" -> :ota_safe
-      basename == "themes.xml" -> :ota_safe
+      basename == "Info.plist" ->
+        {:rebuild_required, :native_shell}
+
+      basename == "PrivacyInfo.xcprivacy" ->
+        {:rebuild_required, :native_shell}
+
+      String.ends_with?(basename, ".entitlements") ->
+        {:rebuild_required, :native_shell}
+
+      basename == "AndroidManifest.xml" ->
+        {:rebuild_required, :native_shell}
+
+      relative_path == "app/build.gradle" ->
+        {:rebuild_required, :native_shell}
+
+      basename == "build.gradle" ->
+        {:rebuild_required, :native_shell}
+
+      relative_path == "gradle/wrapper/gradle-wrapper.properties" ->
+        {:rebuild_required, :native_shell}
+
+      String.ends_with?(basename, ".swift") ->
+        :ota_safe
+
+      String.ends_with?(basename, ".kt") ->
+        :ota_safe
+
+      basename == "gradlew" ->
+        :ota_safe
+
+      basename == "gradlew.bat" ->
+        :ota_safe
+
+      basename == "settings.gradle" ->
+        :ota_safe
+
+      basename == "gradle.properties" ->
+        :ota_safe
+
+      basename == "themes.xml" ->
+        :ota_safe
+
       # Safe default for any unmapped file
-      true -> :ota_safe
+      true ->
+        :ota_safe
     end
   end
 

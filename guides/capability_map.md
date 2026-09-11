@@ -1,5 +1,8 @@
 # Crosswake Capability Map
 
+Canonical owner: `Crosswake.CapabilityMap`.
+Regenerate with `mix crosswake.docs.sync`.
+
 This guide is rendered from `Crosswake.CapabilityMap`. It classifies what Crosswake supports today, what existing proof demonstrates, what the first adopter pressures, and what remains a future gap.
 
 ## What works today
@@ -48,6 +51,16 @@ Crosswake is currently infrastructure for one first adopter. Work is ordered by 
 - **Production iOS storage for offline pronunciation media** — Future gap; v21 permits one host-supplied foreground iOS adapter. Generic native pack storage remains unclaimed.
 - **Reusable sync helpers** — Future gap; Defer to Offline Sync/Native Storage Productization.
 - **StoreKit, Play Billing, and RevenueCat production integration** — Future gap; Defer to Commerce/Paywall Productionization later.
+
+## Current first adopter claim layers
+
+These claims are independent: reusable contracts and dated reference evidence do not promote another host.
+
+| Claim layer | Current truth | Boundary |
+|-------------|---------------|----------|
+| Reusable contracts | Available — reusable contracts verified. | Route policy, scoped replay, pack, and shell contracts are reusable; contract proof alone does not verify a host. |
+| Retained reference evidence | Reference evidence — one source-bound physical-iPhone run was recorded on 2026-08-27 on iOS 26.6; it does not verify your host. | Past evidence stays bound to that reference host, date, runtime line, and one bounded offline-study flow. |
+| First adopter activation | Blocked — sanitized route policy and signed-device proof are required before this host can be promoted. | No retained reference, simulator, fixture, package-version, or policy-contract evidence transfers to this host. |
 
 ## Detailed Capability Rows
 

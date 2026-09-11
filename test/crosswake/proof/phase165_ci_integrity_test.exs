@@ -127,7 +127,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert helper =~ ~s(mix hex.publish --dry-run --yes)
     assert helper =~ ~s(mix hex.config api_key "$sentinel")
     refute helper =~ "${{ secrets."
-
   end
 
   @tag :triggers
@@ -164,7 +163,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     end
 
     for {job, runner, command} <- [
-          {"android-package-unit", "ubuntu-latest", "./gradlew test"},
+          {"android-package-unit", "ubuntu-latest",
+           "script/verify_repository.sh --stage android-package-proof"},
           {"android-generated-shell-unit", "ubuntu-latest",
            "script/verify_generated_android_shell.sh"},
           {"phase5-proof", "ubuntu-latest", "script/verify_phase5_example_hosts.sh"},
@@ -172,7 +172,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
           {"phase18-ios-proof", "macos-15", "verify_generated_ios_shell.sh"},
           {"phase79-android-proof", "ubuntu-latest", "verify_generated_android_shell.sh"},
           {"phase79-ios-proof", "macos-15", "verify_generated_ios_shell.sh"},
-          {"ios-package-unit", "macos-latest", "swift test"}
+          {"ios-package-unit", "macos-latest",
+           "script/verify_repository.sh --stage ios-package-proof"}
         ] do
       body = job_body(workflow, job)
       assert body =~ "name: #{job}"
@@ -182,7 +183,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert body =~ "classification == 'full_proof'"
       assert body =~ "Remediation:"
     end
-
   end
 
   @tag :triggers
@@ -197,8 +197,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     for {job, command} <- [
           {"guard-01-e2e-honesty", "node script/check-e2e-honesty.mjs"},
           {"guard-02-prod-route-absence", "mix phx.routes CrosswakeExample.Router"},
-          {"e2e-proof", "npx playwright test"},
-          {"route-tour-proof", "npx playwright test e2e/route_tour.spec.ts"},
+          {"e2e-proof", "script/verify_repository.sh --stage browser-proof"},
+          {"route-tour-proof", "script/verify_repository.sh --stage browser-proof"},
           {"phase67-android-jvm-proof", "./gradlew testDebugUnitTest"}
         ] do
       body = job_body(workflow, job)
@@ -209,7 +209,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert body =~ command
       assert body =~ "Remediation:"
     end
-
 
     advisory = File.read!(@phase68_advisory)
     assert advisory =~ ~r/^  workflow_dispatch:/m
@@ -248,7 +247,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert advisory =~ ~r/^  schedule:/m
     refute advisory =~ ~r/^  pull_request:/m
     refute advisory =~ ~r/^  push:/m
-
   end
 
   @tag :triggers
@@ -263,13 +261,13 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
           {"proof-aggregator-negative-control", "proof-aggregator-negative-control",
            "python3 script/check_aggregator_result_semantics.py --assert-outcomes"},
           {"guard-01-contract-drift-test", "guard-01-contract-drift-test",
-           "mix test test/crosswake/contract/contract_drift_test.exs"},
+           "script/verify_repository.sh --stage format-proof"},
           {"guard-02-generate-and-diff", "guard-02-generate-and-diff",
-           "mix crosswake.contract.gen"},
+           "script/verify_repository.sh --stage repository-cleanliness"},
           {"proof-dependency-security", "proof-dependency-security",
-           "script/check_dependency_security.sh"},
+           "script/verify_repository.sh --stage repository-preflight"},
           {"proof-requires-example-host", "proof-requires-example-host",
-           "script/check_example_host_isolation.sh --matrix-only"}
+           "script/verify_repository.sh --stage example-host-proof"}
         ] do
       body = job_body(workflow, job)
       assert body =~ "name: #{display_name}"
@@ -277,7 +275,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert body =~ command
       assert body =~ "Remediation:"
     end
-
   end
 
   @tag :triggers
@@ -286,7 +283,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
     for {job, display_name, command} <- [
           {"phase130-core-hermetic-proof", "phase130-core-hermetic-proof",
-           "mix test test/crosswake/proof/phase130_extraction_guards_test.exs"},
+           "script/verify_repository.sh --stage root-proof"},
           {"phase130-companion-engine-absent-proof", "phase130-companion-engine-absent-proof",
            "mix companions.test"},
           {"phase132-core-hermetic-proof", "phase132-core-hermetic-proof",
@@ -319,7 +316,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert advisory =~ ~r/^  schedule:/m
       assert advisory =~ "continue-on-error: true"
     end
-
   end
 
   @tag :manifest
@@ -384,6 +380,71 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     end
   end
 
+  @tag :classifier
+  @tag :manifest
+  @tag :triggers
+  test "generated guides keep the inexpensive documentation route while release inputs fail closed" do
+    allowlist = "script/ci_docs_allowlist.json" |> File.read!() |> Jason.decode!()
+    workflow = File.read!(@crosswake_ci)
+    public_docs = Enum.find(allowlist["families"], &(&1["family"] == "public_docs"))
+
+    assert public_docs["exact"] == [
+             "CONTRIBUTING.md",
+             "README.md",
+             "SETUP.md",
+             "examples/QUICK_START.md",
+             "guides/capability_map.md",
+             "guides/support_matrix.md"
+           ]
+
+    for path <- ["guides/capability_map.md", "guides/support_matrix.md"] do
+      result = classify_path(path)
+      assert result["classification"] == "documentation_only"
+      assert result["reason"] == "all_changed_paths_allowlisted"
+
+      assert result["scheduled_families"] == [
+               "documentation_contracts",
+               "public_docs",
+               "threadline_docs_contract"
+             ]
+    end
+
+    for path <- [
+          "lib/mix/tasks/crosswake.docs.sync.ex",
+          "script/repository_artifact_policy.json",
+          "docs/COMPANION-PUBLISH-RUNBOOK.md",
+          ".github/workflows/crosswake-ci.yml",
+          "future/unknown.md"
+        ] do
+      result = classify_path(path)
+      assert result["classification"] == "full_proof", path
+      assert result["scheduled_families"] == ["full_proof"], path
+    end
+
+    documentation = job_body(workflow, "documentation-contracts")
+    umbrella = job_body(workflow, "merge-blocking-crosswake-ci")
+
+    assert documentation =~ "needs: [classify-change]"
+    assert documentation =~ "if: needs.classify-change.result == 'success'"
+    assert umbrella =~ "if: always()"
+
+    for job <- [
+          "android-generated-shell-unit",
+          "android-package-unit",
+          "e2e-proof",
+          "ios-package-unit",
+          "phase10-proof",
+          "phase23-commerce-proof",
+          "route-tour-proof"
+        ] do
+      assert job_body(workflow, job) =~ "classification == 'full_proof'", job
+    end
+
+    assert umbrella =~ ~s(result != "success")
+    assert umbrella =~ ~s(result != "skipped" or name not in explicitly_irrelevant)
+    assert umbrella =~ "proof leaf did not reach a closed accepted result"
+  end
+
   @tag :triggers
   test "gating, Rulestead, Rindle, and provider PR proof moves without advisory authority" do
     workflow = File.read!(@crosswake_ci)
@@ -391,7 +452,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     refute File.exists?(hd(@plan06_task1_sources))
 
     for {job, command} <- [
-          {"phase41-gating-proof", "phase41_gating_doctor_test.exs"},
+          {"phase41-gating-proof", "script/verify_repository.sh --stage warnings-proof"},
           {"phase43-rulestead-proof",
            "mix test --exclude requires_example_host --exclude advisory_only"},
           {"phase45-rindle-proof",
@@ -414,7 +475,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert advisory =~ ~r/^  schedule:/m
       assert advisory =~ "continue-on-error: true"
     end
-
   end
 
   @tag :triggers
@@ -456,7 +516,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       assert advisory =~ ~r/^  schedule:/m
       assert advisory =~ "continue-on-error: true"
     end
-
   end
 
   @tag :triggers
@@ -838,6 +897,20 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       capture: :all_names
     )
     |> Enum.map(fn [block, inline] -> if block == "", do: inline, else: block end)
+  end
+
+  defp classify_path(path) do
+    code = """
+    import json
+    from pathlib import Path
+    from script.classify_ci_change import classify_records, load_allowlist, parse_name_status
+    allowlist = load_allowlist(Path('script/ci_docs_allowlist.json'))
+    raw = b'M\\0' + #{inspect(path)}.encode('utf-8') + b'\\0'
+    print(json.dumps(classify_records(parse_name_status(raw), allowlist)))
+    """
+
+    {output, 0} = System.cmd("python3", ["-c", code], stderr_to_stdout: true)
+    Jason.decode!(output)
   end
 
   defp cache_identity(fixture) do

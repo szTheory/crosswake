@@ -210,9 +210,7 @@ defmodule Mix.Tasks.Crosswake.Shell.Status do
 
     case overall do
       :not_a_shell ->
-        Mix.shell().info(
-          "[crosswake] no .crosswake/shell.json found — nothing to check."
-        )
+        Mix.shell().info("[crosswake] no .crosswake/shell.json found — nothing to check.")
 
       :up_to_date ->
         Mix.shell().info("[crosswake] generated shells are up to date.")

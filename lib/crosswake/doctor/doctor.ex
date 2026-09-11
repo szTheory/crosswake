@@ -414,13 +414,21 @@ defmodule Crosswake.Doctor do
     end
   end
 
-  defp phase_3_posture(nil, _cwd, _opts) do
-    {%{}, %{}, %{status: :verification_required, blocking_platforms: [:ios, :android]}, []}
+  defp phase_3_posture(nil, cwd, opts) do
+    platforms = claimed_native_platforms(cwd, opts)
+
+    {%{}, %{},
+     %{
+       status: if(platforms == [], do: :not_claimed, else: :verification_required),
+       blocking_platforms: platforms
+     }, []}
   end
 
   defp phase_3_posture(manifest, cwd, opts) do
+    platforms = claimed_native_platforms(cwd, opts)
+
     shells =
-      Enum.into([:ios, :android], %{}, fn platform ->
+      Enum.into(platforms, %{}, fn platform ->
         {platform, shell_posture(platform, cwd, opts)}
       end)
 
@@ -1447,7 +1455,12 @@ defmodule Crosswake.Doctor do
       end)
 
     %{
-      status: if(blocking_platforms == [], do: :supported, else: :verification_required),
+      status:
+        cond do
+          map_size(shells) == 0 -> :not_claimed
+          blocking_platforms == [] -> :supported
+          true -> :verification_required
+        end,
       blocking_platforms: blocking_platforms,
       proof_statuses: proof_statuses,
       release_policy: release_policy_snapshot(manifest)
@@ -1545,6 +1558,25 @@ defmodule Crosswake.Doctor do
     ] ++ capability_posture_findings(support)
   end
 
+  defp support_posture_findings(%{status: :not_claimed} = support, shells) do
+    {severity, code, message, hint} = FindingPolicy.support_claim(:not_claimed)
+
+    [
+      check(
+        severity,
+        code,
+        "support_posture",
+        message,
+        hint,
+        %{
+          status: Atom.to_string(support.status),
+          proof_statuses: %{},
+          shells: shell_support_details(shells)
+        }
+      )
+    ] ++ capability_posture_findings(support)
+  end
+
   defp support_posture_findings(%{status: :verification_required} = support, shells) do
     {severity, code, message, hint} = FindingPolicy.support_claim(:verification_required)
 
@@ -1573,7 +1605,7 @@ defmodule Crosswake.Doctor do
     mb_check =
       if merge_blocking != [] do
         check(
-          if(support.status == :supported, do: :advisory, else: :warning),
+          if(support.status in [:supported, :not_claimed], do: :advisory, else: :warning),
           "capability_proof_merge_blocking",
           "capability_posture",
           "merge-blocking capability proofs are required for: #{Enum.map(merge_blocking, & &1.family) |> Enum.join(", ")}",
@@ -1768,6 +1800,19 @@ defmodule Crosswake.Doctor do
       end
 
     Path.expand(path, cwd)
+  end
+
+  defp claimed_native_platforms(cwd, opts) do
+    case Keyword.get(opts, :native_targets, :auto) do
+      :auto ->
+        Enum.filter([:ios, :android], fn platform ->
+          File.dir?(shell_root(platform, cwd, opts)) or
+            File.exists?(proof_hook_path(platform, cwd, opts))
+        end)
+
+      platforms when is_list(platforms) ->
+        Enum.filter([:ios, :android], &(&1 in platforms))
+    end
   end
 
   defp proof_hook_path(platform, cwd, opts) do

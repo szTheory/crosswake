@@ -70,6 +70,42 @@ defmodule Mix.Tasks.Crosswake.DoctorRouterTest do
     refute output =~ "router module CleanRoomHost.Router"
   end
 
+  test "discovers the installed router when --router is omitted", %{target: target} do
+    write_source!(
+      target,
+      "lib/clean_room_host/router.ex",
+      """
+      defmodule CleanRoomHost.PageController do
+        def init(opts), do: opts
+        def call(conn, _opts), do: conn
+      end
+
+      defmodule CleanRoomHost.Router do
+        # crosswake:install:start
+        use Crosswake.Router
+        # crosswake:install:end
+
+        scope "/" do
+          get "/dashboard", CleanRoomHost.PageController, :index,
+            crosswake: [id: "dashboard", runtime: :live_view]
+        end
+      end
+      """
+    )
+
+    {output, exit_code} =
+      run_mix(target, [
+        "crosswake.doctor",
+        "--install-manifest",
+        "priv/crosswake/install_manifest.json",
+        "--native-checks"
+      ])
+
+    assert exit_code == 0, output
+    assert output =~ "Crosswake doctor report"
+    refute output =~ "pass --router"
+  end
+
   test "reports a missing router as unavailable after app config and compile", %{target: target} do
     {output, exit_code} =
       run_mix(target, ["crosswake.doctor", "--router", "CleanRoomHost.MissingRouter"])
@@ -152,6 +188,7 @@ defmodule Mix.Tasks.Crosswake.DoctorRouterTest do
         schema_version: 1,
         crosswake_version: "0.1.0",
         router_path: Path.relative_to(router_path, target),
+        router_module: "CleanRoomHost.Router",
         web_module: "CleanRoomHost",
         policy_module: "CleanRoomHost.Crosswake.Policy",
         files: %{created_or_reused: [Path.relative_to(policy_path, target)]},

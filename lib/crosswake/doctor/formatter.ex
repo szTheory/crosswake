@@ -57,14 +57,16 @@ defmodule Crosswake.Doctor.Formatter do
 
   defp format_support(_support), do: nil
 
-  defp format_release_policy(%{
-         crosswake_version: crosswake_version,
-         manifest_schema_version: manifest_schema_version,
-         bridge_protocol_version: bridge_protocol_version,
-         native_runtime_version: native_runtime_version,
-         package_version_truth: package_version_truth,
-         companion_requirement: companion_requirement
-       } = release_policy) do
+  defp format_release_policy(
+         %{
+           crosswake_version: crosswake_version,
+           manifest_schema_version: manifest_schema_version,
+           bridge_protocol_version: bridge_protocol_version,
+           native_runtime_version: native_runtime_version,
+           package_version_truth: package_version_truth,
+           companion_requirement: companion_requirement
+         } = release_policy
+       ) do
     # Optional keys added in Phase 64 — structured blocks only rendered when present.
     capability_families = Map.get(release_policy, :capability_families)
     package_surfaces = Map.get(release_policy, :package_surfaces)

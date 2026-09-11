@@ -86,9 +86,10 @@ status: complete
 
 ## Accomplishments
 
-- Rebound the final record after the credential-boundary fix to remote-default SHA `71732ad4393de60a99cc2fec7316c0651ae6e96b`, with exact matching workflow and manifest digests and no compatibility authority.
-- Proved live target protection remains strict and requires exactly `Crosswake CI` before and after collection.
+- Rebound the final record after the completed code-review fixes to remote-default SHA `0b59224bbabc3f0b40038d0c1c4dc7ecae81de4c`, with exact matching workflow and manifest digests and no compatibility authority.
+- Proved live target protection remains strict and requires exactly app-bound `Crosswake CI` (`app_id: 15368`) before and after collection.
 - Proved the pull-request workflow contains no repository secret expressions or named release/recovery credentials while retaining all 44 proof leaves.
+- Proved all 100 required workflow/composite action uses contain zero mutable third-party references.
 - Captured one sanitized main-bound automation observation; exact-SHA documentation-only and executable PR cohorts were unavailable and remain `not_measured`.
 - Generated a reproducible comparison containing workflow/job/check counts, runner classes, timing medians/ranges, closed cache outcomes, and explicit `not_exposed` queue timing.
 
@@ -137,6 +138,7 @@ status: complete
 - An initial manual digest spot-check used ambiguous zsh `$name:suffix` expansion. Re-running with braced expansion proved both blobs match exactly; the production verifier passes SHA and path as separate process arguments and is unaffected.
 - The final exact SHA has no qualifying documentation-only or executable PR runs. Those cohorts remain closed as unavailable.
 - Security review required a new landed source after removing repository credentials from pull-request Hex dry-run proof. The evidence was rebound rather than treating the earlier source record as final.
+- Code-review fixes changed the authoritative workflow and required-check audit. The final evidence was therefore rebound again to PR #144's exact merge SHA instead of treating the pre-review source as current.
 
 ## Known Stubs
 
@@ -159,7 +161,7 @@ None.
 
 - All five plan files exist.
 - Commits `742436f5`, `32da4858`, `6b87e7a8`, `9dfde452`, and `2a7d82d6` exist.
-- Exact-source verification, 34 focused evidence/integrity tests, the recurring Phase 165 gate, credential-free PR workflow scan, and live strict target protection pass.
+- Exact-source verification, evidence self-tests, the recurring Phase 165 gate, credential-free PR workflow scan, immutable-action audit, and live strict app-bound target protection pass.
 
 ---
 *Phase: 165-efficient-and-maintainable-ci*

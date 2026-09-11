@@ -1,17 +1,45 @@
 import { defineConfig, devices } from '@playwright/test';
+import { isAbsolute } from 'node:path';
 
 const EVIDENCE_PANEL_SPEC = 'evidence_panel.spec.ts';
+const repositoryVerify = process.env.CROSSWAKE_REPOSITORY_VERIFY === '1';
+
+function repositoryOutput(name: string): string {
+  const value = process.env[name];
+
+  if (!value || !isAbsolute(value)) {
+    throw new Error(`${name} must be an absolute invocation-owned path in repository verification mode`);
+  }
+
+  return value;
+}
+
+const repositoryOutputs = repositoryVerify
+  ? {
+      report: repositoryOutput('CROSSWAKE_PLAYWRIGHT_REPORT_DIR'),
+      results: repositoryOutput('CROSSWAKE_PLAYWRIGHT_RESULT_DIR'),
+      artifacts: repositoryOutput('CROSSWAKE_PLAYWRIGHT_ARTIFACT_DIR'),
+    }
+  : undefined;
 
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: repositoryVerify ? 0 : process.env.CI ? 2 : 0,
   workers: 1, // Ensure tests run sequentially and avoid database locks
-  reporter: 'html',
+  reporter: repositoryOutputs
+    ? [['html', { open: 'never', outputFolder: repositoryOutputs.report }]]
+    : 'html',
+  ...(repositoryOutputs
+    ? {
+        outputDir: repositoryOutputs.results,
+        snapshotPathTemplate: `${repositoryOutputs.artifacts}/{testFilePath}/{arg}{ext}`,
+      }
+    : {}),
   use: {
     baseURL: 'http://localhost:4700',
-    trace: 'on-first-retry',
+    trace: repositoryVerify ? 'retain-on-failure' : 'on-first-retry',
     serviceWorkers: 'block', // Prevent service worker caching from masking test results
   },
   projects: [
@@ -47,6 +75,6 @@ export default defineConfig({
   webServer: {
     command: 'MIX_ENV=test mix do ecto.drop --quiet + ecto.create --quiet + ecto.migrate --quiet + phx.server',
     port: 4700,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: repositoryVerify ? false : !process.env.CI,
   },
 });

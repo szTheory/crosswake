@@ -61,11 +61,32 @@ defmodule Crosswake.Shell.ActivationTest do
     ]
 
     assert Enum.all?(requests, &match?(%Request{}, &1))
-    assert Enum.map(requests, & &1.source) == [:cold_start, :deep_link, :notification, :in_app_navigation]
+
+    assert Enum.map(requests, & &1.source) == [
+             :cold_start,
+             :deep_link,
+             :notification,
+             :in_app_navigation
+           ]
+
     assert Enum.map(requests, & &1.manifest_source) == [:bundled, :cached, :bundled, :bundled]
-    assert Enum.map(requests, & &1.bridge_protocol_version) == ["1.0.0", "1.0.0", "1.0.0", "1.0.0"]
+
+    assert Enum.map(requests, & &1.bridge_protocol_version) == [
+             "1.0.0",
+             "1.0.0",
+             "1.0.0",
+             "1.0.0"
+           ]
+
     assert Enum.map(requests, & &1.native_runtime_version) == ["1.0.0", "1.0.0", "1.0.0", "1.0.0"]
-    assert Enum.map(requests, & &1.correlation_id) == ["cold-start-1", "deep-link-1", "notification-1", "in-app-1"]
+
+    assert Enum.map(requests, & &1.correlation_id) == [
+             "cold-start-1",
+             "deep-link-1",
+             "notification-1",
+             "in-app-1"
+           ]
+
     assert Enum.at(requests, 1).origin == Types.default_origin()
   end
 
@@ -107,6 +128,7 @@ defmodule Crosswake.Shell.ActivationTest do
       )
 
     assert %Decision{status: :allow, route_id: "dashboard", denial: nil} = allow_decision
+
     assert %Decision{status: :deny, route_id: "missing", denial: %Denial{reason: :inactive_route}} =
              deny_decision
   end
@@ -321,7 +343,11 @@ defmodule Crosswake.Shell.ActivationTest do
 
     assert %Decision{status: :allow, route_id: "library"} = allow_decision
 
-    assert %Decision{status: :deny, route_id: "library", denial: %Denial{reason: :pack_incompatible}} =
+    assert %Decision{
+             status: :deny,
+             route_id: "library",
+             denial: %Denial{reason: :pack_incompatible}
+           } =
              deny_decision
   end
 
@@ -342,7 +368,8 @@ defmodule Crosswake.Shell.ActivationTest do
               path: "/billing",
               runtime: :live_view,
               offline: :unavailable,
-              commerce: Types.new_route_commerce(corridor_ref: "missing_corridor", role: :purchase_intent),
+              commerce:
+                Types.new_route_commerce(corridor_ref: "missing_corridor", role: :purchase_intent),
               allowlisted_origins: [Types.default_origin()]
             )
         }
@@ -371,15 +398,20 @@ defmodule Crosswake.Shell.ActivationTest do
             %Decision{
               status: :deny,
               route_id: "billing",
-              denial: %Denial{reason: :commerce_corridor, code: "commerce.corridor.undeclared"} =
-                denial
+              denial:
+                %Denial{reason: :commerce_corridor, code: "commerce.corridor.undeclared"} =
+                  denial
             }} = activation_result
 
     assert denial.details[:corridor_ref] == "missing_corridor"
     assert denial.details[:role] == :purchase_intent
     assert denial.recovery != %{}
     assert denial.recovery[:fallback] == :return_to_phoenix_guidance
-    assert Enum.any?(denial.recovery[:actions], &(&1 == :declare_corridor_or_disable_commerce_route))
+
+    assert Enum.any?(
+             denial.recovery[:actions],
+             &(&1 == :declare_corridor_or_disable_commerce_route)
+           )
   end
 
   # thread_id tests (Task 1 - 91-02)

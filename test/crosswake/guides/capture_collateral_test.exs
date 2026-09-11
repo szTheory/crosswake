@@ -134,10 +134,20 @@ defmodule Crosswake.Guides.CaptureCollateralTest do
 
   defp scan_script({path, contents}) do
     [
-      require_contains(path, contents, "set -euo pipefail", :missing_strict_mode,
-        "harness must run under strict mode (set -euo pipefail)"),
-      require_contains(path, contents, "--web-only", :missing_web_only_flag,
-        "harness must support the --web-only headless flag"),
+      require_contains(
+        path,
+        contents,
+        "set -euo pipefail",
+        :missing_strict_mode,
+        "harness must run under strict mode (set -euo pipefail)"
+      ),
+      require_contains(
+        path,
+        contents,
+        "--web-only",
+        :missing_web_only_flag,
+        "harness must support the --web-only headless flag"
+      ),
       filename_failures(path, contents),
       rename_mapping_failures(path, contents),
       native_command_failures(path, contents),
@@ -149,8 +159,13 @@ defmodule Crosswake.Guides.CaptureCollateralTest do
 
   defp filename_failures(path, contents) do
     Enum.flat_map(@web_filenames ++ @native_filenames, fn name ->
-      require_contains(path, contents, name, :missing_filename,
-        "harness must reference the collateral file #{name}")
+      require_contains(
+        path,
+        contents,
+        name,
+        :missing_filename,
+        "harness must reference the collateral file #{name}"
+      )
     end)
   end
 
@@ -158,15 +173,25 @@ defmodule Crosswake.Guides.CaptureCollateralTest do
     Enum.flat_map(@rename_mapping, fn {src, dst} ->
       regex = ~r/#{Regex.escape(src)}.*#{Regex.escape(dst)}/
 
-      require_regex(path, contents, regex, :missing_rename_mapping,
-        "harness must rename Playwright artifact #{src} → collateral #{dst}")
+      require_regex(
+        path,
+        contents,
+        regex,
+        :missing_rename_mapping,
+        "harness must rename Playwright artifact #{src} → collateral #{dst}"
+      )
     end)
   end
 
   defp native_command_failures(path, contents) do
     Enum.flat_map(@native_commands, fn cmd ->
-      require_contains(path, contents, cmd, :missing_native_command,
-        "harness must print the native capture command #{inspect(cmd)}")
+      require_contains(
+        path,
+        contents,
+        cmd,
+        :missing_native_command,
+        "harness must print the native capture command #{inspect(cmd)}"
+      )
     end)
   end
 

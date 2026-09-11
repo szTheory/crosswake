@@ -368,7 +368,13 @@ defmodule Crosswake.Policy.SchemaTest do
     end
 
     test "accepts actions keyword list and normalizes to map" do
-      validated = Schema.validate!(id: "home", runtime: :live_view, notification_open: [actions: [:view, :reply]])
+      validated =
+        Schema.validate!(
+          id: "home",
+          runtime: :live_view,
+          notification_open: [actions: [:view, :reply]]
+        )
+
       assert validated[:notification_open] == %{actions: [:view, :reply]}
     end
 

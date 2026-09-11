@@ -17,6 +17,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "script/ci_leaf_manifest.json"
+DEFAULT_STAGES = ROOT / "script/repository_verification_stages.json"
 DEFAULT_WORKFLOW = ROOT / ".github/workflows/crosswake-ci.yml"
 UMBRELLA_ID = "merge-blocking-crosswake-ci"
 UMBRELLA_NAME = "Crosswake CI"
@@ -72,6 +73,7 @@ FINAL_CONTROL_NODES = ("classify-change",)
 FINAL_NEEDS = tuple(sorted(FINAL_PROOF_LEAVES + FINAL_CONTROL_NODES))
 ADVISORY_JOBS = ("brand-visual",)
 CLASSIFIER_IRRELEVANCE_REASON = "all_changed_paths_allowlisted"
+STAGE_COMMAND_PREFIX = "script/verify_repository.sh --stage "
 
 
 @dataclass(frozen=True)
@@ -90,6 +92,112 @@ def load_json(path: Path) -> object:
 
 def load_workflow(path: Path) -> object:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def stage_owner_map(stage_manifest: object, problems: list[Problem]) -> dict[str, str]:
+    if not isinstance(stage_manifest, dict) or set(stage_manifest) != {"schema_version", "stages"}:
+        problems.append(Problem("invalid_stage_manifest", "stages", "top-level stage schema must be closed"))
+        return {}
+    stages = stage_manifest.get("stages")
+    if stage_manifest.get("schema_version") != 1 or not isinstance(stages, list) or not stages:
+        problems.append(Problem("invalid_stage_manifest", "stages", "schema version 1 requires stages"))
+        return {}
+
+    owners: dict[str, str] = {}
+    stage_ids: set[str] = set()
+    for index, stage in enumerate(stages):
+        member = f"stages[{index}]"
+        if not isinstance(stage, dict):
+            problems.append(Problem("invalid_stage_record", member, "stage must be a mapping"))
+            continue
+        stage_id = stage.get("stage_id")
+        if not isinstance(stage_id, str) or not stage_id:
+            problems.append(Problem("invalid_stage_id", member, "stage ID must be one literal string"))
+            continue
+        if stage_id in stage_ids:
+            problems.append(Problem("duplicate_stage", stage_id, "stage ID occurs more than once"))
+        stage_ids.add(stage_id)
+        ci_owners = stage.get("ci_owners")
+        if not isinstance(ci_owners, list) or not ci_owners:
+            problems.append(Problem("missing_stage_owner", stage_id, "add one literal CI owner"))
+            continue
+        expected_command = f"{STAGE_COMMAND_PREFIX}{stage_id}"
+        for owner in ci_owners:
+            if not isinstance(owner, dict) or set(owner) != {"job_id", "command"}:
+                problems.append(Problem("invalid_stage_owner", stage_id, "owner keys must be job_id and command"))
+                continue
+            job_id = owner.get("job_id")
+            command = owner.get("command")
+            if not isinstance(job_id, str) or not job_id:
+                problems.append(Problem("invalid_stage_owner", stage_id, "job ID must be one literal string"))
+                continue
+            if command != expected_command:
+                problems.append(Problem("divergent_stage_command", stage_id, f"use {expected_command}"))
+            prior = owners.get(job_id)
+            if prior is not None and prior != stage_id:
+                problems.append(Problem("duplicate_stage_owner", job_id, f"owner maps to {prior} and {stage_id}"))
+            owners[job_id] = stage_id
+    return owners
+
+
+def validate_stage_parity(stage_manifest: object, workflow: object) -> list[Problem]:
+    problems: list[Problem] = []
+    owners = stage_owner_map(stage_manifest, problems)
+    stage_argv = {
+        stage.get("stage_id"): " ".join(stage.get("argv", []))
+        for stage in stage_manifest.get("stages", [])
+        if isinstance(stage, dict) and isinstance(stage.get("argv"), list)
+    } if isinstance(stage_manifest, dict) else {}
+    if not isinstance(workflow, dict) or not isinstance(workflow.get("jobs"), dict):
+        problems.append(Problem("missing_jobs", "jobs", "workflow jobs mapping is required"))
+        return problems
+    jobs = workflow["jobs"]
+
+    declared_commands = {
+        (job_id, f"{STAGE_COMMAND_PREFIX}{stage_id}") for job_id, stage_id in owners.items()
+    }
+    observed_commands: set[tuple[str, str]] = set()
+    for job_id, job in jobs.items():
+        if not isinstance(job, dict):
+            continue
+        steps = job.get("steps", [])
+        if not isinstance(steps, list):
+            continue
+        for step in steps:
+            if not isinstance(step, dict) or not isinstance(step.get("run"), str):
+                continue
+            lines = [line.strip() for line in step["run"].splitlines()]
+            for command in lines:
+                if not command.startswith(STAGE_COMMAND_PREFIX):
+                    continue
+                observed_commands.add((job_id, command))
+                if step.get("working-directory") not in (None, "."):
+                    stage_id = command.removeprefix(STAGE_COMMAND_PREFIX)
+                    problems.append(Problem("divergent_stage_cwd", stage_id, "run the facade from repository root"))
+                stage_id = command.removeprefix(STAGE_COMMAND_PREFIX)
+                step_env = step.get("env")
+                declared_stage = next(
+                    (
+                        stage
+                        for stage in stage_manifest.get("stages", [])
+                        if isinstance(stage, dict) and stage.get("stage_id") == stage_id
+                    ),
+                    {},
+                )
+                stage_env = declared_stage.get("env", {}) if isinstance(declared_stage, dict) else {}
+                if isinstance(step_env, dict) and set(step_env) & set(stage_env):
+                    problems.append(Problem("divergent_stage_env", stage_id, "keep stage environment in the shared manifest"))
+                raw_command = stage_argv.get(command.removeprefix(STAGE_COMMAND_PREFIX))
+                if raw_command and raw_command in lines:
+                    stage_id = command.removeprefix(STAGE_COMMAND_PREFIX)
+                    problems.append(Problem("copied_stage_command", stage_id, f"remove {raw_command} and use the shared facade"))
+
+    for job_id, command in sorted(declared_commands - observed_commands):
+        problems.append(Problem("missing_stage_owner", owners[job_id], f"restore {job_id}: {command}"))
+    for job_id, command in sorted(observed_commands - declared_commands):
+        stage_id = command.removeprefix(STAGE_COMMAND_PREFIX)
+        problems.append(Problem("extra_stage_owner", stage_id, f"remove undeclared facade call from {job_id}"))
+    return problems
 
 
 def literal_name(job_id: str, job: object, problems: list[Problem]) -> str | None:
@@ -265,6 +373,7 @@ def validate(manifest: object, workflow: object, producer_records=None) -> list[
         producers = [row for row in producer_records if row[0] == UMBRELLA_NAME]
         if len(producers) != 1 or producers[0][2] != UMBRELLA_ID:
             problems.append(Problem("umbrella_producer_count", UMBRELLA_NAME, f"observed={len(producers)}"))
+    problems.extend(validate_stage_parity(load_json(DEFAULT_STAGES), workflow))
     return problems
 
 
@@ -416,7 +525,34 @@ class ManifestSelfTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = load_json(DEFAULT_MANIFEST)
+        cls.stages = load_json(DEFAULT_STAGES)
         cls.workflow = load_workflow(DEFAULT_WORKFLOW)
+
+    def canonical_stage_fixture(self):
+        stages = copy.deepcopy(self.stages)
+        workflow = copy.deepcopy(self.workflow)
+        assignments = {
+            "repository-preflight": ["proof-dependency-security"],
+            "root-proof": ["phase130-core-hermetic-proof"],
+            "example-host-proof": ["proof-requires-example-host"],
+            "browser-proof": ["e2e-proof", "route-tour-proof"],
+            "ios-package-proof": ["ios-package-unit"],
+            "android-package-proof": ["android-package-unit"],
+            "format-proof": ["guard-01-contract-drift-test"],
+            "warnings-proof": ["phase41-gating-proof"],
+            "repository-cleanliness": ["guard-02-generate-and-diff"],
+        }
+        for stage in stages["stages"]:
+            command = f"{STAGE_COMMAND_PREFIX}{stage['stage_id']}"
+            stage["ci_owners"] = [
+                {"job_id": job_id, "command": command}
+                for job_id in assignments[stage["stage_id"]]
+            ]
+            for job_id in assignments[stage["stage_id"]]:
+                workflow["jobs"][job_id].setdefault("steps", []).append(
+                    {"name": f"Run shared {stage['stage_id']}", "run": command}
+                )
+        return stages, workflow
 
     def assert_problem(self, mutate, expected_kind: str, member: str) -> None:
         manifest = copy.deepcopy(self.manifest)
@@ -486,6 +622,63 @@ class ManifestSelfTest(unittest.TestCase):
             "invalid_irrelevance_reason",
             first_executable["leaf_id"],
         )
+
+    def test_stage_parity_mutations(self) -> None:
+        stages, workflow = self.canonical_stage_fixture()
+        self.assertEqual(validate_stage_parity(stages, workflow), [])
+
+        mutations = {}
+
+        missing_stages = copy.deepcopy(stages)
+        missing_stages["stages"][0]["ci_owners"] = []
+        mutations["missing_stage_owner"] = validate_stage_parity(missing_stages, workflow)
+
+        extra_workflow = copy.deepcopy(workflow)
+        extra_workflow["jobs"]["documentation-contracts"]["steps"].append(
+            {"run": f"{STAGE_COMMAND_PREFIX}root-proof"}
+        )
+        mutations["extra_stage_owner"] = validate_stage_parity(stages, extra_workflow)
+
+        divergent_stages = copy.deepcopy(stages)
+        divergent_stages["stages"][1]["ci_owners"][0]["command"] = "mix verify"
+        mutations["divergent_stage_command"] = validate_stage_parity(divergent_stages, workflow)
+
+        cwd_workflow = copy.deepcopy(workflow)
+        owner_step = cwd_workflow["jobs"]["phase130-core-hermetic-proof"]["steps"][-1]
+        owner_step["working-directory"] = "examples/phoenix_host"
+        mutations["divergent_stage_cwd"] = validate_stage_parity(stages, cwd_workflow)
+
+        env_workflow = copy.deepcopy(workflow)
+        env_workflow["jobs"]["phase130-core-hermetic-proof"]["steps"][-1]["env"] = {"MIX_ENV": "dev"}
+        mutations["divergent_stage_env"] = validate_stage_parity(stages, env_workflow)
+
+        duplicate_stages = copy.deepcopy(stages)
+        duplicate_stages["stages"][7]["ci_owners"] = [
+            {
+                "job_id": "guard-01-contract-drift-test",
+                "command": f"{STAGE_COMMAND_PREFIX}warnings-proof",
+            }
+        ]
+        mutations["duplicate_stage_owner"] = validate_stage_parity(duplicate_stages, workflow)
+
+        copied_workflow = copy.deepcopy(workflow)
+        copied_workflow["jobs"]["phase130-core-hermetic-proof"]["steps"][-1]["run"] = (
+            "mix verify\n" + f"{STAGE_COMMAND_PREFIX}root-proof"
+        )
+        mutations["copied_stage_command"] = validate_stage_parity(stages, copied_workflow)
+
+        expected_kinds = {
+            "missing_stage_owner": "missing_stage_owner",
+            "extra_stage_owner": "extra_stage_owner",
+            "divergent_stage_command": "divergent_stage_command",
+            "divergent_stage_cwd": "divergent_stage_cwd",
+            "divergent_stage_env": "divergent_stage_env",
+            "duplicate_stage_owner": "duplicate_stage_owner",
+            "copied_stage_command": "copied_stage_command",
+        }
+        for mutation, problems in mutations.items():
+            self.assertTrue(any(problem.kind == expected_kinds[mutation] for problem in problems), problems)
+            print(f"PASS {mutation}")
 
 
 def run_self_test() -> int:

@@ -160,6 +160,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
       )
 
     assert status == 2
+
     assert {:ok, %{"outcome" => "blocked", "rule_id" => "PL-IOS-NAV-SOURCE"}} =
              Jason.decode(String.trim(output))
   end

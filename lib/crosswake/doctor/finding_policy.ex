@@ -4,7 +4,7 @@ defmodule Crosswake.Doctor.FindingPolicy do
   """
 
   @type shell_proof_status :: :passed | :failed | :missing | :verification_required
-  @type support_status :: :supported | :verification_required
+  @type support_status :: :supported | :verification_required | :not_claimed
 
   @spec shell_proof(shell_proof_status(), String.t(), String.t()) ::
           {atom(), String.t(), String.t()}
@@ -39,5 +39,11 @@ defmodule Crosswake.Doctor.FindingPolicy do
     {:error, "support_claim_verification_required",
      "support claims remain verification required until the tracked generated-project proof hooks pass",
      "run mix crosswake.doctor --native-checks after the host-owned shell projects and proof hooks are in place"}
+  end
+
+  def support_claim(:not_claimed) do
+    {:advisory, "support_claim_not_claimed",
+     "native shell support is not claimed for this host; Phoenix and manifest checks remain active",
+     "generate a shell or pass --native-targets ios|android|all when the host begins claiming native support"}
   end
 end

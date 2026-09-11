@@ -133,8 +133,9 @@ defmodule Crosswake.Proof.Phase40GateEvaluationTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/gated", Crosswake.TestSupport.StudySessionLive,
+        live("/gated", Crosswake.TestSupport.StudySessionLive,
           crosswake: [id: "gated", runtime: :live_view, gated_by: :test_flag]
+        )
       end
     end
   end
@@ -144,13 +145,14 @@ defmodule Crosswake.Proof.Phase40GateEvaluationTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/premium", Crosswake.TestSupport.StudySessionLive,
+        live("/premium", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "premium",
             runtime: :live_view,
             gated_by: :test_flag,
             on_unavailable: {:fallback_phoenix, :home}
           ]
+        )
       end
     end
   end
@@ -160,8 +162,9 @@ defmodule Crosswake.Proof.Phase40GateEvaluationTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/home", Crosswake.TestSupport.StudySessionLive,
+        live("/home", Crosswake.TestSupport.StudySessionLive,
           crosswake: [id: "home", runtime: :live_view]
+        )
       end
     end
   end

@@ -74,12 +74,13 @@ defmodule Crosswake.Proof.Phase42RulesteadCompanionTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/gating/beta-feature", Crosswake.TestSupport.StudySessionLive,
+        live("/gating/beta-feature", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "gating-beta-feature",
             gated_by: :rulestead,
             on_unavailable: :deny
           ]
+        )
       end
     end
   end

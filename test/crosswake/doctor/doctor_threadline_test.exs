@@ -132,11 +132,25 @@ defmodule Crosswake.Doctor.ThreadlineTest do
     defmodule PiiLedgerSchema do
       def __schema__(:fields) do
         # actor_ref is in the forbidden_metadata_keys list
-        [:thread_id, :correlation_id, :route_id, :actor_ref, :actor_kind, :event_class,
-         :event_type, :outcome, :provenance, :occurred_at, :recorded_at, :idempotency_key,
-         :metadata, :row_hash, :prev_hash,
-         # PII-forbidden field
-         :email]
+        [
+          :thread_id,
+          :correlation_id,
+          :route_id,
+          :actor_ref,
+          :actor_kind,
+          :event_class,
+          :event_type,
+          :outcome,
+          :provenance,
+          :occurred_at,
+          :recorded_at,
+          :idempotency_key,
+          :metadata,
+          :row_hash,
+          :prev_hash,
+          # PII-forbidden field
+          :email
+        ]
       end
     end
 
@@ -165,8 +179,20 @@ defmodule Crosswake.Doctor.ThreadlineTest do
     defmodule DriftLedgerSchema do
       def __schema__(:fields) do
         # Missing :idempotency_key, :row_hash, :prev_hash
-        [:thread_id, :correlation_id, :route_id, :actor_ref, :actor_kind, :event_class,
-         :event_type, :outcome, :provenance, :occurred_at, :recorded_at, :metadata]
+        [
+          :thread_id,
+          :correlation_id,
+          :route_id,
+          :actor_ref,
+          :actor_kind,
+          :event_class,
+          :event_type,
+          :outcome,
+          :provenance,
+          :occurred_at,
+          :recorded_at,
+          :metadata
+        ]
       end
     end
 
@@ -195,9 +221,23 @@ defmodule Crosswake.Doctor.ThreadlineTest do
     # Canonical schema fixture — exactly the 15 LEDG-02 columns, including :actor_ref
     defmodule CanonicalLedgerSchema do
       def __schema__(:fields) do
-        [:thread_id, :correlation_id, :route_id, :actor_ref, :actor_kind, :event_class,
-         :event_type, :outcome, :provenance, :occurred_at, :recorded_at, :idempotency_key,
-         :metadata, :row_hash, :prev_hash]
+        [
+          :thread_id,
+          :correlation_id,
+          :route_id,
+          :actor_ref,
+          :actor_kind,
+          :event_class,
+          :event_type,
+          :outcome,
+          :provenance,
+          :occurred_at,
+          :recorded_at,
+          :idempotency_key,
+          :metadata,
+          :row_hash,
+          :prev_hash
+        ]
       end
     end
 
@@ -350,7 +390,10 @@ defmodule Crosswake.Doctor.ThreadlineTest do
       "WKWebView\nWKNavigationDelegate\nsame-origin\n"
     )
 
-    write_file!(Path.join(ios_root, "CrosswakeShell/Info.plist"), "WKAppBoundDomains\nNSCameraUsageDescription\nNSPhotoLibraryUsageDescription\naps-environment\nNSPrivacyCollectedDataTypeDeviceID\ncom.apple.developer.associated-domains\n")
+    write_file!(
+      Path.join(ios_root, "CrosswakeShell/Info.plist"),
+      "WKAppBoundDomains\nNSCameraUsageDescription\nNSPhotoLibraryUsageDescription\naps-environment\nNSPrivacyCollectedDataTypeDeviceID\ncom.apple.developer.associated-domains\n"
+    )
 
     write_file!(
       Path.join(ios_root, "CrosswakeShell/RouteUnavailableView.swift"),

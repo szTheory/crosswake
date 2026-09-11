@@ -19,15 +19,27 @@ defmodule Mix.Tasks.Crosswake.Gen.Sync do
     dir = Path.expand(opts[:dir] || File.cwd!())
 
     schema_dest = Path.join([dir, "lib", app_snake, "sync", "event_log.ex"])
-    controller_dest = Path.join([dir, "lib", "#{app_snake}_web", "controllers", "sync_controller.ex"])
 
-    schema_template = Application.app_dir(:crosswake, "priv/templates/crosswake/sync/event_log.ex.eex")
-    controller_template = Application.app_dir(:crosswake, "priv/templates/crosswake/sync/sync_controller.ex.eex")
+    controller_dest =
+      Path.join([dir, "lib", "#{app_snake}_web", "controllers", "sync_controller.ex"])
+
+    schema_template =
+      Application.app_dir(:crosswake, "priv/templates/crosswake/sync/event_log.ex.eex")
+
+    controller_template =
+      Application.app_dir(:crosswake, "priv/templates/crosswake/sync/sync_controller.ex.eex")
 
     # If running from source (e.g. in development), Application.app_dir might fail for priv if not compiled,
     # but Mix generators usually run in an environment where priv is available, or we can fallback to local path.
-    schema_template = if File.exists?(schema_template), do: schema_template, else: Path.join(File.cwd!(), "priv/templates/crosswake/sync/event_log.ex.eex")
-    controller_template = if File.exists?(controller_template), do: controller_template, else: Path.join(File.cwd!(), "priv/templates/crosswake/sync/sync_controller.ex.eex")
+    schema_template =
+      if File.exists?(schema_template),
+        do: schema_template,
+        else: Path.join(File.cwd!(), "priv/templates/crosswake/sync/event_log.ex.eex")
+
+    controller_template =
+      if File.exists?(controller_template),
+        do: controller_template,
+        else: Path.join(File.cwd!(), "priv/templates/crosswake/sync/sync_controller.ex.eex")
 
     schema_content = EEx.eval_file(schema_template, app_module: app_module)
     controller_content = EEx.eval_file(controller_template, app_module: app_module)

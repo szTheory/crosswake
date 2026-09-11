@@ -33,14 +33,14 @@
       "leaf_id": "documentation-contracts",
       "display_name": "documentation-contracts",
       "family": "documentation_contracts",
-      "remediation_command": "mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs",
+      "remediation_command": "mix crosswake.docs.sync --check && mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/capability_map/capability_map_test.exs test/crosswake/support_matrix/renderer_test.exs test/crosswake/proof/phase69_docs_contract_parity_test.exs",
       "irrelevance_reason": null
     },
     {
       "leaf_id": "e2e-proof",
       "display_name": "e2e-proof",
       "family": "offline_browser",
-      "remediation_command": "cd examples/phoenix_host && npx playwright test",
+      "remediation_command": "script/verify_repository.sh --stage browser-proof",
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
@@ -61,7 +61,7 @@
       "leaf_id": "guard-02-generate-and-diff",
       "display_name": "guard-02-generate-and-diff",
       "family": "contract_drift",
-      "remediation_command": "mix crosswake.contract.gen && git add -A && git diff --cached --exit-code",
+      "remediation_command": "script/verify_repository.sh --stage repository-cleanliness",
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
@@ -306,7 +306,7 @@
       "leaf_id": "route-tour-proof",
       "display_name": "route-tour-proof",
       "family": "offline_browser",
-      "remediation_command": "cd examples/phoenix_host && npx playwright test e2e/route_tour.spec.ts",
+      "remediation_command": "script/verify_repository.sh --stage browser-proof",
       "irrelevance_reason": "all_changed_paths_allowlisted"
     }
   ],

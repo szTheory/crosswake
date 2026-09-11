@@ -141,7 +141,10 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     assert decoded["status"] == "ok"
     assert decoded["support"]["status"] == "supported"
     assert decoded["support"]["release_policy"]["manifest_schema_version"] == "1.1.0"
-    assert decoded["support"]["release_policy"]["bridge_protocol_version"] == Crosswake.Bridge.Contract.version()
+
+    assert decoded["support"]["release_policy"]["bridge_protocol_version"] ==
+             Crosswake.Bridge.Contract.version()
+
     assert decoded["support"]["release_policy"]["native_runtime_version"] == "1.0.0"
     assert decoded["shells"]["ios"]["proof"]["status"] == "supported"
     assert decoded["shells"]["android"]["proof"]["status"] == "supported"
@@ -222,6 +225,8 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
         Mix.Tasks.Crosswake.Doctor.run([
           "--router",
           "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
+          "--native-targets",
+          "ios",
           "--install-manifest",
           "does-not-exist.json"
         ])
@@ -330,7 +335,10 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
       "WKWebView\nWKNavigationDelegate\nsame-origin\n"
     )
 
-    write_file!(Path.join(ios_root, "CrosswakeShell/Info.plist"), "WKAppBoundDomains\nNSCameraUsageDescription\nNSPhotoLibraryUsageDescription\naps-environment\nNSPrivacyCollectedDataTypeDeviceID\ncom.apple.developer.associated-domains\n")
+    write_file!(
+      Path.join(ios_root, "CrosswakeShell/Info.plist"),
+      "WKAppBoundDomains\nNSCameraUsageDescription\nNSPhotoLibraryUsageDescription\naps-environment\nNSPrivacyCollectedDataTypeDeviceID\ncom.apple.developer.associated-domains\n"
+    )
 
     write_file!(
       Path.join(ios_root, "CrosswakeShell/RouteUnavailableView.swift"),

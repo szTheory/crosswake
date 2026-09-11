@@ -65,8 +65,7 @@ defmodule Crosswake.Manifest.Builder do
 
     Types.new_root(
       manifest_schema_version: manifest_schema_version,
-      crosswake_version:
-        Keyword.get(opts, :crosswake_version, Mix.Project.config()[:version] || "dev"),
+      crosswake_version: Keyword.get(opts, :crosswake_version, crosswake_version()),
       generated_at:
         Keyword.get(
           opts,
@@ -82,6 +81,13 @@ defmodule Crosswake.Manifest.Builder do
       navigation_topology: navigation_topology(routes, managed_routes),
       routes: route_entries
     )
+  end
+
+  defp crosswake_version do
+    case Application.spec(:crosswake, :vsn) do
+      nil -> "dev"
+      version -> to_string(version)
+    end
   end
 
   @doc false

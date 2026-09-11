@@ -291,7 +291,9 @@ defmodule Crosswake.Doctor.FormatterTest do
     assert output =~ "haptics.impact"
     assert output =~ "haptics"
     assert output =~ "hint: declare capabilities:"
-    assert output =~ "details: family_capability_id=haptics, legacy_capability_id=haptics.impact, route_id=saas-approval"
+
+    assert output =~
+             "details: family_capability_id=haptics, legacy_capability_id=haptics.impact, route_id=saas-approval"
   end
 
   test "renders the bridge.capability.native_rebuild_required finding without a fall-through (Phase 154, D-49)" do
@@ -320,7 +322,9 @@ defmodule Crosswake.Doctor.FormatterTest do
     assert output =~ "[warning] route:library (bridge.capability.native_rebuild_required)"
     assert output =~ "file_picker"
     assert output =~ "hint: rebuild and resubmit the native shell binary"
-    assert output =~ "details: capability_id=file_picker, rebuild=native_required, route_id=library"
+
+    assert output =~
+             "details: capability_id=file_picker, rebuild=native_required, route_id=library"
   end
 
   test "formats publish readiness as a concise sidecar section ordered by blocking posture" do

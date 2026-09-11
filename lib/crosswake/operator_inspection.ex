@@ -298,13 +298,14 @@ defmodule Crosswake.OperatorInspection do
       delivery_proof: :advisory,
       open_routing_active: open_routing_active?,
       route_activation_proof: if(open_routing_active?, do: :hermetic, else: :not_applicable),
-      activation_authority: if(open_routing_active?, do: :route_gate_sigra, else: :not_applicable),
+      activation_authority:
+        if(open_routing_active?, do: :route_gate_sigra, else: :not_applicable),
       action_allowlist: notification_action_allowlist(route.notification_open),
       evidence_authority: false
     }
   end
 
-  defp notification_action_allowlist([actions: actions]) when is_list(actions), do: actions
+  defp notification_action_allowlist(actions: actions) when is_list(actions), do: actions
   defp notification_action_allowlist(%{actions: actions}) when is_list(actions), do: actions
   defp notification_action_allowlist(true), do: :all_manifest_actions
   defp notification_action_allowlist(_notification_open), do: []
