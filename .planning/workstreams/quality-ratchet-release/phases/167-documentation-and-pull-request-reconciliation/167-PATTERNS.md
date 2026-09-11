@@ -707,16 +707,18 @@ payload_source_oid/tree
        |
        +-- sole commit: phase167-closeout-scope.json
                                   |
-                         closeout_candidate_oid/tree
+                         runtime-derived candidate OID/tree
                                   |
                  exact-head Crosswake CI -> merge -> reachable identical tree on default
 ```
 
 `script/check_phase167_pr_dispositions.py --verify-closeout-candidate` consumes
 `phase167-closeout-scope.json`; it must never reuse Plan 06's default-branch manifest. The scope
-records exact payload path/mode/blob rows with only itself self-excluded. Candidate parent must equal
-`payload_source_oid`, and the candidate tree must equal `payload_source_tree` plus exactly that one
-manifest path/mode/blob.
+contains only schema version, payload source OID/tree, exact payload path/mode/blob rows, and the
+precomputable self-excluded manifest path/mode/schema expectations. It contains no candidate
+identity. The validator derives candidate OID/tree from `--candidate HEAD`, requires its parent to
+equal `payload_source_oid`, and proves its tree equals `payload_source_tree` plus exactly that one
+manifest path/mode/blob. Only the later closeout resolution records candidate OID/tree.
 
 `.github/workflows/crosswake-ci.yml` is pull-request-triggered, so the successful PR head is CI
 authority. The merge/default SHA is proven by reachability and equality of tree OIDs; never demand a
@@ -732,9 +734,11 @@ The ordinary disposition set is exactly #57, #105, #110, #115, #121, #146, and #
 #57/#115/#146/#147 open as release-only Phase 168 approval surfaces. Record #148 and the Plan 06
 replacement in a separate recovery collection; recovery rows never replace ordinary rows. The
 closeout merge receipt, Phase 167 verification, `167-08-SUMMARY.md`, and the final workstream
-`ROADMAP.md` and `STATE.md` necessarily postdate merge/verification. They form the exact closed
-five-path handoff owned together by Phase 168's first reversible landing transaction; each final
-blob is bound when available, and no current-authority file may remain local-only or unowned.
+`ROADMAP.md` and `STATE.md` necessarily postdate merge/verification. During Phase 167 the closeout
+receipt records only these exact five path names and the owner
+`phase_168_first_reversible_landing`—no blob, presence, landing, or non-local claim. After all final
+files exist, a separate Phase 168 scope/receipt binds their blobs and protected-default landing
+together before candidate approval.
 
 After the closeout merge and immediately before local reconciliation, record the exact local tip in
 the post-merge resolution receipt and commit that receipt alone. Reconcile local `main` fail closed:
@@ -743,10 +747,11 @@ ancestors of local `HEAD`; preserve the real empty index; compare the three runt
 pre-merge SHA-256 records without exposing their bytes; reject tracked residue; and require exactly
 those three runtime paths as untracked. The scope and resolution receipts must already exist as
 tracked handoff artifacts. The summary, verification, ROADMAP, and STATE reach their final bytes only
-after merge/verification and therefore are not pre-closeout candidate inputs. The lifecycle
-validator nevertheless requires exactly those five paths and assigns their first joint landing to
-Phase 168. Implement reconciliation as a fixed-argv, no-write validator mode; never normalize state
-with reset, clean, stash, branch switching, or runtime-file rewrites.
+after merge/verification and therefore are not pre-closeout candidate inputs. The Phase 167
+lifecycle validator requires only the exact five names and fixed Phase 168 owner; it must not require
+their current presence, blobs, or default landing. Phase 168 owns those later checks. Implement
+reconciliation as a fixed-argv, no-write validator mode; never normalize state with reset, clean,
+stash, branch switching, or runtime-file rewrites.
 
 ## Shared Patterns
 
