@@ -747,18 +747,27 @@ receipt records only these exact five path names and the owner
 files exist, a separate Phase 168 scope/receipt binds their blobs and protected-default landing
 together before candidate approval.
 
-After the closeout merge and immediately before local reconciliation, record the exact local tip in
-the post-merge resolution receipt and commit that receipt alone. Reconcile local `main` fail closed:
-require fresh remote default, all scope-recorded commits, and that receipt-recorded tip to be
-ancestors of local `HEAD`; preserve the real empty index; compare the three runtime files to
-pre-merge SHA-256 records without exposing their bytes; reject tracked residue; and require exactly
-those three runtime paths as untracked. The scope and resolution receipts must already exist as
-tracked handoff artifacts. The summary, verification, ROADMAP, and STATE reach their final bytes only
+All Phase 167 execution and evidence commits use the dedicated unprotected branch
+`agent-phase167-fixforward`; `origin/main` remains protected authority, and
+`git.allow_default_branch_commits` remains unchanged. Remote PR branches may be handled only in
+isolated worktrees. After each protected-default merge, first commit the bounded receipt on the
+phase branch. Only when no executor commit is pending and that branch is clean may the local `main`
+ref be advanced to freshly fetched remote default, without checking out `main`. Remain on the phase
+branch for every subsequent executor commit.
+
+After the closeout merge and immediately before local reconciliation, record the exact phase-branch
+tip in the post-merge resolution receipt and commit that receipt alone on the phase branch. Reconcile
+the local `main` ref fail closed: require fresh remote default, all scope-recorded commits, and that
+receipt-recorded phase tip to remain reachable; preserve the real empty index; compare the three
+runtime files to pre-merge SHA-256 records without exposing their bytes; reject tracked residue; and
+require exactly those three runtime paths as untracked. The scope and resolution receipts must
+already exist as tracked phase-branch handoff artifacts. The summary, verification, ROADMAP, and STATE reach their final bytes only
 after merge/verification and therefore are not pre-closeout candidate inputs. The Phase 167
 lifecycle validator requires only the exact five names and fixed Phase 168 owner; it must not require
 their current presence, blobs, or default landing. Phase 168 owns those later checks. Implement
-reconciliation as a fixed-argv, no-write validator mode; never normalize state with reset, clean,
-stash, branch switching, or runtime-file rewrites.
+reconciliation as a fixed-argv, no-write validator mode; reject a protected checked-out branch,
+pending executor commit, local-main executor commit, reset, clean, stash, branch switching, runtime
+rewrite, or config-policy change.
 
 ## Shared Patterns
 
