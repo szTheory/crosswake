@@ -93,6 +93,17 @@ test("production manifest is closed, ordered, fixed, and has literal CI owners",
   }
 });
 
+test("the full bridge-hook suite uses the repository Node runtime", () => {
+  const workflowSource = readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8");
+  const start = workflowSource.indexOf("  guard-01-e2e-honesty:");
+  const end = workflowSource.indexOf("\n  guard-02-prod-route-absence:", start);
+
+  assert(start >= 0 && end > start);
+  const guard = workflowSource.slice(start, end);
+  assert.match(guard, /node-version: "22\.14\.0"/);
+  assert.match(guard, /run: node --test test\/js\/\*\.mjs/);
+});
+
 test("artifact policy rejects unknown, empty, unordered, duplicate, and overlapping records", () => {
   const mutations = [
     policy => { policy.future_class = []; },
