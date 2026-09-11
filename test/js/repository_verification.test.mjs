@@ -327,7 +327,7 @@ test("browser stage supplies explicit repository mode and invocation-owned outpu
   }
 });
 
-test("hosted diagnostic emits a closed browser owner and suppresses private failure artifacts", () => {
+test("hosted diagnostic classifier emits a closed browser owner without workflow activation", () => {
   const repository = makeRepository();
   const runRoot = mkdtempSync(path.join(tmpdir(), "crosswake-repository-verify.test-"));
   const privateFailure = "private stdout payload https://invalid.example /private/runner/test-results trace.zip screenshot.png video.webm";
@@ -352,13 +352,13 @@ test("hosted diagnostic emits a closed browser owner and suppresses private fail
     assert.deepEqual({
       closedSignal: result.output.includes('BROWSER_DIAGNOSTIC {"schema_version":1,"owner":"browser","category":"browser_process_exit_nonzero","job":"e2e-proof"}'),
       privateFailureRedacted: !result.output.includes(privateFailure),
-      diagnosticModeClosed: e2eBlock.includes("CROSSWAKE_BROWSER_DIAGNOSTIC_MODE: phase167_post_412"),
-      privateArtifactUploadSuppressed: e2eBlock.includes("if: failure() && env.CROSSWAKE_BROWSER_DIAGNOSTIC_MODE != 'phase167_post_412'")
+      diagnosticModeAbsent: !e2eBlock.includes("CROSSWAKE_BROWSER_DIAGNOSTIC_"),
+      ordinaryFailureArtifactUpload: e2eBlock.includes("if: failure()")
     }, {
       closedSignal: true,
       privateFailureRedacted: true,
-      diagnosticModeClosed: true,
-      privateArtifactUploadSuppressed: true
+      diagnosticModeAbsent: true,
+      ordinaryFailureArtifactUpload: true
     });
   } finally {
     rmSync(runRoot, { recursive: true, force: true });
@@ -366,7 +366,7 @@ test("hosted diagnostic emits a closed browser owner and suppresses private fail
   }
 });
 
-test("hosted diagnostic activation is job-visible to later artifact conditions", () => {
+test("hosted diagnostic activation is absent and ordinary artifact authority is restored", () => {
   const workflowSource = readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8");
   const e2eStart = workflowSource.indexOf("  e2e-proof:");
   const routeTourStart = workflowSource.indexOf("  route-tour-proof:");
@@ -378,21 +378,9 @@ test("hosted diagnostic activation is job-visible to later artifact conditions",
     { id: "route-tour-proof", block: workflowSource.slice(routeTourStart, nextJobStart) }
   ];
 
-  for (const { id, block } of jobs) {
-    const stepsStart = block.indexOf("\n    steps:");
-    const jobEnvironment = block.slice(0, stepsStart);
-    assert.match(jobEnvironment, /\n    env:\n/);
-    assert.match(jobEnvironment, /CROSSWAKE_BROWSER_DIAGNOSTIC_MODE: phase167_post_412/);
-    assert.match(jobEnvironment, new RegExp(`CROSSWAKE_BROWSER_DIAGNOSTIC_JOB: ${id}`));
-
-    const proofStart = block.indexOf(id === "e2e-proof" ? "      - name: Run Playwright tests" : "      - name: Run route-tour Playwright proof");
-    const proofEnd = block.indexOf("\n      - name:", proofStart + 8);
-    const proofStep = block.slice(proofStart, proofEnd);
-    assert.doesNotMatch(proofStep, /CROSSWAKE_BROWSER_DIAGNOSTIC_(?:MODE|JOB):/);
-  }
-
-  assert.match(jobs[0].block, /if: failure\(\) && env\.CROSSWAKE_BROWSER_DIAGNOSTIC_MODE != 'phase167_post_412'/);
-  assert.match(jobs[1].block, /if: env\.CROSSWAKE_BROWSER_DIAGNOSTIC_MODE != 'phase167_post_412'/);
+  for (const { block } of jobs) assert.doesNotMatch(block, /CROSSWAKE_BROWSER_DIAGNOSTIC_/);
+  assert.match(jobs[0].block, /- name: Upload E2E failure evidence\n        if: failure\(\)/);
+  assert.match(jobs[1].block, /- name: Upload route-tour evidence bundle\n        uses: actions\/upload-artifact@/);
 });
 
 test("hosted browser diagnostic redaction rejects unknown values and private child failure data", () => {

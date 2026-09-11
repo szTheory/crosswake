@@ -53,7 +53,7 @@
       "argv": ["npx", "playwright", "test"],
       "timeout_ms": 1800000,
       "cwd": "examples/phoenix_host",
-      "env": {"CI": "1", "CROSSWAKE_REPOSITORY_VERIFY": "1"},
+      "env": {"CI": "1", "CROSSWAKE_REPOSITORY_VERIFY": "1", "ERL_FLAGS": "+S 2:2"},
       "ci_owners": [
         {"job_id": "e2e-proof", "command": "script/verify_repository.sh --stage browser-proof"},
         {"job_id": "route-tour-proof", "command": "script/verify_repository.sh --stage browser-proof"}
