@@ -2,7 +2,7 @@
 phase: "167"
 slug: "documentation-and-pull-request-reconciliation"
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: "2026-09-10"
 ---
@@ -20,7 +20,7 @@ created: "2026-09-10"
 | **Framework** | ExUnit on the repository-pinned Elixir/OTP toolchain, Node built-in tests, repository scripts, Swift Package Manager, and read-only GitHub CLI queries |
 | **Config file** | `test/test_helper.exs`; repository-policy fixtures under `test/js`; GitHub state queried immediately before and after each remote action |
 | **Quick run command** | `mix test test/mix/tasks/crosswake.docs.sync_test.exs test/crosswake/support_matrix test/crosswake/capability_map` |
-| **Full suite command** | `mix crosswake.docs.sync --check && mix crosswake.adoption_context.scan && node --test test/js/repository_verification.test.mjs` plus the existing `documentation-contracts`, package/ExDoc, and `Crosswake CI` owners |
+| **Full suite command** | `mix crosswake.docs.sync --check && mix crosswake.adoption_context.scan && node --test test/js/repository_verification.test.mjs` plus the existing `documentation-contracts`, package/ExDoc, and pull-request-triggered `Crosswake CI` owner |
 | **Estimated runtime** | Focused local checks under 120 seconds after the pinned Erlang/Elixir toolchain is available; hosted GitHub checks are observed, not time-thresholded |
 
 ---
@@ -29,7 +29,7 @@ created: "2026-09-10"
 
 - **After every task commit:** Run the smallest affected ExUnit or Node test and `mix crosswake.docs.sync --check` once generated projections exist.
 - **After every plan wave:** Run the documentation-contract, package/ExDoc, privacy-scan, repository-policy, and docs-only-routing checks touched by that wave.
-- **Before `$gsd-verify-work`:** Run the full recurring documentation proof, confirm `Crosswake CI` is green for the final code SHA, and validate the phase-local five-PR disposition artifact against freshly queried GitHub state.
+- **Before `$gsd-verify-work`:** Run the full recurring documentation proof, confirm `Crosswake CI` succeeded on the exact Phase 167 closeout PR head, prove its reachable default merge has the identical tree, and validate the phase-local five-PR disposition artifact against fresh GitHub state.
 - **Max feedback latency:** 120 seconds for focused local checks; no threshold for external GitHub queue time.
 
 ---
@@ -51,14 +51,14 @@ created: "2026-09-10"
 | 167-05-01 | 167-05 | 5 | DOC-03 | T-167-14, T-167-15 | Shared validator rejects stale identity, bad CI, scope drift, and unauthorized supersession | Python synthetic self-test | `python3 script/check_phase167_pr_dispositions.py --self-test-resolution` | ❌ created by Plan 05 | ⬜ pending |
 | 167-05-02 | 167-05 | 5 | DOC-03 | T-167-13, T-167-14 | All seven setup-java uses share one official immutable v6 OID | workflow lint + ExUnit | `actionlint .github/workflows/crosswake-ci.yml .github/workflows/phase68-proof.yml .github/workflows/release-please.yml && mix test test/crosswake/proof/phase165_ci_integrity_test.exs` | ✅ existing homes | ⬜ pending |
 | 167-05-03 | 167-05 | 5 | DOC-03 | T-167-14, T-167-15 | #121 resolution binds exact tested head/base, same-head CI, scope, replacement, and default reachability | live receipt verification | `python3 script/check_phase167_pr_dispositions.py --verify-resolution .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-121-resolution.json --live` | ❌ receipt created by Plan 05 | ⬜ pending |
-| 167-06-01 | 167-06 | 6 | DOC-01, DOC-03 | T-167-16, T-167-17 | Both companion manifests/READMEs carry one supported floor | ExUnit drift test | `mix test test/crosswake/proof/phase132_compat_matrix_drift_test.exs` | ✅ existing home | ⬜ pending |
-| 167-06-02 | 167-06 | 6 | DOC-01, DOC-03 | T-167-16, T-167-18 | Guides/runbook/fixtures complete the compatibility transaction | ExUnit + docs sync | `mix test test/crosswake/proof/phase132_compat_matrix_drift_test.exs test/crosswake/proof/phase142_release_integrity_test.exs test/crosswake/guides/release_boundaries_test.exs && mix crosswake.docs.sync --check` | ✅ existing homes | ⬜ pending |
-| 167-06-03 | 167-06 | 6 | DOC-01, DOC-03 | T-167-17, T-167-19 | #110 exact tested complete scope is merged/reachable or validly superseded | local contract + live receipt | `mix test test/crosswake/proof/phase132_compat_matrix_drift_test.exs test/crosswake/proof/phase142_release_integrity_test.exs test/crosswake/guides/release_boundaries_test.exs && mix crosswake.docs.sync --check && python3 script/check_phase167_pr_dispositions.py --verify-resolution .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-110-resolution.json --live` | ❌ receipt created by Plan 06 | ⬜ pending |
+| 167-06-3A | 167-06 | 6 | DOC-01, DOC-03 | T-167-16, T-167-19 | Ordered base→boundary (232) and boundary→source (11) transitions preserve five versioned overlaps and exact stage blobs | Python synthetic + local no-write Git-object proof | `python3 script/check_phase167_default_reconciliation.py --self-test && python3 script/check_phase167_default_reconciliation.py --verify .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-dependency-closure.json` | ❌ validator/manifest created by Recovery 3A | ⬜ pending |
+| 167-06-3B | 167-06 | 6 | DOC-01, DOC-03 | T-167-17, T-167-19 | Exact 232-path boundary-tree prerequisite PR passes same-head CI and merges tree-identically | local manifest + live receipt | `python3 script/check_phase167_default_reconciliation.py --verify .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-dependency-closure.json && python3 script/check_phase167_default_reconciliation.py --verify-resolution .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-reconciliation-resolution.json --live` | ❌ receipts created by Recovery 3B | ⬜ pending |
+| 167-06-3C | 167-06 | 6 | DOC-01, DOC-03 | T-167-18, T-167-19 | #110 applies exact 11-path boundary→source transition, including five later-stage overlapping blobs, with exact-head CI and merge-tree identity | local manifest + live PR/receipt | `python3 script/check_phase167_default_reconciliation.py --verify-pr .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-dependency-closure.json --pr 110 --expected-kind package && python3 script/check_phase167_pr_dispositions.py --verify-resolution .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-110-resolution.json --live` | ❌ receipt created by Recovery 3C | ⬜ pending |
 | 167-07-01 | 167-07 | 7 | DOC-03 | T-167-20, T-167-21 | PackStore test cleanup retains deterministic single-resume behavior | Swift package tests | `swift test --package-path packages/crosswake-shell-core-ios` | ✅ existing home | ⬜ pending |
 | 167-07-02 | 167-07 | 7 | DOC-03 | T-167-20, T-167-22 | #105 is one intent commit with exact tested identity, CI, scope, and reachability | Swift + live receipt | `swift test --package-path packages/crosswake-shell-core-ios && python3 script/check_phase167_pr_dispositions.py --verify-resolution .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-105-resolution.json --live` | ❌ receipt created by Plan 07 | ⬜ pending |
-| 167-08-01 | 167-08 | 8 | DOC-03 | T-167-23, T-167-24, T-167-26 | Closeout schema, defer receipts, and final-default CI fail closed | Python synthetic self-test | `python3 script/check_phase167_pr_dispositions.py --self-test` | ✅ created in Plan 05; extended by Plan 08 | ⬜ pending |
-| 167-08-02 | 167-08 | 8 | DOC-03 | T-167-23, T-167-25 | Five live dispositions and both exact defer comments match bounded evidence | live artifact verification | `python3 script/check_phase167_pr_dispositions.py --verify .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-dispositions.json --live` | ❌ final artifact created by Plan 08 | ⬜ pending |
-| 167-08-03 | 167-08 | 8 | DOC-01, DOC-02, DOC-03 | T-167-24, T-167-25, T-167-26 | Final local contracts, live dispositions, comments, and exact-default CI agree | combined local/live exact-SHA gate | `mix crosswake.docs.sync --check && mix crosswake.adoption_context.scan && mix test test/crosswake/capability_map test/crosswake/support_matrix test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs test/crosswake/proof/phase132_compat_matrix_drift_test.exs test/crosswake/proof/phase165_ci_integrity_test.exs test/crosswake/proof/phase166_repository_quality_test.exs && python3 script/check_ci_leaf_manifest.py --self-test && python3 script/check_phase167_pr_dispositions.py --verify .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-dispositions.json --live && python3 script/check_phase167_pr_dispositions.py --verify-final-default-ci .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-dispositions.json` | ❌ final artifact created by Plan 08 | ⬜ pending |
+| 167-08-01 | 167-08 | 8 | DOC-03 | T-167-23, T-167-25, T-167-26 | Five dispositions, defer receipts, and exact PR-head/merge-tree closeout authority fail closed | Python synthetic + live artifact | `python3 script/check_phase167_pr_dispositions.py --self-test && python3 script/check_phase167_pr_dispositions.py --verify .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-dispositions.json --live` | ✅ base validator; closeout modes/evidence created by Plan 08 | ⬜ pending |
+| 167-08-02 | 167-08 | 8 | DOC-01, DOC-02, DOC-03 | T-167-24, T-167-26 | Frozen local pre-closeout source, exact PR scope/tree, local contracts, and exact PR-head Crosswake CI agree | combined local + hosted PR-head gate | `mix crosswake.docs.sync --check && mix crosswake.adoption_context.scan && mix test test/crosswake/capability_map test/crosswake/support_matrix test/crosswake/guides test/crosswake/proof/phase69_docs_contract_parity_test.exs test/crosswake/proof/phase132_compat_matrix_drift_test.exs test/crosswake/proof/phase165_ci_integrity_test.exs test/crosswake/proof/phase166_repository_quality_test.exs && python3 script/check_ci_leaf_manifest.py --self-test && python3 script/check_phase167_pr_dispositions.py --verify .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-dispositions.json --live` | ✅ local homes; scope created by Plan 08 | ⬜ pending |
+| 167-08-03 | 167-08 | 8 | DOC-01, DOC-02, DOC-03 | T-167-23, T-167-25, T-167-26, T-167-27 | Exact successful closeout PR head is reachable through a tree-identical default merge; evidence-only handoff is bounded | live closeout receipt + local no-write gate | `python3 script/check_phase167_pr_dispositions.py --verify-closeout-resolution .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/phase167-closeout-resolution.json --live && mix crosswake.docs.sync --check && mix crosswake.adoption_context.scan && python3 script/check_phase167_pr_dispositions.py --verify .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-dispositions.json --live` | ❌ closeout receipt created after merge | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -70,7 +70,7 @@ created: "2026-09-10"
 - [ ] Focused canonical-claim fixtures — the three required claim layers and all five D-20 impossible combinations.
 - [ ] Multi-record repository-policy fixtures — one/multiple argv, duplicate source/output, unordered output, unsafe argv, undeclared output, and restoration behavior.
 - [ ] Focused parked-state/current-claim assertion — codename-only durable state and the exact external route/device resume gate.
-- [ ] Phase-local resolution/disposition verifier — introduced in Plan 05 for exact tested-head/base/check/scope/reachability receipts, then extended in Plan 08 for the exact five-PR allowlist, defer-comment receipts, final-default CI, and privacy-safe closeout fields.
+- [x] Phase-local resolution verifier — introduced in Plan 05; Plan 06 Recovery 3A adds ordered tree-transition proof and Plan 08 extends five-PR/defer and exact PR-head/merge-tree closeout authority.
 - [ ] Restore or select the repository-pinned Erlang/Elixir toolchain before any local Mix verification claim.
 
 ---
@@ -92,6 +92,10 @@ All phase behavior and evidence evaluation is automated. If GitHub credentials o
 | T-167-05 | Adopter identity, payload, credential, device, or private-route data leaks into docs/evidence | Use closed low-cardinality fields and the existing destination-aware privacy scanner; never echo untrusted values. |
 | T-167-06 | PR state changes between observation and mutation | Refresh exact head/base/check state immediately before each action and stop on mismatch. |
 | T-167-07 | A stale or release-triggering PR is merged accidentally | Apply only the locked disposition for each exact PR number; keep #115/#57 open and deferred to Phase 168. |
+| T-167-16 | Ordered reconciliation paths are collapsed into a false set partition | Preserve exact base, boundary, and source mode/blob stages; require 232/11 transitions, 238-path union, and five named overlaps. |
+| T-167-24 | Local recovery/planning truth never reaches protected default | Freeze the pre-closeout source and land its exact tree through one closeout PR. |
+| T-167-26 | CI is attributed to a default merge SHA the workflow never tests | Bind CI to exact closeout PR head; prove merge/default authority by reachability and identical tree OIDs. |
+| T-167-27 | The closeout receipt becomes self-referential or silently unlanded | Keep inherently post-merge artifacts evidence-only and assign their exact first landing to Phase 168's first reversible transaction. |
 
 ---
 
@@ -102,6 +106,6 @@ All phase behavior and evidence evaluation is automated. If GitHub credentials o
 - [ ] Wave 0 covers all MISSING references.
 - [ ] No watch-mode flags.
 - [ ] Feedback latency is under 120 seconds for focused local checks.
-- [ ] `nyquist_compliant: true` is set in frontmatter after validation.
+- [x] `nyquist_compliant: true` is set in frontmatter after validation.
 
 **Approval:** pending

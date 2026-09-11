@@ -70,6 +70,11 @@ The pattern map preserves these hard boundaries:
 | `packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/PackStoreTests.swift` | test | event-driven / async | same file: actor-controlled continuation queues | exact |
 | `.planning/workstreams/first-b2c-adopter-readiness/STATE.md` | config / durable state | event-driven | current file's `Next Action` and `Blockers` sections | exact |
 | `.planning/.../167-.../evidence/pr-dispositions.json` (new; exact name discretionary) | config / evidence | batch | `.planning/.../165-.../evidence/live-observation.json` | role-match |
+| `script/check_phase167_default_reconciliation.py` (recovery) | utility / validator | batch, Git-object + GitHub boundary | `script/check_phase167_pr_dispositions.py` | exact |
+| `.planning/.../evidence/default-branch-dependency-closure.json` (recovery) | config / evidence | ordered transform | Phase 166 immutable-tree ownership evidence | role-match |
+| `.planning/.../evidence/default-branch-reconciliation-resolution.json` (recovery) | config / evidence | batch | Plan 05 exact-SHA resolution receipt | exact |
+| `.planning/.../evidence/phase167-closeout-scope.json` (new) | config / evidence | ordered transform | default-branch dependency-closure manifest | exact |
+| `.planning/.../evidence/phase167-closeout-resolution.json` (new) | config / evidence | batch | Plan 05 exact-SHA resolution receipt | exact |
 | `test/crosswake/proof/phase167_documentation_reconciliation_test.exs` (new; exact placement discretionary) | test | batch, transform | `test/crosswake/proof/phase166_repository_quality_test.exs` | role-match |
 
 Root `mix.exs`, `CHANGELOG.md`, `.release-please-manifest.json`, and
@@ -625,6 +630,65 @@ source-bound signed-device run both pass.
 Only reconcile contradictory current wording. Preserve the codename, independent resume point,
 TODO-002, sanitized route-policy gate, and fresh source-bound signed-device requirement. Do not
 infer a route, host, identity, or device fact.
+
+---
+
+### Ordered default-reconciliation and closeout evidence
+
+**Apply to:**
+`script/check_phase167_default_reconciliation.py`,
+`script/check_phase167_pr_dispositions.py`, and Phase 167 closure/resolution evidence.
+
+**Primary analogs:** the existing exact-SHA resolution validator in
+`script/check_phase167_pr_dispositions.py`, Phase 165 bounded live evidence, and Phase 166's
+immutable-tree ownership audit.
+
+Recovery uses ordered tree transitions, not a disjoint path partition:
+
+```text
+remote base 74fc15cc -- transition A (232 paths) --> boundary c63a40b2
+boundary c63a40b2  -- transition B (11 paths)  --> source fe205ba
+```
+
+The path union is 238 because five paths change at both stages:
+
+- `docs/COMPANION-PUBLISH-RUNBOOK.md`
+- `guides/companion_compatibility.md`
+- `guides/install.md`
+- `script/check_phase167_pr_dispositions.py`
+- `test/crosswake/proof/phase142_release_integrity_test.exs`
+
+For each overlapping path, retain exact mode/blob identity at base, boundary, and source. Transition
+A's distinct PR must land the boundary blob; rebuilt PR #110 must then advance the same path to its
+source blob. A validator that rejects overlap or compares only a final set loses this ordering and
+is incorrect. PR #145 is already represented in base `74fc15cc`; it is historical authority, not a
+third transaction to replay.
+
+`script/check_phase167_default_reconciliation.py` follows the same closed-input conventions as the
+existing resolution helper: fixed subprocess argv, full OIDs, sorted repository-relative paths,
+closed schemas, non-echoing errors, exact path/mode/blob checks, synthetic negative self-tests, and
+separate local no-write versus live GitHub modes. Its closure manifest is phase-local provenance,
+not a recurring registry or CI owner.
+
+Phase closeout uses one additional exact tree transaction after Plan 07:
+
+```text
+fresh default after #105 -> frozen local pre-closeout source -> closeout PR head
+closeout PR head -- exact-head Crosswake CI --> merge -> reachable identical tree on default
+```
+
+`.github/workflows/crosswake-ci.yml` is pull-request-triggered, so the successful PR head is CI
+authority. The merge/default SHA is proven by reachability and equality of tree OIDs; never demand a
+check that the workflow cannot create. The closeout PR includes every pre-closeout non-evidence
+validator and known planning/evidence artifact, including the revised plans, this pattern map, the
+validation map, recovery validator, ordered closure manifest, and known Plan 05-07 receipts.
+
+The scope artifact is captured after freezing the source commit and is therefore excluded from its
+own candidate. The closeout PR's merge receipt, Phase 167 verification, and `167-08-SUMMARY.md` also
+necessarily postdate the tested source. Keep exactly those artifacts as evidence-only local-git
+handoff, record their closed path set, and assign their first landing to Phase 168's first
+reversible planning/evidence transaction. This is the non-self-referential boundary; it does not
+authorize release publication or permit non-evidence source code to remain local-only.
 
 ## Shared Patterns
 
