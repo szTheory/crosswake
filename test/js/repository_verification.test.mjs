@@ -138,6 +138,10 @@ test("focused root selection closes over preflight and unconditional cleanliness
     "repository-cleanliness"
   ]);
   assert.deepEqual(selected[1].argv, ["mix", "verify"]);
+  assert.equal(
+    loadStageManifest().stages.find(stage => stage.stage_id === "example-host-proof").timeout_ms,
+    3_600_000
+  );
 });
 
 test("manifest rejects malformed, arbitrary, and disconnected records", () => {

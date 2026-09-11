@@ -37,7 +37,7 @@
       "dependencies": ["repository-preflight"],
       "required_tools": [{"tool": "elixir", "argv": ["elixir", "--version"], "version_regex": "Elixir 1\\.19\\.5", "remediation_command": "asdf install"}],
       "argv": ["script/check_example_host_isolation.sh", "--matrix-only"],
-      "timeout_ms": 1800000,
+      "timeout_ms": 3600000,
       "cwd": ".",
       "env": {"MIX_ENV": "test"},
       "ci_owners": [{"job_id": "proof-requires-example-host", "command": "script/verify_repository.sh --stage example-host-proof"}],

@@ -177,7 +177,7 @@
     "second_boundary_path_count": 11,
     "status": "diagnostic_only"
   },
-  "reproduction_source_oid": "bef6ddcbcacf29291c8d23acacc00bb12fbb2580",
+  "reproduction_source_oid": "9c1fbfe6324c05c7766c6d9f6c8f0b5d8f307771",
   "required_ancestor_oids": [
     "367f5b5491384594a652d137a03933fa3a89418a",
     "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
@@ -254,6 +254,11 @@
         [
           "script/verify_repository.sh",
           "--stage",
+          "example-host-proof"
+        ],
+        [
+          "script/verify_repository.sh",
+          "--stage",
           "repository-preflight"
         ]
       ],
@@ -264,6 +269,7 @@
       ],
       "repair_paths": [
         ".github/workflows/crosswake-ci.yml",
+        "script/repository_verification_stages.json",
         "script/verify_repository.mjs"
       ],
       "reproduction_result": "failed_as_expected"
