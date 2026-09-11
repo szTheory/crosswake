@@ -5,8 +5,8 @@
   "kind": "fix_forward_candidate_scope",
   "manifest_mode": "100644",
   "manifest_path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-dependency-closure.json",
-  "payload_source_oid": "43b607c75be57d58c5c68812f22fe36242b71eb0",
-  "payload_source_tree_oid": "480ce4415a224e4be335f3f93889307733df06e3",
+  "payload_source_oid": "4e3dc9269ea27cbf50d0490b0abc4ffc7def2b8b",
+  "payload_source_tree_oid": "9320d4ce2f82651f94d9350ef7a3d58a87c89b09",
   "proof_argv": [
     [
       "python3",
@@ -53,7 +53,7 @@
       },
       "path": ".github/workflows/crosswake-ci.yml",
       "payload": {
-        "blob": "192cd0c1a704474fa1f74402042a2194b85aede7",
+        "blob": "b7abfce488c734b43e6e0100807df67b7a3a1c7d",
         "mode": "100644"
       }
     },
@@ -724,7 +724,7 @@
       },
       "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/fix-forward-failure-ledger.json",
       "payload": {
-        "blob": "23d7296a0f1d9b7055432d35d765e347db0fec17",
+        "blob": "b3eb2a4974985a933bca830fe40a7c7be6f2e1d0",
         "mode": "100644"
       }
     },
@@ -1582,7 +1582,7 @@
       },
       "path": "script/check_phase167_default_reconciliation.py",
       "payload": {
-        "blob": "86f3eadb42f59b6a3a97fa18b58041fea03a9e41",
+        "blob": "3e23298f3fc4b6f41a90dd3acf170bd5421324ca",
         "mode": "100644"
       }
     },
@@ -1649,6 +1649,17 @@
       "path": "script/repository_artifact_policy.json",
       "payload": {
         "blob": "07c57a2b4670501432419f4bb50621e0338f225f",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "aab0d85b00b99694af78ec2d396aed23afe861ae",
+        "mode": "100644"
+      },
+      "path": "script/repository_verification_stages.json",
+      "payload": {
+        "blob": "ad62d85e1d82a85af4642e5fc2d2042ec6b1523e",
         "mode": "100644"
       }
     },
@@ -2572,7 +2583,7 @@
       },
       "path": "test/js/repository_verification.test.mjs",
       "payload": {
-        "blob": "af19147302bc3d9a4793e264dfa2ec4705a69818",
+        "blob": "999732e92317c4b49a09a72b09ffe2b2b22cf8ed",
         "mode": "100644"
       }
     },
@@ -2698,7 +2709,7 @@
       }
     }
   ],
-  "records_digest": "3b71400d4c7328f594a535e91c23dc79a6e0aaa55d7ea1ebdfdc919eb1680cb7",
+  "records_digest": "2ba254d3bd0867d59deb4664ed9fdffe39ead9c4fa7cb8941830af4bbc525174",
   "required_ancestor_oids": [
     "367f5b5491384594a652d137a03933fa3a89418a",
     "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
