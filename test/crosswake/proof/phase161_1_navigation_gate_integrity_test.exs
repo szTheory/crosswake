@@ -29,11 +29,14 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
   end
 
   @tag :tmp_dir
+  @tag :phase41_nested_process
   test "the exact marker fixture advances past transcript reduction", %{tmp_dir: tmp} do
-    {output, status} = run_gate(tmp, NavigationShellAdvisory.assertion_ids())
+    with_phase41_nested_process_tracer("ordered-markers", fn ->
+      {output, status} = run_gate(tmp, NavigationShellAdvisory.assertion_ids())
 
-    assert status == 0, "expected exact markers to advance, got #{status}: #{output}"
-    refute output =~ "PL-IOS-NAV-HOST-MARKER"
+      assert status == 0, "expected exact markers to advance, got #{status}: #{output}"
+      refute output =~ "PL-IOS-NAV-HOST-MARKER"
+    end)
   end
 
   defp assert_marker_failure(tmp, markers) do
@@ -95,6 +98,42 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
 
     for executable <- ["mix", "node", "swift", "xcrun", "xcodebuild"] do
       File.chmod!(Path.join(bin, executable), 0o700)
+    end
+  end
+
+  defp with_phase41_nested_process_tracer(owner, fun) do
+    case System.get_env("CROSSWAKE_PHASE41_ADVERSARIAL_ROOT") do
+      nil ->
+        fun.()
+
+      root ->
+        File.mkdir_p!(root)
+        File.write!(Path.join(root, "ready-#{owner}"), "ready")
+        await_phase41_peer(root, 100)
+
+        case File.open(Path.join(root, "nested-process.lease"), [:write, :exclusive]) do
+          {:ok, lease} ->
+            try do
+              fun.()
+            after
+              File.close(lease)
+              File.rm(Path.join(root, "nested-process.lease"))
+            end
+
+          {:error, :eexist} ->
+            flunk("PHASE41-NESTED-PROCESS-CONTENTION: phase41_resource_contention")
+        end
+    end
+  end
+
+  defp await_phase41_peer(_root, 0), do: :ok
+
+  defp await_phase41_peer(root, attempts) do
+    if length(Path.wildcard(Path.join(root, "ready-*"))) >= 2 do
+      :ok
+    else
+      Process.sleep(10)
+      await_phase41_peer(root, attempts - 1)
     end
   end
 end
