@@ -31,6 +31,11 @@ const browserDiagnosticCategories = [
   "browser_test_timeout"
 ];
 const browserDiagnosticKeys = ["category", "job", "owner", "schema_version"];
+const pythonBytecodeStatusResidueOwners = new Set(["root-proof", "example-host-proof"]);
+const pythonBytecodeStatusResiduePaths = [
+  "script/__pycache__/classify_ci_change.cpython-314.pyc",
+  "script/__pycache__/list_merge_blocking_checks.cpython-314.pyc"
+];
 
 export function spawnStage(command, args, options) {
   return spawnSync(command, args, {
@@ -373,6 +378,23 @@ function cleanupCreatedOutputs(root, createdOutputs) {
   }
 }
 
+function childStageResidueBaseline(root, stageId) {
+  if (!pythonBytecodeStatusResidueOwners.has(stageId)) return null;
+  return new Map(pythonBytecodeStatusResiduePaths.map(relativePath => [
+    path.resolve(root, relativePath),
+    existsSync(path.resolve(root, relativePath))
+  ]));
+}
+
+function cleanupNewChildStageResidue(root, baseline) {
+  if (!baseline) return;
+  const created = [...baseline]
+    .filter(([, existed]) => !existed)
+    .map(([absolute]) => absolute)
+    .filter(absolute => existsSync(absolute));
+  cleanupCreatedOutputs(root, created);
+}
+
 function setResult(records, purpose, result, remediation_command) {
   const current = records.find(record => record.purpose === purpose);
   if (current) {
@@ -442,6 +464,7 @@ export function runVerification(options = {}) {
         continue;
       }
       let result;
+      const residueBaseline = childStageResidueBaseline(root, stage.stage_id);
       try {
         const stageEnv = { ...processEnvironment, ...stage.env };
         if (stage.stage_id === "browser-proof") {
@@ -466,6 +489,12 @@ export function runVerification(options = {}) {
             });
       } catch (error) {
         result = { error, status: null, stdout: "", stderr: "" };
+      } finally {
+        try {
+          cleanupNewChildStageResidue(root, residueBaseline);
+        } catch {
+          // Leave unsafe or unowned residue visible to the final snapshot gate.
+        }
       }
       const outcome = result?.error ? `error=${result.error.code ?? result.error.name ?? "unknown"}` : result?.signal ? `signal=${result.signal}` : `status=${String(result?.status)}`;
       writeFileSync(path.join(runRoot, "logs", `${stage.stage_id}.log`), `${outcome}\n${String(result?.stdout ?? "")}${String(result?.stderr ?? "")}`, { mode: 0o600 });
