@@ -63,7 +63,8 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert troubleshooting =~ "Run `mix crosswake.doctor`"
     assert troubleshooting =~ "one named owner and one bounded action"
 
-    refute troubleshooting =~ ~r/(?:token|credential|account identifier|device identifier):\s*\S+/i
+    refute troubleshooting =~
+             ~r/(?:token|credential|account identifier|device identifier):\s*\S+/i
   end
 
   test "publish runbook stops before the 0.2.1 candidate and immutable release actions" do

@@ -22,8 +22,6 @@ defmodule Mix.Tasks.Crosswake.Docs.Sync do
 
   @impl Mix.Task
   def run([]) do
-    Mix.Task.run("app.start")
-
     results =
       projections()
       |> Enum.map(fn projection ->
@@ -38,8 +36,6 @@ defmodule Mix.Tasks.Crosswake.Docs.Sync do
   end
 
   def run(["--check"]) do
-    Mix.Task.run("app.start")
-
     drift =
       projections()
       |> Enum.flat_map(fn projection ->

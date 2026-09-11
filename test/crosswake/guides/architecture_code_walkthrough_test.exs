@@ -88,7 +88,9 @@ defmodule Crosswake.Guides.ArchitectureCodeWalkthroughTest do
     readme = File.read!("README.md")
 
     evaluating = section_between(readme, "### Evaluating Crosswake", "### Integrating Crosswake")
-    integrating = section_between(readme, "### Integrating Crosswake", "### Contributing or maintaining")
+
+    integrating =
+      section_between(readme, "### Integrating Crosswake", "### Contributing or maintaining")
 
     assert evaluating =~
              "**Current answer:** Crosswake is a Phoenix-first route-policy and runtime-contract system"
@@ -103,7 +105,9 @@ defmodule Crosswake.Guides.ArchitectureCodeWalkthroughTest do
 
   test "contribution guidance maps executable owners to projections and checks" do
     contributing = File.read!("CONTRIBUTING.md")
-    authority = section_between(contributing, "## Documentation authority", "## Upgrade Impact Labels")
+
+    authority =
+      section_between(contributing, "## Documentation authority", "## Upgrade Impact Labels")
 
     assert authority =~ "`Crosswake.SupportMatrix`"
     assert authority =~ "`Crosswake.CapabilityMap`"

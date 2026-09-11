@@ -140,6 +140,7 @@ defmodule Crosswake.Proof.Phase69DocsContractParityTest do
     for guide <- [capability_guide, support_guide] do
       assert guide =~ "Canonical owner: `Crosswake.CapabilityMap`"
       assert guide =~ "Regenerate with `mix crosswake.docs.sync`."
+
       assert guide =~
                "Blocked — sanitized route policy and signed-device proof are required before this host can be promoted."
 
