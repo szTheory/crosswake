@@ -70,9 +70,10 @@ The pattern map preserves these hard boundaries:
 | `packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/PackStoreTests.swift` | test | event-driven / async | same file: actor-controlled continuation queues | exact |
 | `.planning/workstreams/first-b2c-adopter-readiness/STATE.md` | config / durable state | event-driven | current file's `Next Action` and `Blockers` sections | exact |
 | `.planning/.../167-.../evidence/pr-dispositions.json` (new; exact name discretionary) | config / evidence | batch | `.planning/.../165-.../evidence/live-observation.json` | role-match |
-| `script/check_phase167_default_reconciliation.py` (recovery) | utility / validator | batch, Git-object + GitHub boundary | `script/check_phase167_pr_dispositions.py` | exact |
-| `.planning/.../evidence/default-branch-dependency-closure.json` (recovery) | config / evidence | ordered transform | Phase 166 immutable-tree ownership evidence | role-match |
-| `.planning/.../evidence/default-branch-reconciliation-resolution.json` (recovery) | config / evidence | batch | Plan 05 exact-SHA resolution receipt | exact |
+| `script/check_phase167_default_reconciliation.py` (fix-forward recovery) | utility / validator | batch, clean-checkout + Git ancestry + GitHub boundary | `script/check_phase167_pr_dispositions.py` and Phase 166 exact-commit capture | exact |
+| `.planning/.../evidence/fix-forward-failure-ledger.json` (new) | config / evidence | grouped transform | Phase 166 ownership/remediation ledger | role-match |
+| `.planning/.../evidence/default-branch-dependency-closure.json` (replacement schema) | config / evidence | ancestry-preserving transform | Phase 166 immutable-tree ownership evidence | role-match |
+| `.planning/.../evidence/default-branch-reconciliation-resolution.json` (replacement receipt) | config / evidence | batch | Plan 05 exact-SHA resolution receipt | exact |
 | `.planning/.../evidence/phase167-closeout-scope.json` (new) | config / evidence | ordered transform | default-branch dependency-closure manifest | exact |
 | `.planning/.../evidence/phase167-closeout-resolution.json` (new) | config / evidence | batch | Plan 05 exact-SHA resolution receipt | exact |
 | `test/crosswake/proof/phase167_documentation_reconciliation_test.exs` (new; exact placement discretionary) | test | batch, transform | `test/crosswake/proof/phase166_repository_quality_test.exs` | role-match |
@@ -604,8 +605,9 @@ disposition evidence, and its focused verifier/test.
 ```
 
 Use a closed top-level schema with capture time and source/default-branch identity, plus exactly
-five PR rows. Each row contains only: PR number, full observed head SHA, full observed base SHA,
-closed check summary, closed disposition, bounded current reason, and next gate. Sort by PR number
+seven ordinary PR rows and a separate recovery-transaction collection. Each row contains only: PR
+number, full observed head SHA, full observed base SHA, closed check summary, closed disposition,
+bounded current reason, and next gate. Sort ordinary rows by PR number
 and reject unknown keys, abbreviated/non-hex SHAs, duplicate/missing numbers, unknown values, and
 privacy scan failure. Do not retain PR titles, bodies, logs, live counts, credentials, URLs, or
 free-form remote content.
@@ -633,7 +635,7 @@ infer a route, host, identity, or device fact.
 
 ---
 
-### Ordered default-reconciliation and closeout evidence
+### Fix-forward default reconciliation and closeout evidence
 
 **Apply to:**
 `script/check_phase167_default_reconciliation.py`,
@@ -643,34 +645,44 @@ infer a route, host, identity, or device fact.
 `script/check_phase167_pr_dispositions.py`, Phase 165 bounded live evidence, and Phase 166's
 immutable-tree ownership audit.
 
-Recovery uses ordered tree transitions, not a disjoint path partition:
+Runs 34553181146 and 34544586854 invalidate the earlier historical-boundary topology. The exact
+232-path tree was structurally correct but independently red, and its one-commit transplant made
+the immutable OIDs used by Phase 166 evidence unreachable. Preserve that 232/11 analysis only as
+diagnostic history. It is not a candidate recipe.
 
 ```text
-remote base 74fc15cc -- transition A (232 paths) --> boundary c63a40b2
-boundary c63a40b2  -- transition B (11 paths)  --> source fe205ba
+remote default 74fc15cc
+       |
+       +-- actual local ancestry --> full source + demonstrated hermetic repairs
+                                      |
+                                      +-- sole manifest commit --> frozen candidate head
+                                                                      |
+                                         local clean proof + exact-head Crosswake CI
+                                                                      |
+                                           merge commit retains candidate as ancestor
 ```
 
-The path union is 238 because five paths change at both stages:
+First build a closed failure ledger. Group exact failed leaves by their shared executable owner:
+generated-contract/cleanliness, Phase 166 ancestry, root contract assertions, repository
+environment/output/preflight, and transitive platform jobs. Reproduce owners against the current
+full source in an invocation-owned source-by-commit checkout. A repair is authorized only for a
+still-reproducible root and must have a RED/GREEN owner regression. A full-source-resolved or
+transitive row causes no edit. Android/iOS/browser failures do not authorize feature breadth.
 
-- `docs/COMPANION-PUBLISH-RUNBOOK.md`
-- `guides/companion_compatibility.md`
-- `guides/install.md`
-- `script/check_phase167_pr_dispositions.py`
-- `test/crosswake/proof/phase142_release_integrity_test.exs`
+The source-scope manifest records exact protected-default-to-payload path/mode/blob records,
+required Phase 166 evidence ancestors, fixed local proof argv, and the runtime/index baseline.
+Capture it after all repairs, commit it alone, then freeze HEAD. The manifest deliberately binds
+its parent payload and identifies its own path as the sole self-excluded record; the post-freeze
+receipt binds the resulting head/tree. Any later source change invalidates the freeze and requires
+recapture plus the complete clean-checkout proof.
 
-For each overlapping path, retain exact mode/blob identity at base, boundary, and source. Transition
-A's distinct PR must land the boundary blob; rebuilt PR #110 must then advance the same path to its
-source blob. A validator that rejects overlap or compares only a final set loses this ordering and
-is incorrect. PR #145 is already represented in base `74fc15cc`; it is historical authority, not a
-third transaction to replay.
+Push the actual frozen commit ancestry. Do not create a one-commit tree transplant, squash, or
+cherry-pick candidate. Require protected default and every evidence OID as ancestors of the exact
+head. Merge with a merge commit and prove the tested head remains reachable from fresh default in
+addition to tree identity. Keep #148 and #110 open until this proof passes; only then close both
+unmerged with fixed bounded supersession markers. PR #145 remains merged historical authority.
 
-`script/check_phase167_default_reconciliation.py` follows the same closed-input conventions as the
-existing resolution helper: fixed subprocess argv, full OIDs, sorted repository-relative paths,
-closed schemas, non-echoing errors, exact path/mode/blob checks, synthetic negative self-tests, and
-separate local no-write versus live GitHub modes. Its closure manifest is phase-local provenance,
-not a recurring registry or CI owner.
-
-Phase closeout uses one additional exact tree transaction after Plan 07:
+Phase closeout uses the same ancestry-preserving pattern after Plan 07:
 
 ```text
 fresh default after #105 -> frozen local pre-closeout source -> closeout PR head
@@ -681,18 +693,18 @@ closeout PR head -- exact-head Crosswake CI --> merge -> reachable identical tre
 authority. The merge/default SHA is proven by reachability and equality of tree OIDs; never demand a
 check that the workflow cannot create. The closeout PR includes every pre-closeout non-evidence
 validator and known planning/evidence artifact, including the revised plans, this pattern map, the
-validation map, recovery validator, ordered closure manifest, and known Plan 05-07 receipts. Prove
+validation map, recovery validator, fix-forward source-scope manifest, and known Plan 05-07 receipts. Prove
 the two one-time validators with positive self-tests and offline/local verify modes on the exact
 frozen source tree, record their blob OIDs, and require the closeout PR head tree to equal that
 source tree. Hosted Crosswake CI proves recurring repository contracts on that exact PR head, not
 direct invocation of those phase-local validators.
 
-The scope artifact is captured after freezing the source commit and is therefore excluded from its
-own candidate. The closeout PR's merge receipt, Phase 167 verification, and `167-08-SUMMARY.md` also
-necessarily postdate the tested source. Keep exactly those artifacts as evidence-only local-git
-handoff, record their closed path set, and assign their first landing to Phase 168's first
-reversible planning/evidence transaction. This is the non-self-referential boundary; it does not
-authorize release publication or permit non-evidence source code to remain local-only.
+The ordinary disposition set is exactly #57, #105, #110, #115, #121, #146, and #147. Keep
+#57/#115/#146/#147 open as release-only Phase 168 approval surfaces. Record #148 and the Plan 06
+replacement in a separate recovery collection; recovery rows never replace ordinary rows. The
+closeout merge receipt, Phase 167 verification, and `167-08-SUMMARY.md` necessarily postdate the
+tested source and are the only evidence-only handoff paths owned by Phase 168's first reversible
+landing transaction.
 
 After the closeout merge and immediately before local reconciliation, record the exact local tip in
 the post-merge resolution receipt and commit that receipt alone. Reconcile local `main` fail closed:
