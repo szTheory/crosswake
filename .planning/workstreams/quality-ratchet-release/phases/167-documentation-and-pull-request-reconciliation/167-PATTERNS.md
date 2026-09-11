@@ -681,7 +681,11 @@ closeout PR head -- exact-head Crosswake CI --> merge -> reachable identical tre
 authority. The merge/default SHA is proven by reachability and equality of tree OIDs; never demand a
 check that the workflow cannot create. The closeout PR includes every pre-closeout non-evidence
 validator and known planning/evidence artifact, including the revised plans, this pattern map, the
-validation map, recovery validator, ordered closure manifest, and known Plan 05-07 receipts.
+validation map, recovery validator, ordered closure manifest, and known Plan 05-07 receipts. Prove
+the two one-time validators with positive self-tests and offline/local verify modes on the exact
+frozen source tree, record their blob OIDs, and require the closeout PR head tree to equal that
+source tree. Hosted Crosswake CI proves recurring repository contracts on that exact PR head, not
+direct invocation of those phase-local validators.
 
 The scope artifact is captured after freezing the source commit and is therefore excluded from its
 own candidate. The closeout PR's merge receipt, Phase 167 verification, and `167-08-SUMMARY.md` also
@@ -689,6 +693,13 @@ necessarily postdate the tested source. Keep exactly those artifacts as evidence
 handoff, record their closed path set, and assign their first landing to Phase 168's first
 reversible planning/evidence transaction. This is the non-self-referential boundary; it does not
 authorize release publication or permit non-evidence source code to remain local-only.
+
+After the closeout merge, reconcile local `main` fail closed: require fresh remote default and all
+expected local phase/evidence commits to be ancestors of local `HEAD`, preserve the real empty
+index, compare the three runtime files to pre-merge SHA-256 records without exposing their bytes,
+reject tracked residue, and allow only those runtime paths plus declared post-closeout evidence as
+untracked. Implement this as a fixed-argv, no-write validator mode; never normalize state with
+reset, clean, stash, branch switching, or runtime-file rewrites.
 
 ## Shared Patterns
 
