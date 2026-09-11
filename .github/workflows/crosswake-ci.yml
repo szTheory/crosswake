@@ -1134,6 +1134,8 @@ jobs:
     timeout-minutes: 20
     env:
       MIX_ENV: test
+      CROSSWAKE_BROWSER_DIAGNOSTIC_MODE: phase167_post_412
+      CROSSWAKE_BROWSER_DIAGNOSTIC_JOB: e2e-proof
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/setup-elixir-cache
@@ -1159,9 +1161,6 @@ jobs:
         working-directory: examples/phoenix_host
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        env:
-          CROSSWAKE_BROWSER_DIAGNOSTIC_MODE: phase167_post_412
-          CROSSWAKE_BROWSER_DIAGNOSTIC_JOB: e2e-proof
         run: script/verify_repository.sh --stage browser-proof
       - name: Upload E2E failure evidence
         if: failure() && env.CROSSWAKE_BROWSER_DIAGNOSTIC_MODE != 'phase167_post_412'
@@ -1187,6 +1186,8 @@ jobs:
     timeout-minutes: 20
     env:
       MIX_ENV: test
+      CROSSWAKE_BROWSER_DIAGNOSTIC_MODE: phase167_post_412
+      CROSSWAKE_BROWSER_DIAGNOSTIC_JOB: route-tour-proof
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/setup-elixir-cache
@@ -1217,8 +1218,6 @@ jobs:
       - name: Run route-tour Playwright proof
         env:
           CROSSWAKE_VERSION: ${{ steps.crosswake-version.outputs.version }}
-          CROSSWAKE_BROWSER_DIAGNOSTIC_MODE: phase167_post_412
-          CROSSWAKE_BROWSER_DIAGNOSTIC_JOB: route-tour-proof
         run: script/verify_repository.sh --stage browser-proof
       - name: Assert route-tour required evidence files
         run: |
