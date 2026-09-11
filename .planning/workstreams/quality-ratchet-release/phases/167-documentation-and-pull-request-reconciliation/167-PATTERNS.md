@@ -74,7 +74,7 @@ The pattern map preserves these hard boundaries:
 | `.planning/.../evidence/fix-forward-failure-ledger.json` (new) | config / evidence | grouped transform | Phase 166 ownership/remediation ledger | role-match |
 | `.planning/.../evidence/default-branch-dependency-closure.json` (replacement schema) | config / evidence | ancestry-preserving transform | Phase 166 immutable-tree ownership evidence | role-match |
 | `.planning/.../evidence/default-branch-reconciliation-resolution.json` (replacement receipt) | config / evidence | batch | Plan 05 exact-SHA resolution receipt | exact |
-| `.planning/.../evidence/phase167-closeout-scope.json` (new) | config / evidence | ordered transform | default-branch dependency-closure manifest | exact |
+| `.planning/.../evidence/phase167-closeout-scope.json` (new) | config / evidence | ordered transform | distinct payload/source candidate manifest in the PR-disposition validator | exact |
 | `.planning/.../evidence/phase167-closeout-resolution.json` (new) | config / evidence | batch | Plan 05 exact-SHA resolution receipt | exact |
 | `test/crosswake/proof/phase167_documentation_reconciliation_test.exs` (new; exact placement discretionary) | test | batch, transform | `test/crosswake/proof/phase166_repository_quality_test.exs` | role-match |
 
@@ -669,6 +669,24 @@ full source in an invocation-owned source-by-commit checkout. A repair is author
 still-reproducible root and must have a RED/GREEN owner regression. A full-source-resolved or
 transitive row causes no edit. Android/iOS/browser failures do not authorize feature breadth.
 
+The ledger carries a closed `authorized_repair_paths` universe grounded in both failed runs:
+`.github/workflows/crosswake-ci.yml`, `mix.exs`, `lib/crosswake/doctor/doctor.ex`,
+`lib/crosswake/telemetry.ex`, `lib/mix/tasks/crosswake.contract.gen.ex`,
+`lib/mix/tasks/crosswake.docs.sync.ex`, the Rulestead companion owner,
+`script/check_dependency_security.sh`, `script/check_phase166_ownership_ledger.py`,
+`script/list_merge_blocking_checks.py`, repository
+artifact/stage/environment/verifier owners, the example-host Playwright config, and their exact
+repository-verification, Phase 166, Threadline, Rulestead, telemetry, and docs-sync tests listed in
+Plan 167-06. Every emitted repair path must be in both this universe and the plan's static
+`files_modified`; an out-of-set owner halts for plan revision before any edit.
+
+Actual ancestry does not make historical OIDs available inside GitHub's shallow checkout. Split
+Phase 166 verification deliberately: recurring `--verify-remediations` validates the closed
+queue/schema and current repair inputs without Git-range resolution, while pinned source-by-commit
+proof retains full `--ledger`/`--evidence` range, tree, and history validation. A shallow repository
+fixture must fail before the split and pass afterward. Do not broaden dozens of jobs with full-depth
+fetch unless recorded evidence proves this split unsafe.
+
 The source-scope manifest records exact protected-default-to-payload path/mode/blob records,
 required Phase 166 evidence ancestors, fixed local proof argv, and the runtime/index baseline.
 Capture it after all repairs, commit it alone, then freeze HEAD. The manifest deliberately binds
@@ -682,12 +700,23 @@ head. Merge with a merge commit and prove the tested head remains reachable from
 addition to tree identity. Keep #148 and #110 open until this proof passes; only then close both
 unmerged with fixed bounded supersession markers. PR #145 remains merged historical authority.
 
-Phase closeout uses the same ancestry-preserving pattern after Plan 07:
+Phase closeout uses a distinct Plan 08 scope manifest after Plan 07:
 
 ```text
-fresh default after #105 -> frozen local pre-closeout source -> closeout PR head
-closeout PR head -- exact-head Crosswake CI --> merge -> reachable identical tree on default
+payload_source_oid/tree
+       |
+       +-- sole commit: phase167-closeout-scope.json
+                                  |
+                         closeout_candidate_oid/tree
+                                  |
+                 exact-head Crosswake CI -> merge -> reachable identical tree on default
 ```
+
+`script/check_phase167_pr_dispositions.py --verify-closeout-candidate` consumes
+`phase167-closeout-scope.json`; it must never reuse Plan 06's default-branch manifest. The scope
+records exact payload path/mode/blob rows with only itself self-excluded. Candidate parent must equal
+`payload_source_oid`, and the candidate tree must equal `payload_source_tree` plus exactly that one
+manifest path/mode/blob.
 
 `.github/workflows/crosswake-ci.yml` is pull-request-triggered, so the successful PR head is CI
 authority. The merge/default SHA is proven by reachability and equality of tree OIDs; never demand a
@@ -702,9 +731,10 @@ direct invocation of those phase-local validators.
 The ordinary disposition set is exactly #57, #105, #110, #115, #121, #146, and #147. Keep
 #57/#115/#146/#147 open as release-only Phase 168 approval surfaces. Record #148 and the Plan 06
 replacement in a separate recovery collection; recovery rows never replace ordinary rows. The
-closeout merge receipt, Phase 167 verification, and `167-08-SUMMARY.md` necessarily postdate the
-tested source and are the only evidence-only handoff paths owned by Phase 168's first reversible
-landing transaction.
+closeout merge receipt, Phase 167 verification, `167-08-SUMMARY.md`, and the final workstream
+`ROADMAP.md` and `STATE.md` necessarily postdate merge/verification. They form the exact closed
+five-path handoff owned together by Phase 168's first reversible landing transaction; each final
+blob is bound when available, and no current-authority file may remain local-only or unowned.
 
 After the closeout merge and immediately before local reconciliation, record the exact local tip in
 the post-merge resolution receipt and commit that receipt alone. Reconcile local `main` fail closed:
@@ -712,10 +742,11 @@ require fresh remote default, all scope-recorded commits, and that receipt-recor
 ancestors of local `HEAD`; preserve the real empty index; compare the three runtime files to
 pre-merge SHA-256 records without exposing their bytes; reject tracked residue; and require exactly
 those three runtime paths as untracked. The scope and resolution receipts must already exist as
-tracked handoff artifacts. Phase 167 verification and `167-08-SUMMARY.md` belong to a later lifecycle
-and must not be required to exist during this check. Implement this as a fixed-argv, no-write
-validator mode; never normalize state with reset, clean, stash, branch switching, or runtime-file
-rewrites.
+tracked handoff artifacts. The summary, verification, ROADMAP, and STATE reach their final bytes only
+after merge/verification and therefore are not pre-closeout candidate inputs. The lifecycle
+validator nevertheless requires exactly those five paths and assigns their first joint landing to
+Phase 168. Implement reconciliation as a fixed-argv, no-write validator mode; never normalize state
+with reset, clean, stash, branch switching, or runtime-file rewrites.
 
 ## Shared Patterns
 
