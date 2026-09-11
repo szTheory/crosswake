@@ -4,6 +4,15 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
   alias Crosswake.ProofLane.NavigationShellAdvisory
 
   @script "scripts/verify_phase_161_1.sh"
+  @workflow ".github/workflows/crosswake-ci.yml"
+  @phase41_tagged_tests [
+    "successful physical-class promotion survives the producing subprocess exit",
+    "a zero-exit host run with passed names cannot promote without every ordered marker",
+    "the exact marker fixture advances past transcript reduction"
+  ]
+  @phase41_non_host_tests 1_625
+  @phase41_host_tests 74
+  @phase41_broad_tests @phase41_non_host_tests - length(@phase41_tagged_tests)
   @host_tests ~w(
     testOrderedProductionNavigationProofEmitsClosedMarkers
     testProductionContainerAuthorizesRootsAndMirrorsOneNavigateWithoutDuplicate
@@ -17,6 +26,8 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
   test "a zero-exit host run with passed names cannot promote without every ordered marker", %{
     tmp_dir: tmp
   } do
+    assert_phase41_partition_contract!()
+
     assert_marker_failure(tmp, Enum.drop(NavigationShellAdvisory.assertion_ids(), -1))
 
     assert_marker_failure(
@@ -45,6 +56,48 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
     assert status != 0
     assert output =~ "PL-IOS-NAV-HOST-MARKER: host-markers"
     refute output =~ "fixture-transcript-canary"
+  end
+
+  defp assert_phase41_partition_contract! do
+    tagged_tests =
+      "test/**/*_test.exs"
+      |> Path.wildcard()
+      |> Enum.flat_map(fn path ->
+        path
+        |> File.read!()
+        |> then(&Regex.scan(~r/@tag\s+:phase41_nested_process\s+test\s+"([^"]+)"/, &1,
+          capture: :all_but_first
+        ))
+        |> List.flatten()
+      end)
+      |> Enum.sort()
+
+    assert tagged_tests == Enum.sort(@phase41_tagged_tests)
+    assert length(tagged_tests) == 3
+    assert @phase41_broad_tests == 1_622
+    assert @phase41_broad_tests + length(tagged_tests) == @phase41_non_host_tests
+    assert @phase41_non_host_tests + @phase41_host_tests == 1_699
+
+    phase41_commands =
+      @workflow
+      |> File.read!()
+      |> String.split("      - name: Run Phase 41 gating doctor and support matrix proof\n",
+        parts: 2
+      )
+      |> List.last()
+      |> String.split("      - name: Summarize Phase 41 gating proof\n", parts: 2)
+      |> List.first()
+
+    dedicated =
+      "mix test --only phase41_nested_process --seed 748644 --max-cases 1"
+
+    broad =
+      "mix test --exclude phase41_nested_process --exclude requires_example_host --seed 748644 --max-cases 8"
+
+    assert length(:binary.matches(phase41_commands, dedicated)) == 1
+    assert length(:binary.matches(phase41_commands, broad)) == 1
+    assert :binary.match(phase41_commands, dedicated) < :binary.match(phase41_commands, broad)
+    assert phase41_commands =~ "mix test test/crosswake/proof/phase41_gating_doctor_test.exs"
   end
 
   defp run_gate(tmp, markers) do
