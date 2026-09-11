@@ -739,25 +739,41 @@ the existing five-path browser universe. Do not hide failures, retry blindly, in
 timeouts, or reduce coverage. Remove all diagnostic job mode/upload diversion before final freeze and
 re-prove ordinary failure artifact publication plus required proof failure direction.
 
-Phase41 now has explicit stabilization authority, but only for
+Recovery 3F and 3G are completed, immutable evidence: Phase41 RED `62fcfcea`, lock GREEN `b4d98103`,
+cleanup/browser RED `f1b45b69`, cleanup/browser GREEN `c8e69c32`, and ledger `232958ab`. Failed final
+candidate `072250e3` and run `34649577077` then proved the browser, e2e, route-tour, mobile, cleanup,
+root, and example leaves GREEN; only Phase41 plus the transitive umbrella failed. Do not redo or
+reinterpret those GREEN owners.
+
+The remaining Phase41 authority is still exactly
 `test/crosswake/proof_lane/evidence_test.exs`,
 `test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs`,
-`scripts/verify_phase_161_1.sh`, and the existing Phase41 workflow. The dedicated 12/12 proof passed;
-the broad hosted run timed out only the physical-promotion and ordered-marker nested-process tests,
-while exact local broad seed 480367/max-cases 8 passed 1625/1625. Lead with deterministic adversarial
-contention RED, distinguish resource/order pressure from semantic assertion behavior, then choose
-only module-local serialization or harness-local lifecycle isolation proven by that RED. Preserve
-timeouts, assertions, exits, markers, privacy, max-cases, and proof breadth. `.tool-versions`,
-`test/test_helper.exs`, setup action, and production libraries are read-only; OTP/global ownership
-checkpoints before edit. GREEN requires repeated adversarial runs, dedicated seed 280497, and the
-exact broad seed/max-cases.
+`scripts/verify_phase_161_1.sh`, and `.github/workflows/crosswake-ci.yml`. Hosted broad seed 748644
+with max-cases 8 timed out at the unchanged 60 seconds in the negative-marker test's second nested
+verifier call. That test is untagged, while the existing global lock covers only the physical-class
+promotion and positive ordered-marker tests; two-test locking therefore cannot isolate the observed
+three-test nested-process class. Fair local default/max-cases-8, `+S 2`/max-cases-8, and
+default/max-cases-4 comparisons were all green, so scheduler caps and max-cases reduction are not
+evidence-backed repairs.
 
-Only the final-candidate budget remains 0/1. After Phase41, bytecode prevention, and browser timeout
-are locally GREEN, remove diagnostic diversion, commit all non-manifest bytes, invalidate prior
-manifests, run complete clean proof, and commit one freshly captured manifest alone. Fast-forward PR
-#149 once from exact 81834a5c and require 47/47 green. Any Phase41 timeout, cleanup residue, browser
-timeout, missing/red check, drift, or new owner checkpoints without rerun or another head update;
-#149/#148/#110 remain open and unmerged.
+Lead with deterministic metadata and workflow-command RED: the negative-marker test is absent from
+the tag selection and remains in the broad command. GREEN gives exactly those three tests
+`:phase41_nested_process`, runs all three with `mix test --only phase41_nested_process --seed 748644
+--max-cases 1`, then runs `mix test --exclude phase41_nested_process --exclude
+requires_example_host --seed 748644 --max-cases 8`. Both commands fail closed independently. Their
+counted union must contain every non-host test exactly once while retaining exactly the 74
+`requires_example_host` exclusions. Preserve assertions, the default timeout, markers, exits,
+toolchain, global concurrency, and the existing doctor proof. Existing ad-hoc locks may be reduced
+only when the partition proof establishes redundancy; do not add another lock. `.tool-versions`,
+`test/test_helper.exs`, setup action, production libraries, and other nested-process tests remain
+read-only; any need for them checkpoints before edit.
+
+Both diagnostic allowances and the failed 072 prior-final update are consumed 1/1. After the tag
+partition and complete clean local proof, invalidate 072's manifest and commit one freshly captured
+manifest alone. Exactly one replacement-final PR #149 fast-forward from 072 is authorized; require
+all 47 checks green on the first exact-head run. Any Phase41 recurrence, cleanup/browser regression,
+missing/red check, drift, or new owner checkpoints without rerun or another head update;
+#149/#148/#110 remain open and unmerged until that gate passes.
 
 Push the actual frozen commit ancestry. Do not create a one-commit tree transplant, squash, or
 cherry-pick candidate. Require protected default and every evidence OID as ancestors of the exact
