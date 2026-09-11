@@ -7,6 +7,9 @@ import path from "node:path";
 import { test } from "node:test";
 
 import {
+  BROWSER_DIAGNOSTIC_MODE,
+  browserDiagnosticContext,
+  classifyBrowserFailure,
   loadArtifactPolicy,
   loadStageManifest,
   runPreflight,
@@ -16,7 +19,8 @@ import {
   selectStages,
   validateCiParity,
   validateArtifactPolicy,
-  validateStageManifest
+  validateStageManifest,
+  validateBrowserDiagnostic
 } from "../../script/verify_repository.mjs";
 
 const root = new URL("../../", import.meta.url);
@@ -356,6 +360,63 @@ test("hosted diagnostic emits a closed browser owner and suppresses private fail
       diagnosticModeClosed: true,
       privateArtifactUploadSuppressed: true
     });
+  } finally {
+    rmSync(runRoot, { recursive: true, force: true });
+    rmSync(repository, { recursive: true, force: true });
+  }
+});
+
+test("hosted browser diagnostic redaction rejects unknown values and private child failure data", () => {
+  assert.throws(() => browserDiagnosticContext({ CROSSWAKE_BROWSER_DIAGNOSTIC_MODE: "unknown", CROSSWAKE_BROWSER_DIAGNOSTIC_JOB: "e2e-proof" }), /mode is unknown/);
+  assert.throws(() => browserDiagnosticContext({ CROSSWAKE_BROWSER_DIAGNOSTIC_MODE: BROWSER_DIAGNOSTIC_MODE, CROSSWAKE_BROWSER_DIAGNOSTIC_JOB: "unknown" }), /job is unknown/);
+  assert.throws(() => validateBrowserDiagnostic({ schema_version: 1, owner: "browser", category: "unknown", job: "e2e-proof" }), /closed schema/);
+  assert.throws(() => validateBrowserDiagnostic({ schema_version: 1, owner: "browser", category: "browser_process_exit_nonzero", job: "e2e-proof", detail: "private" }), /unknown or missing keys/);
+
+  const privateValues = [
+    "child stdout", "child stderr", "raw payload", "pull request prose",
+    "https://invalid.example", "/private/runner/path", "SECRET_ENV=value",
+    "private-stage.log", "playwright-report", "test-results", "trace.zip",
+    "screenshot.png", "video.webm"
+  ];
+  const diagnostic = classifyBrowserFailure(
+    { status: 1, stdout: privateValues.join(" "), stderr: privateValues.join(" ") },
+    { mode: BROWSER_DIAGNOSTIC_MODE, job: "route-tour-proof" }
+  );
+  assert.deepEqual(diagnostic, {
+    schema_version: 1,
+    owner: "browser",
+    category: "browser_process_exit_nonzero",
+    job: "route-tour-proof"
+  });
+  const serialized = JSON.stringify(diagnostic);
+  for (const privateValue of privateValues) assert.equal(serialized.includes(privateValue), false);
+});
+
+test("hosted diagnostic keeps ordinary browser proof and nonzero failure authority", () => {
+  const repository = makeRepository();
+  const runRoot = mkdtempSync(path.join(tmpdir(), "crosswake-repository-verify.test-"));
+  const commands = [];
+  try {
+    const result = runVerification(verificationOptions(repository, {
+      selection: "browser-proof",
+      runRoot,
+      processEnvironment: {
+        ...process.env,
+        CROSSWAKE_BROWSER_DIAGNOSTIC_MODE: BROWSER_DIAGNOSTIC_MODE,
+        CROSSWAKE_BROWSER_DIAGNOSTIC_JOB: "route-tour-proof"
+      },
+      spawn: (command, argv) => {
+        commands.push([command, ...argv].join(" "));
+        return [command, ...argv].join(" ") === "npx playwright test"
+          ? { status: 1, stdout: "", stderr: "" }
+          : { status: 0, stdout: "", stderr: "" };
+      }
+    }));
+    assert.equal(result.status, 1);
+    assert.equal(commands.includes("npx playwright test"), true);
+    assert.match(result.output, /FAIL browser-proof/);
+    assert.match(result.output, /BROWSER_DIAGNOSTIC/);
+    assert.throws(() => browserDiagnosticContext({ CROSSWAKE_BROWSER_DIAGNOSTIC_JOB: "route-tour-proof" }), /mode is unknown/);
   } finally {
     rmSync(runRoot, { recursive: true, force: true });
     rmSync(repository, { recursive: true, force: true });

@@ -19,6 +19,18 @@ const ownerKeys = ["command", "job_id"];
 const artifactPolicyKeys = ["schema_version", "ignored_transient", "intentionally_tracked", "generated_contracts", "forbidden_tracked", "safe_fixtures"];
 const matcherKeys = ["kind", "value"];
 const generatedContractKeys = ["canonical_source", "output_paths", "regeneration_argv", "remediation_command"];
+export const BROWSER_DIAGNOSTIC_MODE = "phase167_post_412";
+const browserDiagnosticJobs = ["e2e-proof", "route-tour-proof"];
+const browserDiagnosticCategories = [
+  "browser_assertion_failed",
+  "browser_configuration_failed",
+  "browser_process_error",
+  "browser_process_exit_nonzero",
+  "browser_process_signal",
+  "browser_server_start_failed",
+  "browser_test_timeout"
+];
+const browserDiagnosticKeys = ["category", "job", "owner", "schema_version"];
 
 export function spawnStage(command, args, options) {
   return spawnSync(command, args, {
@@ -36,6 +48,35 @@ function sameKeys(value, expected, label) {
 
 function safeRelative(value, label) {
   if (typeof value !== "string" || value === "" || path.isAbsolute(value) || value.split(/[\\/]/).includes("..")) throw new Error(`${label} must stay repository-relative`);
+}
+
+export function browserDiagnosticContext(environment = process.env) {
+  const mode = environment.CROSSWAKE_BROWSER_DIAGNOSTIC_MODE;
+  const job = environment.CROSSWAKE_BROWSER_DIAGNOSTIC_JOB;
+  if (mode === undefined && job === undefined) return null;
+  if (mode !== BROWSER_DIAGNOSTIC_MODE) throw new Error("browser diagnostic mode is unknown");
+  if (!browserDiagnosticJobs.includes(job)) throw new Error("browser diagnostic job is unknown");
+  return { mode, job };
+}
+
+export function validateBrowserDiagnostic(value) {
+  sameKeys(value, browserDiagnosticKeys, "browser diagnostic");
+  if (value.schema_version !== 1 || value.owner !== "browser" || !browserDiagnosticCategories.includes(value.category) || !browserDiagnosticJobs.includes(value.job)) throw new Error("browser diagnostic value is outside the closed schema");
+  return value;
+}
+
+export function classifyBrowserFailure(result, context) {
+  if (!context || !browserDiagnosticJobs.includes(context.job)) throw new Error("browser diagnostic context is invalid");
+  const output = `${String(result?.stdout ?? "")}\n${String(result?.stderr ?? "")}`;
+  let category;
+  if (result?.error) category = "browser_process_error";
+  else if (result?.signal) category = "browser_process_signal";
+  else if (/config(?:uration)? error|playwright\.config/i.test(output)) category = "browser_configuration_failed";
+  else if (/webserver|server.*(?:failed|timeout|timed out)/i.test(output)) category = "browser_server_start_failed";
+  else if (/test timeout|timed out.*test/i.test(output)) category = "browser_test_timeout";
+  else if (/expect(?:ed|\()|assertion/i.test(output)) category = "browser_assertion_failed";
+  else category = "browser_process_exit_nonzero";
+  return validateBrowserDiagnostic({ schema_version: 1, owner: "browser", category, job: context.job });
 }
 
 export function loadStageManifest(source = manifestPath) {
@@ -187,7 +228,7 @@ function renderSummary(records) {
   for (const record of records) byPurpose.set(record.purpose, record);
   return [...byPurpose.values()].map(record => record.result === "PASS"
     ? `PASS ${record.purpose}`
-    : `${record.result} ${record.purpose}${record.category ? ` category=${record.category}` : ""}${record.path ? ` path=${JSON.stringify(record.path)}` : ""}; corrective-command=${record.remediation_command}`).join("\n");
+    : `${record.result} ${record.purpose}${record.category ? ` category=${record.category}` : ""}${record.path ? ` path=${JSON.stringify(record.path)}` : ""}; corrective-command=${record.remediation_command}${record.diagnostic ? `\nBROWSER_DIAGNOSTIC ${JSON.stringify(validateBrowserDiagnostic(record.diagnostic))}` : ""}`).join("\n");
 }
 
 function validateRunRoot(runRoot, root, captureRoot) {
@@ -347,6 +388,8 @@ export function runVerification(options = {}) {
   const root = realpathSync(options.repoRoot ?? repoRoot);
   const artifactPolicy = enforceArtifactPolicy ? validateArtifactPolicy(options.artifactPolicy ?? loadArtifactPolicy()) : null;
   const selection = options.selection ?? "all";
+  const processEnvironment = options.processEnvironment ?? process.env;
+  const browserDiagnostic = browserDiagnosticContext(processEnvironment);
   const selected = selectStages(manifest, selection);
   const verifyGeneratedContracts = selection === "all" || selection === "repository-cleanliness";
   const suppliedRunRoot = Boolean(options.runRoot);
@@ -400,7 +443,7 @@ export function runVerification(options = {}) {
       }
       let result;
       try {
-        const stageEnv = { ...process.env, ...stage.env };
+        const stageEnv = { ...processEnvironment, ...stage.env };
         if (stage.stage_id === "browser-proof") {
           const browserOutputRoot = process.env.GITHUB_ACTIONS === "true"
             ? path.join(root, "examples/phoenix_host")
@@ -428,12 +471,16 @@ export function runVerification(options = {}) {
       writeFileSync(path.join(runRoot, "logs", `${stage.stage_id}.log`), `${outcome}\n${String(result?.stdout ?? "")}${String(result?.stderr ?? "")}`, { mode: 0o600 });
       const passed = result && !result.error && result.signal == null && Number.isInteger(result.status) && result.status === 0;
       const stageResult = passed ? "PASS" : "FAIL";
+      const diagnostic = !passed && stage.stage_id === "browser-proof" && browserDiagnostic
+        ? classifyBrowserFailure(result, browserDiagnostic)
+        : undefined;
       records.push({
         result: stageResult,
         purpose: stage.stage_id,
         remediation_command: result?.remediation_command ?? stage.remediation_command,
         category: result?.category,
-        path: result?.path
+        path: result?.path,
+        ...(diagnostic ? { diagnostic } : {})
       });
       if (!passed) { nonpassing.add(stage.stage_id); exitStatus = 1; }
     }
