@@ -609,6 +609,75 @@ test("cleanup preserves pre-existing caches byte-for-byte", () => {
   }
 });
 
+test("root and example child stages remove only newly created exact Python bytecode status residue", () => {
+  const residues = [
+    "script/__pycache__/classify_ci_change.cpython-314.pyc",
+    "script/__pycache__/list_merge_blocking_checks.cpython-314.pyc"
+  ];
+
+  for (const selection of ["root-proof", "example-host-proof"]) {
+    const repository = makeRepository();
+    try {
+      const result = runVerification(verificationOptions(repository, {
+        selection,
+        spawn: (command, argv) => {
+          const invocation = [command, ...argv].join(" ");
+          const selectedStage = loadStageManifest().stages.find(stage => stage.stage_id === selection);
+          if (invocation === selectedStage.argv.join(" ")) {
+            for (const residue of residues) {
+              const destination = path.join(repository, residue);
+              mkdirSync(path.dirname(destination), { recursive: true });
+              writeFileSync(destination, `${selection}\n`);
+            }
+          }
+          return { status: 0, stdout: "", stderr: "" };
+        }
+      }));
+
+      assert.equal(result.records.find(record => record.purpose === selection).result, "PASS");
+      assert.equal(result.records.find(record => record.purpose === "repository-cleanliness").result, "PASS");
+      assert.equal(result.status, 0);
+      for (const residue of residues) assert.equal(existsSync(path.join(repository, residue)), false);
+    } finally {
+      rmSync(repository, { recursive: true, force: true });
+    }
+  }
+});
+
+test("Python bytecode status cleanup preserves pre-existing files and exposes unexpected residue", () => {
+  const repository = makeRepository();
+  const exactResidue = "script/__pycache__/classify_ci_change.cpython-314.pyc";
+  const unexpectedResidue = "script/__pycache__/unexpected.cpython-314.pyc";
+  const preservedBytes = Buffer.from("preserve exact pre-existing bytes\n");
+
+  try {
+    mkdirSync(path.dirname(path.join(repository, exactResidue)), { recursive: true });
+    writeFileSync(path.join(repository, exactResidue), preservedBytes);
+    const preserved = runVerification(verificationOptions(repository, {
+      selection: "root-proof",
+      spawn: () => ({ status: 0, stdout: "", stderr: "" })
+    }));
+    assert.equal(preserved.status, 0);
+    assert.deepEqual(readFileSync(path.join(repository, exactResidue)), preservedBytes);
+
+    const unexpected = runVerification(verificationOptions(repository, {
+      selection: "root-proof",
+      spawn: (command, argv) => {
+        if ([command, ...argv].join(" ") === "mix verify") {
+          writeFileSync(path.join(repository, unexpectedResidue), "unexpected\n");
+        }
+        return { status: 0, stdout: "", stderr: "" };
+      }
+    }));
+    assert.equal(unexpected.records.find(record => record.purpose === "root-proof").result, "PASS");
+    assert.equal(unexpected.records.find(record => record.purpose === "repository-cleanliness").result, "FAIL");
+    assert.equal(unexpected.status, 1);
+    assert.equal(existsSync(path.join(repository, unexpectedResidue)), true);
+  } finally {
+    rmSync(repository, { recursive: true, force: true });
+  }
+});
+
 test("cleanup refuses symlink escape and invalid run-root prefix", () => {
   const repository = makeRepository();
   const outside = mkdtempSync(path.join(tmpdir(), "crosswake-repository-outside-"));
