@@ -237,11 +237,17 @@ def validate_evidence_binding(text: str, evidence_path: Path) -> list[Problem]:
     return problems
 
 
-def remediation_queue(text: str, root: Path) -> tuple[list[dict[str, str]], list[Problem]]:
-    problems = validate_text(text, root)
-    if problems:
-        return [], problems
+def remediation_queue(
+    text: str, root: Path, *, validate_history: bool = True
+) -> tuple[list[dict[str, str]], list[Problem]]:
+    """Validate and render the remediation queue.
 
+    The recurring CI mode deliberately validates the closed queue and its current
+    tracked inputs without resolving the ledger's historical Git range.  Exact
+    range, tree, expansion, and evidence validation remains owned by the default
+    ``--ledger``/``--evidence`` path used by pinned source-by-commit proof.
+    """
+    problems = validate_text(text, root) if validate_history else []
     candidates_rows = table(text, "Candidates", ["candidate", "evidence", "owner", "disposition"])
     edge_rows = table(
         text,
@@ -249,8 +255,49 @@ def remediation_queue(text: str, root: Path) -> tuple[list[dict[str, str]], list
         ["source candidate", "target", "edge kind", "evidence", "owner", "disposition"],
     )
     queue_rows = table(text, "Remediation queue", list(REMEDIATION_COLUMNS))
-    if candidates_rows is None or edge_rows is None or queue_rows is None:
+    closure_rows = table(text, "Closed edges", ["source candidate", "target", "terminal result"])
+    if candidates_rows is None or edge_rows is None or closure_rows is None or queue_rows is None:
         return [], [Problem("invalid_remediation_schema", "remediation queue", "exact remediation columns are required")]
+
+    if not validate_history:
+        for label in ("Base commit", "Tree commit"):
+            value = metadata(text, label)
+            if value is None or re.fullmatch(r"[0-9a-f]{40}", value) is None:
+                problems.append(Problem("invalid_remediation_metadata", label, "full Git OID is required"))
+
+        candidate_paths = [row["candidate"] for row in candidates_rows]
+        if candidate_paths != sorted(candidate_paths) or len(candidate_paths) != len(set(candidate_paths)):
+            problems.append(Problem("invalid_remediation_candidates", "candidates", "rows must be unique and sorted"))
+        for row in candidates_rows:
+            if not all(valid_value(row[field]) for field in ("candidate", "evidence", "owner")):
+                problems.append(Problem("incomplete_candidate", row["candidate"], "candidate, evidence, and owner are required"))
+            if row["disposition"] not in DISPOSITIONS:
+                problems.append(Problem("unknown_disposition", row["candidate"], row["disposition"]))
+
+        edge_keys = [(row["source candidate"], row["target"]) for row in edge_rows]
+        closure_keys = [(row["source candidate"], row["target"]) for row in closure_rows]
+        closure_map = {
+            (row["source candidate"], row["target"]): row["terminal result"]
+            for row in closure_rows
+        }
+        if edge_keys != sorted(edge_keys) or len(edge_keys) != len(set(edge_keys)):
+            problems.append(Problem("invalid_remediation_edges", "direct expansions", "rows must be unique and sorted"))
+        if closure_keys != sorted(closure_keys) or len(closure_keys) != len(set(closure_keys)):
+            problems.append(Problem("invalid_remediation_closures", "closed edges", "rows must be unique and sorted"))
+        for row in edge_rows:
+            key = (row["source candidate"], row["target"])
+            if not all(valid_value(row[field]) for field in ("source candidate", "target", "evidence", "owner")):
+                problems.append(Problem("incomplete_edge", " -> ".join(key), "closed edge inputs are required"))
+            if row["edge kind"] not in EDGE_KINDS:
+                problems.append(Problem("invalid_edge_kind", " -> ".join(key), row["edge kind"]))
+            if row["disposition"] not in DISPOSITIONS:
+                problems.append(Problem("unknown_disposition", " -> ".join(key), row["disposition"]))
+            if closure_map.get(key) != row["disposition"]:
+                problems.append(Problem("closure_mismatch", " -> ".join(key), closure_map.get(key, "absent")))
+        for key in sorted(set(closure_map) - set(edge_keys)):
+            problems.append(Problem("extra_closure", " -> ".join(key), "closure has no expansion row"))
+        if has_cycle(edge_rows):
+            problems.append(Problem("cyclic_expansion", "direct expansions", "ownership expansion must terminate"))
 
     expected_paths = {
         row["candidate"] for row in candidates_rows if row["disposition"] in {"changed", "removed-with-proof"}
@@ -435,7 +482,9 @@ def main() -> int:
         return self_test()
     if args.verify_remediations:
         queue, problems = remediation_queue(
-            args.verify_remediations.read_text(encoding="utf-8"), args.root.resolve()
+            args.verify_remediations.read_text(encoding="utf-8"),
+            args.root.resolve(),
+            validate_history=False,
         )
         if problems:
             for problem in sorted(problems, key=lambda item: (item.kind, item.member, item.detail)):

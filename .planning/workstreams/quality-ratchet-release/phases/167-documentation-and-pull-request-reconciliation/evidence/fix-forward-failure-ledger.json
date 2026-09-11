@@ -1,0 +1,303 @@
+{
+  "authorized_repair_paths": [
+    ".github/workflows/crosswake-ci.yml",
+    "examples/phoenix_host/playwright.config.ts",
+    "lib/crosswake/doctor/doctor.ex",
+    "lib/crosswake/telemetry.ex",
+    "lib/mix/tasks/crosswake.contract.gen.ex",
+    "lib/mix/tasks/crosswake.docs.sync.ex",
+    "mix.exs",
+    "packages/crosswake_rulestead/lib/crosswake/companions/rulestead.ex",
+    "script/check_dependency_security.sh",
+    "script/check_phase166_ownership_ledger.py",
+    "script/list_merge_blocking_checks.py",
+    "script/repository_artifact_policy.json",
+    "script/repository_verification_stages.json",
+    "script/run_repository_evidence_environment.sh",
+    "script/verify_repository.mjs",
+    "test/crosswake/doctor/doctor_threadline_test.exs",
+    "test/crosswake/guides/architecture_code_walkthrough_test.exs",
+    "test/crosswake/guides/release_boundaries_test.exs",
+    "test/crosswake/proof/phase166_repository_quality_test.exs",
+    "test/crosswake/proof/phase43_rulestead_advisory_test.exs",
+    "test/crosswake/proof/phase69_docs_contract_parity_test.exs",
+    "test/crosswake/telemetry_test.exs",
+    "test/js/repository_verification.test.mjs",
+    "test/mix/tasks/crosswake.docs.sync_test.exs"
+  ],
+  "base_oid": "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
+  "failed_runs": [
+    {
+      "conclusion": "FAILURE",
+      "failed_leaves": [
+        {
+          "job": "android-package-unit",
+          "root_id": "transitive_platform"
+        },
+        {
+          "job": "e2e-proof",
+          "root_id": "repository_environment"
+        },
+        {
+          "job": "guard-01-contract-drift-test",
+          "root_id": "generated_contract_cleanliness"
+        },
+        {
+          "job": "guard-01-e2e-honesty",
+          "root_id": "phase166_ancestry"
+        },
+        {
+          "job": "hex-page-proof",
+          "root_id": "root_contract"
+        },
+        {
+          "job": "ios-package-unit",
+          "root_id": "transitive_platform"
+        },
+        {
+          "job": "phase130-core-hermetic-proof",
+          "root_id": "root_contract"
+        },
+        {
+          "job": "phase132-core-hermetic-proof",
+          "root_id": "root_contract"
+        },
+        {
+          "job": "phase34-commerce-proof",
+          "root_id": "root_contract"
+        },
+        {
+          "job": "phase41-gating-proof",
+          "root_id": "root_contract"
+        },
+        {
+          "job": "phase43-rulestead-proof",
+          "root_id": "root_contract"
+        },
+        {
+          "job": "phase45-rindle-proof",
+          "root_id": "root_contract"
+        },
+        {
+          "job": "proof-dependency-security",
+          "root_id": "repository_environment"
+        },
+        {
+          "job": "proof-requires-example-host",
+          "root_id": "repository_environment"
+        },
+        {
+          "job": "route-tour-proof",
+          "root_id": "repository_environment"
+        }
+      ],
+      "head_oid": "85e6aeec41b9a53840f0a2315c16c4390cef1878",
+      "pr_number": 110,
+      "run_id": 34544586854
+    },
+    {
+      "conclusion": "FAILURE",
+      "failed_leaves": [
+        {
+          "job": "android-package-unit",
+          "root_id": "transitive_platform"
+        },
+        {
+          "job": "e2e-proof",
+          "root_id": "repository_environment"
+        },
+        {
+          "job": "guard-01-contract-drift-test",
+          "root_id": "generated_contract_cleanliness"
+        },
+        {
+          "job": "guard-01-e2e-honesty",
+          "root_id": "phase166_ancestry"
+        },
+        {
+          "job": "hex-page-proof",
+          "root_id": "root_contract"
+        },
+        {
+          "job": "ios-package-unit",
+          "root_id": "transitive_platform"
+        },
+        {
+          "job": "phase130-core-hermetic-proof",
+          "root_id": "root_contract"
+        },
+        {
+          "job": "phase132-core-hermetic-proof",
+          "root_id": "root_contract"
+        },
+        {
+          "job": "phase34-commerce-proof",
+          "root_id": "root_contract"
+        },
+        {
+          "job": "phase41-gating-proof",
+          "root_id": "root_contract"
+        },
+        {
+          "job": "phase43-rulestead-proof",
+          "root_id": "root_contract"
+        },
+        {
+          "job": "phase45-rindle-proof",
+          "root_id": "root_contract"
+        },
+        {
+          "job": "proof-dependency-security",
+          "root_id": "repository_environment"
+        },
+        {
+          "job": "proof-requires-example-host",
+          "root_id": "repository_environment"
+        },
+        {
+          "job": "route-tour-proof",
+          "root_id": "repository_environment"
+        }
+      ],
+      "head_oid": "cc5286da6467c6d582f9a9585272360fcc1e4927",
+      "pr_number": 148,
+      "run_id": 34553181146
+    }
+  ],
+  "formatter_checkpoint_paths": [
+    "test/crosswake/guides/architecture_code_walkthrough_test.exs",
+    "test/crosswake/guides/release_boundaries_test.exs",
+    "test/crosswake/proof/phase69_docs_contract_parity_test.exs"
+  ],
+  "kind": "fix_forward_failure_ledger",
+  "red_tracer_oid": "367f5b5491384594a652d137a03933fa3a89418a",
+  "rejected_topology": {
+    "first_boundary_path_count": 232,
+    "reason": "shallow_history_unavailable",
+    "second_boundary_path_count": 11,
+    "status": "diagnostic_only"
+  },
+  "reproduction_source_oid": "9a7f2e3614fab29189d14dbb483b6e74dd4d9b7b",
+  "required_ancestor_oids": [
+    "367f5b5491384594a652d137a03933fa3a89418a",
+    "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
+    "8383aaea2a2b2e10bbe61dd843b51f4129a5d447",
+    "c06b6109ab3f68a5433a99c3ffb7ff11eafe71ca",
+    "c6b02e388c59e375950329c268c76197f945b5b4",
+    "cc14f63662ec6d5db3adf918cb5a59327447353f",
+    "d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b",
+    "eba0f21b052c43d957df8ab280ecaa04771782aa"
+  ],
+  "roots": [
+    {
+      "category": "generated_contract_cleanliness",
+      "disposition": "repair_required",
+      "fixed_argv": [
+        [
+          "mix",
+          "format",
+          "--check-formatted"
+        ],
+        [
+          "mix",
+          "test",
+          "test/crosswake/guides/architecture_code_walkthrough_test.exs",
+          "test/crosswake/guides/release_boundaries_test.exs",
+          "test/crosswake/proof/phase69_docs_contract_parity_test.exs"
+        ]
+      ],
+      "id": "generated_contract_cleanliness",
+      "regression_paths": [
+        "test/crosswake/guides/architecture_code_walkthrough_test.exs",
+        "test/crosswake/guides/release_boundaries_test.exs",
+        "test/crosswake/proof/phase69_docs_contract_parity_test.exs"
+      ],
+      "repair_paths": [
+        "test/crosswake/guides/architecture_code_walkthrough_test.exs",
+        "test/crosswake/guides/release_boundaries_test.exs",
+        "test/crosswake/proof/phase69_docs_contract_parity_test.exs"
+      ],
+      "reproduction_result": "failed_as_expected"
+    },
+    {
+      "category": "phase166_ancestry",
+      "disposition": "repair_required",
+      "fixed_argv": [
+        [
+          "node",
+          "--test",
+          "test/js/repository_verification.test.mjs"
+        ]
+      ],
+      "id": "phase166_ancestry",
+      "regression_paths": [
+        "test/js/repository_verification.test.mjs"
+      ],
+      "repair_paths": [
+        "script/check_phase166_ownership_ledger.py"
+      ],
+      "reproduction_result": "failed_as_expected"
+    },
+    {
+      "category": "repository_environment",
+      "disposition": "resolved_by_full_source",
+      "fixed_argv": [
+        [
+          "script/verify_repository.sh",
+          "--stage",
+          "repository-preflight"
+        ]
+      ],
+      "id": "repository_environment",
+      "regression_paths": [
+        "test/js/repository_verification.test.mjs"
+      ],
+      "repair_paths": [],
+      "reproduction_result": "passed_current_source"
+    },
+    {
+      "category": "root_contract",
+      "disposition": "repair_required",
+      "fixed_argv": [
+        [
+          "mix",
+          "test",
+          "--exclude",
+          "requires_example_host",
+          "--exclude",
+          "advisory_only"
+        ]
+      ],
+      "id": "root_contract",
+      "regression_paths": [
+        "test/mix/tasks/crosswake.docs.sync_test.exs"
+      ],
+      "repair_paths": [
+        "lib/mix/tasks/crosswake.docs.sync.ex",
+        "test/mix/tasks/crosswake.docs.sync_test.exs"
+      ],
+      "reproduction_result": "failed_as_expected"
+    },
+    {
+      "category": "transitive_platform",
+      "disposition": "transitive_only",
+      "fixed_argv": [],
+      "id": "transitive_platform",
+      "regression_paths": [],
+      "repair_paths": [],
+      "reproduction_result": "not_independent"
+    }
+  ],
+  "runtime": {
+    "elixir": "1.19.5-otp-27",
+    "erlang": "27.3.4.15",
+    "node": "22.14.0",
+    "otp_semantic": "27"
+  },
+  "runtime_file_hashes": {
+    ".planning/workstreams/quality-ratchet-release/config.json": "05b25ad604490dba4c12df84c624d04b1c7bae454ecd78a262dd1b97b68c1a28",
+    ".planning/workstreams/quality-ratchet-release/milestone.lock": "fd4c22c0f07449f02acc487c3100eed7a10edb1382d63807dd4003a54bfd2943",
+    ".planning/workstreams/quality-ratchet-release/state.json": "6cf0413c5cc52eb4f9c10ba497f82614608a54659e10bd48172bad2d9765dff4"
+  },
+  "schema_version": 2
+}

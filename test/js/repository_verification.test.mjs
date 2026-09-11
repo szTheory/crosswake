@@ -774,7 +774,7 @@ test("Phase 166 remediation queue remains verifiable from a depth-one checkout",
     const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
 
     assert.equal(result.status, 0, output);
-    assert.match(output, /^phase166-remediations: PASS count=4/m);
+    assert.match(output, /^phase166-remediations: PASS count=3/m);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
