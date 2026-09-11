@@ -667,6 +667,58 @@ if (docs && existsSync("fail-generator")) process.exit(7);
   }
 });
 
+test("generated contract cleanup stays with the fully provisioned cleanliness owner", () => {
+  const affectedSelections = [
+    "android-package-proof",
+    "ios-package-proof",
+    "root-proof",
+    "example-host-proof"
+  ];
+
+  for (const selection of affectedSelections) {
+    const generated = [];
+    const result = runVerification({
+      manifest: loadStageManifest(),
+      selection,
+      probe: tool => ({ stdout: fixture.tool_versions[tool.tool] }),
+      spawn: () => ({ status: 0, stdout: "primary owner passed", stderr: "" }),
+      generatorSpawn: (...argv) => {
+        generated.push(argv);
+        return { status: 127, stdout: "", stderr: "generator unavailable" };
+      },
+      repoRoot: new URL(".", root).pathname,
+      artifactPolicy: loadArtifactPolicy(),
+      enforceArtifactPolicy: true,
+      workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8")
+    });
+
+    assert.equal(result.records.find(record => record.purpose === selection).result, "PASS");
+    assert.equal(result.records.find(record => record.purpose === "repository-cleanliness").result, "PASS");
+    assert.equal(result.status, 0);
+    assert.deepEqual(generated, []);
+  }
+
+  let dedicatedGenerationCount = 0;
+  const dedicated = runVerification({
+    manifest: loadStageManifest(),
+    selection: "repository-cleanliness",
+    probe: tool => ({ stdout: fixture.tool_versions[tool.tool] }),
+    spawn: () => ({ status: 0, stdout: "", stderr: "" }),
+    generatorSpawn: () => {
+      dedicatedGenerationCount += 1;
+      return { status: 0, stdout: "", stderr: "" };
+    },
+    repoRoot: new URL(".", root).pathname,
+    artifactPolicy: loadArtifactPolicy(),
+    enforceArtifactPolicy: true,
+    workflowSource: readFileSync(new URL("../../.github/workflows/crosswake-ci.yml", import.meta.url), "utf8")
+  });
+
+  assert.equal(dedicated.status, 0);
+  assert.equal(dedicated.records.find(record => record.purpose === "repository-cleanliness").result, "PASS");
+  assert(dedicatedGenerationCount > 0);
+});
+
 test("capture self-test proves exact-commit isolation, dirty source success, and evidence rejection", () => {
   const script = new URL("../../script/capture_repository_verification_evidence.sh", import.meta.url).pathname;
   const result = spawnSync(script, ["--self-test"], {
