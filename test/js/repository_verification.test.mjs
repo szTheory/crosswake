@@ -1,6 +1,6 @@
 /* Repository verification is a closed purpose inventory, never a shell-command API (D-01–D-06). */
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { execFileSync, spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -310,10 +310,13 @@ test("browser stage supplies explicit repository mode and invocation-owned outpu
     }));
 
     assert.equal(result.status, 0);
+    const expectedOutputRoot = process.env.GITHUB_ACTIONS === "true"
+      ? path.join(realpathSync(repository), "examples/phoenix_host")
+      : runRoot;
     assert.equal(browserEnvironment.CROSSWAKE_REPOSITORY_VERIFY, "1");
-    assert.equal(browserEnvironment.CROSSWAKE_PLAYWRIGHT_REPORT_DIR, path.join(runRoot, "playwright-report"));
-    assert.equal(browserEnvironment.CROSSWAKE_PLAYWRIGHT_RESULT_DIR, path.join(runRoot, "test-results"));
-    assert.equal(browserEnvironment.CROSSWAKE_PLAYWRIGHT_ARTIFACT_DIR, path.join(runRoot, "playwright-artifacts"));
+    assert.equal(browserEnvironment.CROSSWAKE_PLAYWRIGHT_REPORT_DIR, path.join(expectedOutputRoot, "playwright-report"));
+    assert.equal(browserEnvironment.CROSSWAKE_PLAYWRIGHT_RESULT_DIR, path.join(expectedOutputRoot, "test-results"));
+    assert.equal(browserEnvironment.CROSSWAKE_PLAYWRIGHT_ARTIFACT_DIR, path.join(expectedOutputRoot, "playwright-artifacts"));
   } finally {
     rmSync(runRoot, { recursive: true, force: true });
     rmSync(repository, { recursive: true, force: true });
