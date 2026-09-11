@@ -5,8 +5,8 @@
   "kind": "fix_forward_candidate_scope",
   "manifest_mode": "100644",
   "manifest_path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-dependency-closure.json",
-  "payload_source_oid": "327d824da3545c099fbba149985def15100cfdbd",
-  "payload_source_tree_oid": "3ca2711dc0f91cd95ca7ae374628b53caf21bc3a",
+  "payload_source_oid": "43acd6a386365621cbb8ace9dcd448c589d81504",
+  "payload_source_tree_oid": "9cc17070e4dbd63c317acaa982ce9cb72dadebec",
   "proof_argv": [
     [
       "python3",
@@ -2583,7 +2583,7 @@
       },
       "path": "test/js/repository_verification.test.mjs",
       "payload": {
-        "blob": "f61569825fccac4ef0c7dc31330974c20791fa94",
+        "blob": "a0d61e841aff5ae1f9ef6e87e94b90e30030d549",
         "mode": "100644"
       }
     },
@@ -2709,7 +2709,7 @@
       }
     }
   ],
-  "records_digest": "2facb66da64ea0283ea2c628bbadc3c581491cb2f6d0725aa3136daca4974935",
+  "records_digest": "c1378ca8648e8638725dcbd021d711f3a558459ff44d2d574f042668f91347a3",
   "required_ancestor_oids": [
     "367f5b5491384594a652d137a03933fa3a89418a",
     "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
