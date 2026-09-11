@@ -104,26 +104,32 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
   defp with_phase41_nested_process_tracer(owner, fun) do
     case System.get_env("CROSSWAKE_PHASE41_ADVERSARIAL_ROOT") do
       nil ->
-        fun.()
+        with_phase41_nested_process_lease(fun)
 
       root ->
-        File.mkdir_p!(root)
-        File.write!(Path.join(root, "ready-#{owner}"), "ready")
-        await_phase41_peer(root, 100)
+        with_phase41_nested_process_lease(fn ->
+          File.mkdir_p!(root)
+          File.write!(Path.join(root, "ready-#{owner}"), "ready")
+          await_phase41_peer(root, 100)
 
-        case File.open(Path.join(root, "nested-process.lease"), [:write, :exclusive]) do
-          {:ok, lease} ->
-            try do
-              fun.()
-            after
-              File.close(lease)
-              File.rm(Path.join(root, "nested-process.lease"))
-            end
+          case File.open(Path.join(root, "nested-process.lease"), [:write, :exclusive]) do
+            {:ok, lease} ->
+              try do
+                fun.()
+              after
+                File.close(lease)
+                File.rm(Path.join(root, "nested-process.lease"))
+              end
 
-          {:error, :eexist} ->
-            flunk("PHASE41-NESTED-PROCESS-CONTENTION: phase41_resource_contention")
-        end
+            {:error, :eexist} ->
+              flunk("PHASE41-NESTED-PROCESS-CONTENTION: phase41_resource_contention")
+          end
+        end)
     end
+  end
+
+  defp with_phase41_nested_process_lease(fun) do
+    :global.trans({Crosswake.Proof.Phase41NestedProcessLease, self()}, fun)
   end
 
   defp await_phase41_peer(_root, 0), do: :ok
