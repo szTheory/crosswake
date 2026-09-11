@@ -723,13 +723,23 @@ feature, template, device, parity, generator, Maven, JVM, or vector change.
 Browser diagnostics follow only after generated cleanup is GREEN. The browser repair universe is
 exactly `script/repository_verification_stages.json`, `script/verify_repository.mjs`,
 `examples/phoenix_host/playwright.config.ts`, `.github/workflows/crosswake-ci.yml`, and
-`test/js/repository_verification.test.mjs`. One guarded PR #149 diagnostic head may expose only a
-stable category and owner for route-tour and e2e; private inner Playwright logs, stdout/stderr,
-artifact contents, URLs, remote prose, and environment values stay invocation-private. The empty
+`test/js/repository_verification.test.mjs`. The sequence is fixed: commit a local-only failing
+regression against generic browser output and unsafe diagnostic-path Playwright publication; commit
+separate diagnostic instrumentation and make its negative/redaction controls GREEN locally; push
+that instrumented, still-browser-red head once; then implement browser repair GREEN from the hosted
+category without another diagnostic push. Instrumentation is not repair GREEN. Its exact closed
+diagnostic mode retains each ordinary route-tour/e2e command and failing exit while exposing only
+schema version, fixed browser owner, allowlisted low-cardinality category, and fixed job identity.
+Unknown modes/categories/fields fail closed. On only that diagnostic path the workflow must suppress
+Playwright report/test-result/trace/screenshot/video publication; it may not create a general skip or
+weaken the required check. Private inner logs, stdout/stderr, payloads, artifact contents, URLs,
+filesystem absolutes, remote prose, and environment values stay invocation-private. Before final
+candidate capture, remove the one-head activation/upload diversion and re-prove ordinary required
+browser proof authority; a safe recurring closed mapper/redaction assertion may remain. The empty
 route-tour `CROSSWAKE_VERSION` observation is only `route_tour_version_presence_empty`; it becomes
-causal only if an otherwise identical RED/GREEN regression deterministically follows that input.
-A new owner/path or inconclusive single diagnostic stops for plan revision before further edit or
-push.
+causal only if an otherwise identical RED/GREEN regression deterministically follows that input. A
+new owner/path, unsafe/inconclusive diagnostic, or exhausted single diagnostic stops for plan
+revision before further edit or push.
 
 The post-412 attempt budget permits exactly one browser diagnostic PR #149 head update and exactly
 one later final-candidate update. The diagnostic cannot merge or close/supersede any PR. After both
