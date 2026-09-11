@@ -689,18 +689,21 @@ test("capture self-test proves exact-commit isolation, dirty source success, and
   assert.match(output, /PASS capture-self-test complete cases=8/);
 });
 
-test("evidence environment self-test locks Darwin arm64 tools and confinement", () => {
+test("evidence environment contract locks Darwin arm64 tools and self-tests on its supported host", () => {
   const lockPath = new URL("../../script/repository_evidence_toolchain.json", import.meta.url);
   const stagesPath = new URL("../../script/repository_verification_stages.json", import.meta.url);
-  const script = new URL("../../script/run_repository_evidence_environment.sh", import.meta.url).pathname;
-  const result = spawnSync(script, ["--self-test"], {
-    cwd: new URL("../..", import.meta.url),
-    encoding: "utf8",
-    timeout: 120_000
-  });
-  const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
-
-  assert.equal(result.status, 0, output);
+  const supportedHost = process.platform === "darwin" && process.arch === "arm64";
+  let output = "";
+  if (supportedHost) {
+    const script = new URL("../../script/run_repository_evidence_environment.sh", import.meta.url).pathname;
+    const result = spawnSync(script, ["--self-test"], {
+      cwd: new URL("../..", import.meta.url),
+      encoding: "utf8",
+      timeout: 120_000
+    });
+    output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+    assert.equal(result.status, 0, output);
+  }
   const lock = JSON.parse(readFileSync(lockPath, "utf8"));
   assert.deepEqual(
     Object.keys(lock).sort(),
@@ -745,7 +748,7 @@ test("evidence environment self-test locks Darwin arm64 tools and confinement", 
   assert.match(captureSource, /GIT_OPTIONAL_LOCKS=0[^\n]*verify_repository\.sh --all/);
   assert.equal((captureSource.match(/GIT_OPTIONAL_LOCKS=0 git -C "\$checkout" status/g) ?? []).length, 2);
   assert.match(environmentSource, /gradlew --no-daemon --version[^\n]*preflight-bootstrap\.log/);
-  for (const fixtureName of [
+  for (const fixtureName of supportedHost ? [
     "exact-version-selection",
     "checksum-rejection",
     "source-pin-rejection",
@@ -765,11 +768,13 @@ test("evidence environment self-test locks Darwin arm64 tools and confinement", 
     "unsafe-link-chain-rejection",
     "zip-contained-symlink",
     "zip-symlink-rejection"
-  ]) {
+  ] : []) {
     assert.match(output, new RegExp(`PASS evidence-environment-self-test ${fixtureName}`));
   }
-  assert.match(output, /PASS evidence-environment-self-test pinned-python-package/);
-  assert.match(output, /PASS evidence-environment-self-test complete cases=20/);
+  if (supportedHost) {
+    assert.match(output, /PASS evidence-environment-self-test pinned-python-package/);
+    assert.match(output, /PASS evidence-environment-self-test complete cases=20/);
+  }
 });
 
 test("CI inventory requires declared PyYAML and never performs an unpinned runtime install", () => {
