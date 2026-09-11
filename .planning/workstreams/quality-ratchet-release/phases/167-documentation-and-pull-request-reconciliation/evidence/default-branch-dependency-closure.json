@@ -5,8 +5,8 @@
   "kind": "fix_forward_candidate_scope",
   "manifest_mode": "100644",
   "manifest_path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-dependency-closure.json",
-  "payload_source_oid": "a758fc55e07d8ef5953722ca998ff7edac7af0f9",
-  "payload_source_tree_oid": "8c477cca31ddcab2a662d3062dabfbd44941d288",
+  "payload_source_oid": "e125dc4f443ab0219bf6db23e7a7ba16abfc8f9d",
+  "payload_source_tree_oid": "385858814af61012b22316ebfebeef6ba41b8137",
   "proof_argv": [
     [
       "python3",
@@ -35,6 +35,93 @@
       "node",
       "--test",
       "test/js/repository_verification.test.mjs"
+    ],
+    [
+      "mix",
+      "test",
+      "test/crosswake/proof_lane/evidence_test.exs",
+      "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "--seed",
+      "480367",
+      "--max-cases",
+      "8"
+    ],
+    [
+      "mix",
+      "test",
+      "test/crosswake/proof_lane/evidence_test.exs",
+      "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "--seed",
+      "480367",
+      "--max-cases",
+      "8"
+    ],
+    [
+      "mix",
+      "test",
+      "test/crosswake/proof_lane/evidence_test.exs",
+      "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "--seed",
+      "480367",
+      "--max-cases",
+      "8"
+    ],
+    [
+      "mix",
+      "test",
+      "test/crosswake/proof_lane/evidence_test.exs",
+      "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "--seed",
+      "480367",
+      "--max-cases",
+      "8"
+    ],
+    [
+      "mix",
+      "test",
+      "test/crosswake/proof_lane/evidence_test.exs",
+      "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "--seed",
+      "480367",
+      "--max-cases",
+      "8"
+    ],
+    [
+      "mix",
+      "test",
+      "test/crosswake/proof_lane/evidence_test.exs",
+      "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "--seed",
+      "480367",
+      "--max-cases",
+      "8"
+    ],
+    [
+      "mix",
+      "test",
+      "test/crosswake/proof_lane/evidence_test.exs",
+      "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "--seed",
+      "480367",
+      "--max-cases",
+      "8"
+    ],
+    [
+      "mix",
+      "test",
+      "test/crosswake/proof/phase41_gating_doctor_test.exs",
+      "--seed",
+      "280497"
+    ],
+    [
+      "mix",
+      "test",
+      "--exclude",
+      "requires_example_host",
+      "--seed",
+      "480367",
+      "--max-cases",
+      "8"
     ],
     [
       "python3",
@@ -636,7 +723,7 @@
       },
       "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-06-PLAN.md",
       "payload": {
-        "blob": "10ae9f1c384f54db934baad8cc1b7f67dff7f9bd",
+        "blob": "7ca77a48099c54cdb82cda4efa343224e7af21ba",
         "mode": "100644"
       }
     },
@@ -691,7 +778,7 @@
       },
       "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-PATTERNS.md",
       "payload": {
-        "blob": "f63ac0b063cdd1b2c3353af8a918fc06a338a408",
+        "blob": "54763c0b15ddb89dfbe1c43e35a069fdeda2ddca",
         "mode": "100644"
       }
     },
@@ -713,7 +800,7 @@
       },
       "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-VALIDATION.md",
       "payload": {
-        "blob": "edae350c14124c251a21a777665fcc8e4a79d31f",
+        "blob": "d628fd3a24820d6dfccf5de5421fc1f10ba07216",
         "mode": "100644"
       }
     },
@@ -724,7 +811,7 @@
       },
       "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/fix-forward-failure-ledger.json",
       "payload": {
-        "blob": "b3eb2a4974985a933bca830fe40a7c7be6f2e1d0",
+        "blob": "7127dfcd8ac3fc1b51d2214b1e61d14d2e922149",
         "mode": "100644"
       }
     },
@@ -1582,7 +1669,7 @@
       },
       "path": "script/check_phase167_default_reconciliation.py",
       "payload": {
-        "blob": "3e23298f3fc4b6f41a90dd3acf170bd5421324ca",
+        "blob": "5c100e3002dce4f6e8e9b784198c5e2b2403c966",
         "mode": "100644"
       }
     },
@@ -1659,7 +1746,7 @@
       },
       "path": "script/repository_verification_stages.json",
       "payload": {
-        "blob": "ad62d85e1d82a85af4642e5fc2d2042ec6b1523e",
+        "blob": "c5e91d42b1835f68b94a4c7330bb69da2baf4ca4",
         "mode": "100644"
       }
     },
@@ -1670,7 +1757,7 @@
       },
       "path": "script/verify_repository.mjs",
       "payload": {
-        "blob": "9eea6dd3cbf81632c3be6d48bb163c7f66de6d22",
+        "blob": "89d9726029c927f0cf775b0836119919af578298",
         "mode": "100755"
       }
     },
@@ -2204,6 +2291,17 @@
     },
     {
       "base": {
+        "blob": "c2f452ab6be5fa9fcbf5f0b0b121a3e31c695b27",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "payload": {
+        "blob": "99d4a4e489671e55b8236634ee33add40e8a838a",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
         "blob": "97919ec1f5b5f25e9477250cd73b2647b06ddb43",
         "mode": "100644"
       },
@@ -2457,6 +2555,17 @@
     },
     {
       "base": {
+        "blob": "693f3f7a8d02365aa03cc338ceaac34d7a705273",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof_lane/evidence_test.exs",
+      "payload": {
+        "blob": "9826f9e32744af392f81ae750cc90f1b9971edec",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
         "blob": "916f35ebc61762d858c36878e9b8c51fb5f1f020",
         "mode": "100644"
       },
@@ -2583,7 +2692,7 @@
       },
       "path": "test/js/repository_verification.test.mjs",
       "payload": {
-        "blob": "9bd2c4f5e3676d337451bfdde3af66d3cadc42dc",
+        "blob": "a2f2f33b09258245e1acfeaf804e864136e60983",
         "mode": "100644"
       }
     },
@@ -2709,7 +2818,7 @@
       }
     }
   ],
-  "records_digest": "2ce8ec5db844a62cde698064898a254f1eb9ca5eac13d5310b3d22c634a2992f",
+  "records_digest": "d9e9d807032724dc4e8f004f13656b283f5545fd1f6d40e6db255f9ee08affdb",
   "required_ancestor_oids": [
     "367f5b5491384594a652d137a03933fa3a89418a",
     "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
