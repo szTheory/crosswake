@@ -680,6 +680,13 @@ repository-verification, Phase 166, Threadline, Rulestead, telemetry, and docs-s
 Plan 167-06. Every emitted repair path must be in both this universe and the plan's static
 `files_modified`; an out-of-set owner halts for plan revision before any edit.
 
+Checkpoint authorization adds exactly three formatter-owned tests to that universe and no others:
+`test/crosswake/proof/phase69_docs_contract_parity_test.exs`,
+`test/crosswake/guides/architecture_code_walkthrough_test.exs`, and
+`test/crosswake/guides/release_boundaries_test.exs`. Their owner check is `mix format
+--check-formatted` followed by those three focused ExUnit files. Recovery resumes from committed RED
+tracer `367f5b5491384594a652d137a03933fa3a89418a`; do not rerun or recommit the RED step.
+
 Actual ancestry does not make historical OIDs available inside GitHub's shallow checkout. Split
 Phase 166 verification deliberately: recurring `--verify-remediations` validates the closed
 queue/schema and current repair inputs without Git-range resolution, while pinned source-by-commit
