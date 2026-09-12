@@ -83,7 +83,8 @@ defmodule Crosswake.MixProject do
       ],
       verify: [
         "companions.test",
-        "test --exclude requires_example_host --exclude advisory_only"
+        "cmd mix test --only phase41_nested_process --seed 748644 --max-cases 1",
+        "cmd mix test --exclude phase41_nested_process --exclude requires_example_host --exclude advisory_only --seed 748644 --max-cases 8"
       ]
     ]
   end

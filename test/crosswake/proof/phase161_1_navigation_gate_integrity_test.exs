@@ -9,6 +9,8 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
   @phase41_dedicated_command "test --only phase41_nested_process --seed 748644 --max-cases 1"
   @phase41_hosted_broad_command "test --exclude phase41_nested_process --exclude requires_example_host --seed 748644 --max-cases 8"
   @phase41_alias_broad_command "test --exclude phase41_nested_process --exclude requires_example_host --exclude advisory_only --seed 748644 --max-cases 8"
+  @phase41_alias_dedicated_entry "cmd mix " <> @phase41_dedicated_command
+  @phase41_alias_broad_entry "cmd mix " <> @phase41_alias_broad_command
   @companion_commands [
     "cmd --cd packages/crosswake_rulestead mix deps.get --check-locked",
     "cmd --cd packages/crosswake_rulestead mix test",
@@ -128,37 +130,42 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
     assert_verify_commands!(
       [
         "companions.test",
-        @phase41_dedicated_command,
-        @phase41_alias_broad_command
+        @phase41_alias_dedicated_entry,
+        @phase41_alias_broad_entry
       ],
       verify_commands
     )
 
+    assert Enum.map(tl(verify_commands), &String.replace_prefix(&1, "cmd mix ", "")) == [
+             @phase41_dedicated_command,
+             @phase41_alias_broad_command
+           ]
+
     for mutation <- [
-          ["companions.test", @phase41_alias_broad_command],
+          ["companions.test", @phase41_alias_broad_entry],
           [
             "companions.test",
-            @phase41_dedicated_command,
-            @phase41_dedicated_command,
-            @phase41_alias_broad_command
+            @phase41_alias_dedicated_entry,
+            @phase41_alias_dedicated_entry,
+            @phase41_alias_broad_entry
           ],
           [
             "companions.test",
-            @phase41_alias_broad_command,
-            @phase41_dedicated_command
+            @phase41_alias_broad_entry,
+            @phase41_alias_dedicated_entry
           ],
           [
             "companions.test",
-            @phase41_dedicated_command,
-            String.replace(@phase41_alias_broad_command, "--exclude phase41_nested_process ", "")
+            @phase41_alias_dedicated_entry,
+            String.replace(@phase41_alias_broad_entry, "--exclude phase41_nested_process ", "")
           ]
         ] do
       assert_raise ExUnit.AssertionError, fn ->
         assert_verify_commands!(
           [
             "companions.test",
-            @phase41_dedicated_command,
-            @phase41_alias_broad_command
+            @phase41_alias_dedicated_entry,
+            @phase41_alias_broad_entry
           ],
           mutation
         )
