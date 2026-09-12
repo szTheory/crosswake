@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v22.0
 milestone_name: Quality Ratchet & Release Readiness
-current_phase: 168
-current_phase_name: 0.2.1 Release Candidate Readiness
-status: ready_to_plan
-stopped_at: Completed 167-08-PLAN.md
-last_updated: "2026-09-12T03:10:05Z"
+current_phase: 167
+current_phase_name: Documentation and Pull-Request Reconciliation
+status: gaps_found
+stopped_at: Verification found a fail-open adoption-claim tuple
+last_updated: "2026-09-12T03:48:17Z"
 last_activity: 2026-09-11
-last_activity_desc: Phase 167 completed with exact-head closeout and bounded Phase 168 handoff
+last_activity_desc: Phase 167 verification found one fail-open adoption-claim gap
 state_head: 30ca31ed3f4be23ae6e4d115d8d0f6273aae220a
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 3
   total_plans: 34
   completed_plans: 34
-  percent: 80
+  percent: 60
 workstream: quality-ratchet-release
 ---
 
@@ -27,16 +27,16 @@ See: `.planning/PROJECT.md` (updated 2026-09-10)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 168 — 0.2.1 Release Candidate Readiness
+**Current focus:** Phase 167 gap closure — fail-closed adoption-claim tuple validation
 
 ## Current Position
 
-Phase: 168 (0.2.1 Release Candidate Readiness) — READY TO PLAN
-Plan: TBD
-Status: Phase 167 complete; ready for Phase 168 discussion and planning
-Last activity: 2026-09-11 — Phase 167 closeout merged and five-path handoff recorded
+Phase: 167 (Documentation and Pull-Request Reconciliation) — GAPS FOUND
+Plan: Gap closure required
+Status: Phase 167 remains pending after verification found one fail-open adoption-claim tuple
+Last activity: 2026-09-11 — Phase 167 verification completed with 37/38 must-haves
 
-Progress: [████████░░] 80%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
@@ -183,11 +183,15 @@ Progress: [████████░░] 80%
 
 ### Pending Todos
 
+- Plan and execute the Phase 167 gap that rejects impossible available/promoting adoption claims
+  when source authority is missing.
 - Phase 168 must bind and land the exact five Phase 167 closeout artifact blobs before candidate approval.
 - Phase 168 owns all further evaluation of release-only PRs 57, 115, 146, and 147.
 
 ### Blockers/Concerns
 
+- Phase 167 verification reproduces a fail-open adoption-claim tuple; DOC-01 remains incomplete
+  until the tuple contract and regression coverage are corrected.
 - The First B2C Adopter work remains parked separately at Phase 163.1 pending external route/device
   authority; do not copy or infer adopter facts into v22 artifacts.
 
@@ -201,6 +205,6 @@ Progress: [████████░░] 80%
 
 ## Session Continuity
 
-Last session: 2026-09-12T03:10:05Z
-Stopped at: Completed 167-08-PLAN.md
+Last session: 2026-09-12T03:48:17Z
+Stopped at: Phase 167 verification found one gap
 Resume file: None

@@ -70,13 +70,13 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 
 ### Documentation and Pull-Request Hygiene
 
-- [x] **DOC-01**: Public guides, support/capability truth, architecture notes, contribution guidance,
+- [ ] **DOC-01**: Public guides, support/capability truth, architecture notes, contribution guidance,
   and release runbooks agree with the verified code and current package versions.
 
-- [x] **DOC-02**: The parked First B2C Adopter work remains codename-only, independently resumable,
+- [ ] **DOC-02**: The parked First B2C Adopter work remains codename-only, independently resumable,
   and visibly blocked only on its real external route/device authority.
 
-- [x] **DOC-03**: Every open pull request is merged, rebased, superseded, closed, or explicitly
+- [ ] **DOC-03**: Every open pull request is merged, rebased, superseded, closed, or explicitly
   deferred with a current reason; no stale PR is left ambiguous.
 
 ### Release Readiness
@@ -150,9 +150,9 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 | ENG-02 | Phase 166 | Complete |
 | ENG-03 | Phase 166 | Complete |
 | ENG-04 | Phase 166 | Complete |
-| DOC-01 | Phase 167 | Complete |
-| DOC-02 | Phase 167 | Complete |
-| DOC-03 | Phase 167 | Complete |
+| DOC-01 | Phase 167 | Gaps Found |
+| DOC-02 | Phase 167 | Gaps Found |
+| DOC-03 | Phase 167 | Gaps Found |
 | REL-01 | Phase 168 | Pending |
 | REL-02 | Phase 168 | Pending |
 | REL-03 | Phase 168 | Pending |
