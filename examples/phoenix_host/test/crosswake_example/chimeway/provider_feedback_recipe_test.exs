@@ -68,7 +68,10 @@ defmodule CrosswakeExample.Chimeway.ProviderFeedbackRecipeTest do
     assert :ok =
              perform(%{
                "feedback" =>
-                 feedback_attrs(:delivery_accepted, correlation_id: correlation_id)
+                 feedback_attrs(:delivery_accepted,
+                   correlation_id: correlation_id,
+                   token_ref: unique_ref("advisory_token")
+                 )
              })
 
     assert %TokenBindingEvent{

@@ -124,13 +124,13 @@ defmodule MyApp.Workers.ChimewayProviderFeedbackWorker do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"feedback" => feedback_attrs}}) do
-    feedback = Crosswake.Companions.Chimeway.Contracts.ProviderFeedback.from_attrs(feedback_attrs)
-
-    # Resolve this from authenticated host-owned delivery/binding state. Provider
-    # token fields corroborate the event; they never authenticate a revocation.
-    scope = MyApp.Notifications.resolve_authenticated_binding_scope!(feedback)
-    CrosswakeExample.Chimeway.Registry.apply_provider_feedback(feedback, scope)
-    :ok
+    with {:ok, feedback} <-
+           Crosswake.Companions.Chimeway.Redaction.feedback_from_provider_attrs(feedback_attrs),
+         opts <- MyApp.Notifications.authenticated_provider_feedback_opts!(feedback),
+         {:ok, _result} <-
+           CrosswakeExample.Chimeway.Registry.apply_provider_feedback(feedback, opts) do
+      :ok
+    end
   end
 end
 ```
@@ -138,8 +138,13 @@ end
 These workers are host-owned. They call `CrosswakeExample.Chimeway.Registry.prune_stale/1`
 and `CrosswakeExample.Chimeway.Registry.apply_provider_feedback/2` and do not duplicate
 lifecycle writes or claim delivery authority. Invalidating provider feedback requires
-`authenticated_context`, the exact `binding_ref`, `app_identity_ref`, installation, and current
-session/version scope; a token reference or fingerprint is corroborating evidence only.
+the host-owned `authenticated_provider_feedback_opts!/1` resolver to return a keyword list with
+`authenticated_context`, the exact `binding_ref`, `installation_ref`, and `app_identity_ref`.
+For a session-scoped binding, that list must also contain the current `session_ref` and
+`session_version`; installation-scoped bindings omit both session keys. Resolve these values from
+authenticated host delivery/binding state. A provider token reference or fingerprint is
+corroborating evidence only and never authenticates or broadens an invalidation. The worker
+preserves conversion and registry errors so the host's Oban retry/discard policy can act on them.
 
 ### Secondary: Quantum or cron scheduling (for pruning)
 
