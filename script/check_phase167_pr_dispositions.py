@@ -8,7 +8,9 @@ import copy
 import hashlib
 import json
 import re
+import shutil
 import subprocess
+import tempfile
 import urllib.parse
 from dataclasses import dataclass
 from pathlib import Path
@@ -160,6 +162,38 @@ FORBIDDEN_EVIDENCE = (
     "stable_device",
     "founder_identity",
 )
+PLAN07_DEFAULT = "783bd74df1c050f6c0214da4682d198a528ba59c"
+CLOSEOUT_SCOPE_PATH = ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/phase167-closeout-scope.json"
+CLOSEOUT_SCOPE_FIELDS = {
+    "schema_version",
+    "payload_source_oid",
+    "payload_source_tree",
+    "payload_scope",
+    "self_excluded_manifest",
+}
+CLOSEOUT_RECORD_FIELDS = {"path", "mode", "blob"}
+CLOSEOUT_SELF_FIELDS = {"path", "expected_mode", "expected_schema_fields"}
+CLOSEOUT_REQUIRED_ANCESTORS = [
+    "367f5b5491384594a652d137a03933fa3a89418a",
+    "b489905d0f735e88268905607390021256e405b8",
+    "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b",
+    "1587e1a557884b0b34cad8b748ccbd948c090eed",
+    "783bd74df1c050f6c0214da4682d198a528ba59c",
+    "b5424dc59ab0305bbc7a16d53d8bf1339d21b02a",
+    "bda14a28b6447f1e6f5ad9d825d429b42f7da1db",
+    "c961d4a60633e1c1db3ea11c4e4dd5d912073f6b",
+    "a7c3d91ebf57380ecb7a2458cc8a148bc30312df",
+]
+RUNTIME_PATHS = [
+    ".planning/workstreams/quality-ratchet-release/config.json",
+    ".planning/workstreams/quality-ratchet-release/milestone.lock",
+    ".planning/workstreams/quality-ratchet-release/state.json",
+]
+RUNTIME_HASHES = {
+    RUNTIME_PATHS[0]: "05b25ad604490dba4c12df84c624d04b1c7bae454ecd78a262dd1b97b68c1a28",
+    RUNTIME_PATHS[1]: "fd4c22c0f07449f02acc487c3100eed7a10edb1382d63807dd4003a54bfd2943",
+    RUNTIME_PATHS[2]: "6cf0413c5cc52eb4f9c10ba497f82614608a54659e10bd48172bad2d9765dff4",
+}
 
 
 @dataclass(frozen=True)
@@ -263,13 +297,19 @@ def pr_snapshot(number: int) -> dict[str, Any]:
 
 
 def check_snapshot(repository: str, head_oid: str) -> dict[str, Any] | None:
-    endpoint = f"repos/{repository}/commits/{head_oid}/check-runs?filter=latest&per_page=100"
+    owner, name = repository.split("/", 1)
     query = (
-        '[.check_runs[] | select(.name == "Crosswake CI") | '
-        "{name:.name,head_oid:.head_sha,status:(.status | ascii_upcase),"
-        "conclusion:((.conclusion // \"\") | ascii_upcase)}] | first"
+        "query { repository(owner:%s,name:%s) { object(expression:%s) { ... on Commit { "
+        "statusCheckRollup { contexts(first:100) { nodes { ... on CheckRun { name status conclusion } } } } } } } }"
+        % (json.dumps(owner), json.dumps(name), json.dumps(head_oid))
     )
-    return gh_json("api", "-H", "Accept: application/vnd.github+json", endpoint, "--jq", query)
+    value = gh_json(
+        "api", "graphql", "-f", f"query={query}", "--jq",
+        '.data.repository.object.statusCheckRollup.contexts.nodes | map(select(.name == "Crosswake CI") | {name:.name,status:(.status | ascii_upcase),conclusion:((.conclusion // "") | ascii_upcase)}) | first',
+    )
+    if isinstance(value, dict):
+        value["head_oid"] = head_oid
+    return value
 
 
 def sha256_bytes(value: bytes) -> str:
@@ -278,6 +318,166 @@ def sha256_bytes(value: bytes) -> str:
 
 def file_sha256(path: str) -> str:
     return sha256_bytes((ROOT / path).read_bytes())
+
+
+def git_text(*args: str) -> str:
+    completed = subprocess.run(
+        ["git", *args], cwd=ROOT, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+    )
+    return completed.stdout.strip()
+
+
+def tree_oid(commit: str) -> str:
+    value = git_text("rev-parse", f"{commit}^{{tree}}")
+    if FULL_OID.fullmatch(value) is None:
+        raise ValueError("tree oid")
+    return value
+
+
+def diff_paths(left: str, right: str) -> list[str]:
+    raw = subprocess.run(
+        ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "-z", left, right],
+        cwd=ROOT,
+        check=True,
+        stdout=subprocess.PIPE,
+    ).stdout
+    return sorted(item.decode("utf-8") for item in raw.split(b"\0") if item)
+
+
+def tree_record(commit: str, path: str) -> dict[str, str]:
+    raw = subprocess.run(
+        ["git", "ls-tree", "-z", commit, "--", path], cwd=ROOT, check=True, stdout=subprocess.PIPE
+    ).stdout
+    if raw.count(b"\0") != 1:
+        raise ValueError("tree record")
+    metadata, actual = raw[:-1].split(b"\t", 1)
+    mode, kind, blob = metadata.decode("ascii").split(" ")
+    if actual.decode("utf-8") != path or kind != "blob" or mode not in {"100644", "100755", "120000"} or FULL_OID.fullmatch(blob) is None:
+        raise ValueError("tree record")
+    return {"path": path, "mode": mode, "blob": blob}
+
+
+def runtime_clean() -> bool:
+    untracked = sorted(filter(None, git_text("ls-files", "--others", "--exclude-standard", "-z").split("\0")))
+    return (
+        untracked == RUNTIME_PATHS
+        and all(file_sha256(path) == expected for path, expected in RUNTIME_HASHES.items())
+        and not git_text("diff", "--name-only")
+        and not git_text("diff", "--cached", "--name-only")
+    )
+
+
+def capture_closeout_scope(payload: str) -> dict[str, Any]:
+    payload_oid = git_text("rev-parse", f"{payload}^{{commit}}")
+    paths = [path for path in diff_paths(PLAN07_DEFAULT, payload_oid) if path != CLOSEOUT_SCOPE_PATH]
+    return {
+        "schema_version": 1,
+        "payload_source_oid": payload_oid,
+        "payload_source_tree": tree_oid(payload_oid),
+        "payload_scope": [tree_record(payload_oid, path) for path in paths],
+        "self_excluded_manifest": {
+            "path": CLOSEOUT_SCOPE_PATH,
+            "expected_mode": "100644",
+            "expected_schema_fields": sorted(CLOSEOUT_SCOPE_FIELDS),
+        },
+    }
+
+
+def validate_closeout_scope(value: dict[str, Any]) -> None:
+    if set(value) != CLOSEOUT_SCOPE_FIELDS or value.get("schema_version") != 1:
+        raise ValueError("closeout schema")
+    payload = value.get("payload_source_oid")
+    if not isinstance(payload, str) or FULL_OID.fullmatch(payload) is None:
+        raise ValueError("payload oid")
+    if value.get("payload_source_tree") != tree_oid(payload):
+        raise ValueError("payload tree")
+    expected_self = {
+        "path": CLOSEOUT_SCOPE_PATH,
+        "expected_mode": "100644",
+        "expected_schema_fields": sorted(CLOSEOUT_SCOPE_FIELDS),
+    }
+    if value.get("self_excluded_manifest") != expected_self:
+        raise ValueError("self exclusion")
+    if git_text("ls-tree", payload, "--", CLOSEOUT_SCOPE_PATH):
+        raise ValueError("manifest not excluded")
+    expected_paths = [path for path in diff_paths(PLAN07_DEFAULT, payload) if path != CLOSEOUT_SCOPE_PATH]
+    scope = value.get("payload_scope")
+    if not isinstance(scope, list) or [item.get("path") for item in scope if isinstance(item, dict)] != expected_paths:
+        raise ValueError("payload paths")
+    for item in scope:
+        if not isinstance(item, dict) or set(item) != CLOSEOUT_RECORD_FIELDS or item != tree_record(payload, item["path"]):
+            raise ValueError("payload record")
+    for oid in CLOSEOUT_REQUIRED_ANCESTORS:
+        subprocess.run(["git", "merge-base", "--is-ancestor", oid, payload], cwd=ROOT, check=True)
+    serialized = json.dumps(value, sort_keys=True, separators=(",", ":")).lower()
+    if any(token in serialized for token in FORBIDDEN_EVIDENCE):
+        raise ValueError("privacy")
+
+
+def verify_closeout_candidate(value: dict[str, Any], candidate: str, local_clean: bool) -> None:
+    validate_closeout_scope(value)
+    candidate_oid = git_text("rev-parse", f"{candidate}^{{commit}}")
+    if git_text("rev-parse", f"{candidate_oid}^") != value["payload_source_oid"]:
+        raise ValueError("candidate parent")
+    if diff_paths(value["payload_source_oid"], candidate_oid) != [CLOSEOUT_SCOPE_PATH]:
+        raise ValueError("candidate delta")
+    if tree_record(candidate_oid, CLOSEOUT_SCOPE_PATH)["mode"] != value["self_excluded_manifest"]["expected_mode"]:
+        raise ValueError("candidate manifest mode")
+    if git_text("branch", "--show-current") != "agent-phase167-fixforward" or not runtime_clean():
+        raise ValueError("candidate checkout")
+    if local_clean:
+        proof_root = Path(tempfile.mkdtemp(prefix=".phase167-closeout-proof.", dir=ROOT / ".planning"))
+        try:
+            subprocess.run(
+                [
+                    "script/run_repository_evidence_environment.sh",
+                    "--source-repository",
+                    str(ROOT),
+                    "--commit",
+                    candidate_oid,
+                    "--output-dir",
+                    str(proof_root),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            evidence = json.loads((proof_root / "clean-checkout-run.json").read_text(encoding="utf-8"))
+            if evidence.get("supported_code_sha") != candidate_oid or [item.get("result") for item in evidence.get("stages", [])] != ["PASS"] * 9:
+                raise ValueError("clean checkout")
+        finally:
+            shutil.rmtree(proof_root, ignore_errors=True)
+
+
+def self_test_closeout_schema() -> int:
+    valid = {
+        "schema_version": 1,
+        "payload_source_oid": "a" * 40,
+        "payload_source_tree": "b" * 40,
+        "payload_scope": [{"path": "README.md", "mode": "100644", "blob": "c" * 40}],
+        "self_excluded_manifest": {
+            "path": CLOSEOUT_SCOPE_PATH,
+            "expected_mode": "100644",
+            "expected_schema_fields": sorted(CLOSEOUT_SCOPE_FIELDS),
+        },
+    }
+    fixtures = [
+        {**valid, "candidate_oid": "d" * 40},
+        {**valid, "payload_source_oid": "short"},
+        {**valid, "payload_scope": []},
+        {**valid, "self_excluded_manifest": {**valid["self_excluded_manifest"], "expected_mode": "100755"}},
+    ]
+    for item in fixtures:
+        structurally_valid = (
+            set(item) == CLOSEOUT_SCOPE_FIELDS
+            and item.get("schema_version") == 1
+            and FULL_OID.fullmatch(str(item.get("payload_source_oid", ""))) is not None
+            and isinstance(item.get("payload_scope"), list)
+            and len(item["payload_scope"]) == 1
+            and item.get("self_excluded_manifest") == valid["self_excluded_manifest"]
+        )
+        if structurally_valid:
+            return 1
+    return 0
 
 
 def inventory_pr_snapshot(number: int) -> dict[str, Any]:
@@ -458,7 +658,10 @@ def self_test_inventory() -> int:
         if not validate_inventory(candidate):
             print(f"phase167-pr-dispositions-self-test: FAIL fixture={name}")
             return 1
-    print(f"phase167-pr-dispositions-self-test: PASS count={len(fixtures) + 1}")
+    if self_test_closeout_schema() != 0:
+        print("phase167-pr-dispositions-self-test: FAIL fixture=closeout_schema")
+        return 1
+    print(f"phase167-pr-dispositions-self-test: PASS count={len(fixtures) + 5}")
     return 0
 
 
@@ -472,12 +675,8 @@ def default_snapshot() -> tuple[str, str, str]:
 
 
 def merge_is_reachable(repository: str, merge_oid: str, default_oid: str) -> bool:
-    endpoint = f"repos/{repository}/compare/{merge_oid}...{default_oid}"
-    result = gh_json(
-        "api", "-H", "Accept: application/vnd.github+json", endpoint, "--jq",
-        "{status:.status,behind_by:.behind_by}",
-    )
-    return result.get("status") in {"ahead", "identical"} and result.get("behind_by") == 0
+    subprocess.run(["git", "fetch", "--quiet", "--no-tags", "origin", default_oid], cwd=ROOT, check=True)
+    return subprocess.run(["git", "merge-base", "--is-ancestor", merge_oid, default_oid], cwd=ROOT).returncode == 0
 
 
 def has_supersession_marker(repository: str, original: int) -> bool:
@@ -621,12 +820,26 @@ def main() -> int:
     parser.add_argument("--self-test-resolution", action="store_true")
     parser.add_argument("--verify-resolution", type=Path)
     parser.add_argument("--verify", type=Path)
+    parser.add_argument("--verify-closeout-candidate", type=Path)
+    parser.add_argument("--candidate", default="HEAD")
+    parser.add_argument("--local-clean-checkout", action="store_true")
     parser.add_argument("--live", action="store_true")
     args = parser.parse_args()
     if args.self_test:
         return self_test_inventory()
     if args.self_test_resolution:
         return self_test_resolution()
+    if args.verify_closeout_candidate is not None:
+        try:
+            raw = json.loads(args.verify_closeout_candidate.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                raise ValueError("scope must be an object")
+            verify_closeout_candidate(raw, args.candidate, args.local_clean_checkout)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError, KeyError, TypeError, subprocess.CalledProcessError):
+            print("phase167-closeout-candidate: FAIL closed_failure")
+            return 1
+        print("phase167-closeout-candidate: PASS derived_candidate=runtime")
+        return 0
     if args.verify is not None:
         try:
             raw = json.loads(args.verify.read_text(encoding="utf-8"))
