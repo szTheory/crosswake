@@ -4,16 +4,16 @@ milestone: v22.0
 milestone_name: Quality Ratchet & Release Readiness
 current_phase: 167
 current_phase_name: Documentation and Pull-Request Reconciliation
-status: gaps_found
-stopped_at: Verification found a fail-open adoption-claim tuple
-last_updated: "2026-09-12T03:48:17Z"
-last_activity: 2026-09-11
-last_activity_desc: Phase 167 verification found one fail-open adoption-claim gap
-state_head: 30ca31ed3f4be23ae6e4d115d8d0f6273aae220a
+status: ready_to_execute
+stopped_at: Gap closure plan 167-09 verified and ready for execution
+last_updated: "2026-09-12T04:07:38.047Z"
+last_activity: 2026-09-12
+last_activity_desc: Phase 167 gap closure plan 167-09 passed plan verification
+state_head: 4643f212ebf962944cb4e70e7cd44d51c042ebec
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 34
+  total_plans: 35
   completed_plans: 34
   percent: 60
 workstream: quality-ratchet-release
@@ -31,10 +31,10 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 
 ## Current Position
 
-Phase: 167 (Documentation and Pull-Request Reconciliation) — GAPS FOUND
-Plan: Gap closure required
-Status: Phase 167 remains pending after verification found one fail-open adoption-claim tuple
-Last activity: 2026-09-11 — Phase 167 verification completed with 37/38 must-haves
+Phase: 167 (Documentation and Pull-Request Reconciliation) — READY TO EXECUTE
+Plan: 9 of 9 (gap closure)
+Status: Plan 167-09 is verified and ready for gap-only execution
+Last activity: 2026-09-12 — Phase 167 gap closure plan passed all planning gates
 
 Progress: [██████░░░░] 60%
 
@@ -183,8 +183,8 @@ Progress: [██████░░░░] 60%
 
 ### Pending Todos
 
-- Plan and execute the Phase 167 gap that rejects impossible available/promoting adoption claims
-  when source authority is missing.
+- Execute Plan 167-09 to reject impossible available/promoting adoption claims when source
+  authority is missing, then re-run Phase 167 verification.
 - Phase 168 must bind and land the exact five Phase 167 closeout artifact blobs before candidate approval.
 - Phase 168 owns all further evaluation of release-only PRs 57, 115, 146, and 147.
 
