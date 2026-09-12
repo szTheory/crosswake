@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v22.0
 milestone_name: Quality Ratchet & Release Readiness
-current_phase: 167
-current_phase_name: Documentation and Pull-Request Reconciliation
-status: ready_to_verify
-stopped_at: Completed 167-09-PLAN.md
-last_updated: "2026-09-12T15:10:59.298Z"
+current_phase: 168
+current_phase_name: 0.2.1 Release Candidate Readiness
+status: planning
+stopped_at: Phase 167 complete, ready to plan Phase 168
+last_updated: "2026-09-12T19:59:45.326Z"
 last_activity: 2026-09-12
-last_activity_desc: Plan 167-09 closed the fail-open adoption-authority tuple
-state_head: f10fe9e4049f871caa79071bd4ad6cdfdddf404c
+last_activity_desc: Phase 167 complete, transitioned to Phase 168
+state_head: 3208c719302389aab7c239f7b1b0a6f74ef97aef
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 35
   completed_plans: 35
-  percent: 60
+  percent: 80
 workstream: quality-ratchet-release
 ---
 
@@ -31,18 +31,18 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 
 ## Current Position
 
-Phase: 167 (Documentation and Pull-Request Reconciliation) — READY TO VERIFY
-Plan: 9 of 9 (gap closure complete)
-Status: Plan 167-09 complete; Phase 167 verification is ready to rerun
-Last activity: 2026-09-12 — Plan 167-09 closed the fail-open adoption-authority tuple
+Phase: 168 — 0.2.1 Release Candidate Readiness
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-09-12 — Phase 167 complete, transitioned to Phase 168
 
-Progress: [██████░░░░] 60%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 27
+- Total plans completed: 35
 - Average duration: N/A
 - Total execution time: 0 hours
 
@@ -54,6 +54,7 @@ Progress: [██████░░░░] 60%
 | 164 | 5 | - | - |
 | 165 | 13 | - | - |
 | 166 | 8 | - | - |
+| 167 | 9 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -206,5 +207,5 @@ Progress: [██████░░░░] 60%
 ## Session Continuity
 
 Last session: 2026-09-12T15:10:59.155Z
-Stopped at: Completed 167-09-PLAN.md
+Stopped at: Phase 167 complete, ready to plan Phase 168
 Resume file: None

@@ -17,7 +17,7 @@ independent workstream; the numbering does not imply that parked adopter work mu
 - [x] **Phase 164: Dependency Security and Gate Authority** - Establish patched dependencies and one fail-closed authoritative path for every required result. (completed 2026-08-28)
 - [x] **Phase 165: Efficient and Maintainable CI** - Reduce runner cost and duplicate work while preserving visible, named proof. (completed 2026-09-09)
 - [x] **Phase 166: Clean-Checkout Engineering Quality** - Make the supported repository verification surfaces deterministic, focused, and clean. (completed 2026-09-10)
-- [ ] **Phase 167: Documentation and Pull-Request Reconciliation** - Align public truth, preserve the parked lane, and resolve ambiguous open PR state.
+- [x] **Phase 167: Documentation and Pull-Request Reconciliation** - Align public truth, preserve the parked lane, and resolve ambiguous open PR state. (completed 2026-09-12)
 - [ ] **Phase 168: 0.2.1 Release Candidate Readiness** - Prove package-family consistency and prepare an exact, approval-gated release candidate.
 
 ## Phase Details
@@ -233,7 +233,7 @@ Plans:
 | 164. Dependency Security and Gate Authority | 5/5 | Complete    | 2026-08-28 |
 | 165. Efficient and Maintainable CI | 13/13 | Complete    | 2026-09-09 |
 | 166. Clean-Checkout Engineering Quality | 8/8 | Complete    | 2026-09-10 |
-| 167. Documentation and Pull-Request Reconciliation | 9/9 | In Progress|  |
+| 167. Documentation and Pull-Request Reconciliation | 9/9 | Complete    | 2026-09-12 |
 | 168. 0.2.1 Release Candidate Readiness | 0/TBD | Not started | - |
 
 ---
