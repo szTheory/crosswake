@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 167
 current_phase_name: Documentation and Pull-Request Reconciliation
 status: executing
-stopped_at: Completed 167-06-PLAN.md
-last_updated: "2026-09-12T00:51:24.454Z"
+stopped_at: Completed 167-07-PLAN.md
+last_updated: "2026-09-12T01:27:28.603Z"
 last_activity: 2026-09-10
 last_activity_desc: Phase 167 execution started
-state_head: c01a7f7bc45df055557b1e9d308402067e3496ed
+state_head: bda14a28b6447f1e6f5ad9d825d429b42f7da1db
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 34
-  completed_plans: 32
+  completed_plans: 33
   percent: 60
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 167 (Documentation and Pull-Request Reconciliation) — EXECUTING
-Plan: 7 of 8
+Plan: 8 of 8
 Status: Ready to execute
 Last activity: 2026-09-10 — Phase 167 execution started
 
@@ -87,6 +87,7 @@ Progress: [██████░░░░] 60%
 | Phase 167 P04 | 7min | 3 tasks | 12 files |
 | Phase 167 P05 | 20min | 3 tasks | 7 files |
 | Phase 167 P06 | 1h 2m | 2 tasks | 22 files |
+| Phase 167 P07 | 27m | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -170,6 +171,9 @@ Progress: [██████░░░░] 60%
 - [Phase 167]: Run repeated root Mix test partitions in isolated cmd mix processes so single-run task state cannot skip the broad lane.
 - [Phase 167]: Keep the destroyed-log e5 root observation nondeterministic and unreproduced; do not infer a leaf, category, or retry policy.
 - [Phase 167]: Require a manifest-only candidate, two complete local proofs, and the first 47-of-47 exact-head hosted run before merge and supersession.
+- [Phase 167]: Preserve PR 105's exact six waiter-name edits while replacing stale three-commit history with one tested intent commit.
+- [Phase 167]: Keep exact-head CI authority through bounded failed-job retries; merge only after the unchanged head reaches 47-of-47 success.
+- [Phase 167]: Commit the PR 105 receipt before integrating fresh protected default so parent order and Plan 08 tree authority remain explicit.
 
 ### Pending Todos
 
@@ -190,6 +194,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-12T00:51:24.295Z
-Stopped at: Completed 167-06-PLAN.md
+Last session: 2026-09-12T01:27:28.437Z
+Stopped at: Completed 167-07-PLAN.md
 Resume file: None
