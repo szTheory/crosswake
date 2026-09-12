@@ -5,8 +5,8 @@
   "kind": "fix_forward_candidate_scope",
   "manifest_mode": "100644",
   "manifest_path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-dependency-closure.json",
-  "payload_source_oid": "e125dc4f443ab0219bf6db23e7a7ba16abfc8f9d",
-  "payload_source_tree_oid": "385858814af61012b22316ebfebeef6ba41b8137",
+  "payload_source_oid": "f4ab5118214c68e40f250ac7e8cdd78fbdab4a7f",
+  "payload_source_tree_oid": "d54f972001f41698d53aa6bb18a023b4da1d0910",
   "proof_argv": [
     [
       "python3",
@@ -18,6 +18,14 @@
       "script/check_phase167_default_reconciliation.py",
       "--verify-failure-ledger",
       ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/fix-forward-failure-ledger.json"
+    ],
+    [
+      "python3",
+      "script/check_phase167_default_reconciliation.py",
+      "--verify-post-412-ledger",
+      ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/fix-forward-failure-ledger.json",
+      "--attempt",
+      "072250e365ec1e2d230e1a84acf43ad3e2e3268c"
     ],
     [
       "mix",
@@ -39,87 +47,91 @@
     [
       "mix",
       "test",
-      "test/crosswake/proof_lane/evidence_test.exs",
-      "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "--only",
+      "phase41_nested_process",
       "--seed",
-      "480367",
+      "748644",
       "--max-cases",
-      "8"
+      "1"
     ],
     [
       "mix",
       "test",
-      "test/crosswake/proof_lane/evidence_test.exs",
-      "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "--only",
+      "phase41_nested_process",
       "--seed",
-      "480367",
+      "748644",
       "--max-cases",
-      "8"
+      "1"
     ],
     [
       "mix",
       "test",
-      "test/crosswake/proof_lane/evidence_test.exs",
-      "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "--only",
+      "phase41_nested_process",
       "--seed",
-      "480367",
+      "748644",
       "--max-cases",
-      "8"
+      "1"
     ],
     [
       "mix",
       "test",
-      "test/crosswake/proof_lane/evidence_test.exs",
-      "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "--only",
+      "phase41_nested_process",
       "--seed",
-      "480367",
+      "748644",
       "--max-cases",
-      "8"
+      "1"
     ],
     [
       "mix",
       "test",
-      "test/crosswake/proof_lane/evidence_test.exs",
-      "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "--only",
+      "phase41_nested_process",
       "--seed",
-      "480367",
+      "748644",
       "--max-cases",
-      "8"
+      "1"
     ],
     [
       "mix",
       "test",
-      "test/crosswake/proof_lane/evidence_test.exs",
-      "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "--only",
+      "phase41_nested_process",
       "--seed",
-      "480367",
+      "748644",
       "--max-cases",
-      "8"
+      "1"
     ],
     [
       "mix",
       "test",
-      "test/crosswake/proof_lane/evidence_test.exs",
-      "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "--only",
+      "phase41_nested_process",
       "--seed",
-      "480367",
+      "748644",
       "--max-cases",
-      "8"
+      "1"
     ],
     [
       "mix",
       "test",
       "test/crosswake/proof/phase41_gating_doctor_test.exs",
       "--seed",
-      "280497"
+      "280497",
+      "--max-cases",
+      "1"
     ],
     [
       "mix",
       "test",
       "--exclude",
+      "phase41_nested_process",
+      "--exclude",
       "requires_example_host",
       "--seed",
-      "480367",
+      "748644",
       "--max-cases",
       "8"
     ],
@@ -140,7 +152,7 @@
       },
       "path": ".github/workflows/crosswake-ci.yml",
       "payload": {
-        "blob": "f589499f6da705699586ff951fe048da558ae10a",
+        "blob": "fa5b8eb5af0babb0ff32d8f3d8b951a726240fc1",
         "mode": "100644"
       }
     },
@@ -723,7 +735,7 @@
       },
       "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-06-PLAN.md",
       "payload": {
-        "blob": "7ca77a48099c54cdb82cda4efa343224e7af21ba",
+        "blob": "cf40cbe4edc4e8a4760a6aabde11010b0031e08b",
         "mode": "100644"
       }
     },
@@ -778,7 +790,7 @@
       },
       "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-PATTERNS.md",
       "payload": {
-        "blob": "54763c0b15ddb89dfbe1c43e35a069fdeda2ddca",
+        "blob": "d4810becacabf76c9544fb7d9596c57671701af2",
         "mode": "100644"
       }
     },
@@ -800,7 +812,7 @@
       },
       "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-VALIDATION.md",
       "payload": {
-        "blob": "d628fd3a24820d6dfccf5de5421fc1f10ba07216",
+        "blob": "4dde37ff9a87f84006c6b51d742980bb25ddd1ee",
         "mode": "100644"
       }
     },
@@ -811,7 +823,7 @@
       },
       "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/fix-forward-failure-ledger.json",
       "payload": {
-        "blob": "7127dfcd8ac3fc1b51d2214b1e61d14d2e922149",
+        "blob": "2624049f6ec5979924141b07e34452110b14b234",
         "mode": "100644"
       }
     },
@@ -1559,7 +1571,7 @@
       },
       "path": "mix.exs",
       "payload": {
-        "blob": "c43656dd5c3d89dddfdd728e6025493d31d34285",
+        "blob": "8a6d15bf0d46e3a7d824d726d96a0e6766110639",
         "mode": "100644"
       }
     },
@@ -1669,7 +1681,7 @@
       },
       "path": "script/check_phase167_default_reconciliation.py",
       "payload": {
-        "blob": "5c100e3002dce4f6e8e9b784198c5e2b2403c966",
+        "blob": "22d438bddd1de7223ed7a8f8c7a6723c4bf0cb58",
         "mode": "100644"
       }
     },
@@ -2296,7 +2308,7 @@
       },
       "path": "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
       "payload": {
-        "blob": "99d4a4e489671e55b8236634ee33add40e8a838a",
+        "blob": "1294cdee8bf3a4a0af838dcedbfb04c8e681865e",
         "mode": "100644"
       }
     },
@@ -2818,7 +2830,7 @@
       }
     }
   ],
-  "records_digest": "d9e9d807032724dc4e8f004f13656b283f5545fd1f6d40e6db255f9ee08affdb",
+  "records_digest": "9798a291a234f782a68dfa803f2d20f1530903212d358b30f144ee1a16fee576",
   "required_ancestor_oids": [
     "367f5b5491384594a652d137a03933fa3a89418a",
     "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
