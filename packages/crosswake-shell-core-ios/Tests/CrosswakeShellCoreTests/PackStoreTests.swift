@@ -234,14 +234,14 @@ private actor ControlledPackProvider: PackProvider {
     }
 
     private func resumeStatusWaiters() {
-        let ready = statusWaiters.filter { $0.0 <= statusEntries }
-        statusWaiters.removeAll { $0.0 <= statusEntries }
-        ready.forEach { $0.1.resume() }
+        let ready = statusWaiters.filter { waiter in waiter.0 <= statusEntries }
+        statusWaiters.removeAll { waiter in waiter.0 <= statusEntries }
+        ready.forEach { waiter in waiter.1.resume() }
     }
 
     private func resumeInvalidationWaiters() {
-        let ready = invalidationWaiters.filter { $0.0 <= invalidationEntries }
-        invalidationWaiters.removeAll { $0.0 <= invalidationEntries }
-        ready.forEach { $0.1.resume() }
+        let ready = invalidationWaiters.filter { waiter in waiter.0 <= invalidationEntries }
+        invalidationWaiters.removeAll { waiter in waiter.0 <= invalidationEntries }
+        ready.forEach { waiter in waiter.1.resume() }
     }
 }
