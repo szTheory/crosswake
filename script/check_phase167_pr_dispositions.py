@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import copy
+import hashlib
 import json
 import re
 import subprocess
@@ -98,6 +100,66 @@ SUPERSESSION_MARKERS = {
     121: "<!-- crosswake-phase167-pr-121-superseded -->",
     110: "<!-- crosswake-phase167-pr-110-superseded -->",
 }
+ORDINARY_NUMBERS = [57, 105, 110, 115, 121, 146, 147]
+DEFERRED_NUMBERS = [57, 115, 146, 147]
+DEFER_MARKER = "<!-- crosswake-phase167-release-only-deferred-phase168 -->"
+INVENTORY_FIELDS = {
+    "schema_version",
+    "kind",
+    "captured_at",
+    "default_oid",
+    "ordinary_prs",
+    "release_only_deferred",
+    "recovery_transactions",
+}
+ORDINARY_FIELDS = {
+    "number",
+    "head_oid",
+    "base_oid",
+    "check_summary",
+    "disposition",
+    "reason",
+    "next_gate",
+}
+CHECK_FIELDS = {"name", "head_oid", "status", "conclusion"}
+DEFER_FIELDS = {"number", "comment_node_id", "marker_sha256"}
+RECOVERY_FIELDS = {
+    "role",
+    "number",
+    "head_oid",
+    "state",
+    "merge_oid",
+    "replacement_number",
+    "receipt_path",
+    "receipt_sha256",
+}
+DISPOSITIONS = {
+    57: ("release_only_deferred", "release_candidate_requires_phase_168", "phase_168_exact_candidate_and_maintainer_approval"),
+    105: ("merged", "packstore_waiter_clarity_landed", "none"),
+    110: ("closed_unmerged_superseded", "complete_truth_landed_by_replacement", "replacement_pr_149_receipt"),
+    115: ("release_only_deferred", "release_candidate_requires_phase_168", "phase_168_exact_candidate_and_maintainer_approval"),
+    121: ("merged", "setup_java_v6_landed", "none"),
+    146: ("release_only_deferred", "release_candidate_requires_phase_168", "phase_168_exact_candidate_and_maintainer_approval"),
+    147: ("release_only_deferred", "release_candidate_requires_phase_168", "phase_168_exact_candidate_and_maintainer_approval"),
+}
+RECOVERY_PATHS = {
+    145: ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-reconciliation-resolution.json",
+    110: ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-110-resolution.json",
+    148: ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-reconciliation-resolution.json",
+    149: ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-reconciliation-resolution.json",
+}
+RECOVERY_ROLES = ["historical_merged", "failed_closed_unmerged", "failed_closed_unmerged", "replacement_merged"]
+FORBIDDEN_EVIDENCE = (
+    "http://",
+    "https://",
+    "bearer ",
+    "ghp_",
+    "raw_answer",
+    "transcript",
+    "credential",
+    "stable_device",
+    "founder_identity",
+)
 
 
 @dataclass(frozen=True)
@@ -210,15 +272,203 @@ def check_snapshot(repository: str, head_oid: str) -> dict[str, Any] | None:
     return gh_json("api", "-H", "Accept: application/vnd.github+json", endpoint, "--jq", query)
 
 
-def default_snapshot() -> tuple[str, str, str]:
-    repository = gh_json(
-        "repo", "view", "--json", "nameWithOwner,defaultBranchRef", "--jq",
-        "{repository:.nameWithOwner,branch:.defaultBranchRef.name}",
+def sha256_bytes(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
+
+
+def file_sha256(path: str) -> str:
+    return sha256_bytes((ROOT / path).read_bytes())
+
+
+def inventory_pr_snapshot(number: int) -> dict[str, Any]:
+    query = (
+        "{number:.number,state:.state,head_oid:.headRefOid,base_oid:.baseRefOid,"
+        "merge_oid:(.mergeCommit.oid // null),"
+        "check:([.statusCheckRollup[] | select(.name == \"Crosswake CI\") | "
+        "{name:.name,status:(.status | ascii_upcase),conclusion:((.conclusion // \"\") | ascii_upcase)}] | first),"
+        f"marker_ids:[.comments[] | select(.body == {json.dumps(DEFER_MARKER)}) | .id]}}"
     )
-    branch = repository["branch"]
-    endpoint = f"repos/{repository['repository']}/branches/{urllib.parse.quote(branch, safe='')}"
-    authority = gh_json("api", "-H", "Accept: application/vnd.github+json", endpoint, "--jq", "{oid:.commit.sha}")
-    return repository["repository"], branch, authority["oid"]
+    value = gh_json(
+        "pr", "view", str(number), "--json",
+        "number,state,headRefOid,baseRefOid,mergeCommit,statusCheckRollup,comments", "--jq", query,
+    )
+    if isinstance(value.get("check"), dict):
+        value["check"]["head_oid"] = value["head_oid"]
+    return value
+
+
+def open_pr_numbers() -> list[int]:
+    values = gh_json("pr", "list", "--state", "open", "--limit", "100", "--json", "number")
+    return sorted(int(item["number"]) for item in values)
+
+
+def load_inventory_live() -> dict[str, Any]:
+    repository, _branch, default_oid = default_snapshot()
+    snapshots = {number: inventory_pr_snapshot(number) for number in set(ORDINARY_NUMBERS + [145, 148, 149])}
+    checks = {number: snapshots[number]["check"] for number in ORDINARY_NUMBERS}
+    markers = {number: snapshots[number]["marker_ids"] for number in DEFERRED_NUMBERS}
+    return {
+        "repository": repository,
+        "default_oid": default_oid,
+        "snapshots": snapshots,
+        "checks": checks,
+        "markers": markers,
+        "open_numbers": open_pr_numbers(),
+    }
+
+
+def validate_inventory(value: dict[str, Any], live: dict[str, Any] | None = None) -> list[Problem]:
+    problems: list[Problem] = []
+
+    def reject(condition: bool, rule: str, number: int = 0) -> None:
+        if condition:
+            problems.append(Problem(rule, number))
+
+    reject(set(value) != INVENTORY_FIELDS, "inventory_schema")
+    reject(value.get("schema_version") != 1 or value.get("kind") != "phase167_pr_dispositions", "inventory_identity")
+    reject(not isinstance(value.get("captured_at"), str) or re.fullmatch(r"20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", value.get("captured_at", "")) is None, "captured_at")
+    reject(not isinstance(value.get("default_oid"), str) or FULL_OID.fullmatch(value.get("default_oid", "")) is None, "default_oid_format")
+    rows = value.get("ordinary_prs") if isinstance(value.get("ordinary_prs"), list) else []
+    reject([row.get("number") for row in rows if isinstance(row, dict)] != ORDINARY_NUMBERS, "ordinary_set")
+    for row in rows:
+        number = row.get("number") if isinstance(row, dict) and isinstance(row.get("number"), int) else 0
+        reject(not isinstance(row, dict) or set(row) != ORDINARY_FIELDS, "ordinary_schema", number)
+        if not isinstance(row, dict):
+            continue
+        reject(FULL_OID.fullmatch(str(row.get("head_oid", ""))) is None, "ordinary_head", number)
+        reject(FULL_OID.fullmatch(str(row.get("base_oid", ""))) is None, "ordinary_base", number)
+        check_value = row.get("check_summary")
+        reject(not isinstance(check_value, dict) or set(check_value) != CHECK_FIELDS, "check_schema", number)
+        if isinstance(check_value, dict):
+            reject(check_value.get("name") != "Crosswake CI", "check_name", number)
+            reject(check_value.get("head_oid") != row.get("head_oid"), "check_head", number)
+            reject(check_value.get("status") != "COMPLETED", "check_status", number)
+            reject(check_value.get("conclusion") not in {"SUCCESS", "FAILURE"}, "check_conclusion", number)
+        reject(tuple(row.get(field) for field in ("disposition", "reason", "next_gate")) != DISPOSITIONS.get(number), "ordinary_disposition", number)
+
+    defers = value.get("release_only_deferred") if isinstance(value.get("release_only_deferred"), list) else []
+    reject([item.get("number") for item in defers if isinstance(item, dict)] != DEFERRED_NUMBERS, "defer_set")
+    marker_hash = sha256_bytes(DEFER_MARKER.encode("utf-8"))
+    for item in defers:
+        number = item.get("number") if isinstance(item, dict) and isinstance(item.get("number"), int) else 0
+        reject(not isinstance(item, dict) or set(item) != DEFER_FIELDS, "defer_schema", number)
+        if isinstance(item, dict):
+            reject(not isinstance(item.get("comment_node_id"), str) or re.fullmatch(r"IC_[A-Za-z0-9_-]+", item["comment_node_id"]) is None, "defer_comment_id", number)
+            reject(item.get("marker_sha256") != marker_hash, "defer_marker", number)
+
+    recovery = value.get("recovery_transactions") if isinstance(value.get("recovery_transactions"), list) else []
+    reject([item.get("number") for item in recovery if isinstance(item, dict)] != [145, 148, 110, 149], "recovery_set")
+    reject([item.get("role") for item in recovery if isinstance(item, dict)] != RECOVERY_ROLES, "recovery_roles")
+    for item in recovery:
+        number = item.get("number") if isinstance(item, dict) and isinstance(item.get("number"), int) else 0
+        reject(not isinstance(item, dict) or set(item) != RECOVERY_FIELDS, "recovery_schema", number)
+        if not isinstance(item, dict):
+            continue
+        path = RECOVERY_PATHS.get(number)
+        reject(item.get("receipt_path") != path, "recovery_receipt_path", number)
+        if path is not None:
+            reject(item.get("receipt_sha256") != file_sha256(path), "recovery_receipt_digest", number)
+        reject(FULL_OID.fullmatch(str(item.get("head_oid", ""))) is None, "recovery_head", number)
+        if number in {110, 148}:
+            reject(item.get("state") != "CLOSED" or item.get("merge_oid") is not None or item.get("replacement_number") != 149, "failed_recovery", number)
+        elif number == 145:
+            reject(item.get("state") != "MERGED" or item.get("merge_oid") != "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb" or item.get("replacement_number") is not None, "historical_recovery", number)
+        elif number == 149:
+            reject(item.get("state") != "MERGED" or item.get("merge_oid") != "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b" or item.get("replacement_number") is not None, "replacement_recovery", number)
+
+    serialized = json.dumps(value, sort_keys=True, separators=(",", ":")).lower()
+    reject(any(token in serialized for token in FORBIDDEN_EVIDENCE), "privacy_sentinel")
+
+    if live is not None:
+        reject(value.get("default_oid") != live.get("default_oid"), "default_oid_drift")
+        reject(live.get("open_numbers") != DEFERRED_NUMBERS, "unknown_open_pr")
+        for row in rows:
+            if not isinstance(row, dict) or row.get("number") not in ORDINARY_NUMBERS:
+                continue
+            number = int(row["number"])
+            snapshot = live["snapshots"].get(number, {})
+            reject(snapshot.get("head_oid") != row.get("head_oid"), "live_head_drift", number)
+            reject(snapshot.get("base_oid") != row.get("base_oid"), "live_base_drift", number)
+            expected_state = "OPEN" if number in DEFERRED_NUMBERS else ("CLOSED" if number == 110 else "MERGED")
+            reject(snapshot.get("state") != expected_state, "live_state", number)
+            if number == 110:
+                reject(snapshot.get("merge_oid") is not None, "failed_pr_merged", number)
+            check_value = live["checks"].get(number)
+            reject(check_value != row.get("check_summary"), "live_check_drift", number)
+        for item in defers:
+            if not isinstance(item, dict) or item.get("number") not in DEFERRED_NUMBERS:
+                continue
+            receipts = live["markers"].get(item["number"], [])
+            reject(receipts != [item.get("comment_node_id")], "live_defer_marker", item["number"])
+        for item in recovery:
+            if not isinstance(item, dict) or item.get("number") not in live["snapshots"]:
+                continue
+            snapshot = live["snapshots"][item["number"]]
+            reject(snapshot.get("head_oid") != item.get("head_oid") or snapshot.get("state") != item.get("state") or snapshot.get("merge_oid") != item.get("merge_oid"), "live_recovery_drift", item["number"])
+    return problems
+
+
+def valid_inventory_fixture() -> dict[str, Any]:
+    oid = lambda char: char * 40
+    rows = []
+    for index, number in enumerate(ORDINARY_NUMBERS):
+        disposition, reason, gate = DISPOSITIONS[number]
+        head = oid(format(index + 1, "x"))
+        rows.append({
+            "number": number,
+            "head_oid": head,
+            "base_oid": oid("a"),
+            "check_summary": {"name": "Crosswake CI", "head_oid": head, "status": "COMPLETED", "conclusion": "SUCCESS"},
+            "disposition": disposition,
+            "reason": reason,
+            "next_gate": gate,
+        })
+    defers = [{"number": number, "comment_node_id": f"IC_fixture_{number}", "marker_sha256": sha256_bytes(DEFER_MARKER.encode())} for number in DEFERRED_NUMBERS]
+    resolution_path = RECOVERY_PATHS[145]
+    pr110_path = RECOVERY_PATHS[110]
+    recovery = [
+        {"role": "historical_merged", "number": 145, "head_oid": "a6e2622acaaa82e82eb33a21760e75db2e51a281", "state": "MERGED", "merge_oid": "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb", "replacement_number": None, "receipt_path": resolution_path, "receipt_sha256": file_sha256(resolution_path)},
+        {"role": "failed_closed_unmerged", "number": 148, "head_oid": "cc5286da6467c6d582f9a9585272360fcc1e4927", "state": "CLOSED", "merge_oid": None, "replacement_number": 149, "receipt_path": resolution_path, "receipt_sha256": file_sha256(resolution_path)},
+        {"role": "failed_closed_unmerged", "number": 110, "head_oid": "85e6aeec41b9a53840f0a2315c16c4390cef1878", "state": "CLOSED", "merge_oid": None, "replacement_number": 149, "receipt_path": pr110_path, "receipt_sha256": file_sha256(pr110_path)},
+        {"role": "replacement_merged", "number": 149, "head_oid": "b489905d0f735e88268905607390021256e405b8", "state": "MERGED", "merge_oid": "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b", "replacement_number": None, "receipt_path": resolution_path, "receipt_sha256": file_sha256(resolution_path)},
+    ]
+    return {"schema_version": 1, "kind": "phase167_pr_dispositions", "captured_at": "2026-09-12T00:00:00Z", "default_oid": oid("b"), "ordinary_prs": rows, "release_only_deferred": defers, "recovery_transactions": recovery}
+
+
+def self_test_inventory() -> int:
+    valid = valid_inventory_fixture()
+    if validate_inventory(valid):
+        print("phase167-pr-dispositions-self-test: FAIL fixture=valid")
+        return 1
+    fixtures: list[tuple[str, Callable[[dict[str, Any]], None]]] = [
+        ("extra_row", lambda value: value["ordinary_prs"].append(copy.deepcopy(value["ordinary_prs"][-1]))),
+        ("missing_row", lambda value: value["ordinary_prs"].pop()),
+        ("stale_head", lambda value: value["ordinary_prs"][0].update(head_oid="abc")),
+        ("recovery_conflated", lambda value: value["recovery_transactions"].pop()),
+        ("replacement_missing", lambda value: value["recovery_transactions"].pop()),
+        ("failed_merged", lambda value: value["recovery_transactions"][1].update(merge_oid="f" * 40)),
+        ("release_mutation", lambda value: value["ordinary_prs"][0].update(disposition="merged")),
+        ("missing_marker", lambda value: value["release_only_deferred"].pop()),
+        ("unknown_key", lambda value: value.update(title="untrusted")),
+        ("privacy", lambda value: value.update(source_url="https://invalid.example")),
+    ]
+    for name, mutate in fixtures:
+        candidate = copy.deepcopy(valid)
+        mutate(candidate)
+        if not validate_inventory(candidate):
+            print(f"phase167-pr-dispositions-self-test: FAIL fixture={name}")
+            return 1
+    print(f"phase167-pr-dispositions-self-test: PASS count={len(fixtures) + 1}")
+    return 0
+
+
+def default_snapshot() -> tuple[str, str, str]:
+    value = gh_json(
+        "api", "graphql", "-f",
+        "query=query { repository(owner:\"szTheory\",name:\"crosswake\") { nameWithOwner defaultBranchRef { name target { oid } } } }",
+        "--jq", ".data.repository | {repository:.nameWithOwner,branch:.defaultBranchRef.name,oid:.defaultBranchRef.target.oid}",
+    )
+    return value["repository"], value["branch"], value["oid"]
 
 
 def merge_is_reachable(repository: str, merge_oid: str, default_oid: str) -> bool:
@@ -366,15 +616,34 @@ def self_test_resolution() -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(allow_abbrev=False)
+    parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--self-test-resolution", action="store_true")
     parser.add_argument("--verify-resolution", type=Path)
+    parser.add_argument("--verify", type=Path)
     parser.add_argument("--live", action="store_true")
     args = parser.parse_args()
+    if args.self_test:
+        return self_test_inventory()
     if args.self_test_resolution:
         return self_test_resolution()
+    if args.verify is not None:
+        try:
+            raw = json.loads(args.verify.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                raise ValueError("inventory must be an object")
+            problems = validate_inventory(raw, load_inventory_live() if args.live else None)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError, KeyError, TypeError, subprocess.CalledProcessError):
+            print(Problem("inventory_query_failed", 0).render())
+            return 1
+        if problems:
+            for problem in sorted(set(problems), key=lambda item: (item.rule, item.number)):
+                print(problem.render())
+            return 1
+        print(f"phase167-pr-dispositions: PASS ordinary={len(raw['ordinary_prs'])} recovery={len(raw['recovery_transactions'])}")
+        return 0
     if args.verify_resolution is None or not args.live:
-        parser.error("use --self-test-resolution or --verify-resolution PATH --live")
+        parser.error("select one fixed verification mode")
     try:
         raw = json.loads(args.verify_resolution.read_text(encoding="utf-8"))
         if not isinstance(raw, dict):
