@@ -1,6 +1,6 @@
 ---
 phase: 167-documentation-and-pull-request-reconciliation
-verified: 2026-09-12T19:55:43Z
+verified: 2026-09-12T20:04:17Z
 status: passed
 score: 38/38 must-haves verified
 roadmap_score: 3/3 success criteria verified
@@ -9,6 +9,7 @@ covered_files:
   - .github/workflows/crosswake-ci.yml
   - .github/workflows/phase68-proof.yml
   - .github/workflows/release-please.yml
+  - .planning/PROJECT.md
   - .planning/workstreams/first-b2c-adopter-readiness/STATE.md
   - .planning/workstreams/quality-ratchet-release/REQUIREMENTS.md
   - .planning/workstreams/quality-ratchet-release/ROADMAP.md
@@ -96,9 +97,15 @@ covered_files:
   - test/js/phase167_pr_dispositions.test.mjs
   - test/js/repository_verification.test.mjs
   - test/mix/tasks/crosswake.docs.sync_test.exs
-covered_digest: "v1:sha256:df0f34b6fb2b82a60b6066d2ff91a8b357130a50ced7aa664ba0f2a65902deea"
+covered_digest: "v1:sha256:3ea66fcbafd67e07e9788231ce063c037d807188b1fc784cf093ae1b70d46c37"
 behavior_unverified: 0
 overrides_applied: 0
+post_transition_refresh:
+  head: f4b65fd5cd571347b7c99e2c0c7e658fc3416975
+  prior_verification_commit: 3208c719302389aab7c239f7b1b0a6f74ef97aef
+  changed_files: 4
+  source_changes: 0
+  phase_168_handoff_consistent: true
 re_verification:
   previous_status: gaps_found
   previous_score: 37/38
@@ -137,7 +144,7 @@ prohibition_review:
 # Phase 167: Documentation and Pull-Request Reconciliation Verification Report
 
 **Phase Goal:** Maintainers see one current account of supported behavior and can understand the disposition of every open change without disturbing parked adopter work.
-**Verified:** 2026-09-12T19:55:43Z
+**Verified:** 2026-09-12T20:04:17Z
 **Status:** passed
 **Re-verification:** Yes — after the complete adoption-authority tuple gap and later closeout-validator review blockers were repaired.
 
@@ -147,7 +154,13 @@ Phase 167 achieves its goal. Public support and capability projections are byte-
 
 The former blocker is closed in production, not just in narration: `validate_adoption_claim!/1` now accepts only three exact seven-field authority tuples. The exact formerly accepted available/first-adopter/missing-source/promoting tuple raises, the 64-case available cross-product and 63 all-state one-axis mutations pass, and both renderers consume `first_adopter_claims/0`.
 
-Current runtime receipt drift is not reported as a green local reconciliation. Two of the three untracked runtime files differ from the retained closeout hashes, so the corrected command exits 1 with `phase167-local-reconciliation: FAIL closed_failure`. That is the intended fail-closed result for changed current runtime state. The historical closeout remains independently supported by retained raw-byte-to-Git-blob bindings, candidate/merge parent and tree identity, the exact 47/47 CI receipt, and a fresh live seven-ordinary/four-recovery/five-handoff verification.
+Current runtime receipt drift is not reported as a green local reconciliation. The completed-phase transition changed `state.json`, removed `milestone.lock`, and introduced `.verification-ledger.json`; the corrected command therefore exits 1 with `phase167-local-reconciliation: FAIL closed_failure`. That is the intended fail-closed result for runtime state that no longer equals the retained closeout receipt. The historical closeout remains independently supported by retained raw-byte-to-Git-blob bindings, candidate/merge parent and tree identity, the exact 47/47 CI receipt, and the previously refreshed live seven-ordinary/four-recovery/five-handoff verification.
+
+## Post-Transition Refresh
+
+HEAD `f4b65fd5cd571347b7c99e2c0c7e658fc3416975` changes exactly four files relative to the passed verification commit `3208c719302389aab7c239f7b1b0a6f74ef97aef`: `.planning/PROJECT.md`, workstream `REQUIREMENTS.md`, `ROADMAP.md`, and `STATE.md`. `git diff --check` passes, and no source, test, workflow, guide, or retained-evidence byte changed.
+
+The final planning bytes agree: DOC-01, DOC-02, and DOC-03 are checked and traced as complete; Phase 167 is recorded complete on 2026-09-12; Phase 168 is current, unstarted, and owns REL-01 through REL-05. The retained closeout still hands Phase 168 exactly five path names under owner `phase_168_first_reversible_landing`, while final state explicitly assigns Phase 168 the five-blob landing and further evaluation of PRs 57, 115, 146, and 147. Fresh post-transition `mix crosswake.docs.sync --check` and `mix crosswake.adoption_context.scan` both pass.
 
 ## Goal Achievement
 
@@ -199,7 +212,7 @@ Current runtime receipt drift is not reported as a green local reconciliation. T
 | P8-T2 | Recovery provenance is separate and replacement proof is complete. | VERIFIED | Recovery collection is distinct; raw evidence bytes are bound to tested Git history. |
 | P8-T3 | Pre-closeout source and evidence are byte-bound, CI-covered, and landed. | VERIFIED | Baseline and scope raw bytes match their recorded Git blobs; candidate, merge, and tree identity pass. |
 | P8-T4 | Closeout preserves ancestry/tree identity and hands off exactly five names/one owner. | VERIFIED | Closeout resolution passes offline and live with `handoff=5`; no premature blob-landing claim is made. |
-| P8-T5 | Local reconciliation preserves branch/index/tracked state and rejects changed runtime receipts. | VERIFIED | Branch/main/ancestry/tracked/index checks pass; the current command exits 1 because two runtime hashes changed, proving the corrected fail-closed contract. WR-05 records the missing positive fixture. |
+| P8-T5 | Local reconciliation preserves branch/index/tracked state and rejects changed runtime receipts. | VERIFIED | Branch/main/ancestry/tracked/index checks pass; after the phase transition the current command exits 1 because runtime state changed shape and bytes, proving the corrected fail-closed contract. WR-05 records the missing positive fixture. |
 | P8-T6 | Retained truth contains no prohibited remote prose/secret/adopter/release/Android breadth. | VERIFIED | Closed schemas, non-echoing negative tests, and adoption privacy scan pass. |
 
 **Score:** 38/38 truths verified; 0 present-but-behavior-unverified.
@@ -260,6 +273,8 @@ No rendered goal-critical value terminates in a mock, empty prop, or static fall
 | Current PR state and retained closeout agree | closeout verifier with `--live` | `PASS ordinary=7 recovery=4 handoff=5 observation=live` | PASS |
 | Current runtime drift is rejected | local reconciliation verifier | exit 1, `FAIL closed_failure` | PASS — negative fail-closed contract |
 | PackStore waiter ordering remains exercised | `swift test ... --filter PackStoreTests` | 9 tests, 0 failures | PASS |
+| Final transition changed planning state only | `git diff --name-status 3208c719..f4b65fd5` | exactly PROJECT, REQUIREMENTS, ROADMAP, STATE; no source changes | PASS |
+| Final generated docs and privacy boundary remain current | docs sync check + adoption scan | both passed at post-transition HEAD | PASS |
 
 ## Probe Execution
 
@@ -274,8 +289,9 @@ No rendered goal-critical value terminates in a mock, empty prop, or static fall
 | Runtime path | Retained closeout SHA-256 | Current SHA-256 | Status |
 | --- | --- | --- | --- |
 | `config.json` | `05b25ad...` | `05b25ad...` | unchanged |
-| `milestone.lock` | `fd4c22c...` | `75a62e50...` | changed after closeout |
-| `state.json` | `6cf0413c...` | `0d096c6d...` | changed after closeout |
+| `milestone.lock` | `fd4c22c...` | absent | removed by completed-phase transition |
+| `state.json` | `6cf0413c...` | `f912dda2...` | changed after closeout and transition |
+| `.verification-ledger.json` | not in closeout runtime set | `9f83742e...` | introduced by transition; additional current runtime state |
 
 The validator is supposed to reject this state. Calling that rejection a passing local reconciliation would be a false claim; calling it evidence that the historical PR closeout failed would also be wrong. Historical authority is carried by the immutable Git and CI bindings above, while the local command governs whether today's untracked runtime still equals the closeout receipt.
 
@@ -287,9 +303,7 @@ The validator is supposed to reject this state. Calling that rejection a passing
 | DOC-02 | 01, 03-04, 08 | Parked adopter work remains codename-only, resumable, and honestly blocked. | SATISFIED | Parked state inspection plus destination-aware privacy scan. |
 | DOC-03 | 05-08 | Every open PR has an explicit current disposition. | SATISFIED | Fresh live exact-set verification and retained ordinary/recovery evidence. |
 
-The unchecked DOC-02/DOC-03 boxes and prior `Gaps Found` rows in `REQUIREMENTS.md` are pre-transition workflow state from the earlier failed verification; this report supplies the requirement outcomes for the orchestrator's phase transition rather than treating stale workflow bookkeeping as implementation behavior.
-
-No additional requirement is mapped to Phase 167 without a claiming plan.
+Final `REQUIREMENTS.md` now checks DOC-01 through DOC-03 and traces all three to Phase 167 as `Complete`; REL-01 through REL-05 remain pending under Phase 168. No additional requirement is mapped to Phase 167 without a claiming plan.
 
 ## Decision Coverage
 
@@ -327,9 +341,9 @@ N/A — documentation/tooling reconciliation phase with no user-facing visual or
 
 ## Gaps Summary
 
-No blocking gaps remain. The prior complete-authority-tuple gap is closed, the two later code-review blockers are repaired, all five residual review findings are retained as advisories, and current runtime receipt drift is rejected honestly rather than misreported as green.
+No blocking gaps remain. The prior complete-authority-tuple gap is closed, the two later code-review blockers are repaired, all five residual review findings are retained as advisories, and current post-transition runtime receipt drift is rejected honestly rather than misreported as green. Final requirements, roadmap, project, and state bytes consistently close Phase 167 and hand Phase 168 only its declared release-candidate obligations.
 
 ---
 
-_Verified: 2026-09-12T19:55:43Z_
+_Verified: 2026-09-12T20:04:17Z_
 _Verifier: the agent (gsd-verifier)_
