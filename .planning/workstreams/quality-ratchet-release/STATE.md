@@ -4,17 +4,17 @@ milestone: v22.0
 milestone_name: Quality Ratchet & Release Readiness
 current_phase: 167
 current_phase_name: Documentation and Pull-Request Reconciliation
-status: ready_to_execute
-stopped_at: Gap closure plan 167-09 verified and ready for execution
-last_updated: "2026-09-12T04:07:38.047Z"
+status: ready_to_verify
+stopped_at: Completed 167-09-PLAN.md
+last_updated: "2026-09-12T15:10:59.298Z"
 last_activity: 2026-09-12
-last_activity_desc: Phase 167 gap closure plan 167-09 passed plan verification
-state_head: 4643f212ebf962944cb4e70e7cd44d51c042ebec
+last_activity_desc: Plan 167-09 closed the fail-open adoption-authority tuple
+state_head: f10fe9e4049f871caa79071bd4ad6cdfdddf404c
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 35
-  completed_plans: 34
+  completed_plans: 35
   percent: 60
 workstream: quality-ratchet-release
 ---
@@ -27,14 +27,14 @@ See: `.planning/PROJECT.md` (updated 2026-09-10)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 167 gap closure — fail-closed adoption-claim tuple validation
+**Current focus:** Phase 167 post-gap verification — complete adoption-authority tuple closure
 
 ## Current Position
 
-Phase: 167 (Documentation and Pull-Request Reconciliation) — READY TO EXECUTE
-Plan: 9 of 9 (gap closure)
-Status: Plan 167-09 is verified and ready for gap-only execution
-Last activity: 2026-09-12 — Phase 167 gap closure plan passed all planning gates
+Phase: 167 (Documentation and Pull-Request Reconciliation) — READY TO VERIFY
+Plan: 9 of 9 (gap closure complete)
+Status: Plan 167-09 complete; Phase 167 verification is ready to rerun
+Last activity: 2026-09-12 — Plan 167-09 closed the fail-open adoption-authority tuple
 
 Progress: [██████░░░░] 60%
 
@@ -89,6 +89,7 @@ Progress: [██████░░░░] 60%
 | Phase 167 P06 | 1h 2m | 2 tasks | 22 files |
 | Phase 167 P07 | 27m | 2 tasks | 2 files |
 | Phase 167 P08 | 1h 28m | 3 tasks | 10 files |
+| Phase 167 P09 | 9min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -180,18 +181,17 @@ Progress: [██████░░░░] 60%
 - [Phase 167]: Keep release-only PRs 57, 115, 146, and 147 open, unmerged, singly marked, and owned by the Phase 168 exact-candidate gate.
 - [Phase 167]: Bind closeout authority to PR 150 head 7211b78f8004511bd4380cac92cac1abcd8854ed, run 34666842094 at 47/47, and tree-identical merge 30ca31ed3f4be23ae6e4d115d8d0f6273aae220a.
 - [Phase 167]: Hand Phase 168 only the five final path names and owner phase_168_first_reversible_landing; do not claim their blobs are on protected default.
+- [Phase 167]: Admit adoption authority only by exact membership in the three canonical seven-field tuples.
+- [Phase 167]: Return one stable complete_authority_tuple rule without echoing sensitive statement or boundary values.
 
 ### Pending Todos
 
-- Execute Plan 167-09 to reject impossible available/promoting adoption claims when source
-  authority is missing, then re-run Phase 167 verification.
+- Re-run Phase 167 verification against the complete adoption-authority tuple closure.
 - Phase 168 must bind and land the exact five Phase 167 closeout artifact blobs before candidate approval.
 - Phase 168 owns all further evaluation of release-only PRs 57, 115, 146, and 147.
 
 ### Blockers/Concerns
 
-- Phase 167 verification reproduces a fail-open adoption-claim tuple; DOC-01 remains incomplete
-  until the tuple contract and regression coverage are corrected.
 - The First B2C Adopter work remains parked separately at Phase 163.1 pending external route/device
   authority; do not copy or infer adopter facts into v22 artifacts.
 
@@ -205,6 +205,6 @@ Progress: [██████░░░░] 60%
 
 ## Session Continuity
 
-Last session: 2026-09-12T03:48:17Z
-Stopped at: Phase 167 verification found one gap
+Last session: 2026-09-12T15:10:59.155Z
+Stopped at: Completed 167-09-PLAN.md
 Resume file: None
