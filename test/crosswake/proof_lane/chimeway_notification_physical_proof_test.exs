@@ -65,6 +65,25 @@ defmodule Crosswake.ProofLane.ChimewayNotificationPhysicalProofTest do
     end)
   end
 
+  test "the physical host allows only declared local-network callback transport" do
+    ios_root =
+      Path.expand(
+        "../../../examples/phoenix_host/native/ios",
+        __DIR__
+      )
+
+    plist = File.read!(Path.join(ios_root, "CrosswakeProofLane/Info.plist"))
+    project = File.read!(Path.join(ios_root, "CrosswakeProofLane.xcodeproj/project.pbxproj"))
+
+    assert plist =~ "<key>NSLocalNetworkUsageDescription</key>"
+    assert plist =~ "<key>NSAppTransportSecurity</key>"
+    assert plist =~ "<key>NSAllowsLocalNetworking</key>"
+    refute plist =~ "NSAllowsArbitraryLoads"
+
+    assert length(Regex.scan(~r/GENERATE_INFOPLIST_FILE = NO;/, project)) == 2
+    assert length(Regex.scan(~r{INFOPLIST_FILE = CrosswakeProofLane/Info.plist;}, project)) == 2
+  end
+
   test "the source-owned task promotes a closed notification result" do
     root =
       Path.join(

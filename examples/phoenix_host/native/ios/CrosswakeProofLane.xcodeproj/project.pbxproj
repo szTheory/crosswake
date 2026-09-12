@@ -316,7 +316,8 @@
 				DEVELOPMENT_TEAM = ZP67WW2L67;
 				ENABLE_TESTABILITY = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CrosswakeProofLane/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.crosswake.prooflane;
 				PRODUCT_MODULE_NAME = CrosswakeProofLane;
@@ -335,7 +336,8 @@
 				CODE_SIGNING_REQUIRED = NO;
 				COMPRESS_PNG_FILES = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CrosswakeProofLane/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.crosswake.prooflane;
 				PRODUCT_MODULE_NAME = CrosswakeProofLane;
