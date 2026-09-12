@@ -11,7 +11,7 @@ Add `crosswake_rulestead` to your `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:crosswake, "~> 0.1"},
+    {:crosswake, "~> 0.2"},
     {:crosswake_rulestead, "~> 0.1"},
     {:rulestead, "~> 0.1"}   # the engine (optional; companion probes at runtime)
   ]

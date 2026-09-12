@@ -95,7 +95,11 @@ For the full proof command reference: [examples/QUICK_START.md](https://github.c
 
 ### Evaluating Crosswake
 
-Start with:
+**Current answer:** Crosswake is a Phoenix-first route-policy and runtime-contract system;
+it assigns one explicit owner to each managed route and fails closed when that contract
+cannot be satisfied. Start with the architecture guide for the model.
+
+Use this map:
 
 - [guides/architecture.md](guides/architecture.md) for the system mental model from route declaration to runtime owner or denial
 - [guides/route_policy.md](guides/route_policy.md) for the start-here route-owner map
@@ -106,16 +110,23 @@ Start with:
 - [guides/support_matrix.md](guides/support_matrix.md) for the current supported baseline
 - [examples/phoenix_host/README.md](https://github.com/szTheory/crosswake/blob/main/examples/phoenix_host/README.md) for the shared exemplar host contract
 
+Use the [canonical support matrix](guides/support_matrix.md) for current support and proof detail.
+
 ### Integrating Crosswake
 
-Use the current host-owned path:
+**Current answer:** your Phoenix router owns route declarations and each generated shell is host-owned.
+Crosswake owns compilation, compatibility checks, and bounded diagnostics. Use this current path,
+then let `mix crosswake.doctor` name the exact owner or action when proof cannot proceed:
 
 ```bash
 mix deps.get
 mix crosswake.install
+mix crosswake.doctor
+
+# Add native targets only when this host starts claiming them.
 mix crosswake.gen.shell ios
 mix crosswake.gen.shell android
-mix crosswake.doctor --router Elixir.YourAppWeb.Router
+mix crosswake.doctor --native-checks
 ```
 
 Then run the checked-in proof lane:
@@ -178,6 +189,11 @@ For the fastest "how would I actually use this in my app?" pass, start with
 Crosswake treats diagnostics, support truth, and proof lanes as part of the product
 surface.
 
+**Blocked — sanitized route policy and signed-device proof are required before this host can be promoted.**
+Retained reference evidence is dated, source-bound, and does not verify the first adopter's host.
+See the [current first adopter claim layers](guides/support_matrix.md#first-adopter-readiness) for
+the executable support boundary.
+
 - [guides/support_matrix.md](guides/support_matrix.md) is the canonical support-status surface.
 - [guides/support_matrix.md#support-truth-label-legend](guides/support_matrix.md#support-truth-label-legend) defines support-truth labels: merge-blocking proof, advisory evidence, checked-in public-coordinate proof, local-dev proof, generated public-coordinate proof, JVM hermetic proof, emulator evidence, device evidence, verification-required, and rebuild-required.
 - [guides/troubleshooting.md](guides/troubleshooting.md) maps doctor findings, denial reasons, route-unavailable states, offline replay outcomes, and native evidence labels to route-owner fixes.
@@ -185,7 +201,8 @@ surface.
 - The checked-in `examples/ios_shell_host` and `examples/android_shell_host` hosts are `checked-in public-coordinate proof`; use `--local` only for maintainer/local-dev proof.
 - `bash script/verify_phase5_example_hosts.sh` is the primary checked-in proof lane.
 - The route-tour evidence path uses `merge-blocking proof` for browser semantic assertions, manifest labels for artifacts, and `advisory evidence` for native simulator/emulator collateral.
-- `mix crosswake.doctor --router Elixir.YourAppWeb.Router --native-checks` reruns the local generated-shell verification hooks.
+- `mix crosswake.doctor` discovers the installed router and stays green with native support `not_claimed` before a shell exists; `--native-targets none` makes that CI posture explicit.
+- `mix crosswake.doctor --native-checks` reruns verification hooks for generated or explicitly claimed native targets.
 
 Crosswake stays deliberately narrow and explicit. Unsupported or incompatible routes
 fail closed onto explicit denial behavior instead of silently degrading into a generic

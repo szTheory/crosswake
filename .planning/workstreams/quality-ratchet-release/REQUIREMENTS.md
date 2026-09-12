@@ -56,24 +56,24 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 
 ### Engineering and Repository Quality
 
-- [ ] **ENG-01**: The root suite, example host, browser proof, iOS package, Android package, format,
+- [x] **ENG-01**: The root suite, example host, browser proof, iOS package, Android package, format,
   and warnings-as-errors checks are deterministic from a clean checkout.
 
-- [ ] **ENG-02**: Code touched by the milestone has explicit ownership boundaries, focused modules,
+- [x] **ENG-02**: Code touched by the milestone has explicit ownership boundaries, focused modules,
   and no known dead branches, accidental duplication, or misleading compatibility fallbacks.
 
-- [ ] **ENG-03**: Generated, temporary, secret-bearing, editor, and local-only artifacts are either
+- [x] **ENG-03**: Generated, temporary, secret-bearing, editor, and local-only artifacts are either
   ignored or intentionally tracked, and a clean verification run leaves Git clean.
 
-- [ ] **ENG-04**: Repository quality checks emit concise, actionable failures without stale phase
+- [x] **ENG-04**: Repository quality checks emit concise, actionable failures without stale phase
   labels, contradictory comments, or unactionable warning noise.
 
 ### Documentation and Pull-Request Hygiene
 
-- [ ] **DOC-01**: Public guides, support/capability truth, architecture notes, contribution guidance,
+- [x] **DOC-01**: Public guides, support/capability truth, architecture notes, contribution guidance,
   and release runbooks agree with the verified code and current package versions.
 
-- [ ] **DOC-02**: The parked First B2C Adopter work remains codename-only, independently resumable,
+- [x] **DOC-02**: The parked First B2C Adopter work remains codename-only, independently resumable,
   and visibly blocked only on its real external route/device authority.
 
 - [ ] **DOC-03**: Every open pull request is merged, rebased, superseded, closed, or explicitly
@@ -146,12 +146,12 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 | CIP-05 | Phase 165 | Complete |
 | CIP-06 | Phase 165 | Complete |
 | CIP-07 | Phase 165 | Complete |
-| ENG-01 | Phase 166 | Pending |
-| ENG-02 | Phase 166 | Pending |
-| ENG-03 | Phase 166 | Pending |
-| ENG-04 | Phase 166 | Pending |
-| DOC-01 | Phase 167 | Pending |
-| DOC-02 | Phase 167 | Pending |
+| ENG-01 | Phase 166 | Complete |
+| ENG-02 | Phase 166 | Complete |
+| ENG-03 | Phase 166 | Complete |
+| ENG-04 | Phase 166 | Complete |
+| DOC-01 | Phase 167 | Complete |
+| DOC-02 | Phase 167 | Complete |
 | DOC-03 | Phase 167 | Pending |
 | REL-01 | Phase 168 | Pending |
 | REL-02 | Phase 168 | Pending |
@@ -162,4 +162,4 @@ to release without weakening its Phoenix-first runtime contracts or its honest s
 **Coverage:** 26/26 active v22.0 requirements mapped exactly once
 
 ---
-*Last updated: 2026-08-28 after v22.0 roadmap creation and traceability mapping*
+*Last updated: 2026-09-10 after Phase 166 verified ENG-01 through ENG-04*

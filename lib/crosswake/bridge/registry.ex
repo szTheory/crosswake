@@ -42,13 +42,14 @@ defmodule Crosswake.Bridge.Registry do
 
   @spec allowed_commands() :: [String.t()]
   def allowed_commands do
-    (@capability_commands |> Map.keys()) ++ (@transfer_commands |> Map.keys())
+    ((@capability_commands |> Map.keys()) ++ (@transfer_commands |> Map.keys()))
     |> Enum.sort()
   end
 
   @spec command_capability(String.t()) :: String.t() | nil
   def command_capability(command) do
-    Map.get(@capability_commands, command) || if(Map.has_key?(@transfer_commands, command), do: command)
+    Map.get(@capability_commands, command) ||
+      if(Map.has_key?(@transfer_commands, command), do: command)
   end
 
   @spec command_supported?(String.t()) :: boolean()
@@ -124,7 +125,8 @@ defmodule Crosswake.Bridge.Registry do
   defp capability_entry(manifest, route, command, capability_id) do
     with %Capability{} = capability <-
            lookup_capability(manifest, capability_id) || {:error, :undeclared_capability},
-         true <- capability_declared_on_route?(route, capability) || {:error, :undeclared_capability} do
+         true <-
+           capability_declared_on_route?(route, capability) || {:error, :undeclared_capability} do
       {:ok,
        %Entry{
          command: command,
@@ -195,7 +197,8 @@ defmodule Crosswake.Bridge.Registry do
     end
   end
 
-  defp match_transfer_command?(%TransferSeam{intent: intent}, transfer_intent), do: intent == transfer_intent
+  defp match_transfer_command?(%TransferSeam{intent: intent}, transfer_intent),
+    do: intent == transfer_intent
 
   defp payload_transfer_id(payload) do
     Map.get(payload, "transfer_id") || Map.get(payload, :transfer_id)

@@ -1,6 +1,27 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Offline Storage Quota Enforcement', () => {
+  test('renders a recoverable unavailable state when offline initialization fails', async ({ page }) => {
+    await page.addInitScript(() => {
+      IDBFactory.prototype.open = function() {
+        throw new Error('private initialization detail');
+      };
+    });
+
+    await page.goto('/offline');
+
+    const status = page.locator('#crosswake-study-status');
+    await expect(status).toHaveAttribute('data-state', 'initialization_failed');
+    await expect(status).toContainText('Offline study unavailable.');
+    await expect(status).toContainText('Reload this page to try again.');
+    await expect(status).not.toContainText('private initialization detail');
+    await expect(status).not.toContainText('CW-OFFLINE-INITIALIZATION');
+    await expect(page.locator('#btn-flip')).toBeDisabled();
+    await expect(page.locator('#btn-good')).toBeDisabled();
+    await expect(page.locator('#btn-hard')).toBeDisabled();
+    await expect(page.locator('#status')).toHaveText('Offline study unavailable. Reload this page to try again.');
+  });
+
   test('shows hard block when journal reserve is unfulfilled', async ({ page }) => {
     // Mock navigator.storage.estimate to return low bytes (remaining = 1MB, reserve = 5MB)
     await page.addInitScript(() => {
@@ -56,10 +77,13 @@ test.describe('Offline Storage Quota Enforcement', () => {
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'storage', {
         value: {
-          estimate: async () => ({
-            quota: 100000000,
-            usage: 10000000
-          })
+          estimate: async () => {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            return {
+              quota: 100000000,
+              usage: 10000000
+            };
+          }
         },
         configurable: true
       });
@@ -86,7 +110,8 @@ test.describe('Offline Storage Quota Enforcement', () => {
     const notification = page.locator('text=Device storage limit reached! Cannot save more progress. Please free up space on your device.');
     await expect(notification).toBeVisible();
     
-    // Verify we didn't crash completely - the status message should also say handled
-    await expect(page.locator('#status')).toHaveText('QuotaExceededError handled gracefully.');
+    // The compatibility status describes recovery without exposing implementation jargon.
+    await expect(page.locator('#status')).toHaveText('Free up space on this device, then try saving again.');
+    await expect(page.locator('#status')).not.toContainText('QuotaExceededError');
   });
 });

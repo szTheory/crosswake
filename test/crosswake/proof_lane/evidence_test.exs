@@ -114,13 +114,16 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     end)
   end
 
+  @tag :phase41_nested_process
   test "successful physical-class promotion survives the producing subprocess exit" do
-    with_destination(fn destination ->
-      run_promotion_subprocess!(destination, physical_candidate())
+    with_phase41_nested_process_tracer("physical-promotion", fn ->
+      with_destination(fn destination ->
+        run_promotion_subprocess!(destination, physical_candidate())
 
-      assert File.regular?(Path.join(destination, "proof-lane-evidence.json"))
-      assert File.regular?(Path.join(destination, ".complete"))
-      assert :ok = Evidence.check(destination, physical_sources())
+        assert File.regular?(Path.join(destination, "proof-lane-evidence.json"))
+        assert File.regular?(Path.join(destination, ".complete"))
+        assert :ok = Evidence.check(destination, physical_sources())
+      end)
     end)
   end
 
@@ -749,6 +752,52 @@ defmodule Crosswake.ProofLane.EvidenceTest do
       fun.(destination)
     after
       File.rm_rf(root)
+    end
+  end
+
+  # The opt-in Phase 41 tracer makes the hosted failure mode deterministic without
+  # changing the proof input or its subprocess exit requirement. Two async test
+  # modules rendezvous, then compete for one deliberately exclusive nested-process
+  # lease. Normal test execution never enters this fixture.
+  defp with_phase41_nested_process_tracer(owner, fun) do
+    case System.get_env("CROSSWAKE_PHASE41_ADVERSARIAL_ROOT") do
+      nil ->
+        with_phase41_nested_process_lease(fun)
+
+      root ->
+        with_phase41_nested_process_lease(fn ->
+          File.mkdir_p!(root)
+          File.write!(Path.join(root, "ready-#{owner}"), "ready")
+          await_phase41_peer(root, 100)
+
+          case File.open(Path.join(root, "nested-process.lease"), [:write, :exclusive]) do
+            {:ok, lease} ->
+              try do
+                fun.()
+              after
+                File.close(lease)
+                File.rm(Path.join(root, "nested-process.lease"))
+              end
+
+            {:error, :eexist} ->
+              flunk("PHASE41-NESTED-PROCESS-CONTENTION: phase41_resource_contention")
+          end
+        end)
+    end
+  end
+
+  defp with_phase41_nested_process_lease(fun) do
+    :global.trans({Crosswake.Proof.Phase41NestedProcessLease, self()}, fun)
+  end
+
+  defp await_phase41_peer(_root, 0), do: :ok
+
+  defp await_phase41_peer(root, attempts) do
+    if length(Path.wildcard(Path.join(root, "ready-*"))) >= 2 do
+      :ok
+    else
+      Process.sleep(10)
+      await_phase41_peer(root, attempts - 1)
     end
   end
 end

@@ -94,7 +94,17 @@ defmodule Crosswake.Compatibility do
     @moduledoc since: "0.1.0"
 
     @enforce_keys [:axis, :message]
-    defstruct [:axis, :message, :required, :available, :hint, :route_id, :subject, :code, details: %{}]
+    defstruct [
+      :axis,
+      :message,
+      :required,
+      :available,
+      :hint,
+      :route_id,
+      :subject,
+      :code,
+      details: %{}
+    ]
 
     @typedoc "Restriction evidence emitted by a companion's `route_gated?/2` or `evaluate_auth/3` callback."
     @type t :: %__MODULE__{
@@ -314,7 +324,8 @@ defmodule Crosswake.Compatibility do
           required: :external,
           available: route.entry,
           message: "route #{route.id} does not allow external entry",
-          hint: "declare entry: :external on the route policy before opening it from an inbound deep link"
+          hint:
+            "declare entry: :external on the route policy before opening it from an inbound deep link"
         }
         | errors
       ]
@@ -334,7 +345,8 @@ defmodule Crosswake.Compatibility do
           required: "notification_open: true",
           available: "nil",
           message: "route #{route.id} does not allow notification open",
-          hint: "declare notification_open: true on the route policy before opening it from a push notification"
+          hint:
+            "declare notification_open: true on the route policy before opening it from a push notification"
         }
         | errors
       ]
@@ -759,13 +771,15 @@ defmodule Crosswake.Compatibility do
     do:
       "route requires pack #{pack_id} at #{required_version}, but the shell is invalidating that pack"
 
-  defp pack_message(pack_id, required_version, %{state: :failed, failure: %{reason: :verification_missing}}),
-    do:
-      "route requires pack #{pack_id} at #{required_version}, but the shell has not verified the installed pack yet"
+  defp pack_message(pack_id, required_version, %{
+         state: :failed,
+         failure: %{reason: :verification_missing}
+       }),
+       do:
+         "route requires pack #{pack_id} at #{required_version}, but the shell has not verified the installed pack yet"
 
   defp pack_message(pack_id, required_version, %{state: state}),
-    do:
-      "route requires pack #{pack_id} at #{required_version}, but the shell reports #{state}"
+    do: "route requires pack #{pack_id} at #{required_version}, but the shell reports #{state}"
 
   defp pack_hint(pack_id, nil, %{state: :not_installed}),
     do: "install pack #{pack_id} in the shell before activating the route"

@@ -11,7 +11,11 @@ defmodule Crosswake.NativeEscape.Runtime do
           Contract.local_capture(),
           [TransferContracts.declaration()]
         ) :: {:ok, Contract.result()} | {:error, Contract.denial()}
-  def capture_local(%Contract.Request{} = request, %Contract.LocalCapture{} = local_capture, declared_transfers)
+  def capture_local(
+        %Contract.Request{} = request,
+        %Contract.LocalCapture{} = local_capture,
+        declared_transfers
+      )
       when is_list(declared_transfers) do
     with :ok <- validate_runtime(request),
          {:ok, transfer} <- declared_transfer(request.transfer_id, declared_transfers) do
@@ -33,7 +37,10 @@ defmodule Crosswake.NativeEscape.Runtime do
 
   @spec complete_transfer(Contract.result(), TransferContracts.Result.t()) ::
           {:ok, Contract.result()} | {:error, Contract.denial()}
-  def complete_transfer(%Contract.Result{} = result, %TransferContracts.Result{} = transfer_result) do
+  def complete_transfer(
+        %Contract.Result{} = result,
+        %TransferContracts.Result{} = transfer_result
+      ) do
     cond do
       result.state != :captured_local ->
         {:error,
@@ -86,12 +93,16 @@ defmodule Crosswake.NativeEscape.Runtime do
   end
 
   defp declared_transfer(transfer_id, transfers) do
-    case Enum.find(transfers, &(&1.id == transfer_id and &1.intent == :upload and &1.source == :native_capture)) do
+    case Enum.find(
+           transfers,
+           &(&1.id == transfer_id and &1.intent == :upload and &1.source == :native_capture)
+         ) do
       nil ->
         {:error,
          Contract.new_denial(
            reason: :undeclared_transfer_seam,
-           message: "the native capture flow requires a declared upload seam with source :native_capture"
+           message:
+             "the native capture flow requires a declared upload seam with source :native_capture"
          )}
 
       transfer ->

@@ -53,7 +53,8 @@ defmodule Crosswake.Policy.Validator do
       %{
         key: :offline,
         message: "live_view routes cannot declare offline :local_first",
-        hint: "use runtime: :offline_island for local-first ownership, or change offline to :unavailable or :cached_read_only"
+        hint:
+          "use runtime: :offline_island for local-first ownership, or change offline to :unavailable or :cached_read_only"
       }
       | errors
     ]
@@ -77,7 +78,8 @@ defmodule Crosswake.Policy.Validator do
       %{
         key: :entry,
         message: "entry :external is not supported on offline_island routes",
-        hint: "keep offline_island routes internal_only until external activation semantics are explicitly proven"
+        hint:
+          "keep offline_island routes internal_only until external activation semantics are explicitly proven"
       }
       | errors
     ]
@@ -90,7 +92,8 @@ defmodule Crosswake.Policy.Validator do
       %{
         key: :sync,
         message: "sync declarations require offline support",
-        hint: "set offline: :cached_read_only or :local_first, or remove sync entries from the route policy"
+        hint:
+          "set offline: :cached_read_only or :local_first, or remove sync entries from the route policy"
       }
       | errors
     ]
@@ -103,7 +106,8 @@ defmodule Crosswake.Policy.Validator do
       [
         %{
           key: :security,
-          message: "security must be declared when offline, capability, pack, or sync policy is enabled",
+          message:
+            "security must be declared when offline, capability, pack, or sync policy is enabled",
           hint: "add security: :standard or security: :sensitive to the route policy"
         }
         | errors
@@ -159,8 +163,7 @@ defmodule Crosswake.Policy.Validator do
         [
           %{
             key: :commerce,
-            message:
-              "route #{inspect(route.id)} uses unsupported commerce role #{inspect(role)}",
+            message: "route #{inspect(route.id)} uses unsupported commerce role #{inspect(role)}",
             hint: "use one of #{inspect(@commerce_role_values)}"
           }
           | errors
@@ -233,7 +236,8 @@ defmodule Crosswake.Policy.Validator do
         %{
           key: :transfers,
           message: "transfer ids must be unique for route #{inspect(route.id)}",
-          hint: "remove duplicate transfer ids so the route exposes one semantic seam per transfer declaration"
+          hint:
+            "remove duplicate transfer ids so the route exposes one semantic seam per transfer declaration"
         }
         | errors
       ]

@@ -79,9 +79,22 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
 
       write_if_changed(@ios_activation_path, ios_activation_json(bridge_vsn))
       write_if_changed(@android_activation_path, android_activation_json(bridge_vsn))
-      write_if_changed(@vectors_path, vectors_json(protocol, bridge_vsn, commands, denial_reasons))
-      write_if_changed(@ios_vectors_path, vectors_json(protocol, bridge_vsn, commands, denial_reasons))
-      write_if_changed(@android_vectors_path, vectors_json(protocol, bridge_vsn, commands, denial_reasons))
+
+      write_if_changed(
+        @vectors_path,
+        vectors_json(protocol, bridge_vsn, commands, denial_reasons)
+      )
+
+      write_if_changed(
+        @ios_vectors_path,
+        vectors_json(protocol, bridge_vsn, commands, denial_reasons)
+      )
+
+      write_if_changed(
+        @android_vectors_path,
+        vectors_json(protocol, bridge_vsn, commands, denial_reasons)
+      )
+
       write_if_changed(@docs_snippet_path, docs_snippet(bridge_vsn))
 
       Mix.shell().info("""
@@ -345,7 +358,8 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
          "Shell providing a newer bridge_protocol_version satisfies a request demanding an older version (floor >=, allow)"},
         {"request_override",
          [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", "1.0.0"}]},
-        {"session_override", [{"bridge_protocol_version", bridge_vsn}, {"capabilities", [{"app.info.get", "1.0.0"}]}]},
+        {"session_override",
+         [{"bridge_protocol_version", bridge_vsn}, {"capabilities", [{"app.info.get", "1.0.0"}]}]},
         {"expected_outcome", "ok"},
         {"expected_denial_reason", nil},
         {"native_only", true}
@@ -369,8 +383,14 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
         {"description",
          "Shell providing a newer native_runtime_version satisfies a request demanding an older version (floor >=, allow)"},
         {"request_override",
-         [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}, {"native_runtime_version", "1.0.0"}]},
-        {"session_override", [{"native_runtime_version", "2.0.0"}, {"capabilities", [{"app.info.get", "1.0.0"}]}]},
+         [
+           {"capability", "app.info.get"},
+           {"command", "app.info.get"},
+           {"version", bridge_vsn},
+           {"native_runtime_version", "1.0.0"}
+         ]},
+        {"session_override",
+         [{"native_runtime_version", "2.0.0"}, {"capabilities", [{"app.info.get", "1.0.0"}]}]},
         {"expected_outcome", "ok"},
         {"expected_denial_reason", nil},
         {"native_only", true}
@@ -380,7 +400,12 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
         {"description",
          "Shell providing an older native_runtime_version cannot satisfy a request demanding a newer version (floor >=, deny)"},
         {"request_override",
-         [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}, {"native_runtime_version", "2.0.0"}]},
+         [
+           {"capability", "app.info.get"},
+           {"command", "app.info.get"},
+           {"version", bridge_vsn},
+           {"native_runtime_version", "2.0.0"}
+         ]},
         {"session_override", [{"native_runtime_version", "1.0.0"}]},
         {"expected_outcome", "deny"},
         {"expected_denial_reason", "compatibility_mismatch"},
@@ -398,7 +423,12 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
         {"description",
          "Request capability version (1.1.0) newer than session floor (1.0.0) — floor semantics allow (provides=request, demands=session). This vector is DISCRIMINATING: it returns ok under >= floor but would return deny under the pre-fix == equality check, proving the floor is applied."},
         {"request_override",
-         [{"capabilities", [{"app.info.get", "1.1.0"}]}, {"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}]},
+         [
+           {"capabilities", [{"app.info.get", "1.1.0"}]},
+           {"capability", "app.info.get"},
+           {"command", "app.info.get"},
+           {"version", bridge_vsn}
+         ]},
         {"session_override", [{"capabilities", [{"app.info.get", "1.0.0"}]}]},
         {"expected_outcome", "ok"},
         {"expected_denial_reason", nil}
@@ -423,7 +453,11 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
         {"request_override",
          [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}]},
         {"session_override",
-         [{"installed_packs", [{"test-pack", "2.0.0"}]}, {"route_required_packs", ["test-pack@1.0.0"]}, {"capabilities", [{"app.info.get", "1.0.0"}]}]},
+         [
+           {"installed_packs", [{"test-pack", "2.0.0"}]},
+           {"route_required_packs", ["test-pack@1.0.0"]},
+           {"capabilities", [{"app.info.get", "1.0.0"}]}
+         ]},
         {"expected_outcome", "ok"},
         {"expected_denial_reason", nil},
         {"native_only", true}
@@ -435,7 +469,10 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
         {"request_override",
          [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}]},
         {"session_override",
-         [{"installed_packs", [{"test-pack", "1.0.0"}]}, {"route_required_packs", ["test-pack@2.0.0"]}]},
+         [
+           {"installed_packs", [{"test-pack", "1.0.0"}]},
+           {"route_required_packs", ["test-pack@2.0.0"]}
+         ]},
         {"expected_outcome", "deny"},
         {"expected_denial_reason", "pack_incompatible"},
         {"native_only", true}

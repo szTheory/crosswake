@@ -21,6 +21,7 @@ defmodule Crosswake.Policy.RouteTest do
 
       assert route.runtime == :offline_island
       assert route.offline == :local_first
+
       assert route.packs == [
                %ContentPack{id: "deck_data", version: "1.0.0", kind: :content, integrity: nil}
              ]
@@ -58,9 +59,11 @@ defmodule Crosswake.Policy.RouteTest do
 
       assert route.id == "capture"
       assert route.capabilities == ["camera", "photos"]
+
       assert route.packs == [
                %ContentPack{id: "media_core", version: "1.0.0", kind: :content, integrity: nil}
              ]
+
       assert route.sync == ["uploads"]
       assert route.security == :sensitive
     end
@@ -91,7 +94,12 @@ defmodule Crosswake.Policy.RouteTest do
                  kind: :content,
                  integrity: %{algorithm: "sha256", digest: "sha256-abc123"}
                },
-               %ContentPack{id: "pronunciation_audio", version: "2.0.0", kind: :media, integrity: nil}
+               %ContentPack{
+                 id: "pronunciation_audio",
+                 version: "2.0.0",
+                 kind: :media,
+                 integrity: nil
+               }
              ]
     end
 
@@ -184,7 +192,8 @@ defmodule Crosswake.Policy.RouteTest do
                  security: :standard
                )
 
-      assert Exception.message(error) =~ "entry :external is not supported on offline_island routes"
+      assert Exception.message(error) =~
+               "entry :external is not supported on offline_island routes"
     end
 
     test "rejects provider-specific commerce role declarations" do
@@ -242,7 +251,13 @@ defmodule Crosswake.Policy.RouteTest do
                )
 
       assert Enum.map(route.transfers, & &1.intent) == [:upload, :download, :import, :export]
-      assert Enum.map(route.transfers, & &1.direction) == [:inbound, :outbound, :inbound, :outbound]
+
+      assert Enum.map(route.transfers, & &1.direction) == [
+               :inbound,
+               :outbound,
+               :inbound,
+               :outbound
+             ]
     end
 
     test "rejects ambiguous or runtime-inconsistent transfer declarations" do

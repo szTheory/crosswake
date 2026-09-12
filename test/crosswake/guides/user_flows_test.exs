@@ -8,6 +8,7 @@ defmodule Crosswake.Guides.UserFlowsTest do
     assert guide =~ "Three Canonical Jobs"
     assert guide =~ "Job 1: Keep The Main Product Phoenix-Owned On Mobile"
     assert guide =~ "Job 2: Move One Device-Heavy Corridor Native Without Contaminating The Rest"
+
     assert guide =~
              "Job 3: Keep One Meaningful Workflow Useful Offline Without Pretending The Whole App Is Local-First"
 

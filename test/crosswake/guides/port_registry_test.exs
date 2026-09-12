@@ -17,14 +17,34 @@ defmodule Crosswake.Guides.PortRegistryTest do
 
     failures =
       [
-        require_contains(@port_registry_path, contents, "COMPOSE_PROJECT_NAME", :missing_caveat,
-          "document COMPOSE_PROJECT_NAME namespacing caveat"),
-        require_contains(@port_registry_path, contents, "10.0.2.2", :missing_android_note,
-          "document Android emulator host loopback address"),
-        require_contains(@port_registry_path, contents, port, :wrong_port,
-          "registry must list the source-derived port"),
-        require_contains(@port_registry_path, contents, "crosswake", :missing_seed_row,
-          "registry must have a crosswake seed row")
+        require_contains(
+          @port_registry_path,
+          contents,
+          "COMPOSE_PROJECT_NAME",
+          :missing_caveat,
+          "document COMPOSE_PROJECT_NAME namespacing caveat"
+        ),
+        require_contains(
+          @port_registry_path,
+          contents,
+          "10.0.2.2",
+          :missing_android_note,
+          "document Android emulator host loopback address"
+        ),
+        require_contains(
+          @port_registry_path,
+          contents,
+          port,
+          :wrong_port,
+          "registry must list the source-derived port"
+        ),
+        require_contains(
+          @port_registry_path,
+          contents,
+          "crosswake",
+          :missing_seed_row,
+          "registry must have a crosswake seed row"
+        )
       ]
       |> List.flatten()
 
@@ -60,14 +80,34 @@ defmodule Crosswake.Guides.PortRegistryTest do
     port = committed_port()
 
     [
-      require_contains(path, contents, "COMPOSE_PROJECT_NAME", :missing_caveat,
-        "document COMPOSE_PROJECT_NAME namespacing caveat"),
-      require_contains(path, contents, "10.0.2.2", :missing_android_note,
-        "document Android emulator host loopback address"),
-      require_contains(path, contents, port, :wrong_port,
-        "registry must list the source-derived port"),
-      require_contains(path, contents, "crosswake", :missing_seed_row,
-        "registry must have a crosswake seed row")
+      require_contains(
+        path,
+        contents,
+        "COMPOSE_PROJECT_NAME",
+        :missing_caveat,
+        "document COMPOSE_PROJECT_NAME namespacing caveat"
+      ),
+      require_contains(
+        path,
+        contents,
+        "10.0.2.2",
+        :missing_android_note,
+        "document Android emulator host loopback address"
+      ),
+      require_contains(
+        path,
+        contents,
+        port,
+        :wrong_port,
+        "registry must list the source-derived port"
+      ),
+      require_contains(
+        path,
+        contents,
+        "crosswake",
+        :missing_seed_row,
+        "registry must have a crosswake seed row"
+      )
     ]
     |> List.flatten()
   end

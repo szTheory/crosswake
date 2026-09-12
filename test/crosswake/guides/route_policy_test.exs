@@ -97,12 +97,26 @@ defmodule Crosswake.Guides.RoutePolicyTest do
     end
   end
 
+  test "mixed-host guidance keeps reverse-proxied Vite paths outside fake owner classes" do
+    guide = read_guide!()
+
+    assert guide =~ "Mixed hosts and same-origin reverse proxies"
+    assert guide =~ "`/study/**`, `/api/study/**`"
+    assert guide =~ "`backend/provider seam`: that owner class"
+    assert guide =~ "`explicit defer` either"
+    assert guide =~ "unsupported gap"
+    assert guide =~ "Do not declare `:offline_island` during the proxy-only phase"
+  end
+
   test "user-flow JTBD ramp remains and links into the route-policy guide" do
     user_flows = File.read!(@user_flows_path)
 
     assert user_flows =~ "Who should own this route?"
     assert user_flows =~ "Job 1: Keep The Main Product Phoenix-Owned On Mobile"
-    assert user_flows =~ "Job 2: Move One Device-Heavy Corridor Native Without Contaminating The Rest"
+
+    assert user_flows =~
+             "Job 2: Move One Device-Heavy Corridor Native Without Contaminating The Rest"
+
     assert user_flows =~
              "Job 3: Keep One Meaningful Workflow Useful Offline Without Pretending The Whole App Is Local-First"
 

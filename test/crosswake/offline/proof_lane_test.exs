@@ -1,4 +1,3 @@
-
 defmodule Crosswake.Offline.ProofLaneTest do
   use ExUnit.Case, async: true
 
@@ -6,7 +5,8 @@ defmodule Crosswake.Offline.ProofLaneTest do
   alias Crosswake.Manifest
 
   test "repo-local proof lane asserts the narrow cached and study-session offline posture" do
-    assert {:ok, %{manifest: manifest}} = Manifest.compile(Crosswake.TestSupport.RouterFixtures.ManagedRouter)
+    assert {:ok, %{manifest: manifest}} =
+             Manifest.compile(Crosswake.TestSupport.RouterFixtures.ManagedRouter)
 
     assert manifest.routes["library"].cache_contract.hydration == :sqlite_snapshot
     assert manifest.routes["study-session"].island_contract.sync_seam == "study_reviews"
@@ -15,7 +15,10 @@ defmodule Crosswake.Offline.ProofLaneTest do
 
   test "doctor keeps offline support while generated shell runtime remains verification required" do
     target =
-      Path.join(System.tmp_dir!(), "crosswake-offline-proof-#{System.unique_integer([:positive])}")
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-offline-proof-#{System.unique_integer([:positive])}"
+      )
 
     install_manifest_path = write_install_fixture!(target)
 
@@ -23,6 +26,7 @@ defmodule Crosswake.Offline.ProofLaneTest do
       Doctor.run(
         route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
         install_manifest_path: install_manifest_path,
+        native_targets: [:ios, :android],
         cwd: target
       )
 

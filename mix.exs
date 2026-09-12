@@ -1,7 +1,8 @@
 defmodule Crosswake.MixProject do
   use Mix.Project
 
-  @version "0.2.0" # x-release-please-version
+  # x-release-please-version
+  @version "0.2.0"
   @source_url "https://github.com/szTheory/crosswake"
 
   def project do
@@ -82,7 +83,8 @@ defmodule Crosswake.MixProject do
       ],
       verify: [
         "companions.test",
-        "test --exclude requires_example_host --exclude advisory_only"
+        "cmd mix test --only phase41_nested_process --seed 748644 --max-cases 1",
+        "cmd mix test --exclude phase41_nested_process --exclude requires_example_host --exclude advisory_only --seed 748644 --max-cases 8"
       ]
     ]
   end
@@ -160,7 +162,7 @@ defmodule Crosswake.MixProject do
           Crosswake.Compatibility.Target,
           Crosswake.Manifest.Types.RouteEntry
         ],
-        "Telemetry": [
+        Telemetry: [
           Crosswake.Telemetry,
           Crosswake.Offline.Telemetry
         ]
@@ -197,7 +199,7 @@ defmodule Crosswake.MixProject do
           "guides/compatibility.md",
           "guides/android_uat.md"
         ],
-        "Telemetry": [
+        Telemetry: [
           "guides/telemetry.md"
         ],
         "Extension Authors": [

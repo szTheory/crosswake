@@ -43,7 +43,8 @@ defmodule Mix.Tasks.Crosswake.Install do
 
     target = Path.expand(opts[:target] || File.cwd!())
     router_path = Path.expand(opts[:router] || infer_router_path!(target), target)
-    web_module = opts[:web_module] || infer_web_module!(router_path)
+    router_module = infer_router_module!(router_path)
+    web_module = opts[:web_module] || infer_web_module!(router_module)
     policy_module = opts[:policy_module] || "#{web_module}.Crosswake.Policy"
     policy_path = policy_path(target, router_path)
 
@@ -56,12 +57,15 @@ defmodule Mix.Tasks.Crosswake.Install do
       ensure_policy_module(policy_path, policy_module, router_path)
 
     endpoint_path = opts[:endpoint] && Path.expand(opts[:endpoint], target)
-    {endpoint_summary, endpoint_files} = patch_endpoint(endpoint_path || infer_endpoint_path(target), target)
+
+    {endpoint_summary, endpoint_files} =
+      patch_endpoint(endpoint_path || infer_endpoint_path(target), target)
 
     {:ok, manifest_action} =
       Manifest.write(manifest_path, %{
-        crosswake_version: Mix.Project.config()[:version] || "dev",
+        crosswake_version: crosswake_version(),
         router_path: Path.relative_to(router_path, target),
+        router_module: router_module,
         web_module: web_module,
         policy_module: policy_module,
         files: %{
@@ -161,6 +165,13 @@ defmodule Mix.Tasks.Crosswake.Install do
     never guesses a route id. Attach in mount/3 before you push.
 
     Confirm all of it with: mix crosswake.doctor
+
+    Phoenix's esbuild profile must leave the served module import external and emit ESM:
+
+        --external:/crosswake/* --format=esm
+
+    If the router keeps Phoenix LiveDashboard, use the lexical import pattern documented
+    in guides/install.md#live-dashboard-in-development.
     """
   end
 
@@ -179,11 +190,56 @@ defmodule Mix.Tasks.Crosswake.Install do
     end
   end
 
-  defp infer_web_module!(router_path) do
-    router_path
-    |> Path.dirname()
-    |> Path.basename()
-    |> Macro.camelize()
+  defp infer_router_module!(router_path) do
+    contents = File.read!(router_path)
+
+    with {:ok, ast} <- Code.string_to_quoted(contents),
+         [router_module] <- top_level_module_names(ast) do
+      router_module
+    else
+      {:error, _parse_error} ->
+        Mix.raise(
+          "could not parse the router module from #{router_path}; ensure --router names valid Elixir source"
+        )
+
+      [] ->
+        Mix.raise(
+          "could not infer the router module from #{router_path}; ensure --router names a file containing one top-level defmodule"
+        )
+
+      router_modules when is_list(router_modules) ->
+        Mix.raise(
+          "could not infer one router module from #{router_path}; ensure --router names a file containing exactly one top-level defmodule"
+        )
+    end
+  end
+
+  defp top_level_module_names({:__block__, _meta, forms}), do: module_names(forms)
+  defp top_level_module_names(form), do: module_names([form])
+
+  defp module_names(forms) do
+    Enum.flat_map(forms, fn
+      {:defmodule, _meta, [{:__aliases__, _alias_meta, parts}, body]}
+      when is_list(parts) and is_list(body) ->
+        if Enum.all?(parts, &is_atom/1) do
+          [Enum.map_join(parts, ".", &Atom.to_string/1)]
+        else
+          []
+        end
+
+      _other ->
+        []
+    end)
+  end
+
+  defp infer_web_module!(router_module) do
+    if String.ends_with?(router_module, ".Router") do
+      String.replace_suffix(router_module, ".Router", "")
+    else
+      Mix.raise(
+        "could not infer the web module from router module #{router_module}; pass --web-module explicitly"
+      )
+    end
   end
 
   defp policy_path(target, router_path) do
@@ -212,24 +268,23 @@ defmodule Mix.Tasks.Crosswake.Install do
     module_template_path =
       Application.app_dir(:crosswake, "priv/templates/crosswake/policy_module.ex")
 
-    router_module = router_module_from_path(router_path)
+    router_module = infer_router_module!(router_path)
 
     EEx.eval_file(module_template_path,
       assigns: [policy_module: policy_module, router_module: router_module]
     )
   end
 
-  defp router_module_from_path(router_path) do
-    router_path
-    |> Path.dirname()
-    |> Path.basename()
-    |> Kernel.<>(".Router")
-    |> then(&Macro.camelize(&1))
-  end
-
   defp format_router_actions(actions) do
     actions
     |> Enum.map(&Atom.to_string/1)
     |> Enum.join(", ")
+  end
+
+  defp crosswake_version do
+    case Application.spec(:crosswake, :vsn) do
+      nil -> "dev"
+      version -> to_string(version)
+    end
   end
 end

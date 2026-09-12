@@ -1,0 +1,2850 @@
+{
+  "base_oid": "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
+  "base_tree_oid": "c8f304ec39a1b0e258e4479c5aa1c0aea651ff6d",
+  "expected_branch": "agent-phase167-fixforward",
+  "kind": "fix_forward_candidate_scope",
+  "manifest_mode": "100644",
+  "manifest_path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-dependency-closure.json",
+  "payload_source_oid": "f4ab5118214c68e40f250ac7e8cdd78fbdab4a7f",
+  "payload_source_tree_oid": "d54f972001f41698d53aa6bb18a023b4da1d0910",
+  "proof_argv": [
+    [
+      "python3",
+      "script/check_phase167_default_reconciliation.py",
+      "--self-test"
+    ],
+    [
+      "python3",
+      "script/check_phase167_default_reconciliation.py",
+      "--verify-failure-ledger",
+      ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/fix-forward-failure-ledger.json"
+    ],
+    [
+      "python3",
+      "script/check_phase167_default_reconciliation.py",
+      "--verify-post-412-ledger",
+      ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/fix-forward-failure-ledger.json",
+      "--attempt",
+      "072250e365ec1e2d230e1a84acf43ad3e2e3268c"
+    ],
+    [
+      "mix",
+      "format",
+      "--check-formatted"
+    ],
+    [
+      "mix",
+      "test",
+      "test/crosswake/proof/phase69_docs_contract_parity_test.exs",
+      "test/crosswake/guides/architecture_code_walkthrough_test.exs",
+      "test/crosswake/guides/release_boundaries_test.exs"
+    ],
+    [
+      "node",
+      "--test",
+      "test/js/repository_verification.test.mjs"
+    ],
+    [
+      "mix",
+      "test",
+      "--only",
+      "phase41_nested_process",
+      "--seed",
+      "748644",
+      "--max-cases",
+      "1"
+    ],
+    [
+      "mix",
+      "test",
+      "--only",
+      "phase41_nested_process",
+      "--seed",
+      "748644",
+      "--max-cases",
+      "1"
+    ],
+    [
+      "mix",
+      "test",
+      "--only",
+      "phase41_nested_process",
+      "--seed",
+      "748644",
+      "--max-cases",
+      "1"
+    ],
+    [
+      "mix",
+      "test",
+      "--only",
+      "phase41_nested_process",
+      "--seed",
+      "748644",
+      "--max-cases",
+      "1"
+    ],
+    [
+      "mix",
+      "test",
+      "--only",
+      "phase41_nested_process",
+      "--seed",
+      "748644",
+      "--max-cases",
+      "1"
+    ],
+    [
+      "mix",
+      "test",
+      "--only",
+      "phase41_nested_process",
+      "--seed",
+      "748644",
+      "--max-cases",
+      "1"
+    ],
+    [
+      "mix",
+      "test",
+      "--only",
+      "phase41_nested_process",
+      "--seed",
+      "748644",
+      "--max-cases",
+      "1"
+    ],
+    [
+      "mix",
+      "test",
+      "test/crosswake/proof/phase41_gating_doctor_test.exs",
+      "--seed",
+      "280497",
+      "--max-cases",
+      "1"
+    ],
+    [
+      "mix",
+      "test",
+      "--exclude",
+      "phase41_nested_process",
+      "--exclude",
+      "requires_example_host",
+      "--seed",
+      "748644",
+      "--max-cases",
+      "8"
+    ],
+    [
+      "python3",
+      "script/check_phase166_ownership_ledger.py",
+      "--ledger",
+      ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-ownership-ledger.md",
+      "--evidence",
+      ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/evidence/clean-checkout-run.json"
+    ]
+  ],
+  "records": [
+    {
+      "base": {
+        "blob": "730d737641298a5c1b7c65c7a0c33d3809a88612",
+        "mode": "100644"
+      },
+      "path": ".github/workflows/crosswake-ci.yml",
+      "payload": {
+        "blob": "fa5b8eb5af0babb0ff32d8f3d8b951a726240fc1",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "81c0e8a9c9df08242b7bfd3e7804a9ef2d50da4a",
+        "mode": "100644"
+      },
+      "path": ".planning/PROJECT.md",
+      "payload": {
+        "blob": "15c314da4b803f589783805fd1a5582aecef40aa",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "9083e7f8aaf3109491b848d72a8621e760cd00bf",
+        "mode": "100644"
+      },
+      "path": ".planning/WINDOWS.md",
+      "payload": {
+        "blob": "b886cba5dae0fa424e810aad51ee834baf3bb876",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "b0131ea503e63ada740a9b10d14a147ef3c3c813",
+        "mode": "100644"
+      },
+      "path": ".planning/workstreams/first-b2c-adopter-readiness/STATE.md",
+      "payload": {
+        "blob": "c6750b57a4ecf603b8cdb0de66b73a71162a9d56",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "26363f7419f210e417b14d58c5ae048f33dd0ece",
+        "mode": "100644"
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/REQUIREMENTS.md",
+      "payload": {
+        "blob": "f093551d5859373eae005a54238ee616f6edcbf9",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "07d4cbf9731ff5ce3ce471a58f5a729a99b5fc36",
+        "mode": "100644"
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
+      "payload": {
+        "blob": "0898a990dca6412bd623ff9ee343eb7b4200f287",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "3b9147fcc5da62178491c87f6c754a8e1103fbe6",
+        "mode": "100644"
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/STATE.md",
+      "payload": {
+        "blob": "2d83535af7bb6243fa86d1e26ae77a9b1a4a2b5a",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "03ef943b9aacc04865b9c7027d6492b10b11b235",
+        "mode": "100644"
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/165-13-SUMMARY.md",
+      "payload": {
+        "blob": "b5fab5e89686376bea8727807ef2e3f1eaa5d9e1",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "6579e5ea69affec64da2b2957116322780a77087",
+        "mode": "100644"
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/165-REVIEW-FIX.md",
+      "payload": {
+        "blob": "7d48bd6ff7a84c0fb673c157f517d273b48eb658",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "fd85c2628fc9b0ba40dc0ecd345912a8c3789229",
+        "mode": "100644"
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/165-SECURITY.md",
+      "payload": {
+        "blob": "5c229a3d1686135c6b405ee6c4eaf1f07e6f5bdc",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "f6246728b48ccbc48f29e6ac84b516f148d15943",
+        "mode": "100644"
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/165-VALIDATION.md",
+      "payload": {
+        "blob": "45f9afae8d23a48172bc72113ac62b9dafa4495f",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/165-VERIFICATION.md",
+      "payload": {
+        "blob": "7f9c39416862dff6900b3d6414fc47f8c2f973bf",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "d53e39663c94f5a40a561540494fbf5f1d9d7fe7",
+        "mode": "100644"
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/after.json",
+      "payload": {
+        "blob": "ea0421b633009c0f6695460b9a479011b8574a4e",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "d6efb4e4d5ce9f9c2e0b4c850a8d43b684a976b9",
+        "mode": "100644"
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/comparison.md",
+      "payload": {
+        "blob": "40fe156ccd051d02b302b7213a23017be56c2574",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "301325fba94bb977df4fef78f0fc6729ecf03cdf",
+        "mode": "100644"
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/final-remote-default-source.json",
+      "payload": {
+        "blob": "54b7052c2cd6165da3779a0ae61c0fc80c75a18b",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-01-PLAN.md",
+      "payload": {
+        "blob": "385dc9b83a83a8114e539698220a240d0054b4ff",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-01-SUMMARY.md",
+      "payload": {
+        "blob": "e79cda75933095964994f2aa702fb9738caf93ce",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-02-PLAN.md",
+      "payload": {
+        "blob": "60478b9075a61d388d05ad14c3287137010db5cc",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-02-SUMMARY.md",
+      "payload": {
+        "blob": "bffdbc2983fbd2f170308f31831750f06f4086d0",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-03-PLAN.md",
+      "payload": {
+        "blob": "7acd60c336704b6564535d952a5a259ac03e0563",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-03-SUMMARY.md",
+      "payload": {
+        "blob": "5ff7af170cf5f5b69ca8b805e001f72955dcc977",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-04-PLAN.md",
+      "payload": {
+        "blob": "58820c3d55ae42ab6bc3f785f57adee78fee855c",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-04-SUMMARY.md",
+      "payload": {
+        "blob": "49a9985d8cab342671dccd62069d0a4af8ea9e64",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-05-PLAN.md",
+      "payload": {
+        "blob": "2ab6fb06e27a0a55274fac7fbf6cc23564e75caa",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-05-SUMMARY.md",
+      "payload": {
+        "blob": "fc2e632c947f1ed793b36853fb7712093f4cc6dc",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-06-PLAN.md",
+      "payload": {
+        "blob": "bb04aa381c1fe6238a49cf703a99113023314c71",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-06-SUMMARY.md",
+      "payload": {
+        "blob": "2853cb3f92c1ac1d6a0fb0bbc533f9a4e71df6a0",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-07-PLAN.md",
+      "payload": {
+        "blob": "d5e5927dc7ba037bdc20bfdee8854eeead517537",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-07-SUMMARY.md",
+      "payload": {
+        "blob": "4b53e46da853da767e6281fb750c5e1146317696",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-08-PLAN.md",
+      "payload": {
+        "blob": "f65fd09fa4ef1d203ba3bd082c4e1935f32e1510",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-08-SUMMARY.md",
+      "payload": {
+        "blob": "b15498611495d444ebdf9cac888c01a1184d0865",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-CONTEXT.md",
+      "payload": {
+        "blob": "425ecc13203633247ffbfd8f5c1d80b7853bd2db",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-DISCUSSION-LOG.md",
+      "payload": {
+        "blob": "c4140bb5ee38031f1f55355d7d6dc5d26c2f217b",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-PATTERNS.md",
+      "payload": {
+        "blob": "fa1b4b01c33c86c0d922a6bee1436ce1e82bffe3",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-RESEARCH.md",
+      "payload": {
+        "blob": "e00b95e36572b25919308d987a33a9add41a9d4b",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-REVIEW-FIX.md",
+      "payload": {
+        "blob": "73ee71fa2eb6a87d13cb73ca46e922f961d5dec8",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-REVIEW.md",
+      "payload": {
+        "blob": "4d6c9b734a1fc06a7dbafa6a5a00508daf372109",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-SECURITY.md",
+      "payload": {
+        "blob": "9d22a5b11518ffcf8e366f50ca088eca7d3e6a43",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-UI-REVIEW.md",
+      "payload": {
+        "blob": "589af4e3d47132df7f63978d7a9e85c4c5046c58",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-VALIDATION.md",
+      "payload": {
+        "blob": "120a419986a0231d5fb37deb902241c1dcf9a9d5",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-VERIFICATION.md",
+      "payload": {
+        "blob": "2af914bb8f1b494a0e9aa85087d80f657ac92260",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/evidence/clean-checkout-run.json",
+      "payload": {
+        "blob": "5cc2eed1a6ba153f54e7fb0a932de51d318a41ef",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/evidence/clean-checkout-run.md",
+      "payload": {
+        "blob": "15bf656643185650b961f04bde17941294336a3e",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-01-PLAN.md",
+      "payload": {
+        "blob": "d79014f1232cf0e90faf61f0e34e3cb9b146959f",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-01-SUMMARY.md",
+      "payload": {
+        "blob": "3dd6dbe83f24fd806153480c0474fcf0a55f45ef",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-02-PLAN.md",
+      "payload": {
+        "blob": "293ae79e6a07801cf11a21cdd13cf56c7333ab35",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-02-SUMMARY.md",
+      "payload": {
+        "blob": "81c5c966a7b58a052a37f150b6c2eaa382c893ce",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-03-PLAN.md",
+      "payload": {
+        "blob": "55a10d3cc286979389c9f3164296594d97c2a3c6",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-03-SUMMARY.md",
+      "payload": {
+        "blob": "46b766bcefb0249081340d5b442e8e1a3524eacd",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-04-PLAN.md",
+      "payload": {
+        "blob": "07172d399d94155fac48249e2d041a0629317cf5",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-04-SUMMARY.md",
+      "payload": {
+        "blob": "6dfc432b457bbc5e9b6a53ea4dd0c9032cd10efa",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-05-PLAN.md",
+      "payload": {
+        "blob": "24a27169bfa443857670dba0778a83ea6adb8225",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-05-SUMMARY.md",
+      "payload": {
+        "blob": "14c6a1e5e8def52e19928a7d7fe6eceee3dc288e",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-06-PLAN.md",
+      "payload": {
+        "blob": "cf40cbe4edc4e8a4760a6aabde11010b0031e08b",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-07-PLAN.md",
+      "payload": {
+        "blob": "85317761b3cf4617be540852b8a278bd1c0fbba3",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-08-PLAN.md",
+      "payload": {
+        "blob": "57cf0bb96b125aa97b8567b7a5a14235a36deb8a",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-CONTEXT.md",
+      "payload": {
+        "blob": "988c84378a766ea8cfd474e8af9c175407d7f4a0",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-DISCUSSION-LOG.md",
+      "payload": {
+        "blob": "3465d2299fb84a5dd5b35bc5b1e61765d552eb48",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-PATTERNS.md",
+      "payload": {
+        "blob": "d4810becacabf76c9544fb7d9596c57671701af2",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-RESEARCH.md",
+      "payload": {
+        "blob": "2e4f400987d77b4ce9b29017e6de109f11c86535",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-VALIDATION.md",
+      "payload": {
+        "blob": "4dde37ff9a87f84006c6b51d742980bb25ddd1ee",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/fix-forward-failure-ledger.json",
+      "payload": {
+        "blob": "2624049f6ec5979924141b07e34452110b14b234",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-121-resolution.json",
+      "payload": {
+        "blob": "de680e56accca1b778d060f9ed839c9c01796317",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "3989c710a0cbc2fba7597905f9050d4dc525fe5e",
+        "mode": "100644"
+      },
+      "path": ".tool-versions",
+      "payload": {
+        "blob": "aeee2241d0b1424d90b149139649016648336783",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "8c2b6fe2ab31c41522da36790364c5574cc38738",
+        "mode": "100644"
+      },
+      "path": "CHANGELOG.md",
+      "payload": {
+        "blob": "0a6218b4a06efe989b19105077704158f703d4d1",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "1669d3ff07bf00b8f5a03e2a898083ec5de074ce",
+        "mode": "100644"
+      },
+      "path": "CONTRIBUTING.md",
+      "payload": {
+        "blob": "622466a5e3df8fcc00e86de5f84bcd2a31e7aea4",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "7caf25326934e8ea499c2e01107ae14768444e10",
+        "mode": "100644"
+      },
+      "path": "README.md",
+      "payload": {
+        "blob": "443a7d457ac6a82f6a58c8a36489cae8a90250bd",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "ef6af5cb002652ba82c6316d0d9d9f7fba09ca82",
+        "mode": "100644"
+      },
+      "path": "docs/COMPANION-PUBLISH-RUNBOOK.md",
+      "payload": {
+        "blob": "8b91c4dcec5f32a852c5d992350999d8aa8b8f92",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "fb4d38fa70f8cc3bc2cead76fae4556f981c595a",
+        "mode": "100644"
+      },
+      "path": "examples/phoenix_host/e2e/offline_storage.spec.ts",
+      "payload": {
+        "blob": "e66f0e849e462b2748f9ae62f52ffbbfedcb6a57",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "c9699cc5dc8e5f01109c7100b1cc8712571830fa",
+        "mode": "100644"
+      },
+      "path": "examples/phoenix_host/e2e/offline_sync.spec.ts",
+      "payload": {
+        "blob": "396a783336120a531e2f872029b4c523a8c92a4c",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "c8d0495eb8d856cdb6a9460be81163780f9a2ade",
+        "mode": "100644"
+      },
+      "path": "examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/index.html.heex",
+      "payload": {
+        "blob": "7f8a14ed6e69ff129ee0b066a4ad12eef2dc9060",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "b07ac45e229681ec6ad64542f842e221624fe60c",
+        "mode": "100644"
+      },
+      "path": "examples/phoenix_host/playwright.config.ts",
+      "payload": {
+        "blob": "eaac24335676354fdaa191b84823d47e5132bf5a",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "7c08bbe704fff093f46d978debb1bb0eef7781b8",
+        "mode": "100644"
+      },
+      "path": "examples/phoenix_host/priv/static/offline_study.js",
+      "payload": {
+        "blob": "9853f6898b0811662399007b42da017d0794bef5",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "b2748b8610b4f7e461f08fb4df5e0e08e52c24ea",
+        "mode": "100644"
+      },
+      "path": "guides/architecture.md",
+      "payload": {
+        "blob": "cc1778286765b6d81f602fa1aae44324e201c0f5",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "0563f365b284b347691277bedaf73f51c8c10311",
+        "mode": "100644"
+      },
+      "path": "guides/capability_map.md",
+      "payload": {
+        "blob": "27814e23857c2283e63e444d88650940acbeb4f9",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "0e61d5ec60ba303221ec6ef8707398cf03c9077d",
+        "mode": "100644"
+      },
+      "path": "guides/code-walkthrough.md",
+      "payload": {
+        "blob": "6ea2a8fd578e79c5e3c404bfeda85b27dcf4bc11",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "d009ce869869d0a5945c122582b14c436fb7d94f",
+        "mode": "100644"
+      },
+      "path": "guides/companion_compatibility.md",
+      "payload": {
+        "blob": "8a1559d3a6d3e03907f1ee9040202209dc3da344",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "7a7f9f9d849571355e0822dc1678af96a37d44b3",
+        "mode": "100644"
+      },
+      "path": "guides/compatibility.md",
+      "payload": {
+        "blob": "61841873e0f3f82d2e01856884540a3769d843d2",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "a9d636d55a948201e596d007768a30f93a9a83d4",
+        "mode": "100644"
+      },
+      "path": "guides/install.md",
+      "payload": {
+        "blob": "42610ee11f5d7105bf7ee60919f5801c38aeb16d",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "5dd3606fa38b2aea672b3489fe416851580078aa",
+        "mode": "100644"
+      },
+      "path": "guides/physical_iphone_handoff.md",
+      "payload": {
+        "blob": "9c40e1310b0f727183eeb1ff0c6726fd75d47073",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "83c48090c23e29124b7b48acf4759b859a3cceaa",
+        "mode": "100644"
+      },
+      "path": "guides/route_policy.md",
+      "payload": {
+        "blob": "823464b61512d6c9db1113d38c00d11135b47bf1",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "58e80979fe3a31033c6274f944afd8c280af0c5e",
+        "mode": "100644"
+      },
+      "path": "guides/support_matrix.md",
+      "payload": {
+        "blob": "5be2029f7db8462e8747efe07ab1ed5bff71194b",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "135c112719a333e4a7f2ad7493137ec86593132d",
+        "mode": "100644"
+      },
+      "path": "guides/troubleshooting.md",
+      "payload": {
+        "blob": "759bae4bef67e060cfbadf2da38c4cad013a1f15",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "ced00fdf1bdf95dd6398980f0a33501ace396df2",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/bridge.ex",
+      "payload": {
+        "blob": "83d461a9391c7b32ef8fc8614485add69c360ff6",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "a30294224932490742f37b83f35df6982373c578",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/bridge/commands/file_picker.ex",
+      "payload": {
+        "blob": "74024437d7575b1f87bf1840159eaf9c7b479977",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "a551b04f0234535d7d2a2b1bce4576de8b8abcf0",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/bridge/commands/permissions_status.ex",
+      "payload": {
+        "blob": "21fdc63a41c5fc59c83c1cdcbee2d29a3ad33b3c",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "ca8ce962eb9583780dd0a2d2dc3bcc14faa52571",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/bridge/registry.ex",
+      "payload": {
+        "blob": "7bc0f1ad2a155a68c12ffd811a78cd74174297cb",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "c6ca797e21b3ebab5e620117a376328038aa077e",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/capability_map.ex",
+      "payload": {
+        "blob": "9a67298e7a06ad91b150f150d10bf221d346f347",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "91d825bf9581d69f6acf494b3221821fa14f7e21",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/capability_map/renderer.ex",
+      "payload": {
+        "blob": "1da30bfe1ecdee02705770cec399410facd9462f",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "27919027a89499069bb7f7779ad2d0efdbd68b2e",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/commerce.ex",
+      "payload": {
+        "blob": "e642af7b023cd5b7cb4589c8d3d18759567f15a1",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "ff72e1647455303fd7de87ef517383a9320fd9fa",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/commerce/contracts.ex",
+      "payload": {
+        "blob": "a61ae2c42057725f5a7638342da92feedb1ed1aa",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "e001d16304bf042e64bc8a6689d89fccf686c650",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/commerce/provider_evidence.ex",
+      "payload": {
+        "blob": "cf5a91ef57fc00abf0c8acfcbb1282a2345cdf68",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "c297ab587c68c41115665a3c79cf02d9b14a7bab",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/commerce/reconciliation.ex",
+      "payload": {
+        "blob": "46bb91586de01779c7ce3e4f5882e402f46e2305",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "accf7596e5e245db02aad41870ac750c52237783",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/companion/state.ex",
+      "payload": {
+        "blob": "9e08ae9e01f5572043da3dd176917f0c0693160e",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "e43f1e1567042631c987409c5c7610b8a6dc8287",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/companion_guard.ex",
+      "payload": {
+        "blob": "9e9e0eb719d9a7924759a66de638259668f113f6",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "96004cf76e3f6b5aa21033d4ebc3b786f97471a1",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/companions/play_billing/evidence.ex",
+      "payload": {
+        "blob": "5b52fd9a3468cf339afc2154d3d48a2914e97dce",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "557f6420c2c71df4df061b0e2d529ae5ee92d062",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/companions/play_billing/result.ex",
+      "payload": {
+        "blob": "c53357be0bb4f261f6b933df183037298a26d6d8",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "1e6ebaf271750095ae661b78c8fc073cbd0d89d2",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/companions/store_kit/evidence.ex",
+      "payload": {
+        "blob": "2eb46ddc91af371240031fc794ecdbe3a0283c35",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "5970cc5824a0cc53b4b1f5af1f6b87ee2ac6f0bb",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/companions/store_kit/result.ex",
+      "payload": {
+        "blob": "dc00530ef3a13f580fa9e08e05fec805f1b9a153",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "3c0390cbdf4505a1c294b11a00fa80d99c4582f4",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/compatibility/compatibility.ex",
+      "payload": {
+        "blob": "d2f98e9cb92047ef2ee811812c03eddda1c3ff42",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "833d536a564a6ecf83336277d3d6a4469608b9c4",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/compatibility/route_gate.ex",
+      "payload": {
+        "blob": "63797f16df54f7eccab83fc7e11c42a3b95178fc",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "9a24c2e44f923fe5e72fa14aef4852b665d69c42",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/doctor/doctor.ex",
+      "payload": {
+        "blob": "1415ad0f53d854e4288891a98f0afb36f1ed987e",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "a850177b6dac5db152de7527d59fd5ee90f24dd0",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/doctor/finding_policy.ex",
+      "payload": {
+        "blob": "2187865970cbb95c2bc7eaba478abf869526efdd",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "130b5625990b3a6852981f41bd7c428753aedb2d",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/doctor/formatter.ex",
+      "payload": {
+        "blob": "d9e7761bb6cb08e022bdfafe9202a8331127844e",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "cafd15357fd0f0c111957fae1acc9c535f842b28",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/doctor/publish_readiness.ex",
+      "payload": {
+        "blob": "94caed57e4efd5f58058548404e5dced057596af",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "2163a78445089b9de022e05b24deed14a1612ac4",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/install/patcher.ex",
+      "payload": {
+        "blob": "0c16a8475aaad4850a46788c39ec49fca9d6ff2d",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "5a065cd61e4e88e73558d8a2ad48e902403b9360",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/manifest/builder.ex",
+      "payload": {
+        "blob": "473f61baf75bf960a91db58000515919e44dd4af",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "267d29607e8e6d5bc7ec5ec70ee9fae652b1b803",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/native_escape/contract.ex",
+      "payload": {
+        "blob": "1017577166194d94eef9b325db942cd3386f4a03",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "6485063213af40ff03a2ead5d18dfde14c4a6ba2",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/native_escape/runtime.ex",
+      "payload": {
+        "blob": "b7073428191833d23cd7ec8f60db22ec87037bc1",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "62e40ef35fe29f03d91849d75f0c0234da720931",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/offline/contracts.ex",
+      "payload": {
+        "blob": "f84fd22fcea84cc67fc130adf218f70bc287257f",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "9bf1f041ea9c8bf0c0f2249d3f1715880a7762be",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/operator_inspection.ex",
+      "payload": {
+        "blob": "b9b10f1d8edb783e995e8bfe9bf38d3efdfe28f3",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "619e7f193a0d96184fd9e35b47ca57222313035b",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/packs/runtime.ex",
+      "payload": {
+        "blob": "0a88293ed14d247c711a4c31f4f2f282b9cd481d",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "1d4fbbb6beaff5fe76a1c523e1807ba73d1be748",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/policy/schema.ex",
+      "payload": {
+        "blob": "38b7fe5edc2535699121b41fc66d3c767228fef2",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "1b0a8f315cd92bb89237456fc05a25a58dee2920",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/policy/validator.ex",
+      "payload": {
+        "blob": "4d073513e74b088691e81f7029d8cdba9b500e6a",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "fa1142f04adfabad875722a46a138b3f2dbe493c",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/router.ex",
+      "payload": {
+        "blob": "23e6e59bd4893b43e1f29ce2bc845b6a521fe6ab",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "e0b592ce9834789cf26c3bf48499fab791d06b15",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/router/scope_defaults.ex",
+      "payload": {
+        "blob": "a298dd3104b184bc8558d576074d634d98a41598",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "745e5abe694e40b23072bed6c98a80114bcbe008",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/runtime_line/rebuild_policy.ex",
+      "payload": {
+        "blob": "4c2a45c943790d14779a33dbedd25630458c7049",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "e7914b3b20922e58fa49b88af7ff98f6719b38d1",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/shell/diagnostic_export.ex",
+      "payload": {
+        "blob": "ac1aa7ad374a50a6086fdd201a86f61bfa02eaf3",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "34acf1d8e05798e5e231af8d4b421f9f0926976f",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/support_matrix/renderer.ex",
+      "payload": {
+        "blob": "5f52c399e01169a4803afe0b4fa87df8f608d59b",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "9f87ddb09126c8055e4eaaaadad4c58baf885256",
+        "mode": "100644"
+      },
+      "path": "lib/crosswake/transfer/contracts.ex",
+      "payload": {
+        "blob": "185452e36271437658e4d5470f17341ae838eb30",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "1e6c37dcf8f87b3cb8ded70d408faf8bc3b00470",
+        "mode": "100644"
+      },
+      "path": "lib/mix/tasks/closeout.verify.ex",
+      "payload": {
+        "blob": "344b15830bb520f358a718aa62d44fda8fba98dd",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "a06732e576dfc978714498dfb82e626042d6642b",
+        "mode": "100644"
+      },
+      "path": "lib/mix/tasks/crosswake.contract.gen.ex",
+      "payload": {
+        "blob": "6457c80c2992d6e7693171900abed5a70a0da6aa",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": "lib/mix/tasks/crosswake.docs.sync.ex",
+      "payload": {
+        "blob": "ec46a236ca4a5d59877e58247eae48c4bfb85405",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "52163feadddadb65277d24ab492639936dd7bbe1",
+        "mode": "100644"
+      },
+      "path": "lib/mix/tasks/crosswake.doctor.ex",
+      "payload": {
+        "blob": "5c69fd46f30faa343dd0cc2d2d65092644d50645",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "027ac432ae22c1bd3cf2a4cc1ff92dd28e942a25",
+        "mode": "100644"
+      },
+      "path": "lib/mix/tasks/crosswake.gen.offline_ui.ex",
+      "payload": {
+        "blob": "dcd5dfe9ef3c588944f418c6652fe1898cf4be6e",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "1a718bd6fe2e03fceb99fce7fdcfa81f126f9be4",
+        "mode": "100644"
+      },
+      "path": "lib/mix/tasks/crosswake.gen.shell.ex",
+      "payload": {
+        "blob": "bb9cc2568de23b37a2afefdb95e7ec3b8d6fc2d9",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "cb95aace1ff6236e9c0a73c175896c5359a284a1",
+        "mode": "100644"
+      },
+      "path": "lib/mix/tasks/crosswake.gen.sync.ex",
+      "payload": {
+        "blob": "d794104c1142e60db52878c605d94279dec19d77",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "82c5c1e61042ce63bafbfce81ac02c67a80406bc",
+        "mode": "100644"
+      },
+      "path": "lib/mix/tasks/crosswake.install.ex",
+      "payload": {
+        "blob": "0995c31e4174fcfcad9b90078b91e28a45e4fd36",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "ab1a32a8e203a34bebd7df41fc1ca07036f93346",
+        "mode": "100644"
+      },
+      "path": "lib/mix/tasks/crosswake.shell.status.ex",
+      "payload": {
+        "blob": "e20a261d96f317c298df60cd3e08f7b9e34d5a78",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "5e25ff799d94bca35aa9419ae155f5a7d33a7c92",
+        "mode": "100644"
+      },
+      "path": "mix.exs",
+      "payload": {
+        "blob": "8a6d15bf0d46e3a7d824d726d96a0e6766110639",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "433a6c73b81215d03e9b8086cf9bff22cb1e6eab",
+        "mode": "100644"
+      },
+      "path": "packages/crosswake_rindle/README.md",
+      "payload": {
+        "blob": "7aba773f99bc80241aa11a5c49e089f8489ff97a",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "aa2dc26dd09f0e943c4b60e71c3954b4320f47e2",
+        "mode": "100644"
+      },
+      "path": "packages/crosswake_rindle/mix.exs",
+      "payload": {
+        "blob": "a514d3c8e07ebfc317ff19562ca0fc40590d3968",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "35b3bef8a45ce73013461e9ab289132c7d3a98a2",
+        "mode": "100644"
+      },
+      "path": "packages/crosswake_rulestead/README.md",
+      "payload": {
+        "blob": "8be3942e2adef4a2ff8ec1fb1d56c77db071b5b9",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "5ab54002a33edc0ede796f6fd5db4f16e937c8a9",
+        "mode": "100644"
+      },
+      "path": "packages/crosswake_rulestead/mix.exs",
+      "payload": {
+        "blob": "b9b1649a381eefa8a46fe9c8def94bc4516821f0",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "6884a6e0ea6d79228b7f9dcba2bedb6ea1304e1b",
+        "mode": "100644"
+      },
+      "path": "priv/templates/crosswake/install_manifest.json.eex",
+      "payload": {
+        "blob": "88e0b78876a56c6ebf1c3dd6030fc3da62fa02de",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "d7d047a16fb9ac4d62841b95a3219afb18c4889b",
+        "mode": "100644"
+      },
+      "path": "script/check_ci_leaf_manifest.py",
+      "payload": {
+        "blob": "d81ce1080e57b44a28e322d6c067c80d21ed1aae",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "e710daf406341d1b78dfd254200f0e586b07e56e",
+        "mode": "100755"
+      },
+      "path": "script/check_dependency_security.sh",
+      "payload": {
+        "blob": "5e66d105f8e55ef944dd862711c366817d442987",
+        "mode": "100755"
+      }
+    },
+    {
+      "base": {
+        "blob": "652f302ab603698b6f72dd780aa50e406ca93146",
+        "mode": "100755"
+      },
+      "path": "script/check_example_host_isolation.sh",
+      "payload": {
+        "blob": "33936d994bba00eef329c52dcca94df335e7bc67",
+        "mode": "100755"
+      }
+    },
+    {
+      "base": {
+        "blob": "82ff104f3c0cca60b92d3332258e765a9bd1070f",
+        "mode": "100755"
+      },
+      "path": "script/check_phase166_ownership_ledger.py",
+      "payload": {
+        "blob": "7ec6b96fcf04fa835923d614cb7db93a0bc37b15",
+        "mode": "100755"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": "script/check_phase167_default_reconciliation.py",
+      "payload": {
+        "blob": "22d438bddd1de7223ed7a8f8c7a6723c4bf0cb58",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": "script/check_phase167_pr_dispositions.py",
+      "payload": {
+        "blob": "c7a947fb45e5ed487141657b645c1d83431e95a2",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "ec396601875edb1c7d93afdcb6086f5f992e7d44",
+        "mode": "100644"
+      },
+      "path": "script/check_release_workflow_integrity.exs",
+      "payload": {
+        "blob": "47a9f5a0d9ae561845c96504164d9ae7eba6613a",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "1ae2aedcefda3ef9b73c931d3b3f854eb287887f",
+        "mode": "100644"
+      },
+      "path": "script/ci_docs_allowlist.json",
+      "payload": {
+        "blob": "b120c4fe5fbe09895296c5edbd7962f447063704",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "a52635be329e5c59e14a77624f8618e5e57bf795",
+        "mode": "100644"
+      },
+      "path": "script/ci_leaf_manifest.json",
+      "payload": {
+        "blob": "6f514bb53480a3ccc40cd12e723ff1e232c23997",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "9870abdaeb15ee203a46e8de540589447d58fbc6",
+        "mode": "100755"
+      },
+      "path": "script/list_merge_blocking_checks.py",
+      "payload": {
+        "blob": "75b3b329191e8825ff16baea0ce8d17f0b0a4779",
+        "mode": "100755"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": "script/repository_artifact_policy.json",
+      "payload": {
+        "blob": "07c57a2b4670501432419f4bb50621e0338f225f",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "aab0d85b00b99694af78ec2d396aed23afe861ae",
+        "mode": "100644"
+      },
+      "path": "script/repository_verification_stages.json",
+      "payload": {
+        "blob": "c5e91d42b1835f68b94a4c7330bb69da2baf4ca4",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": "script/verify_repository.mjs",
+      "payload": {
+        "blob": "89d9726029c927f0cf775b0836119919af578298",
+        "mode": "100755"
+      }
+    },
+    {
+      "base": {
+        "blob": "ce0eb0ef080d990e6b9f06c707d42e0c1f8051cb",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/bridge/bridge_behavioral_vector_test.exs",
+      "payload": {
+        "blob": "7e9942c19886f0bc5669cb68ed1ff47409208158",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "f85cd7b2438c6100bc87bd6a2063ca696ba3350b",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/bridge/contract_test.exs",
+      "payload": {
+        "blob": "9a614859fd377e97430de657a6e1433ef89d6c61",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "f077bbb8272fef4e44808f0ed796a3b59a4f6dab",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/bridge/push_test.exs",
+      "payload": {
+        "blob": "6c82e15dbb19bb7ab2597ba9511fdfe71476eb6e",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "9baec980e8eb57a71c383f2f67d9054fa51faac5",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/bridge/registry_test.exs",
+      "payload": {
+        "blob": "335ecd760971d561463329a0fec97f17a2f427d0",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "604b6733ebe9b3fe0c16b4cbac300a56ec6678e5",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/capability_map/capability_map_test.exs",
+      "payload": {
+        "blob": "e55861cacfafff0986f8305e1361a49e716391c1",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "5c03c6162e3b90e8613af4e4f7d9b8d4177be738",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/capability_map/renderer_test.exs",
+      "payload": {
+        "blob": "fb380b2df3f3c682328dfaf0f509a5ddbbad0ec3",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "ba7f2658d44b094a524eaa5d1e1fc79a8523e8a1",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/commerce/reconciliation_test.exs",
+      "payload": {
+        "blob": "e71571a8bb469ce99446987081846cb420fb9cd5",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "0dd80a252fbbdccfc7b3e4b08bca4b73f9fd32e1",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/companions/play_billing_test.exs",
+      "payload": {
+        "blob": "eb5e1f8ce8aea97deb7adfed96d987364e05a135",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "bf82d7cdf8570a4a36452e89659ac31d81b471cd",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/companions/store_kit_test.exs",
+      "payload": {
+        "blob": "1587cbddf7b345d57fe18a6ff8b7b0d6498409ed",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "8e0ae31029a171ac6963f756ebe416f6a38ca743",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/compatibility/compatibility_test.exs",
+      "payload": {
+        "blob": "325bd8432813b7ba693e672438286a3088cb6e6b",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "3a09954d0eab3b5b5a4f582ea664329586bd4fda",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/doctor/doctor_test.exs",
+      "payload": {
+        "blob": "904caef6845523f5fefaaa5d0377577654f859c5",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "d216df2baf07a057345dfa09a57bc48714fb4dd7",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/doctor/doctor_threadline_test.exs",
+      "payload": {
+        "blob": "7cd95ea807503b9e4df7453689aaa2670b8c11e6",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "7eb4ae6aadd436ad7d70926a0e80a19305d207ce",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/doctor/formatter_test.exs",
+      "payload": {
+        "blob": "632effa5741dac973f2fdaf323ce7f206e0712e8",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "20eb03f28df1ba038eb711b60f6a9b4ed7d21685",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/guides/adopter_profiles_test.exs",
+      "payload": {
+        "blob": "aa7bee5b3f83053fdc035cfc2aa78f2ad173f632",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "ac4a73b8b24a8f0ef10aeae4e2887ea3fca0ff0c",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/guides/architecture_code_walkthrough_test.exs",
+      "payload": {
+        "blob": "77b1f6d750c256092bd91c4a1d15f0e2b0065f39",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "26ba229fbc1ea9c0f6775b356c0b4c1b6912fc33",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/guides/capabilities_test.exs",
+      "payload": {
+        "blob": "1d3d444abfc6beadb673404fc4f4fe0bc022ed1c",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "05a4a9537c169af57d53568d71ba8376cce2b4a4",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/guides/capture_collateral_test.exs",
+      "payload": {
+        "blob": "c21d6ffff7252103cf2e146e3b391688e7d7d0d8",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "7ad704d621ac0d283491131156a7e05ffac408f1",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/guides/collateral_table_test.exs",
+      "payload": {
+        "blob": "37b5e4f4b5b6f13f8e4596c766b52811f309b381",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "0413cd395ef3fa7ce96560b8126bb9983a003d5d",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/guides/native_dev_wiring_test.exs",
+      "payload": {
+        "blob": "8de5f3bd5b9566b0a6148a6fa4ea23904a1c07f4",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "7b02551c872ef3822f331262a3441a3adb27752d",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/guides/port_registry_test.exs",
+      "payload": {
+        "blob": "bd9680c9fd582651362678225ab651f80dad7858",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "6178eb7c37019e4aa8f504a177caed1bd5e85b19",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/guides/quick_start_adoption_drift_test.exs",
+      "payload": {
+        "blob": "81207caa53f74b5b95025961783ed05f2b2b7d50",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "077d850e2f183eac8794fbed542b9c4c98760d8e",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/guides/readme_see_it_run_test.exs",
+      "payload": {
+        "blob": "2c85bb470388e7a5c86557bd1fb65db622bb34b8",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "537d3d0ec8521013c44c79a5e3657bf742bd2e8f",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/guides/release_boundaries_test.exs",
+      "payload": {
+        "blob": "b9e92ab7acfe3022c0982c0bde95b4fbae6a6fdb",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "805452316c3ad1c5beb58707cde6f3a0ab222aed",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/guides/route_policy_test.exs",
+      "payload": {
+        "blob": "1223fd492f8e1546af73cc9174eed1a5adafc4a3",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "ba203967be3a4be4bbacaa09fbce7064d1aa8678",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/guides/see_it_run_banner_test.exs",
+      "payload": {
+        "blob": "0b5b3f02fa77dcd27fa890edcd5c883c03e7c45e",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "c73f95a2d5f9fbc9675179729eea31c48eafb43d",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/guides/user_flows_test.exs",
+      "payload": {
+        "blob": "8d82c7495a07e3b477909324877daa25e9fa9e81",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "5f9d6700fb9e4b2fb43588bd6fa042c43cd689dc",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/guides/web_to_mobile_migration_test.exs",
+      "payload": {
+        "blob": "4ccb802c0f735e3419fcab9d54dc42933d06c3bd",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "93195fc026b20d3b9407b8de191c7f64fbf9224a",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/hex_page_test.exs",
+      "payload": {
+        "blob": "92c01127aa45d15fcc0fcaf37d6d009a50975fad",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "f2e90b58bf41d6a7490a36437f9bb51a9defd35f",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/manifest/manifest_test.exs",
+      "payload": {
+        "blob": "fcbcb524ff03a5579c350a6df9b17a9f15f1ef3f",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "3afd05ff7b5e70de87cfa6847ad992cd5fda45f0",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/offline/contracts_test.exs",
+      "payload": {
+        "blob": "658613f614a51fbecce4d85ce9f3f54088aa2d12",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "656aa1dd95f4a3804f6185ae368bbf1ec01061c9",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/offline/proof_lane_test.exs",
+      "payload": {
+        "blob": "3a92a8e9f9ba47b1797ac533b65b260c3cd9dc24",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "f80291c65784d0900984e18ea58d64f6e4fba21f",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/planning/closeout_ci_parity_test.exs",
+      "payload": {
+        "blob": "6708e3f349fef6a36ec37fd9dddf482538e02db3",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "7d089bc77060436b2e8e42135243759e3732403e",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/planning/release_please_config_test.exs",
+      "payload": {
+        "blob": "c1723f449a65bc05a7b0a89ed8553f4aef05c1aa",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "f19f3dde53b1f11e7c467de5e93e40147826aa67",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/policy/compile_error_test.exs",
+      "payload": {
+        "blob": "12557e857413443aa99939a5bf454dbc0576c94f",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "e0b6d1e71bdfafc70f6fb46d8b43333956e7ebb3",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/policy/compiler_test.exs",
+      "payload": {
+        "blob": "1acca240560f3b0b1a963c319d995acc26c7b4ef",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "e9628460041e02031b7b16a9e8067c4fbfcf43b9",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/policy/route_test.exs",
+      "payload": {
+        "blob": "3e89fb2960c39781d3c536643eee36439ca77297",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "c5b5752659e0ea1619f3d8f9ff0c742875ae4df4",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/policy/schema_test.exs",
+      "payload": {
+        "blob": "5eb2f47f6591479a9c866e4fe17902790d286f87",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "7a59239895c3de089649eaa818240f29b898e439",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/policy/warning_test.exs",
+      "payload": {
+        "blob": "9dc9baf0d81fabc35f3860c399322eaf8d633574",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "44c9946a90bfcda117152c9d150d962ad0fa7d8e",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase129_companion_contract_freeze_test.exs",
+      "payload": {
+        "blob": "42236bfa3c8b4c93f53c21c3745e612b0430e354",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "003908bdac5b643c4d13e83763110acd6e73b6f5",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase130_extraction_guards_test.exs",
+      "payload": {
+        "blob": "aa25569d0c5da60e64ce00e7d515752d4e17b8ee",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "6780cc03288ba5bc69a130042e2cc9b099944bd5",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase130_fail_closed_contract_test.exs",
+      "payload": {
+        "blob": "c00253c9af167b4b6b4a122a4670ffb03a319e17",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "7e02d20f78808d62a14fd6007395b37e70b8d823",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase132_compat_matrix_drift_test.exs",
+      "payload": {
+        "blob": "a1c2e8de0caacf734d597cf6987066920d2116b7",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "8691ee63a52a5f2a057c57576ad9b654c5306c12",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase133_telemetry_contract_test.exs",
+      "payload": {
+        "blob": "74317ad7debc7c23c8568a5d278f235f1588c482",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "4c25b02543d2f4713d4b39204f1a0bdebf095b2f",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase136_decouple_proof_test.exs",
+      "payload": {
+        "blob": "6f668f437b114d17a825cc41b44e306b4684b88e",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "ddbc0d63e90e4fd5535c823b15e8fbbe148d2a8c",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase142_release_integrity_test.exs",
+      "payload": {
+        "blob": "f0ecb9399da5fde7812e2dfca01ce4752c48537b",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "130bc85338aa46302a663e082c3aa731d870cf92",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase145_ios_backfill_script_test.exs",
+      "payload": {
+        "blob": "2ffdd4760fc5be438c44e210b7f14101eb3bcc00",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "7bbe088d327c4340c1e4a95b5ec1ee8b5092d839",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase154_advisory_actionability_test.exs",
+      "payload": {
+        "blob": "7247d3657f65b17ffa0d1fc9f49a8255c616c673",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "ec1cf9067a103ca835e1e4bbaa4939fec32ef9c9",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase154_recipe_followable_test.exs",
+      "payload": {
+        "blob": "402fe0f4c42ba0d6e698d631444822fb86bf238b",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "c2f452ab6be5fa9fcbf5f0b0b121a3e31c695b27",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "payload": {
+        "blob": "1294cdee8bf3a4a0af838dcedbfb04c8e681865e",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "97919ec1f5b5f25e9477250cd73b2647b06ddb43",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase164_example_host_isolation_test.exs",
+      "payload": {
+        "blob": "e622d7ed29f3ea56c1e1c52532be823cc7f15b54",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "ef36dc2c6c26f6a3181002f11bb7b8210d34da51",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase165_ci_integrity_test.exs",
+      "payload": {
+        "blob": "73c83df6c89f6a762c034fcf7e3c33b47439677b",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "279e008c5458c36316c98786b88b9d2eb5acff28",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase165_ci_policy_test.exs",
+      "payload": {
+        "blob": "a37b0892c1c0449e4e85f23637391ea8689bed0e",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "39e5a0980266e20032109eb1ef6e606bb0a487c8",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase165_evidence_test.exs",
+      "payload": {
+        "blob": "cac3524ec8eef61c21cd2e28ba26be194d7ec737",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": "test/crosswake/proof/phase166_repository_quality_test.exs",
+      "payload": {
+        "blob": "b86a3c9b89a8374055289b100d1836d856338c9c",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "a5dfd581c3adbad289b9571089887cb04b3e17cb",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase18_bounded_family_lane_test.exs",
+      "payload": {
+        "blob": "8a19657518611166bfb126d426c5093b97b231f1",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "d66c6806edd5db49510cdb0682fe92b9eee821a7",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase18_deep_link_activation_lane_test.exs",
+      "payload": {
+        "blob": "b22dc0e0d5be1b8de02740e54128fc94a6ae91ef",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "bc3283a5326d94efbfec66ef37b2fd74265757a4",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase21_reconciliation_example_test.exs",
+      "payload": {
+        "blob": "2e0fedb964815d0b6772113f7d5daea1354a746b",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "31869bb7d3ad90b146b177813366747940c289c2",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase23_commerce_support_proof_test.exs",
+      "payload": {
+        "blob": "12f355e4ccdef7682d14e16faf3b26c4adfbadfa",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "d67b827d5194ccd391e6cf399a0ad739211ef26e",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase33_commerce_corridor_routes_test.exs",
+      "payload": {
+        "blob": "fd8b8a6abb60a008f664c5b59a31590f73d076b8",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "7c3292e3f027f639b99de4fac8faccf4d29a6e1c",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase34_mock_storefront_test.exs",
+      "payload": {
+        "blob": "44e5e189b99dbe94b87c94d78c524a6388d8cf2a",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "a7a243452d73770123520dd1dcd21f949e03b3c9",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase34_paywall_corridor_proof_test.exs",
+      "payload": {
+        "blob": "76793eddc5be9b39eebecbd81970da4e6c8d7961",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "cabe70fd22926081b8679f1b454e31c2ab43239b",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase38_companion_contract_test.exs",
+      "payload": {
+        "blob": "4866945a6afdc7c3036c34631121cba9ad811f53",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "4b3bbd9573230f7bd537c7c6a054a69fbeb20299",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase39_route_policy_gating_test.exs",
+      "payload": {
+        "blob": "cf6ed2fe794379c1d90f197d97298b8ce45bcd00",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "e93bc742a2b466d54f3f8fbb1b98267efedad94e",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase40_gate_evaluation_test.exs",
+      "payload": {
+        "blob": "c943989818dab1fd9708387595294e51121b644f",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "48a55cc06a235489a9f1df98c8b2289cecd26741",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase41_gating_doctor_test.exs",
+      "payload": {
+        "blob": "11e6a60e722f2c24d6a28f0cc53068c2ea75264d",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "c4ec8d3b18286af7838cba9c9427d58e1bbe473c",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase42_rulestead_companion_test.exs",
+      "payload": {
+        "blob": "7d41c9adaf81e71655a14794ec61ae531c9a4e1f",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "c5c6fd0a0e1722b4058f539a41ae64447575361a",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase48_provider_adapter_proof_test.exs",
+      "payload": {
+        "blob": "4740868af75ba775692c122dfa11ecc16e7f0e8f",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "119c197e90ea427cc8c56fe067b0dd38d4c99546",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase63_advisory_proof_test.exs",
+      "payload": {
+        "blob": "8bd6e1b7801d1e101d160a8a247596ad5de68150",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "6d259b52a33a8ef75191b891577d915049868a46",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase65_diagnostic_export_seam_test.exs",
+      "payload": {
+        "blob": "cb483c15dc8057684d4971f4f0ff6af141d82468",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "a397e0fbc8a3ad93e2624afcce2d95a280c42206",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase68_android_uat_test.exs",
+      "payload": {
+        "blob": "c32e4dd04cc8b62b18f3e8bc08b0d882244b035b",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "7555dd51312e89f623018822d7bbc11f3db3aae5",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase69_docs_contract_parity_test.exs",
+      "payload": {
+        "blob": "66ed8974b3bb09e639c80d894d17e4a4088b4284",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "261954f68b0c09566071eec5c3678cdfc4049f36",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof/phase8_selective_native_lane_test.exs",
+      "payload": {
+        "blob": "0191cde63232702f79990393d9e68661a949612e",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "693f3f7a8d02365aa03cc338ceaac34d7a705273",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof_lane/evidence_test.exs",
+      "payload": {
+        "blob": "9826f9e32744af392f81ae750cc90f1b9971edec",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "916f35ebc61762d858c36878e9b8c51fb5f1f020",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/proof_lane/ios_verifier_test.exs",
+      "payload": {
+        "blob": "fe46d1427e88cced264d12461692b249668ea1d0",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "b54828b38e0b978a3f635c08e3dae61bd1f5c5a3",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/router_defaults_test.exs",
+      "payload": {
+        "blob": "3b8fc48396fb05bb2924e61e43592a52f5ea92c7",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "d1e6ba0e2632c18b9b63b985cce9169ac5fc9d74",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/router_test.exs",
+      "payload": {
+        "blob": "05247c4209b8dcdbaa53a21b29592ffb34ef31b1",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "d27b74bdceb4063d89cb2188f700832970cd14ba",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/shell/activation_test.exs",
+      "payload": {
+        "blob": "8e2654ea87c7a2ef6ec257c79a98537311de3af1",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "e4e4a9f74c642c50c9ecfdc847593b5ef5cdee09",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/shell/denial_test.exs",
+      "payload": {
+        "blob": "49f646430bb67b29530d0d5bdc8aa7f8bcf885d0",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "998652c126d5b9dffded331ccb540acab6c1403d",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/shell/diagnostic_export_test.exs",
+      "payload": {
+        "blob": "3a4b0ad8f28a570a714ddacc561d0c7b47aa9d56",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "f0414a05fe847c03af023788fc51a92c8b459134",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/support_matrix/renderer_test.exs",
+      "payload": {
+        "blob": "631d68ebe7325b9c27a4a8a7b20b1b10a867f8ef",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "96d86a00634703d643c9dbc07fd41100370f325e",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/sync/event_log_test.exs",
+      "payload": {
+        "blob": "e0e8e1c415fe1fa26357a8046fe35ce242bddbdd",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "5c590919cc72a2d18f03b80d8a4fbb317d5678b8",
+        "mode": "100644"
+      },
+      "path": "test/crosswake/transfer/contracts_test.exs",
+      "payload": {
+        "blob": "4f805e3982e3338ef91b58d2a27cf6d01ee44e54",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "ca1ad103c3c5769dfb054c40fbef40bd8fdcaaa9",
+        "mode": "100644"
+      },
+      "path": "test/fixtures/proof/phase52_publish_readiness.json",
+      "payload": {
+        "blob": "6dfeecb54723d6d5ec5fa8b640b8aa9212dfe3b1",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": "test/js/playwright_repository_mode.test.mjs",
+      "payload": {
+        "blob": "1400b567d6242625ac9f3359be25d8af8ae6e9ac",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": "test/js/repository_verification.test.mjs",
+      "payload": {
+        "blob": "a2f2f33b09258245e1acfeaf804e864136e60983",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": null,
+        "mode": null
+      },
+      "path": "test/mix/tasks/crosswake.docs.sync_test.exs",
+      "payload": {
+        "blob": "b4c09faaa7eaf0700641325a1cbbc54e8e366a28",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "b43d567209bd8c90acf6fb0e4662f9f5500c50af",
+        "mode": "100644"
+      },
+      "path": "test/mix/tasks/crosswake.gen.native_controls_ui_test.exs",
+      "payload": {
+        "blob": "9749f2c32713337204f9f830f9ad3bd0606a08a1",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "10056c6f3cd6a1bb4fe4431386762b49bcfc5c80",
+        "mode": "100644"
+      },
+      "path": "test/mix/tasks/crosswake.gen.offline_ui_test.exs",
+      "payload": {
+        "blob": "f234a44e4e142881ba8a1a83959cbc90434707cc",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "f3825e27ebb67f3aa5cfd90c16722cbb091847c2",
+        "mode": "100644"
+      },
+      "path": "test/mix/tasks/crosswake.gen.sync_test.exs",
+      "payload": {
+        "blob": "48f23ddac8d2403621f77374dabb9959c5072774",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "cee8f2295eecd469056b914a40b0d256d2aefdb3",
+        "mode": "100644"
+      },
+      "path": "test/mix/tasks/crosswake_doctor_router_test.exs",
+      "payload": {
+        "blob": "2c027a4c9b152ec7e9ab90fc9c2d210ef6df37e1",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "4b761d51797cabd19d2eae82d696373bdb6db096",
+        "mode": "100644"
+      },
+      "path": "test/mix/tasks/crosswake_doctor_test.exs",
+      "payload": {
+        "blob": "d11ae1e36ad579773a65bd770c2180426d7c808a",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "7366552f7c95356dc6e859c83e404f9588062dae",
+        "mode": "100644"
+      },
+      "path": "test/mix/tasks/crosswake_install_test.exs",
+      "payload": {
+        "blob": "71202d936787530df4eaa8715188d8bb8da61eac",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "c201c8d5d5f939da33dbba467f586140c95d6b2b",
+        "mode": "100644"
+      },
+      "path": "test/support/bridge_live_view_case.ex",
+      "payload": {
+        "blob": "1825a65bdaf6f2f00938af449c9c9ef1964d3b76",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "753fe6169dba02a1ad3dd97525ab9025e9a83dea",
+        "mode": "100644"
+      },
+      "path": "test/support/compile_router_case.ex",
+      "payload": {
+        "blob": "cd06f4c39f325e8878786d9317565531c2007dfc",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "981f61fe70e18207fb53df5b2190e97c25563804",
+        "mode": "100644"
+      },
+      "path": "test/support/router_fixtures.ex",
+      "payload": {
+        "blob": "1135ac7301a6ffda6709406a07d3864eab7bc387",
+        "mode": "100644"
+      }
+    },
+    {
+      "base": {
+        "blob": "08224639621d828def1ad49f96f6e7ffe15cf1e3",
+        "mode": "100644"
+      },
+      "path": "test/test_helper.exs",
+      "payload": {
+        "blob": "3bf1c700175bb4e1be003296790d2cce725c91be",
+        "mode": "100644"
+      }
+    }
+  ],
+  "records_digest": "9798a291a234f782a68dfa803f2d20f1530903212d358b30f144ee1a16fee576",
+  "required_ancestor_oids": [
+    "367f5b5491384594a652d137a03933fa3a89418a",
+    "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
+    "8383aaea2a2b2e10bbe61dd843b51f4129a5d447",
+    "c06b6109ab3f68a5433a99c3ffb7ff11eafe71ca",
+    "c6b02e388c59e375950329c268c76197f945b5b4",
+    "cc14f63662ec6d5db3adf918cb5a59327447353f",
+    "d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b",
+    "eba0f21b052c43d957df8ab280ecaa04771782aa"
+  ],
+  "runtime_file_hashes": {
+    ".planning/workstreams/quality-ratchet-release/config.json": "05b25ad604490dba4c12df84c624d04b1c7bae454ecd78a262dd1b97b68c1a28",
+    ".planning/workstreams/quality-ratchet-release/milestone.lock": "fd4c22c0f07449f02acc487c3100eed7a10edb1382d63807dd4003a54bfd2943",
+    ".planning/workstreams/quality-ratchet-release/state.json": "6cf0413c5cc52eb4f9c10ba497f82614608a54659e10bd48172bad2d9765dff4"
+  },
+  "schema_version": 2
+}

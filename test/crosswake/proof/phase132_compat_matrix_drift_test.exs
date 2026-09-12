@@ -28,6 +28,94 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
 
   @doc_path Path.join([File.cwd!(), "guides", "companion_compatibility.md"])
   @package_glob "packages/crosswake_*/mix.exs"
+  @install_path "guides/install.md"
+  @runbook_path "docs/COMPANION-PUBLISH-RUNBOOK.md"
+  @published_versions %{
+    "crosswake_rulestead" => "0.1.0",
+    "crosswake_rindle" => "unpublished"
+  }
+
+  test "both extracted companion manifests and READMEs match the current core floor" do
+    expected_floor = expected_core_floor()
+
+    for mix_exs_path <- extracted_companion_mix_files() do
+      package = package_name(mix_exs_path)
+      readme_path = Path.join(Path.dirname(mix_exs_path), "README.md")
+      manifest = File.read!(mix_exs_path)
+      readme = File.read!(readme_path)
+
+      assert compatibility_surface_errors(manifest, readme, package, expected_floor) == []
+    end
+  end
+
+  test "the companion package contract detects manifest-only and README-only floor drift" do
+    expected_floor = expected_core_floor()
+    manifest = File.read!("packages/crosswake_rulestead/mix.exs")
+    readme = File.read!("packages/crosswake_rulestead/README.md")
+
+    assert compatibility_surface_errors(
+             String.replace(manifest, expected_floor, "~> 0.1", global: false),
+             readme,
+             "crosswake_rulestead",
+             expected_floor
+           ) == [:manifest_core_floor, :manifest_readme_core_floor]
+
+    assert compatibility_surface_errors(
+             manifest,
+             String.replace(readme, expected_floor, "~> 0.1", global: false),
+             "crosswake_rulestead",
+             expected_floor
+           ) == [:manifest_readme_core_floor]
+  end
+
+  test "the complete extracted-companion transaction matches install, matrix, and runbook truth" do
+    expected_floor = expected_core_floor()
+    guide = File.read!(@doc_path)
+    install = File.read!(@install_path)
+    runbook = File.read!(@runbook_path)
+
+    assert readme_dependency_requirement(install, "crosswake") == expected_floor
+
+    for mix_exs_path <- extracted_companion_mix_files() do
+      package = package_name(mix_exs_path)
+      manifest_floor = extract_crosswake_requirement(mix_exs_path)
+
+      assert package_row_cell(guide, package, "Requires `crosswake`") == "`#{manifest_floor}`"
+
+      assert package_row_cell(guide, package, "Current Version") ==
+               "`#{@published_versions[package]}`"
+
+      assert runbook_floor(runbook, package) == manifest_floor
+    end
+  end
+
+  test "the complete transaction rejects the old two-manifest-only patch" do
+    expected_floor = expected_core_floor()
+    guide = File.read!(@doc_path)
+    install = File.read!(@install_path)
+    runbook = File.read!(@runbook_path)
+
+    stale_guide =
+      Enum.reduce(Map.keys(@published_versions), guide, fn package, text ->
+        replace_package_row_floor(text, package, "~> 0.1")
+      end)
+
+    stale_install = String.replace(install, expected_floor, "~> 0.1", global: false)
+
+    stale_runbook =
+      Enum.reduce(Map.keys(@published_versions), runbook, fn package, text ->
+        replace_runbook_floor(text, package, "~> 0.1")
+      end)
+
+    refute readme_dependency_requirement(stale_install, "crosswake") == expected_floor
+
+    for package <- Map.keys(@published_versions) do
+      refute package_row_cell(stale_guide, package, "Requires `crosswake`") ==
+               "`#{expected_floor}`"
+
+      refute runbook_floor(stale_runbook, package) == expected_floor
+    end
+  end
 
   # ---------------------------------------------------------------------------
   # SC#1 — the doc exists (distinct failure from a row being wrong)
@@ -261,6 +349,110 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
        do: req
 
   defp extract_hex_req_from_if(_), do: nil
+
+  defp expected_core_floor do
+    [_, major, minor] = Regex.run(~r/@version\s+"(\d+)\.(\d+)\.\d+"/, File.read!("mix.exs"))
+    "~> #{major}.#{minor}"
+  end
+
+  defp extracted_companion_mix_files do
+    ~w(crosswake_rulestead crosswake_rindle)
+    |> Enum.map(&Path.join(["packages", &1, "mix.exs"]))
+  end
+
+  defp compatibility_surface_errors(manifest, readme, package, expected_floor) do
+    manifest_floor = extract_crosswake_requirement_from_source(manifest)
+    readme_core_floor = readme_dependency_requirement(readme, "crosswake")
+    companion_version = package_version(manifest)
+    readme_companion_floor = readme_dependency_requirement(readme, package)
+
+    []
+    |> maybe_error(manifest_floor != expected_floor, :manifest_core_floor)
+    |> maybe_error(readme_core_floor != manifest_floor, :manifest_readme_core_floor)
+    |> maybe_error(
+      readme_companion_floor != version_floor(companion_version),
+      :independent_companion_version
+    )
+    |> maybe_error(
+      not String.contains?(manifest, "{:crosswake, path: \"../..\"}"),
+      :development_path_dependency
+    )
+    |> Enum.reverse()
+  end
+
+  defp extract_crosswake_requirement_from_source(source) do
+    {:ok, ast} = Code.string_to_quoted(source, [])
+
+    {_ast, req} =
+      Macro.prewalk(ast, nil, fn
+        {:defp, _, [{:crosswake_dep, _, _}, [do: if_expr]]} = node, _acc ->
+          {node, extract_hex_req_from_if(if_expr)}
+
+        node, acc ->
+          {node, acc}
+      end)
+
+    req
+  end
+
+  defp readme_dependency_requirement(readme, package) do
+    case Regex.run(~r/\{:\Q#{package}\E,\s*"([^"]+)"\}/, readme) do
+      [_, requirement] -> requirement
+      _ -> nil
+    end
+  end
+
+  defp package_version(manifest) do
+    case Regex.run(~r/@version\s+"(\d+\.\d+\.\d+)"/, manifest) do
+      [_, version] -> version
+      _ -> nil
+    end
+  end
+
+  defp version_floor(version) do
+    case String.split(to_string(version), ".") do
+      [major, minor, _patch] -> "~> #{major}.#{minor}"
+      _ -> nil
+    end
+  end
+
+  defp maybe_error(errors, true, error), do: [error | errors]
+  defp maybe_error(errors, false, _error), do: errors
+
+  defp package_row_cell(doc, package, header) do
+    with cells when is_list(cells) <- header_row_cells(doc),
+         index when is_integer(index) <- Enum.find_index(cells, &(&1 == header)),
+         line when is_binary(line) <- package_row_line(doc, package) do
+      line |> row_cells() |> Enum.at(index)
+    else
+      _ -> nil
+    end
+  end
+
+  defp runbook_floor(runbook, package) do
+    case Regex.run(~r/^\|\s*`#{Regex.escape(package)}`\s*\|\s*`([^`]+)`\s*\|$/m, runbook) do
+      [_, floor] -> floor
+      _ -> nil
+    end
+  end
+
+  defp replace_package_row_floor(doc, package, floor) do
+    Regex.replace(
+      ~r/^(\|\s*`#{Regex.escape(package)}`\s*\|.*?\|\s*)`~> 0\.2`(\s*\|.*)$/m,
+      doc,
+      "\\1`#{floor}`\\2",
+      global: false
+    )
+  end
+
+  defp replace_runbook_floor(runbook, package, floor) do
+    Regex.replace(
+      ~r/^(\|\s*`#{Regex.escape(package)}`\s*\|\s*)`~> 0\.2`/m,
+      runbook,
+      "\\1`#{floor}`",
+      global: false
+    )
+  end
 
   defp package_name(mix_exs_path) do
     mix_exs_path

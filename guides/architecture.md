@@ -48,6 +48,17 @@ external integration. A **proof class** says what kind of evidence backs a claim
 **rebuild posture** says whether a contract change needs only an Elixir deployment or
 also a new native binary.
 
+### Choose the route owner
+
+Start with the interaction's authority, not the container. Keep server-centric screens
+`:live_view`; use `:offline_island` only for a bounded local mutation loop; choose
+`:native_screen` when the platform must continuously own presentation or device state.
+`Crosswake.Router` records that route-local choice, and `Crosswake.Manifest` turns the
+validated policy into the deterministic boundary consumed by the shell. If the declared
+owner or its requirements cannot be proved, activation stops with an explicit denial.
+The [Support matrix](support_matrix.md) is the canonical public projection for the current
+support and proof posture behind that choice.
+
 ## Journey 1: a route becomes shared runtime truth
 
 The author writes ownership beside the route it governs:

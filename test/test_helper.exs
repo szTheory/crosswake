@@ -13,7 +13,9 @@ ExUnit.start()
 exclude =
   []
   |> then(fn acc ->
-    if System.get_env("MIX_INCLUDE_RULESTEAD") == "1", do: acc, else: [{:advisory_only, true} | acc]
+    if System.get_env("MIX_INCLUDE_RULESTEAD") == "1",
+      do: acc,
+      else: [{:advisory_only, true} | acc]
   end)
   |> then(fn acc ->
     if System.get_env("CROSSWAKE_INCLUDE_COLLATERAL") == "1",

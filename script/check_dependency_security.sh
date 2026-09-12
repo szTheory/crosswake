@@ -3,7 +3,7 @@
 # Output is intentionally bounded to project, lock, package, and corrective command.
 set -u
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 EXAMPLE_DIR="${ROOT_DIR}/examples/phoenix_host"
 FIXTURE_FLAG="--assert-vulnerable-fixture"
 

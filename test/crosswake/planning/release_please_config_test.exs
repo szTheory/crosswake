@@ -17,7 +17,7 @@ defmodule Crosswake.Planning.ReleasePleaseConfigTest do
     mix_version =
       release_please_version(
         File.read!(@mix_path),
-        ~r/@version\s+"(?<version>[^"]+)"\s+# x-release-please-version/
+        ~r/# x-release-please-version\s+@version\s+"(?<version>[^"]+)"/
       )
 
     android_version =
@@ -34,7 +34,8 @@ defmodule Crosswake.Planning.ReleasePleaseConfigTest do
 
     assert [
              %{"type" => "generic", "path" => @android_gradle_path}
-           ] == get_in(config, ["packages", "packages/crosswake-shell-core-android", "extra-files"])
+           ] ==
+             get_in(config, ["packages", "packages/crosswake-shell-core-android", "extra-files"])
   end
 
   defp release_please_version(contents, regex) do

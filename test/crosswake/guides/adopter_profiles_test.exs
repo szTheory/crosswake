@@ -21,7 +21,11 @@ defmodule Crosswake.Guides.AdopterProfilesTest do
     guide = File.read!("guides/adopter_profiles.md")
 
     assert count_occurrences(guide, "| #{Enum.join(@matrix_header, " | ")} |") == 1
-    assert count_occurrences(guide, "|---------|---------------|-----------------------|-------------------------------|----------------|-------------------|--------------------|") == 1
+
+    assert count_occurrences(
+             guide,
+             "|---------|---------------|-----------------------|-------------------------------|----------------|-------------------|--------------------|"
+           ) == 1
 
     for name <- @locked_names do
       assert guide =~ name

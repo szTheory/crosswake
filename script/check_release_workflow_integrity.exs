@@ -14,8 +14,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   @components ~w(rulestead rindle sigra chimeway threadline)
   @hex_packages ~w(crosswake crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline)
   @companion_floors %{
-    "crosswake_rulestead" => "~> 0.1",
-    "crosswake_rindle" => "~> 0.1",
+    "crosswake_rulestead" => "~> 0.2",
+    "crosswake_rindle" => "~> 0.2",
     "crosswake_sigra" => "~> 0.2",
     "crosswake_chimeway" => "~> 0.2",
     "crosswake_threadline" => "~> 0.2"
@@ -309,7 +309,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     check(
       "recovery.hex.exact_ref_only",
       includes?(recovery_workflow, "^[0-9a-f]{40}$") and
-        includes?(recovery_workflow, "EXPECTED_TAG_REF=\"refs/tags/${TAG_COMPONENT}-v${EXPECTED_VERSION}\"") and
+        includes?(
+          recovery_workflow,
+          "EXPECTED_TAG_REF=\"refs/tags/${TAG_COMPONENT}-v${EXPECTED_VERSION}\""
+        ) and
         includes?(recovery_workflow, "crosswake) TAG_COMPONENT=\"hex\"") and
         includes?(recovery_workflow, "crosswake_sigra|crosswake_chimeway|crosswake_threadline") and
         includes?(recovery_workflow, "[ \"$RECOVERY_REF\" = \"$EXPECTED_TAG_REF\" ]") and
@@ -599,7 +602,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     check(
       "release.version_graph.companion_floors_honest",
       floors_ok?,
-      "companion crosswake_dep floors must stay mixed: rulestead/rindle ~> 0.1 and sigra/chimeway/threadline ~> 0.2"
+      "companion crosswake_dep floors must match the independently owned current core requirements"
     )
   end
 
@@ -616,7 +619,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     check(
       "release.workflow.companion_floors_honest",
       floors_ok?,
-      "package mix.exs files must preserve mixed clean-room floors: rulestead/rindle ~> 0.1 and sigra/chimeway/threadline ~> 0.2; inspect packages/crosswake_*/mix.exs and rerun elixir script/check_release_workflow_integrity.exs"
+      "package mix.exs files must match the independently owned current core floors; inspect packages/crosswake_*/mix.exs and rerun elixir script/check_release_workflow_integrity.exs"
     )
   end
 

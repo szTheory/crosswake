@@ -1,13 +1,13 @@
 defmodule Crosswake.Commerce.Reconciliation do
   @moduledoc """
   Typed backend-owned reconciliation vocabulary for commerce.
-  
+
   This module encodes the canonical flow:
   1. Device/native evidence enters Phoenix.
   2. Phoenix records a reconciliation attempt.
   3. Host-owned workers verify it.
   4. Backend publishes a refreshed authoritative entitlement snapshot.
-  
+
   These states represent reconciliation or freshness outcomes, not automatic access grants
   or silent denials. Device success is evidence, not entitlement.
   """
@@ -34,7 +34,12 @@ defmodule Crosswake.Commerce.Reconciliation do
   ]
 
   @unresolved_outcomes [:pending_purchase, :pending_restore, :awaiting_verification]
-  @workflow_reporting_outcomes [:projection_refreshed, :verification_failed, :conflict, :stale_authority]
+  @workflow_reporting_outcomes [
+    :projection_refreshed,
+    :verification_failed,
+    :conflict,
+    :stale_authority
+  ]
 
   @spec outcome_vocabulary() :: [outcome()]
   def outcome_vocabulary do
@@ -63,7 +68,14 @@ defmodule Crosswake.Commerce.Reconciliation do
     A typed record of a backend-owned reconciliation attempt.
     """
     @enforce_keys [:provider, :provider_reference, :event_kind, :status]
-    defstruct [:provider, :provider_reference, :event_kind, :status, :evidence_ref, :idempotency_ref]
+    defstruct [
+      :provider,
+      :provider_reference,
+      :event_kind,
+      :status,
+      :evidence_ref,
+      :idempotency_ref
+    ]
 
     @type t :: %__MODULE__{
             provider: String.t(),
@@ -107,7 +119,13 @@ defmodule Crosswake.Commerce.Reconciliation do
           }
   end
 
-  @success_like_event_kinds MapSet.new(["purchase", "restore", "renewal", "grace_period", "billing_retry"])
+  @success_like_event_kinds MapSet.new([
+                              "purchase",
+                              "restore",
+                              "renewal",
+                              "grace_period",
+                              "billing_retry"
+                            ])
 
   @spec ingest_evidence(Contracts.ReconciliationEvidence.t(), keyword()) ::
           {:ok, EvidenceResult.t()} | {:error, term()}
@@ -115,7 +133,10 @@ defmodule Crosswake.Commerce.Reconciliation do
     with :ok <- reject_direct_authority_override(opts),
          {:ok, source} <- normalize_evidence_source(evidence.source) do
       idempotency_key = to_idempotency_key(evidence)
-      replay? = seen_idempotency_key?(idempotency_key, Keyword.get(opts, :seen_idempotency_keys, []))
+
+      replay? =
+        seen_idempotency_key?(idempotency_key, Keyword.get(opts, :seen_idempotency_keys, []))
+
       status = evidence_status(evidence, opts)
 
       attempt = %Attempt{
@@ -149,8 +170,12 @@ defmodule Crosswake.Commerce.Reconciliation do
     }
   end
 
-  defp seen_idempotency_key?(idempotency_key, %MapSet{} = seen), do: MapSet.member?(seen, idempotency_key)
-  defp seen_idempotency_key?(idempotency_key, seen) when is_list(seen), do: Enum.member?(seen, idempotency_key)
+  defp seen_idempotency_key?(idempotency_key, %MapSet{} = seen),
+    do: MapSet.member?(seen, idempotency_key)
+
+  defp seen_idempotency_key?(idempotency_key, seen) when is_list(seen),
+    do: Enum.member?(seen, idempotency_key)
+
   defp seen_idempotency_key?(_idempotency_key, _seen), do: false
 
   defp evidence_status(evidence, opts) do

@@ -1,4 +1,3 @@
-
 defmodule Crosswake.Policy.WarningTest do
   use ExUnit.Case, async: true
 
@@ -19,7 +18,15 @@ defmodule Crosswake.Policy.WarningTest do
   test "fully managed routers compile cleanly with no warnings" do
     routes = [
       route("/dashboard", helper: "page", crosswake: [id: "dashboard", runtime: :live_view]),
-      route("/library", helper: "library", crosswake: [id: "library", runtime: :offline_island, offline: :cached_read_only, security: :standard])
+      route("/library",
+        helper: "library",
+        crosswake: [
+          id: "library",
+          runtime: :offline_island,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
     ]
 
     assert {:ok, %{routes: compiled_routes, warnings: []}} =
@@ -35,7 +42,9 @@ defmodule Crosswake.Policy.WarningTest do
       route("/unmanaged", helper: "public")
     ]
 
-    assert {:error, diagnostic} = Compiler.compile(routes, warn_on_unmanaged?: true, emit_warnings?: true)
+    assert {:error, diagnostic} =
+             Compiler.compile(routes, warn_on_unmanaged?: true, emit_warnings?: true)
+
     assert diagnostic.warnings == []
   end
 

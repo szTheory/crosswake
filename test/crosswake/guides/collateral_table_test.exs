@@ -47,7 +47,8 @@ defmodule Crosswake.Guides.CollateralTableTest do
   end
 
   test "scanner rejects a web row that drops the Web proof label" do
-    mutated = String.replace(File.read!(@table_path), "Web proof — localhost:4700/ ", "screenshot ")
+    mutated =
+      String.replace(File.read!(@table_path), "Web proof — localhost:4700/ ", "screenshot ")
 
     assert_failure_category(
       scan_table({"synthetic/no_web_label.md", mutated}),
@@ -94,25 +95,48 @@ defmodule Crosswake.Guides.CollateralTableTest do
 
   defp filename_failures(path, contents) do
     Enum.flat_map(@all_files, fn name ->
-      require_contains(path, contents, name, :missing_filename,
-        "table must list the collateral asset #{name}")
+      require_contains(
+        path,
+        contents,
+        name,
+        :missing_filename,
+        "table must list the collateral asset #{name}"
+      )
     end)
   end
 
   defp web_label_failures(path, contents) do
     Enum.flat_map(@web_rows, fn name ->
-      row_label_failure(path, contents, name, "Web proof", :missing_web_label,
-        "web row #{name} must carry the 'Web proof' label")
+      row_label_failure(
+        path,
+        contents,
+        name,
+        "Web proof",
+        :missing_web_label,
+        "web row #{name} must carry the 'Web proof' label"
+      )
     end)
   end
 
   defp native_label_failures(path, contents) do
     Enum.flat_map(@native_rows, fn name ->
       [
-        row_label_failure(path, contents, name, "emulator evidence", :missing_native_label,
-          "native row #{name} must carry the 'emulator evidence' label"),
-        row_label_failure(path, contents, name, "advisory, not physical device", :missing_native_label,
-          "native row #{name} must carry the 'advisory, not physical device' disclaimer")
+        row_label_failure(
+          path,
+          contents,
+          name,
+          "emulator evidence",
+          :missing_native_label,
+          "native row #{name} must carry the 'emulator evidence' label"
+        ),
+        row_label_failure(
+          path,
+          contents,
+          name,
+          "advisory, not physical device",
+          :missing_native_label,
+          "native row #{name} must carry the 'advisory, not physical device' disclaimer"
+        )
       ]
     end)
   end
@@ -134,8 +158,13 @@ defmodule Crosswake.Guides.CollateralTableTest do
   end
 
   defp raw_url_failure(path, contents) do
-    require_contains(path, contents, @raw_url_prefix, :missing_raw_url,
-      "table must document the raw.githubusercontent.com reference pattern")
+    require_contains(
+      path,
+      contents,
+      @raw_url_prefix,
+      :missing_raw_url,
+      "table must document the raw.githubusercontent.com reference pattern"
+    )
   end
 
   # ---------------------------------------------------------------------------

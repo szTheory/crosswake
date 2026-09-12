@@ -45,7 +45,7 @@ created: "2026-09-09"
 | T-165-12 | Elevation of privilege | Release and recovery separation | high | mitigate | Credential-free PR workflow; isolated offline Hex dry-run; separate release/manual authority. | closed |
 | T-165-13 | Spoofing | Advisory checks | medium | mitigate | Advisory jobs remain outside the required manifest and umbrella authority. | closed |
 | T-165-14 | Elevation of privilege | Release automation | high | mitigate | Separate triggers, permissions, secrets, and non-cancelling release/recovery workflows. | closed |
-| T-165-15 | Spoofing / Tampering | Final source binding | high | mitigate | Exact remote tip `71732ad439ca3319c7d7dfbeb439d1f74545e9c8` with matching landed workflow/manifest digests and live target audit. | closed |
+| T-165-15 | Spoofing / Tampering | Final source binding | high | mitigate | Exact remote tip `0b59224bbabc3f0b40038d0c1c4dc7ecae81de4c` with matching landed workflow/manifest digests and live strict app-bound target audit. | closed |
 
 ---
 
@@ -60,6 +60,7 @@ No accepted risks.
 | Audit Date | Threats Total | Closed | Open | Run By |
 |------------|---------------|--------|------|--------|
 | 2026-09-09 | 15 | 15 | 0 | gsd-security-auditor |
+| 2026-09-09 | 15 | 15 | 0 | post-review exact-source rebind (`0b59224b`) |
 
 ---
 

@@ -140,12 +140,13 @@ defmodule Crosswake.Proof.Phase130FailClosedContractTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/gating/stub-feature", Crosswake.TestSupport.StudySessionLive,
+        live("/gating/stub-feature", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "gating-stub-feature",
             gated_by: :stub_dep_missing,
             on_unavailable: :deny
           ]
+        )
       end
     end
   end
@@ -155,12 +156,13 @@ defmodule Crosswake.Proof.Phase130FailClosedContractTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/gating/stub-ks", Crosswake.TestSupport.StudySessionLive,
+        live("/gating/stub-ks", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "gating-stub-ks",
             gated_by: :stub_dep_missing_ks_on,
             on_unavailable: :deny
           ]
+        )
       end
     end
   end
@@ -170,12 +172,13 @@ defmodule Crosswake.Proof.Phase130FailClosedContractTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/gating/stub-raises", Crosswake.TestSupport.StudySessionLive,
+        live("/gating/stub-raises", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "gating-stub-raises",
             gated_by: :stub_dep_raises,
             on_unavailable: :deny
           ]
+        )
       end
     end
   end
@@ -253,7 +256,10 @@ defmodule Crosswake.Proof.Phase130FailClosedContractTest do
   # ---------------------------------------------------------------------------
 
   test "D-02 precedence: dependency_missing beats kill_switch_active when both apply" do
-    Application.put_env(:crosswake, :companions, [Crosswake.TestSupport.StubDepMissingKillSwitchOnCompanion])
+    Application.put_env(:crosswake, :companions, [
+      Crosswake.TestSupport.StubDepMissingKillSwitchOnCompanion
+    ])
+
     Application.put_env(:crosswake, :stub_dep_missing_ks_on, %{enabled: true})
 
     assert {:ok, %{manifest: manifest}} = Manifest.compile(StubKillSwitchOnRouter)

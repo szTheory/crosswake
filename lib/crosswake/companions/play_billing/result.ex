@@ -4,7 +4,14 @@ defmodule Crosswake.Companions.PlayBilling.Result do
   alias Crosswake.Commerce.ProviderEvidence
 
   @enforce_keys [:status]
-  defstruct [:status, :lifecycle_hint, :message, :acknowledgement_state, :consumption_state, metadata: %{}]
+  defstruct [
+    :status,
+    :lifecycle_hint,
+    :message,
+    :acknowledgement_state,
+    :consumption_state,
+    metadata: %{}
+  ]
 
   @type status ::
           :submitted
@@ -57,21 +64,27 @@ defmodule Crosswake.Companions.PlayBilling.Result do
       end
 
     errors =
-      if is_nil(result.lifecycle_hint) or result.lifecycle_hint in ProviderEvidence.lifecycle_hint_vocabulary() do
+      if is_nil(result.lifecycle_hint) or
+           result.lifecycle_hint in ProviderEvidence.lifecycle_hint_vocabulary() do
         errors
       else
         [{:lifecycle_hint, {:invalid_lifecycle_hint, result.lifecycle_hint}} | errors]
       end
 
     errors =
-      if is_nil(result.acknowledgement_state) or result.acknowledgement_state in [:pending, :acknowledged, :unspecified] do
+      if is_nil(result.acknowledgement_state) or
+           result.acknowledgement_state in [:pending, :acknowledged, :unspecified] do
         errors
       else
-        [{:acknowledgement_state, {:invalid_acknowledgement_state, result.acknowledgement_state}} | errors]
+        [
+          {:acknowledgement_state, {:invalid_acknowledgement_state, result.acknowledgement_state}}
+          | errors
+        ]
       end
 
     errors =
-      if is_nil(result.consumption_state) or result.consumption_state in [:not_consumed, :consumed, :unspecified] do
+      if is_nil(result.consumption_state) or
+           result.consumption_state in [:not_consumed, :consumed, :unspecified] do
         errors
       else
         [{:consumption_state, {:invalid_consumption_state, result.consumption_state}} | errors]

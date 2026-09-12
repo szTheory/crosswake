@@ -24,5 +24,6 @@ defmodule Crosswake.Commerce do
   @doc """
   Fetch the current entitlement snapshot for a given group.
   """
-  @callback fetch_entitlement_snapshot(String.t()) :: {:ok, Contracts.EntitlementSnapshot.t()} | {:error, term()}
+  @callback fetch_entitlement_snapshot(String.t()) ::
+              {:ok, Contracts.EntitlementSnapshot.t()} | {:error, term()}
 end

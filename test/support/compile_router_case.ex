@@ -15,7 +15,9 @@ defmodule Crosswake.TestSupport.CompileRouterCase do
             send(self(), {:compile_result, result})
 
           {:error, %Diagnostic{} = diagnostic} ->
-            flunk("expected successful compilation, got diagnostic:\n#{Diagnostic.format(diagnostic)}")
+            flunk(
+              "expected successful compilation, got diagnostic:\n#{Diagnostic.format(diagnostic)}"
+            )
         end
       end)
 

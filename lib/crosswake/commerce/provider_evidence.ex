@@ -14,8 +14,21 @@ defmodule Crosswake.Commerce.ProviderEvidence do
   ]
 
   @environment_vocabulary [:sandbox, :production, :license_test]
-  @result_status_vocabulary [:submitted, :user_canceled, :pending, :provider_error, :prerequisite_missing, :reconcile_required]
-  @lifecycle_hint_vocabulary [:flow_opened, :flow_closed, :pending_external, :reconcile_required, :reconcile_timeout]
+  @result_status_vocabulary [
+    :submitted,
+    :user_canceled,
+    :pending,
+    :provider_error,
+    :prerequisite_missing,
+    :reconcile_required
+  ]
+  @lifecycle_hint_vocabulary [
+    :flow_opened,
+    :flow_closed,
+    :pending_external,
+    :reconcile_required,
+    :reconcile_timeout
+  ]
 
   @provider_by_string Map.new(@provider_vocabulary, &{&1, &1})
   @event_kind_by_string Map.new(@event_kind_vocabulary, &{&1, &1})
@@ -43,7 +56,8 @@ defmodule Crosswake.Commerce.ProviderEvidence do
   def authority_mutation_allowed_from_lifecycle_hint?(_lifecycle_hint), do: false
 
   @spec canonical_provider(term()) :: {:ok, String.t()} | {:error, {:invalid_provider, keyword()}}
-  def canonical_provider(provider) when is_atom(provider), do: canonical_provider(Atom.to_string(provider))
+  def canonical_provider(provider) when is_atom(provider),
+    do: canonical_provider(Atom.to_string(provider))
 
   def canonical_provider(provider) when is_binary(provider) do
     downcased = provider |> String.trim() |> String.downcase()
@@ -57,13 +71,17 @@ defmodule Crosswake.Commerce.ProviderEvidence do
   def canonical_provider(provider),
     do: {:error, {:invalid_provider, [provider: provider, allowed: @provider_vocabulary]}}
 
-  @spec canonical_event_kind(term()) :: {:ok, String.t()} | {:error, {:invalid_event_kind, keyword()}}
+  @spec canonical_event_kind(term()) ::
+          {:ok, String.t()} | {:error, {:invalid_event_kind, keyword()}}
   def canonical_event_kind(event_kind) when is_atom(event_kind) do
     normalized = event_kind |> Atom.to_string() |> String.trim() |> String.downcase()
 
     case Map.fetch(@event_kind_by_string, normalized) do
-      {:ok, canonical} -> {:ok, canonical}
-      :error -> {:error, {:invalid_event_kind, [event_kind: event_kind, allowed: @event_kind_vocabulary]}}
+      {:ok, canonical} ->
+        {:ok, canonical}
+
+      :error ->
+        {:error, {:invalid_event_kind, [event_kind: event_kind, allowed: @event_kind_vocabulary]}}
     end
   end
 
@@ -71,8 +89,11 @@ defmodule Crosswake.Commerce.ProviderEvidence do
     normalized = event_kind |> String.trim() |> String.downcase()
 
     case Map.fetch(@event_kind_by_string, normalized) do
-      {:ok, canonical} -> {:ok, canonical}
-      :error -> {:error, {:invalid_event_kind, [event_kind: event_kind, allowed: @event_kind_vocabulary]}}
+      {:ok, canonical} ->
+        {:ok, canonical}
+
+      :error ->
+        {:error, {:invalid_event_kind, [event_kind: event_kind, allowed: @event_kind_vocabulary]}}
     end
   end
 

@@ -63,6 +63,7 @@ defmodule Crosswake.Proof.Phase130ExtractionGuardsTest do
       # Prove the string comparison can detect the pattern when present.
       # Construct from fragments so THIS proof file does not trip its own guard.
       synthetic = "MIX_" <> "INCLUDE_RULESTEAD"
+
       assert String.contains?(synthetic, "MIX_" <> "INCLUDE_RULESTEAD"),
              "non-vacuity: the guard must be capable of detecting MIX_INCLUDE_RULESTEAD"
     end
@@ -230,6 +231,7 @@ defmodule Crosswake.Proof.Phase130ExtractionGuardsTest do
   describe "D-27 — packages/crosswake_rulestead/mix.exs must not carry runtime: false" do
     test "crosswake_rulestead mix.exs: {:crosswake, path:} dep carries no runtime: false (D-27)" do
       pkg_mix = Path.join(File.cwd!(), "packages/crosswake_rulestead/mix.exs")
+
       assert File.exists?(pkg_mix),
              ProofAssertions.stable_id_message(
                "proof.d27.package_mix_exists",

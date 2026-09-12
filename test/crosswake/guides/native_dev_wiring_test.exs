@@ -30,30 +30,37 @@ defmodule Crosswake.Guides.NativeDevWiringTest do
 
   test "prod Info.plist contains none of the dev ATS keys (NSAllowsArbitraryLoads, NSExceptionDomains, localhost)" do
     plist = File.read!(@prod_ios_plist_path)
+
     refute String.contains?(plist, "NSAllowsArbitraryLoads"),
            "prod Info.plist must not contain NSAllowsArbitraryLoads"
+
     refute String.contains?(plist, "NSExceptionDomains"),
            "prod Info.plist must not contain NSExceptionDomains"
+
     refute String.contains?(plist, "localhost"),
            "prod Info.plist must not contain the localhost token"
   end
 
   test "prod iOS fixture origin is the proof invalid domain" do
     decoded = @prod_ios_fixture_path |> File.read!() |> Jason.decode!()
+
     assert decoded["origin"] == @proof_invalid_origin,
            "expected prod iOS fixture origin to be #{inspect(@proof_invalid_origin)}, got: #{inspect(decoded["origin"])}"
   end
 
   test "prod Android fixture origin is the proof invalid domain" do
     decoded = @prod_android_fixture_path |> File.read!() |> Jason.decode!()
+
     assert decoded["origin"] == @proof_invalid_origin,
            "expected prod Android fixture origin to be #{inspect(@proof_invalid_origin)}, got: #{inspect(decoded["origin"])}"
   end
 
   test "prod AndroidManifest.xml has usesCleartextTraffic=false and no dev network security config reference" do
     manifest = File.read!(@prod_android_manifest_path)
+
     assert String.contains?(manifest, ~s(android:usesCleartextTraffic="false")),
            "prod AndroidManifest.xml must have usesCleartextTraffic=\"false\""
+
     refute String.contains?(manifest, "network_security_config_dev"),
            "prod AndroidManifest.xml must not reference network_security_config_dev"
   end
@@ -80,29 +87,36 @@ defmodule Crosswake.Guides.NativeDevWiringTest do
 
     assert String.contains?(ios["origin"], "localhost:#{port}"),
            "iOS dev fixture origin must contain localhost:#{port}; got: #{inspect(ios["origin"])}"
+
     assert String.contains?(ios["url"], "localhost:#{port}"),
            "iOS dev fixture url must contain localhost:#{port}; got: #{inspect(ios["url"])}"
 
     assert String.contains?(android["origin"], "10.0.2.2:#{port}"),
            "Android dev fixture origin must contain 10.0.2.2:#{port}; got: #{inspect(android["origin"])}"
+
     assert String.contains?(android["url"], "10.0.2.2:#{port}"),
            "Android dev fixture url must contain 10.0.2.2:#{port}; got: #{inspect(android["url"])}"
   end
 
   test "Info-Dev.plist contains the localhost cleartext exception tokens" do
     plist = File.read!(@dev_ios_plist_path)
+
     assert String.contains?(plist, "NSExceptionDomains"),
            "Info-Dev.plist must contain NSExceptionDomains"
+
     assert String.contains?(plist, "localhost"),
            "Info-Dev.plist must contain localhost exception domain"
+
     assert String.contains?(plist, "NSExceptionAllowsInsecureHTTPLoads"),
            "Info-Dev.plist must contain NSExceptionAllowsInsecureHTTPLoads"
   end
 
   test "network_security_config_dev.xml permits cleartext for 10.0.2.2 and has default-off base-config" do
     config = File.read!(@dev_android_network_config_path)
+
     assert String.contains?(config, "10.0.2.2"),
            "network_security_config_dev.xml must contain 10.0.2.2 domain"
+
     assert String.contains?(config, "cleartextTrafficPermitted"),
            "network_security_config_dev.xml must contain cleartextTrafficPermitted"
   end
@@ -150,6 +164,7 @@ defmodule Crosswake.Guides.NativeDevWiringTest do
     # Confirm the positive check WOULD fail on this synthetic plist:
     # refute String.contains?(synthetic, "NSExceptionDomains") would fail — good, the guard works.
     vacuity_result = not String.contains?(synthetic_plist_with_dev_key, "NSExceptionDomains")
+
     refute vacuity_result,
            "anti-vacuity: the positive prod-plist NSExceptionDomains check is non-vacuous — it correctly catches the forbidden key"
   end

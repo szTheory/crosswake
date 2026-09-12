@@ -73,7 +73,10 @@ defmodule Crosswake.Compatibility.RouteGate do
     end
   end
 
-  defp transition_for_non_notification_denial(%RouteEntry{on_unavailable: {:fallback_phoenix, id}}, _opts) do
+  defp transition_for_non_notification_denial(
+         %RouteEntry{on_unavailable: {:fallback_phoenix, id}},
+         _opts
+       ) do
     {:redirect, id}
   end
 
@@ -152,11 +155,15 @@ defmodule Crosswake.Compatibility.RouteGate do
             rescue
               _ ->
                 result = {{:error, nil}, :adapter_unloadable}
-                {result, %{companion_id: companion.companion_id(), route_id: route.id, exception: true}}
+
+                {result,
+                 %{companion_id: companion.companion_id(), route_id: route.id, exception: true}}
             catch
               _ ->
                 result = {{:error, nil}, :adapter_unloadable}
-                {result, %{companion_id: companion.companion_id(), route_id: route.id, exception: true}}
+
+                {result,
+                 %{companion_id: companion.companion_id(), route_id: route.id, exception: true}}
             end
           end
         )
@@ -261,6 +268,7 @@ defmodule Crosswake.Compatibility.RouteGate do
         Application.get_env(:crosswake, :companions, [])
         |> Enum.filter(fn companion ->
           config = Application.get_env(:crosswake, companion.companion_id(), %{})
+
           companion.enabled?(config) and
             function_exported?(companion, :auth_authority?, 0) and
             companion.auth_authority?()

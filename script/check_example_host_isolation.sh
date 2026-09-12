@@ -3,11 +3,13 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EXAMPLE_DIR="${ROOT_DIR}/examples/phoenix_host"
-OWNED_TMP_DIR="${TMPDIR:-/tmp}"
 seeds="17 101 1009"
 mode="${1:-}"
 
 snapshot_dir="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-phase164-isolation.XXXXXX")"
+snapshot_dir="$(cd "${snapshot_dir}" && pwd -P)"
+OWNED_TMP_DIR="${snapshot_dir}/runtime"
+mkdir -p "${OWNED_TMP_DIR}"
 cleanup_snapshot_dir() {
   rm -rf "${snapshot_dir}"
 }
@@ -75,11 +77,13 @@ run_class() {
   status=0
   if [ "${class}" = "tagged" ]; then
     (
+      export TMPDIR="${OWNED_TMP_DIR}"
       cd "${ROOT_DIR}"
       MIX_ENV=test mix test --only requires_example_host --seed "$seed"
     ) >"${log}" 2>&1 || status=$?
   else
     (
+      export TMPDIR="${OWNED_TMP_DIR}"
       cd "${ROOT_DIR}"
       CROSSWAKE_INCLUDE_EXAMPLE_HOST=1 mix test --seed "$seed"
     ) >"${log}" 2>&1 || status=$?
@@ -111,16 +115,22 @@ if [ -n "${mode}" ] && [ "${mode}" != "--matrix-only" ]; then
   exit 2
 fi
 
+(
+  export TMPDIR="${OWNED_TMP_DIR}"
+  cd "${EXAMPLE_DIR}"
+  MIX_ENV=dev mix deps.get
+  MIX_ENV=dev mix compile
+)
+
+(
+  export TMPDIR="${OWNED_TMP_DIR}"
+  cd "${ROOT_DIR}"
+  MIX_ENV=test mix compile
+)
+
 if [ "${mode}" != "--matrix-only" ]; then
   (
-    cd "${EXAMPLE_DIR}"
-    MIX_ENV=dev mix deps.get
-    MIX_ENV=dev mix compile
-  )
-
-  (
     cd "${ROOT_DIR}"
-    MIX_ENV=test mix compile
     MIX_ENV=test mix test test/crosswake/proof/phase164_example_host_isolation_test.exs
   )
 fi

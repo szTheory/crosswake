@@ -7,7 +7,16 @@ defmodule Crosswake.Transfer.Contracts do
   @protocol "crosswake.transfer"
   @version "1.0.0"
   @intents [:upload, :download, :import, :export]
-  @states [:queued, :preparing, :transferring, :awaiting_network, :verifying, :complete, :failed, :canceled]
+  @states [
+    :queued,
+    :preparing,
+    :transferring,
+    :awaiting_network,
+    :verifying,
+    :complete,
+    :failed,
+    :canceled
+  ]
   @sources [:native_picker, :native_capture, :app_sandbox]
   @destinations [:app_sandbox, :user_visible_files, :phoenix_origin]
   @verifications [:required, :none]
@@ -130,15 +139,25 @@ defmodule Crosswake.Transfer.Contracts do
   end
 
   def normalize_declaration(%{} = declaration) do
-    with {:ok, id} <- validate_identifier(Map.get(declaration, :id, Map.get(declaration, "id")), "id"),
-         {:ok, intent} <- validate_intent(Map.get(declaration, :intent, Map.get(declaration, "intent"))),
+    with {:ok, id} <-
+           validate_identifier(Map.get(declaration, :id, Map.get(declaration, "id")), "id"),
+         {:ok, intent} <-
+           validate_intent(Map.get(declaration, :intent, Map.get(declaration, "intent"))),
          {:ok, verification} <-
-           validate_verification(Map.get(declaration, :verification, Map.get(declaration, "verification"))),
-         {:ok, source} <- validate_source(intent, Map.get(declaration, :source, Map.get(declaration, "source"))),
+           validate_verification(
+             Map.get(declaration, :verification, Map.get(declaration, "verification"))
+           ),
+         {:ok, source} <-
+           validate_source(intent, Map.get(declaration, :source, Map.get(declaration, "source"))),
          {:ok, destination} <-
-           validate_destination(intent, Map.get(declaration, :destination, Map.get(declaration, "destination"))),
+           validate_destination(
+             intent,
+             Map.get(declaration, :destination, Map.get(declaration, "destination"))
+           ),
          {:ok, media_types} <-
-           validate_media_types(Map.get(declaration, :media_types, Map.get(declaration, "media_types"))) do
+           validate_media_types(
+             Map.get(declaration, :media_types, Map.get(declaration, "media_types"))
+           ) do
       {:ok,
        new_declaration(
          id: id,
@@ -167,7 +186,8 @@ defmodule Crosswake.Transfer.Contracts do
   end
 
   @spec validate_picker_declaration(declaration()) ::
-          :ok | {:error, :invalid_picker_direction | :invalid_picker_intent | :invalid_picker_source}
+          :ok
+          | {:error, :invalid_picker_direction | :invalid_picker_intent | :invalid_picker_source}
   def validate_picker_declaration(%Declaration{} = declaration) do
     cond do
       declaration.intent not in @picker_intents ->
@@ -187,12 +207,18 @@ defmodule Crosswake.Transfer.Contracts do
   defp direction_for_intent(intent) when intent in @inbound_intents, do: :inbound
   defp direction_for_intent(intent) when intent in @outbound_intents, do: :outbound
 
-  defp validate_identifier(value, _field) when is_binary(value) and byte_size(value) > 0, do: {:ok, value}
+  defp validate_identifier(value, _field) when is_binary(value) and byte_size(value) > 0,
+    do: {:ok, value}
+
   defp validate_identifier(value, _field) when is_atom(value), do: {:ok, Atom.to_string(value)}
-  defp validate_identifier(_value, field), do: {:error, "#{field} is required and must be a non-empty string or atom"}
+
+  defp validate_identifier(_value, field),
+    do: {:error, "#{field} is required and must be a non-empty string or atom"}
 
   defp validate_intent(value) when value in @intents, do: {:ok, value}
-  defp validate_intent(value), do: {:error, "intent must be one of #{inspect(@intents)}, got: #{inspect(value)}"}
+
+  defp validate_intent(value),
+    do: {:error, "intent must be one of #{inspect(@intents)}, got: #{inspect(value)}"}
 
   defp validate_verification(value) when value in @verifications, do: {:ok, value}
 
@@ -208,7 +234,9 @@ defmodule Crosswake.Transfer.Contracts do
 
   defp validate_source(_intent, nil), do: {:ok, nil}
   defp validate_source(_intent, value) when value in @sources, do: {:ok, value}
-  defp validate_source(_intent, value), do: {:error, "source must be one of #{inspect(@sources)}, got: #{inspect(value)}"}
+
+  defp validate_source(_intent, value),
+    do: {:error, "source must be one of #{inspect(@sources)}, got: #{inspect(value)}"}
 
   defp validate_destination(intent, nil) when intent in @outbound_intents,
     do: {:error, "destination is required for #{intent} transfers"}

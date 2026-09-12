@@ -1,0 +1,617 @@
+#!/usr/bin/env python3
+"""Fail-closed Phase 167 ancestry-preserving fix-forward authority."""
+
+from __future__ import annotations
+
+import argparse
+import copy
+import hashlib
+import json
+import re
+import shutil
+import subprocess
+import tempfile
+import urllib.parse
+from pathlib import Path
+from typing import Any
+
+
+ROOT = Path(__file__).resolve().parents[1]
+BASE = "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb"
+RED = "367f5b5491384594a652d137a03933fa3a89418a"
+BRANCH = "agent-phase167-fixforward"
+PR145 = {"head_oid": "a6e2622acaaa82e82eb33a21760e75db2e51a281", "merge_oid": BASE, "state": "MERGED"}
+FAILED = {110: (34544586854, "85e6aeec41b9a53840f0a2315c16c4390cef1878"), 148: (34553181146, "cc5286da6467c6d582f9a9585272360fcc1e4927")}
+FAILED_DIAGNOSTIC = {
+    "head_oid": "412dc4d15bed871b4eefabc05ced4567da25c61c",
+    "tree_oid": "919cbf8dd6ed72c18650291b3d3f285eede2a06a",
+    "run_id": 34626117633,
+}
+GENERATED_RED = "24fac450ffba5af764ab4be10d8c4aef034780d4"
+GENERATED_GREEN = "60d77d61fa28593f5f1b725f7d643d94f2e6db1e"
+INVALID_BROWSER_DIAGNOSTIC = {
+    "head_oid": "a35e81efae2f8a6e6c9448111ab756df9bfd58e5",
+    "tree_oid": "d94a93c33821c800c091cb5ca3efafe58cc0d9f8",
+    "run_id": 34635587034,
+}
+REPLACEMENT_BROWSER_DIAGNOSTIC = {
+    "head_oid": "81834a5cdc72c8afecac8d0628c4b2c22257a582",
+    "tree_oid": "75f8b6d54712a497cf78ec737dc2d99e147e6348",
+    "run_id": 34640820161,
+}
+PHASE41_RED = "62fcfcea08cb57660830a8faf97585e94b2fe433"
+PHASE41_GREEN = "b4d981037bc0df072d20ffa5f2993039e859035a"
+BROWSER_CLEANUP_GREEN = "c8e69c32d69a49b955e196c1c7b2f56d4357e7a9"
+FAILED_FINAL_ATTEMPT = {
+    "head_oid": "072250e365ec1e2d230e1a84acf43ad3e2e3268c",
+    "tree_oid": "ae1f8d1c33b38830553cbcfbe84bdc19f2b8bd17",
+    "run_id": 34649577077,
+}
+PHASE41_PARTITION_RED = "0a0e190739f5f82e4c324ee7ecb3eaad3b611a60"
+PHASE41_PARTITION_GREEN = "90a984d0c51b7a92eb6fe79eb94b1a07c266791d"
+PHASE41_PARTITION_FORMAT = "dfe1f8cb7694faa8b4763fcc8dba1def426857ec"
+FULL_OID = re.compile(r"^[0-9a-f]{40}$")
+SHA256 = re.compile(r"^[0-9a-f]{64}$")
+MODES = {"100644", "100755", "120000", "160000"}
+PHASE_EVIDENCE = ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence"
+MANIFEST_PATH = f"{PHASE_EVIDENCE}/default-branch-dependency-closure.json"
+LEDGER_PATH = f"{PHASE_EVIDENCE}/fix-forward-failure-ledger.json"
+RESOLUTION_PATH = f"{PHASE_EVIDENCE}/default-branch-reconciliation-resolution.json"
+PR110_PATH = f"{PHASE_EVIDENCE}/pr-110-resolution.json"
+RUNTIME_PATHS = [
+    ".planning/workstreams/quality-ratchet-release/config.json",
+    ".planning/workstreams/quality-ratchet-release/milestone.lock",
+    ".planning/workstreams/quality-ratchet-release/state.json",
+]
+RUNTIME_HASHES = dict(zip(RUNTIME_PATHS, [
+    "05b25ad604490dba4c12df84c624d04b1c7bae454ecd78a262dd1b97b68c1a28",
+    "fd4c22c0f07449f02acc487c3100eed7a10edb1382d63807dd4003a54bfd2943",
+    "6cf0413c5cc52eb4f9c10ba497f82614608a54659e10bd48172bad2d9765dff4",
+]))
+CHECKPOINT_PATHS = sorted([
+    "test/crosswake/proof/phase69_docs_contract_parity_test.exs",
+    "test/crosswake/guides/architecture_code_walkthrough_test.exs",
+    "test/crosswake/guides/release_boundaries_test.exs",
+])
+AUTHORIZED = sorted([
+    ".github/workflows/crosswake-ci.yml", "mix.exs", "lib/crosswake/doctor/doctor.ex",
+    "lib/crosswake/telemetry.ex", "lib/mix/tasks/crosswake.contract.gen.ex",
+    "lib/mix/tasks/crosswake.docs.sync.ex",
+    "packages/crosswake_rulestead/lib/crosswake/companions/rulestead.ex",
+    "script/check_dependency_security.sh", "script/check_phase166_ownership_ledger.py",
+    "script/list_merge_blocking_checks.py", "script/repository_artifact_policy.json",
+    "script/repository_verification_stages.json", "script/run_repository_evidence_environment.sh",
+    "script/verify_repository.mjs", "examples/phoenix_host/playwright.config.ts",
+    "scripts/verify_phase_161_1.sh",
+    "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+    "test/crosswake/proof_lane/evidence_test.exs",
+    "test/js/repository_verification.test.mjs",
+    "test/crosswake/proof/phase166_repository_quality_test.exs",
+    "test/crosswake/doctor/doctor_threadline_test.exs",
+    "test/crosswake/proof/phase43_rulestead_advisory_test.exs",
+    "test/crosswake/telemetry_test.exs", *CHECKPOINT_PATHS,
+    "test/mix/tasks/crosswake.docs.sync_test.exs",
+])
+GENERATED_REPAIR_UNIVERSE = sorted([
+    ".github/workflows/crosswake-ci.yml",
+    "lib/mix/tasks/crosswake.contract.gen.ex",
+    "script/repository_artifact_policy.json",
+    "script/verify_repository.mjs",
+    "test/js/repository_verification.test.mjs",
+])
+BROWSER_REPAIR_UNIVERSE = sorted([
+    ".github/workflows/crosswake-ci.yml",
+    "examples/phoenix_host/playwright.config.ts",
+    "script/repository_verification_stages.json",
+    "script/verify_repository.mjs",
+    "test/js/repository_verification.test.mjs",
+])
+PHASE41_REPAIR_UNIVERSE = sorted([
+    ".github/workflows/crosswake-ci.yml",
+    "scripts/verify_phase_161_1.sh",
+    "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+    "test/crosswake/proof_lane/evidence_test.exs",
+])
+PHASE41_TAGGED_TESTS = [
+    "a zero-exit host run with passed names cannot promote without every ordered marker",
+    "successful physical-class promotion survives the producing subprocess exit",
+    "the exact marker fixture advances past transcript reduction",
+]
+JOBS = sorted([
+    "android-package-unit", "e2e-proof", "guard-01-contract-drift-test",
+    "guard-01-e2e-honesty", "hex-page-proof", "ios-package-unit",
+    "phase130-core-hermetic-proof", "phase132-core-hermetic-proof",
+    "phase34-commerce-proof", "phase41-gating-proof", "phase43-rulestead-proof",
+    "phase45-rindle-proof", "proof-dependency-security", "proof-requires-example-host",
+    "route-tour-proof",
+])
+JOB_ROOT = {
+    **{job: "root_contract" for job in ["hex-page-proof", "phase130-core-hermetic-proof", "phase132-core-hermetic-proof", "phase34-commerce-proof", "phase41-gating-proof", "phase43-rulestead-proof", "phase45-rindle-proof"]},
+    **{job: "repository_environment" for job in ["e2e-proof", "proof-dependency-security", "proof-requires-example-host", "route-tour-proof"]},
+    "guard-01-contract-drift-test": "generated_contract_cleanliness",
+    "guard-01-e2e-honesty": "phase166_ancestry",
+    "android-package-unit": "transitive_platform", "ios-package-unit": "transitive_platform",
+}
+ANCESTORS = sorted([BASE, "8383aaea2a2b2e10bbe61dd843b51f4129a5d447", "d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b", "cc14f63662ec6d5db3adf918cb5a59327447353f", "c6b02e388c59e375950329c268c76197f945b5b4", "eba0f21b052c43d957df8ab280ecaa04771782aa", "c06b6109ab3f68a5433a99c3ffb7ff11eafe71ca", RED])
+PROOF_ARGV = [
+    ["python3", "script/check_phase167_default_reconciliation.py", "--self-test"],
+    ["python3", "script/check_phase167_default_reconciliation.py", "--verify-failure-ledger", LEDGER_PATH],
+    ["python3", "script/check_phase167_default_reconciliation.py", "--verify-post-412-ledger", LEDGER_PATH, "--attempt", FAILED_FINAL_ATTEMPT["head_oid"]],
+    ["mix", "format", "--check-formatted"],
+    ["mix", "test", "test/crosswake/proof/phase69_docs_contract_parity_test.exs", "test/crosswake/guides/architecture_code_walkthrough_test.exs", "test/crosswake/guides/release_boundaries_test.exs"],
+    ["node", "--test", "test/js/repository_verification.test.mjs"],
+    *[["mix", "test", "--only", "phase41_nested_process", "--seed", "748644", "--max-cases", "1"] for _ in range(7)],
+    ["mix", "test", "test/crosswake/proof/phase41_gating_doctor_test.exs", "--seed", "280497", "--max-cases", "1"],
+    ["mix", "test", "--exclude", "phase41_nested_process", "--exclude", "requires_example_host", "--seed", "748644", "--max-cases", "8"],
+    ["python3", "script/check_phase166_ownership_ledger.py", "--ledger", ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-ownership-ledger.md", "--evidence", ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/evidence/clean-checkout-run.json"],
+]
+FORBIDDEN = ("http://", "https://", "bearer ", "ghp_", "raw_answer", "transcript", "credential", "stable_device", "founder_identity")
+
+
+class ProofError(Exception): pass
+def require(ok: bool, rule: str) -> None:
+    if not ok: raise ProofError(rule)
+def run(argv: list[str], cwd: Path = ROOT) -> str:
+    result = subprocess.run(argv, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    require(result.returncode == 0, "command_failed")
+    return result.stdout
+def git(*args: str, cwd: Path = ROOT) -> str: return run(["git", *args], cwd)
+def gh_json(*args: str) -> Any: return json.loads(run(["gh", *args]))
+def canonical(value: Any) -> bytes: return (json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n").encode()
+def digest(value: Any) -> str: return hashlib.sha256(canonical(value)).hexdigest()
+def load(path: Path) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8")); require(isinstance(value, dict), "json_object"); return value
+def write_json(path: Path, value: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(json.dumps(value, sort_keys=True, indent=2).encode() + b"\n")
+def keys(value: Any, expected: set[str], rule: str) -> None: require(isinstance(value, dict) and set(value) == expected, rule)
+def privacy(value: Any) -> None: require(not any(x in canonical(value).decode("ascii").lower() for x in FORBIDDEN), "privacy_sentinel")
+def tree(oid: str) -> str:
+    require(FULL_OID.fullmatch(oid) is not None, "commit_oid"); value = git("rev-parse", f"{oid}^{{tree}}").strip(); require(FULL_OID.fullmatch(value) is not None, "tree_oid"); return value
+def sha(path: Path) -> str: return hashlib.sha256(path.read_bytes()).hexdigest()
+def diff_paths(left: str, right: str) -> list[str]:
+    raw = subprocess.run(["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "-z", left, right], cwd=ROOT, check=True, stdout=subprocess.PIPE).stdout
+    return sorted(x.decode() for x in raw.split(b"\0") if x)
+def stage(oid: str, path: str) -> dict[str, str | None]:
+    raw = subprocess.run(["git", "ls-tree", "-z", oid, "--", path], cwd=ROOT, check=True, stdout=subprocess.PIPE).stdout
+    if not raw: return {"mode": None, "blob": None}
+    require(raw.count(b"\0") == 1, "stage_count"); meta, actual = raw[:-1].split(b"\t", 1); mode, kind, blob = meta.decode().split(" ")
+    require(actual.decode() == path and mode in MODES and kind in {"blob", "commit"} and FULL_OID.fullmatch(blob) is not None, "stage")
+    return {"mode": mode, "blob": blob}
+def runtime_clean() -> None:
+    untracked = sorted(x for x in git("ls-files", "--others", "--exclude-standard", "-z").split("\0") if x)
+    require(untracked == RUNTIME_PATHS, "runtime_paths")
+    require(all(sha(ROOT / path) == expected for path, expected in RUNTIME_HASHES.items()), "runtime_hashes")
+
+
+def failed_final_attempt() -> dict[str, Any]:
+    return {
+        **FAILED_FINAL_ATTEMPT,
+        "pr_number": 149,
+        "status": "failed_phase41_timeout",
+        "total_checks": 47,
+        "successful_checks": 45,
+        "failed_checks": 2,
+        "successful_conclusions_preserved": 45,
+        "failed_conclusions": [
+            {
+                "job": "phase41-gating-proof",
+                "result": "FAILURE",
+                "owner_id": "phase41_nested_process",
+                "category": "nested_process_timeout_only",
+                "timeout_seconds": 60,
+                "timeout_direction": "negative_marker_navigation",
+            },
+            {
+                "job": "Crosswake CI",
+                "result": "FAILURE",
+                "owner_id": "transitive_umbrella",
+                "category": "transitive_failure",
+            },
+        ],
+    }
+
+
+def post_412_recovery() -> dict[str, Any]:
+    return {
+        "schema_version": 4,
+        "kind": "post_412_recovery",
+        "failed_diagnostic": {
+            **FAILED_DIAGNOSTIC,
+            "pr_number": 149,
+            "total_checks": 47,
+            "successful_checks": 40,
+            "failed_leaves": [
+                {"job": job, "owner_id": "generated_contract_cleanup", "primary_result": "SUCCESS", "cleanup_cascade": True}
+                for job in ["android-package-unit", "ios-package-unit", "phase130-core-hermetic-proof", "proof-requires-example-host"]
+            ] + [
+                {"job": job, "owner_id": "browser", "primary_result": "FAILURE", "cleanup_cascade": True}
+                for job in ["e2e-proof", "route-tour-proof"]
+            ],
+            "umbrella": {"job": "Crosswake CI", "owner_id": "transitive_umbrella", "category": "transitive_failure"},
+        },
+        "failed_final_attempt": failed_final_attempt(),
+        "owner_order": ["generated_contract_cleanup", "browser"],
+        "owners": {
+            "generated_contract_cleanup": {
+                "status": "green",
+                "repair_universe": GENERATED_REPAIR_UNIVERSE,
+                "strategy": "dedicated_fully_provisioned_owner",
+                "red": {
+                    "commit_oid": GENERATED_RED,
+                    "result": "failed_as_expected",
+                    "category": "generated_contract_generation_failed",
+                    "owner_path": "lib/mix/tasks/crosswake.contract.gen.ex",
+                    "affected_jobs": ["android-package-unit", "ios-package-unit", "phase130-core-hermetic-proof", "proof-requires-example-host"],
+                },
+                "green": {
+                    "commit_oid": GENERATED_GREEN,
+                    "result": "passed",
+                    "owner_selection": "repository-cleanliness",
+                },
+            },
+            "browser": {
+                "status": "green",
+                "repair_universe": BROWSER_REPAIR_UNIVERSE,
+                "invalid_diagnostic": invalid_browser_diagnostic(),
+                "replacement_diagnostic": replacement_browser_diagnostic(),
+                "repair": {
+                    "status": "green",
+                    "category": "browser_test_timeout",
+                    "owner_path": "script/repository_verification_stages.json",
+                    "green_commit_oid": BROWSER_CLEANUP_GREEN,
+                    "ordinary_authority": "restored",
+                    "strategy": "browser_child_scheduler_cap",
+                },
+            },
+        },
+        "cleanup_repair": {
+            "status": "green",
+            "category": "python_bytecode_status_residue",
+            "owner_path": "script/verify_repository.mjs",
+            "green_commit_oid": BROWSER_CLEANUP_GREEN,
+            "strategy": "python_child_environment_prevention",
+            "preexisting": "preserved",
+            "unexpected": "fails_cleanliness",
+        },
+        "phase41_repair": {
+            "status": "green",
+            "category": "nested_process_partition",
+            "repair_universe": PHASE41_REPAIR_UNIVERSE,
+            "prior_red_commit_oid": PHASE41_RED,
+            "prior_green_commit_oid": PHASE41_GREEN,
+            "partition_red_commit_oid": PHASE41_PARTITION_RED,
+            "partition_green_commit_oid": PHASE41_PARTITION_GREEN,
+            "partition_format_commit_oid": PHASE41_PARTITION_FORMAT,
+            "tagged_membership_sha256": digest(PHASE41_TAGGED_TESTS),
+            "dedicated_tests": 3,
+            "dedicated_repetitions": 7,
+            "dedicated_seed": 748644,
+            "dedicated_max_cases": 1,
+            "broad_tests": 1622,
+            "broad_seed": 748644,
+            "broad_max_cases": 8,
+            "non_host_tests": 1625,
+            "requires_example_host_tests": 74,
+            "total_tests": 1699,
+            "negative_marker_timeout_seconds": 60,
+            "negative_marker_timeout_direction": "negative_marker_navigation",
+            "assertion_posture": "fail_closed_unchanged",
+        },
+        "head_update_budget": {
+            "original_diagnostic": {"allowed": 1, "used": 1},
+            "replacement_diagnostic": {"allowed": 1, "used": 1},
+            "prior_final": {"allowed": 1, "used": 1},
+            "replacement_final": {"allowed": 1, "used": 0},
+        },
+    }
+
+
+def replacement_browser_diagnostic() -> dict[str, Any]:
+    return {
+        **REPLACEMENT_BROWSER_DIAGNOSTIC,
+        "status": "failed_as_expected",
+        "total_checks": 47,
+        "successful_checks": 41,
+        "failed_checks": 6,
+        "suppression": "PASS",
+        "artifact": "structured_category_only",
+        "redaction": "passed",
+        "playwright_artifacts": "suppressed_for_diagnostic",
+        "classifications": [
+            {"schema_version": 1, "owner": "browser", "category": "browser_test_timeout", "job": job}
+            for job in ["e2e-proof", "route-tour-proof"]
+        ],
+        "cleanup_recurrence": {
+            "category": "python_bytecode_status_residue",
+            "affected_jobs": ["phase130-core-hermetic-proof", "proof-requires-example-host"],
+            "primary_result": "SUCCESS",
+            "cleanliness_result": "FAILURE",
+        },
+        "phase41": {
+            "category": "nested_process_timeout_only",
+            "dedicated_tests": 12,
+            "dedicated_result": "SUCCESS",
+            "broad_seed": 480367,
+            "broad_max_cases": 8,
+            "timed_out_tests": 2,
+            "semantic_error": False,
+        },
+    }
+
+
+def invalid_browser_diagnostic() -> dict[str, Any]:
+    return {
+        **INVALID_BROWSER_DIAGNOSTIC,
+        "pr_number": 149,
+        "total_checks": 47,
+        "successful_checks": 41,
+        "status": "invalid_suppression_scope",
+        "diagnostic_scope": "proof_step_only",
+        "artifact_upload": "executed",
+        "accepted_category": False,
+        "classifications": [
+            {
+                "affected_jobs": ["phase130-core-hermetic-proof", "proof-requires-example-host"],
+                "category": "python_bytecode_status_residue",
+                "owner_id": "repository_verifier_child_cleanup",
+                "primary_results": [
+                    {"job": "phase130-core-hermetic-proof", "stage": "root-proof", "result": "PASS"},
+                    {"job": "proof-requires-example-host", "stage": "example-host-proof", "result": "PASS"},
+                ],
+                "final_stage": "repository-cleanliness",
+                "final_result": "FAILURE",
+                "residue_scope": "python_cache_tag_independent",
+                "broad_imports": "exercised",
+                "python_producer_owner": False,
+                "observed_test_owner": False,
+            },
+            {
+                "affected_jobs": ["e2e-proof", "route-tour-proof"],
+                "category": "invalid_suppression_scope",
+                "owner_id": "browser",
+                "accepted_category": False,
+            },
+            {
+                "affected_jobs": ["phase41-gating-proof"],
+                "category": "pre_existing_hosted_nondeterminism",
+                "owner_id": "none",
+                "causal": False,
+                "edit_authority": False,
+                "retry_authority": False,
+            },
+        ],
+        "umbrella": {"job": "Crosswake CI", "owner_id": "transitive_umbrella", "category": "transitive_failure"},
+    }
+
+
+def validate_failed_final_attempt(value: Any, attempt: str | None = None) -> None:
+    keys(value, set(failed_final_attempt()), "failed_final_attempt_schema")
+    require(value == failed_final_attempt(), "failed_final_attempt_identity")
+    if attempt is not None:
+        require(attempt == FAILED_FINAL_ATTEMPT["head_oid"], "failed_final_unknown_attempt")
+
+
+def validate_post_412(value: Any, owner: str | None = None, live: bool = False, attempt: str | None = None) -> None:
+    keys(value, {"schema_version", "kind", "failed_diagnostic", "failed_final_attempt", "owner_order", "owners", "cleanup_repair", "phase41_repair", "head_update_budget"}, "post_412_schema")
+    require(value["schema_version"] == 4 and value["kind"] == "post_412_recovery", "post_412_authority")
+    failed = value["failed_diagnostic"]
+    keys(failed, {"head_oid", "tree_oid", "run_id", "pr_number", "total_checks", "successful_checks", "failed_leaves", "umbrella"}, "post_412_failed_schema")
+    require({k: failed[k] for k in FAILED_DIAGNOSTIC} == FAILED_DIAGNOSTIC, "post_412_failed_identity")
+    require((failed["pr_number"], failed["total_checks"], failed["successful_checks"]) == (149, 47, 40), "post_412_check_counts")
+    expected_leaves = post_412_recovery()["failed_diagnostic"]["failed_leaves"]
+    require(failed["failed_leaves"] == expected_leaves, "post_412_leaf_coverage")
+    require(failed["umbrella"] == {"job": "Crosswake CI", "owner_id": "transitive_umbrella", "category": "transitive_failure"}, "post_412_umbrella")
+    validate_failed_final_attempt(value["failed_final_attempt"], attempt)
+    require(value["owner_order"] == ["generated_contract_cleanup", "browser"], "post_412_owner_order")
+    keys(value["owners"], {"generated_contract_cleanup", "browser"}, "post_412_owners")
+    generated = value["owners"]["generated_contract_cleanup"]
+    keys(generated, {"status", "repair_universe", "strategy", "red", "green"}, "generated_owner_schema")
+    require(generated["status"] == "green" and generated["repair_universe"] == GENERATED_REPAIR_UNIVERSE and generated["strategy"] == "dedicated_fully_provisioned_owner", "generated_owner_authority")
+    require(generated["red"] == post_412_recovery()["owners"]["generated_contract_cleanup"]["red"] and generated["green"] == post_412_recovery()["owners"]["generated_contract_cleanup"]["green"], "generated_owner_receipts")
+    require(git("merge-base", "--is-ancestor", GENERATED_RED, GENERATED_GREEN).strip() == "", "generated_commit_order")
+    require(value["cleanup_repair"] == post_412_recovery()["cleanup_repair"], "cleanup_repair_receipt")
+    require(value["phase41_repair"] == post_412_recovery()["phase41_repair"], "phase41_repair_receipt")
+    require(git("merge-base", "--is-ancestor", PHASE41_RED, PHASE41_GREEN).strip() == "", "phase41_commit_order")
+    require(git("merge-base", "--is-ancestor", PHASE41_PARTITION_RED, PHASE41_PARTITION_GREEN).strip() == "", "phase41_partition_commit_order")
+    require(git("merge-base", "--is-ancestor", PHASE41_PARTITION_GREEN, PHASE41_PARTITION_FORMAT).strip() == "", "phase41_partition_format_order")
+    browser = value["owners"]["browser"]
+    keys(browser, {"status", "repair_universe", "invalid_diagnostic", "replacement_diagnostic", "repair"}, "browser_owner_schema")
+    require(browser["repair_universe"] == BROWSER_REPAIR_UNIVERSE, "browser_repair_universe")
+    require(browser["invalid_diagnostic"] == invalid_browser_diagnostic(), "invalid_browser_diagnostic")
+    keys(value["head_update_budget"], {"original_diagnostic", "replacement_diagnostic", "prior_final", "replacement_final"}, "head_update_budget_schema")
+    for name in ["original_diagnostic", "replacement_diagnostic", "prior_final", "replacement_final"]:
+        keys(value["head_update_budget"][name], {"allowed", "used"}, "head_update_counter_schema")
+        require(value["head_update_budget"][name]["allowed"] == 1 and value["head_update_budget"][name]["used"] in {0, 1}, "head_update_counter")
+    if browser["status"] == "pending_replacement_diagnostic":
+        require(browser["replacement_diagnostic"] == {"status": "not_pushed"} and browser["repair"] == {"status": "not_started"}, "browser_pending")
+        require(value["head_update_budget"] == {"original_diagnostic": {"allowed": 1, "used": 1}, "replacement_diagnostic": {"allowed": 1, "used": 0}, "prior_final": {"allowed": 1, "used": 0}, "replacement_final": {"allowed": 1, "used": 0}}, "browser_pending_budget")
+    elif browser["status"] == "green":
+        validate_browser_recovery(browser, value["head_update_budget"])
+    else:
+        raise ProofError("browser_status")
+    require(owner in {None, "generated_contract_cleanup", "browser"}, "post_412_owner")
+    if owner == "generated_contract_cleanup": require(generated["status"] == "green", "generated_not_green")
+    if owner == "browser":
+        require(browser["status"] == "green", "browser_not_green")
+        if live:
+            snapshot = pr(149)
+            require(snapshot["state"] == "OPEN" and snapshot["head_oid"] == browser["replacement_diagnostic"]["head_oid"] and snapshot["base_oid"] == BASE, "browser_diagnostic_live")
+    privacy(value)
+
+
+def validate_browser_recovery(browser: dict[str, Any], budget: dict[str, Any]) -> None:
+    keys(browser["replacement_diagnostic"], set(replacement_browser_diagnostic()), "browser_diagnostic_schema")
+    diagnostic = browser["replacement_diagnostic"]
+    require(diagnostic == replacement_browser_diagnostic(), "browser_diagnostic_identity")
+    keys(browser["repair"], {"status", "category", "owner_path", "green_commit_oid", "ordinary_authority", "strategy"}, "browser_repair_schema")
+    repair = browser["repair"]
+    require(repair == post_412_recovery()["owners"]["browser"]["repair"], "browser_repair_receipt")
+    require(budget == {
+        "original_diagnostic": {"allowed": 1, "used": 1},
+        "replacement_diagnostic": {"allowed": 1, "used": 1},
+        "prior_final": {"allowed": 1, "used": 1},
+        "replacement_final": {"allowed": 1, "used": 0},
+    }, "browser_green_budget")
+
+
+def failure_ledger() -> dict[str, Any]:
+    roots = [
+        {"id": "generated_contract_cleanliness", "category": "generated_contract_cleanliness", "disposition": "repair_required", "repair_paths": CHECKPOINT_PATHS, "regression_paths": CHECKPOINT_PATHS, "fixed_argv": [["mix", "format", "--check-formatted"], ["mix", "test", *CHECKPOINT_PATHS]], "reproduction_result": "failed_as_expected"},
+        {"id": "phase166_ancestry", "category": "phase166_ancestry", "disposition": "repair_required", "repair_paths": ["script/check_phase166_ownership_ledger.py"], "regression_paths": ["test/js/repository_verification.test.mjs"], "fixed_argv": [["node", "--test", "test/js/repository_verification.test.mjs"]], "reproduction_result": "failed_as_expected"},
+        {"id": "repository_environment", "category": "repository_environment", "disposition": "repair_required", "repair_paths": [".github/workflows/crosswake-ci.yml", "script/repository_verification_stages.json", "script/verify_repository.mjs"], "regression_paths": [".github/workflows/crosswake-ci.yml", "test/js/repository_verification.test.mjs"], "fixed_argv": [["mix", "deps.get"], ["node", "--test", "test/js/repository_verification.test.mjs"], ["script/verify_repository.sh", "--stage", "example-host-proof"], ["script/verify_repository.sh", "--stage", "repository-preflight"]], "reproduction_result": "failed_as_expected"},
+        {"id": "root_contract", "category": "root_contract", "disposition": "repair_required", "repair_paths": ["lib/mix/tasks/crosswake.docs.sync.ex", "test/mix/tasks/crosswake.docs.sync_test.exs"], "regression_paths": ["test/mix/tasks/crosswake.docs.sync_test.exs"], "fixed_argv": [["mix", "test", "--exclude", "requires_example_host", "--exclude", "advisory_only"]], "reproduction_result": "failed_as_expected"},
+        {"id": "transitive_platform", "category": "transitive_platform", "disposition": "transitive_only", "repair_paths": [], "regression_paths": [], "fixed_argv": [], "reproduction_result": "not_independent"},
+    ]
+    return {"schema_version": 4, "kind": "fix_forward_failure_ledger", "base_oid": BASE, "reproduction_source_oid": git("rev-parse", "HEAD").strip(), "red_tracer_oid": RED, "failed_runs": [{"pr_number": n, "run_id": FAILED[n][0], "head_oid": FAILED[n][1], "conclusion": "FAILURE", "failed_leaves": [{"job": job, "root_id": JOB_ROOT[job]} for job in JOBS]} for n in [110, 148]], "roots": sorted(roots, key=lambda x: x["id"]), "authorized_repair_paths": AUTHORIZED, "formatter_checkpoint_paths": CHECKPOINT_PATHS, "required_ancestor_oids": ANCESTORS, "rejected_topology": {"first_boundary_path_count": 232, "second_boundary_path_count": 11, "status": "diagnostic_only", "reason": "shallow_history_unavailable"}, "runtime": {"erlang": "27.3.4.15", "elixir": "1.19.5-otp-27", "node": "22.14.0", "otp_semantic": "27"}, "runtime_file_hashes": RUNTIME_HASHES, "post_412_recovery": post_412_recovery()}
+
+
+def validate_ledger(value: Any) -> None:
+    keys(value, {"schema_version", "kind", "base_oid", "reproduction_source_oid", "red_tracer_oid", "failed_runs", "roots", "authorized_repair_paths", "formatter_checkpoint_paths", "required_ancestor_oids", "rejected_topology", "runtime", "runtime_file_hashes", "post_412_recovery"}, "ledger_schema")
+    require(value["schema_version"] == 4 and value["kind"] == "fix_forward_failure_ledger" and value["base_oid"] == BASE and value["red_tracer_oid"] == RED, "ledger_authority")
+    require(FULL_OID.fullmatch(value["reproduction_source_oid"]) is not None, "source_oid")
+    require(value["authorized_repair_paths"] == AUTHORIZED and value["formatter_checkpoint_paths"] == CHECKPOINT_PATHS and value["required_ancestor_oids"] == ANCESTORS, "ledger_scope")
+    require(value["runtime"] == {"erlang": "27.3.4.15", "elixir": "1.19.5-otp-27", "node": "22.14.0", "otp_semantic": "27"} and value["runtime_file_hashes"] == RUNTIME_HASHES, "ledger_runtime")
+    require(value["rejected_topology"] == {"first_boundary_path_count": 232, "second_boundary_path_count": 11, "status": "diagnostic_only", "reason": "shallow_history_unavailable"}, "topology")
+    require(isinstance(value["failed_runs"], list) and len(value["failed_runs"]) == 2, "runs")
+    for item, n in zip(value["failed_runs"], [110, 148]):
+        keys(item, {"pr_number", "run_id", "head_oid", "conclusion", "failed_leaves"}, "run_schema")
+        require((item["pr_number"], item["run_id"], item["head_oid"], item["conclusion"]) == (n, FAILED[n][0], FAILED[n][1], "FAILURE"), "run_identity")
+        require(item["failed_leaves"] == [{"job": job, "root_id": JOB_ROOT[job]} for job in JOBS], "leaf_coverage")
+    require([x.get("id") for x in value["roots"]] == sorted(set(JOB_ROOT.values())), "root_set")
+    repairs: list[str] = []
+    for item in value["roots"]:
+        keys(item, {"id", "category", "disposition", "repair_paths", "regression_paths", "fixed_argv", "reproduction_result"}, "root_schema")
+        require(item["id"] == item["category"] and item["disposition"] in {"repair_required", "resolved_by_full_source", "transitive_only"}, "root_disposition")
+        require(item["repair_paths"] == sorted(set(item["repair_paths"])) and item["regression_paths"] == sorted(set(item["regression_paths"])), "root_paths")
+        for argv in item["fixed_argv"]: require(isinstance(argv, list) and argv and all(isinstance(p, str) and p and not re.search(r"[;&|`\n\r]", p) for p in argv), "fixed_argv")
+        if item["disposition"] == "repair_required": require(item["repair_paths"] and item["regression_paths"] and item["fixed_argv"], "repair_proof"); repairs += item["repair_paths"]
+        else: require(item["repair_paths"] == [], "nonrepair_edit")
+    require(len(repairs) == len(set(repairs)) and set(repairs) <= set(AUTHORIZED) and set(CHECKPOINT_PATHS) <= set(repairs), "repair_queue")
+    validate_post_412(value["post_412_recovery"])
+    privacy(value)
+
+
+def source_manifest(payload: str) -> dict[str, Any]:
+    payload = git("rev-parse", f"{payload}^{{commit}}").strip()
+    for oid in ANCESTORS: subprocess.run(["git", "merge-base", "--is-ancestor", oid, payload], cwd=ROOT, check=True)
+    records = [{"path": path, "base": stage(BASE, path), "payload": stage(payload, path)} for path in diff_paths(BASE, payload) if path != MANIFEST_PATH]
+    return {"schema_version": 2, "kind": "fix_forward_candidate_scope", "base_oid": BASE, "base_tree_oid": tree(BASE), "payload_source_oid": payload, "payload_source_tree_oid": tree(payload), "manifest_path": MANIFEST_PATH, "manifest_mode": "100644", "records": records, "records_digest": digest(records), "required_ancestor_oids": ANCESTORS, "proof_argv": PROOF_ARGV, "runtime_file_hashes": RUNTIME_HASHES, "expected_branch": BRANCH}
+
+
+def validate_manifest(value: Any) -> None:
+    keys(value, {"schema_version", "kind", "base_oid", "base_tree_oid", "payload_source_oid", "payload_source_tree_oid", "manifest_path", "manifest_mode", "records", "records_digest", "required_ancestor_oids", "proof_argv", "runtime_file_hashes", "expected_branch"}, "manifest_schema")
+    require(value["schema_version"] == 2 and value["kind"] == "fix_forward_candidate_scope" and value["base_oid"] == BASE and value["base_tree_oid"] == tree(BASE), "manifest_base")
+    require(FULL_OID.fullmatch(value["payload_source_oid"]) is not None and value["payload_source_tree_oid"] == tree(value["payload_source_oid"]), "manifest_payload")
+    require(value["manifest_path"] == MANIFEST_PATH and value["manifest_mode"] == "100644" and value["required_ancestor_oids"] == ANCESTORS and value["proof_argv"] == PROOF_ARGV and value["runtime_file_hashes"] == RUNTIME_HASHES and value["expected_branch"] == BRANCH, "manifest_contract")
+    expected = [p for p in diff_paths(BASE, value["payload_source_oid"]) if p != MANIFEST_PATH]
+    require([x.get("path") for x in value["records"]] == expected and value["records_digest"] == digest(value["records"]), "manifest_records")
+    for item in value["records"]:
+        keys(item, {"path", "base", "payload"}, "record_schema"); require(item["base"] == stage(BASE, item["path"]) and item["payload"] == stage(value["payload_source_oid"], item["path"]), "record_blob")
+    for oid in ANCESTORS: subprocess.run(["git", "merge-base", "--is-ancestor", oid, value["payload_source_oid"]], cwd=ROOT, check=True)
+    privacy(value)
+
+
+def verify_candidate(value: dict[str, Any], candidate: str, local_clean: bool) -> None:
+    validate_manifest(value); candidate = git("rev-parse", f"{candidate}^{{commit}}").strip()
+    require(git("rev-parse", f"{candidate}^").strip() == value["payload_source_oid"] and diff_paths(value["payload_source_oid"], candidate) == [MANIFEST_PATH], "candidate_delta")
+    require(git("branch", "--show-current").strip() == BRANCH and not git("diff", "--name-only").strip() and not git("diff", "--cached", "--name-only").strip(), "candidate_state")
+    runtime_clean()
+    if local_clean:
+        proof = Path(tempfile.mkdtemp(prefix=".phase167-candidate-proof.", dir=ROOT / ".planning"))
+        try:
+            run(["script/run_repository_evidence_environment.sh", "--source-repository", str(ROOT), "--commit", candidate, "--output-dir", str(proof)])
+            evidence = load(proof / "clean-checkout-run.json")
+            require(evidence.get("supported_code_sha") == candidate and [x.get("result") for x in evidence.get("stages", [])] == ["PASS"] * 9, "clean_checkout")
+        finally: shutil.rmtree(proof, ignore_errors=True)
+
+
+def repository() -> tuple[str, str]:
+    info = gh_json("repo", "view", "--json", "nameWithOwner,defaultBranchRef", "--jq", "{repo:.nameWithOwner,branch:.defaultBranchRef.name}")
+    endpoint = f"repos/{info['repo']}/branches/{urllib.parse.quote(info['branch'], safe='')}"
+    return info["repo"], gh_json("api", endpoint, "--jq", ".commit.sha")
+def pr(number: int) -> dict[str, Any]:
+    return gh_json("pr", "view", str(number), "--json", "number,state,headRefOid,baseRefOid,mergeCommit,comments", "--jq", "{number,state,head_oid:.headRefOid,base_oid:.baseRefOid,merge_oid:(.mergeCommit.oid//null),comments:[.comments[].body]}")
+def check(repo: str, head: str) -> Any:
+    return gh_json("api", f"repos/{repo}/commits/{head}/check-runs?filter=latest&per_page=100", "--jq", '[.check_runs[]|select(.name=="Crosswake CI")|{head_oid:.head_sha,status:(.status|ascii_upcase),conclusion:((.conclusion//"")|ascii_upcase)}]|first')
+def reachable(repo: str, ancestor: str, descendant: str) -> bool:
+    item = gh_json("api", f"repos/{repo}/compare/{ancestor}...{descendant}", "--jq", "{status,behind_by}"); return item.get("status") in {"ahead", "identical"} and item.get("behind_by") == 0
+def validate_supersession(item: Any, number: int) -> None:
+    keys(item, {"schema_version", "kind", "pr_number", "old_head_oid", "failed_run_id", "state", "merged", "marker_sha256", "replacement_pr_number", "replacement_head_oid", "replacement_merge_oid"}, "supersession_schema")
+    require(item["schema_version"] == 2 and item["kind"] == "superseded_fix_forward" and (item["pr_number"], item["old_head_oid"], item["failed_run_id"]) == (number, FAILED[number][1], FAILED[number][0]) and item["state"] == "CLOSED" and item["merged"] is False and SHA256.fullmatch(item["marker_sha256"]) is not None, "supersession")
+
+
+def validate_resolution(value: Any, live: bool) -> None:
+    keys(value, {"schema_version", "kind", "replacement_pr_number", "tested_head_oid", "tested_base_oid", "tested_tree_oid", "merge_commit_oid", "merge_tree_oid", "fresh_default_oid", "crosswake_ci", "required_ancestor_oids", "pr145", "superseded", "phase_branch", "receipt_parent_oid", "local_main_before_oid"}, "resolution_schema")
+    require(value["schema_version"] == 2 and value["kind"] == "fix_forward_resolution" and value["tested_base_oid"] == BASE and value["crosswake_ci"] == "SUCCESS" and value["required_ancestor_oids"] == ANCESTORS and value["pr145"] == PR145 and value["phase_branch"] == BRANCH, "resolution_contract")
+    for k in ["tested_head_oid", "tested_tree_oid", "merge_commit_oid", "merge_tree_oid", "fresh_default_oid", "receipt_parent_oid", "local_main_before_oid"]: require(FULL_OID.fullmatch(value[k]) is not None, k)
+    require(value["tested_tree_oid"] == value["merge_tree_oid"] and value["fresh_default_oid"] == value["merge_commit_oid"] and value["receipt_parent_oid"] == value["tested_head_oid"], "resolution_identity")
+    require([x.get("pr_number") for x in value["superseded"]] == [110, 148], "superseded_set")
+    for item in value["superseded"]: validate_supersession(item, item["pr_number"]); require(item["replacement_pr_number"] == value["replacement_pr_number"] and item["replacement_head_oid"] == value["tested_head_oid"] and item["replacement_merge_oid"] == value["merge_commit_oid"], "supersession_link")
+    require(load(ROOT / PR110_PATH) == value["superseded"][0], "pr110_receipt"); privacy(value)
+    if live:
+        repo, default = repository(); replacement = pr(value["replacement_pr_number"]); ci = check(repo, value["tested_head_oid"])
+        require(replacement["state"] == "MERGED" and replacement["head_oid"] == value["tested_head_oid"] and replacement["base_oid"] == BASE and replacement["merge_oid"] == value["merge_commit_oid"], "replacement_live")
+        require(default == value["fresh_default_oid"] and reachable(repo, value["tested_head_oid"], default) and ci == {"head_oid": value["tested_head_oid"], "status": "COMPLETED", "conclusion": "SUCCESS"}, "replacement_authority")
+        marker = "<!-- crosswake-phase167-superseded_fix_forward -->"; require(hashlib.sha256(marker.encode()).hexdigest() == value["superseded"][0]["marker_sha256"], "marker_digest")
+        for item in value["superseded"]:
+            snap = pr(item["pr_number"]); require(snap["state"] == "CLOSED" and snap["merge_oid"] is None and snap["head_oid"] == item["old_head_oid"] and marker in snap["comments"], "superseded_live")
+
+
+def local_reconciliation(value: Any) -> None:
+    validate_resolution(value, False); require(git("branch", "--show-current").strip() == BRANCH and git("rev-parse", "refs/heads/main").strip() == value["fresh_default_oid"], "local_refs")
+    receipt_commit = git("log", "-1", "--format=%H", "--", RESOLUTION_PATH).strip()
+    require(receipt_commit == git("rev-parse", "HEAD").strip() and git("rev-parse", f"{receipt_commit}^").strip() == value["receipt_parent_oid"], "receipt_commit")
+    require(not git("diff", "--name-only").strip() and not git("diff", "--cached", "--name-only").strip(), "local_residue"); runtime_clean()
+
+
+def self_test() -> int:
+    valid = failure_ledger(); validate_ledger(valid); fixtures = []
+    for name, mutate in [
+        ("short_oid", lambda x: x.update(base_oid=BASE[:12])),
+        ("unknown_key", lambda x: x.update(unknown=True)),
+        ("missing_leaf", lambda x: x["failed_runs"][0].update(failed_leaves=x["failed_runs"][0]["failed_leaves"][:-1])),
+        ("outside_repair", lambda x: x["roots"][0].update(repair_paths=["outside.txt"])),
+        ("formatter_scope", lambda x: x.update(formatter_checkpoint_paths=x["formatter_checkpoint_paths"][:-1])),
+        ("runtime_hash", lambda x: x["runtime_file_hashes"].update({RUNTIME_PATHS[0]: "a" * 64})),
+        ("obsolete_topology", lambda x: x["rejected_topology"].update(status="candidate")),
+        ("unsafe_argv", lambda x: x["roots"][0].update(fixed_argv=[["sh", "bad | argv"]])),
+        ("post_412_owner", lambda x: x["post_412_recovery"]["owner_order"].reverse()),
+        ("attempt_count", lambda x: x["post_412_recovery"]["failed_final_attempt"].update(successful_checks=44)),
+        ("attempt_conclusion", lambda x: x["post_412_recovery"]["failed_final_attempt"]["failed_conclusions"][0].update(result="SUCCESS")),
+        ("attempt_owner", lambda x: x["post_412_recovery"]["failed_final_attempt"]["failed_conclusions"][0].update(owner_id="unknown")),
+    ]:
+        item = copy.deepcopy(valid); mutate(item); fixtures.append((name, item))
+    for name, item in fixtures:
+        try: validate_ledger(item)
+        except ProofError: continue
+        print(f"phase167-default-reconciliation-self-test: FAIL fixture={name}"); return 1
+    try:
+        validate_post_412(valid["post_412_recovery"], attempt="f" * 40)
+    except ProofError:
+        pass
+    else:
+        print("phase167-default-reconciliation-self-test: FAIL fixture=unknown_attempt"); return 1
+    print(f"phase167-default-reconciliation-self-test: PASS count={len(fixtures) + 2}"); return 0
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(); p.add_argument("--self-test", action="store_true"); p.add_argument("--capture-failure-ledger", action="store_true"); p.add_argument("--verify-failure-ledger", type=Path); p.add_argument("--verify-post-412-ledger", type=Path); p.add_argument("--owner", choices=["generated_contract_cleanup", "browser"]); p.add_argument("--attempt"); p.add_argument("--capture-source-scope", action="store_true"); p.add_argument("--payload-source", default="HEAD"); p.add_argument("--output", type=Path); p.add_argument("--verify-candidate", type=Path); p.add_argument("--candidate", default="HEAD"); p.add_argument("--local-clean-checkout", action="store_true"); p.add_argument("--verify-resolution", type=Path); p.add_argument("--live", action="store_true"); p.add_argument("--verify-local-reconciliation", type=Path); a = p.parse_args()
+    try:
+        if a.self_test: return self_test()
+        if a.capture_failure_ledger: require(a.output is not None, "output"); value = failure_ledger(); validate_ledger(value); write_json(a.output, value); print("phase167-default-reconciliation: CAPTURED failure-ledger"); return 0
+        if a.verify_failure_ledger: validate_ledger(load(a.verify_failure_ledger)); print("phase167-default-reconciliation: PASS failure-ledger roots=5 runs=2"); return 0
+        if a.verify_post_412_ledger:
+            require((a.owner is None) != (a.attempt is None), "post_412_selector")
+            value = load(a.verify_post_412_ledger); validate_ledger(value)
+            validate_post_412(value["post_412_recovery"], a.owner, a.live, a.attempt)
+            label = f"owner={a.owner}" if a.owner is not None else f"attempt={a.attempt} status=failed_phase41_timeout"
+            print(f"phase167-default-reconciliation: PASS post-412 {label}"); return 0
+        if a.capture_source_scope: require(a.output is not None, "output"); value = source_manifest(a.payload_source); validate_manifest(value); write_json(a.output, value); print("phase167-default-reconciliation: CAPTURED source-scope"); return 0
+        if a.verify_candidate: verify_candidate(load(a.verify_candidate), a.candidate, a.local_clean_checkout); print("phase167-default-reconciliation: PASS candidate"); return 0
+        if a.verify_resolution: require(a.live, "live"); validate_resolution(load(a.verify_resolution), True); print("phase167-default-reconciliation: PASS resolution"); return 0
+        if a.verify_local_reconciliation: local_reconciliation(load(a.verify_local_reconciliation)); print("phase167-default-reconciliation: PASS local-reconciliation"); return 0
+        p.error("select one fixed mode")
+    except (ProofError, OSError, UnicodeDecodeError, json.JSONDecodeError, KeyError, TypeError, ValueError, subprocess.CalledProcessError): print("phase167-default-reconciliation: FAIL closed_failure"); return 1
+
+
+if __name__ == "__main__": raise SystemExit(main())

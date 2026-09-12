@@ -53,6 +53,23 @@ defmodule Crosswake.CapabilityMap.RendererTest do
     refute rendered =~ "Native Controls Pack 1"
   end
 
+  test "D-03/D-17 generated guide names its owner and renders all three current claim layers" do
+    rendered = Renderer.render()
+
+    assert rendered =~ "Canonical owner: `Crosswake.CapabilityMap`"
+    assert rendered =~ "Regenerate with `mix crosswake.docs.sync`."
+    assert rendered =~ "Available — reusable contracts verified."
+    assert rendered =~ "Reference evidence —"
+    assert rendered =~ "2026-08-27"
+    assert rendered =~ "iOS 26.6"
+    assert rendered =~ "does not verify your host"
+
+    assert rendered =~
+             "Blocked — sanitized route policy and signed-device proof are required before this host can be promoted."
+
+    refute rendered =~ "support one first adopter offline-study flow"
+  end
+
   test "RESET-01 equal implications preserve canonical row adjacency in deterministic rendering" do
     rows = [
       renderer_row(%{id: "first-equal", surface: "First equal", adoption_implication: "same"}),

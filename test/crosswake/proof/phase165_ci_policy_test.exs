@@ -100,7 +100,9 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
                    "CONTRIBUTING.md",
                    "README.md",
                    "SETUP.md",
-                   "examples/QUICK_START.md"
+                   "examples/QUICK_START.md",
+                   "guides/capability_map.md",
+                   "guides/support_matrix.md"
                  ],
                  "trees" => ["brandbook", "docs", "guides"],
                  "extensions" => [".md"],

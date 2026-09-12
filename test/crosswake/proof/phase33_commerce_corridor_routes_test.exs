@@ -28,26 +28,29 @@ defmodule Crosswake.Proof.Phase33CommerceCorridorRoutesTest do
 
     scope "/commerce" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/paywall", Crosswake.TestSupport.StudySessionLive,
+        live("/paywall", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "commerce-paywall-entry",
             runtime: :live_view,
             commerce: [corridor: :subscription_default, role: :paywall_entry]
           ]
+        )
 
-        live "/purchase", Crosswake.TestSupport.StudySessionLive,
+        live("/purchase", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "commerce-purchase-intent",
             runtime: :native_screen,
             commerce: [corridor: :subscription_default, role: :purchase_intent]
           ]
+        )
 
-        live "/restore", Crosswake.TestSupport.StudySessionLive,
+        live("/restore", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "commerce-restore-intent",
             runtime: :native_screen,
             commerce: [corridor: :subscription_default, role: :restore_intent]
           ]
+        )
       end
     end
   end

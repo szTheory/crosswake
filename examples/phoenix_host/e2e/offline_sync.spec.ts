@@ -785,13 +785,16 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await context.setOffline(true);
     await page.click('#btn-flip');
     await page.click('#btn-good');
-    await context.setOffline(false);
+    await expect.poll(async () => (
+      await readQueuedOfflineMutations(page, { scopeRef: alphaScope })
+    ).length).toBe(1);
     await page.evaluate(() => {
       window.fetch = async () => new Response(JSON.stringify({ data: {
         accepted_records: [], rejected: [{ class: 'sigra_denied' }], halted: 'sigra_denied',
       } }), { status: 200, headers: { 'Content-Type': 'application/json' } });
-      window.dispatchEvent(new Event('online'));
     });
+    await context.setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
 
     await expect(page.locator('#crosswake-study-status')).toContainText('Some saved answers need review.');
     expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);

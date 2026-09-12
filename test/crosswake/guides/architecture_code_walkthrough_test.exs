@@ -84,6 +84,55 @@ defmodule Crosswake.Guides.ArchitectureCodeWalkthroughTest do
     assert guide_map =~ "[guides/code-walkthrough.md](guides/code-walkthrough.md)"
   end
 
+  test "reader paths lead with a current answer and one authoritative next step" do
+    readme = File.read!("README.md")
+
+    evaluating = section_between(readme, "### Evaluating Crosswake", "### Integrating Crosswake")
+
+    integrating =
+      section_between(readme, "### Integrating Crosswake", "### Contributing or maintaining")
+
+    assert evaluating =~
+             "**Current answer:** Crosswake is a Phoenix-first route-policy and runtime-contract system"
+
+    assert evaluating =~ "[canonical support matrix](guides/support_matrix.md)"
+
+    assert integrating =~
+             "**Current answer:** your Phoenix router owns route declarations and each generated shell is host-owned"
+
+    assert integrating =~ "`mix crosswake.doctor`"
+  end
+
+  test "contribution guidance maps executable owners to projections and checks" do
+    contributing = File.read!("CONTRIBUTING.md")
+
+    authority =
+      section_between(contributing, "## Documentation authority", "## Upgrade Impact Labels")
+
+    assert authority =~ "`Crosswake.SupportMatrix`"
+    assert authority =~ "`Crosswake.CapabilityMap`"
+    assert authority =~ "[`guides/support_matrix.md`](guides/support_matrix.md)"
+    assert authority =~ "[`guides/capability_map.md`](guides/capability_map.md)"
+    assert authority =~ "`mix crosswake.docs.sync`"
+    assert authority =~ "`mix crosswake.docs.sync --check`"
+    assert authority =~ "Authored semantic guidance"
+  end
+
+  test "route-owner and source trails name the current executable authority" do
+    architecture = File.read!(@architecture_path)
+    walkthrough = File.read!(@walkthrough_path)
+
+    assert architecture =~ "### Choose the route owner"
+    assert architecture =~ "`Crosswake.Router`"
+    assert architecture =~ "`Crosswake.Manifest`"
+    assert architecture =~ "[Support matrix](support_matrix.md)"
+
+    assert walkthrough =~ "## Current source trail"
+    assert walkthrough =~ "`Crosswake.CapabilityMap`"
+    assert walkthrough =~ "`Crosswake.SupportMatrix`"
+    assert walkthrough =~ "`mix crosswake.docs.sync --check`"
+  end
+
   test "architecture keeps the required journey and four accessible diagrams" do
     architecture = File.read!(@architecture_path)
 

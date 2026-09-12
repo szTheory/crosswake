@@ -80,7 +80,9 @@ defmodule Crosswake.Bridge.RegistryTest do
     manifest = manifest_fixture()
 
     assert {:ok, entry} =
-             Registry.lookup(manifest, "library", "files.pick", %{"transfer_id" => "lesson_import"})
+             Registry.lookup(manifest, "library", "files.pick", %{
+               "transfer_id" => "lesson_import"
+             })
 
     assert entry.command == "files.pick"
     assert entry.capability == "file_picker"
@@ -101,10 +103,14 @@ defmodule Crosswake.Bridge.RegistryTest do
              Registry.lookup(manifest, "library", "files.pick", %{})
 
     assert {:error, :undeclared_capability} =
-             Registry.lookup(manifest, "camera", "files.pick", %{"transfer_id" => "capture_upload"})
+             Registry.lookup(manifest, "camera", "files.pick", %{
+               "transfer_id" => "capture_upload"
+             })
 
     assert {:error, :undeclared_capability} =
-             Registry.lookup(manifest, "library", "files.pick", %{"transfer_id" => "lesson_export"})
+             Registry.lookup(manifest, "library", "files.pick", %{
+               "transfer_id" => "lesson_export"
+             })
 
     assert {:error, :undeclared_capability} =
              Registry.lookup(manifest, "camera", "notifications.token.get")
@@ -194,7 +200,10 @@ defmodule Crosswake.Bridge.RegistryTest do
   test "files.pick stays a compatibility command instead of becoming the public share family" do
     manifest =
       manifest_fixture()
-      |> put_in([Access.key!(:capability_registry), "share"], Types.new_capability(id: "share", family: "share"))
+      |> put_in(
+        [Access.key!(:capability_registry), "share"],
+        Types.new_capability(id: "share", family: "share")
+      )
       |> put_in([Access.key!(:routes), "dashboard", Access.key!(:capabilities)], ["share"])
 
     assert {:error, :undeclared_capability} =
@@ -204,7 +213,9 @@ defmodule Crosswake.Bridge.RegistryTest do
   test "registry still honors legacy route capability aliases while family ids stay canonical" do
     manifest =
       manifest_fixture()
-      |> put_in([Access.key!(:routes), "dashboard", Access.key!(:capabilities)], ["push.notifications"])
+      |> put_in([Access.key!(:routes), "dashboard", Access.key!(:capabilities)], [
+        "push.notifications"
+      ])
 
     assert {:ok, entry} = Registry.lookup(manifest, "dashboard", "notifications.token.get")
     assert entry.capability == "notification_token"
@@ -310,7 +321,8 @@ defmodule Crosswake.Bridge.RegistryTest do
               "provider token snapshot available"
             ],
             denial: "unavailable_capability",
-            fallback: "treat notification token replies as provider-tagged evidence instead of backend registration truth",
+            fallback:
+              "treat notification token replies as provider-tagged evidence instead of backend registration truth",
             guide: "guides/capabilities.md#bounded-bridge",
             legacy_ids: ["push.notifications"]
           )

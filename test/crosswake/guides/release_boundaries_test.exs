@@ -46,6 +46,43 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert example_host =~ "not a separate supported runtime package"
   end
 
+  test "install compatibility and troubleshooting lead to executable owners" do
+    install = File.read!("guides/install.md")
+    compatibility = File.read!("guides/compatibility.md")
+    troubleshooting = File.read!("guides/troubleshooting.md")
+
+    assert install =~ "**Current setup answer:**"
+    assert install =~ "`mix.exs` owns the package version and dependency ranges"
+    assert install =~ "[support matrix](support_matrix.md)"
+
+    assert compatibility =~ "**Current rebuild answer:**"
+    assert compatibility =~ "`Crosswake.SupportMatrix` owns the four change classes"
+    assert compatibility =~ "Package versions alone do not decide rebuild posture"
+
+    assert troubleshooting =~ "**Current recovery answer:**"
+    assert troubleshooting =~ "Run `mix crosswake.doctor`"
+    assert troubleshooting =~ "one named owner and one bounded action"
+
+    refute troubleshooting =~
+             ~r/(?:token|credential|account identifier|device identifier):\s*\S+/i
+  end
+
+  test "publish runbook stops before the 0.2.1 candidate and immutable release actions" do
+    runbook = File.read!("docs/COMPANION-PUBLISH-RUNBOOK.md")
+
+    boundary =
+      section_between(runbook, "## Phase 167 review boundary", "## Current Operating Model")
+
+    assert boundary =~ "reversible preparation only"
+    assert boundary =~ "Phase 168"
+    assert boundary =~ "exact `0.2.1` candidate proof"
+    assert boundary =~ "explicit maintainer approval"
+    assert boundary =~ "Do not merge a Release Please PR"
+    assert boundary =~ "publish a package"
+    assert boundary =~ "create or move a tag"
+    assert boundary =~ "update the SwiftPM mirror"
+  end
+
   test "guide surfaces link rebuild guidance to canonical promotion and non-claim truth" do
     guide_paths = [
       "guides/install.md",
@@ -119,7 +156,16 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
       assert File.exists?(path), "ExDoc extra #{path} must exist"
     end
 
-    assert Keyword.keys(groups) == [:Start, :Adopt, :"Runtime Owners", :Truth, :Telemetry, :"Extension Authors", :"Advanced/Companions"]
+    assert Keyword.keys(groups) == [
+             :Start,
+             :Adopt,
+             :"Runtime Owners",
+             :Truth,
+             :Telemetry,
+             :"Extension Authors",
+             :"Advanced/Companions"
+           ]
+
     assert "guides/route_policy.md" in groups[:Start]
     assert "guides/web_to_mobile_migration.md" in groups[:Adopt]
     assert "guides/support_matrix.md" in groups[:Truth]
@@ -642,7 +688,8 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
       Enum.reduce(lines, {[], nil, []}, fn line, {sections, heading, acc_lines} ->
         trimmed = String.trim(line)
 
-        if historical_changelog_line?(trimmed) and Regex.match?(~r/^## \[\d+\.\d+\.\d+\]/, trimmed) do
+        if historical_changelog_line?(trimmed) and
+             Regex.match?(~r/^## \[\d+\.\d+\.\d+\]/, trimmed) do
           completed = if heading, do: [{heading, Enum.reverse(acc_lines)}], else: []
           {sections ++ completed, line, []}
         else
@@ -698,5 +745,11 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
 
   defp normalize_whitespace(contents) do
     Regex.replace(~r/\s+/, contents, " ")
+  end
+
+  defp section_between(contents, start_heading, next_heading) do
+    [_, rest] = String.split(contents, start_heading, parts: 2)
+    [section | _] = String.split(rest, next_heading, parts: 2)
+    section
   end
 end

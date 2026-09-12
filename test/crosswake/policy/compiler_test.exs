@@ -1,4 +1,3 @@
-
 defmodule Crosswake.Policy.CompilerTest do
   use ExUnit.Case, async: true
 
@@ -22,9 +21,20 @@ defmodule Crosswake.Policy.CompilerTest do
   test "duplicate ids, missing required metadata, invalid enum values, and adapter runtime fail compilation" do
     routes = [
       route("/dashboard", helper: "page", crosswake: [id: "shared", runtime: :live_view]),
-      route("/library", helper: "library", crosswake: [id: "shared", runtime: :offline_island, offline: :local_first, security: :standard]),
+      route("/library",
+        helper: "library",
+        crosswake: [
+          id: "shared",
+          runtime: :offline_island,
+          offline: :local_first,
+          security: :standard
+        ]
+      ),
       route("/missing-runtime", helper: "missing", crosswake: [id: "missing-runtime"]),
-      route("/bad-offline", helper: "bad_offline", crosswake: [id: "bad-offline", runtime: :native_screen, offline: :sometimes]),
+      route("/bad-offline",
+        helper: "bad_offline",
+        crosswake: [id: "bad-offline", runtime: :native_screen, offline: :sometimes]
+      ),
       route("/adapter", helper: "adapter", crosswake: [id: "adapter-route", runtime: :adapter])
     ]
 
@@ -40,15 +50,31 @@ defmodule Crosswake.Policy.CompilerTest do
     routes = [
       route("/live-local-first",
         helper: "live_local_first",
-        crosswake: [id: "live-local-first", runtime: :live_view, offline: :local_first, security: :standard]
+        crosswake: [
+          id: "live-local-first",
+          runtime: :live_view,
+          offline: :local_first,
+          security: :standard
+        ]
       ),
       route("/island-cached",
         helper: "island_cached",
-        crosswake: [id: "island-cached", runtime: :offline_island, offline: :unavailable, security: :standard]
+        crosswake: [
+          id: "island-cached",
+          runtime: :offline_island,
+          offline: :unavailable,
+          security: :standard
+        ]
       ),
       route("/sync-without-local-first",
         helper: "sync_without_local_first",
-        crosswake: [id: "sync-without-local-first", runtime: :native_screen, sync: ["uploads"], offline: :unavailable, security: :sensitive]
+        crosswake: [
+          id: "sync-without-local-first",
+          runtime: :native_screen,
+          sync: ["uploads"],
+          offline: :unavailable,
+          security: :sensitive
+        ]
       ),
       route("/study-share",
         helper: "study_share",
@@ -64,10 +90,31 @@ defmodule Crosswake.Policy.CompilerTest do
 
     assert {:error, %{errors: errors}} = Compiler.compile(routes)
 
-    assert Enum.any?(errors, &String.contains?(&1.message, "live_view routes cannot declare offline :local_first"))
-    assert Enum.any?(errors, &String.contains?(&1.message, "offline_island routes cannot declare offline :unavailable"))
-    assert Enum.any?(errors, &String.contains?(&1.message, "sync declarations require offline support"))
-    assert Enum.any?(errors, &String.contains?(&1.message, "entry :external is not supported on offline_island routes"))
+    assert Enum.any?(
+             errors,
+             &String.contains?(&1.message, "live_view routes cannot declare offline :local_first")
+           )
+
+    assert Enum.any?(
+             errors,
+             &String.contains?(
+               &1.message,
+               "offline_island routes cannot declare offline :unavailable"
+             )
+           )
+
+    assert Enum.any?(
+             errors,
+             &String.contains?(&1.message, "sync declarations require offline support")
+           )
+
+    assert Enum.any?(
+             errors,
+             &String.contains?(
+               &1.message,
+               "entry :external is not supported on offline_island routes"
+             )
+           )
 
     assert {:ok, %{routes: [route], warnings: []}} =
              Compiler.compile([
@@ -153,8 +200,18 @@ defmodule Crosswake.Policy.CompilerTest do
 
     assert {:error, %{errors: errors}} = Compiler.compile(routes)
 
-    assert Enum.any?(errors, &String.contains?(&1.message, "provider-specific commerce role :storekit"))
-    assert Enum.any?(errors, &String.contains?(&1.message, "provider-specific corridor vocabulary \"play_billing\""))
+    assert Enum.any?(
+             errors,
+             &String.contains?(&1.message, "provider-specific commerce role :storekit")
+           )
+
+    assert Enum.any?(
+             errors,
+             &String.contains?(
+               &1.message,
+               "provider-specific corridor vocabulary \"play_billing\""
+             )
+           )
 
     assert Enum.any?(errors, fn error ->
              error.hint ==

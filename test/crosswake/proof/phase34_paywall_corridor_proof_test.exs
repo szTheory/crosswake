@@ -1,7 +1,22 @@
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_backend.ex", __DIR__)
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_backend.ex",
+  __DIR__
+)
 
 defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
   @moduledoc """
@@ -37,6 +52,12 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
   alias CrosswakeExample.Commerce.MockBackend
 
   @group_id "sub_pro_monthly"
+  @allowed_require_file_paths [
+    "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex",
+    "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex",
+    "../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex",
+    "../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_backend.ex"
+  ]
 
   # ---------------------------------------------------------------------------
   # SC#1 — four derived states (PROOF-01, D-04)
@@ -49,7 +70,9 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
     end
 
     test ":pending — fresh + :awaiting_verification reconciliation" do
-      snap = phase34_snapshot(%{reconciliation: phase34_reconciliation_lane(:awaiting_verification)})
+      snap =
+        phase34_snapshot(%{reconciliation: phase34_reconciliation_lane(:awaiting_verification)})
+
       assert EntitlementProjection.derived_state(snap) == :pending
     end
 
@@ -57,6 +80,7 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
       # Base defaults: freshness :fresh, reconciliation :projection_refreshed, access :denied
       # granted_snapshot? returns false (access :denied) -> fallthrough to :denied
       snap = phase34_snapshot()
+
       assert EntitlementProjection.derived_state(snap) == :denied,
              "base snapshot with access :denied and reconciliation :projection_refreshed should fall through to :denied"
     end
@@ -80,7 +104,9 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
     end
 
     test ":pending origin — derived_state on :awaiting_verification + fresh snapshot == :pending" do
-      snap = phase34_snapshot(%{reconciliation: phase34_reconciliation_lane(:awaiting_verification)})
+      snap =
+        phase34_snapshot(%{reconciliation: phase34_reconciliation_lane(:awaiting_verification)})
+
       assert EntitlementProjection.derived_state(snap) == :pending
     end
 
@@ -100,12 +126,14 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
     test "D-06.1: authority_mutation_allowed_from_evidence?/1 returns false for mock evidence (lib contract)" do
       evidence = phase34_mock_evidence()
 
-      assert Crosswake.Commerce.Reconciliation.authority_mutation_allowed_from_evidence?(evidence) == false,
+      assert Crosswake.Commerce.Reconciliation.authority_mutation_allowed_from_evidence?(evidence) ==
+               false,
              "authority_mutation_allowed_from_evidence?/1 returns false unconditionally for any ReconciliationEvidence — this is the lib contract and the anti-grant fence anchor"
     end
 
     test "D-06.2: project_snapshot/2 rejects unverified (:awaiting_verification) reconciliation state" do
-      unverified = phase34_snapshot(%{reconciliation: phase34_reconciliation_lane(:awaiting_verification)})
+      unverified =
+        phase34_snapshot(%{reconciliation: phase34_reconciliation_lane(:awaiting_verification)})
 
       assert {:error, :unverified_reconciliation_outcome} =
                EntitlementProjection.project_snapshot(nil, unverified),
@@ -137,40 +165,39 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
 
   describe "hermeticity self-scan guard (SC#4 / D-03)" do
     test "no runtime-path Code.require_file lines; only the four allowed pure-commerce modules" do
-      source = File.read!(__ENV__.file) |> String.downcase()
+      assert :ok = validate_require_file_contract(File.read!(__ENV__.file))
+    end
 
-      require_call_lines =
-        source
-        |> String.split("\n")
-        |> Enum.filter(&Regex.match?(~r/^\s*code\.require_file\s*\(/, &1))
+    test "a computed fifth Code.require_file call is counted and rejected" do
+      allowed_calls =
+        Enum.map_join(@allowed_require_file_paths, "\n", fn path ->
+          "Code.require_file(" <> inspect(path) <> ", __DIR__)"
+        end)
 
-      # The ONLY allowed pure commerce modules — any other path is a runtime/server leak
-      allowed_modules = [
-        "reconciliation_keys.ex",
-        "reconciliation_inbox.ex",
-        "entitlement_projection.ex",
-        "mock_backend.ex"
-      ]
+      source =
+        allowed_calls <>
+          "\nruntime_path = Path.join(__DIR__, \"runtime.ex\")" <>
+          "\nCode.require_file(runtime_path, __DIR__)\n"
 
-      # Must have exactly 4 require_file lines
-      assert length(require_call_lines) == 4,
-             "expected exactly 4 Code.require_file lines (one per pure commerce module); found #{length(require_call_lines)}: #{inspect(require_call_lines)}"
+      assert {:error, {:unexpected_require_file_count, 5}} =
+               validate_require_file_contract(source)
+    end
 
-      # Each require line must point at one of the allowed pure-commerce modules
-      for line <- require_call_lines do
-        assert Enum.any?(allowed_modules, &String.contains?(line, &1)),
-               "proof requires file not in the allowed pure-commerce module list: #{inspect(line)}"
-      end
+    test "a fully qualified computed load is counted while comments and strings are ignored" do
+      allowed_calls =
+        Enum.map_join(@allowed_require_file_paths, "\n", fn path ->
+          "Code.require_file(" <> inspect(path) <> ", __DIR__)"
+        end)
 
-      # No require line may contain a forbidden runtime-path substring
-      forbidden_runtime_substrings = ["_live", "endpoint", "application", "router", "repo", "_web"]
+      source =
+        allowed_calls <>
+          "\n# Elixir.Code.require_file(comment_path, __DIR__)" <>
+          "\ndecoy = \"Elixir.Code.require_file(string_path, __DIR__)\"" <>
+          "\nruntime_path = Path.join(__DIR__, \"runtime.ex\")" <>
+          "\nElixir.Code.require_file(runtime_path, __DIR__)\n"
 
-      for line <- require_call_lines do
-        for forbidden <- forbidden_runtime_substrings do
-          refute String.contains?(line, forbidden),
-                 "proof requires a runtime-path file containing #{inspect(forbidden)}: #{inspect(line)}"
-        end
-      end
+      assert {:error, {:unexpected_require_file_count, 5}} =
+               validate_require_file_contract(source)
     end
 
     test "no process-start or server tokens in the proof body" do
@@ -192,12 +219,14 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
 
     test "proof uses async: false (required for hermetic determinism)" do
       source = File.read!(__ENV__.file)
+
       assert String.contains?(source, "async: false"),
              "proof must use ExUnit.Case, async: false for hermetic determinism"
     end
 
     test "proof is untagged — no @moduletag :requires_example_host (merge-blocking lane)" do
       source = File.read!(__ENV__.file) |> String.downcase()
+
       # A real @moduletag directive always appears at the start of a line (after optional whitespace).
       # The moduledoc prose mentioning it is embedded mid-line inside documentation text, not at line start.
       # Use a line-by-line scan: filter lines that are actual @moduletag directives (start of line),
@@ -216,6 +245,49 @@ defmodule Crosswake.Proof.Phase34PaywallCorridorProofTest do
       end
     end
   end
+
+  defp validate_require_file_contract(source) do
+    with {:ok, ast} <- Code.string_to_quoted(source) do
+      require_file_arguments = collect_require_file_arguments(ast)
+
+      cond do
+        length(require_file_arguments) != 4 ->
+          {:error, {:unexpected_require_file_count, length(require_file_arguments)}}
+
+        not Enum.all?(require_file_arguments, &is_binary/1) ->
+          {:error, :non_literal_require_file_path}
+
+        Enum.sort(require_file_arguments) != Enum.sort(@allowed_require_file_paths) ->
+          {:error, :unexpected_require_file_paths}
+
+        true ->
+          :ok
+      end
+    else
+      {:error, _parse_error} -> {:error, :invalid_elixir_source}
+    end
+  end
+
+  defp collect_require_file_arguments(ast) do
+    {_ast, arguments} =
+      Macro.prewalk(ast, [], fn
+        {{:., _dot_meta, [receiver, :require_file]}, _call_meta, [first_argument | _rest]} = node,
+        arguments ->
+          if code_module?(receiver) do
+            {node, [first_argument | arguments]}
+          else
+            {node, arguments}
+          end
+
+        node, arguments ->
+          {node, arguments}
+      end)
+
+    Enum.reverse(arguments)
+  end
+
+  defp code_module?({:__aliases__, _meta, segments}), do: Module.concat(segments) == Code
+  defp code_module?(_receiver), do: false
 
   # ---------------------------------------------------------------------------
   # Private inline fixture builders (phase34_-prefixed; phase21 pattern, D-07)

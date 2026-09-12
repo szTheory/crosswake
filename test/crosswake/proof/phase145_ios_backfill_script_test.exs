@@ -45,7 +45,9 @@ defmodule Crosswake.Proof.Phase145IosBackfillScriptTest do
     unwritable_mirror = Path.join(fixture.mirror, "does-not-exist.git")
 
     {output, exit_code} =
-      run_script(fixture, ["--apply"], [{"CROSSWAKE_IOS_BACKFILL_MIRROR_REMOTE", unwritable_mirror}])
+      run_script(fixture, ["--apply"], [
+        {"CROSSWAKE_IOS_BACKFILL_MIRROR_REMOTE", unwritable_mirror}
+      ])
 
     assert exit_code != 0
     assert output =~ "[crosswake] FAIL: dry-run push to"
@@ -80,7 +82,12 @@ defmodule Crosswake.Proof.Phase145IosBackfillScriptTest do
   end
 
   defp backfill_fixture do
-    root = Path.join(System.tmp_dir!(), "crosswake-phase145-ios-backfill-#{System.unique_integer([:positive])}")
+    root =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-phase145-ios-backfill-#{System.unique_integer([:positive])}"
+      )
+
     release = Path.join(root, "release")
     mirror = Path.join(root, "mirror.git")
     File.mkdir_p!(release)
@@ -93,8 +100,16 @@ defmodule Crosswake.Proof.Phase145IosBackfillScriptTest do
 
     File.mkdir_p!(Path.join(release, "packages/crosswake-shell-core-ios"))
     File.mkdir_p!(Path.join(release, "packages/crosswake-shell-core-android"))
-    File.write!(Path.join(release, "packages/crosswake-shell-core-ios/Package.swift"), "// swift package\n")
-    File.write!(Path.join(release, "packages/crosswake-shell-core-android/build.gradle.kts"), "// gradle\n")
+
+    File.write!(
+      Path.join(release, "packages/crosswake-shell-core-ios/Package.swift"),
+      "// swift package\n"
+    )
+
+    File.write!(
+      Path.join(release, "packages/crosswake-shell-core-android/build.gradle.kts"),
+      "// gradle\n"
+    )
 
     File.write!(
       Path.join(release, ".release-please-manifest.json"),
@@ -146,7 +161,16 @@ defmodule Crosswake.Proof.Phase145IosBackfillScriptTest do
   end
 
   defp tag_exists?(mirror, tag) do
-    {_, exit_code} = System.cmd("git", ["--git-dir", mirror, "show-ref", "--verify", "--quiet", "refs/tags/#{tag}"])
+    {_, exit_code} =
+      System.cmd("git", [
+        "--git-dir",
+        mirror,
+        "show-ref",
+        "--verify",
+        "--quiet",
+        "refs/tags/#{tag}"
+      ])
+
     exit_code == 0
   end
 

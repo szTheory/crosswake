@@ -542,7 +542,9 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   test "phase 144 comment-only queue text does not violate consolidated concurrency id" do
     workflow =
       real_workflow()
-      |> String.replace("  cancel-in-progress: false", "  # queue: max\n  cancel-in-progress: false",
+      |> String.replace(
+        "  cancel-in-progress: false",
+        "  # queue: max\n  cancel-in-progress: false",
         global: false
       )
 
@@ -722,7 +724,9 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   test "full-line comments cannot satisfy or violate semantic checks" do
     commented_queue =
       real_workflow()
-      |> String.replace("  cancel-in-progress: false", "  # queue: max\n  cancel-in-progress: false",
+      |> String.replace(
+        "  cancel-in-progress: false",
+        "  # queue: max\n  cancel-in-progress: false",
         global: false
       )
 
@@ -951,7 +955,7 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   end
 
   @tag :phase143_version_graph
-  test "flattened companion floors fail with stable check id" do
+  test "stale extracted-companion floors fail with stable check id" do
     temp_root =
       Path.join(
         System.tmp_dir!(),
@@ -970,7 +974,13 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
       contents =
         source
         |> File.read!()
-        |> String.replace(~s({:crosswake, "~> 0.1"}), ~s({:crosswake, "~> 0.2"}))
+        |> then(fn contents ->
+          if package in ~w(crosswake_rulestead crosswake_rindle) do
+            String.replace(contents, ~s({:crosswake, "~> 0.2"}), ~s({:crosswake, "~> 0.1"}))
+          else
+            contents
+          end
+        end)
 
       File.write!(Path.join(target_dir, "mix.exs"), contents)
     end

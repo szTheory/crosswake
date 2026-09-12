@@ -608,11 +608,11 @@ defmodule Crosswake.Doctor.PublishReadiness do
       passed?: errors == [],
       message:
         if(errors == [],
-          do:
-            "all committed contract surfaces carry bridge_protocol_version #{expected}",
+          do: "all committed contract surfaces carry bridge_protocol_version #{expected}",
           else: "contract version parity failed: #{Enum.join(errors, "; ")}"
         ),
-      hint: "Run mix crosswake.contract.gen and commit the regenerated surfaces. Hand-maintained crosswake_manifest.json files require manual updates.",
+      hint:
+        "Run mix crosswake.contract.gen and commit the regenerated surfaces. Hand-maintained crosswake_manifest.json files require manual updates.",
       docs_reference: "guides/compatibility.md",
       proof_class: :merge_blocking,
       claim_scope: "Contract version parity across committed surfaces",
@@ -684,7 +684,10 @@ defmodule Crosswake.Doctor.PublishReadiness do
     errors = contract_version_parity_errors(cwd)
     has_drift? = errors != []
     detected_class = if has_drift?, do: "native or companion rebuild required", else: nil
-    active_sequence = action_sequence_for(detected_class || "native or companion rebuild required")
+
+    active_sequence =
+      action_sequence_for(detected_class || "native or companion rebuild required")
+
     denial_vocabulary = Enum.map(Denial.reasons(), &Atom.to_string/1)
 
     {severity, result, code, message, hint} =

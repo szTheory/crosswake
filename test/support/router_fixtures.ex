@@ -51,13 +51,20 @@ defmodule Crosswake.TestSupport.RouterFixtures do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
-        get "/dashboard", Crosswake.TestSupport.PageController, :index,
+        get("/dashboard", Crosswake.TestSupport.PageController, :index,
           crosswake: [
             id: "dashboard",
-            capabilities: ["app_info", "haptics", "permissions.status", "notification_token", "share"]
+            capabilities: [
+              "app_info",
+              "haptics",
+              "permissions.status",
+              "notification_token",
+              "share"
+            ]
           ]
+        )
 
-        live "/library", Crosswake.TestSupport.LibraryLive,
+        live("/library", Crosswake.TestSupport.LibraryLive,
           crosswake: [
             id: "library",
             cache_contract: :lesson_library_v1,
@@ -94,8 +101,9 @@ defmodule Crosswake.TestSupport.RouterFixtures do
               ]
             ]
           ]
+        )
 
-        live "/study-session", Crosswake.TestSupport.StudySessionLive,
+        live("/study-session", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "study-session",
             runtime: :offline_island,
@@ -104,8 +112,9 @@ defmodule Crosswake.TestSupport.RouterFixtures do
             packs: [[id: :study_session_media, version: "3.0.0", kind: :media]],
             sync: [:study_reviews]
           ]
+        )
 
-        live "/camera", Crosswake.TestSupport.CameraLive, :capture,
+        live("/camera", Crosswake.TestSupport.CameraLive, :capture,
           crosswake: [
             id: "camera",
             runtime: :native_screen,
@@ -122,9 +131,10 @@ defmodule Crosswake.TestSupport.RouterFixtures do
             ],
             security: :sensitive
           ]
+        )
       end
 
-      get "/settings", Crosswake.TestSupport.SettingsController, :index
+      get("/settings", Crosswake.TestSupport.SettingsController, :index)
     end
   end
 
@@ -137,7 +147,7 @@ defmodule Crosswake.TestSupport.RouterFixtures do
                          packs: [[id: :core_content, version: "1.0.0", kind: :content]],
                          sync: ["catalog"],
                          security: :standard do
-        get "/reader", Crosswake.TestSupport.PageController, :index,
+        get("/reader", Crosswake.TestSupport.PageController, :index,
           crosswake: [
             id: "reader",
             runtime: :live_view,
@@ -152,8 +162,9 @@ defmodule Crosswake.TestSupport.RouterFixtures do
               ]
             ]
           ]
+        )
 
-        live "/study-session", Crosswake.TestSupport.StudySessionLive,
+        live("/study-session", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "study-session",
             runtime: :offline_island,
@@ -163,8 +174,9 @@ defmodule Crosswake.TestSupport.RouterFixtures do
             sync: ["drafts"],
             island_contract: :study_session_v1
           ]
+        )
 
-        live "/capture", Crosswake.TestSupport.CameraLive, :capture,
+        live("/capture", Crosswake.TestSupport.CameraLive, :capture,
           crosswake: [
             id: "capture",
             runtime: :native_screen,
@@ -183,9 +195,10 @@ defmodule Crosswake.TestSupport.RouterFixtures do
             sync: ["uploads"],
             security: :sensitive
           ]
+        )
       end
 
-      get "/public", Crosswake.TestSupport.SettingsController, :index
+      get("/public", Crosswake.TestSupport.SettingsController, :index)
     end
   end
 end

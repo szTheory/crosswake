@@ -25,26 +25,8 @@ from collections import defaultdict
 try:
     import yaml
 except ImportError:
-    # Preserve the repository's existing runner bootstrap behavior. No new dependency is added.
-    import subprocess
-
-    yaml = None
-    for _extra in ([], ["--user"], ["--break-system-packages"]):
-        try:
-            subprocess.run(
-                [sys.executable, "-m", "pip", "install", "--quiet", *_extra, "pyyaml"],
-                check=True,
-                capture_output=True,
-            )
-            import yaml  # noqa: F811
-
-            break
-        except Exception:
-            yaml = None
-
-    if yaml is None:
-        print("[crosswake] FAIL: PyYAML is required (pip install pyyaml)", file=sys.stderr)
-        sys.exit(2)
+    print("[crosswake] FAIL: PyYAML is required; use the declared dependency setup", file=sys.stderr)
+    sys.exit(2)
 
 
 CROSSWAKE_CI = ".github/workflows/crosswake-ci.yml"

@@ -18,7 +18,9 @@ defmodule Mix.Tasks.Crosswake.Gen.SyncTest do
     run(["--dir", @tmp_dir, "--app", "TestApp"])
 
     schema_path = Path.join([@tmp_dir, "lib", "test_app", "sync", "event_log.ex"])
-    controller_path = Path.join([@tmp_dir, "lib", "test_app_web", "controllers", "sync_controller.ex"])
+
+    controller_path =
+      Path.join([@tmp_dir, "lib", "test_app_web", "controllers", "sync_controller.ex"])
 
     assert File.exists?(schema_path)
     assert File.exists?(controller_path)

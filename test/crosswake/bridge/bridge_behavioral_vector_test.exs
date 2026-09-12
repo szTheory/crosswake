@@ -81,6 +81,7 @@ defmodule Crosswake.Bridge.BridgeVectorBehavioralTest do
 
     for vector <- vectors do
       id = vector["id"]
+
       # Skip vectors that target native-only semantics (session vs request check, not request vs manifest).
       # These vectors are exercised by the native (Swift/Kotlin) conformance test suites instead.
       unless vector["native_only"] == true do
@@ -169,8 +170,7 @@ defmodule Crosswake.Bridge.BridgeVectorBehavioralTest do
         ),
       support_matrix: SupportMatrix.canonical(),
       capability_registry: %{
-        "app_info" =>
-          Types.new_capability(id: "app_info", version: cap_version)
+        "app_info" => Types.new_capability(id: "app_info", version: cap_version)
       },
       routes: %{
         "dashboard" =>
@@ -245,5 +245,4 @@ defmodule Crosswake.Bridge.BridgeVectorBehavioralTest do
   # ---------------------------------------------------------------------------
   # Helpers
   # ---------------------------------------------------------------------------
-
 end

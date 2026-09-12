@@ -93,7 +93,8 @@ defmodule Crosswake.Offline.Contracts do
     eviction = Keyword.fetch!(attrs, :eviction)
 
     if eviction not in [:volatile, :manual] do
-      raise ArgumentError, "invalid eviction policy: #{inspect(eviction)}. Allowed: :volatile or :manual"
+      raise ArgumentError,
+            "invalid eviction policy: #{inspect(eviction)}. Allowed: :volatile or :manual"
     end
 
     struct!(StudySessionIsland, %{

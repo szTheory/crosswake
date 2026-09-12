@@ -1,4 +1,3 @@
-
 defmodule Crosswake.Proof.Phase18DeepLinkActivationLaneTest do
   use ExUnit.Case, async: true
 
