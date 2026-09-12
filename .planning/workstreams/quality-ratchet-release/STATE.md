@@ -23,11 +23,11 @@ workstream: quality-ratchet-release
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-09-10)
+See: `.planning/PROJECT.md` (updated 2026-09-12)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 167 post-gap verification — complete adoption-authority tuple closure
+**Current focus:** Phase 168 — exact, approval-gated 0.2.1 release-candidate readiness
 
 ## Current Position
 
@@ -187,7 +187,6 @@ Progress: [████████░░] 80%
 
 ### Pending Todos
 
-- Re-run Phase 167 verification against the complete adoption-authority tuple closure.
 - Phase 168 must bind and land the exact five Phase 167 closeout artifact blobs before candidate approval.
 - Phase 168 owns all further evaluation of release-only PRs 57, 115, 146, and 147.
 
@@ -195,6 +194,8 @@ Progress: [████████░░] 80%
 
 - The First B2C Adopter work remains parked separately at Phase 163.1 pending external route/device
   authority; do not copy or infer adopter facts into v22 artifacts.
+- Phase 167 code review retained five non-blocking advisories; Phase 168 should resolve the
+  release-relevant full-comment marker count before relying on it for exact candidate authority.
 
 ## Deferred Items
 
@@ -206,6 +207,6 @@ Progress: [████████░░] 80%
 
 ## Session Continuity
 
-Last session: 2026-09-12T15:10:59.155Z
+Last session: 2026-09-12T20:02:00Z
 Stopped at: Phase 167 complete, ready to plan Phase 168
 Resume file: None
