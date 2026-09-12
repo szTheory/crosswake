@@ -206,7 +206,11 @@ defmodule Crosswake.CapabilityMapTest do
     mutations =
       for claim <- claims,
           field <- authority_fields,
-          replacement <- [incompatible_authority_value(claim, field), nil, :omitted] do
+          replacement <- [
+            incompatible_authority_value(claim, field),
+            missing_authority_value(claim, field),
+            :omitted
+          ] do
         claim
         |> put_or_delete(field, replacement)
         |> Map.put(:statement, "neutral-complete-statement-sentinel")
@@ -464,6 +468,10 @@ defmodule Crosswake.CapabilityMapTest do
 
   defp incompatible_authority_value(claim, :support_promotion),
     do: not claim.support_promotion
+
+  defp missing_authority_value(claim, field) do
+    if Map.fetch!(claim, field) == nil, do: :invalid_missing_authority, else: nil
+  end
 
   defp alternate(current, allowed), do: Enum.find(allowed, &(&1 != current))
 
