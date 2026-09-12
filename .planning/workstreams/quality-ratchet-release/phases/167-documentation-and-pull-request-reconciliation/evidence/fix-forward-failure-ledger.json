@@ -276,7 +276,7 @@
       },
       "replacement_final": {
         "allowed": 1,
-        "used": 0
+        "used": 1
       }
     },
     "kind": "post_412_recovery",

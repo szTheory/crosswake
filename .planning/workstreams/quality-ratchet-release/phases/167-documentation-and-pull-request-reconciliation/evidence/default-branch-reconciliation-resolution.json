@@ -1,0 +1,58 @@
+{
+  "crosswake_ci": "SUCCESS",
+  "fresh_default_oid": "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b",
+  "kind": "fix_forward_resolution",
+  "local_main_before_oid": "08924f7631ad68cadb6438cab65add90f52778f8",
+  "merge_commit_oid": "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b",
+  "merge_tree_oid": "a318b4e8ef4707236c34d43ee0bb9faa29e9b41e",
+  "phase_branch": "agent-phase167-fixforward",
+  "pr145": {
+    "head_oid": "a6e2622acaaa82e82eb33a21760e75db2e51a281",
+    "merge_oid": "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
+    "state": "MERGED"
+  },
+  "receipt_parent_oid": "b489905d0f735e88268905607390021256e405b8",
+  "replacement_pr_number": 149,
+  "required_ancestor_oids": [
+    "367f5b5491384594a652d137a03933fa3a89418a",
+    "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
+    "8383aaea2a2b2e10bbe61dd843b51f4129a5d447",
+    "c06b6109ab3f68a5433a99c3ffb7ff11eafe71ca",
+    "c6b02e388c59e375950329c268c76197f945b5b4",
+    "cc14f63662ec6d5db3adf918cb5a59327447353f",
+    "d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b",
+    "eba0f21b052c43d957df8ab280ecaa04771782aa"
+  ],
+  "schema_version": 2,
+  "superseded": [
+    {
+      "failed_run_id": 34544586854,
+      "kind": "superseded_fix_forward",
+      "marker_sha256": "fe07e692ded0b563b771b345ce7d1dca5b31ed1d203914acd21251a0e266abcf",
+      "merged": false,
+      "old_head_oid": "85e6aeec41b9a53840f0a2315c16c4390cef1878",
+      "pr_number": 110,
+      "replacement_head_oid": "b489905d0f735e88268905607390021256e405b8",
+      "replacement_merge_oid": "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b",
+      "replacement_pr_number": 149,
+      "schema_version": 2,
+      "state": "CLOSED"
+    },
+    {
+      "failed_run_id": 34553181146,
+      "kind": "superseded_fix_forward",
+      "marker_sha256": "fe07e692ded0b563b771b345ce7d1dca5b31ed1d203914acd21251a0e266abcf",
+      "merged": false,
+      "old_head_oid": "cc5286da6467c6d582f9a9585272360fcc1e4927",
+      "pr_number": 148,
+      "replacement_head_oid": "b489905d0f735e88268905607390021256e405b8",
+      "replacement_merge_oid": "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b",
+      "replacement_pr_number": 149,
+      "schema_version": 2,
+      "state": "CLOSED"
+    }
+  ],
+  "tested_base_oid": "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
+  "tested_head_oid": "b489905d0f735e88268905607390021256e405b8",
+  "tested_tree_oid": "a318b4e8ef4707236c34d43ee0bb9faa29e9b41e"
+}

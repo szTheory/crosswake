@@ -301,7 +301,7 @@ def post_412_recovery() -> dict[str, Any]:
             "original_diagnostic": {"allowed": 1, "used": 1},
             "replacement_diagnostic": {"allowed": 1, "used": 1},
             "prior_final": {"allowed": 1, "used": 1},
-            "replacement_final": {"allowed": 1, "used": 0},
+            "replacement_final": {"allowed": 1, "used": 1},
         },
     }
 
@@ -450,7 +450,7 @@ def validate_browser_recovery(browser: dict[str, Any], budget: dict[str, Any]) -
         "original_diagnostic": {"allowed": 1, "used": 1},
         "replacement_diagnostic": {"allowed": 1, "used": 1},
         "prior_final": {"allowed": 1, "used": 1},
-        "replacement_final": {"allowed": 1, "used": 0},
+        "replacement_final": {"allowed": 1, "used": 1},
     }, "browser_green_budget")
 
 
@@ -528,7 +528,8 @@ def verify_candidate(value: dict[str, Any], candidate: str, local_clean: bool) -
 def repository() -> tuple[str, str]:
     info = gh_json("repo", "view", "--json", "nameWithOwner,defaultBranchRef", "--jq", "{repo:.nameWithOwner,branch:.defaultBranchRef.name}")
     endpoint = f"repos/{info['repo']}/branches/{urllib.parse.quote(info['branch'], safe='')}"
-    return info["repo"], gh_json("api", endpoint, "--jq", ".commit.sha")
+    authority = gh_json("api", endpoint, "--jq", "{oid:.commit.sha}")
+    return info["repo"], authority["oid"]
 def pr(number: int) -> dict[str, Any]:
     return gh_json("pr", "view", str(number), "--json", "number,state,headRefOid,baseRefOid,mergeCommit,comments", "--jq", "{number,state,head_oid:.headRefOid,base_oid:.baseRefOid,merge_oid:(.mergeCommit.oid//null),comments:[.comments[].body]}")
 def check(repo: str, head: str) -> Any:
