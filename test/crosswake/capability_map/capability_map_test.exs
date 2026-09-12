@@ -193,6 +193,40 @@ defmodule Crosswake.CapabilityMapTest do
     end
   end
 
+  test "D-20 complete adoption-authority tuple set is closed for all activation states" do
+    claims = CapabilityMap.first_adopter_claims()
+    authority_fields = authority_fields()
+
+    assert length(claims) == 3
+
+    for claim <- claims do
+      assert CapabilityMap.validate_adoption_claim!(claim) == claim
+    end
+
+    mutations =
+      for claim <- claims,
+          field <- authority_fields,
+          replacement <- [incompatible_authority_value(claim, field), nil, :omitted] do
+        claim
+        |> put_or_delete(field, replacement)
+        |> Map.put(:statement, "neutral-complete-statement-sentinel")
+        |> Map.put(:boundary, "neutral-complete-boundary-sentinel")
+      end
+
+    assert length(mutations) == 63
+
+    for mutation <- mutations do
+      error =
+        assert_raise ArgumentError, fn ->
+          CapabilityMap.validate_adoption_claim!(mutation)
+        end
+
+      assert error.message =~ "complete_authority_tuple"
+      refute error.message =~ "neutral-complete-statement-sentinel"
+      refute error.message =~ "neutral-complete-boundary-sentinel"
+    end
+  end
+
   test "D-53 every canonical row declares an explicit rebuild class from the locked vocabulary" do
     for row <- canonical_rows() do
       assert row.rebuild in @rebuild_classes,
@@ -398,8 +432,8 @@ defmodule Crosswake.CapabilityMapTest do
   defp put_or_delete(map, key, :omitted), do: Map.delete(map, key)
   defp put_or_delete(map, key, value), do: Map.put(map, key, value)
 
-  defp available_authority_tuple?(claim) do
-    Map.take(claim, [
+  defp authority_fields do
+    [
       :evidence_subject,
       :source_binding,
       :activation_state,
@@ -407,7 +441,34 @@ defmodule Crosswake.CapabilityMapTest do
       :recorded_on,
       :ios_runtime_line,
       :support_promotion
-    ]) == %{
+    ]
+  end
+
+  defp incompatible_authority_value(claim, :evidence_subject),
+    do: alternate(claim.evidence_subject, @evidence_subjects)
+
+  defp incompatible_authority_value(claim, :source_binding),
+    do: alternate(claim.source_binding, @source_bindings)
+
+  defp incompatible_authority_value(claim, :activation_state),
+    do: alternate(claim.activation_state, @activation_states)
+
+  defp incompatible_authority_value(claim, :proof_source),
+    do: alternate(claim.proof_source, [:repository_contract, :physical_device, :required_missing])
+
+  defp incompatible_authority_value(%{recorded_on: nil}, :recorded_on), do: ~D[2026-08-27]
+  defp incompatible_authority_value(_claim, :recorded_on), do: ~D[2026-08-28]
+
+  defp incompatible_authority_value(%{ios_runtime_line: nil}, :ios_runtime_line), do: "26.6"
+  defp incompatible_authority_value(_claim, :ios_runtime_line), do: "26.7"
+
+  defp incompatible_authority_value(claim, :support_promotion),
+    do: not claim.support_promotion
+
+  defp alternate(current, allowed), do: Enum.find(allowed, &(&1 != current))
+
+  defp available_authority_tuple?(claim) do
+    Map.take(claim, authority_fields()) == %{
       evidence_subject: :crosswake_contract,
       source_binding: :repository_bound,
       activation_state: :available,
