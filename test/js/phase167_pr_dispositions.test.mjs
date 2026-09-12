@@ -152,6 +152,25 @@ test("closeout resolution accepts the retained offline authority", () => {
   );
 });
 
+test("closeout resolution binds scope bytes to the exact tested Git blob", () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), "crosswake-phase167-scope-blob-"));
+  try {
+    const scope = json(scopePath);
+    const reserializedScope = path.join(temporary, "reserialized-scope.json");
+    writeFileSync(reserializedScope, `${JSON.stringify(scope)}\n`, "utf8");
+    const receipt = mutateReceipt(temporary, "reserialized-scope-receipt", (value) => {
+      value.scope.sha256 = sha256(readFileSync(reserializedScope));
+    });
+
+    assertClosedFailure(
+      runValidator(closeoutArgs(receipt, ["--scope", reserializedScope])),
+      "phase167-closeout-resolution: FAIL closed_failure",
+    );
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
 test("closeout live observations are injectable without GitHub or network access", () => {
   const temporary = mkdtempSync(path.join(tmpdir(), "crosswake-phase167-observation-"));
   try {
@@ -247,14 +266,14 @@ test("closeout diagnostics are stable, privacy-safe, and non-echoing", () => {
   }
 });
 
-test("local reconciliation accepts the retained scope and clean synthetic repository", () => {
+test("local reconciliation rejects runtime drift from the pinned receipt hashes", () => {
   const { temporary, repository } = localReconciliationRepository();
   try {
     const result = runValidator(reconciliationArgs(resolutionPath, scopePath, ["--repository", repository]));
 
-    assertPass(
+    assertClosedFailure(
       result,
-      "phase167-local-reconciliation: PASS branch=agent-phase167-fixforward runtime=3",
+      "phase167-local-reconciliation: FAIL closed_failure",
     );
   } finally {
     rmSync(temporary, { recursive: true, force: true });

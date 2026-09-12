@@ -424,6 +424,11 @@ def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
+def git_blob_oid(value: bytes) -> str:
+    header = f"blob {len(value)}\0".encode("ascii")
+    return hashlib.sha1(header + value).hexdigest()
+
+
 def file_sha256(path: str) -> str:
     return sha256_bytes((ROOT / path).read_bytes())
 
@@ -857,8 +862,9 @@ def validate_closeout_resolution(
     require_closeout(baseline_receipt.get("path") == INVENTORY_PATH)
     require_sha256(baseline_receipt.get("sha256"))
     baseline_path = ROOT / INVENTORY_PATH
-    require_closeout(sha256_bytes(baseline_path.read_bytes()) == baseline_receipt["sha256"])
-    baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+    baseline_bytes = baseline_path.read_bytes()
+    require_closeout(sha256_bytes(baseline_bytes) == baseline_receipt["sha256"])
+    baseline = json.loads(baseline_bytes.decode("utf-8"))
     require_closeout(isinstance(baseline, dict) and not validate_inventory(baseline))
     require_closeout(
         baseline_receipt.get("captured_at") == baseline.get("captured_at")
@@ -879,6 +885,8 @@ def validate_closeout_resolution(
     require_closeout(
         scope_receipt.get("payload_source_oid") == scope.get("payload_source_oid")
         and scope_receipt.get("payload_source_tree") == scope.get("payload_source_tree")
+        and git_blob_oid(baseline_bytes)
+        == tree_record(scope["payload_source_oid"], INVENTORY_PATH)["blob"]
     )
 
     closeout = require_fields(value.get("closeout"), CLOSEOUT_FIELDS)
@@ -902,6 +910,8 @@ def validate_closeout_resolution(
         == [CLOSEOUT_SCOPE_PATH]
         and tree_record(closeout["tested_head_oid"], CLOSEOUT_SCOPE_PATH)["mode"]
         == scope["self_excluded_manifest"]["expected_mode"]
+        and git_blob_oid(scope_bytes)
+        == tree_record(closeout["tested_head_oid"], CLOSEOUT_SCOPE_PATH)["blob"]
     )
     ci = require_fields(closeout.get("crosswake_ci"), CLOSEOUT_CI_FIELDS)
     require_closeout(
@@ -1223,8 +1233,8 @@ def verify_local_reconciliation(
     require_closeout(untracked == RUNTIME_PATHS)
     require_closeout(
         all(
-            (repository / path).read_bytes() == (ROOT / path).read_bytes()
-            for path in reconciliation["runtime_hashes"]
+            sha256_bytes((repository / path).read_bytes()) == expected
+            for path, expected in reconciliation["runtime_hashes"].items()
         )
     )
 
@@ -1462,7 +1472,7 @@ def main() -> int:
             raw = json.loads(args.verify_closeout_resolution.read_text(encoding="utf-8"))
             if not isinstance(raw, dict):
                 raise ValueError("resolution must be an object")
-            validate_closeout_resolution(raw)
+            validate_closeout_resolution(raw, args.scope)
             observation = None
             source = None
             if args.observation is not None:
