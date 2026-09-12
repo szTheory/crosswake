@@ -139,6 +139,60 @@ defmodule Crosswake.CapabilityMapTest do
     end
   end
 
+  test "D-20 available authority cross-product rejects missing source, missing proof, and promotion" do
+    [available, _reference, _blocked] = CapabilityMap.first_adopter_claims()
+
+    fail_open = %{
+      available
+      | evidence_subject: :first_adopter,
+        source_binding: :required_missing,
+        proof_source: :required_missing,
+        support_promotion: true
+    }
+
+    assert_raise ArgumentError, fn ->
+      CapabilityMap.validate_adoption_claim!(fail_open)
+    end
+
+    assert CapabilityMap.validate_adoption_claim!(available) == available
+
+    subjects = [:crosswake_contract, :first_adopter]
+    bindings = [:repository_bound, :required_missing, nil, :omitted]
+    proofs = [:repository_contract, :required_missing, nil, :omitted]
+    promotions = [false, true]
+
+    candidates =
+      for subject <- subjects,
+          binding <- bindings,
+          proof <- proofs,
+          promotion <- promotions do
+        available
+        |> Map.put(:evidence_subject, subject)
+        |> put_or_delete(:source_binding, binding)
+        |> put_or_delete(:proof_source, proof)
+        |> Map.put(:support_promotion, promotion)
+        |> Map.put(:statement, "neutral-statement-sentinel")
+        |> Map.put(:boundary, "neutral-boundary-sentinel")
+      end
+
+    assert length(candidates) == 64
+
+    for candidate <- candidates do
+      if available_authority_tuple?(candidate) do
+        assert CapabilityMap.validate_adoption_claim!(candidate) == candidate
+      else
+        error =
+          assert_raise ArgumentError, fn ->
+            CapabilityMap.validate_adoption_claim!(candidate)
+          end
+
+        assert error.message =~ "complete_authority_tuple"
+        refute error.message =~ "neutral-statement-sentinel"
+        refute error.message =~ "neutral-boundary-sentinel"
+      end
+    end
+  end
+
   test "D-53 every canonical row declares an explicit rebuild class from the locked vocabulary" do
     for row <- canonical_rows() do
       assert row.rebuild in @rebuild_classes,
@@ -339,6 +393,29 @@ defmodule Crosswake.CapabilityMapTest do
 
   defp row!(rows, id) do
     Enum.find(rows, &(&1.id == id)) || flunk("expected capability-map row #{inspect(id)}")
+  end
+
+  defp put_or_delete(map, key, :omitted), do: Map.delete(map, key)
+  defp put_or_delete(map, key, value), do: Map.put(map, key, value)
+
+  defp available_authority_tuple?(claim) do
+    Map.take(claim, [
+      :evidence_subject,
+      :source_binding,
+      :activation_state,
+      :proof_source,
+      :recorded_on,
+      :ios_runtime_line,
+      :support_promotion
+    ]) == %{
+      evidence_subject: :crosswake_contract,
+      source_binding: :repository_bound,
+      activation_state: :available,
+      proof_source: :repository_contract,
+      recorded_on: nil,
+      ios_runtime_line: nil,
+      support_promotion: false
+    }
   end
 
   defp non_empty?(value), do: is_binary(value) and String.trim(value) != ""
