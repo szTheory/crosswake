@@ -1,9 +1,9 @@
 ---
 phase: 167-documentation-and-pull-request-reconciliation
-verified: 2026-09-12T03:42:05Z
-status: gaps_found
-score: 37/38 must-haves verified
-roadmap_score: 2/3 success criteria verified
+verified: 2026-09-12T19:55:43Z
+status: passed
+score: 38/38 must-haves verified
+roadmap_score: 3/3 success criteria verified
 covered_files:
   - .github/actions/setup-android-jvm/action.yml
   - .github/workflows/crosswake-ci.yml
@@ -29,11 +29,14 @@ covered_files:
   - .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-07-SUMMARY.md
   - .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-08-PLAN.md
   - .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-08-SUMMARY.md
+  - .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-09-PLAN.md
+  - .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-09-SUMMARY.md
   - .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-CONTEXT.md
   - .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-DISCUSSION-LOG.md
   - .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-PATTERNS.md
   - .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-RESEARCH.md
   - .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-REVIEW.md
+  - .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-SECURITY.md
   - .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-VALIDATION.md
   - .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/167-08-task1-red.json
   - .planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-dependency-closure.json
@@ -93,43 +96,58 @@ covered_files:
   - test/js/phase167_pr_dispositions.test.mjs
   - test/js/repository_verification.test.mjs
   - test/mix/tasks/crosswake.docs.sync_test.exs
-covered_digest: "v1:sha256:5c7264055c1e54a644c5843f8230c103a2ea1c6e98bc8b58dd22fd29f239efad"
+covered_digest: "v1:sha256:df0f34b6fb2b82a60b6066d2ff91a8b357130a50ced7aa664ba0f2a65902deea"
 behavior_unverified: 0
 overrides_applied: 0
-gaps:
-  - truth: "Both generated projections consume the same typed current-claim owner and mechanically reject all five impossible adoption-claim combinations."
-    status: failed
-    reason: "Crosswake.CapabilityMap.validate_adoption_claim!/1 accepts an available, promoting first-adopter claim whose source binding and proof source are explicitly missing."
-    artifacts:
-      - path: "lib/crosswake/capability_map.ex"
-        issue: "Lines 570-577 validate vocabularies, reference-evidence tuples, and blocked promotion, but impose no complete-tuple rule for :available claims."
-      - path: "test/crosswake/capability_map/capability_map_test.exs"
-        issue: "Existing mutations do not exercise required_missing plus :available plus support_promotion: true, so the fail-open path remains green."
-    missing:
-      - "Define and enforce the closed set of complete adoption-authority tuples for available, reference_evidence, and blocked states."
-      - "Add cross-product mutation tests proving missing source/proof and promotion cannot be represented as available."
-deferred: []
+re_verification:
+  previous_status: gaps_found
+  previous_score: 37/38
+  gaps_closed:
+    - "Both generated projections consume the same typed current-claim owner and mechanically reject all five impossible adoption-claim combinations."
+  gaps_remaining: []
+  regressions: []
+advisory:
+  - finding: "Canonical capability rows reuse adoption-authority field names without enforcing the exact adoption-claim tuple contract."
+    category: architectural
+    reason: "The inconsistent hidden row metadata is not rendered and the public adoption claims use the separately validated exact three-tuple owner, so no current roadmap truth is falsified; separate or validate the row-level semantics before consumers rely on them."
+    evidence_status: "Code inspection; no current rendered-output defect reproduced."
+  - finding: "The Phase 41 leaf manifest advertises a superseded two-command remediation while the executable job runs the correct three-command partition."
+    category: other
+    reason: "Current execution, ordering, manifest self-tests, and CI authority pass; the stale remediation text remains a maintainer-quality warning rather than a Phase 167 goal blocker."
+    evidence_status: "Static mismatch; actionlint and seven manifest self-tests pass."
+  - finding: "The generated support-matrix header names Crosswake.CapabilityMap for embedded adoption claims but omits Crosswake.SupportMatrix as the owner of the remaining matrix."
+    category: architectural
+    reason: "CONTRIBUTING names both owners and the renderer consumes the real SupportMatrix value, so data is current and flowing; attribution in the generated header is incomplete."
+    evidence_status: "Code inspection; generated-byte and semantic tests pass."
+  - finding: "Live defer-marker validation reads only the latest 100 comments without pagination or a truncation guard."
+    category: other
+    reason: "Fresh GraphQL totals are 2, 2, 1, and 1 comments for PRs 57, 115, 146, and 147, so no current marker is hidden; the validator should still fail closed if a future thread exceeds 100 comments."
+    evidence_status: "Current defect not reproduced; live comment totals are below the query bound."
+  - finding: "The local-reconciliation Node fixture has no passing pinned-runtime baseline and its runtime-mutation subtest is non-discriminating once the copied current runtime already drifts."
+    category: other
+    reason: "Production now compares all three files directly to receipt hashes and demonstrably rejects current drift; offline/live closeout authority passes independently. Add a pinned passing fixture to protect the success path and each individual runtime check."
+    evidence_status: "Test-quality warning; production negative path reproduced and 37 tests pass."
 prohibition_review:
-  mode: autonomous_non_authoritative_llm_judgment
-  flagged_count: 9
-  human_review_recommended: true
-  unresolved:
-    - "The no-transfer/current-activation prohibition is not mechanically enforced because the failed tuple is accepted; this is included in the blocking gap."
-  evidence_backed_non_authoritative_passes: 8
+  mode: automated_enforcement_evidence
+  verified_count: 9
+  flagged_count: 0
+  details: "All nine distinct plan prohibitions are covered by exact tuple mutations, destination-aware privacy scanning, no-write docs tests, CI topology checks, live guarded disposition receipts, narrow Swift scope, and release/adopter/Android boundary evidence."
 ---
 
 # Phase 167: Documentation and Pull-Request Reconciliation Verification Report
 
 **Phase Goal:** Maintainers see one current account of supported behavior and can understand the disposition of every open change without disturbing parked adopter work.
-**Verified:** 2026-09-12T03:42:05Z
-**Status:** gaps_found
-**Re-verification:** No — initial goal-backward audit. A prior executor-authored report existed, but it had no `gaps:` section and its claims were not treated as evidence.
+**Verified:** 2026-09-12T19:55:43Z
+**Status:** passed
+**Re-verification:** Yes — after the complete adoption-authority tuple gap and later closeout-validator review blockers were repaired.
 
 ## Verdict
 
-Phase 167 is not yet goal-complete. The current rendered documents agree and the PR/adopter-state reconciliation is intact, but the executable owner of those documents accepts a fail-open adoption-authority tuple. That makes DOC-01 and roadmap criterion 1 untrue as an enforced contract.
+Phase 167 achieves its goal. Public support and capability projections are byte-current from executable owners, the parked First B2C Adopter lane remains codename-only and blocked on its actual route/device authority, and fresh structured GitHub verification confirms every current open PR is explicitly deferred to Phase 168 while resolved PRs retain exact dispositions.
 
-The accepted property-equivalent closeout proof is sufficient for this one-time closeout and is not a blocker. It independently established the closed receipt/scope schemas, SHA-256 bindings, merge parent order, ancestry, candidate/merge/default tree identity, exact 47/47 CI receipt, local-main reconciliation, unchanged runtime hashes, and exact five-name Phase 168 handoff. The absent plan-impossible CLI mode names are therefore not counted as a failed truth.
+The former blocker is closed in production, not just in narration: `validate_adoption_claim!/1` now accepts only three exact seven-field authority tuples. The exact formerly accepted available/first-adopter/missing-source/promoting tuple raises, the 64-case available cross-product and 63 all-state one-axis mutations pass, and both renderers consume `first_adopter_claims/0`.
+
+Current runtime receipt drift is not reported as a green local reconciliation. Two of the three untracked runtime files differ from the retained closeout hashes, so the corrected command exits 1 with `phase167-local-reconciliation: FAIL closed_failure`. That is the intended fail-closed result for changed current runtime state. The historical closeout remains independently supported by retained raw-byte-to-Git-blob bindings, candidate/merge parent and tree identity, the exact 47/47 CI receipt, and a fresh live seven-ordinary/four-recovery/five-handoff verification.
 
 ## Goal Achievement
 
@@ -137,151 +155,181 @@ The accepted property-equivalent closeout proof is sufficient for this one-time 
 
 | # | Roadmap truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Public guides, support/capability truth, architecture, contribution guidance, and release runbooks agree with verified behavior and current versions. | FAILED | Generated bytes and ordinary docs checks pass, but `validate_adoption_claim!/1` accepts an impossible available/promoting first-adopter tuple with missing source authority. |
-| 2 | Parked First B2C Adopter work stays codename-only, independently resumable, and blocked only on real route/device authority. | VERIFIED | Parked state remains `parked_external_dependency` at the recorded resume point; `mix crosswake.adoption_context.scan` passed; current public copy uses “first adopter.” |
-| 3 | Every open PR has an explicit current disposition. | VERIFIED | Fresh structured GitHub reads show the exact open set `[57,115,146,147]`; all remain open/unmerged with one fixed defer marker, while #105/#121 are merged and #110 is closed unmerged. |
+| 1 | Public guides, support/capability truth, architecture, contribution guidance, and release runbooks agree with verified behavior and current versions. | VERIFIED | 210 current documentation/claim tests, exact tuple behavior, 33 renderer/docs-sync tests, `mix crosswake.docs.sync --check`, artifact-policy checks, and direct source-to-renderer tracing pass. |
+| 2 | Parked First B2C Adopter work stays codename-only, independently resumable, and blocked only on real route/device authority. | VERIFIED | `mix crosswake.adoption_context.scan` passes; parked state remains `parked_external_dependency` with TODO-002 and the fresh source-bound signed-device gate; no adopter work was resumed. |
+| 3 | Every open PR has an explicit current disposition. | VERIFIED | Fresh live closeout verification passes `ordinary=7 recovery=4 handoff=5`; the current open set is exactly 57, 115, 146, and 147, each open/unmerged and Phase-168-deferred with one marker. |
 
 ### Observable Truths
 
 | ID | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| P1-T1 | Three separate current claim layers retain the existing public vocabulary. | VERIFIED | `first_adopter_claims/0` contains reusable, dated reference, and blocked adopter layers; both renderers consume them. |
-| P1-T2 | Both projections use one typed owner and reject all impossible combinations. | **FAILED** | Discriminating `mix run` printed `FAIL_OPEN_ACCEPTED_AVAILABLE_MISSING_SOURCE_PROMOTING`. |
-| P1-T3 | Public terminology and durable codename-only resumability remain correct. | VERIFIED | Public/durable destination tests and privacy scan passed. |
-| P2-T1 | Docs sync writes both guides and `--check` compares without writes/staging. | VERIFIED | Focused task tests and `mix crosswake.docs.sync --check` passed. |
-| P2-T2 | Generated docs join the existing artifact registry with fixed ownership/remediation. | VERIFIED | Artifact policy has a second docs record; production runner wiring and parity tests pass. |
-| P2-T3 | Artifact records validate independently and restoration preserves legacy behavior. | VERIFIED | Named Node production-runner test passed; multi-record tests passed in the focused suite. |
-| P3-T1 | Recurring semantic/version/topology/privacy/docs checks stay under existing owners. | VERIFIED | 227 focused Elixir tests passed across the two bounded runs; docs/privacy checks passed. |
-| P3-T2 | Docs-only changes retain visible Crosswake CI without unrelated proof families. | VERIFIED | CI policy/integrity tests and manifest self-test passed. |
-| P3-T3 | CI docs check is observational and excludes live/network prose authority. | VERIFIED | Workflow invokes check mode; no-write task and repository-runner tests passed. |
-| P4-T1 | Six reader jobs have current answer-first paths with executable truth owners. | VERIFIED | README/guides/runbook links and semantic guide tests pass. |
-| P4-T2 | README remains a map and ExDoc topology/authored prose protections remain intact. | VERIFIED | Architecture, walkthrough, package-surface, and docs parity tests pass. |
-| P4-T3 | Brand, accessibility, recovery, responsive, motion, and link behavior remain intact. | VERIFIED | Guide contract suite passed; no contradictory current support language found. |
-| P4-T4 | Historical provenance stays immutable; inventories remain phase-local. | VERIFIED | Changed-file set is limited to current surfaces/evidence; historical records were not rewritten. |
-| P5-T1 | #121 uses the single immutable setup-java v6 SHA and merged with passing authority. | VERIFIED | All seven uses resolve to `de7274f...`; live disposition and receipt show merged #121. |
-| P5-T2 | Replacement-only fallback remained conditional. | VERIFIED | Final state used the coherent #121 path; no unnecessary replacement remains open. |
-| P5-T3 | Remote writes were guarded; #115/#57 were not mutated by this plan. | VERIFIED | Closed receipts/self-tests plus current heads/states agree. |
-| P5-T4 | PR work remained isolated from phase reconciliation. | VERIFIED | Commit ancestry, branch, and closeout tree bindings pass the equivalent closeout proof. |
-| P6-T1 | Required Task 1-2 commits remain byte-identical ancestors. | VERIFIED | Git ancestry and scope/blob bindings pass. |
-| P6-T2 | Recovery history and failed candidates remain diagnostic-only. | VERIFIED | Separate recovery records preserve failed OIDs/runs and exclude them from merge authority. |
-| P6-T3 | #148/#110 failures were classified by shared owners before repair. | VERIFIED | Failure ledger and ownership validator self-tests pass. |
-| P6-T4 | One replacement carries complete path/blob/ancestry truth and ledger-proven fixes. | VERIFIED | Replacement receipt, ancestry, and tree checks pass. |
-| P6-T5 | Final #149 diagnostic facts were consumed without further diagnostic push. | VERIFIED | Recovery receipt binds the final head and classifications. |
-| P6-T6 | Later recovery/partition history remains immutable and final allowance is consumed. | VERIFIED | Receipt ancestry and exact-head CI history agree. |
+| P1-T1 | Three separate current claim layers retain the existing public vocabulary. | VERIFIED | `first_adopter_claims/0` returns reusable, dated reference, and blocked adopter layers; both renderer suites pass. |
+| P1-T2 | Both projections use one typed owner and reject all impossible combinations. | VERIFIED | Exact three-tuple production gate at `capability_map.ex:80-108,610-658`; two named gap tests pass, including 64 available combinations and 63 all-state mutations. |
+| P1-T3 | Public terminology and durable codename-only resumability remain correct. | VERIFIED | Destination-aware adoption scan and 210-test documentation gate pass. |
+| P2-T1 | Docs sync writes both guides and `--check` compares without writes/staging. | VERIFIED | Five docs-sync task tests are included in the 33-test focused run; direct `--check` passes with unchanged tracked/index state. |
+| P2-T2 | Generated docs join the existing artifact registry with fixed ownership/remediation. | VERIFIED | Artifact-policy and generated-contract checks pass; the registry contains the docs record beside the preserved contract record. |
+| P2-T3 | Artifact records validate independently and restoration preserves legacy behavior. | VERIFIED | Focused artifact-policy run passes 8/8; declared artifact query passes all records. |
+| P3-T1 | Recurring semantic/version/topology/privacy/docs checks stay under existing owners. | VERIFIED | Workflow command, manifest, tests, and 210-test current documentation gate agree. |
+| P3-T2 | Docs-only changes retain visible Crosswake CI without unrelated proof families. | VERIFIED | Classifier/manifest/trigger run passes 14/14 and leaf manifest self-test passes 7/7. |
+| P3-T3 | CI docs check is observational and excludes live/network prose authority. | VERIFIED | Workflow invokes only `mix crosswake.docs.sync --check`; no-write task and repository runner tests pass. |
+| P4-T1 | Six reader jobs have current answer-first paths with executable truth owners. | VERIFIED | README/guides/runbook semantic tests are included in the 210-test documentation gate. |
+| P4-T2 | README remains a map and ExDoc topology/authored prose protections remain intact. | VERIFIED | Architecture, walkthrough, release-boundary, and docs parity tests pass. |
+| P4-T3 | Brand, accessibility, recovery, responsive, motion, and link behavior remain intact. | VERIFIED | Guide contract tests pass with no current contradictory support language. |
+| P4-T4 | Historical provenance stays immutable; inventories remain phase-local. | VERIFIED | Current reconciliation changes are limited to current owners, phase evidence, and tests; no historical adopter evidence was rewritten. |
+| P5-T1 | #121 uses the single immutable setup-java v6 SHA and merged with passing authority. | VERIFIED | All seven uses resolve to `de7274f...`; retained receipt and current history preserve the merge. |
+| P5-T2 | Replacement-only fallback remained conditional. | VERIFIED | #121 itself merged; no unnecessary replacement disposition exists. |
+| P5-T3 | Remote writes were guarded; #115/#57 were not mutated by this plan. | VERIFIED | Closed receipts and fresh live state agree; Phase 168 still owns the release-only PRs. |
+| P5-T4 | PR work remained isolated from phase reconciliation. | VERIFIED | Commit ancestry, exact scopes, and closeout tree bindings pass current validation. |
+| P6-T1 | Required Task 1-2 commits remain byte-identical ancestors. | VERIFIED | Current ancestry checks and retained scope/blob bindings pass. |
+| P6-T2 | Recovery history and failed candidates remain diagnostic-only. | VERIFIED | Separate recovery records preserve failed identities without granting merge authority. |
+| P6-T3 | #148/#110 failures were classified by shared owners before repair. | VERIFIED | Failure ledger remains substantive and bound into the closeout evidence set. |
+| P6-T4 | One replacement carries complete path/blob/ancestry truth and ledger-proven fixes. | VERIFIED | Replacement receipt, ancestry, and merge-tree checks pass. |
+| P6-T5 | Final #149 diagnostic facts were consumed without further diagnostic push. | VERIFIED | Fixed attempt budgets and final recovery receipt remain internally consistent. |
+| P6-T6 | Later recovery/partition history remains immutable and final allowance is consumed. | VERIFIED | Receipt ancestry and exact-head history remain reachable. |
 | P6-T7 | Initial e5 root failure remains classified as unknown, not invented causality. | VERIFIED | Ledger retains the bounded unknown classification. |
-| P6-T8 | Root verification applies the exact Phase 41 partition while preserving command union. | VERIFIED | Integrity/policy tests pass; actual workflow has doctor, serialized nested, and seeded broad commands. |
-| P6-T9 | Exactly one final manifest-only candidate followed complete local proof. | VERIFIED | Scope delta/tree identity and exact-head 47/47 receipt pass. |
-| P6-T10 | #145 remains historical; #148/#110 close only after replacement merge. | VERIFIED | Separate structured recovery and ordinary state verify this ordering/result. |
-| P6-T11 | Work stayed on the unprotected phase branch and local main moved only after proof. | VERIFIED | Current branch is `agent-phase167-fixforward`; local/remote main both equal `30ca31ed...`; tracked/index state is clean. |
-| P7-T1 | #105 is one narrow waiter-closure cleanup with current Swift/CI proof and merge. | VERIFIED | `PackStoreTests` ran 9 tests/0 failures; live/receipt state shows #105 merged. |
-| P7-T2 | Exact state gated the cleanup and no native/Android breadth was added. | VERIFIED | Changed scope is one Swift test file; receipt and current state agree. |
-| P7-T3 | #115/#57 remain untouched release-approval surfaces. | VERIFIED | Both remain open Phase 168 deferrals. |
-| P7-T4 | Phase evidence stayed on the unprotected branch with fresh-default ancestry. | VERIFIED | Current branch/ref/ancestry checks pass. |
-| P8-T1 | Seven ordinary dispositions are exact and four release PRs remain Phase 168 deferrals. | VERIFIED | Offline validator passes 7 ordinary/4 recovery; fresh open set is exact. |
-| P8-T2 | Recovery provenance is separate and replacement proof is complete. | VERIFIED | Recovery collection is distinct; property-equivalent proof verifies CI/ancestry/merge truth. |
-| P8-T3 | Pre-closeout source and evidence are byte-bound, CI-covered, and landed. | VERIFIED | Scope hashes, merge ancestry, tree identity, and exact-head CI receipt pass. |
-| P8-T4 | Closeout preserves ancestry/tree identity and hands off exactly five names/one owner. | VERIFIED | Equivalent proof returned `five_name_handoff=PASS`; no blob/landing assertion is present. |
-| P8-T5 | Local reconciliation preserves branch/index/tracked/runtime state. | VERIFIED | Current branch/ref checks pass; three runtime hashes remain exactly unchanged. |
-| P8-T6 | Retained truth contains no prohibited remote prose/secret/adopter/release/Android breadth. | VERIFIED | Privacy scan and bounded-schema inspection pass. |
+| P6-T8 | Root verification applies the exact Phase 41 partition while preserving command union. | VERIFIED | Current Phase 41 integrity, manifest, and workflow checks pass; stale remediation text is advisory WR-02. |
+| P6-T9 | Exactly one final manifest-only candidate followed complete local proof. | VERIFIED | Scope delta/tree identity and exact-head 47/47 receipt validate. |
+| P6-T10 | #145 remains historical; #148/#110 close only after replacement merge. | VERIFIED | Separate structured recovery transactions encode and validate this ordering. |
+| P6-T11 | Work stayed on the unprotected phase branch and local main moved only after proof. | VERIFIED | Current branch is `agent-phase167-fixforward`; local main remains `30ca31ed...`; tracked/index state is clean. |
+| P7-T1 | #105 is one narrow waiter-closure cleanup with current Swift/CI proof and merge. | VERIFIED | Fresh `PackStoreTests` run executes 9 tests with 0 failures; receipt/history preserve merged #105. |
+| P7-T2 | Exact state gated the cleanup and no native/Android breadth was added. | VERIFIED | Scope is one Swift test file; no production or Android change is present. |
+| P7-T3 | #115/#57 remain untouched release-approval surfaces. | VERIFIED | Fresh live state keeps both open and Phase-168-deferred. |
+| P7-T4 | Phase evidence stayed on the unprotected branch with fresh-default ancestry. | VERIFIED | Branch/ref/ancestry checks pass. |
+| P8-T1 | Seven ordinary dispositions are exact and four release PRs remain Phase 168 deferrals. | VERIFIED | Fresh offline/live validator passes 7 ordinary, 4 recovery, 5 handoff. |
+| P8-T2 | Recovery provenance is separate and replacement proof is complete. | VERIFIED | Recovery collection is distinct; raw evidence bytes are bound to tested Git history. |
+| P8-T3 | Pre-closeout source and evidence are byte-bound, CI-covered, and landed. | VERIFIED | Baseline and scope raw bytes match their recorded Git blobs; candidate, merge, and tree identity pass. |
+| P8-T4 | Closeout preserves ancestry/tree identity and hands off exactly five names/one owner. | VERIFIED | Closeout resolution passes offline and live with `handoff=5`; no premature blob-landing claim is made. |
+| P8-T5 | Local reconciliation preserves branch/index/tracked state and rejects changed runtime receipts. | VERIFIED | Branch/main/ancestry/tracked/index checks pass; the current command exits 1 because two runtime hashes changed, proving the corrected fail-closed contract. WR-05 records the missing positive fixture. |
+| P8-T6 | Retained truth contains no prohibited remote prose/secret/adopter/release/Android breadth. | VERIFIED | Closed schemas, non-echoing negative tests, and adoption privacy scan pass. |
 
-**Score:** 37/38 truths verified; 0 present-but-behavior-unverified.
+**Score:** 38/38 truths verified; 0 present-but-behavior-unverified.
 
 ## Required Artifacts
 
+Automated PLAN-frontmatter artifact verification reports 34/34 declared artifacts present and substantive across Plans 167-01 through 167-09. Manual Level 3/4 inspection confirms the following groups are wired and data-bearing.
+
 | Artifact group | Expected | Status | Details |
 | --- | --- | --- | --- |
-| Typed adoption truth and two renderers | One fail-closed owner feeding both generated guides | PARTIAL / BLOCKER | Exists, substantive, wired, and flowing, but complete tuple validation is missing for `:available`. |
-| Docs sync task and artifact registry | Stable write/check command, multi-record policy, restoration | VERIFIED | Artifact queries passed; focused Elixir/Node behavior checks pass. |
-| CI/docs routing and ownership | Existing Crosswake CI authority and docs-only classification | VERIFIED with warning | Wiring passes; Phase 41 manifest remediation text is stale. |
-| Reader-facing docs and runbooks | Current answer-first, linked, version-consistent surfaces | VERIFIED with warning | Semantic checks pass; support-matrix header omits its primary `Crosswake.SupportMatrix` owner. |
-| PR/recovery validators and evidence | Seven ordinary rows, separate recovery, exact closeout | VERIFIED | Offline/self-tests, live structured reads, ancestry, hashes, and equivalent closeout proof pass. |
-| Parked adopter state | Codename-only, independently resumable, real blockers only | VERIFIED | State and scanner agree; no parked-lane mutation detected. |
-| Swift waiter-closure test | Narrow cleanup with exercised ordering invariants | VERIFIED | `PackStoreTests`: 9 tests, 0 failures. |
-
-Automated artifact verification reported all declared paths present and substantive. Manual Level 3/4 inspection found the one semantic blocker above; existence alone was not accepted as correctness.
+| Typed adoption truth and two renderers | One fail-closed owner feeding both generated guides | VERIFIED | Exact three-tuple membership is enforced before rendering; 64-case and 63-mutation tests pass. |
+| Docs sync task and artifact registry | Stable write/check command, multi-record policy, restoration | VERIFIED | 33 focused tests, 8 artifact-policy tests, and direct check mode pass. |
+| CI/docs routing and ownership | Existing Crosswake CI authority and docs-only classification | VERIFIED with advisory | 14 routing tests, 7 manifest self-tests, and actionlint pass; WR-02 is stale remediation copy only. |
+| Reader-facing docs and runbooks | Current answer-first, linked, version-consistent surfaces | VERIFIED with advisory | 210 semantic/claim tests pass; WR-03 is incomplete header attribution, not stale data. |
+| PR/recovery validators and evidence | Seven ordinary rows, separate recovery, exact closeout | VERIFIED with advisories | Offline/live authority and 37 Node tests pass; WR-04/WR-05 remain bounded robustness warnings. |
+| Parked adopter state | Codename-only, independently resumable, real blockers only | VERIFIED | State and privacy scanner agree; parked lane remains untouched. |
+| Swift waiter-closure test | Narrow cleanup with exercised ordering invariants | VERIFIED | Fresh selected suite: 9 tests, 0 failures. |
 
 ## Key Link Verification
 
+The generic key-link query verifies all file-path links in Plans 01-04 and the file-based links in later plans. Its remaining non-file pseudo-links were verified manually against code, Git history, retained receipts, and fresh commands.
+
 | From | To | Via | Status | Details |
 | --- | --- | --- | --- | --- |
-| `Crosswake.CapabilityMap.first_adopter_claims/0` | both guide renderers | direct function consumption | WIRED / SEMANTIC GAP | Data flows to both projections, but validator permits an impossible available tuple. |
-| `mix crosswake.docs.sync` | renderers and checked-in guides | pure render then write/byte-compare | WIRED | Write and no-write test paths pass. |
-| artifact policy | repository verifier and CI | generated-contract record/stage mapping | WIRED | Named restoration test and CI parity tests pass. |
-| docs classifier | `Crosswake CI` aggregate | allowlist, leaf manifest, aggregate checks | WIRED | Docs-only authority remains visible. |
-| parked state | public first-read surfaces/privacy scan | destination-aware assertions | WIRED | Correct public/durable terminology and blockers verified. |
-| PR evidence | Python validators/live GitHub state | closed schema, structured fields, fixed markers | WIRED | Exact open set and dispositions verified. |
-| closeout scope/receipt | Git ancestry, trees, local refs, Phase 168 handoff | accepted property-equivalent verifier | WIRED | All equivalent properties passed. |
+| `Crosswake.CapabilityMap.first_adopter_claims/0` | both guide renderers | validated claim list | WIRED | Both renderers call the same function; each claim is mapped through `validate_adoption_claim!/1`. |
+| `validate_adoption_claim!/1` | exact authority set | seven-field `Map.take/2` membership | WIRED | Only the three canonical maps at lines 80-108 are admitted. |
+| `mix crosswake.docs.sync` | both checked-in guides | pure render/write or in-memory compare | WIRED | Write/check behavior and byte parity pass. |
+| artifact policy | repository verifier and CI | generated-contract record/stage mapping | WIRED | Multi-record validation/restoration and CI parity pass. |
+| docs classifier | `Crosswake CI` aggregate | allowlist, leaf manifest, umbrella | WIRED | Docs-only authority remains visible and fail-closed. |
+| parked state | public first-read surfaces/privacy scan | destination-aware assertions | WIRED | Public wording and durable codename posture pass their distinct rules. |
+| structured GitHub state | closeout resolution | exact heads/checks/markers/merge graph | WIRED | Fresh live verification passes with exact ordinary/recovery/handoff cardinalities. |
+| closeout candidate | protected default | ancestry and identical tree | WIRED | Commit `30ca31ed...` has candidate parent `7211b78f...` and tree `9bd87f8b...`. |
 
 ## Data-Flow Trace (Level 4)
 
-| Artifact | Data value | Source | Produces real/current data | Status |
+| Artifact | Data variable | Source | Produces real data | Status |
 | --- | --- | --- | --- | --- |
-| Generated capability/support guides | three adoption layers | `first_adopter_claims/0` | Yes | FLOWING, validator gap |
-| Generated support matrix | support rows plus adopter layers | `Crosswake.SupportMatrix` and `CapabilityMap` | Yes | FLOWING, owner-header warning |
-| Crosswake CI documentation leaf | docs parity result | docs sync check and semantic tests | Yes | FLOWING |
-| PR disposition evidence | open/merged/closed/head/check state | structured GitHub reads plus immutable receipts | Yes | FLOWING |
-| Parked-state narrative | resume point and blockers | durable workstream state | Yes | FLOWING |
+| Capability guide | `claims` | `CapabilityMap.first_adopter_claims/0` | Yes | FLOWING |
+| Support guide | `claims` + canonical support matrix | `CapabilityMap` + `Crosswake.SupportMatrix.canonical/0` | Yes | FLOWING |
+| Generated guide files | rendered bytes | `mix crosswake.docs.sync` render functions | Yes | FLOWING |
+| PR disposition result | ordinary/recovery/handoff snapshots | structured GitHub GraphQL plus Git commit graph | Yes | FLOWING |
+| Parked-state claim | status/resume/blockers | tracked workstream state and privacy scanner | Yes | FLOWING |
+
+No rendered goal-critical value terminates in a mock, empty prop, or static fallback.
 
 ## Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 | --- | --- | --- | --- |
-| Reject impossible available adoption claim | focused `mix run` mutation | `FAIL_OPEN_ACCEPTED_AVAILABLE_MISSING_SOURCE_PROMOTING` | **FAIL** |
-| Generated docs parity | `mix crosswake.docs.sync --check` | pass | PASS |
-| Adopter privacy/destination rules | `mix crosswake.adoption_context.scan` | pass | PASS |
-| Focused docs/capability/CI/release suites | two bounded `mix test` runs | 227 tests, 0 failures | PASS |
-| Docs restoration invariant | named Node repository-verification test | 1 test, 0 failures | PASS |
-| PR disposition contract | Node contract plus Python self/offline modes | pass; 15 controls, 22 resolution controls, 7 ordinary/4 recovery | PASS |
-| CI leaf contract | `python3 script/check_ci_leaf_manifest.py --self-test` | 7 tests plus negative controls pass | PASS |
-| Swift waiter ordering/cleanup | `swift test ... --filter PackStoreTests` | 9 tests, 0 failures | PASS |
-| Closeout/local reconciliation | accepted property-equivalent read-only checker | all schema/hash/ancestry/tree/CI/runtime/handoff properties pass | PASS |
+| Formerly fail-open authority tuple and complete set reject noncanonical states | `mix test ...capability_map_test.exs:142 ...:196` | 2 tests, 0 failures | PASS |
+| Current docs/claims/readers agree semantically | `mix test test/crosswake/guides ...capability... ...support... ...phase69...` | 210 tests, 0 failures | PASS |
+| Renderers and docs sync behavior | focused renderer/task test command | 33 tests, 0 failures | PASS |
+| Generated docs are current without writes | `mix crosswake.docs.sync --check` | passed | PASS |
+| Public/durable privacy boundary | `mix crosswake.adoption_context.scan` | passed | PASS |
+| Docs-only and artifact-policy wiring | focused Phase 165/166 tests | 14 + 8 tests, 0 failures | PASS |
+| CI manifest/workflow validity | manifest self-test + actionlint | 7 tests, all mutation probes pass; lint clean | PASS |
+| PR closeout behavior | `node --test test/js/phase167_pr_dispositions.test.mjs` | 37 tests, 0 failures, 0 skipped | PASS |
+| Current PR state and retained closeout agree | closeout verifier with `--live` | `PASS ordinary=7 recovery=4 handoff=5 observation=live` | PASS |
+| Current runtime drift is rejected | local reconciliation verifier | exit 1, `FAIL closed_failure` | PASS — negative fail-closed contract |
+| PackStore waiter ordering remains exercised | `swift test ... --filter PackStoreTests` | 9 tests, 0 failures | PASS |
 
 ## Probe Execution
 
-No `probe-*.sh` was declared or present for this phase. Phase-declared validators and bounded behavioral checks were executed directly.
+| Probe | Command | Result | Status |
+| --- | --- | --- | --- |
+| Retained closeout authority | `check_phase167_pr_dispositions.py --verify-closeout-resolution ...` | `PASS ordinary=7 recovery=4 handoff=5` | PASS |
+| Fresh GitHub disposition observation | same command with `--live` | `PASS ... observation=live` | PASS |
+| Current local reconciliation | `--verify-local-reconciliation ... --scope ...` | Exit 1, closed failure on receipt hash drift | PASS — expected rejection |
+
+## Current Runtime Receipt Drift
+
+| Runtime path | Retained closeout SHA-256 | Current SHA-256 | Status |
+| --- | --- | --- | --- |
+| `config.json` | `05b25ad...` | `05b25ad...` | unchanged |
+| `milestone.lock` | `fd4c22c...` | `75a62e50...` | changed after closeout |
+| `state.json` | `6cf0413c...` | `0d096c6d...` | changed after closeout |
+
+The validator is supposed to reject this state. Calling that rejection a passing local reconciliation would be a false claim; calling it evidence that the historical PR closeout failed would also be wrong. Historical authority is carried by the immutable Git and CI bindings above, while the local command governs whether today's untracked runtime still equals the closeout receipt.
 
 ## Requirements Coverage
 
-| Requirement | Description | Status | Evidence |
-| --- | --- | --- | --- |
-| DOC-01 | Public guides and executable support/capability/release truth agree with verified behavior and versions. | **BLOCKED** | Current bytes agree, but the executable claim validator accepts a support-promoting missing-authority tuple. |
-| DOC-02 | Parked adopter work remains codename-only, resumable, and blocked only on real route/device authority. | SATISFIED | Parked state plus privacy scan and public terminology checks pass. |
-| DOC-03 | Every open PR is merged, rebased, superseded, closed, or explicitly deferred with a current reason. | SATISFIED | Live open set and all ordinary/recovery dispositions are explicit. |
+| Requirement | Source plans | Description | Status | Evidence |
+| --- | --- | --- | --- | --- |
+| DOC-01 | 01-06, 08-09 | Public guides and support/capability/release truth agree with verified code and versions. | SATISFIED | Exact authority closure, 210 semantic tests, generated parity, artifact/CI checks, and current source-to-renderer wiring. |
+| DOC-02 | 01, 03-04, 08 | Parked adopter work remains codename-only, resumable, and honestly blocked. | SATISFIED | Parked state inspection plus destination-aware privacy scan. |
+| DOC-03 | 05-08 | Every open PR has an explicit current disposition. | SATISFIED | Fresh live exact-set verification and retained ordinary/recovery evidence. |
 
-No additional Phase 167 requirements are orphaned from plan frontmatter.
+The unchecked DOC-02/DOC-03 boxes and prior `Gaps Found` rows in `REQUIREMENTS.md` are pre-transition workflow state from the earlier failed verification; this report supplies the requirement outcomes for the orchestrator's phase transition rather than treating stale workflow bookkeeping as implementation behavior.
+
+No additional requirement is mapped to Phase 167 without a claiming plan.
 
 ## Decision Coverage
 
-`check.decision-coverage-verify` reported 32/32 trackable CONTEXT decisions honored. This structural result does not override the behavioral fail-open finding.
+All 32 trackable Phase 167 CONTEXT decisions are honored by shipped artifacts (`check.decision-coverage-verify`: 32/32).
+
+## Test Quality Audit
+
+| Test file/group | Linked req | Active | Skipped | Circular | Assertion level | Verdict |
+| --- | --- | ---: | ---: | --- | --- | --- |
+| capability map authority tests | DOC-01 | 2 selected / 14 file tests | 0 | No | value + exhaustive mutation behavior | STRONG |
+| guide/renderer/docs-sync tests | DOC-01, DOC-02 | 210 + 33 | 7 environment exclusions in the broad docs run; none in focused claims | No | byte parity + semantic value + no-write behavior | STRONG |
+| CI classifier/artifact-policy tests | DOC-01 | 14 + 8 | 20 unrelated exclusions | No | behavioral mutation and topology assertions | STRONG |
+| PR closeout Node tests | DOC-03 | 37 | 0 | No; written JSON files are hostile input fixtures, not generated expected output | behavioral with one reliability warning | PASS WITH WR-05 |
+| PackStore selected tests | DOC-03 | 9 | 0 | No | ordering/state-transition behavior | STRONG |
+
+**Disabled requirement tests:** 0. **Circular tests:** 0. **Insufficient assertions:** 1 warning (WR-05), not a blocker because the production negative path and independent closeout success authority were both exercised.
 
 ## Anti-Patterns and Review Findings
 
-| Finding | Classification | Phase disposition | Impact |
+No unreferenced `TBD`, `FIXME`, or `XXX` debt marker exists in the modified implementation set. TODO-002 occurrences are formal tracked external-gate references, not unfinished code. Empty collections and `nil` values found mechanically are closed validation/test states, not rendered stubs.
+
+| Finding | Severity | Blocking? | Assessment |
 | --- | --- | --- | --- |
-| Accepted property-equivalent closeout instead of two internally impossible CLI modes | Accepted equivalent proof | **Not a blocker** | One-time closeout invariants were independently re-proved; recurring mode names remain optional hardening. |
-| Fail-open adoption tuple semantics | BLOCKER | **Goal blocker** | Executable truth can represent current adopter availability/promotion with explicitly missing authority. |
-| Canonical row tuple coherence | WARNING | Valid follow-up | Demo rows default to an internally incoherent adoption tuple, but these fields are not the rendered three-claim authority. Add row validation or separate the concepts. |
-| Stale Phase 41 manifest remediation | WARNING | Valid follow-up | The workflow executes/emits the correct three-command partition, while the manifest retains obsolete two-command advice. |
-| Support-matrix owner wording | WARNING | Valid follow-up | Generated header names `CapabilityMap` for embedded adopter layers but omits primary `Crosswake.SupportMatrix`; CONTRIBUTING still identifies the executable owner. |
+| WR-01 capability-row metadata is not governed by the adoption tuple validator | Warning | No | Hidden row fields are not the current adoption-claim source or rendered columns; exact public claim authority is independently closed. |
+| WR-02 Phase 41 manifest remediation is stale | Warning | No | Actual commands, ordering, CI, and self-tests are correct; maintenance copy should be reconciled separately. |
+| WR-03 generated support header omits the overall SupportMatrix owner | Warning | No | CONTRIBUTING names both owners and runtime data flows from SupportMatrix; header attribution is incomplete, not stale support truth. |
+| WR-04 live marker query lacks pagination | Warning | No | Fresh threads contain at most two comments, so current exact-one disposition is observable; future truncation remains a fail-closed hardening need. |
+| WR-05 local-reconciliation fixture lacks a positive pinned baseline | Warning | No | Current drift rejection and independent closeout validation are real; test discrimination for a future valid local-runtime state is incomplete. |
 
-No unreferenced `TBD`, `FIXME`, or `XXX` debt markers and no disabled-test patterns were found in the reviewed phase files. The formal `TODO(core-1.0, D-09)` marker is referenced follow-up work; `TODO-002` is the governing adopter gate, not implementation debt.
-
-## Prohibition Review
-
-All nine PLAN prohibitions were judgment-tier and remain flagged for human review by policy; the following verdicts are non-authoritative. Eight are supported by privacy scans, scoped diffs, structured receipts, current PR states, and absence of broadened product/Android work. The no-transfer/current-activation prohibition is not mechanically assured because the blocking invalid tuple is accepted. No separate UAT is proposed: closing the validator gap with discriminating tests is the deterministic resolution.
-
-## Deferred-Phase Filter
-
-Phase 168 owns exact 0.2.1 candidate and reversible release preparation. It does not own adoption-claim tuple validation, so the blocker is not deferred. The four release PRs remain legitimate Phase 168 deferrals and are not Phase 167 gaps.
+These findings remain actionable advisories. None currently produces a missing artifact, broken key link, stale rendered claim, ambiguous open PR, adopter-state disturbance, or reproducible failure of a roadmap success criterion.
 
 ## Human Verification Required
 
-None for the executable blocker. The fix is fully automatable. Judgment-tier prohibition flags remain explicitly non-authoritative as noted above.
+N/A — documentation/tooling reconciliation phase with no user-facing visual or external trust action left to perform. All phase acceptance claims were checked programmatically; behavior-unverified count is zero.
 
-## Gaps Summary and Next Action
+## Gaps Summary
 
-One grouped blocker remains: `validate_adoption_claim!/1` must reject complete authority tuples that combine `:available` with first-adopter/missing-source/missing-proof or promoting state. Add closed complete-tuple validation and cross-product mutation tests, then rerun the focused capability/renderers/docs-sync/privacy checks and this verification. The three warning-level cleanup items may be handled in the same gap-closure change but do not independently block the phase goal.
+No blocking gaps remain. The prior complete-authority-tuple gap is closed, the two later code-review blockers are repaired, all five residual review findings are retained as advisories, and current runtime receipt drift is rejected honestly rather than misreported as green.
 
 ---
-_Verified: 2026-09-12T03:42:05Z_
+
+_Verified: 2026-09-12T19:55:43Z_
 _Verifier: the agent (gsd-verifier)_
