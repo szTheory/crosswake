@@ -1,0 +1,88 @@
+{
+  "payload_scope": [
+    {
+      "blob": "b61d53c8d128a098612c840386fa2133976f4a39",
+      "mode": "100644",
+      "path": ".planning/workstreams/quality-ratchet-release/REQUIREMENTS.md"
+    },
+    {
+      "blob": "af8d0591fd66ae426725fcad90ce6eee4f8f2e49",
+      "mode": "100644",
+      "path": ".planning/workstreams/quality-ratchet-release/ROADMAP.md"
+    },
+    {
+      "blob": "e98e12ea619e0d8961746993b60723476c810f56",
+      "mode": "100644",
+      "path": ".planning/workstreams/quality-ratchet-release/STATE.md"
+    },
+    {
+      "blob": "8ddde5a9e54d547fe3d0e50d83402e39d2cf0674",
+      "mode": "100644",
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-06-SUMMARY.md"
+    },
+    {
+      "blob": "6162dcbd54f2fdd10464a34ce49108d08e4e1ea2",
+      "mode": "100644",
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-07-SUMMARY.md"
+    },
+    {
+      "blob": "6dc3620fa7679a4e8d15cae69095046131d93e01",
+      "mode": "100644",
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/167-08-task1-red.json"
+    },
+    {
+      "blob": "276cae1a20595985764504e65815f57b4e6a2c36",
+      "mode": "100644",
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-reconciliation-resolution.json"
+    },
+    {
+      "blob": "03c16db4e1df0ef19d95f8e585590887da4a21f1",
+      "mode": "100644",
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/fix-forward-failure-ledger.json"
+    },
+    {
+      "blob": "125a358ef0bebf1593693ac0eb1fd810650faa20",
+      "mode": "100644",
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-105-resolution.json"
+    },
+    {
+      "blob": "919bed233e9251c9c8b54f69ab84848ecb279756",
+      "mode": "100644",
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-110-resolution.json"
+    },
+    {
+      "blob": "c7da93451e331cc672cf379d442a1eecde54050d",
+      "mode": "100644",
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-dispositions.json"
+    },
+    {
+      "blob": "c760535fa454e2607422148720389b78f118e11e",
+      "mode": "100644",
+      "path": "script/check_phase167_default_reconciliation.py"
+    },
+    {
+      "blob": "64a18b3b72f1041daf424d5a3191e92781aa67b7",
+      "mode": "100644",
+      "path": "script/check_phase167_pr_dispositions.py"
+    },
+    {
+      "blob": "6e3406ea0c11601b32c14eaa30524eb18bd63f93",
+      "mode": "100644",
+      "path": "test/js/phase167_pr_dispositions.test.mjs"
+    }
+  ],
+  "payload_source_oid": "38cbaa6d6bd5e14a723193e9c485c0932a4422bc",
+  "payload_source_tree": "1dba09d95f6cff625b46bcffcf6fae5628bece67",
+  "schema_version": 1,
+  "self_excluded_manifest": {
+    "expected_mode": "100644",
+    "expected_schema_fields": [
+      "payload_scope",
+      "payload_source_oid",
+      "payload_source_tree",
+      "schema_version",
+      "self_excluded_manifest"
+    ],
+    "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/phase167-closeout-scope.json"
+  }
+}

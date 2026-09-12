@@ -1,0 +1,13 @@
+{
+  "failed_run_id": 34544586854,
+  "kind": "superseded_fix_forward",
+  "marker_sha256": "fe07e692ded0b563b771b345ce7d1dca5b31ed1d203914acd21251a0e266abcf",
+  "merged": false,
+  "old_head_oid": "85e6aeec41b9a53840f0a2315c16c4390cef1878",
+  "pr_number": 110,
+  "replacement_head_oid": "b489905d0f735e88268905607390021256e405b8",
+  "replacement_merge_oid": "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b",
+  "replacement_pr_number": 149,
+  "schema_version": 2,
+  "state": "CLOSED"
+}

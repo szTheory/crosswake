@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "original_number": 105,
+  "candidate_number": 105,
+  "tested_head_oid": "1587e1a557884b0b34cad8b748ccbd948c090eed",
+  "tested_base_oid": "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b",
+  "merge_commit_oid": "783bd74df1c050f6c0214da4682d198a528ba59c",
+  "fresh_default_oid": "783bd74df1c050f6c0214da4682d198a528ba59c",
+  "crosswake_ci": "SUCCESS",
+  "scope_profile": "packstore_waiter_clarity",
+  "intent_commit_count": 1,
+  "disposition": "merged",
+  "replacement_for": null,
+  "supersession_receipt": false
+}

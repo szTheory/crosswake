@@ -1,0 +1,9 @@
+{
+  "command": "node --test test/js/phase167_pr_dispositions.test.mjs",
+  "exitCode": 1,
+  "targetFile": "test/js/phase167_pr_dispositions.test.mjs",
+  "targetTest": "self-test covers seven ordinary PRs and separate recovery",
+  "expected": "phase167-pr-dispositions-self-test: PASS with a positive fixture count",
+  "actual": "legacy resolution-only self-test output",
+  "output": "TAP version 13\nnot ok 1 - self-test covers seven ordinary PRs and separate recovery\n1..1\n# tests 1\n# pass 0\n# fail 1\n"
+}
