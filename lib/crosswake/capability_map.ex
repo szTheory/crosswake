@@ -573,6 +573,7 @@ defmodule Crosswake.CapabilityMap do
       |> require_closed(claim, :evidence_subject, @evidence_subjects)
       |> require_closed(claim, :source_binding, @source_bindings)
       |> require_closed(claim, :activation_state, @activation_states)
+      |> validate_complete_authority_tuple(claim)
       |> validate_reference_evidence(claim)
       |> validate_blocked_promotion(claim)
 
@@ -611,6 +612,35 @@ defmodule Crosswake.CapabilityMap do
       do: violations,
       else: ["unsupported_#{field}" | violations]
   end
+
+  defp validate_complete_authority_tuple(violations, %{activation_state: :available} = claim) do
+    authority =
+      Map.take(claim, [
+        :evidence_subject,
+        :source_binding,
+        :activation_state,
+        :proof_source,
+        :recorded_on,
+        :ios_runtime_line,
+        :support_promotion
+      ])
+
+    require_rule(
+      violations,
+      authority == %{
+        evidence_subject: :crosswake_contract,
+        source_binding: :repository_bound,
+        activation_state: :available,
+        proof_source: :repository_contract,
+        recorded_on: nil,
+        ios_runtime_line: nil,
+        support_promotion: false
+      },
+      "complete_authority_tuple"
+    )
+  end
+
+  defp validate_complete_authority_tuple(violations, _claim), do: violations
 
   defp validate_reference_evidence(violations, %{activation_state: :reference_evidence} = claim) do
     violations
