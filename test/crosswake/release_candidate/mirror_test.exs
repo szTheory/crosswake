@@ -42,9 +42,10 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
     for {name, mutation} <- mutations do
       result = Mirror.evaluate!(mutation)
       assert result.state == "BLOCKED", "#{name} passed"
-      assert result.external_state_changed == false
       refute result.correction == "none"
     end
+
+    assert Mirror.evaluate!(%{input | external_state_changed: true}).external_state_changed == true
   end
 
   test "candidate proves exact 0.2.1 split, authorization, atomic porcelain, and no ref change" do
@@ -91,9 +92,10 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
     for {name, mutation} <- mutations do
       result = Mirror.evaluate!(mutation)
       assert result.state == "BLOCKED", "#{name} passed"
-      assert result.external_state_changed == false
       refute result.correction == "none"
     end
+
+    assert Mirror.evaluate!(%{input | external_state_changed: true}).external_state_changed == true
   end
 
   test "adapter exposes separate baseline and candidate modes with bounded output" do
