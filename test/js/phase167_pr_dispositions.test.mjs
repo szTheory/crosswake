@@ -455,12 +455,13 @@ test("local reconciliation accepts the tracked Phase 167 runtime authority fixtu
   }
 });
 
-test("local reconciliation rejects current runtime drift from the pinned receipt hashes", () => {
+test("local reconciliation rejects runtime drift from the pinned receipt hashes", () => {
   const { temporary, repository } = localReconciliationRepository();
   try {
-    copyFileSync(
-      path.join(root, runtimePaths[1]),
+    writeFileSync(
       path.join(repository, runtimePaths[1]),
+      `${JSON.stringify({ phase: "168", session: "drift-control", pid: 1, updated_at: 1 }, null, 2)}\n`,
+      "utf8",
     );
     const result = runValidator(reconciliationArgs(resolutionPath, scopePath, ["--repository", repository]));
 
