@@ -1,6 +1,6 @@
-# Inspect, rehearse, publish, or recover the SwiftPM mirror through four
-# explicitly separated modes. Baseline inspection is credential-free. The
-# scoped MIRROR_DEPLOY_KEY is loaded only for trusted rehearsal and mutation.
+# Inspect, rehearse, attest, publish, or recover through explicitly separated
+# modes. Baseline inspection is credential-free. The scoped MIRROR_DEPLOY_KEY
+# is loaded only for trusted rehearsal and mutation.
 
 name: iOS mirror authority
 
@@ -8,13 +8,14 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: 'Credential-free baseline, trusted candidate rehearsal, ordinary publication, or approved recovery.'
+        description: 'Baseline, trusted rehearsal, canonical receipt attestation, publication, or approved recovery.'
         required: true
         type: choice
         default: baseline
         options:
           - baseline
           - candidate-rehearsal
+          - candidate-receipt-attestation
           - publish
           - recovery
       version:
@@ -43,7 +44,7 @@ on:
         default: ''
         type: string
       candidate_receipt:
-        description: 'SHA-256 digest of the canonical candidate receipt.'
+        description: 'Capture digest for rehearsal, or closed JSON envelope for canonical receipt attestation.'
         required: false
         default: ''
         type: string
@@ -158,6 +159,118 @@ jobs:
           path: |
             ${{ runner.temp }}/candidate-rehearsal-ios/mirror.json
             ${{ runner.temp }}/candidate-rehearsal-ios/rehearsal.json
+          if-no-files-found: error
+          retention-days: 14
+
+  attest-candidate-receipt:
+    name: Attest canonical exact-head candidate receipt
+    if: ${{ github.event.inputs.operation == 'candidate-receipt-attestation' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+    env:
+      ATTESTATION_ENVELOPE: "${{ inputs.candidate_receipt }}"
+      CANDIDATE_HEAD: "${{ inputs.candidate_head }}"
+      CANDIDATE_TREE: "${{ inputs.candidate_tree }}"
+      CANDIDATE_BASE: "${{ inputs.candidate_base }}"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Decode closed attestation envelope
+        id: envelope
+        env:
+          OUTPUT_DIR: ${{ runner.temp }}/candidate-receipt-attestation
+        run: |
+          set -euo pipefail
+          printf '%s' "$CANDIDATE_HEAD$CANDIDATE_TREE$CANDIDATE_BASE" | grep -Eq '^[0-9a-f]{120}$'
+          mkdir -p "$OUTPUT_DIR"
+          python3 -c 'import base64,hashlib,json,os,pathlib,re; value=json.loads(os.environ["ATTESTATION_ENVELOPE"]); required={"candidate_ci_run_id","hex_run_id","ios_run_id","payload_base64","sha256"}; assert set(value)==required; assert re.fullmatch(r"[0-9a-f]{64}",value["sha256"]); assert all(isinstance(value[key],int) and value[key]>0 for key in ("candidate_ci_run_id","hex_run_id","ios_run_id")); payload=base64.b64decode(value["payload_base64"],validate=True); assert hashlib.sha256(payload).hexdigest()==value["sha256"]; pathlib.Path(os.environ["OUTPUT_DIR"],"candidate-receipt.json").write_bytes(payload); print("candidate_ci_run_id={}".format(value["candidate_ci_run_id"])); print("hex_run_id={}".format(value["hex_run_id"])); print("ios_run_id={}".format(value["ios_run_id"])); print("receipt_sha256={}".format(value["sha256"]))' >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.candidate_head }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+
+      - name: Download exact CI and trusted rehearsal evidence
+        env:
+          OUTPUT_DIR: ${{ runner.temp }}/candidate-receipt-attestation
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUTPUT_DIR/ci" "$OUTPUT_DIR/hex" "$OUTPUT_DIR/ios"
+          gh run download "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
+            --name "phase168-candidate-ci-${CANDIDATE_HEAD}" --dir "$OUTPUT_DIR/ci"
+          gh run download "${{ steps.envelope.outputs.hex_run_id }}" \
+            --name candidate-rehearsal-hex --dir "$OUTPUT_DIR/hex"
+          gh run download "${{ steps.envelope.outputs.ios_run_id }}" \
+            --name candidate-rehearsal-ios --dir "$OUTPUT_DIR/ios"
+          test -f "$OUTPUT_DIR/ci/release-candidate-ci-receipt.json"
+          test -f "$OUTPUT_DIR/ci/artifacts/artifacts.json"
+          test -f "$OUTPUT_DIR/hex/rehearsal.json"
+          test -f "$OUTPUT_DIR/hex/packages/artifacts.json"
+          test -f "$OUTPUT_DIR/ios/rehearsal.json"
+          test -f "$OUTPUT_DIR/ios/mirror.json"
+
+      - name: Validate canonical receipt against immutable evidence
+        env:
+          OUTPUT_DIR: ${{ runner.temp }}/candidate-receipt-attestation
+        run: |
+          set -euo pipefail
+          [ "$(git rev-parse HEAD)" = "$CANDIDATE_HEAD" ]
+          [ "$(git rev-parse "${CANDIDATE_HEAD}^{tree}")" = "$CANDIDATE_TREE" ]
+          [ "$(git ls-remote origin refs/heads/main | awk '{print $1}')" = "$CANDIDATE_BASE" ]
+
+          ci_receipt_sha=$(sha256sum "$OUTPUT_DIR/ci/release-candidate-ci-receipt.json" | awk '{print $1}')
+          package_sha=$(sha256sum "$OUTPUT_DIR/hex/packages/artifacts.json" | awk '{print $1}')
+          hex_sha=$(sha256sum "$OUTPUT_DIR/hex/rehearsal.json" | awk '{print $1}')
+          ios_sha=$(sha256sum "$OUTPUT_DIR/ios/rehearsal.json" | awk '{print $1}')
+          mirror_sha=$(sha256sum "$OUTPUT_DIR/ios/mirror.json" | awk '{print $1}')
+
+          jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
+            --arg base "$CANDIDATE_BASE" --arg run "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
+            '.state == "PASS" and .head == $head and .tree == $tree and .base == $base and (.run_id | tostring) == $run and .package_count == 6 and .profile_count == 5 and .install_count == 2 and .external_state_changed == false' \
+            "$OUTPUT_DIR/ci/release-candidate-ci-receipt.json" >/dev/null
+          jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
+            --arg base "$CANDIDATE_BASE" --arg run "${{ steps.envelope.outputs.hex_run_id }}" \
+            '.requested_head == $head and .observed_head == $head and .observed_tree == $tree and .observed_base == $base and (.run_id | tostring) == $run and .run_conclusion == "success" and .package_count == 6 and .external_state_changed == false' \
+            "$OUTPUT_DIR/hex/rehearsal.json" >/dev/null
+          jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
+            --arg base "$CANDIDATE_BASE" --arg run "${{ steps.envelope.outputs.ios_run_id }}" \
+            '.requested_head == $head and .observed_head == $head and .observed_tree == $tree and .observed_base == $base and (.run_id | tostring) == $run and .run_conclusion == "success" and .external_state_changed == false' \
+            "$OUTPUT_DIR/ios/rehearsal.json" >/dev/null
+
+          jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
+            --arg base "$CANDIDATE_BASE" --argjson run "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
+            --arg ci "$ci_receipt_sha" --arg package "$package_sha" --arg hex "$hex_sha" \
+            --arg ios "$ios_sha" --arg mirror "$mirror_sha" \
+            '.state == "READY FOR APPROVAL" and .identity.bound == .identity.observed and .identity.bound.head == $head and .identity.bound.tree == $tree and .identity.bound.base == $base and .identity.bound.run.id == $run and .credentials == {"exercised":true,"mirror_write_authority":"PROVEN"} and .external_state.changed == false and .external_state.publication == "NONE" and (([.checks[] | select(.status == "PASS")] | length) == 12) and any(.identity.bound.proofs[]; .id == "candidate.ci" and .sha256 == $ci) and any(.identity.bound.proofs[]; .id == "package.family" and .sha256 == $package) and any(.identity.bound.proofs[]; .id == "hex.rehearsal" and .sha256 == $hex) and any(.identity.bound.proofs[]; .id == "ios.rehearsal" and .sha256 == $ios) and any(.identity.bound.proofs[]; .id == "mirror.authority" and .sha256 == $mirror)' \
+            "$OUTPUT_DIR/candidate-receipt.json" >/dev/null
+
+          mix deps.get --check-locked
+          RECEIPT="$OUTPUT_DIR/candidate-receipt.json" MIX_ENV=test mix run -e 'receipt = System.fetch_env!("RECEIPT") |> File.read!() |> Jason.decode!(keys: :atoms); Crosswake.ReleaseCandidate.Receipt.validate!(receipt)'
+
+          test -z "$(git ls-remote --tags origin 'refs/tags/*0.2.1*')"
+          test "$(curl -sS -o /dev/null -w '%{http_code}' https://hex.pm/api/packages/crosswake/releases/0.2.1)" = 404
+          test "$(curl -sS -o /dev/null -w '%{http_code}' https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/0.2.1/crosswake-shell-core-android-0.2.1.pom)" = 404
+          expected_mirror_main=$(jq -er '.identity.bound.mirror.main' "$OUTPUT_DIR/candidate-receipt.json")
+          test "$(git ls-remote https://github.com/szTheory/crosswake-shell-core-ios.git refs/heads/main | awk '{print $1}')" = "$expected_mirror_main"
+          test -z "$(git ls-remote https://github.com/szTheory/crosswake-shell-core-ios.git refs/tags/v0.2.1)"
+
+          cp "$OUTPUT_DIR/ci/artifacts/artifacts.json" "$OUTPUT_DIR/artifacts.json"
+          echo 'canonical candidate receipt attestation PASS; external_state_changed=false'
+
+      - name: Upload canonical candidate receipt authority
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: phase168-candidate-receipt-${{ inputs.candidate_head }}
+          path: |
+            ${{ runner.temp }}/candidate-receipt-attestation/candidate-receipt.json
+            ${{ runner.temp }}/candidate-receipt-attestation/artifacts.json
           if-no-files-found: error
           retention-days: 14
 
