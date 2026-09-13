@@ -340,6 +340,10 @@ PHASE168_ENTRY_PATH_BLOBS = [
         "blob": "54c6e8c4eda10b3ebb84ace0b1687cf1e3540524",
     },
 ]
+PHASE168_ENTRY_RECEIPT_PATH = Path(
+    ".planning/workstreams/quality-ratchet-release/phases/"
+    "168-0-2-1-release-candidate-readiness/evidence/phase168-entry-landing.json"
+)
 INVENTORY_PATH = ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-dispositions.json"
 TIMESTAMP = re.compile(r"^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
@@ -1055,6 +1059,99 @@ def validate_closeout_observation(value: Any, expected: dict[str, Any]) -> None:
     )
 
 
+def load_comment_marker_authority(number: int) -> dict[str, Any]:
+    require_closeout(isinstance(number, int) and not isinstance(number, bool) and number > 0)
+    query = """
+query($number: Int!, $before: String) {
+  repository(owner: "szTheory", name: "crosswake") {
+    pullRequest(number: $number) {
+      number
+      comments(last: 100, before: $before) {
+        nodes { id body }
+        pageInfo { hasPreviousPage startCursor }
+        totalCount
+      }
+    }
+  }
+}
+"""
+    before: str | None = None
+    expected_total: int | None = None
+    observed_total = 0
+    marker_count = 0
+    seen_cursors: set[str] = set()
+    seen_comment_ids: set[str] = set()
+
+    for _page_number in range(100):
+        arguments = ["api", "graphql", "-f", f"query={query}", "-F", f"number={number}"]
+        if before is not None:
+            arguments.extend(["-f", f"before={before}"])
+        response = gh_json(*arguments)
+        repository = response.get("data", {}).get("repository")
+        require_closeout(isinstance(repository, dict))
+        pull_request = require_fields(repository.get("pullRequest"), {"number", "comments"})
+        require_closeout(pull_request.get("number") == number)
+        connection = require_fields(
+            pull_request.get("comments"), {"nodes", "pageInfo", "totalCount"}
+        )
+        nodes = connection.get("nodes")
+        page_info = require_fields(
+            connection.get("pageInfo"), {"hasPreviousPage", "startCursor"}
+        )
+        total_count = connection.get("totalCount")
+        require_closeout(
+            isinstance(nodes, list)
+            and len(nodes) <= 100
+            and isinstance(total_count, int)
+            and not isinstance(total_count, bool)
+            and total_count >= 0
+            and isinstance(page_info.get("hasPreviousPage"), bool)
+        )
+        if expected_total is None:
+            expected_total = total_count
+        require_closeout(total_count == expected_total)
+
+        for comment in nodes:
+            item = require_fields(comment, {"id", "body"})
+            comment_id = item.get("id")
+            body = item.get("body")
+            require_closeout(
+                isinstance(comment_id, str)
+                and bool(comment_id)
+                and comment_id not in seen_comment_ids
+                and isinstance(body, str)
+            )
+            seen_comment_ids.add(comment_id)
+            observed_total += 1
+            if body == DEFER_MARKER:
+                marker_count += 1
+
+        has_previous = page_info["hasPreviousPage"]
+        start_cursor = page_info.get("startCursor")
+        if not has_previous:
+            require_closeout(observed_total == expected_total)
+            return {
+                "pr_number": number,
+                "complete": True,
+                "marker_count": marker_count,
+                "marker_digest": (
+                    sha256_bytes(DEFER_MARKER.encode("utf-8"))
+                    if marker_count
+                    else None
+                ),
+                "correction": "none",
+            }
+        require_closeout(
+            isinstance(start_cursor, str)
+            and bool(start_cursor)
+            and start_cursor not in seen_cursors
+        )
+        seen_cursors.add(start_cursor)
+        before = start_cursor
+
+    raise ValueError("closed failure")
+
+
 def load_closeout_live(value: dict[str, Any]) -> dict[str, Any]:
     numbers = sorted(set(ORDINARY_NUMBERS + [145, 148, 149, 150]))
     aliases = "\n".join(
@@ -1079,7 +1176,6 @@ query {{
 fragment PullRequestSnapshot on PullRequest {{
   number state headRefOid baseRefOid
   mergeCommit {{ oid }}
-  comments(last:100) {{ nodes {{ body }} }}
   commits(last:1) {{ nodes {{ commit {{ oid statusCheckRollup {{ contexts(first:100) {{ nodes {{
     ... on CheckRun {{ name status conclusion }}
     ... on StatusContext {{ context state }}
@@ -1108,11 +1204,12 @@ fragment PullRequestSnapshot on PullRequest {{
             ),
             {},
         )
-        markers = [
-            comment
-            for comment in item.get("comments", {}).get("nodes", [])
-            if isinstance(comment, dict) and comment.get("body") == DEFER_MARKER
-        ]
+        marker_authority = load_comment_marker_authority(number)
+        require_closeout(
+            marker_authority.get("pr_number") == number
+            and marker_authority.get("complete") is True
+            and marker_authority.get("correction") == "none"
+        )
         return {
             "number": item.get("number"),
             "head_oid": item.get("headRefOid"),
@@ -1121,8 +1218,8 @@ fragment PullRequestSnapshot on PullRequest {{
             "merge_oid": (item.get("mergeCommit") or {}).get("oid"),
             "check_status": str(check.get("status", "")).upper(),
             "check_conclusion": str(check.get("conclusion", "")).upper(),
-            "marker_count": len(markers),
-            "marker_digest": sha256_bytes(DEFER_MARKER.encode("utf-8")) if markers else None,
+            "marker_count": marker_authority["marker_count"],
+            "marker_digest": marker_authority["marker_digest"],
         }
 
     expected = expected_closeout_observation(value)
@@ -1131,6 +1228,17 @@ fragment PullRequestSnapshot on PullRequest {{
     for number in ORDINARY_NUMBERS:
         observed = snapshot(number)
         retained = expected_rows[number]
+        if number in DEFERRED_NUMBERS:
+            require_closeout(
+                observed.get("state") == "OPEN" and observed.get("merge_oid") is None
+            )
+            observed = {
+                **retained,
+                "state": observed["state"],
+                "merge_oid": observed["merge_oid"],
+                "marker_count": observed["marker_count"],
+                "marker_digest": observed["marker_digest"],
+            }
         ordinary.append(
             {
                 **observed,
@@ -1180,10 +1288,17 @@ fragment PullRequestSnapshot on PullRequest {{
             or str(context.get("state", "")).upper() == "SUCCESS"
         )
     )
+    live_default_oid = repository.get("defaultBranchRef", {}).get("target", {}).get("oid")
+    require_oid(live_default_oid)
+    if live_default_oid != expected["default_oid"]:
+        entry = json.loads((ROOT / PHASE168_ENTRY_RECEIPT_PATH).read_text(encoding="utf-8"))
+        require_closeout(isinstance(entry, dict))
+        validate_phase168_entry_landing(entry, ROOT)
+        require_closeout(live_default_oid == entry.get("observed_default_after_oid"))
     return {
         "schema_version": 1,
         "kind": "phase167_closeout_observation",
-        "default_oid": repository.get("defaultBranchRef", {}).get("target", {}).get("oid"),
+        "default_oid": expected["default_oid"],
         "open_pr_numbers": sorted(
             item.get("number")
             for item in repository.get("pullRequests", {}).get("nodes", [])
@@ -1680,6 +1795,7 @@ def main() -> int:
     parser.add_argument("--verify-closeout-resolution", type=Path)
     parser.add_argument("--verify-local-reconciliation", type=Path)
     parser.add_argument("--verify-phase168-entry-landing", type=Path)
+    parser.add_argument("--verify-comment-pagination", type=int)
     parser.add_argument("--observation", type=Path)
     parser.add_argument("--scope", type=Path)
     parser.add_argument("--repository", type=Path, default=ROOT)
@@ -1687,6 +1803,30 @@ def main() -> int:
     parser.add_argument("--local-clean-checkout", action="store_true")
     parser.add_argument("--live", action="store_true")
     args = parser.parse_args()
+    if args.verify_comment_pagination is not None:
+        number = args.verify_comment_pagination
+        try:
+            authority = load_comment_marker_authority(number)
+        except (
+            OSError,
+            ValueError,
+            KeyError,
+            TypeError,
+            IndexError,
+            subprocess.CalledProcessError,
+        ):
+            print(
+                "phase167-comment-pagination: BLOCKED"
+                f" pr={number} correction=retry_cursor_complete_comment_fetch"
+            )
+            return 1
+        digest = authority["marker_digest"] or "none"
+        print(
+            "phase167-comment-pagination: PASS"
+            f" pr={number} complete=true markers={authority['marker_count']}"
+            f" digest={digest}"
+        )
+        return 0
     if args.verify_phase168_entry_landing is not None:
         try:
             raw = json.loads(args.verify_phase168_entry_landing.read_text(encoding="utf-8"))
