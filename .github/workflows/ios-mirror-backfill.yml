@@ -225,6 +225,19 @@ jobs:
           [ "$(git rev-parse "${CANDIDATE_HEAD}^{tree}")" = "$CANDIDATE_TREE" ]
           [ "$(git ls-remote origin refs/heads/main | awk '{print $1}')" = "$CANDIDATE_BASE" ]
 
+          candidate_run=$(gh run view "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
+            --json conclusion,headSha,workflowName)
+          printf '%s' "$candidate_run" | jq -e --arg head "$CANDIDATE_HEAD" \
+            '.conclusion == "success" and .headSha == $head and .workflowName == "Crosswake CI"' >/dev/null
+          hex_run=$(gh run view "${{ steps.envelope.outputs.hex_run_id }}" \
+            --json conclusion,workflowName)
+          printf '%s' "$hex_run" | jq -e \
+            '.conclusion == "success" and .workflowName == "Hex candidate rehearsal and recovery"' >/dev/null
+          ios_run=$(gh run view "${{ steps.envelope.outputs.ios_run_id }}" \
+            --json conclusion,workflowName)
+          printf '%s' "$ios_run" | jq -e \
+            '.conclusion == "success" and .workflowName == "iOS mirror authority"' >/dev/null
+
           ci_receipt_sha=$(sha256sum "$OUTPUT_DIR/ci/release-candidate-ci-receipt.json" | awk '{print $1}')
           package_sha=$(sha256sum "$OUTPUT_DIR/hex/packages/artifacts.json" | awk '{print $1}')
           hex_sha=$(sha256sum "$OUTPUT_DIR/hex/rehearsal.json" | awk '{print $1}')
@@ -251,8 +264,26 @@ jobs:
             '.state == "READY FOR APPROVAL" and .identity.bound == .identity.observed and .identity.bound.head == $head and .identity.bound.tree == $tree and .identity.bound.base == $base and .identity.bound.run.id == $run and .credentials == {"exercised":true,"mirror_write_authority":"PROVEN"} and .external_state.changed == false and .external_state.publication == "NONE" and (([.checks[] | select(.status == "PASS")] | length) == 12) and any(.identity.bound.proofs[]; .id == "candidate.ci" and .sha256 == $ci) and any(.identity.bound.proofs[]; .id == "package.family" and .sha256 == $package) and any(.identity.bound.proofs[]; .id == "hex.rehearsal" and .sha256 == $hex) and any(.identity.bound.proofs[]; .id == "ios.rehearsal" and .sha256 == $ios) and any(.identity.bound.proofs[]; .id == "mirror.authority" and .sha256 == $mirror)' \
             "$OUTPUT_DIR/candidate-receipt.json" >/dev/null
 
+          receipt_digest() {
+            jq -er --arg id "$1" '.identity.bound.workflow_digests[] | select(.id == $id) | .sha256' \
+              "$OUTPUT_DIR/candidate-receipt.json"
+          }
+          config_digest() {
+            jq -er --arg id "$1" '.identity.bound.config_digests[] | select(.id == $id) | .sha256' \
+              "$OUTPUT_DIR/candidate-receipt.json"
+          }
+          test "$(sha256sum .github/workflows/crosswake-ci.yml | awk '{print $1}')" = "$(receipt_digest crosswake-ci)"
+          test "$(sha256sum .github/workflows/hex-publish.yml | awk '{print $1}')" = "$(receipt_digest hex-publish)"
+          test "$(sha256sum .github/workflows/ios-mirror-backfill.yml | awk '{print $1}')" = "$(receipt_digest ios-mirror-backfill)"
+          test "$(sha256sum .github/workflows/release-please.yml | awk '{print $1}')" = "$(receipt_digest release-please)"
+          test "$(sha256sum release-please-config.json | awk '{print $1}')" = "$(config_digest release-please-config)"
+          test "$(sha256sum .release-please-manifest.json | awk '{print $1}')" = "$(config_digest release-please-manifest)"
+
           mix deps.get --check-locked
-          RECEIPT="$OUTPUT_DIR/candidate-receipt.json" MIX_ENV=test mix run -e 'receipt = System.fetch_env!("RECEIPT") |> File.read!() |> Jason.decode!(keys: :atoms); Crosswake.ReleaseCandidate.Receipt.validate!(receipt)'
+          CANDIDATE_RECEIPT_PATH="$OUTPUT_DIR/candidate-receipt.json"
+          export CANDIDATE_RECEIPT_PATH
+          export MIX_ENV=test
+          mix run -e 'receipt = System.fetch_env!("CANDIDATE_RECEIPT_PATH") |> File.read!() |> Jason.decode!(keys: :atoms) |> Crosswake.ReleaseCandidate.Receipt.validate!(); File.write!(Path.join(System.fetch_env!("OUTPUT_DIR"), "candidate-receipt.md"), Crosswake.ReleaseCandidate.Projection.markdown(receipt))'
 
           test -z "$(git ls-remote --tags origin 'refs/tags/*0.2.1*')"
           test "$(curl -sS -o /dev/null -w '%{http_code}' https://hex.pm/api/packages/crosswake/releases/0.2.1)" = 404
@@ -270,6 +301,7 @@ jobs:
           name: phase168-candidate-receipt-${{ inputs.candidate_head }}
           path: |
             ${{ runner.temp }}/candidate-receipt-attestation/candidate-receipt.json
+            ${{ runner.temp }}/candidate-receipt-attestation/candidate-receipt.md
             ${{ runner.temp }}/candidate-receipt-attestation/artifacts.json
           if-no-files-found: error
           retention-days: 14
