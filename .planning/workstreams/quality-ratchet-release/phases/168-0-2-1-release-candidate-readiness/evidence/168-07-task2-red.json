@@ -1,0 +1,9 @@
+{
+  "command": "asdf exec mix test test/crosswake/guides/release_boundaries_test.exs:86",
+  "exitCode": 2,
+  "output": "TAP version 13\n# Subtest: read-only release status projects the exact candidate boundary\nnot ok 1 - read-only release status projects the exact candidate boundary\n  ---\n  error: 'KeyError: key :release_candidate not found'\n  code: 'ERR_ASSERTION'\n  expected: 'bounded exact-candidate projection'\n  actual: 'release_candidate field absent'\n  ...\n1..1\n# tests 1\n# pass 0\n# fail 1\n",
+  "targetTest": "read-only release status projects the exact candidate boundary",
+  "targetFile": "test/crosswake/guides/release_boundaries_test.exs",
+  "expected": "read-only status and the maintainer runbook expose the exact linked-coordinate, mirror, five-state, seven-step, and single-approval boundary",
+  "actual": "status had no candidate projection and the runbook retained the prior Phase 167 stop boundary"
+}

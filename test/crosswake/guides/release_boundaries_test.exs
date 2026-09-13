@@ -83,6 +83,75 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert boundary =~ "update the SwiftPM mirror"
   end
 
+  test "read-only release status projects the exact candidate boundary" do
+    status = Crosswake.ReleaseStatus.build()
+
+    assert %{
+             version: "0.2.1",
+             state: "BLOCKED",
+             next_action: next_action,
+             linked_coordinates: linked,
+             independent_companions: companions,
+             mirror: mirror,
+             external_state_changed: false,
+             credentials_exercised: false
+           } = status.release_candidate
+
+    assert Enum.map(linked, & &1.coordinate) == [
+             "hex:crosswake@0.2.1",
+             "swiftpm:crosswake-shell-core-ios@0.2.1",
+             "maven:io.github.sztheory:crosswake-shell-core-android:0.2.1"
+           ]
+
+    assert Enum.all?(companions, &(&1.relationship == "independent"))
+    assert mirror.baseline_ref == "refs/tags/v0.2.0"
+    assert mirror.public_ref == "refs/tags/v0.2.1"
+    assert next_action == "run mix crosswake.release.status --live, then capture the exact candidate receipt"
+  end
+
+  test "candidate runbook fixes the seven-step sequence and single approval boundary" do
+    runbook = File.read!("docs/COMPANION-PUBLISH-RUNBOOK.md")
+
+    steps = [
+      "1. Land the exact five-blob stack",
+      "2. Refresh and capture the candidate",
+      "3. Build and unpack all six packages",
+      "4. Run candidate-local clean rooms",
+      "5. Run the trusted mirror rehearsal",
+      "6. Review the exact receipt",
+      "7. Approve one exact-head merge"
+    ]
+
+    Enum.reduce(steps, -1, fn step, previous ->
+      offset = :binary.match(runbook, step) |> elem(0)
+      assert offset > previous
+      offset
+    end)
+
+    for state <- ["BLOCKED", "STALE", "READY FOR APPROVAL", "PARTIAL", "COMPLETE"] do
+      assert runbook =~ "`#{state}`"
+    end
+
+    for token <- [
+          "candidate-local",
+          "exact-public",
+          "ordinary publication",
+          "recovery",
+          "one next action",
+          "credentials_exercised",
+          "external_state_changed",
+          "mix crosswake.release.candidate --version 0.2.1 --ref <40sha>",
+          "Companion pull requests are excluded",
+          "Android breadth is excluded",
+          "first-adopter activation is excluded",
+          "does not publish"
+        ] do
+      assert runbook =~ token
+    end
+
+    assert length(Regex.scan(~r/approval boundary/, runbook)) == 1
+  end
+
   test "guide surfaces link rebuild guidance to canonical promotion and non-claim truth" do
     guide_paths = [
       "guides/install.md",
