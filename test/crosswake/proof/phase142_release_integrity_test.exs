@@ -194,8 +194,7 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     assert File.read!("lib/crosswake/release_candidate/mirror.ex") =~
              "resolve_immutable_tag_conflict"
 
-    assert File.read!("lib/crosswake/release_candidate/mirror.ex") =~
-             "external_state_changed"
+    assert File.read!("lib/crosswake/release_candidate/mirror.ex") =~ "external_state_changed"
 
     assert adapter =~ "--force-with-lease=refs/heads/main:${EXPECTED_OLD_REF}"
   end
