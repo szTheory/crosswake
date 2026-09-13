@@ -77,10 +77,9 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+      - uses: ./.github/actions/setup-elixir-cache
         with:
-          version-file: .tool-versions
-          version-type: strict
+          mix-env: test
       - name: Inspect immutable 0.2.0 baseline
         run: >
           bash script/release_candidate/ios_mirror.sh baseline
@@ -117,10 +116,9 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+      - uses: ./.github/actions/setup-elixir-cache
         with:
-          version-file: .tool-versions
-          version-type: strict
+          mix-env: test
 
       - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:

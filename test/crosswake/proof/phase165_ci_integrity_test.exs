@@ -121,11 +121,14 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       refute workflow =~ credential
     end
 
-    helper = File.read!(@hex_publish_dry_run)
+    helper =
+      File.read!(@hex_publish_dry_run) <>
+        File.read!("script/release_candidate/hex_artifacts.sh")
+
     assert helper =~ ~s(env -u HEX_API_KEY)
     assert helper =~ ~s(HEX_OFFLINE=1)
-    assert helper =~ ~s(mix hex.publish --dry-run --yes)
-    assert helper =~ ~s(mix hex.config api_key "$sentinel")
+    assert helper =~ ~s(mix hex.publish package --dry-run --yes)
+    assert helper =~ ~s(mix hex.config api_key "$SENTINEL")
     refute helper =~ "${{ secrets."
   end
 
@@ -340,7 +343,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert proof_ids == Enum.sort(proof_ids)
     assert control_ids == ["classify-change"]
     assert compatibility_ids == []
-    assert length(proof_ids) == 44
+    assert length(proof_ids) == 46
     assert length(compatibility_ids) == 0
 
     for id <- [

@@ -154,17 +154,25 @@ evaluate() {
   local after_main="$2"
   local after_tag="$3"
   local changed="$4"
+  local output
 
-  cd "$REPO_ROOT" && "${RUNTIME[@]}" mix run --no-start -e \
-  'Crosswake.ReleaseCandidate.Mirror.evaluate_cli!(System.argv())' -- \
-  "$MODE" "$VERSION" "$SOURCE_REF" "$(dash_if_empty "$SPLIT_SHA")" \
-  "$(dash_if_empty "$RECORDED_SPLIT_SHA")" "$REMOTE_STATUS" \
-  "$(dash_if_empty "$REMOTE_MAIN")" "$(dash_if_empty "$REMOTE_TAG")" \
-  "$ATOMIC_SUPPORTED" "$AUTHORIZATION_CHECKED" "$AUTHORIZATION_RESULT" "$dry_status" \
-  "$(dash_if_empty "$BEFORE_MAIN")" "$(dash_if_empty "$BEFORE_TAG")" \
-  "$(dash_if_empty "$after_main")" "$(dash_if_empty "$after_tag")" "$changed" \
-  "$ANCESTRY" "$(dash_if_empty "$APPROVAL_STATUS")" "$(dash_if_empty "$APPROVAL_RECEIPT")" \
-  "$(dash_if_empty "$EXPECTED_OLD_REF")" "$(dash_if_empty "$EXPECTED_NEW_REF")"
+  if ! output=$(cd "$REPO_ROOT" && "${RUNTIME[@]}" mix run --no-start -e \
+    'Crosswake.ReleaseCandidate.Mirror.evaluate_cli!(System.argv())' -- \
+    "$MODE" "$VERSION" "$SOURCE_REF" "$(dash_if_empty "$SPLIT_SHA")" \
+    "$(dash_if_empty "$RECORDED_SPLIT_SHA")" "$REMOTE_STATUS" \
+    "$(dash_if_empty "$REMOTE_MAIN")" "$(dash_if_empty "$REMOTE_TAG")" \
+    "$ATOMIC_SUPPORTED" "$AUTHORIZATION_CHECKED" "$AUTHORIZATION_RESULT" "$dry_status" \
+    "$(dash_if_empty "$BEFORE_MAIN")" "$(dash_if_empty "$BEFORE_TAG")" \
+    "$(dash_if_empty "$after_main")" "$(dash_if_empty "$after_tag")" "$changed" \
+    "$ANCESTRY" "$(dash_if_empty "$APPROVAL_STATUS")" "$(dash_if_empty "$APPROVAL_RECEIPT")" \
+    "$(dash_if_empty "$EXPECTED_OLD_REF")" "$(dash_if_empty "$EXPECTED_NEW_REF")"); then
+    printf '%s\n' "$output" >&2
+    return 1
+  fi
+
+  # Mix may compile on a clean runner before emitting the evaluator's single
+  # JSON line. Keep the machine-readable workflow artifact JSON-only.
+  printf '%s\n' "$output" | tail -n 1
 }
 
 RESULT=$(evaluate "$DRY_RUN_STATUS" "$AFTER_MAIN" "$AFTER_TAG" false)
