@@ -1,6 +1,8 @@
 defmodule Crosswake.ReleaseCandidate.WorkflowTest do
   use ExUnit.Case, async: true
 
+  alias Crosswake.ReleaseCandidate.Workflow
+
   @hex_workflow ".github/workflows/hex-publish.yml"
   @ios_workflow ".github/workflows/ios-mirror-backfill.yml"
   @release_workflow ".github/workflows/release-please.yml"
@@ -111,6 +113,93 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     refute workflow =~ "merge-companion"
   end
 
+  test "every child failure preserves exact prior public success as PARTIAL" do
+    assert Code.ensure_loaded?(Workflow)
+    assert function_exported?(Workflow, :rollup!, 1)
+
+    ordered = ~w(hex ios_mirror android ios_public_proof android_public_proof exact_public)a
+
+    for {failed_child, index} <- Enum.with_index(ordered) do
+      children =
+        ordered
+        |> Enum.with_index()
+        |> Map.new(fn {child, child_index} ->
+          status =
+            cond do
+              child == failed_child -> "failed"
+              child_index > index -> "skipped"
+              true -> "success"
+            end
+
+          {child, status}
+        end)
+
+      result = Workflow.rollup!(rollup_input(children))
+
+      assert result.child_states == children
+      assert result.failed_step == Atom.to_string(failed_child)
+      assert result.failed_ref == String.duplicate("a", 40)
+      assert result.next_action == "retry_failed_step_from_exact_ref_or_publish_forward_fix"
+
+      expected_coordinates =
+        [:hex, :ios_mirror, :android]
+        |> Enum.filter(&(Map.fetch!(children, &1) == "success"))
+        |> Enum.map(&coordinate/1)
+        |> Enum.sort()
+
+      assert result.successful_coordinates == expected_coordinates
+      assert result.state == if(expected_coordinates == [], do: "BLOCKED", else: "PARTIAL")
+    end
+  end
+
+  test "complete requires every linked publication and exact-public proof" do
+    children = %{
+      hex: "success",
+      ios_mirror: "success",
+      android: "success",
+      ios_public_proof: "success",
+      android_public_proof: "success",
+      exact_public: "success"
+    }
+
+    result = Workflow.rollup!(rollup_input(children))
+
+    assert result.state == "COMPLETE"
+    assert result.successful_coordinates ==
+             Enum.sort([coordinate(:hex), coordinate(:ios_mirror), coordinate(:android)])
+    assert result.failed_step == nil
+    assert result.failed_ref == nil
+    assert result.next_action == "no_action_required"
+  end
+
+  test "partial recovery rejects mutable refs, lost success, and impossible resumes" do
+    baseline = %{
+      hex: "success",
+      ios_mirror: "failed",
+      android: "success",
+      ios_public_proof: "skipped",
+      android_public_proof: "success",
+      exact_public: "skipped"
+    }
+
+    assert_raise ArgumentError, "release workflow observation is invalid", fn ->
+      Workflow.rollup!(rollup_input(baseline) |> Map.put(:approved_ref, "main"))
+    end
+
+    assert_raise ArgumentError, "release workflow observation is invalid", fn ->
+      Workflow.validate!(%{
+        Workflow.rollup!(rollup_input(baseline))
+        | successful_coordinates: [coordinate(:android)]
+      })
+    end
+
+    assert_raise ArgumentError, "release workflow observation is invalid", fn ->
+      Workflow.rollup!(
+        rollup_input(%{baseline | ios_public_proof: "success", exact_public: "success"})
+      )
+    end
+  end
+
   defp job_block(workflow, job) do
     regex = ~r/(?ms)^  #{Regex.escape(job)}:\n(.*?)(?=^  [A-Za-z0-9_-]+:\n|\z)/
 
@@ -119,4 +208,16 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
       _ -> ""
     end
   end
+
+  defp rollup_input(children) do
+    %{
+      approved_ref: String.duplicate("a", 40),
+      candidate_receipt: String.duplicate("b", 64),
+      children: children
+    }
+  end
+
+  defp coordinate(:hex), do: "hex:crosswake@0.2.1"
+  defp coordinate(:ios_mirror), do: "swift:crosswake-shell-core-ios@0.2.1"
+  defp coordinate(:android), do: "maven:io.crosswake:crosswake-shell-core@0.2.1"
 end
