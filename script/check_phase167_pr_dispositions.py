@@ -281,6 +281,20 @@ CLOSEOUT_RECOVERY_FIELDS = {
     "replacement_number",
 }
 HANDOFF_FIELDS = {"owner", "paths"}
+PHASE168_ENTRY_FIELDS = {
+    "schema_version",
+    "kind",
+    "handoff_owner",
+    "path_blobs",
+    "observed_default_before_oid",
+    "candidate",
+    "crosswake_ci",
+    "merge",
+    "observed_default_after_oid",
+    "external_state_changed",
+}
+PHASE168_ENTRY_CANDIDATE_FIELDS = {"pr_number", "base_oid", "head_oid", "tree_oid"}
+PHASE168_ENTRY_MERGE_FIELDS = {"oid", "parent_oids", "tree_oid"}
 CLOSEOUT_OBSERVATION_RECEIPT_FIELDS = {
     "schema_version",
     "kind",
@@ -298,6 +312,33 @@ PHASE168_HANDOFF_PATHS = [
     ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-VERIFICATION.md",
     ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
     ".planning/workstreams/quality-ratchet-release/STATE.md",
+]
+PHASE168_ENTRY_PATH_BLOBS = [
+    {
+        "path": PHASE168_HANDOFF_PATHS[0],
+        "mode": "100644",
+        "blob": "78920bb2990121c7b5705a17fa5866a9b41f73be",
+    },
+    {
+        "path": PHASE168_HANDOFF_PATHS[1],
+        "mode": "100644",
+        "blob": "512786c4b492084696a6df308be7e8cf1a55bbe7",
+    },
+    {
+        "path": PHASE168_HANDOFF_PATHS[2],
+        "mode": "100644",
+        "blob": "dd146c148ef78d8cb06ed93433ced4e4b929a066",
+    },
+    {
+        "path": PHASE168_HANDOFF_PATHS[3],
+        "mode": "100644",
+        "blob": "ea598f1f65f4e61b40b496dfd4136d1b773ceb19",
+    },
+    {
+        "path": PHASE168_HANDOFF_PATHS[4],
+        "mode": "100644",
+        "blob": "54c6e8c4eda10b3ebb84ace0b1687cf1e3540524",
+    },
 ]
 INVENTORY_PATH = ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-dispositions.json"
 TIMESTAMP = re.compile(r"^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$")
@@ -1178,6 +1219,190 @@ def git_at(repository: Path, *args: str, binary: bool = False) -> str | bytes:
     return completed.stdout if binary else completed.stdout.strip()
 
 
+def entry_tree_oid(repository: Path, commit: str) -> str:
+    value = str(git_at(repository, "rev-parse", f"{commit}^{{tree}}"))
+    require_closeout(FULL_OID.fullmatch(value) is not None)
+    return value
+
+
+def entry_diff_paths(repository: Path, left: str, right: str) -> list[str]:
+    raw = git_at(
+        repository,
+        "diff-tree",
+        "--no-commit-id",
+        "--name-only",
+        "-r",
+        "-z",
+        left,
+        right,
+        binary=True,
+    )
+    require_closeout(isinstance(raw, bytes))
+    return sorted(item.decode("utf-8") for item in raw.split(b"\0") if item)
+
+
+def entry_tree_record(repository: Path, commit: str, path: str) -> dict[str, str]:
+    raw = git_at(repository, "ls-tree", "-z", commit, "--", path, binary=True)
+    require_closeout(isinstance(raw, bytes) and raw.count(b"\0") == 1)
+    metadata, actual = raw[:-1].split(b"\t", 1)
+    mode, kind, blob = metadata.decode("ascii").split(" ")
+    require_closeout(
+        actual.decode("utf-8") == path
+        and kind == "blob"
+        and mode == "100644"
+        and FULL_OID.fullmatch(blob) is not None
+    )
+    return {"path": path, "mode": mode, "blob": blob}
+
+
+def validate_phase168_entry_landing(
+    value: dict[str, Any], repository: Path, live: dict[str, Any] | None = None
+) -> None:
+    require_fields(value, PHASE168_ENTRY_FIELDS)
+    require_closeout(
+        value.get("schema_version") == 1
+        and value.get("kind") == "phase168_entry_landing"
+        and value.get("handoff_owner") == "phase_168_first_reversible_landing"
+        and value.get("path_blobs") == PHASE168_ENTRY_PATH_BLOBS
+        and value.get("external_state_changed") is True
+    )
+    repository = repository.resolve()
+    require_closeout(
+        repository.is_dir()
+        and Path(str(git_at(repository, "rev-parse", "--show-toplevel"))).resolve()
+        == repository
+    )
+    before = require_oid(value.get("observed_default_before_oid"))
+    after = require_oid(value.get("observed_default_after_oid"))
+    candidate = require_fields(value.get("candidate"), PHASE168_ENTRY_CANDIDATE_FIELDS)
+    require_closeout(
+        isinstance(candidate.get("pr_number"), int)
+        and not isinstance(candidate.get("pr_number"), bool)
+        and candidate["pr_number"] > 0
+    )
+    candidate_base = require_oid(candidate.get("base_oid"))
+    candidate_head = require_oid(candidate.get("head_oid"))
+    candidate_tree = require_oid(candidate.get("tree_oid"))
+    require_closeout(
+        before == candidate_base
+        and str(git_at(repository, "show", "-s", "--format=%P", candidate_head)) == before
+        and entry_tree_oid(repository, candidate_head) == candidate_tree
+        and entry_diff_paths(repository, before, candidate_head)
+        == sorted(PHASE168_HANDOFF_PATHS)
+        and [
+            entry_tree_record(repository, candidate_head, record["path"])
+            for record in PHASE168_ENTRY_PATH_BLOBS
+        ]
+        == PHASE168_ENTRY_PATH_BLOBS
+    )
+    ci = require_fields(value.get("crosswake_ci"), CLOSEOUT_CI_FIELDS - {"successful_contexts", "total_contexts"})
+    require_closeout(
+        ci.get("name") == "Crosswake CI"
+        and isinstance(ci.get("run_id"), int)
+        and not isinstance(ci.get("run_id"), bool)
+        and ci["run_id"] > 0
+        and ci.get("head_oid") == candidate_head
+        and ci.get("status") == "COMPLETED"
+        and ci.get("conclusion") == "SUCCESS"
+    )
+    merge = require_fields(value.get("merge"), PHASE168_ENTRY_MERGE_FIELDS)
+    merge_oid = require_oid(merge.get("oid"))
+    merge_tree = require_oid(merge.get("tree_oid"))
+    require_closeout(
+        merge.get("parent_oids") == [before, candidate_head]
+        and str(git_at(repository, "show", "-s", "--format=%P", merge_oid)).split()
+        == merge["parent_oids"]
+        and entry_tree_oid(repository, merge_oid) == merge_tree
+        and merge_tree == candidate_tree
+        and after == merge_oid
+        and subprocess.run(
+            ["git", "merge-base", "--is-ancestor", candidate_head, after],
+            cwd=repository,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        ).returncode
+        == 0
+    )
+    serialized = json.dumps(value, sort_keys=True, separators=(",", ":")).lower()
+    require_closeout(not any(token in serialized for token in FORBIDDEN_EVIDENCE))
+    if live is not None:
+        require_closeout(
+            live
+            == {
+                "default_oid": after,
+                "pr_number": candidate["pr_number"],
+                "pr_state": "MERGED",
+                "pr_head_oid": candidate_head,
+                "pr_base_oid": before,
+                "pr_merge_oid": merge_oid,
+                "run_id": ci["run_id"],
+                "run_head_oid": candidate_head,
+                "run_status": "COMPLETED",
+                "run_conclusion": "SUCCESS",
+            }
+        )
+
+
+def load_phase168_entry_landing_live(
+    value: dict[str, Any], repository: Path
+) -> dict[str, Any]:
+    candidate = value["candidate"]
+    query = f"""
+query {{
+  repository(owner:\"szTheory\", name:\"crosswake\") {{
+    defaultBranchRef {{ target {{ oid }} }}
+    pullRequest(number:{candidate['pr_number']}) {{
+      number state headRefOid baseRefOid mergeCommit {{ oid }}
+    }}
+    candidateCommit: object(expression:{json.dumps(candidate['head_oid'])}) {{
+      ... on Commit {{ statusCheckRollup {{ contexts(first:100) {{ nodes {{
+        ... on CheckRun {{ name status conclusion checkSuite {{ workflowRun {{ databaseId }} }} }}
+      }} }} }} }}
+    }}
+  }}
+}}
+"""
+    response = gh_json("api", "graphql", "-f", f"query={query}")
+    remote = response.get("data", {}).get("repository")
+    require_closeout(isinstance(remote, dict))
+    pr = require_fields(remote.get("pullRequest"), {"number", "state", "headRefOid", "baseRefOid", "mergeCommit"})
+    contexts = (
+        remote.get("candidateCommit", {})
+        .get("statusCheckRollup", {})
+        .get("contexts", {})
+        .get("nodes", [])
+    )
+    checks = [
+        item
+        for item in contexts
+        if isinstance(item, dict) and item.get("name") == "Crosswake CI"
+    ]
+    require_closeout(len(checks) == 1)
+    check = checks[0]
+    run = (check.get("checkSuite") or {}).get("workflowRun") or {}
+    default_oid = remote.get("defaultBranchRef", {}).get("target", {}).get("oid")
+    require_oid(default_oid)
+    subprocess.run(
+        ["git", "fetch", "--quiet", "--no-tags", "origin", default_oid],
+        cwd=repository,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return {
+        "default_oid": default_oid,
+        "pr_number": pr.get("number"),
+        "pr_state": pr.get("state"),
+        "pr_head_oid": pr.get("headRefOid"),
+        "pr_base_oid": pr.get("baseRefOid"),
+        "pr_merge_oid": (pr.get("mergeCommit") or {}).get("oid"),
+        "run_id": run.get("databaseId"),
+        "run_head_oid": candidate["head_oid"],
+        "run_status": str(check.get("status", "")).upper(),
+        "run_conclusion": str(check.get("conclusion", "")).upper(),
+    }
+
+
 def verify_local_reconciliation(
     value: dict[str, Any], scope_path: Path, repository: Path
 ) -> None:
@@ -1454,6 +1679,7 @@ def main() -> int:
     parser.add_argument("--verify-closeout-candidate", type=Path)
     parser.add_argument("--verify-closeout-resolution", type=Path)
     parser.add_argument("--verify-local-reconciliation", type=Path)
+    parser.add_argument("--verify-phase168-entry-landing", type=Path)
     parser.add_argument("--observation", type=Path)
     parser.add_argument("--scope", type=Path)
     parser.add_argument("--repository", type=Path, default=ROOT)
@@ -1461,6 +1687,35 @@ def main() -> int:
     parser.add_argument("--local-clean-checkout", action="store_true")
     parser.add_argument("--live", action="store_true")
     args = parser.parse_args()
+    if args.verify_phase168_entry_landing is not None:
+        try:
+            raw = json.loads(args.verify_phase168_entry_landing.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                raise ValueError("entry landing must be an object")
+            live = (
+                load_phase168_entry_landing_live(raw, args.repository)
+                if args.live
+                else None
+            )
+            validate_phase168_entry_landing(raw, args.repository, live)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            ValueError,
+            KeyError,
+            TypeError,
+            IndexError,
+            subprocess.CalledProcessError,
+        ):
+            print("phase168-entry-landing: FAIL closed_failure")
+            return 1
+        source = "live" if args.live else "offline"
+        print(
+            "phase168-entry-landing: PASS paths=5"
+            f" observation={source} external_state_changed=true"
+        )
+        return 0
     if args.self_test:
         return self_test_inventory()
     if args.self_test_resolution:

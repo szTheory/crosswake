@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "kind": "phase168_entry_landing",
+  "handoff_owner": "phase_168_first_reversible_landing",
+  "path_blobs": [
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/phase167-closeout-resolution.json",
+      "mode": "100644",
+      "blob": "78920bb2990121c7b5705a17fa5866a9b41f73be"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-08-SUMMARY.md",
+      "mode": "100644",
+      "blob": "512786c4b492084696a6df308be7e8cf1a55bbe7"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-VERIFICATION.md",
+      "mode": "100644",
+      "blob": "dd146c148ef78d8cb06ed93433ced4e4b929a066"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
+      "mode": "100644",
+      "blob": "ea598f1f65f4e61b40b496dfd4136d1b773ceb19"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/STATE.md",
+      "mode": "100644",
+      "blob": "54c6e8c4eda10b3ebb84ace0b1687cf1e3540524"
+    }
+  ],
+  "observed_default_before_oid": "30ca31ed3f4be23ae6e4d115d8d0f6273aae220a",
+  "candidate": {
+    "pr_number": 151,
+    "base_oid": "30ca31ed3f4be23ae6e4d115d8d0f6273aae220a",
+    "head_oid": "8f113ccaf5a6f0d5d38b6e3ebd9c693baab1c0f7",
+    "tree_oid": "dcd8e4c24b28dc30b933bd373cc938c24e5f4f7b"
+  },
+  "crosswake_ci": {
+    "name": "Crosswake CI",
+    "run_id": 34730772214,
+    "head_oid": "8f113ccaf5a6f0d5d38b6e3ebd9c693baab1c0f7",
+    "status": "COMPLETED",
+    "conclusion": "SUCCESS"
+  },
+  "merge": {
+    "oid": "6e9ea2853b67a118242292d6f3fe2ab71d3ac558",
+    "parent_oids": [
+      "30ca31ed3f4be23ae6e4d115d8d0f6273aae220a",
+      "8f113ccaf5a6f0d5d38b6e3ebd9c693baab1c0f7"
+    ],
+    "tree_oid": "dcd8e4c24b28dc30b933bd373cc938c24e5f4f7b"
+  },
+  "observed_default_after_oid": "6e9ea2853b67a118242292d6f3fe2ab71d3ac558",
+  "external_state_changed": true
+}
