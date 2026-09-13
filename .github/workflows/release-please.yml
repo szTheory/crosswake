@@ -834,6 +834,7 @@ jobs:
   native-release-rollup:
     name: Native release status rollup
     needs:
+      - approved-release-guard
       - release-please
       - publish-ios-core
       - clean-room-proof-ios
@@ -849,6 +850,7 @@ jobs:
         env:
           VERSION: ${{ needs.release-please.outputs.version }}
           PATHS_RELEASED: ${{ needs.release-please.outputs.paths_released || '[]' }}
+          LINKED_RELEASE: ${{ needs.approved-release-guard.outputs.linked_release }}
           IOS_PUBLISH_RESULT: ${{ needs.publish-ios-core.result }}
           IOS_PROOF_RESULT: ${{ needs.clean-room-proof-ios.result }}
           ANDROID_PUBLISH_RESULT: ${{ needs.publish-android-core.result }}
@@ -857,6 +859,11 @@ jobs:
           set -euo pipefail
 
           released_path() {
+            if [ "$LINKED_RELEASE" != "true" ]; then
+              printf "false"
+              return
+            fi
+
             case "$PATHS_RELEASED" in
               *"$1"*) printf "true" ;;
               *) printf "false" ;;

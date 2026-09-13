@@ -1048,7 +1048,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
     required_needs =
       Enum.all?(
-        ~w(release-please publish-ios-core clean-room-proof-ios publish-android-core clean-room-proof-android),
+        ~w(approved-release-guard release-please publish-ios-core clean-room-proof-ios publish-android-core clean-room-proof-android),
         &job_needs?(jobs, "native-release-rollup", &1)
       )
 
@@ -1061,11 +1061,14 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     check(
       "release.workflow.native_rollup_summary",
       required_needs and job_if(jobs, "native-release-rollup") == "${{ always() }}" and
-        required_results and includes?(block, "$GITHUB_STEP_SUMMARY") and
+        required_results and
+        includes?(block, "needs.approved-release-guard.outputs.linked_release") and
+        includes?(block, ~s([ "$LINKED_RELEASE" != "true" ])) and
+        includes?(block, "$GITHUB_STEP_SUMMARY") and
         includes?(block, "native_core=\"partial\"") and
         includes?(block, "native_core=${native_core}") and includes?(block, "next_action") and
         includes?(block, "Fix MIRROR_DEPLOY_KEY or run the iOS mirror backfill workflow."),
-      "native-release-rollup must always summarize native publish/proof results, expose partial native_core state, and give a next safe action"
+      "native-release-rollup must always summarize native publish/proof results, ignore proposal-only paths unless the exact linked-release guard passed, expose partial native_core state, and give a next safe action"
     )
   end
 
