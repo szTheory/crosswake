@@ -1,21 +1,21 @@
 ---
-gsd_state_version: 1.0
+gsd_state_version: "1.0"
 milestone: v22.0
 milestone_name: Quality Ratchet & Release Readiness
 current_phase: 168
 current_phase_name: 0.2.1 Release Candidate Readiness
-status: planning
-stopped_at: Phase 168 context gathered
-last_updated: "2026-09-12T23:17:21.285Z"
+status: executing
+stopped_at: Completed 168-07-PLAN.md
+last_updated: "2026-09-13T13:09:20.612Z"
 last_activity: 2026-09-12
-last_activity_desc: Phase 167 complete, transitioned to Phase 168
-state_head: f7075ad725458adac4000029b648545016ce13c0
+last_activity_desc: Phase 168 execution started
+state_head: a1f110e80c90e2b1429d2d119a807a89726daa4d
 progress:
   total_phases: 5
-  completed_phases: 4
-  total_plans: 35
-  completed_plans: 35
-  percent: 80
+  completed_phases: 3
+  total_plans: 43
+  completed_plans: 42
+  percent: 60
 workstream: quality-ratchet-release
 ---
 
@@ -27,22 +27,22 @@ See: `.planning/PROJECT.md` (updated 2026-09-12)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 168 — exact, approval-gated 0.2.1 release-candidate readiness
+**Current focus:** Phase 168 — 0.2.1 Release Candidate Readiness
 
 ## Current Position
 
-Phase: 168 — 0.2.1 Release Candidate Readiness
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-09-12 — Phase 167 complete, transitioned to Phase 168
+Phase: 168 (0.2.1 Release Candidate Readiness) — EXECUTING
+Plan: 8 of 8
+Status: Ready to execute
+Last activity: 2026-09-12 — Phase 168 execution started
 
-Progress: [████████░░] 80%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 35
+- Total plans completed: 37
 - Average duration: N/A
 - Total execution time: 0 hours
 
@@ -91,6 +91,13 @@ Progress: [████████░░] 80%
 | Phase 167 P07 | 27m | 2 tasks | 2 files |
 | Phase 167 P08 | 1h 28m | 3 tasks | 10 files |
 | Phase 167 P09 | 9min | 2 tasks | 2 files |
+| Phase 168 P01 | 38m | 3 tasks | 7 files |
+| Phase 168 P02 | 16m | 2 tasks | 9 files |
+| Phase 168 P03 | 38m | 2 tasks | 8 files |
+| Phase 168 P04 | 34m | 2 tasks | 5 files |
+| Phase 168 P05 | 26m | 2 tasks | 6 files |
+| Phase 168 P06 | 60m | 3 tasks | 12 files |
+| Phase 168 P07 | 22m | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -184,6 +191,26 @@ Progress: [████████░░] 80%
 - [Phase 167]: Hand Phase 168 only the five final path names and owner phase_168_first_reversible_landing; do not claim their blobs are on protected default.
 - [Phase 167]: Admit adoption authority only by exact membership in the three canonical seven-field tuples.
 - [Phase 167]: Return one stable complete_authority_tuple rule without echoing sensitive statement or boundary values.
+- [Phase 168]: Bind the first Phase 168 landing to exactly five retained path/mode/blob records, exact-head Crosswake CI, and a tree-identical two-parent merge.
+- [Phase 168]: Use a tracked historical lock fixture for positive reconciliation while current, missing, changed, and additional runtime state remains non-passing.
+- [Phase 168]: Treat release-only PR head/base/check refreshes as mutable observations while preserving strict open, unmerged, cursor-complete marker authority.
+- [Phase 168]: Represent receipt identity as separately validated bound and observed tuples so drift remains reproducible and a STALE receipt can validate itself.
+- [Phase 168]: Keep the Mix task evaluation-only; fixed flags delegate to the pure evaluator while later plans supply normalized external observations through the narrow adapter seam.
+- [Phase 168]: Write one canonical JSON receipt and derive every human projection from the same validated receipt map without color or raw adapter diagnostics.
+- [Phase 168]: Use official Hex unpack plus normalized metadata and payload digests as package evidence; repository trees and ephemeral roots are not durable authority.
+- [Phase 168]: Seed companion audits from the candidate core tarball inside exact-ref snapshots so public requirements remain testable without registry fallback.
+- [Phase 168]: Link only Hex, iOS core, and Android core at 0.2.1; companions and proposals remain independent approval outsiders.
+- [Phase 168]: Generate map-shaped companion settings and one explicit managed route so the real Doctor path evaluates the intended host contract.
+- [Phase 168]: Treat every install, compile, smoke, registration, and Doctor command as a fail-closed proof child before recording profile success.
+- [Phase 168]: Keep exact-public verification fixture-backed and dormant until 0.2.1 publication and an approved receipt make its live precondition true.
+- [Phase 168]: Phase 168 Plan 05 models baseline inspection, candidate rehearsal, ordinary publication, and recovery as four closed mirror modes.
+- [Phase 168]: Ordinary iOS mirror publication is atomic and fast-forward/equal only; exact-ref force-with-lease exists only in separately approved recovery.
+- [Phase 168]: Phase 168-06: Existing trusted Hex and iOS workflows own no-mutation rehearsal; no new workflow family or second approval was added.
+- [Phase 168]: Phase 168-06: Release Please and all one-way children require the approved head as merge parent with an identical approved tree.
+- [Phase 168]: Phase 168-06: Linked publications are independent siblings, while proofs retain narrow dependencies and rollup preserves exact PARTIAL truth.
+- [Phase 168]: Keep stable candidate fixtures always-on and route release-sensitive, Release Please, or ambiguous changes to exact-head full proof.
+- [Phase 168]: Keep real mirror authorization in the trusted workflow; ordinary PR CI remains credential-free.
+- [Phase 168]: Use read-only linked-coordinate status for BLOCKED/PARTIAL/COMPLETE and reserve READY FOR APPROVAL/STALE for the exact receipt authority.
 
 ### Pending Todos
 
@@ -207,6 +234,6 @@ Progress: [████████░░] 80%
 
 ## Session Continuity
 
-Last session: 2026-09-12T23:17:21.004Z
-Stopped at: Phase 168 context gathered
-Resume file: .planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-CONTEXT.md
+Last session: 2026-09-13T13:09:20.506Z
+Stopped at: Completed 168-07-PLAN.md
+Resume file: None

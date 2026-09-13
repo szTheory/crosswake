@@ -1,0 +1,9 @@
+{
+  "command": "asdf exec mix test test/crosswake/release_candidate/cleanroom_test.exs:16",
+  "exitCode": 2,
+  "output": "TAP version 13\n# Subtest: candidate-local proof normalizes six payloads, five profiles, and two isolated installs\nnot ok 1 - candidate-local proof normalizes six payloads, five profiles, and two isolated installs\n  ---\n  error: 'Cleanroom.evaluate!/1 must enforce candidate-local generated-host proof'\n  code: 'ERR_ASSERTION'\n  expected: true\n  actual: false\n  ...\n1..1\n# tests 1\n# pass 0\n# fail 1\n",
+  "targetTest": "candidate-local proof normalizes six payloads, five profiles, and two isolated installs",
+  "targetFile": "test/crosswake/release_candidate/cleanroom_test.exs",
+  "expected": "Cleanroom.evaluate!/1 accepts exactly six candidate payloads and returns five normalized profiles with two isolated installs",
+  "actual": "the public candidate clean-room evaluator was not implemented"
+}

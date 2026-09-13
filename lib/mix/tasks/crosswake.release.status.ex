@@ -1,7 +1,7 @@
 defmodule Mix.Tasks.Crosswake.Release.Status do
   use Mix.Task
 
-  @shortdoc "Report Crosswake package-family release readiness"
+  @shortdoc "Report read-only package-family and exact-candidate release truth"
 
   @moduledoc """
   Reports the local release graph, version drift, release-as staleness, and
@@ -15,6 +15,10 @@ defmodule Mix.Tasks.Crosswake.Release.Status do
   `--live` adds best-effort public registry probes for Hex, Maven Central, and
   the iOS SwiftPM mirror. The default is local-only so the task is fast and
   deterministic in CI.
+
+  The exact candidate projection uses the shared `BLOCKED`, `STALE`,
+  `READY FOR APPROVAL`, `PARTIAL`, and `COMPLETE` vocabulary. This command only
+  observes state; it never captures, approves, publishes, or recovers a candidate.
   """
 
   @impl Mix.Task

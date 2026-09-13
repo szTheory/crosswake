@@ -144,6 +144,10 @@ DISPOSITIONS = {
     146: ("release_only_deferred", "release_candidate_requires_phase_168", "phase_168_exact_candidate_and_maintainer_approval"),
     147: ("release_only_deferred", "release_candidate_requires_phase_168", "phase_168_exact_candidate_and_maintainer_approval"),
 }
+MERGED_ORDINARY_OIDS = {
+    105: "783bd74df1c050f6c0214da4682d198a528ba59c",
+    121: "159eebd7f68572ad5ab19f598ce1fb068e7b03b2",
+}
 RECOVERY_PATHS = {
     145: ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/default-branch-reconciliation-resolution.json",
     110: ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-110-resolution.json",
@@ -194,6 +198,155 @@ RUNTIME_HASHES = {
     RUNTIME_PATHS[1]: "fd4c22c0f07449f02acc487c3100eed7a10edb1382d63807dd4003a54bfd2943",
     RUNTIME_PATHS[2]: "6cf0413c5cc52eb4f9c10ba497f82614608a54659e10bd48172bad2d9765dff4",
 }
+CLOSEOUT_RESOLUTION_FIELDS = {
+    "schema_version",
+    "kind",
+    "baseline",
+    "scope",
+    "closeout",
+    "pre_reconciliation",
+    "current_observation",
+    "phase_168_handoff",
+}
+CLOSEOUT_BASELINE_FIELDS = {
+    "path",
+    "sha256",
+    "captured_at",
+    "default_oid",
+    "ordinary_numbers",
+    "recovery_numbers",
+}
+CLOSEOUT_SCOPE_RECEIPT_FIELDS = {
+    "path",
+    "sha256",
+    "payload_source_oid",
+    "payload_source_tree",
+}
+CLOSEOUT_FIELDS = {
+    "pr_number",
+    "tested_head_oid",
+    "tested_base_oid",
+    "tested_tree_oid",
+    "crosswake_ci",
+    "merge_commit_oid",
+    "merge_parent_oids",
+    "merge_tree_oid",
+    "candidate_reachable_from_fresh_default",
+    "fresh_default_oid",
+    "fresh_default_tree_oid",
+}
+CLOSEOUT_CI_FIELDS = {
+    "name",
+    "run_id",
+    "head_oid",
+    "status",
+    "conclusion",
+    "successful_contexts",
+    "total_contexts",
+}
+PRE_RECONCILIATION_FIELDS = {
+    "phase_branch",
+    "phase_branch_tip",
+    "local_main_before_oid",
+    "expected_local_main_after_oid",
+    "runtime_hashes",
+}
+CLOSEOUT_OBSERVATION_FIELDS = {
+    "captured_at",
+    "default_oid",
+    "open_pr_numbers",
+    "ordinary_prs",
+    "recovery_transactions",
+}
+CLOSEOUT_ORDINARY_FIELDS = {
+    "number",
+    "head_oid",
+    "base_oid",
+    "state",
+    "merge_oid",
+    "check_status",
+    "check_conclusion",
+    "marker_count",
+    "marker_digest",
+    "disposition",
+    "next_gate",
+    "drift",
+}
+CLOSEOUT_RECOVERY_FIELDS = {
+    "role",
+    "number",
+    "head_oid",
+    "state",
+    "merge_oid",
+    "replacement_number",
+}
+HANDOFF_FIELDS = {"owner", "paths"}
+PHASE168_ENTRY_FIELDS = {
+    "schema_version",
+    "kind",
+    "handoff_owner",
+    "path_blobs",
+    "observed_default_before_oid",
+    "candidate",
+    "crosswake_ci",
+    "merge",
+    "observed_default_after_oid",
+    "external_state_changed",
+}
+PHASE168_ENTRY_CANDIDATE_FIELDS = {"pr_number", "base_oid", "head_oid", "tree_oid"}
+PHASE168_ENTRY_MERGE_FIELDS = {"oid", "parent_oids", "tree_oid"}
+CLOSEOUT_OBSERVATION_RECEIPT_FIELDS = {
+    "schema_version",
+    "kind",
+    "default_oid",
+    "open_pr_numbers",
+    "closeout_pr",
+    "crosswake_ci",
+    "ordinary_prs",
+    "recovery_transactions",
+}
+CLOSEOUT_PR_FIELDS = {"number", "state", "head_oid", "base_oid", "merge_oid"}
+PHASE168_HANDOFF_PATHS = [
+    ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/phase167-closeout-resolution.json",
+    ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-08-SUMMARY.md",
+    ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-VERIFICATION.md",
+    ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
+    ".planning/workstreams/quality-ratchet-release/STATE.md",
+]
+PHASE168_ENTRY_PATH_BLOBS = [
+    {
+        "path": PHASE168_HANDOFF_PATHS[0],
+        "mode": "100644",
+        "blob": "78920bb2990121c7b5705a17fa5866a9b41f73be",
+    },
+    {
+        "path": PHASE168_HANDOFF_PATHS[1],
+        "mode": "100644",
+        "blob": "512786c4b492084696a6df308be7e8cf1a55bbe7",
+    },
+    {
+        "path": PHASE168_HANDOFF_PATHS[2],
+        "mode": "100644",
+        "blob": "dd146c148ef78d8cb06ed93433ced4e4b929a066",
+    },
+    {
+        "path": PHASE168_HANDOFF_PATHS[3],
+        "mode": "100644",
+        "blob": "ea598f1f65f4e61b40b496dfd4136d1b773ceb19",
+    },
+    {
+        "path": PHASE168_HANDOFF_PATHS[4],
+        "mode": "100644",
+        "blob": "54c6e8c4eda10b3ebb84ace0b1687cf1e3540524",
+    },
+]
+PHASE168_ENTRY_RECEIPT_PATH = Path(
+    ".planning/workstreams/quality-ratchet-release/phases/"
+    "168-0-2-1-release-candidate-readiness/evidence/phase168-entry-landing.json"
+)
+INVENTORY_PATH = ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-dispositions.json"
+TIMESTAMP = re.compile(r"^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$")
+SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
 @dataclass(frozen=True)
@@ -314,6 +467,11 @@ def check_snapshot(repository: str, head_oid: str) -> dict[str, Any] | None:
 
 def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
+
+
+def git_blob_oid(value: bytes) -> str:
+    header = f"blob {len(value)}\0".encode("ascii")
+    return hashlib.sha1(header + value).hexdigest()
 
 
 def file_sha256(path: str) -> str:
@@ -608,6 +766,819 @@ def validate_inventory(value: dict[str, Any], live: dict[str, Any] | None = None
     return problems
 
 
+def require_closeout(condition: bool) -> None:
+    if not condition:
+        raise ValueError("closed failure")
+
+
+def require_fields(value: Any, expected: set[str]) -> dict[str, Any]:
+    require_closeout(isinstance(value, dict) and set(value) == expected)
+    return value
+
+
+def require_oid(value: Any) -> str:
+    require_closeout(isinstance(value, str) and FULL_OID.fullmatch(value) is not None)
+    return value
+
+
+def require_sha256(value: Any) -> str:
+    require_closeout(isinstance(value, str) and SHA256.fullmatch(value) is not None)
+    return value
+
+
+def validate_closeout_observation_rows(
+    observation: dict[str, Any], baseline: dict[str, Any]
+) -> None:
+    require_fields(observation, CLOSEOUT_OBSERVATION_FIELDS)
+    require_closeout(
+        isinstance(observation.get("captured_at"), str)
+        and TIMESTAMP.fullmatch(observation["captured_at"]) is not None
+    )
+    require_oid(observation.get("default_oid"))
+    require_closeout(observation.get("open_pr_numbers") == DEFERRED_NUMBERS)
+
+    baseline_rows = {
+        item["number"]: item
+        for item in baseline["ordinary_prs"]
+        if isinstance(item, dict) and item.get("number") in ORDINARY_NUMBERS
+    }
+    rows = observation.get("ordinary_prs")
+    require_closeout(
+        isinstance(rows, list)
+        and [item.get("number") for item in rows if isinstance(item, dict)]
+        == ORDINARY_NUMBERS
+    )
+    marker_digest = sha256_bytes(DEFER_MARKER.encode("utf-8"))
+    for row in rows:
+        require_fields(row, CLOSEOUT_ORDINARY_FIELDS)
+        number = row.get("number")
+        require_closeout(number in ORDINARY_NUMBERS)
+        require_oid(row.get("head_oid"))
+        require_oid(row.get("base_oid"))
+        require_closeout(
+            row.get("check_status") == "COMPLETED"
+            and row.get("check_conclusion") in {"SUCCESS", "FAILURE"}
+        )
+        baseline_row = baseline_rows[number]
+        require_closeout(
+            row.get("disposition") == baseline_row.get("disposition")
+            and row.get("next_gate") == baseline_row.get("next_gate")
+        )
+        if number in DEFERRED_NUMBERS:
+            expected_drift = (
+                "post_closeout_release_pr_refresh" if number == 57 else "none"
+            )
+            require_closeout(
+                row.get("state") == "OPEN"
+                and row.get("merge_oid") is None
+                and row.get("marker_count") == 1
+                and row.get("marker_digest") == marker_digest
+                and row.get("drift") == expected_drift
+            )
+            if expected_drift == "none":
+                require_closeout(
+                    row.get("head_oid") == baseline_row.get("head_oid")
+                    and row.get("base_oid") == baseline_row.get("base_oid")
+                    and row.get("check_status")
+                    == baseline_row.get("check_summary", {}).get("status")
+                    and row.get("check_conclusion")
+                    == baseline_row.get("check_summary", {}).get("conclusion")
+                )
+            else:
+                require_closeout(
+                    row.get("head_oid") != baseline_row.get("head_oid")
+                    and row.get("base_oid") == observation.get("default_oid")
+                )
+        else:
+            expected_state = "CLOSED" if number == 110 else "MERGED"
+            require_closeout(
+                row.get("state") == expected_state
+                and row.get("marker_count") == 0
+                and row.get("marker_digest") is None
+                and row.get("drift") == "none"
+                and row.get("head_oid") == baseline_row.get("head_oid")
+                and row.get("base_oid") == baseline_row.get("base_oid")
+                and row.get("check_status")
+                == baseline_row.get("check_summary", {}).get("status")
+                and row.get("check_conclusion")
+                == baseline_row.get("check_summary", {}).get("conclusion")
+            )
+            if number == 110:
+                require_closeout(row.get("merge_oid") is None)
+            else:
+                require_closeout(row.get("merge_oid") == MERGED_ORDINARY_OIDS[number])
+
+    baseline_recovery = {
+        item["number"]: item
+        for item in baseline["recovery_transactions"]
+        if isinstance(item, dict) and item.get("number") in {110, 145, 148, 149}
+    }
+    recovery = observation.get("recovery_transactions")
+    require_closeout(
+        isinstance(recovery, list)
+        and [item.get("number") for item in recovery if isinstance(item, dict)]
+        == [145, 148, 110, 149]
+        and [item.get("role") for item in recovery if isinstance(item, dict)]
+        == RECOVERY_ROLES
+    )
+    for item in recovery:
+        require_fields(item, CLOSEOUT_RECOVERY_FIELDS)
+        number = item.get("number")
+        expected = baseline_recovery.get(number, {})
+        require_closeout(
+            item
+            == {
+                field: expected.get(field)
+                for field in CLOSEOUT_RECOVERY_FIELDS
+            }
+        )
+
+
+def validate_closeout_resolution(
+    value: dict[str, Any], scope_override: Path | None = None
+) -> None:
+    require_fields(value, CLOSEOUT_RESOLUTION_FIELDS)
+    require_closeout(
+        value.get("schema_version") == 1
+        and value.get("kind") == "phase167_closeout_resolution"
+    )
+
+    baseline_receipt = require_fields(value.get("baseline"), CLOSEOUT_BASELINE_FIELDS)
+    require_closeout(baseline_receipt.get("path") == INVENTORY_PATH)
+    require_sha256(baseline_receipt.get("sha256"))
+    baseline_path = ROOT / INVENTORY_PATH
+    baseline_bytes = baseline_path.read_bytes()
+    require_closeout(sha256_bytes(baseline_bytes) == baseline_receipt["sha256"])
+    baseline = json.loads(baseline_bytes.decode("utf-8"))
+    require_closeout(isinstance(baseline, dict) and not validate_inventory(baseline))
+    require_closeout(
+        baseline_receipt.get("captured_at") == baseline.get("captured_at")
+        and baseline_receipt.get("default_oid") == baseline.get("default_oid")
+        and baseline_receipt.get("ordinary_numbers") == ORDINARY_NUMBERS
+        and baseline_receipt.get("recovery_numbers") == [145, 148, 110, 149]
+    )
+
+    scope_receipt = require_fields(value.get("scope"), CLOSEOUT_SCOPE_RECEIPT_FIELDS)
+    require_closeout(scope_receipt.get("path") == CLOSEOUT_SCOPE_PATH)
+    require_sha256(scope_receipt.get("sha256"))
+    scope_path = scope_override if scope_override is not None else ROOT / CLOSEOUT_SCOPE_PATH
+    scope_bytes = scope_path.read_bytes()
+    require_closeout(sha256_bytes(scope_bytes) == scope_receipt["sha256"])
+    scope = json.loads(scope_bytes.decode("utf-8"))
+    require_closeout(isinstance(scope, dict))
+    validate_closeout_scope(scope)
+    require_closeout(
+        scope_receipt.get("payload_source_oid") == scope.get("payload_source_oid")
+        and scope_receipt.get("payload_source_tree") == scope.get("payload_source_tree")
+        and git_blob_oid(baseline_bytes)
+        == tree_record(scope["payload_source_oid"], INVENTORY_PATH)["blob"]
+    )
+
+    closeout = require_fields(value.get("closeout"), CLOSEOUT_FIELDS)
+    require_closeout(closeout.get("pr_number") == 150)
+    for field in (
+        "tested_head_oid",
+        "tested_base_oid",
+        "tested_tree_oid",
+        "merge_commit_oid",
+        "merge_tree_oid",
+        "fresh_default_oid",
+        "fresh_default_tree_oid",
+    ):
+        require_oid(closeout.get(field))
+    require_closeout(
+        closeout["tested_base_oid"] == baseline_receipt["default_oid"]
+        and closeout["tested_tree_oid"] == tree_oid(closeout["tested_head_oid"])
+        and git_text("rev-parse", f"{closeout['tested_head_oid']}^")
+        == scope["payload_source_oid"]
+        and diff_paths(scope["payload_source_oid"], closeout["tested_head_oid"])
+        == [CLOSEOUT_SCOPE_PATH]
+        and tree_record(closeout["tested_head_oid"], CLOSEOUT_SCOPE_PATH)["mode"]
+        == scope["self_excluded_manifest"]["expected_mode"]
+        and git_blob_oid(scope_bytes)
+        == tree_record(closeout["tested_head_oid"], CLOSEOUT_SCOPE_PATH)["blob"]
+    )
+    ci = require_fields(closeout.get("crosswake_ci"), CLOSEOUT_CI_FIELDS)
+    require_closeout(
+        ci.get("name") == "Crosswake CI"
+        and isinstance(ci.get("run_id"), int)
+        and not isinstance(ci.get("run_id"), bool)
+        and ci["run_id"] > 0
+        and ci.get("head_oid") == closeout["tested_head_oid"]
+        and ci.get("status") == "COMPLETED"
+        and ci.get("conclusion") == "SUCCESS"
+        and ci.get("successful_contexts") == 47
+        and ci.get("total_contexts") == 47
+    )
+    require_closeout(
+        closeout.get("merge_parent_oids")
+        == [closeout["tested_base_oid"], closeout["tested_head_oid"]]
+        and git_text("show", "-s", "--format=%P", closeout["merge_commit_oid"]).split()
+        == closeout["merge_parent_oids"]
+        and closeout["merge_tree_oid"] == tree_oid(closeout["merge_commit_oid"])
+        and closeout["merge_tree_oid"] == closeout["tested_tree_oid"]
+        and closeout.get("candidate_reachable_from_fresh_default") is True
+        and closeout["fresh_default_oid"] == closeout["merge_commit_oid"]
+        and closeout["fresh_default_tree_oid"] == tree_oid(closeout["fresh_default_oid"])
+        and closeout["fresh_default_tree_oid"] == closeout["tested_tree_oid"]
+    )
+    subprocess.run(
+        [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            closeout["tested_head_oid"],
+            closeout["fresh_default_oid"],
+        ],
+        cwd=ROOT,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    reconciliation = require_fields(
+        value.get("pre_reconciliation"), PRE_RECONCILIATION_FIELDS
+    )
+    require_closeout(
+        reconciliation.get("phase_branch") == "agent-phase167-fixforward"
+        and reconciliation.get("phase_branch_tip") == closeout["tested_head_oid"]
+        and require_oid(reconciliation.get("local_main_before_oid"))
+        and reconciliation.get("expected_local_main_after_oid")
+        == closeout["fresh_default_oid"]
+        and reconciliation.get("runtime_hashes") == RUNTIME_HASHES
+    )
+
+    observation = require_fields(
+        value.get("current_observation"), CLOSEOUT_OBSERVATION_FIELDS
+    )
+    validate_closeout_observation_rows(observation, baseline)
+    require_closeout(observation.get("default_oid") == closeout["fresh_default_oid"])
+
+    handoff = require_fields(value.get("phase_168_handoff"), HANDOFF_FIELDS)
+    require_closeout(
+        handoff.get("owner") == "phase_168_first_reversible_landing"
+        and handoff.get("paths") == PHASE168_HANDOFF_PATHS
+    )
+    serialized = json.dumps(value, sort_keys=True, separators=(",", ":")).lower()
+    require_closeout(not any(token in serialized for token in FORBIDDEN_EVIDENCE))
+
+
+def expected_closeout_observation(value: dict[str, Any]) -> dict[str, Any]:
+    closeout = value["closeout"]
+    current = value["current_observation"]
+    return {
+        "schema_version": 1,
+        "kind": "phase167_closeout_observation",
+        "default_oid": current["default_oid"],
+        "open_pr_numbers": current["open_pr_numbers"],
+        "closeout_pr": {
+            "number": closeout["pr_number"],
+            "state": "MERGED",
+            "head_oid": closeout["tested_head_oid"],
+            "base_oid": closeout["tested_base_oid"],
+            "merge_oid": closeout["merge_commit_oid"],
+        },
+        "crosswake_ci": closeout["crosswake_ci"],
+        "ordinary_prs": current["ordinary_prs"],
+        "recovery_transactions": current["recovery_transactions"],
+    }
+
+
+def validate_closeout_observation(value: Any, expected: dict[str, Any]) -> None:
+    require_fields(value, CLOSEOUT_OBSERVATION_RECEIPT_FIELDS)
+    require_closeout(
+        value.get("schema_version") == 1
+        and value.get("kind") == "phase167_closeout_observation"
+    )
+    require_fields(value.get("closeout_pr"), CLOSEOUT_PR_FIELDS)
+    require_fields(value.get("crosswake_ci"), CLOSEOUT_CI_FIELDS)
+    serialized = json.dumps(value, sort_keys=True, separators=(",", ":")).lower()
+    require_closeout(
+        not any(token in serialized for token in FORBIDDEN_EVIDENCE)
+        and value == expected
+    )
+
+
+def load_comment_marker_authority(number: int) -> dict[str, Any]:
+    require_closeout(isinstance(number, int) and not isinstance(number, bool) and number > 0)
+    query = """
+query($number: Int!, $before: String) {
+  repository(owner: "szTheory", name: "crosswake") {
+    pullRequest(number: $number) {
+      number
+      comments(last: 100, before: $before) {
+        nodes { id body }
+        pageInfo { hasPreviousPage startCursor }
+        totalCount
+      }
+    }
+  }
+}
+"""
+    before: str | None = None
+    expected_total: int | None = None
+    observed_total = 0
+    marker_count = 0
+    seen_cursors: set[str] = set()
+    seen_comment_ids: set[str] = set()
+
+    for _page_number in range(100):
+        arguments = ["api", "graphql", "-f", f"query={query}", "-F", f"number={number}"]
+        if before is not None:
+            arguments.extend(["-f", f"before={before}"])
+        response = gh_json(*arguments)
+        repository = response.get("data", {}).get("repository")
+        require_closeout(isinstance(repository, dict))
+        pull_request = require_fields(repository.get("pullRequest"), {"number", "comments"})
+        require_closeout(pull_request.get("number") == number)
+        connection = require_fields(
+            pull_request.get("comments"), {"nodes", "pageInfo", "totalCount"}
+        )
+        nodes = connection.get("nodes")
+        page_info = require_fields(
+            connection.get("pageInfo"), {"hasPreviousPage", "startCursor"}
+        )
+        total_count = connection.get("totalCount")
+        require_closeout(
+            isinstance(nodes, list)
+            and len(nodes) <= 100
+            and isinstance(total_count, int)
+            and not isinstance(total_count, bool)
+            and total_count >= 0
+            and isinstance(page_info.get("hasPreviousPage"), bool)
+        )
+        if expected_total is None:
+            expected_total = total_count
+        require_closeout(total_count == expected_total)
+
+        for comment in nodes:
+            item = require_fields(comment, {"id", "body"})
+            comment_id = item.get("id")
+            body = item.get("body")
+            require_closeout(
+                isinstance(comment_id, str)
+                and bool(comment_id)
+                and comment_id not in seen_comment_ids
+                and isinstance(body, str)
+            )
+            seen_comment_ids.add(comment_id)
+            observed_total += 1
+            if body == DEFER_MARKER:
+                marker_count += 1
+
+        has_previous = page_info["hasPreviousPage"]
+        start_cursor = page_info.get("startCursor")
+        if not has_previous:
+            require_closeout(observed_total == expected_total)
+            return {
+                "pr_number": number,
+                "complete": True,
+                "marker_count": marker_count,
+                "marker_digest": (
+                    sha256_bytes(DEFER_MARKER.encode("utf-8"))
+                    if marker_count
+                    else None
+                ),
+                "correction": "none",
+            }
+        require_closeout(
+            isinstance(start_cursor, str)
+            and bool(start_cursor)
+            and start_cursor not in seen_cursors
+        )
+        seen_cursors.add(start_cursor)
+        before = start_cursor
+
+    raise ValueError("closed failure")
+
+
+def load_closeout_live(value: dict[str, Any]) -> dict[str, Any]:
+    numbers = sorted(set(ORDINARY_NUMBERS + [145, 148, 149, 150]))
+    aliases = "\n".join(
+        f"p{number}: pullRequest(number:{number}) {{ ...PullRequestSnapshot }}"
+        for number in numbers
+    )
+    head_oid = value["closeout"]["tested_head_oid"]
+    query = f"""
+query {{
+  repository(owner:\"szTheory\", name:\"crosswake\") {{
+    defaultBranchRef {{ target {{ oid }} }}
+    pullRequests(states:OPEN, first:100) {{ nodes {{ number }} }}
+    closeoutCommit: object(expression:{json.dumps(head_oid)}) {{
+      ... on Commit {{ oid statusCheckRollup {{ contexts(first:100) {{ nodes {{
+        ... on CheckRun {{ name status conclusion checkSuite {{ workflowRun {{ databaseId }} }} }}
+        ... on StatusContext {{ context state }}
+      }} }} }} }}
+    }}
+    {aliases}
+  }}
+}}
+fragment PullRequestSnapshot on PullRequest {{
+  number state headRefOid baseRefOid
+  mergeCommit {{ oid }}
+  commits(last:1) {{ nodes {{ commit {{ oid statusCheckRollup {{ contexts(first:100) {{ nodes {{
+    ... on CheckRun {{ name status conclusion }}
+    ... on StatusContext {{ context state }}
+  }} }} }} }} }} }}
+}}
+"""
+    response = gh_json("api", "graphql", "-f", f"query={query}")
+    repository = response.get("data", {}).get("repository")
+    require_closeout(isinstance(repository, dict))
+
+    def snapshot(number: int) -> dict[str, Any]:
+        item = repository.get(f"p{number}")
+        require_closeout(isinstance(item, dict))
+        contexts = (
+            item.get("commits", {}).get("nodes", [{}])[-1]
+            .get("commit", {})
+            .get("statusCheckRollup", {})
+            .get("contexts", {})
+            .get("nodes", [])
+        )
+        check = next(
+            (
+                context
+                for context in contexts
+                if isinstance(context, dict) and context.get("name") == "Crosswake CI"
+            ),
+            {},
+        )
+        marker_authority = load_comment_marker_authority(number)
+        require_closeout(
+            marker_authority.get("pr_number") == number
+            and marker_authority.get("complete") is True
+            and marker_authority.get("correction") == "none"
+        )
+        return {
+            "number": item.get("number"),
+            "head_oid": item.get("headRefOid"),
+            "base_oid": item.get("baseRefOid"),
+            "state": item.get("state"),
+            "merge_oid": (item.get("mergeCommit") or {}).get("oid"),
+            "check_status": str(check.get("status", "")).upper(),
+            "check_conclusion": str(check.get("conclusion", "")).upper(),
+            "marker_count": marker_authority["marker_count"],
+            "marker_digest": marker_authority["marker_digest"],
+        }
+
+    expected = expected_closeout_observation(value)
+    ordinary = []
+    expected_rows = {item["number"]: item for item in expected["ordinary_prs"]}
+    for number in ORDINARY_NUMBERS:
+        observed = snapshot(number)
+        retained = expected_rows[number]
+        if number in DEFERRED_NUMBERS:
+            require_closeout(
+                observed.get("state") == "OPEN" and observed.get("merge_oid") is None
+            )
+            observed = {
+                **retained,
+                "state": observed["state"],
+                "merge_oid": observed["merge_oid"],
+                "marker_count": observed["marker_count"],
+                "marker_digest": observed["marker_digest"],
+            }
+        ordinary.append(
+            {
+                **observed,
+                "disposition": retained["disposition"],
+                "next_gate": retained["next_gate"],
+                "drift": retained["drift"],
+            }
+        )
+    recovery = []
+    expected_recovery = {item["number"]: item for item in expected["recovery_transactions"]}
+    for number in [145, 148, 110, 149]:
+        observed = snapshot(number)
+        retained = expected_recovery[number]
+        recovery.append(
+            {
+                "role": retained["role"],
+                "number": number,
+                "head_oid": observed["head_oid"],
+                "state": observed["state"],
+                "merge_oid": observed["merge_oid"],
+                "replacement_number": retained["replacement_number"],
+            }
+        )
+
+    closeout_snapshot = snapshot(150)
+    contexts = (
+        repository.get("closeoutCommit", {})
+        .get("statusCheckRollup", {})
+        .get("contexts", {})
+        .get("nodes", [])
+    )
+    check = next(
+        (
+            context
+            for context in contexts
+            if isinstance(context, dict) and context.get("name") == "Crosswake CI"
+        ),
+        {},
+    )
+    run = (check.get("checkSuite") or {}).get("workflowRun") or {}
+    successful = sum(
+        1
+        for context in contexts
+        if isinstance(context, dict)
+        and (
+            str(context.get("conclusion", "")).upper() == "SUCCESS"
+            or str(context.get("state", "")).upper() == "SUCCESS"
+        )
+    )
+    live_default_oid = repository.get("defaultBranchRef", {}).get("target", {}).get("oid")
+    require_oid(live_default_oid)
+    if live_default_oid != expected["default_oid"]:
+        entry = json.loads((ROOT / PHASE168_ENTRY_RECEIPT_PATH).read_text(encoding="utf-8"))
+        require_closeout(isinstance(entry, dict))
+        validate_phase168_entry_landing(entry, ROOT)
+        require_closeout(live_default_oid == entry.get("observed_default_after_oid"))
+    return {
+        "schema_version": 1,
+        "kind": "phase167_closeout_observation",
+        "default_oid": expected["default_oid"],
+        "open_pr_numbers": sorted(
+            item.get("number")
+            for item in repository.get("pullRequests", {}).get("nodes", [])
+            if isinstance(item, dict) and isinstance(item.get("number"), int)
+        ),
+        "closeout_pr": {
+            field: closeout_snapshot[field]
+            for field in CLOSEOUT_PR_FIELDS
+        },
+        "crosswake_ci": {
+            "name": check.get("name"),
+            "run_id": run.get("databaseId"),
+            "head_oid": head_oid,
+            "status": str(check.get("status", "")).upper(),
+            "conclusion": str(check.get("conclusion", "")).upper(),
+            "successful_contexts": successful,
+            "total_contexts": len(contexts),
+        },
+        "ordinary_prs": ordinary,
+        "recovery_transactions": recovery,
+    }
+
+
+def git_at(repository: Path, *args: str, binary: bool = False) -> str | bytes:
+    completed = subprocess.run(
+        ["git", *args],
+        cwd=repository,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=not binary,
+    )
+    return completed.stdout if binary else completed.stdout.strip()
+
+
+def entry_tree_oid(repository: Path, commit: str) -> str:
+    value = str(git_at(repository, "rev-parse", f"{commit}^{{tree}}"))
+    require_closeout(FULL_OID.fullmatch(value) is not None)
+    return value
+
+
+def entry_diff_paths(repository: Path, left: str, right: str) -> list[str]:
+    raw = git_at(
+        repository,
+        "diff-tree",
+        "--no-commit-id",
+        "--name-only",
+        "-r",
+        "-z",
+        left,
+        right,
+        binary=True,
+    )
+    require_closeout(isinstance(raw, bytes))
+    return sorted(item.decode("utf-8") for item in raw.split(b"\0") if item)
+
+
+def entry_tree_record(repository: Path, commit: str, path: str) -> dict[str, str]:
+    raw = git_at(repository, "ls-tree", "-z", commit, "--", path, binary=True)
+    require_closeout(isinstance(raw, bytes) and raw.count(b"\0") == 1)
+    metadata, actual = raw[:-1].split(b"\t", 1)
+    mode, kind, blob = metadata.decode("ascii").split(" ")
+    require_closeout(
+        actual.decode("utf-8") == path
+        and kind == "blob"
+        and mode == "100644"
+        and FULL_OID.fullmatch(blob) is not None
+    )
+    return {"path": path, "mode": mode, "blob": blob}
+
+
+def validate_phase168_entry_landing(
+    value: dict[str, Any], repository: Path, live: dict[str, Any] | None = None
+) -> None:
+    require_fields(value, PHASE168_ENTRY_FIELDS)
+    require_closeout(
+        value.get("schema_version") == 1
+        and value.get("kind") == "phase168_entry_landing"
+        and value.get("handoff_owner") == "phase_168_first_reversible_landing"
+        and value.get("path_blobs") == PHASE168_ENTRY_PATH_BLOBS
+        and value.get("external_state_changed") is True
+    )
+    repository = repository.resolve()
+    require_closeout(
+        repository.is_dir()
+        and Path(str(git_at(repository, "rev-parse", "--show-toplevel"))).resolve()
+        == repository
+    )
+    before = require_oid(value.get("observed_default_before_oid"))
+    after = require_oid(value.get("observed_default_after_oid"))
+    candidate = require_fields(value.get("candidate"), PHASE168_ENTRY_CANDIDATE_FIELDS)
+    require_closeout(
+        isinstance(candidate.get("pr_number"), int)
+        and not isinstance(candidate.get("pr_number"), bool)
+        and candidate["pr_number"] > 0
+    )
+    candidate_base = require_oid(candidate.get("base_oid"))
+    candidate_head = require_oid(candidate.get("head_oid"))
+    candidate_tree = require_oid(candidate.get("tree_oid"))
+    require_closeout(
+        before == candidate_base
+        and str(git_at(repository, "show", "-s", "--format=%P", candidate_head)) == before
+        and entry_tree_oid(repository, candidate_head) == candidate_tree
+        and entry_diff_paths(repository, before, candidate_head)
+        == sorted(PHASE168_HANDOFF_PATHS)
+        and [
+            entry_tree_record(repository, candidate_head, record["path"])
+            for record in PHASE168_ENTRY_PATH_BLOBS
+        ]
+        == PHASE168_ENTRY_PATH_BLOBS
+    )
+    ci = require_fields(value.get("crosswake_ci"), CLOSEOUT_CI_FIELDS - {"successful_contexts", "total_contexts"})
+    require_closeout(
+        ci.get("name") == "Crosswake CI"
+        and isinstance(ci.get("run_id"), int)
+        and not isinstance(ci.get("run_id"), bool)
+        and ci["run_id"] > 0
+        and ci.get("head_oid") == candidate_head
+        and ci.get("status") == "COMPLETED"
+        and ci.get("conclusion") == "SUCCESS"
+    )
+    merge = require_fields(value.get("merge"), PHASE168_ENTRY_MERGE_FIELDS)
+    merge_oid = require_oid(merge.get("oid"))
+    merge_tree = require_oid(merge.get("tree_oid"))
+    require_closeout(
+        merge.get("parent_oids") == [before, candidate_head]
+        and str(git_at(repository, "show", "-s", "--format=%P", merge_oid)).split()
+        == merge["parent_oids"]
+        and entry_tree_oid(repository, merge_oid) == merge_tree
+        and merge_tree == candidate_tree
+        and after == merge_oid
+        and subprocess.run(
+            ["git", "merge-base", "--is-ancestor", candidate_head, after],
+            cwd=repository,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        ).returncode
+        == 0
+    )
+    serialized = json.dumps(value, sort_keys=True, separators=(",", ":")).lower()
+    require_closeout(not any(token in serialized for token in FORBIDDEN_EVIDENCE))
+    if live is not None:
+        require_closeout(
+            live
+            == {
+                "default_oid": after,
+                "pr_number": candidate["pr_number"],
+                "pr_state": "MERGED",
+                "pr_head_oid": candidate_head,
+                "pr_base_oid": before,
+                "pr_merge_oid": merge_oid,
+                "run_id": ci["run_id"],
+                "run_head_oid": candidate_head,
+                "run_status": "COMPLETED",
+                "run_conclusion": "SUCCESS",
+            }
+        )
+
+
+def load_phase168_entry_landing_live(
+    value: dict[str, Any], repository: Path
+) -> dict[str, Any]:
+    candidate = value["candidate"]
+    query = f"""
+query {{
+  repository(owner:\"szTheory\", name:\"crosswake\") {{
+    defaultBranchRef {{ target {{ oid }} }}
+    pullRequest(number:{candidate['pr_number']}) {{
+      number state headRefOid baseRefOid mergeCommit {{ oid }}
+    }}
+    candidateCommit: object(expression:{json.dumps(candidate['head_oid'])}) {{
+      ... on Commit {{ statusCheckRollup {{ contexts(first:100) {{ nodes {{
+        ... on CheckRun {{ name status conclusion checkSuite {{ workflowRun {{ databaseId }} }} }}
+      }} }} }} }}
+    }}
+  }}
+}}
+"""
+    response = gh_json("api", "graphql", "-f", f"query={query}")
+    remote = response.get("data", {}).get("repository")
+    require_closeout(isinstance(remote, dict))
+    pr = require_fields(remote.get("pullRequest"), {"number", "state", "headRefOid", "baseRefOid", "mergeCommit"})
+    contexts = (
+        remote.get("candidateCommit", {})
+        .get("statusCheckRollup", {})
+        .get("contexts", {})
+        .get("nodes", [])
+    )
+    checks = [
+        item
+        for item in contexts
+        if isinstance(item, dict) and item.get("name") == "Crosswake CI"
+    ]
+    require_closeout(len(checks) == 1)
+    check = checks[0]
+    run = (check.get("checkSuite") or {}).get("workflowRun") or {}
+    default_oid = remote.get("defaultBranchRef", {}).get("target", {}).get("oid")
+    require_oid(default_oid)
+    subprocess.run(
+        ["git", "fetch", "--quiet", "--no-tags", "origin", default_oid],
+        cwd=repository,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return {
+        "default_oid": default_oid,
+        "pr_number": pr.get("number"),
+        "pr_state": pr.get("state"),
+        "pr_head_oid": pr.get("headRefOid"),
+        "pr_base_oid": pr.get("baseRefOid"),
+        "pr_merge_oid": (pr.get("mergeCommit") or {}).get("oid"),
+        "run_id": run.get("databaseId"),
+        "run_head_oid": candidate["head_oid"],
+        "run_status": str(check.get("status", "")).upper(),
+        "run_conclusion": str(check.get("conclusion", "")).upper(),
+    }
+
+
+def verify_local_reconciliation(
+    value: dict[str, Any], scope_path: Path, repository: Path
+) -> None:
+    validate_closeout_resolution(value, scope_path)
+    repository = repository.resolve()
+    require_closeout(repository.is_dir())
+    toplevel = Path(str(git_at(repository, "rev-parse", "--show-toplevel"))).resolve()
+    require_closeout(toplevel == repository)
+    reconciliation = value["pre_reconciliation"]
+    closeout = value["closeout"]
+    require_closeout(
+        git_at(repository, "branch", "--show-current")
+        == reconciliation["phase_branch"]
+        and git_at(repository, "rev-parse", "refs/heads/main")
+        == reconciliation["expected_local_main_after_oid"]
+        and git_at(repository, "rev-parse", f"{reconciliation['phase_branch_tip']}^{{commit}}")
+        == reconciliation["phase_branch_tip"]
+        and git_at(repository, "rev-parse", f"{closeout['merge_commit_oid']}^{{commit}}")
+        == closeout["merge_commit_oid"]
+    )
+    for ancestor, descendant in (
+        (reconciliation["phase_branch_tip"], "HEAD"),
+        (value["scope"]["payload_source_oid"], reconciliation["phase_branch_tip"]),
+        (closeout["tested_head_oid"], "refs/heads/main"),
+    ):
+        result = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", ancestor, descendant],
+            cwd=repository,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        require_closeout(result.returncode == 0)
+    require_closeout(
+        subprocess.run(
+            ["git", "diff", "--quiet"], cwd=repository, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        ).returncode
+        == 0
+        and subprocess.run(
+            ["git", "diff", "--cached", "--quiet"],
+            cwd=repository,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        ).returncode
+        == 0
+    )
+    raw_untracked = git_at(
+        repository, "ls-files", "--others", "--exclude-standard", "-z", binary=True
+    )
+    require_closeout(isinstance(raw_untracked, bytes))
+    untracked = sorted(
+        item.decode("utf-8") for item in raw_untracked.split(b"\0") if item
+    )
+    require_closeout(untracked == RUNTIME_PATHS)
+    require_closeout(
+        all(
+            sha256_bytes((repository / path).read_bytes()) == expected
+            for path, expected in reconciliation["runtime_hashes"].items()
+        )
+    )
+
+
 def valid_inventory_fixture() -> dict[str, Any]:
     oid = lambda char: char * 40
     rows = []
@@ -821,14 +1792,114 @@ def main() -> int:
     parser.add_argument("--verify-resolution", type=Path)
     parser.add_argument("--verify", type=Path)
     parser.add_argument("--verify-closeout-candidate", type=Path)
+    parser.add_argument("--verify-closeout-resolution", type=Path)
+    parser.add_argument("--verify-local-reconciliation", type=Path)
+    parser.add_argument("--verify-phase168-entry-landing", type=Path)
+    parser.add_argument("--verify-comment-pagination", type=int)
+    parser.add_argument("--observation", type=Path)
+    parser.add_argument("--scope", type=Path)
+    parser.add_argument("--repository", type=Path, default=ROOT)
     parser.add_argument("--candidate", default="HEAD")
     parser.add_argument("--local-clean-checkout", action="store_true")
     parser.add_argument("--live", action="store_true")
     args = parser.parse_args()
+    if args.verify_comment_pagination is not None:
+        number = args.verify_comment_pagination
+        try:
+            authority = load_comment_marker_authority(number)
+        except (
+            OSError,
+            ValueError,
+            KeyError,
+            TypeError,
+            IndexError,
+            subprocess.CalledProcessError,
+        ):
+            print(
+                "phase167-comment-pagination: BLOCKED"
+                f" pr={number} correction=retry_cursor_complete_comment_fetch"
+            )
+            return 1
+        digest = authority["marker_digest"] or "none"
+        print(
+            "phase167-comment-pagination: PASS"
+            f" pr={number} complete=true markers={authority['marker_count']}"
+            f" digest={digest}"
+        )
+        return 0
+    if args.verify_phase168_entry_landing is not None:
+        try:
+            raw = json.loads(args.verify_phase168_entry_landing.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                raise ValueError("entry landing must be an object")
+            live = (
+                load_phase168_entry_landing_live(raw, args.repository)
+                if args.live
+                else None
+            )
+            validate_phase168_entry_landing(raw, args.repository, live)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            ValueError,
+            KeyError,
+            TypeError,
+            IndexError,
+            subprocess.CalledProcessError,
+        ):
+            print("phase168-entry-landing: FAIL closed_failure")
+            return 1
+        source = "live" if args.live else "offline"
+        print(
+            "phase168-entry-landing: PASS paths=5"
+            f" observation={source} external_state_changed=true"
+        )
+        return 0
     if args.self_test:
         return self_test_inventory()
     if args.self_test_resolution:
         return self_test_resolution()
+    if args.verify_closeout_resolution is not None:
+        try:
+            if args.live and args.observation is not None:
+                raise ValueError("observation source")
+            raw = json.loads(args.verify_closeout_resolution.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                raise ValueError("resolution must be an object")
+            validate_closeout_resolution(raw, args.scope)
+            observation = None
+            source = None
+            if args.observation is not None:
+                observation = json.loads(args.observation.read_text(encoding="utf-8"))
+                source = "injected"
+            elif args.live:
+                observation = load_closeout_live(raw)
+                source = "live"
+            if observation is not None:
+                validate_closeout_observation(observation, expected_closeout_observation(raw))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError, KeyError, TypeError, IndexError, subprocess.CalledProcessError):
+            print("phase167-closeout-resolution: FAIL closed_failure")
+            return 1
+        suffix = f" observation={source}" if source is not None else ""
+        print(
+            "phase167-closeout-resolution: PASS ordinary=7 recovery=4 handoff=5"
+            f"{suffix}"
+        )
+        return 0
+    if args.verify_local_reconciliation is not None:
+        try:
+            if args.scope is None:
+                raise ValueError("scope required")
+            raw = json.loads(args.verify_local_reconciliation.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                raise ValueError("resolution must be an object")
+            verify_local_reconciliation(raw, args.scope, args.repository)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError, KeyError, TypeError, IndexError, subprocess.CalledProcessError):
+            print("phase167-local-reconciliation: FAIL closed_failure")
+            return 1
+        print("phase167-local-reconciliation: PASS branch=agent-phase167-fixforward runtime=3")
+        return 0
     if args.verify_closeout_candidate is not None:
         try:
             raw = json.loads(args.verify_closeout_candidate.read_text(encoding="utf-8"))

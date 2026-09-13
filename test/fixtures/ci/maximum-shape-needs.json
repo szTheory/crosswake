@@ -43,5 +43,7 @@
   "proof-dependency-security": {"result": "action_required", "outputs": {"irrelevance_reason": "all_changed_paths_allowlisted"}},
   "proof-requires-example-host": {"result": "action_required", "outputs": {"irrelevance_reason": "all_changed_paths_allowlisted"}},
   "release-as-staleness-proof": {"result": "action_required", "outputs": {"irrelevance_reason": "all_changed_paths_allowlisted"}},
+  "release-candidate-fixtures": {"result": "action_required", "outputs": {"irrelevance_reason": "all_changed_paths_allowlisted"}},
+  "release-candidate-full-proof": {"result": "action_required", "outputs": {"irrelevance_reason": "release_inputs_unchanged"}},
   "route-tour-proof": {"result": "action_required", "outputs": {"irrelevance_reason": "all_changed_paths_allowlisted"}}
 }

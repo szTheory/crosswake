@@ -50,6 +50,698 @@
 
 set -euo pipefail
 
+if command -v asdf >/dev/null 2>&1; then
+  RUNTIME=(asdf exec)
+else
+  RUNTIME=()
+fi
+
+# ---------------------------------------------------------------------------
+# Phase 168 package-family matrix
+# ---------------------------------------------------------------------------
+
+# The option-based interface is the candidate-grade path. The positional interface below remains
+# available for the existing independently versioned companion publication jobs until their
+# workflow owner migrates them in a later plan.
+if [ "${1:-}" = "--source-mode" ]; then
+  MATRIX_SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+  MATRIX_REPO_ROOT=$(cd "$MATRIX_SCRIPT_DIR/.." && pwd -P)
+  MATRIX_SOURCE_MODE=""
+  MATRIX_ARTIFACT_MANIFEST=""
+  MATRIX_APPROVED_MANIFEST=""
+  MATRIX_RESULT=""
+
+  matrix_fail() {
+    echo "[crosswake] FAIL: companion clean-room proof is blocked."
+    echo "[crosswake] What to do next: inspect the named invocation-local step and rerun with the exact source-mode authority."
+    exit 1
+  }
+
+  matrix_usage() {
+    echo "usage: verify_companion_cleanroom.sh --source-mode candidate-local --artifact-manifest <path> [--result <new-file>]" >&2
+    echo "       verify_companion_cleanroom.sh --source-mode exact-public --approved-manifest <path> [--result <new-file>]" >&2
+    exit 2
+  }
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --source-mode)
+        [ "$#" -ge 2 ] || matrix_usage
+        MATRIX_SOURCE_MODE="$2"
+        shift 2
+        ;;
+      --artifact-manifest)
+        [ "$#" -ge 2 ] || matrix_usage
+        MATRIX_ARTIFACT_MANIFEST="$2"
+        shift 2
+        ;;
+      --approved-manifest)
+        [ "$#" -ge 2 ] || matrix_usage
+        MATRIX_APPROVED_MANIFEST="$2"
+        shift 2
+        ;;
+      --result)
+        [ "$#" -ge 2 ] || matrix_usage
+        MATRIX_RESULT="$2"
+        shift 2
+        ;;
+      *) matrix_usage ;;
+    esac
+  done
+
+  case "$MATRIX_SOURCE_MODE" in
+    candidate-local)
+      [ -n "$MATRIX_ARTIFACT_MANIFEST" ] && [ -z "$MATRIX_APPROVED_MANIFEST" ] || matrix_usage
+      ;;
+    exact-public)
+      [ -z "$MATRIX_ARTIFACT_MANIFEST" ] && [ -n "$MATRIX_APPROVED_MANIFEST" ] || matrix_usage
+      MATRIX_ARTIFACT_MANIFEST="$MATRIX_APPROVED_MANIFEST"
+      ;;
+    *) matrix_usage ;;
+  esac
+
+  [ -f "$MATRIX_ARTIFACT_MANIFEST" ] || matrix_fail
+  MATRIX_ARTIFACT_MANIFEST=$(cd "$(dirname "$MATRIX_ARTIFACT_MANIFEST")" && pwd -P)/$(basename "$MATRIX_ARTIFACT_MANIFEST")
+  if [ "$MATRIX_SOURCE_MODE" = "exact-public" ]; then
+    MATRIX_APPROVED_MANIFEST="$MATRIX_ARTIFACT_MANIFEST"
+  fi
+
+  MATRIX_INVOCATION_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/crosswake-cleanroom.XXXXXX")
+  MATRIX_INVOCATION_ROOT=$(cd "$MATRIX_INVOCATION_ROOT" && pwd -P)
+  umask 077
+  printf '%s\n' 'crosswake-cleanroom-v1' > "$MATRIX_INVOCATION_ROOT/.crosswake-owned"
+
+  matrix_cleanup() {
+    if [ -n "${MATRIX_INVOCATION_ROOT:-}" ] &&
+      [ -f "$MATRIX_INVOCATION_ROOT/.crosswake-owned" ] &&
+      [ "$(cat "$MATRIX_INVOCATION_ROOT/.crosswake-owned")" = "crosswake-cleanroom-v1" ]; then
+      rm -rf -- "$MATRIX_INVOCATION_ROOT"
+    fi
+  }
+  trap matrix_cleanup EXIT
+
+  MATRIX_SOURCE_ROOT=$(python3 - "$MATRIX_ARTIFACT_MANIFEST" "$MATRIX_SOURCE_MODE" <<'PYEOF'
+import json
+import os
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as handle:
+    artifacts = json.load(handle)
+
+expected = [
+    "crosswake",
+    "crosswake_rulestead",
+    "crosswake_rindle",
+    "crosswake_sigra",
+    "crosswake_chimeway",
+    "crosswake_threadline",
+]
+if not isinstance(artifacts, list) or [item.get("package") for item in artifacts] != expected:
+    raise SystemExit(1)
+
+if sys.argv[2] == "exact-public":
+    print("")
+    raise SystemExit(0)
+
+roots = [os.path.realpath(item.get("unpacked_root", "")) for item in artifacts]
+parents = {os.path.dirname(os.path.dirname(root)) for root in roots}
+if len(parents) != 1 or any(not os.path.isdir(root) for root in roots):
+    raise SystemExit(1)
+print(parents.pop())
+PYEOF
+  ) || matrix_fail
+
+  if [ "$MATRIX_SOURCE_MODE" = "candidate-local" ]; then
+    case "$MATRIX_SOURCE_ROOT" in
+      "$MATRIX_REPO_ROOT"|"$MATRIX_REPO_ROOT"/*) matrix_fail ;;
+    esac
+  fi
+
+  matrix_artifact_field() {
+    local package="$1"
+    local field="$2"
+    jq -er --arg package "$package" --arg field "$field" \
+      '.[] | select(.package == $package) | .[$field]' "$MATRIX_ARTIFACT_MANIFEST"
+  }
+
+  MATRIX_GENERATOR_MIX_HOME="$MATRIX_INVOCATION_ROOT/generator/mix-home"
+  MATRIX_GENERATOR_HEX_HOME="$MATRIX_INVOCATION_ROOT/generator/hex-home"
+  mkdir -p "$MATRIX_GENERATOR_MIX_HOME/archives" "$MATRIX_GENERATOR_HEX_HOME"
+
+  MATRIX_SOURCE_ARCHIVES=$("${RUNTIME[@]}" elixir -e 'Application.ensure_all_started(:mix); IO.write(Mix.path_for(:archives))') || matrix_fail
+  MATRIX_HEX_ARCHIVE=$(find "$MATRIX_SOURCE_ARCHIVES" -mindepth 1 -maxdepth 1 -type d -name 'hex-*' | sort | tail -1)
+  [ -n "$MATRIX_HEX_ARCHIVE" ] || matrix_fail
+  cp -R "$MATRIX_HEX_ARCHIVE" "$MATRIX_GENERATOR_MIX_HOME/archives/"
+  MATRIX_ASDF_ERLANG_VERSION=$(awk '$1 == "erlang" { print $2 }' "$MATRIX_REPO_ROOT/.tool-versions")
+  MATRIX_ASDF_ELIXIR_VERSION=$(awk '$1 == "elixir" { print $2 }' "$MATRIX_REPO_ROOT/.tool-versions")
+
+  matrix_fetch_public_family() {
+    local public_root="$MATRIX_INVOCATION_ROOT/public-artifacts"
+    local normalized_manifest="$public_root/artifacts.json"
+    local candidate_ref package version tarball unpacked_root outer_checksum
+    local -a artifact_args=()
+    local -a succeeded=()
+    local -a failed=()
+
+    mkdir -p "$public_root/tarballs" "$public_root/unpacked"
+    candidate_ref=$(jq -er 'map(.candidate_ref) | unique | if length == 1 then .[0] else error("candidate ref") end' "$MATRIX_APPROVED_MANIFEST") || matrix_fail
+
+    for package in crosswake crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline; do
+      version=$(jq -er --arg package "$package" '.[] | select(.package == $package) | .version' "$MATRIX_APPROVED_MANIFEST") || matrix_fail
+      tarball="$public_root/tarballs/$package-$version.tar"
+      unpacked_root="$public_root/unpacked/$package"
+
+      echo "[crosswake] source_mode=exact-public package=$package version=$version step=fetch"
+      if ! env MIX_HOME="$MATRIX_GENERATOR_MIX_HOME" HEX_HOME="$MATRIX_GENERATOR_HEX_HOME" \
+        ASDF_ERLANG_VERSION="$MATRIX_ASDF_ERLANG_VERSION" \
+        ASDF_ELIXIR_VERSION="$MATRIX_ASDF_ELIXIR_VERSION" \
+        "${RUNTIME[@]}" mix hex.package fetch "$package" "$version" --output "$tarball" \
+          >"$MATRIX_INVOCATION_ROOT/fetch-$package.log" 2>&1; then
+        failed+=("$package")
+        continue
+      fi
+
+      mkdir "$unpacked_root"
+      if ! TARBALL="$tarball" UNPACKED_ROOT="$unpacked_root" \
+        MIX_HOME="$MATRIX_GENERATOR_MIX_HOME" \
+        ASDF_ERLANG_VERSION="$MATRIX_ASDF_ERLANG_VERSION" \
+        ASDF_ELIXIR_VERSION="$MATRIX_ASDF_ELIXIR_VERSION" \
+        "${RUNTIME[@]}" elixir -e '
+          Application.ensure_all_started(:mix)
+          Mix.Local.append_archives()
+          bytes = File.read!(System.fetch_env!("TARBALL"))
+          case :mix_hex_tarball.unpack(bytes, String.to_charlist(System.fetch_env!("UNPACKED_ROOT"))) do
+            {:ok, _result} -> :ok
+            _other -> System.halt(1)
+          end
+        ' >>"$MATRIX_INVOCATION_ROOT/fetch-$package.log" 2>&1; then
+        failed+=("$package")
+        continue
+      fi
+
+      outer_checksum=$(shasum -a 256 "$tarball" | awk '{print $1}')
+      artifact_args+=("$package" "$version" "$tarball" "$unpacked_root" "$outer_checksum" "built_tarball")
+      succeeded+=("$package")
+    done
+
+    if [ "${#failed[@]}" -gt 0 ]; then
+      SUCCEEDED_PACKAGES=$(IFS=,; echo "${succeeded[*]}")
+      FAILED_PACKAGES=$(IFS=,; echo "${failed[*]}")
+      SUCCEEDED_PACKAGES="$SUCCEEDED_PACKAGES" FAILED_PACKAGES="$FAILED_PACKAGES" python3 - <<'PYEOF'
+import json
+import os
+
+print(json.dumps({
+    "state": "PARTIAL",
+    "source_mode": "exact-public",
+    "succeeded_packages": [item for item in os.environ["SUCCEEDED_PACKAGES"].split(",") if item],
+    "failed_packages": [item for item in os.environ["FAILED_PACKAGES"].split(",") if item],
+    "external_state_changed": False,
+}, separators=(",", ":"), sort_keys=True))
+PYEOF
+      echo "[crosswake] FAIL: exact-public registry availability is partial; no profile result is complete."
+      exit 1
+    fi
+
+    (
+      cd "$MATRIX_REPO_ROOT"
+      "${RUNTIME[@]}" mix run --no-start -e 'Crosswake.ReleaseCandidate.Artifact.inspect_cli!(System.argv())' -- \
+        "$candidate_ref" "$public_root" "$normalized_manifest" "${artifact_args[@]}" >/dev/null
+    ) || matrix_fail
+
+    MATRIX_ARTIFACT_MANIFEST="$normalized_manifest"
+    MATRIX_SOURCE_ROOT="$public_root"
+  }
+
+  if [ "$MATRIX_SOURCE_MODE" = "exact-public" ]; then
+    matrix_fetch_public_family
+  fi
+
+  echo "[crosswake] source_mode=$MATRIX_SOURCE_MODE generator=phx_new 1.8.13 step=install-generator"
+  env MIX_HOME="$MATRIX_GENERATOR_MIX_HOME" HEX_HOME="$MATRIX_GENERATOR_HEX_HOME" \
+    "${RUNTIME[@]}" mix archive.install hex phx_new 1.8.13 --force >/dev/null || matrix_fail
+  env MIX_HOME="$MATRIX_GENERATOR_MIX_HOME" HEX_HOME="$MATRIX_GENERATOR_HEX_HOME" \
+    "${RUNTIME[@]}" mix local.rebar --force >/dev/null || matrix_fail
+
+  MATRIX_INSTALLS="$MATRIX_INVOCATION_ROOT/installs.tsv"
+  : > "$MATRIX_INSTALLS"
+
+  matrix_write_host() {
+    local host_root="$1"
+    local profile="$2"
+    local core_root companion_root core_version companion_version engine_dep companion_module
+
+    core_root=$(matrix_artifact_field crosswake unpacked_root) || matrix_fail
+    companion_root=$(matrix_artifact_field "crosswake_${profile}" unpacked_root) || matrix_fail
+    core_version=$(matrix_artifact_field crosswake version) || matrix_fail
+    companion_version=$(matrix_artifact_field "crosswake_${profile}" version) || matrix_fail
+
+    case "$profile" in
+      rulestead)
+        engine_dep='{:rulestead, "~> 0.1"}'
+        companion_module='Crosswake.Companions.Rulestead'
+        ;;
+      rindle)
+        engine_dep='{:rindle, "~> 0.1"}'
+        companion_module='Crosswake.Companions.Rindle'
+        ;;
+      sigra)
+        engine_dep=''
+        companion_module='Crosswake.Companions.Sigra'
+        ;;
+      chimeway)
+        engine_dep=''
+        companion_module='Crosswake.Companions.Chimeway'
+        ;;
+      threadline)
+        engine_dep=''
+        companion_module='Crosswake.Threadline'
+        ;;
+      *) matrix_fail ;;
+    esac
+
+    python3 - "$host_root/mix.exs" "$core_root" "$companion_root" "$profile" "$engine_dep" \
+      "$MATRIX_SOURCE_MODE" "$core_version" "$companion_version" <<'PYEOF'
+import json
+import sys
+
+(
+    mix_path,
+    core_root,
+    companion_root,
+    profile,
+    engine_dep,
+    source_mode,
+    core_version,
+    companion_version,
+) = sys.argv[1:]
+with open(mix_path, "r", encoding="utf-8") as handle:
+    source = handle.read()
+
+needle = "  defp deps do\n    [\n"
+if source.count(needle) != 1:
+    raise SystemExit(1)
+
+if source_mode == "candidate-local":
+    deps = [
+        f"      {{:crosswake, path: {json.dumps(core_root)}, override: true}},",
+        f"      {{:crosswake_{profile}, path: {json.dumps(companion_root)}}},",
+    ]
+elif source_mode == "exact-public":
+    deps = [
+        f"      {{:crosswake, \"== {core_version}\", override: true}},",
+        f"      {{:crosswake_{profile}, \"== {companion_version}\"}},",
+    ]
+else:
+    raise SystemExit(1)
+if engine_dep:
+    deps.append(f"      {engine_dep},")
+
+source = source.replace(needle, needle + "\n".join(deps) + "\n", 1)
+with open(mix_path, "w", encoding="utf-8") as handle:
+    handle.write(source)
+PYEOF
+
+    python3 - "$host_root/config/runtime.exs" "$profile" "$companion_module" <<'PYEOF'
+import sys
+
+runtime_path, profile, companion_module = sys.argv[1:]
+if profile == "threadline":
+    positive = "[]"
+    negative = f"[{companion_module}]"
+else:
+    positive = f"[{companion_module}]"
+    negative = "[]"
+
+with open(runtime_path, "a", encoding="utf-8") as handle:
+    handle.write(
+        "\n# Crosswake candidate clean-room registration control.\n"
+        "companions =\n"
+        "  if System.get_env(\"CROSSWAKE_NEGATIVE_CONTROL\") == \"1\",\n"
+        f"    do: {negative},\n"
+        f"    else: {positive}\n\n"
+        "config :crosswake, :companions, companions\n"
+        f"config :crosswake, :{profile}, %{{enabled: true}}\n"
+    )
+PYEOF
+
+    python3 - "$host_root/lib/clean_room_host_web/router.ex" <<'PYEOF'
+import sys
+
+router_path = sys.argv[1]
+with open(router_path, "r", encoding="utf-8") as handle:
+    source = handle.read()
+
+needle = '    get "/", PageController, :home\n'
+replacement = '''    get "/", PageController, :home,
+      metadata: %{
+        crosswake: [
+          id: "clean-room-home",
+          runtime: :live_view,
+          offline: :unavailable,
+          security: :standard
+        ]
+      }
+'''
+
+if source.count(needle) != 1:
+    raise SystemExit(1)
+
+with open(router_path, "w", encoding="utf-8") as handle:
+    handle.write(source.replace(needle, replacement, 1))
+PYEOF
+  }
+
+  matrix_write_smoke() {
+    local host_root="$1"
+    local profile="$2"
+    local smoke="$host_root/test/crosswake_cleanroom_smoke_test.exs"
+
+    python3 - "$smoke" "$profile" <<'PYEOF'
+import sys
+
+path, profile = sys.argv[1:]
+module = {
+    "rulestead": "Crosswake.Companions.Rulestead",
+    "rindle": "Crosswake.Companions.Rindle",
+    "sigra": "Crosswake.Companions.Sigra",
+    "chimeway": "Crosswake.Companions.Chimeway",
+    "threadline": "Crosswake.Threadline",
+}[profile]
+
+common = f'''defmodule CleanRoomHost.CrosswakeSmokeTest do
+  use ExUnit.Case, async: false
+
+  @module {module}
+
+  test "generated Phoenix runtime, router, and package application are live" do
+    assert Application.spec(:phoenix, :vsn)
+    assert Application.spec(:crosswake, :vsn)
+    assert [_route | _rest] = CleanRoomHostWeb.Router.__routes__()
+    assert Application.get_env(:crosswake, :{profile})[:enabled] == true
+  end
+
+  test "registration posture is exact" do
+    registered = Application.get_env(:crosswake, :companions, [])
+'''
+
+if profile == "threadline":
+    registration = '''    refute @module in registered
+    assert registered == []
+  end
+'''
+else:
+    registration = '''    assert @module in registered
+    assert registered == [@module]
+  end
+'''
+
+specific = {
+    "rulestead": '''
+  test "Rulestead engine and dependency behavior are non-vacuous" do
+    assert Code.ensure_loaded?(Rulestead)
+    assert Crosswake.Companions.Rulestead.validate_dependency() == :ok
+    assert Crosswake.Companions.Rulestead.companion_id() == :rulestead
+  end
+''',
+    "rindle": '''
+  test "Rindle engine, dependency, and contracts behavior are non-vacuous" do
+    assert Code.ensure_loaded?(Rindle)
+    assert Crosswake.Companions.Rindle.validate_dependency() == :ok
+    assert Crosswake.Companions.Rindle.Contracts.media_state_vocabulary() != []
+  end
+''',
+    "sigra": '''
+  test "Sigra projects a real allow and a closed denial" do
+    assert Crosswake.Companions.Sigra.auth_authority?()
+    assert {:allow, %{status: :allow}} = Crosswake.Companions.Sigra.evaluate_auth(nil, nil, [])
+    assert {:deny, :sigra_denied} = Crosswake.Companions.Sigra.replay_decision(:invalid, :invalid, [])
+  end
+''',
+    "chimeway": '''
+  test "Chimeway telemetry is present while Sigra stays absent" do
+    assert length(Crosswake.Companions.Chimeway.Telemetry.event_names()) == 10
+    refute Code.ensure_loaded?(Crosswake.Companions.Sigra)
+  end
+''',
+    "threadline": '''
+  test "Threadline ships Plug, Telemetry, Ledger, and both templates without siblings" do
+    assert length(Crosswake.Threadline.Telemetry.event_names()) == 3
+    assert Crosswake.Plug.Threadline.init([])[:header_name] == "x-crosswake-thread-id"
+    assert byte_size(Crosswake.Audit.Ledger.actor_ref("fixture", secret: "fixture")) == 64
+    refute Code.ensure_loaded?(Crosswake.Companions.Sigra)
+    refute Code.ensure_loaded?(Crosswake.Companions.Chimeway)
+
+    app_root = Application.app_dir(:crosswake_threadline)
+    assert File.regular?(Path.join(app_root, "priv/templates/crosswake/audit/ledger.ex.eex"))
+    assert File.regular?(Path.join(app_root, "priv/templates/crosswake/audit/migration.exs.eex"))
+  end
+''',
+}[profile]
+
+with open(path, "w", encoding="utf-8") as handle:
+    handle.write(common + registration + specific + "end\n")
+PYEOF
+  }
+
+  matrix_registration_check() {
+    local profile="$1"
+    local mode="$2"
+    local expression
+
+    case "$profile" in
+      rulestead) expression='Crosswake.Companions.Rulestead' ;;
+      rindle) expression='Crosswake.Companions.Rindle' ;;
+      sigra) expression='Crosswake.Companions.Sigra' ;;
+      chimeway) expression='Crosswake.Companions.Chimeway' ;;
+      threadline) expression='Crosswake.Threadline' ;;
+      *) matrix_fail ;;
+    esac
+
+    if [ "$profile" = "threadline" ]; then
+      expression="registered = Application.get_env(:crosswake, :companions, []); if ${expression} in registered, do: System.halt(23)"
+    else
+      expression="registered = Application.get_env(:crosswake, :companions, []); unless ${expression} in registered, do: System.halt(23)"
+    fi
+
+    if [ "$mode" = "negative" ]; then
+      if CROSSWAKE_NEGATIVE_CONTROL=1 "${RUNTIME[@]}" mix run --no-compile -e "$expression" >/dev/null 2>&1; then
+        matrix_fail
+      fi
+    else
+      "${RUNTIME[@]}" mix run --no-compile -e "$expression" >/dev/null || matrix_fail
+    fi
+  }
+
+  for MATRIX_PROFILE in rulestead rindle sigra chimeway threadline; do
+    for INSTALL_PASS in 1 2; do
+      MATRIX_PASS_ROOT="$MATRIX_INVOCATION_ROOT/runs/${MATRIX_PROFILE}/${INSTALL_PASS}"
+      MATRIX_HOST_ROOT="$MATRIX_PASS_ROOT/host"
+      MATRIX_MIX_HOME="$MATRIX_PASS_ROOT/mix-home"
+      MATRIX_HEX_HOME="$MATRIX_PASS_ROOT/hex-home"
+      MATRIX_DEPS="$MATRIX_PASS_ROOT/deps"
+      MATRIX_BUILD="$MATRIX_PASS_ROOT/build"
+      mkdir -p "$MATRIX_PASS_ROOT" "$MATRIX_MIX_HOME/archives" "$MATRIX_HEX_HOME" "$MATRIX_DEPS" "$MATRIX_BUILD"
+      cp -R "$MATRIX_GENERATOR_MIX_HOME/." "$MATRIX_MIX_HOME/"
+
+      echo "[crosswake] source_mode=$MATRIX_SOURCE_MODE profile=$MATRIX_PROFILE install=$INSTALL_PASS step=generate"
+      env MIX_HOME="$MATRIX_MIX_HOME" HEX_HOME="$MATRIX_HEX_HOME" \
+        ASDF_ERLANG_VERSION="$MATRIX_ASDF_ERLANG_VERSION" \
+        ASDF_ELIXIR_VERSION="$MATRIX_ASDF_ELIXIR_VERSION" \
+        "${RUNTIME[@]}" mix phx.new "$MATRIX_HOST_ROOT" --app clean_room_host --module CleanRoomHost \
+          --no-ecto --no-assets --no-dashboard --no-mailer --no-gettext --no-install \
+          --no-version-check >/dev/null || matrix_fail
+
+      matrix_write_host "$MATRIX_HOST_ROOT" "$MATRIX_PROFILE" || matrix_fail
+      matrix_write_smoke "$MATRIX_HOST_ROOT" "$MATRIX_PROFILE" || matrix_fail
+
+      (
+        cd "$MATRIX_HOST_ROOT"
+        export MIX_HOME="$MATRIX_MIX_HOME"
+        export HEX_HOME="$MATRIX_HEX_HOME"
+        export MIX_DEPS_PATH="$MATRIX_DEPS"
+        export MIX_BUILD_PATH="$MATRIX_BUILD"
+        export MIX_ENV=test
+        export CROSSWAKE_RELEASE=1
+        export ASDF_ERLANG_VERSION="$MATRIX_ASDF_ERLANG_VERSION"
+        export ASDF_ELIXIR_VERSION="$MATRIX_ASDF_ELIXIR_VERSION"
+
+        "${RUNTIME[@]}" mix deps.get >/dev/null || matrix_fail
+        "${RUNTIME[@]}" mix compile --warnings-as-errors >/dev/null || matrix_fail
+        "${RUNTIME[@]}" mix run --no-compile -e 'unless CleanRoomHostWeb.Router.__routes__() != [], do: System.halt(22)' >/dev/null || matrix_fail
+        "${RUNTIME[@]}" mix test test/crosswake_cleanroom_smoke_test.exs >/dev/null || matrix_fail
+        matrix_registration_check "$MATRIX_PROFILE" positive
+        matrix_registration_check "$MATRIX_PROFILE" negative
+        "${RUNTIME[@]}" mix crosswake.doctor --router CleanRoomHostWeb.Router > "$MATRIX_PASS_ROOT/doctor.log" || matrix_fail
+        [ -s "$MATRIX_PASS_ROOT/doctor.log" ] || matrix_fail
+
+        MATRIX_PATH_LOCK_COUNT=$("${RUNTIME[@]}" elixir -e '
+          {lock, _binding} = Code.eval_file("mix.lock")
+          count = Enum.count(lock, fn {_app, entry} -> is_tuple(entry) and elem(entry, 0) == :path end)
+          IO.write(count)
+        ') || matrix_fail
+        [ "$MATRIX_PATH_LOCK_COUNT" = "0" ] || matrix_fail
+        printf '%s\t%s\t%s\t%s\t%s\n' "$MATRIX_PROFILE" "$INSTALL_PASS" "PASS" "$MATRIX_PASS_ROOT" "$MATRIX_PATH_LOCK_COUNT" >> "$MATRIX_INSTALLS"
+      ) || matrix_fail
+    done
+  done
+
+  MATRIX_LIVE_STATUS="not_applicable"
+  if [ "$MATRIX_SOURCE_MODE" = "exact-public" ]; then
+    if (
+      cd "$MATRIX_REPO_ROOT"
+      "${RUNTIME[@]}" mix crosswake.release.status --live > "$MATRIX_INVOCATION_ROOT/release-status.log" 2>&1
+    ); then
+      MATRIX_LIVE_STATUS="PASS"
+    else
+      MATRIX_LIVE_STATUS="BLOCKED"
+    fi
+  fi
+
+  MATRIX_INPUT="$MATRIX_INVOCATION_ROOT/observation.json"
+  python3 - "$MATRIX_ARTIFACT_MANIFEST" "$MATRIX_INSTALLS" "$MATRIX_INPUT" \
+    "$MATRIX_REPO_ROOT" "$MATRIX_SOURCE_ROOT" "$MATRIX_SOURCE_MODE" \
+    "$MATRIX_APPROVED_MANIFEST" "$MATRIX_LIVE_STATUS" <<'PYEOF'
+import json
+import sys
+
+(
+    manifest_path,
+    installs_path,
+    output_path,
+    repository_root,
+    source_root,
+    source_mode,
+    approved_manifest_path,
+    live_status,
+) = sys.argv[1:]
+with open(manifest_path, "r", encoding="utf-8") as handle:
+    source_artifacts = json.load(handle)
+
+artifacts = [
+    {
+        "package": item["package"],
+        "version": item["version"],
+        "source": item["source"],
+        "unpacked_root": item["unpacked_root"],
+        "metadata_digest": item["metadata_digest"],
+        "payload_digest": item["payload_digest"],
+    }
+    for item in source_artifacts
+]
+
+installs = []
+with open(installs_path, "r", encoding="utf-8") as handle:
+    for line in handle:
+        profile, install_pass, status, scratch_root, path_lock_count = line.rstrip("\n").split("\t")
+        installs.append({
+            "profile": profile,
+            "pass": int(install_pass),
+            "status": status,
+            "scratch_root": scratch_root,
+            "path_lock_count": int(path_lock_count),
+        })
+
+common = [
+    "generated_phoenix",
+    "compile_warnings_as_errors",
+    "runtime_config_loaded",
+    "router_output",
+    "public_smoke",
+    "registration",
+    "doctor",
+]
+specific = {
+    "rulestead": ["engine_loaded", "dependency_validated"],
+    "rindle": ["engine_loaded", "dependency_validated", "contracts_nonempty"],
+    "sigra": ["auth_non_vacuous"],
+    "chimeway": ["sigra_absent", "telemetry_events"],
+    "threadline": ["observer_unregistered", "siblings_absent", "plug", "telemetry", "ledger", "templates"],
+}
+profile_results = [
+    {
+        "profile": profile,
+        "package": f"crosswake_{profile}",
+        "status": "PASS",
+        "passed_checks": common + checks,
+        "negative_control": "PASS",
+    }
+    for profile, checks in specific.items()
+]
+
+if source_mode == "candidate-local":
+    observation = {
+        "source_mode": source_mode,
+        "generator_version": "1.8.13",
+        "repository_root": repository_root,
+        "source_root": source_root,
+        "artifacts": artifacts,
+        "installs": installs,
+        "profile_results": profile_results,
+        "live_status": live_status,
+    }
+elif source_mode == "exact-public":
+    with open(approved_manifest_path, "r", encoding="utf-8") as handle:
+        approved_source = json.load(handle)
+
+    observation = {
+        "source_mode": source_mode,
+        "generator_version": "1.8.13",
+        "repository_root": repository_root,
+        "source_root": source_root,
+        "approved_artifacts": [
+            {
+                "package": item["package"],
+                "version": item["version"],
+                "metadata_digest": item["metadata_digest"],
+                "payload_digest": item["payload_digest"],
+            }
+            for item in approved_source
+        ],
+        "public_artifacts": [
+            {
+                **item,
+                "source": "hex_registry",
+                "status": "PASS",
+                "path_lock_count": 0,
+            }
+            for item in artifacts
+        ],
+        "installs": installs,
+        "profile_results": profile_results,
+        "live_status": live_status,
+    }
+else:
+    raise SystemExit(1)
+
+with open(output_path, "x", encoding="utf-8") as handle:
+    json.dump(observation, handle, separators=(",", ":"), sort_keys=True)
+    handle.write("\n")
+PYEOF
+
+  if [ -z "$MATRIX_RESULT" ]; then
+    MATRIX_RESULT="$MATRIX_INVOCATION_ROOT/result.json"
+  else
+    [ ! -e "$MATRIX_RESULT" ] || matrix_fail
+  fi
+
+  (
+    cd "$MATRIX_REPO_ROOT"
+    "${RUNTIME[@]}" mix run --no-start -e 'Crosswake.ReleaseCandidate.Cleanroom.evaluate_cli!(System.argv())' -- \
+      "$MATRIX_INPUT" "$MATRIX_RESULT" >/dev/null
+  ) || matrix_fail
+
+  jq -c '{state,source_mode,generator_version,install_count,package_count,profile_count,path_lock_count,succeeded_packages,failed_packages,profile_results,live_status}' "$MATRIX_RESULT"
+
+  if [ "$MATRIX_SOURCE_MODE" = "exact-public" ]; then
+    [ "$(jq -r '.state' "$MATRIX_RESULT")" = "COMPLETE" ] || matrix_fail
+    echo "[crosswake] OK: exact-public package family matched approved digests, passed five profiles, and passed fail-closed live status."
+  else
+    echo "[crosswake] OK: candidate-local package family passed five non-vacuous profiles across two isolated installs."
+  fi
+  exit 0
+fi
+
 # ---------------------------------------------------------------------------
 # Parameters (D-16)
 # ---------------------------------------------------------------------------
@@ -306,7 +998,18 @@ package_config
 validate_inputs
 
 METADATA_FILE=$(mktemp "${TMPDIR:-/tmp}/crosswake-cleanroom-release.XXXXXX.json")
-trap 'rm -f "$METADATA_FILE"' EXIT
+CLEAN_ROOM_OWNER=""
+
+legacy_cleanup() {
+  rm -f "$METADATA_FILE"
+
+  if [ -n "$CLEAN_ROOM_OWNER" ] && [ -f "$CLEAN_ROOM_OWNER/.crosswake-owned" ] &&
+    [ "$(cat "$CLEAN_ROOM_OWNER/.crosswake-owned")" = "crosswake-cleanroom-legacy-v1" ]; then
+    rm -rf -- "$CLEAN_ROOM_OWNER"
+  fi
+}
+
+trap legacy_cleanup EXIT
 
 fetch_hex_release_metadata "$METADATA_FILE"
 parse_core_requirement_from_release "$METADATA_FILE"
@@ -328,13 +1031,14 @@ ok "Step 1: package=${PACKAGE} version=${VERSION} core_floor=${CORE_REQUIREMENT}
 # Step 2: Create throwaway Phoenix host OUTSIDE the monorepo (D-17)
 # ---------------------------------------------------------------------------
 
-# Underscores, not hyphens: the basename becomes the `mix new` app name, which must be a
-# valid Elixir atom (hyphens error: "Application name must start with a lowercase ASCII letter").
-CLEAN_ROOM_DIR="${RUNNER_TEMP:-/tmp}/clean_room_${PACKAGE}"
+# Underscores, not hyphens: the host basename becomes the application name. The owner directory
+# is exclusively created, marked, and is the only directory this invocation may remove.
+CLEAN_ROOM_OWNER=$(mktemp -d "${RUNNER_TEMP:-/tmp}/crosswake-cleanroom-legacy.XXXXXX")
+CLEAN_ROOM_OWNER=$(cd "$CLEAN_ROOM_OWNER" && pwd -P)
+printf '%s\n' 'crosswake-cleanroom-legacy-v1' > "$CLEAN_ROOM_OWNER/.crosswake-owned"
+CLEAN_ROOM_DIR="$CLEAN_ROOM_OWNER/clean_room_${PACKAGE}"
 
 echo "[crosswake] Step 2: creating throwaway Phoenix host at ${CLEAN_ROOM_DIR}..."
-
-rm -rf "$CLEAN_ROOM_DIR"
 
 # mix new in the PARENT of CLEAN_ROOM_DIR, naming the subdirectory.
 # Create ONLY the parent — `mix new "$APP_NAME"` creates the leaf dir itself; pre-creating
@@ -700,7 +1404,7 @@ cat >> config/runtime.exs <<CONFIGEOF
 import Config
 # Clean-room: register ${COMPANION_MODULE} (no-engine mode — pure-Elixir auth, no engine dep)
 config :crosswake, :companions, [${COMPANION_MODULE}]
-config :crosswake, :${COMPANION_SUFFIX}, enabled: true
+config :crosswake, :${COMPANION_SUFFIX}, %{enabled: true}
 CONFIGEOF
 else
 # Engine mode: register companion + engine config.
@@ -709,7 +1413,7 @@ cat >> config/runtime.exs <<CONFIGEOF
 import Config
 # Clean-room: register ${COMPANION_MODULE} with engine ${ENGINE_MODULE} enabled
 config :crosswake, :companions, [${COMPANION_MODULE}]
-config :crosswake, :${COMPANION_SUFFIX}, enabled: true
+config :crosswake, :${COMPANION_SUFFIX}, %{enabled: true}
 CONFIGEOF
 fi
 

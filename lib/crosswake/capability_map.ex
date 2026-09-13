@@ -67,6 +67,46 @@ defmodule Crosswake.CapabilityMap do
   @reference_evidence_date ~D[2026-08-27]
   @reference_ios_runtime_line "26.6"
 
+  @authority_fields [
+    :evidence_subject,
+    :source_binding,
+    :activation_state,
+    :proof_source,
+    :recorded_on,
+    :ios_runtime_line,
+    :support_promotion
+  ]
+
+  @complete_authority_tuples [
+    %{
+      evidence_subject: :crosswake_contract,
+      source_binding: :repository_bound,
+      activation_state: :available,
+      proof_source: :repository_contract,
+      recorded_on: nil,
+      ios_runtime_line: nil,
+      support_promotion: false
+    },
+    %{
+      evidence_subject: :reference_host,
+      source_binding: :source_bound,
+      activation_state: :reference_evidence,
+      proof_source: :physical_device,
+      recorded_on: @reference_evidence_date,
+      ios_runtime_line: @reference_ios_runtime_line,
+      support_promotion: false
+    },
+    %{
+      evidence_subject: :first_adopter,
+      source_binding: :required_missing,
+      activation_state: :blocked,
+      proof_source: :required_missing,
+      recorded_on: nil,
+      ios_runtime_line: nil,
+      support_promotion: false
+    }
+  ]
+
   # D-53 (Phase 154, CTRL-05): mirrors Crosswake.Manifest.Types.Capability.rebuild/0's
   # three-value vocabulary — the guide adopters read to CHOOSE controls must show
   # rebuild cost, not just support posture. Rows without a live manifest capability
@@ -573,8 +613,7 @@ defmodule Crosswake.CapabilityMap do
       |> require_closed(claim, :evidence_subject, @evidence_subjects)
       |> require_closed(claim, :source_binding, @source_bindings)
       |> require_closed(claim, :activation_state, @activation_states)
-      |> validate_reference_evidence(claim)
-      |> validate_blocked_promotion(claim)
+      |> validate_complete_authority_tuple(claim)
 
     case violations do
       [] ->
@@ -612,37 +651,13 @@ defmodule Crosswake.CapabilityMap do
       else: ["unsupported_#{field}" | violations]
   end
 
-  defp validate_reference_evidence(violations, %{activation_state: :reference_evidence} = claim) do
-    violations
-    |> require_rule(
-      Map.get(claim, :evidence_subject) == :reference_host,
-      "reference_subject_mismatch"
-    )
-    |> require_rule(
-      Map.get(claim, :source_binding) == :source_bound,
-      "reference_source_binding_missing"
-    )
-    |> require_rule(
-      Map.get(claim, :proof_source) == :physical_device,
-      "reference_physical_source_required"
-    )
-    |> require_rule(
-      Map.get(claim, :recorded_on) == @reference_evidence_date and
-        Map.get(claim, :ios_runtime_line) == @reference_ios_runtime_line,
-      "reference_authority_changed"
-    )
-    |> require_rule(
-      Map.get(claim, :support_promotion) == false,
-      "reference_evidence_non_transferable"
+  defp validate_complete_authority_tuple(violations, claim) do
+    require_rule(
+      violations,
+      Map.take(claim, @authority_fields) in @complete_authority_tuples,
+      "complete_authority_tuple"
     )
   end
-
-  defp validate_reference_evidence(violations, _claim), do: violations
-
-  defp validate_blocked_promotion(violations, %{activation_state: :blocked} = claim),
-    do: require_rule(violations, Map.get(claim, :support_promotion) == false, "blocked_promotion")
-
-  defp validate_blocked_promotion(violations, _claim), do: violations
 
   defp require_rule(violations, true, _rule), do: violations
   defp require_rule(violations, false, rule), do: [rule | violations]

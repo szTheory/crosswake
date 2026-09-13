@@ -2,8 +2,7 @@ defmodule Crosswake.Proof.Phase145IosBackfillScriptTest do
   use ExUnit.Case, async: true
 
   @script "script/verify_ios_mirror_backfill.sh"
-  @version "0.2.0"
-  @source_ref "refs/tags/ios-core-v0.2.0"
+  @version "0.2.1"
 
   @tag :phase145_ios_backfill_script
   test "script source keeps verify-first and exact-ref guardrails" do
@@ -18,67 +17,64 @@ defmodule Crosswake.Proof.Phase145IosBackfillScriptTest do
     assert script =~ "--ref"
     assert script =~ "--apply"
     assert script =~ "--update-main"
-    assert script =~ "main|master|HEAD|heads/*|refs/heads/*|v*|[0-9]*"
-    assert script =~ "refs/tags/hex-v${VERSION}"
-    assert script =~ "refs/tags/android-core-v${VERSION}"
-    assert script =~ "refs/tags/v${VERSION}"
-    assert script =~ ".release-please-manifest.json"
-    assert script =~ "packages/crosswake-shell-core-ios"
-    assert script =~ "git subtree split"
-    assert script =~ ~s(--force-with-lease="refs/heads/main:)
+    assert script =~ "baseline|candidate"
+    assert script =~ "publish|recovery"
+    assert script =~ "release_candidate/ios_mirror.sh"
+    assert script =~ "CROSSWAKE_IOS_MIRROR_EXECUTE=true"
+    assert script =~ "--approval-receipt"
+    assert script =~ "--expected-old-ref"
+    assert script =~ "--expected-new-ref"
   end
 
   @tag :phase145_ios_backfill_script
-  test "verify-only mode reports absent mirror tag without requiring MIRROR_PUSH_TOKEN" do
+  test "candidate rehearsal proves write authorization without changing the mirror" do
     fixture = backfill_fixture()
 
     {output, exit_code} = run_script(fixture)
+    result = output |> String.split("\n", trim: true) |> hd() |> Jason.decode!()
 
     assert exit_code == 0, output
-    assert output =~ "[crosswake] OK: SwiftPM mirror refs/tags/v0.2.0 is absent"
-    assert output =~ "verification-only mode made no changes"
+    assert result["state"] == "PASS"
+    assert result["authorization_result"] == "PROVEN"
+    assert result["external_state_changed"] == false
+    refute tag_exists?(fixture.mirror, "v0.2.1")
   end
 
   @tag :phase145_ios_backfill_script
-  test "apply mode fails closed when the mirror write probe cannot succeed" do
+  test "candidate mode rejects apply before any mirror operation" do
     fixture = backfill_fixture()
-    unwritable_mirror = Path.join(fixture.mirror, "does-not-exist.git")
-
-    {output, exit_code} =
-      run_script(fixture, ["--apply"], [
-        {"CROSSWAKE_IOS_BACKFILL_MIRROR_REMOTE", unwritable_mirror}
-      ])
+    {output, exit_code} = run_script(fixture, ["--apply"])
 
     assert exit_code != 0
-    assert output =~ "[crosswake] FAIL: dry-run push to"
-    assert output =~ "MIRROR_DEPLOY_KEY"
-    refute tag_exists?(fixture.mirror, "v0.2.0")
+    assert output =~ "[crosswake] FAIL: baseline and candidate modes are read-only"
+    refute tag_exists?(fixture.mirror, "v0.2.1")
   end
 
   @tag :phase145_ios_backfill_script
   test "exact existing mirror tag exits successfully without push" do
     fixture = backfill_fixture()
-    push_tag!(fixture.release, fixture.mirror, fixture.split_sha, "v0.2.0")
+    push_tag!(fixture.release, fixture.mirror, fixture.split_sha, "v0.2.1")
 
     {output, exit_code} = run_script(fixture)
+    result = output |> String.split("\n", trim: true) |> hd() |> Jason.decode!()
 
     assert exit_code == 0, output
-    assert output =~ "already points at #{fixture.split_sha}; no push needed"
+    assert result["remote_tag"] == fixture.split_sha
+    assert result["external_state_changed"] == false
   end
 
   @tag :phase145_ios_backfill_script
   test "mismatched existing mirror tag fails closed and leaves tag unchanged" do
     fixture = backfill_fixture()
     mismatch_sha = add_commit!(fixture.release, "mismatch.txt", "wrong release\n")
-    push_tag!(fixture.release, fixture.mirror, mismatch_sha, "v0.2.0")
-    before_sha = mirror_tag_sha(fixture.mirror, "v0.2.0")
+    push_tag!(fixture.release, fixture.mirror, mismatch_sha, "v0.2.1")
+    before_sha = mirror_tag_sha(fixture.mirror, "v0.2.1")
 
     {output, exit_code} = run_script(fixture)
 
     assert exit_code != 0
-    assert output =~ "[crosswake] FAIL: SwiftPM mirror refs/tags/v0.2.0 points at #{mismatch_sha}"
-    assert output =~ "Do not delete or move the public SwiftPM tag automatically"
-    assert mirror_tag_sha(fixture.mirror, "v0.2.0") == before_sha
+    assert output =~ "restore_mirror_write_authority"
+    assert mirror_tag_sha(fixture.mirror, "v0.2.1") == before_sha
   end
 
   defp backfill_fixture do
@@ -128,22 +124,24 @@ defmodule Crosswake.Proof.Phase145IosBackfillScriptTest do
     git!(["-C", release, "tag", "ios-core-v#{@version}", split_sha])
     git!(["-C", release, "tag", "android-core-v#{@version}", split_sha])
     git!(["init", "--bare", "-q", mirror])
+    git!(["-C", release, "push", mirror, "HEAD:refs/heads/main"])
 
     %{release: release, mirror: mirror, split_sha: split_sha}
   end
 
   defp run_script(fixture, args \\ [], env \\ []) do
     base_env = [
-      {"CROSSWAKE_IOS_BACKFILL_RELEASE_REPO", fixture.release},
-      {"CROSSWAKE_IOS_BACKFILL_MIRROR_REMOTE", fixture.mirror},
-      {"CROSSWAKE_IOS_BACKFILL_SPLIT_SHA", fixture.split_sha},
-      {"CROSSWAKE_IOS_BACKFILL_HEX_LIVE", "true"},
-      {"CROSSWAKE_IOS_BACKFILL_MAVEN_LIVE", "true"}
+      {"CROSSWAKE_IOS_MIRROR_RELEASE_REPO", fixture.release},
+      {"CROSSWAKE_IOS_MIRROR_PUBLIC_REMOTE", fixture.mirror},
+      {"CROSSWAKE_IOS_MIRROR_WRITE_REMOTE", fixture.mirror},
+      {"CROSSWAKE_IOS_MIRROR_SPLIT_SHA", fixture.split_sha},
+      {"CROSSWAKE_IOS_MIRROR_AUTHORIZATION_CHECKED", "true"}
     ]
 
     System.cmd(
       "bash",
-      [@script, "--version", @version, "--ref", @source_ref] ++ args,
+      [@script, "--mode", "candidate", "--version", @version, "--ref", fixture.split_sha] ++
+        args,
       stderr_to_stdout: true,
       env: base_env ++ env
     )

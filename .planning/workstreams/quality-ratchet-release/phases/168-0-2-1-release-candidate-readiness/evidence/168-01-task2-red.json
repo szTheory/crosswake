@@ -1,0 +1,9 @@
+{
+  "command": "node --test --test-name-pattern='local reconciliation accepts the tracked Phase 167 runtime authority fixture' test/js/phase167_pr_dispositions.test.mjs",
+  "exitCode": 1,
+  "output": "TAP version 13\n# Subtest: local reconciliation accepts the tracked Phase 167 runtime authority fixture\nnot ok 1 - local reconciliation accepts the tracked Phase 167 runtime authority fixture\n  ---\n  failureType: 'testCodeFailure'\n  error: 'tracked runtime authority fixture is missing'\n  code: 'ERR_ASSERTION'\n  expected: true\n  actual: false\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n",
+  "targetTest": "local reconciliation accepts the tracked Phase 167 runtime authority fixture",
+  "targetFile": "test/js/phase167_pr_dispositions.test.mjs",
+  "expected": "the tracked immutable Phase 167 runtime lock fixture exists and the positive reconciliation passes",
+  "actual": "the tracked immutable Phase 167 runtime lock fixture was absent"
+}

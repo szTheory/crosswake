@@ -67,12 +67,15 @@ FINAL_PROOF_LEAVES = (
     "proof-dependency-security",
     "proof-requires-example-host",
     "release-as-staleness-proof",
+    "release-candidate-fixtures",
+    "release-candidate-full-proof",
     "route-tour-proof",
 )
 FINAL_CONTROL_NODES = ("classify-change",)
 FINAL_NEEDS = tuple(sorted(FINAL_PROOF_LEAVES + FINAL_CONTROL_NODES))
 ADVISORY_JOBS = ("brand-visual",)
 CLASSIFIER_IRRELEVANCE_REASON = "all_changed_paths_allowlisted"
+RELEASE_IRRELEVANCE_REASON = "release_inputs_unchanged"
 STAGE_COMMAND_PREFIX = "script/verify_repository.sh --stage "
 
 
@@ -267,12 +270,15 @@ def validate(manifest: object, workflow: object, producer_records=None) -> list[
             if not isinstance(row[field], str) or not row[field] or "${{" in row[field]:
                 problems.append(Problem(f"invalid_{field}", leaf_id, "field must be a non-empty literal"))
         reason = row["irrelevance_reason"]
-        if reason is not None and reason != CLASSIFIER_IRRELEVANCE_REASON:
+        if reason is not None and reason not in {
+            CLASSIFIER_IRRELEVANCE_REASON,
+            RELEASE_IRRELEVANCE_REASON,
+        }:
             problems.append(
                 Problem(
                     "invalid_irrelevance_reason",
                     leaf_id,
-                    f"must equal classifier reason {CLASSIFIER_IRRELEVANCE_REASON!r}",
+                    "must equal one closed classifier reason",
                 )
             )
     for node_id, row in controls.items():
@@ -296,7 +302,12 @@ def validate(manifest: object, workflow: object, producer_records=None) -> list[
             problems.append(Problem("remediation_mismatch", leaf_id, "literal remediation command is absent from job"))
         if row["irrelevance_reason"] is not None:
             condition = str(jobs.get(leaf_id, {}).get("if", ""))
-            if "classification == 'full_proof'" not in condition:
+            expected_condition = (
+                "release_candidate_scope == 'full_matrix'"
+                if row["irrelevance_reason"] == RELEASE_IRRELEVANCE_REASON
+                else "classification == 'full_proof'"
+            )
+            if expected_condition not in condition:
                 problems.append(Problem("executable_leaf_condition", leaf_id, "leaf is not closed on full_proof"))
 
     expected = set(proofs) | set(controls)
@@ -448,7 +459,11 @@ def validate_maximum_shape(workflow: object, needs_fixture: object) -> list[Prob
             record = needs_fixture.get(member)
             if not isinstance(record, dict) or record.get("result") != "action_required":
                 problems.append(Problem("needs_fixture_result", member, "use longest closed result action_required"))
-            elif member != "classify-change" and record.get("outputs", {}).get("irrelevance_reason") != "all_changed_paths_allowlisted":
+            elif member != "classify-change" and record.get("outputs", {}).get("irrelevance_reason") != (
+                RELEASE_IRRELEVANCE_REASON
+                if member == "release-candidate-full-proof"
+                else CLASSIFIER_IRRELEVANCE_REASON
+            ):
                 problems.append(Problem("needs_fixture_irrelevance", member, "use longest closed irrelevance reason"))
         size = serialized_needs_bytes(needs_fixture)
         if size >= NEEDS_BYTE_LIMIT:

@@ -26,8 +26,94 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  approved-release-guard:
+    name: Guard exact approved 0.2.1 merge
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      linked_release: ${{ steps.guard.outputs.linked_release }}
+      approved_head: ${{ steps.guard.outputs.approved_head }}
+      approved_tree: ${{ steps.guard.outputs.approved_tree }}
+      merge_oid: ${{ steps.guard.outputs.merge_oid }}
+      merge_parents: ${{ steps.guard.outputs.merge_parents }}
+      merge_tree: ${{ steps.guard.outputs.merge_tree }}
+      candidate_receipt: ${{ steps.guard.outputs.candidate_receipt }}
+      candidate_run_id: ${{ steps.guard.outputs.candidate_run_id }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Require approved head parentage, identical tree, and exact receipt
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_HEAD: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          emit_output() { printf '%s\n' "$1" >> "$GITHUB_OUTPUT"; }
+          emit_output "linked_release=false"
+
+          # Proposal-refresh pushes remain reversible. The strict gate activates only
+          # for the merge that changes all three linked coordinates to 0.2.1.
+          parent_line=$(git rev-list --parents -n 1 "$RUN_HEAD")
+          parent_count=$(printf '%s\n' "$parent_line" | awk '{print NF}')
+          [ "$parent_count" -ge 2 ] || exit 0
+          first_parent=$(printf '%s\n' "$parent_line" | awk '{print $2}')
+          linked_delta=$(git diff --name-only "$first_parent" "$RUN_HEAD" -- \
+            mix.exs .release-please-manifest.json \
+            packages/crosswake-shell-core-android/build.gradle.kts | wc -l | tr -d ' ')
+          [ "$linked_delta" -eq 3 ] || exit 0
+          grep -q '@version "0.2.1"' mix.exs
+          grep -q 'version = "0.2.1"' packages/crosswake-shell-core-android/build.gradle.kts
+          jq -e '."." == "0.2.1" and ."packages/crosswake-shell-core-ios" == "0.2.1" and ."packages/crosswake-shell-core-android" == "0.2.1"' .release-please-manifest.json >/dev/null
+
+          # A linked release must be a two-parent merge. The approved Release Please
+          # head is the second parent; its tree must be byte-identical to the merge.
+          [ "$parent_count" -eq 3 ]
+          merge_oid=$(printf '%s\n' "$parent_line" | awk '{print $1}')
+          second_parent=$(printf '%s\n' "$parent_line" | awk '{print $3}')
+          approved_head="$second_parent"
+          approved_tree=$(git rev-parse "${approved_head}^{tree}")
+          merge_tree=$(git rev-parse "${merge_oid}^{tree}")
+          [ "$approved_head" = "$second_parent" ]
+          [ "$merge_tree" = "$approved_tree" ]
+
+          # Crosswake CI owns the canonical exact-head candidate receipt. Select an
+          # exact successful run for the approved head and require the named artifact.
+          runs=$(gh run list --repo "$REPOSITORY" --workflow crosswake-ci.yml \
+            --commit "$approved_head" --status success --limit 20 \
+            --json databaseId,headSha,conclusion)
+          candidate_run_id=$(printf '%s' "$runs" | jq -er \
+            --arg head "$approved_head" '[.[] | select(.headSha == $head and .conclusion == "success")] | first | .databaseId')
+          receipt_dir="$RUNNER_TEMP/approved-candidate-receipt"
+          mkdir -p "$receipt_dir"
+          gh run download "$candidate_run_id" --repo "$REPOSITORY" \
+            --name "phase168-candidate-receipt-${approved_head}" --dir "$receipt_dir"
+          receipt="$receipt_dir/candidate-receipt.json"
+          test -f "$receipt"
+          jq -e --arg head "$approved_head" --arg tree "$approved_tree" \
+            '.state == "READY FOR APPROVAL" and .identity.bound.head == $head and .identity.bound.tree == $tree and .identity.observed.head == $head and .identity.observed.tree == $tree and .external_state.changed == false' \
+            "$receipt" >/dev/null
+          candidate_receipt=$(sha256sum "$receipt" | awk '{print $1}')
+
+          emit_output "linked_release=true"
+          emit_output "approved_head=$approved_head"
+          emit_output "approved_tree=$approved_tree"
+          emit_output "merge_oid=$merge_oid"
+          emit_output "merge_parents=$first_parent,$second_parent"
+          emit_output "merge_tree=$merge_tree"
+          emit_output "candidate_receipt=$candidate_receipt"
+          emit_output "candidate_run_id=$candidate_run_id"
+
   release-please:
     name: Release Please
+    needs: approved-release-guard
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
@@ -95,8 +181,8 @@ jobs:
 
   publish-hex:
     name: Publish to Hex.pm
-    needs: release-please
-    if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}
+    needs: [approved-release-guard, release-please]
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == '0.2.1' && contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -105,6 +191,8 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ needs.release-please.outputs.tag_name }}
+          fetch-depth: 0
+          persist-credentials: false
 
       - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
         with:
@@ -132,6 +220,10 @@ jobs:
           crosswake
           "${{ needs.release-please.outputs.version }}"
           "${{ needs.release-please.outputs.tag_name }}"
+          --approved-head "${{ needs.approved-release-guard.outputs.approved_head }}"
+          --approved-tree "${{ needs.approved-release-guard.outputs.approved_tree }}"
+          --merge-oid "${{ needs.approved-release-guard.outputs.merge_oid }}"
+          --candidate-receipt "${{ needs.approved-release-guard.outputs.candidate_receipt }}"
 
   publish-hex-rulestead:
     name: Publish crosswake_rulestead to Hex.pm
@@ -391,8 +483,8 @@ jobs:
 
   publish-ios-core:
     name: Mirror iOS core to split repo
-    needs: [release-please, publish-hex]
-    if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') }}
+    needs: [approved-release-guard, release-please]
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == '0.2.1' && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -424,81 +516,21 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
 
-      - name: Split subtree
-        run: |
-          set -euo pipefail
-          # `git subtree split` (stock git), NOT splitsh-lite. splitsh-lite v1.0.1
-          # SIGSEGVs on this split, and the mirror v0.1.2 lineage was itself built
-          # with git subtree (splitsh 404'd during the 0.1.2 cut). Every release
-          # must use the SAME split tool or the mirror main lineage forks at each
-          # version boundary. HEAD is the release tag checked out above with
-          # fetch-depth: 0, so the full history git subtree needs is present.
-          SHA="$(git subtree split --prefix=packages/crosswake-shell-core-ios HEAD | tail -1)"
-          if [ -z "$SHA" ]; then
-            echo "[crosswake] FAIL: git subtree split produced no SHA for packages/crosswake-shell-core-ios."
-            echo "[crosswake] What to do next: confirm git-subtree is available (stock git) and the checkout used fetch-depth: 0."
-            exit 1
-          fi
-          echo "SPLIT_SHA=$SHA" >> "$GITHUB_ENV"
-
-      - name: Push split to mirror and tag
+      - name: Publish immutable fast-forward iOS mirror refs
         env:
-          # SwiftPM resolves on a bare semver tag (e.g. v0.1.2). The release-please
-          # root tag_name is component-prefixed (`hex-v0.1.2`) and would NOT resolve,
-          # so the mirror tag is derived from the plain `version` output (PUB-01/SC#1).
-          VERSION: ${{ needs.release-please.outputs.version }}
-        run: |
-          set -euo pipefail
-          git remote add mirror git@github.com:szTheory/crosswake-shell-core-ios.git
-
-          mirror_tag_sha="$(git ls-remote mirror "refs/tags/v${VERSION}" | awk '{print $1}' || true)"
-          if [ -n "$mirror_tag_sha" ]; then
-            if [ "$mirror_tag_sha" = "$SPLIT_SHA" ]; then
-              echo "[crosswake] OK: iOS mirror tag refs/tags/v${VERSION} already points at ${SPLIT_SHA}; no mirror push needed."
-              exit 0
-            fi
-            echo "[crosswake] FAIL: iOS mirror tag refs/tags/v${VERSION} points at ${mirror_tag_sha}, expected ${SPLIT_SHA}."
-            echo "[crosswake] What to do next: do not delete or move the public SwiftPM tag automatically. Inspect szTheory/crosswake-shell-core-ios and use the Phase 145 iOS mirror backfill route only after confirming the intended release identity."
-            exit 1
-          fi
-
-          CURRENT_MAIN_SHA="$(git ls-remote mirror refs/heads/main | awk '{print $1}' | head -1)"
-          if [ -n "$CURRENT_MAIN_SHA" ]; then
-            MIRROR_PUSH_ARGS=(--force-with-lease="refs/heads/main:${CURRENT_MAIN_SHA}")
-          else
-            MIRROR_PUSH_ARGS=()
-          fi
-
-          if ! git push --atomic mirror --dry-run --porcelain "${MIRROR_PUSH_ARGS[@]}" \
-            "${SPLIT_SHA}:refs/heads/main" \
-            "${SPLIT_SHA}:refs/tags/v${VERSION}" > /tmp/mirror_push_dry_run.log 2>&1; then
-            dry_run_output="$(cat /tmp/mirror_push_dry_run.log)"
-            echo "$dry_run_output"
-            case "$dry_run_output" in
-              *"Permission denied"*|*"publickey"*|*"Could not read from remote repository"*)
-                echo "[crosswake] FAIL: MIRROR_DEPLOY_KEY cannot authenticate to szTheory/crosswake-shell-core-ios."
-                echo "[crosswake] What to do next: confirm the SSH deploy key is registered with write access (gh repo deploy-key add ./crosswake_ios_mirror.pub -R szTheory/crosswake-shell-core-ios --allow-write), then retry this release job."
-                ;;
-              *"stale info"*|*"non-fast-forward"*|*"rejected"*)
-                echo "[crosswake] FAIL: mirror push for refs/tags/v${VERSION} was rejected (non-fast-forward or lease mismatch), not a credential problem — every iOS adopter of ${VERSION} stays unresolvable until this lands."
-                echo "[crosswake] What to do next: inspect szTheory/crosswake-shell-core-ios main and run script/verify_ios_mirror_backfill.sh --version ${VERSION} --ref refs/tags/ios-core-v${VERSION} --update-main after reviewing mirror-only commits."
-                ;;
-              *)
-                echo "[crosswake] FAIL: mirror push dry-run for refs/tags/v${VERSION} failed for an unrecognized reason — every iOS adopter of ${VERSION} stays unresolvable until this lands."
-                echo "[crosswake] What to do next: inspect the dry-run output above, then retry this release job or run script/verify_ios_mirror_backfill.sh --version ${VERSION} --ref refs/tags/ios-core-v${VERSION}."
-                ;;
-            esac
-            exit 1
-          fi
-
-          git push --atomic mirror "${MIRROR_PUSH_ARGS[@]}" \
-            "${SPLIT_SHA}:refs/heads/main" \
-            "${SPLIT_SHA}:refs/tags/v${VERSION}"
+          CROSSWAKE_IOS_MIRROR_EXECUTE: "true"
+        run: >
+          bash script/release_candidate/ios_mirror.sh publish
+          --version 0.2.1
+          --ref "${{ needs.approved-release-guard.outputs.merge_oid }}"
+          --approval-receipt "${{ needs.approved-release-guard.outputs.candidate_receipt }}"
+          --expected-old-ref "$(git ls-remote git@github.com:szTheory/crosswake-shell-core-ios.git refs/heads/main | awk '{print $1}')"
+          --expected-new-ref "$(git subtree split --prefix=packages/crosswake-shell-core-ios '${{ needs.approved-release-guard.outputs.merge_oid }}' | tail -1)"
 
   publish-android-core:
     name: Publish Android core to Maven Central
-    needs: release-please
-    if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-android') }}
+    needs: [approved-release-guard, release-please]
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == '0.2.1' && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-android') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -507,6 +539,8 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ needs.release-please.outputs.tag_name }}
+          fetch-depth: 0
+          persist-credentials: false
 
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
         with:
@@ -514,16 +548,20 @@ jobs:
           distribution: 'temurin'
 
       - name: Publish to Maven Central
-        working-directory: packages/crosswake-shell-core-android
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyId }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
-        # -PcrosswakeAutomaticRelease=true: upload AND auto-publish to Maven Central
-        # once validated, so the downstream clean-room proof can resolve 0.1.2.
-        run: ./gradlew publishToMavenCentral --no-daemon -PcrosswakeAutomaticRelease=true
+        run: >
+          bash script/release_candidate/android_publication.sh
+          --version 0.2.1
+          --ref "${{ needs.approved-release-guard.outputs.merge_oid }}"
+          --approved-head "${{ needs.approved-release-guard.outputs.approved_head }}"
+          --approved-tree "${{ needs.approved-release-guard.outputs.approved_tree }}"
+          --candidate-receipt "${{ needs.approved-release-guard.outputs.candidate_receipt }}"
+          --execute
 
   clean-room-proof-ios:
     name: Clean-room proof — iOS swift build
@@ -638,6 +676,122 @@ jobs:
 
           echo "gradle build failed after $MAX_ATTEMPTS attempts (~30 min). Maven Central propagation timeout."
           exit 1
+
+  exact-public-proof:
+    name: Prove exact public 0.2.1 artifacts
+    needs:
+      - approved-release-guard
+      - release-please
+      - publish-hex
+      - publish-ios-core
+      - publish-android-core
+      - clean-room-proof-ios
+      - clean-room-proof-android
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == '0.2.1' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ needs.approved-release-guard.outputs.merge_oid }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Download approved candidate payload manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ needs.approved-release-guard.outputs.candidate_run_id }}
+        run: |
+          set -euo pipefail
+          gh run download "$RUN_ID" --name "phase168-candidate-receipt-${{ needs.approved-release-guard.outputs.approved_head }}" --dir "$RUNNER_TEMP/approved-candidate"
+          test -f "$RUNNER_TEMP/approved-candidate/artifacts.json"
+      - name: Re-fetch and prove exact public package family
+        run: >
+          bash script/verify_companion_cleanroom.sh
+          --source-mode exact-public
+          --approved-manifest "$RUNNER_TEMP/approved-candidate/artifacts.json"
+          --result "$RUNNER_TEMP/exact-public-result.json"
+      - name: Upload exact-public proof
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: exact-public-proof-0.2.1
+          path: ${{ runner.temp }}/exact-public-result.json
+          if-no-files-found: error
+          retention-days: 14
+
+  linked-release-rollup:
+    name: Linked 0.2.1 release rollup
+    needs:
+      - approved-release-guard
+      - release-please
+      - publish-hex
+      - publish-ios-core
+      - publish-android-core
+      - clean-room-proof-ios
+      - clean-room-proof-android
+      - exact-public-proof
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Initialize linked release rollup
+        id: linked-release
+        env:
+          LINKED_RELEASE: ${{ needs.approved-release-guard.outputs.linked_release }}
+        run: |
+          set -euo pipefail
+          if [ "$LINKED_RELEASE" = "true" ]; then
+            echo "applicable=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "applicable=false" >> "$GITHUB_OUTPUT"
+            echo '{"state":"NOT_APPLICABLE","child_states":{},"successful_coordinates":[],"failed_step":null,"failed_ref":null,"next_action":"no_action_required"}' > linked-release-status.json
+          fi
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        if: ${{ steps.linked-release.outputs.applicable == 'true' }}
+        with:
+          ref: ${{ needs.approved-release-guard.outputs.merge_oid }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        if: ${{ steps.linked-release.outputs.applicable == 'true' }}
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Preserve exact linked child states
+        # The executable policy emits COMPLETE only for all six successes and
+        # PARTIAL whenever an immutable public coordinate survives a failure.
+        if: ${{ steps.linked-release.outputs.applicable == 'true' }}
+        env:
+          APPROVED_HEAD: ${{ needs.approved-release-guard.outputs.approved_head }}
+          APPROVED_TREE: ${{ needs.approved-release-guard.outputs.approved_tree }}
+          APPROVED_REF: ${{ needs.approved-release-guard.outputs.merge_oid }}
+          CANDIDATE_RECEIPT: ${{ needs.approved-release-guard.outputs.candidate_receipt }}
+          HEX_STATE: ${{ needs.publish-hex.result }}
+          IOS_STATE: ${{ needs.publish-ios-core.result }}
+          ANDROID_STATE: ${{ needs.publish-android-core.result }}
+          IOS_PROOF_STATE: ${{ needs.clean-room-proof-ios.result }}
+          ANDROID_PROOF_STATE: ${{ needs.clean-room-proof-android.result }}
+          EXACT_PUBLIC_STATE: ${{ needs.exact-public-proof.result }}
+          LINKED_RELEASE_STATUS: linked-release-status.json
+        run: |
+          set -euo pipefail
+          mix run --no-start -e 'Crosswake.ReleaseCandidate.Workflow.evaluate_cli!()'
+      - name: Upload linked release status
+        if: ${{ always() }}
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: linked-release-status-0.2.1
+          path: linked-release-status.json
+          if-no-files-found: error
+          retention-days: 30
 
   native-release-rollup:
     name: Native release status rollup

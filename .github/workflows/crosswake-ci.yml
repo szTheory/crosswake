@@ -21,6 +21,8 @@ jobs:
       reason: ${{ steps.classify.outputs.reason }}
       scheduled_families: ${{ steps.classify.outputs.scheduled_families }}
       irrelevant_leaves: ${{ steps.classify.outputs.irrelevant_leaves }}
+      release_candidate_scope: ${{ steps.classify.outputs.release_candidate_scope }}
+      release_candidate_reason: ${{ steps.classify.outputs.release_candidate_reason }}
     steps:
       - name: Check out the synthetic merge with full history
         id: checkout
@@ -36,6 +38,7 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           set -euo pipefail
           {
@@ -44,6 +47,8 @@ jobs:
             echo 'reason=checkout_or_object_validation_failed'
             echo 'scheduled_families=["full_proof"]'
             echo 'irrelevant_leaves=[]'
+            echo 'release_candidate_scope=full_matrix'
+            echo 'release_candidate_reason=checkout_or_object_validation_failed'
           } >> "$GITHUB_OUTPUT"
 
           if [ "$CHECKOUT_OUTCOME" != 'success' ]; then
@@ -64,6 +69,40 @@ jobs:
             --base "$base_sha" \
             --merge "$merge_sha" \
             --github-output "$GITHUB_OUTPUT" >/dev/null
+
+          if [[ "$HEAD_REF" == release-please--* ]]; then
+            {
+              echo 'release_candidate_scope=full_matrix'
+              echo 'release_candidate_reason=release_please_candidate'
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          set +e
+          git diff --quiet "$base_sha" "$merge_sha" -- \
+            .github/workflows/crosswake-ci.yml \
+            .github/workflows/hex-publish.yml \
+            .github/workflows/ios-mirror-publish.yml \
+            .release-please-manifest.json \
+            CHANGELOG.md LICENSE README.md guides lib mix.exs mix.lock packages priv \
+            release-please-config.json \
+            script/check_release_workflow_integrity.exs \
+            script/release_candidate \
+            script/verify_companion_cleanroom.sh
+          release_diff_status=$?
+          set -e
+
+          if [ "$release_diff_status" -eq 0 ]; then
+            {
+              echo 'release_candidate_scope=fast_fixtures'
+              echo 'release_candidate_reason=release_inputs_unchanged'
+            } >> "$GITHUB_OUTPUT"
+          elif [ "$release_diff_status" -eq 1 ]; then
+            {
+              echo 'release_candidate_scope=full_matrix'
+              echo 'release_candidate_reason=release_sensitive_input_changed'
+            } >> "$GITHUB_OUTPUT"
+          fi
 
   documentation-contracts:
     name: documentation-contracts
@@ -92,6 +131,164 @@ jobs:
             echo 'Expected/observed leaves: 1/1.'
             echo 'Executable, browser, Android, Apple, and packaging proof are not scheduled for a validated documentation-only change.'
             echo 'Remediation: mix crosswake.docs.sync --check && mix crosswake.adoption_context.scan && mix test test/crosswake/guides test/crosswake/capability_map/capability_map_test.exs test/crosswake/support_matrix/renderer_test.exs test/crosswake/proof/phase69_docs_contract_parity_test.exs'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  release-candidate-fixtures:
+    name: release-candidate-fixtures
+    needs: [classify-change]
+    if: needs.classify-change.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Run stable candidate contract fixtures
+        run: >-
+          mix test
+          test/crosswake/release_candidate
+          test/mix/tasks/crosswake_release_candidate_test.exs
+          test/mix/tasks/crosswake_release_status_test.exs
+          --max-cases 1
+      - name: Check candidate workflow structure
+        run: elixir script/check_release_workflow_integrity.exs
+      - name: Summarize fast candidate proof
+        env:
+          RELEASE_CANDIDATE_SCOPE: ${{ needs.classify-change.outputs.release_candidate_scope }}
+          RELEASE_CANDIDATE_REASON: ${{ needs.classify-change.outputs.release_candidate_reason }}
+        run: |
+          {
+            echo "Candidate scope: ${RELEASE_CANDIDATE_SCOPE}."
+            echo "Candidate reason: ${RELEASE_CANDIDATE_REASON}."
+            echo 'Stable candidate artifact, coordinate, mirror, clean-room, workflow, and receipt fixtures passed.'
+            echo 'Remediation: mix test test/crosswake/release_candidate test/mix/tasks/crosswake_release_candidate_test.exs test/mix/tasks/crosswake_release_status_test.exs --max-cases 1 && elixir script/check_release_workflow_integrity.exs'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  release-candidate-full-proof:
+    name: release-candidate-full-proof
+    needs: [classify-change]
+    if: needs.classify-change.outputs.release_candidate_scope == 'full_matrix'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      MIX_ENV: test
+      CANDIDATE_REF: ${{ github.event.pull_request.head.sha }}
+      CANDIDATE_ROOT: /tmp/crosswake-release-candidate-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Check out the exact pull-request head
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Validate exact candidate identity
+        run: |
+          set -euo pipefail
+          test "$CANDIDATE_REF" = "$(git rev-parse HEAD)"
+          test "${#CANDIDATE_REF}" -eq 40
+          git cat-file -e "$CANDIDATE_REF^{commit}"
+          mkdir -p "$CANDIDATE_ROOT"
+          git rev-parse "$CANDIDATE_REF^{tree}" > "$CANDIDATE_ROOT/tree.txt"
+          git merge-base "$CANDIDATE_REF" "${{ github.event.pull_request.base.sha }}" > "$CANDIDATE_ROOT/base.txt"
+      - name: Build and officially unpack all six candidate artifacts
+        run: >-
+          bash script/release_candidate/hex_artifacts.sh
+          --ref "$CANDIDATE_REF"
+          --output-dir "$CANDIDATE_ROOT/artifacts"
+          --manifest "$CANDIDATE_ROOT/artifacts/artifacts.json"
+      - name: Run five clean-room profiles twice from candidate artifacts
+        run: >-
+          bash script/verify_companion_cleanroom.sh
+          --source-mode candidate-local
+          --artifact-manifest "$CANDIDATE_ROOT/artifacts/artifacts.json"
+          --result "$CANDIDATE_ROOT/cleanroom.json"
+      - name: Run coordinate, mirror, workflow, and receipt proof
+        run: >-
+          mix test
+          test/crosswake/release_candidate/coordinate_test.exs
+          test/crosswake/release_candidate/mirror_test.exs
+          test/crosswake/release_candidate/workflow_test.exs
+          test/crosswake/release_candidate/receipt_test.exs
+          test/mix/tasks/crosswake_release_candidate_test.exs
+          --max-cases 1
+      - name: Validate candidate workflow integrity
+        run: elixir script/check_release_workflow_integrity.exs
+      - name: Write the exact non-vacuous CI receipt
+        env:
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path(os.environ["CANDIDATE_ROOT"])
+          artifacts_path = root / "artifacts" / "artifacts.json"
+          cleanroom_path = root / "cleanroom.json"
+          artifacts = json.loads(artifacts_path.read_text(encoding="utf-8"))
+          cleanroom = json.loads(cleanroom_path.read_text(encoding="utf-8"))
+          expected_packages = [
+              "crosswake", "crosswake_rulestead", "crosswake_rindle",
+              "crosswake_sigra", "crosswake_chimeway", "crosswake_threadline",
+          ]
+          if [item.get("package") for item in artifacts] != expected_packages:
+              raise SystemExit("candidate receipt: exact six-package set missing")
+          if cleanroom.get("package_count") != 6 or cleanroom.get("profile_count") != 5:
+              raise SystemExit("candidate receipt: package/profile proof was vacuous")
+          if cleanroom.get("install_count") != 2:
+              raise SystemExit("candidate receipt: clean-room proof did not pass twice")
+          if any(row.get("status") != "PASS" or row.get("negative_control") != "PASS" for row in cleanroom.get("profile_results", [])):
+              raise SystemExit("candidate receipt: profile or negative-control proof did not pass")
+
+          def digest(path):
+              return hashlib.sha256(path.read_bytes()).hexdigest()
+
+          receipt = {
+              "schema_version": 1,
+              "state": "PASS",
+              "head": os.environ["CANDIDATE_REF"],
+              "tree": (root / "tree.txt").read_text(encoding="utf-8").strip(),
+              "base": (root / "base.txt").read_text(encoding="utf-8").strip(),
+              "run_id": os.environ["RUN_ID"],
+              "run_attempt": os.environ["RUN_ATTEMPT"],
+              "package_count": 6,
+              "profile_count": 5,
+              "install_count": 2,
+              "artifact_manifest_sha256": digest(artifacts_path),
+              "cleanroom_result_sha256": digest(cleanroom_path),
+              "external_state_changed": False,
+              "credentials_exercised": False,
+          }
+          output = root / "release-candidate-ci-receipt.json"
+          output.write_text(json.dumps(receipt, separators=(",", ":"), sort_keys=True) + "\n", encoding="utf-8")
+          if json.loads(output.read_text(encoding="utf-8")) != receipt:
+              raise SystemExit("candidate receipt: canonical receipt could not be reread")
+          PY
+      - name: Upload exact candidate proof
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.2
+        with:
+          name: phase168-candidate-ci-${{ github.event.pull_request.head.sha }}
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            ${{ env.CANDIDATE_ROOT }}/artifacts/artifacts.json
+            ${{ env.CANDIDATE_ROOT }}/cleanroom.json
+            ${{ env.CANDIDATE_ROOT }}/release-candidate-ci-receipt.json
+      - name: Summarize exact candidate proof
+        run: |
+          {
+            echo "Exact candidate: ${CANDIDATE_REF}."
+            echo 'Observed packages/profiles/installs: 6/5/2.'
+            echo 'Credentialed real-mirror rehearsal remains owned by the trusted iOS release workflow.'
+            echo 'The approval receipt remains operator-owned: mix crosswake.release.candidate --version 0.2.1 --ref <40sha> --output-dir <new-directory>.'
+            echo 'Remediation: rerun the release-candidate-full-proof leaf at this exact head; zero, stale, missing, or partial evidence blocks the umbrella.'
           } >> "$GITHUB_STEP_SUMMARY"
 
   brand-structural:
@@ -1085,6 +1282,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: "22.14.0"
@@ -1448,6 +1647,8 @@ jobs:
       - proof-dependency-security
       - proof-requires-example-host
       - release-as-staleness-proof
+      - release-candidate-fixtures
+      - release-candidate-full-proof
       - route-tour-proof
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -1459,6 +1660,8 @@ jobs:
           CLASSIFICATION: ${{ needs.classify-change.outputs.classification }}
           REASON: ${{ needs.classify-change.outputs.reason }}
           SCHEDULED_FAMILIES: ${{ needs.classify-change.outputs.scheduled_families }}
+          RELEASE_CANDIDATE_SCOPE: ${{ needs.classify-change.outputs.release_candidate_scope }}
+          RELEASE_CANDIDATE_REASON: ${{ needs.classify-change.outputs.release_candidate_reason }}
         run: |
           python3 - <<'PY'
           import json
@@ -1470,6 +1673,18 @@ jobs:
               sys.exit("Crosswake CI: classification was missing or unknown")
           if classification == "documentation_only" and os.environ.get("REASON", "") != "all_changed_paths_allowlisted":
               sys.exit("Crosswake CI: documentation irrelevance reason was not manifest-authorized")
+          candidate_scope = os.environ.get("RELEASE_CANDIDATE_SCOPE", "")
+          candidate_reason = os.environ.get("RELEASE_CANDIDATE_REASON", "")
+          candidate_reasons = {
+              "full_matrix": {
+                  "checkout_or_object_validation_failed",
+                  "release_please_candidate",
+                  "release_sensitive_input_changed",
+              },
+              "fast_fixtures": {"release_inputs_unchanged"},
+          }
+          if candidate_scope not in candidate_reasons or candidate_reason not in candidate_reasons[candidate_scope]:
+              sys.exit("Crosswake CI: candidate scope or reason was missing or unknown")
           explicitly_irrelevant = {
               "android-generated-shell-unit",
               "android-package-unit",
@@ -1515,6 +1730,8 @@ jobs:
               "release-as-staleness-proof",
               "route-tour-proof",
           } if classification == "documentation_only" else set()
+          if candidate_scope == "fast_fixtures":
+              explicitly_irrelevant.add("release-candidate-full-proof")
           for name, value in sorted(needs.items()):
               result = value.get("result", "")
               if name == "classify-change" and result != "success":
@@ -1527,8 +1744,9 @@ jobs:
             echo "Classification: ${CLASSIFICATION}."
             echo "Reason: ${REASON}."
             echo "Scheduled proof families: ${SCHEDULED_FAMILIES}."
+            echo "Candidate scope/reason: ${RELEASE_CANDIDATE_SCOPE}/${RELEASE_CANDIDATE_REASON}."
             echo 'Explicitly irrelevant families: classifier-authorized leaves reported as skipped; unrelated executable families are not scheduled.'
-            echo 'Expected/observed proof leaves: 44/44.'
+            echo 'Expected/observed proof leaves: 46/46.'
             echo 'Observed proof leaves use count units; hosted-runner timing is not measured.'
             echo 'Remediation: python3 script/check_ci_leaf_manifest.py --self-test'
           } >> "$GITHUB_STEP_SUMMARY"

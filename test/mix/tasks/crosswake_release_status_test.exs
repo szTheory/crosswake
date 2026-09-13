@@ -22,7 +22,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
   test "release status reports local graph and scanner-backed guard checks" do
     status = Crosswake.ReleaseStatus.build()
 
-    assert status.schema_version == "1.0.0"
+    assert status.schema_version == "1.1.0"
     assert status.status == :ok
     assert Enum.any?(status.core, &(&1.component == "hex"))
     assert Enum.any?(status.companions, &(&1.package == "crosswake_sigra"))
@@ -110,9 +110,9 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     decoded = Jason.decode!(output)
 
     assert Map.keys(decoded) |> Enum.sort() ==
-             ~w(checks companions core generated_at live_checked schema_version status)
+             ~w(checks companions core generated_at live_checked release_candidate schema_version status)
 
-    assert decoded["schema_version"] == "1.0.0"
+    assert decoded["schema_version"] == "1.1.0"
     assert decoded["status"] == "ok"
     assert decoded["live_checked"] == false
 
@@ -123,6 +123,11 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert_required_fields(hd(decoded["companions"]), ~w(
       configured_version core_requirement kind live manifest_version name package path
       release_as release_as_tag_exists version
+    ))
+
+    assert_required_fields(decoded["release_candidate"], ~w(
+      credentials_exercised external_state_changed independent_companions linked_coordinates
+      mirror next_action state version
     ))
 
     for check <- decoded["checks"] do
@@ -274,7 +279,9 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     live_entries = Enum.count(status.core ++ status.companions, & &1.live)
 
     assert live_entries > 0
-    assert :counters.get(counter, 1) == live_entries
+
+    assert :counters.get(counter, 1) ==
+             live_entries + length(status.release_candidate.linked_coordinates)
   end
 
   test "a probe that fails twice and then answers is NOT unavailable (retry short-circuits)" do

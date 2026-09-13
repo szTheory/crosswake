@@ -65,10 +65,10 @@ separately funded business-line mandate. Durable reasoning is in
 `.planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md`.
 
 ## Current State
-- **v22.0 Quality Ratchet & Release Readiness — PHASE 166 COMPLETE 2026-09-10.** Dependency
-  security, authoritative and efficient CI, and deterministic clean-checkout repository proof are
-  verified. Phase 167 documentation/PR reconciliation is ready to plan before the exact,
-  approval-gated 0.2.1 release-candidate phase.
+- **v22.0 Quality Ratchet & Release Readiness — PHASE 167 COMPLETE 2026-09-12.** Dependency
+  security, authoritative and efficient CI, deterministic clean-checkout repository proof,
+  documentation truth, parked-lane isolation, and explicit pull-request dispositions are verified.
+  Phase 168 now owns the exact, approval-gated 0.2.1 release candidate.
 - **v21.0 Adopter Readiness — PARKED AT PHASE 163.1 2026-08-28.** Plans 163.1-08 through
   163.1-10 remain blocked on the validated private adopter handoff and source-bound physical-device
   authority. The completed substrate and exact resume context live in
@@ -326,6 +326,11 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 - ✓ **Phase 147 Arc, Fixture, and Showcase Foundation** (ARC-01..03, SHOW-01..04) — preserved the v19 showcase → v20 Native Controls Pack 1 → later capture/device, commerce/paywall, operator dashboard, and offline-sync/native-storage thread; classified SEED-002 as strategic capability breadth input and SEED-003/004 as release-infrastructure carryovers; shipped a deterministic reset foundation and first-screen showcase hub with route-owner/support labels and honest offline/native proof boundaries. Validated in Phase 147; full detail in `.planning/phases/147-arc-fixture-and-showcase-foundation/147-VERIFICATION.md`.
 - ✓ **Phase 148 Demo App Brand & Fixture Direction** (BRAND-01..04) — locked Crosswake-owned showcase framing, served the real Crosswake lockup from the example host, fixed AdminPilot/Fieldserv/LearnLoop as distinct fictional app brands, encoded fixture-density briefs, and verified root brand rendering, distinct styling, mobile containment, focus, and support-label honesty. Validated in Phase 148; full detail in `.planning/phases/148-demo-app-brand-fixture-direction/148-VERIFICATION.md`.
 - ✓ **v19.0 Showcase Apps & Capability Map** (all 31 v19 requirements: ARC-01..03, SHOW-01..04, BRAND-01..04, SAAS-01..04, FIELD-01..04, LEARN-01..04, CAPMAP-01..04, PROOF-01..04) — shipped the Crosswake-owned showcase hub, AdminPilot/Fieldserv/LearnLoop product lanes, deterministic reset/proof, generalized route-tour collateral, support-truth claim guards, capability map, and v20 Native Controls Pack 1 handoff. Validated across Phases 147-152.1; audit passed; full detail in `.planning/milestones/v19.0-REQUIREMENTS.md`.
+- ✓ **v22.0 Phase 167 Documentation and Pull-Request Reconciliation** (DOC-01..03) — aligned
+  public documentation with executable owners, preserved the parked first-adopter lane without
+  transferring authority, and gave every retained pull request an explicit verified disposition.
+  Exact adoption-authority tuples and blob-bound closeout receipts fail closed. Validated in Phase
+  167; full detail in the quality-ratchet-release workstream verification.
 
 ### Active
 
@@ -431,6 +436,8 @@ After v19.0, Crosswake has a product-shaped proof surface: a Crosswake-owned sho
 | Give each v19 demo app a separate fictional micro-brand inside the Crosswake showcase | Realistic product identities and dense fixtures make the examples feel credible while keeping Crosswake positioned as the parent route-policy/runtime-contract system, not one demo app | ✓ Validated in v19.0 — AdminPilot, Fieldserv, and LearnLoop are distinct fictional brands under Crosswake-owned framing |
 | Treat SEED-002 as a multi-milestone arc, not a single broad feature dump | Native controls, capture/device flows, and commerce/paywall support should be sequenced from examples and capability-map evidence so Crosswake stays Phoenix-first and does not drift into a generic WebView plugin catalog | ✓ Validated in v19.0 — v20 Native Controls Pack 1 is scoped from capability-map evidence; capture/device and commerce breadth remain later arcs |
 | Bind complete repository proof to a fixed nine-stage facade and an exact supported-code commit | Maintainers need one deterministic clean-checkout result without widening `mix verify`, hiding independent failures, leaking diagnostic state, or letting evidence commits redefine supported code | ✓ Validated in Phase 166 — all nine stages pass for `d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b`; recurring CI parity remains contract-tested |
+| Keep current support and adoption authority in executable owners with exact tuple membership | Generated prose must not become a second source of truth, and partial field validation can admit impossible support combinations | ✓ Validated in Phase 167 — `Crosswake.CapabilityMap` owns the claim layers and only three canonical seven-field tuples are admitted |
+| Keep release-only PRs open and hand Phase 168 a blob-bound, reversible closeout | Phase 167 reconciles ambiguity but cannot exercise the irreversible publication approval reserved for the release-candidate phase | ✓ Validated in Phase 167 — PRs 57, 115, 146, and 147 remain explicitly deferred and Phase 168 owns their exact-candidate gate |
 
 ## Evolution
 
@@ -450,4 +457,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-09-10 after Phase 166 verification and transition to Phase 167.*
+*Last updated: 2026-09-12 after Phase 167 verification and transition to Phase 168.*

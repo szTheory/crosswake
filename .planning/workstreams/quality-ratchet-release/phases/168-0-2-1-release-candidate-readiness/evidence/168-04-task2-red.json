@@ -1,0 +1,9 @@
+{
+  "command": "asdf exec mix test test/crosswake/release_candidate/cleanroom_test.exs:130",
+  "exitCode": 2,
+  "output": "TAP version 13\n# Subtest: exact-public proof requires six registry payloads, the same profiles, and live status\nnot ok 1 - exact-public proof requires six registry payloads, the same profiles, and live status\n  ---\n  error: 'Cleanroom.evaluate_public!/1 must enforce exact-public registry proof'\n  code: 'ERR_ASSERTION'\n  expected: true\n  actual: false\n  ...\n1..1\n# tests 1\n# pass 0\n# fail 1\n",
+  "targetTest": "exact-public proof requires six registry payloads, the same profiles, and live status",
+  "targetFile": "test/crosswake/release_candidate/cleanroom_test.exs",
+  "expected": "Cleanroom.evaluate_public!/1 accepts six exact registry payloads and returns COMPLETE only after five profiles and live status pass",
+  "actual": "the public exact-public evaluator was not implemented"
+}

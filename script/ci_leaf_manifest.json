@@ -303,6 +303,20 @@
       "irrelevance_reason": "all_changed_paths_allowlisted"
     },
     {
+      "leaf_id": "release-candidate-fixtures",
+      "display_name": "release-candidate-fixtures",
+      "family": "release_candidate",
+      "remediation_command": "mix test test/crosswake/release_candidate",
+      "irrelevance_reason": null
+    },
+    {
+      "leaf_id": "release-candidate-full-proof",
+      "display_name": "release-candidate-full-proof",
+      "family": "release_candidate",
+      "remediation_command": "bash script/release_candidate/hex_artifacts.sh",
+      "irrelevance_reason": "release_inputs_unchanged"
+    },
+    {
       "leaf_id": "route-tour-proof",
       "display_name": "route-tour-proof",
       "family": "offline_browser",

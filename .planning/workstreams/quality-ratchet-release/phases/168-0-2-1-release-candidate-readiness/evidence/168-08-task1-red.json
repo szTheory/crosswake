@@ -1,0 +1,9 @@
+{
+  "command": "python3 -c '<live protected-default ancestry assertion>'",
+  "exitCode": 1,
+  "output": "TAP version 13\n# Subtest: all reversible Phase 168 implementation is on protected default before candidate refresh\nnot ok 1 - all reversible Phase 168 implementation is on protected default before candidate refresh\n  ---\n  error: candidate branch head is not reachable from protected default\n  expected: true\n  actual: false\n  ...\n1..1\n# tests 1\n# pass 0\n# fail 1\n",
+  "targetTest": "all reversible Phase 168 implementation is on protected default before candidate refresh",
+  "targetFile": ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-08-PLAN.md",
+  "expected": "the exact full Phase 168 reversible implementation head is reachable from protected default before Release Please refresh is captured",
+  "actual": "the execution branch head was not yet reachable from protected default"
+}

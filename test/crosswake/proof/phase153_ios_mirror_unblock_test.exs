@@ -32,18 +32,15 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
   @parity_workflow ".github/workflows/crosswake-ci.yml"
   @parity_leaf "ios-mirror-parity-proof"
   @version "0.2.0"
-  @source_ref "refs/tags/ios-core-v0.2.0"
 
   @phase153_ids ~w(
-    release.ios_backfill.write_probe
-    release.ios_backfill.explicit_lease
-    release.ios_backfill.ssh_transport
     release.ios.ssh_transport
-    release.ios.atomic_leased_push
+    release.ios.ordinary_atomic_push
     release.ios.checkout_ref_pinned
-    release.ios.hex_gated
     release.workflow.native_rollup_fails_closed
     release.workflow.release_failure_alert_native
+    release.ios_mirror.four_modes
+    release.partial.exact_ref_recovery
   )
 
   # --- Tests A/B/C: raw git push semantics against disjoint-history bare fixtures ---
@@ -99,72 +96,30 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
     assert mirror_ref_sha(fixture.mirror, "refs/heads/main") == current_main
   end
 
-  # --- Tests D/E: drive the real script via its env seams ---
+  # --- Phase 168 compatibility: the former backfill entry point is now a
+  # four-mode adapter whose candidate paths are strictly read-only. ---
 
   @tag :phase153_ios_mirror_unblock
-  test "apply=false proves WRITE scope via a real dry-run push probe, not merely anonymous read (D-07)" do
-    fixture = backfill_fixture()
-
-    {output, exit_code} = run_script(fixture)
-
-    assert exit_code == 0, output
-    assert output =~ "dry-run push to"
-    assert output =~ "MIRROR_DEPLOY_KEY has WRITE scope"
-    assert output =~ "verification-only mode made no changes"
-  end
-
-  @tag :phase153_ios_mirror_unblock
-  test "ancestry guard logs an advisory (not fail-closed) when mirror main is an unknown object (D-08)" do
-    fixture = backfill_fixture()
-    push_foreign_main!(fixture)
-
-    {output, exit_code} = run_script(fixture, ["--apply", "--update-main"])
-
-    assert exit_code == 0, output
-    assert output =~ "is not a known object in this repository"
-    refute output =~ "mirror main has commits not reachable"
-    assert mirror_ref_sha(fixture.mirror, "refs/heads/main") == fixture.split_sha
-  end
-
-  @tag :phase153_ios_mirror_unblock
-  test "ancestry guard still fails closed when mirror main is known and genuinely not an ancestor (D-08)" do
-    fixture = backfill_fixture()
-    other_sha = add_commit!(fixture.release, "descendant.txt", "known but not an ancestor\n")
-    git!(["-C", fixture.release, "push", fixture.mirror, "#{other_sha}:refs/heads/main"])
-
-    {output, exit_code} = run_script(fixture, ["--apply", "--update-main"])
+  test "candidate mode rejects every mutation flag before delegating" do
+    {output, exit_code} =
+      System.cmd(
+        "bash",
+        [
+          @script,
+          "--mode",
+          "candidate",
+          "--version",
+          "0.2.1",
+          "--ref",
+          String.duplicate("a", 40),
+          "--apply"
+        ],
+        stderr_to_stdout: true
+      )
 
     assert exit_code != 0
-    assert output =~ "mirror main has commits not reachable from expected split SHA"
-    assert output =~ "mirror-only commit evidence"
-  end
-
-  @tag :phase153_ios_mirror_unblock
-  test "an already-present matching tag still re-baselines main under --update-main (tag short-circuit must not skip step 5)" do
-    fixture = disjoint_mirror_fixture()
-    # Pre-push the correct v0.2.0 tag so the tag path short-circuits with
-    # "already points at ... no push needed" - reproducing the exact state
-    # after D-21 step 4 (the tag push) when step 5 (the main re-baseline) is
-    # dispatched as its own separate run.
-    git!([
-      "-C",
-      fixture.release,
-      "push",
-      fixture.mirror,
-      "#{fixture.split_sha}:refs/tags/v#{@version}"
-    ])
-
-    assert mirror_ref_sha(fixture.mirror, "refs/heads/main") == fixture.preexisting_sha
-
-    {output, exit_code} = run_script(fixture, ["--apply", "--update-main"])
-
-    assert exit_code == 0, output
-    assert output =~ "already points at #{fixture.split_sha}; no push needed"
-    assert output =~ "updated mirror main to #{fixture.split_sha}"
-    # main re-baselined; both tags preserved.
-    assert mirror_ref_sha(fixture.mirror, "refs/heads/main") == fixture.split_sha
-    assert mirror_ref_sha(fixture.mirror, "refs/tags/v#{@version}") == fixture.split_sha
-    assert mirror_ref_sha(fixture.mirror, "refs/tags/v0.1.2") == fixture.preexisting_sha
+    assert output =~ "baseline and candidate modes are read-only"
+    assert output =~ "explicit publish or recovery mode"
   end
 
   # --- decoys: scanner emits the new phase153 ids as :ok (added by task 3) ---
@@ -197,16 +152,16 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
   end
 
   @tag :phase153_ios_mirror_unblock
-  test "publish-ios-core coupled to publish-android-core fails hex_gated id" do
+  test "publish-ios-core cannot switch ordinary publication to recovery" do
     workflow =
       real_workflow()
       |> replace_in_job(
         "publish-ios-core",
-        "needs: [release-please, publish-hex]",
-        "needs: [release-please, publish-hex, publish-android-core]"
+        "script/release_candidate/ios_mirror.sh publish",
+        "script/release_candidate/ios_mirror.sh recovery"
       )
 
-    assert_scanner_failure!("release.ios.hex_gated", workflow)
+    assert_scanner_failure!("release.ios.ordinary_atomic_push", workflow)
   end
 
   @tag :phase153_ios_mirror_unblock
@@ -400,42 +355,15 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
     release = Path.join(root, "release")
     mirror = Path.join(root, "mirror.git")
     File.mkdir_p!(release)
-    File.mkdir_p!(mirror)
     on_exit(fn -> File.rm_rf(root) end)
 
     git!(["init", "-q", release])
     git!(["-C", release, "config", "user.email", "ci@crosswake"])
     git!(["-C", release, "config", "user.name", "Crosswake CI"])
-
-    File.mkdir_p!(Path.join(release, "packages/crosswake-shell-core-ios"))
-    File.mkdir_p!(Path.join(release, "packages/crosswake-shell-core-android"))
-
-    File.write!(
-      Path.join(release, "packages/crosswake-shell-core-ios/Package.swift"),
-      "// swift package\n"
-    )
-
-    File.write!(
-      Path.join(release, "packages/crosswake-shell-core-android/build.gradle.kts"),
-      "// gradle\n"
-    )
-
-    File.write!(
-      Path.join(release, ".release-please-manifest.json"),
-      Jason.encode!(%{
-        "." => @version,
-        "packages/crosswake-shell-core-ios" => @version,
-        "packages/crosswake-shell-core-android" => @version
-      })
-    )
-
+    File.write!(Path.join(release, "Package.swift"), "// swift package\n")
     git!(["-C", release, "add", "."])
     git!(["-C", release, "commit", "-q", "-m", "release fixture"])
     split_sha = git!(["-C", release, "rev-parse", "HEAD"]) |> String.trim()
-
-    git!(["-C", release, "tag", "hex-v#{@version}", split_sha])
-    git!(["-C", release, "tag", "ios-core-v#{@version}", split_sha])
-    git!(["-C", release, "tag", "android-core-v#{@version}", split_sha])
     git!(["init", "--bare", "-q", mirror])
 
     %{root: root, release: release, mirror: mirror, split_sha: split_sha}
@@ -464,27 +392,6 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
     Map.put(fixture, :preexisting_sha, legacy_sha)
   end
 
-  defp push_foreign_main!(fixture) do
-    foreign = Path.join(fixture.root, "foreign")
-    File.mkdir_p!(foreign)
-    git!(["init", "-q", foreign])
-    git!(["-C", foreign, "config", "user.email", "ci@crosswake"])
-    git!(["-C", foreign, "config", "user.name", "Crosswake CI"])
-    File.write!(Path.join(foreign, "foreign.txt"), "unrelated to the release repo\n")
-    git!(["-C", foreign, "add", "."])
-    git!(["-C", foreign, "commit", "-q", "-m", "foreign, unrelated history"])
-    sha = git!(["-C", foreign, "rev-parse", "HEAD"]) |> String.trim()
-    git!(["-C", foreign, "push", fixture.mirror, "#{sha}:refs/heads/main"])
-    sha
-  end
-
-  defp add_commit!(repo, path, contents) do
-    File.write!(Path.join(repo, path), contents)
-    git!(["-C", repo, "add", path])
-    git!(["-C", repo, "commit", "-q", "-m", "extra commit"])
-    git!(["-C", repo, "rev-parse", "HEAD"]) |> String.trim()
-  end
-
   # The atomic + explicit-lease command form, copied character-for-character
   # from RESEARCH's empirically-verified recommendation. Driven through
   # `bash -c` (not a plain System.cmd arg list) so the source text literally
@@ -504,23 +411,6 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
       {output, 0} -> String.trim(output)
       {_output, _exit_code} -> nil
     end
-  end
-
-  defp run_script(fixture, args \\ [], env \\ []) do
-    base_env = [
-      {"CROSSWAKE_IOS_BACKFILL_RELEASE_REPO", fixture.release},
-      {"CROSSWAKE_IOS_BACKFILL_MIRROR_REMOTE", fixture.mirror},
-      {"CROSSWAKE_IOS_BACKFILL_SPLIT_SHA", fixture.split_sha},
-      {"CROSSWAKE_IOS_BACKFILL_HEX_LIVE", "true"},
-      {"CROSSWAKE_IOS_BACKFILL_MAVEN_LIVE", "true"}
-    ]
-
-    System.cmd(
-      "bash",
-      [@script, "--version", @version, "--ref", @source_ref] ++ args,
-      stderr_to_stdout: true,
-      env: base_env ++ env
-    )
   end
 
   defp run_scanner do

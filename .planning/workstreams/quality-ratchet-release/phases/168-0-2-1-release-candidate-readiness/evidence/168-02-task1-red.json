@@ -1,0 +1,9 @@
+{
+  "command": "asdf exec mix test test/crosswake/release_candidate/receipt_test.exs:32",
+  "exitCode": 1,
+  "output": "TAP version 13\n# Subtest: complete reversible proof yields exactly READY FOR APPROVAL\nnot ok 1 - complete reversible proof yields exactly READY FOR APPROVAL\n  ---\n  error: 'Assertion with == failed: left :not_implemented, right READY FOR APPROVAL'\n  code: 'ERR_ASSERTION'\n  ...\n1..1\n# tests 1\n# pass 0\n# fail 1\n",
+  "targetTest": "complete reversible proof yields exactly READY FOR APPROVAL",
+  "targetFile": "test/crosswake/release_candidate/receipt_test.exs",
+  "expected": "the deterministic evaluator returns READY FOR APPROVAL for complete reversible proof",
+  "actual": "the test-only RED fallback returned :not_implemented"
+}

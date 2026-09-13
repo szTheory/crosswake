@@ -1,77 +1,124 @@
-# Verify or backfill the SwiftPM mirror tag for an already-published lockstep
-# Crosswake core/native release. Verification is the default; mutation requires
-# apply=true. Authenticates over SSH using the MIRROR_DEPLOY_KEY deploy key
-# scoped to szTheory/crosswake-shell-core-ios.
+# Inspect, rehearse, publish, or recover the SwiftPM mirror through four
+# explicitly separated modes. Baseline inspection is credential-free. The
+# scoped MIRROR_DEPLOY_KEY is loaded only for trusted rehearsal and mutation.
 
-name: iOS mirror backfill
+name: iOS mirror authority
 
 on:
   workflow_dispatch:
     inputs:
+      operation:
+        description: 'Credential-free baseline, trusted candidate rehearsal, ordinary publication, or approved recovery.'
+        required: true
+        type: choice
+        default: baseline
+        options:
+          - baseline
+          - candidate-rehearsal
+          - publish
+          - recovery
       version:
-        description: 'Crosswake lockstep version to verify or backfill.'
+        description: 'Exact Crosswake lockstep version.'
         required: true
         type: string
         default: '0.2.0'
       release_ref:
-        description: 'Exact Release Please iOS component ref.'
+        description: 'Exact source ref: the 0.2.0 iOS tag for baseline or a 40-character 0.2.1 candidate SHA.'
         required: true
         type: string
         default: 'refs/tags/ios-core-v0.2.0'
-      apply:
-        description: 'Push the missing SwiftPM mirror tag. False means verify only.'
-        required: true
-        type: boolean
-        default: false
-      update_main:
-        description: 'Also realign mirror main after tag backfill.'
-        required: true
-        type: boolean
-        default: false
+      candidate_head:
+        description: 'Exact refreshed Release Please candidate head.'
+        required: false
+        default: ''
+        type: string
+      candidate_tree:
+        description: 'Exact candidate Git tree.'
+        required: false
+        default: ''
+        type: string
+      candidate_base:
+        description: 'Exact protected-default base.'
+        required: false
+        default: ''
+        type: string
+      candidate_receipt:
+        description: 'SHA-256 digest of the canonical candidate receipt.'
+        required: false
+        default: ''
+        type: string
+      approval_receipt:
+        description: 'Approved receipt digest required only for publication or recovery.'
+        required: false
+        default: ''
+        type: string
+      expected_old_ref:
+        description: 'Fresh exact mirror main before publication or recovery.'
+        required: false
+        default: ''
+        type: string
+      expected_new_ref:
+        description: 'Exact split/new main for publication or recovery.'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
 
 jobs:
-  verify-or-backfill-ios-mirror:
-    name: Verify or backfill iOS SwiftPM mirror
+  inspect-ios-mirror-baseline:
+    name: Inspect credential-free iOS mirror baseline
+    if: ${{ github.event.inputs.operation == 'baseline' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Validate inputs
-        env:
-          VERSION: ${{ inputs.version }}
-          RELEASE_REF: ${{ inputs.release_ref }}
-        run: |
-          set -euo pipefail
-          VERSION_PATTERN='^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z._-]+)?$'
-          EXPECTED_REF="refs/tags/ios-core-v${VERSION}"
-
-          case "$RELEASE_REF" in
-            ""|main|master|HEAD|heads/*|refs/heads/*|v*|[0-9]*)
-              echo "[crosswake] FAIL: release_ref '${RELEASE_REF}' is mutable, current-HEAD-shaped, or bare-version-shaped."
-              echo "[crosswake] What to do next: use ${EXPECTED_REF}."
-              exit 1
-              ;;
-          esac
-
-          if ! printf '%s' "$VERSION" | grep -Eq "$VERSION_PATTERN"; then
-            echo "[crosswake] FAIL: version '${VERSION}' is not semver."
-            exit 1
-          fi
-
-          if [ "$RELEASE_REF" != "$EXPECTED_REF" ]; then
-            echo "[crosswake] FAIL: release_ref '${RELEASE_REF}' is not the expected iOS component ref."
-            echo "[crosswake] What to do next: use ${EXPECTED_REF}."
-            exit 1
-          fi
-
-          echo "[crosswake] OK: iOS mirror backfill inputs are exact."
-
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Inspect immutable 0.2.0 baseline
+        run: >
+          bash script/release_candidate/ios_mirror.sh baseline
+          --version "${{ inputs.version }}"
+          --ref "${{ inputs.release_ref }}"
+
+  rehearse-ios-mirror-candidate:
+    name: Rehearse exact candidate mirror authority
+    if: ${{ github.event.inputs.operation == 'candidate-rehearsal' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      CANDIDATE_HEAD: "${{ inputs.candidate_head }}"
+      CANDIDATE_TREE: "${{ inputs.candidate_tree }}"
+      CANDIDATE_BASE: "${{ inputs.candidate_base }}"
+      CANDIDATE_RECEIPT: "${{ inputs.candidate_receipt }}"
+      CANDIDATE_RUN_ID: ${{ github.run_id }}
+    steps:
+      - name: Validate exact candidate authority
+        run: |
+          set -euo pipefail
+          [ "${{ inputs.version }}" = "0.2.1" ]
+          [ "${{ inputs.release_ref }}" = "$CANDIDATE_HEAD" ]
+          printf '%s' "$CANDIDATE_HEAD" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$CANDIDATE_TREE" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$CANDIDATE_BASE" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$CANDIDATE_RECEIPT" | grep -Eq '^[0-9a-f]{64}$'
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.candidate_head }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
 
       - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:
@@ -82,34 +129,67 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
 
-      # No split tool install: verify_ios_mirror_backfill.sh computes the
-      # subtree split with `git subtree split` (stock git). fetch-depth: 0 on the
-      # checkout above gives it the full history it needs.
-      - name: Verify or backfill SwiftPM mirror
+      - name: Exercise exact atomic mirror refspec without mutation
         env:
-          VERSION: ${{ inputs.version }}
-          RELEASE_REF: ${{ inputs.release_ref }}
-          APPLY: ${{ inputs.apply }}
-          UPDATE_MAIN: ${{ inputs.update_main }}
+          OUTPUT_DIR: ${{ runner.temp }}/candidate-rehearsal-ios
         run: |
           set -euo pipefail
-          args=(--version "$VERSION" --ref "$RELEASE_REF")
+          observed_head=$(git rev-parse HEAD)
+          observed_tree=$(git rev-parse "${observed_head}^{tree}")
+          git cat-file -e "${CANDIDATE_BASE}^{commit}"
+          git merge-base --is-ancestor "$CANDIDATE_BASE" "$observed_head"
+          [ "$observed_head" = "$CANDIDATE_HEAD" ]
+          [ "$observed_tree" = "$CANDIDATE_TREE" ]
 
-          if [ "$APPLY" = "true" ]; then
-            args+=(--apply)
-          fi
+          mkdir -p "$OUTPUT_DIR"
+          bash script/release_candidate/ios_mirror.sh candidate \
+            --version 0.2.1 --ref "$CANDIDATE_HEAD" | tee "$OUTPUT_DIR/mirror.json"
+          python3 -c 'import json,sys; value=json.load(open(sys.argv[1])); assert value["state"]=="PASS" and value["authorization_result"]=="PROVEN" and value["external_state_changed"] is False' "$OUTPUT_DIR/mirror.json"
 
-          if [ "$UPDATE_MAIN" = "true" ]; then
-            args+=(--update-main)
-          fi
+          workflow_sha256=$(sha256sum .github/workflows/ios-mirror-backfill.yml | awk '{print $1}')
+          mirror_digest=$(sha256sum "$OUTPUT_DIR/mirror.json" | awk '{print $1}')
+          WORKFLOW_SHA256="$workflow_sha256" MIRROR_DIGEST="$mirror_digest" python3 -c 'import json,os,pathlib; pathlib.Path(os.environ["OUTPUT_DIR"], "rehearsal.json").write_text(json.dumps({"schema_version":"1.0.0","requested_head":os.environ["CANDIDATE_HEAD"],"observed_head":os.environ["CANDIDATE_HEAD"],"observed_tree":os.environ["CANDIDATE_TREE"],"observed_base":os.environ["CANDIDATE_BASE"],"candidate_receipt":os.environ["CANDIDATE_RECEIPT"],"run_id":os.environ["CANDIDATE_RUN_ID"],"run_head":os.environ["CANDIDATE_HEAD"],"run_conclusion":"success","workflow_sha256":os.environ["WORKFLOW_SHA256"],"mirror_observation_sha256":os.environ["MIRROR_DIGEST"],"external_state_changed":False},sort_keys=True,separators=(",",":"))+"\n")'
+          echo "external_state_changed=false"
 
-          {
-            echo "## iOS mirror backfill"
-            echo ""
-            echo "- Version: ${VERSION}"
-            echo "- Release ref: ${RELEASE_REF}"
-            echo "- Mode: $([ "$APPLY" = "true" ] && echo "apply" || echo "verify-only")"
-            echo "- Update main: ${UPDATE_MAIN}"
-          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload exact mirror rehearsal receipt
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: candidate-rehearsal-ios
+          path: |
+            ${{ runner.temp }}/candidate-rehearsal-ios/mirror.json
+            ${{ runner.temp }}/candidate-rehearsal-ios/rehearsal.json
+          if-no-files-found: error
+          retention-days: 14
 
-          bash script/verify_ios_mirror_backfill.sh "${args[@]}"
+  recover-ios-mirror:
+    name: Recover approved iOS mirror main
+    if: ${{ github.event.inputs.operation == 'recovery' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.release_ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.MIRROR_DEPLOY_KEY }}
+      - name: Add GitHub to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+      - name: Run separately approved exact-ref recovery
+        env:
+          CROSSWAKE_IOS_MIRROR_EXECUTE: "true"
+        run: >
+          bash script/release_candidate/ios_mirror.sh recovery
+          --version "${{ inputs.version }}"
+          --ref "${{ inputs.release_ref }}"
+          --approval-receipt "${{ inputs.approval_receipt }}"
+          --expected-old-ref "${{ inputs.expected_old_ref }}"
+          --expected-new-ref "${{ inputs.expected_new_ref }}"

@@ -53,10 +53,11 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     // setOffline(false) does NOT fire the browser 'online' event (CDP toggles transport only).
     // The app's flushOutbox listener (offline_study.js:280) only fires on the window 'online' event.
     await context.setOffline(false);
+    const syncResponse = page.waitForResponse(r => r.url().includes('/study/sync') && r.status() === 200);
     // page.dispatchEvent cannot target window — use page.evaluate exclusively (E2E-03c)
     await page.evaluate(() => window.dispatchEvent(new Event('online'))); // OBSERVATION_ONLY (env simulation)
     // D-03b: deterministic reconnect assertion — confirm app reacted before polling Ecto
-    await page.waitForResponse(r => r.url().includes('/study/sync') && r.status() === 200);
+    await syncResponse;
 
     // Step 6: Server confirms exactly one row (E2E-03d)
     await expectSyncedReview(page.request, capturedId);

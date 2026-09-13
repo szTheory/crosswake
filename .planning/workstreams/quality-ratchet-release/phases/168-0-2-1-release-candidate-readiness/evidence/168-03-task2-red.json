@@ -1,0 +1,9 @@
+{
+  "command": "asdf exec mix test test/crosswake/release_candidate/coordinate_test.exs:15",
+  "exitCode": 2,
+  "output": "TAP version 13\n# Subtest: links only Hex, iOS, and Android at the candidate coordinate\nnot ok 1 - links only Hex, iOS, and Android at the candidate coordinate\n  ---\n  error: 'Coordinate.validate!/1 must enforce the candidate coordinate graph'\n  code: 'ERR_ASSERTION'\n  expected: true\n  actual: false\n  ...\n1..1\n# tests 1\n# pass 0\n# fail 1\n",
+  "targetTest": "links only Hex, iOS, and Android at the candidate coordinate",
+  "targetFile": "test/crosswake/release_candidate/coordinate_test.exs",
+  "expected": "Coordinate.validate!/1 accepts exactly the linked candidate core/native tuple and independent compatible companions",
+  "actual": "the public coordinate evaluator was not implemented"
+}

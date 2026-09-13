@@ -1,0 +1,9 @@
+{
+  "command": "node --test --test-name-pattern='live deferral-marker authority traverses more than 100 comments' test/js/phase167_pr_dispositions.test.mjs",
+  "exitCode": 1,
+  "output": "TAP version 13\n# Subtest: live deferral-marker authority traverses more than 100 comments\nnot ok 1 - live deferral-marker authority traverses more than 100 comments\n  ---\n  failureType: 'testCodeFailure'\n  error: 'validator CLI rejected the planned --verify-comment-pagination mode as unrecognized'\n  code: 'ERR_ASSERTION'\n  expected: 0\n  actual: 2\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n",
+  "targetTest": "live deferral-marker authority traverses more than 100 comments",
+  "targetFile": "test/js/phase167_pr_dispositions.test.mjs",
+  "expected": "cursor-complete pagination counts a marker beyond the newest 100 comments exactly once",
+  "actual": "validator CLI rejected the planned --verify-comment-pagination mode as unrecognized"
+}

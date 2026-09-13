@@ -222,7 +222,40 @@ Plans:
   4. The exact Crosswake 0.2.1 candidate commit passes package audit, build, tests, documentation generation, clean-room installation, and release-status verification.
   5. Every reversible release preparation step is automated, and the remaining irreversible package or tag publication is presented as one explicit maintainer approval rather than performed implicitly.
 
-**Plans**: TBD
+**Plans**: 7/8 plans executed
+
+Plans:
+**Wave 1**
+
+- [x] 168-01-PLAN.md — Land the exact Phase 167 handoff and close runtime/pagination authority gaps.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 168-02-PLAN.md — Define exact candidate identity, five-state receipt, projections, and CLI.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] 168-03-PLAN.md — Build and inspect six candidate packages and enforce coordinate/floor consistency.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [x] 168-04-PLAN.md — Prove five companion profiles from candidate payloads and prepare exact-public verification.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [x] 168-05-PLAN.md — Separate mirror baseline, candidate rehearsal, publication, and recovery authority.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
+- [x] 168-06-PLAN.md — Wire trusted rehearsal and the guarded linked postapproval graph into existing workflows.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
+- [x] 168-07-PLAN.md — Ratchet candidate contracts into existing CI, status, and release guidance.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
+- [ ] 168-08-PLAN.md — Capture the refreshed exact candidate and stop at the single irreversible approval.
 
 ## Progress
 
@@ -234,7 +267,7 @@ Plans:
 | 165. Efficient and Maintainable CI | 13/13 | Complete    | 2026-09-09 |
 | 166. Clean-Checkout Engineering Quality | 8/8 | Complete    | 2026-09-10 |
 | 167. Documentation and Pull-Request Reconciliation | 9/9 | Complete    | 2026-09-12 |
-| 168. 0.2.1 Release Candidate Readiness | 0/TBD | Not started | - |
+| 168. 0.2.1 Release Candidate Readiness | 7/8 | In Progress|  |
 
 ---
 *Roadmap created: 2026-08-28 for workstream `quality-ratchet-release`*

@@ -2,7 +2,7 @@
 # guarded_hex_publish.sh — guarded Hex publish helper for release automation.
 #
 # Usage:
-#   bash script/guarded_hex_publish.sh PACKAGE VERSION [RELEASE_REF]
+#   bash script/guarded_hex_publish.sh PACKAGE VERSION [RELEASE_REF] [approved identity]
 #
 # The helper is shared by automatic Release Please publish jobs and the manual
 # exact-ref Hex recovery workflow. It verifies package/version identity before
@@ -15,6 +15,21 @@ set -euo pipefail
 PACKAGE="${1:-}"
 VERSION="${2:-}"
 RELEASE_REF="${3:-unknown-ref}"
+shift "$(( $# >= 3 ? 3 : $# ))"
+APPROVED_HEAD=""
+APPROVED_TREE=""
+MERGE_OID=""
+CANDIDATE_RECEIPT=""
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --approved-head) [ "$#" -ge 2 ] || exit 2; APPROVED_HEAD="$2"; shift 2 ;;
+    --approved-tree) [ "$#" -ge 2 ] || exit 2; APPROVED_TREE="$2"; shift 2 ;;
+    --merge-oid) [ "$#" -ge 2 ] || exit 2; MERGE_OID="$2"; shift 2 ;;
+    --candidate-receipt) [ "$#" -ge 2 ] || exit 2; CANDIDATE_RECEIPT="$2"; shift 2 ;;
+    *) exit 2 ;;
+  esac
+done
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
@@ -119,6 +134,29 @@ validate_inputs() {
   if ! printf "%s" "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z._-]+)?$'; then
     fail "VERSION '${VERSION:-<empty>}' does not look like a valid semver string." "Pass the exact Release Please version output for ${PACKAGE}."
   fi
+}
+
+verify_approved_identity() {
+  if [ "$PACKAGE" != "crosswake" ] || [ "$VERSION" != "0.2.1" ]; then
+    return 0
+  fi
+
+  printf '%s' "$APPROVED_HEAD$APPROVED_TREE$MERGE_OID" | grep -Eq '^[0-9a-f]{120}$' ||
+    fail "approved linked release identity is missing or malformed."
+  printf '%s' "$CANDIDATE_RECEIPT" | grep -Eq '^[0-9a-f]{64}$' ||
+    fail "approved candidate receipt digest is missing or malformed."
+  [ "$CHECKED_SHA" = "$MERGE_OID" ] || fail "checked-out release ref is not the approved merge commit."
+
+  local parent_line
+  parent_line=$(git -C "$REPO_ROOT" rev-list --parents -n 1 "$MERGE_OID")
+  [ "$(printf '%s\n' "$parent_line" | awk '{print NF}')" -eq 3 ] ||
+    fail "approved release must be a two-parent merge commit."
+  [ "$(printf '%s\n' "$parent_line" | awk '{print $3}')" = "$APPROVED_HEAD" ] ||
+    fail "approved head is not the merge commit's second parent."
+  [ "$(git -C "$REPO_ROOT" rev-parse "${MERGE_OID}^{tree}")" = "$APPROVED_TREE" ] ||
+    fail "merge tree differs from the approved candidate tree."
+  [ "$(git -C "$REPO_ROOT" rev-parse "${APPROVED_HEAD}^{tree}")" = "$APPROVED_TREE" ] ||
+    fail "approved head tree differs from the approved candidate tree."
 }
 
 verify_expected_version() {
@@ -261,6 +299,7 @@ poll_hex_release() {
 main() {
   validate_inputs
   package_config
+  verify_approved_identity
   verify_expected_version
 
   local body_file
