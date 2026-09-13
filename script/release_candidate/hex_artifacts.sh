@@ -126,9 +126,10 @@ prepare_companion_source() {
 
       inner = Base.encode16(unpacked.inner_checksum, case: :lower)
       outer = Base.encode16(unpacked.outer_checksum, case: :lower)
-      lock = Mix.Dep.Lock.read(System.fetch_env!("LOCKFILE"))
+      lockfile = System.fetch_env!("LOCKFILE")
+      lock = Mix.Dep.Lock.read(lockfile)
       entry = {:hex, :crosswake, metadata["version"], inner, [:mix], requirements, "hexpm", outer}
-      Mix.Dep.Lock.write(Map.put(lock, :crosswake, entry), file: System.fetch_env!("LOCKFILE"))
+      File.write!(lockfile, inspect(Map.put(lock, :crosswake, entry), pretty: true, limit: :infinity) <> "\n")
 
       marker =
         {{:hex, 2, 0},
