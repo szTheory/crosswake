@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 29
+open_count: 30
 waived_count: 0
 fixed_count: 0
-total_count: 29
-last_updated: 2026-09-13T03:10:30.643Z
+total_count: 30
+last_updated: 2026-09-13T04:25:48.040Z
 ---
 
 # Broken Windows Ledger
@@ -44,6 +44,7 @@ last_updated: 2026-09-13T03:10:30.643Z
 | 27 | 168 | deviation | script/release_candidate/hex_artifacts.sh |  | Pinned asdf versions are passed into exact-ref source snapshots. | open |  | 2026-09-13T03:10:30.456Z |  |
 | 28 | 168 | deviation | lib/crosswake/release_candidate/artifact.ex |  | Official tuple-shaped Hex link metadata is normalized. | open |  | 2026-09-13T03:10:30.550Z |  |
 | 29 | 168 | deviation | script/release_candidate/hex_artifacts.sh |  | Manifest paths are canonicalized across macOS temporary-directory aliases. | open |  | 2026-09-13T03:10:30.643Z |  |
+| 30 | 168 | deviation | lib/crosswake/release_candidate/mirror.ex |  | Preserve observed mirror ref mutation in bounded evidence instead of normalizing external_state_changed to false | open |  | 2026-09-13T04:25:48.040Z |  |
 
 ````json
 [
@@ -309,8 +310,7 @@ last_updated: 2026-09-13T03:10:30.643Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-13T03:10:29.898Z",
-    "resolved_at": null,
-    "milestone": null
+    "resolved_at": null
   },
   {
     "id": 23,
@@ -322,8 +322,7 @@ last_updated: 2026-09-13T03:10:30.643Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-13T03:10:30.028Z",
-    "resolved_at": null,
-    "milestone": null
+    "resolved_at": null
   },
   {
     "id": 24,
@@ -335,8 +334,7 @@ last_updated: 2026-09-13T03:10:30.643Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-13T03:10:30.142Z",
-    "resolved_at": null,
-    "milestone": null
+    "resolved_at": null
   },
   {
     "id": 25,
@@ -348,8 +346,7 @@ last_updated: 2026-09-13T03:10:30.643Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-13T03:10:30.254Z",
-    "resolved_at": null,
-    "milestone": null
+    "resolved_at": null
   },
   {
     "id": 26,
@@ -361,8 +358,7 @@ last_updated: 2026-09-13T03:10:30.643Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-13T03:10:30.367Z",
-    "resolved_at": null,
-    "milestone": null
+    "resolved_at": null
   },
   {
     "id": 27,
@@ -374,8 +370,7 @@ last_updated: 2026-09-13T03:10:30.643Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-13T03:10:30.456Z",
-    "resolved_at": null,
-    "milestone": null
+    "resolved_at": null
   },
   {
     "id": 28,
@@ -387,8 +382,7 @@ last_updated: 2026-09-13T03:10:30.643Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-13T03:10:30.550Z",
-    "resolved_at": null,
-    "milestone": null
+    "resolved_at": null
   },
   {
     "id": 29,
@@ -400,8 +394,19 @@ last_updated: 2026-09-13T03:10:30.643Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-13T03:10:30.643Z",
-    "resolved_at": null,
-    "milestone": null
+    "resolved_at": null
+  },
+  {
+    "id": 30,
+    "kind": "deviation",
+    "phase": "168",
+    "file": "lib/crosswake/release_candidate/mirror.ex",
+    "line": null,
+    "description": "Preserve observed mirror ref mutation in bounded evidence instead of normalizing external_state_changed to false",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-13T04:25:48.040Z",
+    "resolved_at": null
   }
 ]
 ````

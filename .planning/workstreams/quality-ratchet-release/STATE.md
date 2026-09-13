@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 168
 current_phase_name: 0.2.1 Release Candidate Readiness
 status: executing
-stopped_at: Completed 168-04-PLAN.md
-last_updated: "2026-09-13T03:54:12.148Z"
+stopped_at: Completed 168-05-PLAN.md
+last_updated: "2026-09-13T04:25:59.019Z"
 last_activity: 2026-09-12
 last_activity_desc: Phase 168 execution started
-state_head: 9a4f8fdd9020a43699500ca5ffb187d5af552d3e
+state_head: 7af4387e317179c32e4568e4c626732d1fbf46fb
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 43
-  completed_plans: 39
+  completed_plans: 40
   percent: 80
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 168 (0.2.1 Release Candidate Readiness) — EXECUTING
-Plan: 5 of 8
+Plan: 6 of 8
 Status: Ready to execute
 Last activity: 2026-09-12 — Phase 168 execution started
 
@@ -95,6 +95,7 @@ Progress: [████████░░] 80%
 | Phase 168 P02 | 16m | 2 tasks | 9 files |
 | Phase 168 P03 | 38m | 2 tasks | 8 files |
 | Phase 168 P04 | 34m | 2 tasks | 5 files |
+| Phase 168 P05 | 26m | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -200,6 +201,8 @@ Progress: [████████░░] 80%
 - [Phase 168]: Generate map-shaped companion settings and one explicit managed route so the real Doctor path evaluates the intended host contract.
 - [Phase 168]: Treat every install, compile, smoke, registration, and Doctor command as a fail-closed proof child before recording profile success.
 - [Phase 168]: Keep exact-public verification fixture-backed and dormant until 0.2.1 publication and an approved receipt make its live precondition true.
+- [Phase 168]: Phase 168 Plan 05 models baseline inspection, candidate rehearsal, ordinary publication, and recovery as four closed mirror modes.
+- [Phase 168]: Ordinary iOS mirror publication is atomic and fast-forward/equal only; exact-ref force-with-lease exists only in separately approved recovery.
 
 ### Pending Todos
 
@@ -223,6 +226,6 @@ Progress: [████████░░] 80%
 
 ## Session Continuity
 
-Last session: 2026-09-13T03:54:12.041Z
-Stopped at: Completed 168-04-PLAN.md
+Last session: 2026-09-13T04:25:58.919Z
+Stopped at: Completed 168-05-PLAN.md
 Resume file: None
