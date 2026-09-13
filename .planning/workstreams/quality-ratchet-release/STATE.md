@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 168
 current_phase_name: 0.2.1 Release Candidate Readiness
 status: executing
-stopped_at: Completed 168-02-PLAN.md
-last_updated: "2026-09-13T02:26:09.448Z"
+stopped_at: Completed 168-03-PLAN.md
+last_updated: "2026-09-13T03:10:16.096Z"
 last_activity: 2026-09-12
 last_activity_desc: Phase 168 execution started
-state_head: 4a3e44267b0081cd1a49095d16114e227b35b753
+state_head: aa99328e0381d34b053c5a44c128a527bd52dcb8
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 43
-  completed_plans: 37
+  completed_plans: 38
   percent: 80
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 168 (0.2.1 Release Candidate Readiness) — EXECUTING
-Plan: 3 of 8
+Plan: 4 of 8
 Status: Ready to execute
 Last activity: 2026-09-12 — Phase 168 execution started
 
@@ -93,6 +93,7 @@ Progress: [████████░░] 80%
 | Phase 167 P09 | 9min | 2 tasks | 2 files |
 | Phase 168 P01 | 38m | 3 tasks | 7 files |
 | Phase 168 P02 | 16m | 2 tasks | 9 files |
+| Phase 168 P03 | 38m | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -192,6 +193,9 @@ Progress: [████████░░] 80%
 - [Phase 168]: Represent receipt identity as separately validated bound and observed tuples so drift remains reproducible and a STALE receipt can validate itself.
 - [Phase 168]: Keep the Mix task evaluation-only; fixed flags delegate to the pure evaluator while later plans supply normalized external observations through the narrow adapter seam.
 - [Phase 168]: Write one canonical JSON receipt and derive every human projection from the same validated receipt map without color or raw adapter diagnostics.
+- [Phase 168]: Use official Hex unpack plus normalized metadata and payload digests as package evidence; repository trees and ephemeral roots are not durable authority.
+- [Phase 168]: Seed companion audits from the candidate core tarball inside exact-ref snapshots so public requirements remain testable without registry fallback.
+- [Phase 168]: Link only Hex, iOS core, and Android core at 0.2.1; companions and proposals remain independent approval outsiders.
 
 ### Pending Todos
 
@@ -215,6 +219,6 @@ Progress: [████████░░] 80%
 
 ## Session Continuity
 
-Last session: 2026-09-13T02:26:09.358Z
-Stopped at: Completed 168-02-PLAN.md
+Last session: 2026-09-13T03:10:15.997Z
+Stopped at: Completed 168-03-PLAN.md
 Resume file: None

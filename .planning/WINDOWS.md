@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 21
+open_count: 29
 waived_count: 0
 fixed_count: 0
-total_count: 21
-last_updated: 2026-09-10T21:17:04.313Z
+total_count: 29
+last_updated: 2026-09-13T03:10:30.643Z
 ---
 
 # Broken Windows Ledger
@@ -36,6 +36,14 @@ last_updated: 2026-09-10T21:17:04.313Z
 | 19 | 166 | deviation | script/verify_repository.mjs |  | Escaped hostile artifact paths and kept them out of remediation command text | open |  | 2026-09-09T17:23:36.661Z |  |
 | 20 | 167 | deviation | README.md |  | Restored route-owner guidance before canonical support detail after the new answer-first copy changed navigation order. | open |  | 2026-09-10T21:17:04.170Z |  |
 | 21 | 167 | deviation | guides/compatibility.md |  | Named the public SupportMatrix owner instead of linking ExDoc to its private change-class helper. | open |  | 2026-09-10T21:17:04.313Z |  |
+| 22 | 168 | deviation | script/release_candidate/hex_artifacts.sh |  | Pinned Hex archive was resolved from the active Mix runtime. | open |  | 2026-09-13T03:10:29.898Z |  |
+| 23 | 168 | deviation | script/release_candidate/hex_artifacts.sh |  | Companion audits were seeded from the candidate core tarball. | open |  | 2026-09-13T03:10:30.028Z |  |
+| 24 | 168 | deviation | test/crosswake/release_candidate/artifact_test.exs |  | Artifact module loading was made deterministic across test seeds. | open |  | 2026-09-13T03:10:30.142Z |  |
+| 25 | 168 | deviation | script/release_candidate/hex_artifacts.sh |  | Candidate dependency atoms were bounded to the known core dependency set. | open |  | 2026-09-13T03:10:30.254Z |  |
+| 26 | 168 | deviation | script/release_candidate/hex_artifacts.sh |  | Invocation-local companion locks are serialized without a loaded Mix project. | open |  | 2026-09-13T03:10:30.367Z |  |
+| 27 | 168 | deviation | script/release_candidate/hex_artifacts.sh |  | Pinned asdf versions are passed into exact-ref source snapshots. | open |  | 2026-09-13T03:10:30.456Z |  |
+| 28 | 168 | deviation | lib/crosswake/release_candidate/artifact.ex |  | Official tuple-shaped Hex link metadata is normalized. | open |  | 2026-09-13T03:10:30.550Z |  |
+| 29 | 168 | deviation | script/release_candidate/hex_artifacts.sh |  | Manifest paths are canonicalized across macOS temporary-directory aliases. | open |  | 2026-09-13T03:10:30.643Z |  |
 
 ````json
 [
@@ -290,6 +298,110 @@ last_updated: 2026-09-10T21:17:04.313Z
     "reason": "",
     "recorded_at": "2026-09-10T21:17:04.313Z",
     "resolved_at": null
+  },
+  {
+    "id": 22,
+    "kind": "deviation",
+    "phase": "168",
+    "file": "script/release_candidate/hex_artifacts.sh",
+    "line": null,
+    "description": "Pinned Hex archive was resolved from the active Mix runtime.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-13T03:10:29.898Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 23,
+    "kind": "deviation",
+    "phase": "168",
+    "file": "script/release_candidate/hex_artifacts.sh",
+    "line": null,
+    "description": "Companion audits were seeded from the candidate core tarball.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-13T03:10:30.028Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 24,
+    "kind": "deviation",
+    "phase": "168",
+    "file": "test/crosswake/release_candidate/artifact_test.exs",
+    "line": null,
+    "description": "Artifact module loading was made deterministic across test seeds.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-13T03:10:30.142Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 25,
+    "kind": "deviation",
+    "phase": "168",
+    "file": "script/release_candidate/hex_artifacts.sh",
+    "line": null,
+    "description": "Candidate dependency atoms were bounded to the known core dependency set.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-13T03:10:30.254Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 26,
+    "kind": "deviation",
+    "phase": "168",
+    "file": "script/release_candidate/hex_artifacts.sh",
+    "line": null,
+    "description": "Invocation-local companion locks are serialized without a loaded Mix project.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-13T03:10:30.367Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 27,
+    "kind": "deviation",
+    "phase": "168",
+    "file": "script/release_candidate/hex_artifacts.sh",
+    "line": null,
+    "description": "Pinned asdf versions are passed into exact-ref source snapshots.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-13T03:10:30.456Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 28,
+    "kind": "deviation",
+    "phase": "168",
+    "file": "lib/crosswake/release_candidate/artifact.ex",
+    "line": null,
+    "description": "Official tuple-shaped Hex link metadata is normalized.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-13T03:10:30.550Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 29,
+    "kind": "deviation",
+    "phase": "168",
+    "file": "script/release_candidate/hex_artifacts.sh",
+    "line": null,
+    "description": "Manifest paths are canonicalized across macOS temporary-directory aliases.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-13T03:10:30.643Z",
+    "resolved_at": null,
+    "milestone": null
   }
 ]
 ````
