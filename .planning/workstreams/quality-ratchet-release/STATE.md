@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 168
 current_phase_name: 0.2.1 Release Candidate Readiness
 status: executing
-stopped_at: Phase 168 context gathered
-last_updated: "2026-09-13T01:07:03.082Z"
+stopped_at: Completed 168-01-PLAN.md
+last_updated: "2026-09-13T02:04:35.230Z"
 last_activity: 2026-09-12
-last_activity_desc: Phase 167 complete, transitioned to Phase 168
-state_head: dac8f884e773abec1b228a4f11bde325a47f2741
+last_activity_desc: Phase 168 execution started
+state_head: 9f94c16c39b05035d1ad96f92505513f612cc78c
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 43
-  completed_plans: 35
+  completed_plans: 36
   percent: 80
 workstream: quality-ratchet-release
 ---
@@ -27,14 +27,14 @@ See: `.planning/PROJECT.md` (updated 2026-09-12)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 168 — exact, approval-gated 0.2.1 release-candidate readiness
+**Current focus:** Phase 168 — 0.2.1 Release Candidate Readiness
 
 ## Current Position
 
-Phase: 168 (0.2.1 Release Candidate Readiness) — READY TO EXECUTE
-Plan: Not started
+Phase: 168 (0.2.1 Release Candidate Readiness) — EXECUTING
+Plan: 2 of 8
 Status: Ready to execute
-Last activity: 2026-09-12 — Phase 167 complete, transitioned to Phase 168
+Last activity: 2026-09-12 — Phase 168 execution started
 
 Progress: [████████░░] 80%
 
@@ -91,6 +91,7 @@ Progress: [████████░░] 80%
 | Phase 167 P07 | 27m | 2 tasks | 2 files |
 | Phase 167 P08 | 1h 28m | 3 tasks | 10 files |
 | Phase 167 P09 | 9min | 2 tasks | 2 files |
+| Phase 168 P01 | 38m | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -184,6 +185,9 @@ Progress: [████████░░] 80%
 - [Phase 167]: Hand Phase 168 only the five final path names and owner phase_168_first_reversible_landing; do not claim their blobs are on protected default.
 - [Phase 167]: Admit adoption authority only by exact membership in the three canonical seven-field tuples.
 - [Phase 167]: Return one stable complete_authority_tuple rule without echoing sensitive statement or boundary values.
+- [Phase 168]: Bind the first Phase 168 landing to exactly five retained path/mode/blob records, exact-head Crosswake CI, and a tree-identical two-parent merge.
+- [Phase 168]: Use a tracked historical lock fixture for positive reconciliation while current, missing, changed, and additional runtime state remains non-passing.
+- [Phase 168]: Treat release-only PR head/base/check refreshes as mutable observations while preserving strict open, unmerged, cursor-complete marker authority.
 
 ### Pending Todos
 
@@ -207,6 +211,6 @@ Progress: [████████░░] 80%
 
 ## Session Continuity
 
-Last session: 2026-09-12T23:17:21.004Z
-Stopped at: Phase 168 context gathered
-Resume file: .planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-CONTEXT.md
+Last session: 2026-09-13T02:04:35.138Z
+Stopped at: Completed 168-01-PLAN.md
+Resume file: None
