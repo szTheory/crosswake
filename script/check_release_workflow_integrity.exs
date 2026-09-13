@@ -8,6 +8,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   @default_doctor_task "lib/mix/tasks/crosswake.doctor.ex"
   @default_ios_backfill_script "script/release_candidate/ios_mirror.sh"
   @default_ios_backfill_workflow ".github/workflows/ios-mirror-backfill.yml"
+  @default_android_publication "script/release_candidate/android_publication.sh"
   @default_release_config "release-please-config.json"
   @default_manifest ".release-please-manifest.json"
   @default_companion_root "packages"
@@ -51,6 +52,11 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
     non_comment_ios_backfill_workflow = strip_full_line_comments(ios_backfill_workflow)
 
+    android_publication =
+      File.read!(path_from_env("ANDROID_PUBLICATION_PATH", @default_android_publication))
+
+    non_comment_android_publication = strip_full_line_comments(android_publication)
+
     release_config =
       path_from_env("RELEASE_PLEASE_CONFIG_PATH", @default_release_config)
       |> File.read!()
@@ -91,7 +97,9 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         native_rollup_summary(jobs),
         native_status_artifact(jobs),
         release_ios_ssh_transport(jobs),
-        release_ios_atomic_leased_push(jobs),
+        approved_release_merge_guard(jobs),
+        linked_release_children(jobs, non_comment_helper, non_comment_android_publication),
+        release_ios_ordinary_atomic_push(jobs),
         release_ios_checkout_ref_pinned(jobs),
         release_ios_hex_gated(jobs),
         native_rollup_fails_closed(jobs),
@@ -222,16 +230,6 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
   defp includes?(text, value) when is_binary(value), do: String.contains?(text, value)
   defp includes?(text, %Regex{} = regex), do: Regex.match?(regex, text)
-
-  defp workflow_input_default?(workflow, input, expected_default) do
-    input_regex = Regex.escape(input)
-    default_regex = Regex.escape(expected_default)
-
-    Regex.match?(
-      ~r/(?ms)^      #{input_regex}:\n(?:(?!^      [A-Za-z0-9_-]+:\n|^\S).)*?^        default:\s*#{default_regex}\s*$/,
-      workflow
-    )
-  end
 
   defp hex_publish_already_live_preflight(helper) do
     check(
@@ -658,9 +656,15 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   end
 
   defp path_gate(jobs, id, job, path) do
+    expression = job_if(jobs, job)
+
     check(
       id,
-      job_if(jobs, job) == path_gate_expression(path),
+      includes?(
+        expression,
+        "contains(fromJSON(needs.release-please.outputs.paths_released), '#{path}')"
+      ) and
+        not includes?(expression, "releases_created"),
       "#{job} must gate on paths_released exact path #{path}; run elixir script/check_release_workflow_integrity.exs"
     )
   end
@@ -791,22 +795,75 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     )
   end
 
-  # REWRITE (not rename) of the retired release.mirror_token.write_preflight
-  # check. It asserted the old TWO-refspec dry-run shape from the two-command
-  # push implementation; that shape no longer exists once the push became one
-  # atomic, explicit-lease command (D-13).
-  defp release_ios_atomic_leased_push(jobs) do
+  defp approved_release_merge_guard(jobs) do
+    block = job_block(jobs, "approved-release-guard")
+
+    required_outputs =
+      ~w(approved_head approved_tree merge_oid merge_parents merge_tree candidate_receipt candidate_run_id)
+
+    check(
+      "release.approval.merge_tree_guard",
+      Enum.all?(required_outputs, &includes?(block, &1)) and
+        includes?(block, "git rev-list --parents -n 1") and
+        includes?(block, ~s([ "$parent_count" -eq 3 ])) and
+        includes?(block, ~s([ "$approved_head" = "$second_parent" ])) and
+        includes?(block, ~s([ "$merge_tree" = "$approved_tree" ])) and
+        includes?(block, ~s(.state == "READY FOR APPROVAL")) and
+        includes?(block, ".external_state.changed == false") and
+        job_needs?(jobs, "release-please", "approved-release-guard"),
+      "Release Please must run only after exact approved-head parentage, identical tree, and READY receipt validation"
+    )
+  end
+
+  defp linked_release_children(jobs, helper, android_publication) do
+    rollup = job_block(jobs, "linked-release-rollup")
+    exact_public = job_block(jobs, "exact-public-proof")
+
+    guarded_children? =
+      Enum.all?(~w(publish-hex publish-ios-core publish-android-core), fn job ->
+        block = job_block(jobs, job)
+
+        job_needs?(jobs, job, "approved-release-guard") and
+          includes?(
+            job_if(jobs, job),
+            "needs.approved-release-guard.outputs.linked_release == 'true'"
+          ) and
+          includes?(job_if(jobs, job), "needs.release-please.outputs.version == '0.2.1'") and
+          not includes?(block, "environment:")
+      end)
+
+    graph_children =
+      ~w(publish-hex publish-ios-core publish-android-core clean-room-proof-ios clean-room-proof-android exact-public-proof)
+
+    companions_excluded? =
+      Enum.all?(@components, fn component ->
+        not job_needs?(jobs, "publish-hex-#{component}", "approved-release-guard")
+      end)
+
+    check(
+      "release.approval.linked_graph",
+      guarded_children? and companions_excluded? and
+        includes?(job_block(jobs, "publish-hex"), "--candidate-receipt") and
+        includes?(helper, "verify_approved_identity") and
+        includes?(job_block(jobs, "publish-android-core"), "android_publication.sh") and
+        includes?(android_publication, "APPROVED_HEAD") and
+        includes?(exact_public, "exact-public") and
+        Enum.all?(graph_children, &job_needs?(jobs, "linked-release-rollup", &1)) and
+        includes?(rollup, "child_states") and includes?(rollup, "successful_coordinates") and
+        includes?(rollup, "COMPLETE") and includes?(rollup, "PARTIAL"),
+      "the fixed postapproval graph must contain only guarded Hex/iOS/Android 0.2.1 children, exact-public proof, and a closed linked rollup"
+    )
+  end
+
+  defp release_ios_ordinary_atomic_push(jobs) do
     block = job_block(jobs, "publish-ios-core")
 
     check(
-      "release.ios.atomic_leased_push",
-      includes?(block, "push --atomic mirror") and
-        includes?(block, ~s(--force-with-lease="refs/heads/main:${CURRENT_MAIN_SHA}")) and
-        includes?(block, ~s("${SPLIT_SHA}:refs/heads/main")) and
-        includes?(block, ~s("${SPLIT_SHA}:refs/tags/v${VERSION}")) and
-        includes?(block, "--dry-run --porcelain") and
-        not includes?(block, ~r/--force-with-lease=refs\/heads\/main(?!:)/),
-      "publish-ios-core must push main and the release tag atomically with an explicit-lease scoped to main alone, probed by a dry-run of the same atomic form; run elixir script/check_release_workflow_integrity.exs"
+      "release.ios.ordinary_atomic_push",
+      includes?(block, "script/release_candidate/ios_mirror.sh publish") and
+        includes?(block, "--approval-receipt") and includes?(block, "--expected-old-ref") and
+        includes?(block, "--expected-new-ref") and not includes?(block, "--force"),
+      "ordinary iOS publication must delegate to the exact approved adapter and contain no force path"
     )
   end
 
@@ -993,88 +1050,6 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         not includes?(hex, "guarded_hex_publish.sh") and
         not includes?(ios, "CROSSWAKE_IOS_MIRROR_EXECUTE"),
       "candidate rehearsal must fail closed without registry, ref, tag, or package mutation authority"
-    )
-  end
-
-  defp ios_backfill_verify_first(script, workflow) do
-    check(
-      "release.ios_backfill.verify_first",
-      includes?(script, "APPLY=0") and includes?(script, "--apply") and
-        includes?(script, "MIRROR_DEPLOY_KEY has WRITE scope") and
-        includes?(script, "verification-only mode made no changes") and
-        includes?(workflow, "workflow_dispatch") and
-        includes?(workflow, "verify-or-backfill-ios-mirror") and
-        includes?(workflow, "type: boolean") and
-        workflow_input_default?(workflow, "apply", "false") and
-        includes?(workflow, "bash script/verify_ios_mirror_backfill.sh"),
-      "iOS mirror backfill must default to verify-only and require explicit apply before mutation"
-    )
-  end
-
-  defp ios_backfill_exact_release_ref(script, workflow) do
-    check(
-      "release.ios_backfill.exact_release_ref",
-      includes?(script, "refs/tags/ios-core-v${VERSION}") and
-        includes?(script, "refs/tags/hex-v${VERSION}") and
-        includes?(script, "refs/tags/android-core-v${VERSION}") and
-        includes?(script, "main|master|HEAD|heads/*|refs/heads/*|v*|[0-9]*") and
-        includes?(workflow, "release_ref") and
-        workflow_input_default?(workflow, "release_ref", "'refs/tags/ios-core-v0.2.0'") and
-        includes?(workflow, "--ref \"$RELEASE_REF\""),
-      "iOS mirror backfill must use the exact Release Please iOS component ref, not main/HEAD/current checkout/bare version tags"
-    )
-  end
-
-  defp ios_backfill_tag_idempotent(script) do
-    check(
-      "release.ios_backfill.tag_idempotent",
-      includes?(script, "refs/tags/v${VERSION}") and includes?(script, "git ls-remote") and
-        includes?(script, "already points at ${SPLIT_SHA}; no push needed") and
-        includes?(script, "points at ${tag_sha}, expected ${SPLIT_SHA}") and
-        includes?(script, "Do not delete or move the public SwiftPM tag automatically"),
-      "iOS mirror backfill must treat exact existing tags as success and mismatched public tags as fail-closed"
-    )
-  end
-
-  defp ios_backfill_no_default_main_force(script, workflow) do
-    check(
-      "release.ios_backfill.no_default_main_force",
-      includes?(script, "--update-main") and
-        includes?(script, ~s(--force-with-lease="refs/heads/main:${current_main}")) and
-        includes?(script, "mirror-only commit evidence") and
-        includes?(workflow, "update_main") and includes?(workflow, "Update main: ${UPDATE_MAIN}") and
-        workflow_input_default?(workflow, "update_main", "false"),
-      "iOS mirror backfill must prefer tag verification/creation and only realign main with explicit update_main plus explicit-lease guardrails"
-    )
-  end
-
-  defp ios_backfill_write_probe(script) do
-    check(
-      "release.ios_backfill.write_probe",
-      includes?(script, "push --dry-run --porcelain") and
-        includes?(script, "MIRROR_DEPLOY_KEY has WRITE scope"),
-      "iOS mirror backfill verify-only mode (apply=false) must perform a real dry-run write probe, not just anonymous read; run elixir script/check_release_workflow_integrity.exs"
-    )
-  end
-
-  defp ios_backfill_explicit_lease(script) do
-    check(
-      "release.ios_backfill.explicit_lease",
-      includes?(script, ~s(--force-with-lease="refs/heads/main:${current_main}")) and
-        not includes?(script, ~r/--force-with-lease=refs\/heads\/main(?!:)/),
-      "iOS mirror backfill --update-main push must use the explicit-lease form (--force-with-lease=<ref>:<expect>), the only form that works in a never-fetched CI checkout; run elixir script/check_release_workflow_integrity.exs"
-    )
-  end
-
-  defp ios_backfill_ssh_transport(script, workflow) do
-    check(
-      "release.ios_backfill.ssh_transport",
-      includes?(workflow, "persist-credentials: false") and
-        includes?(workflow, "webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555") and
-        includes?(workflow, "ssh-keyscan") and
-        includes?(script, "git@github.com:szTheory/crosswake-shell-core-ios.git") and
-        not includes?(script, "x-access-token"),
-      "iOS mirror backfill must authenticate over SSH via MIRROR_DEPLOY_KEY, never an HTTPS URL-embedded token; run elixir script/check_release_workflow_integrity.exs"
     )
   end
 

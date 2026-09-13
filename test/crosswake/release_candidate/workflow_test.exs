@@ -73,7 +73,7 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert guard =~ "[ \"$approved_head\" = \"$second_parent\" ]"
     assert guard =~ "[ \"$merge_tree\" = \"$approved_tree\" ]"
     assert guard =~ "READY FOR APPROVAL"
-    assert guard =~ "external_state_changed"
+    assert guard =~ ".external_state.changed == false"
 
     for job <- ~w(publish-hex publish-ios-core publish-android-core) do
       block = job_block(workflow, job)
