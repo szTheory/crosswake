@@ -281,6 +281,18 @@ jobs:
     steps:
       - run: "true"
     name: release-as-staleness-proof
+  release-candidate-fixtures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: release-candidate-fixtures
+  release-candidate-full-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: release-candidate-full-proof
   route-tour-proof:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -336,6 +348,8 @@ jobs:
       - proof-dependency-security
       - proof-requires-example-host
       - release-as-staleness-proof
+      - release-candidate-fixtures
+      - release-candidate-full-proof
       - route-tour-proof
     runs-on: ubuntu-latest
     timeout-minutes: 10

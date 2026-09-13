@@ -12,6 +12,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   @default_release_workflow_policy "lib/crosswake/release_candidate/workflow.ex"
   @default_release_config "release-please-config.json"
   @default_manifest ".release-please-manifest.json"
+  @default_ci_workflow ".github/workflows/crosswake-ci.yml"
   @default_companion_root "packages"
   @components ~w(rulestead rindle sigra chimeway threadline)
   @hex_packages ~w(crosswake crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline)
@@ -74,6 +75,11 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       |> JSON.decode!()
 
     companion_root = path_from_env("COMPANION_MIX_ROOT", @default_companion_root)
+
+    ci_workflow =
+      path_from_env("CROSSWAKE_CI_WORKFLOW_PATH", @default_ci_workflow)
+      |> File.read!()
+      |> strip_full_line_comments()
 
     checks =
       [
@@ -144,7 +150,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         workflow_doctor_proof_unmasked(non_comment_doctor_task, non_comment_cleanroom_script),
         version_graph_lockstep_core_native_only(release_config),
         version_graph_companions_independent(release_config, release_manifest),
-        version_graph_companion_floors_honest(companion_root)
+        version_graph_companion_floors_honest(companion_root),
+        candidate_ci_contract(ci_workflow)
       ] ++ component_gates(jobs) ++ component_proof_gates(jobs)
 
     failures = Enum.filter(checks, &match?({:error, _, _}, &1))
@@ -239,6 +246,57 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
   defp check(id, true, detail), do: {:ok, id, detail}
   defp check(id, false, detail), do: {:error, id, detail}
+
+  defp candidate_ci_contract(workflow) do
+    jobs = job_blocks(workflow)
+    classifier = job_block(jobs, "classify-change")
+    fixtures = job_block(jobs, "release-candidate-fixtures")
+    full = job_block(jobs, "release-candidate-full-proof")
+    umbrella = job_block(jobs, "merge-blocking-crosswake-ci")
+
+    classifier_closed? =
+      includes?(classifier, "release_candidate_scope=full_matrix") and
+        includes?(classifier, "release_candidate_reason=checkout_or_object_validation_failed") and
+        includes?(classifier, "release_candidate_scope=fast_fixtures") and
+        includes?(classifier, "release_candidate_reason=release_inputs_unchanged") and
+        includes?(classifier, "release_please_candidate") and
+        includes?(classifier, "release_sensitive_input_changed")
+
+    fixtures_complete? =
+      job_if(jobs, "release-candidate-fixtures") ==
+        "needs.classify-change.result == 'success'" and
+        includes?(fixtures, "test/crosswake/release_candidate") and
+        includes?(fixtures, "script/check_release_workflow_integrity.exs")
+
+    full_complete? =
+      job_if(jobs, "release-candidate-full-proof") ==
+        "needs.classify-change.outputs.release_candidate_scope == 'full_matrix'" and
+        includes?(full, "ref: ${{ github.event.pull_request.head.sha }}") and
+        includes?(full, "script/release_candidate/hex_artifacts.sh") and
+        includes?(full, "script/verify_companion_cleanroom.sh") and
+        includes?(full, "test/crosswake/release_candidate/coordinate_test.exs") and
+        includes?(full, "test/crosswake/release_candidate/mirror_test.exs") and
+        includes?(full, "test/crosswake/release_candidate/workflow_test.exs") and
+        includes?(full, "test/crosswake/release_candidate/receipt_test.exs") and
+        includes?(full, "release-candidate-ci-receipt.json") and
+        includes?(full, "package_count\": 6") and includes?(full, "profile_count\": 5") and
+        includes?(full, "install_count\": 2") and
+        includes?(full, "mix crosswake.release.candidate --version 0.2.1 --ref <40sha>") and
+        not includes?(full, "HEX_API_KEY") and not includes?(full, "MIRROR_DEPLOY_KEY") and
+        not includes?(full, "git push")
+
+    umbrella_closed? =
+      includes?(umbrella, "release-candidate-fixtures") and
+        includes?(umbrella, "release-candidate-full-proof") and
+        includes?(umbrella, "release_inputs_unchanged") and
+        includes?(umbrella, "candidate scope or reason was missing or unknown")
+
+    check(
+      "release.ci.candidate_matrix",
+      classifier_closed? and fixtures_complete? and full_complete? and umbrella_closed?,
+      "Crosswake CI must always run stable fixtures and fail open to exact-head non-vacuous full candidate proof without credentials"
+    )
+  end
 
   defp includes?(text, value) when is_binary(value), do: String.contains?(text, value)
   defp includes?(text, %Regex{} = regex), do: Regex.match?(regex, text)
