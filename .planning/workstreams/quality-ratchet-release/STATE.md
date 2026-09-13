@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 168
 current_phase_name: 0.2.1 Release Candidate Readiness
 status: executing
-stopped_at: Completed 168-06-PLAN.md
-last_updated: "2026-09-13T05:30:11.816Z"
+stopped_at: Completed 168-07-PLAN.md
+last_updated: "2026-09-13T13:09:20.612Z"
 last_activity: 2026-09-12
 last_activity_desc: Phase 168 execution started
-state_head: c62471a3776bd03566f15b3cc8c2bb10bb8b4464
+state_head: a1f110e80c90e2b1429d2d119a807a89726daa4d
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 43
-  completed_plans: 41
+  completed_plans: 42
   percent: 60
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 168 (0.2.1 Release Candidate Readiness) — EXECUTING
-Plan: 7 of 8
+Plan: 8 of 8
 Status: Ready to execute
 Last activity: 2026-09-12 — Phase 168 execution started
 
@@ -97,6 +97,7 @@ Progress: [██████░░░░] 60%
 | Phase 168 P04 | 34m | 2 tasks | 5 files |
 | Phase 168 P05 | 26m | 2 tasks | 6 files |
 | Phase 168 P06 | 60m | 3 tasks | 12 files |
+| Phase 168 P07 | 22m | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -207,6 +208,9 @@ Progress: [██████░░░░] 60%
 - [Phase 168]: Phase 168-06: Existing trusted Hex and iOS workflows own no-mutation rehearsal; no new workflow family or second approval was added.
 - [Phase 168]: Phase 168-06: Release Please and all one-way children require the approved head as merge parent with an identical approved tree.
 - [Phase 168]: Phase 168-06: Linked publications are independent siblings, while proofs retain narrow dependencies and rollup preserves exact PARTIAL truth.
+- [Phase 168]: Keep stable candidate fixtures always-on and route release-sensitive, Release Please, or ambiguous changes to exact-head full proof.
+- [Phase 168]: Keep real mirror authorization in the trusted workflow; ordinary PR CI remains credential-free.
+- [Phase 168]: Use read-only linked-coordinate status for BLOCKED/PARTIAL/COMPLETE and reserve READY FOR APPROVAL/STALE for the exact receipt authority.
 
 ### Pending Todos
 
@@ -230,6 +234,6 @@ Progress: [██████░░░░] 60%
 
 ## Session Continuity
 
-Last session: 2026-09-13T05:30:11.305Z
-Stopped at: Completed 168-06-PLAN.md
+Last session: 2026-09-13T13:09:20.506Z
+Stopped at: Completed 168-07-PLAN.md
 Resume file: None
