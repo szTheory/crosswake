@@ -89,6 +89,43 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     end
   end
 
+  test "canonical approval receipt is attested separately from credential-free candidate CI" do
+    ios_workflow = File.read!(@ios_workflow)
+    release_workflow = File.read!(@release_workflow)
+    attestation = job_block(ios_workflow, "attest-candidate-receipt")
+    guard = job_block(release_workflow, "approved-release-guard")
+    exact_public = job_block(release_workflow, "exact-public-proof")
+
+    assert ios_workflow =~ "candidate-receipt-attestation"
+    assert attestation =~ "phase168-candidate-ci-${CANDIDATE_HEAD}"
+    assert attestation =~ "candidate-rehearsal-hex"
+    assert attestation =~ "candidate-rehearsal-ios"
+    assert attestation =~ "Crosswake.ReleaseCandidate.Receipt.validate!"
+    assert attestation =~ "phase168-candidate-receipt-${{ inputs.candidate_head }}"
+    assert attestation =~ "candidate-receipt.json"
+    assert attestation =~ "artifacts.json"
+
+    assert guard =~ "phase168-candidate-receipt-${approved_head}"
+    assert guard =~ "candidate_receipt_run_id"
+    assert guard =~ "phase168-candidate-ci-${approved_head}"
+    assert guard =~ "release-candidate-ci-receipt.json"
+    assert exact_public =~ "candidate_receipt_run_id"
+    assert exact_public =~ "phase168-candidate-receipt-${{ needs.approved-release-guard.outputs.approved_head }}"
+
+    refute guard =~
+             ~s(--name "phase168-candidate-receipt-${approved_head}" --dir "$receipt_dir")
+  end
+
+  test "rollback of an untagged failed release remains a reversible proposal refresh" do
+    workflow = File.read!(@release_workflow)
+    guard = job_block(workflow, "approved-release-guard")
+
+    assert guard =~ "linked_candidate=false"
+    assert guard =~ "linked_candidate=true"
+    assert guard =~ ~s([ "$linked_candidate" = "true" ] || exit 0)
+    assert guard =~ "linked_release=false"
+  end
+
   test "postapproval graph contains only the three linked core coordinates" do
     workflow = File.read!(@release_workflow)
     android = job_block(workflow, "publish-android-core")
