@@ -214,8 +214,8 @@ defmodule Crosswake.Doctor.PublishReadiness do
         "CHANGELOG.md must not describe deferred provider, auth, notification, or shell work as shipped"
       )
       |> require_truth(
-        versioned_or_candidate_changelog?(changelog, expected_version),
-        "CHANGELOG.md must include the current [#{expected_version}] release or preserve it as explicit unpublished candidate truth"
+        versioned_or_candidate_changelog?(cwd, changelog, expected_version),
+        "CHANGELOG.md must include the current [#{expected_version}] release"
       )
 
     result_check(
@@ -1028,16 +1028,18 @@ defmodule Crosswake.Doctor.PublishReadiness do
       String.contains?(contents, "## [0.1.0]")
   end
 
-  defp versioned_or_candidate_changelog?(contents, expected_version)
+  defp versioned_or_candidate_changelog?(cwd, contents, expected_version)
        when is_binary(expected_version) do
     String.contains?(contents, "[#{expected_version}]") or
-      explicit_unpublished_candidate?(contents, expected_version)
+      explicit_unpublished_candidate?(cwd, contents, expected_version)
   end
 
-  defp versioned_or_candidate_changelog?(_contents, _expected_version), do: false
+  defp versioned_or_candidate_changelog?(_cwd, _contents, _expected_version), do: false
 
-  defp explicit_unpublished_candidate?(contents, expected_version) do
-    with [_, published_version] <- Regex.run(~r/^## \[(\d+\.\d+\.\d+)\]/m, contents),
+  defp explicit_unpublished_candidate?(cwd, contents, expected_version) do
+    with {:ok, manifest} <- read_release_manifest(cwd),
+         ^expected_version <- Map.get(manifest, "."),
+         [_, published_version] <- Regex.run(~r/^## \[(\d+\.\d+\.\d+)\]/m, contents),
          :gt <- Version.compare(expected_version, published_version) do
       unreleased = changelog_section(contents, "## [Unreleased]")
 
@@ -1051,6 +1053,15 @@ defmodule Crosswake.Doctor.PublishReadiness do
         )
     else
       _ -> false
+    end
+  end
+
+  defp read_release_manifest(cwd) do
+    with {:ok, contents} <- cwd |> Path.join(".release-please-manifest.json") |> File.read(),
+         {:ok, manifest} when is_map(manifest) <- Jason.decode(contents) do
+      {:ok, manifest}
+    else
+      _ -> :error
     end
   end
 
