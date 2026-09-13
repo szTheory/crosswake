@@ -19,6 +19,10 @@ PACKAGES=(
 )
 
 fail() {
+  if [ -n "${LOG:-}" ] && [ -f "$LOG" ]; then
+    echo "[crosswake] package log (credential-free):" >&2
+    tail -n 80 "$LOG" >&2
+  fi
   echo "[crosswake] FAIL: candidate Hex artifact proof is blocked."
   echo "[crosswake] What to do next: inspect the named package step in its invocation-local log and rerun from the exact candidate ref."
   exit 1
