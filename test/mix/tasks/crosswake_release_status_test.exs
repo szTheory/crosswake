@@ -172,6 +172,8 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
   # "no such release" is a definite negative; a probe that never got an answer
   # is an unknown. Fail closed on both, but never misreport which one happened.
   test "live probes split definite absence from unverifiable, and both fail closed (D-18)" do
+    current_version = Application.spec(:crosswake, :vsn) |> to_string()
+
     status =
       Crosswake.ReleaseStatus.build(
         live?: true,
@@ -191,7 +193,11 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert %{live: %{status: :ok, source: "hex"}} =
              Enum.find(status.core, &(&1.component == "hex"))
 
-    assert %{live: %{status: :missing, source: "ios_mirror", ref: "refs/tags/v0.2.0"}} =
+    expected_ios_ref = "refs/tags/v#{current_version}"
+
+    assert %{
+             live: %{status: :missing, source: "ios_mirror", ref: ^expected_ios_ref}
+           } =
              Enum.find(status.core, &(&1.component == "ios-core"))
 
     assert %{live: %{status: :missing, source: "maven"}} =
@@ -209,8 +215,8 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
            } = presence = check!(status, "release.live_registry_presence")
 
     assert presence_next =~ "mix crosswake.release.status --live"
-    assert "android-core@0.2.0=missing" in presence_evidence
-    assert presence_message =~ "ios-core@0.2.0 missing on ios_mirror"
+    assert "android-core@#{current_version}=missing" in presence_evidence
+    assert presence_message =~ "ios-core@#{current_version} missing on ios_mirror"
     assert presence_message =~ "found no release"
     # A source we merely could not reach must NOT be named as a confirmed absence.
     refute presence_message =~ "crosswake_sigra"
@@ -281,7 +287,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert live_entries > 0
 
     assert :counters.get(counter, 1) ==
-             live_entries + length(status.release_candidate.linked_coordinates)
+             live_entries + length(status.release_candidate.linked_coordinates) + 1
   end
 
   test "a probe that fails twice and then answers is NOT unavailable (retry short-circuits)" do
@@ -448,6 +454,8 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
   end
 
   test "a missing iOS mirror tag is fatal — core is never bootstrap-exempt (D-18)" do
+    current_version = Application.spec(:crosswake, :vsn) |> to_string()
+
     status =
       Crosswake.ReleaseStatus.build(
         live?: true,
@@ -463,7 +471,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert %{status: :error, message: message} =
              check!(status, "release.live_registry_presence")
 
-    assert message =~ "ios-core@0.2.0 missing on ios_mirror"
+    assert message =~ "ios-core@#{current_version} missing on ios_mirror"
   end
 
   test "the real probes are the ones wrapped in retry, not the injection seam" do

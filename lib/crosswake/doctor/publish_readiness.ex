@@ -214,8 +214,8 @@ defmodule Crosswake.Doctor.PublishReadiness do
         "CHANGELOG.md must not describe deferred provider, auth, notification, or shell work as shipped"
       )
       |> require_truth(
-        is_binary(expected_version) and changelog =~ "[#{expected_version}]",
-        "CHANGELOG.md must include the current [#{expected_version}] release"
+        versioned_or_candidate_changelog?(changelog, expected_version),
+        "CHANGELOG.md must include the current [#{expected_version}] release or preserve it as explicit unpublished candidate truth"
       )
 
     result_check(
@@ -1026,6 +1026,32 @@ defmodule Crosswake.Doctor.PublishReadiness do
     String.contains?(contents, "published Hex release") and
       String.contains?(contents, "planning milestones") and
       String.contains?(contents, "## [0.1.0]")
+  end
+
+  defp versioned_or_candidate_changelog?(contents, expected_version)
+       when is_binary(expected_version) do
+    String.contains?(contents, "[#{expected_version}]") or
+      explicit_unpublished_candidate?(contents, expected_version)
+  end
+
+  defp versioned_or_candidate_changelog?(_contents, _expected_version), do: false
+
+  defp explicit_unpublished_candidate?(contents, expected_version) do
+    with [_, published_version] <- Regex.run(~r/^## \[(\d+\.\d+\.\d+)\]/m, contents),
+         :gt <- Version.compare(expected_version, published_version) do
+      unreleased = changelog_section(contents, "## [Unreleased]")
+
+      String.contains?(
+        unreleased,
+        "No new support claims have been cut after `#{published_version}` yet"
+      ) and
+        String.contains?(
+          unreleased,
+          "The current published Hex release is `#{published_version}`"
+        )
+    else
+      _ -> false
+    end
   end
 
   defp no_false_shipped_claims?(contents) do

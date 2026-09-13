@@ -178,7 +178,7 @@ defmodule Crosswake.ReleaseStatus do
     ) <> "\n"
   end
 
-  defp release_candidate(core, companions, live?, probes) do
+  defp release_candidate(_core, companions, live?, probes) do
     candidate_live = %{
       hex: maybe_hex_live("crosswake", @candidate_version, live?, probes),
       ios: maybe_ios_mirror_live(@candidate_version, live?, probes),
@@ -186,7 +186,7 @@ defmodule Crosswake.ReleaseStatus do
     }
 
     {state, next_action} = candidate_state(candidate_live, live?)
-    baseline_ios = core |> Enum.find(&(&1.component == "ios-core")) |> Map.fetch!(:live)
+    baseline_ios = maybe_ios_mirror_live(@mirror_baseline_version, live?, probes)
 
     %{
       version: @candidate_version,
