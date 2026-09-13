@@ -312,9 +312,18 @@ jobs:
           [ "$APPROVED_TREE" = "$PHASE168_APPROVED_TREE" ]
           [ "$CANDIDATE_RECEIPT" = "$PHASE168_CANDIDATE_RECEIPT" ]
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Check out trusted recovery tooling
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.sha }}
+          path: recovery-tools
+          persist-credentials: false
+
+      - name: Check out the immutable release payload
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ inputs.ref }}
+          path: release-source
           fetch-depth: 0
           persist-credentials: false
 
@@ -331,7 +340,8 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyId }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
         run: >
-          bash script/release_candidate/android_publication.sh
+          bash "$GITHUB_WORKSPACE/recovery-tools/script/release_candidate/android_publication.sh"
+          --release-root "$GITHUB_WORKSPACE/release-source"
           --version "${{ inputs.release_version }}"
           --ref "${{ inputs.ref }}"
           --approved-head "${{ inputs.approved_head }}"

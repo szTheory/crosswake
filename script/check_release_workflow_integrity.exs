@@ -998,7 +998,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
     exact_android_recovery? =
       includes?(android_publication, "--recover") and
-        includes?(android_publication, ~S|[ "$(git rev-parse HEAD)" = "$SOURCE_REF" ]|) and
+        includes?(
+          android_publication,
+          ~S|[ "$(git -C "$RELEASE_ROOT" rev-parse HEAD)" = "$SOURCE_REF" ]|
+        ) and
         includes?(android_publication, "already public; exact-ref recovery is complete") and
         not includes?(android_publication, "--replace") and
         not includes?(android_publication, "--force")
@@ -1046,6 +1049,16 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(hex_recovery, ~s([ "$RECOVERY_REF" = "$PHASE168_MERGE_OID" ])) and
         includes?(android_recovery, "github.event.inputs.operation == 'android-recovery'") and
         includes?(android_recovery, "android_publication.sh") and
+        includes?(android_recovery, "ref: ${{ github.sha }}") and
+        includes?(android_recovery, "path: recovery-tools") and
+        includes?(android_recovery, "path: release-source") and
+        includes?(
+          android_recovery,
+          ~s(bash "$GITHUB_WORKSPACE/recovery-tools/script/release_candidate/android_publication.sh")
+        ) and
+        includes?(android_recovery, ~s(--release-root "$GITHUB_WORKSPACE/release-source")) and
+        includes?(android_publication, "--release-root") and
+        includes?(android_publication, ~s(git -C "$RELEASE_ROOT" rev-parse HEAD)) and
         includes?(android_recovery, "--recover") and not includes?(android_recovery, "--execute") and
         includes?(ios_publish, "github.event.inputs.operation == 'publish'") and
         includes?(ios_publish, "ios_mirror.sh publish") and
