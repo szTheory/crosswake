@@ -14,6 +14,8 @@ defmodule Crosswake.ReleaseCandidate.ArtifactTest do
   )
 
   test "inspects exactly six non-empty built tarball payloads with stable normalized digests" do
+    assert Code.ensure_loaded?(Artifact)
+
     assert function_exported?(Artifact, :inspect_family!, 1),
            "Artifact.inspect_family!/1 must inspect the exact candidate package family"
 
