@@ -1,9 +1,3 @@
-unless Code.ensure_loaded?(Mix.Tasks.Crosswake.Release.Candidate) do
-  defmodule Mix.Tasks.Crosswake.Release.Candidate do
-    def run(_args, _opts \\ []), do: :not_implemented
-  end
-end
-
 defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
   use ExUnit.Case, async: false
 
