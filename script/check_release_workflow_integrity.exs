@@ -1049,7 +1049,13 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(hex_recovery, ~s([ "$RECOVERY_REF" = "$PHASE168_MERGE_OID" ])) and
         includes?(android_recovery, "github.event.inputs.operation == 'android-recovery'") and
         includes?(android_recovery, "android_publication.sh") and
-        includes?(android_recovery, "ref: ${{ github.sha }}") and
+        includes?(
+          android_recovery,
+          "ref: e089bfc0e8a4edf0b024a2a284c8a384216bd64d"
+        ) and
+        not includes?(android_recovery, "ref: ${{ github.sha }}") and
+        not includes?(android_recovery, "ref: main") and
+        not includes?(android_recovery, "refs/heads/") and
         includes?(android_recovery, "path: recovery-tools") and
         includes?(android_recovery, "path: release-source") and
         includes?(
