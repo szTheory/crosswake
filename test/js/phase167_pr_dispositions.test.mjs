@@ -76,7 +76,7 @@ const historicalRuntimeState = {
     { number: "164", name: "Dependency Security and Gate Authority", status: "complete" },
     { number: "165", name: "Efficient and Maintainable CI", status: "complete" },
     { number: "166", name: "Clean-Checkout Engineering Quality", status: "complete" },
-    { number: "167", name: "Documentation and Pull-Request Reconciliation", status: "pending" },
+    { number: "167", name: "Documentation and Pull-Request Reconciliation", status: "in_progress" },
     { number: "168", name: "0.2.1 Release Candidate Readiness", status: "pending" },
   ],
   next: {
@@ -476,6 +476,10 @@ test("local reconciliation rejects ref, scope, index, runtime, and clean-state d
     writeFileSync(extraPath, "PRIVATE_LOCAL_CANARY_DO_NOT_ECHO\n", "utf8");
     await rejects("unexpected untracked residue");
     unlinkSync(extraPath);
+
+    unlinkSync(path.join(repository, runtimePaths[1]));
+    await rejects("missing runtime file");
+    copyFileSync(runtimeLockFixture, path.join(repository, runtimePaths[1]));
 
     writeFileSync(path.join(repository, runtimePaths[0]), "{}\n", "utf8");
     await rejects("runtime file bytes");
