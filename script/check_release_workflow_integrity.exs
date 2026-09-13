@@ -6,7 +6,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   @default_helper "script/guarded_hex_publish.sh"
   @default_cleanroom_script "script/verify_companion_cleanroom.sh"
   @default_doctor_task "lib/mix/tasks/crosswake.doctor.ex"
-  @default_ios_backfill_script "script/verify_ios_mirror_backfill.sh"
+  @default_ios_backfill_script "script/release_candidate/ios_mirror.sh"
   @default_ios_backfill_workflow ".github/workflows/ios-mirror-backfill.yml"
   @default_release_config "release-please-config.json"
   @default_manifest ".release-please-manifest.json"
@@ -96,25 +96,11 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         release_ios_hex_gated(jobs),
         native_rollup_fails_closed(jobs),
         release_failure_alert_native(jobs),
-        ios_backfill_verify_first(
-          non_comment_ios_backfill_script,
-          non_comment_ios_backfill_workflow
-        ),
-        ios_backfill_exact_release_ref(
-          non_comment_ios_backfill_script,
-          non_comment_ios_backfill_workflow
-        ),
-        ios_backfill_tag_idempotent(non_comment_ios_backfill_script),
-        ios_backfill_no_default_main_force(
-          non_comment_ios_backfill_script,
-          non_comment_ios_backfill_workflow
-        ),
-        ios_backfill_write_probe(non_comment_ios_backfill_script),
-        ios_backfill_explicit_lease(non_comment_ios_backfill_script),
-        ios_backfill_ssh_transport(
-          non_comment_ios_backfill_script,
-          non_comment_ios_backfill_workflow
-        ),
+        ios_mirror_four_mode_adapter(non_comment_ios_backfill_script),
+        trusted_hex_candidate_rehearsal(non_comment_recovery),
+        trusted_ios_candidate_rehearsal(non_comment_ios_backfill_workflow),
+        trusted_rehearsal_identity(non_comment_recovery, non_comment_ios_backfill_workflow),
+        trusted_rehearsal_no_mutation(non_comment_recovery, non_comment_ios_backfill_workflow),
         workflow_concurrency_queue_max(non_comment_workflow),
         workflow_no_cancel_in_progress_true(non_comment_workflow),
         cleanup_after_publish_and_proof(jobs),
@@ -929,6 +915,84 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(block, "name: native-release-status") and
         includes?(block, "if-no-files-found: error"),
       "native-release-rollup must write native-release-status.json and always upload it as the native-release-status artifact, failing closed if absent"
+    )
+  end
+
+  defp ios_mirror_four_mode_adapter(script) do
+    check(
+      "release.ios_mirror.four_modes",
+      Enum.all?(~w(baseline candidate publish recovery), &includes?(script, &1)) and
+        includes?(script, ~r/push\s+--dry-run\s+--porcelain\s+--atomic/) and
+        includes?(script, "CROSSWAKE_IOS_MIRROR_EXECUTE") and
+        includes?(script, ~s(--force-with-lease=refs/heads/main:${EXPECTED_OLD_REF})),
+      "the iOS adapter must retain separate baseline, candidate, ordinary publication, and exact-ref recovery modes"
+    )
+  end
+
+  defp trusted_hex_candidate_rehearsal(workflow) do
+    jobs = job_blocks(workflow)
+    block = job_block(jobs, "rehearse-hex-candidate")
+
+    check(
+      "release.rehearsal.hex_candidate",
+      job_if(jobs, "rehearse-hex-candidate") ==
+        "${{ github.event.inputs.operation == 'candidate-rehearsal' }}" and
+        includes?(block, "script/release_candidate/hex_artifacts.sh") and
+        includes?(block, "package_count\":6") and
+        includes?(block, "candidate-rehearsal-hex") and
+        not includes?(block, "script/guarded_hex_publish.sh") and
+        not includes?(block, "mix hex.publish --yes"),
+      "trusted Hex candidate rehearsal must build exactly six packages without any publication path"
+    )
+  end
+
+  defp trusted_ios_candidate_rehearsal(workflow) do
+    jobs = job_blocks(workflow)
+    baseline = job_block(jobs, "inspect-ios-mirror-baseline")
+    rehearsal = job_block(jobs, "rehearse-ios-mirror-candidate")
+
+    check(
+      "release.rehearsal.ios_candidate",
+      includes?(baseline, "ios_mirror.sh baseline") and
+        not includes?(baseline, "MIRROR_DEPLOY_KEY") and
+        not includes?(baseline, "ssh-agent") and
+        job_if(jobs, "rehearse-ios-mirror-candidate") ==
+          "${{ github.event.inputs.operation == 'candidate-rehearsal' }}" and
+        includes?(rehearsal, "ssh-private-key: ${{ secrets.MIRROR_DEPLOY_KEY }}") and
+        includes?(rehearsal, "ios_mirror.sh candidate") and
+        includes?(rehearsal, "authorization_result") and
+        includes?(rehearsal, "external_state_changed") and
+        includes?(rehearsal, "candidate-rehearsal-ios"),
+      "mirror baseline must be credential-free and candidate rehearsal must use the scoped deploy key only for an exact dry-run"
+    )
+  end
+
+  defp trusted_rehearsal_identity(hex_workflow, ios_workflow) do
+    required =
+      ~w(requested_head observed_head observed_tree observed_base candidate_receipt run_id run_head run_conclusion workflow_sha256)
+
+    check(
+      "release.rehearsal.exact_identity",
+      Enum.all?([hex_workflow, ios_workflow], fn workflow ->
+        Enum.all?(required, &includes?(workflow, &1)) and
+          includes?(workflow, "if-no-files-found: error")
+      end),
+      "both trusted rehearsal artifacts must bind requested/observed Git identity, receipt, workflow blob, and exact run identity"
+    )
+  end
+
+  defp trusted_rehearsal_no_mutation(hex_workflow, ios_workflow) do
+    hex = job_block(job_blocks(hex_workflow), "rehearse-hex-candidate")
+    ios = job_block(job_blocks(ios_workflow), "rehearse-ios-mirror-candidate")
+
+    check(
+      "release.rehearsal.no_mutation",
+      includes?(hex, "external_state_changed=false") and
+        includes?(ios, "external_state_changed=false") and
+        not includes?(hex, "HEX_API_KEY") and
+        not includes?(hex, "guarded_hex_publish.sh") and
+        not includes?(ios, "CROSSWAKE_IOS_MIRROR_EXECUTE"),
+      "candidate rehearsal must fail closed without registry, ref, tag, or package mutation authority"
     )
   end
 

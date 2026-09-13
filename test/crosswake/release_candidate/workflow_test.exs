@@ -13,7 +13,7 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert rehearsal =~ "CANDIDATE_TREE: \"${{ inputs.candidate_tree }}\""
     assert rehearsal =~ "CANDIDATE_BASE: \"${{ inputs.candidate_base }}\""
     assert rehearsal =~ "CANDIDATE_RECEIPT: \"${{ inputs.candidate_receipt }}\""
-    assert rehearsal =~ "GITHUB_RUN_ID: ${{ github.run_id }}"
+    assert rehearsal =~ "CANDIDATE_RUN_ID: ${{ github.run_id }}"
     assert rehearsal =~ "bash script/release_candidate/hex_artifacts.sh"
     assert rehearsal =~ "candidate-rehearsal-hex"
     refute rehearsal =~ "script/guarded_hex_publish.sh"

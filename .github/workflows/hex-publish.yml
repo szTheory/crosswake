@@ -1,19 +1,30 @@
-# Manual recovery: publish a Hex package from an already-tagged or pinned-SHA
-# revision when automatic Release Please publishing did not run or needs a
-# one-off retry. The default path is Release Please
+# Trusted candidate rehearsal and manual exact-ref recovery for Hex packages.
+# Candidate rehearsal builds and dry-runs the exact six-package family without
+# registry credentials or publication. Recovery publishes one already-approved
+# exact coordinate when automatic Release Please publishing needs a retry. The
+# default publication path remains Release Please
 # (`.github/workflows/release-please.yml`) on merge of the Release PR; this
 # workflow is recovery/fire-drill only.
 #
 # Requires repository secret: HEX_API_KEY (Actions secrets).
 
-name: Hex publish (manual recovery)
+name: Hex candidate rehearsal and recovery
 
 on:
   workflow_dispatch:
     inputs:
+      operation:
+        description: 'Rehearse the exact candidate or recover one immutable Hex coordinate.'
+        required: true
+        type: choice
+        default: recovery
+        options:
+          - candidate-rehearsal
+          - recovery
       package:
         description: 'Hex package to recover.'
-        required: true
+        required: false
+        default: crosswake
         type: choice
         options:
           - crosswake
@@ -24,19 +35,106 @@ on:
           - crosswake_threadline
       ref:
         description: 'Exact recovery ref: full 40-character lowercase SHA or package-scoped refs/tags/<component>-vX.Y.Z tag ref.'
-        required: true
+        required: false
+        default: ''
         type: string
       release_version:
         description: 'Expected @version string in the selected package mix.exs at that ref.'
-        required: true
+        required: false
+        default: '0.2.1'
+        type: string
+      candidate_head:
+        description: 'Exact refreshed Release Please candidate head (40 lowercase hex).'
+        required: false
+        default: ''
+        type: string
+      candidate_tree:
+        description: 'Exact candidate Git tree (40 lowercase hex).'
+        required: false
+        default: ''
+        type: string
+      candidate_base:
+        description: 'Exact protected-default base (40 lowercase hex).'
+        required: false
+        default: ''
+        type: string
+      candidate_receipt:
+        description: 'SHA-256 digest of the canonical candidate receipt.'
+        required: false
+        default: ''
         type: string
 
 permissions:
   contents: read
 
 jobs:
+  rehearse-hex-candidate:
+    name: Rehearse exact six-package Hex candidate
+    if: ${{ github.event.inputs.operation == 'candidate-rehearsal' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    env:
+      CANDIDATE_HEAD: "${{ inputs.candidate_head }}"
+      CANDIDATE_TREE: "${{ inputs.candidate_tree }}"
+      CANDIDATE_BASE: "${{ inputs.candidate_base }}"
+      CANDIDATE_RECEIPT: "${{ inputs.candidate_receipt }}"
+      CANDIDATE_RUN_ID: ${{ github.run_id }}
+    steps:
+      - name: Validate exact candidate authority
+        run: |
+          set -euo pipefail
+          printf '%s' "$CANDIDATE_HEAD" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$CANDIDATE_TREE" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$CANDIDATE_BASE" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$CANDIDATE_RECEIPT" | grep -Eq '^[0-9a-f]{64}$'
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.candidate_head }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Build trusted rehearsal evidence
+        env:
+          OUTPUT_DIR: ${{ runner.temp }}/candidate-rehearsal-hex
+        run: |
+          set -euo pipefail
+          observed_head=$(git rev-parse HEAD)
+          observed_tree=$(git rev-parse "${observed_head}^{tree}")
+          git cat-file -e "${CANDIDATE_BASE}^{commit}"
+          git merge-base --is-ancestor "$CANDIDATE_BASE" "$observed_head"
+          [ "$observed_head" = "$CANDIDATE_HEAD" ]
+          [ "$observed_tree" = "$CANDIDATE_TREE" ]
+
+          bash script/release_candidate/hex_artifacts.sh \
+            --ref "$CANDIDATE_HEAD" \
+            --output-dir "$OUTPUT_DIR/packages"
+
+          workflow_sha256=$(sha256sum .github/workflows/hex-publish.yml | awk '{print $1}')
+          artifact_digest=$(sha256sum "$OUTPUT_DIR/packages/artifacts.json" | awk '{print $1}')
+          WORKFLOW_SHA256="$workflow_sha256" ARTIFACT_DIGEST="$artifact_digest" python3 -c 'import json,os,pathlib; pathlib.Path(os.environ["OUTPUT_DIR"], "rehearsal.json").write_text(json.dumps({"schema_version":"1.0.0","requested_head":os.environ["CANDIDATE_HEAD"],"observed_head":os.environ["CANDIDATE_HEAD"],"observed_tree":os.environ["CANDIDATE_TREE"],"observed_base":os.environ["CANDIDATE_BASE"],"candidate_receipt":os.environ["CANDIDATE_RECEIPT"],"run_id":os.environ["CANDIDATE_RUN_ID"],"run_head":os.environ["CANDIDATE_HEAD"],"run_conclusion":"success","workflow_sha256":os.environ["WORKFLOW_SHA256"],"package_artifacts_sha256":os.environ["ARTIFACT_DIGEST"],"package_count":6,"external_state_changed":False},sort_keys=True,separators=(",",":"))+"\n")'
+          echo "external_state_changed=false"
+
+      - name: Upload exact Hex rehearsal receipt
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: candidate-rehearsal-hex
+          path: |
+            ${{ runner.temp }}/candidate-rehearsal-hex/rehearsal.json
+            ${{ runner.temp }}/candidate-rehearsal-hex/packages/artifacts.json
+          if-no-files-found: error
+          retention-days: 14
+
   publish:
     name: Recover Hex package
+    if: ${{ github.event.inputs.operation == 'recovery' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
