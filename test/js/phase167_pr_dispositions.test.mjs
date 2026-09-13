@@ -25,6 +25,7 @@ const evidenceRoot = path.join(
 );
 const resolutionPath = path.join(evidenceRoot, "phase167-closeout-resolution.json");
 const scopePath = path.join(evidenceRoot, "phase167-closeout-scope.json");
+const deferMarker = "<!-- crosswake-phase167-release-only-deferred-phase168 -->";
 const expectedHandoffPaths = [
   ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/phase167-closeout-resolution.json",
   ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-08-SUMMARY.md",
@@ -123,6 +124,62 @@ function assertClosedFailure(result, output) {
   assert.equal(result.status, 1, result.stderr || result.stdout);
   assert.equal(result.stdout, `${output}\n`);
   assert.equal(result.stderr, "");
+}
+
+function commentPage(nodes, totalCount, hasPreviousPage, startCursor) {
+  return {
+    data: {
+      repository: {
+        pullRequest: {
+          number: 57,
+          comments: {
+            nodes,
+            pageInfo: { hasPreviousPage, startCursor },
+            totalCount,
+          },
+        },
+      },
+    },
+  };
+}
+
+function runCommentPagination(pages, { failAt = null } = {}) {
+  const temporary = mkdtempSync(path.join(tmpdir(), "crosswake-phase167-pagination-"));
+  try {
+    const fakeBin = path.join(temporary, "bin");
+    mkdirSync(fakeBin);
+    const fixturePath = writeJson(temporary, "pages.json", { pages, failAt });
+    const statePath = path.join(temporary, "state");
+    const fakeGh = path.join(fakeBin, "gh");
+    writeFileSync(
+      fakeGh,
+      `#!/usr/bin/env node
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+const fixture = JSON.parse(readFileSync(process.env.PHASE167_PAGINATION_FIXTURE, "utf8"));
+const index = existsSync(process.env.PHASE167_PAGINATION_STATE)
+  ? Number(readFileSync(process.env.PHASE167_PAGINATION_STATE, "utf8"))
+  : 0;
+writeFileSync(process.env.PHASE167_PAGINATION_STATE, String(index + 1));
+const query = process.argv.find((value) => value.startsWith("query=")) ?? "";
+if (!query.includes("comments(last: 100, before: $before)") ||
+    !query.includes("pageInfo { hasPreviousPage startCursor }") ||
+    !query.includes("totalCount")) process.exit(88);
+if (fixture.failAt === index) process.exit(89);
+if (index >= fixture.pages.length) process.exit(90);
+process.stdout.write(JSON.stringify(fixture.pages[index]));
+`,
+      { mode: 0o755 },
+    );
+    return runValidator(["--verify-comment-pagination", "57"], {
+      env: {
+        PATH: `${fakeBin}${path.delimiter}${process.env.PATH}`,
+        PHASE167_PAGINATION_FIXTURE: fixturePath,
+        PHASE167_PAGINATION_STATE: statePath,
+      },
+    });
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
 }
 
 function closeoutArgs(receipt = resolutionPath, extra = []) {
@@ -570,5 +627,68 @@ test("Phase 168 entry landing rejects every changed authority field", async (t) 
     }
   } finally {
     rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test("live deferral-marker authority traverses more than 100 comments", () => {
+  const recent = Array.from({ length: 100 }, (_, index) => ({
+    id: `recent-${index}`,
+    body: "ordinary comment",
+  }));
+  const result = runCommentPagination([
+    commentPage(recent, 101, true, "cursor-older"),
+    commentPage([{ id: "old-marker", body: deferMarker }], 101, false, "cursor-oldest"),
+  ]);
+
+  assertPass(
+    result,
+    `phase167-comment-pagination: PASS pr=57 complete=true markers=1 digest=${sha256(deferMarker)}`,
+  );
+});
+
+test("live deferral-marker authority blocks incomplete pagination", async (t) => {
+  const nodes = [{ id: "recent-1", body: "ordinary comment" }];
+  const blocked = "phase167-comment-pagination: BLOCKED pr=57 correction=retry_cursor_complete_comment_fetch";
+  const cases = [
+    ["malformed cursor", [commentPage(nodes, 2, true, null)], {}],
+    [
+      "repeated cursor",
+      [
+        commentPage(nodes, 3, true, "cursor-repeat"),
+        commentPage([{ id: "older-1", body: "ordinary comment" }], 3, true, "cursor-repeat"),
+      ],
+      {},
+    ],
+    [
+      "total mismatch",
+      [
+        commentPage(nodes, 2, true, "cursor-older"),
+        commentPage([{ id: "older-1", body: deferMarker }], 3, false, "cursor-oldest"),
+      ],
+      {},
+    ],
+    [
+      "duplicate page",
+      [
+        commentPage(nodes, 2, true, "cursor-older"),
+        commentPage(nodes, 2, false, "cursor-oldest"),
+      ],
+      {},
+    ],
+    [
+      "page fetch failure",
+      [commentPage(nodes, 2, true, "cursor-older")],
+      { failAt: 1 },
+    ],
+  ];
+
+  for (const [name, pages, options] of cases) {
+    await t.test(name, () => {
+      const result = runCommentPagination(pages, options);
+      assert.equal(result.status, 1, result.stderr || result.stdout);
+      assert.equal(result.stdout, `${blocked}\n`);
+      assert.equal(result.stderr, "");
+      assert.doesNotMatch(`${result.stdout}${result.stderr}`, /ordinary comment|old-marker|recent-1/);
+    });
   }
 });
