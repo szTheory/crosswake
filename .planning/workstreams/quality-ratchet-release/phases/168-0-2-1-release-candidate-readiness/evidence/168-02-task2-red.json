@@ -1,0 +1,9 @@
+{
+  "command": "asdf exec mix test test/mix/tasks/crosswake_release_candidate_test.exs:23",
+  "exitCode": 1,
+  "output": "TAP version 13\n# Subtest: the exact command writes one authoritative receipt and matching projections\nnot ok 1 - the exact command writes one authoritative receipt and matching projections\n  ---\n  error: 'Expected candidate-receipt.json to be a regular file, got false'\n  code: 'ERR_ASSERTION'\n  ...\n1..1\n# tests 1\n# pass 0\n# fail 1\n",
+  "targetTest": "the exact command writes one authoritative receipt and matching projections",
+  "targetFile": "test/mix/tasks/crosswake_release_candidate_test.exs",
+  "expected": "the exact command writes the canonical JSON receipt and matching projections",
+  "actual": "the test-only RED fallback returned without writing candidate-receipt.json"
+}
