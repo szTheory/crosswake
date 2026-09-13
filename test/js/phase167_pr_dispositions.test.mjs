@@ -31,6 +31,33 @@ const expectedHandoffPaths = [
   ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
   ".planning/workstreams/quality-ratchet-release/STATE.md",
 ];
+const expectedPhase168PathBlobs = [
+  {
+    path: ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/phase167-closeout-resolution.json",
+    mode: "100644",
+    blob: "78920bb2990121c7b5705a17fa5866a9b41f73be",
+  },
+  {
+    path: ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-08-SUMMARY.md",
+    mode: "100644",
+    blob: "512786c4b492084696a6df308be7e8cf1a55bbe7",
+  },
+  {
+    path: ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-VERIFICATION.md",
+    mode: "100644",
+    blob: "dd146c148ef78d8cb06ed93433ced4e4b929a066",
+  },
+  {
+    path: ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
+    mode: "100644",
+    blob: "ea598f1f65f4e61b40b496dfd4136d1b773ceb19",
+  },
+  {
+    path: ".planning/workstreams/quality-ratchet-release/STATE.md",
+    mode: "100644",
+    blob: "54c6e8c4eda10b3ebb84ace0b1687cf1e3540524",
+  },
+];
 const runtimePaths = [
   ".planning/workstreams/quality-ratchet-release/config.json",
   ".planning/workstreams/quality-ratchet-release/milestone.lock",
@@ -109,9 +136,63 @@ function mutateReceipt(directory, name, change) {
 }
 
 function git(args, cwd) {
-  const result = spawnSync("git", args, { cwd, encoding: "utf8" });
+  const result = spawnSync("git", args, {
+    cwd,
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      GIT_AUTHOR_NAME: "Crosswake Test",
+      GIT_AUTHOR_EMAIL: "crosswake-test@example.invalid",
+      GIT_COMMITTER_NAME: "Crosswake Test",
+      GIT_COMMITTER_EMAIL: "crosswake-test@example.invalid",
+    },
+  });
   assert.equal(result.status, 0, result.stderr);
   return result.stdout.trim();
+}
+
+function phase168EntryLandingRepository() {
+  const temporary = mkdtempSync(path.join(tmpdir(), "crosswake-phase168-entry-"));
+  const repository = path.join(temporary, "repository");
+  git(["clone", "--quiet", "--shared", root, repository], temporary);
+
+  const base = "30ca31ed3f4be23ae6e4d115d8d0f6273aae220a";
+  git(["read-tree", base], repository);
+  for (const record of expectedPhase168PathBlobs) {
+    git(["update-index", "--add", "--cacheinfo", record.mode, record.blob, record.path], repository);
+  }
+  const candidateTree = git(["write-tree"], repository);
+  const candidate = git(["commit-tree", candidateTree, "-p", base, "-m", "Phase 168 entry candidate"], repository);
+  const merge = git(["commit-tree", candidateTree, "-p", base, "-p", candidate, "-m", "Phase 168 entry merge"], repository);
+  const receipt = {
+    schema_version: 1,
+    kind: "phase168_entry_landing",
+    handoff_owner: "phase_168_first_reversible_landing",
+    path_blobs: expectedPhase168PathBlobs,
+    observed_default_before_oid: base,
+    candidate: {
+      pr_number: 168,
+      base_oid: base,
+      head_oid: candidate,
+      tree_oid: candidateTree,
+    },
+    crosswake_ci: {
+      name: "Crosswake CI",
+      run_id: 1,
+      head_oid: candidate,
+      status: "COMPLETED",
+      conclusion: "SUCCESS",
+    },
+    merge: {
+      oid: merge,
+      parent_oids: [base, candidate],
+      tree_oid: candidateTree,
+    },
+    observed_default_after_oid: merge,
+    external_state_changed: true,
+  };
+  const receiptPath = writeJson(temporary, "phase168-entry-landing.json", receipt);
+  return { temporary, repository, receipt, receiptPath };
 }
 
 function localReconciliationRepository() {
@@ -373,4 +454,66 @@ test("the closeout handoff fixture remains the exact fixed five paths", () => {
   const receipt = json(resolutionPath);
   assert.deepEqual(receipt.phase_168_handoff.paths, expectedHandoffPaths);
   assert.equal(receipt.phase_168_handoff.owner, "phase_168_first_reversible_landing");
+});
+
+test("Phase 168 entry landing accepts only the exact five-blob graph", () => {
+  const { temporary, repository, receiptPath } = phase168EntryLandingRepository();
+  try {
+    assertPass(
+      runValidator([
+        "--verify-phase168-entry-landing",
+        receiptPath,
+        "--repository",
+        repository,
+      ]),
+      "phase168-entry-landing: PASS paths=5 observation=offline external_state_changed=true",
+    );
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test("Phase 168 entry landing rejects every changed authority field", async (t) => {
+  const { temporary, repository, receipt } = phase168EntryLandingRepository();
+  const cases = [
+    ["unknown field", (value) => { value.untrusted = "PRIVATE_ENTRY_CANARY_DO_NOT_ECHO"; }],
+    ["handoff owner", (value) => { value.handoff_owner = "phase_167"; }],
+    ["path mode", (value) => { value.path_blobs[0].mode = "100755"; }],
+    ["path blob", (value) => { value.path_blobs[0].blob = "0".repeat(40); }],
+    ["default before", (value) => { value.observed_default_before_oid = value.candidate.head_oid; }],
+    ["candidate base", (value) => { value.candidate.base_oid = value.candidate.head_oid; }],
+    ["candidate head", (value) => { value.candidate.head_oid = value.observed_default_before_oid; }],
+    ["candidate tree", (value) => { value.candidate.tree_oid = value.observed_default_before_oid; }],
+    ["CI name", (value) => { value.crosswake_ci.name = "Other CI"; }],
+    ["CI run", (value) => { value.crosswake_ci.run_id = 0; }],
+    ["CI head", (value) => { value.crosswake_ci.head_oid = value.observed_default_before_oid; }],
+    ["CI status", (value) => { value.crosswake_ci.status = "IN_PROGRESS"; }],
+    ["CI conclusion", (value) => { value.crosswake_ci.conclusion = "FAILURE"; }],
+    ["merge oid", (value) => { value.merge.oid = value.candidate.head_oid; }],
+    ["merge parents", (value) => { value.merge.parent_oids.reverse(); }],
+    ["merge tree", (value) => { value.merge.tree_oid = value.observed_default_before_oid; }],
+    ["default after", (value) => { value.observed_default_after_oid = value.candidate.head_oid; }],
+    ["external state", (value) => { value.external_state_changed = false; }],
+  ];
+
+  try {
+    for (const [name, change] of cases) {
+      await t.test(name, () => {
+        const candidate = clone(receipt);
+        change(candidate);
+        const pathname = writeJson(temporary, `${name.replaceAll(" ", "-")}.json`, candidate);
+        assertClosedFailure(
+          runValidator([
+            "--verify-phase168-entry-landing",
+            pathname,
+            "--repository",
+            repository,
+          ]),
+          "phase168-entry-landing: FAIL closed_failure",
+        );
+      });
+    }
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
 });
