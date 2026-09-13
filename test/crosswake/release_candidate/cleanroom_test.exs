@@ -123,6 +123,9 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     assert script =~ "mix phx.new"
     assert script =~ "mktemp -d"
     assert script =~ "for INSTALL_PASS in 1 2"
+    assert script =~ ~S(config :crosswake, :${COMPANION_SUFFIX}, %{enabled: true})
+    assert script =~ ~S(f"config :crosswake, :{profile}, %{{enabled: true}}\n")
+    refute script =~ ~r/config :crosswake, :(?:\$\{COMPANION_SUFFIX\}|\{profile\}), enabled: true/
     refute script =~ ~s(rm -rf "$CLEAN_ROOM_DIR")
   end
 

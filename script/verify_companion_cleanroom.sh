@@ -375,7 +375,7 @@ with open(runtime_path, "a", encoding="utf-8") as handle:
         f"    do: {negative},\n"
         f"    else: {positive}\n\n"
         "config :crosswake, :companions, companions\n"
-        f"config :crosswake, :{profile}, enabled: true\n"
+        f"config :crosswake, :{profile}, %{{enabled: true}}\n"
     )
 PYEOF
   }
@@ -1372,7 +1372,7 @@ cat >> config/runtime.exs <<CONFIGEOF
 import Config
 # Clean-room: register ${COMPANION_MODULE} (no-engine mode — pure-Elixir auth, no engine dep)
 config :crosswake, :companions, [${COMPANION_MODULE}]
-config :crosswake, :${COMPANION_SUFFIX}, enabled: true
+config :crosswake, :${COMPANION_SUFFIX}, %{enabled: true}
 CONFIGEOF
 else
 # Engine mode: register companion + engine config.
@@ -1381,7 +1381,7 @@ cat >> config/runtime.exs <<CONFIGEOF
 import Config
 # Clean-room: register ${COMPANION_MODULE} with engine ${ENGINE_MODULE} enabled
 config :crosswake, :companions, [${COMPANION_MODULE}]
-config :crosswake, :${COMPANION_SUFFIX}, enabled: true
+config :crosswake, :${COMPANION_SUFFIX}, %{enabled: true}
 CONFIGEOF
 fi
 
