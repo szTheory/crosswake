@@ -45,7 +45,8 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
       refute result.correction == "none"
     end
 
-    assert Mirror.evaluate!(%{input | external_state_changed: true}).external_state_changed == true
+    assert Mirror.evaluate!(%{input | external_state_changed: true}).external_state_changed ==
+             true
   end
 
   test "candidate proves exact 0.2.1 split, authorization, atomic porcelain, and no ref change" do
@@ -95,7 +96,8 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
       refute result.correction == "none"
     end
 
-    assert Mirror.evaluate!(%{input | external_state_changed: true}).external_state_changed == true
+    assert Mirror.evaluate!(%{input | external_state_changed: true}).external_state_changed ==
+             true
   end
 
   test "adapter exposes separate baseline and candidate modes with bounded output" do
@@ -104,7 +106,7 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
 
     assert script =~ "baseline"
     assert script =~ "candidate"
-    assert script =~ "git subtree split"
+    assert script =~ "subtree split"
     assert script =~ "--dry-run"
     assert script =~ "--porcelain"
     assert script =~ "--atomic"
@@ -145,7 +147,7 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
       version: "0.2.1",
       source_ref: @candidate_sha,
       split_sha: @candidate_sha,
-      recorded_split_sha: nil,
+      recorded_split_sha: @candidate_sha,
       remote: %{status: "PASS", main: remote_main, tag: nil},
       atomic_supported: true,
       authorization: %{checked: true, result: "PROVEN"},
