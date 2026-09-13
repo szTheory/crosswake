@@ -111,6 +111,8 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
     assert script =~ "--porcelain"
     assert script =~ "--atomic"
     assert script =~ "WRITE AUTHORITY NOT CHECKED"
+    assert script =~ "RUNTIME=(env)"
+    refute script =~ "RUNTIME=()"
     assert wrapper =~ "release_candidate/ios_mirror.sh"
 
     for forbidden <- ["MIRROR_DEPLOY_KEY=", "ssh-private-key", "remote_url", "command_log"] do
