@@ -47,12 +47,14 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
       duplicate: %{input | artifacts: [hd(input.artifacts) | input.artifacts]},
       extra: %{input | artifacts: input.artifacts ++ [%{hd(input.artifacts) | package: "other"}]},
       public_source: update_artifact(input, "crosswake", &Map.put(&1, :source, "hex_registry")),
-      repository_root: update_artifact(input, "crosswake", fn artifact ->
-        %{artifact | unpacked_root: input.repository_root}
-      end),
-      outside_source_root: update_artifact(input, "crosswake", fn artifact ->
-        %{artifact | unpacked_root: System.tmp_dir!()}
-      end)
+      repository_root:
+        update_artifact(input, "crosswake", fn artifact ->
+          %{artifact | unpacked_root: input.repository_root}
+        end),
+      outside_source_root:
+        update_artifact(input, "crosswake", fn artifact ->
+          %{artifact | unpacked_root: System.tmp_dir!()}
+        end)
     ]
 
     for {name, mutation} <- mutations do
@@ -89,12 +91,14 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     mutations = [
       one_pass: %{input | installs: Enum.reject(input.installs, &(&1.pass == 2))},
       duplicate_pass: %{input | installs: [hd(input.installs) | input.installs]},
-      shared_root: update_install(input, "rulestead", 2, fn install ->
-        %{install | scratch_root: hd(input.installs).scratch_root}
-      end),
-      repository_root: update_install(input, "rulestead", 1, fn install ->
-        %{install | scratch_root: input.repository_root}
-      end),
+      shared_root:
+        update_install(input, "rulestead", 2, fn install ->
+          %{install | scratch_root: hd(input.installs).scratch_root}
+        end),
+      repository_root:
+        update_install(input, "rulestead", 1, fn install ->
+          %{install | scratch_root: input.repository_root}
+        end),
       failed: update_install(input, "rulestead", 1, &Map.put(&1, :status, "FAIL")),
       path_lock: update_install(input, "rulestead", 1, &Map.put(&1, :path_lock_count, 1))
     ]
@@ -188,7 +192,8 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
   end
 
   defp expected_checks(profile) do
-    common = ~w(generated_phoenix compile_warnings_as_errors runtime_config_loaded router_output public_smoke registration doctor)
+    common =
+      ~w(generated_phoenix compile_warnings_as_errors runtime_config_loaded router_output public_smoke registration doctor)
 
     profile_checks = %{
       "rulestead" => ~w(engine_loaded dependency_validated),
@@ -202,12 +207,19 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
   end
 
   defp shuffle_input(input) do
-    %{input | artifacts: Enum.reverse(input.artifacts), installs: Enum.reverse(input.installs), profile_results: Enum.reverse(input.profile_results)}
+    %{
+      input
+      | artifacts: Enum.reverse(input.artifacts),
+        installs: Enum.reverse(input.installs),
+        profile_results: Enum.reverse(input.profile_results)
+    }
   end
 
   defp update_artifact(input, package, callback) do
     update_in(input.artifacts, fn artifacts ->
-      Enum.map(artifacts, fn artifact -> if artifact.package == package, do: callback.(artifact), else: artifact end)
+      Enum.map(artifacts, fn artifact ->
+        if artifact.package == package, do: callback.(artifact), else: artifact
+      end)
     end)
   end
 
@@ -222,7 +234,9 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
   defp update_install(input, profile, pass, callback) do
     update_in(input.installs, fn installs ->
       Enum.map(installs, fn install ->
-        if install.profile == profile and install.pass == pass, do: callback.(install), else: install
+        if install.profile == profile and install.pass == pass,
+          do: callback.(install),
+          else: install
       end)
     end)
   end
