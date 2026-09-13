@@ -137,6 +137,9 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
 
   @tag :post_publication
   test "exact-public proof requires six registry payloads, the same profiles, and live status" do
+    assert Code.ensure_loaded?(Cleanroom),
+           "Cleanroom.evaluate_public!/1 must enforce exact-public registry proof"
+
     assert function_exported?(Cleanroom, :evaluate_public!, 1),
            "Cleanroom.evaluate_public!/1 must enforce exact-public registry proof"
 

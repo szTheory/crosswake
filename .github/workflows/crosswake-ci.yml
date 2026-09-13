@@ -154,7 +154,7 @@ jobs:
           test/mix/tasks/crosswake_release_status_test.exs
           --max-cases 1
       - name: Check candidate workflow structure
-        run: asdf exec elixir script/check_release_workflow_integrity.exs
+        run: elixir script/check_release_workflow_integrity.exs
       - name: Summarize fast candidate proof
         env:
           RELEASE_CANDIDATE_SCOPE: ${{ needs.classify-change.outputs.release_candidate_scope }}
@@ -164,7 +164,7 @@ jobs:
             echo "Candidate scope: ${RELEASE_CANDIDATE_SCOPE}."
             echo "Candidate reason: ${RELEASE_CANDIDATE_REASON}."
             echo 'Stable candidate artifact, coordinate, mirror, clean-room, workflow, and receipt fixtures passed.'
-            echo 'Remediation: mix test test/crosswake/release_candidate test/mix/tasks/crosswake_release_candidate_test.exs test/mix/tasks/crosswake_release_status_test.exs --max-cases 1 && asdf exec elixir script/check_release_workflow_integrity.exs'
+            echo 'Remediation: mix test test/crosswake/release_candidate test/mix/tasks/crosswake_release_candidate_test.exs test/mix/tasks/crosswake_release_status_test.exs --max-cases 1 && elixir script/check_release_workflow_integrity.exs'
           } >> "$GITHUB_STEP_SUMMARY"
 
   release-candidate-full-proof:

@@ -69,6 +69,10 @@ const runtimeLockFixture = path.join(
   root,
   "test/fixtures/phase167_runtime_authority/milestone.lock",
 );
+const runtimeConfigFixture = path.join(
+  root,
+  "test/fixtures/phase167_runtime_authority/config.json",
+);
 const historicalRuntimeState = {
   contract: "1.0.0",
   flavor: "core",
@@ -287,7 +291,7 @@ function localReconciliationRepository() {
   const receipt = json(resolutionPath);
   git(["branch", "--force", "main", receipt.pre_reconciliation.expected_local_main_after_oid], repository);
   const runtimeSources = new Map([
-    [runtimePaths[0], path.join(root, runtimePaths[0])],
+    [runtimePaths[0], runtimeConfigFixture],
     [runtimePaths[1], runtimeLockFixture],
   ]);
   for (const [relative, source] of runtimeSources) {
