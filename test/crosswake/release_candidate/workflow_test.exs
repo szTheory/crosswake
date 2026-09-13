@@ -128,6 +128,16 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert guard =~ "linked_release=false"
   end
 
+  test "proposal refresh cannot be reported as a partial native release" do
+    workflow = File.read!(@release_workflow)
+    rollup = job_block(workflow, "native-release-rollup")
+
+    assert rollup =~ "approved-release-guard"
+    assert rollup =~ "LINKED_RELEASE: ${{ needs.approved-release-guard.outputs.linked_release }}"
+    assert rollup =~ ~s([ "$LINKED_RELEASE" != "true" ])
+    assert rollup =~ ~s(printf "false")
+  end
+
   test "postapproval graph contains only the three linked core coordinates" do
     workflow = File.read!(@release_workflow)
     android = job_block(workflow, "publish-android-core")
