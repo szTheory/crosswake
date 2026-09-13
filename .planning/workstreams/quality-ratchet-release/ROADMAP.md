@@ -222,7 +222,7 @@ Plans:
   4. The exact Crosswake 0.2.1 candidate commit passes package audit, build, tests, documentation generation, clean-room installation, and release-status verification.
   5. Every reversible release preparation step is automated, and the remaining irreversible package or tag publication is presented as one explicit maintainer approval rather than performed implicitly.
 
-**Plans**: 1/8 plans executed
+**Plans**: 2/8 plans executed
 
 Plans:
 **Wave 1**
@@ -231,7 +231,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 168-02-PLAN.md — Define exact candidate identity, five-state receipt, projections, and CLI.
+- [x] 168-02-PLAN.md — Define exact candidate identity, five-state receipt, projections, and CLI.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -267,7 +267,7 @@ Plans:
 | 165. Efficient and Maintainable CI | 13/13 | Complete    | 2026-09-09 |
 | 166. Clean-Checkout Engineering Quality | 8/8 | Complete    | 2026-09-10 |
 | 167. Documentation and Pull-Request Reconciliation | 9/9 | Complete    | 2026-09-12 |
-| 168. 0.2.1 Release Candidate Readiness | 1/8 | In Progress|  |
+| 168. 0.2.1 Release Candidate Readiness | 2/8 | In Progress|  |
 
 ---
 *Roadmap created: 2026-08-28 for workstream `quality-ratchet-release`*

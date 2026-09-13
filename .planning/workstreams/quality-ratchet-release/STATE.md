@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 168
 current_phase_name: 0.2.1 Release Candidate Readiness
 status: executing
-stopped_at: Completed 168-01-PLAN.md
-last_updated: "2026-09-13T02:04:35.230Z"
+stopped_at: Completed 168-02-PLAN.md
+last_updated: "2026-09-13T02:26:09.448Z"
 last_activity: 2026-09-12
 last_activity_desc: Phase 168 execution started
-state_head: 9f94c16c39b05035d1ad96f92505513f612cc78c
+state_head: 4a3e44267b0081cd1a49095d16114e227b35b753
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 43
-  completed_plans: 36
+  completed_plans: 37
   percent: 80
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 168 (0.2.1 Release Candidate Readiness) — EXECUTING
-Plan: 2 of 8
+Plan: 3 of 8
 Status: Ready to execute
 Last activity: 2026-09-12 — Phase 168 execution started
 
@@ -42,7 +42,7 @@ Progress: [████████░░] 80%
 
 **Velocity:**
 
-- Total plans completed: 35
+- Total plans completed: 37
 - Average duration: N/A
 - Total execution time: 0 hours
 
@@ -92,6 +92,7 @@ Progress: [████████░░] 80%
 | Phase 167 P08 | 1h 28m | 3 tasks | 10 files |
 | Phase 167 P09 | 9min | 2 tasks | 2 files |
 | Phase 168 P01 | 38m | 3 tasks | 7 files |
+| Phase 168 P02 | 16m | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -188,6 +189,9 @@ Progress: [████████░░] 80%
 - [Phase 168]: Bind the first Phase 168 landing to exactly five retained path/mode/blob records, exact-head Crosswake CI, and a tree-identical two-parent merge.
 - [Phase 168]: Use a tracked historical lock fixture for positive reconciliation while current, missing, changed, and additional runtime state remains non-passing.
 - [Phase 168]: Treat release-only PR head/base/check refreshes as mutable observations while preserving strict open, unmerged, cursor-complete marker authority.
+- [Phase 168]: Represent receipt identity as separately validated bound and observed tuples so drift remains reproducible and a STALE receipt can validate itself.
+- [Phase 168]: Keep the Mix task evaluation-only; fixed flags delegate to the pure evaluator while later plans supply normalized external observations through the narrow adapter seam.
+- [Phase 168]: Write one canonical JSON receipt and derive every human projection from the same validated receipt map without color or raw adapter diagnostics.
 
 ### Pending Todos
 
@@ -211,6 +215,6 @@ Progress: [████████░░] 80%
 
 ## Session Continuity
 
-Last session: 2026-09-13T02:04:35.138Z
-Stopped at: Completed 168-01-PLAN.md
+Last session: 2026-09-13T02:26:09.358Z
+Stopped at: Completed 168-02-PLAN.md
 Resume file: None
