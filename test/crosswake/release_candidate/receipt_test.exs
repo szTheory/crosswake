@@ -1,20 +1,3 @@
-unless Code.ensure_loaded?(Crosswake.ReleaseCandidate) do
-  defmodule Crosswake.ReleaseCandidate do
-    def evaluate!(_input), do: %{state: :not_implemented}
-  end
-
-  defmodule Crosswake.ReleaseCandidate.Receipt do
-    def validate!(_receipt), do: raise(ArgumentError, "not implemented")
-    def encode!(_receipt), do: "not implemented"
-  end
-
-  defmodule Crosswake.ReleaseCandidate.Projection do
-    def markdown(_receipt), do: "not implemented"
-    def github_summary(_receipt), do: "not implemented"
-    def terminal(_receipt, _opts \\ []), do: "not implemented"
-  end
-end
-
 defmodule Crosswake.ReleaseCandidate.ReceiptTest do
   use ExUnit.Case, async: true
 
@@ -43,7 +26,7 @@ defmodule Crosswake.ReleaseCandidate.ReceiptTest do
       version: &put_in(&1, [:version], "0.2.2"),
       ref: &put_in(&1, [:ref], @sha_b),
       head: &put_in(&1, [:head], @sha_b),
-      tree: &put_in(&1, [:tree], @sha_b),
+      tree: &put_in(&1, [:tree], @sha_a),
       base: &put_in(&1, [:base], @sha_b),
       coordinate: &put_in(&1, [:coordinates, Access.at(0), :coordinate], "crosswake@0.2.2"),
       config_digest: &put_in(&1, [:config_digests, Access.at(0), :sha256], @digest_b),
@@ -51,7 +34,7 @@ defmodule Crosswake.ReleaseCandidate.ReceiptTest do
       package_outer_digest:
         &put_in(&1, [:package_digests, Access.at(0), :outer_sha256], @digest_b),
       package_payload_digest:
-        &put_in(&1, [:package_digests, Access.at(0), :payload_sha256], @digest_b),
+        &put_in(&1, [:package_digests, Access.at(0), :payload_sha256], @digest_c),
       package_metadata_digest:
         &put_in(&1, [:package_digests, Access.at(0), :metadata_sha256], @digest_b),
       proof_result: &put_in(&1, [:proofs, Access.at(0), :status], "FAIL"),
@@ -76,7 +59,7 @@ defmodule Crosswake.ReleaseCandidate.ReceiptTest do
   test "the evaluator exposes only the closed five-state transition vocabulary" do
     receipts = [
       evaluate(),
-      evaluate(observed_identity: put_in(identity(), [:tree], @sha_b)),
+      evaluate(observed_identity: put_in(identity(), [:tree], @sha_c)),
       evaluate(checks: [%{id: "candidate.package", status: "MISSING"}]),
       evaluate(
         external_state: %{
@@ -184,7 +167,7 @@ defmodule Crosswake.ReleaseCandidate.ReceiptTest do
       assert projection =~ "credentials exercised: yes"
       assert projection =~ "external state changed: no"
       refute projection =~ @privacy_canary
-      refute projection =~ IO.ANSI.escape_fragment([:green])
+      refute projection =~ "\e["
     end
 
     assert terminal == Projection.terminal(receipt, no_color: false)
