@@ -1,0 +1,9 @@
+{
+  "command": "asdf exec mix test test/crosswake/release_candidate/workflow_test.exs:61",
+  "exitCode": 2,
+  "output": "TAP version 13\n# Subtest: linked publication is gated by approved merge parent and identical tree\nnot ok 1 - linked publication is gated by approved merge parent and identical tree\n  ---\n  error: 'Assertion with =~ failed: approved-release-guard job block was absent'\n  code: 'ERR_ASSERTION'\n  ...\n1..1\n# tests 1\n# pass 0\n# fail 1\n",
+  "targetTest": "linked publication is gated by approved merge parent and identical tree",
+  "targetFile": "test/crosswake/release_candidate/workflow_test.exs",
+  "expected": "the linked Hex, iOS, and Android graph is transitively gated by the exact approved head as merge parent and an identical approved tree",
+  "actual": "the release workflow had no approved-release-guard job or approved head/tree outputs"
+}

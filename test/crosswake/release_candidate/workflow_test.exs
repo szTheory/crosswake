@@ -3,6 +3,7 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
 
   @hex_workflow ".github/workflows/hex-publish.yml"
   @ios_workflow ".github/workflows/ios-mirror-backfill.yml"
+  @release_workflow ".github/workflows/release-please.yml"
   test "trusted Hex candidate rehearsal builds six exact-head packages without publication" do
     workflow = File.read!(@hex_workflow)
     rehearsal = job_block(workflow, "rehearse-hex-candidate")
@@ -55,6 +56,59 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
       assert workflow =~ "external_state_changed=false"
       assert workflow =~ "if-no-files-found: error"
     end
+  end
+
+  test "linked publication is gated by approved merge parent and identical tree" do
+    workflow = File.read!(@release_workflow)
+    guard = job_block(workflow, "approved-release-guard")
+
+    assert guard =~ "approved_head"
+    assert guard =~ "approved_tree"
+    assert guard =~ "merge_oid"
+    assert guard =~ "merge_parents"
+    assert guard =~ "merge_tree"
+    assert guard =~ "candidate_receipt"
+    assert guard =~ "git rev-list --parents -n 1"
+    assert guard =~ "[ \"$parent_count\" -eq 3 ]"
+    assert guard =~ "[ \"$approved_head\" = \"$second_parent\" ]"
+    assert guard =~ "[ \"$merge_tree\" = \"$approved_tree\" ]"
+    assert guard =~ "READY FOR APPROVAL"
+    assert guard =~ "external_state_changed"
+
+    for job <- ~w(publish-hex publish-ios-core publish-android-core) do
+      block = job_block(workflow, job)
+      assert block =~ "approved-release-guard"
+      assert block =~ "0.2.1"
+      refute block =~ "environment:"
+    end
+  end
+
+  test "postapproval graph contains only the three linked core coordinates" do
+    workflow = File.read!(@release_workflow)
+    android = job_block(workflow, "publish-android-core")
+    ios = job_block(workflow, "publish-ios-core")
+    rollup = job_block(workflow, "linked-release-rollup")
+
+    assert android =~ "script/release_candidate/android_publication.sh"
+    assert ios =~ "script/release_candidate/ios_mirror.sh publish"
+    assert ios =~ "--approval-receipt"
+    refute ios =~ "--force"
+
+    for child <-
+          ~w(publish-hex publish-android-core publish-ios-core clean-room-proof-ios clean-room-proof-android exact-public-proof) do
+      assert rollup =~ child
+    end
+
+    assert rollup =~ "child_states"
+    assert rollup =~ "successful_coordinates"
+    assert rollup =~ "failed_step"
+    assert rollup =~ "failed_ref"
+    assert rollup =~ "COMPLETE"
+    assert rollup =~ "PARTIAL"
+
+    refute workflow =~ "release/v0.2.1"
+    refute workflow =~ "rc-v0.2.1"
+    refute workflow =~ "merge-companion"
   end
 
   defp job_block(workflow, job) do
