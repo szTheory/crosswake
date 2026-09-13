@@ -164,9 +164,11 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
 
     assert result.state == "PARTIAL"
     assert result.succeeded_packages == Enum.drop(@packages, -1)
+
     assert result.failed_packages == [
              %{package: "crosswake_threadline", reason: "registry_missing"}
            ]
+
     assert result.profile_results == []
   end
 
@@ -177,16 +179,14 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     mutations = [
       path_source:
         update_public_artifact(input, "crosswake", &Map.put(&1, :source, "repository_path")),
-      cache_source:
-        update_public_artifact(input, "crosswake", &Map.put(&1, :source, "cache")),
+      cache_source: update_public_artifact(input, "crosswake", &Map.put(&1, :source, "cache")),
       digest_mismatch:
         update_public_artifact(
           input,
           "crosswake",
           &Map.put(&1, :payload_digest, String.duplicate("f", 64))
         ),
-      path_lock:
-        update_public_artifact(input, "crosswake", &Map.put(&1, :path_lock_count, 1)),
+      path_lock: update_public_artifact(input, "crosswake", &Map.put(&1, :path_lock_count, 1)),
       live_ambiguous: %{input | live_status: "BLOCKED"}
     ]
 

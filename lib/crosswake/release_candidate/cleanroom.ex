@@ -22,6 +22,17 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
     live_status
   )a
   @artifact_keys ~w(package version source unpacked_root metadata_digest payload_digest)a
+  @approved_artifact_keys ~w(package version metadata_digest payload_digest)a
+  @public_artifact_keys ~w(
+    package
+    version
+    status
+    source
+    unpacked_root
+    metadata_digest
+    payload_digest
+    path_lock_count
+  )a
   @install_keys ~w(profile pass status scratch_root path_lock_count)a
   @profile_keys ~w(profile package status passed_checks negative_control)a
   @sha_pattern ~r/\A[0-9a-f]{64}\z/
@@ -42,6 +53,17 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
     "chimeway" => ~w(sigra_absent telemetry_events),
     "threadline" => ~w(observer_unregistered siblings_absent plug telemetry ledger templates)
   }
+  @public_input_keys ~w(
+    source_mode
+    generator_version
+    repository_root
+    source_root
+    approved_artifacts
+    public_artifacts
+    installs
+    profile_results
+    live_status
+  )a
 
   @spec profiles() :: [String.t()]
   def profiles, do: @profiles
@@ -56,7 +78,63 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
 
   @spec evaluate!(map()) :: map()
   def evaluate!(%{source_mode: "candidate-local"} = input), do: evaluate_candidate!(input)
+  def evaluate!(%{source_mode: "exact-public"} = input), do: evaluate_public!(input)
   def evaluate!(_input), do: invalid!()
+
+  @spec evaluate_public!(map()) :: map()
+  def evaluate_public!(input) do
+    unless exact_map?(input, @public_input_keys), do: invalid!()
+    unless input.source_mode == "exact-public", do: invalid!()
+    unless input.generator_version == @generator_version, do: invalid!()
+
+    repository_root = regular_directory!(input.repository_root)
+    source_root = regular_directory!(input.source_root)
+    unless outside?(source_root, repository_root), do: invalid!()
+
+    approved = validate_approved_artifacts!(input.approved_artifacts)
+    children = validate_public_artifacts!(input.public_artifacts, approved, source_root)
+    blocked = Enum.filter(children, &(&1.reason not in [nil, "registry_missing"]))
+    missing = Enum.filter(children, &(&1.reason == "registry_missing"))
+    succeeded = Enum.filter(children, &is_nil(&1.reason))
+
+    {state, installs, profile_results} =
+      cond do
+        blocked != [] ->
+          {"BLOCKED", validate_complete_public_proof(input, source_root, repository_root)}
+
+        missing != [] ->
+          unless input.installs == [] and input.profile_results == [] and
+                   input.live_status == "not_run",
+                 do: invalid!()
+
+          {"PARTIAL", {[], []}}
+
+        input.live_status != "PASS" ->
+          {"BLOCKED", validate_complete_public_proof(input, source_root, repository_root)}
+
+        true ->
+          {"COMPLETE", validate_complete_public_proof(input, source_root, repository_root)}
+      end
+      |> then(fn {state, {installs, profile_results}} -> {state, installs, profile_results} end)
+
+    %{
+      state: state,
+      generator_version: @generator_version,
+      install_count: installs |> Enum.map(& &1.pass) |> Enum.uniq() |> length(),
+      package_count: length(succeeded),
+      profile_count: length(profile_results),
+      source_mode: "exact-public",
+      path_lock_count: Enum.sum(Enum.map(children, & &1.path_lock_count)),
+      succeeded_packages: Enum.map(succeeded, & &1.package),
+      failed_packages:
+        Enum.map(Enum.reject(children, &is_nil(&1.reason)), &Map.take(&1, [:package, :reason])),
+      profile_results: profile_results,
+      live_status: input.live_status
+    }
+  rescue
+    File.Error -> invalid!()
+    KeyError -> invalid!()
+  end
 
   @doc false
   @spec evaluate_cli!([String.t()]) :: :ok
@@ -136,6 +214,116 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
   end
 
   defp validate_candidate_artifacts!(_artifacts, _source_root, _repository_root), do: invalid!()
+
+  defp validate_approved_artifacts!(artifacts) when is_list(artifacts) do
+    normalized =
+      Enum.map(artifacts, fn artifact ->
+        unless exact_map?(artifact, @approved_artifact_keys), do: invalid!()
+
+        %{
+          package: package!(artifact.package),
+          version: version!(artifact.version),
+          metadata_digest: sha!(artifact.metadata_digest),
+          payload_digest: sha!(artifact.payload_digest)
+        }
+      end)
+
+    by_package = Map.new(normalized, &{&1.package, &1})
+
+    unless length(normalized) == length(Artifact.packages()) and
+             map_size(by_package) == length(normalized) and
+             Map.keys(by_package) |> Enum.sort() == Enum.sort(Artifact.packages()) and
+             Map.fetch!(by_package, "crosswake").version == "0.2.1",
+           do: invalid!()
+
+    Map.new(Artifact.packages(), &{&1, Map.fetch!(by_package, &1)})
+  end
+
+  defp validate_approved_artifacts!(_artifacts), do: invalid!()
+
+  defp validate_public_artifacts!(artifacts, approved, source_root) when is_list(artifacts) do
+    normalized =
+      Enum.map(artifacts, fn artifact ->
+        unless exact_map?(artifact, @public_artifact_keys), do: invalid!()
+        package = package!(artifact.package)
+        expected = Map.fetch!(approved, package)
+        unless artifact.version == expected.version, do: invalid!()
+
+        unless is_integer(artifact.path_lock_count) and artifact.path_lock_count >= 0,
+          do: invalid!()
+
+        reason = public_artifact_reason(artifact, expected, source_root)
+
+        %{
+          package: package,
+          version: artifact.version,
+          status: artifact.status,
+          source: artifact.source,
+          path_lock_count: artifact.path_lock_count,
+          reason: reason
+        }
+      end)
+
+    by_package = Map.new(normalized, &{&1.package, &1})
+
+    unless length(normalized) == length(Artifact.packages()) and
+             map_size(by_package) == length(normalized) and
+             Map.keys(by_package) |> Enum.sort() == Enum.sort(Artifact.packages()),
+           do: invalid!()
+
+    Enum.map(Artifact.packages(), &Map.fetch!(by_package, &1))
+  end
+
+  defp validate_public_artifacts!(_artifacts, _approved, _source_root), do: invalid!()
+
+  defp public_artifact_reason(artifact, expected, source_root) do
+    cond do
+      artifact.status == "MISSING" and artifact.source == "unavailable" and
+        is_nil(artifact.unpacked_root) and is_nil(artifact.metadata_digest) and
+        is_nil(artifact.payload_digest) and artifact.path_lock_count == 0 ->
+        "registry_missing"
+
+      artifact.status != "PASS" ->
+        "invalid_status"
+
+      artifact.source != "hex_registry" ->
+        "source_not_registry"
+
+      artifact.path_lock_count != 0 ->
+        "path_lock_present"
+
+      not public_root?(artifact.unpacked_root, source_root) ->
+        "source_root_invalid"
+
+      artifact.metadata_digest != expected.metadata_digest or
+          artifact.payload_digest != expected.payload_digest ->
+        "digest_mismatch"
+
+      true ->
+        nil
+    end
+  end
+
+  defp public_root?(path, source_root) when is_binary(path) and path != "" do
+    expanded = Path.expand(path)
+
+    case File.lstat(expanded) do
+      {:ok, %File.Stat{type: :directory}} ->
+        expanded != source_root and String.starts_with?(expanded, source_root <> "/")
+
+      _other ->
+        false
+    end
+  end
+
+  defp public_root?(_path, _source_root), do: false
+
+  defp validate_complete_public_proof(input, source_root, repository_root) do
+    {
+      validate_installs!(input.installs, source_root, repository_root),
+      validate_profile_results!(input.profile_results)
+    }
+  end
 
   defp validate_installs!(installs, source_root, repository_root) when is_list(installs) do
     normalized =
