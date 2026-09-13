@@ -110,7 +110,15 @@ prepare_companion_source() {
         metadata["requirements"]
         |> Enum.sort_by(&elem(&1, 0))
         |> Enum.map(fn {_name, requirement} ->
-          app = String.to_existing_atom(requirement["app"])
+          app =
+            case requirement["app"] do
+              "jason" -> :jason
+              "nimble_options" -> :nimble_options
+              "phoenix" -> :phoenix
+              "phoenix_live_view" -> :phoenix_live_view
+              "telemetry" -> :telemetry
+              _other -> raise "candidate core dependency set changed"
+            end
 
           {app, requirement["requirement"],
            [hex: app, repo: requirement["repository"], optional: requirement["optional"]]}
