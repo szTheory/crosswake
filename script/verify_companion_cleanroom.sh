@@ -378,6 +378,32 @@ with open(runtime_path, "a", encoding="utf-8") as handle:
         f"config :crosswake, :{profile}, %{{enabled: true}}\n"
     )
 PYEOF
+
+    python3 - "$host_root/lib/clean_room_host_web/router.ex" <<'PYEOF'
+import sys
+
+router_path = sys.argv[1]
+with open(router_path, "r", encoding="utf-8") as handle:
+    source = handle.read()
+
+needle = '    get "/", PageController, :home\n'
+replacement = '''    get "/", PageController, :home,
+      metadata: %{
+        crosswake: [
+          id: "clean-room-home",
+          runtime: :live_view,
+          offline: :unavailable,
+          security: :standard
+        ]
+      }
+'''
+
+if source.count(needle) != 1:
+    raise SystemExit(1)
+
+with open(router_path, "w", encoding="utf-8") as handle:
+    handle.write(source.replace(needle, replacement, 1))
+PYEOF
   }
 
   matrix_write_smoke() {
@@ -512,7 +538,7 @@ PYEOF
       mkdir -p "$MATRIX_PASS_ROOT" "$MATRIX_MIX_HOME/archives" "$MATRIX_HEX_HOME" "$MATRIX_DEPS" "$MATRIX_BUILD"
       cp -R "$MATRIX_GENERATOR_MIX_HOME/." "$MATRIX_MIX_HOME/"
 
-      echo "[crosswake] source_mode=candidate-local profile=$MATRIX_PROFILE install=$INSTALL_PASS step=generate"
+      echo "[crosswake] source_mode=$MATRIX_SOURCE_MODE profile=$MATRIX_PROFILE install=$INSTALL_PASS step=generate"
       env MIX_HOME="$MATRIX_MIX_HOME" HEX_HOME="$MATRIX_HEX_HOME" \
         ASDF_ERLANG_VERSION="$MATRIX_ASDF_ERLANG_VERSION" \
         ASDF_ELIXIR_VERSION="$MATRIX_ASDF_ELIXIR_VERSION" \
@@ -534,13 +560,13 @@ PYEOF
         export ASDF_ERLANG_VERSION="$MATRIX_ASDF_ERLANG_VERSION"
         export ASDF_ELIXIR_VERSION="$MATRIX_ASDF_ELIXIR_VERSION"
 
-        asdf exec mix deps.get >/dev/null
-        asdf exec mix compile --warnings-as-errors >/dev/null
-        asdf exec mix run --no-compile -e 'unless CleanRoomHostWeb.Router.__routes__() != [], do: System.halt(22)' >/dev/null
-        asdf exec mix test test/crosswake_cleanroom_smoke_test.exs >/dev/null
+        asdf exec mix deps.get >/dev/null || matrix_fail
+        asdf exec mix compile --warnings-as-errors >/dev/null || matrix_fail
+        asdf exec mix run --no-compile -e 'unless CleanRoomHostWeb.Router.__routes__() != [], do: System.halt(22)' >/dev/null || matrix_fail
+        asdf exec mix test test/crosswake_cleanroom_smoke_test.exs >/dev/null || matrix_fail
         matrix_registration_check "$MATRIX_PROFILE" positive
         matrix_registration_check "$MATRIX_PROFILE" negative
-        asdf exec mix crosswake.doctor --router CleanRoomHostWeb.Router > "$MATRIX_PASS_ROOT/doctor.log"
+        asdf exec mix crosswake.doctor --router CleanRoomHostWeb.Router > "$MATRIX_PASS_ROOT/doctor.log" || matrix_fail
         [ -s "$MATRIX_PASS_ROOT/doctor.log" ] || matrix_fail
 
         MATRIX_PATH_LOCK_COUNT=$(asdf exec elixir -e '

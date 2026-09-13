@@ -126,6 +126,12 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     assert script =~ ~S(config :crosswake, :${COMPANION_SUFFIX}, %{enabled: true})
     assert script =~ ~S(f"config :crosswake, :{profile}, %{{enabled: true}}\n")
     refute script =~ ~r/config :crosswake, :(?:\$\{COMPANION_SUFFIX\}|\{profile\}), enabled: true/
+    assert script =~ ~S(id: "clean-room-home")
+    assert script =~ ~S(metadata: %{)
+
+    assert script =~
+             ~S(mix crosswake.doctor --router CleanRoomHostWeb.Router > "$MATRIX_PASS_ROOT/doctor.log" || matrix_fail)
+
     refute script =~ ~s(rm -rf "$CLEAN_ROOM_DIR")
   end
 
