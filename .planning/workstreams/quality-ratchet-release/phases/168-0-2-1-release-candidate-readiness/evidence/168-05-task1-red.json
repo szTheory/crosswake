@@ -1,0 +1,9 @@
+{
+  "command": "asdf exec mix test test/crosswake/release_candidate/mirror_test.exs:9",
+  "exitCode": 2,
+  "output": "TAP version 13\n# Subtest: baseline accepts only the recorded credential-free 0.2.0 mirror truth\nnot ok 1 - baseline accepts only the recorded credential-free 0.2.0 mirror truth\n  ---\n  error: 'Mirror.evaluate!/1 must enforce the four closed mirror modes'\n  code: 'ERR_ASSERTION'\n  expected: true\n  actual: false\n  ...\n1..1\n# tests 1\n# pass 0\n# fail 1\n",
+  "targetTest": "baseline accepts only the recorded credential-free 0.2.0 mirror truth",
+  "targetFile": "test/crosswake/release_candidate/mirror_test.exs",
+  "expected": "Mirror.evaluate!/1 accepts only exact credential-free 0.2.0 baseline observations",
+  "actual": "the public four-mode mirror policy module was not implemented"
+}
