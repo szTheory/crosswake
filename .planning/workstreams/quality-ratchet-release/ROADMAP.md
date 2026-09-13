@@ -225,13 +225,36 @@ Plans:
 **Plans**: 8 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 168-01-PLAN.md — Land the exact Phase 167 handoff and close runtime/pagination authority gaps.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 168-02-PLAN.md — Define exact candidate identity, five-state receipt, projections, and CLI.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 168-03-PLAN.md — Build and inspect six candidate packages and enforce coordinate/floor consistency.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 168-04-PLAN.md — Prove five companion profiles from candidate payloads and prepare exact-public verification.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
 - [ ] 168-05-PLAN.md — Separate mirror baseline, candidate rehearsal, publication, and recovery authority.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
 - [ ] 168-06-PLAN.md — Wire trusted rehearsal and the guarded linked postapproval graph into existing workflows.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
 - [ ] 168-07-PLAN.md — Ratchet candidate contracts into existing CI, status, and release guidance.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
 - [ ] 168-08-PLAN.md — Capture the refreshed exact candidate and stop at the single irreversible approval.
 
 ## Progress
