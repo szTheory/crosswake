@@ -111,6 +111,18 @@ prepare_companion_source() {
     ln -s "$(cd "$dependency_source" && pwd -P)" "$package_dir/deps/$(basename "$dependency_source")"
   done
 
+  # Resolve the companion lock against a path-shaped copy of the exact unpacked
+  # candidate core first. This lets a clean checkout fetch transitive dependencies
+  # without comparing the not-yet-published candidate checksum to the public Hex
+  # registry entry for the same version.
+  cp -R "$CORE_UNPACKED_ROOT/." "$source_root/"
+  if ! (cd "$package_dir" && env -u HEX_API_KEY -u HEX_API_KEY_READ_ONLY \
+    MIX_HOME="$MIX_HOME_ISOLATED" HEX_HOME="$HEX_HOME_ISOLATED" \
+    ASDF_ERLANG_VERSION="$ASDF_ERLANG_VERSION" ASDF_ELIXIR_VERSION="$ASDF_ELIXIR_VERSION" \
+    "${RUNTIME[@]}" mix deps.get >/dev/null); then
+    fail
+  fi
+
   mkdir "$package_dir/deps/crosswake"
   cp -R "$CORE_UNPACKED_ROOT/." "$package_dir/deps/crosswake/"
 
@@ -159,16 +171,6 @@ prepare_companion_source() {
 
       File.write!(Path.join(System.fetch_env!("DEP_ROOT"), ".hex"), :erlang.term_to_binary(marker))
     ' || fail
-
-  # A clean CI checkout has no companion-local deps directory. Resolve the pinned
-  # lock before entering the offline package audit; the unpacked candidate core
-  # remains the selected crosswake dependency through its generated .hex marker.
-  if ! (cd "$package_dir" && env -u HEX_API_KEY -u HEX_API_KEY_READ_ONLY \
-    CROSSWAKE_RELEASE=1 MIX_HOME="$MIX_HOME_ISOLATED" HEX_HOME="$HEX_HOME_ISOLATED" \
-    ASDF_ERLANG_VERSION="$ASDF_ERLANG_VERSION" ASDF_ELIXIR_VERSION="$ASDF_ELIXIR_VERSION" \
-    "${RUNTIME[@]}" mix deps.get >/dev/null); then
-    fail
-  fi
 
   printf '%s' "$package_dir"
 }
