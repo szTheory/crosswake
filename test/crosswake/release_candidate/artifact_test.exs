@@ -203,6 +203,7 @@ defmodule Crosswake.ReleaseCandidate.ArtifactTest do
       "name" => package,
       "version" => version,
       "description" => "fixture package",
+      "links" => %{"Documentation" => "https://hexdocs.pm/#{package}"},
       "files" => files,
       "requirements" => requirements,
       "build_tools" => ["mix"]
@@ -221,6 +222,7 @@ defmodule Crosswake.ReleaseCandidate.ArtifactTest do
 
   defp encode_metadata(value) when is_binary(value), do: value
   defp encode_metadata(value) when is_boolean(value), do: value
+  defp encode_metadata({key, value}), do: {key, encode_metadata(value)}
   defp encode_metadata(value) when is_list(value), do: Enum.map(value, &encode_metadata/1)
 
   defp encode_metadata(value) when is_map(value),

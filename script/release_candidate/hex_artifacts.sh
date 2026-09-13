@@ -93,6 +93,7 @@ prepare_companion_source() {
 
   for dependency_source in "$REPO_ROOT/packages/$package/deps/"*; do
     [ -e "$dependency_source" ] || continue
+    [ "$(basename "$dependency_source")" != "crosswake" ] || continue
     ln -s "$(cd "$dependency_source" && pwd -P)" "$package_dir/deps/$(basename "$dependency_source")"
   done
 

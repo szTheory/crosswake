@@ -255,6 +255,9 @@ defmodule Crosswake.ReleaseCandidate.Artifact do
     |> Enum.sort_by(&:erlang.term_to_binary(&1, [:deterministic]))
   end
 
+  defp normalize_term({key, value}) when is_binary(key),
+    do: {key, normalize_term(value)}
+
   defp normalize_term(value) when is_binary(value) or is_boolean(value) or is_nil(value),
     do: value
 
