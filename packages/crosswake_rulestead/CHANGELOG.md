@@ -13,6 +13,17 @@ requirement declares a compatible-core floor, not a lockstep pin. See
 `guides/companion_compatibility.md` in the core repo for the cross-package
 compatibility matrix.
 
+## [0.1.1](https://github.com/szTheory/crosswake/compare/crosswake_rulestead-v0.1.0...crosswake_rulestead-v0.1.1) (2026-09-13)
+
+
+### Bug Fixes
+
+* **166-08:** seal companion verification locks ([0b7fe9c](https://github.com/szTheory/crosswake/commit/0b7fe9c399a64413e09efc70db9880fe641750b1))
+* **166:** land repository quality prerequisites ([a6e2622](https://github.com/szTheory/crosswake/commit/a6e2622acaaa82e82eb33a21760e75db2e51a281))
+* **167-06:** align extracted companion core floors ([c6b02e3](https://github.com/szTheory/crosswake/commit/c6b02e388c59e375950329c268c76197f945b5b4))
+* **167-06:** reconcile package and release guidance ([c06b610](https://github.com/szTheory/crosswake/commit/c06b6109ab3f68a5433a99c3ffb7ff11eafe71ca))
+* land Phase 166 CI prerequisites ([74fc15c](https://github.com/szTheory/crosswake/commit/74fc15cc546b756c210b6cbbdcb2d7f77e3966bb))
+
 ## [0.1.0](https://github.com/szTheory/crosswake/compare/crosswake_rulestead-v0.1.0...crosswake_rulestead-v0.1.0) (2026-08-09)
 
 

@@ -1,7 +1,7 @@
 defmodule CrosswakeRulestead.MixProject do
   use Mix.Project
 
-  @version "0.1.0" # x-release-please-version — independently versioned from core 0.2.0
+  @version "0.1.1" # x-release-please-version — independently versioned from core 0.2.0
   @source_url "https://github.com/szTheory/crosswake"
 
   def project do
