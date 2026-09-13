@@ -353,7 +353,7 @@
       "remote"
     ]
   },
-  "crosswake_version": "0.2.0",
+  "crosswake_version": "0.2.1",
   "generated_at": "2026-06-02T01:19:43Z",
   "host": {
     "live_view_version": "~> 1.1",
