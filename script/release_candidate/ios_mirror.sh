@@ -165,7 +165,7 @@ evaluate() {
     "$(dash_if_empty "$BEFORE_MAIN")" "$(dash_if_empty "$BEFORE_TAG")" \
     "$(dash_if_empty "$after_main")" "$(dash_if_empty "$after_tag")" "$changed" \
     "$ANCESTRY" "$(dash_if_empty "$APPROVAL_STATUS")" "$(dash_if_empty "$APPROVAL_RECEIPT")" \
-    "$(dash_if_empty "$EXPECTED_OLD_REF")" "$(dash_if_empty "$EXPECTED_NEW_REF")"); then
+    "$(dash_if_empty "$EXPECTED_OLD_REF")" "$(dash_if_empty "$EXPECTED_NEW_REF")" 2>&1); then
     printf '%s\n' "$output" >&2
     return 1
   fi
