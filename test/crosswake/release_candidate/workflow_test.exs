@@ -169,9 +169,12 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert hex_workflow =~ "android-recovery"
     assert android_recovery =~ "android_publication.sh"
     assert android_recovery =~ "--recover"
-    assert android_recovery =~ "ref: ${{ github.sha }}"
+    assert android_recovery =~ "ref: e089bfc0e8a4edf0b024a2a284c8a384216bd64d"
     assert android_recovery =~ "path: recovery-tools"
     assert android_recovery =~ "path: release-source"
+    refute android_recovery =~ "ref: ${{ github.sha }}"
+    refute android_recovery =~ "ref: main"
+    refute android_recovery =~ "refs/heads/"
 
     assert android_recovery =~
              ~s(bash "$GITHUB_WORKSPACE/recovery-tools/script/release_candidate/android_publication.sh")
