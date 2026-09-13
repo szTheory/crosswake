@@ -1,0 +1,9 @@
+{
+  "command": "asdf exec mix test test/crosswake/release_candidate/workflow_test.exs",
+  "exitCode": 2,
+  "output": "TAP version 13\n# Subtest: trusted Hex candidate rehearsal builds six exact-head packages without publication\nnot ok 1 - trusted Hex candidate rehearsal builds six exact-head packages without publication\n  ---\n  error: 'Assertion with =~ failed: workflow did not contain candidate-rehearsal'\n  code: 'ERR_ASSERTION'\n  ...\n# Subtest: credentialed mirror rehearsal is separate from credential-free baseline\nnot ok 2 - credentialed mirror rehearsal is separate from credential-free baseline\n# Subtest: trusted rehearsal artifacts bind exact workflow and run identity\nnot ok 3 - trusted rehearsal artifacts bind exact workflow and run identity\n1..3\n# tests 3\n# pass 0\n# fail 3\n",
+  "targetTest": "trusted Hex candidate rehearsal builds six exact-head packages without publication",
+  "targetFile": "test/crosswake/release_candidate/workflow_test.exs",
+  "expected": "existing trusted workflows expose exact-head package and mirror candidate rehearsal with bound run/workflow identity and no publication",
+  "actual": "the Hex workflow had no candidate-rehearsal mode, and the iOS workflow had no credential-free baseline or separate candidate rehearsal job"
+}
