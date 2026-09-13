@@ -1,0 +1,9 @@
+{
+  "command": "mix crosswake.release.candidate --version 0.2.1 --ref 5b373d2588d3b06073df9b19294af8e25a6a1eb0 --input pre-trusted-observation.json",
+  "exitCode": 1,
+  "output": "TAP version 13\n# Subtest: exact candidate is ready only after the complete trusted reversible proof set\nnot ok 1 - exact candidate is ready only after the complete trusted reversible proof set\n  ---\n  error: trusted Hex and iOS mirror rehearsal receipts are absent\n  expected: READY FOR APPROVAL\n  actual: BLOCKED\n  ...\n1..1\n# tests 1\n# pass 0\n# fail 1\n",
+  "targetTest": "exact candidate is ready only after the complete trusted reversible proof set",
+  "targetFile": ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-08-PLAN.md",
+  "expected": "the exact captured head has complete exact-head CI, six-package, five-profile, repository, mirror-authority, and zero-mutation proof",
+  "actual": "the refreshed candidate identity and CI are current, but trusted Hex and mirror rehearsal receipts have not been produced"
+}
