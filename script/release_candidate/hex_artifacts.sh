@@ -156,7 +156,9 @@ for PACKAGE in "${PACKAGES[@]}"; do
     PACKAGE_DIR=$(prepare_companion_source "$PACKAGE") || fail
   fi
 
-  VERSION=$(cd "$PACKAGE_DIR" && asdf exec elixir -e '
+  VERSION=$(cd "$PACKAGE_DIR" && env \
+    ASDF_ERLANG_VERSION="$ASDF_ERLANG_VERSION" ASDF_ELIXIR_VERSION="$ASDF_ELIXIR_VERSION" \
+    asdf exec elixir -e '
     source = File.read!("mix.exs")
     case Regex.run(~r/@version\s+"([^"]+)"/, source) do
       [_, version] -> IO.write(version)
