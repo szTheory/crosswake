@@ -483,7 +483,7 @@ jobs:
 
   publish-ios-core:
     name: Mirror iOS core to split repo
-    needs: [approved-release-guard, release-please, publish-hex]
+    needs: [approved-release-guard, release-please]
     if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == '0.2.1' && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -742,12 +742,37 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Preserve exact linked child states
+      - name: Initialize linked release rollup
+        id: linked-release
         env:
           LINKED_RELEASE: ${{ needs.approved-release-guard.outputs.linked_release }}
+        run: |
+          set -euo pipefail
+          if [ "$LINKED_RELEASE" = "true" ]; then
+            echo "applicable=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "applicable=false" >> "$GITHUB_OUTPUT"
+            echo '{"state":"NOT_APPLICABLE","child_states":{},"successful_coordinates":[],"failed_step":null,"failed_ref":null,"next_action":"no_action_required"}' > linked-release-status.json
+          fi
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        if: ${{ steps.linked-release.outputs.applicable == 'true' }}
+        with:
+          ref: ${{ needs.approved-release-guard.outputs.merge_oid }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        if: ${{ steps.linked-release.outputs.applicable == 'true' }}
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Preserve exact linked child states
+        # The executable policy emits COMPLETE only for all six successes and
+        # PARTIAL whenever an immutable public coordinate survives a failure.
+        if: ${{ steps.linked-release.outputs.applicable == 'true' }}
+        env:
           APPROVED_HEAD: ${{ needs.approved-release-guard.outputs.approved_head }}
           APPROVED_TREE: ${{ needs.approved-release-guard.outputs.approved_tree }}
-          MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+          APPROVED_REF: ${{ needs.approved-release-guard.outputs.merge_oid }}
           CANDIDATE_RECEIPT: ${{ needs.approved-release-guard.outputs.candidate_receipt }}
           HEX_STATE: ${{ needs.publish-hex.result }}
           IOS_STATE: ${{ needs.publish-ios-core.result }}
@@ -755,38 +780,10 @@ jobs:
           IOS_PROOF_STATE: ${{ needs.clean-room-proof-ios.result }}
           ANDROID_PROOF_STATE: ${{ needs.clean-room-proof-android.result }}
           EXACT_PUBLIC_STATE: ${{ needs.exact-public-proof.result }}
+          LINKED_RELEASE_STATUS: linked-release-status.json
         run: |
           set -euo pipefail
-          if [ "$LINKED_RELEASE" != "true" ]; then
-            echo '{"state":"NOT_APPLICABLE","child_states":{},"successful_coordinates":[],"failed_step":null,"failed_ref":null}' > linked-release-status.json
-            exit 0
-          fi
-
-          child_states=$(jq -cn \
-            --arg hex "$HEX_STATE" --arg ios "$IOS_STATE" --arg android "$ANDROID_STATE" \
-            --arg ios_proof "$IOS_PROOF_STATE" --arg android_proof "$ANDROID_PROOF_STATE" \
-            --arg exact_public "$EXACT_PUBLIC_STATE" \
-            '{hex:$hex,ios_mirror:$ios,android:$android,ios_public_proof:$ios_proof,android_public_proof:$android_proof,exact_public:$exact_public}')
-          if jq -e 'all(.[]; . == "success")' <<<"$child_states" >/dev/null; then
-            state=COMPLETE
-            failed_step=null
-            failed_ref=null
-          else
-            state=PARTIAL
-            failed_step=$(jq -r 'to_entries | map(select(.value != "success")) | first | .key' <<<"$child_states")
-            failed_ref="$MERGE_OID"
-          fi
-          successful_coordinates=$(jq -cn \
-            --arg hex "$HEX_STATE" --arg ios "$IOS_STATE" --arg android "$ANDROID_STATE" \
-            '[if $hex == "success" then "hex:crosswake@0.2.1" else empty end, if $ios == "success" then "swift:crosswake-shell-core-ios@0.2.1" else empty end, if $android == "success" then "maven:io.crosswake:crosswake-shell-core@0.2.1" else empty end]')
-          jq -cn --arg state "$state" --arg approved_head "$APPROVED_HEAD" \
-            --arg approved_tree "$APPROVED_TREE" --arg merge_oid "$MERGE_OID" \
-            --arg candidate_receipt "$CANDIDATE_RECEIPT" --argjson child_states "$child_states" \
-            --argjson successful_coordinates "$successful_coordinates" --arg failed_step "$failed_step" \
-            --arg failed_ref "$failed_ref" \
-            '{state:$state,approved_head:$approved_head,approved_tree:$approved_tree,merge_oid:$merge_oid,candidate_receipt:$candidate_receipt,child_states:$child_states,successful_coordinates:$successful_coordinates,failed_step:(if $failed_step == "null" then null else $failed_step end),failed_ref:(if $failed_ref == "null" then null else $failed_ref end)}' \
-            > linked-release-status.json
-          [ "$state" = COMPLETE ]
+          mix run --no-start -e 'Crosswake.ReleaseCandidate.Workflow.evaluate_cli!()'
       - name: Upload linked release status
         if: ${{ always() }}
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0

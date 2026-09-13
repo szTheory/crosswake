@@ -165,8 +165,10 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     result = Workflow.rollup!(rollup_input(children))
 
     assert result.state == "COMPLETE"
+
     assert result.successful_coordinates ==
              Enum.sort([coordinate(:hex), coordinate(:ios_mirror), coordinate(:android)])
+
     assert result.failed_step == nil
     assert result.failed_ref == nil
     assert result.next_action == "no_action_required"

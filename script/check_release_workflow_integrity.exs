@@ -9,6 +9,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   @default_ios_backfill_script "script/release_candidate/ios_mirror.sh"
   @default_ios_backfill_workflow ".github/workflows/ios-mirror-backfill.yml"
   @default_android_publication "script/release_candidate/android_publication.sh"
+  @default_release_workflow_policy "lib/crosswake/release_candidate/workflow.ex"
   @default_release_config "release-please-config.json"
   @default_manifest ".release-please-manifest.json"
   @default_companion_root "packages"
@@ -57,6 +58,11 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
     non_comment_android_publication = strip_full_line_comments(android_publication)
 
+    release_workflow_policy =
+      File.read!(path_from_env("RELEASE_WORKFLOW_POLICY_PATH", @default_release_workflow_policy))
+
+    non_comment_release_workflow_policy = strip_full_line_comments(release_workflow_policy)
+
     release_config =
       path_from_env("RELEASE_PLEASE_CONFIG_PATH", @default_release_config)
       |> File.read!()
@@ -101,7 +107,13 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         linked_release_children(jobs, non_comment_helper, non_comment_android_publication),
         release_ios_ordinary_atomic_push(jobs),
         release_ios_checkout_ref_pinned(jobs),
-        release_ios_hex_gated(jobs),
+        release_ios_independent_publication(jobs),
+        partial_release_truth(
+          jobs,
+          non_comment_release_workflow_policy,
+          non_comment_recovery,
+          non_comment_android_publication
+        ),
         native_rollup_fails_closed(jobs),
         release_failure_alert_native(jobs),
         ios_mirror_four_mode_adapter(non_comment_ios_backfill_script),
@@ -850,7 +862,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(exact_public, "exact-public") and
         Enum.all?(graph_children, &job_needs?(jobs, "linked-release-rollup", &1)) and
         includes?(rollup, "child_states") and includes?(rollup, "successful_coordinates") and
-        includes?(rollup, "COMPLETE") and includes?(rollup, "PARTIAL"),
+        includes?(rollup, "Crosswake.ReleaseCandidate.Workflow.evaluate_cli!()") and
+        includes?(rollup, "APPROVED_REF") and includes?(rollup, "CANDIDATE_RECEIPT"),
       "the fixed postapproval graph must contain only guarded Hex/iOS/Android 0.2.1 children, exact-public proof, and a closed linked rollup"
     )
   end
@@ -881,17 +894,51 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     )
   end
 
-  # New check (D-12). Mirrors workflow_native_proof_decoupled/1's shape:
-  # gate on the recoverable registry only, never on the sibling native
-  # platform (which would let an Android flake block a recoverable mirror
-  # push).
-  defp release_ios_hex_gated(jobs) do
+  defp release_ios_independent_publication(jobs) do
     check(
-      "release.ios.hex_gated",
+      "release.ios.independent_publication",
       job_needs?(jobs, "publish-ios-core", "release-please") and
-        job_needs?(jobs, "publish-ios-core", "publish-hex") and
+        job_needs?(jobs, "publish-ios-core", "approved-release-guard") and
+        not job_needs?(jobs, "publish-ios-core", "publish-hex") and
         not job_needs?(jobs, "publish-ios-core", "publish-android-core"),
-      "publish-ios-core must gate on the recoverable registry (release-please, publish-hex) only, never on publish-android-core; run elixir script/check_release_workflow_integrity.exs"
+      "the guarded iOS publication must remain independent of sibling registry outcomes so partial public truth is observable"
+    )
+  end
+
+  defp partial_release_truth(jobs, policy, recovery_workflow, android_publication) do
+    rollup = job_block(jobs, "linked-release-rollup")
+
+    policy_contract? =
+      Enum.all?(
+        ~w(rollup! validate! receipt_external_state COMPLETE PARTIAL BLOCKED successful_coordinates failed_step failed_ref retry_failed_step_from_exact_ref_or_publish_forward_fix),
+        &includes?(policy, &1)
+      ) and
+        includes?(
+          policy,
+          "@children ~w(hex ios_mirror android ios_public_proof android_public_proof exact_public)a"
+        ) and
+        includes?(policy, "exact_hex!(input.approved_ref, 40)")
+
+    exact_hex_recovery? =
+      Enum.all?(~w(approved_head approved_tree merge_oid candidate_receipt), fn input ->
+        includes?(recovery_workflow, input)
+      end) and
+        includes?(recovery_workflow, ~s(--merge-oid "${{ inputs.merge_oid }}")) and
+        includes?(recovery_workflow, ~s(--candidate-receipt "${{ inputs.candidate_receipt }}"))
+
+    exact_android_recovery? =
+      includes?(android_publication, "--recover") and
+        includes?(android_publication, ~S|[ "$(git rev-parse HEAD)" = "$SOURCE_REF" ]|) and
+        includes?(android_publication, "already public; exact-ref recovery is complete") and
+        not includes?(android_publication, "--replace") and
+        not includes?(android_publication, "--force")
+
+    check(
+      "release.partial.exact_ref_recovery",
+      policy_contract? and exact_hex_recovery? and exact_android_recovery? and
+        includes?(rollup, "Crosswake.ReleaseCandidate.Workflow.evaluate_cli!()") and
+        includes?(rollup, "if: ${{ always() }}"),
+      "partial rollup must retain fixed child truth and allow only exact-ref/idempotent or forward-fix recovery without replacement"
     )
   end
 

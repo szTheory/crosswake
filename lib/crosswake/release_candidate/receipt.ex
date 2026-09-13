@@ -182,7 +182,7 @@ defmodule Crosswake.ReleaseCandidate.Receipt do
   defp normalize_coordinates!(_coordinates), do: invalid!()
 
   defp coordinate!(value) when is_binary(value) and byte_size(value) in 1..160 do
-    if Regex.match?(~r/\A[a-z0-9._-]+:[a-z0-9._-]+@[0-9]+\.[0-9]+\.[0-9]+\z/, value),
+    if Regex.match?(~r/\A[a-z0-9._-]+:[a-z0-9._:-]+@[0-9]+\.[0-9]+\.[0-9]+\z/, value),
       do: value,
       else: invalid!()
   end

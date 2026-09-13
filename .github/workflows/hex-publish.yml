@@ -63,6 +63,21 @@ on:
         required: false
         default: ''
         type: string
+      approved_head:
+        description: 'Approved refreshed candidate head required for root 0.2.1 recovery.'
+        required: false
+        default: ''
+        type: string
+      approved_tree:
+        description: 'Approved candidate tree required for root 0.2.1 recovery.'
+        required: false
+        default: ''
+        type: string
+      merge_oid:
+        description: 'Exact approved two-parent merge commit required for root 0.2.1 recovery.'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -143,6 +158,10 @@ jobs:
           RECOVERY_REF: ${{ inputs.ref }}
           RECOVERY_PACKAGE: ${{ inputs.package }}
           EXPECTED_VERSION: ${{ inputs.release_version }}
+          APPROVED_HEAD: ${{ inputs.approved_head }}
+          APPROVED_TREE: ${{ inputs.approved_tree }}
+          MERGE_OID: ${{ inputs.merge_oid }}
+          CANDIDATE_RECEIPT: ${{ inputs.candidate_receipt }}
         run: |
           set -euo pipefail
 
@@ -160,6 +179,11 @@ jobs:
           if ! printf '%s' "$EXPECTED_VERSION" | grep -Eq "$VERSION_PATTERN"; then
             echo "[crosswake] FAIL: release_version '${EXPECTED_VERSION}' is not a semver version."
             exit 1
+          fi
+
+          if [ "$RECOVERY_PACKAGE" = "crosswake" ] && [ "$EXPECTED_VERSION" = "0.2.1" ]; then
+            printf '%s' "$APPROVED_HEAD$APPROVED_TREE$MERGE_OID" | grep -Eq '^[0-9a-f]{120}$'
+            printf '%s' "$CANDIDATE_RECEIPT" | grep -Eq '^[0-9a-f]{64}$'
           fi
 
           if printf '%s' "$RECOVERY_REF" | grep -Eq "$FULL_SHA_PATTERN"; then
@@ -238,3 +262,7 @@ jobs:
           "${{ inputs.package }}"
           "${{ inputs.release_version }}"
           "${{ inputs.ref }}"
+          --approved-head "${{ inputs.approved_head }}"
+          --approved-tree "${{ inputs.approved_tree }}"
+          --merge-oid "${{ inputs.merge_oid }}"
+          --candidate-receipt "${{ inputs.candidate_receipt }}"

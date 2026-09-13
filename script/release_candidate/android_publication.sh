@@ -9,10 +9,10 @@ SOURCE_REF=""
 APPROVED_HEAD=""
 APPROVED_TREE=""
 CANDIDATE_RECEIPT=""
-EXECUTE=false
+MODE="observe"
 
 usage() {
-  echo "usage: android_publication.sh --version 0.2.1 --ref <merge-sha> --approved-head <sha> --approved-tree <tree> --candidate-receipt <sha256> [--execute]" >&2
+  echo "usage: android_publication.sh --version 0.2.1 --ref <merge-sha> --approved-head <sha> --approved-tree <tree> --candidate-receipt <sha256> [--execute|--recover]" >&2
   exit 2
 }
 
@@ -23,7 +23,8 @@ while [ "$#" -gt 0 ]; do
     --approved-head) [ "$#" -ge 2 ] || usage; APPROVED_HEAD="$2"; shift 2 ;;
     --approved-tree) [ "$#" -ge 2 ] || usage; APPROVED_TREE="$2"; shift 2 ;;
     --candidate-receipt) [ "$#" -ge 2 ] || usage; CANDIDATE_RECEIPT="$2"; shift 2 ;;
-    --execute) EXECUTE=true; shift ;;
+    --execute) [ "$MODE" = "observe" ] || usage; MODE="publish"; shift ;;
+    --recover) [ "$MODE" = "observe" ] || usage; MODE="recovery"; shift ;;
     *) usage ;;
   esac
 done
@@ -41,11 +42,28 @@ parent_line=$(git rev-list --parents -n 1 "$SOURCE_REF")
 [ "$(git rev-parse "${APPROVED_HEAD}^{tree}")" = "$APPROVED_TREE" ]
 grep -q 'version = "0.2.1"' packages/crosswake-shell-core-android/build.gradle.kts
 
-if [ "$EXECUTE" != "true" ]; then
+if [ "$MODE" = "observe" ]; then
   echo '[crosswake] OK: Android publication identity is exact; external_state_changed=false.'
   exit 0
 fi
 
+if [ "$MODE" = "recovery" ]; then
+  public_pom="https://repo1.maven.org/maven2/io/crosswake/crosswake-shell-core/0.2.1/crosswake-shell-core-0.2.1.pom"
+  public_status=$(curl -sS -o /dev/null -w '%{http_code}' "$public_pom" || true)
+
+  case "$public_status" in
+    200)
+      echo '[crosswake] OK: Android core 0.2.1 is already public; exact-ref recovery is complete.'
+      exit 0
+      ;;
+    404) ;;
+    *)
+      echo "[crosswake] FAIL: Maven Central returned unexpected status ${public_status}; publication was not attempted." >&2
+      exit 1
+      ;;
+  esac
+fi
+
 cd packages/crosswake-shell-core-android
 ./gradlew publishToMavenCentral --no-daemon -PcrosswakeAutomaticRelease=true
-echo '[crosswake] OK: Android core 0.2.1 publication command completed for the approved exact merge.'
+echo "[crosswake] OK: Android core 0.2.1 ${MODE} command completed for the approved exact merge."
