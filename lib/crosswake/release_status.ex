@@ -6,7 +6,9 @@ defmodule Crosswake.ReleaseStatus do
   public registry probes for Hex, Maven Central, and the iOS SwiftPM mirror.
   """
 
-  @schema_version "1.0.0"
+  @schema_version "1.1.0"
+  @candidate_version "0.2.1"
+  @mirror_baseline_version "0.2.0"
   @manifest_path ".release-please-manifest.json"
   @config_path "release-please-config.json"
   @workflow_path ".github/workflows/release-please.yml"
@@ -50,7 +52,7 @@ defmodule Crosswake.ReleaseStatus do
     release.workflow.proof_after_publish
     release.workflow.native_proof_decoupled
     release.ios.ssh_transport
-    release.ios.atomic_leased_push
+    release.ios.ordinary_atomic_push
     release.workflow.native_rollup_summary
     release.workflow.native_status_artifact
     release.workflow.companion_floors_honest
@@ -78,7 +80,11 @@ defmodule Crosswake.ReleaseStatus do
 
     core = core_components(cwd, manifest, live?, probes)
     companions = companion_components(cwd, manifest, config, live?, probes)
-    checks = checks(manifest, workflow, core, companions, workflow_integrity)
+    release_candidate = release_candidate(core, companions, live?, probes)
+
+    checks =
+      checks(manifest, workflow, core, companions, workflow_integrity) ++
+        candidate_public_checks(release_candidate, live?)
 
     %{
       schema_version: @schema_version,
@@ -87,6 +93,7 @@ defmodule Crosswake.ReleaseStatus do
       live_checked: live?,
       core: core,
       companions: companions,
+      release_candidate: release_candidate,
       checks: checks
     }
   end
@@ -142,6 +149,19 @@ defmodule Crosswake.ReleaseStatus do
           "- #{String.upcase(to_string(check.status))} #{check.code}: #{check.message}#{next_action}"
         end)
 
+    candidate = status.release_candidate
+
+    candidate_lines = [
+      "",
+      "Exact 0.2.1 candidate (read-only):",
+      "- state: #{candidate.state}",
+      "- next action: #{candidate.next_action}",
+      "- linked coordinates: #{Enum.map_join(candidate.linked_coordinates, ", ", & &1.coordinate)}",
+      "- independent companions: #{Enum.map_join(candidate.independent_companions, ", ", & &1.package)}",
+      "- mirror baseline/public: #{candidate.mirror.baseline_ref} / #{candidate.mirror.public_ref}",
+      "- credentials exercised: false; external state changed: false"
+    ]
+
     live_lines =
       if status.live_checked do
         [
@@ -152,7 +172,123 @@ defmodule Crosswake.ReleaseStatus do
         []
       end
 
-    Enum.join(lines ++ core_lines ++ companion_lines ++ live_lines ++ check_lines, "\n") <> "\n"
+    Enum.join(
+      lines ++ core_lines ++ companion_lines ++ candidate_lines ++ live_lines ++ check_lines,
+      "\n"
+    ) <> "\n"
+  end
+
+  defp release_candidate(core, companions, live?, probes) do
+    candidate_live = %{
+      hex: maybe_hex_live("crosswake", @candidate_version, live?, probes),
+      ios: maybe_ios_mirror_live(@candidate_version, live?, probes),
+      android: maybe_maven_live(@candidate_version, live?, probes)
+    }
+
+    {state, next_action} = candidate_state(candidate_live, live?)
+    baseline_ios = core |> Enum.find(&(&1.component == "ios-core")) |> Map.fetch!(:live)
+
+    %{
+      version: @candidate_version,
+      state: state,
+      next_action: next_action,
+      linked_coordinates: [
+        candidate_coordinate(
+          "hex",
+          "hex:crosswake@#{@candidate_version}",
+          candidate_live.hex
+        ),
+        candidate_coordinate(
+          "ios-core",
+          "swiftpm:crosswake-shell-core-ios@#{@candidate_version}",
+          candidate_live.ios
+        ),
+        candidate_coordinate(
+          "android-core",
+          "maven:io.github.sztheory:crosswake-shell-core-android:#{@candidate_version}",
+          candidate_live.android
+        )
+      ],
+      independent_companions:
+        Enum.map(companions, fn companion ->
+          %{
+            package: companion.package,
+            version: companion.version,
+            core_requirement: companion.core_requirement,
+            relationship: "independent"
+          }
+        end),
+      mirror: %{
+        baseline_ref: "refs/tags/v#{@mirror_baseline_version}",
+        baseline_status: public_status(baseline_ios),
+        public_ref: "refs/tags/v#{@candidate_version}",
+        public_status: public_status(candidate_live.ios),
+        write_authority: "NOT CHECKED"
+      },
+      credentials_exercised: false,
+      external_state_changed: false
+    }
+  end
+
+  defp candidate_coordinate(component, coordinate, live) do
+    %{
+      component: component,
+      coordinate: coordinate,
+      relationship: "linked",
+      public_status: public_status(live)
+    }
+  end
+
+  defp public_status(nil), do: "NOT CHECKED"
+  defp public_status(%{status: status}), do: status |> to_string() |> String.upcase()
+
+  defp candidate_state(_candidate_live, false) do
+    {"BLOCKED",
+     "run mix crosswake.release.status --live, then capture the exact candidate receipt"}
+  end
+
+  defp candidate_state(candidate_live, true) do
+    statuses = candidate_live |> Map.values() |> Enum.map(& &1.status)
+    ok_count = Enum.count(statuses, &(&1 == :ok))
+
+    cond do
+      :unavailable in statuses ->
+        {"BLOCKED", "restore live probe access and rerun mix crosswake.release.status --live"}
+
+      ok_count == length(statuses) ->
+        {"COMPLETE", "no action required; preserve the exact public receipt"}
+
+      ok_count > 0 ->
+        {"PARTIAL", "recover only the missing linked coordinate from its exact approved ref"}
+
+      true ->
+        {"BLOCKED",
+         "capture candidate-local proof and the trusted mirror rehearsal before approval"}
+    end
+  end
+
+  defp candidate_public_checks(_candidate, false), do: []
+
+  defp candidate_public_checks(candidate, true) do
+    status = if candidate.state == "COMPLETE", do: :ok, else: :error
+
+    [
+      %{
+        status: status,
+        code: "release.candidate_public_truth",
+        source: "live linked-coordinate probes",
+        evidence:
+          Enum.map(candidate.linked_coordinates, fn coordinate ->
+            "#{coordinate.component}=#{coordinate.public_status}"
+          end),
+        next_action: if(status == :ok, do: nil, else: candidate.next_action),
+        message:
+          if(status == :ok,
+            do: "all three linked 0.2.1 coordinates are public",
+            else: "0.2.1 linked-coordinate state is #{candidate.state}"
+          )
+      }
+    ]
   end
 
   defp core_components(cwd, manifest, live?, probes) do
@@ -319,7 +455,10 @@ defmodule Crosswake.ReleaseStatus do
 
   defp core_path_gates?(jobs) do
     Enum.all?(@core_path_gates, fn {job, path} ->
-      job_if(jobs, job) == path_gate_expression(path)
+      includes?(
+        job_if(jobs, job),
+        "contains(fromJSON(needs.release-please.outputs.paths_released), '#{path}')"
+      )
     end)
   end
 
@@ -426,9 +565,6 @@ defmodule Crosswake.ReleaseStatus do
     |> String.replace(~r/\s+/, " ")
     |> String.trim()
   end
-
-  defp path_gate_expression(path),
-    do: "${{ contains(fromJSON(needs.release-please.outputs.paths_released), '#{path}') }}"
 
   defp component_gate_expression(component),
     do: "${{ needs.release-please.outputs.#{component}_release_created == 'true' }}"

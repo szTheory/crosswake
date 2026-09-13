@@ -1,147 +1,41 @@
 # Companion Publish Runbook
 
-This runbook describes the current package-family release operating model for
-Crosswake Hex packages. The publish path is now guarded CI automation, not a
-maintainer's local `mix hex.publish` loop.
+This is the operator contract for the Crosswake `0.2.1` release candidate. It keeps the
+three linked coordinates together, keeps all five companions independently versioned, and
+separates reversible evidence from publication. The status and candidate commands are
+read-only: neither command publishes, pushes a ref, merges a pull request, or changes a registry.
 
-## Phase 167 review boundary
+## Candidate authority
 
-This phase permits reversible preparation only: inspect checked-in release owners,
-run read-only status and proof commands, and review the Release Please threads. Phase 168
-owns exact `0.2.1` candidate proof and requires explicit maintainer approval before any
-immutable action. Do not merge a Release Please PR, publish a package, create or move a tag,
-update the SwiftPM mirror, or treat a stale release-PR head as the candidate during
-Phase 167.
+The linked release unit is exactly:
 
-## Current Operating Model
+- Hex `crosswake 0.2.1`;
+- SwiftPM mirror tag `refs/tags/v0.2.1` for `crosswake-shell-core-ios`;
+- Maven `io.github.sztheory:crosswake-shell-core-android:0.2.1`.
 
-The Release Please Release PR merge is the human approval boundary. After that
-merge, CI owns the happy-path publish path for every package Release Please says
-was released.
+The five `crosswake_*` Hex packages are independent companions. Their current versions and
+`crosswake` floors are evidence, not members of the linked `0.2.1` approval. Companion pull
+requests are excluded from this runbook.
 
-For Hex packages, the release workflow routes root `crosswake` and all five
-`crosswake_*` companions through `script/guarded_hex_publish.sh`:
+The exact Release Please head, tree, merge base, workflow blobs, artifact digests, run identity,
+and credential checks form the candidate identity. A branch name, a moving pull-request head,
+or a successful test count without those bindings is not candidate evidence.
 
-- `crosswake`
-- `crosswake_rulestead`
-- `crosswake_rindle`
-- `crosswake_sigra`
-- `crosswake_chimeway`
-- `crosswake_threadline`
+## Exact seven-step operator sequence
 
-The helper verifies the checked-out package/version, checks the exact Hex.pm
-package release endpoint, and then chooses one of two states:
+### 1. Land the exact five-blob stack
 
-- Exact package/version is already live: report success, skip publish, and let
-  proof continue.
-- Exact package/version is not live: run deps, compile, tests, dry-run, publish,
-  and poll until Hex.pm reports the exact version.
+Land the reviewed five-blob dependency stack in its recorded order. Re-read the five blob IDs
+from the phase evidence and verify that the candidate base contains each one. If any blob is
+missing, reordered, or replaced, stop with `BLOCKED`; do not refresh the candidate.
 
-Core Hex, iOS core, and Android core remain the only lockstep release group.
-Companion packages remain independently versioned Release Please components.
+### 2. Refresh and capture the candidate
 
-## Already-Live State
+Refresh the one Release Please candidate only after all reversible changes have landed. Capture
+the full 40-character lowercase head SHA, tree SHA, merge base, and the exact release workflow
+blobs. A later push makes the prior capture `STALE` and requires a new capture.
 
-Hex packages are immutable after the public release window. Treat an exact live
-package/version as registry state, not as a failed duplicate publish.
-
-Expected already-live success copy:
-
-```text
-[crosswake] OK: crosswake_sigra 0.1.1 is already live on Hex.pm; no publish attempted. Continuing to proof.
-```
-
-Expected fail-closed copy:
-
-```text
-[crosswake] FAIL: Hex.pm returned HTTP 500 for crosswake_sigra 0.1.1.
-[crosswake] What to do next: Retry after confirming Hex.pm status; do not publish until registry identity can be checked.
-```
-
-The important operator facts are package, release ref, version, registry state,
-live artifact, proof, cleanup PR, and the next safe command. Do not rely on
-prose scraping for machine state; helper outputs include `package`, `version`,
-`publish_state`, `hex_release_url`, and `checked_sha` for later status tooling.
-
-## Manual Recovery
-
-Manual dispatch is exact-ref Hex recovery and fire-drill only. It is not the
-happy path and should not be used when the Release Please publish train is
-healthy.
-
-Use the `Hex publish (manual recovery)` workflow with:
-
-- `package`: one of the six Hex packages listed above.
-- `ref`: either a full 40-character lowercase commit SHA or an explicit
-  package-scoped Release Please tag ref:
-  - `refs/tags/hex-vX.Y.Z` for the root `crosswake` Hex package.
-  - `refs/tags/crosswake_<companion>-vX.Y.Z` for companion packages, for example
-    `refs/tags/crosswake_sigra-v0.1.1`.
-- `release_version`: the expected package version at that ref.
-
-The workflow rejects branch-shaped and bare version-looking refs before
-checkout, including `release/v0.2.0`, `feature/v0.2.0`,
-`refs/heads/release/v0.2.0`, bare `v0.2.0`, bare-semver tag refs such as
-`refs/tags/v0.2.0`, `main`, and `master`. It prints the checked-out SHA before
-calling the guarded helper.
-
-Recovery remains Hex-only in Phase 143. SwiftPM mirror recovery, Maven Central
-recovery, and the missing iOS `v0.2.0` mirror backfill are native-registry
-operations with their own guarded path below.
-
-## iOS Mirror Backfill
-
-The canonical path for the missing SwiftPM mirror tag is verify-first:
-
-```bash
-script/verify_ios_mirror_backfill.sh --version 0.2.0 --ref refs/tags/ios-core-v0.2.0
-```
-
-Verification mode does not require `MIRROR_PUSH_TOKEN` and does not mutate the
-public mirror. Mutation is explicit:
-
-```bash
-script/verify_ios_mirror_backfill.sh --version 0.2.0 --ref refs/tags/ios-core-v0.2.0 --apply
-```
-
-The operator wrapper is the `iOS mirror backfill` workflow. It exposes
-`version`, `release_ref`, `apply`, and `update_main` inputs and delegates the
-release identity, split, registry, and tag checks to the script.
-
-Expected states:
-
-- Exact already-present mirror tag: `[crosswake] OK`, exit 0, no push.
-- Missing mirror tag in verify-only mode: `[crosswake] OK`, exit 0, next action
-  names the apply command/workflow.
-- Mismatched mirror tag: `[crosswake] FAIL`, exit nonzero, no automatic delete or
-  move of `refs/tags/v0.2.0`.
-
-Before any apply-mode mutation, the script verifies root Hex `crosswake 0.2.0`,
-Android Maven `io.github.sztheory:crosswake-shell-core-android:0.2.0`, the
-lockstep Release Please refs (`hex-v0.2.0`, `ios-core-v0.2.0`,
-`android-core-v0.2.0`), and `.release-please-manifest.json` version truth.
-Rerunning the original release workflow is not the primary recovery path because
-Hex and Maven coordinates are immutable once live; use the backfill path to
-repair only the missing SwiftPM mirror tag.
-
-## Companion Floors
-
-Each companion owns its core floor independently. The current set agrees on the
-published core line, but that does not put companion package versions in lockstep:
-
-| Hex package | Requires `crosswake` |
-|---|---|
-| `crosswake_rulestead` | `~> 0.2` |
-| `crosswake_rindle` | `~> 0.2` |
-| `crosswake_sigra` | `~> 0.2` |
-| `crosswake_chimeway` | `~> 0.2` |
-| `crosswake_threadline` | `~> 0.2` |
-
-A companion that needs a newer core API bumps its own floor in its own release.
-
-## Release Status
-
-Use the release-status task for the current read-only operator view:
+Read local and public truth without mutation:
 
 ```bash
 mix crosswake.release.status
@@ -149,49 +43,132 @@ mix crosswake.release.status --json
 mix crosswake.release.status --live
 ```
 
-Default status reads checked-in source, release config, package files, workflow
-guards, and scanner evidence only. It does not call public registries, GitHub
-APIs, or workflow artifacts. Use `--json` when CI or issue tooling needs the
-stable machine contract; consumers should key on `code`, `status`, `source`,
-`next_action`, and structured component fields, not prose.
+### 3. Build and unpack all six packages
 
-Use `--live` only when public registry presence matters. Live probes are
-advisory and distinguish `ok`, `missing`, and `unavailable` for Hex, Maven
-Central, and the SwiftPM mirror. A `missing` result means the exact artifact or
-tag was checked and absent. An `unavailable` result means network, registry, or
-tooling state prevented an honest absence claim.
+From the captured checkout, build and officially unpack the root package plus five companions.
+The output directory must not exist before the command starts.
 
-The status task is read-only. Mutation stays in the guarded release surfaces:
-`script/guarded_hex_publish.sh`, the Release Please publish jobs,
-`script/verify_ios_mirror_backfill.sh`, and the `iOS mirror backfill` workflow.
+```bash
+bash script/release_candidate/hex_artifacts.sh \
+  --ref <40sha> \
+  --output-dir <new-artifact-directory> \
+  --manifest <new-artifact-manifest.json>
+```
 
-## Required Check Boundary
+Success means exactly six non-empty payloads with normalized metadata and payload digests. Zero
+packages, an omitted package, an in-repository unpack root, or a changed checkout blocks the
+candidate.
 
-The `publish-hex-*` and `clean-room-proof-*` jobs are post-merge release jobs.
-They are skipped on normal PRs and MUST NOT be registered as required PR checks.
-Registering them would deadlock ordinary PRs waiting for statuses that cannot
-run before merge.
+### 4. Run candidate-local clean rooms
 
-Keep merge-blocking proof on the semantic workflow checks and source tests. The
-post-merge publish/proof jobs are release execution evidence, not PR gates.
+Run all five host profiles twice from the unpacked candidate artifacts:
 
-## Historical Phase Boundaries
+```bash
+bash script/verify_companion_cleanroom.sh \
+  --source-mode candidate-local \
+  --artifact-manifest <artifact-manifest.json> \
+  --result <new-cleanroom-result.json>
+```
 
-Phase 143 owns the guarded automatic Hex publish train and exact-ref Hex
-recovery.
+Success means six packages, five profiles, two isolated installs per profile, positive public
+surface assertions, deliberate negative controls, and zero path-lock leaks. `candidate-local`
+proves the reversible payloads; it does not prove that any public registry serves them.
 
-Phase 144 owns clean-room exactness completion: exact just-published companion
-installs, derived core floors, and fresh-router doctor loading.
+### 5. Run the trusted mirror rehearsal
 
-Phase 145 owns native registry recovery and parity: SwiftPM mirror credential
-preflight, Maven/SwiftPM recovery semantics, native proof decoupling, and iOS
-mirror backfill through `script/verify_ios_mirror_backfill.sh` and the
-`iOS mirror backfill` workflow.
+Use the existing trusted iOS release workflow candidate-rehearsal operation at the captured SHA.
+The ordinary pull-request workflow stays credential-free. Only the trusted job may check the
+scoped deploy key, and it must record `credentials_exercised=true`,
+`authorization_result=AUTHORIZED`, and `external_state_changed=false`. The rehearsal may inspect
+the recorded `v0.2.0` baseline and dry-run the `v0.2.1` split; it must not push either ref.
 
-## Irreversible Registry Warning
+### 6. Review the exact receipt
 
-Once `mix hex.publish` completes, the package version is public registry state.
-Do not retry a failed release by forcing an overwrite path. First check whether
-the exact version is already live. If it is live, continue to proof or recovery
-verification. If identity cannot be proven, stop and inspect the release ref,
-GitHub release/tag, Hex.pm package page, and workflow logs before retrying.
+The candidate evaluator consumes normalized artifact, clean-room, coordinate, workflow, mirror,
+identity, and credential observations and writes one bounded receipt:
+
+```bash
+mix crosswake.release.candidate --version 0.2.1 --ref <40sha> --output-dir <new-receipt-directory>
+```
+
+Review `candidate-receipt.json`, its Markdown and terminal projections, and the retained CI and
+trusted-workflow artifacts. The receipt must bind the captured head/tree/base and exact workflow
+digests, contain non-zero six-package/five-profile proof, report
+`credentials_exercised=true`, and still report `external_state_changed=false`. Each projection
+must give one next action and must not include credentials, raw remote output, account data, or
+private URLs.
+
+### 7. Approve one exact-head merge
+
+The Release Please merge is the single approval boundary. Approve only when the receipt says
+`READY FOR APPROVAL` and the pull-request head still equals the captured 40-SHA. That approval
+authorizes the fixed post-merge linked graph; it does not authorize companion releases, ref
+replacement, unrelated recovery, or a second approval shortcut.
+
+## Five states and one correction
+
+| State | Meaning | One next action |
+|---|---|---|
+| `BLOCKED` | Required evidence, identity, or authorization is absent or unverifiable. | Repair the named prerequisite and rerun only its owner. |
+| `STALE` | Head, tree, base, workflow, or observation no longer matches the capture. | Refresh and recapture the whole exact candidate. |
+| `READY FOR APPROVAL` | Every reversible proof and credential rehearsal passed with no external mutation. | Approve the one captured exact-head merge. |
+| `PARTIAL` | Approval occurred and at least one linked coordinate is public while another is not complete. | Recover only the named missing coordinate from its exact approved ref. |
+| `COMPLETE` | All three linked coordinates and exact-public proof agree with the approved receipt. | Preserve the receipt; take no publication action. |
+
+Never average mixed results into success. Output names one state, one bounded reason, and one next
+action. `PARTIAL` retains every proven public success and never rolls it back to make the graph
+look atomic.
+
+## Candidate-local versus exact-public proof
+
+`candidate-local` installs from the six officially unpacked local tarballs before approval. It
+proves payload content and host compatibility without registry or mirror write authority.
+
+`exact-public` runs only after publication. It fetches the approved six package digests from the
+public sources, repeats the five profiles, and requires live linked-coordinate truth. Cached,
+repository-local, or merely configured coordinates cannot satisfy exact-public proof.
+
+The read-only status surface shows the `v0.2.0` mirror baseline and the candidate public ref
+`v0.2.1` separately. `missing` is a definite public absence; `unavailable` is an unknown after
+bounded retries. Both fail closed for linked candidate truth, but the operator copy must not call
+an unavailable probe a confirmed absence.
+
+## Ordinary publication and recovery
+
+Ordinary publication is the fixed postapproval Release Please graph: guarded root Hex, iOS
+mirror, and Android Maven children followed by exact-public proof and a linked rollup. It uses the
+approved merge parent and identical tree; it never selects a mutable branch name.
+
+The ordinary publication path never doubles as recovery. Recovery is reachable only after a
+`PARTIAL` receipt. It preserves coordinates already proven
+public, selects one failed coordinate, and uses that coordinate's exact approved ref. iOS ordinary
+publication is atomic fast-forward publication; iOS recovery alone may use the separately
+approved exact force-with-lease contract. Hex and Maven artifacts are immutable and must not be
+replaced. A lost public success, ambiguous ref, or mismatched receipt blocks recovery.
+
+## CI ownership
+
+The existing `Crosswake CI` family always runs stable artifact, coordinate, mirror, clean-room,
+workflow, receipt, and package fixtures. Release-sensitive tracked inputs and the refreshed
+Release Please candidate additionally run the credential-free six-artifact/five-profile full
+matrix against the exact pull-request head. Checkout, object, diff, unknown-classification,
+zero-count, stale-head, omitted-leaf, or missing-receipt ambiguity routes to more proof or fails.
+
+The real credentialed mirror rehearsal stays in the trusted release workflow. One-time live
+reconciliation stays in phase evidence; it is not a permanent CI lane.
+
+## Explicit exclusions and privacy
+
+- Android breadth is excluded: the existing linked Maven coordinate is checked, but no Android
+  feature, generator, JVM, vector, parity, or device scope is added.
+- first-adopter activation is excluded; this is infrastructure release proof, not adopter rollout.
+- Companion pull requests are excluded; companion versions and floors remain independent.
+- Candidate evaluation does not publish, merge, tag, push, open issues, or repair public state.
+- Background or generic sync, commerce productionization, dashboards, native UI breadth, and
+  brand/showcase work remain excluded.
+- Raw answers, media, transcripts, credentials, tokens, account identifiers, stable device IDs,
+  private URLs, and proprietary adopter information must not enter status, receipts, artifacts,
+  logs, or summaries.
+
+If evidence cannot make one bounded claim without exposing those values, record `BLOCKED` and
+name the safe owner to rerun. Do not paste the sensitive input into the correction.

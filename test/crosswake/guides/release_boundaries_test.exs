@@ -67,20 +67,15 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
              ~r/(?:token|credential|account identifier|device identifier):\s*\S+/i
   end
 
-  test "publish runbook stops before the 0.2.1 candidate and immutable release actions" do
+  test "publish runbook keeps candidate evaluation reversible until exact-head approval" do
     runbook = File.read!("docs/COMPANION-PUBLISH-RUNBOOK.md")
 
-    boundary =
-      section_between(runbook, "## Phase 167 review boundary", "## Current Operating Model")
-
-    assert boundary =~ "reversible preparation only"
-    assert boundary =~ "Phase 168"
-    assert boundary =~ "exact `0.2.1` candidate proof"
-    assert boundary =~ "explicit maintainer approval"
-    assert boundary =~ "Do not merge a Release Please PR"
-    assert boundary =~ "publish a package"
-    assert boundary =~ "create or move a tag"
-    assert boundary =~ "update the SwiftPM mirror"
+    assert runbook =~ "separates reversible evidence from publication"
+    assert runbook =~ "exact Release Please head, tree, merge base"
+    assert runbook =~ "must not push either ref"
+    assert runbook =~ "READY FOR APPROVAL"
+    assert runbook =~ "single approval boundary"
+    assert runbook =~ "does not publish"
   end
 
   test "read-only release status projects the exact candidate boundary" do
@@ -106,7 +101,47 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert Enum.all?(companions, &(&1.relationship == "independent"))
     assert mirror.baseline_ref == "refs/tags/v0.2.0"
     assert mirror.public_ref == "refs/tags/v0.2.1"
-    assert next_action == "run mix crosswake.release.status --live, then capture the exact candidate receipt"
+
+    assert next_action ==
+             "run mix crosswake.release.status --live, then capture the exact candidate receipt"
+  end
+
+  test "live candidate status preserves partial linked-coordinate truth" do
+    status =
+      Crosswake.ReleaseStatus.build(
+        live?: true,
+        http_probe: fn _url, context ->
+          case context do
+            %{kind: :hex, package: "crosswake", version: "0.2.1"} ->
+              %{status: :ok, evidence: ["candidate Hex fixture"]}
+
+            %{kind: :maven, version: "0.2.1"} ->
+              %{status: :missing, evidence: ["candidate Maven fixture"]}
+
+            _ ->
+              %{status: :ok, evidence: ["baseline fixture"]}
+          end
+        end,
+        git_ref_probe: fn _remote, ref ->
+          if ref == "refs/tags/v0.2.1" do
+            %{status: :missing, evidence: ["candidate mirror fixture"]}
+          else
+            %{status: :ok, evidence: ["baseline mirror fixture"]}
+          end
+        end
+      )
+
+    assert status.release_candidate.state == "PARTIAL"
+
+    assert status.release_candidate.next_action ==
+             "recover only the missing linked coordinate from its exact approved ref"
+
+    assert status.release_candidate.mirror.baseline_status == "OK"
+    assert status.release_candidate.mirror.public_status == "MISSING"
+
+    assert Enum.any?(status.checks, fn check ->
+             check.code == "release.candidate_public_truth" and check.status == :error
+           end)
   end
 
   test "candidate runbook fixes the seven-step sequence and single approval boundary" do
@@ -814,11 +849,5 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
 
   defp normalize_whitespace(contents) do
     Regex.replace(~r/\s+/, contents, " ")
-  end
-
-  defp section_between(contents, start_heading, next_heading) do
-    [_, rest] = String.split(contents, start_heading, parts: 2)
-    [section | _] = String.split(rest, next_heading, parts: 2)
-    section
   end
 end
