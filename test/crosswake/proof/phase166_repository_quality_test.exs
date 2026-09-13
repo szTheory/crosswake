@@ -291,7 +291,18 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     manifest = decode!(@ci_manifest_path)
     workflow = File.read!(@ci_workflow_path)
 
-    assert length(manifest["proof_leaves"]) == 44
+    assert length(manifest["proof_leaves"]) == 46
+
+    assert Enum.any?(manifest["proof_leaves"], fn leaf ->
+             leaf["leaf_id"] == "release-candidate-fixtures" and
+               leaf["family"] == "release_candidate"
+           end)
+
+    assert Enum.any?(manifest["proof_leaves"], fn leaf ->
+             leaf["leaf_id"] == "release-candidate-full-proof" and
+               leaf["family"] == "release_candidate" and
+               leaf["irrelevance_reason"] == "release_inputs_unchanged"
+           end)
 
     assert manifest["required_control_nodes"] == [
              %{
@@ -304,6 +315,28 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     assert workflow =~ "  merge-blocking-crosswake-ci:"
     assert workflow =~ "    name: Crosswake CI"
     assert workflow =~ "    if: always()"
+  end
+
+  @tag :ci_parity
+  test "candidate CI owns fast fixtures and fail-closed exact-ref full proof" do
+    workflow = File.read!(@ci_workflow_path)
+
+    for token <- [
+          "release_candidate_scope",
+          "release_candidate_reason",
+          "release-candidate-fixtures:",
+          "release-candidate-full-proof:",
+          "github.event.pull_request.head.sha",
+          "script/release_candidate/hex_artifacts.sh",
+          "script/verify_companion_cleanroom.sh",
+          "script/check_release_workflow_integrity.exs",
+          "release-candidate-ci-receipt.json"
+        ] do
+      assert workflow =~ token
+    end
+
+    assert workflow =~ "release_inputs_unchanged"
+    refute workflow =~ ~r/release-candidate-full-proof:.*?(HEX_API_KEY|GITHUB_TOKEN|git push)/s
   end
 
   @tag :ci_parity

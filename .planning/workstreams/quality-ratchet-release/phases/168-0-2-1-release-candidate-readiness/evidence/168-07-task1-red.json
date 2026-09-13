@@ -1,0 +1,9 @@
+{
+  "command": "asdf exec mix test test/crosswake/proof/phase166_repository_quality_test.exs --only ci_parity --only generated_contracts test/crosswake/proof/phase69_docs_contract_parity_test.exs",
+  "exitCode": 2,
+  "output": "TAP version 13\n# Subtest: candidate CI owns fast fixtures and fail-closed exact-ref full proof\nnot ok 1 - candidate CI owns fast fixtures and fail-closed exact-ref full proof\n  ---\n  error: 'Assertion with =~ failed: workflow did not contain release_candidate_scope'\n  code: 'ERR_ASSERTION'\n  expected: true\n  actual: false\n  ...\n# Subtest: stage parity preserves the literal Phase 165 authority graph\nnot ok 2 - stage parity preserves the literal Phase 165 authority graph\n  ---\n  error: 'Assertion with == failed: manifest contained 44 leaves instead of 46'\n  code: 'ERR_ASSERTION'\n  expected: 46\n  actual: 44\n  ...\n1..6\n# tests 6\n# pass 4\n# fail 2\n",
+  "targetTest": "candidate CI owns fast fixtures and fail-closed exact-ref full proof",
+  "targetFile": "test/crosswake/proof/phase166_repository_quality_test.exs",
+  "expected": "ordinary pull requests run candidate fixtures while release-sensitive or ambiguous changes run a credential-free exact-ref six-artifact and five-profile proof matrix",
+  "actual": "the CI graph had no candidate scope, fixture leaf, full-proof leaf, or exact candidate receipt"
+}
