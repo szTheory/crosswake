@@ -1,0 +1,9 @@
+{
+  "command": "asdf exec mix test test/crosswake/release_candidate/artifact_test.exs:16",
+  "exitCode": 1,
+  "output": "TAP version 13\n# Subtest: inspects exactly six non-empty built tarball payloads with stable normalized digests\nnot ok 1 - inspects exactly six non-empty built tarball payloads with stable normalized digests\n  ---\n  error: 'Artifact.inspect_family!/1 must inspect the exact candidate package family'\n  code: 'ERR_ASSERTION'\n  expected: true\n  actual: false\n  ...\n1..1\n# tests 1\n# pass 0\n# fail 1\n",
+  "targetTest": "inspects exactly six non-empty built tarball payloads with stable normalized digests",
+  "targetFile": "test/crosswake/release_candidate/artifact_test.exs",
+  "expected": "Artifact.inspect_family!/1 accepts exactly six built-tarball payloads and returns stable normalized digests",
+  "actual": "the public artifact-family evaluator was not implemented"
+}
