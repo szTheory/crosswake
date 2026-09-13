@@ -70,18 +70,81 @@ cp -R "$HEX_ARCHIVE" "$OUTPUT_DIR/.scratch/mix-home/archives/"
 MIX_HOME_ISOLATED="$OUTPUT_DIR/.scratch/mix-home"
 HEX_HOME_ISOLATED="$OUTPUT_DIR/.scratch/hex-home"
 SENTINEL="crosswake-hermetic-dry-run-not-a-credential"
+ASDF_ERLANG_VERSION=$(awk '$1 == "erlang" { print $2 }' "$REPO_ROOT/.tool-versions")
+ASDF_ELIXIR_VERSION=$(awk '$1 == "elixir" { print $2 }' "$REPO_ROOT/.tool-versions")
 
 env -u HEX_API_KEY -u HEX_API_KEY_READ_ONLY \
   MIX_HOME="$MIX_HOME_ISOLATED" HEX_HOME="$HEX_HOME_ISOLATED" \
   mix hex.config api_key "$SENTINEL" >/dev/null
 
 ARTIFACT_ARGS=()
+CORE_TARBALL=""
+CORE_UNPACKED_ROOT=""
+
+prepare_companion_source() {
+  local package="$1"
+  local source_root="$OUTPUT_DIR/.scratch/sources/$package"
+  local package_dir="$source_root/packages/$package"
+  local dependency_source
+
+  mkdir -p "$source_root"
+  git archive "$CANDIDATE_REF" "packages/$package" | tar -x -C "$source_root"
+  mkdir -p "$package_dir/deps"
+
+  for dependency_source in "$REPO_ROOT/packages/$package/deps/"*; do
+    [ -e "$dependency_source" ] || continue
+    ln -s "$(cd "$dependency_source" && pwd -P)" "$package_dir/deps/$(basename "$dependency_source")"
+  done
+
+  mkdir "$package_dir/deps/crosswake"
+  cp -R "$CORE_UNPACKED_ROOT/." "$package_dir/deps/crosswake/"
+
+  TARBALL="$CORE_TARBALL" DEP_ROOT="$package_dir/deps/crosswake" LOCKFILE="$package_dir/mix.lock" \
+    MIX_HOME="$MIX_HOME_ISOLATED" asdf exec elixir -e '
+      Application.ensure_all_started(:mix)
+      Mix.Local.append_archives()
+      {:ok, unpacked} = :mix_hex_tarball.unpack(File.read!(System.fetch_env!("TARBALL")), :memory)
+      metadata = unpacked.metadata
+
+      requirements =
+        metadata["requirements"]
+        |> Enum.sort_by(&elem(&1, 0))
+        |> Enum.map(fn {_name, requirement} ->
+          app = String.to_existing_atom(requirement["app"])
+
+          {app, requirement["requirement"],
+           [hex: app, repo: requirement["repository"], optional: requirement["optional"]]}
+        end)
+
+      inner = Base.encode16(unpacked.inner_checksum, case: :lower)
+      outer = Base.encode16(unpacked.outer_checksum, case: :lower)
+      lock = Mix.Dep.Lock.read(System.fetch_env!("LOCKFILE"))
+      entry = {:hex, :crosswake, metadata["version"], inner, [:mix], requirements, "hexpm", outer}
+      Mix.Dep.Lock.write(Map.put(lock, :crosswake, entry), file: System.fetch_env!("LOCKFILE"))
+
+      marker =
+        {{:hex, 2, 0},
+         %{
+           name: "crosswake",
+           version: metadata["version"],
+           repo: "hexpm",
+           managers: [:mix],
+           inner_checksum: inner,
+           outer_checksum: outer
+         }}
+
+      File.write!(Path.join(System.fetch_env!("DEP_ROOT"), ".hex"), :erlang.term_to_binary(marker))
+    ' || fail
+
+  printf '%s' "$package_dir"
+}
 
 for PACKAGE in "${PACKAGES[@]}"; do
   if [ "$PACKAGE" = "crosswake" ]; then
     PACKAGE_DIR="$REPO_ROOT"
   else
-    PACKAGE_DIR="$REPO_ROOT/packages/$PACKAGE"
+    [ -n "$CORE_TARBALL" ] && [ -n "$CORE_UNPACKED_ROOT" ] || fail
+    PACKAGE_DIR=$(prepare_companion_source "$PACKAGE") || fail
   fi
 
   VERSION=$(cd "$PACKAGE_DIR" && asdf exec elixir -e '
@@ -99,13 +162,15 @@ for PACKAGE in "${PACKAGES[@]}"; do
   echo "[crosswake] package=$PACKAGE version=$VERSION step=dry-run"
   if ! (cd "$PACKAGE_DIR" && env -u HEX_API_KEY -u HEX_API_KEY_READ_ONLY \
     CROSSWAKE_RELEASE=1 MIX_HOME="$MIX_HOME_ISOLATED" HEX_HOME="$HEX_HOME_ISOLATED" HEX_OFFLINE=1 \
-    asdf exec mix hex.publish --dry-run --yes >"$LOG" 2>&1); then
+    ASDF_ERLANG_VERSION="$ASDF_ERLANG_VERSION" ASDF_ELIXIR_VERSION="$ASDF_ELIXIR_VERSION" \
+    asdf exec mix hex.publish package --dry-run --yes >"$LOG" 2>&1); then
     fail
   fi
 
   echo "[crosswake] package=$PACKAGE version=$VERSION step=build"
   if ! (cd "$PACKAGE_DIR" && env -u HEX_API_KEY -u HEX_API_KEY_READ_ONLY \
     CROSSWAKE_RELEASE=1 MIX_HOME="$MIX_HOME_ISOLATED" HEX_HOME="$HEX_HOME_ISOLATED" HEX_OFFLINE=1 \
+    ASDF_ERLANG_VERSION="$ASDF_ERLANG_VERSION" ASDF_ELIXIR_VERSION="$ASDF_ELIXIR_VERSION" \
     asdf exec mix hex.build --output "$TARBALL" >>"$LOG" 2>&1); then
     fail
   fi
@@ -128,6 +193,11 @@ for PACKAGE in "${PACKAGES[@]}"; do
 
   OUTER_CHECKSUM=$(shasum -a 256 "$TARBALL" | awk '{print $1}')
   ARTIFACT_ARGS+=("$PACKAGE" "$VERSION" "$TARBALL" "$UNPACKED_ROOT" "$OUTER_CHECKSUM" "built_tarball")
+
+  if [ "$PACKAGE" = "crosswake" ]; then
+    CORE_TARBALL="$TARBALL"
+    CORE_UNPACKED_ROOT="$UNPACKED_ROOT"
+  fi
 done
 
 echo "[crosswake] package_family=6 step=normalize"
