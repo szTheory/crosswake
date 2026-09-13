@@ -50,6 +50,12 @@
 
 set -euo pipefail
 
+if command -v asdf >/dev/null 2>&1; then
+  RUNTIME=(asdf exec)
+else
+  RUNTIME=()
+fi
+
 # ---------------------------------------------------------------------------
 # Phase 168 package-family matrix
 # ---------------------------------------------------------------------------
@@ -182,7 +188,7 @@ PYEOF
   MATRIX_GENERATOR_HEX_HOME="$MATRIX_INVOCATION_ROOT/generator/hex-home"
   mkdir -p "$MATRIX_GENERATOR_MIX_HOME/archives" "$MATRIX_GENERATOR_HEX_HOME"
 
-  MATRIX_SOURCE_ARCHIVES=$(asdf exec elixir -e 'Application.ensure_all_started(:mix); IO.write(Mix.path_for(:archives))') || matrix_fail
+  MATRIX_SOURCE_ARCHIVES=$("${RUNTIME[@]}" elixir -e 'Application.ensure_all_started(:mix); IO.write(Mix.path_for(:archives))') || matrix_fail
   MATRIX_HEX_ARCHIVE=$(find "$MATRIX_SOURCE_ARCHIVES" -mindepth 1 -maxdepth 1 -type d -name 'hex-*' | sort | tail -1)
   [ -n "$MATRIX_HEX_ARCHIVE" ] || matrix_fail
   cp -R "$MATRIX_HEX_ARCHIVE" "$MATRIX_GENERATOR_MIX_HOME/archives/"
@@ -209,7 +215,7 @@ PYEOF
       if ! env MIX_HOME="$MATRIX_GENERATOR_MIX_HOME" HEX_HOME="$MATRIX_GENERATOR_HEX_HOME" \
         ASDF_ERLANG_VERSION="$MATRIX_ASDF_ERLANG_VERSION" \
         ASDF_ELIXIR_VERSION="$MATRIX_ASDF_ELIXIR_VERSION" \
-        asdf exec mix hex.package fetch "$package" "$version" --output "$tarball" \
+        "${RUNTIME[@]}" mix hex.package fetch "$package" "$version" --output "$tarball" \
           >"$MATRIX_INVOCATION_ROOT/fetch-$package.log" 2>&1; then
         failed+=("$package")
         continue
@@ -220,7 +226,7 @@ PYEOF
         MIX_HOME="$MATRIX_GENERATOR_MIX_HOME" \
         ASDF_ERLANG_VERSION="$MATRIX_ASDF_ERLANG_VERSION" \
         ASDF_ELIXIR_VERSION="$MATRIX_ASDF_ELIXIR_VERSION" \
-        asdf exec elixir -e '
+        "${RUNTIME[@]}" elixir -e '
           Application.ensure_all_started(:mix)
           Mix.Local.append_archives()
           bytes = File.read!(System.fetch_env!("TARBALL"))
@@ -259,7 +265,7 @@ PYEOF
 
     (
       cd "$MATRIX_REPO_ROOT"
-      asdf exec mix run --no-start -e 'Crosswake.ReleaseCandidate.Artifact.inspect_cli!(System.argv())' -- \
+      "${RUNTIME[@]}" mix run --no-start -e 'Crosswake.ReleaseCandidate.Artifact.inspect_cli!(System.argv())' -- \
         "$candidate_ref" "$public_root" "$normalized_manifest" "${artifact_args[@]}" >/dev/null
     ) || matrix_fail
 
@@ -273,9 +279,9 @@ PYEOF
 
   echo "[crosswake] source_mode=$MATRIX_SOURCE_MODE generator=phx_new 1.8.13 step=install-generator"
   env MIX_HOME="$MATRIX_GENERATOR_MIX_HOME" HEX_HOME="$MATRIX_GENERATOR_HEX_HOME" \
-    asdf exec mix archive.install hex phx_new 1.8.13 --force >/dev/null || matrix_fail
+    "${RUNTIME[@]}" mix archive.install hex phx_new 1.8.13 --force >/dev/null || matrix_fail
   env MIX_HOME="$MATRIX_GENERATOR_MIX_HOME" HEX_HOME="$MATRIX_GENERATOR_HEX_HOME" \
-    asdf exec mix local.rebar --force >/dev/null || matrix_fail
+    "${RUNTIME[@]}" mix local.rebar --force >/dev/null || matrix_fail
 
   MATRIX_INSTALLS="$MATRIX_INVOCATION_ROOT/installs.tsv"
   : > "$MATRIX_INSTALLS"
@@ -519,11 +525,11 @@ PYEOF
     fi
 
     if [ "$mode" = "negative" ]; then
-      if CROSSWAKE_NEGATIVE_CONTROL=1 asdf exec mix run --no-compile -e "$expression" >/dev/null 2>&1; then
+      if CROSSWAKE_NEGATIVE_CONTROL=1 "${RUNTIME[@]}" mix run --no-compile -e "$expression" >/dev/null 2>&1; then
         matrix_fail
       fi
     else
-      asdf exec mix run --no-compile -e "$expression" >/dev/null || matrix_fail
+      "${RUNTIME[@]}" mix run --no-compile -e "$expression" >/dev/null || matrix_fail
     fi
   }
 
@@ -542,7 +548,7 @@ PYEOF
       env MIX_HOME="$MATRIX_MIX_HOME" HEX_HOME="$MATRIX_HEX_HOME" \
         ASDF_ERLANG_VERSION="$MATRIX_ASDF_ERLANG_VERSION" \
         ASDF_ELIXIR_VERSION="$MATRIX_ASDF_ELIXIR_VERSION" \
-        asdf exec mix phx.new "$MATRIX_HOST_ROOT" --app clean_room_host --module CleanRoomHost \
+        "${RUNTIME[@]}" mix phx.new "$MATRIX_HOST_ROOT" --app clean_room_host --module CleanRoomHost \
           --no-ecto --no-assets --no-dashboard --no-mailer --no-gettext --no-install \
           --no-version-check >/dev/null || matrix_fail
 
@@ -560,16 +566,16 @@ PYEOF
         export ASDF_ERLANG_VERSION="$MATRIX_ASDF_ERLANG_VERSION"
         export ASDF_ELIXIR_VERSION="$MATRIX_ASDF_ELIXIR_VERSION"
 
-        asdf exec mix deps.get >/dev/null || matrix_fail
-        asdf exec mix compile --warnings-as-errors >/dev/null || matrix_fail
-        asdf exec mix run --no-compile -e 'unless CleanRoomHostWeb.Router.__routes__() != [], do: System.halt(22)' >/dev/null || matrix_fail
-        asdf exec mix test test/crosswake_cleanroom_smoke_test.exs >/dev/null || matrix_fail
+        "${RUNTIME[@]}" mix deps.get >/dev/null || matrix_fail
+        "${RUNTIME[@]}" mix compile --warnings-as-errors >/dev/null || matrix_fail
+        "${RUNTIME[@]}" mix run --no-compile -e 'unless CleanRoomHostWeb.Router.__routes__() != [], do: System.halt(22)' >/dev/null || matrix_fail
+        "${RUNTIME[@]}" mix test test/crosswake_cleanroom_smoke_test.exs >/dev/null || matrix_fail
         matrix_registration_check "$MATRIX_PROFILE" positive
         matrix_registration_check "$MATRIX_PROFILE" negative
-        asdf exec mix crosswake.doctor --router CleanRoomHostWeb.Router > "$MATRIX_PASS_ROOT/doctor.log" || matrix_fail
+        "${RUNTIME[@]}" mix crosswake.doctor --router CleanRoomHostWeb.Router > "$MATRIX_PASS_ROOT/doctor.log" || matrix_fail
         [ -s "$MATRIX_PASS_ROOT/doctor.log" ] || matrix_fail
 
-        MATRIX_PATH_LOCK_COUNT=$(asdf exec elixir -e '
+        MATRIX_PATH_LOCK_COUNT=$("${RUNTIME[@]}" elixir -e '
           {lock, _binding} = Code.eval_file("mix.lock")
           count = Enum.count(lock, fn {_app, entry} -> is_tuple(entry) and elem(entry, 0) == :path end)
           IO.write(count)
@@ -584,7 +590,7 @@ PYEOF
   if [ "$MATRIX_SOURCE_MODE" = "exact-public" ]; then
     if (
       cd "$MATRIX_REPO_ROOT"
-      asdf exec mix crosswake.release.status --live > "$MATRIX_INVOCATION_ROOT/release-status.log" 2>&1
+      "${RUNTIME[@]}" mix crosswake.release.status --live > "$MATRIX_INVOCATION_ROOT/release-status.log" 2>&1
     ); then
       MATRIX_LIVE_STATUS="PASS"
     else
@@ -721,7 +727,7 @@ PYEOF
 
   (
     cd "$MATRIX_REPO_ROOT"
-    asdf exec mix run --no-start -e 'Crosswake.ReleaseCandidate.Cleanroom.evaluate_cli!(System.argv())' -- \
+    "${RUNTIME[@]}" mix run --no-start -e 'Crosswake.ReleaseCandidate.Cleanroom.evaluate_cli!(System.argv())' -- \
       "$MATRIX_INPUT" "$MATRIX_RESULT" >/dev/null
   ) || matrix_fail
 

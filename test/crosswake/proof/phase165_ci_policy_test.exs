@@ -148,12 +148,14 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     assert documentation["family"] == "documentation_contracts"
     assert documentation["irrelevance_reason"] == nil
     assert documentation["remediation_command"] =~ "mix crosswake.adoption_context.scan"
-    assert length(executable) == 43
+    assert length(executable) == 45
 
     assert Enum.all?(executable, fn leaf ->
              leaf["irrelevance_reason"] in [
+               nil,
                "all_changed_paths_allowlisted",
-               "public_docs_unaffected"
+               "public_docs_unaffected",
+               "release_inputs_unchanged"
              ]
            end)
 

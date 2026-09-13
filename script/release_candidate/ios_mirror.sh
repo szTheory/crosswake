@@ -4,6 +4,11 @@ set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "$SCRIPT_DIR/../.." && pwd)
+if command -v asdf >/dev/null 2>&1; then
+  RUNTIME=(asdf exec)
+else
+  RUNTIME=()
+fi
 BASELINE_SPLIT_SHA="658d60253c58b7e0aedb576f16f40766fa677f23"
 PUBLIC_REMOTE="${CROSSWAKE_IOS_MIRROR_PUBLIC_REMOTE:-https://github.com/szTheory/crosswake-shell-core-ios.git}"
 WRITE_REMOTE="${CROSSWAKE_IOS_MIRROR_WRITE_REMOTE:-git@github.com:szTheory/crosswake-shell-core-ios.git}"
@@ -150,7 +155,7 @@ evaluate() {
   local after_tag="$3"
   local changed="$4"
 
-  cd "$REPO_ROOT" && asdf exec mix run --no-start -e \
+  cd "$REPO_ROOT" && "${RUNTIME[@]}" mix run --no-start -e \
   'Crosswake.ReleaseCandidate.Mirror.evaluate_cli!(System.argv())' -- \
   "$MODE" "$VERSION" "$SOURCE_REF" "$(dash_if_empty "$SPLIT_SHA")" \
   "$(dash_if_empty "$RECORDED_SPLIT_SHA")" "$REMOTE_STATUS" \

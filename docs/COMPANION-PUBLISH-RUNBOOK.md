@@ -17,6 +17,11 @@ The five `crosswake_*` Hex packages are independent companions. Their current ve
 `crosswake` floors are evidence, not members of the linked `0.2.1` approval. Companion pull
 requests are excluded from this runbook.
 
+| Package | Required `crosswake` floor |
+|---|---|
+| `crosswake_rulestead` | `~> 0.2` |
+| `crosswake_rindle` | `~> 0.2` |
+
 The exact Release Please head, tree, merge base, workflow blobs, artifact digests, run identity,
 and credential checks form the candidate identity. A branch name, a moving pull-request head,
 or a successful test count without those bindings is not candidate evidence.

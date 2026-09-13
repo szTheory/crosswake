@@ -55,7 +55,7 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   )
 
   @phase145_mirror_ids ~w(
-    release.ios.atomic_leased_push
+    release.ios.ordinary_atomic_push
   )
 
   @phase145_native_rollup_ids ~w(
@@ -65,10 +65,10 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   )
 
   @phase145_ios_backfill_ids ~w(
-    release.ios_backfill.verify_first
-    release.ios_backfill.exact_release_ref
-    release.ios_backfill.tag_idempotent
-    release.ios_backfill.no_default_main_force
+    release.ios_mirror.four_modes
+    release.rehearsal.ios_candidate
+    release.rehearsal.exact_identity
+    release.rehearsal.no_mutation
   )
 
   test "release workflow integrity script passes" do
@@ -160,39 +160,44 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   end
 
   @tag :phase145_mirror
-  test "phase 145 missing dry-run probe fails atomic lease id" do
+  test "ordinary iOS publication must keep the exact adapter delegation" do
     workflow =
       real_workflow()
       |> replace_in_job(
         "publish-ios-core",
-        "--dry-run --porcelain",
-        ""
+        "script/release_candidate/ios_mirror.sh publish",
+        "script/release_candidate/ios_mirror.sh recovery"
       )
 
-    assert_failure!("release.ios.atomic_leased_push", workflow)
+    assert_failure!("release.ios.ordinary_atomic_push", workflow)
   end
 
   @tag :phase145_mirror
-  test "phase 145 bare force-with-lease decoy fails atomic lease id" do
+  test "ordinary iOS publication rejects a force decoy" do
     workflow =
       real_workflow()
       |> replace_in_job(
         "publish-ios-core",
-        ~s(--force-with-lease="refs/heads/main:${CURRENT_MAIN_SHA}"),
-        "--force-with-lease=refs/heads/main"
+        "--expected-new-ref",
+        "--force --expected-new-ref"
       )
 
-    assert_failure!("release.ios.atomic_leased_push", workflow)
+    assert_failure!("release.ios.ordinary_atomic_push", workflow)
   end
 
   @tag :phase145_mirror
   test "phase 145 mirror tag handling distinguishes exact and mismatched tag identity" do
-    workflow = real_workflow()
+    adapter = ios_backfill_script()
 
-    assert workflow =~ "mirror_tag_sha=\"$(git ls-remote mirror \"refs/tags/v${VERSION}\""
-    assert workflow =~ "already points at ${SPLIT_SHA}; no mirror push needed"
-    assert workflow =~ "points at ${mirror_tag_sha}, expected ${SPLIT_SHA}"
-    assert workflow =~ "do not delete or move the public SwiftPM tag automatically"
+    assert adapter =~ ~S|REMOTE_TAG=$(printf '%s\n'|
+
+    assert File.read!("lib/crosswake/release_candidate/mirror.ex") =~
+             "resolve_immutable_tag_conflict"
+
+    assert File.read!("lib/crosswake/release_candidate/mirror.ex") =~
+             "external_state_changed"
+
+    assert adapter =~ "--force-with-lease=refs/heads/main:${EXPECTED_OLD_REF}"
   end
 
   @tag :phase145_native_rollup
@@ -296,73 +301,49 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   end
 
   @tag :phase145_ios_backfill
-  test "phase 145 iOS backfill rejects current-head source refs" do
+  test "trusted rehearsal requires an exact identity payload" do
     workflow =
       ios_backfill_workflow()
-      |> String.replace("default: 'refs/tags/ios-core-v0.2.0'", "default: 'main'")
+      |> String.replace("requested_head", "requested_ref")
 
     assert_failure_with_fixtures!(
-      "release.ios_backfill.exact_release_ref",
+      "release.rehearsal.exact_identity",
       ios_backfill_workflow: workflow
     )
   end
 
   @tag :phase145_ios_backfill
-  test "phase 145 iOS backfill requires explicit apply before mutation" do
-    script =
-      ios_backfill_script()
-      |> String.replace(
-        "MIRROR_DEPLOY_KEY has WRITE scope",
-        "deploy key scope is not checked"
-      )
-
-    assert_failure_with_fixtures!(
-      "release.ios_backfill.verify_first",
-      ios_backfill_script: script
-    )
-
+  test "trusted rehearsal requires the scoped deploy key" do
     workflow =
       ios_backfill_workflow()
-      |> replace_in_workflow_input("apply", "default: false", "default: true")
+      |> String.replace("secrets.MIRROR_DEPLOY_KEY", "secrets.REMOVED_KEY")
 
     assert_failure_with_fixtures!(
-      "release.ios_backfill.verify_first",
+      "release.rehearsal.ios_candidate",
       ios_backfill_workflow: workflow
     )
   end
 
   @tag :phase145_ios_backfill
-  test "phase 145 iOS backfill cannot ignore mismatched public tags" do
+  test "iOS adapter cannot collapse the explicit recovery mode" do
     script =
       ios_backfill_script()
-      |> String.replace(
-        "Do not delete or move the public SwiftPM tag automatically",
-        "Move the public SwiftPM tag automatically"
-      )
+      |> String.replace("recovery", "retired", global: true)
 
     assert_failure_with_fixtures!(
-      "release.ios_backfill.tag_idempotent",
+      "release.ios_mirror.four_modes",
       ios_backfill_script: script
     )
   end
 
   @tag :phase145_ios_backfill
-  test "phase 145 iOS backfill does not force mirror main by default" do
-    script =
-      ios_backfill_script()
-      |> String.replace(~s(--force-with-lease="refs/heads/main:${current_main}"), "--force")
-
-    assert_failure_with_fixtures!(
-      "release.ios_backfill.no_default_main_force",
-      ios_backfill_script: script
-    )
-
+  test "trusted rehearsal cannot claim external mutation" do
     workflow =
       ios_backfill_workflow()
-      |> replace_in_workflow_input("update_main", "default: false", "default: true")
+      |> String.replace("external_state_changed=false", "external_state_changed=true")
 
     assert_failure_with_fixtures!(
-      "release.ios_backfill.no_default_main_force",
+      "release.rehearsal.no_mutation",
       ios_backfill_workflow: workflow
     )
   end
@@ -712,10 +693,10 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   test "aggregate identity in a behavioral job fails with stable check id" do
     workflow =
       real_workflow()
-      |> String.replace(
-        "if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}",
-        "if: ${{ needs.release-please.outputs.releases_created == 'true' }}",
-        global: false
+      |> replace_in_job(
+        "publish-hex",
+        "contains(fromJSON(needs.release-please.outputs.paths_released), '.')",
+        "needs.release-please.outputs.releases_created == 'true'"
       )
 
     assert_failure!("release.aggregate_gate.behavioral_jobs_absent", workflow)
@@ -750,8 +731,8 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
       real_workflow()
       |> replace_in_job(
         "publish-hex",
-        "if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}",
-        "if: ${{ false }} # contains(fromJSON(needs.release-please.outputs.paths_released), '.')"
+        "contains(fromJSON(needs.release-please.outputs.paths_released), '.')",
+        "false # contains(fromJSON(needs.release-please.outputs.paths_released), '.')"
       )
 
     assert_failure!("release.root_hex.path_gate", inline_comment_decoy)
@@ -760,7 +741,7 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
       real_workflow()
       |> replace_in_job(
         "publish-hex",
-        "if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}",
+        "if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == '0.2.1' && contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}",
         "if: ${{ false }}\n    env:\n      DECOY: \"contains(fromJSON(needs.release-please.outputs.paths_released), '.')\""
       )
 
@@ -1083,21 +1064,12 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     mutated
   end
 
-  defp replace_in_workflow_input(workflow, input, pattern, replacement) do
-    Regex.replace(
-      ~r/(?ms)^      #{Regex.escape(input)}:\n.*?(?=^      [A-Za-z0-9_-]+:\n|^\S|\z)/,
-      workflow,
-      fn block -> String.replace(block, pattern, replacement, global: false) end,
-      global: false
-    )
-  end
-
   defp real_workflow, do: File.read!(@workflow)
   defp recovery_workflow, do: File.read!(@recovery_workflow)
   defp guarded_helper, do: File.read!(@guarded_helper)
   defp release_config, do: File.read!(@release_config)
   defp cleanroom_script, do: File.read!(@cleanroom_script)
   defp doctor_task, do: File.read!(@doctor_task)
-  defp ios_backfill_script, do: File.read!("script/verify_ios_mirror_backfill.sh")
+  defp ios_backfill_script, do: File.read!("script/release_candidate/ios_mirror.sh")
   defp ios_backfill_workflow, do: File.read!(".github/workflows/ios-mirror-backfill.yml")
 end

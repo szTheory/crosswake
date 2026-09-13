@@ -4,6 +4,11 @@ set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "$SCRIPT_DIR/../.." && pwd)
+if command -v asdf >/dev/null 2>&1; then
+  RUNTIME=(asdf exec)
+else
+  RUNTIME=()
+fi
 PACKAGES=(
   crosswake
   crosswake_rulestead
@@ -67,7 +72,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-SOURCE_ARCHIVES=$(asdf exec elixir -e 'Application.ensure_all_started(:mix); IO.write(Mix.path_for(:archives))') || fail
+SOURCE_ARCHIVES=$("${RUNTIME[@]}" elixir -e 'Application.ensure_all_started(:mix); IO.write(Mix.path_for(:archives))') || fail
 HEX_ARCHIVE=$(find "$SOURCE_ARCHIVES" -mindepth 1 -maxdepth 1 -type d -name 'hex-*' | sort | tail -1)
 [ -n "$HEX_ARCHIVE" ] || fail
 cp -R "$HEX_ARCHIVE" "$OUTPUT_DIR/.scratch/mix-home/archives/"
@@ -106,7 +111,7 @@ prepare_companion_source() {
   cp -R "$CORE_UNPACKED_ROOT/." "$package_dir/deps/crosswake/"
 
   TARBALL="$CORE_TARBALL" DEP_ROOT="$package_dir/deps/crosswake" LOCKFILE="$package_dir/mix.lock" \
-    MIX_HOME="$MIX_HOME_ISOLATED" asdf exec elixir -e '
+    MIX_HOME="$MIX_HOME_ISOLATED" "${RUNTIME[@]}" elixir -e '
       Application.ensure_all_started(:mix)
       Mix.Local.append_archives()
       {:ok, unpacked} = :mix_hex_tarball.unpack(File.read!(System.fetch_env!("TARBALL")), :memory)
@@ -164,7 +169,7 @@ for PACKAGE in "${PACKAGES[@]}"; do
 
   VERSION=$(cd "$PACKAGE_DIR" && env \
     ASDF_ERLANG_VERSION="$ASDF_ERLANG_VERSION" ASDF_ELIXIR_VERSION="$ASDF_ELIXIR_VERSION" \
-    asdf exec elixir -e '
+    "${RUNTIME[@]}" elixir -e '
     source = File.read!("mix.exs")
     case Regex.run(~r/@version\s+"([^"]+)"/, source) do
       [_, version] -> IO.write(version)
@@ -180,7 +185,7 @@ for PACKAGE in "${PACKAGES[@]}"; do
   if ! (cd "$PACKAGE_DIR" && env -u HEX_API_KEY -u HEX_API_KEY_READ_ONLY \
     CROSSWAKE_RELEASE=1 MIX_HOME="$MIX_HOME_ISOLATED" HEX_HOME="$HEX_HOME_ISOLATED" HEX_OFFLINE=1 \
     ASDF_ERLANG_VERSION="$ASDF_ERLANG_VERSION" ASDF_ELIXIR_VERSION="$ASDF_ELIXIR_VERSION" \
-    asdf exec mix hex.publish package --dry-run --yes >"$LOG" 2>&1); then
+    "${RUNTIME[@]}" mix hex.publish package --dry-run --yes >"$LOG" 2>&1); then
     fail
   fi
 
@@ -188,14 +193,14 @@ for PACKAGE in "${PACKAGES[@]}"; do
   if ! (cd "$PACKAGE_DIR" && env -u HEX_API_KEY -u HEX_API_KEY_READ_ONLY \
     CROSSWAKE_RELEASE=1 MIX_HOME="$MIX_HOME_ISOLATED" HEX_HOME="$HEX_HOME_ISOLATED" HEX_OFFLINE=1 \
     ASDF_ERLANG_VERSION="$ASDF_ERLANG_VERSION" ASDF_ELIXIR_VERSION="$ASDF_ELIXIR_VERSION" \
-    asdf exec mix hex.build --output "$TARBALL" >>"$LOG" 2>&1); then
+    "${RUNTIME[@]}" mix hex.build --output "$TARBALL" >>"$LOG" 2>&1); then
     fail
   fi
 
   mkdir "$UNPACKED_ROOT"
   echo "[crosswake] package=$PACKAGE version=$VERSION step=official-unpack"
   if ! TARBALL="$TARBALL" UNPACKED_ROOT="$UNPACKED_ROOT" MIX_HOME="$MIX_HOME_ISOLATED" \
-    asdf exec elixir -e '
+    "${RUNTIME[@]}" elixir -e '
       Application.ensure_all_started(:mix)
       Mix.Local.append_archives()
       bytes = File.read!(System.fetch_env!("TARBALL"))
@@ -218,7 +223,7 @@ for PACKAGE in "${PACKAGES[@]}"; do
 done
 
 echo "[crosswake] package_family=6 step=normalize"
-if ! asdf exec mix run --no-start -e 'Crosswake.ReleaseCandidate.Artifact.inspect_cli!(System.argv())' -- \
+if ! "${RUNTIME[@]}" mix run --no-start -e 'Crosswake.ReleaseCandidate.Artifact.inspect_cli!(System.argv())' -- \
   "$CANDIDATE_REF" "$OUTPUT_DIR" "$MANIFEST" "${ARTIFACT_ARGS[@]}" >/dev/null; then
   fail
 fi
