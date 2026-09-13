@@ -1,0 +1,9 @@
+{
+  "command": "asdf exec mix test test/crosswake/release_candidate/mirror_test.exs:121",
+  "exitCode": 2,
+  "output": "TAP version 13\n# Subtest: publish permits only immediate ancestor or equal main with immutable atomic refs\nnot ok 1 - publish permits only immediate ancestor or equal main with immutable atomic refs\n  ---\n  error: 'Mirror.publication_plan!/1 must isolate ordinary publication from recovery'\n  code: 'ERR_ASSERTION'\n  expected: true\n  actual: false\n  ...\n1..1\n# tests 1\n# pass 0\n# fail 1\n",
+  "targetTest": "publish permits only immediate ancestor or equal main with immutable atomic refs",
+  "targetFile": "test/crosswake/release_candidate/mirror_test.exs",
+  "expected": "ordinary publication produces only an ancestor/equal immutable atomic main-plus-tag plan",
+  "actual": "the dedicated publication plan and recovery isolation were not implemented"
+}

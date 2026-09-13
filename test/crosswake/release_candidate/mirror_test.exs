@@ -118,6 +118,144 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
     end
   end
 
+  test "publish permits only immediate ancestor or equal main with immutable atomic refs" do
+    assert function_exported?(Mirror, :publication_plan!, 1),
+           "Mirror.publication_plan!/1 must isolate ordinary publication from recovery"
+
+    input = publish_fixture()
+    result = Mirror.evaluate!(input)
+
+    assert result.state == "PASS"
+    assert result.mode == "publish"
+    assert result.operation == "PUBLISH_ATOMIC"
+
+    assert result.push_arguments == [
+             "--atomic",
+             "#{@candidate_sha}:refs/heads/main",
+             "#{@candidate_sha}:refs/tags/v0.2.1"
+           ]
+
+    refute Enum.any?(result.push_arguments, &String.contains?(&1, "force"))
+
+    refute Enum.any?(
+             result.push_arguments,
+             &String.contains?(&1, ":" <> String.duplicate("0", 40))
+           )
+
+    equal =
+      input
+      |> put_in([:remote, :main], @candidate_sha)
+      |> put_in([:remote, :tag], @candidate_sha)
+      |> put_in([:dry_run, :before_main], @candidate_sha)
+      |> put_in([:dry_run, :before_tag], @candidate_sha)
+      |> put_in([:dry_run, :after_main], @candidate_sha)
+      |> put_in([:dry_run, :after_tag], @candidate_sha)
+      |> Map.put(:ancestry, "EQUAL")
+
+    assert %{state: "PASS", operation: "NOOP", push_arguments: []} = Mirror.evaluate!(equal)
+
+    mutations = [
+      diverged: %{input | ancestry: "DIVERGED"},
+      conflict: put_in(input.remote.tag, String.duplicate("c", 40)),
+      unsupported_atomic: %{input | atomic_supported: false},
+      stale_main: put_in(input.dry_run.before_main, String.duplicate("d", 40)),
+      raced_main: put_in(input.dry_run.after_main, String.duplicate("e", 40)),
+      denied: put_in(input.authorization, %{checked: true, result: "DENIED"})
+    ]
+
+    for {name, mutation} <- mutations do
+      assert %{state: "BLOCKED", push_arguments: []} = Mirror.evaluate!(mutation),
+             "#{name} passed"
+    end
+  end
+
+  test "recovery alone constructs exact force-with-lease after separate receipt approval" do
+    input = recovery_fixture()
+    result = Mirror.evaluate!(input)
+
+    assert result.state == "PASS"
+    assert result.mode == "recovery"
+    assert result.operation == "RECOVER_EXACT_MAIN"
+
+    assert result.push_arguments == [
+             "--force-with-lease=refs/heads/main:#{input.approval.expected_old_ref}",
+             "#{input.approval.expected_new_ref}:refs/heads/main"
+           ]
+
+    mutations = [
+      missing_receipt: put_in(input.approval.receipt_digest, nil),
+      unapproved: put_in(input.approval.status, "NOT APPROVED"),
+      wrong_old: put_in(input.approval.expected_old_ref, String.duplicate("c", 40)),
+      wrong_new: put_in(input.approval.expected_new_ref, String.duplicate("d", 40)),
+      raced: put_in(input.dry_run.after_main, String.duplicate("e", 40))
+    ]
+
+    for {name, mutation} <- mutations do
+      assert %{state: "BLOCKED", push_arguments: []} = Mirror.evaluate!(mutation),
+             "#{name} passed"
+    end
+
+    for mode <- [baseline_fixture(), candidate_fixture(), publish_fixture()] do
+      refute Enum.any?(Mirror.evaluate!(mode) |> Map.get(:push_arguments, []), fn argument ->
+               String.contains?(argument, "force-with-lease")
+             end)
+    end
+  end
+
+  test "local bare mirror publication uses ordinary atomic fast-forward and preserves old tags" do
+    fixture = git_fixture()
+
+    env = [
+      {"CROSSWAKE_IOS_MIRROR_RELEASE_REPO", fixture.release_repo},
+      {"CROSSWAKE_IOS_MIRROR_PUBLIC_REMOTE", fixture.mirror_repo},
+      {"CROSSWAKE_IOS_MIRROR_WRITE_REMOTE", fixture.mirror_repo},
+      {"CROSSWAKE_IOS_MIRROR_AUTHORIZATION_CHECKED", "true"},
+      {"CROSSWAKE_IOS_MIRROR_EXECUTE", "true"}
+    ]
+
+    {output, status} =
+      System.cmd(
+        "bash",
+        [
+          "script/release_candidate/ios_mirror.sh",
+          "publish",
+          "--version",
+          "0.2.1",
+          "--ref",
+          fixture.candidate_ref,
+          "--approval-receipt",
+          String.duplicate("f", 64),
+          "--expected-old-ref",
+          fixture.old_split,
+          "--expected-new-ref",
+          fixture.new_split
+        ],
+        env: env,
+        stderr_to_stdout: true
+      )
+
+    assert status == 0, output
+    assert git!(fixture.mirror_repo, ["rev-parse", "refs/heads/main"]) == fixture.new_split
+    assert git!(fixture.mirror_repo, ["rev-parse", "refs/tags/v0.2.1"]) == fixture.new_split
+    assert git!(fixture.mirror_repo, ["rev-parse", "refs/tags/v0.2.0"]) == fixture.old_split
+    refute output =~ "force-with-lease"
+  end
+
+  test "publish and recovery remain unreachable from candidate readiness evaluation" do
+    script = File.read!("script/release_candidate/ios_mirror.sh")
+    wrapper = File.read!("script/verify_ios_mirror_backfill.sh")
+    candidate_task = File.read!("lib/mix/tasks/crosswake.release.candidate.ex")
+
+    assert script =~ "publish"
+    assert script =~ "recovery"
+    assert script =~ "--force-with-lease=refs/heads/main:"
+    assert script =~ "--atomic"
+    refute candidate_task =~ "ios_mirror.sh"
+    refute candidate_task =~ " publish"
+    refute candidate_task =~ " recovery"
+    refute wrapper =~ "--force-with-lease"
+  end
+
   defp baseline_fixture do
     %{
       mode: "baseline",
@@ -160,5 +298,85 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
       },
       external_state_changed: false
     }
+  end
+
+  defp publish_fixture do
+    candidate_fixture()
+    |> Map.put(:mode, "publish")
+    |> Map.put(:ancestry, "ANCESTOR")
+    |> Map.put(:approval, %{
+      status: "APPROVED",
+      receipt_digest: String.duplicate("f", 64),
+      expected_old_ref: String.duplicate("9", 40),
+      expected_new_ref: @candidate_sha
+    })
+  end
+
+  defp recovery_fixture do
+    publish_fixture()
+    |> Map.put(:mode, "recovery")
+    |> Map.put(:ancestry, "DIVERGED")
+    |> put_in([:approval, :status], "RECOVERY APPROVED")
+  end
+
+  defp git_fixture do
+    root =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-mirror-test-#{System.unique_integer([:positive, :monotonic])}"
+      )
+
+    release_repo = Path.join(root, "release")
+    mirror_repo = Path.join(root, "mirror.git")
+    File.mkdir_p!(Path.join(release_repo, "packages/crosswake-shell-core-ios/Sources"))
+    on_exit(fn -> File.rm_rf!(root) end)
+
+    git!(release_repo, ["init", "-q"])
+    git!(release_repo, ["config", "user.email", "fixture@example.invalid"])
+    git!(release_repo, ["config", "user.name", "Crosswake Fixture"])
+
+    source_file = Path.join(release_repo, "packages/crosswake-shell-core-ios/Sources/Core.swift")
+    File.write!(source_file, "public let version = 1\n")
+    git!(release_repo, ["add", "."])
+    git!(release_repo, ["commit", "-qm", "baseline"])
+
+    old_split =
+      git!(release_repo, [
+        "subtree",
+        "split",
+        "--prefix=packages/crosswake-shell-core-ios",
+        "HEAD"
+      ])
+
+    git!(root, ["init", "--bare", "-q", mirror_repo])
+    git!(release_repo, ["push", "-q", mirror_repo, "#{old_split}:refs/heads/main"])
+    git!(release_repo, ["push", "-q", mirror_repo, "#{old_split}:refs/tags/v0.2.0"])
+
+    File.write!(source_file, "public let version = 2\n")
+    git!(release_repo, ["add", "."])
+    git!(release_repo, ["commit", "-qm", "candidate"])
+    candidate_ref = git!(release_repo, ["rev-parse", "HEAD"])
+
+    new_split =
+      git!(release_repo, [
+        "subtree",
+        "split",
+        "--prefix=packages/crosswake-shell-core-ios",
+        candidate_ref
+      ])
+
+    %{
+      release_repo: release_repo,
+      mirror_repo: mirror_repo,
+      candidate_ref: candidate_ref,
+      old_split: old_split,
+      new_split: new_split
+    }
+  end
+
+  defp git!(root, args) do
+    {output, status} = System.cmd("git", ["-C", root | args], stderr_to_stdout: true)
+    assert status == 0, output
+    String.trim(output)
   end
 end
