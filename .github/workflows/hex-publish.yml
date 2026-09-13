@@ -116,6 +116,9 @@ jobs:
           version-file: .tool-versions
           version-type: strict
 
+      - name: Resolve exact candidate dependencies
+        run: mix deps.get --check-locked
+
       - name: Build trusted rehearsal evidence
         env:
           OUTPUT_DIR: ${{ runner.temp }}/candidate-rehearsal-hex
