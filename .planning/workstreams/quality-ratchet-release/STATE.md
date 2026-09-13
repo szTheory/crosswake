@@ -5,16 +5,16 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 168
 current_phase_name: 0.2.1 Release Candidate Readiness
 status: executing
-stopped_at: Completed 168-03-PLAN.md
-last_updated: "2026-09-13T03:10:16.096Z"
+stopped_at: Completed 168-04-PLAN.md
+last_updated: "2026-09-13T03:54:12.148Z"
 last_activity: 2026-09-12
 last_activity_desc: Phase 168 execution started
-state_head: aa99328e0381d34b053c5a44c128a527bd52dcb8
+state_head: 9a4f8fdd9020a43699500ca5ffb187d5af552d3e
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 43
-  completed_plans: 38
+  completed_plans: 39
   percent: 80
 workstream: quality-ratchet-release
 ---
@@ -32,7 +32,7 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 168 (0.2.1 Release Candidate Readiness) — EXECUTING
-Plan: 4 of 8
+Plan: 5 of 8
 Status: Ready to execute
 Last activity: 2026-09-12 — Phase 168 execution started
 
@@ -94,6 +94,7 @@ Progress: [████████░░] 80%
 | Phase 168 P01 | 38m | 3 tasks | 7 files |
 | Phase 168 P02 | 16m | 2 tasks | 9 files |
 | Phase 168 P03 | 38m | 2 tasks | 8 files |
+| Phase 168 P04 | 34m | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -196,6 +197,9 @@ Progress: [████████░░] 80%
 - [Phase 168]: Use official Hex unpack plus normalized metadata and payload digests as package evidence; repository trees and ephemeral roots are not durable authority.
 - [Phase 168]: Seed companion audits from the candidate core tarball inside exact-ref snapshots so public requirements remain testable without registry fallback.
 - [Phase 168]: Link only Hex, iOS core, and Android core at 0.2.1; companions and proposals remain independent approval outsiders.
+- [Phase 168]: Generate map-shaped companion settings and one explicit managed route so the real Doctor path evaluates the intended host contract.
+- [Phase 168]: Treat every install, compile, smoke, registration, and Doctor command as a fail-closed proof child before recording profile success.
+- [Phase 168]: Keep exact-public verification fixture-backed and dormant until 0.2.1 publication and an approved receipt make its live precondition true.
 
 ### Pending Todos
 
@@ -219,6 +223,6 @@ Progress: [████████░░] 80%
 
 ## Session Continuity
 
-Last session: 2026-09-13T03:10:15.997Z
-Stopped at: Completed 168-03-PLAN.md
+Last session: 2026-09-13T03:54:12.041Z
+Stopped at: Completed 168-04-PLAN.md
 Resume file: None
