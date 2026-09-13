@@ -105,12 +105,10 @@ prepare_companion_source() {
   git archive "$CANDIDATE_REF" "packages/$package" | tar -x -C "$source_root"
   mkdir -p "$package_dir/deps"
 
-  for dependency_source in "$REPO_ROOT/deps/"* "$REPO_ROOT/packages/$package/deps/"*; do
+  for dependency_source in "$REPO_ROOT/packages/$package/deps/"*; do
     [ -e "$dependency_source" ] || continue
     [ "$(basename "$dependency_source")" != "crosswake" ] || continue
-    dependency_target="$package_dir/deps/$(basename "$dependency_source")"
-    [ -e "$dependency_target" ] ||
-      ln -s "$(cd "$dependency_source" && pwd -P)" "$dependency_target"
+    ln -s "$(cd "$dependency_source" && pwd -P)" "$package_dir/deps/$(basename "$dependency_source")"
   done
 
   mkdir "$package_dir/deps/crosswake"
@@ -166,7 +164,7 @@ prepare_companion_source() {
   # lock before entering the offline package audit; the unpacked candidate core
   # remains the selected crosswake dependency through its generated .hex marker.
   if ! (cd "$package_dir" && env -u HEX_API_KEY -u HEX_API_KEY_READ_ONLY \
-    MIX_HOME="$MIX_HOME_ISOLATED" HEX_HOME="$HEX_HOME_ISOLATED" \
+    CROSSWAKE_RELEASE=1 MIX_HOME="$MIX_HOME_ISOLATED" HEX_HOME="$HEX_HOME_ISOLATED" \
     ASDF_ERLANG_VERSION="$ASDF_ERLANG_VERSION" ASDF_ELIXIR_VERSION="$ASDF_ELIXIR_VERSION" \
     "${RUNTIME[@]}" mix deps.get >/dev/null); then
     fail
