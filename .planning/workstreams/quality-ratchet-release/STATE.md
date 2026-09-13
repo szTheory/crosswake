@@ -1,21 +1,21 @@
 ---
-gsd_state_version: "1.0"
+gsd_state_version: 1.0
 milestone: v22.0
 milestone_name: Quality Ratchet & Release Readiness
-current_phase: 167
-current_phase_name: Documentation and Pull-Request Reconciliation
-status: executing
-stopped_at: Completed 167-07-PLAN.md
-last_updated: "2026-09-12T01:27:28.603Z"
-last_activity: 2026-09-10
-last_activity_desc: Phase 167 execution started
-state_head: bda14a28b6447f1e6f5ad9d825d429b42f7da1db
+current_phase: 168
+current_phase_name: 0.2.1 Release Candidate Readiness
+status: planning
+stopped_at: Phase 168 context gathered
+last_updated: "2026-09-12T23:17:21.285Z"
+last_activity: 2026-09-12
+last_activity_desc: Phase 167 complete, transitioned to Phase 168
+state_head: f7075ad725458adac4000029b648545016ce13c0
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 34
-  completed_plans: 33
-  percent: 60
+  completed_phases: 4
+  total_plans: 35
+  completed_plans: 35
+  percent: 80
 workstream: quality-ratchet-release
 ---
 
@@ -23,26 +23,26 @@ workstream: quality-ratchet-release
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-09-10)
+See: `.planning/PROJECT.md` (updated 2026-09-12)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 167 — Documentation and Pull-Request Reconciliation
+**Current focus:** Phase 168 — exact, approval-gated 0.2.1 release-candidate readiness
 
 ## Current Position
 
-Phase: 167 (Documentation and Pull-Request Reconciliation) — EXECUTING
-Plan: 8 of 8
-Status: Ready to execute
-Last activity: 2026-09-10 — Phase 167 execution started
+Phase: 168 — 0.2.1 Release Candidate Readiness
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-09-12 — Phase 167 complete, transitioned to Phase 168
 
-Progress: [██████░░░░] 60%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 26
+- Total plans completed: 35
 - Average duration: N/A
 - Total execution time: 0 hours
 
@@ -54,6 +54,7 @@ Progress: [██████░░░░] 60%
 | 164 | 5 | - | - |
 | 165 | 13 | - | - |
 | 166 | 8 | - | - |
+| 167 | 9 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -88,6 +89,8 @@ Progress: [██████░░░░] 60%
 | Phase 167 P05 | 20min | 3 tasks | 7 files |
 | Phase 167 P06 | 1h 2m | 2 tasks | 22 files |
 | Phase 167 P07 | 27m | 2 tasks | 2 files |
+| Phase 167 P08 | 1h 28m | 3 tasks | 10 files |
+| Phase 167 P09 | 9min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -174,15 +177,25 @@ Progress: [██████░░░░] 60%
 - [Phase 167]: Preserve PR 105's exact six waiter-name edits while replacing stale three-commit history with one tested intent commit.
 - [Phase 167]: Keep exact-head CI authority through bounded failed-job retries; merge only after the unchanged head reaches 47-of-47 success.
 - [Phase 167]: Commit the PR 105 receipt before integrating fresh protected default so parent order and Plan 08 tree authority remain explicit.
+- [Phase 167]: Keep the ordinary PR set exactly 57, 105, 110, 115, 121, 146, and 147; record 145, 148, 110, and 149 separately as recovery provenance.
+- [Phase 167]: Treat the landed disposition receipt as a dated pre-closeout baseline and use a separate closed observation for allowed post-closeout release-only refreshes.
+- [Phase 167]: Keep release-only PRs 57, 115, 146, and 147 open, unmerged, singly marked, and owned by the Phase 168 exact-candidate gate.
+- [Phase 167]: Bind closeout authority to PR 150 head 7211b78f8004511bd4380cac92cac1abcd8854ed, run 34666842094 at 47/47, and tree-identical merge 30ca31ed3f4be23ae6e4d115d8d0f6273aae220a.
+- [Phase 167]: Hand Phase 168 only the five final path names and owner phase_168_first_reversible_landing; do not claim their blobs are on protected default.
+- [Phase 167]: Admit adoption authority only by exact membership in the three canonical seven-field tuples.
+- [Phase 167]: Return one stable complete_authority_tuple rule without echoing sensitive statement or boundary values.
 
 ### Pending Todos
 
-None in this workstream yet.
+- Phase 168 must bind and land the exact five Phase 167 closeout artifact blobs before candidate approval.
+- Phase 168 owns all further evaluation of release-only PRs 57, 115, 146, and 147.
 
 ### Blockers/Concerns
 
 - The First B2C Adopter work remains parked separately at Phase 163.1 pending external route/device
   authority; do not copy or infer adopter facts into v22 artifacts.
+- Phase 167 code review retained five non-blocking advisories; Phase 168 should resolve the
+  release-relevant full-comment marker count before relying on it for exact candidate authority.
 
 ## Deferred Items
 
@@ -194,6 +207,6 @@ None in this workstream yet.
 
 ## Session Continuity
 
-Last session: 2026-09-12T01:27:28.437Z
-Stopped at: Completed 167-07-PLAN.md
-Resume file: None
+Last session: 2026-09-12T23:17:21.004Z
+Stopped at: Phase 168 context gathered
+Resume file: .planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-CONTEXT.md

@@ -17,7 +17,7 @@ independent workstream; the numbering does not imply that parked adopter work mu
 - [x] **Phase 164: Dependency Security and Gate Authority** - Establish patched dependencies and one fail-closed authoritative path for every required result. (completed 2026-08-28)
 - [x] **Phase 165: Efficient and Maintainable CI** - Reduce runner cost and duplicate work while preserving visible, named proof. (completed 2026-09-09)
 - [x] **Phase 166: Clean-Checkout Engineering Quality** - Make the supported repository verification surfaces deterministic, focused, and clean. (completed 2026-09-10)
-- [ ] **Phase 167: Documentation and Pull-Request Reconciliation** - Align public truth, preserve the parked lane, and resolve ambiguous open PR state.
+- [x] **Phase 167: Documentation and Pull-Request Reconciliation** - Align public truth, preserve the parked lane, and resolve ambiguous open PR state. (completed 2026-09-12)
 - [ ] **Phase 168: 0.2.1 Release Candidate Readiness** - Prove package-family consistency and prepare an exact, approval-gated release candidate.
 
 ## Phase Details
@@ -124,7 +124,7 @@ Plans:
   3. Generated, temporary, secret-bearing, editor, and local-only artifacts are either intentionally tracked or excluded, and a complete clean verification run leaves Git clean.
   4. Repository quality failures name a current, actionable correction without stale phase labels, contradictory comments, or unactionable warning noise.
 
-**Plans**: 8/8 plans executed
+**Plans**: 8/9 plans executed
 
 Plans:
 **Wave 1**
@@ -170,7 +170,7 @@ Plans:
   2. A maintainer can resume the First B2C Adopter workstream from its parked state without reconstruction; its durable content remains codename-only and its status names only the real external route/device authority.
   3. Every open pull request has an unambiguous current disposition: merged, rebased, superseded, closed, or explicitly deferred with a current reason.
 
-**Plans**: 7/8 plans executed
+**Plans**: 9/9 plans executed
 
 Plans:
 **Wave 1**
@@ -203,7 +203,11 @@ Plans:
 
 **Wave 8** *(blocked on Wave 7 completion)*
 
-- [ ] 167-08-PLAN.md — Defer release PRs #115/#57 and seal bounded five-PR plus final documentation evidence.
+- [x] 167-08-PLAN.md — Record seven ordinary dispositions, separate recovery provenance, defer four release-only PRs, and seal exact-head closeout evidence.
+
+**Wave 9** *(blocked on Wave 8 completion)*
+
+- [x] 167-09-PLAN.md — Close the fail-open adoption-authority tuple and re-prove both generated projections plus the privacy boundary.
 
 ### Phase 168: 0.2.1 Release Candidate Readiness
 
@@ -229,7 +233,7 @@ Plans:
 | 164. Dependency Security and Gate Authority | 5/5 | Complete    | 2026-08-28 |
 | 165. Efficient and Maintainable CI | 13/13 | Complete    | 2026-09-09 |
 | 166. Clean-Checkout Engineering Quality | 8/8 | Complete    | 2026-09-10 |
-| 167. Documentation and Pull-Request Reconciliation | 7/8 | In Progress|  |
+| 167. Documentation and Pull-Request Reconciliation | 9/9 | Complete    | 2026-09-12 |
 | 168. 0.2.1 Release Candidate Readiness | 0/TBD | Not started | - |
 
 ---

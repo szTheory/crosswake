@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "kind": "phase167_closeout_resolution",
+  "baseline": {
+    "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-dispositions.json",
+    "sha256": "ed9a550b8c088f3ce35e04f7c6b05341e2a66778477c71f42286eab4299ba5f1",
+    "captured_at": "2026-09-12T01:46:00Z",
+    "default_oid": "783bd74df1c050f6c0214da4682d198a528ba59c",
+    "ordinary_numbers": [57, 105, 110, 115, 121, 146, 147],
+    "recovery_numbers": [145, 148, 110, 149]
+  },
+  "scope": {
+    "path": ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/phase167-closeout-scope.json",
+    "sha256": "f4ae9095b8413b3f5ca843bb4886400b803ef83d8b8858d67da80986696ae1cb",
+    "payload_source_oid": "38cbaa6d6bd5e14a723193e9c485c0932a4422bc",
+    "payload_source_tree": "1dba09d95f6cff625b46bcffcf6fae5628bece67"
+  },
+  "closeout": {
+    "pr_number": 150,
+    "tested_head_oid": "7211b78f8004511bd4380cac92cac1abcd8854ed",
+    "tested_base_oid": "783bd74df1c050f6c0214da4682d198a528ba59c",
+    "tested_tree_oid": "9bd87f8baf092053227767d93859fce65e7436f8",
+    "crosswake_ci": {
+      "name": "Crosswake CI",
+      "run_id": 34666842094,
+      "head_oid": "7211b78f8004511bd4380cac92cac1abcd8854ed",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS",
+      "successful_contexts": 47,
+      "total_contexts": 47
+    },
+    "merge_commit_oid": "30ca31ed3f4be23ae6e4d115d8d0f6273aae220a",
+    "merge_parent_oids": [
+      "783bd74df1c050f6c0214da4682d198a528ba59c",
+      "7211b78f8004511bd4380cac92cac1abcd8854ed"
+    ],
+    "merge_tree_oid": "9bd87f8baf092053227767d93859fce65e7436f8",
+    "candidate_reachable_from_fresh_default": true,
+    "fresh_default_oid": "30ca31ed3f4be23ae6e4d115d8d0f6273aae220a",
+    "fresh_default_tree_oid": "9bd87f8baf092053227767d93859fce65e7436f8"
+  },
+  "pre_reconciliation": {
+    "phase_branch": "agent-phase167-fixforward",
+    "phase_branch_tip": "7211b78f8004511bd4380cac92cac1abcd8854ed",
+    "local_main_before_oid": "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b",
+    "expected_local_main_after_oid": "30ca31ed3f4be23ae6e4d115d8d0f6273aae220a",
+    "runtime_hashes": {
+      ".planning/workstreams/quality-ratchet-release/config.json": "05b25ad604490dba4c12df84c624d04b1c7bae454ecd78a262dd1b97b68c1a28",
+      ".planning/workstreams/quality-ratchet-release/milestone.lock": "fd4c22c0f07449f02acc487c3100eed7a10edb1382d63807dd4003a54bfd2943",
+      ".planning/workstreams/quality-ratchet-release/state.json": "6cf0413c5cc52eb4f9c10ba497f82614608a54659e10bd48172bad2d9765dff4"
+    }
+  },
+  "current_observation": {
+    "captured_at": "2026-09-12T02:58:49Z",
+    "default_oid": "30ca31ed3f4be23ae6e4d115d8d0f6273aae220a",
+    "open_pr_numbers": [57, 115, 146, 147],
+    "ordinary_prs": [
+      {
+        "number": 57,
+        "head_oid": "361b27ac5a0fe389bd413ae734588d4855857da9",
+        "base_oid": "30ca31ed3f4be23ae6e4d115d8d0f6273aae220a",
+        "state": "OPEN",
+        "merge_oid": null,
+        "check_status": "COMPLETED",
+        "check_conclusion": "FAILURE",
+        "marker_count": 1,
+        "marker_digest": "ed47831bb8c2d3348b920b14bb423fa3a634196d174bd55c21665c170898bffc",
+        "disposition": "release_only_deferred",
+        "next_gate": "phase_168_exact_candidate_and_maintainer_approval",
+        "drift": "post_closeout_release_pr_refresh"
+      },
+      {
+        "number": 105,
+        "head_oid": "1587e1a557884b0b34cad8b748ccbd948c090eed",
+        "base_oid": "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b",
+        "state": "MERGED",
+        "merge_oid": "783bd74df1c050f6c0214da4682d198a528ba59c",
+        "check_status": "COMPLETED",
+        "check_conclusion": "SUCCESS",
+        "marker_count": 0,
+        "marker_digest": null,
+        "disposition": "merged",
+        "next_gate": "none",
+        "drift": "none"
+      },
+      {
+        "number": 110,
+        "head_oid": "85e6aeec41b9a53840f0a2315c16c4390cef1878",
+        "base_oid": "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
+        "state": "CLOSED",
+        "merge_oid": null,
+        "check_status": "COMPLETED",
+        "check_conclusion": "FAILURE",
+        "marker_count": 0,
+        "marker_digest": null,
+        "disposition": "closed_unmerged_superseded",
+        "next_gate": "replacement_pr_149_receipt",
+        "drift": "none"
+      },
+      {
+        "number": 115,
+        "head_oid": "223389834a578d35891213acc776031766c1abf6",
+        "base_oid": "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b",
+        "state": "OPEN",
+        "merge_oid": null,
+        "check_status": "COMPLETED",
+        "check_conclusion": "SUCCESS",
+        "marker_count": 1,
+        "marker_digest": "ed47831bb8c2d3348b920b14bb423fa3a634196d174bd55c21665c170898bffc",
+        "disposition": "release_only_deferred",
+        "next_gate": "phase_168_exact_candidate_and_maintainer_approval",
+        "drift": "none"
+      },
+      {
+        "number": 121,
+        "head_oid": "0e96dbfda96eb3f8193dc23df281d4e070f9d080",
+        "base_oid": "0b59224bbabc3f0b40038d0c1c4dc7ecae81de4c",
+        "state": "MERGED",
+        "merge_oid": "159eebd7f68572ad5ab19f598ce1fb068e7b03b2",
+        "check_status": "COMPLETED",
+        "check_conclusion": "SUCCESS",
+        "marker_count": 0,
+        "marker_digest": null,
+        "disposition": "merged",
+        "next_gate": "none",
+        "drift": "none"
+      },
+      {
+        "number": 146,
+        "head_oid": "fe2b80efb3b48cc6c1e937dc630672bbda8a72ad",
+        "base_oid": "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b",
+        "state": "OPEN",
+        "merge_oid": null,
+        "check_status": "COMPLETED",
+        "check_conclusion": "FAILURE",
+        "marker_count": 1,
+        "marker_digest": "ed47831bb8c2d3348b920b14bb423fa3a634196d174bd55c21665c170898bffc",
+        "disposition": "release_only_deferred",
+        "next_gate": "phase_168_exact_candidate_and_maintainer_approval",
+        "drift": "none"
+      },
+      {
+        "number": 147,
+        "head_oid": "83f1b93bc8c6886cc809b2cf57b03f8a970bd0c1",
+        "base_oid": "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b",
+        "state": "OPEN",
+        "merge_oid": null,
+        "check_status": "COMPLETED",
+        "check_conclusion": "SUCCESS",
+        "marker_count": 1,
+        "marker_digest": "ed47831bb8c2d3348b920b14bb423fa3a634196d174bd55c21665c170898bffc",
+        "disposition": "release_only_deferred",
+        "next_gate": "phase_168_exact_candidate_and_maintainer_approval",
+        "drift": "none"
+      }
+    ],
+    "recovery_transactions": [
+      {
+        "role": "historical_merged",
+        "number": 145,
+        "head_oid": "a6e2622acaaa82e82eb33a21760e75db2e51a281",
+        "state": "MERGED",
+        "merge_oid": "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb",
+        "replacement_number": null
+      },
+      {
+        "role": "failed_closed_unmerged",
+        "number": 148,
+        "head_oid": "cc5286da6467c6d582f9a9585272360fcc1e4927",
+        "state": "CLOSED",
+        "merge_oid": null,
+        "replacement_number": 149
+      },
+      {
+        "role": "failed_closed_unmerged",
+        "number": 110,
+        "head_oid": "85e6aeec41b9a53840f0a2315c16c4390cef1878",
+        "state": "CLOSED",
+        "merge_oid": null,
+        "replacement_number": 149
+      },
+      {
+        "role": "replacement_merged",
+        "number": 149,
+        "head_oid": "b489905d0f735e88268905607390021256e405b8",
+        "state": "MERGED",
+        "merge_oid": "e0959e8cb503eae7352c21a5d6693ef99d0d5a9b",
+        "replacement_number": null
+      }
+    ]
+  },
+  "phase_168_handoff": {
+    "owner": "phase_168_first_reversible_landing",
+    "paths": [
+      ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/phase167-closeout-resolution.json",
+      ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-08-SUMMARY.md",
+      ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/167-VERIFICATION.md",
+      ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
+      ".planning/workstreams/quality-ratchet-release/STATE.md"
+    ]
+  }
+}
