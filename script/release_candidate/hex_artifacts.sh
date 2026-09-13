@@ -62,8 +62,8 @@ cleanup() {
 }
 trap cleanup EXIT
 
-SOURCE_MIX_HOME="${MIX_HOME:-${HOME}/.mix}"
-HEX_ARCHIVE=$(find "$SOURCE_MIX_HOME/archives" -mindepth 1 -maxdepth 1 -type d -name 'hex-*' | sort | tail -1)
+SOURCE_ARCHIVES=$(asdf exec elixir -e 'Application.ensure_all_started(:mix); IO.write(Mix.path_for(:archives))') || fail
+HEX_ARCHIVE=$(find "$SOURCE_ARCHIVES" -mindepth 1 -maxdepth 1 -type d -name 'hex-*' | sort | tail -1)
 [ -n "$HEX_ARCHIVE" ] || fail
 cp -R "$HEX_ARCHIVE" "$OUTPUT_DIR/.scratch/mix-home/archives/"
 
