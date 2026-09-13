@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 30
+open_count: 32
 waived_count: 0
 fixed_count: 0
-total_count: 30
-last_updated: 2026-09-13T04:25:48.040Z
+total_count: 32
+last_updated: 2026-09-13T05:29:51.445Z
 ---
 
 # Broken Windows Ledger
@@ -45,6 +45,8 @@ last_updated: 2026-09-13T04:25:48.040Z
 | 28 | 168 | deviation | lib/crosswake/release_candidate/artifact.ex |  | Official tuple-shaped Hex link metadata is normalized. | open |  | 2026-09-13T03:10:30.550Z |  |
 | 29 | 168 | deviation | script/release_candidate/hex_artifacts.sh |  | Manifest paths are canonicalized across macOS temporary-directory aliases. | open |  | 2026-09-13T03:10:30.643Z |  |
 | 30 | 168 | deviation | lib/crosswake/release_candidate/mirror.ex |  | Preserve observed mirror ref mutation in bounded evidence instead of normalizing external_state_changed to false | open |  | 2026-09-13T04:25:48.040Z |  |
+| 31 | 168 | deviation | lib/crosswake/release_candidate/workflow.ex |  | Added executable linked-release workflow policy required for validated PARTIAL truth | open |  | 2026-09-13T05:29:51.085Z |  |
+| 32 | 168 | deviation | lib/crosswake/release_candidate/receipt.ex | 185 | Extended bounded receipt coordinates to accept the fixed Maven group/artifact identity | open |  | 2026-09-13T05:29:51.445Z |  |
 
 ````json
 [
@@ -406,6 +408,30 @@ last_updated: 2026-09-13T04:25:48.040Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-13T04:25:48.040Z",
+    "resolved_at": null
+  },
+  {
+    "id": 31,
+    "kind": "deviation",
+    "phase": "168",
+    "file": "lib/crosswake/release_candidate/workflow.ex",
+    "line": null,
+    "description": "Added executable linked-release workflow policy required for validated PARTIAL truth",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-13T05:29:51.085Z",
+    "resolved_at": null
+  },
+  {
+    "id": 32,
+    "kind": "deviation",
+    "phase": "168",
+    "file": "lib/crosswake/release_candidate/receipt.ex",
+    "line": 185,
+    "description": "Extended bounded receipt coordinates to accept the fixed Maven group/artifact identity",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-13T05:29:51.445Z",
     "resolved_at": null
   }
 ]

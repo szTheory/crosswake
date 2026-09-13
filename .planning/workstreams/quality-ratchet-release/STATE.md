@@ -5,17 +5,17 @@ milestone_name: Quality Ratchet & Release Readiness
 current_phase: 168
 current_phase_name: 0.2.1 Release Candidate Readiness
 status: executing
-stopped_at: Completed 168-05-PLAN.md
-last_updated: "2026-09-13T04:25:59.019Z"
+stopped_at: Completed 168-06-PLAN.md
+last_updated: "2026-09-13T05:30:11.816Z"
 last_activity: 2026-09-12
 last_activity_desc: Phase 168 execution started
-state_head: 7af4387e317179c32e4568e4c626732d1fbf46fb
+state_head: c62471a3776bd03566f15b3cc8c2bb10bb8b4464
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 3
   total_plans: 43
-  completed_plans: 40
-  percent: 80
+  completed_plans: 41
+  percent: 60
 workstream: quality-ratchet-release
 ---
 
@@ -32,11 +32,11 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 ## Current Position
 
 Phase: 168 (0.2.1 Release Candidate Readiness) — EXECUTING
-Plan: 6 of 8
+Plan: 7 of 8
 Status: Ready to execute
 Last activity: 2026-09-12 — Phase 168 execution started
 
-Progress: [████████░░] 80%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
@@ -96,6 +96,7 @@ Progress: [████████░░] 80%
 | Phase 168 P03 | 38m | 2 tasks | 8 files |
 | Phase 168 P04 | 34m | 2 tasks | 5 files |
 | Phase 168 P05 | 26m | 2 tasks | 6 files |
+| Phase 168 P06 | 60m | 3 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -203,6 +204,9 @@ Progress: [████████░░] 80%
 - [Phase 168]: Keep exact-public verification fixture-backed and dormant until 0.2.1 publication and an approved receipt make its live precondition true.
 - [Phase 168]: Phase 168 Plan 05 models baseline inspection, candidate rehearsal, ordinary publication, and recovery as four closed mirror modes.
 - [Phase 168]: Ordinary iOS mirror publication is atomic and fast-forward/equal only; exact-ref force-with-lease exists only in separately approved recovery.
+- [Phase 168]: Phase 168-06: Existing trusted Hex and iOS workflows own no-mutation rehearsal; no new workflow family or second approval was added.
+- [Phase 168]: Phase 168-06: Release Please and all one-way children require the approved head as merge parent with an identical approved tree.
+- [Phase 168]: Phase 168-06: Linked publications are independent siblings, while proofs retain narrow dependencies and rollup preserves exact PARTIAL truth.
 
 ### Pending Todos
 
@@ -226,6 +230,6 @@ Progress: [████████░░] 80%
 
 ## Session Continuity
 
-Last session: 2026-09-13T04:25:58.919Z
-Stopped at: Completed 168-05-PLAN.md
+Last session: 2026-09-13T05:30:11.305Z
+Stopped at: Completed 168-06-PLAN.md
 Resume file: None
