@@ -533,21 +533,24 @@ Do not add any force option in normal mode. Git's official documentation defines
 |---|-------|---------|---------------|
 | — | None. Recommendations within the agent's discretion are identified as recommendations; external behavior is cited from official documentation, and in-repo values are quoted from opened source files. | — | — |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **What is the refreshed Release Please #57 identity?**
    - What we know: D-03 explicitly says the current head is not a candidate.
    - What's unclear: the future head/tree/base/run cannot exist until the five-blob landing reaches protected default and Release Please refreshes the proposal.
    - Recommendation: make capture an execution-time gate, not a planning constant; refuse readiness until exact values are observed and receipt-bound.
+   - **RESOLVED:** Preserve those values as execution-time observations. Plan 168-08 captures them only after the D-01 landing and all reversible implementation reach protected default; missing or ambiguous refresh evidence is `BLOCKED`, and any later identity drift is `STALE` and requires complete recapture per D-03/D-04. No planning-time PR identity is authorized.
 
 2. **Can the real mirror remote perform atomic multi-ref push?**
    - What we know: Git's `--atomic` fails rather than partially updating when the server cannot support it. [CITED: https://git-scm.com/docs/git-push.html]
    - What's unclear: capability is a live remote property and must be demonstrated by the trusted candidate dry-run.
    - Recommendation: require the exact atomic dry-run for `READY FOR APPROVAL`; an unsupported result is `BLOCKED` and requires an explicit plan change/recapture, not a silent non-atomic fallback.
+   - **RESOLVED:** Keep capability as a trusted execution-time observation and require the exact credentialed atomic multi-ref dry-run before `READY FOR APPROVAL`. Unsupported, denied, ambiguous, or changed capability is `BLOCKED`; execution must stop for an explicit plan change and full recapture, with no silent non-atomic fallback, per D-22/D-24 and Plan 168-05.
 
 3. **Where should volatile workflow metadata live?**
    - What we know: D-28 requires run ID, while D-28/D-30 also require deterministic digest-bound evidence.
    - Recommendation: serialize volatile run metadata in a clearly separate receipt envelope; compute content/proof digests only over canonical stable fields and test that rerendering does not alter them.
+   - **RESOLVED:** Store run ID and other allowlisted volatile workflow metadata in a dedicated execution envelope within the authoritative receipt. Bind that envelope through the final receipt identity, but exclude it from reusable content/proof sub-digests, which cover only canonical stable fields; identical inputs must rerender byte-for-byte while a changed run identity yields a newly bound receipt per D-28/D-30 and Plans 168-02/168-08.
 
 ## Environment Availability
 
