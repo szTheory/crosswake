@@ -13,6 +13,15 @@ requirement declares a compatible-core floor, not a lockstep pin. See
 `guides/companion_compatibility.md` in the core repo for the cross-package
 compatibility matrix.
 
+## [0.1.1](https://github.com/szTheory/crosswake/compare/crosswake_chimeway-v0.1.0...crosswake_chimeway-v0.1.1) (2026-09-13)
+
+
+### Bug Fixes
+
+* **166-08:** seal companion verification locks ([0b7fe9c](https://github.com/szTheory/crosswake/commit/0b7fe9c399a64413e09efc70db9880fe641750b1))
+* **166:** land repository quality prerequisites ([a6e2622](https://github.com/szTheory/crosswake/commit/a6e2622acaaa82e82eb33a21760e75db2e51a281))
+* land Phase 166 CI prerequisites ([74fc15c](https://github.com/szTheory/crosswake/commit/74fc15cc546b756c210b6cbbdcb2d7f77e3966bb))
+
 ## [0.1.0](https://github.com/szTheory/crosswake/compare/crosswake_chimeway-v0.1.0...crosswake_chimeway-v0.1.0) (2026-07-04)
 
 
