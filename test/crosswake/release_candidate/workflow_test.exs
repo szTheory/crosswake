@@ -18,6 +18,10 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert rehearsal =~ "CANDIDATE_RECEIPT: \"${{ inputs.candidate_receipt }}\""
     assert rehearsal =~ "CANDIDATE_RUN_ID: ${{ github.run_id }}"
     assert rehearsal =~ "bash script/release_candidate/hex_artifacts.sh"
+
+    assert :binary.match(rehearsal, "mix deps.get --check-locked") <
+             :binary.match(rehearsal, "bash script/release_candidate/hex_artifacts.sh")
+
     assert rehearsal =~ "candidate-rehearsal-hex"
     refute rehearsal =~ "script/guarded_hex_publish.sh"
     refute rehearsal =~ "mix hex.publish --yes"
