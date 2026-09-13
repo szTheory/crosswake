@@ -277,9 +277,10 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
 
   test "public release truth docs and manifests reject stale current-proof claims" do
     current_version = current_version()
+    published_version = published_version()
 
     failures =
-      scan_public_docs(public_release_truth_docs(), current_version) ++
+      scan_public_docs(public_release_truth_docs(), published_version) ++
         scan_manifests(public_manifests(), current_version)
 
     assert_no_release_truth_failures(failures)
@@ -360,6 +361,16 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
 
   defp current_version do
     Application.spec(:crosswake, :vsn) |> to_string()
+  end
+
+  defp published_version do
+    "CHANGELOG.md"
+    |> File.read!()
+    |> then(&Regex.run(~r/^## \[(\d+\.\d+\.\d+)\]/m, &1))
+    |> case do
+      [_heading, version] -> version
+      nil -> flunk("CHANGELOG.md must contain a published semantic-version heading")
+    end
   end
 
   defp public_release_truth_docs do

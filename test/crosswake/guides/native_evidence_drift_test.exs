@@ -56,7 +56,7 @@ defmodule Crosswake.Guides.NativeEvidenceDriftTest do
         "examples/android_shell_host/app/build.gradle",
         String.replace(
           current_build_gradle,
-          "io.github.sztheory:crosswake-shell-core-android:0.2.0",
+          "io.github.sztheory:crosswake-shell-core-android:#{current_version()}",
           "dev.crosswake:shell-core-android:0.1.0"
         )
       )
@@ -68,7 +68,7 @@ defmodule Crosswake.Guides.NativeEvidenceDriftTest do
         "examples/android_shell_host/app/build.gradle",
         String.replace(
           current_build_gradle,
-          "io.github.sztheory:crosswake-shell-core-android:0.2.0",
+          "io.github.sztheory:crosswake-shell-core-android:#{current_version()}",
           "io.github.sztheory:crosswake-shell-core-android:+"
         )
       )
@@ -96,8 +96,11 @@ defmodule Crosswake.Guides.NativeEvidenceDriftTest do
     stale_version_failures =
       scan_surface(
         "guides/android_uat.md",
-        String.replace(current_android_uat, "Crosswake v0.2.0", "Crosswake v0.1.0") <>
-          "\nPreserved current version marker: Crosswake v0.2.0\n"
+        String.replace(
+          current_android_uat,
+          "Crosswake v#{current_version()}",
+          "Crosswake v0.1.0"
+        ) <> "\nPreserved current version marker: Crosswake v#{current_version()}\n"
       )
 
     assert Enum.any?(stale_version_failures, &(&1.category == :stale_android_truth))
