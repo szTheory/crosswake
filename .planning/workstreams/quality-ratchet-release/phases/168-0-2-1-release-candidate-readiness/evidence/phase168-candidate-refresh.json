@@ -1,0 +1,145 @@
+{
+  "schema_version": "1.0.0",
+  "kind": "phase168_candidate_refresh",
+  "captured_at": "2026-09-13T16:37:00Z",
+  "planning_time_candidate_head": "b566ccd11d4a02977c71cddeb6b8daf4c614ed41",
+  "superseded_candidate_heads": [
+    "d4c1d83b0030eb7feb56ce8b3282008db3f6e630",
+    "5b373d2588d3b06073df9b19294af8e25a6a1eb0"
+  ],
+  "reversible_landings": [
+    {
+      "pr_number": 152,
+      "head_oid": "2a319dd9cb4922c95b8550df0a079228b2a06240",
+      "head_tree_oid": "b1886b1ad8d60207cbf3715f548af72ca5f14af3",
+      "base_oid": "6e9ea2853b67a118242292d6f3fe2ab71d3ac558",
+      "crosswake_ci_run_id": 34763617978,
+      "crosswake_ci_status": "COMPLETED",
+      "crosswake_ci_conclusion": "SUCCESS",
+      "merge_oid": "2d48272469b6ff58bee577f98f9b281b6bee2e6c"
+    },
+    {
+      "pr_number": 153,
+      "head_oid": "34a1efc2af4ed8997d2f9701333679bcaf2d761c",
+      "head_tree_oid": "d495cdf59b80bafaa9a9e8e797dd636b6410203e",
+      "base_oid": "2d48272469b6ff58bee577f98f9b281b6bee2e6c",
+      "crosswake_ci_run_id": 34764952055,
+      "crosswake_ci_status": "COMPLETED",
+      "crosswake_ci_conclusion": "SUCCESS",
+      "merge_oid": "c1a264625744892e6204ad8aaaeddb5c8e021cfe"
+    },
+    {
+      "pr_number": 154,
+      "head_oid": "6b15315c2b8bbb0972051ce4cd75d848ebc049f9",
+      "head_tree_oid": "594448d63de7417dd980fe674163175c95a63623",
+      "base_oid": "c1a264625744892e6204ad8aaaeddb5c8e021cfe",
+      "crosswake_ci_run_id": 34767846932,
+      "crosswake_ci_status": "COMPLETED",
+      "crosswake_ci_conclusion": "SUCCESS",
+      "merge_oid": "bb3b4eea2b7d50945b49204ccdc42f32780663cd"
+    }
+  ],
+  "protected_default_oid": "bb3b4eea2b7d50945b49204ccdc42f32780663cd",
+  "release_please": {
+    "workflow_run_id": 34768549222,
+    "workflow_status": "COMPLETED",
+    "workflow_conclusion": "SUCCESS",
+    "pr_number": 57,
+    "state": "OPEN",
+    "mergeable": "MERGEABLE",
+    "head_oid": "3d2b50733e28306d1001107c23d61f0c244ced56",
+    "tree_oid": "42c8116dde152a68a2c563fadd788f24e109ac19",
+    "base_oid": "bb3b4eea2b7d50945b49204ccdc42f32780663cd",
+    "updated_at": "2026-09-13T16:28:25Z"
+  },
+  "linked_coordinates": [
+    {
+      "id": "hex-core",
+      "coordinate": "crosswake@0.2.1"
+    },
+    {
+      "id": "ios-core",
+      "coordinate": "crosswake-shell-core-ios@0.2.1"
+    },
+    {
+      "id": "android-core",
+      "coordinate": "io.github.sztheory:crosswake-shell-core-android@0.2.1"
+    }
+  ],
+  "candidate_blobs": [
+    {
+      "path": "release-please-config.json",
+      "blob_oid": "0fd8dc2ed9b8fc5e577234d4d611d479d397039e"
+    },
+    {
+      "path": ".release-please-manifest.json",
+      "blob_oid": "e90f41172763752cc33334f2fb175b8cc4f34069"
+    },
+    {
+      "path": ".github/workflows/release-please.yml",
+      "blob_oid": "526c9b6289ff6c3e55b1d60b50a4ab965c131a71"
+    },
+    {
+      "path": ".github/workflows/crosswake-ci.yml",
+      "blob_oid": "b81b50f44d71dea2544d960aa48b978a9a541503"
+    },
+    {
+      "path": ".github/workflows/hex-publish.yml",
+      "blob_oid": "c2b5fb6fa0ec4512ce1358f259b1e4bee471d950"
+    },
+    {
+      "path": ".github/workflows/ios-mirror-backfill.yml",
+      "blob_oid": "b1b7ceb85ed110ef8e6c06379959c35ad4c96712"
+    }
+  ],
+  "candidate_ci": {
+    "name": "Crosswake CI",
+    "run_id": 34768678964,
+    "head_oid": "3d2b50733e28306d1001107c23d61f0c244ced56",
+    "status": "COMPLETED",
+    "conclusion": "SUCCESS",
+    "successful_contexts": 49,
+    "total_contexts": 49,
+    "created_at": "2026-09-13T16:28:27Z",
+    "completed_at": "2026-09-13T16:36:46Z"
+  },
+  "deferral_marker_authority": {
+    "cursor_complete": true,
+    "marker_count_per_pr": 1,
+    "marker_digest": "ed47831bb8c2d3348b920b14bb423fa3a634196d174bd55c21665c170898bffc",
+    "pr_numbers": [115, 146, 147]
+  },
+  "excluded_companion_proposals": [
+    {
+      "pr_number": 115,
+      "state": "OPEN",
+      "head_oid": "10089054c90f4af52889c55d94756ef1ea7def86",
+      "base_oid": "6e9ea2853b67a118242292d6f3fe2ab71d3ac558",
+      "last_updated_before_plan_start": true
+    },
+    {
+      "pr_number": 146,
+      "state": "OPEN",
+      "head_oid": "bbd231c2dd7e2694892031e01bda4b57e3721132",
+      "base_oid": "6e9ea2853b67a118242292d6f3fe2ab71d3ac558",
+      "last_updated_before_plan_start": true
+    },
+    {
+      "pr_number": 147,
+      "state": "OPEN",
+      "head_oid": "81a76c08009ceac3841cb0edd8c7b6ef84cd7d0e",
+      "base_oid": "6e9ea2853b67a118242292d6f3fe2ab71d3ac558",
+      "last_updated_before_plan_start": true
+    }
+  ],
+  "external_release_state": {
+    "semantic_0_2_1_tags": [],
+    "hex_core_0_2_1_http_status": 404,
+    "maven_android_core_0_2_1_http_status": 404,
+    "mirror_main_oid": "658d60253c58b7e0aedb576f16f40766fa677f23",
+    "mirror_v0_2_0_oid": "658d60253c58b7e0aedb576f16f40766fa677f23",
+    "mirror_v0_2_1_oid": null,
+    "parked_adopter_state_blob_oid": "c6750b57a4ecf603b8cdb0de66b73a71162a9d56",
+    "changed": false
+  }
+}

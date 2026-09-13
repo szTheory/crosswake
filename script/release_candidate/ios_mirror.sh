@@ -7,7 +7,9 @@ REPO_ROOT=$(cd "$SCRIPT_DIR/../.." && pwd)
 if command -v asdf >/dev/null 2>&1; then
   RUNTIME=(asdf exec)
 else
-  RUNTIME=()
+  # Bash 3.2 treats an empty array expansion as unbound under `set -u`.
+  # `env` is a no-op command prefix and keeps the direct runtime path nonempty.
+  RUNTIME=(env)
 fi
 BASELINE_SPLIT_SHA="658d60253c58b7e0aedb576f16f40766fa677f23"
 PUBLIC_REMOTE="${CROSSWAKE_IOS_MIRROR_PUBLIC_REMOTE:-https://github.com/szTheory/crosswake-shell-core-ios.git}"
