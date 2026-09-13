@@ -55,7 +55,12 @@ UNTRACKED_PACKAGE_FILES=$(git ls-files --others --exclude-standard -- \
 umask 077
 mkdir -p "$OUTPUT_DIR/tarballs" "$OUTPUT_DIR/unpacked" "$OUTPUT_DIR/.scratch/mix-home/archives" "$OUTPUT_DIR/.scratch/hex-home"
 OUTPUT_DIR=$(cd "$OUTPUT_DIR" && pwd -P)
-MANIFEST=${MANIFEST:-"$OUTPUT_DIR/artifacts.json"}
+if [ -n "$MANIFEST" ]; then
+  MANIFEST_PARENT=$(cd "$(dirname "$MANIFEST")" && pwd -P) || fail
+  MANIFEST="$MANIFEST_PARENT/$(basename "$MANIFEST")"
+else
+  MANIFEST="$OUTPUT_DIR/artifacts.json"
+fi
 
 cleanup() {
   rm -rf -- "$OUTPUT_DIR/.scratch"
