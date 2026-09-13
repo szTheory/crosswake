@@ -126,6 +126,90 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     refute script =~ ~s(rm -rf "$CLEAN_ROOM_DIR")
   end
 
+  @tag :post_publication
+  test "exact-public proof requires six registry payloads, the same profiles, and live status" do
+    assert function_exported?(Cleanroom, :evaluate_public!, 1),
+           "Cleanroom.evaluate_public!/1 must enforce exact-public registry proof"
+
+    result = Cleanroom.evaluate_public!(public_fixture())
+
+    assert result.state == "COMPLETE"
+    assert result.source_mode == "exact-public"
+    assert result.path_lock_count == 0
+    assert result.live_status == "PASS"
+    assert result.succeeded_packages == @packages
+    assert result.failed_packages == []
+    assert Enum.map(result.profile_results, & &1.profile) == @profiles
+  end
+
+  @tag :post_publication
+  test "exact-public proof reports partial registry availability without claiming completeness" do
+    input =
+      public_fixture()
+      |> update_public_artifact("crosswake_threadline", fn artifact ->
+        %{
+          artifact
+          | status: "MISSING",
+            source: "unavailable",
+            unpacked_root: nil,
+            metadata_digest: nil,
+            payload_digest: nil
+        }
+      end)
+      |> Map.put(:installs, [])
+      |> Map.put(:profile_results, [])
+      |> Map.put(:live_status, "not_run")
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.state == "PARTIAL"
+    assert result.succeeded_packages == Enum.drop(@packages, -1)
+    assert result.failed_packages == [
+             %{package: "crosswake_threadline", reason: "registry_missing"}
+           ]
+    assert result.profile_results == []
+  end
+
+  @tag :post_publication
+  test "exact-public proof blocks path, cache, digest, lock-source, and live-status ambiguity" do
+    input = public_fixture()
+
+    mutations = [
+      path_source:
+        update_public_artifact(input, "crosswake", &Map.put(&1, :source, "repository_path")),
+      cache_source:
+        update_public_artifact(input, "crosswake", &Map.put(&1, :source, "cache")),
+      digest_mismatch:
+        update_public_artifact(
+          input,
+          "crosswake",
+          &Map.put(&1, :payload_digest, String.duplicate("f", 64))
+        ),
+      path_lock:
+        update_public_artifact(input, "crosswake", &Map.put(&1, :path_lock_count, 1)),
+      live_ambiguous: %{input | live_status: "BLOCKED"}
+    ]
+
+    for {name, mutation} <- mutations do
+      result = Cleanroom.evaluate_public!(mutation)
+      assert result.state == "BLOCKED", "#{name} passed"
+      refute result.state == "COMPLETE"
+    end
+  end
+
+  @tag :post_publication
+  test "post-publication adapter fetches exact packages and preapproval command cannot count it" do
+    script = File.read!("script/verify_companion_cleanroom.sh")
+    candidate_task = File.read!("lib/mix/tasks/crosswake.release.candidate.ex")
+
+    assert script =~ "--approved-manifest"
+    assert script =~ "mix hex.package fetch"
+    assert script =~ "source_mode=exact-public"
+    assert script =~ "crosswake.release.status --live"
+    refute candidate_task =~ "verify_companion_cleanroom"
+    refute candidate_task =~ "exact-public"
+  end
+
   defp candidate_fixture do
     fixture_root =
       Path.join(
@@ -191,6 +275,41 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     }
   end
 
+  defp public_fixture do
+    candidate = candidate_fixture()
+    public_root = Path.join(Path.dirname(candidate.source_root), "public-payloads")
+    File.mkdir!(public_root)
+
+    approved_artifacts =
+      Enum.map(candidate.artifacts, fn artifact ->
+        Map.take(artifact, [:package, :version, :metadata_digest, :payload_digest])
+      end)
+
+    public_artifacts =
+      Enum.map(candidate.artifacts, fn artifact ->
+        root = Path.join(public_root, artifact.package)
+        File.mkdir!(root)
+
+        artifact
+        |> Map.put(:source, "hex_registry")
+        |> Map.put(:unpacked_root, root)
+        |> Map.put(:status, "PASS")
+        |> Map.put(:path_lock_count, 0)
+      end)
+
+    %{
+      source_mode: "exact-public",
+      generator_version: "1.8.13",
+      repository_root: candidate.repository_root,
+      source_root: public_root,
+      approved_artifacts: approved_artifacts,
+      public_artifacts: public_artifacts,
+      installs: candidate.installs,
+      profile_results: candidate.profile_results,
+      live_status: "PASS"
+    }
+  end
+
   defp expected_checks(profile) do
     common =
       ~w(generated_phoenix compile_warnings_as_errors runtime_config_loaded router_output public_smoke registration doctor)
@@ -227,6 +346,14 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     update_in(input.profile_results, fn profiles ->
       Enum.map(profiles, fn observation ->
         if observation.profile == profile, do: callback.(observation), else: observation
+      end)
+    end)
+  end
+
+  defp update_public_artifact(input, package, callback) do
+    update_in(input.public_artifacts, fn artifacts ->
+      Enum.map(artifacts, fn artifact ->
+        if artifact.package == package, do: callback.(artifact), else: artifact
       end)
     end)
   end
