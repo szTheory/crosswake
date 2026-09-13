@@ -110,7 +110,9 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert guard =~ "phase168-candidate-ci-${approved_head}"
     assert guard =~ "release-candidate-ci-receipt.json"
     assert exact_public =~ "candidate_receipt_run_id"
-    assert exact_public =~ "phase168-candidate-receipt-${{ needs.approved-release-guard.outputs.approved_head }}"
+
+    assert exact_public =~
+             "phase168-candidate-receipt-${{ needs.approved-release-guard.outputs.approved_head }}"
 
     refute guard =~
              ~s(--name "phase168-candidate-receipt-${approved_head}" --dir "$receipt_dir")
