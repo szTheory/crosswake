@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 import {
   appendFileSync,
   copyFileSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -63,6 +64,28 @@ const runtimePaths = [
   ".planning/workstreams/quality-ratchet-release/milestone.lock",
   ".planning/workstreams/quality-ratchet-release/state.json",
 ];
+const runtimeLockFixture = path.join(
+  root,
+  "test/fixtures/phase167_runtime_authority/milestone.lock",
+);
+const historicalRuntimeState = {
+  contract: "1.0.0",
+  flavor: "core",
+  milestone: "v22.0 — Quality Ratchet & Release Readiness",
+  phases: [
+    { number: "164", name: "Dependency Security and Gate Authority", status: "complete" },
+    { number: "165", name: "Efficient and Maintainable CI", status: "complete" },
+    { number: "166", name: "Clean-Checkout Engineering Quality", status: "complete" },
+    { number: "167", name: "Documentation and Pull-Request Reconciliation", status: "pending" },
+    { number: "168", name: "0.2.1 Release Candidate Readiness", status: "pending" },
+  ],
+  next: {
+    command: "/gsd:progress --next",
+    label: "Advance to the next step",
+    reason: "Phase 167 of 5 · 60% · executing",
+  },
+  updated_at: "2026-09-10T21:42:01.912Z",
+};
 
 function json(pathname) {
   return JSON.parse(readFileSync(pathname, "utf8"));
@@ -206,11 +229,20 @@ function localReconciliationRepository() {
 
   const receipt = json(resolutionPath);
   git(["branch", "--force", "main", receipt.pre_reconciliation.expected_local_main_after_oid], repository);
-  for (const relative of runtimePaths) {
+  const runtimeSources = new Map([
+    [runtimePaths[0], path.join(root, runtimePaths[0])],
+    [runtimePaths[1], runtimeLockFixture],
+  ]);
+  for (const [relative, source] of runtimeSources) {
     const destination = path.join(repository, relative);
     mkdirSync(path.dirname(destination), { recursive: true });
-    copyFileSync(path.join(root, relative), destination);
+    copyFileSync(source, destination);
   }
+  writeJson(
+    path.dirname(path.join(repository, runtimePaths[2])),
+    path.basename(runtimePaths[2]),
+    historicalRuntimeState,
+  );
   return { temporary, repository };
 }
 
@@ -347,9 +379,28 @@ test("closeout diagnostics are stable, privacy-safe, and non-echoing", () => {
   }
 });
 
-test("local reconciliation rejects runtime drift from the pinned receipt hashes", () => {
+test("local reconciliation accepts the tracked Phase 167 runtime authority fixture", () => {
+  assert.equal(existsSync(runtimeLockFixture), true, "tracked runtime authority fixture is missing");
   const { temporary, repository } = localReconciliationRepository();
   try {
+    const result = runValidator(reconciliationArgs(resolutionPath, scopePath, ["--repository", repository]));
+
+    assertPass(
+      result,
+      "phase167-local-reconciliation: PASS branch=agent-phase167-fixforward runtime=3",
+    );
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test("local reconciliation rejects current runtime drift from the pinned receipt hashes", () => {
+  const { temporary, repository } = localReconciliationRepository();
+  try {
+    copyFileSync(
+      path.join(root, runtimePaths[1]),
+      path.join(repository, runtimePaths[1]),
+    );
     const result = runValidator(reconciliationArgs(resolutionPath, scopePath, ["--repository", repository]));
 
     assertClosedFailure(
