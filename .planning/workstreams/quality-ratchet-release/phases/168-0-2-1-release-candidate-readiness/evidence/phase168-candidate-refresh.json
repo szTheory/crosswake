@@ -1,8 +1,12 @@
 {
   "schema_version": "1.0.0",
   "kind": "phase168_candidate_refresh",
-  "captured_at": "2026-09-13T16:02:35Z",
+  "captured_at": "2026-09-13T16:37:00Z",
   "planning_time_candidate_head": "b566ccd11d4a02977c71cddeb6b8daf4c614ed41",
+  "superseded_candidate_heads": [
+    "d4c1d83b0030eb7feb56ce8b3282008db3f6e630",
+    "5b373d2588d3b06073df9b19294af8e25a6a1eb0"
+  ],
   "reversible_landings": [
     {
       "pr_number": 152,
@@ -23,20 +27,30 @@
       "crosswake_ci_status": "COMPLETED",
       "crosswake_ci_conclusion": "SUCCESS",
       "merge_oid": "c1a264625744892e6204ad8aaaeddb5c8e021cfe"
+    },
+    {
+      "pr_number": 154,
+      "head_oid": "6b15315c2b8bbb0972051ce4cd75d848ebc049f9",
+      "head_tree_oid": "594448d63de7417dd980fe674163175c95a63623",
+      "base_oid": "c1a264625744892e6204ad8aaaeddb5c8e021cfe",
+      "crosswake_ci_run_id": 34767846932,
+      "crosswake_ci_status": "COMPLETED",
+      "crosswake_ci_conclusion": "SUCCESS",
+      "merge_oid": "bb3b4eea2b7d50945b49204ccdc42f32780663cd"
     }
   ],
-  "protected_default_oid": "c1a264625744892e6204ad8aaaeddb5c8e021cfe",
+  "protected_default_oid": "bb3b4eea2b7d50945b49204ccdc42f32780663cd",
   "release_please": {
-    "workflow_run_id": 34765437718,
+    "workflow_run_id": 34768549222,
     "workflow_status": "COMPLETED",
     "workflow_conclusion": "SUCCESS",
     "pr_number": 57,
     "state": "OPEN",
     "mergeable": "MERGEABLE",
-    "head_oid": "5b373d2588d3b06073df9b19294af8e25a6a1eb0",
-    "tree_oid": "0e36b1d4e3a823272e3936dabf11bac0a68ef79d",
-    "base_oid": "c1a264625744892e6204ad8aaaeddb5c8e021cfe",
-    "updated_at": "2026-09-13T15:25:40Z"
+    "head_oid": "3d2b50733e28306d1001107c23d61f0c244ced56",
+    "tree_oid": "42c8116dde152a68a2c563fadd788f24e109ac19",
+    "base_oid": "bb3b4eea2b7d50945b49204ccdc42f32780663cd",
+    "updated_at": "2026-09-13T16:28:25Z"
   },
   "linked_coordinates": [
     {
@@ -71,7 +85,7 @@
     },
     {
       "path": ".github/workflows/hex-publish.yml",
-      "blob_oid": "e4eb79ef0ca71de2bbcae82b96325f1649205bb2"
+      "blob_oid": "c2b5fb6fa0ec4512ce1358f259b1e4bee471d950"
     },
     {
       "path": ".github/workflows/ios-mirror-backfill.yml",
@@ -80,14 +94,14 @@
   ],
   "candidate_ci": {
     "name": "Crosswake CI",
-    "run_id": 34765569801,
-    "head_oid": "5b373d2588d3b06073df9b19294af8e25a6a1eb0",
+    "run_id": 34768678964,
+    "head_oid": "3d2b50733e28306d1001107c23d61f0c244ced56",
     "status": "COMPLETED",
     "conclusion": "SUCCESS",
     "successful_contexts": 49,
     "total_contexts": 49,
-    "created_at": "2026-09-13T15:25:45Z",
-    "completed_at": "2026-09-13T15:36:01Z"
+    "created_at": "2026-09-13T16:28:27Z",
+    "completed_at": "2026-09-13T16:36:46Z"
   },
   "deferral_marker_authority": {
     "cursor_complete": true,
