@@ -200,12 +200,12 @@ jobs:
           bash script/release_candidate/hex_artifacts.sh
           --ref "$CANDIDATE_REF"
           --output-dir "$CANDIDATE_ROOT/artifacts"
-          --manifest "$CANDIDATE_ROOT/artifacts.json"
+          --manifest "$CANDIDATE_ROOT/artifacts/artifacts.json"
       - name: Run five clean-room profiles twice from candidate artifacts
         run: >-
           bash script/verify_companion_cleanroom.sh
           --source-mode candidate-local
-          --artifact-manifest "$CANDIDATE_ROOT/artifacts.json"
+          --artifact-manifest "$CANDIDATE_ROOT/artifacts/artifacts.json"
           --result "$CANDIDATE_ROOT/cleanroom.json"
       - name: Run coordinate, mirror, workflow, and receipt proof
         run: >-
@@ -217,7 +217,7 @@ jobs:
           test/mix/tasks/crosswake_release_candidate_test.exs
           --max-cases 1
       - name: Validate candidate workflow integrity
-        run: asdf exec elixir script/check_release_workflow_integrity.exs
+        run: elixir script/check_release_workflow_integrity.exs
       - name: Write the exact non-vacuous CI receipt
         env:
           RUN_ID: ${{ github.run_id }}
@@ -230,7 +230,7 @@ jobs:
           from pathlib import Path
 
           root = Path(os.environ["CANDIDATE_ROOT"])
-          artifacts_path = root / "artifacts.json"
+          artifacts_path = root / "artifacts" / "artifacts.json"
           cleanroom_path = root / "cleanroom.json"
           artifacts = json.loads(artifacts_path.read_text(encoding="utf-8"))
           cleanroom = json.loads(cleanroom_path.read_text(encoding="utf-8"))
@@ -278,7 +278,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
           path: |
-            ${{ env.CANDIDATE_ROOT }}/artifacts.json
+            ${{ env.CANDIDATE_ROOT }}/artifacts/artifacts.json
             ${{ env.CANDIDATE_ROOT }}/cleanroom.json
             ${{ env.CANDIDATE_ROOT }}/release-candidate-ci-receipt.json
       - name: Summarize exact candidate proof

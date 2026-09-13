@@ -156,6 +156,16 @@ prepare_companion_source() {
       File.write!(Path.join(System.fetch_env!("DEP_ROOT"), ".hex"), :erlang.term_to_binary(marker))
     ' || fail
 
+  # A clean CI checkout has no companion-local deps directory. Resolve the pinned
+  # lock before entering the offline package audit; the unpacked candidate core
+  # remains the selected crosswake dependency through its generated .hex marker.
+  if ! (cd "$package_dir" && env -u HEX_API_KEY -u HEX_API_KEY_READ_ONLY \
+    MIX_HOME="$MIX_HOME_ISOLATED" HEX_HOME="$HEX_HOME_ISOLATED" \
+    ASDF_ERLANG_VERSION="$ASDF_ERLANG_VERSION" ASDF_ELIXIR_VERSION="$ASDF_ELIXIR_VERSION" \
+    "${RUNTIME[@]}" mix deps.get >/dev/null); then
+    fail
+  fi
+
   printf '%s' "$package_dir"
 }
 
