@@ -105,10 +105,12 @@ prepare_companion_source() {
   git archive "$CANDIDATE_REF" "packages/$package" | tar -x -C "$source_root"
   mkdir -p "$package_dir/deps"
 
-  for dependency_source in "$REPO_ROOT/packages/$package/deps/"*; do
+  for dependency_source in "$REPO_ROOT/deps/"* "$REPO_ROOT/packages/$package/deps/"*; do
     [ -e "$dependency_source" ] || continue
     [ "$(basename "$dependency_source")" != "crosswake" ] || continue
-    ln -s "$(cd "$dependency_source" && pwd -P)" "$package_dir/deps/$(basename "$dependency_source")"
+    dependency_target="$package_dir/deps/$(basename "$dependency_source")"
+    [ -e "$dependency_target" ] ||
+      ln -s "$(cd "$dependency_source" && pwd -P)" "$dependency_target"
   done
 
   mkdir "$package_dir/deps/crosswake"
