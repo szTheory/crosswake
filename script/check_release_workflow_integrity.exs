@@ -125,6 +125,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         ios_mirror_four_mode_adapter(non_comment_ios_backfill_script),
         trusted_hex_candidate_rehearsal(non_comment_recovery),
         trusted_ios_candidate_rehearsal(non_comment_ios_backfill_workflow),
+        trusted_candidate_receipt_attestation(non_comment_ios_backfill_workflow),
         trusted_rehearsal_identity(non_comment_recovery, non_comment_ios_backfill_workflow),
         trusted_rehearsal_no_mutation(non_comment_recovery, non_comment_ios_backfill_workflow),
         workflow_concurrency_queue_max(non_comment_workflow),
@@ -869,7 +870,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     block = job_block(jobs, "approved-release-guard")
 
     required_outputs =
-      ~w(approved_head approved_tree merge_oid merge_parents merge_tree candidate_receipt candidate_run_id)
+      ~w(approved_head approved_tree merge_oid merge_parents merge_tree candidate_receipt candidate_run_id candidate_receipt_run_id)
 
     check(
       "release.approval.merge_tree_guard",
@@ -878,7 +879,13 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(block, ~s([ "$parent_count" -eq 3 ])) and
         includes?(block, ~s([ "$approved_head" = "$second_parent" ])) and
         includes?(block, ~s([ "$merge_tree" = "$approved_tree" ])) and
+        includes?(block, "linked_candidate=false") and
+        includes?(block, ~s([ "$linked_candidate" = "true" ] || exit 0)) and
+        includes?(block, "phase168-candidate-receipt-${approved_head}") and
+        includes?(block, "phase168-candidate-ci-${approved_head}") and
+        includes?(block, "release-candidate-ci-receipt.json") and
         includes?(block, ~s(.state == "READY FOR APPROVAL")) and
+        includes?(block, ~s(.identity.bound == .identity.observed)) and
         includes?(block, ".external_state.changed == false") and
         job_needs?(jobs, "release-please", "approved-release-guard"),
       "Release Please must run only after exact approved-head parentage, identical tree, and READY receipt validation"
@@ -1126,6 +1133,23 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(rehearsal, "external_state_changed") and
         includes?(rehearsal, "candidate-rehearsal-ios"),
       "mirror baseline must be credential-free and candidate rehearsal must use the scoped deploy key only for an exact dry-run"
+    )
+  end
+
+  defp trusted_candidate_receipt_attestation(workflow) do
+    check(
+      "release.candidate.receipt_attestation",
+      includes?(workflow, "candidate-receipt-attestation") and
+        includes?(workflow, "attest-candidate-receipt:") and
+        includes?(workflow, "phase168-candidate-ci-${CANDIDATE_HEAD}") and
+        includes?(workflow, "candidate-rehearsal-hex") and
+        includes?(workflow, "candidate-rehearsal-ios") and
+        includes?(workflow, "Crosswake.ReleaseCandidate.Receipt.validate!") and
+        includes?(workflow, "phase168-candidate-receipt-${{ inputs.candidate_head }}") and
+        includes?(workflow, "candidate-receipt.json") and
+        includes?(workflow, "artifacts.json") and
+        includes?(workflow, "external_state_changed=false"),
+      "the existing trusted iOS workflow must attest one canonical READY receipt against exact CI, Hex, iOS, mirror, and zero-mutation evidence"
     )
   end
 

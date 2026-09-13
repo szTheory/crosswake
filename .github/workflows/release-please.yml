@@ -42,6 +42,7 @@ jobs:
       merge_tree: ${{ steps.guard.outputs.merge_tree }}
       candidate_receipt: ${{ steps.guard.outputs.candidate_receipt }}
       candidate_run_id: ${{ steps.guard.outputs.candidate_run_id }}
+      candidate_receipt_run_id: ${{ steps.guard.outputs.candidate_receipt_run_id }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -69,9 +70,13 @@ jobs:
             mix.exs .release-please-manifest.json \
             packages/crosswake-shell-core-android/build.gradle.kts | wc -l | tr -d ' ')
           [ "$linked_delta" -eq 3 ] || exit 0
-          grep -q '@version "0.2.1"' mix.exs
-          grep -q 'version = "0.2.1"' packages/crosswake-shell-core-android/build.gradle.kts
-          jq -e '."." == "0.2.1" and ."packages/crosswake-shell-core-ios" == "0.2.1" and ."packages/crosswake-shell-core-android" == "0.2.1"' .release-please-manifest.json >/dev/null
+          linked_candidate=false
+          if grep -q '@version "0.2.1"' mix.exs &&
+            grep -q 'version = "0.2.1"' packages/crosswake-shell-core-android/build.gradle.kts &&
+            jq -e '."." == "0.2.1" and ."packages/crosswake-shell-core-ios" == "0.2.1" and ."packages/crosswake-shell-core-android" == "0.2.1"' .release-please-manifest.json >/dev/null; then
+            linked_candidate=true
+          fi
+          [ "$linked_candidate" = "true" ] || exit 0
 
           # A linked release must be a two-parent merge. The approved Release Please
           # head is the second parent; its tree must be byte-identical to the merge.
@@ -84,23 +89,55 @@ jobs:
           [ "$approved_head" = "$second_parent" ]
           [ "$merge_tree" = "$approved_tree" ]
 
-          # Crosswake CI owns the canonical exact-head candidate receipt. Select an
-          # exact successful run for the approved head and require the named artifact.
+          # Crosswake CI owns credential-free candidate proof; the trusted iOS
+          # workflow separately attests the canonical READY receipt against CI,
+          # Hex, iOS, and live zero-mutation evidence. Require one unexpired exact-head
+          # attestation artifact, then independently bind its referenced CI run.
+          artifact_name="phase168-candidate-receipt-${approved_head}"
+          artifact_index=$(gh api -X GET "repos/$REPOSITORY/actions/artifacts" \
+            -f name="$artifact_name" -f per_page=100)
+          [ "$(printf '%s' "$artifact_index" | jq '[.artifacts[] | select(.expired == false)] | length')" -eq 1 ]
+          candidate_receipt_run_id=$(printf '%s' "$artifact_index" | jq -er \
+            '[.artifacts[] | select(.expired == false)] | first | .workflow_run.id')
+          receipt_run=$(gh run view "$candidate_receipt_run_id" --repo "$REPOSITORY" \
+            --json conclusion,event,workflowName)
+          printf '%s' "$receipt_run" | jq -e \
+            '.conclusion == "success" and .event == "workflow_dispatch" and .workflowName == "iOS mirror authority"' >/dev/null
+
+          receipt_dir="$RUNNER_TEMP/approved-candidate-receipt"
+          mkdir -p "$receipt_dir"
+          gh run download "$candidate_receipt_run_id" --repo "$REPOSITORY" \
+            --name "$artifact_name" --dir "$receipt_dir"
+          receipt="$receipt_dir/candidate-receipt.json"
+          test -f "$receipt"
+          test -f "$receipt_dir/artifacts.json"
+          jq -e --arg head "$approved_head" --arg tree "$approved_tree" --arg base "$first_parent" \
+            '.state == "READY FOR APPROVAL" and .identity.bound == .identity.observed and .identity.bound.head == $head and .identity.bound.tree == $tree and .identity.bound.base == $base and .external_state.changed == false and .external_state.publication == "NONE" and .credentials == {"exercised":true,"mirror_write_authority":"PROVEN"}' \
+            "$receipt" >/dev/null
+          candidate_receipt=$(sha256sum "$receipt" | awk '{print $1}')
+          candidate_run_id=$(jq -er '.identity.bound.run.id' "$receipt")
+
           runs=$(gh run list --repo "$REPOSITORY" --workflow crosswake-ci.yml \
             --commit "$approved_head" --status success --limit 20 \
             --json databaseId,headSha,conclusion)
-          candidate_run_id=$(printf '%s' "$runs" | jq -er \
-            --arg head "$approved_head" '[.[] | select(.headSha == $head and .conclusion == "success")] | first | .databaseId')
-          receipt_dir="$RUNNER_TEMP/approved-candidate-receipt"
-          mkdir -p "$receipt_dir"
+          printf '%s' "$runs" | jq -e --arg head "$approved_head" --argjson run "$candidate_run_id" \
+            'any(.[]; .databaseId == $run and .headSha == $head and .conclusion == "success")' >/dev/null
+          ci_dir="$RUNNER_TEMP/approved-candidate-ci"
+          mkdir -p "$ci_dir"
           gh run download "$candidate_run_id" --repo "$REPOSITORY" \
-            --name "phase168-candidate-receipt-${approved_head}" --dir "$receipt_dir"
-          receipt="$receipt_dir/candidate-receipt.json"
-          test -f "$receipt"
+            --name "phase168-candidate-ci-${approved_head}" --dir "$ci_dir"
+          ci_receipt="$ci_dir/release-candidate-ci-receipt.json"
+          test -f "$ci_receipt"
+          test -f "$ci_dir/artifacts/artifacts.json"
           jq -e --arg head "$approved_head" --arg tree "$approved_tree" \
-            '.state == "READY FOR APPROVAL" and .identity.bound.head == $head and .identity.bound.tree == $tree and .identity.observed.head == $head and .identity.observed.tree == $tree and .external_state.changed == false' \
+            --arg base "$first_parent" --arg run "$candidate_run_id" \
+            '.state == "PASS" and .head == $head and .tree == $tree and .base == $base and (.run_id | tostring) == $run and .external_state_changed == false' \
+            "$ci_receipt" >/dev/null
+          ci_receipt_sha=$(sha256sum "$ci_receipt" | awk '{print $1}')
+          jq -e --arg digest "$ci_receipt_sha" \
+            'any(.identity.bound.proofs[]; .id == "candidate.ci" and .sha256 == $digest)' \
             "$receipt" >/dev/null
-          candidate_receipt=$(sha256sum "$receipt" | awk '{print $1}')
+          cmp "$receipt_dir/artifacts.json" "$ci_dir/artifacts/artifacts.json"
 
           emit_output "linked_release=true"
           emit_output "approved_head=$approved_head"
@@ -110,6 +147,7 @@ jobs:
           emit_output "merge_tree=$merge_tree"
           emit_output "candidate_receipt=$candidate_receipt"
           emit_output "candidate_run_id=$candidate_run_id"
+          emit_output "candidate_receipt_run_id=$candidate_receipt_run_id"
 
   release-please:
     name: Release Please
@@ -706,7 +744,7 @@ jobs:
       - name: Download approved candidate payload manifest
         env:
           GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ needs.approved-release-guard.outputs.candidate_run_id }}
+          RUN_ID: ${{ needs.approved-release-guard.outputs.candidate_receipt_run_id }}
         run: |
           set -euo pipefail
           gh run download "$RUN_ID" --name "phase168-candidate-receipt-${{ needs.approved-release-guard.outputs.approved_head }}" --dir "$RUNNER_TEMP/approved-candidate"
