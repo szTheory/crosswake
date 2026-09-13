@@ -119,6 +119,8 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
   end
 
   test "publish permits only immediate ancestor or equal main with immutable atomic refs" do
+    assert Code.ensure_loaded?(Mirror)
+
     assert function_exported?(Mirror, :publication_plan!, 1),
            "Mirror.publication_plan!/1 must isolate ordinary publication from recovery"
 
@@ -150,6 +152,7 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
       |> put_in([:dry_run, :before_tag], @candidate_sha)
       |> put_in([:dry_run, :after_main], @candidate_sha)
       |> put_in([:dry_run, :after_tag], @candidate_sha)
+      |> put_in([:approval, :expected_old_ref], @candidate_sha)
       |> Map.put(:ancestry, "EQUAL")
 
     assert %{state: "PASS", operation: "NOOP", push_arguments: []} = Mirror.evaluate!(equal)
@@ -239,6 +242,16 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
     assert git!(fixture.mirror_repo, ["rev-parse", "refs/tags/v0.2.1"]) == fixture.new_split
     assert git!(fixture.mirror_repo, ["rev-parse", "refs/tags/v0.2.0"]) == fixture.old_split
     refute output =~ "force-with-lease"
+
+    expected_split = fixture.new_split
+
+    assert %{
+             "state" => "PASS",
+             "operation" => "PUBLISHED",
+             "external_state_changed" => true,
+             "remote_main" => ^expected_split,
+             "remote_tag" => ^expected_split
+           } = Jason.decode!(output)
   end
 
   test "publish and recovery remain unreachable from candidate readiness evaluation" do
@@ -347,6 +360,7 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
         "--prefix=packages/crosswake-shell-core-ios",
         "HEAD"
       ])
+      |> split_sha!()
 
     git!(root, ["init", "--bare", "-q", mirror_repo])
     git!(release_repo, ["push", "-q", mirror_repo, "#{old_split}:refs/heads/main"])
@@ -364,6 +378,7 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
         "--prefix=packages/crosswake-shell-core-ios",
         candidate_ref
       ])
+      |> split_sha!()
 
     %{
       release_repo: release_repo,
@@ -378,5 +393,12 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
     {output, status} = System.cmd("git", ["-C", root | args], stderr_to_stdout: true)
     assert status == 0, output
     String.trim(output)
+  end
+
+  defp split_sha!(output) do
+    output
+    |> then(&Regex.scan(~r/[0-9a-f]{40}/, &1))
+    |> List.last()
+    |> hd()
   end
 end
