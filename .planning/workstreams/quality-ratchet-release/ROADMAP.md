@@ -222,7 +222,17 @@ Plans:
   4. The exact Crosswake 0.2.1 candidate commit passes package audit, build, tests, documentation generation, clean-room installation, and release-status verification.
   5. Every reversible release preparation step is automated, and the remaining irreversible package or tag publication is presented as one explicit maintainer approval rather than performed implicitly.
 
-**Plans**: TBD
+**Plans**: 8 plans
+
+Plans:
+- [ ] 168-01-PLAN.md — Land the exact Phase 167 handoff and close runtime/pagination authority gaps.
+- [ ] 168-02-PLAN.md — Define exact candidate identity, five-state receipt, projections, and CLI.
+- [ ] 168-03-PLAN.md — Build and inspect six candidate packages and enforce coordinate/floor consistency.
+- [ ] 168-04-PLAN.md — Prove five companion profiles from candidate payloads and prepare exact-public verification.
+- [ ] 168-05-PLAN.md — Separate mirror baseline, candidate rehearsal, publication, and recovery authority.
+- [ ] 168-06-PLAN.md — Wire trusted rehearsal and the guarded linked postapproval graph into existing workflows.
+- [ ] 168-07-PLAN.md — Ratchet candidate contracts into existing CI, status, and release guidance.
+- [ ] 168-08-PLAN.md — Capture the refreshed exact candidate and stop at the single irreversible approval.
 
 ## Progress
 
