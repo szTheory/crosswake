@@ -700,7 +700,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
     pins = Regex.scan(~r/actions\/setup-java@([0-9a-f]{40}) # v6(?:\.\d+\.\d+)?/, matches)
 
-    assert length(pins) == 7
+    assert length(pins) == 8
     assert pins |> Enum.map(&Enum.at(&1, 1)) |> Enum.uniq() == [@setup_java_v6_oid]
   end
 

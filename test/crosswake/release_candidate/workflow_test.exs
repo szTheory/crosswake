@@ -128,6 +128,70 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert guard =~ "linked_release=false"
   end
 
+  test "proposal refresh cannot be reported as a partial native release" do
+    workflow = File.read!(@release_workflow)
+    rollup = job_block(workflow, "native-release-rollup")
+
+    assert rollup =~ "approved-release-guard"
+    assert rollup =~ "LINKED_RELEASE: ${{ needs.approved-release-guard.outputs.linked_release }}"
+    assert rollup =~ ~s([ "$LINKED_RELEASE" != "true" ])
+    assert rollup =~ ~s(printf "false")
+  end
+
+  test "partial 0.2.1 recovery is bound to the approved immutable release identity" do
+    hex_workflow = File.read!(@hex_workflow)
+    ios_workflow = File.read!(@ios_workflow)
+    android_script = File.read!("script/release_candidate/android_publication.sh")
+    hex_recovery = job_block(hex_workflow, "publish")
+    android_recovery = job_block(hex_workflow, "recover-android-core")
+    ios_publish = job_block(ios_workflow, "publish-ios-mirror")
+
+    approved = [
+      "b780a19863936619394087f1ffd384f1dca17c93",
+      "1051ab90cf75e918c6f596f84578ac77eadf45af",
+      "ecf63228243bfe7c2d6a377be996aa374b31d91f",
+      "359ef8a5257b54e472a2328ce3ae722222506527312b3805467d643bb8666c78"
+    ]
+
+    for identity <- approved do
+      assert hex_recovery =~ identity
+      assert android_recovery =~ identity
+      assert ios_publish =~ identity
+    end
+
+    assert ios_publish =~ "9533049d1ee5239b122b43749ff90f8ace7c7f6b"
+    assert ios_publish =~ "658d60253c58b7e0aedb576f16f40766fa677f23"
+    assert ios_publish =~ "424ab96ede1b92f2b751b54bce04c6e607f0f3c8"
+    assert ios_publish =~ "ios_mirror.sh publish"
+    assert ios_publish =~ ~s(CROSSWAKE_IOS_MIRROR_EXECUTE: "true")
+    refute ios_publish =~ "force"
+
+    assert hex_workflow =~ "android-recovery"
+    assert android_recovery =~ "android_publication.sh"
+    assert android_recovery =~ "--recover"
+    assert android_recovery =~ "ref: e089bfc0e8a4edf0b024a2a284c8a384216bd64d"
+    assert android_recovery =~ "path: recovery-tools"
+    assert android_recovery =~ "path: release-source"
+    refute android_recovery =~ "ref: ${{ github.sha }}"
+    refute android_recovery =~ "ref: main"
+    refute android_recovery =~ "refs/heads/"
+
+    assert android_recovery =~
+             ~s(bash "$GITHUB_WORKSPACE/recovery-tools/script/release_candidate/android_publication.sh")
+
+    assert android_recovery =~ ~s(--release-root "$GITHUB_WORKSPACE/release-source")
+    assert android_script =~ "--release-root"
+    assert android_script =~ ~s(git -C "$RELEASE_ROOT" rev-parse HEAD)
+    refute android_recovery =~ "--execute"
+
+    assert android_script =~
+             "io/github/sztheory/crosswake-shell-core-android/0.2.1/crosswake-shell-core-android-0.2.1.pom"
+
+    refute android_script =~ "io/crosswake/crosswake-shell-core/0.2.1"
+    refute hex_recovery =~ "--replace"
+    refute android_recovery =~ "--replace"
+  end
+
   test "postapproval graph contains only the three linked core coordinates" do
     workflow = File.read!(@release_workflow)
     android = job_block(workflow, "publish-android-core")

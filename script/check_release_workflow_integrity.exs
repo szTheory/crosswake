@@ -120,6 +120,11 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
           non_comment_recovery,
           non_comment_android_publication
         ),
+        phase168_partial_recovery_routes(
+          non_comment_recovery,
+          non_comment_ios_backfill_workflow,
+          non_comment_android_publication
+        ),
         native_rollup_fails_closed(jobs),
         release_failure_alert_native(jobs),
         ios_mirror_four_mode_adapter(non_comment_ios_backfill_script),
@@ -993,7 +998,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
     exact_android_recovery? =
       includes?(android_publication, "--recover") and
-        includes?(android_publication, ~S|[ "$(git rev-parse HEAD)" = "$SOURCE_REF" ]|) and
+        includes?(
+          android_publication,
+          ~S|[ "$(git -C "$RELEASE_ROOT" rev-parse HEAD)" = "$SOURCE_REF" ]|
+        ) and
         includes?(android_publication, "already public; exact-ref recovery is complete") and
         not includes?(android_publication, "--replace") and
         not includes?(android_publication, "--force")
@@ -1004,6 +1012,72 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(rollup, "Crosswake.ReleaseCandidate.Workflow.evaluate_cli!()") and
         includes?(rollup, "if: ${{ always() }}"),
       "partial rollup must retain fixed child truth and allow only exact-ref/idempotent or forward-fix recovery without replacement"
+    )
+  end
+
+  defp phase168_partial_recovery_routes(recovery_workflow, ios_workflow, android_publication) do
+    hex_recovery = recovery_workflow |> job_blocks() |> job_block("publish")
+    android_recovery = recovery_workflow |> job_blocks() |> job_block("recover-android-core")
+    ios_publish = ios_workflow |> job_blocks() |> job_block("publish-ios-mirror")
+
+    approved_identity = [
+      "b780a19863936619394087f1ffd384f1dca17c93",
+      "1051ab90cf75e918c6f596f84578ac77eadf45af",
+      "ecf63228243bfe7c2d6a377be996aa374b31d91f",
+      "359ef8a5257b54e472a2328ce3ae722222506527312b3805467d643bb8666c78"
+    ]
+
+    exact_registry_identity? =
+      Enum.all?(approved_identity, fn identity ->
+        includes?(hex_recovery, identity) and includes?(android_recovery, identity)
+      end)
+
+    exact_ios_identity? =
+      Enum.all?(
+        approved_identity ++
+          [
+            "9533049d1ee5239b122b43749ff90f8ace7c7f6b",
+            "658d60253c58b7e0aedb576f16f40766fa677f23",
+            "424ab96ede1b92f2b751b54bce04c6e607f0f3c8"
+          ],
+        &includes?(ios_publish, &1)
+      )
+
+    check(
+      "release.partial.phase168_recovery_routes",
+      exact_registry_identity? and exact_ios_identity? and
+        includes?(hex_recovery, ~s([ "$RECOVERY_REF" = "$PHASE168_MERGE_OID" ])) and
+        includes?(android_recovery, "github.event.inputs.operation == 'android-recovery'") and
+        includes?(android_recovery, "android_publication.sh") and
+        includes?(
+          android_recovery,
+          "ref: e089bfc0e8a4edf0b024a2a284c8a384216bd64d"
+        ) and
+        not includes?(android_recovery, "ref: ${{ github.sha }}") and
+        not includes?(android_recovery, "ref: main") and
+        not includes?(android_recovery, "refs/heads/") and
+        includes?(android_recovery, "path: recovery-tools") and
+        includes?(android_recovery, "path: release-source") and
+        includes?(
+          android_recovery,
+          ~s(bash "$GITHUB_WORKSPACE/recovery-tools/script/release_candidate/android_publication.sh")
+        ) and
+        includes?(android_recovery, ~s(--release-root "$GITHUB_WORKSPACE/release-source")) and
+        includes?(android_publication, "--release-root") and
+        includes?(android_publication, ~s(git -C "$RELEASE_ROOT" rev-parse HEAD)) and
+        includes?(android_recovery, "--recover") and not includes?(android_recovery, "--execute") and
+        includes?(ios_publish, "github.event.inputs.operation == 'publish'") and
+        includes?(ios_publish, "ios_mirror.sh publish") and
+        includes?(ios_publish, ~s(CROSSWAKE_IOS_MIRROR_EXECUTE: "true")) and
+        not includes?(ios_publish, "force") and
+        includes?(
+          android_publication,
+          "io/github/sztheory/crosswake-shell-core-android/0.2.1/crosswake-shell-core-android-0.2.1.pom"
+        ) and
+        not includes?(android_publication, "io/crosswake/crosswake-shell-core/0.2.1") and
+        not includes?(android_publication, "--replace") and
+        not includes?(android_publication, "--force"),
+      "Phase 168 partial recovery must bind Hex, Maven, and atomic iOS publication to the approved immutable b780/1051/ecf/359 identity, correct public coordinates, and no tag movement or package replacement"
     )
   end
 
@@ -1048,7 +1122,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
     required_needs =
       Enum.all?(
-        ~w(release-please publish-ios-core clean-room-proof-ios publish-android-core clean-room-proof-android),
+        ~w(approved-release-guard release-please publish-ios-core clean-room-proof-ios publish-android-core clean-room-proof-android),
         &job_needs?(jobs, "native-release-rollup", &1)
       )
 
@@ -1061,11 +1135,14 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     check(
       "release.workflow.native_rollup_summary",
       required_needs and job_if(jobs, "native-release-rollup") == "${{ always() }}" and
-        required_results and includes?(block, "$GITHUB_STEP_SUMMARY") and
+        required_results and
+        includes?(block, "needs.approved-release-guard.outputs.linked_release") and
+        includes?(block, ~s([ "$LINKED_RELEASE" != "true" ])) and
+        includes?(block, "$GITHUB_STEP_SUMMARY") and
         includes?(block, "native_core=\"partial\"") and
         includes?(block, "native_core=${native_core}") and includes?(block, "next_action") and
         includes?(block, "Fix MIRROR_DEPLOY_KEY or run the iOS mirror backfill workflow."),
-      "native-release-rollup must always summarize native publish/proof results, expose partial native_core state, and give a next safe action"
+      "native-release-rollup must always summarize native publish/proof results, ignore proposal-only paths unless the exact linked-release guard passed, expose partial native_core state, and give a next safe action"
     )
   end
 

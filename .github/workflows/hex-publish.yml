@@ -14,13 +14,14 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: 'Rehearse the exact candidate or recover one immutable Hex coordinate.'
+        description: 'Rehearse the exact candidate or recover one immutable registry coordinate.'
         required: true
         type: choice
         default: recovery
         options:
           - candidate-rehearsal
           - recovery
+          - android-recovery
       package:
         description: 'Hex package to recover.'
         required: false
@@ -165,6 +166,10 @@ jobs:
           APPROVED_TREE: ${{ inputs.approved_tree }}
           MERGE_OID: ${{ inputs.merge_oid }}
           CANDIDATE_RECEIPT: ${{ inputs.candidate_receipt }}
+          PHASE168_MERGE_OID: b780a19863936619394087f1ffd384f1dca17c93
+          PHASE168_APPROVED_HEAD: 1051ab90cf75e918c6f596f84578ac77eadf45af
+          PHASE168_APPROVED_TREE: ecf63228243bfe7c2d6a377be996aa374b31d91f
+          PHASE168_CANDIDATE_RECEIPT: 359ef8a5257b54e472a2328ce3ae722222506527312b3805467d643bb8666c78
         run: |
           set -euo pipefail
 
@@ -187,6 +192,11 @@ jobs:
           if [ "$RECOVERY_PACKAGE" = "crosswake" ] && [ "$EXPECTED_VERSION" = "0.2.1" ]; then
             printf '%s' "$APPROVED_HEAD$APPROVED_TREE$MERGE_OID" | grep -Eq '^[0-9a-f]{120}$'
             printf '%s' "$CANDIDATE_RECEIPT" | grep -Eq '^[0-9a-f]{64}$'
+            [ "$RECOVERY_REF" = "$PHASE168_MERGE_OID" ]
+            [ "$MERGE_OID" = "$PHASE168_MERGE_OID" ]
+            [ "$APPROVED_HEAD" = "$PHASE168_APPROVED_HEAD" ]
+            [ "$APPROVED_TREE" = "$PHASE168_APPROVED_TREE" ]
+            [ "$CANDIDATE_RECEIPT" = "$PHASE168_CANDIDATE_RECEIPT" ]
           fi
 
           if printf '%s' "$RECOVERY_REF" | grep -Eq "$FULL_SHA_PATTERN"; then
@@ -218,6 +228,8 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ inputs.ref }}
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Print checked-out SHA
         env:
@@ -269,3 +281,70 @@ jobs:
           --approved-tree "${{ inputs.approved_tree }}"
           --merge-oid "${{ inputs.merge_oid }}"
           --candidate-receipt "${{ inputs.candidate_receipt }}"
+
+  recover-android-core:
+    name: Recover approved Android core from exact merge
+    if: ${{ github.event.inputs.operation == 'android-recovery' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Validate exact Phase 168 Android recovery authority
+        env:
+          RECOVERY_PACKAGE: ${{ inputs.package }}
+          RECOVERY_VERSION: ${{ inputs.release_version }}
+          RECOVERY_REF: ${{ inputs.ref }}
+          APPROVED_HEAD: ${{ inputs.approved_head }}
+          APPROVED_TREE: ${{ inputs.approved_tree }}
+          CANDIDATE_RECEIPT: ${{ inputs.candidate_receipt }}
+          PHASE168_MERGE_OID: b780a19863936619394087f1ffd384f1dca17c93
+          PHASE168_APPROVED_HEAD: 1051ab90cf75e918c6f596f84578ac77eadf45af
+          PHASE168_APPROVED_TREE: ecf63228243bfe7c2d6a377be996aa374b31d91f
+          PHASE168_CANDIDATE_RECEIPT: 359ef8a5257b54e472a2328ce3ae722222506527312b3805467d643bb8666c78
+        run: |
+          set -euo pipefail
+          [ "$RECOVERY_PACKAGE" = "crosswake" ]
+          [ "$RECOVERY_VERSION" = "0.2.1" ]
+          [ "$RECOVERY_REF" = "$PHASE168_MERGE_OID" ]
+          [ "${{ inputs.merge_oid }}" = "$PHASE168_MERGE_OID" ]
+          [ "$APPROVED_HEAD" = "$PHASE168_APPROVED_HEAD" ]
+          [ "$APPROVED_TREE" = "$PHASE168_APPROVED_TREE" ]
+          [ "$CANDIDATE_RECEIPT" = "$PHASE168_CANDIDATE_RECEIPT" ]
+
+      - name: Check out trusted recovery tooling
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: e089bfc0e8a4edf0b024a2a284c8a384216bd64d
+          path: recovery-tools
+          persist-credentials: false
+
+      - name: Check out the immutable release payload
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.ref }}
+          path: release-source
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Recover the exact Maven coordinate without replacement
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyId }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
+        run: >
+          bash "$GITHUB_WORKSPACE/recovery-tools/script/release_candidate/android_publication.sh"
+          --release-root "$GITHUB_WORKSPACE/release-source"
+          --version "${{ inputs.release_version }}"
+          --ref "${{ inputs.ref }}"
+          --approved-head "${{ inputs.approved_head }}"
+          --approved-tree "${{ inputs.approved_tree }}"
+          --candidate-receipt "${{ inputs.candidate_receipt }}"
+          --recover
