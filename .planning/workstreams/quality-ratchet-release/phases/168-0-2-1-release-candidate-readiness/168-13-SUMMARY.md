@@ -14,7 +14,7 @@ affects: [phase-168-evidence, release-approval-audit-trail]
 actuals:
   tasks: 2
   commits: 2
-plan_head_before: 52135b09
+plan_head_before: b97bf702
 tech-stack:
   added: []
   patterns: [byte-for-byte-evidence-recovery, dated-provenance-not-retroactive-edit]

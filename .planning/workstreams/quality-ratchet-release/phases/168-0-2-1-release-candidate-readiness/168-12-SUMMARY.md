@@ -16,7 +16,7 @@ affects: [ios-mirror-backfill, release-workflow-integrity-scanner, companion-pub
 actuals:
   tasks: 2
   commits: 2
-plan_head_before: 862dcada
+plan_head_before: 46eb808e
 tech-stack:
   added: []
   patterns: [gate-before-credentials, pin-everything-shape-check-the-lease, structural-ordering-check]
@@ -57,8 +57,8 @@ this was a latent hole, not the path the live publication took. Closed on its me
 
 | Task | Commit |
 |---|---|
-| 1 (RED) | `54cc1eb2` test(168-12): require exact identity authorization on mirror recovery |
-| 2 (GREEN) | `f16aa470` fix(168-12): gate iOS mirror recovery on exact approved identity |
+| 1 (RED) | `0949020f` test(168-12): require exact identity authorization on mirror recovery |
+| 2 (GREEN) | `1e9f3852` fix(168-12): gate iOS mirror recovery on exact approved identity |
 
 ## Evidence and Verification
 
