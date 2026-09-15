@@ -26,6 +26,25 @@ The exact Release Please head, tree, merge base, workflow blobs, artifact digest
 and credential checks form the candidate identity. A branch name, a moving pull-request head,
 or a successful test count without those bindings is not candidate evidence.
 
+## Before releasing any version other than 0.2.1
+
+**STOP — this pipeline currently publishes exactly one version.**
+
+`publish-hex`, `publish-ios-core`, `publish-android-core`, and `exact-public-proof` in
+`.github/workflows/release-please.yml` are each gated on
+`needs.release-please.outputs.version == '0.2.1'`. For any other version every one of them skips,
+so the release **tags and then publishes nothing**. The linked rollup reports `PARTIAL` — correctly,
+but only because everything downstream was skipped. Do not read that `PARTIAL` as a transient
+failure to retry.
+
+Close `TODO-009` / `SEED-017` before attempting a release of `0.2.2` or later. The fix must
+generalize the version **without** generalizing the authority: the per-release exact-identity
+binding has to replace the version literal, not disappear with it.
+
+Related: a release completing through exact-ref recovery does not run `exact-public-proof` at all,
+because that job `needs:` the ordinary publish jobs. 0.2.1 shipped this way, which is why the
+post-publication proof has never executed.
+
 ## Exact seven-step operator sequence
 
 ### 1. Land the exact five-blob stack
