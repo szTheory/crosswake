@@ -13,6 +13,7 @@ re_verification:
   gaps_remaining: []
   regressions: []
 human_verification:
+
   - test: "Run the android-publish-fire-drill workflow_dispatch lane after secrets are provisioned per SETUP.md"
     expected: "Preflight passes (all 8 secrets present), local publish produces AAR + sources.jar + javadoc.jar + POM + .asc files in ~/.m2, POM fields validated, Central Portal upload reaches VALIDATED state, deployment is successfully DROPped via DELETE API call, fire-drill reports 'Version coordinate is FREE'"
     why_human: "Requires provisioned credentials (8 GitHub Actions secrets), a real Sonatype account, a GPG key on keyservers, and network access to Central Portal. Cannot be verified by static analysis."
@@ -25,6 +26,10 @@ human_verification:
   - test: "Verify Sonatype namespace io.github.sztheather is active in Central Portal"
     expected: "Login to central.sonatype.com confirms io.github.sztheather namespace is verified and active"
     why_human: "No status API exists for Central Portal namespace verification. Documented as a known preflight blind spot in SETUP.md."
+audit_acknowledged:
+  milestone: v22.0
+  at: 2026-09-15
+  status: human_needed
 ---
 
 # Phase 110: Native Publish & Lockstep Infrastructure Verification Report

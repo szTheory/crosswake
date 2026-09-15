@@ -6,12 +6,17 @@ score: 5/7 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
 human_verification:
+
   - test: "Run bin/see-it-run.sh --build, then bin/capture-collateral.sh, then capture iOS Simulator and Android Emulator screenshots + three-runtime-montage.png composite + see-it-run.gif recording using the printed xcrun/adb/ImageMagick/gifsicle commands, then commit all seven binaries under brandbook/collateral/see-it-run/"
     expected: "brandbook/collateral/see-it-run/ contains web-home.png, web-offline.png, web-bridge-proof.png (automated), ios-simulator.png, android-emulator.png, three-runtime-montage.png, see-it-run.gif (human-captured); COLL-01 and COLL-02 are met"
     why_human: "iOS simulator and Android emulator captures require macOS + Xcode + Android SDK + Phase-126 Dev build on the maintainer's Mac. Cannot be automated in CI. Explicitly scoped as a user_setup manual gate in 128-03-PLAN.md (D-03/D-19 discipline)."
   - test: "Verify guides/see_it_run.md renders correctly in ExDoc and that the raw.githubusercontent.com image URLs resolve once the binaries are committed (run mix docs, open doc/see_it_run.html)"
     expected: "The guide renders with the montage PNG and GIF inline; no broken-image icons in local ExDoc output after binaries land"
     why_human: "mix docs exits 0 already (verified); image URL resolution depends on the binaries being committed and pushed to main — cannot verify programmatically without the actual files on origin."
+audit_acknowledged:
+  milestone: v22.0
+  at: 2026-09-15
+  status: human_needed
 ---
 
 # Phase 128: Collateral + See It Run Guide — Verification Report
@@ -121,6 +126,7 @@ No blockers detected.
 #### 1. Commit the Seven Collateral Asset Binaries (COLL-01 / COLL-02)
 
 **Test:** On the maintainer's Mac (Xcode + Android SDK + Phase-126 Dev build):
+
 1. Run `bin/see-it-run.sh --build` to boot the shared backend
 2. Run `bin/capture-collateral.sh` — captures `web-home.png`, `web-offline.png`, `web-bridge-proof.png` automatically via Playwright
 3. With iOS Simulator booted and dev-wired: `xcrun simctl io booted screenshot brandbook/collateral/see-it-run/ios-simulator.png`

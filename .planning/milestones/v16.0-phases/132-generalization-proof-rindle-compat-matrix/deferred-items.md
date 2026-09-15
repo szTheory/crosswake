@@ -17,6 +17,7 @@ change) — not caused by the rindle extraction. Logged, deferred, then **fixed 
    that the fixture predated; no readiness category/code/proof-class/rebuild change. (A second,
    intentional line — `guides/companion_compatibility.md` in the docs list — came from also
    un-orphaning that guide in `mix.exs` extras to green the `hex page proof` lane.)
+  status: acknowledged
 
 ## Also fixed in Phase 135 (was failing on the PR, not in deferred-items)
 
