@@ -11,6 +11,30 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Unpublished support claims
+
+* No new support claims have been cut after `0.2.1` yet. Future entries here must distinguish planning milestone work from published Hex release truth.
+* **The companion-decoupling core refactor shipped in `0.2.0`** (runtime `:companions` registry inversion — see the `[0.2.0]` section below).
+* The current published Hex family includes `crosswake 0.2.1`, `crosswake_sigra 0.1.3`, `crosswake_chimeway 0.1.0`, and `crosswake_threadline 0.1.0`. The local release graph also tracks `crosswake_rulestead 0.1.0` and `crosswake_rindle 0.1.0`; public registry presence is reported by `mix crosswake.release.status --live`, and compatibility floors remain documented in `guides/companion_compatibility.md`.
+
+### Verification-required and advisory surfaces
+
+* Storefront, provider, device, checked-in native host, and optional companion proof lanes remain visible as advisory or verification-required evidence. They are not equivalent to fully supported native runtime breadth.
+* Provider/device sandbox proof remains advisory unless promotion criteria pass.
+
+### Deferred non-shipped claims
+
+* RevenueCat provider adapter, Chimeway notification delivery execution, native device/emulator proof lanes, and broad native runtime expansion beyond the listed live companion packages are not shipped in the published core Hex package. They stay routed to future milestones and must not be promoted without provider/native proof.
+* Future companion or native breadth still requires its own release, proof, and support-matrix update. Existing live companion packages do not promote RevenueCat, push delivery execution, physical-device evidence, or broad native runtime expansion.
+
+### Published Hex truth
+
+* The current published Hex release is `0.2.1`. Public readers should treat this `[Unreleased]` section as future development and planning continuity, not a newer installable release.
+
+## [0.2.1] — 2026-09-14
+
+> Published release. Patch release over `0.2.0` carrying the Phase 154 control-surface, bridge-dispatch, and installer work below. The `manifest_schema_version` compatibility bump it contains is additive and native-inert.
+
 ### Upgrade Impact
 
 **compatibility-bump only**
@@ -39,26 +63,6 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 * Documentation-only: add an architecture guide and source walkthrough with accessible light/dark Mermaid diagrams and the Crosswake docs favicon. This adds no runtime API or support claim.
 * Document the mixed-host boundary: same-origin paths short-circuited to a reverse proxy are outside Phoenix route policy and the Crosswake manifest during the proxy-only phase; explicit manifest ownership for non-Phoenix routes remains unsupported.
 * Document the external bridge module's required host esbuild flags and the installer/doctor pre-shell day-one flow.
-
-### Unpublished support claims
-
-* No new support claims have been cut after `0.2.0` yet. Future entries here must distinguish planning milestone work from published Hex release truth.
-* **The companion-decoupling core refactor shipped in `0.2.0`** (runtime `:companions` registry inversion — see the `[0.2.0]` section below).
-* The current published Hex family includes `crosswake 0.2.0`, `crosswake_sigra 0.1.3`, `crosswake_chimeway 0.1.0`, and `crosswake_threadline 0.1.0`. The local release graph also tracks `crosswake_rulestead 0.1.0` and `crosswake_rindle 0.1.0`; public registry presence is reported by `mix crosswake.release.status --live`, and compatibility floors remain documented in `guides/companion_compatibility.md`.
-
-### Verification-required and advisory surfaces
-
-* Storefront, provider, device, checked-in native host, and optional companion proof lanes remain visible as advisory or verification-required evidence. They are not equivalent to fully supported native runtime breadth.
-* Provider/device sandbox proof remains advisory unless promotion criteria pass.
-
-### Deferred non-shipped claims
-
-* RevenueCat provider adapter, Chimeway notification delivery execution, native device/emulator proof lanes, and broad native runtime expansion beyond the listed live companion packages are not shipped in the published core Hex package. They stay routed to future milestones and must not be promoted without provider/native proof.
-* Future companion or native breadth still requires its own release, proof, and support-matrix update. Existing live companion packages do not promote RevenueCat, push delivery execution, physical-device evidence, or broad native runtime expansion.
-
-### Published Hex truth
-
-* The current published Hex release is `0.2.0`. Public readers should treat this `[Unreleased]` section as future development and planning continuity, not a newer installable release.
 
 ## [0.2.0] — 2026-07-03
 
