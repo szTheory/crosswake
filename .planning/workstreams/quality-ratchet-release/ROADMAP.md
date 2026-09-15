@@ -222,7 +222,7 @@ Plans:
   4. The exact Crosswake 0.2.1 candidate commit passes package audit, build, tests, documentation generation, clean-room installation, and release-status verification.
   5. Every reversible release preparation step is automated, and the remaining irreversible package or tag publication is presented as one explicit maintainer approval rather than performed implicitly.
 
-**Plans**: 7/8 plans executed
+**Plans**: 13 plans (8 executed, 5 gap closure)
 
 Plans:
 **Wave 1**
@@ -255,7 +255,27 @@ Plans:
 
 **Wave 8** *(blocked on Wave 7 completion)*
 
-- [ ] 168-08-PLAN.md — Capture the refreshed exact candidate and stop at the single irreversible approval.
+- [x] 168-08-PLAN.md — Capture the refreshed exact candidate and stop at the single irreversible approval.
+
+**Wave 9** *(gap closure — 168-VERIFICATION gap 3, highest urgency)*
+
+- [ ] 168-09-PLAN.md — Restore 0.2.1 version truth on protected default and close duplicate-release PR #158 unmerged.
+
+**Wave 10** *(gap closure — blocked on Wave 9 completion)*
+
+- [ ] 168-10-PLAN.md — Guard against a manifest version falling behind the newest published release tag.
+
+**Wave 11** *(gap closure — blocked on Wave 10 completion)*
+
+- [ ] 168-11-PLAN.md — Reconcile changelog published-release truth to the released 0.2.1.
+
+**Wave 12** *(gap closure — 168-VERIFICATION gap 1 / REVIEW CR-01, blocked on Wave 11 completion)*
+
+- [ ] 168-12-PLAN.md — Gate the iOS mirror recovery job on the approved exact identity and hold it with a scanner check.
+
+**Wave 13** *(gap closure — 168-VERIFICATION gap 2, blocked on Wave 12 completion)*
+
+- [ ] 168-13-PLAN.md — Land the canonical candidate receipt, the approval dossier, and the 168-08 record.
 
 ## Progress
 
@@ -267,7 +287,7 @@ Plans:
 | 165. Efficient and Maintainable CI | 13/13 | Complete    | 2026-09-09 |
 | 166. Clean-Checkout Engineering Quality | 8/8 | Complete    | 2026-09-10 |
 | 167. Documentation and Pull-Request Reconciliation | 9/9 | Complete    | 2026-09-12 |
-| 168. 0.2.1 Release Candidate Readiness | 7/8 | In Progress|  |
+| 168. 0.2.1 Release Candidate Readiness | 8/13 | In Progress (gap closure) |  |
 
 ---
 *Roadmap created: 2026-08-28 for workstream `quality-ratchet-release`*
