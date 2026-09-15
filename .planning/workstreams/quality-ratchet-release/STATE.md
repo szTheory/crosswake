@@ -1,22 +1,16 @@
 ---
 gsd_state_version: "1.0"
-milestone: v22.0
-milestone_name: Quality Ratchet & Release Readiness
-status: Awaiting next milestone
-stopped_at: Completed 168-13-PLAN.md; phase 168 closed with 1 item deferred to v23.0
-last_updated: "2026-09-15T20:31:26.703Z"
+milestone: v23.0
+milestone_name: Release Pipeline Repair & Proof-Lane Truth
+status: planning
+last_updated: "2026-09-15T22:05:16.672Z"
 last_activity: 2026-09-15
-last_activity_desc: Milestone v22.0 completed and archived
-state_head: 05e36baf1d58535fd5df9089321a2674f82e14b2
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 48
-  completed_plans: 48
-  percent: 100
-workstream: quality-ratchet-release
-current_phase: 168
-current_phase_name: 0.2.1 Release Candidate Readiness
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -45,10 +39,10 @@ Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
 
-Phase: Milestone v22.0 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-09-15 — Milestone v22.0 completed and archived
+Status: Defining requirements
+Last activity: 2026-09-15 — Milestone v23.0 started
 
 ## Performance Metrics
 
