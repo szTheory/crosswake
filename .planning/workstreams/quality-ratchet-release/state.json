@@ -1,0 +1,38 @@
+{
+  "contract": "1.0.0",
+  "flavor": "core",
+  "milestone": "v22.0 — Quality Ratchet & Release Readiness",
+  "phases": [
+    {
+      "number": "164",
+      "name": "Dependency Security and Gate Authority",
+      "status": "complete"
+    },
+    {
+      "number": "165",
+      "name": "Efficient and Maintainable CI",
+      "status": "complete"
+    },
+    {
+      "number": "166",
+      "name": "Clean-Checkout Engineering Quality",
+      "status": "complete"
+    },
+    {
+      "number": "167",
+      "name": "Documentation and Pull-Request Reconciliation",
+      "status": "complete"
+    },
+    {
+      "number": "168",
+      "name": "0.2.1 Release Candidate Readiness",
+      "status": "pending"
+    }
+  ],
+  "next": {
+    "command": "/gsd:progress",
+    "label": "Show progress",
+    "reason": "Unsure of state — showing progress"
+  },
+  "updated_at": "2026-09-15T20:31:26.722Z"
+}

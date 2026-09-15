@@ -2,21 +2,21 @@
 gsd_state_version: "1.0"
 milestone: v22.0
 milestone_name: Quality Ratchet & Release Readiness
-current_phase: 168
-current_phase_name: 0.2.1 Release Candidate Readiness
-status: phase_complete
+status: Awaiting next milestone
 stopped_at: Completed 168-13-PLAN.md; phase 168 closed with 1 item deferred to v23.0
-last_updated: "2026-09-16T00:55:00.000Z"
+last_updated: "2026-09-15T20:31:26.703Z"
 last_activity: 2026-09-16
-last_activity_desc: Phase 168 closed — 13/13 plans, 5/6 must-haves, exact-public proof deferred to v23.0
-state_head: 81ad5ce2576973ecc282d515dc38fba38edbcfab
+last_activity_desc: Milestone v22.0 completed and archived
+state_head: 05e36baf1d58535fd5df9089321a2674f82e14b2
 progress:
   total_phases: 5
   completed_phases: 5
-  total_plans: 43
-  completed_plans: 43
+  total_plans: 48
+  completed_plans: 48
   percent: 100
 workstream: quality-ratchet-release
+current_phase: 168
+current_phase_name: 0.2.1 Release Candidate Readiness
 ---
 
 # Project State
@@ -31,12 +31,10 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 
 ## Current Position
 
-Phase: 168 (0.2.1 Release Candidate Readiness) — COMPLETE (1 item deferred)
-Plan: 13 of 13
-Status: Milestone v22.0 phases all complete; ready for milestone closeout
-Last activity: 2026-09-16 — Phase 168 closed, exact-public proof deferred to v23.0
-
-Progress: [██████████] 100%
+Phase: Milestone v22.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-09-15 — Milestone v22.0 completed and archived
 
 ## Performance Metrics
 
@@ -237,3 +235,7 @@ Progress: [██████████] 100%
 Last session: 2026-09-13T13:09:20.506Z
 Stopped at: Completed 168-07-PLAN.md
 Resume file: None
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
