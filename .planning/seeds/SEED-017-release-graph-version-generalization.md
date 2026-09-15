@@ -67,6 +67,13 @@ artifact naming convention, and wants a new `check_release_workflow_integrity.ex
 no publish job is gated on a bare version literal. Needs tests; the existing Phase 168 proof tests
 are the pattern to follow.
 
+## Interim guard already in place
+
+A tripwire landed 2026-09-15: `release.version_weld.gates_match_declared_version` fails CI when
+the declared manifest version and the publish gates' literal diverge. It buys safety, not
+progress — the generalization below is still required, and closing it includes retiring the
+tripwire rather than loosening it.
+
 ## Breadcrumbs
 
 - `.planning/todos/TODO-009-release-graph-welded-to-0-2-1.md` — the full finding, with the line

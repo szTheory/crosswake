@@ -68,6 +68,22 @@ that completes through exact-ref recovery (as 0.2.1 did) never satisfies those `
 post-publication proof does not run for precisely the releases that took the unusual path and most
 warrant proving. Recovery should converge on the same proof.
 
+## Interim guard (landed 2026-09-15)
+
+`release.version_weld.gates_match_declared_version` in
+`script/check_release_workflow_integrity.exs` compares the version declared in
+`.release-please-manifest.json` against the literal each version-gated job accepts. It is quiet
+while they agree and FAILs the moment they diverge — i.e. on the 0.2.2 release pull request,
+before it merges. Proof: `test/crosswake/proof/phase168_release_version_weld_test.exs`.
+
+This converts the silent no-op publish into a loud, actionable CI failure. It does **not** fix
+anything — the graph is still welded.
+
+**Retire this check as part of closing TODO-009**, together with the literals it guards. Do not
+weaken it to keep a bumped manifest green; that restores the exact failure mode it exists to
+prevent. Its `welded == []` branch already tells a future reader this, and the coverage test
+fails loudly if a fifth version-gated job appears.
+
 ## Breadcrumbs
 
 - `.github/workflows/release-please.yml:718-763` — the `exact-public-proof` job
