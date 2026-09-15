@@ -14,6 +14,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   @default_manifest ".release-please-manifest.json"
   @default_ci_workflow ".github/workflows/crosswake-ci.yml"
   @default_companion_root "packages"
+  @version_gated_jobs ~w(publish-hex publish-ios-core publish-android-core exact-public-proof)
   @components ~w(rulestead rindle sigra chimeway threadline)
   @hex_packages ~w(crosswake crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline)
   @companion_floors %{
@@ -126,6 +127,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
           non_comment_android_publication
         ),
         phase168_ios_recovery_exact_identity(non_comment_ios_backfill_workflow),
+        release_version_weld(jobs, release_manifest),
         native_rollup_fails_closed(jobs),
         release_failure_alert_native(jobs),
         ios_mirror_four_mode_adapter(non_comment_ios_backfill_script),
@@ -249,6 +251,71 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     |> Enum.join(" ")
     |> String.replace(~r/\s+/, " ")
     |> String.trim()
+  end
+
+  # TRIPWIRE for TODO-009 / SEED-017 — not a permanent contract.
+  #
+  # Four jobs gate publication (and the post-publication proof) on a bare
+  # version literal: `needs.release-please.outputs.version == '0.2.1'`. For any
+  # other version all four skip, so the release tags and then publishes
+  # NOTHING, and the rollup reports PARTIAL only because everything downstream
+  # was skipped. A silent no-op publish is worse than a loud failure.
+  #
+  # Generalizing the graph is real work with a real hazard: the version literal
+  # and the publication authority are currently the same string, so deleting
+  # the comparison would leave publication gated on `linked_release` alone.
+  # Until that work lands, this check makes the weld impossible to trip over by
+  # accident — it is quiet while the manifest and the gates agree, and fires on
+  # the release pull request that first declares a version the gates refuse,
+  # BEFORE it merges.
+  #
+  # When TODO-009 lands, retire this check deliberately along with the literals
+  # it guards. Do not weaken it to keep a bumped manifest green.
+  defp release_version_weld(jobs, release_manifest) do
+    declared = Map.get(release_manifest, ".")
+
+    welded =
+      @version_gated_jobs
+      |> Enum.flat_map(fn job ->
+        jobs
+        |> job_block(job)
+        |> then(
+          &Regex.scan(~r/outputs\.version\s*==\s*'(\d+\.\d+\.\d+)'/, &1, capture: :all_but_first)
+        )
+        |> List.flatten()
+        |> Enum.map(&{job, &1})
+      end)
+
+    {matching, drifted} = Enum.split_with(welded, fn {_job, version} -> version == declared end)
+
+    accepted = welded |> Enum.map(fn {_job, version} -> version end) |> Enum.uniq() |> Enum.sort()
+
+    detail =
+      cond do
+        welded == [] ->
+          "no publication job gates on a bare version literal any more. If TODO-009 / SEED-017 landed, retire release.version_weld.gates_match_declared_version with the literals it guarded; if a refactor merely moved the gates, restore them"
+
+        drifted == [] ->
+          "declared version #{declared} matches the literal accepted by all #{length(matching)} version-gated publication jobs (#{Enum.join(@version_gated_jobs, ", ")}); this weld is TODO-009 / SEED-017 and must be generalized before a release moves past #{declared}"
+
+        true ->
+          drift_detail(declared, accepted, drifted)
+      end
+
+    check(
+      "release.version_weld.gates_match_declared_version",
+      welded != [] and drifted == [],
+      detail
+    )
+  end
+
+  defp drift_detail(declared, accepted, drifted) do
+    sites =
+      drifted
+      |> Enum.map(fn {job, version} -> "#{job} accepts #{version}" end)
+      |> Enum.join("; ")
+
+    ".release-please-manifest.json declares #{inspect(declared)} but the release graph is welded to #{inspect(accepted)} (#{sites}). Those jobs would SKIP, so the release would tag and then publish NOTHING while the linked rollup reported PARTIAL. This is TODO-009 / SEED-017: generalize the version WITHOUT generalizing the authority — the per-release exact-identity binding must replace the version literal, not disappear with it. Do not simply delete the comparison; that leaves publication gated on linked_release alone"
   end
 
   defp check(id, true, detail), do: {:ok, id, detail}
