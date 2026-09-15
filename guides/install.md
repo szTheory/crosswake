@@ -79,8 +79,8 @@ of duplicating router edits, and existing host-owned policy files are left alone
 
 The installer reads the declared `MyAppWeb.Router` module from the router source. It
 does not derive module capitalization from the OTP app name, so an app created with
-`--module GetFluent` keeps `GetFluentWeb.Router` and
-`GetFluentWeb.Crosswake.Policy` even when its OTP app is `:getfluent`.
+`--module AcmeShop` keeps `AcmeShopWeb.Router` and
+`AcmeShopWeb.Crosswake.Policy` even when its OTP app is `:acmeshop`.
 
 ### LiveDashboard in development
 

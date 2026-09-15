@@ -141,12 +141,12 @@ defmodule Mix.Tasks.Crosswake.InstallTest do
   end
 
   test "derives the declared web module instead of camelizing the OTP app path", %{target: target} do
-    router_path = Path.join(target, "lib/getfluent_web/router.ex")
+    router_path = Path.join(target, "lib/acmeshop_web/router.ex")
     File.mkdir_p!(Path.dirname(router_path))
 
     File.write!(router_path, """
-    defmodule GetFluentWeb.Router do
-      use GetFluentWeb, :router
+    defmodule AcmeShopWeb.Router do
+      use AcmeShopWeb, :router
     end
     """)
 
@@ -156,20 +156,20 @@ defmodule Mix.Tasks.Crosswake.InstallTest do
         Mix.Task.run(@task, ["--target", target, "--router", router_path])
       end)
 
-    assert output =~ "policy module: lib/getfluent_web/crosswake/policy.ex"
+    assert output =~ "policy module: lib/acmeshop_web/crosswake/policy.ex"
 
-    assert File.read!(Path.join(target, "lib/getfluent_web/crosswake/policy.ex")) =~
-             "defmodule GetFluentWeb.Crosswake.Policy"
+    assert File.read!(Path.join(target, "lib/acmeshop_web/crosswake/policy.ex")) =~
+             "defmodule AcmeShopWeb.Crosswake.Policy"
 
-    assert File.read!(Path.join(target, "lib/getfluent_web/crosswake/policy.ex")) =~
-             "@router GetFluentWeb.Router"
+    assert File.read!(Path.join(target, "lib/acmeshop_web/crosswake/policy.ex")) =~
+             "@router AcmeShopWeb.Router"
 
     manifest =
       Jason.decode!(File.read!(Path.join(target, "priv/crosswake/install_manifest.json")))
 
-    assert manifest["web_module"] == "GetFluentWeb"
-    assert manifest["router_module"] == "GetFluentWeb.Router"
-    assert manifest["policy_module"] == "GetFluentWeb.Crosswake.Policy"
+    assert manifest["web_module"] == "AcmeShopWeb"
+    assert manifest["router_module"] == "AcmeShopWeb.Router"
+    assert manifest["policy_module"] == "AcmeShopWeb.Crosswake.Policy"
   end
 
   test "accepts a nonstandard router module when the web module is explicit", %{

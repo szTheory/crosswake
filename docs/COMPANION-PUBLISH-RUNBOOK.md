@@ -151,6 +151,69 @@ publication is atomic fast-forward publication; iOS recovery alone may use the s
 approved exact force-with-lease contract. Hex and Maven artifacts are immutable and must not be
 replaced. A lost public success, ambiguous ref, or mismatched receipt blocks recovery.
 
+### Scope of the iOS mirror recovery mode
+
+The `recovery` operation of `ios-mirror-backfill.yml` is the only mode that can
+replace the public mirror's `main` with a leased force push. It is bound to the
+single approved Phase 168 transaction and to nothing else.
+
+Its first step validates the exact approved identity — release version, merge
+OID, approved head, tree, and base, the candidate receipt digest, and the
+expected new ref — against values hardcoded in the workflow. That step runs
+**before** the checkout of the supplied ref and **before** `MIRROR_DEPLOY_KEY`
+is loaded, so an unauthorized dispatch stops without reaching credentials or
+running any code from the ref it supplied.
+
+The lease (`expected_old_ref`) is the one input that is not pinned. Recovery
+exists because mirror `main` has diverged to a commit that cannot be known in
+advance, so the lease is constrained by shape — a 40-character lowercase object
+id, distinct from the new ref — rather than by value. It is never accepted
+unconstrained.
+
+**A future release that needs to recover the mirror must land a new approved
+identity in the workflow first.** The gate will refuse a dispatch carrying any
+other transaction, and that refusal is correct: re-pointing it is an approval
+decision that belongs in a reviewed change, not in dispatch inputs. The
+`recovery.ios.exact_identity_gate` check in
+`script/check_release_workflow_integrity.exs` fails closed if the gate is ever
+removed or reordered behind the checkout or the credential load.
+
+### Verifying declared version truth after a recovery
+
+Run:
+
+```
+elixir script/check_release_version_truth.exs
+```
+
+It compares each linked core component's declared version in
+`.release-please-manifest.json` against the newest matching published tag
+(`hex-v`, `ios-core-v`, `android-core-v`).
+
+| State | Exit | Meaning |
+|-------|------|---------|
+| `OK` | 0 | Declared version is at or ahead of published truth. Ahead is the normal pre-release state. |
+| `FAIL` | 1 | **Declared version truth is behind published truth.** |
+| `BLOCKED` | 2 | Published truth could not be established. The answer is *unknown*, not clean. |
+
+**A `FAIL` is the condition that armed a duplicate release proposal against an
+already-live `0.2.1`.** It happens when a release merge is rolled back to
+restore an earlier version so Release Please can re-form a candidate, but
+publication then completes anyway through exact-ref recovery against the
+already-created tag, and the rollback is never undone. Release Please then
+correctly re-proposes the published version off the stale manifest; merging that
+proposal would attempt to tag over an immutable public tag and republish a live
+package. Recover forward: restore declared truth to the published version across
+the manifest and its sibling coordinate files, **then** close the stale release
+pull request. Never move a published tag or replace a published artifact.
+
+**A `BLOCKED` means release tags were not visible**, typically a shallow
+checkout carrying no tags. Re-run with full history (`git fetch --tags`, or a
+checkout with `fetch-depth: 0`). Do not read `BLOCKED` as clean.
+
+This guard runs automatically in the `release-candidate-full-proof` job, which is
+release-sensitive and already checks out with `fetch-depth: 0`.
+
 ## CI ownership
 
 The existing `Crosswake CI` family always runs stable artifact, coordinate, mirror, clean-room,
