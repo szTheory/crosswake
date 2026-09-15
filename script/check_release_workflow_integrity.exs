@@ -125,6 +125,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
           non_comment_ios_backfill_workflow,
           non_comment_android_publication
         ),
+        phase168_ios_recovery_exact_identity(non_comment_ios_backfill_workflow),
         native_rollup_fails_closed(jobs),
         release_failure_alert_native(jobs),
         ios_mirror_four_mode_adapter(non_comment_ios_backfill_script),
@@ -1013,6 +1014,83 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(rollup, "if: ${{ always() }}"),
       "partial rollup must retain fixed child truth and allow only exact-ref/idempotent or forward-fix recovery without replacement"
     )
+  end
+
+  # CR-01 / gap 1: `recover-ios-mirror` is the only mode able to replace the public
+  # mirror's `main` with a leased force push, and it was the only irreversible job in
+  # the Phase 168 authority chain carrying no hardcoded identity validation. This check
+  # holds the gate in place and fails closed if it is removed or reordered.
+  #
+  # The gate must precede BOTH the checkout of the supplied ref and the deploy-key load,
+  # so an unauthorized dispatch never reaches credentials or attacker-chosen code.
+  #
+  # Every approved constant is pinned except the lease. Recovery exists precisely because
+  # mirror `main` has diverged to a commit not knowable in advance, so `expected_old_ref`
+  # is shape-constrained to a 40-hex object id distinct from the new ref rather than
+  # pinned to a value.
+  defp phase168_ios_recovery_exact_identity(ios_workflow) do
+    recovery = ios_workflow |> job_blocks() |> job_block("recover-ios-mirror")
+
+    pinned_constants = [
+      {"PHASE168_MERGE_OID", "b780a19863936619394087f1ffd384f1dca17c93"},
+      {"PHASE168_APPROVED_HEAD", "1051ab90cf75e918c6f596f84578ac77eadf45af"},
+      {"PHASE168_APPROVED_TREE", "ecf63228243bfe7c2d6a377be996aa374b31d91f"},
+      {"PHASE168_APPROVED_BASE", "9533049d1ee5239b122b43749ff90f8ace7c7f6b"},
+      {"PHASE168_CANDIDATE_RECEIPT",
+       "359ef8a5257b54e472a2328ce3ae722222506527312b3805467d643bb8666c78"},
+      {"PHASE168_MIRROR_SPLIT", "424ab96ede1b92f2b751b54bce04c6e607f0f3c8"}
+    ]
+
+    declared? =
+      Enum.all?(pinned_constants, fn {name, value} ->
+        includes?(recovery, "#{name}: #{value}")
+      end)
+
+    compared? =
+      Enum.all?(
+        [
+          ~s([ "$RELEASE_VERSION" = "0.2.1" ]),
+          ~s([ "$RELEASE_REF" = "$PHASE168_MERGE_OID" ]),
+          ~s([ "$APPROVED_HEAD" = "$PHASE168_APPROVED_HEAD" ]),
+          ~s([ "$APPROVED_TREE" = "$PHASE168_APPROVED_TREE" ]),
+          ~s([ "$APPROVED_BASE" = "$PHASE168_APPROVED_BASE" ]),
+          ~s([ "$APPROVAL_RECEIPT" = "$PHASE168_CANDIDATE_RECEIPT" ]),
+          ~s([ "$EXPECTED_NEW_REF" = "$PHASE168_MIRROR_SPLIT" ])
+        ],
+        &includes?(recovery, &1)
+      )
+
+    # The lease is shape-checked, never pinned, and never left unconstrained.
+    lease_shape_constrained? =
+      includes?(recovery, ~s(printf '%s' "$EXPECTED_OLD_REF" | grep -Eq '^[0-9a-f]{40}$')) and
+        includes?(recovery, ~s([ "$EXPECTED_OLD_REF" != "$EXPECTED_NEW_REF" ])) and
+        not includes?(recovery, ~s([ "$EXPECTED_OLD_REF" = "$PHASE168_MIRROR_MAIN" ]))
+
+    gate_first? = gate_precedes_credentials_and_checkout?(recovery)
+
+    check(
+      "recovery.ios.exact_identity_gate",
+      declared? and compared? and lease_shape_constrained? and gate_first?,
+      ".github/workflows/ios-mirror-backfill.yml job recover-ios-mirror must validate the exact approved Phase 168 identity as its first step, before actions/checkout of the supplied ref and before the MIRROR_DEPLOY_KEY load, pinning the merge OID, approved head, tree, base, candidate receipt, and mirror split, and shape-constraining expected_old_ref to a 40-hex id distinct from expected_new_ref; re-run elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  defp gate_precedes_credentials_and_checkout?(job_block) do
+    with gate when is_integer(gate) <-
+           index_of(job_block, "Validate exact Phase 168 iOS recovery authority"),
+         checkout when is_integer(checkout) <- index_of(job_block, "actions/checkout@"),
+         credentials when is_integer(credentials) <- index_of(job_block, "webfactory/ssh-agent@") do
+      gate < checkout and gate < credentials
+    else
+      _ -> false
+    end
+  end
+
+  defp index_of(haystack, needle) do
+    case :binary.match(haystack, needle) do
+      {index, _length} -> index
+      :nomatch -> nil
+    end
   end
 
   defp phase168_partial_recovery_routes(recovery_workflow, ios_workflow, android_publication) do
