@@ -2,7 +2,7 @@
 phase: 168-0-2-1-release-candidate-readiness
 verified: 2026-09-15T18:00:00Z
 status: gaps_found
-score: 2/5 must-haves verified
+score: 2/5 must-haves verified (3 gaps after 2026-09-15 forensic correction; original pass logged 2)
 covered_files: [".github/workflows/crosswake-ci.yml", ".github/workflows/hex-publish.yml", ".github/workflows/ios-mirror-backfill.yml", ".github/workflows/release-please.yml", ".planning/workstreams/quality-ratchet-release/REQUIREMENTS.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-01-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-01-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-02-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-02-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-03-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-03-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-04-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-04-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-05-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-05-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-06-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-06-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-07-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-07-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-08-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-08-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-REVIEW.md", "lib/crosswake/release_candidate.ex", "lib/crosswake/release_candidate/artifact.ex", "lib/crosswake/release_candidate/cleanroom.ex", "lib/crosswake/release_candidate/coordinate.ex", "lib/crosswake/release_candidate/identity.ex", "lib/crosswake/release_candidate/mirror.ex", "lib/crosswake/release_candidate/projection.ex", "lib/crosswake/release_candidate/receipt.ex", "lib/crosswake/release_candidate/workflow.ex", "lib/crosswake/release_status.ex", "lib/mix/tasks/crosswake.release.candidate.ex", "lib/mix/tasks/crosswake.release.status.ex", "mix.exs", "script/check_release_workflow_integrity.exs", "script/release_candidate/android_publication.sh", "script/release_candidate/hex_artifacts.sh", "script/release_candidate/ios_mirror.sh", "script/verify_companion_cleanroom.sh", "script/verify_hex_publish_dry_run.sh", "script/verify_ios_mirror_backfill.sh"]
 covered_digest: "v1:sha256:ce2c15455e964971a52db22a3f07002bfefcb0f9515536ce4109c995ec1815ec"
 behavior_unverified: 1
@@ -14,6 +14,7 @@ gaps:
     artifacts:
       - path: ".github/workflows/ios-mirror-backfill.yml"
         issue: "recover-ios-mirror job (lines 393-424) missing the same exact-identity authorization gate present in publish-ios-mirror, hex-publish.yml publish (recovery), and hex-publish.yml recover-android-core"
+    urgency: "routine — see resolved_escalations[0]. Forensics confirm this job has NEVER run non-skipped; it is a latent hole, not the path the live 0.2.1 publish took. Close it on its merits, not as incident response."
     missing:
       - "Add a PHASE168_*-style hardcoded exact-identity validation step to recover-ios-mirror (matching the pattern already used in the three sibling jobs) before checkout/credential use, or explicitly document why recovery is intentionally left general-purpose."
   - truth: "The exact Crosswake 0.2.1 candidate commit's readiness is captured as one canonical, durable receipt that a maintainer actually reviewed and approved (SC4 / SC5, REL-04 / REL-05)"
@@ -29,7 +30,20 @@ gaps:
     missing:
       - "Regenerate and commit the canonical candidate receipt (JSON + Markdown) against the truly current, mergeable candidate identity, or recover and land the existing 9160f3c0/3c825ea2 commits."
       - "Commit 168-08-SUMMARY.md."
-      - "Reconcile against the fact that hex.pm, the iOS mirror, and Maven Central already show crosswake@0.2.1 live (published 2026-09-14T03:52:13Z, ~8h after 168-08's SUMMARY completion timestamp) while this repository's mix.exs still reads @version \"0.2.0\" and no maintainer-approval receipt is present in git history — see human_verification item 1."
+      - "CORRECTED 2026-09-15: the original third bullet here asserted an unreconciled publish/approval mismatch. Forensics refuted that premise — see resolved_escalations[0] and [2]. The actual fix is one of: (a) dispatch ios-mirror-backfill.yml with operation=candidate-receipt-attestation, the mechanism ad8fbada added for exactly this and which has never been invoked; or (b) land the stranded commits 9160f3c0/3c825ea2 from the local unmerged branch. Prefer (a) — it is the design the phase converged on."
+  - truth: "The repository's version truth agrees with what is actually published (SC3-adjacent / REL-03, REL-04)"
+    status: failed
+    discovered_by: "orchestrator forensic pass 2026-09-15 — NOT surfaced by the original verification"
+    reason: "crosswake 0.2.1 is live on Hex, the iOS mirror and Maven Central, and refs/tags/{hex,ios-core,android-core}-v0.2.1 all point at b780a198 whose mix.exs reads 0.2.1 — but origin/main's mix.exs reads @version \"0.2.0\", deliberately reverted by c7edcd78 along with 10 sibling coordinate files (.release-please-manifest.json, README.md, both example shell hosts' manifests, guides/android_uat.md, packages/crosswake-shell-core-android/build.gradle.kts, examples/*/evidence manifests). That revert was correct AT THE TIME — it was rolling back a failed release merge so Release Please could re-form a candidate — but publication subsequently completed anyway via exact-ref recovery against the old tag, and the rollback was never un-done. Main is therefore permanently understating the published version."
+    urgency: "highest of the three — this is the only gap describing a CURRENT, LIVE inconsistency rather than a latent hole or a missing record."
+    artifacts:
+      - path: "mix.exs"
+        issue: "@version \"0.2.0\" while hex-v0.2.1 is tagged, published, and an ancestor of origin/main"
+      - path: ".release-please-manifest.json"
+        issue: "reverted to 0.2.0 by c7edcd78; Release Please will try to re-form a 0.2.1 candidate that is already published"
+    missing:
+      - "Decide and implement: either restore version truth to 0.2.1 across all 11 files c7edcd78 reverted, or explicitly re-cut a 0.2.2 and document 0.2.1 as a recovered/stranded release."
+      - "Confirm Release Please cannot now attempt to re-publish an already-live 0.2.1 (the manifest currently says 0.2.0, so a fresh candidate would collide with published packages)."
 deferred: []
 advisory: []
 behavior_unverified_items:
@@ -37,10 +51,25 @@ behavior_unverified_items:
     test: "Run `script/verify_companion_cleanroom.sh` in its exact-public/post-publication mode (per 168-04's must-haves) against the now-actually-published crosswake@0.2.1 and companion packages on Hex/SwiftPM/Maven, per docs/COMPANION-PUBLISH-RUNBOOK.md's seven-step sequence."
     expected: "All five companion profiles (Rulestead, Rindle, Sigra, Chimeway, Threadline) install twice from exact registry sources (zero path locks), pass non-vacuous registration/Doctor checks, and match the approved normalized digests, ending in a live-status COMPLETE."
     why_human: "This is a real-network, stateful, long-running proof (generates Phoenix hosts, resolves real registries) that the verifier cannot safely or quickly execute as a spot-check; the repo only contains fixture-backed unit coverage for this mode (test/crosswake/release_candidate/cleanroom_test.exs --only post_publication), not a captured live run against the now-published packages."
+resolved_escalations:
+  - question: "Did the already-live crosswake@0.2.1 publication bypass this phase's gated release graph? (raised as human_verification item 1 in the original pass)"
+    answer: "NO — refuted by CI forensics on 2026-09-15. All three publications ran through jobs that DO carry the PHASE168_* exact-identity gate. CR-01's ungated job was never exercised."
+    resolved_by: "orchestrator forensic pass, /gsd-execute-phase 168, user-authorized"
+    evidence:
+      - "Release Please PR #57 WAS merged as b780a19863936619394087f1ffd384f1dca17c93 on 2026-09-13, and IS an ancestor of origin/main (`git merge-base --is-ancestor b780a198 origin/main` = true). mix.exs AT THAT TAG reads @version \"0.2.1\"."
+      - "Tags refs/tags/hex-v0.2.1, refs/tags/ios-core-v0.2.1 and refs/tags/android-core-v0.2.1 all exist on origin, all pointing at b780a198."
+      - "Hex publish: run 34803888729, workflow_dispatch on main @81ad5ce2, 2026-09-14T03:49:15Z — job 'Recover Hex package' = success (the other two jobs skipped). Hex inserted_at 03:52:13Z matches."
+      - "Maven Central: run 34804081347, workflow_dispatch on main @81ad5ce2, 2026-09-14T03:52:48Z — job 'Recover approved Android core from exact merge' = success."
+      - "iOS mirror: run 34803135968, workflow_dispatch @dfc353f2, 2026-09-14T03:35:39Z — job 'Publish approved iOS mirror tag and main atomically' (publish-ios-mirror, WHICH IS GATED) = success; 'Recover approved iOS mirror main' = SKIPPED."
+      - "Across all 15 most recent ios-mirror-backfill.yml runs, the ungated recover-ios-mirror job has NEVER run non-skipped. CR-01 is a latent hole, not the mechanism used."
+    consequence: "CR-01 remains a real defect and a real gap, but it is ROUTINE (latent, unexercised), not URGENT (not the path taken). Gap plans must not be written on the premise that a bypass occurred."
+  - question: "Why does main read @version \"0.2.0\" when 0.2.1 is published and tagged?"
+    answer: "Deliberate. Commit c7edcd78 'fix(168-08): restore untagged candidate state' (2026-09-13T16:04:02-0400) states: 'reverse the failed release merge without moving tags or replacing packages / return version truth to 0.2.0 so Release Please can form a fresh 0.2.1 candidate'. It reverted mix.exs and 10 sibling coordinate files from 0.2.1 back to 0.2.0. The recovery dispatches that completed publication ran ~8h LATER, against the already-tagged b780a198 — which is exactly what exact-ref recovery mode exists for."
+    consequence: "Not a bypass. But it leaves a genuine live inconsistency — see gap 3, which the original pass did not surface."
+  - question: "Why is there no phase168-candidate-receipt.json on main?"
+    answer: "The receipt mechanism was CHANGED mid-phase and the replacement was never invoked. Commit ad8fbada 'fix(168-08): attest canonical approval receipt' added an 'Attest canonical exact-head candidate receipt' job to ios-mirror-backfill.yml that UPLOADS READY authority as a trusted-workflow artifact rather than committing a file to the repo. That job is gated on `github.event.inputs.operation == 'candidate-receipt-attestation'`, and across all recent runs it has only ever appeared as SKIPPED — it has never been dispatched."
+    consequence: "Gap 2 is real, but its fix is 'dispatch the attestation that already exists' (or land the stranded branch), not 'reconstruct a receipt for a publish that evaded review'."
 human_verification:
-  - test: "Reconcile the already-live crosswake@0.2.1 publication with this phase's designed one-approval release graph"
-    expected: "The maintainer should be able to point to the exact candidate receipt (head/tree/base/checks) that was approved before hex.pm, the iOS mirror (refs/tags/v0.2.1), and Maven Central all went live at 0.2.1 on 2026-09-14T03:52:13Z."
-    why_human: "`mix crosswake.release.status --live` (read-only, run during this verification) shows the 0.2.1 candidate state as COMPLETE — hex, ios-core, and android-core coordinates are all confirmed public — so the release did happen. But no candidate-receipt artifact recording an explicit maintainer approval exists anywhere in this repository's git history (see gap 2), and mix.exs on main still reads @version \"0.2.0\" (never bumped by the normal Release Please flow reachable from HEAD). This pattern — an irreversible publish having occurred without a corresponding in-repo approval record — is exactly the failure mode CR-01 describes for the ungated iOS mirror recovery path. A maintainer needs to confirm whether the actual 0.2.1 publish went through the reviewed, receipt-bound flow this phase built, or through an out-of-band/recovery path, and if the latter, treat CR-01 as urgent rather than routine."
   - test: "Run the exact-public clean-room proof against the live-published 0.2.1 companion family"
     expected: "See behavior_unverified_items above."
     why_human: "Requires real network access to Hex/SwiftPM/Maven and generates real Phoenix hosts; out of scope for a fast, non-mutating verification pass."
