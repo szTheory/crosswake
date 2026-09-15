@@ -7,7 +7,7 @@ plugins {
     id("com.vanniktech.maven.publish") version "0.31.0"
 }
 
-version = "0.2.0" // x-release-please-version
+version = "0.2.1" // x-release-please-version
 
 android {
     namespace = "dev.crosswake.shell.core"
