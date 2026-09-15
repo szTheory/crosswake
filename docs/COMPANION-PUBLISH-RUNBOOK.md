@@ -151,6 +151,33 @@ publication is atomic fast-forward publication; iOS recovery alone may use the s
 approved exact force-with-lease contract. Hex and Maven artifacts are immutable and must not be
 replaced. A lost public success, ambiguous ref, or mismatched receipt blocks recovery.
 
+### Scope of the iOS mirror recovery mode
+
+The `recovery` operation of `ios-mirror-backfill.yml` is the only mode that can
+replace the public mirror's `main` with a leased force push. It is bound to the
+single approved Phase 168 transaction and to nothing else.
+
+Its first step validates the exact approved identity — release version, merge
+OID, approved head, tree, and base, the candidate receipt digest, and the
+expected new ref — against values hardcoded in the workflow. That step runs
+**before** the checkout of the supplied ref and **before** `MIRROR_DEPLOY_KEY`
+is loaded, so an unauthorized dispatch stops without reaching credentials or
+running any code from the ref it supplied.
+
+The lease (`expected_old_ref`) is the one input that is not pinned. Recovery
+exists because mirror `main` has diverged to a commit that cannot be known in
+advance, so the lease is constrained by shape — a 40-character lowercase object
+id, distinct from the new ref — rather than by value. It is never accepted
+unconstrained.
+
+**A future release that needs to recover the mirror must land a new approved
+identity in the workflow first.** The gate will refuse a dispatch carrying any
+other transaction, and that refusal is correct: re-pointing it is an approval
+decision that belongs in a reviewed change, not in dispatch inputs. The
+`recovery.ios.exact_identity_gate` check in
+`script/check_release_workflow_integrity.exs` fails closed if the gate is ever
+removed or reordered behind the checkout or the credential load.
+
 ### Verifying declared version truth after a recovery
 
 Run:
