@@ -15,8 +15,10 @@ returns a path inside that tmp dir, which doesn't have `priv/templates/...`, cau
 **Root cause:** Pre-existing in Plan 02's `shell.status` test; not introduced by Plan 03.
 
 **Fix options:**
+
 1. Change `crosswake_shell_status_test.exs` to `async: false` (safest, matches diff test)
 2. Use `ExUnit.Callbacks.on_exit/1` to restore CWD after each test in shell.status test
 3. Rewrite `run_status/3` to avoid `File.cd!` (pass the tmp_dir as a `--target` flag or cwd override)
 
 **Out of scope for Plan 03** — this is a pre-existing race outside the current task's files.
+  status: acknowledged
