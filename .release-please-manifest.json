@@ -1,7 +1,7 @@
 {
-  ".": "0.2.0",
-  "packages/crosswake-shell-core-ios": "0.2.0",
-  "packages/crosswake-shell-core-android": "0.2.0",
+  ".": "0.2.1",
+  "packages/crosswake-shell-core-ios": "0.2.1",
+  "packages/crosswake-shell-core-android": "0.2.1",
   "packages/crosswake_rulestead": "0.1.0",
   "packages/crosswake_rindle": "0.1.0",
   "packages/crosswake_sigra": "0.1.3",
