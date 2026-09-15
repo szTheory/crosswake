@@ -1,7 +1,7 @@
 ---
 id: TODO-010
 title: crosswake_rindle was never published to Hex, which blocks the exact-public proof entirely
-status: open
+status: closed
 created: 2026-09-15
 severity: high
 surfaced_by: attempting Phase 168's human verification item (168-UAT.md test 1)
@@ -9,6 +9,16 @@ relates_to: SC1, REL-01, PROOF-01, SEED-017, D-15, D-16
 ---
 
 # `crosswake_rindle` is not on Hex, so exact-public proof cannot pass
+
+> **CLOSED 2026-09-15.** Resolved by path 1: `crosswake_rindle 0.1.0` was published via PR #146,
+> the repository's own gated release path (`publish-hex-rindle`), not a manual `mix hex.publish`.
+> All six packages now resolve on Hex (crosswake 0.2.1, rulestead 0.1.0, rindle 0.1.0, sigra 0.1.3,
+> chimeway 0.1.0, threadline 0.1.0), so the exact-public precondition is satisfied and
+> `168-UAT.md` test 1 returns to `pending`.
+>
+> The same release run surfaced a separate, older problem: the post-publish companion clean-room
+> lane failed, and has never been green. That is `TODO-011`, not this item — rindle itself
+> resolved, compiled clean, and passed its smoke test.
 
 ## Outcome
 
