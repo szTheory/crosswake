@@ -92,3 +92,43 @@ fails loudly if a fifth version-gated job appears.
 - `script/check_release_workflow_integrity.exs` — where a "no bare version literal in a publish
   gate" check would belong
 - `docs/COMPANION-PUBLISH-RUNBOOK.md` — the operator contract that documents the seven-step sequence
+
+## Observed firing on PR #164 (2026-09-15)
+
+The interim tripwire was confirmed against its real target, not just fixtures. Running
+`script/check_release_workflow_integrity.exs` over a manifest declaring `"0.2.2"` produces:
+
+```
+FAIL: release.version_weld.gates_match_declared_version - .release-please-manifest.json
+declares "0.2.2" but the release graph is welded to ["0.2.1"] (publish-hex accepts 0.2.1;
+publish-ios-core accepts 0.2.1; publish-android-core accepts 0.2.1; exact-public-proof
+accepts 0.2.1). Those jobs would SKIP, so the release would tag and then publish NOTHING
+```
+
+PR #164 (`chore: release main`, proposing 0.2.2) fails CI with 8 red checks and cannot merge.
+The guard holds.
+
+### But the operator-facing message does not survive the trip
+
+`release-candidate-fixtures` on #164 reports:
+
+```
+root/native publish jobs are not exact path-gated: missing scanner IDs:
+release.outputs.paths_released, release.root_hex.path_gate, release.ios.path_gate,
+release.android.path_gate
+```
+
+That is what a maintainer debugging #164 actually sees. It never mentions the weld, the
+declared version, or `SEED-017`. `Crosswake.ReleaseStatus` classifies a scanner that exited
+non-zero as *missing IDs* rather than surfacing the failing check's own message, so the
+precise, carefully-worded diagnostic the tripwire emits is discarded exactly where it is
+needed most.
+
+This is a near relative of the defect class in the v22.0 retrospective. It is not absence
+scored as success — the build does go red. It is **the right failure carrying the wrong
+explanation**, which costs a maintainer the same debugging hour and invites the conclusion
+that the scanner is broken rather than that the release is.
+
+Fold into the `SEED-017` work: when `scanner_ids_result/2` receives a failed scanner, it
+should propagate the failing check ids and their messages instead of reporting the required
+ids as missing. See `lib/crosswake/release_status.ex:806-820`.
