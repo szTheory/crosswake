@@ -114,8 +114,6 @@
       "component": "crosswake_rindle",
       "release-type": "elixir",
       "separate-pull-requests": true,
-      "_TODO_release_as": "ONE-SHOT override (Phase 132 / recipe Step 12f / Pitfall 6): remove 'release-as' after the first crosswake_rindle Release PR merges, or subsequent runs keep re-targeting 0.1.0. rindle is independently versioned — intentionally NOT in the linked-versions lockstep group (D-01).",
-      "release-as": "0.1.0",
       "extra-files": ["packages/crosswake_rindle/mix.exs"],
       "changelog-sections": [
         { "type": "feat",     "section": "Features" },

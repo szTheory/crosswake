@@ -11,9 +11,16 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from phase_evidence_path import resolve as _phase_path  # noqa: E402
+
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_LEDGER = ROOT / ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-ownership-ledger.md"
+_WS = "quality-ratchet-release"
+_PHASE = "166-clean-checkout-engineering-quality"
+DEFAULT_LEDGER = Path(_phase_path(_WS, f"{_PHASE}/166-ownership-ledger.md", root=ROOT))
 DISPOSITIONS = {"retained", "changed", "removed-with-proof", "unproven-retained"}
 EDGE_KINDS = {"caller", "import", "include", "generator", "mutator", "test", "shared-authority"}
 REMOVAL_FIELDS = (
@@ -39,11 +46,23 @@ FINDING_CLASSES = {
     "responsibility-extraction",
 }
 REMEDIATION_RESULTS = {"pending", "pass"}
+_EVIDENCE_ONLY_RELATIVE = (
+    f"{_PHASE}/evidence/clean-checkout-run.json",
+    f"{_PHASE}/evidence/clean-checkout-run.md",
+    f"{_PHASE}/166-ownership-ledger.md",
+    f"{_PHASE}/166-VALIDATION.md",
+)
+
+# These are matched against repository-relative paths (e.g. from a git diff), so
+# BOTH spellings must be recognised: the live one while the milestone is in
+# flight, and the archived one after `/gsd-complete-milestone` moves the phase
+# directory under `milestones/<version>-phases/`. Carrying only the live form is
+# what breaks these checks at exactly the moment a milestone ships.
 EVIDENCE_ONLY_PATHS = {
-    ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/evidence/clean-checkout-run.json",
-    ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/evidence/clean-checkout-run.md",
-    ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-ownership-ledger.md",
-    ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-VALIDATION.md",
+    f".planning/workstreams/{_WS}/phases/{rel}" for rel in _EVIDENCE_ONLY_RELATIVE
+} | {
+    str(Path(_phase_path(_WS, rel, root=ROOT)).relative_to(ROOT))
+    for rel in _EVIDENCE_ONLY_RELATIVE
 }
 
 

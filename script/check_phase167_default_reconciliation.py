@@ -17,6 +17,28 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# Phase directories MOVE when `/gsd-complete-milestone` archives a milestone, so a
+# path used to READ a file must resolve live-or-archived. Paths used as recorded
+# git identities (diff path sets, `manifest_path`, `proof_argv`) are deliberately
+# NOT resolved: those describe where a file was when the evidence was recorded,
+# and rewriting them would silently invalidate an equality against the receipt.
+import sys as _sys
+
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+from phase_evidence_path import resolve as _phase_path  # noqa: E402
+
+_WS = "quality-ratchet-release"
+
+
+def _readable(recorded: str) -> str:
+    """Repo-relative path to READ, resolving an archived phase directory."""
+    prefix = f".planning/workstreams/{_WS}/phases/"
+    if not recorded.startswith(prefix):
+        return recorded
+    resolved = Path(_phase_path(_WS, recorded[len(prefix):], root=ROOT))
+    return str(resolved.relative_to(ROOT))
+
 BASE = "74fc15cc546b756c210b6cbbdcb2d7f77e3966bb"
 RED = "367f5b5491384594a652d137a03933fa3a89418a"
 BRANCH = "agent-phase167-fixforward"
@@ -54,6 +76,8 @@ FULL_OID = re.compile(r"^[0-9a-f]{40}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 MODES = {"100644", "100755", "120000", "160000"}
 PHASE_EVIDENCE = ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence"
+# Recorded identity above; readable location below. They differ after archival.
+PHASE_EVIDENCE_READ = _readable(PHASE_EVIDENCE)
 MANIFEST_PATH = f"{PHASE_EVIDENCE}/default-branch-dependency-closure.json"
 LEDGER_PATH = f"{PHASE_EVIDENCE}/fix-forward-failure-ledger.json"
 RESOLUTION_PATH = f"{PHASE_EVIDENCE}/default-branch-reconciliation-resolution.json"
@@ -548,7 +572,7 @@ def validate_resolution(value: Any, live: bool) -> None:
     require(value["tested_tree_oid"] == value["merge_tree_oid"] and value["fresh_default_oid"] == value["merge_commit_oid"] and value["receipt_parent_oid"] == value["tested_head_oid"], "resolution_identity")
     require([x.get("pr_number") for x in value["superseded"]] == [110, 148], "superseded_set")
     for item in value["superseded"]: validate_supersession(item, item["pr_number"]); require(item["replacement_pr_number"] == value["replacement_pr_number"] and item["replacement_head_oid"] == value["tested_head_oid"] and item["replacement_merge_oid"] == value["merge_commit_oid"], "supersession_link")
-    require(load(ROOT / PR110_PATH) == value["superseded"][0], "pr110_receipt"); privacy(value)
+    require(load(ROOT / _readable(PR110_PATH)) == value["superseded"][0], "pr110_receipt"); privacy(value)
     if live:
         repo, default = repository(); replacement = pr(value["replacement_pr_number"]); ci = check(repo, value["tested_head_oid"])
         require(replacement["state"] == "MERGED" and replacement["head_oid"] == value["tested_head_oid"] and replacement["base_oid"] == BASE and replacement["merge_oid"] == value["merge_commit_oid"], "replacement_live")

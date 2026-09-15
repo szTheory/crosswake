@@ -8,8 +8,12 @@ cd "$ROOT_DIR"
 REPO="${REPO:-szTheory/crosswake}"
 BRANCH="${BRANCH:-main}"
 EP="repos/${REPO}/branches/${BRANCH}/protection/required_status_checks"
-BASELINE=".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/required-context-baseline.json"
-OBSERVATION=".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/live-observation.json"
+# Phase directories MOVE when a milestone is archived; resolve live-or-archived.
+# shellcheck source=script/phase_evidence_path.sh
+. "$(dirname "${BASH_SOURCE[0]}")/phase_evidence_path.sh"
+_CW_PHASE165="165-efficient-and-maintainable-ci"
+BASELINE=$(crosswake_phase_evidence_path quality-ratchet-release "${_CW_PHASE165}/evidence/required-context-baseline.json")
+OBSERVATION=$(crosswake_phase_evidence_path quality-ratchet-release "${_CW_PHASE165}/evidence/live-observation.json")
 
 POLICY=""; MODE=""; ACTION="dry-run"; OUTPUT=""; VERIFY_OUTPUT=""; APPROVED_PROPOSAL=""
 usage() {

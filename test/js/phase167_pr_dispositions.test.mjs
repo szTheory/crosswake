@@ -16,12 +16,16 @@ import { tmpdir } from "node:os";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { phaseEvidencePath } from "./phase_evidence_path.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const script = "script/check_phase167_pr_dispositions.py";
-const evidenceRoot = path.join(
+// Read location: resolves live-or-archived. The expected* path lists below are
+// recorded git identity with pinned blob SHAs and stay literal on purpose.
+const evidenceRoot = phaseEvidencePath(
   root,
-  ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence",
+  "quality-ratchet-release",
+  "167-documentation-and-pull-request-reconciliation/evidence",
 );
 const resolutionPath = path.join(evidenceRoot, "phase167-closeout-resolution.json");
 const scopePath = path.join(evidenceRoot, "phase167-closeout-scope.json");

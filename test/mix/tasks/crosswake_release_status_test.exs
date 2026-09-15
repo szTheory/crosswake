@@ -356,9 +356,19 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
   # documents, and the same trap D-16 avoids by keying on RELEASED git tags.
   # A permanently-red truth command is exactly the ignorable red this phase exists
   # to kill, so these are advisory - and loudly named, never silently dropped.
+  #
+  # This test builds its own fixture checkout rather than reading the repository's
+  # live `release-please-config.json`. It used to rely on the repo happening to
+  # carry a bootstrap pin, so publishing `crosswake_rindle 0.1.0` and retiring its
+  # now-stale pin turned this into a red test about nothing — the BEHAVIOUR under
+  # test never changed. A guard whose premise is "some unrelated config still
+  # looks a certain way" is not guarding the thing it names.
   test "an unreleased bootstrap companion is advisory, not fatal" do
+    cwd = bootstrap_pinned_checkout()
+
     status =
       Crosswake.ReleaseStatus.build(
+        cwd: cwd,
         live?: true,
         http_probe: fn _url, context ->
           case context do
@@ -509,5 +519,38 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
 
   defp assert_required_fields(map, keys) do
     assert MapSet.subset?(MapSet.new(keys), MapSet.new(Map.keys(map)))
+  end
+
+  # A throwaway checkout identical to this repository except that
+  # `crosswake_rindle` still carries its one-shot `release-as` bootstrap pin at
+  # the version the manifest declares. Every top-level entry is symlinked so the
+  # workflow-integrity scanner sees a faithful tree; `.git` is deliberately NOT
+  # linked, so `release_as_tag_exists?` answers false exactly as it would for a
+  # genuinely unreleased package.
+  defp bootstrap_pinned_checkout do
+    root = File.cwd!()
+
+    cwd =
+      Path.join(System.tmp_dir!(), "crosswake-bootstrap-#{System.unique_integer([:positive])}")
+
+    File.mkdir_p!(cwd)
+    on_exit(fn -> File.rm_rf!(cwd) end)
+
+    for entry <- File.ls!(root), entry not in [".git", "release-please-config.json"] do
+      File.ln_s!(Path.join(root, entry), Path.join(cwd, entry))
+    end
+
+    manifest = Path.join(root, ".release-please-manifest.json") |> File.read!() |> Jason.decode!()
+    config = Path.join(root, "release-please-config.json") |> File.read!() |> Jason.decode!()
+
+    pinned =
+      put_in(
+        config,
+        ["packages", "packages/crosswake_rindle", "release-as"],
+        manifest["packages/crosswake_rindle"]
+      )
+
+    File.write!(Path.join(cwd, "release-please-config.json"), Jason.encode!(pinned))
+    cwd
   end
 end

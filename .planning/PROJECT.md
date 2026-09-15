@@ -47,12 +47,17 @@ BLOCKING before any release past `0.2.1`.
 
 ## Active Workstreams
 
-### v22.0 Quality Ratchet & Release Readiness (active)
+### v22.0 Quality Ratchet & Release Readiness (shipped)
 
 **Goal:** Make Crosswake safe to change, inexpensive to verify, pleasant to review, and ready for
 an exact approval-gated 0.2.1 release candidate without reopening product or mobile breadth.
 
+**Shipped:** 2026-09-15 as `override_closeout`. See the milestone section above for what it did
+and did not establish.
+
 **Planning:** `.planning/workstreams/quality-ratchet-release/`
+**Archive:** `.planning/workstreams/quality-ratchet-release/milestones/v22.0-ROADMAP.md` and
+`v22.0-REQUIREMENTS.md` (workstream-scoped, not the root `.planning/milestones/`).
 
 ### v21.0 First B2C Adopter Readiness (parked)
 

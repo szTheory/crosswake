@@ -32,6 +32,14 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
   @requirements Path.join(@planning_root, "REQUIREMENTS.md")
   @project Path.join(@root, ".planning/PROJECT.md")
   @state Path.join(@planning_root, "STATE.md")
+  # `/gsd-complete-milestone` writes archives next to the workstream that owns the
+  # milestone, NOT to the root `.planning/milestones/`. Search both: a project can
+  # legitimately carry root-level archives from before it adopted workstreams.
+  # Hardcoding one location is what breaks these checks at the moment of archival.
+  @milestones_dirs [
+    Path.join(@planning_root, "milestones"),
+    Path.join(@root, ".planning/milestones")
+  ]
   @milestones_dir Path.join(@root, ".planning/milestones")
   @milestones_index Path.join(@root, ".planning/MILESTONES.md")
 
@@ -42,9 +50,10 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
     assert File.read!(@roadmap) =~ label,
            "ROADMAP.md does not name the milestone #{inspect(label)}"
 
-    assert File.read!(@project) =~ "### #{label} (active)",
-           "PROJECT.md does not name active workstream #{inspect(label)}"
-
+    # NOTE: PROJECT.md's "(active)" marker is asserted per-state below, NOT here.
+    # An unconditional assertion here contradicted the SHIPPED branch's refute of
+    # the same string, so this test could never pass once a milestone shipped —
+    # it only looked correct while a milestone happened to be mid-flight.
     assert File.read!(@state) =~ name,
            "STATE.md body does not reference the milestone name #{inspect(name)}"
 
@@ -67,22 +76,22 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
 
   test "milestone archive presence matches active/shipped state" do
     {version, _name} = active_milestone()
-    archived_requirements = Path.join(@milestones_dir, "#{version}-REQUIREMENTS.md")
-    archived_roadmap = Path.join(@milestones_dir, "#{version}-ROADMAP.md")
+    archived_requirements = archived_snapshot("#{version}-REQUIREMENTS.md")
+    archived_roadmap = archived_snapshot("#{version}-ROADMAP.md")
 
     if between_milestones?() do
       # SHIPPED: the just-shipped milestone's snapshot must be archived.
-      assert File.exists?(archived_requirements),
+      assert archived_requirements,
              "shipped milestone #{version} is missing its archived REQUIREMENTS snapshot"
 
-      assert File.exists?(archived_roadmap),
+      assert archived_roadmap,
              "shipped milestone #{version} is missing its archived ROADMAP snapshot"
     else
       # ACTIVE: the in-progress milestone must not be archived yet.
-      refute File.exists?(archived_requirements),
+      refute archived_requirements,
              "active milestone #{version} should not have an archived REQUIREMENTS snapshot yet"
 
-      refute File.exists?(archived_roadmap),
+      refute archived_roadmap,
              "active milestone #{version} should not have an archived ROADMAP snapshot yet"
     end
   end
@@ -159,5 +168,11 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
       [_, value] -> String.trim(value)
       _ -> flunk("could not read `#{field}` from STATE.md frontmatter")
     end
+  end
+
+  # True when `basename` exists in ANY archive location. Workstream milestones
+  # archive beside their workstream; older project-level ones live at the root.
+  defp archived_snapshot(basename) do
+    Enum.any?(@milestones_dirs, &File.exists?(Path.join(&1, basename)))
   end
 end

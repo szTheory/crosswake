@@ -5,6 +5,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { phaseEvidencePath } from "./phase_evidence_path.mjs";
 
 import {
   BROWSER_DIAGNOSTIC_MODE,
@@ -1078,7 +1079,16 @@ test("Phase 166 remediation queue remains verifiable from a depth-one checkout",
         "--root",
         checkout,
         "--verify-remediations",
-        ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-ownership-ledger.md"
+        // Resolve live-or-archived: the phase directory MOVES when the milestone
+        // is archived, and this is a read of the checkout's own copy.
+        path.relative(
+          checkout,
+          phaseEvidencePath(
+            checkout,
+            "quality-ratchet-release",
+            "166-clean-checkout-engineering-quality/166-ownership-ledger.md",
+          ),
+        )
       ],
       { cwd: checkout, encoding: "utf8" }
     );
