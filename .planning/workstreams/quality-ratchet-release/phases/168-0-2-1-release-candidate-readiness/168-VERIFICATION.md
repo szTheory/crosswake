@@ -41,9 +41,12 @@ gaps:
         issue: "@version \"0.2.0\" while hex-v0.2.1 is tagged, published, and an ancestor of origin/main"
       - path: ".release-please-manifest.json"
         issue: "reverted to 0.2.0 by c7edcd78; Release Please will try to re-form a 0.2.1 candidate that is already published"
+    live_hazard: "PR #158 ('chore: release main', branch release-please--branches--main, opened 2026-09-13T20:20:05Z) is OPEN and proposes `\".\": \"0.2.1\"` + `@version \"0.2.1\"` — a version already published. Merging it would attempt to tag over the existing refs/tags/hex-v0.2.1 (at b780a198) and re-publish 0.2.1 to Hex. DO NOT MERGE #158."
+    decision: "RESOLVED by maintainer 2026-09-15 (asked and answered during the execute-phase forensic pass): restore version truth to 0.2.1 and close PR #158 unmerged. The next genuine release becomes 0.2.2."
     missing:
-      - "Decide and implement: either restore version truth to 0.2.1 across all 11 files c7edcd78 reverted, or explicitly re-cut a 0.2.2 and document 0.2.1 as a recovered/stranded release."
-      - "Confirm Release Please cannot now attempt to re-publish an already-live 0.2.1 (the manifest currently says 0.2.0, so a fresh candidate would collide with published packages)."
+      - "Re-apply version truth 0.2.1 across all 11 files that c7edcd78 reverted: mix.exs, .release-please-manifest.json, README.md, examples/android_shell_host/app/build.gradle, examples/android_shell_host/app/src/main/assets/crosswake_manifest.json, examples/ios_shell_host/Fixtures/crosswake_manifest.json, examples/native_evidence/evidence-manifest.example.json, examples/phoenix_host/evidence/evidence-manifest.example.json, examples/phoenix_host/priv/crosswake/install_manifest.json, guides/android_uat.md, packages/crosswake-shell-core-android/build.gradle.kts."
+      - "Close PR #158 unmerged, AFTER the version-truth restore lands — closing it first leaves a window in which Release Please re-forms the same 0.2.1 candidate off a 0.2.0 manifest."
+      - "Add a regression check asserting .release-please-manifest.json is never behind the newest published tag, so a rollback-after-publish cannot silently re-arm a duplicate release."
 deferred: []
 advisory: []
 behavior_unverified_items:
