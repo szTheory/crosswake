@@ -30,7 +30,7 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 
-* `mix crosswake.install` derives the web namespace from the router's actual `defmodule`, preserving mixed-case names such as `GetFluentWeb` instead of reconstructing them from the OTP application name.
+* `mix crosswake.install` derives the web namespace from the router's actual `defmodule`, preserving mixed-case names such as `AcmeShopWeb` instead of reconstructing them from the OTP application name.
 * The generated router import block excludes `Phoenix.LiveView.Router.live/2,3,4`, consumes the policy module attribute without a compiler warning, and adds the lexical Crosswake exclusion required by the standard Phoenix `live_dashboard` block.
 * Generated install manifests and runtime manifests report the Crosswake dependency version rather than the host application's version.
 
