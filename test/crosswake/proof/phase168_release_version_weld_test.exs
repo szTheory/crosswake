@@ -205,6 +205,17 @@ defmodule Crosswake.Proof.Phase168ReleaseVersionWeldTest do
         "\\g{1}#{version}\\g{2}"
       )
 
+    if mutated == block do
+      raise """
+      mutate_job_version/3 produced an IDENTICAL block for job #{inspect(job)}.
+
+      The replacement matched but changed nothing, so the control below would
+      assert against an UNMUTATED workflow and pass while proving the opposite of
+      what it claims. This is exactly how "\\1" <> a version was once read as
+      capture group 10 rather than group 1.
+      """
+    end
+
     String.replace(workflow, block, mutated, global: false)
   end
 end

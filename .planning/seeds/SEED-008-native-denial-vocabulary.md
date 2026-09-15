@@ -27,7 +27,7 @@ half's tractability imply the second half is nearly done.
 **What already shipped, so nobody re-solves it:** the *runtime* answer landed in Phase 154 Plan
 03. `Crosswake.Bridge`'s reply decoder (`lib/crosswake/bridge.ex:687`) resolves an unknown reason
 string to `:unavailable_capability`, preserves the raw value at `details.raw_reason`, and neither
-crashes nor grows the atom table. Asserted by `test/crosswake/bridge/push_test.exs:308`. That
+crashes nor grows the atom table. Asserted by `test/crosswake/bridge/push_test.exs:403`. That
 tolerance is required under *every* disposition of this seed — already-shipped shell binaries
 emit the old strings forever, so the decoder can never be removed even after both halves are
 retired.
