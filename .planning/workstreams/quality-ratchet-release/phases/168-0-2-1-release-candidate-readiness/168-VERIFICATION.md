@@ -19,7 +19,12 @@ re_verification:
   gaps_remaining: []
   regressions: []
 gaps: []
-deferred: []
+deferred:
+  - item: "Exact-public clean-room proof against the live-published 0.2.1 family (the single behavior_unverified item below)"
+    to: "v23.0 — release pipeline repair"
+    carries: ["SEED-017", "TODO-009", "TODO-011", "TODO-012"]
+    reason: "Not deferred for effort or time. TODO-012 establishes that the test as specified is unsatisfiable: verify_companion_cleanroom.sh:206 requires one candidate_ref for all six packages, while COMPANION-PUBLISH-RUNBOOK.md:16-18 and D-15/D-16 require companions to be independently versioned. Executing the test cannot reconcile that; a recorded design decision can. Deferring it is the honest disposition, and it must not be read as the item having passed."
+    decided: 2026-09-16
 advisory:
   - finding: "`mix crosswake.release.status` without `--live` still prints candidate state BLOCKED with next action \"run mix crosswake.release.status --live, then capture the exact candidate receipt\", even though the canonical receipt now exists on main. `Crosswake.ReleaseStatus.candidate_state/2`'s deterministic (live=false) clause at lib/crosswake/release_status.ex:245-248 is a fixed literal that never inspects the receipt file, so the message now misdescribes repository state to an operator who has not passed --live."
     category: other

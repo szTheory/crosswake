@@ -259,23 +259,23 @@ Plans:
 
 **Wave 9** *(gap closure — 168-VERIFICATION gap 3, highest urgency)*
 
-- [ ] 168-09-PLAN.md — Restore 0.2.1 version truth on protected default and close duplicate-release PR #158 unmerged.
+- [x] 168-09-PLAN.md — Restore 0.2.1 version truth on protected default and close duplicate-release PR #158 unmerged.
 
 **Wave 10** *(gap closure — blocked on Wave 9 completion)*
 
-- [ ] 168-10-PLAN.md — Guard against a manifest version falling behind the newest published release tag.
+- [x] 168-10-PLAN.md — Guard against a manifest version falling behind the newest published release tag.
 
 **Wave 11** *(gap closure — blocked on Wave 10 completion)*
 
-- [ ] 168-11-PLAN.md — Reconcile changelog published-release truth to the released 0.2.1.
+- [x] 168-11-PLAN.md — Reconcile changelog published-release truth to the released 0.2.1.
 
 **Wave 12** *(gap closure — 168-VERIFICATION gap 1 / REVIEW CR-01, blocked on Wave 11 completion)*
 
-- [ ] 168-12-PLAN.md — Gate the iOS mirror recovery job on the approved exact identity and hold it with a scanner check.
+- [x] 168-12-PLAN.md — Gate the iOS mirror recovery job on the approved exact identity and hold it with a scanner check.
 
 **Wave 13** *(gap closure — 168-VERIFICATION gap 2, blocked on Wave 12 completion)*
 
-- [ ] 168-13-PLAN.md — Land the canonical candidate receipt, the approval dossier, and the 168-08 record.
+- [x] 168-13-PLAN.md — Land the canonical candidate receipt, the approval dossier, and the 168-08 record.
 
 ## Progress
 
@@ -287,7 +287,7 @@ Plans:
 | 165. Efficient and Maintainable CI | 13/13 | Complete    | 2026-09-09 |
 | 166. Clean-Checkout Engineering Quality | 8/8 | Complete    | 2026-09-10 |
 | 167. Documentation and Pull-Request Reconciliation | 9/9 | Complete    | 2026-09-12 |
-| 168. 0.2.1 Release Candidate Readiness | 8/13 | In Progress (gap closure) |  |
+| 168. 0.2.1 Release Candidate Readiness | 13/13 | Complete (1 item deferred to v23.0) | 2026-09-16 |
 
 ---
 *Roadmap created: 2026-08-28 for workstream `quality-ratchet-release`*

@@ -4,18 +4,18 @@ milestone: v22.0
 milestone_name: Quality Ratchet & Release Readiness
 current_phase: 168
 current_phase_name: 0.2.1 Release Candidate Readiness
-status: executing
-stopped_at: Completed 168-07-PLAN.md
-last_updated: "2026-09-13T13:09:20.612Z"
-last_activity: 2026-09-12
-last_activity_desc: Phase 168 execution started
-state_head: a1f110e80c90e2b1429d2d119a807a89726daa4d
+status: phase_complete
+stopped_at: Completed 168-13-PLAN.md; phase 168 closed with 1 item deferred to v23.0
+last_updated: "2026-09-16T00:55:00.000Z"
+last_activity: 2026-09-16
+last_activity_desc: Phase 168 closed — 13/13 plans, 5/6 must-haves, exact-public proof deferred to v23.0
+state_head: 81ad5ce2576973ecc282d515dc38fba38edbcfab
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 5
   total_plans: 43
-  completed_plans: 42
-  percent: 60
+  completed_plans: 43
+  percent: 100
 workstream: quality-ratchet-release
 ---
 
@@ -31,12 +31,12 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 
 ## Current Position
 
-Phase: 168 (0.2.1 Release Candidate Readiness) — EXECUTING
-Plan: 8 of 8
-Status: Ready to execute
-Last activity: 2026-09-12 — Phase 168 execution started
+Phase: 168 (0.2.1 Release Candidate Readiness) — COMPLETE (1 item deferred)
+Plan: 13 of 13
+Status: Milestone v22.0 phases all complete; ready for milestone closeout
+Last activity: 2026-09-16 — Phase 168 closed, exact-public proof deferred to v23.0
 
-Progress: [██████░░░░] 60%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
