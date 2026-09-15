@@ -201,7 +201,8 @@ defmodule Crosswake.Proof.Phase168ReleaseVersionWeldTest do
       Regex.replace(
         ~r/(outputs\.version\s*==\s*')\d+\.\d+\.\d+(')/,
         block,
-        "\\1#{version}\\2"
+        # \g{1} not \1 — "\\1" <> "0.9.9" reads as capture group 10, not group 1.
+        "\\g{1}#{version}\\g{2}"
       )
 
     String.replace(workflow, block, mutated, global: false)
