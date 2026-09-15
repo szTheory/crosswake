@@ -186,6 +186,8 @@ jobs:
       - uses: ./.github/actions/setup-elixir-cache
         with:
           mix-env: test
+      - name: Prove declared version truth is not behind published tags
+        run: elixir script/check_release_version_truth.exs
       - name: Validate exact candidate identity
         run: |
           set -euo pipefail

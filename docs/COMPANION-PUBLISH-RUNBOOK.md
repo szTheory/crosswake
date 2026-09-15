@@ -151,6 +151,42 @@ publication is atomic fast-forward publication; iOS recovery alone may use the s
 approved exact force-with-lease contract. Hex and Maven artifacts are immutable and must not be
 replaced. A lost public success, ambiguous ref, or mismatched receipt blocks recovery.
 
+### Verifying declared version truth after a recovery
+
+Run:
+
+```
+elixir script/check_release_version_truth.exs
+```
+
+It compares each linked core component's declared version in
+`.release-please-manifest.json` against the newest matching published tag
+(`hex-v`, `ios-core-v`, `android-core-v`).
+
+| State | Exit | Meaning |
+|-------|------|---------|
+| `OK` | 0 | Declared version is at or ahead of published truth. Ahead is the normal pre-release state. |
+| `FAIL` | 1 | **Declared version truth is behind published truth.** |
+| `BLOCKED` | 2 | Published truth could not be established. The answer is *unknown*, not clean. |
+
+**A `FAIL` is the condition that armed a duplicate release proposal against an
+already-live `0.2.1`.** It happens when a release merge is rolled back to
+restore an earlier version so Release Please can re-form a candidate, but
+publication then completes anyway through exact-ref recovery against the
+already-created tag, and the rollback is never undone. Release Please then
+correctly re-proposes the published version off the stale manifest; merging that
+proposal would attempt to tag over an immutable public tag and republish a live
+package. Recover forward: restore declared truth to the published version across
+the manifest and its sibling coordinate files, **then** close the stale release
+pull request. Never move a published tag or replace a published artifact.
+
+**A `BLOCKED` means release tags were not visible**, typically a shallow
+checkout carrying no tags. Re-run with full history (`git fetch --tags`, or a
+checkout with `fetch-depth: 0`). Do not read `BLOCKED` as clean.
+
+This guard runs automatically in the `release-candidate-full-proof` job, which is
+release-sensitive and already checks out with `fetch-depth: 0`.
+
 ## CI ownership
 
 The existing `Crosswake CI` family always runs stable artifact, coordinate, mirror, clean-room,
