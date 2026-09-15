@@ -37,6 +37,12 @@ This seed will surface during `$gsd-new-milestone` when the milestone scope matc
 - `.planning/PROJECT.md` — records `crosswake 0.2.0` as the current public Hex release and keeps the
   planning-milestone version axis distinct from package versions.
 
+## Related
+
+`SEED-017` (planted 2026-09-15) covers the linked release graph's weld to `0.2.1`. It is adjacent
+but **not** the same scope: this seed is low-churn hygiene, SEED-017 blocks any release after
+0.2.1. Do not fold SEED-017 into a hygiene pass — it needs its own plan.
+
 ## Notes
 
 After the 0.2.1 release benchmark, evaluate a low-churn closeout pass that confirms main-branch CI
