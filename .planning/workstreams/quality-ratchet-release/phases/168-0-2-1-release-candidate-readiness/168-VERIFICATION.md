@@ -59,6 +59,14 @@ human_verification:
     why_human: "Requires real network access to Hex/SwiftPM/Maven and generates real Phoenix hosts; out of scope for a fast, non-mutating verification pass."
 ---
 
+> **Correction 2026-09-15T23:05Z.** This report filed the `crosswake_rindle` absence as an
+> advisory that was "out of scope per D-15/D-16". That framing was too weak. D-15/D-16 govern
+> version *lockstep* and still hold, but rindle is not merely out of lockstep — it returns 404
+> from hex.pm and has never been published. Because `verify_companion_cleanroom.sh` fails closed
+> on a partial family, the exact-public proof exits 1 before running any profile. The single
+> remaining human-verification item is therefore **blocked**, not pending. See `TODO-010` and
+> `168-UAT.md`.
+
 # Phase 168: 0.2.1 Release Candidate Readiness Verification Report
 
 **Phase Goal:** Maintainers can approve an exact Crosswake 0.2.1 candidate knowing every reversible package-family and release check has passed.
