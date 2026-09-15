@@ -5,7 +5,7 @@ milestone_name: Quality Ratchet & Release Readiness
 status: Awaiting next milestone
 stopped_at: Completed 168-13-PLAN.md; phase 168 closed with 1 item deferred to v23.0
 last_updated: "2026-09-15T20:31:26.703Z"
-last_activity: 2026-09-16
+last_activity: 2026-09-15
 last_activity_desc: Milestone v22.0 completed and archived
 state_head: 05e36baf1d58535fd5df9089321a2674f82e14b2
 progress:
@@ -23,11 +23,16 @@ current_phase_name: 0.2.1 Release Candidate Readiness
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-09-12)
+See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 168 — 0.2.1 Release Candidate Readiness
+**Current focus:** Planning v23.0 — release pipeline repair (`SEED-017`, carrying `TODO-009`,
+`TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
+
+**Open blocker carried forward:** PR #164 (`chore: release main`, proposing 0.2.2) must NOT be
+merged until `SEED-017` lands. The release graph is welded to `0.2.1`, so that merge would tag and
+then publish nothing. An interim CI tripwire on `main` should fail it on re-run.
 
 ## Current Position
 
