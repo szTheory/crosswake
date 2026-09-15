@@ -239,7 +239,10 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
   @tag :ownership_remediation
   test "ownership validator emits the exact deterministic remediation queue" do
     ledger =
-      ".planning/workstreams/quality-ratchet-release/phases/166-clean-checkout-engineering-quality/166-ownership-ledger.md"
+      Crosswake.Test.PhaseEvidencePath.resolve(
+        "quality-ratchet-release",
+        "166-clean-checkout-engineering-quality/166-ownership-ledger.md"
+      )
 
     {output, status} =
       System.cmd(

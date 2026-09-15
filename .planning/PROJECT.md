@@ -10,7 +10,25 @@ Get one real Phoenix application onto one physical iPhone with explicit per-rout
 honest offline mutation island, bounded native affordances, and enough self-service proof to keep a
 team of one out of framework-debugging purgatory.
 
-## Last Shipped Milestone: v19.0 Showcase Apps & Capability Map
+## Last Shipped Milestone: v22.0 Quality Ratchet & Release Readiness (shipped 2026-09-15)
+
+5 phases (164-168), 48 plans, 100 tasks. Closed as `override_closeout`.
+
+Dependency-security and merge-gate authority were made fail-closed through one authoritative path;
+CI was consolidated from twenty-seven legacy contexts to a single required `Crosswake CI` umbrella
+over forty-four literal proof leaves; clean-checkout repository quality became deterministic behind
+a nine-stage runner; public and pull-request truth were reconciled; and `crosswake 0.2.1` went live
+on Hex, SwiftPM and Maven.
+
+**What this milestone did not establish, and should not be read as establishing.** Phase 168 proved
+the *pre*-publication candidate path. It also surfaced that the **post-publication proof lane has
+never executed at any release** — the release graph is welded to `0.2.1` (`TODO-009`/`SEED-017`),
+the companion clean-room lane has been green at zero of three releases inspected (`TODO-011`), and
+the exact-public proof is structurally unsatisfiable under the independent-companion design
+(`TODO-012`). An interim CI tripwire is on `main`; the durable repair is v23.0 work. `SEED-017` is
+BLOCKING before any release past `0.2.1`.
+
+## Earlier Shipped Milestone: v19.0 Showcase Apps & Capability Map
 
 **Shipped:** 2026-07-12
 
@@ -29,12 +47,17 @@ team of one out of framework-debugging purgatory.
 
 ## Active Workstreams
 
-### v22.0 Quality Ratchet & Release Readiness (active)
+### v22.0 Quality Ratchet & Release Readiness (shipped)
 
 **Goal:** Make Crosswake safe to change, inexpensive to verify, pleasant to review, and ready for
 an exact approval-gated 0.2.1 release candidate without reopening product or mobile breadth.
 
+**Shipped:** 2026-09-15 as `override_closeout`. See the milestone section above for what it did
+and did not establish.
+
 **Planning:** `.planning/workstreams/quality-ratchet-release/`
+**Archive:** `.planning/workstreams/quality-ratchet-release/milestones/v22.0-ROADMAP.md` and
+`v22.0-REQUIREMENTS.md` (workstream-scoped, not the root `.planning/milestones/`).
 
 ### v21.0 First B2C Adopter Readiness (parked)
 
@@ -218,7 +241,7 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 **Archive:** `.planning/milestones/v16.0-ROADMAP.md`, `.planning/milestones/v16.0-REQUIREMENTS.md`, and `.planning/milestones/v16.0-MILESTONE-AUDIT.md`.
 
-## Last Shipped Milestone: v17.0 Companion Family Completion (shipped 2026-07-04)
+## Earlier Shipped Milestone: v17.0 Companion Family Completion (shipped 2026-07-04)
 
 **Goal:** Extract the remaining three first-party companions — `sigra` (auth), `chimeway` (notifications), `threadline` (audit) — into standalone, independently-versioned, fail-closed Hex packages, completing the companion family. Module names preserved (`Crosswake.Companions.Sigra.*` etc.) so the sole adopter touch-point (`config :crosswake, :companions, [...]`) is unchanged and extraction is non-breaking.
 
@@ -457,4 +480,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-09-12 after Phase 167 verification and transition to Phase 168.*
+*Last updated: 2026-09-15 after the v22.0 milestone close.*

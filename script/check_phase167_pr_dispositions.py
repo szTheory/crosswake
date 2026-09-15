@@ -18,6 +18,28 @@ from typing import Any, Callable
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# Phase directories MOVE when `/gsd-complete-milestone` archives a milestone, so a
+# path used to READ a file must resolve live-or-archived. Paths used as recorded
+# git identities (diff path sets, `manifest_path`, `proof_argv`) are deliberately
+# NOT resolved: those describe where a file was when the evidence was recorded,
+# and rewriting them would silently invalidate an equality against the receipt.
+import sys as _sys
+
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+from phase_evidence_path import resolve as _phase_path  # noqa: E402
+
+_WS = "quality-ratchet-release"
+
+
+def _readable(recorded: str) -> str:
+    """Repo-relative path to READ, resolving an archived phase directory."""
+    prefix = f".planning/workstreams/{_WS}/phases/"
+    if not recorded.startswith(prefix):
+        return recorded
+    resolved = Path(_phase_path(_WS, recorded[len(prefix):], root=ROOT))
+    return str(resolved.relative_to(ROOT))
+
 FULL_OID = re.compile(r"^[0-9a-f]{40}$")
 RECEIPT_FIELDS = {
     "schema_version",
@@ -167,6 +189,9 @@ FORBIDDEN_EVIDENCE = (
     "founder_identity",
 )
 PLAN07_DEFAULT = "783bd74df1c050f6c0214da4682d198a528ba59c"
+# Recorded git identity: compared against receipts and used as a git pathspec
+# (ls-tree / diff_paths / tree_record), so it must stay the path as RECORDED.
+# Resolution happens at the read sites below, never here.
 CLOSEOUT_SCOPE_PATH = ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/phase167-closeout-scope.json"
 CLOSEOUT_SCOPE_FIELDS = {
     "schema_version",
@@ -341,9 +366,14 @@ PHASE168_ENTRY_PATH_BLOBS = [
     },
 ]
 PHASE168_ENTRY_RECEIPT_PATH = Path(
-    ".planning/workstreams/quality-ratchet-release/phases/"
-    "168-0-2-1-release-candidate-readiness/evidence/phase168-entry-landing.json"
+    _readable(
+        ".planning/workstreams/quality-ratchet-release/phases/"
+        "168-0-2-1-release-candidate-readiness/evidence/phase168-entry-landing.json"
+    )
 )
+# Recorded git identity: compared against receipts and used as a git pathspec
+# (ls-tree / diff_paths / tree_record), so it must stay the path as RECORDED.
+# Resolution happens at the read sites below, never here.
 INVENTORY_PATH = ".planning/workstreams/quality-ratchet-release/phases/167-documentation-and-pull-request-reconciliation/evidence/pr-dispositions.json"
 TIMESTAMP = re.compile(r"^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
@@ -475,7 +505,10 @@ def git_blob_oid(value: bytes) -> str:
 
 
 def file_sha256(path: str) -> str:
-    return sha256_bytes((ROOT / path).read_bytes())
+    # `path` is frequently ALSO a recorded identity (a `receipt_path` written into
+    # the inventory), so it must stay literal at its call sites. Resolution belongs
+    # here, at the read boundary: this function's whole job is to open the file.
+    return sha256_bytes((ROOT / _readable(path)).read_bytes())
 
 
 def git_text(*args: str) -> str:
@@ -906,7 +939,7 @@ def validate_closeout_resolution(
     baseline_receipt = require_fields(value.get("baseline"), CLOSEOUT_BASELINE_FIELDS)
     require_closeout(baseline_receipt.get("path") == INVENTORY_PATH)
     require_sha256(baseline_receipt.get("sha256"))
-    baseline_path = ROOT / INVENTORY_PATH
+    baseline_path = ROOT / _readable(INVENTORY_PATH)
     baseline_bytes = baseline_path.read_bytes()
     require_closeout(sha256_bytes(baseline_bytes) == baseline_receipt["sha256"])
     baseline = json.loads(baseline_bytes.decode("utf-8"))
@@ -921,7 +954,7 @@ def validate_closeout_resolution(
     scope_receipt = require_fields(value.get("scope"), CLOSEOUT_SCOPE_RECEIPT_FIELDS)
     require_closeout(scope_receipt.get("path") == CLOSEOUT_SCOPE_PATH)
     require_sha256(scope_receipt.get("sha256"))
-    scope_path = scope_override if scope_override is not None else ROOT / CLOSEOUT_SCOPE_PATH
+    scope_path = scope_override if scope_override is not None else ROOT / _readable(CLOSEOUT_SCOPE_PATH)
     scope_bytes = scope_path.read_bytes()
     require_closeout(sha256_bytes(scope_bytes) == scope_receipt["sha256"])
     scope = json.loads(scope_bytes.decode("utf-8"))

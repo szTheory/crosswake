@@ -66,3 +66,7 @@ erl_crash.dump
 # under the project root by default; Phase 153.1's gate-integrity negative controls
 # leave synthetic workflow trees there. Test detritus, never an artifact.
 /tmp/
+
+# Python bytecode from script/*.py helpers
+__pycache__/
+*.py[cod]

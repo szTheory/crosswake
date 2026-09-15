@@ -6,16 +6,40 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
   use ExUnit.Case, async: true
 
   @monitor "scripts/ci_monitor.cjs"
-  @evidence ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/baseline.json"
-  @rendered ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/baseline.md"
-  @contexts ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/required-context-baseline.json"
+  @evidence Crosswake.Test.PhaseEvidencePath.resolve(
+              "quality-ratchet-release",
+              "165-efficient-and-maintainable-ci/evidence/baseline.json"
+            )
+  @rendered Crosswake.Test.PhaseEvidencePath.resolve(
+              "quality-ratchet-release",
+              "165-efficient-and-maintainable-ci/evidence/baseline.md"
+            )
+  @contexts Crosswake.Test.PhaseEvidencePath.resolve(
+              "quality-ratchet-release",
+              "165-efficient-and-maintainable-ci/evidence/required-context-baseline.json"
+            )
 
-  @remote_source ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/remote-default-source.json"
-  @live_observation ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/live-observation.json"
+  @remote_source Crosswake.Test.PhaseEvidencePath.resolve(
+                   "quality-ratchet-release",
+                   "165-efficient-and-maintainable-ci/evidence/remote-default-source.json"
+                 )
+  @live_observation Crosswake.Test.PhaseEvidencePath.resolve(
+                      "quality-ratchet-release",
+                      "165-efficient-and-maintainable-ci/evidence/live-observation.json"
+                    )
   @required_policy "script/required_check_policy.json"
-  @final_source ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/final-remote-default-source.json"
-  @after_evidence ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/after.json"
-  @comparison ".planning/workstreams/quality-ratchet-release/phases/165-efficient-and-maintainable-ci/evidence/comparison.md"
+  @final_source Crosswake.Test.PhaseEvidencePath.resolve(
+                  "quality-ratchet-release",
+                  "165-efficient-and-maintainable-ci/evidence/final-remote-default-source.json"
+                )
+  @after_evidence Crosswake.Test.PhaseEvidencePath.resolve(
+                    "quality-ratchet-release",
+                    "165-efficient-and-maintainable-ci/evidence/after.json"
+                  )
+  @comparison Crosswake.Test.PhaseEvidencePath.resolve(
+                "quality-ratchet-release",
+                "165-efficient-and-maintainable-ci/evidence/comparison.md"
+              )
   @required_check_cases "test/fixtures/ci/required-checks/cases.json"
 
   @tag :final_source

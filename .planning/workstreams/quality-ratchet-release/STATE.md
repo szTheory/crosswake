@@ -2,41 +2,44 @@
 gsd_state_version: "1.0"
 milestone: v22.0
 milestone_name: Quality Ratchet & Release Readiness
-current_phase: 168
-current_phase_name: 0.2.1 Release Candidate Readiness
-status: phase_complete
+status: Awaiting next milestone
 stopped_at: Completed 168-13-PLAN.md; phase 168 closed with 1 item deferred to v23.0
-last_updated: "2026-09-16T00:55:00.000Z"
-last_activity: 2026-09-16
-last_activity_desc: Phase 168 closed — 13/13 plans, 5/6 must-haves, exact-public proof deferred to v23.0
-state_head: 81ad5ce2576973ecc282d515dc38fba38edbcfab
+last_updated: "2026-09-15T20:31:26.703Z"
+last_activity: 2026-09-15
+last_activity_desc: Milestone v22.0 completed and archived
+state_head: 05e36baf1d58535fd5df9089321a2674f82e14b2
 progress:
   total_phases: 5
   completed_phases: 5
-  total_plans: 43
-  completed_plans: 43
+  total_plans: 48
+  completed_plans: 48
   percent: 100
 workstream: quality-ratchet-release
+current_phase: 168
+current_phase_name: 0.2.1 Release Candidate Readiness
 ---
 
 # Project State
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-09-12)
+See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 168 — 0.2.1 Release Candidate Readiness
+**Current focus:** Planning v23.0 — release pipeline repair (`SEED-017`, carrying `TODO-009`,
+`TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
+
+**Open blocker carried forward:** PR #164 (`chore: release main`, proposing 0.2.2) must NOT be
+merged until `SEED-017` lands. The release graph is welded to `0.2.1`, so that merge would tag and
+then publish nothing. An interim CI tripwire on `main` should fail it on re-run.
 
 ## Current Position
 
-Phase: 168 (0.2.1 Release Candidate Readiness) — COMPLETE (1 item deferred)
-Plan: 13 of 13
-Status: Milestone v22.0 phases all complete; ready for milestone closeout
-Last activity: 2026-09-16 — Phase 168 closed, exact-public proof deferred to v23.0
-
-Progress: [██████████] 100%
+Phase: Milestone v22.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-09-15 — Milestone v22.0 completed and archived
 
 ## Performance Metrics
 
@@ -237,3 +240,7 @@ Progress: [██████████] 100%
 Last session: 2026-09-13T13:09:20.506Z
 Stopped at: Completed 168-07-PLAN.md
 Resume file: None
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone

@@ -737,6 +737,74 @@
 - **Verification:** Milestone audit passed 31/31 requirements, 7/7 phases, 10/10 integration checks, and 6/6 flows after the Phase 152.1 repair.
 - **Residual debt:** one accepted artifact-shape exception for Phase 148; no unsatisfied v19 product requirements.
 
+## Milestone: v22.0 — Quality Ratchet & Release Readiness
+
+**Shipped:** 2026-09-15
+**Phases:** 5 (164-168) | **Plans:** 48 | **Tasks:** 100
+
+### What Was Built
+
+Dependency-security and merge-gate authority made fail-closed through one authoritative path. CI
+consolidated from twenty-seven legacy required contexts to a single `Crosswake CI` umbrella over
+forty-four literal proof leaves. Clean-checkout repository quality made deterministic behind a
+nine-stage Node runner. Public and pull-request truth reconciled. `crosswake 0.2.1` published live
+to Hex, SwiftPM and Maven, plus `crosswake_rindle 0.1.0` — the sixth package, which had never been
+published at any version.
+
+### What Worked
+
+Fail-closed defaults repeatedly caught real problems. The rollup treating `skipped` as not-success
+is why a welded release graph produced `PARTIAL` rather than a false green. The clean-room harness
+failing closed on a missing package is what exposed that `crosswake_rindle` had never shipped.
+
+Writing findings down as `TODO-NNN` with a linked `SEED` — rather than fixing them inline — kept a
+three-deep cascade of discoveries legible instead of turning one phase into an unbounded repair.
+
+### What Was Inefficient
+
+Phase 168's gap closure was re-verified only after merge, so `stale` verification then blocked the
+milestone close and forced an override. Verification that runs before the last merge lands is
+verification that has to be redone.
+
+Roadmap checkboxes drifted from reality — plans 168-09 through 168-13 shipped in PR #163 and were
+never ticked, leaving the table reading `8/13` at close time.
+
+### Patterns Established
+
+**Absence scored as success is this repository's recurring failure shape.** It appeared three
+separate times in one milestone: publication jobs that `skip` on a version mismatch and report
+nothing; a `mix test path:63` against a test that has moved, which prints `0 tests, 0 failures` and
+exits 0; and a negative-control regex whose mutation silently did nothing (`\1` + a digit reading
+as capture group 10), so the control passed against an unmutated file. Every new guard should be
+asked what it does when the thing it watches is *missing*, not merely wrong.
+
+Corollary: a negative control must assert that its mutation actually changed something. That one
+assertion is the difference between a control and a decoration.
+
+### Key Lessons
+
+- A post-publication proof that runs *after* the one-way door cannot block anything. Ordinary and
+  recovery publication paths must converge on the same proof, or the unusual path stays unproven —
+  which is exactly what happened to 0.2.1.
+- A test can be unsatisfiable rather than merely failing. `TODO-012`'s exact-public proof requires
+  one candidate ref for six packages while the design requires six independent ones; no amount of
+  running it resolves that. Recognising this early saves a lot of retrying.
+- Deferred-item records rot. Six items carried as "known pre-existing failures" since v14.0 all
+  passed when finally re-run, and one had drifted two lines so the citation matched no test at all.
+
+### Tooling Friction
+
+`@opengsd/gsd-core` 1.14.0's audit scanner reads GFM table rows as deferred items, but
+`audit-open acknowledge` refuses to write to a table-row span (`audit.cjs:1455`). The scanner can
+therefore surface items its own writer structurally cannot clear, hard-blocking a milestone close
+with no CLI path out. Worth reporting upstream.
+
+### Cost Observations
+
+- Model mix: predominantly Opus for the forensic/debugging work
+- Notable: the expensive part was not execution but re-establishing context after each discovery
+  invalidated the prior plan
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
