@@ -30,9 +30,18 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 **Current focus:** Planning v23.0 — release pipeline repair (`SEED-017`, carrying `TODO-009`,
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
-**Open blocker carried forward:** PR #164 (`chore: release main`, proposing 0.2.2) must NOT be
-merged until `SEED-017` lands. The release graph is welded to `0.2.1`, so that merge would tag and
-then publish nothing. An interim CI tripwire on `main` should fail it on re-run.
+**Open release pull requests — triage as of 2026-09-15. None should be merged yet.**
+
+| PR | Proposes | Disposition |
+|---|---|---|
+| #164 | `0.2.2` (linked core) | **BLOCKED on `SEED-017`.** The release graph is welded to `0.2.1`, so merging tags and then publishes NOTHING. An interim CI tripwire on `main` exists to fail this. |
+| #147 | `crosswake_rulestead 0.1.1` | **Hold.** Independently versioned (D-15/D-16), so not weld-blocked — but publishing is a one-way door, and per `TODO-011` the post-publish companion clean-room lane has never been green, while `TODO-012` makes the exact-public proof structurally unsatisfiable. Publishing more of the family before the proof lane works adds unverifiable artifacts. Also stale (opened 2026-08-10). |
+| #115 | `crosswake_chimeway 0.1.1` | **Hold**, same reasoning. Stale (opened 2026-08-09). |
+
+The companion holds are a judgement call, not a hard gate: these publishes would most
+likely succeed the way `crosswake_rindle 0.1.0` did this session. The argument for waiting
+is that "it published and nothing verified it" is exactly the state `SEED-017` exists to end.
+Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
 
