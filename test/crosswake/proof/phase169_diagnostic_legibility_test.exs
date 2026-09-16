@@ -355,6 +355,201 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
     end
   end
 
+  describe "Task 2: the two crash shapes classify distinctly and cascade loudly (D-03, D-08)" do
+    test "the crash-before-roster fixture yields :unavailable with the never-started message, and the five scoped checks + owner check are :unverifiable (exit 3)" do
+      previous = System.get_env("RELEASE_PLEASE_CONFIG_PATH")
+      missing_path = Path.join(System.tmp_dir!(), "crosswake-phase169-missing-config-#{System.unique_integer([:positive])}.json")
+      System.put_env("RELEASE_PLEASE_CONFIG_PATH", missing_path)
+
+      on_exit(fn ->
+        case previous do
+          nil -> System.delete_env("RELEASE_PLEASE_CONFIG_PATH")
+          value -> System.put_env("RELEASE_PLEASE_CONFIG_PATH", value)
+        end
+      end)
+
+      {raw_output, raw_exit_code} = run_scanner()
+      refute raw_output =~ "[crosswake] ROSTER: "
+      assert raw_exit_code != 0
+
+      status = Crosswake.ReleaseStatus.build(live?: false)
+
+      owner = check!(status, "release.workflow_integrity")
+      assert owner.status == :unverifiable
+      assert owner.message =~ "scanner did not start: no roster line emitted (exit "
+
+      for code <- @scoped_scanner_codes do
+        check = check!(status, code)
+        assert check.status == :unverifiable, "expected #{code} to be :unverifiable, got #{inspect(check.status)}"
+        assert check.message =~ "This is not a pass."
+      end
+
+      refute Enum.any?(status.checks, &(&1.code in @scoped_scanner_codes and &1.status == :ok))
+
+      assert Crosswake.ReleaseStatus.exit_code(status) == 3
+    end
+
+    test "the roster-then-crash fixture yields :unverifiable with the terminated-early message, and the five scoped checks + owner check are :unverifiable (exit 3)" do
+      source = File.read!(@scanner)
+      mutated = inject_crash_after_roster(source)
+
+      status =
+        with_mutated_scanner_cwd(mutated, fn cwd ->
+          Crosswake.ReleaseStatus.build(live?: false, cwd: cwd)
+        end)
+
+      owner = check!(status, "release.workflow_integrity")
+      assert owner.status == :unverifiable
+      assert owner.message =~ " roster checks ran (exit "
+      assert owner.message =~ "scanner terminated early: 0 of "
+
+      for code <- @scoped_scanner_codes do
+        check = check!(status, code)
+        assert check.status == :unverifiable, "expected #{code} to be :unverifiable, got #{inspect(check.status)}"
+        assert check.message =~ "This is not a pass."
+      end
+
+      refute Enum.any?(status.checks, &(&1.code in @scoped_scanner_codes and &1.status == :ok))
+
+      assert Crosswake.ReleaseStatus.exit_code(status) == 3
+    end
+
+    test "a run with a ROSTER line, full OK/FAIL lines, but no DONE line classifies as :unverifiable, not :ok" do
+      source = File.read!(@scanner)
+      mutated = drop_done_line(source)
+
+      status =
+        with_mutated_scanner_cwd(mutated, fn cwd ->
+          Crosswake.ReleaseStatus.build(live?: false, cwd: cwd)
+        end)
+
+      owner = check!(status, "release.workflow_integrity")
+      assert owner.status == :unverifiable
+    end
+
+    test "a complete run with one FAIL still routes to :error / exit 1 (unchanged)" do
+      {_id, _detail} = run_drifted_scanner_and_capture_fail()
+      status = Crosswake.ReleaseStatus.build(live?: false)
+
+      assert status.status == :error
+      assert Crosswake.ReleaseStatus.exit_code(status) == 1
+    end
+
+    test "the stderr excerpt in a crash message is bounded and carries a truncation marker when clipped" do
+      previous = System.get_env("RELEASE_PLEASE_CONFIG_PATH")
+      missing_path = Path.join(System.tmp_dir!(), "crosswake-phase169-missing-config-#{System.unique_integer([:positive])}.json")
+      System.put_env("RELEASE_PLEASE_CONFIG_PATH", missing_path)
+
+      on_exit(fn ->
+        case previous do
+          nil -> System.delete_env("RELEASE_PLEASE_CONFIG_PATH")
+          value -> System.put_env("RELEASE_PLEASE_CONFIG_PATH", value)
+        end
+      end)
+
+      status = Crosswake.ReleaseStatus.build(live?: false)
+      owner = check!(status, "release.workflow_integrity")
+
+      [_, excerpt] = String.split(owner.message, "stderr: ", parts: 2)
+      assert String.length(excerpt) <= 520
+    end
+
+    test "the OK|FAIL consumer regex literal is byte-identical to its pre-phase form" do
+      source = File.read!("lib/crosswake/release_status.ex")
+      assert source =~ "~r/^\\[crosswake\\] (OK|FAIL): ([^\\s]+) - (.*)$/"
+    end
+  end
+
+  # --- Task 2 helpers ---------------------------------------------------------
+
+  # Injects a raise immediately after the ROSTER line is emitted and before any
+  # OK/FAIL line prints — the roster-then-crash shape (D-03). Mirrors
+  # mutate_roster_remove_id/2's raise-on-absent-pattern discipline: a silent
+  # no-op mutation would make the negative control prove nothing.
+  defp inject_crash_after_roster(source) do
+    target = roster_ioputs_line()
+
+    unless String.contains?(source, target) do
+      raise """
+      inject_crash_after_roster/1 found no ROSTER IO.puts line to inject after.
+
+      The mutation would be a no-op, so the negative control would assert nothing.
+      The scanner's ROSTER emission line changed — update this helper to match.
+      """
+    end
+
+    String.replace(
+      source,
+      target,
+      target <> "\n    raise \"phase169 test-injected crash after roster\"",
+      global: false
+    )
+  end
+
+  # Removes the DONE line emission so a run completes all OK/FAIL lines but never
+  # asserts completion — proving DONE is a positive assertion, not an inference.
+  defp drop_done_line(source) do
+    target = done_ioputs_call()
+
+    unless String.contains?(source, target) do
+      raise """
+      drop_done_line/1 found no DONE IO.puts call to remove.
+
+      The mutation would be a no-op, so the negative control would assert nothing.
+      The scanner's DONE emission changed — update this helper to match.
+      """
+    end
+
+    String.replace(source, target, "", global: false)
+  end
+
+  defp roster_ioputs_line do
+    "    IO.puts(\"[crosswake] ROSTER: \#{length(@roster_ids)} \#{Enum.join(@roster_ids, \",\")}\")"
+  end
+
+  defp done_ioputs_call do
+    "    IO.puts(\n      \"[crosswake] DONE: \#{length(checks)} of \#{length(@roster_ids)} roster checks emitted; \#{length(failures)} failed.\"\n    )\n\n"
+  end
+
+  # Mirrors an entire cwd as a symlink tree so the scanner script's relative
+  # reads (manifest, config, workflow, mix.exs, gradle files, .git) resolve to
+  # the REAL project — except for script/check_release_workflow_integrity.exs,
+  # which is written as the real (non-symlinked) mutated content. This lets
+  # Crosswake.ReleaseStatus.build(cwd: ...) exercise the mutated scanner through
+  # the exact same code path production uses, with no permanent change to any
+  # tracked file.
+  defp with_mutated_scanner_cwd(mutated_source, fun) do
+    real_cwd = File.cwd!()
+
+    temp_root =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-phase169-cwd-#{System.unique_integer([:positive])}"
+      )
+
+    File.mkdir_p!(temp_root)
+
+    try do
+      for entry <- File.ls!(real_cwd), entry != "script" do
+        File.ln_s!(Path.join(real_cwd, entry), Path.join(temp_root, entry))
+      end
+
+      script_dir = Path.join(temp_root, "script")
+      File.mkdir_p!(script_dir)
+
+      for entry <- File.ls!(Path.join(real_cwd, "script")),
+          entry != "check_release_workflow_integrity.exs" do
+        File.ln_s!(Path.join([real_cwd, "script", entry]), Path.join(script_dir, entry))
+      end
+
+      File.write!(Path.join(script_dir, "check_release_workflow_integrity.exs"), mutated_source)
+
+      fun.(temp_root)
+    after
+      File.rm_rf!(temp_root)
+    end
+  end
+
   describe "Task 3: release.scanner.roster_exact — self-checking roster, proven non-vacuous" do
     test "a clean run emits [crosswake] OK: release.scanner.roster_exact" do
       {output, exit_code} = run_scanner()
