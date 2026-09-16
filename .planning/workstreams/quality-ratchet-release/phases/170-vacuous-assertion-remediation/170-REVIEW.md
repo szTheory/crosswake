@@ -239,6 +239,47 @@ alongside the existing string-literal caveat, so both known gaps are documented 
 
 ---
 
+## Findings Closed (gap closure, plan 170-06)
+
+**CR-01 (Critical) — closed.** `@manual_overrides` in
+`script/inventory_collection_assertions.exs` is now keyed by `row["key"]` (the same sha256
+content hash every other ledger row uses) instead of `{file, line}`, so an override tracks its
+call site through line movement instead of silently stopping to match. `apply_manual_override/1`
+was updated to look up by that key. Independently, `--check`'s completeness diff (and the "both
+directions" ledger proof test) now compares full row CONTENT for every key present in both the
+live and committed snapshots — not just key-set membership — so a bucket that silently drifts
+between a committed snapshot and the live tree is reported as a `mismatched:` FAIL instead of
+passing silently. A new D-14 non-vacuity control (`phase170_vacuous_assertion_ledger_test.exs`,
+"mutating one row's bucket ... makes --check exit non-zero") proves the content-diff can go RED:
+a bucket-only mutation with an unchanged key now fails `--check` and names the row. Ledger
+regenerates byte-identical for this change alone (verified before layering WR-03's rationale
+edit on top). Commit: `6a3c3973`.
+
+**WR-03 (Warning) — closed.** Re-verified the `validator_test.exs:86` override against the real
+code path: added a temporary `IO.inspect` and ran
+`mix test test/crosswake/manifest/validator_test.exs:81`, which shows
+`Validator.validate(manifest) == []` for that fixture. The previously recorded rationale's claim
+of a "different, later `Validator.validate(manifest)` call (same expression, same test, second
+occurrence)" was confirmed false — no such second call exists in that test. The site IS safe
+(same positive-path "fixture validates cleanly" shape as the sibling override at line 303), just
+not for the reason previously recorded; the rationale was rewritten to state the real, observed
+reason with an accurate `mix test` citation. No reclassification: bucket composition is unchanged
+at 131 safe-by-construction / 4 safe-compile-time-literal / 25 safe-cardinality-pinned / 60
+safe-guarded (220 sites total). Commit: `b170a58c`.
+
+Verification re-run after both fixes: `elixir script/inventory_collection_assertions.exs --check`
+exits 0 (220 sites); `--emit-snapshot` regenerates byte-identical against the committed ledger;
+all three phase170 proof test files pass (51 tests, 0 failures across
+`phase170_vacuous_assertion_ledger_test.exs`, `phase170_guard_expression_match_test.exs`,
+`phase170_vacuity_taxonomy_convention_test.exs`, plus `validator_test.exs`); `mix format
+--check-formatted` is clean on every file touched.
+
+WR-01, WR-02, IN-01, and IN-02 remain open by design — deliberately deferred, per this plan's
+scope.
+
+---
+
 _Reviewed: 2026-09-16T20:08:19Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
+_Gap closure: 2026-09-16, plan 170-06_
