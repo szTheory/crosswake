@@ -117,14 +117,14 @@ pass a one-way-door step.
    review checklist item applied at the close of each of those phases, not a code change owned by
    this phase itself.
 
-**Plans**: 1/5 plans executed
+**Plans**: 2/5 plans executed
 **Wave 1**
 
 - [x] 170-01-PLAN.md — Inventory script, committed classification ledger, and its non-vacuity proof (VAC-01)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 170-02-PLAN.md — Frozen remediation manifest, guard insertions, and the itemized structural proof (VAC-02)
+- [x] 170-02-PLAN.md — Frozen remediation manifest, guard insertions, and the itemized structural proof (VAC-02)
 - [ ] 170-04-PLAN.md — `vacuity_taxonomy` phase-close convention and the Phase 169 retroactive addendum (VAC-03)
 
 **Wave 3** *(blocked on Wave 2 completion)*
@@ -361,7 +361,7 @@ before the real one-way door.
 | 167. Documentation and Pull-Request Reconciliation | 9/9 | Shipped | 2026-09-12 |
 | 168. 0.2.1 Release Candidate Readiness | 13/13 | Shipped | 2026-09-16 |
 | 169. Diagnostic Legibility | 4/4 | Complete    | 2026-09-16 |
-| 170. Vacuous Assertion Remediation | 1/5 | In Progress|  |
+| 170. Vacuous Assertion Remediation | 2/5 | In Progress|  |
 | 171. Version/Authority Split | 0/TBD | Not started | - |
 | 172. Per-Package Proof Scope | 0/TBD | Not started | - |
 | 173. Recovery-Path Proof Convergence | 0/TBD | Not started | - |
