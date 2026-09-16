@@ -890,26 +890,44 @@ defmodule Crosswake.ReleaseStatus do
   defp scanner_ids_result(%{status: :unavailable, message: message}, _required_ids),
     do: {false, [], message}
 
-  defp scanner_ids_result(%{status: :failed, checks: checks}, required_ids) do
+  # D-07/D-09: `failing` is scoped to THIS call site's own `required_ids` — exactly
+  # like the catch-all sibling below — so a foreign check failing elsewhere in the
+  # scanner's full parsed set does not bleed into unrelated checks. It is safe
+  # precisely because the verified ground truth (169-CONTEXT.md) establishes the
+  # scanner evaluates eagerly and every check emits, so a scoped green here is a
+  # real green; the always-emitted `release.workflow_integrity` owner check
+  # (workflow_integrity_owner_check/1) is the one place the full unscoped failure
+  # set surfaces. `failing` is ordered by the scanner's own emission `order:`, not
+  # alphabetically. Both non-empty buckets compose into one message, failing named
+  # first, so neither shadows the other.
+  defp scanner_ids_result(%{status: :failed, checks: checks} = evidence, required_ids) do
     missing = Enum.reject(required_ids, &Map.has_key?(checks, &1))
 
     failing =
-      checks
-      |> Enum.filter(fn {_id, check} -> match?(%{status: :error}, check) end)
-      |> Enum.map(fn {id, _check} -> id end)
-      |> Enum.sort()
+      required_ids
+      |> Enum.filter(fn id -> match?(%{status: :error}, Map.get(checks, id)) end)
+      |> Enum.sort_by(fn id -> Map.get(checks, id) |> Map.get(:order, 0) end)
 
-    evidence = Enum.uniq(missing ++ failing)
+    if missing == [] and failing == [] do
+      # D-07: this call site's own required_ids are all present and all passed —
+      # under a complete run, a foreign failure elsewhere does not make this scoped
+      # check lie about its own scope. The unscoped failure still surfaces via the
+      # always-emitted release.workflow_integrity owner check.
+      {true, required_ids, "all scanner IDs passed"}
+    else
+      evidence_ids = Enum.uniq(failing ++ missing)
 
-    cond do
-      missing != [] ->
-        {false, evidence, "missing scanner IDs: #{Enum.join(missing, ", ")}"}
+      segments =
+        [failing_segment(failing, checks), missing_segment(missing, evidence)]
+        |> Enum.reject(&is_nil/1)
 
-      failing != [] ->
-        {false, evidence, "failing scanner IDs: #{Enum.join(failing, ", ")}"}
+      message =
+        case segments do
+          [] -> "scanner exited nonzero without parseable failing IDs"
+          _ -> Enum.join(segments, "; ")
+        end
 
-      true ->
-        {false, evidence, "scanner exited nonzero without parseable failing IDs"}
+      {false, evidence_ids, message}
     end
   end
 
@@ -965,25 +983,79 @@ defmodule Crosswake.ReleaseStatus do
     case System.cmd("elixir", [@workflow_integrity_source], cd: cwd, stderr_to_stdout: true) do
       {output, exit_code} ->
         checks = parse_workflow_integrity_output(output)
+        roster_size = parse_roster_size(output)
 
         cond do
           checks == %{} ->
             %{
               status: :unavailable,
               checks: %{},
-              message: "scanner output was empty or unparseable"
+              message: "scanner output was empty or unparseable",
+              roster_size: roster_size
             }
 
           exit_code == 0 ->
-            %{status: :ok, checks: checks, message: "scanner passed"}
+            %{
+              status: :ok,
+              checks: checks,
+              message: "scanner passed",
+              roster_size: roster_size
+            }
 
           true ->
-            %{status: :failed, checks: checks, message: "scanner reported release workflow drift"}
+            %{
+              status: :failed,
+              checks: checks,
+              message: "scanner reported release workflow drift",
+              roster_size: roster_size
+            }
         end
     end
   rescue
     error ->
-      %{status: :unavailable, checks: %{}, message: Exception.message(error)}
+      %{status: :unavailable, checks: %{}, message: Exception.message(error), roster_size: nil}
+  end
+
+  # D-02: the ROSTER line's count is the denominator that makes "never defined"
+  # (an ID absent from the scanner's declared roster) legible with a number, rather
+  # than a bare unexplained absence. `nil` when no ROSTER line was observed at all
+  # (e.g. a hand-built fixture map, or a crash before the roster line prints).
+  defp parse_roster_size(output) do
+    case Regex.run(~r/^\[crosswake\] ROSTER: (\d+) /m, output, capture: :all_but_first) do
+      [count] -> String.to_integer(count)
+      _ -> nil
+    end
+  end
+
+  # D-09: one composed segment per non-empty bucket, failing named first. Each
+  # failing entry carries its ID and its verbatim `detail` — never a bare ID.
+  defp failing_segment([], _checks), do: nil
+
+  defp failing_segment(failing, checks) do
+    details =
+      Enum.map_join(failing, ", ", fn id -> "#{id}: #{Map.get(checks, id).detail}" end)
+
+    "#{length(failing)} failing (#{details})"
+  end
+
+  # D-03: a missing required ID is explained, not presented as an unexplained new
+  # problem — literal never-defined wording naming the roster size and the drift
+  # pointer back to the scanner source.
+  defp missing_segment([], _evidence), do: nil
+
+  defp missing_segment(missing, evidence) do
+    roster_size = Map.get(evidence, :roster_size)
+    details = Enum.map_join(missing, ", ", &never_defined_detail(&1, roster_size))
+
+    "#{length(missing)} never defined (#{details})"
+  end
+
+  defp never_defined_detail(id, nil) do
+    "never defined by scanner: #{id} — not in the scanner's roster; the required-ID list in Crosswake.ReleaseStatus has drifted from #{@workflow_integrity_source}"
+  end
+
+  defp never_defined_detail(id, roster_size) do
+    "never defined by scanner: #{id} — not in the scanner's #{roster_size}-check roster; the required-ID list in Crosswake.ReleaseStatus has drifted from #{@workflow_integrity_source}"
   end
 
   defp parse_workflow_integrity_output(output) do

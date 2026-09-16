@@ -42,7 +42,15 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     end
   end
 
-  test "scanner failure outside scoped evidence IDs fails the status surface" do
+  # Phase 169 / D-06 / D-07: a scanner check failing OUTSIDE any caller's required_ids
+  # is a foreign failure. The five scoped scanner_check/7 checks now report their own
+  # honest truth (they genuinely passed), and the always-emitted
+  # release.workflow_integrity owner check is the single place the foreign failure's
+  # verbatim detail surfaces. Before Phase 169 this same fixture made every one of the
+  # five scoped checks parrot the same uninformative bare ID — the defect this phase
+  # fixes (see .planning/workstreams/quality-ratchet-release/phases/169-diagnostic-legibility/169-CONTEXT.md
+  # <verified_ground_truth>).
+  test "a foreign scanner failure is scoped away from unrelated checks and surfaced once by the owner check" do
     baseline = Crosswake.ReleaseStatus.build()
 
     checks =
@@ -64,11 +72,14 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
 
     assert status.status == :error
 
+    assert %{status: :ok} = check!(status, "release.workflow_path_gates")
+
     assert %{status: :error, evidence: evidence, message: message, next_action: next_action} =
-             check!(status, "release.workflow_path_gates")
+             check!(status, "release.workflow_integrity")
 
     assert "release.unscoped.regression" in evidence
-    assert message =~ "failing scanner IDs: release.unscoped.regression"
+    assert message =~ "release.unscoped.regression"
+    assert message =~ "fixture failure"
     assert next_action == "elixir script/check_release_workflow_integrity.exs"
   end
 

@@ -18,6 +18,16 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
   @manifest_path ".release-please-manifest.json"
   @line_regex ~r/^\[crosswake\] (OK|FAIL): ([^\s]+) - (.*)$/
 
+  # The five pre-existing scoped scanner_check/7 call sites (D-07) — unaffected by
+  # the always-emitted release.workflow_integrity owner check.
+  @scoped_scanner_codes ~w(
+    release.workflow_path_gates
+    release.cleanroom_dependency_floor
+    release.governance_queue_max
+    release.governance_behavioral_identity_gates
+    release.governance_cleanup_after_proof
+  )
+
   describe "Task 1: one failing scanner check's own sentence reaches mix crosswake.release.status" do
     test "a drifted manifest surfaces the failing check's verbatim detail through build/1 and render/1" do
       {fail_id, detail} = run_drifted_scanner_and_capture_fail()
@@ -79,6 +89,161 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
       [emitted_str, _of, _roster_count_str | _rest] = done_line |> String.trim_leading("[crosswake] DONE: ") |> String.split(" ")
 
       assert String.to_integer(emitted_str) == ok_fail_count
+    end
+  end
+
+  describe "Task 2: scope the five call sites to their own gates and compose every non-empty bucket" do
+    test "a foreign check failing leaves the five scoped checks green and surfaces once via the owner check" do
+      baseline = Crosswake.ReleaseStatus.build()
+
+      all_scanner_ids =
+        baseline.checks
+        |> Enum.filter(&(&1.source == "script/check_release_workflow_integrity.exs"))
+        |> Enum.flat_map(& &1.evidence)
+        |> Enum.uniq()
+
+      checks =
+        all_scanner_ids
+        |> Map.new(&{&1, %{status: :ok, detail: "fixture ok", order: 0}})
+        |> Map.put("release.foreign.regression", %{
+          status: :error,
+          detail: "fixture foreign failure",
+          order: 999
+        })
+
+      status =
+        Crosswake.ReleaseStatus.build(
+          workflow_integrity: %{
+            status: :failed,
+            checks: checks,
+            message: "scanner reported release workflow drift"
+          }
+        )
+
+      for code <- @scoped_scanner_codes do
+        assert %{status: :ok} = check!(status, code)
+      end
+
+      assert %{status: :error, message: message, evidence: evidence} =
+               check!(status, "release.workflow_integrity")
+
+      assert "release.foreign.regression" in evidence
+      assert message =~ "release.foreign.regression"
+      assert message =~ "fixture foreign failure"
+    end
+
+    test "one of a caller's own required IDs failing surfaces that caller's check with the verbatim detail" do
+      baseline = Crosswake.ReleaseStatus.build()
+      required_ids = check!(baseline, "release.workflow_path_gates").evidence
+      [own_id | _] = required_ids
+
+      checks =
+        required_ids
+        |> Map.new(&{&1, %{status: :ok, detail: "fixture ok", order: 0}})
+        |> Map.put(own_id, %{status: :error, detail: "fixture own failure detail", order: 0})
+
+      status =
+        Crosswake.ReleaseStatus.build(
+          workflow_integrity: %{
+            status: :failed,
+            checks: checks,
+            message: "scanner reported release workflow drift"
+          }
+        )
+
+      assert %{status: :error, message: message} = check!(status, "release.workflow_path_gates")
+      assert message =~ own_id
+      assert message =~ "fixture own failure detail"
+    end
+
+    test "a simultaneous own-failing and required-missing state names failing first and never shadows missing" do
+      baseline = Crosswake.ReleaseStatus.build()
+      required_ids = check!(baseline, "release.workflow_path_gates").evidence
+      [failing_id, missing_id | _] = required_ids
+
+      checks =
+        required_ids
+        |> Enum.reject(&(&1 == missing_id))
+        |> Map.new(&{&1, %{status: :ok, detail: "fixture ok", order: 0}})
+        |> Map.put(failing_id, %{status: :error, detail: "fixture failing detail", order: 0})
+
+      status =
+        Crosswake.ReleaseStatus.build(
+          workflow_integrity: %{
+            status: :failed,
+            checks: checks,
+            message: "scanner reported release workflow drift",
+            roster_size: 69
+          }
+        )
+
+      assert %{status: :error, message: message} = check!(status, "release.workflow_path_gates")
+
+      assert [failing_part, missing_part] = String.split(message, "; ", parts: 2)
+      assert failing_part =~ "failing"
+      assert failing_part =~ failing_id
+      assert missing_part =~ "never defined"
+      assert missing_part =~ missing_id
+      assert missing_part =~ "not in the scanner's "
+      assert missing_part =~ "script/check_release_workflow_integrity.exs"
+    end
+
+    test "a missing required ID explains the absence rather than presenting it as an unexplained new problem" do
+      baseline = Crosswake.ReleaseStatus.build()
+      required_ids = check!(baseline, "release.workflow_path_gates").evidence
+      [missing_id | rest_ids] = required_ids
+
+      checks = Map.new(rest_ids, &{&1, %{status: :ok, detail: "fixture ok", order: 0}})
+
+      status =
+        Crosswake.ReleaseStatus.build(
+          workflow_integrity: %{
+            status: :failed,
+            checks: checks,
+            message: "scanner reported release workflow drift",
+            roster_size: 69
+          }
+        )
+
+      assert %{status: :error, message: message} = check!(status, "release.workflow_path_gates")
+      assert message =~ "never defined by scanner: #{missing_id}"
+      assert message =~ "not in the scanner's 69-check roster"
+      assert message =~ "script/check_release_workflow_integrity.exs"
+    end
+
+    test "two of a caller's own required IDs failing are both named, ordered by scanner emission order, stably" do
+      baseline = Crosswake.ReleaseStatus.build()
+      required_ids = check!(baseline, "release.workflow_path_gates").evidence
+      [id_a, id_b | rest_ids] = required_ids
+
+      checks =
+        rest_ids
+        |> Map.new(&{&1, %{status: :ok, detail: "fixture ok", order: 0}})
+        |> Map.put(id_a, %{status: :error, detail: "detail A", order: 5})
+        |> Map.put(id_b, %{status: :error, detail: "detail B", order: 2})
+
+      build_fn = fn ->
+        Crosswake.ReleaseStatus.build(
+          workflow_integrity: %{
+            status: :failed,
+            checks: checks,
+            message: "scanner reported release workflow drift"
+          }
+        )
+      end
+
+      status = build_fn.()
+
+      assert %{status: :error, message: message} = check!(status, "release.workflow_path_gates")
+      assert message =~ "#{id_b}: detail B"
+      assert message =~ "#{id_a}: detail A"
+
+      {b_index, _} = :binary.match(message, id_b)
+      {a_index, _} = :binary.match(message, id_a)
+      assert b_index < a_index, "expected order:2 (#{id_b}) before order:5 (#{id_a})"
+
+      status2 = build_fn.()
+      assert check!(status2, "release.workflow_path_gates").message == message
     end
   end
 
