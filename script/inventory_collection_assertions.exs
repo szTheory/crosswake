@@ -61,6 +61,8 @@ defmodule Crosswake.CollectionAssertionInventory do
   @sunset "When VACG-01 (absence.collection_assertion_non_empty) lands as a merge-blocking guard, lift this script's detection core into that guard rather than rewriting it, then delete script/inventory_collection_assertions.exs, script/collection_assertion_ledger.json, script/collection_assertion_remediation.json, and test/crosswake/proof/phase170_vacuous_assertion_ledger_test.exs. Two mechanisms that can silently disagree about what counts as safe are worse than one."
 
   @row_fields ~w(key shape bucket rationale display enclosing expression)
+  @remediation_row_fields ~w(key shape display enclosing expression)
+  @remediation_note "This list is closed-world and frozen: it is the exact set of sites phase 170 rewrote, it will not grow to cover a site added later, and standing tree-wide enforcement is VACG-01's deferred job."
 
   @shape_patterns [
     {:assert_all, ~r/assert\s+Enum\.all\?\(/},
@@ -76,6 +78,9 @@ defmodule Crosswake.CollectionAssertionInventory do
     ledger_path = Keyword.get(opts, :ledger_path, Path.join(root, @default_ledger_relpath))
 
     cond do
+      Keyword.get(opts, :emit_remediation, false) ->
+        emit_remediation(root, ledger_path)
+
       Keyword.get(opts, :emit_snapshot, false) ->
         scope = effective_scope(Keyword.get(opts, :scope), ledger_path)
         root |> rows(scope) |> render_snapshot(scope) |> IO.write()
@@ -84,6 +89,29 @@ defmodule Crosswake.CollectionAssertionInventory do
       true ->
         check(root, Keyword.get(opts, :scope), ledger_path)
     end
+  end
+
+  # `--emit-remediation`: projects the CURRENT committed ledger's `needs-fix` rows into the
+  # closed-world remediation manifest (D-12.1). This reads the already-committed ledger rather
+  # than rescanning the tree, because once guards are inserted those rows reclassify to
+  # `safe-guarded` and a fresh scan would find nothing left to freeze — the manifest must be
+  # generated BEFORE any guard lands.
+  defp emit_remediation(root, ledger_path) do
+    ledger_path
+    |> File.read!()
+    |> JSON.decode!()
+    |> Map.get("rows", [])
+    |> Enum.filter(&(&1["bucket"] == "needs-fix"))
+    |> Enum.sort_by(&{&1["display"], &1["key"]})
+    |> render_remediation(frozen_at(root))
+    |> IO.write()
+
+    0
+  end
+
+  defp frozen_at(root) do
+    {sha, 0} = System.cmd("git", ["rev-parse", "HEAD"], cd: root)
+    String.trim(sha)
   end
 
   # `--scope` is optional for both `--emit-snapshot` and `--check`: an already-committed ledger
@@ -161,6 +189,39 @@ defmodule Crosswake.CollectionAssertionInventory do
       "rows": [#{rows_block}]
     }
     """
+  end
+
+  @doc """
+  Deterministic text rendering of the closed-world remediation manifest (D-12.1). `rows` is the
+  ledger's `needs-fix` subset, already sorted by `{display, key}`; `frozen_at` is the git SHA of
+  HEAD at generation time. Row fields are a narrower projection than the full ledger row — no
+  `bucket`/`rationale`, since by definition every row here is `needs-fix` until the guard lands.
+  """
+  def render_remediation(rows, frozen_at) do
+    rows_json =
+      rows
+      |> Enum.map(&render_remediation_row/1)
+      |> Enum.join(",\n")
+
+    rows_block = if rows_json == "", do: "", else: "\n" <> rows_json <> "\n"
+
+    """
+    {
+      "frozen_at": #{JSON.encode!(frozen_at)},
+      "generator": #{JSON.encode!(@generator)},
+      "note": #{JSON.encode!(@remediation_note)},
+      "rows": [#{rows_block}]
+    }
+    """
+  end
+
+  defp render_remediation_row(row) do
+    fields =
+      @remediation_row_fields
+      |> Enum.map(fn key -> ~s("#{key}": #{JSON.encode!(Map.fetch!(row, key))}) end)
+      |> Enum.join(", ")
+
+    "    {" <> fields <> "}"
   end
 
   # ── File-level scan ──────────────────────────────────────────────────────
@@ -625,6 +686,7 @@ defmodule Crosswake.CollectionAssertionInventory.CLI do
         scope: nil,
         ledger: nil,
         emit_snapshot: false,
+        emit_remediation: false,
         check: false
       })
 
@@ -633,6 +695,10 @@ defmodule Crosswake.CollectionAssertionInventory.CLI do
   defp parse(["--scope", glob | rest], acc), do: parse(rest, %{acc | scope: glob})
   defp parse(["--ledger", path | rest], acc), do: parse(rest, %{acc | ledger: path})
   defp parse(["--emit-snapshot" | rest], acc), do: parse(rest, %{acc | emit_snapshot: true})
+
+  defp parse(["--emit-remediation" | rest], acc),
+    do: parse(rest, %{acc | emit_remediation: true})
+
   defp parse(["--check" | rest], acc), do: parse(rest, %{acc | check: true})
   defp parse([_unrecognized | rest], acc), do: parse(rest, acc)
 end
@@ -640,7 +706,7 @@ end
 cli = Crosswake.CollectionAssertionInventory.CLI.parse(System.argv())
 
 run_opts =
-  [emit_snapshot: cli.emit_snapshot]
+  [emit_snapshot: cli.emit_snapshot, emit_remediation: cli.emit_remediation]
   |> then(fn opts -> if cli.scope, do: Keyword.put(opts, :scope, cli.scope), else: opts end)
   |> then(fn opts ->
     if cli.ledger, do: Keyword.put(opts, :ledger_path, cli.ledger), else: opts
