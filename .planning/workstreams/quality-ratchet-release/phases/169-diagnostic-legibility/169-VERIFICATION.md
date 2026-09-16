@@ -26,7 +26,20 @@ covered_files:
   - test/crosswake/proof/phase169_check_name_uniqueness_test.exs
   - test/crosswake/proof/phase169_diagnostic_legibility_test.exs
   - test/crosswake/proof/phase169_exit_contract_guard_test.exs
-covered_digest: "v1:sha256:43ecc49f41a12f643d6ac01146c8a36d0782f58221b2deaf002d1c0082b9a1ee"
+covered_digest: "v1:sha256:c34f65e1702c63c12ddb98d215d12ea9d8c395b6108fbb8249fe17e700aebc70"
+revalidated: 2026-09-16T20:51:03Z
+revalidation_note: |
+  Digest refreshed by /gsd-verify-work 169 (see 169-UAT.md). The prior digest
+  (v1:sha256:43ecc49f...) went stale because phase 170 edited the SHARED
+  .planning/workstreams/quality-ratchet-release/REQUIREMENTS.md, which is listed in
+  covered_files. Every covered file that phase 169 is actually about — release_status.ex,
+  crosswake.release.status.ex, check_release_workflow_integrity.exs,
+  check_required_checks_registered.sh, list_merge_blocking_checks.py, release-please.yml,
+  phase70-proof.yml, and the three phase-169 test files — is byte-unchanged since the original
+  verification. All four success criteria were RE-EXECUTED, not re-read: 53 proof tests pass,
+  list_merge_blocking_checks.py --producers exits 0 with 103 records / 0 version-literal / 0
+  duplicate names, mix crosswake.release.status exits 0 with no FAIL/UNVERIFIED lines, and
+  required_check_policy.json diffs empty. Verdict unchanged: passed, 4/4.
 behavior_unverified: 0
 overrides_applied: 0
 deferred:
