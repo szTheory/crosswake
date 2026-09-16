@@ -137,17 +137,7 @@ defmodule Crosswake.ReleaseStatus do
       [
         "",
         "Checks:"
-      ] ++
-        Enum.map(status.checks, fn check ->
-          next_action =
-            if check.status == :ok or is_nil(check.next_action) do
-              ""
-            else
-              " next action: #{check.next_action}"
-            end
-
-          "- #{String.upcase(to_string(check.status))} #{check.code}: #{check.message}#{next_action}"
-        end)
+      ] ++ Enum.flat_map(status.checks, &render_check_line/1)
 
     candidate = status.release_candidate
 
@@ -176,6 +166,33 @@ defmodule Crosswake.ReleaseStatus do
       lines ++ core_lines ++ companion_lines ++ candidate_lines ++ live_lines ++ check_lines,
       "\n"
     ) <> "\n"
+  end
+
+  # D-10: every check renders as exactly one line, except the always-emitted
+  # release.workflow_integrity owner check when it is failing — that one gets an
+  # indented, byte-for-byte, untruncated continuation line per failing entry so the
+  # scanner's own sentence reaches the surface.
+  defp render_check_line(check) do
+    next_action =
+      if check.status == :ok or is_nil(check.next_action) do
+        ""
+      else
+        " next action: #{check.next_action}"
+      end
+
+    summary =
+      "- #{String.upcase(to_string(check.status))} #{check.code}: #{check.message}#{next_action}"
+
+    if check.code == "release.workflow_integrity" and check.status != :ok do
+      detail_lines =
+        check
+        |> Map.get(:entries, [])
+        |> Enum.map(fn %{id: id, detail: detail} -> "    #{id}: #{detail}" end)
+
+      [summary | detail_lines]
+    else
+      [summary]
+    end
   end
 
   defp release_candidate(_core, companions, live?, probes) do
@@ -387,7 +404,8 @@ defmodule Crosswake.ReleaseStatus do
         workflow_integrity,
         @workflow_path_gate_ids,
         workflow =~ "paths_released:" and core_path_gates?(jobs)
-      )
+      ),
+      workflow_integrity_owner_check(workflow_integrity)
     ]
 
     proof_checks = [
@@ -817,6 +835,58 @@ defmodule Crosswake.ReleaseStatus do
     }
   end
 
+  # D-06: the single always-emitted owner check over the FULL parsed scanner set — not
+  # scoped to any caller's required_ids. This is the one place a failing scanner check's
+  # own verbatim `detail` reaches the surface, at a stable owning code, regardless of
+  # whether any of the five scanner_check/7 call sites happen to require that ID.
+  defp workflow_integrity_owner_check(%{status: :unavailable, message: message}) do
+    %{
+      status: :error,
+      code: "release.workflow_integrity",
+      message: "scanner did not run: #{message}",
+      next_action: @workflow_integrity_command,
+      source: @workflow_integrity_source,
+      evidence: [],
+      entries: []
+    }
+  end
+
+  defp workflow_integrity_owner_check(%{checks: checks}) do
+    failing =
+      checks
+      |> Enum.filter(fn {_id, check} -> match?(%{status: :error}, check) end)
+      |> Enum.sort_by(fn {_id, check} -> Map.get(check, :order, 0) end)
+
+    case failing do
+      [] ->
+        %{
+          status: :ok,
+          code: "release.workflow_integrity",
+          message: "release workflow integrity scanner reported no failing checks",
+          next_action: nil,
+          source: @workflow_integrity_source,
+          evidence: [],
+          entries: []
+        }
+
+      _ ->
+        entries = Enum.map(failing, fn {id, check} -> %{id: id, detail: check.detail} end)
+
+        message =
+          Enum.map_join(entries, "; ", fn %{id: id, detail: detail} -> "#{id}: #{detail}" end)
+
+        %{
+          status: :error,
+          code: "release.workflow_integrity",
+          message: message,
+          next_action: @workflow_integrity_command,
+          source: @workflow_integrity_source,
+          evidence: Enum.map(entries, & &1.id),
+          entries: entries
+        }
+    end
+  end
+
   defp scanner_ids_result(%{status: :unavailable, message: message}, _required_ids),
     do: {false, [], message}
 
@@ -930,6 +1000,8 @@ defmodule Crosswake.ReleaseStatus do
           []
       end
     end)
+    |> Enum.with_index()
+    |> Enum.map(fn {{id, check}, index} -> {id, Map.put(check, :order, index)} end)
     |> Map.new()
   end
 
