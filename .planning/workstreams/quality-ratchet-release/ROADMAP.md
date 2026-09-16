@@ -60,13 +60,13 @@ message, and the system never reports "missing" when the true state is "failing"
    exits with two different, documented statuses, confirmed by running both cases and diffing the
    exit codes.
 
-**Plans**: 1/4 plans executed
+**Plans**: 2/4 plans executed
 
 Plans:
 **Wave 1**
 
 - [x] 169-01-PLAN.md — Tracer: a failing scanner check's own sentence reaches the maintainer verbatim; `failing` no longer shadowed by `missing` (MSG-01, MSG-03)
-- [ ] 169-03-PLAN.md — Version-neutral display names and a global duplicate-name scan, landed atomically (MSG-06)
+- [x] 169-03-PLAN.md — Version-neutral display names and a global duplicate-name scan, landed atomically (MSG-06)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -344,7 +344,7 @@ before the real one-way door.
 | 166. Clean-Checkout Engineering Quality | 8/8 | Shipped | 2026-09-10 |
 | 167. Documentation and Pull-Request Reconciliation | 9/9 | Shipped | 2026-09-12 |
 | 168. 0.2.1 Release Candidate Readiness | 13/13 | Shipped | 2026-09-16 |
-| 169. Diagnostic Legibility | 1/4 | In Progress|  |
+| 169. Diagnostic Legibility | 2/4 | In Progress|  |
 | 170. Vacuous Assertion Remediation | 0/TBD | Not started | - |
 | 171. Version/Authority Split | 0/TBD | Not started | - |
 | 172. Per-Package Proof Scope | 0/TBD | Not started | - |

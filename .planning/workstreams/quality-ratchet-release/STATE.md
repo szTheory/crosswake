@@ -5,16 +5,16 @@ milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 169
 current_phase_name: Diagnostic Legibility
 status: executing
-stopped_at: Completed 169-01-PLAN.md
-last_updated: "2026-09-16T13:46:57.058Z"
+stopped_at: Completed 169-03-PLAN.md
+last_updated: "2026-09-16T14:00:12.934Z"
 last_activity: 2026-09-16
 last_activity_desc: Phase 169 execution started
-state_head: 2d1984bf4e70689be865cfed7bbd73c7b1244c8a
+state_head: 19c3e5b9fb4b0284ef4513b0bc9150591a4ceb98
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -45,7 +45,7 @@ Revisit once the post-publication proof lane can actually run.
 ## Current Position
 
 Phase: 169 (Diagnostic Legibility) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-09-16 — Phase 169 execution started
 
@@ -110,6 +110,7 @@ Last activity: 2026-09-16 — Phase 169 execution started
 | Phase 168 P06 | 60m | 3 tasks | 12 files |
 | Phase 168 P07 | 22m | 2 tasks | 14 files |
 | Phase 169 P01 | 39min | 3 tasks | 4 files |
+| Phase 169 P03 | 12 min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -224,6 +225,7 @@ Last activity: 2026-09-16 — Phase 169 execution started
 - [Phase 168]: Keep real mirror authorization in the trusted workflow; ordinary PR CI remains credential-free.
 - [Phase 168]: Use read-only linked-coordinate status for BLOCKED/PARTIAL/COMPLETE and reserve READY FOR APPROVAL/STALE for the exact receipt authority.
 - [Phase 169]: Corrected scanner_ids_result/2's :failed clause to scope failing to required_ids (D-07) and compose failing+missing segments (D-09), fixing the live PR #164 defect where five identical bare-ID errors masked the actual root cause. — Verified ground truth in 169-CONTEXT.md established the scanner evaluates eagerly and every check emits, making scoped greens real greens.
+- [Phase 169]: [Phase 169-03]: Widened list_merge_blocking_checks.py's duplicate scan from a merge-blocking substring filter to a global check over every job producer, added a version-literal reject, and retired all six version-welded release-please.yml/phase70-proof.yml display names/artifact names in one atomic commit (D-21).
 
 ### v23.0 Roadmap Decisions
 
@@ -290,8 +292,8 @@ Last activity: 2026-09-16 — Phase 169 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-16T13:46:57.046Z
-Stopped at: Completed 169-01-PLAN.md
+Last session: 2026-09-16T14:00:04.764Z
+Stopped at: Completed 169-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

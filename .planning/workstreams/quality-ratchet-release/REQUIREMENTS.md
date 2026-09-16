@@ -19,7 +19,7 @@ Source: `.planning/research/v23/SUMMARY.md` (decision set, adjudicated divergenc
 - [x] **MSG-03**: A check that fails while other required IDs are absent surfaces the failure, not the absence — `missing` never shadows `failing`
 - [ ] **MSG-04**: `release.publish_gate.no_bare_version_literal` fails when any publish-gating `if:` clause contains a bare version literal
 - [ ] **MSG-05**: `release.publish_gate.no_bare_version_literal` is proven non-vacuous against a pre-repair fixture of the workflow file — it demonstrably would have caught the original weld
-- [ ] **MSG-06**: The three release check display names carrying `0.2.1` are renamed to version-neutral names, and duplicate required-check names fail a uniqueness assertion
+- [x] **MSG-06**: The three release check display names carrying `0.2.1` are renamed to version-neutral names, and duplicate required-check names fail a uniqueness assertion
 
 ### Version / Authority Split
 
@@ -123,7 +123,7 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 | MSG-03 | Phase 169 | Complete |
 | MSG-04 | Phase 171 | Pending |
 | MSG-05 | Phase 171 | Pending |
-| MSG-06 | Phase 169 | Pending |
+| MSG-06 | Phase 169 | Complete |
 | WELD-01 | Phase 171 | Pending |
 | WELD-02 | Phase 171 | Pending |
 | WELD-03 | Phase 171 | Pending |
