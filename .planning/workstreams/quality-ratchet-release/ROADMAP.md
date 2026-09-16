@@ -117,7 +117,13 @@ pass a one-way-door step.
    review checklist item applied at the close of each of those phases, not a code change owned by
    this phase itself.
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+- [ ] 170-01-PLAN.md — Inventory script, committed classification ledger, and its non-vacuity proof (VAC-01)
+- [ ] 170-02-PLAN.md — Frozen remediation manifest, guard insertions, and the itemized structural proof (VAC-02)
+- [ ] 170-03-PLAN.md — Empty-input regression proofs at the high-blast-radius sites (VAC-02)
+- [ ] 170-04-PLAN.md — `vacuity_taxonomy` phase-close convention and the Phase 169 retroactive addendum (VAC-03)
+- [ ] 170-05-PLAN.md — Phase 170's own taxonomy record and the decidable convention check (VAC-03)
 
 **Research**: Standard pattern — an audit-and-classify pass plus mechanical test rewrites at
 already-identified sites. Skip phase-level research.
