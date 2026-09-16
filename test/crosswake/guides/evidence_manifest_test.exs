@@ -127,6 +127,18 @@ defmodule Crosswake.Guides.EvidenceManifestTest do
     assert "Next-pack candidate" in manifest_values(manifest, "support_label")
   end
 
+  test "phase 170: an empty manifest_values list now fails instead of passing vacuously" do
+    empty_manifest = %{"routes" => []}
+
+    values = manifest_values(empty_manifest, "proof_class")
+
+    assert values == []
+
+    assert_raise ExUnit.AssertionError, fn ->
+      refute Enum.empty?(values)
+    end
+  end
+
   test "synthetic regressions reject missing D-08 root and route fields" do
     manifest = read_manifest!(@example_manifest)
 

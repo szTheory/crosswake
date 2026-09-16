@@ -750,6 +750,26 @@ defmodule Crosswake.DoctorTest do
            )
   end
 
+  test "phase 170: an empty commerce-corridor findings list now fails instead of passing vacuously",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    report =
+      Doctor.run(
+        route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    commerce_corridor_findings =
+      report.findings
+      |> Enum.filter(&String.starts_with?(&1.code, "commerce.corridor."))
+
+    assert commerce_corridor_findings == []
+
+    assert_raise ExUnit.AssertionError, fn ->
+      refute Enum.empty?(commerce_corridor_findings)
+    end
+  end
+
   defmodule BoundaryViolationRouter do
     use Crosswake.Router
 

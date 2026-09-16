@@ -202,6 +202,22 @@ defmodule Crosswake.SupportMatrixTest do
            )
   end
 
+  test "phase 170: an empty release-boundary target filter now fails instead of passing vacuously" do
+    matrix = SupportMatrix.canonical()
+
+    filtered =
+      Enum.filter(
+        matrix.release_boundaries,
+        &(&1.target in ["nonexistent_target"])
+      )
+
+    assert filtered == []
+
+    assert_raise ExUnit.AssertionError, fn ->
+      refute Enum.empty?(filtered)
+    end
+  end
+
   test "change classes stay frozen to the four public release actions" do
     matrix = SupportMatrix.canonical()
 

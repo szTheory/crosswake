@@ -107,6 +107,21 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
              "run mix crosswake.release.status --live, then capture the exact candidate receipt"
   end
 
+  test "phase 170: an empty independent-companion list now fails instead of passing vacuously" do
+    status =
+      with_manifest_without_companions_cwd(fn cwd ->
+        Crosswake.ReleaseStatus.build(cwd: cwd)
+      end)
+
+    companions = status.release_candidate.independent_companions
+
+    assert companions == []
+
+    assert_raise ExUnit.AssertionError, fn ->
+      refute Enum.empty?(companions)
+    end
+  end
+
   test "live candidate status preserves partial linked-coordinate truth" do
     status =
       Crosswake.ReleaseStatus.build(
@@ -861,5 +876,50 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
 
   defp normalize_whitespace(contents) do
     Regex.replace(~r/\s+/, contents, " ")
+  end
+
+  # Phase 170: drives Crosswake.ReleaseStatus.build/1's real computation to a
+  # genuinely empty independent-companion list via the `:cwd` option it
+  # already accepts (see test/crosswake/proof/phase169_diagnostic_legibility_test.exs
+  # for the same symlink-and-mutate idiom), rather than fabricating a bypass or
+  # changing lib/. Every file is symlinked into a temp root except the release
+  # manifest, which is rewritten to drop every `packages/crosswake_*` companion
+  # entry — `Crosswake.ReleaseStatus`'s companion_components/5 derives
+  # `companions` (and therefore `independent_companions`) solely from those
+  # manifest keys.
+  defp with_manifest_without_companions_cwd(fun) do
+    real_cwd = File.cwd!()
+
+    temp_root =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-phase170-release-boundaries-cwd-#{System.unique_integer([:positive])}"
+      )
+
+    File.mkdir_p!(temp_root)
+
+    try do
+      for entry <- File.ls!(real_cwd), entry != ".release-please-manifest.json" do
+        File.ln_s!(Path.join(real_cwd, entry), Path.join(temp_root, entry))
+      end
+
+      manifest_without_companions =
+        real_cwd
+        |> Path.join(".release-please-manifest.json")
+        |> File.read!()
+        |> Jason.decode!()
+        |> Map.reject(fn {path, _version} ->
+          String.starts_with?(path, "packages/crosswake_")
+        end)
+
+      File.write!(
+        Path.join(temp_root, ".release-please-manifest.json"),
+        Jason.encode!(manifest_without_companions)
+      )
+
+      fun.(temp_root)
+    after
+      File.rm_rf!(temp_root)
+    end
   end
 end
