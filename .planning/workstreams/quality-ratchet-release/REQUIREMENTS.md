@@ -92,6 +92,19 @@ Deferred to a later milestone. Tracked, not in this roadmap.
 
 - **VACG-01**: `absence.collection_assertion_non_empty` as a merge-blocking guard — **only after** VAC-01/VAC-02 land. Guard-before-audit produces a wall of red that gets waived, which teaches the team that red is negotiable.
 
+  **Sunset step (D-08), recorded here so the later deletion is a documented step and not a cold
+  judgment call):** when VACG-01 lands, lift `script/inventory_collection_assertions.exs`'s
+  detection core into the new guard rather than rewriting it from scratch, then **delete**:
+  - `script/inventory_collection_assertions.exs`
+  - `script/collection_assertion_ledger.json`
+  - `script/collection_assertion_remediation.json`
+  - `test/crosswake/proof/phase170_vacuous_assertion_ledger_test.exs`
+
+  Reason: two mechanisms that can silently disagree about what counts as safe are worse than one.
+  A regenerable inventory and a merge-blocking guard checking the same shapes by two independently
+  maintained implementations would eventually drift apart, and neither the ledger test nor the
+  guard would be able to tell you which one is right.
+
 ### Consolidation
 
 - **CONS-01**: Delete the legacy positional clean-room path once the backport has proven stable across a release cycle
