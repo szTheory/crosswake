@@ -92,6 +92,114 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
     end
   end
 
+  describe "Task 1: :unverifiable is first-class in aggregate_status/1 and exit_code/1 (FID-02, D-13)" do
+    test "exit_code/1 returns exact integers for every known status" do
+      assert Crosswake.ReleaseStatus.exit_code(:ok) == 0
+      assert Crosswake.ReleaseStatus.exit_code(:warning) == 0
+      assert Crosswake.ReleaseStatus.exit_code(:error) == 1
+      assert Crosswake.ReleaseStatus.exit_code(:unverifiable) == 3
+    end
+
+    test "exit_code/1's map-forwarding clause reaches the new clause" do
+      assert Crosswake.ReleaseStatus.exit_code(%{status: :unverifiable}) == 3
+    end
+
+    test "exit_code/1's catch-all still fails open for an unrecognized status (known hazard any future atom must close)" do
+      assert Crosswake.ReleaseStatus.exit_code(:some_future_unknown_atom) == 0
+    end
+
+    test "the exit_code(:unverifiable) clause appears textually above the catch-all in source" do
+      source = File.read!("lib/crosswake/release_status.ex")
+
+      {unverifiable_index, _} = :binary.match(source, "def exit_code(:unverifiable), do: 3")
+      {catch_all_index, _} = :binary.match(source, "def exit_code(_status), do: 0")
+
+      assert unverifiable_index < catch_all_index
+    end
+
+    test "aggregate_status/1 over one :error and one :unverifiable returns :error" do
+      assert Crosswake.ReleaseStatus.aggregate_status([
+               %{status: :unverifiable},
+               %{status: :error}
+             ]) == :error
+    end
+
+    test "aggregate_status/1 over one :unverifiable, one :warning, and five :ok returns :unverifiable" do
+      checks =
+        [%{status: :unverifiable}, %{status: :warning}] ++ List.duplicate(%{status: :ok}, 5)
+
+      assert Crosswake.ReleaseStatus.aggregate_status(checks) == :unverifiable
+      assert Crosswake.ReleaseStatus.aggregate_status(Enum.reverse(checks)) == :unverifiable
+    end
+
+    test "aggregate_status([]) returns :unverifiable — nothing verified is not clean" do
+      assert Crosswake.ReleaseStatus.aggregate_status([]) == :unverifiable
+    end
+
+    test "aggregate_status/1 branch for :unverifiable appears after :error and before :warning in source" do
+      source = File.read!("lib/crosswake/release_status.ex")
+
+      {error_index, _} = :binary.match(source, "&(&1.status == :error)")
+      {unverifiable_index, _} = :binary.match(source, "&(&1.status == :unverifiable)")
+      {warning_index, _} = :binary.match(source, "&(&1.status == :warning)")
+
+      assert error_index < unverifiable_index
+      assert unverifiable_index < warning_index
+    end
+
+    test "exit_code/1 carries a @doc naming all three codes and stating that 2 is reserved" do
+      {:docs_v1, _, _, _, _, _, docs} = Code.fetch_docs(Crosswake.ReleaseStatus)
+
+      {_, _, _, %{"en" => doc}, _} =
+        Enum.find(docs, fn
+          {{:function, :exit_code, 1}, _, _, _, _} -> true
+          _ -> false
+        end)
+
+      assert doc =~ "0"
+      assert doc =~ "1"
+      assert doc =~ "3"
+      assert doc =~ "reserved"
+    end
+
+    test "@schema_version is \"1.2.0\"" do
+      status = Crosswake.ReleaseStatus.build(live?: false)
+      assert status.schema_version == "1.2.0"
+    end
+
+    test "render/1 renders UNVERIFIED, never the bare atom, for an :unverifiable check" do
+      status = %{
+        schema_version: "1.2.0",
+        generated_at: "2026-01-01T00:00:00Z",
+        status: :unverifiable,
+        live_checked: false,
+        core: [],
+        companions: [],
+        release_candidate: %{
+          state: "BLOCKED",
+          next_action: "n/a",
+          linked_coordinates: [],
+          independent_companions: [],
+          mirror: %{baseline_ref: "n/a", public_ref: "n/a"}
+        },
+        checks: [
+          %{
+            status: :unverifiable,
+            code: "release.fixture.crash_check",
+            message: "fixture message",
+            next_action: "fix it",
+            source: "fixture"
+          }
+        ]
+      }
+
+      rendered = Crosswake.ReleaseStatus.render(status)
+
+      assert rendered =~ "UNVERIFIED"
+      refute rendered =~ "unverifiable"
+    end
+  end
+
   describe "Task 2: scope the five call sites to their own gates and compose every non-empty bucket" do
     test "a foreign check failing leaves the five scoped checks green and surfaces once via the owner check" do
       baseline = Crosswake.ReleaseStatus.build()

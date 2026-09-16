@@ -6,7 +6,7 @@ defmodule Crosswake.ReleaseStatus do
   public registry probes for Hex, Maven Central, and the iOS SwiftPM mirror.
   """
 
-  @schema_version "1.1.0"
+  @schema_version "1.2.0"
   @candidate_version "0.2.1"
   @mirror_baseline_version "0.2.0"
   @manifest_path ".release-please-manifest.json"
@@ -103,7 +103,7 @@ defmodule Crosswake.ReleaseStatus do
     lines = [
       "Crosswake release status",
       "",
-      "status: #{status.status}",
+      "status: #{status_label(status.status)}",
       "live checks: #{if(status.live_checked, do: "enabled", else: "disabled")}",
       "",
       "Core/native lockstep:"
@@ -181,7 +181,7 @@ defmodule Crosswake.ReleaseStatus do
       end
 
     summary =
-      "- #{String.upcase(to_string(check.status))} #{check.code}: #{check.message}#{next_action}"
+      "- #{status_label(check.status)} #{check.code}: #{check.message}#{next_action}"
 
     if check.code == "release.workflow_integrity" and check.status != :ok do
       detail_lines =
@@ -950,17 +950,50 @@ defmodule Crosswake.ReleaseStatus do
     end
   end
 
+  # D-13: nothing verified is never scored as clean. An empty checks list means
+  # `build/1` produced no checks at all — that is not the same thing as every
+  # check passing, so it must not fall through to `:ok`.
+  def aggregate_status([]), do: :unverifiable
+
+  # Precedence is total and deterministic: :error > :unverifiable > :warning > :ok.
+  # A confirmed defect always outranks an unknown, and an unknown always outranks
+  # a mere warning — permuting the input list never changes the result.
   def aggregate_status(checks) do
     cond do
       Enum.any?(checks, &(&1.status == :error)) -> :error
+      Enum.any?(checks, &(&1.status == :unverifiable)) -> :unverifiable
       Enum.any?(checks, &(&1.status == :warning)) -> :warning
       true -> :ok
     end
   end
 
+  @doc """
+  Exit-code contract for `mix crosswake.release.status` and the release workflow
+  scanner (`script/check_release_workflow_integrity.exs`).
+
+  | Code | Meaning |
+  |------|---------|
+  | `0` | clean — every check ran and passed (`:ok` or `:warning`) |
+  | `1` | ran and found a defect (`:error`) |
+  | `3` | could not verify — one or more checks could not run (`:unverifiable`) |
+
+  `2` is deliberately reserved to its existing meanings elsewhere in this repo
+  (defect-found in `script/verify_generated_ios_shell.sh`, usage error in
+  `script/check_required_checks_registered.sh`, shells-behind in
+  `lib/mix/tasks/crosswake.shell.status.ex`) and is never returned here.
+  `:warning` maps to `0`.
+  """
+  @spec exit_code(atom() | map()) :: 0 | 1 | 3
   def exit_code(:error), do: 1
+  def exit_code(:unverifiable), do: 3
   def exit_code(%{status: status}), do: exit_code(status)
   def exit_code(_status), do: 0
+
+  # D-16/D-17: the internal atom must never reach the maintainer as a bare word —
+  # the human-facing verb is "UNVERIFIED". Every other status keeps its existing
+  # rendering.
+  defp status_label(:unverifiable), do: "UNVERIFIED"
+  defp status_label(status), do: status |> to_string() |> String.upcase()
 
   defp live_label(%{live: nil}), do: ""
   defp live_label(%{live: %{status: status, source: source}}), do: " live_#{source}=#{status}"

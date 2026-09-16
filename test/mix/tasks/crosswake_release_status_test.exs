@@ -22,7 +22,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
   test "release status reports local graph and scanner-backed guard checks" do
     status = Crosswake.ReleaseStatus.build()
 
-    assert status.schema_version == "1.1.0"
+    assert status.schema_version == "1.2.0"
     assert status.status == :ok
     assert Enum.any?(status.core, &(&1.component == "hex"))
     assert Enum.any?(status.companions, &(&1.package == "crosswake_sigra"))
@@ -123,7 +123,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert Map.keys(decoded) |> Enum.sort() ==
              ~w(checks companions core generated_at live_checked release_candidate schema_version status)
 
-    assert decoded["schema_version"] == "1.1.0"
+    assert decoded["schema_version"] == "1.2.0"
     assert decoded["status"] == "ok"
     assert decoded["live_checked"] == false
 
@@ -169,6 +169,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert Crosswake.ReleaseStatus.exit_code(:ok) == 0
     assert Crosswake.ReleaseStatus.exit_code(:warning) == 0
     assert Crosswake.ReleaseStatus.exit_code(:error) == 1
+    assert Crosswake.ReleaseStatus.exit_code(:unverifiable) == 3
 
     assert_raise Mix.Error, fn ->
       Mix.Task.clear()
