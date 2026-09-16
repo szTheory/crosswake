@@ -26,12 +26,19 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   # 2026-09-16 (Task 2), never the numbers this plan predicted going in.
   @audited_site_count 220
   @shape_counts %{"assert_all" => 42, "assert_any" => 131, "refute_any" => 47, "refute_all" => 0}
+  # Plan 170-02 Task 2 regenerated this after inserting guards at every needs-fix row: 8 of the
+  # 60 rows were reclassified from needs-fix to safe-cardinality-pinned via manual override after
+  # real test execution proved their collections are permanently empty by design (positive-path
+  # and negative-control tests) — see script/inventory_collection_assertions.exs's
+  # @manual_overrides for the per-site citations. shape/audited-site counts are unchanged; only
+  # bucket composition moved.
+  # `needs-fix` is intentionally absent: `Enum.frequencies_by/2` never emits a key for zero
+  # occurrences, and the committed ledger now has zero `needs-fix` rows (VAC-02 complete).
   @bucket_counts %{
     "safe-by-construction" => 131,
     "safe-compile-time-literal" => 4,
-    "safe-cardinality-pinned" => 17,
-    "safe-guarded" => 8,
-    "needs-fix" => 60
+    "safe-cardinality-pinned" => 25,
+    "safe-guarded" => 60
   }
 
   describe "Task 1: a clean run against the committed ledger" do
@@ -358,18 +365,27 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
                Enum.count(committed["rows"], &(&1["bucket"] == "safe-by-construction"))
     end
 
-    test "every bucket value is drawn from the exact five-member vocabulary" do
+    test "every bucket value is drawn from the five-member vocabulary" do
+      # Plan 170-02 Task 2 resolved every needs-fix row (VAC-02), so the committed ledger no
+      # longer USES all five names — a subset check (every value is a MEMBER of the vocabulary)
+      # is the correct closed-vocabulary assertion now; an equality check against all five names
+      # would incorrectly require a needs-fix row to always exist.
       committed = @ledger |> File.read!() |> JSON.decode!()
       buckets = committed["rows"] |> Enum.map(& &1["bucket"]) |> Enum.uniq() |> Enum.sort()
 
-      assert buckets ==
-               Enum.sort(~w(
-                 safe-by-construction
-                 safe-compile-time-literal
-                 safe-cardinality-pinned
-                 safe-guarded
-                 needs-fix
-               ))
+      vocabulary =
+        MapSet.new(~w(
+          safe-by-construction
+          safe-compile-time-literal
+          safe-cardinality-pinned
+          safe-guarded
+          needs-fix
+        ))
+
+      refute Enum.empty?(buckets)
+
+      assert MapSet.subset?(MapSet.new(buckets), vocabulary),
+             "expected every bucket value to be drawn from the five-member vocabulary, got: #{inspect(buckets)}"
     end
 
     test "reconciliation: raw grep over-counts @audited_site_count by exactly 6, all of them this file's own fixture heredocs" do

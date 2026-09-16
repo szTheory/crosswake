@@ -17,6 +17,7 @@ defmodule Crosswake.ProofLane.NavigationShellAdvisoryTest do
            } = NavigationShellAdvisory.to_map(advisory)
 
     assert Map.keys(assertions) |> Enum.sort() == Enum.sort(@ids)
+    refute Enum.empty?(assertions)
     assert Enum.all?(assertions, fn {_id, outcome} -> outcome == "passed" end)
     assert String.match?(digest, ~r/\A[a-f0-9]{64}\z/)
     assert subject_digests != %{}

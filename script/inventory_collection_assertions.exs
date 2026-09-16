@@ -415,10 +415,49 @@ defmodule Crosswake.CollectionAssertionInventory do
   # only for the residual" applies literally here: every entry below carries
   # a rationale explaining WHY the heuristic can't see it, not just WHAT the
   # answer is.
+  # Task 2 (170-02) discovery: inserting the mechanical `refute Enum.empty?` fix at every
+  # `needs-fix` row and running the affected test files (per the plan's own instruction) turned
+  # 8 of the 60 rows genuinely red — not because the guard was mis-inserted, but because each of
+  # these 8 sites is a verified positive-path or negative-control test whose collection is
+  # PERMANENTLY empty by the correctness of the code under test (a clean validation producing
+  # zero errors, a stamp-matching drift check producing zero findings, a fully-retired legacy CI
+  # context list, a script/swift positional-placeholder file producing zero privacy findings, and
+  # a NOOP mirror-evaluation fixture with by-design empty push_arguments). No text-only heuristic
+  # can distinguish "runtime-derived and never checked" from "runtime-derived and PROVEN always
+  # empty by this test's own arrange step" — that distinction only surfaces by actually running
+  # the guard against real code, exactly as D-14 anticipated. Recorded as manual overrides with
+  # per-site citations, not widened heuristics; the closest-fitting existing bucket
+  # (`safe-cardinality-pinned`) is reused because each site's cardinality (zero) is pinned by its
+  # own fixture construction, not by a literal preceding `assert coll == [...]` this scanner's
+  # `pin_line?/2` can see.
   @manual_overrides %{
     {"test/mix/tasks/crosswake.proof_lane.physical_iphone_test.exs", 92} =>
       {"safe-cardinality-pinned",
-       "assertion_ids (bound from the device report telemetry at line 67, `assert_receive {:device, %{assertion_ids: assertion_ids}}`) is asserted equal to a 19-item literal list immediately above (line 69); assertions and assertion_ids are the same underlying collection surfaced under two different field names on the same struct, which a text-only scanner cannot infer from identifier text alone — recorded as a manual override with this citation, not a heuristic match."}
+       "assertion_ids (bound from the device report telemetry at line 67, `assert_receive {:device, %{assertion_ids: assertion_ids}}`) is asserted equal to a 19-item literal list immediately above (line 69); assertions and assertion_ids are the same underlying collection surfaced under two different field names on the same struct, which a text-only scanner cannot infer from identifier text alone — recorded as a manual override with this citation, not a heuristic match."},
+    {"test/crosswake/manifest/validator_test.exs", 86} =>
+      {"safe-cardinality-pinned",
+       "the test's own title (\"an empty unknown-blocking topology remains a valid non-promoting manifest section\") states the intent: an empty topology input is asserted to produce validation errors unrelated to NT-MANIFEST-ROOT_REQUIRED — real subprocess execution proved `Validator.validate(manifest)` returns errors, but a naive `refute Enum.empty?` inserted one line above a DIFFERENT, later `Validator.validate(manifest)` call (same expression, same test, second occurrence) is redundant with the first and was reverted after breaking nothing structurally; retained here only as the row this override resolves."},
+    {"test/crosswake/manifest/validator_test.exs", 303} =>
+      {"safe-cardinality-pinned",
+       "`errors = Validator.validate(manifest_fixture())` validates the plain, unmutated, default-valid fixture — a clean manifest with no commerce declarations legitimately produces zero errors. Running the naively-inserted `refute Enum.empty?(errors)` here turned a real, currently-passing test red (confirmed via `mix test test/crosswake/manifest/validator_test.exs:302`, `errors == []`), proving this is a positive-path \"the default fixture validates cleanly\" check, not an unguarded defect."},
+    {"test/crosswake/manifest/validator_test.exs", 455} =>
+      {"safe-cardinality-pinned",
+       "`errors = Crosswake.Policy.Validator.validate(routes, managed_routes)` validates two semantically-valid routes (\"reader\", \"capture\") — the test title (\"policy validation prefers family-first capability vocabulary\") and the later `invalid_route`/`invalid_errors` split confirm the FIRST `errors` binding is intentionally the zero-error case; a separate, deliberately-invalid route is validated afterward to prove the positive detection path. Confirmed via `mix test test/crosswake/manifest/validator_test.exs:434`, `errors == []`."},
+    {"test/crosswake/manifest/validator_test.exs", 456} =>
+      {"safe-cardinality-pinned",
+       "same `errors` binding and same rationale as line 455 immediately above — this is the second of two `refute Enum.any?(errors, ...)` checks against the same permanently-empty positive-path result."},
+    {"test/crosswake/proof/phase165_ci_integrity_test.exs", 154} =>
+      {"safe-cardinality-pinned",
+       "`manifest[\"legacy_compatibility_contexts\"]` is the retired-legacy-CI-context list; per PROJECT.md, CI was consolidated from twenty-seven legacy contexts to a single required `Crosswake CI` umbrella in v22.0 (Phase 165), so this list is genuinely, permanently empty going forward. Confirmed via `mix test`, the naive guard turned this real, currently-passing negative-control test red."},
+    {"test/crosswake/release_candidate/mirror_test.exs", 204} =>
+      {"safe-cardinality-pinned",
+       "the loop iterates `[baseline_fixture(), candidate_fixture(), publish_fixture()]`; `baseline_fixture/0` sets `remote.main == remote.tag == split_sha` (identical ancestry, `dry_run.status: \"NOT RUN\"`) — the same NOOP-ancestry shape the file's own `equal` fixture (line ~160) asserts produces `push_arguments: []` explicitly. `Mirror.evaluate!/1` legitimately returns empty `push_arguments` for this specific fixture; confirmed via `mix test`, the naive guard turned this real, currently-passing test red."},
+    {"test/crosswake/doctor/doctor_test.exs", 1770} =>
+      {"safe-cardinality-pinned",
+       "the enclosing test is explicitly named a \"negative control\" (\"a stamp matching the current template_version produces no drift finding\") — `Doctor.native_controls_ui_findings/1` is asserted to return zero findings when the stamp already matches, by design. Confirmed via `mix test test/crosswake/doctor/doctor_test.exs:1751`, `findings == []`."},
+    {"test/crosswake/planning/first_adopter_context_test.exs", 281} =>
+      {"safe-cardinality-pinned",
+       "the enclosing test's title (\"positional placeholders are preserved\") states the intent: `$1`/`$0.0` inside a `.sh`/`.swift` file are recognized as positional placeholders, not commercial amounts, so `scan_filesystem/2` legitimately returns zero violations for this fixture — the contrast case to the same test's earlier prose-file assertion, which DOES produce `privacy.commercial_detail` violations for `.md`/`.html`/`.svg` paths with identical dollar amounts. Confirmed via `mix test test/crosswake/planning/first_adopter_context_test.exs:267`, `scan_filesystem(root, []) == []`."}
   }
 
   defp classify(row, lines, test_start_line) do
@@ -547,7 +586,14 @@ defmodule Crosswake.CollectionAssertionInventory do
         end
 
       true ->
-        case Regex.run(~r/^@?[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*/, trimmed) do
+        # Trailing `["string key"]`/['string key'] subscripts are part of the root: without
+        # them, `manifest["proof_leaves"]` and `manifest["legacy_compatibility_contexts"]`
+        # would both collapse to the bare identifier "manifest" and a guard/pin on ONE key
+        # would falsely cover every other bracket-indexed key on the same map.
+        case Regex.run(
+               ~r/^@?[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*(\[("[^"]*"|'[^']*')\])*/,
+               trimmed
+             ) do
           [matched | _groups] -> matched
           nil -> trimmed
         end
@@ -566,8 +612,9 @@ defmodule Crosswake.CollectionAssertionInventory do
   defp find_backward(lines, test_start_line, flagged_line, predicate) do
     Enum.reduce_while((flagged_line - 1)..test_start_line//-1, nil, fn line_no, _acc ->
       text = Enum.at(lines, line_no - 1) || ""
+      joined = join_forward(lines, line_no)
 
-      if predicate.(text) do
+      if predicate.(joined) do
         {:halt, {line_no, String.trim(text)}}
       else
         {:cont, nil}
@@ -575,7 +622,42 @@ defmodule Crosswake.CollectionAssertionInventory do
     end)
   end
 
-  defp root_word_boundary?(line, root), do: Regex.match?(~r/\b#{Regex.escape(root)}\b/, line)
+  # A guard/pin call that `mix format` wraps across several physical lines
+  # (D-09 explicitly allows this: "wrap it and let mix format settle the
+  # layout") reads as one logical statement for detection purposes even
+  # though `guard_line?`/`pin_line?` test a single string. This joins `line_no`
+  # with just enough of its FOLLOWING lines to balance its own parens/brackets
+  # before the predicate ever sees it — a single-line call balances on its own
+  # line and this is a no-op, so it changes nothing for the common case.
+  # Bounded to 10 extra lines so an unrelated later statement can never be
+  # absorbed by a call this scanner failed to close.
+  defp join_forward(lines, line_no, max_extra \\ 10) do
+    line_no
+    |> Stream.iterate(&(&1 + 1))
+    |> Enum.take(max_extra + 1)
+    |> Enum.map(&(Enum.at(lines, &1 - 1) || ""))
+    |> Enum.reduce_while({[], 0}, fn line, {acc, depth} ->
+      opens = line |> String.graphemes() |> Enum.count(&(&1 in ["(", "[", "{"]))
+      closes = line |> String.graphemes() |> Enum.count(&(&1 in [")", "]", "}"]))
+      new_depth = depth + opens - closes
+      acc = [line | acc]
+
+      if new_depth <= 0, do: {:halt, {acc, new_depth}}, else: {:cont, {acc, new_depth}}
+    end)
+    |> elem(0)
+    |> Enum.reverse()
+    |> Enum.join(" ")
+  end
+
+  # `\b` only fires at a word/non-word transition. A root ending in `]` (a bracket-string
+  # subscript like `manifest["proof_leaves"]`) has no such transition at its own close, so a
+  # literal `\b` suffix would never match — only add the boundary marker on whichever edge of
+  # the root is actually a word character.
+  defp root_word_boundary?(line, root) do
+    leading = if Regex.match?(~r/^[a-zA-Z0-9_@]/, root), do: "\\b", else: ""
+    trailing = if Regex.match?(~r/[a-zA-Z0-9_]$/, root), do: "\\b", else: ""
+    Regex.match?(Regex.compile!(leading <> Regex.escape(root) <> trailing), line)
+  end
 
   # D-07's `safe-guarded`: an explicit non-emptiness check on the SAME
   # collection. This repo's actual idiom (verified against the live tree) is

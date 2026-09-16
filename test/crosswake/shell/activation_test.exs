@@ -60,6 +60,7 @@ defmodule Crosswake.Shell.ActivationTest do
       )
     ]
 
+    refute Enum.empty?(requests)
     assert Enum.all?(requests, &match?(%Request{}, &1))
 
     assert Enum.map(requests, & &1.source) == [

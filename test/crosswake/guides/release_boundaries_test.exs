@@ -98,6 +98,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
              "maven:io.github.sztheory:crosswake-shell-core-android:0.2.1"
            ]
 
+    refute Enum.empty?(companions)
     assert Enum.all?(companions, &(&1.relationship == "independent"))
     assert mirror.baseline_ref == "refs/tags/v0.2.0"
     assert mirror.public_ref == "refs/tags/v0.2.1"

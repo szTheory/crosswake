@@ -214,6 +214,7 @@ defmodule Crosswake.DoctorTest do
              finding.code == "support_claim_not_claimed" and finding.severity == :advisory
            end)
 
+    refute Enum.empty?(report.findings)
     refute Enum.any?(report.findings, &(&1.code in ["proof_hook_missing", "proof_hook_failed"]))
   end
 
@@ -262,6 +263,7 @@ defmodule Crosswake.DoctorTest do
 
     assert report.status == :ok
     assert report.support.status == :supported
+    refute Enum.empty?(report.findings)
     assert Enum.all?(report.findings, &match?(%Check{}, &1))
 
     human = Formatter.render(report)
@@ -550,7 +552,9 @@ defmodule Crosswake.DoctorTest do
     assert report.commerce_summary.snapshot_freshness == :not_applicable
     assert report.commerce_summary.corridors == []
     assert report.commerce_summary.rebuild_requirements == []
+    refute Enum.empty?(report.findings)
     refute Enum.any?(report.findings, &(&1.code == "commerce.entitlement.stale_snapshot"))
+    refute Enum.empty?(report.findings)
     refute Enum.any?(report.findings, &(&1.code == "commerce.corridor.native_rebuild_required"))
   end
 
@@ -572,10 +576,14 @@ defmodule Crosswake.DoctorTest do
         entitlement_snapshot_freshness: :fresh
       )
 
+    refute Enum.empty?(report.findings)
+
     refute Enum.any?(report.findings, &(&1.code == "commerce.corridor.role_unknown")),
            "canonical fixtures should not surface commerce.corridor.role_unknown; got findings: #{inspect(Enum.map(report.findings, & &1.code))}"
 
     # Every emitted corridor row has a resolved (non-:unknown) proof_class.
+    refute Enum.empty?(report.commerce_summary.corridors)
+
     refute Enum.any?(report.commerce_summary.corridors, &(&1.proof_class == :unknown)),
            "no commerce_summary corridor row should carry :unknown proof_class for canonical fixtures"
   end
@@ -662,6 +670,7 @@ defmodule Crosswake.DoctorTest do
       )
 
     assert report.commerce_summary.snapshot_freshness == :fresh
+    refute Enum.empty?(report.findings)
     refute Enum.any?(report.findings, &(&1.code == "commerce.entitlement.stale_snapshot"))
   end
 
@@ -710,6 +719,7 @@ defmodule Crosswake.DoctorTest do
         native_rebuild_satisfied?: true
       )
 
+    refute Enum.empty?(report.findings)
     refute Enum.any?(report.findings, &(&1.code == "commerce.corridor.native_rebuild_required"))
 
     assert Enum.any?(report.commerce_summary.rebuild_requirements, fn requirement ->
@@ -727,6 +737,11 @@ defmodule Crosswake.DoctorTest do
         install_manifest_path: install_manifest_path,
         cwd: target
       )
+
+    refute Enum.empty?(
+             report.findings
+             |> Enum.filter(&String.starts_with?(&1.code, "commerce.corridor."))
+           )
 
     assert Enum.all?(
              report.findings
@@ -1546,6 +1561,8 @@ defmodule Crosswake.DoctorTest do
 
       # media_capture is rebuild: :native_required in the catalog but is not
       # declared on any route in RebuildRequiredRouter — no finding names it.
+      refute Enum.empty?(report.findings)
+
       refute Enum.any?(report.findings, fn finding ->
                finding.code == "bridge.capability.native_rebuild_required" and
                  finding.details.capability_id == "media_capture"
@@ -1680,6 +1697,8 @@ defmodule Crosswake.DoctorTest do
       File.mkdir_p!(Path.join(host, "lib"))
 
       findings = Doctor.bridge_hook_wiring_findings(host)
+
+      refute Enum.empty?(findings)
 
       refute Enum.any?(findings, &(&1.severity == :error)),
              "the best-effort grep must never produce an error-severity finding (D-37)"
@@ -1819,6 +1838,8 @@ defmodule Crosswake.DoctorTest do
       File.write!(component_path, component_fixture(current))
 
       findings = Doctor.native_controls_ui_findings(host)
+
+      refute Enum.empty?(findings)
 
       refute Enum.any?(findings, &(&1.severity == :error)),
              "the best-effort wiring grep must never produce an error-severity finding (D-40)"

@@ -64,6 +64,7 @@ defmodule Crosswake.Manifest.ValidatorTest do
     assert Enum.any?(messages, &String.contains?(&1, "NT-MANIFEST-UNKNOWN_ROUTE"))
     assert Enum.any?(messages, &String.contains?(&1, "NT-MANIFEST-DUPLICATE_ROOT"))
     assert Enum.any?(messages, &String.contains?(&1, "NT-MANIFEST-INVALID_PARENT"))
+    refute Enum.empty?(messages)
     refute Enum.any?(messages, &String.contains?(&1, secret))
   end
 
@@ -98,6 +99,7 @@ defmodule Crosswake.Manifest.ValidatorTest do
     errors = Validator.validate(manifest)
 
     assert Enum.any?(errors, &String.contains?(&1.message, "NT-MANIFEST-ENTRY"))
+    refute Enum.empty?(errors)
     refute Enum.any?(errors, &String.contains?(&1.message, secret))
   end
 
@@ -196,6 +198,7 @@ defmodule Crosswake.Manifest.ValidatorTest do
     assert {:error, %{errors: errors}} =
              Manifest.compile(invalid_routes, support_matrix: invalid_support_matrix)
 
+    refute Enum.empty?(errors)
     assert Enum.all?(errors, &match?(%Crosswake.Policy.Error{}, &1))
   end
 

@@ -234,7 +234,9 @@ defmodule Crosswake.Shell.DiagnosticExportTest do
       assert m["platform"] == "ios"
       assert m["kind"] == "crash"
       assert m["schema_version"] == "1"
+      refute Enum.empty?(m)
       refute Enum.any?(m, fn {_, v} -> is_nil(v) end)
+      refute Enum.empty?(m)
       refute Enum.any?(m, fn {_, v} -> is_atom(v) end)
     end
 

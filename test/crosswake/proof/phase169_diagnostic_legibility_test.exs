@@ -76,7 +76,9 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
       roster_lines = Enum.filter(lines, &String.starts_with?(&1, "[crosswake] ROSTER: "))
       done_lines = Enum.filter(lines, &String.starts_with?(&1, "[crosswake] DONE: "))
 
-      assert length(roster_lines) == 1, "expected exactly one ROSTER line, got #{inspect(roster_lines)}"
+      assert length(roster_lines) == 1,
+             "expected exactly one ROSTER line, got #{inspect(roster_lines)}"
+
       assert length(done_lines) == 1, "expected exactly one DONE line, got #{inspect(done_lines)}"
 
       ok_fail_count =
@@ -86,7 +88,9 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
         end)
 
       [done_line] = done_lines
-      [emitted_str, _of, _roster_count_str | _rest] = done_line |> String.trim_leading("[crosswake] DONE: ") |> String.split(" ")
+
+      [emitted_str, _of, _roster_count_str | _rest] =
+        done_line |> String.trim_leading("[crosswake] DONE: ") |> String.split(" ")
 
       assert String.to_integer(emitted_str) == ok_fail_count
     end
@@ -358,7 +362,13 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
   describe "Task 2: the two crash shapes classify distinctly and cascade loudly (D-03, D-08)" do
     test "the crash-before-roster fixture yields :unavailable with the never-started message, and the five scoped checks + owner check are :unverifiable (exit 3)" do
       previous = System.get_env("RELEASE_PLEASE_CONFIG_PATH")
-      missing_path = Path.join(System.tmp_dir!(), "crosswake-phase169-missing-config-#{System.unique_integer([:positive])}.json")
+
+      missing_path =
+        Path.join(
+          System.tmp_dir!(),
+          "crosswake-phase169-missing-config-#{System.unique_integer([:positive])}.json"
+        )
+
       System.put_env("RELEASE_PLEASE_CONFIG_PATH", missing_path)
 
       on_exit(fn ->
@@ -380,10 +390,14 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
 
       for code <- @scoped_scanner_codes do
         check = check!(status, code)
-        assert check.status == :unverifiable, "expected #{code} to be :unverifiable, got #{inspect(check.status)}"
+
+        assert check.status == :unverifiable,
+               "expected #{code} to be :unverifiable, got #{inspect(check.status)}"
+
         assert check.message =~ "This is not a pass."
       end
 
+      refute Enum.empty?(status.checks)
       refute Enum.any?(status.checks, &(&1.code in @scoped_scanner_codes and &1.status == :ok))
 
       assert Crosswake.ReleaseStatus.exit_code(status) == 3
@@ -405,10 +419,14 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
 
       for code <- @scoped_scanner_codes do
         check = check!(status, code)
-        assert check.status == :unverifiable, "expected #{code} to be :unverifiable, got #{inspect(check.status)}"
+
+        assert check.status == :unverifiable,
+               "expected #{code} to be :unverifiable, got #{inspect(check.status)}"
+
         assert check.message =~ "This is not a pass."
       end
 
+      refute Enum.empty?(status.checks)
       refute Enum.any?(status.checks, &(&1.code in @scoped_scanner_codes and &1.status == :ok))
 
       assert Crosswake.ReleaseStatus.exit_code(status) == 3
@@ -437,7 +455,13 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
 
     test "the stderr excerpt in a crash message is bounded and carries a truncation marker when clipped" do
       previous = System.get_env("RELEASE_PLEASE_CONFIG_PATH")
-      missing_path = Path.join(System.tmp_dir!(), "crosswake-phase169-missing-config-#{System.unique_integer([:positive])}.json")
+
+      missing_path =
+        Path.join(
+          System.tmp_dir!(),
+          "crosswake-phase169-missing-config-#{System.unique_integer([:positive])}.json"
+        )
+
       System.put_env("RELEASE_PLEASE_CONFIG_PATH", missing_path)
 
       on_exit(fn ->
@@ -766,7 +790,12 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
   # reaches the OS, not just the library-level exit_code/1 return value.
   defp run_mix_release_status(opts \\ []) do
     env = Keyword.get(opts, :env, [])
-    System.cmd("mix", ["crosswake.release.status"], cd: File.cwd!(), stderr_to_stdout: true, env: env)
+
+    System.cmd("mix", ["crosswake.release.status"],
+      cd: File.cwd!(),
+      stderr_to_stdout: true,
+      env: env
+    )
   end
 
   defp check!(status, code) do

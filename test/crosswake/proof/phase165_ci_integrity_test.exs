@@ -146,7 +146,9 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     refute visual =~ ~r/\|\|\s*true/
     refute visual =~ "if: always()"
 
+    refute Enum.empty?(manifest["proof_leaves"])
     refute Enum.any?(manifest["proof_leaves"], &(&1["leaf_id"] == "brand-visual"))
+    refute Enum.empty?(manifest["required_control_nodes"])
     refute Enum.any?(manifest["required_control_nodes"], &(&1["node_id"] == "brand-visual"))
 
     refute Enum.any?(manifest["legacy_compatibility_contexts"], fn row ->

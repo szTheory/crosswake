@@ -179,10 +179,19 @@ defmodule Crosswake.SupportMatrixTest do
                  "package versions alone do not define support truth"
            end)
 
+    refute Enum.empty?(matrix.release_boundaries)
+
     refute Enum.any?(matrix.release_boundaries, fn entry ->
              entry.target in ["core", "companion"] and
                String.contains?(entry.versioning, "lockstep")
            end)
+
+    refute Enum.empty?(
+             Enum.filter(
+               matrix.release_boundaries,
+               &(&1.target in ["ios_shell", "android_shell"])
+             )
+           )
 
     assert Enum.all?(
              Enum.filter(

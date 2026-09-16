@@ -232,6 +232,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert presence_message =~ "found no release"
     # A source we merely could not reach must NOT be named as a confirmed absence.
     refute presence_message =~ "crosswake_sigra"
+    refute Enum.empty?(presence_evidence)
     refute Enum.any?(presence_evidence, &String.starts_with?(&1, "crosswake_sigra"))
 
     # Unknowns: the probe itself failed after retries. Still fatal, differently named.
@@ -274,6 +275,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
              check!(status, "release.live_registry_presence")
 
     assert message =~ "all live registry probes found manifest versions"
+    refute Enum.empty?(status.checks)
     refute Enum.any?(status.checks, &(&1.code == "release.live_registry_unverifiable"))
     assert Crosswake.ReleaseStatus.exit_code(status) == 0
   end
@@ -407,6 +409,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
 
     # Advisory, but not swallowed into a false all-clear.
     assert %{status: :ok} = check!(status, "release.live_registry_presence")
+    refute Enum.empty?(status.checks)
     refute Enum.any?(status.checks, &(&1.code == "release.live_registry_unverifiable"))
   end
 
@@ -443,6 +446,8 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert message =~ "crosswake_rindle"
 
     # The lie this guards against: claiming the registry confirmed an absence.
+    refute Enum.empty?(status.checks)
+
     refute Enum.any?(
              status.checks,
              &(&1.code == "release.live_registry_bootstrap_pending" and

@@ -19,6 +19,7 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
              |> Enum.map(& &1.path)
 
     assert paths == Enum.sort(paths)
+    refute Enum.empty?(paths)
     assert Enum.all?(paths, &File.exists?/1)
     assert FirstAdopterContext.validate_routing_matrix(matrix) == []
 

@@ -19,6 +19,8 @@ defmodule Crosswake.Proof.Phase65DiagnosticExportSeamTest do
   test "Bridge.Contract.commands/0 has no diagnostics.* entry" do
     commands = BridgeContract.commands()
 
+    refute Enum.empty?(commands)
+
     refute Enum.any?(commands, &String.starts_with?(&1, "diagnostics")),
            ProofAssertions.stable_id_message(
              "proof.diag_01.bridge_commands.no_diagnostics",
