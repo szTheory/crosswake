@@ -4,17 +4,17 @@ milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 169
 current_phase_name: Diagnostic Legibility
-status: executing
-stopped_at: Completed 169-02-PLAN.md
-last_updated: "2026-09-16T14:51:16.124Z"
+status: verifying
+stopped_at: Completed 169-04-PLAN.md — Phase 169 (Diagnostic Legibility) all 4 plans complete
+last_updated: "2026-09-16T15:09:39.238Z"
 last_activity: 2026-09-16
 last_activity_desc: Phase 169 execution started
-state_head: b6899fc8654ee489472c529d50f0c5bb4227e3dd
+state_head: b222a977c3c47e4b6f15047c3bac8e135e24f8ee
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -46,7 +46,7 @@ Revisit once the post-publication proof lane can actually run.
 
 Phase: 169 (Diagnostic Legibility) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-09-16 — Phase 169 execution started
 
 ## Performance Metrics
@@ -112,6 +112,7 @@ Last activity: 2026-09-16 — Phase 169 execution started
 | Phase 169 P01 | 39min | 3 tasks | 4 files |
 | Phase 169 P03 | 12 min | 3 tasks | 6 files |
 | Phase 169 P02 | 95min | 3 tasks | 5 files |
+| Phase 169 P04 | 24 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -228,6 +229,7 @@ Last activity: 2026-09-16 — Phase 169 execution started
 - [Phase 169]: Corrected scanner_ids_result/2's :failed clause to scope failing to required_ids (D-07) and compose failing+missing segments (D-09), fixing the live PR #164 defect where five identical bare-ID errors masked the actual root cause. — Verified ground truth in 169-CONTEXT.md established the scanner evaluates eagerly and every check emits, making scoped greens real greens.
 - [Phase 169]: [Phase 169-03]: Widened list_merge_blocking_checks.py's duplicate scan from a merge-blocking substring filter to a global check over every job producer, added a version-literal reject, and retired all six version-welded release-please.yml/phase70-proof.yml display names/artifact names in one atomic commit (D-21).
 - [Phase 169]: [Phase 169-02] Both crash evidence statuses (:unavailable and :unverifiable) route the release.workflow_integrity owner check and the five scoped checks to the same check-level :unverifiable, never :error — an :error owner check would outrank :unverifiable in aggregate_status/1's precedence and silently force exit 1 on a crash instead of exit 3.
+- [Phase 169]: [Phase 169-04]: Added a 6th exit-contract-guard entry point for Crosswake.ReleaseStatus.exit_code/1's own source clauses (extracting literal do: <n> from each def exit_code(...) head, skipping the delegating clause), alongside the 5 file-based checks the plan named, and read exit_code/1's @doc content via Code.fetch_docs/1 as a separate assertion.
 
 ### v23.0 Roadmap Decisions
 
@@ -294,8 +296,8 @@ Last activity: 2026-09-16 — Phase 169 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-16T14:51:16.110Z
-Stopped at: Completed 169-02-PLAN.md
+Last session: 2026-09-16T15:09:39.222Z
+Stopped at: Completed 169-04-PLAN.md — Phase 169 (Diagnostic Legibility) all 4 plans complete
 Resume file: None
 
 ## Operator Next Steps

@@ -60,7 +60,7 @@ message, and the system never reports "missing" when the true state is "failing"
    exits with two different, documented statuses, confirmed by running both cases and diffing the
    exit codes.
 
-**Plans**: 3/4 plans executed
+**Plans**: 4/4 plans executed
 
 Plans:
 **Wave 1**
@@ -74,7 +74,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 169-04-PLAN.md — Exit-contract drift guard and canonical-doc link (FID-02)
+- [x] 169-04-PLAN.md — Exit-contract drift guard and canonical-doc link (FID-02)
 
 **Wave structure**: Wave 1 = 169-01 and 169-03 in parallel (no shared files) · Wave 2 = 169-02 ·
 Wave 3 = 169-04.
@@ -344,7 +344,7 @@ before the real one-way door.
 | 166. Clean-Checkout Engineering Quality | 8/8 | Shipped | 2026-09-10 |
 | 167. Documentation and Pull-Request Reconciliation | 9/9 | Shipped | 2026-09-12 |
 | 168. 0.2.1 Release Candidate Readiness | 13/13 | Shipped | 2026-09-16 |
-| 169. Diagnostic Legibility | 3/4 | In Progress|  |
+| 169. Diagnostic Legibility | 4/4 | In Progress|  |
 | 170. Vacuous Assertion Remediation | 0/TBD | Not started | - |
 | 171. Version/Authority Split | 0/TBD | Not started | - |
 | 172. Per-Package Proof Scope | 0/TBD | Not started | - |
