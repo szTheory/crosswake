@@ -5,16 +5,16 @@ milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 170
 current_phase_name: Vacuous Assertion Remediation
 status: executing
-stopped_at: Completed 170-02-PLAN.md
-last_updated: "2026-09-16T19:23:13.842Z"
+stopped_at: Completed 170-04-PLAN.md
+last_updated: "2026-09-16T19:32:32.022Z"
 last_activity: 2026-09-16
 last_activity_desc: Phase 170 execution started
-state_head: c23cf9efcbc093ef98a5e1e484452a9cfe3323c9
+state_head: 3a06fd81fdfb6170b8f361dce099098ea21ac7fd
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 9
-  completed_plans: 6
+  completed_plans: 7
   percent: 14
 ---
 
@@ -45,7 +45,7 @@ Revisit once the post-publication proof lane can actually run.
 ## Current Position
 
 Phase: 170 (Vacuous Assertion Remediation) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-09-16 — Phase 170 execution started
 
@@ -116,6 +116,7 @@ Last activity: 2026-09-16 — Phase 170 execution started
 | Phase 169 P04 | 24 min | 2 tasks | 2 files |
 | Phase 170 P01 | 55min | 3 tasks | 4 files |
 | Phase 170 P02 | 55min | 3 tasks | 22 files |
+| Phase 170 P04 | 25min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -235,6 +236,7 @@ Last activity: 2026-09-16 — Phase 170 execution started
 - [Phase 169]: [Phase 169-04]: Added a 6th exit-contract-guard entry point for Crosswake.ReleaseStatus.exit_code/1's own source clauses (extracting literal do: <n> from each def exit_code(...) head, skipping the delegating clause), alongside the 5 file-based checks the plan named, and read exit_code/1's @doc content via Code.fetch_docs/1 as a separate assertion.
 - [Phase 170]: [Phase 170-01]: Built script/inventory_collection_assertions.exs (content-hash-keyed, root-identifier backward-scan classifier) and committed the full 220-row ledger; guard/pin detection is unbounded within the enclosing test body rather than a fixed 6-line window, with one explicit manual override for a cross-field pin the heuristic cannot see.
 - [Phase 170]: Task 3's structural predicate replaces the naive display_line-1 offset check with a bounded backward-scan + join_forward technique mirrored from the classifier, to handle mix format's multi-line guard wrapping and blank-line-before-fn insertion.
+- [Phase 170]: VAC-03 convention: a check that doesn't map to any of the six vacuity shapes records the explicit 'matches none of A-F, because ___' escape form rather than a forced nearest-fit letter. — Applied retroactively to release.scanner.roster_exact and release.workflow_integrity in the Phase 169 addendum; both are structurally a roster-diff check and a message-passthrough check, neither a possibly-empty-collection predicate.
 
 ### v23.0 Roadmap Decisions
 
@@ -301,8 +303,8 @@ Last activity: 2026-09-16 — Phase 170 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-16T19:23:13.824Z
-Stopped at: Completed 170-02-PLAN.md
+Last session: 2026-09-16T19:32:24.313Z
+Stopped at: Completed 170-04-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
