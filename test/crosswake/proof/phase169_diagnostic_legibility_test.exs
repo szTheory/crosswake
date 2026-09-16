@@ -622,6 +622,77 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
     end
   end
 
+  describe "169-02 Task 3: the Mix task reaches OS exit 3, with D-17 microcopy" do
+    test "a clean run terminates with exit status exactly 0 and prints neither FAIL (exit nor UNVERIFIED (exit" do
+      {output, exit_status} = run_mix_release_status()
+
+      assert exit_status == 0
+      refute output =~ "[crosswake] FAIL (exit"
+      refute output =~ "[crosswake] UNVERIFIED (exit"
+    end
+
+    test "the drifted-manifest fixture terminates with exit status exactly 1 and prints the FAIL (exit 1) summary block" do
+      manifest = @manifest_path |> File.read!() |> JSON.decode!()
+      drifted = Map.put(manifest, ".", "0.2.2")
+
+      path =
+        Path.join(
+          System.tmp_dir!(),
+          "crosswake-phase169-mixtask-manifest-#{System.unique_integer([:positive])}.json"
+        )
+
+      File.write!(path, JSON.encode!(drifted))
+      on_exit(fn -> File.rm(path) end)
+
+      {output, exit_status} =
+        run_mix_release_status(env: [{"RELEASE_PLEASE_MANIFEST_PATH", path}])
+
+      assert exit_status == 1
+      assert output =~ "[crosswake] FAIL (exit 1): release status ran all "
+      refute output =~ "[crosswake] UNVERIFIED (exit"
+    end
+
+    test "the crash fixture terminates with exit status exactly 3 and prints the UNVERIFIED (exit 3) summary block naming 'Do not read exit 3 as a pass.'" do
+      missing_path =
+        Path.join(
+          System.tmp_dir!(),
+          "crosswake-phase169-mixtask-missing-config-#{System.unique_integer([:positive])}.json"
+        )
+
+      {output, exit_status} =
+        run_mix_release_status(env: [{"RELEASE_PLEASE_CONFIG_PATH", missing_path}])
+
+      assert exit_status == 3
+      assert output =~ "[crosswake] UNVERIFIED (exit 3): "
+      assert output =~ "Do not read exit 3 as a pass."
+    end
+
+    test "lib/mix/tasks/crosswake.release.status.ex contains exit({:shutdown, 3}) and no System.halt(" do
+      source = File.read!("lib/mix/tasks/crosswake.release.status.ex")
+
+      assert source =~ "exit({:shutdown, 3})"
+      refute source =~ "System.halt("
+    end
+
+    test "Mix.shell().info(output) appears on an earlier line than the exit-code case" do
+      source = File.read!("lib/mix/tasks/crosswake.release.status.ex")
+
+      {info_index, _} = :binary.match(source, "Mix.shell().info(output)")
+
+      {case_index, _} =
+        :binary.match(source, "case Crosswake.ReleaseStatus.exit_code(status) do")
+
+      assert info_index < case_index
+    end
+
+    test "no check count in the summary block is a hardcoded integer literal in the source" do
+      source = File.read!("lib/crosswake/release_status.ex")
+
+      refute source =~ "release status ran all 7 checks"
+      refute source =~ "1 of 7 checks"
+    end
+  end
+
   # --- Task 3 helpers -------------------------------------------------------
 
   # Mirrors phase142_release_integrity_test.exs's replace_in_job/4 raise-on-absent-
@@ -686,6 +757,16 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
 
   defp run_scanner do
     System.cmd("elixir", [@scanner], stderr_to_stdout: true)
+  end
+
+  # --- 169-02 Task 3 helper ---------------------------------------------------
+
+  # Observes the REAL OS exit status of `mix crosswake.release.status` — the
+  # only way to prove Mix.raise (always 1) versus exit({:shutdown, 3}) actually
+  # reaches the OS, not just the library-level exit_code/1 return value.
+  defp run_mix_release_status(opts \\ []) do
+    env = Keyword.get(opts, :env, [])
+    System.cmd("mix", ["crosswake.release.status"], cd: File.cwd!(), stderr_to_stdout: true, env: env)
   end
 
   defp check!(status, code) do

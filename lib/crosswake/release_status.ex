@@ -163,9 +163,67 @@ defmodule Crosswake.ReleaseStatus do
       end
 
     Enum.join(
-      lines ++ core_lines ++ companion_lines ++ candidate_lines ++ live_lines ++ check_lines,
+      lines ++
+        core_lines ++
+        companion_lines ++
+        candidate_lines ++ live_lines ++ check_lines ++ summary_block(status),
       "\n"
     ) <> "\n"
+  end
+
+  # D-17: appended to the END of render/1's assembled output, after every existing
+  # section, so no existing rendered line moves. On a clean run this emits nothing.
+  # When both a defect AND an unknown are present, BOTH blocks emit and the process
+  # still exits 1 — a confirmed defect outranks an unknown, but nothing is masked
+  # (D-13). Every status word here routes through status_label/1; no internal atom
+  # is ever printed. No count here is a hardcoded integer literal — all are derived
+  # from status.checks.
+  defp summary_block(status) do
+    total = length(status.checks)
+    failing = Enum.filter(status.checks, &(&1.status == :error))
+    unverifiable = Enum.filter(status.checks, &(&1.status == :unverifiable))
+
+    fail_lines =
+      if failing == [] do
+        []
+      else
+        [
+          "",
+          "[crosswake] FAIL (exit 1): release status ran all #{total} checks and found #{length(failing)} blocking issues."
+        ] ++
+          Enum.map(failing, fn check -> "[crosswake]   - #{check.code}: #{check.message}" end) ++
+          [
+            "[crosswake] What to do next: fix the named issues above, then re-run `mix crosswake.release.status`."
+          ]
+      end
+
+    unverifiable_lines =
+      if unverifiable == [] do
+        []
+      else
+        passed = total - length(failing) - length(unverifiable)
+
+        passed_line =
+          if failing == [] do
+            ["[crosswake] The #{passed} checks that did run passed."]
+          else
+            []
+          end
+
+        [
+          "",
+          "[crosswake] UNVERIFIED (exit 3): #{length(unverifiable)} of #{total} checks could not run, so their result is unknown — not clean."
+        ] ++
+          Enum.map(unverifiable, fn check ->
+            "[crosswake]   - #{check.code}: #{check.message}"
+          end) ++
+          passed_line ++
+          [
+            "[crosswake] What to do next: restore the missing prerequisite and re-run. Do not read exit 3 as a pass."
+          ]
+      end
+
+    fail_lines ++ unverifiable_lines
   end
 
   # D-10: every check renders as exactly one line, except the always-emitted
