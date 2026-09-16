@@ -167,13 +167,15 @@ defmodule Crosswake.CollectionAssertionInventory do
 
   defp file_rows(path, root) do
     display_root = relative(path, root)
+    stripped = path |> File.read!() |> strip_heredocs()
+    lines = String.split(stripped, "\n")
+    blocks = test_blocks(lines)
 
     raw =
-      path
-      |> File.read!()
-      |> strip_heredocs()
-      |> test_blocks()
-      |> Enum.flat_map(fn {enclosing, start_line, body} ->
+      blocks
+      |> Enum.flat_map(fn {enclosing, start_line, end_line} ->
+        body = lines |> Enum.slice(start_line - 1, end_line - start_line + 1) |> Enum.join("\n")
+
         body
         |> find_calls()
         |> Enum.map(fn {shape, line_offset, expr} ->
@@ -182,7 +184,8 @@ defmodule Crosswake.CollectionAssertionInventory do
             shape: shape,
             expression: String.trim(expr),
             normalized: normalize_expression(expr),
-            line: start_line + line_offset
+            line: start_line + line_offset,
+            test_start_line: start_line
           }
         end)
       end)
@@ -204,10 +207,10 @@ defmodule Crosswake.CollectionAssertionInventory do
           "expression" => item.expression
         }
 
-        {row, counts}
+        {{row, item.test_start_line}, counts}
       end)
 
-    Enum.map(finished_rows, &classify/1)
+    Enum.map(finished_rows, fn {row, test_start_line} -> classify(row, lines, test_start_line) end)
   end
 
   # Heredoc contents are DATA, not code — a fixture inside `"""..."""`
@@ -231,16 +234,15 @@ defmodule Crosswake.CollectionAssertionInventory do
     Enum.join(stripped, "\n")
   end
 
-  # Splits the source into {enclosing_name, start_line (1-based), body} test
-  # blocks. Crude but sufficient, matching this repo's established
-  # source-regex-over-heredoc-stripped-text idiom (no real AST parsing
-  # anywhere in script/): a test block runs from its `test "..." do` line to
-  # the line before the next `test "..." do`, or to EOF. The nearest
-  # preceding `describe "..." do` (if any) is prefixed onto the enclosing
-  # name so two identically-named tests in different describes never collide.
-  defp test_blocks(source) do
-    lines = String.split(source, "\n")
-
+  # Splits the source into {enclosing_name, start_line, end_line} (both
+  # 1-based, inclusive) test blocks. Crude but sufficient, matching this
+  # repo's established source-regex-over-heredoc-stripped-text idiom (no real
+  # AST parsing anywhere in script/): a test block runs from its
+  # `test "..." do` line to the line before the next `test "..." do`, or to
+  # EOF. The nearest preceding `describe "..." do` (if any) is prefixed onto
+  # the enclosing name so two identically-named tests in different describes
+  # never collide.
+  defp test_blocks(lines) do
     starts =
       lines
       |> Enum.with_index()
@@ -267,9 +269,7 @@ defmodule Crosswake.CollectionAssertionInventory do
           nil -> length(lines)
         end
 
-      body = lines |> Enum.slice(idx, next_idx - idx) |> Enum.join("\n")
-
-      {enclosing, idx + 1, body}
+      {enclosing, idx + 1, next_idx}
     end)
   end
 
@@ -344,12 +344,31 @@ defmodule Crosswake.CollectionAssertionInventory do
     end
   end
 
-  # ── Classification (Task 1: the two mechanically-trivial buckets only —
-  # the full five-bucket classifier from D-07 is Task 2's job) ────────────
+  # ── Classification (D-07's full five-bucket classifier, in precedence order) ─
 
-  defp classify(row) do
-    case row["shape"] do
-      "assert_any" ->
+  # D-14: a small, explicitly-justified table of sites the general heuristic
+  # below cannot syntactically reach — because the pinning/guarding evidence
+  # references a DIFFERENT identifier than the flagged expression's own root,
+  # a fact only a human reading the surrounding code can establish. D-07's
+  # "classification is mechanically bucketed first; humans write rationale
+  # only for the residual" applies literally here: every entry below carries
+  # a rationale explaining WHY the heuristic can't see it, not just WHAT the
+  # answer is.
+  @manual_overrides %{
+    {"test/mix/tasks/crosswake.proof_lane.physical_iphone_test.exs", 92} =>
+      {"safe-cardinality-pinned",
+       "assertion_ids (bound from the device report telemetry at line 67, `assert_receive {:device, %{assertion_ids: assertion_ids}}`) is asserted equal to a 19-item literal list immediately above (line 69); assertions and assertion_ids are the same underlying collection surfaced under two different field names on the same struct, which a text-only scanner cannot infer from identifier text alone — recorded as a manual override with this citation, not a heuristic match."}
+  }
+
+  defp classify(row, lines, test_start_line) do
+    row
+    |> classify_heuristically(lines, test_start_line)
+    |> apply_manual_override()
+  end
+
+  defp classify_heuristically(row, lines, test_start_line) do
+    cond do
+      row["shape"] == "assert_any" ->
         row
         |> Map.put("bucket", "safe-by-construction")
         |> Map.put(
@@ -357,14 +376,167 @@ defmodule Crosswake.CollectionAssertionInventory do
           "Enum.any?/2 is false on an empty collection, so this assertion FAILS on the empty case by construction — it cannot silently pass on absence."
         )
 
-      _ ->
+      compile_time_literal?(row["expression"]) ->
         row
-        |> Map.put("bucket", "needs-fix")
+        |> Map.put("bucket", "safe-compile-time-literal")
+        |> Map.put("rationale", compile_time_literal_rationale(row["expression"]))
+
+      true ->
+        classify_by_backward_scan(row, lines, test_start_line)
+    end
+  end
+
+  defp classify_by_backward_scan(row, lines, test_start_line) do
+    flagged_line = display_line(row["display"])
+    root = extract_root(row["expression"])
+
+    case find_backward(lines, test_start_line, flagged_line, &pin_line?(&1, root)) do
+      {pin_line, pin_text} ->
+        row
+        |> Map.put("bucket", "safe-cardinality-pinned")
         |> Map.put(
           "rationale",
-          "runtime-derived collection with no preceding cardinality or emptiness guard detected by this narrow-scope pass (full five-bucket classification is Phase 170 Task 2)"
+          "pinned to an exact set at line #{pin_line} (`#{pin_text}`), which fixes #{root}'s cardinality — the empty case is unreachable while that pin holds."
         )
+
+      nil ->
+        case find_backward(lines, test_start_line, flagged_line, &guard_line?(&1, root)) do
+          {guard_line, guard_text} ->
+            row
+            |> Map.put("bucket", "safe-guarded")
+            |> Map.put(
+              "rationale",
+              "guarded by an explicit non-emptiness check on the same collection at line #{guard_line} (`#{guard_text}`)."
+            )
+
+          nil ->
+            row
+            |> Map.put("bucket", "needs-fix")
+            |> Map.put(
+              "rationale",
+              "runtime-derived collection at #{row["display"]}: `#{row["expression"]}` inside test \"#{row["enclosing"]}\" — no preceding cardinality-pinning or emptiness guard was found for this expression; needs-fix pending VAC-02 remediation."
+            )
+        end
     end
+  end
+
+  defp apply_manual_override(row) do
+    file = row["display"] |> String.split(":") |> Enum.drop(-1) |> Enum.join(":")
+    line = display_line(row["display"])
+
+    case Map.get(@manual_overrides, {file, line}) do
+      {bucket, rationale} ->
+        row |> Map.put("bucket", bucket) |> Map.put("rationale", rationale)
+
+      nil ->
+        row
+    end
+  end
+
+  defp display_line(display) do
+    display |> String.split(":") |> List.last() |> String.to_integer()
+  end
+
+  # A collection expression that is EITHER a bare module-attribute reference
+  # OR a bracketed list literal cannot be empty at the call site: its
+  # contents are fixed at compile time (or, for the attribute case, fixed
+  # wherever the attribute itself is declared — this scanner does not chase
+  # attribute definitions across files, so a `[]`-valued attribute would be
+  # misclassified; none of the 220 audited sites do this).
+  defp compile_time_literal?(expr) do
+    trimmed = String.trim(expr)
+
+    Regex.match?(~r/^@[a-zA-Z_]\w*$/, trimmed) or
+      (String.starts_with?(trimmed, "[") and String.ends_with?(trimmed, "]") and
+         not String.contains?(trimmed, "Enum.") and not String.contains?(trimmed, "|>"))
+  end
+
+  defp compile_time_literal_rationale(expr) do
+    trimmed = String.trim(expr)
+
+    if String.starts_with?(trimmed, "@") do
+      "#{trimmed} is a module attribute holding a fixed literal collection; it cannot be empty, so the empty case is unreachable."
+    else
+      "#{trimmed} is a literal list written directly in source; it cannot be empty by construction."
+    end
+  end
+
+  # The "root" a guard or pin must reference to count as covering THIS
+  # expression: the leading identifier/dotted-path, unwrapping one level of
+  # a pipeline (`X |> Enum.filter(...)` → X) or a known collection-producing
+  # call (`Enum.filter(X, ...)` / `Map.values(X)` → X) so `report.findings`
+  # is recognized as the subject of `report.findings |> Enum.filter(...)`
+  # and of `Enum.filter(matrix.release_boundaries, ...)` alike.
+  defp extract_root(expr) do
+    trimmed = String.trim(expr)
+
+    cond do
+      String.contains?(trimmed, "|>") ->
+        trimmed |> String.split("|>") |> List.first() |> String.trim() |> extract_root()
+
+      Regex.match?(~r/^(Enum|Map|MapSet|Stream)\.[a-zA-Z_?!]+\(/, trimmed) ->
+        case Regex.run(~r/^(Enum|Map|MapSet|Stream)\.[a-zA-Z_?!]+\(/, trimmed) do
+          [prefix | _groups] ->
+            rest = String.slice(trimmed, String.length(prefix)..-1//1)
+            {inner, _rest} = capture_first_arg(rest)
+            extract_root(inner)
+
+          nil ->
+            trimmed
+        end
+
+      true ->
+        case Regex.run(~r/^@?[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*/, trimmed) do
+          [matched | _groups] -> matched
+          nil -> trimmed
+        end
+    end
+  end
+
+  # Searches backward from the line immediately before `flagged_line` to
+  # `test_start_line` (inclusive), returning the NEAREST matching line as
+  # {line_number, trimmed_text}, or nil. Unbounded within the test body (not
+  # a fixed N-line window) because a guard or pin can sit many lines above a
+  # SECOND flagged assertion on the same already-guarded collection.
+  defp find_backward(_lines, test_start_line, flagged_line, _predicate)
+       when flagged_line - 1 < test_start_line,
+       do: nil
+
+  defp find_backward(lines, test_start_line, flagged_line, predicate) do
+    Enum.reduce_while((flagged_line - 1)..test_start_line//-1, nil, fn line_no, _acc ->
+      text = Enum.at(lines, line_no - 1) || ""
+
+      if predicate.(text) do
+        {:halt, {line_no, String.trim(text)}}
+      else
+        {:cont, nil}
+      end
+    end)
+  end
+
+  defp root_word_boundary?(line, root), do: Regex.match?(~r/\b#{Regex.escape(root)}\b/, line)
+
+  # D-07's `safe-guarded`: an explicit non-emptiness check on the SAME
+  # collection. This repo's actual idiom (verified against the live tree) is
+  # `assert <coll> != []` / `refute <coll> == []`, not literally
+  # `refute Enum.empty?/1` — both forms are recognized.
+  defp guard_line?(line, root) do
+    root_word_boundary?(line, root) and
+      (Regex.match?(~r/!=\s*\[\]/, line) or
+         Regex.match?(~r/refute\s+.*==\s*\[\]/, line) or
+         Regex.match?(~r/refute\s+Enum\.empty\?\(/, line) or
+         Regex.match?(~r/assert\s+\[_\s*\|\s*_\]\s*=/, line))
+  end
+
+  # D-07's `safe-cardinality-pinned`: an exact equality assertion pinning the
+  # element set — `assert Enum.map(coll, ...) == [<literal>]`,
+  # `assert coll == [<literal>]`, `assert Enum.map(coll, ...) == @attribute`,
+  # or an exact-count pin (`assert (length|map_size)(coll) == <int>`).
+  defp pin_line?(line, root) do
+    root_word_boundary?(line, root) and
+      (Regex.match?(~r/assert\s+.*==\s*\[/, line) or
+         Regex.match?(~r/assert\s+.*==\s*@[A-Za-z_]\w*/, line) or
+         Regex.match?(~r/assert\s+(length|map_size)\(.*\)\s*==\s*\d+/, line))
   end
 
   # ── Snapshot rendering ───────────────────────────────────────────────────

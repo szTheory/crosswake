@@ -20,6 +20,20 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   @script "script/inventory_collection_assertions.exs"
   @ledger "script/collection_assertion_ledger.json"
 
+  # D-14 / D-24 (Phase 169 precedent): hard-coded measured facts, not derived from the ledger
+  # under test — a contract cannot silently drift when the assertion re-reads the same file it
+  # is checking. These are the numbers the script ACTUALLY produced against this tree on
+  # 2026-09-16 (Task 2), never the numbers this plan predicted going in.
+  @audited_site_count 220
+  @shape_counts %{"assert_all" => 42, "assert_any" => 131, "refute_any" => 47, "refute_all" => 0}
+  @bucket_counts %{
+    "safe-by-construction" => 131,
+    "safe-compile-time-literal" => 4,
+    "safe-cardinality-pinned" => 17,
+    "safe-guarded" => 8,
+    "needs-fix" => 60
+  }
+
   describe "Task 1: a clean run against the committed ledger" do
     test "elixir script/inventory_collection_assertions.exs --check exits 0 and prints [crosswake] OK: naming a non-zero row count" do
       {output, exit_code} = run_check(File.cwd!())
@@ -301,6 +315,96 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
       # incidental one, since two rows can never share both fields.
       displays = JSON.decode!(first)["rows"] |> Enum.map(&{&1["display"], &1["key"]})
       assert displays == Enum.sort(displays)
+    end
+  end
+
+  describe "Task 2: full-tree audit, measured totals pinned as literals (D-14 / D-24)" do
+    test "the committed ledger's row count matches @audited_site_count exactly" do
+      committed = @ledger |> File.read!() |> JSON.decode!()
+      assert length(committed["rows"]) == @audited_site_count
+    end
+
+    test "the committed ledger's scope covers the whole tree" do
+      committed = @ledger |> File.read!() |> JSON.decode!()
+      assert committed["scope"] == "test/**/*.exs"
+    end
+
+    test "the committed ledger's per-shape composition matches @shape_counts exactly" do
+      committed = @ledger |> File.read!() |> JSON.decode!()
+      counted = Enum.frequencies_by(committed["rows"], & &1["shape"])
+
+      expected_nonzero =
+        @shape_counts |> Enum.reject(fn {_shape, count} -> count == 0 end) |> Map.new()
+
+      for {shape, expected_count} <- @shape_counts do
+        assert Map.get(counted, shape, 0) == expected_count,
+               "expected #{expected_count} #{shape} row(s), got #{Map.get(counted, shape, 0)}"
+      end
+
+      assert counted == expected_nonzero
+    end
+
+    test "the committed ledger's per-bucket composition matches @bucket_counts exactly" do
+      committed = @ledger |> File.read!() |> JSON.decode!()
+      counted = Enum.frequencies_by(committed["rows"], & &1["bucket"])
+
+      assert counted == @bucket_counts
+    end
+
+    test "the count of assert_any rows equals the count of safe-by-construction rows" do
+      committed = @ledger |> File.read!() |> JSON.decode!()
+
+      assert Enum.count(committed["rows"], &(&1["shape"] == "assert_any")) ==
+               Enum.count(committed["rows"], &(&1["bucket"] == "safe-by-construction"))
+    end
+
+    test "every bucket value is drawn from the exact five-member vocabulary" do
+      committed = @ledger |> File.read!() |> JSON.decode!()
+      buckets = committed["rows"] |> Enum.map(& &1["bucket"]) |> Enum.uniq() |> Enum.sort()
+
+      assert buckets ==
+               Enum.sort(~w(
+                 safe-by-construction
+                 safe-compile-time-literal
+                 safe-cardinality-pinned
+                 safe-guarded
+                 needs-fix
+               ))
+    end
+
+    test "reconciliation: raw grep over-counts @audited_site_count by exactly 6, all of them this file's own fixture heredocs" do
+      # Raw grep has no notion of a heredoc fixture string — it counts source TEXT, including the
+      # flagged-shape occurrences quoted inside this very test file's own fixture
+      # sources (the adjacency/encoding-edge tests above). The scanner's strip_heredocs/1
+      # correctly excludes them, which is exactly why the committed count (220) is 6 LOWER than
+      # a naive `grep -rnE 'assert Enum\\.(all\\?|any\\?)' test | wc -l` (179) plus
+      # `grep -rnE 'refute Enum\\.any\\?' test | wc -l` (47) = 226. Named here per Task 2's
+      # instruction that any delta be reconciled by naming the specific excluded sites, not
+      # absorbed silently.
+      {assert_output, 0} =
+        System.cmd("grep", ["-rnE", "assert Enum\\.(all\\?|any\\?)", "test", "--include=*.exs"])
+
+      {refute_output, 0} =
+        System.cmd("grep", ["-rnE", "refute Enum\\.any\\?", "test", "--include=*.exs"])
+
+      raw_count =
+        (assert_output |> String.split("\n", trim: true) |> length()) +
+          (refute_output |> String.split("\n", trim: true) |> length())
+
+      fixture_only_lines =
+        (assert_output <> "\n" <> refute_output)
+        |> String.split("\n", trim: true)
+        |> Enum.filter(
+          &String.starts_with?(
+            &1,
+            "test/crosswake/proof/phase170_vacuous_assertion_ledger_test.exs:"
+          )
+        )
+
+      assert raw_count - @audited_site_count == 6
+
+      assert length(fixture_only_lines) == 6,
+             "expected exactly 6 raw grep matches inside this file's own fixture heredocs, got: #{inspect(fixture_only_lines)}"
     end
   end
 
