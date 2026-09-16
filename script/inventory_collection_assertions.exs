@@ -448,10 +448,14 @@ defmodule Crosswake.CollectionAssertionInventory do
     "sha256:cce3a74c3adbbdca" =>
       {"safe-cardinality-pinned",
        "assertion_ids (bound from the device report telemetry at line 67, `assert_receive {:device, %{assertion_ids: assertion_ids}}`) is asserted equal to a 19-item literal list immediately above (line 69); assertions and assertion_ids are the same underlying collection surfaced under two different field names on the same struct, which a text-only scanner cannot infer from identifier text alone — recorded as a manual override with this citation, not a heuristic match."},
-    # test/crosswake/manifest/validator_test.exs:86
+    # test/crosswake/manifest/validator_test.exs:86 — rationale corrected by WR-03 gap-closure
+    # (code review, 170-06): the previously recorded rationale claimed a "different, later
+    # Validator.validate(manifest) call (same expression, same test, second occurrence)" in this
+    # test. No such second call exists — the test has exactly one `Validator.validate(manifest)`
+    # call. Re-verified against the real code path instead of re-asserting the old text.
     "sha256:e98dd963a0991078" =>
       {"safe-cardinality-pinned",
-       "the test's own title (\"an empty unknown-blocking topology remains a valid non-promoting manifest section\") states the intent: an empty topology input is asserted to produce validation errors unrelated to NT-MANIFEST-ROOT_REQUIRED — real subprocess execution proved `Validator.validate(manifest)` returns errors, but a naive `refute Enum.empty?` inserted one line above a DIFFERENT, later `Validator.validate(manifest)` call (same expression, same test, second occurrence) is redundant with the first and was reverted after breaking nothing structurally; retained here only as the row this override resolves."},
+       "the test's own title (\"an empty unknown-blocking topology remains a valid non-promoting manifest section\") states the intent: an empty topology entries list combined with `:unknown_blocking` status legitimately validates with ZERO errors overall, not merely zero NT-MANIFEST-ROOT_REQUIRED errors — confirmed via `mix test test/crosswake/manifest/validator_test.exs:81`, `Validator.validate(manifest) == []`. This is the same positive-path \"the fixture validates cleanly\" shape as the sibling override immediately below (line 303): the `refute Enum.any?/2` check is permanently vacuous by the correctness of the code under test, not by an unguarded gap."},
     # test/crosswake/manifest/validator_test.exs:303
     "sha256:6bdd78c41b8ae37e" =>
       {"safe-cardinality-pinned",
