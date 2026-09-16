@@ -430,32 +430,54 @@ defmodule Crosswake.CollectionAssertionInventory do
   # (`safe-cardinality-pinned`) is reused because each site's cardinality (zero) is pinned by its
   # own fixture construction, not by a literal preceding `assert coll == [...]` this scanner's
   # `pin_line?/2` can see.
+  #
+  # CR-01 gap-closure (code review, 170-06): this table used to be keyed by `{file, line}` —
+  # the one place in this whole scanner where line number, not content, decided a classification.
+  # Every OTHER row in the ledger is keyed by a content hash of `{enclosing, normalized
+  # expression, ordinal}` specifically so a moved-but-unchanged assertion produces zero diff
+  # noise; keying this table by line number meant the exact opposite failure mode was possible
+  # here — a moved-but-unchanged assertion could silently stop matching its override, reverting
+  # silently to an unguarded classification with no test noticing (see 170-REVIEW.md CR-01). This
+  # already manifested once: plan 170-03 had to repair two of these entries after line drift.
+  # The table is now keyed by the SAME `row["key"]` content hash the rest of the ledger uses, so
+  # an override tracks its call site through arbitrary line movement instead of breaking on it.
+  # The `# file:line` comment above each entry is retained purely for human navigation — it plays
+  # no role in the lookup.
   @manual_overrides %{
-    {"test/mix/tasks/crosswake.proof_lane.physical_iphone_test.exs", 92} =>
+    # test/mix/tasks/crosswake.proof_lane.physical_iphone_test.exs:92
+    "sha256:cce3a74c3adbbdca" =>
       {"safe-cardinality-pinned",
        "assertion_ids (bound from the device report telemetry at line 67, `assert_receive {:device, %{assertion_ids: assertion_ids}}`) is asserted equal to a 19-item literal list immediately above (line 69); assertions and assertion_ids are the same underlying collection surfaced under two different field names on the same struct, which a text-only scanner cannot infer from identifier text alone — recorded as a manual override with this citation, not a heuristic match."},
-    {"test/crosswake/manifest/validator_test.exs", 86} =>
+    # test/crosswake/manifest/validator_test.exs:86
+    "sha256:e98dd963a0991078" =>
       {"safe-cardinality-pinned",
        "the test's own title (\"an empty unknown-blocking topology remains a valid non-promoting manifest section\") states the intent: an empty topology input is asserted to produce validation errors unrelated to NT-MANIFEST-ROOT_REQUIRED — real subprocess execution proved `Validator.validate(manifest)` returns errors, but a naive `refute Enum.empty?` inserted one line above a DIFFERENT, later `Validator.validate(manifest)` call (same expression, same test, second occurrence) is redundant with the first and was reverted after breaking nothing structurally; retained here only as the row this override resolves."},
-    {"test/crosswake/manifest/validator_test.exs", 303} =>
+    # test/crosswake/manifest/validator_test.exs:303
+    "sha256:6bdd78c41b8ae37e" =>
       {"safe-cardinality-pinned",
        "`errors = Validator.validate(manifest_fixture())` validates the plain, unmutated, default-valid fixture — a clean manifest with no commerce declarations legitimately produces zero errors. Running the naively-inserted `refute Enum.empty?(errors)` here turned a real, currently-passing test red (confirmed via `mix test test/crosswake/manifest/validator_test.exs:302`, `errors == []`), proving this is a positive-path \"the default fixture validates cleanly\" check, not an unguarded defect."},
-    {"test/crosswake/manifest/validator_test.exs", 455} =>
+    # test/crosswake/manifest/validator_test.exs:455
+    "sha256:fff91e7a3749f39f" =>
       {"safe-cardinality-pinned",
        "`errors = Crosswake.Policy.Validator.validate(routes, managed_routes)` validates two semantically-valid routes (\"reader\", \"capture\") — the test title (\"policy validation prefers family-first capability vocabulary\") and the later `invalid_route`/`invalid_errors` split confirm the FIRST `errors` binding is intentionally the zero-error case; a separate, deliberately-invalid route is validated afterward to prove the positive detection path. Confirmed via `mix test test/crosswake/manifest/validator_test.exs:434`, `errors == []`."},
-    {"test/crosswake/manifest/validator_test.exs", 456} =>
+    # test/crosswake/manifest/validator_test.exs:456
+    "sha256:3398111c1c522c75" =>
       {"safe-cardinality-pinned",
        "same `errors` binding and same rationale as line 455 immediately above — this is the second of two `refute Enum.any?(errors, ...)` checks against the same permanently-empty positive-path result."},
-    {"test/crosswake/proof/phase165_ci_integrity_test.exs", 154} =>
+    # test/crosswake/proof/phase165_ci_integrity_test.exs:154
+    "sha256:b72e83b1cb382bec" =>
       {"safe-cardinality-pinned",
        "`manifest[\"legacy_compatibility_contexts\"]` is the retired-legacy-CI-context list; per PROJECT.md, CI was consolidated from twenty-seven legacy contexts to a single required `Crosswake CI` umbrella in v22.0 (Phase 165), so this list is genuinely, permanently empty going forward. Confirmed via `mix test`, the naive guard turned this real, currently-passing negative-control test red."},
-    {"test/crosswake/release_candidate/mirror_test.exs", 227} =>
+    # test/crosswake/release_candidate/mirror_test.exs:227
+    "sha256:d151d66128c154ab" =>
       {"safe-cardinality-pinned",
        "the loop iterates `[baseline_fixture(), candidate_fixture(), publish_fixture()]`; `baseline_fixture/0` sets `remote.main == remote.tag == split_sha` (identical ancestry, `dry_run.status: \"NOT RUN\"`) — the same NOOP-ancestry shape the file's own `equal` fixture (line ~160, and the phase 170 empty-input regression added immediately after it) asserts produces `push_arguments: []` explicitly. `Mirror.evaluate!/1` legitimately returns empty `push_arguments` for this specific fixture; confirmed via `mix test`, the naive guard turned this real, currently-passing test red. (Line renumbered by plan 170-03's own empty-input regression addition; content and citation unchanged from plan 170-02.)"},
-    {"test/crosswake/doctor/doctor_test.exs", 1790} =>
+    # test/crosswake/doctor/doctor_test.exs:1790
+    "sha256:83f0be7bcec980d6" =>
       {"safe-cardinality-pinned",
        "the enclosing test is explicitly named a \"negative control\" (\"a stamp matching the current template_version produces no drift finding\") — `Doctor.native_controls_ui_findings/1` is asserted to return zero findings when the stamp already matches, by design. Confirmed via `mix test test/crosswake/doctor/doctor_test.exs:1774`, `findings == []`. (Line renumbered by plan 170-03's own empty-input regression addition; content and citation unchanged from plan 170-02.)"},
-    {"test/crosswake/planning/first_adopter_context_test.exs", 281} =>
+    # test/crosswake/planning/first_adopter_context_test.exs:281
+    "sha256:36575ec13936cbc3" =>
       {"safe-cardinality-pinned",
        "the enclosing test's title (\"positional placeholders are preserved\") states the intent: `$1`/`$0.0` inside a `.sh`/`.swift` file are recognized as positional placeholders, not commercial amounts, so `scan_filesystem/2` legitimately returns zero violations for this fixture — the contrast case to the same test's earlier prose-file assertion, which DOES produce `privacy.commercial_detail` violations for `.md`/`.html`/`.svg` paths with identical dollar amounts. Confirmed via `mix test test/crosswake/planning/first_adopter_context_test.exs:267`, `scan_filesystem(root, []) == []`."}
   }
@@ -520,11 +542,12 @@ defmodule Crosswake.CollectionAssertionInventory do
     end
   end
 
+  # CR-01 gap-closure (code review, 170-06): looked up by `row["key"]` — the same content hash
+  # (`{enclosing, normalized expression, ordinal}`) every other row is keyed by — instead of the
+  # previous `{file, line}` lookup, so an override tracks its call site through line movement
+  # instead of silently stopping to match on it.
   defp apply_manual_override(row) do
-    file = row["display"] |> String.split(":") |> Enum.drop(-1) |> Enum.join(":")
-    line = display_line(row["display"])
-
-    case Map.get(@manual_overrides, {file, line}) do
+    case Map.get(@manual_overrides, row["key"]) do
       {bucket, rationale} ->
         row |> Map.put("bucket", bucket) |> Map.put("rationale", rationale)
 
@@ -715,7 +738,22 @@ defmodule Crosswake.CollectionAssertionInventory do
         unclassified_keys = MapSet.difference(live_keys, committed_keys)
         orphan_keys = MapSet.difference(committed_keys, live_keys)
 
-        if MapSet.size(unclassified_keys) == 0 and MapSet.size(orphan_keys) == 0 do
+        # CR-01 gap-closure (code review, 170-06): a key present on both sides used to be
+        # considered a match with no further inspection — so a row whose CONTENT changed (most
+        # importantly its `bucket`) while its key stayed the same was invisible to this check.
+        # This is the completeness gap `@manual_overrides` used to be exposed to via `{file,
+        # line}` keying (now fixed separately by content-hash keying) and, more generally, is
+        # exactly the kind of check-that-asserts-nothing this phase exists to eliminate. For
+        # every key present in BOTH snapshots, compare the full row — not just its presence.
+        mismatched_keys =
+          MapSet.intersection(live_keys, committed_keys)
+          |> Enum.filter(fn key ->
+            Map.fetch!(live_by_key, key) != Map.fetch!(committed_by_key, key)
+          end)
+          |> MapSet.new()
+
+        if MapSet.size(unclassified_keys) == 0 and MapSet.size(orphan_keys) == 0 and
+             MapSet.size(mismatched_keys) == 0 do
           IO.puts(
             "[crosswake] OK: #{length(committed_rows)} classified collection-assertion site(s), ledger matches the live tree exactly."
           )
@@ -723,7 +761,7 @@ defmodule Crosswake.CollectionAssertionInventory do
           0
         else
           IO.puts(
-            "[crosswake] FAIL: the committed classification snapshot has #{MapSet.size(unclassified_keys)} site(s) not yet classified and #{MapSet.size(orphan_keys)} orphan row(s)."
+            "[crosswake] FAIL: the committed classification snapshot has #{MapSet.size(unclassified_keys)} site(s) not yet classified, #{MapSet.size(orphan_keys)} orphan row(s), and #{MapSet.size(mismatched_keys)} row(s) whose content has drifted from the live tree."
           )
 
           unclassified_keys
@@ -738,6 +776,28 @@ defmodule Crosswake.CollectionAssertionInventory do
           |> Enum.sort_by(& &1["display"])
           |> Enum.each(fn row ->
             IO.puts("[crosswake]   orphan: #{row["display"]} (#{row["key"]})")
+          end)
+
+          mismatched_keys
+          |> Enum.map(fn key ->
+            {Map.fetch!(committed_by_key, key), Map.fetch!(live_by_key, key)}
+          end)
+          |> Enum.sort_by(fn {committed_row, _live_row} -> committed_row["display"] end)
+          |> Enum.each(fn {committed_row, live_row} ->
+            diffs =
+              committed_row
+              |> Map.keys()
+              |> Enum.filter(fn field ->
+                Map.get(committed_row, field) != Map.get(live_row, field)
+              end)
+              |> Enum.map(fn field ->
+                "#{field}: committed=#{inspect(Map.get(committed_row, field))} live=#{inspect(Map.get(live_row, field))}"
+              end)
+              |> Enum.join("; ")
+
+            IO.puts(
+              "[crosswake]   mismatched: #{committed_row["display"]} (#{committed_row["key"]}) — #{diffs}"
+            )
           end)
 
           IO.puts(

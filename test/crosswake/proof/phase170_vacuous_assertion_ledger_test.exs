@@ -84,6 +84,25 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
       assert MapSet.size(unclassified) == 0 and MapSet.size(orphans) == 0,
              "unclassified (live, not in committed snapshot): #{inspect(MapSet.to_list(unclassified))}; " <>
                "orphan (in committed snapshot, not live): #{inspect(MapSet.to_list(orphans))}"
+
+      # CR-01 gap-closure (code review, 170-06): a shared key used to be treated as a full
+      # match on sight. That let a row whose CONTENT changed (most importantly its `bucket`)
+      # while its key stayed stable go completely undetected — exactly the failure this ledger
+      # exists to prevent, one layer up. For every key present in BOTH snapshots, assert full
+      # row equality, not just key-set membership.
+      committed_by_key = Map.new(committed["rows"], &{&1["key"], &1})
+      regenerated_by_key = Map.new(regenerated["rows"], &{&1["key"], &1})
+      shared_keys = MapSet.intersection(committed_keys, regenerated_keys)
+
+      mismatched =
+        shared_keys
+        |> Enum.filter(fn key ->
+          Map.fetch!(committed_by_key, key) != Map.fetch!(regenerated_by_key, key)
+        end)
+        |> Enum.map(&Map.fetch!(committed_by_key, &1)["display"])
+
+      assert mismatched == [],
+             "row(s) with matching keys but diverging content (bucket/rationale/shape/expression drifted between the committed snapshot and a fresh regeneration): #{inspect(mismatched)}"
     end
 
     test "every row in the committed ledger has exactly the seven schema keys and a non-empty string rationale" do
@@ -156,6 +175,38 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
 
       assert output =~ "[crosswake] FAIL:"
       assert output =~ orphan_row["display"]
+    end
+
+    test "mutating one row's bucket in a copy of the committed ledger (same key, diverged content) makes --check exit non-zero and name that row" do
+      # CR-01's own D-14 requirement: a fix to a vacuity defect is itself unproven — and
+      # therefore no better than the defect it replaces — unless it is demonstrated capable of
+      # going red. This is that demonstration: a bucket-only divergence (identical key, changed
+      # bucket) is exactly the failure mode CR-01 found invisible to the old key-set-only diff.
+      committed = @ledger |> File.read!() |> JSON.decode!()
+      [target_row | remaining_rows] = committed["rows"]
+
+      mutated_row = Map.put(target_row, "bucket", "needs-fix")
+      mutated = %{committed | "rows" => [mutated_row | remaining_rows]}
+      mutated_path = tmp_json_path("crosswake-phase170-ledger-bucket-mutation")
+      File.write!(mutated_path, JSON.encode!(mutated))
+      on_exit(fn -> File.rm(mutated_path) end)
+
+      {output, exit_code} =
+        System.cmd("elixir", [@script, "--ledger", mutated_path, "--check"],
+          stderr_to_stdout: true,
+          cd: File.cwd!()
+        )
+
+      assert exit_code != 0,
+             "expected a ledger with a bucket-mutated row (same key, diverged content) to make --check exit non-zero:\n#{output}"
+
+      assert output =~ "[crosswake] FAIL:"
+
+      assert output =~ target_row["display"],
+             "expected the mutated row's display value #{inspect(target_row["display"])} to appear in:\n#{output}"
+
+      assert output =~ "mismatched:",
+             "expected --check to report this as a content mismatch (not an unclassified/orphan), got:\n#{output}"
     end
   end
 
