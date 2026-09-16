@@ -127,7 +127,7 @@ pass a one-way-door step.
    review checklist item applied at the close of each of those phases, not a code change owned by
    this phase itself.
 
-**Plans**: 4/5 plans executed
+**Plans**: 5/5 plans executed
 **Wave 1**
 
 - [x] 170-01-PLAN.md — Inventory script, committed classification ledger, and its non-vacuity proof (VAC-01)
@@ -143,7 +143,7 @@ pass a one-way-door step.
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 170-05-PLAN.md — Phase 170's own taxonomy record and the decidable convention check (VAC-03)
+- [x] 170-05-PLAN.md — Phase 170's own taxonomy record and the decidable convention check (VAC-03)
 
 **Research**: Standard pattern — an audit-and-classify pass plus mechanical test rewrites at
 already-identified sites. Skip phase-level research.
@@ -371,7 +371,7 @@ before the real one-way door.
 | 167. Documentation and Pull-Request Reconciliation | 9/9 | Shipped | 2026-09-12 |
 | 168. 0.2.1 Release Candidate Readiness | 13/13 | Shipped | 2026-09-16 |
 | 169. Diagnostic Legibility | 4/4 | Complete    | 2026-09-16 |
-| 170. Vacuous Assertion Remediation | 4/5 | In Progress|  |
+| 170. Vacuous Assertion Remediation | 5/5 | In Progress|  |
 | 171. Version/Authority Split | 0/TBD | Not started | - |
 | 172. Per-Package Proof Scope | 0/TBD | Not started | - |
 | 173. Recovery-Path Proof Convergence | 0/TBD | Not started | - |

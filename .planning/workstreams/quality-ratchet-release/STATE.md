@@ -4,17 +4,17 @@ milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 170
 current_phase_name: Vacuous Assertion Remediation
-status: executing
-stopped_at: Completed 170-03-PLAN.md
-last_updated: "2026-09-16T19:46:23.075Z"
+status: verifying
+stopped_at: Completed 170-05-PLAN.md — Phase 170 fully closed
+last_updated: "2026-09-16T19:54:17.444Z"
 last_activity: 2026-09-16
 last_activity_desc: Phase 170 execution started
-state_head: e53dff6ccbdca2ed00271e6eddda75106deb18e6
+state_head: e7478c7f3a3c4c2593c9d3ff48e151461f3cdbaa
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
   percent: 14
 ---
 
@@ -46,7 +46,7 @@ Revisit once the post-publication proof lane can actually run.
 
 Phase: 170 (Vacuous Assertion Remediation) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-09-16 — Phase 170 execution started
 
 ## Performance Metrics
@@ -118,6 +118,7 @@ Last activity: 2026-09-16 — Phase 170 execution started
 | Phase 170 P02 | 55min | 3 tasks | 22 files |
 | Phase 170 P04 | 25min | 3 tasks | 4 files |
 | Phase 170 P03 | 65min | 3 tasks | 7 files |
+| Phase 170 P05 | 30min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -240,6 +241,7 @@ Last activity: 2026-09-16 — Phase 170 execution started
 - [Phase 170]: VAC-03 convention: a check that doesn't map to any of the six vacuity shapes records the explicit 'matches none of A-F, because ___' escape form rather than a forced nearest-fit letter. — Applied retroactively to release.scanner.roster_exact and release.workflow_integrity in the Phase 169 addendum; both are structurally a roster-diff check and a message-passthrough check, neither a possibly-empty-collection predicate.
 - [Phase 170]: 170-03: coordinate_test.exs and crosswake_release_status_test.exs's flagged sites recorded as structural-test-only (compile-time-fixed companion list; check-only-emitted-when-nonempty computations), not silently dropped
 - [Phase 170]: 170-03: release_boundaries_test.exs's empty-companions regression reuses ReleaseStatus.build/1's existing :cwd override via a symlink-and-mutate-manifest helper, avoiding any lib/ change
+- [Phase 170]: Phase 170's meta-checks (ledger completeness, guard-expression-match) recorded via the vacuity_taxonomy convention's explicit escape form, mirroring Phase 169's roster_exact/workflow_integrity precedent; the convention check itself and the empty-input regression set classify as Shape A.
 
 ### v23.0 Roadmap Decisions
 
@@ -306,8 +308,8 @@ Last activity: 2026-09-16 — Phase 170 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-16T19:46:23.055Z
-Stopped at: Completed 170-03-PLAN.md
+Last session: 2026-09-16T19:54:17.425Z
+Stopped at: Completed 170-05-PLAN.md — Phase 170 fully closed
 Resume file: None
 
 ## Operator Next Steps

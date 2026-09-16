@@ -60,7 +60,7 @@ Source: `.planning/research/v23/SUMMARY.md` (decision set, adjudicated divergenc
 
 - [x] **VAC-01**: All 173 sites flagged by SEED-018 are audited and classified as genuinely vacuous or safe
 - [x] **VAC-02**: Every assertion confirmed vacuous is rewritten so that an empty collection fails
-- [ ] **VAC-03**: Every new check added by this milestone is checked against the six-shape vacuity taxonomy before it is made merge-blocking
+- [x] **VAC-03**: Every new check added by this milestone is checked against the six-shape vacuity taxonomy before it is made merge-blocking
 
 ### Release Execution
 
@@ -162,7 +162,7 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 | FID-02 | Phase 169 | Complete |
 | VAC-01 | Phase 170 | Complete |
 | VAC-02 | Phase 170 | Complete |
-| VAC-03 | Phase 170 | Pending |
+| VAC-03 | Phase 170 | Complete |
 | REL-10 | Phase 175 | Pending |
 | REL-11 | Phase 175 | Pending |
 | REL-12 | Phase 175 | Pending |
