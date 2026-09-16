@@ -5,16 +5,16 @@ milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 170
 current_phase_name: Vacuous Assertion Remediation
 status: executing
-stopped_at: Phase 170 context gathered
-last_updated: "2026-09-16T16:39:45.145Z"
+stopped_at: Completed 170-01-PLAN.md
+last_updated: "2026-09-16T17:11:23.611Z"
 last_activity: 2026-09-16
-last_activity_desc: Phase 169 complete, transitioned to Phase 170
-state_head: 0defbf7a1766afd1d23b5b010532568990780bba
+last_activity_desc: Phase 170 execution started
+state_head: 8b03d32b8491a1d0f1f8377bf557825c0265cc3e
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 9
-  completed_plans: 4
+  completed_plans: 5
   percent: 14
 ---
 
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 169 — Diagnostic Legibility
+**Current focus:** Phase 170 — Vacuous Assertion Remediation
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
 **Open release pull requests — triage as of 2026-09-15. None should be merged yet.**
@@ -44,10 +44,10 @@ Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
 
-Phase: 170 (Vacuous Assertion Remediation) — READY TO EXECUTE
-Plan: Not started
+Phase: 170 (Vacuous Assertion Remediation) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-09-16 — Phase 169 complete, transitioned to Phase 170
+Last activity: 2026-09-16 — Phase 170 execution started
 
 ## Performance Metrics
 
@@ -114,6 +114,7 @@ Last activity: 2026-09-16 — Phase 169 complete, transitioned to Phase 170
 | Phase 169 P03 | 12 min | 3 tasks | 6 files |
 | Phase 169 P02 | 95min | 3 tasks | 5 files |
 | Phase 169 P04 | 24 min | 2 tasks | 2 files |
+| Phase 170 P01 | 55min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -231,6 +232,7 @@ Last activity: 2026-09-16 — Phase 169 complete, transitioned to Phase 170
 - [Phase 169]: [Phase 169-03]: Widened list_merge_blocking_checks.py's duplicate scan from a merge-blocking substring filter to a global check over every job producer, added a version-literal reject, and retired all six version-welded release-please.yml/phase70-proof.yml display names/artifact names in one atomic commit (D-21).
 - [Phase 169]: [Phase 169-02] Both crash evidence statuses (:unavailable and :unverifiable) route the release.workflow_integrity owner check and the five scoped checks to the same check-level :unverifiable, never :error — an :error owner check would outrank :unverifiable in aggregate_status/1's precedence and silently force exit 1 on a crash instead of exit 3.
 - [Phase 169]: [Phase 169-04]: Added a 6th exit-contract-guard entry point for Crosswake.ReleaseStatus.exit_code/1's own source clauses (extracting literal do: <n> from each def exit_code(...) head, skipping the delegating clause), alongside the 5 file-based checks the plan named, and read exit_code/1's @doc content via Code.fetch_docs/1 as a separate assertion.
+- [Phase 170]: [Phase 170-01]: Built script/inventory_collection_assertions.exs (content-hash-keyed, root-identifier backward-scan classifier) and committed the full 220-row ledger; guard/pin detection is unbounded within the enclosing test body rather than a fixed 6-line window, with one explicit manual override for a cross-field pin the heuristic cannot see.
 
 ### v23.0 Roadmap Decisions
 
@@ -297,9 +299,9 @@ Last activity: 2026-09-16 — Phase 169 complete, transitioned to Phase 170
 
 ## Session Continuity
 
-Last session: 2026-09-16T15:52:50.525Z
-Stopped at: Phase 170 context gathered
-Resume file: .planning/workstreams/quality-ratchet-release/phases/170-vacuous-assertion-remediation/170-CONTEXT.md
+Last session: 2026-09-16T17:11:23.584Z
+Stopped at: Completed 170-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
