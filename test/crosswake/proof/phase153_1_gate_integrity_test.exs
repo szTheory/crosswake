@@ -120,7 +120,9 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
     assert status == 1,
            "expected the uniqueness assertion to fail (exit 1), got #{status}:\n#{out}"
 
-    assert out =~ "duplicate-merge-blocking-name"
+    # Phase 169 (MSG-06/D-20) widened this assertion from a "merge-blocking" substring match to
+    # a global duplicate-display-name scan and renamed the diagnostic identifier accordingly.
+    assert out =~ "duplicate-producer/duplicate-display-name"
 
     # Both colliding sources must be named — a failure that does not say WHERE is not actionable.
     assert out =~ "a.yml"
