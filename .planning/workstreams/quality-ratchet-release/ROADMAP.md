@@ -26,7 +26,7 @@ unacknowledged. See `MILESTONES.md` for the recorded overrides.
 
 ### v23.0 Release Pipeline Repair & Proof-Lane Truth (planning)
 
-- [ ] **Phase 169: Diagnostic Legibility** - Every release/verification check surfaces its own failing message, and distinguishes "never ran" from "never defined"
+- [x] **Phase 169: Diagnostic Legibility** - Every release/verification check surfaces its own failing message, and distinguishes "never ran" from "never defined" (completed 2026-09-16)
 - [ ] **Phase 170: Vacuous Assertion Remediation** - All 173 SEED-018-flagged sites are classified and every confirmed-vacuous one is rewritten so an empty collection fails
 - [ ] **Phase 171: Version/Authority Split** - The release graph is version-parametric while the approval identity gate stays exact; the `0.2.1` weld and its interim tripwire are both retired atomically
 - [ ] **Phase 172: Per-Package Proof Scope** - Byte-exact publish verification is proven against each package's own approved ref, never one shared ref for all six
@@ -344,7 +344,7 @@ before the real one-way door.
 | 166. Clean-Checkout Engineering Quality | 8/8 | Shipped | 2026-09-10 |
 | 167. Documentation and Pull-Request Reconciliation | 9/9 | Shipped | 2026-09-12 |
 | 168. 0.2.1 Release Candidate Readiness | 13/13 | Shipped | 2026-09-16 |
-| 169. Diagnostic Legibility | 4/4 | In Progress|  |
+| 169. Diagnostic Legibility | 4/4 | Complete    | 2026-09-16 |
 | 170. Vacuous Assertion Remediation | 0/TBD | Not started | - |
 | 171. Version/Authority Split | 0/TBD | Not started | - |
 | 172. Per-Package Proof Scope | 0/TBD | Not started | - |
