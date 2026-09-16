@@ -241,6 +241,11 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         candidate_ci_contract(ci_workflow)
       ] ++ component_gates(jobs) ++ component_proof_gates(jobs)
 
+    # D-04: appended AFTER the full eager list is built (including this check's own
+    # emitted ID), so it participates in the ROSTER/DONE counts like any other check
+    # and can compare the FULL emitted ID set — itself included — against @roster_ids.
+    checks = checks ++ [roster_exact(checks)]
+
     failures = Enum.filter(checks, &match?({:error, _, _}, &1))
 
     IO.puts("[crosswake] ROSTER: #{length(@roster_ids)} #{Enum.join(@roster_ids, ",")}")
@@ -402,6 +407,44 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
   defp check(id, true, detail), do: {:ok, id, detail}
   defp check(id, false, detail), do: {:error, id, detail}
+
+  # D-04: the declared @roster_ids attribute is derived from the check bodies and can
+  # rot away from them. Neutralize that mechanically: compare the set of IDs the
+  # eager `checks` list ACTUALLY emitted — including this check's own ID, since it is
+  # about to emit "release.scanner.roster_exact" itself — against the declared
+  # @roster_ids set. A mismatch in EITHER direction (something emitted that was never
+  # declared, or something declared that was never emitted) is a hard FAIL, never
+  # advisory.
+  defp roster_exact(checks) do
+    emitted_ids =
+      checks
+      |> Enum.map(fn {_status, id, _detail} -> id end)
+      |> MapSet.new()
+      |> MapSet.put("release.scanner.roster_exact")
+
+    declared_ids = MapSet.new(@roster_ids)
+
+    extra_emitted = emitted_ids |> MapSet.difference(declared_ids) |> Enum.sort()
+    missing_emitted = declared_ids |> MapSet.difference(emitted_ids) |> Enum.sort()
+
+    detail =
+      if extra_emitted == [] and missing_emitted == [] do
+        "emitted #{MapSet.size(emitted_ids)} check IDs match the declared @roster_ids exactly"
+      else
+        [
+          if(extra_emitted != [],
+            do: "emitted but not declared in @roster_ids: #{Enum.join(extra_emitted, ", ")}"
+          ),
+          if(missing_emitted != [],
+            do: "declared in @roster_ids but never emitted: #{Enum.join(missing_emitted, ", ")}"
+          )
+        ]
+        |> Enum.reject(&is_nil/1)
+        |> Enum.join("; ")
+      end
+
+    check("release.scanner.roster_exact", extra_emitted == [] and missing_emitted == [], detail)
+  end
 
   defp candidate_ci_contract(workflow) do
     jobs = job_blocks(workflow)

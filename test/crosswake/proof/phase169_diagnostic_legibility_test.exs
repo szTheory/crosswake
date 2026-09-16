@@ -247,6 +247,99 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
     end
   end
 
+  describe "Task 3: release.scanner.roster_exact — self-checking roster, proven non-vacuous" do
+    test "a clean run emits [crosswake] OK: release.scanner.roster_exact" do
+      {output, exit_code} = run_scanner()
+
+      assert exit_code == 0, output
+      assert output =~ ~r/^\[crosswake\] OK: release\.scanner\.roster_exact - /m
+    end
+
+    test "removing one ID token from @roster_ids turns the scanner red at release.scanner.roster_exact (non-vacuity proof)" do
+      source = File.read!(@scanner)
+      mutated = mutate_roster_remove_id(source, "release.concurrency.not_cancelled")
+
+      path =
+        Path.join(
+          System.tmp_dir!(),
+          "crosswake-phase169-roster-mutation-#{System.unique_integer([:positive])}.exs"
+        )
+
+      File.write!(path, mutated)
+      on_exit(fn -> File.rm(path) end)
+
+      {output, exit_code} = System.cmd("elixir", [path], stderr_to_stdout: true)
+
+      assert exit_code != 0,
+             "expected a drifted @roster_ids to make the scanner exit non-zero:\n#{output}"
+
+      assert output =~ "[crosswake] FAIL: release.scanner.roster_exact"
+    end
+
+    test "the mutation helper raises when its target token is absent from the source" do
+      source = File.read!(@scanner)
+
+      assert_raise RuntimeError, ~r/found no/, fn ->
+        mutate_roster_remove_id(source, "release.this.id.does.not.exist.anywhere")
+      end
+    end
+
+    test "on a clean run, ROSTER count, ROSTER ID-list length, OK/FAIL line count, and DONE emitted count are mutually consistent and > 60" do
+      {output, exit_code} = run_scanner()
+      assert exit_code == 0, output
+
+      lines = String.split(output, "\n", trim: true)
+
+      [roster_line] = Enum.filter(lines, &String.starts_with?(&1, "[crosswake] ROSTER: "))
+      [done_line] = Enum.filter(lines, &String.starts_with?(&1, "[crosswake] DONE: "))
+
+      [roster_count_str, roster_ids_str] =
+        roster_line
+        |> String.trim_leading("[crosswake] ROSTER: ")
+        |> String.split(" ", parts: 2)
+
+      roster_count = String.to_integer(roster_count_str)
+      roster_id_list_length = roster_ids_str |> String.split(",", trim: true) |> length()
+
+      ok_fail_count =
+        Enum.count(lines, fn line ->
+          String.starts_with?(line, "[crosswake] OK: ") or
+            String.starts_with?(line, "[crosswake] FAIL: ")
+        end)
+
+      [done_emitted_str, _of, _roster_count_str2 | _rest] =
+        done_line |> String.trim_leading("[crosswake] DONE: ") |> String.split(" ")
+
+      done_emitted = String.to_integer(done_emitted_str)
+
+      assert roster_count == roster_id_list_length
+      assert roster_count == ok_fail_count
+      assert roster_count == done_emitted
+      assert roster_count > 60
+    end
+  end
+
+  # --- Task 3 helpers -------------------------------------------------------
+
+  # Mirrors phase142_release_integrity_test.exs's replace_in_job/4 raise-on-absent-
+  # pattern discipline: a silent no-op mutation would make the negative control prove
+  # nothing about the check it names.
+  defp mutate_roster_remove_id(source, id) do
+    target = "\n    #{id}\n"
+
+    unless String.contains?(source, target) do
+      raise """
+      mutate_roster_remove_id/2 found no #{inspect(id)} line in @roster_ids.
+
+      The mutation would be a no-op, so the negative control would assert nothing.
+      The scanner drifted away from this ID — update the test to a current roster
+      member, do not delete the control.
+      """
+    end
+
+    String.replace(source, target, "\n", global: false)
+  end
+
   # --- Task 1 helpers -------------------------------------------------------
 
   defp run_drifted_scanner_and_capture_fail do
