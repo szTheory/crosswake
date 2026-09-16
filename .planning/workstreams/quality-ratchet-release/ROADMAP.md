@@ -46,6 +46,7 @@ message, and the system never reports "missing" when the true state is "failing"
 **Requirements**: MSG-01, MSG-02, MSG-03, MSG-06, FID-02
 
 **Success Criteria** (what must be TRUE):
+
 1. A deliberately failing release check (e.g. a fixture reproducing the PR #164 defect) surfaces
    its own verbatim `detail` message in `Crosswake.ReleaseStatus`'s output — not a generic "missing
    check IDs" list — confirmed by a test asserting the exact string appears.
@@ -62,9 +63,17 @@ message, and the system never reports "missing" when the true state is "failing"
 **Plans**: 4 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 169-01-PLAN.md — Tracer: a failing scanner check's own sentence reaches the maintainer verbatim; `failing` no longer shadowed by `missing` (MSG-01, MSG-03)
-- [ ] 169-02-PLAN.md — `:unverifiable` / exit 3: could-not-verify is a distinct, documented outcome (FID-02, MSG-02)
 - [ ] 169-03-PLAN.md — Version-neutral display names and a global duplicate-name scan, landed atomically (MSG-06)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 169-02-PLAN.md — `:unverifiable` / exit 3: could-not-verify is a distinct, documented outcome (FID-02, MSG-02)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 169-04-PLAN.md — Exit-contract drift guard and canonical-doc link (FID-02)
 
 **Wave structure**: Wave 1 = 169-01 and 169-03 in parallel (no shared files) · Wave 2 = 169-02 ·
@@ -89,6 +98,7 @@ pass a one-way-door step.
 **Requirements**: VAC-01, VAC-02, VAC-03
 
 **Success Criteria** (what must be TRUE):
+
 1. Each of the 173 SEED-018-flagged sites has a recorded classification (genuinely vacuous vs.
    safe) committed in-repo (e.g. a table or ledger keyed by file:line), confirmed by counting rows
    against the 173 total.
@@ -137,6 +147,7 @@ plan sequencing must land the check and the fix in one commit/PR, with the check
 proof (run against a pre-fix fixture of the workflow file) as part of that same change.
 
 **Success Criteria** (what must be TRUE):
+
 1. `release.publish_gate.no_bare_version_literal` runs against a pre-repair fixture of the workflow
    file and fails, proving it is non-vacuous — confirmed by a test that pins the fixture and asserts
    the failure.
@@ -178,6 +189,7 @@ same module, same test fixtures)
 **Requirements**: XPUB-01, XPUB-02, XPUB-03
 
 **Success Criteria** (what must be TRUE):
+
 1. The approved-artifacts manifest schema accepts six independent `candidate_ref` values — confirmed
    by a test asserting the schema no longer enforces `unique | length == 1` across packages.
 2. `validate_approved_artifacts!/1` (or its successor) resolves and validates each package against
@@ -209,6 +221,7 @@ executed in parallel once Phase 171 is merged.
 **Requirements**: XPUB-04, XPUB-05, XPUB-06, XPUB-07
 
 **Success Criteria** (what must be TRUE):
+
 1. `exact-public-proof`'s `needs:` is satisfied by a publication-record signal for the exact
    `{package, version, approved_head}` triple, demonstrated identically from a fixture representing
    the ordinary graph and one representing `workflow_dispatch` recovery.
@@ -246,6 +259,7 @@ reproduces against a live Hex release.
 **Requirements**: ROOM-01, ROOM-02, ROOM-03, ROOM-04, ROOM-05, ROOM-06, FID-01
 
 **Success Criteria** (what must be TRUE):
+
 1. The legacy positional clean-room path's generated host declares a real Crosswake route with
    capability metadata before `doctor` runs — confirmed by inspecting the host generated during an
    actual run.
@@ -292,6 +306,7 @@ lower-blast-radius held companion first, as the fire-drill for the repaired clea
 0.2.2 next; the second held companion last.
 
 **Success Criteria** (what must be TRUE):
+
 1. A retire/backfill runbook covering Hex (`mix hex.retire`), the iOS mirror (re-tag/note), and
    Maven (retire-forward) is committed to the repo — with its commit SHA recorded — before the first
    publish command in this phase is executed.
