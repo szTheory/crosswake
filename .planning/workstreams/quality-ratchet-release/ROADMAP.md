@@ -59,7 +59,16 @@ message, and the system never reports "missing" when the true state is "failing"
    exits with two different, documented statuses, confirmed by running both cases and diffing the
    exit codes.
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 169-01-PLAN.md — Tracer: a failing scanner check's own sentence reaches the maintainer verbatim; `failing` no longer shadowed by `missing` (MSG-01, MSG-03)
+- [ ] 169-02-PLAN.md — `:unverifiable` / exit 3: could-not-verify is a distinct, documented outcome (FID-02, MSG-02)
+- [ ] 169-03-PLAN.md — Version-neutral display names and a global duplicate-name scan, landed atomically (MSG-06)
+- [ ] 169-04-PLAN.md — Exit-contract drift guard and canonical-doc link (FID-02)
+
+**Wave structure**: Wave 1 = 169-01 and 169-03 in parallel (no shared files) · Wave 2 = 169-02 ·
+Wave 3 = 169-04.
 
 **Research**: Standard pattern — pure Elixir refactor of an existing function plus a new pure-syntax
 scanner check; the coverage-test shape already exists in the repo to copy. Skip phase-level research.
