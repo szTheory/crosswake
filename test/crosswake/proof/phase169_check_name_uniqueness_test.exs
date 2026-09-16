@@ -226,12 +226,30 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
     Jason.decode!(out)
   end
 
+  # Extracted as pure predicates (rather than inline asserts against the live file) so a
+  # synthetic violating fixture can prove each guard is capable of going red (D-23 non-vacuity)
+  # instead of resting on "it currently passes against a currently-clean file."
+  defp on_trigger_clean?(triggers) do
+    is_map(triggers) and Enum.sort(Map.keys(triggers)) == ["push", "workflow_dispatch"]
+  end
+
+  defp release_prefix_lowercase?(name) do
+    rest = String.trim_leading(name, "release: ")
+    rest == String.downcase(rest)
+  end
+
   test "Task 3: release-please.yml's on: mapping has exactly push and workflow_dispatch keys" do
     triggers = workflow_json!(".github/workflows/release-please.yml", "doc.get('on', doc.get(True, {}))")
 
-    assert is_map(triggers)
-    assert Map.keys(triggers) |> Enum.sort() == ["push", "workflow_dispatch"]
+    assert on_trigger_clean?(triggers)
     refute Map.has_key?(triggers, "pull_request")
+  end
+
+  test "Task 3: on:-trigger guard fires on a synthetic trigger set with pull_request added" do
+    # Non-vacuity proof: the real file cannot be safely mutated by this test (it is live CI
+    # config asserted elsewhere), so this proves the PREDICATE the real-file test relies on is
+    # capable of going false, not just currently true.
+    refute on_trigger_clean?(%{"push" => %{}, "workflow_dispatch" => nil, "pull_request" => %{}})
   end
 
   test "Task 3: required_check_policy.json declares exactly one target context bound to app id 15368" do
@@ -260,8 +278,11 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
              "examined set would make this assertion pass vacuously"
 
     for name <- prefixed_names do
-      rest = String.trim_leading(name, "release: ")
-      assert rest == String.downcase(rest), "#{inspect(name)} is not lowercase after the prefix"
+      assert release_prefix_lowercase?(name), "#{inspect(name)} is not lowercase after the prefix"
     end
+  end
+
+  test "Task 3: release: prefix rule fires on a synthetic name with uppercase after the prefix" do
+    refute release_prefix_lowercase?("release: Exact-Public Artifact Proof")
   end
 end
