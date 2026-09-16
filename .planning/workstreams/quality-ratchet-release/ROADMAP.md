@@ -34,6 +34,16 @@ unacknowledged. See `MILESTONES.md` for the recorded overrides.
 - [ ] **Phase 174: Clean-Room Host Realism & Adopter Fidelity** - The clean-room lane exercises install, not just compile, on both code paths, and the two named adopter gaps are closed or deferred with a reason
 - [ ] **Phase 175: Rehearsal and Publish** - `crosswake 0.2.2` and the two held companion PRs are live through the repaired graph, and `exact-public-proof` has actually executed and passed for 0.2.2
 
+## Milestone Conventions
+
+Every phase in milestone v23.0 closes with a `vacuity_taxonomy` record: for each new check the
+phase landed, its shape against the six-shape vacuity taxonomy and a measured non-vacuity fact.
+The rules live in [`VERIFICATION-CONVENTIONS.md`](VERIFICATION-CONVENTIONS.md). Phase 169 closed
+before this convention existed and is covered retroactively by
+[`169-VACUITY-TAXONOMY.md`](phases/169-diagnostic-legibility/169-VACUITY-TAXONOMY.md) rather than
+by editing its sealed `169-VERIFICATION.md`. A phase that lands no new checks states that
+explicitly in its own record rather than omitting it.
+
 ## Phase Details
 
 ### Phase 169: Diagnostic Legibility
