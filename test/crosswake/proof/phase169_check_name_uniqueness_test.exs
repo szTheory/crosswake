@@ -78,26 +78,28 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
   @tag :tmp_dir
   test "Task 2: duplicate reject does not over-fire on distinct names", %{tmp_dir: tmp} do
     prepare_fixture!(tmp, [
-      {"a.yml", """
-      name: A
-      on: [push]
-      jobs:
-        alpha:
-          name: alpha distinct name
-          runs-on: ubuntu-latest
-          steps:
-            - run: "true"
-      """},
-      {"b.yml", """
-      name: B
-      on: [push]
-      jobs:
-        beta:
-          name: beta distinct name
-          runs-on: ubuntu-latest
-          steps:
-            - run: "true"
-      """}
+      {"a.yml",
+       """
+       name: A
+       on: [push]
+       jobs:
+         alpha:
+           name: alpha distinct name
+           runs-on: ubuntu-latest
+           steps:
+             - run: "true"
+       """},
+      {"b.yml",
+       """
+       name: B
+       on: [push]
+       jobs:
+         beta:
+           name: beta distinct name
+           runs-on: ubuntu-latest
+           steps:
+             - run: "true"
+       """}
     ])
 
     {out, status} = run_detector(tmp)
@@ -111,16 +113,17 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
   @tag :tmp_dir
   test "Task 2: version-literal reject fires on a job display name", %{tmp_dir: tmp} do
     prepare_fixture!(tmp, [
-      {"one.yml", """
-      name: One
-      on: [push]
-      jobs:
-        gate:
-          name: prove 1.2.3 thing
-          runs-on: ubuntu-latest
-          steps:
-            - run: "true"
-      """}
+      {"one.yml",
+       """
+       name: One
+       on: [push]
+       jobs:
+         gate:
+           name: prove 1.2.3 thing
+           runs-on: ubuntu-latest
+           steps:
+             - run: "true"
+       """}
     ])
 
     {out, status} = run_detector(tmp)
@@ -133,21 +136,22 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
   @tag :tmp_dir
   test "Task 2: version-literal reject fires on an upload-artifact name", %{tmp_dir: tmp} do
     prepare_fixture!(tmp, [
-      {"one.yml", """
-      name: One
-      on: [push]
-      jobs:
-        gate:
-          name: artifact version check
-          runs-on: ubuntu-latest
-          steps:
-            - run: "true"
-            - name: Upload thing
-              uses: actions/upload-artifact@v4
-              with:
-                name: proof-artifact-9.9.9
-                path: out.json
-      """}
+      {"one.yml",
+       """
+       name: One
+       on: [push]
+       jobs:
+         gate:
+           name: artifact version check
+           runs-on: ubuntu-latest
+           steps:
+             - run: "true"
+             - name: Upload thing
+               uses: actions/upload-artifact@v4
+               with:
+                 name: proof-artifact-9.9.9
+                 path: out.json
+       """}
     ])
 
     {out, status} = run_detector(tmp)
@@ -239,7 +243,8 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
   end
 
   test "Task 3: release-please.yml's on: mapping has exactly push and workflow_dispatch keys" do
-    triggers = workflow_json!(".github/workflows/release-please.yml", "doc.get('on', doc.get(True, {}))")
+    triggers =
+      workflow_json!(".github/workflows/release-please.yml", "doc.get('on', doc.get(True, {}))")
 
     assert on_trigger_clean?(triggers)
     refute Map.has_key?(triggers, "pull_request")
