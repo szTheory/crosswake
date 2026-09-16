@@ -174,6 +174,29 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
     end
   end
 
+  test "phase 170: an empty push_arguments list now fails instead of passing vacuously" do
+    input = publish_fixture()
+
+    equal =
+      input
+      |> put_in([:remote, :main], @candidate_sha)
+      |> put_in([:remote, :tag], @candidate_sha)
+      |> put_in([:dry_run, :before_main], @candidate_sha)
+      |> put_in([:dry_run, :before_tag], @candidate_sha)
+      |> put_in([:dry_run, :after_main], @candidate_sha)
+      |> put_in([:dry_run, :after_tag], @candidate_sha)
+      |> put_in([:approval, :expected_old_ref], @candidate_sha)
+      |> Map.put(:ancestry, "EQUAL")
+
+    result = Mirror.evaluate!(equal)
+
+    assert result.push_arguments == []
+
+    assert_raise ExUnit.AssertionError, fn ->
+      refute Enum.empty?(result.push_arguments)
+    end
+  end
+
   test "recovery alone constructs exact force-with-lease after separate receipt approval" do
     input = recovery_fixture()
     result = Mirror.evaluate!(input)
