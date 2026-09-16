@@ -218,3 +218,7 @@ None - no external service configuration required.
 ---
 *Phase: 170-vacuous-assertion-remediation*
 *Completed: 2026-09-16*
+
+## Self-Check: PASSED
+
+All 8 named files (5 modified test files, 2 modified script files, this SUMMARY) confirmed present on disk. All 4 task/plan commit hashes (`ea8e4c7f`, `21dd505f`, `11668acc`, `6772f354`) confirmed present in `git log --oneline --all`.
