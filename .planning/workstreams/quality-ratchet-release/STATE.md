@@ -4,17 +4,17 @@ milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 169
 current_phase_name: Diagnostic Legibility
-status: planning
-stopped_at: Phase 169 context gathered
-last_updated: "2026-09-16T03:48:13.694Z"
-last_activity: 2026-09-15
-last_activity_desc: "v23.0 roadmap revised: VAC-01/02/03 split into its own Phase 170; Phases 170-174 renumbered to 171-175"
-state_head: 4ec84ed7a8e16b25b1edff251c573e767e40c259
+status: executing
+stopped_at: Completed 169-01-PLAN.md
+last_updated: "2026-09-16T13:46:57.058Z"
+last_activity: 2026-09-16
+last_activity_desc: Phase 169 execution started
+state_head: 2d1984bf4e70689be865cfed7bbd73c7b1244c8a
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 4
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Planning v23.0 — release pipeline repair (`SEED-017`, carrying `TODO-009`,
+**Current focus:** Phase 169 — Diagnostic Legibility
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
 **Open release pull requests — triage as of 2026-09-15. None should be merged yet.**
@@ -44,10 +44,10 @@ Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
 
-Phase: 169 (Diagnostic Legibility) — READY TO EXECUTE
-Plan: —
-Status: Roadmap created (Phases 169-175, 42/42 requirements mapped); ready for `/gsd-plan-phase 169`
-Last activity: 2026-09-15 — v23.0 roadmap revised: VAC-01/02/03 split into its own Phase 170; Phases 170-174 renumbered to 171-175
+Phase: 169 (Diagnostic Legibility) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
+Last activity: 2026-09-16 — Phase 169 execution started
 
 ## Performance Metrics
 
@@ -109,6 +109,7 @@ Last activity: 2026-09-15 — v23.0 roadmap revised: VAC-01/02/03 split into its
 | Phase 168 P05 | 26m | 2 tasks | 6 files |
 | Phase 168 P06 | 60m | 3 tasks | 12 files |
 | Phase 168 P07 | 22m | 2 tasks | 14 files |
+| Phase 169 P01 | 39min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -222,6 +223,7 @@ Last activity: 2026-09-15 — v23.0 roadmap revised: VAC-01/02/03 split into its
 - [Phase 168]: Keep stable candidate fixtures always-on and route release-sensitive, Release Please, or ambiguous changes to exact-head full proof.
 - [Phase 168]: Keep real mirror authorization in the trusted workflow; ordinary PR CI remains credential-free.
 - [Phase 168]: Use read-only linked-coordinate status for BLOCKED/PARTIAL/COMPLETE and reserve READY FOR APPROVAL/STALE for the exact receipt authority.
+- [Phase 169]: Corrected scanner_ids_result/2's :failed clause to scope failing to required_ids (D-07) and compose failing+missing segments (D-09), fixing the live PR #164 defect where five identical bare-ID errors masked the actual root cause. — Verified ground truth in 169-CONTEXT.md established the scanner evaluates eagerly and every check emits, making scoped greens real greens.
 
 ### v23.0 Roadmap Decisions
 
@@ -288,9 +290,9 @@ Last activity: 2026-09-15 — v23.0 roadmap revised: VAC-01/02/03 split into its
 
 ## Session Continuity
 
-Last session: 2026-09-16T02:35:43.903Z
-Stopped at: Phase 169 context gathered
-Resume file: .planning/workstreams/quality-ratchet-release/phases/169-diagnostic-legibility/169-CONTEXT.md
+Last session: 2026-09-16T13:46:57.046Z
+Stopped at: Completed 169-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
