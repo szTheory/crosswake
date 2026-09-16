@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 status: planning
-last_updated: "2026-09-15T22:05:16.672Z"
+last_updated: "2026-09-16T01:13:39.000Z"
 last_activity: 2026-09-15
 progress:
-  total_phases: 0
+  total_phases: 7
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -39,10 +39,10 @@ Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 169 (Diagnostic Legibility) — not started
 Plan: —
-Status: Defining requirements
-Last activity: 2026-09-15 — Milestone v23.0 started
+Status: Roadmap created (Phases 169-175, 42/42 requirements mapped); ready for `/gsd-plan-phase 169`
+Last activity: 2026-09-15 — v23.0 roadmap revised: VAC-01/02/03 split into its own Phase 170; Phases 170-174 renumbered to 171-175
 
 ## Performance Metrics
 
@@ -218,10 +218,53 @@ Last activity: 2026-09-15 — Milestone v23.0 started
 - [Phase 168]: Keep real mirror authorization in the trusted workflow; ordinary PR CI remains credential-free.
 - [Phase 168]: Use read-only linked-coordinate status for BLOCKED/PARTIAL/COMPLETE and reserve READY FOR APPROVAL/STALE for the exact receipt authority.
 
+### v23.0 Roadmap Decisions
+
+- [Roadmap]: Phase numbering continues from v22.0 (which ended at 168) — v23.0 starts at Phase 169,
+  not reset to 1.
+- [Roadmap]: Phase 171 (Version/Authority Split) merges SUMMARY.md's Phase A `no_bare_version_literal`
+  check (MSG-04/MSG-05) with Phase B's D1 fix (WELD-01..08) into one phase, landed as one PR/commit.
+  Landing the check and the fix separately would either turn `main` permanently red (check merges
+  first) or leave the check meaninglessly advisory for a window (fix merges first). The purely
+  diagnostic D6 work (MSG-01/02/03/06, plus FID-02) stays in its own earlier Phase 169 since it has
+  no such atomicity constraint.
+- [Roadmap][Revision]: VAC-01/02/03 (the SEED-018 vacuous-assertion audit — classify 173 sites, then
+  rewrite every confirmed-vacuous one) was originally bundled into Phase 169, but was pulled out into
+  its own **Phase 170 (Vacuous Assertion Remediation)** on user-directed revision. Rationale: Phase
+  169's whole purpose is being cheap, fast, and first so every later phase reads its own CI failures
+  through the new diagnostic seam; bundling a 173-site remediation project into it made 169 the long
+  pole and gated the version/authority work behind an unrelated audit. Phase 170 is independent of
+  every other phase and startable in parallel from the beginning (like Phase 174's clean-room work),
+  but must complete before Phase 175 (Rehearsal and Publish) opens. Phase 170 explicitly keeps
+  VACG-01 (the merge-blocking `absence.collection_assertion_non_empty` guard) OUT of this milestone —
+  it stays a Future Requirement — because landing the guard before the audit produces a wall of red
+  that gets waived, teaching the team red is negotiable. All phases after 169-170 renumbered by +1
+  (170→171, 171→172, 172→173, 173→174, 174→175) so reading order matches execution order.
+- [Roadmap]: FID-01 (SEED-014 adopter gaps CW-REQ-A/B) was folded into Phase 174 (Clean-Room Host
+  Realism), since both are about adopter-facing proof fidelity.
+- [Roadmap]: DOC-05 (manifest word-collision) was folded into Phase 171, since the collision is
+  release-manifest-adjacent to the version/authority work already touching that vocabulary. DOC-04
+  (delete the "only publishes 0.2.1" doc section) and DOC-06 (splitsh-lite references) were folded
+  into Phase 175, since DOC-04 only becomes true once 0.2.2 actually publishes and DOC-06 documents
+  the mirror mechanism the retire/backfill runbook (REL-10) also covers.
+- [Roadmap]: Phase 175 (Rehearsal and Publish) is strictly last and its own phase — never combined
+  with Phases 169-174 in the same plan — because it contains the milestone's only irreversible
+  operations (Hex publish, iOS mirror tag push, Maven upload; project decision D-19). REL-10's
+  retire/backfill runbook must be committed before any publish step in that phase executes.
+- [Roadmap]: Phases 172 (per-package proof scope) and 173 (recovery-path convergence) both depend
+  only on Phase 171 and touch disjoint file sets — they may be planned/executed in parallel. Phase
+  174 (clean-room realism) and Phase 170 (vacuous assertion remediation) are each independent of
+  171-173 and may start as early as Phase 169 — Phase 174's threadline/sigra diagnosis is
+  calendar-bound to a live Hex release, and Phase 170's audit has no dependency on the identity-model
+  work at all.
+
 ### Pending Todos
 
-- Phase 168 must bind and land the exact five Phase 167 closeout artifact blobs before candidate approval.
-- Phase 168 owns all further evaluation of release-only PRs 57, 115, 146, and 147.
+- Phase 168 must bind and land the exact five Phase 167 closeout artifact blobs before candidate approval. (v22.0, closed)
+- Phase 168 owns all further evaluation of release-only PRs 57, 115, 146, and 147. (v22.0, closed)
+- Phase 169 is next: `/gsd-plan-phase 169` (Diagnostic Legibility).
+- PR #164 (0.2.2), PR #147, and PR #115 all remain held/blocked until Phase 175 repairs and executes
+  the graph — do not merge any of them earlier.
 
 ### Blockers/Concerns
 
@@ -240,10 +283,11 @@ Last activity: 2026-09-15 — Milestone v23.0 started
 
 ## Session Continuity
 
-Last session: 2026-09-13T13:09:20.506Z
-Stopped at: Completed 168-07-PLAN.md
+Last session: 2026-09-16T01:13:39.000Z
+Stopped at: v23.0 roadmap revised — VAC-01/02/03 split into Phase 170, phases renumbered to 169-175
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Review the v23.0 roadmap (`ROADMAP.md`) and requirements traceability (`REQUIREMENTS.md`).
+- Once approved, run `/gsd-plan-phase 169` to begin Diagnostic Legibility.

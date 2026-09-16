@@ -116,17 +116,56 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 
 ## Traceability
 
-Populated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (pending roadmap) | — | Pending |
+| MSG-01 | Phase 169 | Pending |
+| MSG-02 | Phase 169 | Pending |
+| MSG-03 | Phase 169 | Pending |
+| MSG-04 | Phase 171 | Pending |
+| MSG-05 | Phase 171 | Pending |
+| MSG-06 | Phase 169 | Pending |
+| WELD-01 | Phase 171 | Pending |
+| WELD-02 | Phase 171 | Pending |
+| WELD-03 | Phase 171 | Pending |
+| WELD-04 | Phase 171 | Pending |
+| WELD-05 | Phase 171 | Pending |
+| WELD-06 | Phase 171 | Pending |
+| WELD-07 | Phase 171 | Pending |
+| WELD-08 | Phase 171 | Pending |
+| XPUB-01 | Phase 172 | Pending |
+| XPUB-02 | Phase 172 | Pending |
+| XPUB-03 | Phase 172 | Pending |
+| XPUB-04 | Phase 173 | Pending |
+| XPUB-05 | Phase 173 | Pending |
+| XPUB-06 | Phase 173 | Pending |
+| XPUB-07 | Phase 173 | Pending |
+| ROOM-01 | Phase 174 | Pending |
+| ROOM-02 | Phase 174 | Pending |
+| ROOM-03 | Phase 174 | Pending |
+| ROOM-04 | Phase 174 | Pending |
+| ROOM-05 | Phase 174 | Pending |
+| ROOM-06 | Phase 174 | Pending |
+| FID-01 | Phase 174 | Pending |
+| FID-02 | Phase 169 | Pending |
+| VAC-01 | Phase 170 | Pending |
+| VAC-02 | Phase 170 | Pending |
+| VAC-03 | Phase 170 | Pending |
+| REL-10 | Phase 175 | Pending |
+| REL-11 | Phase 175 | Pending |
+| REL-12 | Phase 175 | Pending |
+| REL-13 | Phase 175 | Pending |
+| REL-14 | Phase 175 | Pending |
+| REL-15 | Phase 175 | Pending |
+| REL-16 | Phase 175 | Pending |
+| DOC-04 | Phase 175 | Pending |
+| DOC-05 | Phase 171 | Pending |
+| DOC-06 | Phase 175 | Pending |
 
 **Coverage:**
 - v23.0 requirements: 42 total
-- Mapped to phases: 0
-- Unmapped: 42 ⚠️
+- Mapped to phases: 42
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-09-15*
-*Last updated: 2026-09-15 after v23.0 research synthesis*
+*Last updated: 2026-09-15 after v23.0 roadmap revision (Phases 169-175, VAC-01/02/03 split into its own Phase 170, 100% coverage)*
