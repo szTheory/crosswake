@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   approved-release-guard:
-    name: Guard exact approved 0.2.1 merge
+    name: "release: approved-candidate merge guard"
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -716,7 +716,7 @@ jobs:
           exit 1
 
   exact-public-proof:
-    name: Prove exact public 0.2.1 artifacts
+    name: "release: exact-public artifact proof"
     needs:
       - approved-release-guard
       - release-please
@@ -758,13 +758,13 @@ jobs:
       - name: Upload exact-public proof
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
-          name: exact-public-proof-0.2.1
+          name: exact-public-proof
           path: ${{ runner.temp }}/exact-public-result.json
           if-no-files-found: error
           retention-days: 14
 
   linked-release-rollup:
-    name: Linked 0.2.1 release rollup
+    name: "release: linked release rollup"
     needs:
       - approved-release-guard
       - release-please
@@ -826,7 +826,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
-          name: linked-release-status-0.2.1
+          name: linked-release-status
           path: linked-release-status.json
           if-no-files-found: error
           retention-days: 30
