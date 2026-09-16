@@ -118,11 +118,21 @@ pass a one-way-door step.
    this phase itself.
 
 **Plans**: 5 plans
+**Wave 1**
 
 - [ ] 170-01-PLAN.md — Inventory script, committed classification ledger, and its non-vacuity proof (VAC-01)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 170-02-PLAN.md — Frozen remediation manifest, guard insertions, and the itemized structural proof (VAC-02)
-- [ ] 170-03-PLAN.md — Empty-input regression proofs at the high-blast-radius sites (VAC-02)
 - [ ] 170-04-PLAN.md — `vacuity_taxonomy` phase-close convention and the Phase 169 retroactive addendum (VAC-03)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 170-03-PLAN.md — Empty-input regression proofs at the high-blast-radius sites (VAC-02)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 170-05-PLAN.md — Phase 170's own taxonomy record and the decidable convention check (VAC-03)
 
 **Research**: Standard pattern — an audit-and-classify pass plus mechanical test rewrites at
