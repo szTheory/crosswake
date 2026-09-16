@@ -27,7 +27,7 @@ unacknowledged. See `MILESTONES.md` for the recorded overrides.
 ### v23.0 Release Pipeline Repair & Proof-Lane Truth (planning)
 
 - [x] **Phase 169: Diagnostic Legibility** - Every release/verification check surfaces its own failing message, and distinguishes "never ran" from "never defined" (completed 2026-09-16)
-- [ ] **Phase 170: Vacuous Assertion Remediation** - All 173 SEED-018-flagged sites are classified and every confirmed-vacuous one is rewritten so an empty collection fails
+- [x] **Phase 170: Vacuous Assertion Remediation** - All 173 SEED-018-flagged sites are classified and every confirmed-vacuous one is rewritten so an empty collection fails (completed 2026-09-16)
 - [ ] **Phase 171: Version/Authority Split** - The release graph is version-parametric while the approval identity gate stays exact; the `0.2.1` weld and its interim tripwire are both retired atomically
 - [ ] **Phase 172: Per-Package Proof Scope** - Byte-exact publish verification is proven against each package's own approved ref, never one shared ref for all six
 - [ ] **Phase 173: Recovery-Path Proof Convergence** - `exact-public-proof` runs and must pass identically whether a publish happened via the ordinary or the recovery path
@@ -127,7 +127,7 @@ pass a one-way-door step.
    review checklist item applied at the close of each of those phases, not a code change owned by
    this phase itself.
 
-**Plans**: 5/5 plans executed
+**Plans**: 5/5 plans complete
 **Wave 1**
 
 - [x] 170-01-PLAN.md — Inventory script, committed classification ledger, and its non-vacuity proof (VAC-01)
@@ -371,7 +371,7 @@ before the real one-way door.
 | 167. Documentation and Pull-Request Reconciliation | 9/9 | Shipped | 2026-09-12 |
 | 168. 0.2.1 Release Candidate Readiness | 13/13 | Shipped | 2026-09-16 |
 | 169. Diagnostic Legibility | 4/4 | Complete    | 2026-09-16 |
-| 170. Vacuous Assertion Remediation | 5/5 | In Progress|  |
+| 170. Vacuous Assertion Remediation | 5/5 | Complete   | 2026-09-16 |
 | 171. Version/Authority Split | 0/TBD | Not started | - |
 | 172. Per-Package Proof Scope | 0/TBD | Not started | - |
 | 173. Recovery-Path Proof Convergence | 0/TBD | Not started | - |
