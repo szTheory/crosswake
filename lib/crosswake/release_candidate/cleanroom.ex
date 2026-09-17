@@ -95,8 +95,15 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
 
     approved = validate_approved_artifacts!(input.approved_artifacts)
     children = validate_public_artifacts!(input.public_artifacts, approved, source_root)
-    blocked = Enum.filter(children, &(&1.reason not in [nil, "registry_missing"]))
+
+    blocked =
+      Enum.filter(
+        children,
+        &(&1.reason not in [nil, "registry_missing", "reachable_and_compatible"])
+      )
+
     missing = Enum.filter(children, &(&1.reason == "registry_missing"))
+    attested = Enum.filter(children, &(&1.reason == "reachable_and_compatible"))
     succeeded = Enum.filter(children, &is_nil(&1.reason))
 
     {state, installs, profile_results} =
@@ -114,6 +121,9 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
         input.live_status != "PASS" ->
           {"BLOCKED", validate_complete_public_proof(input, source_root, repository_root)}
 
+        attested != [] ->
+          {"ATTESTED", validate_complete_public_proof(input, source_root, repository_root)}
+
         true ->
           {"COMPLETE", validate_complete_public_proof(input, source_root, repository_root)}
       end
@@ -130,6 +140,8 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
       succeeded_packages: Enum.map(succeeded, & &1.package),
       failed_packages:
         Enum.map(Enum.reject(children, &is_nil(&1.reason)), &Map.take(&1, [:package, :reason])),
+      attested_packages: Enum.map(attested, & &1.package),
+      package_claims: Enum.map(children, &Map.take(&1, [:package, :claim])),
       profile_results: profile_results,
       live_status: input.live_status
     }
@@ -255,6 +267,7 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
           do: invalid!()
 
         reason = public_artifact_reason(artifact, expected, source_root)
+        claim = public_artifact_claim(reason)
 
         %{
           package: package,
@@ -263,7 +276,8 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
           status: artifact.status,
           source: artifact.source,
           path_lock_count: artifact.path_lock_count,
-          reason: reason
+          reason: reason,
+          claim: claim
         }
       end)
 
@@ -313,6 +327,21 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
 
       true ->
         nil
+    end
+  end
+
+  defp public_artifact_claim(reason) do
+    case reason do
+      nil -> "fully_proven"
+      "reachable_and_compatible" -> "reachable_and_compatible"
+      "registry_missing" -> "unproven"
+      "invalid_status" -> "unproven"
+      "source_not_registry" -> "unproven"
+      "path_lock_present" -> "unproven"
+      "source_root_invalid" -> "unproven"
+      "digest_mismatch" -> "unproven"
+      "unproven" -> "unproven"
+      _other -> "unproven"
     end
   end
 

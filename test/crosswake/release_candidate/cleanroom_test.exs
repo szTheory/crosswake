@@ -153,7 +153,131 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     assert result.live_status == "PASS"
     assert result.succeeded_packages == @packages
     assert result.failed_packages == []
+    assert result.attested_packages == []
+    assert Enum.map(result.package_claims, & &1.package) == @packages
+    assert Enum.all?(result.package_claims, &(&1.claim == "fully_proven"))
     assert Enum.map(result.profile_results, & &1.profile) == @profiles
+  end
+
+  @tag :post_publication
+  test "one attested package with five fully-proven packages reports ATTESTED, not COMPLETE" do
+    input =
+      update_public_artifact(
+        public_fixture(),
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.state == "ATTESTED"
+    assert result.attested_packages == ["crosswake_sigra"]
+    refute "crosswake_sigra" in result.succeeded_packages
+    assert result.succeeded_packages == Enum.reject(@packages, &(&1 == "crosswake_sigra"))
+    assert result.package_count == 5
+
+    claim_by_package = Map.new(result.package_claims, &{&1.package, &1.claim})
+    assert claim_by_package["crosswake_sigra"] == "reachable_and_compatible"
+
+    assert claim_by_package
+           |> Map.delete("crosswake_sigra")
+           |> Map.values()
+           |> Enum.all?(&(&1 == "fully_proven"))
+  end
+
+  @tag :post_publication
+  test "a blocked package outranks an attested package - the run still reports BLOCKED" do
+    input =
+      public_fixture()
+      |> update_public_artifact(
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+      |> update_public_artifact(
+        "crosswake",
+        &Map.put(&1, :payload_digest, String.duplicate("f", 64))
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.state == "BLOCKED"
+  end
+
+  @tag :post_publication
+  test "a registry-missing package still reports PARTIAL even alongside an attested package" do
+    input =
+      public_fixture()
+      |> update_public_artifact(
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+      |> update_public_artifact("crosswake_threadline", fn artifact ->
+        %{
+          artifact
+          | status: "MISSING",
+            source: "unavailable",
+            unpacked_root: nil,
+            metadata_digest: nil,
+            payload_digest: nil
+        }
+      end)
+      |> Map.put(:installs, [])
+      |> Map.put(:profile_results, [])
+      |> Map.put(:live_status, "not_run")
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.state == "PARTIAL"
+  end
+
+  @tag :post_publication
+  test "the four public-artifact buckets are disjoint and sum to six" do
+    input =
+      update_public_artifact(
+        public_fixture(),
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    succeeded_count = length(result.succeeded_packages)
+    attested_count = length(result.attested_packages)
+    missing_count = Enum.count(result.failed_packages, &(&1.reason == "registry_missing"))
+
+    blocked_count =
+      Enum.count(
+        result.failed_packages,
+        &(&1.reason not in ["registry_missing", "reachable_and_compatible"])
+      )
+
+    assert succeeded_count + attested_count + missing_count + blocked_count == 6
+    assert succeeded_count == 5
+    assert attested_count == 1
+    assert missing_count == 0
+    assert blocked_count == 0
+  end
+
+  @tag :post_publication
+  test "package_claims and succeeded_packages agree on which packages are fully proven" do
+    result = Cleanroom.evaluate_public!(public_fixture())
+
+    fully_proven_from_claims =
+      result.package_claims
+      |> Enum.filter(&(&1.claim == "fully_proven"))
+      |> Enum.map(& &1.package)
+      |> Enum.sort()
+
+    assert fully_proven_from_claims == Enum.sort(result.succeeded_packages)
+  end
+
+  @tag :post_publication
+  test "package_claims always carries exactly six non-empty claims in canonical order" do
+    result = Cleanroom.evaluate_public!(public_fixture())
+
+    assert Enum.map(result.package_claims, & &1.package) == @packages
+    assert length(result.package_claims) == 6
+    assert Enum.all?(result.package_claims, &(is_binary(&1.claim) and &1.claim != ""))
   end
 
   @tag :post_publication
