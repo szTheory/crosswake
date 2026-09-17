@@ -303,6 +303,124 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert result.next_action == "no_action_required"
   end
 
+  # Phase 173-03 Task 1 (ROADMAP SC#3, XPUB-07). The every-child-failure loop
+  # above CANNOT construct the combination that matters most here. That loop
+  # marks every child AFTER the failed one as "skipped", so the exact-public
+  # child -- last in the order -- is only ever reached as "failed", with nothing
+  # after it to be skipped. A skipped exact-public proof standing beside five
+  # successes was therefore never asserted anywhere in this suite. It is
+  # constructed directly below rather than folded into that loop, because
+  # burying it there would hide the fact that the loop cannot reach it.
+  #
+  # `lib/crosswake/release_candidate/workflow.ex` is NOT modified by this phase.
+  # The criterion is that its fail-closed semantics are UNCHANGED; editing the
+  # module to make any assertion below pass would invert the criterion.
+  @five_successes %{
+    hex: "success",
+    ios_mirror: "success",
+    android: "success",
+    ios_public_proof: "success",
+    android_public_proof: "success"
+  }
+
+  test "a skipped exact-public proof beside five successes still rolls up not-complete" do
+    children = Map.put(@five_successes, :exact_public, "skipped")
+
+    result = Workflow.rollup!(rollup_input(children))
+
+    refute result.state == "COMPLETE"
+    assert result.state == "PARTIAL"
+    assert result.failed_step == "exact_public"
+    assert result.failed_ref == String.duplicate("a", 40)
+    assert result.next_action == "retry_failed_step_from_exact_ref_or_publish_forward_fix"
+    assert result.receipt_external_state.all_linked_proven == false
+
+    # The three public coordinates really did publish and are immutable. A
+    # fail-closed rollup must refuse to call the release complete WITHOUT
+    # erasing them -- both halves, or the refusal is useless for recovery.
+    assert result.successful_coordinates ==
+             Enum.sort([coordinate(:hex), coordinate(:ios_mirror), coordinate(:android)])
+  end
+
+  test "a skipped exact-public proof is not distinguished from a failed one" do
+    skipped = Workflow.rollup!(rollup_input(Map.put(@five_successes, :exact_public, "skipped")))
+    failed = Workflow.rollup!(rollup_input(Map.put(@five_successes, :exact_public, "failed")))
+
+    assert skipped.state == failed.state
+    assert skipped.failed_step == failed.failed_step
+    assert skipped.failed_ref == failed.failed_ref
+    assert skipped.next_action == failed.next_action
+    assert skipped.successful_coordinates == failed.successful_coordinates
+    assert skipped.receipt_external_state == failed.receipt_external_state
+
+    # Equality alone would also hold if BOTH rolled up to COMPLETE, so the
+    # direction is pinned: it is the skip that is dragged down to the failure,
+    # never the failure lifted up to the skip.
+    assert skipped.failed_step == "exact_public"
+    refute skipped.state == "COMPLETE"
+  end
+
+  test "no accepted non-success status for the exact-public child ever yields COMPLETE" do
+    non_success = ~w(failed skipped)
+
+    # Cardinality pinned at the assertion site. The module accepts exactly three
+    # statuses, so these two ARE the whole non-success set rather than a sample
+    # of it; the rejection sweep below is what makes that claim falsifiable.
+    assert length(non_success) == 2
+
+    for status <- non_success do
+      result = Workflow.rollup!(rollup_input(Map.put(@five_successes, :exact_public, status)))
+
+      refute result.state == "COMPLETE", "exact_public=#{status} produced COMPLETE"
+      assert result.failed_step == "exact_public"
+    end
+
+    # `cancelled` is a real GitHub job result and is NOT in the accepted set: it
+    # is rejected outright rather than silently tolerated as some third thing.
+    for rejected <- ["cancelled", "neutral", "SUCCESS", "success ", ""] do
+      assert_raise ArgumentError, "release workflow observation is invalid", fn ->
+        Workflow.rollup!(rollup_input(Map.put(@five_successes, :exact_public, rejected)))
+      end
+    end
+
+    # Control: the sweep is sensitive to the status, not failing on every input.
+    assert Workflow.rollup!(rollup_input(Map.put(@five_successes, :exact_public, "success"))).state ==
+             "COMPLETE"
+  end
+
+  test "the rollup still depends on the exact-public proof job and still reads its result" do
+    workflow = File.read!(@release_workflow)
+    rollup = strip_full_line_comments(job_block(workflow, "linked-release-rollup"))
+
+    assert rollup != "", "no linked-release-rollup job found in #{@release_workflow}"
+
+    needs =
+      rollup
+      |> String.split("\n")
+      |> Enum.drop_while(&(String.trim(&1) != "needs:"))
+      |> Enum.drop(1)
+      |> Enum.take_while(&String.starts_with?(&1, "      - "))
+      |> Enum.map(&(&1 |> String.trim() |> String.trim_leading("- ")))
+
+    # Cardinality pinned: the eight dependencies the rollup is declared with. A
+    # bare `in` on an unpinned list cannot tell a preserved edge from a list
+    # that grew a near-duplicate.
+    assert length(needs) == 8
+    assert "exact-public-proof" in needs
+
+    # The dependency alone proves ordering, not observation. This is the edge
+    # that 173-01's graph change could have severed: the rollup must still read
+    # that job's result into the child state the fail-closed comparison above
+    # consumes.
+    assert rollup =~ "EXACT_PUBLIC_STATE: ${{ needs.exact-public-proof.result }}"
+
+    # ...and the job it depends on really is the reusable-workflow CALLER that
+    # 173-01 made it, so the result being read is a caller's aggregate result
+    # and not a leftover inline job that happens to share the name.
+    proof_job = strip_full_line_comments(job_block(workflow, "exact-public-proof"))
+    assert proof_job =~ @proof_uses
+  end
+
   test "partial recovery rejects mutable refs, lost success, and impossible resumes" do
     baseline = %{
       hex: "success",
