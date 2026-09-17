@@ -1103,7 +1103,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
             job_if(jobs, job),
             "needs.approved-release-guard.outputs.linked_release == 'true'"
           ) and
-          includes?(job_if(jobs, job), "needs.release-please.outputs.version == '0.2.1'") and
+          includes?(
+            job_if(jobs, job),
+            "needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version"
+          ) and
           not includes?(block, "environment:")
       end)
 
@@ -1127,7 +1130,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(rollup, "child_states") and includes?(rollup, "successful_coordinates") and
         includes?(rollup, "Crosswake.ReleaseCandidate.Workflow.evaluate_cli!()") and
         includes?(rollup, "APPROVED_REF") and includes?(rollup, "CANDIDATE_RECEIPT"),
-      "the fixed postapproval graph must contain only guarded Hex/iOS/Android 0.2.1 children, exact-public proof, and a closed linked rollup"
+      "the fixed postapproval graph must contain only guarded Hex/iOS/Android children gated on approved_version, exact-public proof, and a closed linked rollup"
     )
   end
 
