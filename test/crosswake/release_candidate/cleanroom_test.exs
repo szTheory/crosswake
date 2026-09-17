@@ -12,6 +12,8 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     crosswake_threadline
   )
   @profiles ~w(rulestead rindle sigra chimeway threadline)
+  @candidate_ref String.duplicate("a", 40)
+  @second_candidate_ref String.duplicate("b", 40)
 
   test "candidate-local proof normalizes six payloads, five profiles, and two isolated installs" do
     assert Code.ensure_loaded?(Cleanroom),
@@ -224,6 +226,65 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
   end
 
   @tag :post_publication
+  test "approved-artifacts schema accepts six independent candidate_ref values in one run" do
+    refs = for digit <- ~w(0 1 2 3 4 5), do: String.duplicate(digit, 40)
+
+    input =
+      Enum.zip(@packages, refs)
+      |> Enum.reduce(public_fixture(), fn {package, ref}, acc ->
+        acc
+        |> update_approved_artifact(package, &Map.put(&1, :candidate_ref, ref))
+        |> update_public_artifact(package, &Map.put(&1, :candidate_ref, ref))
+      end)
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.state == "COMPLETE"
+    assert result.succeeded_packages == @packages
+    assert result.failed_packages == []
+  end
+
+  @tag :post_publication
+  test "two packages with different candidate_ref values both validate independently in one run" do
+    input =
+      public_fixture()
+      |> update_approved_artifact(
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+      |> update_public_artifact(
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.state == "COMPLETE"
+    assert "crosswake_sigra" in result.succeeded_packages
+    assert "crosswake" in result.succeeded_packages
+    assert result.succeeded_packages == @packages
+    assert result.failed_packages == []
+  end
+
+  @tag :post_publication
+  test "approved-artifacts validator rejects a malformed or absent candidate_ref" do
+    malformed =
+      update_approved_artifact(
+        public_fixture(),
+        "crosswake",
+        &Map.put(&1, :candidate_ref, "not-a-ref")
+      )
+
+    absent =
+      update_approved_artifact(public_fixture(), "crosswake", &Map.delete(&1, :candidate_ref))
+
+    for {name, mutation} <- [malformed: malformed, absent: absent] do
+      error = assert_raise ArgumentError, fn -> Cleanroom.evaluate_public!(mutation) end
+      assert Exception.message(error) == "candidate clean-room input is invalid", "#{name} passed"
+    end
+  end
+
+  @tag :post_publication
   test "approved-artifacts validator rejects missing, duplicate, and unexpected packages" do
     input = public_fixture()
 
@@ -279,6 +340,14 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     assert script =~ "mix hex.package fetch"
     assert script =~ "source_mode=exact-public"
     assert script =~ "crosswake.release.status --live"
+
+    assert script =~
+             ~S{select(.package == $package) | .candidate_ref}
+
+    assert script =~
+             ~S{MATRIX_PUBLIC_REF=$(git -C "$MATRIX_REPO_ROOT" rev-parse HEAD)}
+
+    refute script =~ "unique"
     refute candidate_task =~ "verify_companion_cleanroom"
     refute candidate_task =~ "exact-public"
   end
@@ -355,7 +424,9 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
 
     approved_artifacts =
       Enum.map(candidate.artifacts, fn artifact ->
-        Map.take(artifact, [:package, :version, :metadata_digest, :payload_digest])
+        artifact
+        |> Map.take([:package, :version, :metadata_digest, :payload_digest])
+        |> Map.put(:candidate_ref, @candidate_ref)
       end)
 
     public_artifacts =
@@ -368,6 +439,7 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
         |> Map.put(:unpacked_root, root)
         |> Map.put(:status, "PASS")
         |> Map.put(:path_lock_count, 0)
+        |> Map.put(:candidate_ref, @candidate_ref)
       end)
 
     %{

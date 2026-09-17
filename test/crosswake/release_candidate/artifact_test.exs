@@ -4,6 +4,7 @@ defmodule Crosswake.ReleaseCandidate.ArtifactTest do
   alias Crosswake.ReleaseCandidate.Artifact
 
   @candidate_ref String.duplicate("a", 40)
+  @second_candidate_ref String.duplicate("b", 40)
   @packages ~w(
     crosswake
     crosswake_rulestead
@@ -30,7 +31,7 @@ defmodule Crosswake.ReleaseCandidate.ArtifactTest do
       assert Map.keys(observation) |> Enum.sort() ==
                ~w(candidate_ref files metadata_digest outer_checksum package payload_digest requirements source unpacked_root version)a
 
-      assert observation.candidate_ref == @candidate_ref
+      assert observation.candidate_ref =~ ~r/\A[0-9a-f]{40}\z/
       assert observation.source == "built_tarball"
       assert observation.files != []
       assert observation.unpacked_root != File.cwd!()
@@ -96,6 +97,12 @@ defmodule Crosswake.ReleaseCandidate.ArtifactTest do
       end,
       repository_fallback: fn input ->
         mutate_artifact(input, "crosswake", &Map.put(&1, :source, "repository_path"))
+      end,
+      top_level_candidate_ref: fn input ->
+        Map.put(input, :candidate_ref, @candidate_ref)
+      end,
+      malformed_ref: fn input ->
+        mutate_artifact(input, "crosswake", &Map.put(&1, :candidate_ref, "not-a-ref"))
       end
     ]
 
@@ -109,6 +116,24 @@ defmodule Crosswake.ReleaseCandidate.ArtifactTest do
       assert Exception.message(error) == "candidate artifact input is invalid",
              "#{name} did not fail closed"
     end
+  end
+
+  test "two artifacts in one family carry their own distinct candidate_ref, not a broadcast value" do
+    input =
+      mutate_artifact(
+        fixture_family(),
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+
+    observations = Artifact.inspect_family!(input)
+
+    assert by_package(observations, "crosswake").candidate_ref == @candidate_ref
+    assert by_package(observations, "crosswake_sigra").candidate_ref == @second_candidate_ref
+    assert by_package(observations, "crosswake_rulestead").candidate_ref == @candidate_ref
+    assert by_package(observations, "crosswake_rindle").candidate_ref == @candidate_ref
+    assert by_package(observations, "crosswake_chimeway").candidate_ref == @candidate_ref
+    assert by_package(observations, "crosswake_threadline").candidate_ref == @candidate_ref
   end
 
   test "changed metadata and payload bytes change their independent normalized digests" do
@@ -188,6 +213,7 @@ defmodule Crosswake.ReleaseCandidate.ArtifactTest do
         %{
           package: package,
           version: version,
+          candidate_ref: @candidate_ref,
           tarball: tarball,
           unpacked_root: unpacked_root,
           outer_checksum: sha256(File.read!(tarball)),
@@ -195,7 +221,7 @@ defmodule Crosswake.ReleaseCandidate.ArtifactTest do
         }
       end)
 
-    %{candidate_ref: @candidate_ref, output_root: root, artifacts: artifacts}
+    %{output_root: root, artifacts: artifacts}
   end
 
   defp metadata(package, version, files, requirements \\ []) do
