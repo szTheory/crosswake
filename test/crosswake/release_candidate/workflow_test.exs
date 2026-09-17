@@ -184,10 +184,12 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert android_script =~ ~s(git -C "$RELEASE_ROOT" rev-parse HEAD)
     refute android_recovery =~ "--execute"
 
+    # 171-04 Task 1b generalized android_publication.sh's PUBLIC_POM to interpolate
+    # ${VERSION} instead of the phase168 literal 0.2.1 (WELD-06).
     assert android_script =~
-             "io/github/sztheory/crosswake-shell-core-android/0.2.1/crosswake-shell-core-android-0.2.1.pom"
+             "io/github/sztheory/crosswake-shell-core-android/${VERSION}/crosswake-shell-core-android-${VERSION}.pom"
 
-    refute android_script =~ "io/crosswake/crosswake-shell-core/0.2.1"
+    refute android_script =~ "io/crosswake/crosswake-shell-core/"
     refute hex_recovery =~ "--replace"
     refute android_recovery =~ "--replace"
   end
