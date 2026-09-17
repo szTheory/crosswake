@@ -6,6 +6,8 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
   @hex_workflow ".github/workflows/hex-publish.yml"
   @ios_workflow ".github/workflows/ios-mirror-backfill.yml"
   @release_workflow ".github/workflows/release-please.yml"
+  @proof_workflow ".github/workflows/exact-public-proof.yml"
+  @proof_uses "uses: ./.github/workflows/exact-public-proof.yml"
   test "trusted Hex candidate rehearsal builds six exact-head packages without publication" do
     workflow = File.read!(@hex_workflow)
     rehearsal = job_block(workflow, "rehearse-hex-candidate")
@@ -95,6 +97,7 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     attestation = job_block(ios_workflow, "attest-candidate-receipt")
     guard = job_block(release_workflow, "approved-release-guard")
     exact_public = job_block(release_workflow, "exact-public-proof")
+    proof_workflow = File.read!(@proof_workflow)
 
     assert ios_workflow =~ "candidate-receipt-attestation"
     assert attestation =~ "phase168-candidate-ci-${CANDIDATE_HEAD}"
@@ -109,10 +112,27 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert guard =~ "candidate_receipt_run_id"
     assert guard =~ "phase168-candidate-ci-${approved_head}"
     assert guard =~ "release-candidate-ci-receipt.json"
+    # Phase 173-01 Task 2 MOVED the candidate-receipt download out of the
+    # exact-public-proof job block and into the reusable proof workflow. These
+    # assertions follow their subject; none of them was deleted, and each moved
+    # assertion gained a companion asserting the caller passes the matching
+    # input. An assertion dropped because its subject moved is the
+    # absence-scored-as-success defect this milestone exists to remove.
+    assert proof_workflow =~
+             ~s(gh run download "$RUN_ID" --name "phase168-candidate-receipt-${{ inputs.approved_head }}")
+
+    assert proof_workflow =~ "RUN_ID: ${{ inputs.candidate_receipt_run_id }}"
+    assert proof_workflow =~ "artifacts.json"
+
     assert exact_public =~ "candidate_receipt_run_id"
 
     assert exact_public =~
-             "phase168-candidate-receipt-${{ needs.approved-release-guard.outputs.approved_head }}"
+             "candidate_receipt_run_id: ${{ needs.approved-release-guard.outputs.candidate_receipt_run_id }}"
+
+    assert exact_public =~
+             "approved_head: ${{ needs.approved-release-guard.outputs.approved_head }}"
+
+    refute exact_public =~ "phase168-candidate-receipt-"
 
     refute guard =~
              ~s(--name "phase168-candidate-receipt-${approved_head}" --dir "$receipt_dir")
@@ -398,6 +418,98 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert_raise ArgumentError, "release workflow observation is invalid", fn ->
       Workflow.validate!(%{result | version: "9.9.9"})
     end
+  end
+
+  test "one reusable workflow carries the only copy of the exact-public proof body" do
+    proof_workflow = File.read!(@proof_workflow)
+
+    assert proof_workflow =~ "workflow_call:"
+    assert proof_workflow =~ "bash script/assert_publication_record.sh"
+    assert proof_workflow =~ "--source-mode exact-public"
+
+    # No `secrets:` key at all. The proof body reads only the ambient job token;
+    # inheriting secrets it does not need is an elevation-of-privilege shape.
+    refute proof_workflow =~ ~r/^\s*secrets:/m
+
+    assert proof_workflow =~ "actions: read"
+    assert proof_workflow =~ "contents: read"
+
+    # The expected triple comes from the workflow's OWN inputs, never from the
+    # record being verified (SEED-019).
+    assert proof_workflow =~ ~s(--package "$PACKAGE")
+    assert proof_workflow =~ ~s(--version "$VERSION")
+    assert proof_workflow =~ ~s(--approved-head "$APPROVED_HEAD")
+    assert proof_workflow =~ "PACKAGE: ${{ inputs.package }}"
+    assert proof_workflow =~ "VERSION: ${{ inputs.version }}"
+    assert proof_workflow =~ "APPROVED_HEAD: ${{ inputs.approved_head }}"
+
+    # The record decision is made by a step that RUNS, before the proof body.
+    assert :binary.match(proof_workflow, "bash script/assert_publication_record.sh") <
+             :binary.match(proof_workflow, "--source-mode exact-public")
+
+    # Exactly one copy of the proof body exists across the release graph.
+    for lane_workflow <- [@release_workflow, @hex_workflow] do
+      refute File.read!(lane_workflow) =~ "--source-mode exact-public"
+    end
+  end
+
+  test "every caller of the reusable exact-public proof grants actions: read at job level" do
+    callers = proof_callers()
+
+    # Absence must never score as success: with zero callers every assertion in
+    # the loop below would pass vacuously, and this check would silently stop
+    # guarding anything.
+    assert callers != [], "no job anywhere calls #{@proof_uses}"
+
+    assert Enum.any?(callers, fn {path, job, _block} ->
+             path == @release_workflow and job == "exact-public-proof"
+           end)
+
+    for {path, job, block} <- callers do
+      # Runtime authorization, not syntax. Both lane workflows declare a
+      # top-level `permissions:` key, so `actions` is `none` for any job that
+      # does not grant it, and a called workflow can only NARROW the caller's
+      # token -- never widen it. Dropping this block yields a forbidden response
+      # at release time on a real release; actionlint cannot decide that, which
+      # is why it is asserted here rather than linted.
+      assert block =~ "permissions:", "#{path} job #{job} declares no job-level permissions block"
+      assert block =~ "actions: read", "#{path} job #{job} does not grant actions: read"
+      assert block =~ "contents: read", "#{path} job #{job} does not grant contents: read"
+
+      refute block =~ "secrets: inherit"
+
+      # A caller job is the reusable workflow call; these keys move INTO the
+      # called file and are a parse error if left behind.
+      refute block =~ ~r/^    runs-on:/m
+      refute block =~ ~r/^    timeout-minutes:/m
+      refute block =~ ~r/^    steps:/m
+    end
+  end
+
+  # Comment prose is not configuration. Without this the caller-permission
+  # assertions below would match the explanatory comment that mentions
+  # `permissions:` and `actions: read`, and would pass against a caller job that
+  # declares neither -- observed while mutation-testing this very check.
+  defp strip_full_line_comments(text) do
+    text
+    |> String.split("\n", trim: false)
+    |> Enum.reject(&(&1 |> String.trim_leading() |> String.starts_with?("#")))
+    |> Enum.join("\n")
+  end
+
+  defp proof_callers do
+    ".github/workflows/*.yml"
+    |> Path.wildcard()
+    |> Enum.sort()
+    |> Enum.flat_map(fn path ->
+      workflow = File.read!(path)
+
+      ~r/(?ms)^  ([A-Za-z0-9_-]+):\n(.*?)(?=^  [A-Za-z0-9_-]+:\n|\z)/
+      |> Regex.scan(workflow, capture: :all_but_first)
+      |> Enum.map(fn [job, block] -> [job, strip_full_line_comments(block)] end)
+      |> Enum.filter(fn [_job, block] -> String.contains?(block, @proof_uses) end)
+      |> Enum.map(fn [job, block] -> {path, job, block} end)
+    end)
   end
 
   defp job_block(workflow, job) do

@@ -1,0 +1,204 @@
+# The ONLY copy of the exact-public artifact proof body.
+#
+# Both Hex publication lanes reach this file through the identical
+# `uses: ./.github/workflows/exact-public-proof.yml` path:
+#   - ordinary: `exact-public-proof` in .github/workflows/release-please.yml
+#   - recovery: `recovery-exact-public-proof` in .github/workflows/hex-publish.yml
+#
+# A second copy of these steps anywhere in the tree is the drift failure this
+# extraction exists to remove: two lanes cannot be "satisfied identically" if
+# each carries its own copy of the thing being satisfied.
+#
+# No `secrets:` key is declared, deliberately. The proof body reads only the
+# ambient job token; inheriting secrets a workflow does not need is an
+# elevation-of-privilege shape (T-173-02).
+#
+# PERMISSIONS ARE NOT GRANTED HERE. A called workflow's `permissions:` can only
+# NARROW the token the caller hands it — it can never widen it. Both callers
+# therefore declare their own job-level `actions: read` / `contents: read`;
+# without that grant the artifact reads below fail with a forbidden response at
+# release time (T-173-15). actionlint cannot decide this, which is why
+# test/crosswake/release_candidate/workflow_test.exs asserts it instead.
+
+name: Exact public artifact proof
+
+on:
+  workflow_call:
+    inputs:
+      package:
+        description: 'Hex package the proof is being taken for.'
+        required: true
+        type: string
+      version:
+        description: 'Approved release version being proved.'
+        required: true
+        type: string
+      approved_head:
+        description: 'Approved candidate head (40 lowercase hex).'
+        required: true
+        type: string
+      merge_oid:
+        description: 'Approved two-parent merge commit the proof checks out.'
+        required: true
+        type: string
+      candidate_receipt_run_id:
+        description: 'Run id of the trusted workflow that uploaded the approved candidate receipt.'
+        required: true
+        type: string
+      lane:
+        description: 'Publication lane that reached this proof: ordinary or recovery.'
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  exact-public-proof:
+    name: "release: exact-public artifact proof"
+    # always(): the record decision must be made by a step that RUNS. A job-level
+    # condition that declines to run is exactly the skip-instead-of-fail shape
+    # XPUB-05 exists to close — a skipped proof and a passing proof must never be
+    # indistinguishable downstream.
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      # Tier 1 of the two-tier pattern approved-release-guard already uses: the
+      # ONE legitimate not-applicable outcome writes a marker and exits zero.
+      # Every other condition below it is a bare assertion under
+      # `set -euo pipefail`, so a malformed call fails the job rather than
+      # quietly proving nothing.
+      - name: Decide exact-public proof applicability
+        id: applicability
+        env:
+          PACKAGE: ${{ inputs.package }}
+          VERSION: ${{ inputs.version }}
+          APPROVED_HEAD: ${{ inputs.approved_head }}
+          MERGE_OID: ${{ inputs.merge_oid }}
+          CANDIDATE_RECEIPT_RUN_ID: ${{ inputs.candidate_receipt_run_id }}
+          LANE: ${{ inputs.lane }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$APPROVED_HEAD" ] && [ -z "$MERGE_OID" ]; then
+            echo "applicable=false" >> "$GITHUB_OUTPUT"
+            echo "[crosswake] OK: not a linked release — no approved head and no merge oid were supplied, so the exact-public proof does not apply."
+            exit 0
+          fi
+
+          printf '%s' "$APPROVED_HEAD" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$MERGE_OID" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
+          [ -n "$PACKAGE" ]
+          [ -n "$CANDIDATE_RECEIPT_RUN_ID" ]
+          case "$LANE" in
+            ordinary|recovery) ;;
+            *)
+              echo "[crosswake] FAIL: lane '${LANE}' is not a declared publication lane."
+              echo "[crosswake] What to do next: call this workflow with lane: ordinary (release-please.yml) or lane: recovery (hex-publish.yml)."
+              exit 1
+              ;;
+          esac
+
+          echo "applicable=true" >> "$GITHUB_OUTPUT"
+          echo "[crosswake] OK: exact-public proof applies to ${PACKAGE}@${VERSION} (lane ${LANE}, head ${APPROVED_HEAD})."
+
+      # The checkout precedes the record assertion only because the assertion is a
+      # repository script. It performs no proof work of its own, so the record
+      # decision remains the proof's first substantive act.
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        with:
+          ref: ${{ inputs.merge_oid }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Same `gh` + artifact-count idiom approved-release-guard uses for the
+      # pre-merge candidate receipt. This step only REPORTS what it found; it
+      # never decides pass/fail, so "absent" reaches the assertion script as an
+      # absent file rather than as an opaque gh error.
+      - name: Download the publication record
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          PACKAGE: ${{ inputs.package }}
+          APPROVED_HEAD: ${{ inputs.approved_head }}
+        run: |
+          set -euo pipefail
+          artifact_name="publication-record-${PACKAGE}-${APPROVED_HEAD}"
+          record_dir="$RUNNER_TEMP/publication-record"
+          mkdir -p "$record_dir"
+
+          artifact_index=$(gh api -X GET "repos/$REPOSITORY/actions/artifacts" \
+            -f name="$artifact_name" -f per_page=100)
+          matches=$(printf '%s' "$artifact_index" | jq --argjson run "$RUN_ID" \
+            '[.artifacts[] | select(.expired == false) | select(.workflow_run.id == $run)] | length')
+
+          # More than one record for one coordinate in one run is a defect, never
+          # a tie to be broken silently.
+          [ "$matches" -le 1 ]
+
+          if [ "$matches" -eq 1 ]; then
+            gh run download "$RUN_ID" --repo "$REPOSITORY" --name "$artifact_name" --dir "$record_dir"
+            echo "[crosswake] OK: downloaded ${artifact_name} from run ${RUN_ID}."
+          else
+            echo "[crosswake] no artifact named ${artifact_name} was uploaded by run ${RUN_ID}; the assertion step decides what that means."
+          fi
+
+      # The expected triple comes from THIS workflow's own inputs — the values the
+      # caller already authenticated — and never from the downloaded record.
+      # Deriving the expected values from the artifact under verification is the
+      # scope-selector defect recorded as SEED-019 (T-173-01): a record naming the
+      # wrong version would verify itself.
+      - name: Assert the publication record for the exact coordinate
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        env:
+          PACKAGE: ${{ inputs.package }}
+          VERSION: ${{ inputs.version }}
+          APPROVED_HEAD: ${{ inputs.approved_head }}
+        run: >
+          bash script/assert_publication_record.sh
+          --package "$PACKAGE"
+          --version "$VERSION"
+          --approved-head "$APPROVED_HEAD"
+          --record "$RUNNER_TEMP/publication-record/publication-record.json"
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Download approved candidate payload manifest
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.candidate_receipt_run_id }}
+        run: |
+          set -euo pipefail
+          gh run download "$RUN_ID" --name "phase168-candidate-receipt-${{ inputs.approved_head }}" --dir "$RUNNER_TEMP/approved-candidate"
+          test -f "$RUNNER_TEMP/approved-candidate/artifacts.json"
+
+      - name: Re-fetch and prove exact public package family
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        run: >
+          bash script/verify_companion_cleanroom.sh
+          --source-mode exact-public
+          --approved-manifest "$RUNNER_TEMP/approved-candidate/artifacts.json"
+          --result "$RUNNER_TEMP/exact-public-result.json"
+
+      - name: Upload exact-public proof
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: exact-public-proof
+          path: ${{ runner.temp }}/exact-public-result.json
+          if-no-files-found: error
+          retention-days: 14
