@@ -3,12 +3,11 @@ defmodule Crosswake.Proof.Phase171NoBareVersionLiteralTest do
   Non-vacuity proof for `release.publish_gate.no_bare_version_literal`
   (MSG-04 / MSG-05).
 
-  Phase 171 replaces the interim tripwire
-  `release.version_weld.gates_match_declared_version` with a permanent
-  structural check: no publish-gating `if:` clause in
-  `.github/workflows/release-please.yml` may compare
-  `needs.release-please.outputs.version` against a bare semver literal.
-  Every gated job must instead compare against
+  Phase 171 replaces the interim TODO-009 / SEED-017 tripwire (retired in
+  this same phase, WELD-07) with a permanent structural check: no
+  publish-gating `if:` clause in `.github/workflows/release-please.yml`
+  may compare `needs.release-please.outputs.version` against a bare
+  semver literal. Every gated job must instead compare against
   `needs.approved-release-guard.outputs.approved_version` (WELD-03).
 
   This proves the check is non-vacuous: it must FAIL against a pre-repair
