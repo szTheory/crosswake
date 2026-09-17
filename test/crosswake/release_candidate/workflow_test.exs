@@ -453,6 +453,57 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     end
   end
 
+  test "both publish lanes emit one publication record through the one shared emitter" do
+    release_workflow = File.read!(@release_workflow)
+    hex_workflow = File.read!(@hex_workflow)
+    ordinary = job_block(release_workflow, "publish-hex")
+    recovery = job_block(hex_workflow, "publish")
+
+    emitter_flags = ~w(--package --version --approved-head --ref --lane --run-id --output)
+
+    for block <- [ordinary, recovery] do
+      assert block =~ "bash script/write_publication_record.sh"
+
+      # Same flags, in the same order, in both lanes. Scoped to the emitter
+      # invocation itself: matching over the whole job block would pick up the
+      # guarded_hex_publish.sh flags above it and prove nothing about this one.
+      invocation = emitter_invocation(block)
+
+      assert emitter_flags
+             |> Enum.map(fn flag ->
+               assert invocation =~ flag
+               {at, _len} = :binary.match(invocation, flag)
+               at
+             end)
+             |> then(&(&1 == Enum.sort(&1)))
+
+      assert block =~ "if-no-files-found: error"
+      assert block =~ "name: publication-record-"
+    end
+
+    assert ordinary =~ ~s(--lane "ordinary")
+    assert recovery =~ ~s(--lane "recovery")
+
+    # Exactly one emitter invocation per lane -- a second would make the record
+    # ambiguous about which publish it attests.
+    assert length(String.split(ordinary, "bash script/write_publication_record.sh")) == 2
+    assert length(String.split(recovery, "bash script/write_publication_record.sh")) == 2
+
+    # The pre-merge candidate receipt is a DIFFERENT artifact with a different
+    # meaning (it asserts nothing had been published yet). The post-publish
+    # record must never be folded into it.
+    refute ordinary =~ "phase168-candidate-receipt"
+    refute recovery =~ "phase168-candidate-receipt"
+  end
+
+  test "native recovery is deliberately left outside this phase's Hex convergence" do
+    hex_workflow = File.read!(@hex_workflow)
+    android_recovery = job_block(hex_workflow, "recover-android-core")
+
+    refute android_recovery =~ @proof_uses
+    refute android_recovery =~ "script/write_publication_record.sh"
+  end
+
   test "every caller of the reusable exact-public proof grants actions: read at job level" do
     callers = proof_callers()
 
@@ -461,9 +512,25 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     # guarding anything.
     assert callers != [], "no job anywhere calls #{@proof_uses}"
 
-    assert Enum.any?(callers, fn {path, job, _block} ->
-             path == @release_workflow and job == "exact-public-proof"
+    # Both lanes, by name. `callers != []` alone would still pass if the recovery
+    # lane silently stopped calling the shared proof -- which is the exact
+    # convergence this phase exists to establish.
+    assert Enum.sort(Enum.map(callers, fn {path, job, _block} -> {path, job} end)) ==
+             Enum.sort([
+               {@release_workflow, "exact-public-proof"},
+               {@hex_workflow, "recovery-exact-public-proof"}
+             ])
+
+    # Character-identical `uses:` from both lanes. A near-copy is how two lanes
+    # drift while each still looks correct in isolation.
+    assert callers
+           |> Enum.map(fn {_path, _job, block} ->
+             block
+             |> String.split("\n")
+             |> Enum.find(&String.contains?(&1, @proof_uses))
+             |> String.trim()
            end)
+           |> Enum.uniq() == [@proof_uses]
 
     for {path, job, block} <- callers do
       # Runtime authorization, not syntax. Both lane workflows declare a
@@ -495,6 +562,14 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     |> String.split("\n", trim: false)
     |> Enum.reject(&(&1 |> String.trim_leading() |> String.starts_with?("#")))
     |> Enum.join("\n")
+  end
+
+  # The emitter step's own `run:` body, from the script name to the blank line
+  # that ends the step.
+  defp emitter_invocation(block) do
+    [_, rest] = String.split(block, "bash script/write_publication_record.sh", parts: 2)
+    [invocation | _] = String.split(rest, "\n\n", parts: 2)
+    invocation
   end
 
   defp proof_callers do

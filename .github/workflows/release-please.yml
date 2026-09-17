@@ -269,6 +269,35 @@ jobs:
           --candidate-receipt "${{ needs.approved-release-guard.outputs.candidate_receipt }}"
           --expected-version "${{ needs.approved-release-guard.outputs.approved_version }}"
 
+      # The post-publish record is a WORKFLOW STEP, never a write inside
+      # guarded_hex_publish.sh: that helper treats an already-live release as
+      # success and returns through more than one path, so a write placed inside
+      # it would be reached inconsistently. Here it runs exactly when the publish
+      # step returned success.
+      #
+      # Identical invocation to the recovery lane in hex-publish.yml -- same
+      # script, same flags, same order -- differing only in the lane name and in
+      # where the values come from. One emitter is what makes "both lanes are
+      # satisfied identically" a checkable claim rather than a resemblance.
+      - name: Write the publication record
+        run: >
+          bash script/write_publication_record.sh
+          --package "crosswake"
+          --version "${{ needs.release-please.outputs.version }}"
+          --approved-head "${{ needs.approved-release-guard.outputs.approved_head }}"
+          --ref "${{ needs.release-please.outputs.tag_name }}"
+          --lane "ordinary"
+          --run-id "${{ github.run_id }}"
+          --output "${{ runner.temp }}/publication-record.json"
+
+      - name: Upload the publication record
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: publication-record-crosswake-${{ needs.approved-release-guard.outputs.approved_head }}
+          path: ${{ runner.temp }}/publication-record.json
+          if-no-files-found: error
+          retention-days: 14
+
   publish-hex-rulestead:
     name: Publish crosswake_rulestead to Hex.pm
     needs: release-please

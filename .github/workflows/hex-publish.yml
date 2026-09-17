@@ -83,6 +83,11 @@ on:
         required: false
         default: ''
         type: string
+      candidate_receipt_run_id:
+        description: 'Run id of the trusted "iOS mirror authority" run that uploaded the approved candidate receipt. Required for the recovery exact-public proof.'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -295,6 +300,62 @@ jobs:
           --merge-oid "${{ inputs.merge_oid }}"
           --candidate-receipt "${{ inputs.candidate_receipt }}"
           --expected-version "${{ inputs.approved_version }}"
+
+      # The SAME script, the SAME flags, in the SAME order as the ordinary lane's
+      # emitter in release-please.yml's publish-hex job. Only the lane name and
+      # the source of the values differ -- here workflow_dispatch inputs rather
+      # than needs.*.outputs.*. Two invocations of one script with one argument
+      # list is what makes "both lanes are satisfied identically" checkable.
+      - name: Write the publication record
+        run: >
+          bash script/write_publication_record.sh
+          --package "${{ inputs.package }}"
+          --version "${{ inputs.release_version }}"
+          --approved-head "${{ inputs.approved_head }}"
+          --ref "${{ inputs.ref }}"
+          --lane "recovery"
+          --run-id "${{ github.run_id }}"
+          --output "${{ runner.temp }}/publication-record.json"
+
+      - name: Upload the publication record
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: publication-record-${{ inputs.package }}-${{ inputs.approved_head }}
+          path: ${{ runner.temp }}/publication-record.json
+          if-no-files-found: error
+          retention-days: 14
+
+  # A recovery publish now reaches the SAME proof body the ordinary publish
+  # reaches, through a character-identical `uses:` path. A second copy of the
+  # proof steps in this file is the drift failure the extraction exists to
+  # remove.
+  #
+  # `recover-android-core` below is DELIBERATELY untouched by this phase. Native
+  # recovery convergence is Phase 174's scope; silently widening the Hex claim to
+  # cover the native lane would make the two claims indistinguishable in the
+  # record, and this phase would be credited with a convergence it did not do.
+  #
+  # The job-level `permissions:` block is NOT optional. This workflow declares a
+  # top-level `permissions:` key listing only `contents: read`, so `actions` is
+  # `none` for every job that does not grant it. Without the grant below, the
+  # artifact downloads inside the reusable workflow fail with a forbidden
+  # response, and the reusable workflow's own declaration cannot rescue it -- a
+  # called workflow narrows the caller's token, it never widens it (T-173-15).
+  recovery-exact-public-proof:
+    name: "recovery: exact-public artifact proof"
+    needs: [publish]
+    if: ${{ needs.publish.result == 'success' }}
+    permissions:
+      actions: read
+      contents: read
+    uses: ./.github/workflows/exact-public-proof.yml
+    with:
+      package: ${{ inputs.package }}
+      version: ${{ inputs.release_version }}
+      approved_head: ${{ inputs.approved_head }}
+      merge_oid: ${{ inputs.merge_oid }}
+      candidate_receipt_run_id: ${{ inputs.candidate_receipt_run_id }}
+      lane: recovery
 
   recover-android-core:
     name: Recover approved Android core from exact merge
