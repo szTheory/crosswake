@@ -445,7 +445,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(full, "release-candidate-ci-receipt.json") and
         includes?(full, "package_count\": 6") and includes?(full, "profile_count\": 5") and
         includes?(full, "install_count\": 2") and
-        includes?(full, "mix crosswake.release.candidate --version 0.2.1 --ref <40sha>") and
+        includes?(full, "mix crosswake.release.candidate --version <semver> --ref <40sha>") and
         not includes?(full, "HEX_API_KEY") and not includes?(full, "MIRROR_DEPLOY_KEY") and
         not includes?(full, "git push")
 

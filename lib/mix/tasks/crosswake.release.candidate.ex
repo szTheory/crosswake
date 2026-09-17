@@ -1,18 +1,19 @@
 defmodule Mix.Tasks.Crosswake.Release.Candidate do
   use Mix.Task
 
-  @shortdoc "Evaluate an exact Crosswake 0.2.1 release candidate"
+  @shortdoc "Evaluate an exact Crosswake release candidate"
 
   @moduledoc """
-  Evaluates one exact Crosswake 0.2.1 candidate and writes its authoritative receipt.
+  Evaluates one exact Crosswake candidate and writes its authoritative receipt.
 
-      mix crosswake.release.candidate --version 0.2.1 --ref <40sha> --output-dir <dir>
+      mix crosswake.release.candidate --version <semver> --ref <40sha> --output-dir <dir>
 
   The command is evaluation-only. External observation adapters are owned separately and supply
   normalized facts to `Crosswake.ReleaseCandidate.run!/1`.
   """
 
   @sha_pattern ~r/\A[0-9a-f]{40}\z/
+  @version_pattern ~r/\A\d+\.\d+\.\d+\z/
   @required_options ~w(version ref output_dir)a
 
   @impl Mix.Task
@@ -47,7 +48,8 @@ defmodule Mix.Tasks.Crosswake.Release.Candidate do
 
     valid? =
       invalid == [] and argv == [] and Enum.sort(keys) == Enum.sort(@required_options) and
-        Enum.uniq(keys) == keys and exact_option_counts?(args) and opts[:version] == "0.2.1" and
+        Enum.uniq(keys) == keys and exact_option_counts?(args) and
+        is_binary(opts[:version]) and Regex.match?(@version_pattern, opts[:version]) and
         is_binary(opts[:ref]) and Regex.match?(@sha_pattern, opts[:ref]) and
         is_binary(opts[:output_dir]) and opts[:output_dir] != "" and
         not String.contains?(opts[:output_dir], <<0>>)
