@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 32
+open_count: 33
 waived_count: 0
 fixed_count: 0
-total_count: 32
-last_updated: 2026-09-13T05:29:51.445Z
+total_count: 33
+last_updated: 2026-09-17T21:53:26.882Z
 ---
 
 # Broken Windows Ledger
@@ -47,6 +47,7 @@ last_updated: 2026-09-13T05:29:51.445Z
 | 30 | 168 | deviation | lib/crosswake/release_candidate/mirror.ex |  | Preserve observed mirror ref mutation in bounded evidence instead of normalizing external_state_changed to false | open |  | 2026-09-13T04:25:48.040Z |  |
 | 31 | 168 | deviation | lib/crosswake/release_candidate/workflow.ex |  | Added executable linked-release workflow policy required for validated PARTIAL truth | open |  | 2026-09-13T05:29:51.085Z |  |
 | 32 | 168 | deviation | lib/crosswake/release_candidate/receipt.ex | 185 | Extended bounded receipt coordinates to accept the fixed Maven group/artifact identity | open |  | 2026-09-13T05:29:51.445Z |  |
+| 33 | 173 | deviation | .github/workflows/exact-public-proof.yml |  | Record-assertion step carries a step-level if: on the applicability marker; the job itself is if: always() and the marker step is unconditional | open |  | 2026-09-17T21:53:26.882Z |  |
 
 ````json
 [
@@ -433,6 +434,19 @@ last_updated: 2026-09-13T05:29:51.445Z
     "reason": "",
     "recorded_at": "2026-09-13T05:29:51.445Z",
     "resolved_at": null
+  },
+  {
+    "id": 33,
+    "kind": "deviation",
+    "phase": "173",
+    "file": ".github/workflows/exact-public-proof.yml",
+    "line": null,
+    "description": "Record-assertion step carries a step-level if: on the applicability marker; the job itself is if: always() and the marker step is unconditional",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-17T21:53:26.882Z",
+    "resolved_at": null,
+    "milestone": null
   }
 ]
 ````
