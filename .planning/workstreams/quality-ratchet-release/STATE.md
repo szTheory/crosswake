@@ -5,16 +5,16 @@ milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 172
 current_phase_name: Per-Package Proof Scope
 status: executing
-stopped_at: Completed 172-01-PLAN.md
-last_updated: "2026-09-17T19:27:41.068Z"
+stopped_at: Completed 172-02-PLAN.md
+last_updated: "2026-09-17T19:54:52.105Z"
 last_activity: 2026-09-17
 last_activity_desc: Phase 172 execution started
-state_head: ca6f88cf143a8dc312cb7506cd924072b72e72df
+state_head: 66367f1a62dc2d391157bafa39a918aff64c0520
 progress:
   total_phases: 7
   completed_phases: 3
   total_plans: 17
-  completed_plans: 15
+  completed_plans: 16
   percent: 43
 ---
 
@@ -46,7 +46,7 @@ Revisit once the post-publication proof lane can actually run.
 ## Current Position
 
 Phase: 172 (Per-Package Proof Scope) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-09-17 — Phase 172 execution started
 
@@ -121,6 +121,7 @@ Last activity: 2026-09-17 — Phase 172 execution started
 | Phase 170 P03 | 65min | 3 tasks | 7 files |
 | Phase 170 P05 | 30min | 2 tasks | 2 files |
 | Phase 172 P01 | 55min | 3 tasks | 7 files |
+| Phase 172 P02 | 70min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -245,6 +246,9 @@ Last activity: 2026-09-17 — Phase 172 execution started
 - [Phase 170]: 170-03: release_boundaries_test.exs's empty-companions regression reuses ReleaseStatus.build/1's existing :cwd override via a symlink-and-mutate-manifest helper, avoiding any lib/ change
 - [Phase 170]: Phase 170's meta-checks (ledger completeness, guard-expression-match) recorded via the vacuity_taxonomy convention's explicit escape form, mirroring Phase 169's roster_exact/workflow_integrity precedent; the convention check itself and the empty-input regression set classify as Shape A.
 - [Phase 172]: 172-01: candidate_ref moved to per-artifact schema; observed ref (MATRIX_PUBLIC_REF) resolved independently from git rev-parse HEAD, never the approved manifest, closing the T-172-01 vacuity path for 172-02's drift comparison.
+- [Phase 172]: 172-02: branch order in public_artifact_reason/3 (compatible -> digest_mismatch -> unproven -> nil) is load-bearing, chosen so each prescribed mutation falsifies exactly its paired test
+- [Phase 172]: 172-02: ref!/1 resolved inside each drift branch's own cond guard, not via a shared pre-cond binding, to keep the registry-missing branch reachable for a nil observed ref
+- [Phase 172]: 172-02: public_artifact_claim/1 written as an explicit case over every known reason string with a catch-all, so a future reason added without a matching clause resolves to unproven rather than crashing
 
 ### v23.0 Roadmap Decisions
 
@@ -311,8 +315,8 @@ Last activity: 2026-09-17 — Phase 172 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-17T19:27:41.031Z
-Stopped at: Completed 172-01-PLAN.md
+Last session: 2026-09-17T19:54:52.062Z
+Stopped at: Completed 172-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
