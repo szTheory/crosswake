@@ -90,17 +90,6 @@ done <<EOF
 $expected
 EOF
 
-dup_names="$(awk -F '\t' '{print $1}' "$PRODUCERS_FILE" | sort | uniq -d)"
-if [ -n "$dup_names" ]; then
-  while IFS= read -r dup_name; do
-    [ -n "$dup_name" ] || continue
-    dup_count="$(awk -F '\t' -v wanted="$dup_name" '$1 == wanted {n++} END {print n+0}' "$PRODUCERS_FILE")"
-    echo "[crosswake] FAIL: display name '${dup_name}' has ${dup_count} producers (duplicate-producer/duplicate-display-name)." >&2
-    errors=1
-  done <<EOF
-$dup_names
-EOF
-fi
 
 if [ -z "$POLICY" ]; then
   while IFS=$'\t' read -r context workflow job_id; do

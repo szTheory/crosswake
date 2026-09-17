@@ -10,8 +10,17 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
   straight through — the check was vacuous by construction. This module proves the widened scan
   fires on a fixture that does NOT contain "merge-blocking" (the exact shape the old filter missed),
   proves the version-literal reject fires on both a job name and an `upload-artifact` name, proves
-  the real tree is clean under both new assertions, and proves the same guarantee at the shell entry
-  point independent of the Python exit code.
+  the real tree is clean under both new assertions, and proves the shell entry point fails closed
+  on a duplicate without reaching the network.
+
+  On the shell layer specifically: `check_required_checks_registered.sh` gets this guarantee from
+  its very first step — `list_merge_blocking_checks.py --producers` exits non-zero on a duplicate,
+  so the script aborts there and surfaces Python's verbatim diagnostic. The shell test below
+  proves exactly that, and nothing more. It is deliberately NOT a claim of independence from the
+  Python exit code: the shell layer has no duplicate detection of its own to be independent with.
+  A second, shell-local duplicate loop did exist here and was deleted in v23.0 — it sat after the
+  Python call and was unreachable for any real duplicate, so it was a divergent copy of a rule
+  that could never fire (proven by deleting it: all 11 tests in this module still passed).
   """
   use ExUnit.Case, async: true
 
@@ -178,7 +187,7 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
   end
 
   @tag :tmp_dir
-  test "Task 2: the shell entry point's global-uniqueness branch fires independent of gh", %{
+  test "Task 2: the shell entry point fails closed on a duplicate before reaching gh", %{
     tmp_dir: tmp
   } do
     workflow = fn wf_name, job_id ->
@@ -205,7 +214,8 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
     {out, status} = run_checker(tmp, json)
 
     assert status == 1,
-           "expected the shell entry point's global-uniqueness branch to fail, got #{status}:\n#{out}"
+           "expected the shell entry point to abort on the Python producer inventory's duplicate " <>
+             "reject (exit 1) before any gh call, got #{status}:\n#{out}"
 
     assert out =~ "duplicate-producer/duplicate-display-name"
     refute out =~ "gh-was-invoked"
