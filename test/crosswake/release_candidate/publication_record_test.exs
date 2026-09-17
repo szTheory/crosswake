@@ -196,6 +196,10 @@ defmodule Crosswake.ReleaseCandidate.PublicationRecordTest do
 
       codes = [head_code, version_code, lane_code]
 
+      # Pins the collection's cardinality before the all?/2 below: on an empty list
+      # `Enum.all?/2` is vacuously true, so without this line the assertion would pass
+      # on a collection that was never built (VAC-02).
+      assert length(codes) == 3
       assert Enum.all?(codes, &(&1 != 0))
       assert Enum.uniq(codes) == codes
     end
@@ -325,6 +329,10 @@ defmodule Crosswake.ReleaseCandidate.PublicationRecordTest do
 
       codes = [missing_code, mismatch_code, unreadable_code]
 
+      # Pins the collection's cardinality before the all?/2 below: on an empty list
+      # `Enum.all?/2` is vacuously true, so without this line the assertion would pass
+      # on a collection that was never built (VAC-02).
+      assert length(codes) == 3
       assert Enum.all?(codes, &(&1 != 0))
       assert Enum.uniq(codes) == codes
     end

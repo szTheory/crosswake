@@ -56,7 +56,12 @@ permissions:
 
 jobs:
   exact-public-proof:
-    name: "release: exact-public artifact proof"
+    # DISTINCT from both callers' job names on purpose. script/list_merge_blocking_checks.py
+    # inventories literal job producers and fails closed on two producers sharing one display
+    # name; extracting this body left it carrying release-please.yml's caller name verbatim,
+    # which collided. The callers keep "release:" / "recovery:" so each lane stays identifiable
+    # in the checks list, and this body names itself as the shared body it is.
+    name: "shared: exact-public artifact proof body"
     # always(): the record decision must be made by a step that RUNS. A job-level
     # condition that declines to run is exactly the skip-instead-of-fail shape
     # XPUB-05 exists to close — a skipped proof and a passing proof must never be
