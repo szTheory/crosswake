@@ -241,7 +241,8 @@ same module, same test fixtures)
    a fixture that forces drift and inspects the reported result type.
 
 **Plans**:
-- [ ] 172-01-PLAN.md (Wave 1) — thread a per-package `candidate_ref` through the producer, the schema and both shell consumers
+
+- [x] 172-01-PLAN.md (Wave 1) — thread a per-package `candidate_ref` through the producer, the schema and both shell consumers
 - [ ] 172-02-PLAN.md (Wave 2) — the four-branch classifier, the derived `claim` field and the distinct `attested` bucket
 - [ ] 172-03-PLAN.md (Wave 3) — the non-vacuity proofs, including a single-byte real-tarball mutation, and `172-NON-VACUITY.md`
 
@@ -398,7 +399,7 @@ before the real one-way door.
 | 169. Diagnostic Legibility | 4/4 | Complete    | 2026-09-16 |
 | 170. Vacuous Assertion Remediation | 5/5 | Complete   | 2026-09-16 |
 | 171. Version/Authority Split | 0/TBD | Not started | - |
-| 172. Per-Package Proof Scope | 0/TBD | Not started | - |
+| 172. Per-Package Proof Scope | 1/3 | In Progress|  |
 | 173. Recovery-Path Proof Convergence | 0/TBD | Not started | - |
 | 174. Clean-Room Host Realism & Adopter Fidelity | 0/TBD | Not started | - |
 | 175. Rehearsal and Publish | 0/TBD | Not started | - |

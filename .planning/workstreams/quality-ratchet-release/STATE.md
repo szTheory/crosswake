@@ -4,17 +4,17 @@ milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 172
 current_phase_name: Per-Package Proof Scope
-status: ready_to_execute
-stopped_at: Phase 172 planned — 3 plans, plan-checker PASS after one revision cycle; ready to execute
-last_updated: "2026-09-17T18:30:00.000Z"
+status: executing
+stopped_at: Completed 172-01-PLAN.md
+last_updated: "2026-09-17T19:27:41.068Z"
 last_activity: 2026-09-17
-last_activity_desc: Phase 172 planning complete
-state_head: 501e44106e6ac7a7f77ea248134cf3bcda404b43
+last_activity_desc: Phase 172 execution started
+state_head: ca6f88cf143a8dc312cb7506cd924072b72e72df
 progress:
   total_phases: 7
   completed_phases: 3
   total_plans: 17
-  completed_plans: 14
+  completed_plans: 15
   percent: 43
 ---
 
@@ -45,10 +45,10 @@ Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
 
-Phase: 170 (Vacuous Assertion Remediation) — EXECUTING
-Plan: 5 of 5
-Status: planning
-Last activity: 2026-09-16 — Phase 170 execution started
+Phase: 172 (Per-Package Proof Scope) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-09-17 — Phase 172 execution started
 
 ## Performance Metrics
 
@@ -120,6 +120,7 @@ Last activity: 2026-09-16 — Phase 170 execution started
 | Phase 170 P04 | 25min | 3 tasks | 4 files |
 | Phase 170 P03 | 65min | 3 tasks | 7 files |
 | Phase 170 P05 | 30min | 2 tasks | 2 files |
+| Phase 172 P01 | 55min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -243,6 +244,7 @@ Last activity: 2026-09-16 — Phase 170 execution started
 - [Phase 170]: 170-03: coordinate_test.exs and crosswake_release_status_test.exs's flagged sites recorded as structural-test-only (compile-time-fixed companion list; check-only-emitted-when-nonempty computations), not silently dropped
 - [Phase 170]: 170-03: release_boundaries_test.exs's empty-companions regression reuses ReleaseStatus.build/1's existing :cwd override via a symlink-and-mutate-manifest helper, avoiding any lib/ change
 - [Phase 170]: Phase 170's meta-checks (ledger completeness, guard-expression-match) recorded via the vacuity_taxonomy convention's explicit escape form, mirroring Phase 169's roster_exact/workflow_integrity precedent; the convention check itself and the empty-input regression set classify as Shape A.
+- [Phase 172]: 172-01: candidate_ref moved to per-artifact schema; observed ref (MATRIX_PUBLIC_REF) resolved independently from git rev-parse HEAD, never the approved manifest, closing the T-172-01 vacuity path for 172-02's drift comparison.
 
 ### v23.0 Roadmap Decisions
 
@@ -309,8 +311,8 @@ Last activity: 2026-09-16 — Phase 170 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-16T19:54:17.425Z
-Stopped at: Completed 170-05-PLAN.md — Phase 170 fully closed
+Last session: 2026-09-17T19:27:41.031Z
+Stopped at: Completed 172-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
