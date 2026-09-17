@@ -636,6 +636,47 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     refute candidate_task =~ "exact-public"
   end
 
+  @tag :post_publication
+  test "the exact-public terminal gate still requires the completion state, not the attested state" do
+    script = File.read!("script/verify_companion_cleanroom.sh")
+
+    assert script =~
+             ~S(jq -c '{state,source_mode,generator_version,install_count,package_count,profile_count,path_lock_count,succeeded_packages,failed_packages,attested_packages,package_claims,profile_results,live_status}')
+
+    # Scope this refutation to the terminal-assertion line itself (the line comparing jq's
+    # extracted `.state` against a literal string), not the whole script — "ATTESTED"
+    # legitimately appears elsewhere in the file as a projected jq key name
+    # (`attested_packages`, asserted above) that is not itself a comparison, and a
+    # whole-file refutation would false-positive on that unrelated occurrence.
+    terminal_assertion_line =
+      script
+      |> String.split("\n")
+      |> Enum.find(&(&1 =~ ~S{jq -r '.state' "$MATRIX_RESULT"}))
+
+    refute is_nil(terminal_assertion_line),
+           "expected to find the terminal state-comparison line in the script"
+
+    assert terminal_assertion_line =~
+             ~S{[ "$(jq -r '.state' "$MATRIX_RESULT")" = "COMPLETE" ] || matrix_fail}
+
+    refute terminal_assertion_line =~ "ATTESTED"
+  end
+
+  @tag :post_publication
+  test "an attested run's state is never the completion string (semantic anchor for the terminal gate)" do
+    input =
+      update_public_artifact(
+        public_fixture(),
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.state == "ATTESTED"
+    refute result.state == "COMPLETE"
+  end
+
   defp candidate_fixture do
     fixture_root =
       Path.join(
