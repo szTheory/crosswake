@@ -212,6 +212,166 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
   end
 
   @tag :post_publication
+  test "a package whose observed ref drifts but keeps matching bytes reports reachable_and_compatible" do
+    input =
+      update_public_artifact(
+        public_fixture(),
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.failed_packages == [
+             %{package: "crosswake_sigra", reason: "reachable_and_compatible"}
+           ]
+
+    approved = Enum.find(input.approved_artifacts, &(&1.package == "crosswake_sigra"))
+    public = Enum.find(input.public_artifacts, &(&1.package == "crosswake_sigra"))
+    assert public.metadata_digest == approved.metadata_digest
+    assert public.payload_digest == approved.payload_digest
+  end
+
+  @tag :post_publication
+  test "a package whose observed ref drifts AND whose digests differ reports unproven, not digest_mismatch" do
+    input =
+      public_fixture()
+      |> update_public_artifact(
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+      |> update_public_artifact(
+        "crosswake_sigra",
+        &Map.put(&1, :payload_digest, String.duplicate("f", 64))
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.failed_packages == [
+             %{package: "crosswake_sigra", reason: "unproven"}
+           ]
+  end
+
+  @tag :post_publication
+  test "SC#3 regression anchor: a payload_digest change with no ref drift still reports digest_mismatch" do
+    input =
+      update_public_artifact(
+        public_fixture(),
+        "crosswake_sigra",
+        &Map.put(&1, :payload_digest, String.duplicate("f", 64))
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.failed_packages == [
+             %{package: "crosswake_sigra", reason: "digest_mismatch"}
+           ]
+  end
+
+  @tag :post_publication
+  test "SC#3 regression anchor: a metadata_digest change with no ref drift still reports digest_mismatch" do
+    input =
+      update_public_artifact(
+        public_fixture(),
+        "crosswake_sigra",
+        &Map.put(&1, :metadata_digest, String.duplicate("f", 64))
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.failed_packages == [
+             %{package: "crosswake_sigra", reason: "digest_mismatch"}
+           ]
+  end
+
+  @tag :post_publication
+  test "a registry-missing package still reports registry_missing even with a drifted approved ref" do
+    input =
+      public_fixture()
+      |> update_approved_artifact(
+        "crosswake_threadline",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+      |> update_public_artifact("crosswake_threadline", fn artifact ->
+        %{
+          artifact
+          | status: "MISSING",
+            source: "unavailable",
+            unpacked_root: nil,
+            metadata_digest: nil,
+            payload_digest: nil
+        }
+      end)
+      |> Map.put(:installs, [])
+      |> Map.put(:profile_results, [])
+      |> Map.put(:live_status, "not_run")
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.failed_packages == [
+             %{package: "crosswake_threadline", reason: "registry_missing"}
+           ]
+  end
+
+  @tag :post_publication
+  test "drift never masks a harder pre-drift failure" do
+    input = public_fixture()
+
+    mutations = [
+      invalid_status:
+        input
+        |> update_approved_artifact(
+          "crosswake",
+          &Map.put(&1, :candidate_ref, @second_candidate_ref)
+        )
+        |> update_public_artifact("crosswake", &Map.put(&1, :status, "FAIL")),
+      source_not_registry:
+        input
+        |> update_approved_artifact(
+          "crosswake",
+          &Map.put(&1, :candidate_ref, @second_candidate_ref)
+        )
+        |> update_public_artifact("crosswake", &Map.put(&1, :source, "repository_path")),
+      path_lock_present:
+        input
+        |> update_approved_artifact(
+          "crosswake",
+          &Map.put(&1, :candidate_ref, @second_candidate_ref)
+        )
+        |> update_public_artifact("crosswake", &Map.put(&1, :path_lock_count, 1)),
+      source_root_invalid:
+        input
+        |> update_approved_artifact(
+          "crosswake",
+          &Map.put(&1, :candidate_ref, @second_candidate_ref)
+        )
+        |> update_public_artifact("crosswake", &Map.put(&1, :unpacked_root, System.tmp_dir!()))
+    ]
+
+    for {expected_reason, mutation} <- mutations do
+      result = Cleanroom.evaluate_public!(mutation)
+
+      assert result.failed_packages == [
+               %{package: "crosswake", reason: Atom.to_string(expected_reason)}
+             ],
+             "#{expected_reason} passed"
+    end
+  end
+
+  @tag :post_publication
+  test "a malformed observed candidate_ref on an otherwise-healthy package raises ArgumentError" do
+    input =
+      update_public_artifact(
+        public_fixture(),
+        "crosswake",
+        &Map.put(&1, :candidate_ref, "not-a-ref")
+      )
+
+    error = assert_raise ArgumentError, fn -> Cleanroom.evaluate_public!(input) end
+    assert Exception.message(error) == "candidate clean-room input is invalid"
+  end
+
+  @tag :post_publication
   test "approved-artifacts validator accepts any well-formed semver, not just the current candidate" do
     input =
       public_fixture()

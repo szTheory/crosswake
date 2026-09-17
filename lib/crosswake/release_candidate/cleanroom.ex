@@ -298,9 +298,18 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
       not public_root?(artifact.unpacked_root, source_root) ->
         "source_root_invalid"
 
-      artifact.metadata_digest != expected.metadata_digest or
-          artifact.payload_digest != expected.payload_digest ->
+      ref!(artifact.candidate_ref) != expected.candidate_ref and
+        artifact.metadata_digest == expected.metadata_digest and
+          artifact.payload_digest == expected.payload_digest ->
+        "reachable_and_compatible"
+
+      ref!(artifact.candidate_ref) == expected.candidate_ref and
+          (artifact.metadata_digest != expected.metadata_digest or
+             artifact.payload_digest != expected.payload_digest) ->
         "digest_mismatch"
+
+      ref!(artifact.candidate_ref) != expected.candidate_ref ->
+        "unproven"
 
       true ->
         nil
