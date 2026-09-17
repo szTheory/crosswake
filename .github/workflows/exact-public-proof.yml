@@ -85,7 +85,43 @@ jobs:
         run: |
           set -euo pipefail
 
+          # The lane is decided FIRST, before any branch can exit zero, because
+          # the single not-applicable branch below is reachable from exactly one
+          # lane and an unvalidated lane cannot be used to decide that.
+          case "$LANE" in
+            ordinary|recovery) ;;
+            *)
+              echo "[crosswake] FAIL: lane '${LANE}' is not a declared publication lane."
+              echo "[crosswake] What to do next: call this workflow with lane: ordinary (release-please.yml) or lane: recovery (hex-publish.yml)."
+              exit 1
+              ;;
+          esac
+
           if [ -z "$APPROVED_HEAD" ] && [ -z "$MERGE_OID" ]; then
+            # NOT-APPLICABLE IS AN ORDINARY-LANE-ONLY ANSWER, and the gate below
+            # is what makes that structural rather than incidental.
+            #
+            # The ordinary caller sits in a release workflow that runs on pushes
+            # which produce no linked release at all, so "this is not a linked
+            # release" is a truthful outcome there. A recovery call exists only
+            # because a maintainer dispatched a publish AND that publish
+            # succeeded, so the same answer is never truthful for it.
+            #
+            # Both recovery inputs are `required: false` with `default: ''` on
+            # hex-publish.yml's workflow_dispatch. Without this gate, a
+            # maintainer who leaves those two fields blank gets a real recovery
+            # publish, every proof step skipped by the applicability marker, and
+            # a job that concludes success having proved nothing -- absence
+            # scored as success, inside the artifact built to remove it.
+            # Form-level `required: true` cannot close this: workflow_call and
+            # the REST dispatch API both bypass it.
+            if [ "$LANE" != "ordinary" ]; then
+              echo "[crosswake] FAIL: PROOF_APPLICABILITY_UNDETERMINED - the ${LANE} lane reached the exact-public proof with neither an approved head nor a merge oid."
+              echo "[crosswake] A ${LANE} call follows a publish that already happened, so the proof always applies to it; skipping it here would conclude success having proved nothing."
+              echo "[crosswake] What to do next: re-dispatch .github/workflows/hex-publish.yml supplying the approved_head and merge_oid inputs (plus candidate_receipt_run_id) for the coordinate you recovered."
+              exit 1
+            fi
+
             echo "applicable=false" >> "$GITHUB_OUTPUT"
             echo "[crosswake] OK: not a linked release — no approved head and no merge oid were supplied, so the exact-public proof does not apply."
             exit 0
@@ -96,14 +132,6 @@ jobs:
           printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
           [ -n "$PACKAGE" ]
           [ -n "$CANDIDATE_RECEIPT_RUN_ID" ]
-          case "$LANE" in
-            ordinary|recovery) ;;
-            *)
-              echo "[crosswake] FAIL: lane '${LANE}' is not a declared publication lane."
-              echo "[crosswake] What to do next: call this workflow with lane: ordinary (release-please.yml) or lane: recovery (hex-publish.yml)."
-              exit 1
-              ;;
-          esac
 
           echo "applicable=true" >> "$GITHUB_OUTPUT"
           echo "[crosswake] OK: exact-public proof applies to ${PACKAGE}@${VERSION} (lane ${LANE}, head ${APPROVED_HEAD})."
