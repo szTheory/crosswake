@@ -2,14 +2,14 @@
 gsd_state_version: "1.0"
 milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
-current_phase: 172
-current_phase_name: Per-Package Proof Scope
+current_phase: 173
+current_phase_name: Recovery-Path Proof Convergence
 status: ready_to_plan
-stopped_at: Phase 172 complete — verified 4/4, one PR open for the whole phase; Phase 173 unblocked and unplanned
+stopped_at: Phase 172 merged as ec505c08 (49/49 CI green); Phase 173 unplanned — needs phase-level research
 last_updated: "2026-09-17T20:47:39.477Z"
 last_activity: 2026-09-17
-last_activity_desc: Phase 172 executed and verified
-state_head: 199fc1324846ab44c8612196c4c2a8ce52e1a9d8
+last_activity_desc: Phase 172 merged; main synced to origin
+state_head: ec505c087fcabc6dfb352bfceb5dc7d2e22e2c30
 progress:
   total_phases: 7
   completed_phases: 4
