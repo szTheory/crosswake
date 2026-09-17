@@ -52,34 +52,31 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
     end
   end
 
-  # This proves WELD-06 at the CLI entrypoint specifically: `parse!/1` and
-  # `validate_command_identity!/3` (this task's own scope) no longer refuse a
-  # well-formed non-candidate version with the pre-fix `Mix.Error("invalid
-  # release candidate command")`. The bound-identity fixture's own version
-  # matches the CLI `--version`, so `validate_command_identity!/3` and
-  # `validate_bound_command_identity!/3` both pass; the ArgumentError this test
-  # still expects to see originates one layer deeper, from
-  # `Identity.normalize!/2`'s own literal-version clause, which is Task 2's
-  # scope (171-RESEARCH.md's `identity.ex:128` weld) and not yet fixed at this
-  # commit. Task 2 replaces this raise with a full READY FOR APPROVAL receipt.
+  # WELD-06, end to end: a well-formed version two minor releases ahead of the
+  # declared candidate reaches the full evaluation graph and produces a real
+  # receipt -- proving the CLI entrypoint (parse!/1,
+  # validate_command_identity!/3) AND the identity self-consistency layer
+  # (Identity.normalize!/2) both accept it, not just format-check it.
   @tag :tmp_dir
-  test "a well-formed version two minor releases ahead is not refused by the CLI entrypoint format checks",
+  test "a well-formed version two minor releases ahead reaches evaluation and produces a real receipt",
        %{tmp_dir: tmp_dir} do
     output_dir = Path.join(tmp_dir, "non-candidate")
     version = "1.4.0"
 
-    error =
-      assert_raise ArgumentError, fn ->
-        capture_io(fn ->
-          Candidate.run(
-            ["--version", version, "--ref", @sha_a, "--output-dir", output_dir],
-            candidate_opts: [input: input(version)]
-          )
-        end)
-      end
+    terminal =
+      capture_io(fn ->
+        Candidate.run(
+          ["--version", version, "--ref", @sha_a, "--output-dir", output_dir],
+          candidate_opts: [input: input(version)]
+        )
+      end)
 
-    refute Exception.message(error) == "invalid release candidate command"
-    refute File.exists?(output_dir)
+    receipt =
+      Path.join(output_dir, "candidate-receipt.json") |> File.read!() |> Jason.decode!()
+
+    assert receipt["state"] == "READY FOR APPROVAL"
+    assert receipt["identity"]["bound"]["version"] == version
+    assert String.starts_with?(terminal, "READY FOR APPROVAL")
   end
 
   @tag :tmp_dir

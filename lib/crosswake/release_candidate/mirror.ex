@@ -8,7 +8,7 @@ defmodule Crosswake.ReleaseCandidate.Mirror do
   """
 
   @baseline_version "0.2.0"
-  @candidate_version "0.2.1"
+  @version_pattern ~r/\A\d+\.\d+\.\d+\z/
   @sha_pattern ~r/\A[0-9a-f]{40}\z/
   @common_input_keys ~w(
     mode version source_ref split_sha recorded_split_sha remote atomic_supported authorization
@@ -242,7 +242,7 @@ defmodule Crosswake.ReleaseCandidate.Mirror do
   end
 
   defp candidate_pass?(input) do
-    input.version == @candidate_version and valid_sha?(input.source_ref) and
+    valid_semver?(input.version) and valid_sha?(input.source_ref) and
       valid_sha?(input.split_sha) and input.recorded_split_sha == input.split_sha and
       input.remote.status == "PASS" and valid_sha?(input.remote.main) and
       optional_sha?(input.remote.tag) and input.atomic_supported and
@@ -308,7 +308,7 @@ defmodule Crosswake.ReleaseCandidate.Mirror do
   end
 
   defp publication_identity?(input, approval_status) do
-    input.version == @candidate_version and valid_sha?(input.source_ref) and
+    valid_semver?(input.version) and valid_sha?(input.source_ref) and
       valid_sha?(input.split_sha) and input.recorded_split_sha == input.split_sha and
       valid_sha?(input.remote.main) and optional_sha?(input.remote.tag) and
       input.approval.status == approval_status and valid_digest?(input.approval.receipt_digest) and
@@ -322,14 +322,14 @@ defmodule Crosswake.ReleaseCandidate.Mirror do
       "--porcelain",
       "--atomic",
       "#{input.split_sha}:refs/heads/main",
-      "#{input.split_sha}:refs/tags/v#{@candidate_version}"
+      "#{input.split_sha}:refs/tags/v#{input.version}"
     ]
 
   defp publish_push_arguments(input),
     do: [
       "--atomic",
       "#{input.split_sha}:refs/heads/main",
-      "#{input.split_sha}:refs/tags/v#{@candidate_version}"
+      "#{input.split_sha}:refs/tags/v#{input.version}"
     ]
 
   defp recovery_push_arguments(input),
@@ -423,6 +423,9 @@ defmodule Crosswake.ReleaseCandidate.Mirror do
 
   defp valid_sha?(value) when is_binary(value), do: Regex.match?(@sha_pattern, value)
   defp valid_sha?(_value), do: false
+
+  defp valid_semver?(value) when is_binary(value), do: Regex.match?(@version_pattern, value)
+  defp valid_semver?(_value), do: false
 
   defp enum!(value, allowed), do: if(value in allowed, do: value, else: invalid!())
   defp boolean!(value) when is_boolean(value), do: value
