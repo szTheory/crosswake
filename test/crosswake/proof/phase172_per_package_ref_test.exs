@@ -35,6 +35,7 @@ defmodule Crosswake.Proof.Phase172PerPackageRefTest do
 
   @candidate_ref String.duplicate("a", 40)
   @second_candidate_ref String.duplicate("b", 40)
+  @package_count length(Artifact.packages())
 
   describe "the family-wide ref collapse cannot return in the shell transport (SC#1)" do
     test "no jq expression collapses the approved manifest's refs to one scalar, and a per-package lookup is there instead" do
@@ -159,6 +160,7 @@ defmodule Crosswake.Proof.Phase172PerPackageRefTest do
       result = public_fixture(@candidate_ref) |> Cleanroom.evaluate_public!()
 
       assert result.state == "COMPLETE"
+      assert length(result.package_claims) == @package_count
       assert Enum.all?(result.package_claims, &(&1.claim == "fully_proven"))
     end
 
@@ -188,10 +190,10 @@ defmodule Crosswake.Proof.Phase172PerPackageRefTest do
     test "the claim entry count equals the package count and no package carries two claims, for a fully-proven run" do
       result = public_fixture(@candidate_ref) |> Cleanroom.evaluate_public!()
 
-      assert length(result.package_claims) == length(Artifact.packages())
+      assert length(result.package_claims) == @package_count
 
       assert result.package_claims |> Enum.map(& &1.package) |> Enum.uniq() |> length() ==
-               length(Artifact.packages())
+               @package_count
     end
 
     test "the claim entry count equals the package count and no package carries two claims, for a mixed-claim run" do
@@ -202,10 +204,10 @@ defmodule Crosswake.Proof.Phase172PerPackageRefTest do
         |> override_public(target, &Map.put(&1, :candidate_ref, @second_candidate_ref))
         |> Cleanroom.evaluate_public!()
 
-      assert length(result.package_claims) == length(Artifact.packages())
+      assert length(result.package_claims) == @package_count
 
       assert result.package_claims |> Enum.map(& &1.package) |> Enum.uniq() |> length() ==
-               length(Artifact.packages())
+               @package_count
     end
   end
 
