@@ -334,3 +334,18 @@ None - no external service configuration required.
 *Phase: 172-per-package-proof-scope*
 *Plan: 03*
 *Completed: 2026-09-17*
+
+## Self-Check: PASSED
+
+- All 6 plan-scoped/deviation files confirmed present on disk via `[ -f ]`: the new proof
+  module, the modified `artifact_test.exs`, `172-NON-VACUITY.md`, this SUMMARY.md, the modified
+  `phase170_vacuous_assertion_ledger_test.exs`, and the regenerated `collection_assertion_ledger.json`.
+- All 5 task/deviation/SUMMARY commit hashes (`a431f21a`, `1100c8b4`, `4d4fbc2c`, `5d9cbcfd`,
+  `b053d244`) confirmed present via `git log --oneline --all`.
+- All plan-level `<verification>` commands re-run and passing: `mix format --check-formatted`
+  (0), `mix test test/crosswake/proof --max-cases 1` (690 tests, 0 failures), `bash -n
+  script/verify_companion_cleanroom.sh script/release_candidate/hex_artifacts.sh` (0),
+  `test -f 172-NON-VACUITY.md && grep -cv '^#' 172-NON-VACUITY.md` (118, non-zero), `grep -c
+  '\[ \]\|\[x\]\|☑' 172-NON-VACUITY.md` (0, no checkbox marks).
+- Full project suite `mix test --exclude requires_example_host` re-run after the ledger-snapshot
+  fix: 1861 tests, 0 failures.
