@@ -730,3 +730,61 @@ most ASVS categories do not apply; the relevant ones are supply-chain/integrity-
 
 **Research date:** 2026-09-17
 **Valid until:** ~14 days (workflow file line numbers are explicitly expected to drift as prior phases land per SUMMARY.md's own caveat; re-grep before writing the diff regardless of this file's age)
+
+---
+
+## Orchestrator Addendum — the two carried-forward open items, resolved (2026-09-17)
+
+Both items the researcher and pattern-mapper flagged UNVERIFIED were resolved by direct inspection
+before planning, so the planner writes tasks against facts rather than assumptions.
+
+### Open Question 1 — `Crosswake.ReleaseCandidate.Coordinate` is orphaned. RESOLVED: no production caller.
+
+Command run: `grep -rn "Coordinate" lib script test` (whole tracked tree, excluding the module's own file).
+
+Result: the ONLY references to `Crosswake.ReleaseCandidate.Coordinate` anywhere outside
+`lib/crosswake/release_candidate/coordinate.ex` are in
+`test/crosswake/release_candidate/coordinate_test.exs`. The three `lib/crosswake/doctor/publish_readiness.ex`
+hits are the unrelated English prose string "Coordinated deploy with updated Hex package"; the
+`test/fixtures/proof/phase52_publish_readiness.json` hit is `generator_coordinate_parity`, a different
+concept. The module exposes exactly one public function, `validate!/1` (line 47).
+
+**Conclusion:** `Coordinate` is a validator that nothing in production calls. Its 5 live-gate-shaped
+`0.2.1` sites are therefore not currently gating anything — they are a dormant weld. This is precisely
+the hazard RESEARCH.md's own Pitfall 3 names ("an orphaned validator reactivating the weld later").
+
+**Classification for the WELD-01 inventory:** NOT "live gate". Record it as its own row type —
+`orphaned validator (no production caller; test-only)` — and say so in the table rather than
+flattening it into one of the four original labels, which would misstate what the grep found.
+Do not silently delete the module under cover of this phase: deleting dead code is a defensible change
+but it is not what WELD-01..08 asked for, and bundling it would hide a deletion inside a repair PR.
+The planner should make the disposition an explicit, recorded decision.
+
+### Open Question 2 — `ios-mirror-backfill.yml:288-293`. RESOLVED: live gate, and currently unsatisfiable.
+
+The lines sit inside job `attest-candidate-receipt` (job starts line 165), which is
+`workflow_dispatch`-only and further gated by
+`if: ${{ github.event.inputs.operation == 'candidate-receipt-attestation' }}` (line 167). It never runs
+in ordinary CI and is not merge-blocking.
+
+The six assertions are **negative controls proving the candidate has not yet been published**:
+
+```
+test -z "$(git ls-remote --tags origin 'refs/tags/*0.2.1*')"
+test "$(curl ... https://hex.pm/api/packages/crosswake/releases/0.2.1)" = 404
+test "$(curl ... .../crosswake-shell-core-android/0.2.1/...pom)" = 404
+test -z "$(git ls-remote ...crosswake-shell-core-ios.git refs/tags/v0.2.1)"
+```
+
+**They are a live gate, not a fixture** — they execute and can fail. But `0.2.1` is now fully published
+to Hex, Maven and the iOS mirror, so all four assertions are **false today**: this attestation path
+cannot pass for any dispatch, at any version, in its current form. It is not vacuous (it would fail
+loudly) — it is welded to a version whose premise has since inverted.
+
+**Classification for the WELD-01 inventory:** `live gate`, with a note that it is presently
+unsatisfiable. The fix is the same version-parametric one as everywhere else — assert the absence of
+the *candidate* version, not of the literal `0.2.1`.
+
+**Flag for Phase 175:** Phase 175 (Rehearsal and Publish) depends on this attestation path working for
+`0.2.2`. If Phase 171 does not parameterize these six lines, Phase 175 inherits a blocked one-way-door
+rehearsal. This is a cross-phase dependency the ROADMAP does not currently record.
