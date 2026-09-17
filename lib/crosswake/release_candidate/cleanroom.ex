@@ -232,8 +232,7 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
 
     unless length(normalized) == length(Artifact.packages()) and
              map_size(by_package) == length(normalized) and
-             Map.keys(by_package) |> Enum.sort() == Enum.sort(Artifact.packages()) and
-             Map.fetch!(by_package, "crosswake").version == "0.2.1",
+             Map.keys(by_package) |> Enum.sort() == Enum.sort(Artifact.packages()),
            do: invalid!()
 
     Map.new(Artifact.packages(), &{&1, Map.fetch!(by_package, &1)})
