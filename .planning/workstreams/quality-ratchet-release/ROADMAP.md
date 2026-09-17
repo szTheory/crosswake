@@ -287,7 +287,13 @@ executed in parallel once Phase 171 is merged.
    the repo for at least one real run, confirmed by inspecting the committed record after the
    retention window would otherwise have expired.
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 173-01-PLAN.md — tracer: one shared publication-record emitter, one shared record assertion, one reusable proof workflow, both Hex lanes calling it
+- [ ] 173-02-PLAN.md — fixture proof that the ordinary graph and the recovery graph satisfy the same contract, with a declared lane roster that cannot shrink
+- [ ] 173-03-PLAN.md — the missing fail-closed rollup case, and a git-committed release ledger that outlives artifact retention
+- [ ] 173-04-PLAN.md — credential-free fire drill, one real dispatch observation of failed-not-skipped, and the phase's measured non-vacuity record
 
 **Research**: Needs phase-level research (`/gsd-plan-phase --research-phase 173`) — confirm GitHub
 Actions' current `workflow_call`/`workflow_dispatch` composition rules before writing YAML for the
