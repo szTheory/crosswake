@@ -144,7 +144,7 @@ defmodule Crosswake.Proof.Phase171NoBareVersionLiteralTest do
       assert line =~ "OK:", "expected OK on the unmodified repository, got:\n#{line}"
     end
 
-    test "the check inspects the workflow text, not the declared manifest version" do
+    test "the check inspects the workflow text, not the declared release-manifest version" do
       dir = tmp_dir!("bumped-manifest")
       manifest = manifest_at!(dir, "9.9.9")
 
@@ -152,7 +152,7 @@ defmodule Crosswake.Proof.Phase171NoBareVersionLiteralTest do
       line = line_for(out, @check_id)
 
       assert line =~ "OK:",
-             "the check must stay OK against a bumped manifest -- it asserts the workflow if: shape, not the manifest content:\n#{line}"
+             "the check must stay OK against a bumped release manifest -- it asserts the workflow if: shape, not the release-manifest content:\n#{line}"
     end
   end
 

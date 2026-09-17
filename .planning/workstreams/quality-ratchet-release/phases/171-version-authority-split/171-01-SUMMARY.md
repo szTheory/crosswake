@@ -118,7 +118,7 @@ status: complete
 
 ## Task Commits
 
-1. **Task 1: End-to-end approved_version spine — manifest to guard output to all four publish gates** - `b3ec6d4c` (feat)
+1. **Task 1: End-to-end approved_version spine — release manifest to guard output to all four publish gates** - `b3ec6d4c` (feat)
 2. **Task 2: Land release.publish_gate.no_bare_version_literal with its non-vacuity proof** - `633be55b` (test)
 3. **Task 3: Delete the tripwire and its test; pin the guard output and identity-gate exactness** - `db21fe64` (feat)
 
@@ -131,7 +131,7 @@ _Task 2 is TDD: the test was written and run first (RED — `line_for/2` found n
 - `test/crosswake/proof/phase171_approved_version_output_test.exs` — new; pins WELD-02, T-171-02, WELD-08, WELD-07
 - `test/crosswake/proof/phase168_release_version_weld_test.exs` — deleted (tripwire's test; reusable fixture helpers already copied forward into the phase171 test in Task 2)
 - `test/crosswake/proof/phase142_release_integrity_test.exs` — negative-control decoy text updated to the post-WELD-03 `if:` shape
-- `test/crosswake/proof/phase169_diagnostic_legibility_test.exs` — "produce a FAIL" fixture switched from a manifest-version drift (now a no-op post-WELD-02/03) to a bare-version-literal reintroduction
+- `test/crosswake/proof/phase169_diagnostic_legibility_test.exs` — "produce a FAIL" fixture switched from a release-manifest-version drift (now a no-op post-WELD-02/03) to a bare-version-literal reintroduction
 - `script/collection_assertion_ledger.json` — two rows' `display`/`rationale` line numbers regenerated after phase169's file grew by one line (moduledoc edit); same keys, buckets, shapes — diff confirmed minimal via `elixir script/inventory_collection_assertions.exs --emit-snapshot`
 
 ## Decisions Made
@@ -152,8 +152,8 @@ _Task 2 is TDD: the test was written and run first (RED — `line_for/2` found n
 
 **2. [Rule 1 - Auto-fix bugs] Two pre-existing tests broke as a direct consequence of Task 1/3's changes**
 - **Found during:** Task 3 verification (`mix test test/crosswake/proof --max-cases 1`)
-- **Issue:** `phase142_release_integrity_test.exs`'s negative-control fixture hardcoded the exact pre-171 `if:` text (`... == '0.2.1' ...`) as a mutation target — it broke once WELD-03 changed that text. `phase169_diagnostic_legibility_test.exs`'s "produce a FAIL" fixture drifted the manifest's declared version away from the gates' literal — this technique became a no-op once WELD-02/03 made the gates and the guard read the SAME manifest (nothing can drift between them any more, which is the intended effect of the fix, not a regression). `phase170_vacuous_assertion_ledger_test.exs` then failed transitively because `phase169`'s file grew by one line (a moduledoc edit), shifting two committed collection-assertion-ledger line numbers by +1.
-- **Fix:** Updated `phase142`'s decoy string to the post-WELD-03 comparison text. Rewrote `phase169`'s FAIL-producing fixture to reintroduce a bare version literal into a gated job's `if:` clause (the exact defect class `release.publish_gate.no_bare_version_literal` exists to catch) instead of drifting the manifest, using `RELEASE_WORKFLOW_PATH` env override (already supported by the scanner) in place of `RELEASE_PLEASE_MANIFEST_PATH`. Regenerated `script/collection_assertion_ledger.json` via `elixir script/inventory_collection_assertions.exs --emit-snapshot`; diffed against the previous committed ledger and confirmed only the two affected rows' `display`/`rationale` line numbers changed (same `key`, `bucket`, `shape`, `expression`).
+- **Issue:** `phase142_release_integrity_test.exs`'s negative-control fixture hardcoded the exact pre-171 `if:` text (`... == '0.2.1' ...`) as a mutation target — it broke once WELD-03 changed that text. `phase169_diagnostic_legibility_test.exs`'s "produce a FAIL" fixture drifted the release manifest's declared version away from the gates' literal — this technique became a no-op once WELD-02/03 made the gates and the guard read the SAME release manifest (nothing can drift between them any more, which is the intended effect of the fix, not a regression). `phase170_vacuous_assertion_ledger_test.exs` then failed transitively because `phase169`'s file grew by one line (a moduledoc edit), shifting two committed collection-assertion-ledger line numbers by +1.
+- **Fix:** Updated `phase142`'s decoy string to the post-WELD-03 comparison text. Rewrote `phase169`'s FAIL-producing fixture to reintroduce a bare version literal into a gated job's `if:` clause (the exact defect class `release.publish_gate.no_bare_version_literal` exists to catch) instead of drifting the release manifest, using `RELEASE_WORKFLOW_PATH` env override (already supported by the scanner) in place of `RELEASE_PLEASE_MANIFEST_PATH`. Regenerated `script/collection_assertion_ledger.json` via `elixir script/inventory_collection_assertions.exs --emit-snapshot`; diffed against the previous committed ledger and confirmed only the two affected rows' `display`/`rationale` line numbers changed (same `key`, `bucket`, `shape`, `expression`).
 - **Files modified:** `test/crosswake/proof/phase142_release_integrity_test.exs`, `test/crosswake/proof/phase169_diagnostic_legibility_test.exs`, `script/collection_assertion_ledger.json`
 - **Verification:** `mix test test/crosswake/proof --max-cases 1` — 677 tests, 0 failures (confirmed twice, after each fix pass).
 - **Committed in:** `db21fe64` (Task 3 commit)

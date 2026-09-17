@@ -135,19 +135,19 @@ defmodule Crosswake.Proof.Phase171ApprovedVersionOutputTest do
       dir = tmp_dir!("version-independence")
       _other_manifest = manifest_at!(dir, "9.9.9")
 
-      # The guard step's own text does not change based on manifest CONTENT --
+      # The guard step's own text does not change based on release-manifest CONTENT --
       # only its behavior at runtime does. Re-reading the workflow after
-      # pointing at a differently-versioned manifest fixture confirms the
+      # pointing at a differently-versioned release-manifest fixture confirms the
       # identity predicates are asserted unconditionally in the job body
-      # (not templated/interpolated from the manifest at authoring time).
+      # (not templated/interpolated from the release manifest at authoring time).
       block = job_block(File.read!(@workflow), "approved-release-guard")
 
       found_before =
         Enum.filter(@identity_predicates, fn {_label, needle} -> block =~ needle end)
 
-      # Re-read after "pointing" a differently-versioned manifest -- the
+      # Re-read after "pointing" a differently-versioned release manifest -- the
       # guard step's static text in the workflow file is unaffected by which
-      # manifest content will be read at runtime.
+      # release-manifest content will be read at runtime.
       block_after = job_block(File.read!(@workflow), "approved-release-guard")
 
       found_after =
@@ -156,7 +156,7 @@ defmodule Crosswake.Proof.Phase171ApprovedVersionOutputTest do
       assert found_before != []
 
       assert found_before == found_after,
-             "the identity predicates found must not depend on the declared manifest version"
+             "the identity predicates found must not depend on the declared release-manifest version"
     end
   end
 

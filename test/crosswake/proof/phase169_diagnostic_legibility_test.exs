@@ -753,7 +753,7 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
 
   # Phase 171 (WELD-02/WELD-03) made the publish gates derive their version
   # comparison from the same release manifest the guard already reads, so a
-  # manifest-only drift (the pre-171 fixture technique this helper used) no
+  # release-manifest-only drift (the pre-171 fixture technique this helper used) no
   # longer produces ANY scanner FAIL -- that is the intended effect of the
   # fix, not a regression. Reintroducing a bare version literal into one
   # gated job's if: clause (the shape release.publish_gate.no_bare_version_literal
