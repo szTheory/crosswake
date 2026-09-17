@@ -41,8 +41,7 @@ on:
         type: string
       release_version:
         description: 'Expected @version string in the selected package mix.exs at that ref.'
-        required: false
-        default: '0.2.1'
+        required: true
         type: string
       candidate_head:
         description: 'Exact refreshed Release Please candidate head (40 lowercase hex).'
@@ -65,17 +64,22 @@ on:
         default: ''
         type: string
       approved_head:
-        description: 'Approved refreshed candidate head required for root 0.2.1 recovery.'
+        description: 'Approved refreshed candidate head required for root Hex recovery.'
         required: false
         default: ''
         type: string
       approved_tree:
-        description: 'Approved candidate tree required for root 0.2.1 recovery.'
+        description: 'Approved candidate tree required for root Hex recovery.'
         required: false
         default: ''
         type: string
       merge_oid:
-        description: 'Exact approved two-parent merge commit required for root 0.2.1 recovery.'
+        description: 'Exact approved two-parent merge commit required for root Hex recovery.'
+        required: false
+        default: ''
+        type: string
+      approved_version:
+        description: 'Approved release version required for root Hex recovery.'
         required: false
         default: ''
         type: string
@@ -162,6 +166,7 @@ jobs:
           RECOVERY_REF: ${{ inputs.ref }}
           RECOVERY_PACKAGE: ${{ inputs.package }}
           EXPECTED_VERSION: ${{ inputs.release_version }}
+          APPROVED_VERSION: ${{ inputs.approved_version }}
           APPROVED_HEAD: ${{ inputs.approved_head }}
           APPROVED_TREE: ${{ inputs.approved_tree }}
           MERGE_OID: ${{ inputs.merge_oid }}
@@ -189,7 +194,15 @@ jobs:
             exit 1
           fi
 
-          if [ "$RECOVERY_PACKAGE" = "crosswake" ] && [ "$EXPECTED_VERSION" = "0.2.1" ]; then
+          if [ "$RECOVERY_PACKAGE" = "crosswake" ]; then
+            if [ -z "$APPROVED_VERSION" ]; then
+              echo "[crosswake] FAIL: approved_version is required to recover crosswake, but none was supplied."
+              exit 1
+            fi
+            if [ "$EXPECTED_VERSION" != "$APPROVED_VERSION" ]; then
+              echo "[crosswake] FAIL: release_version '${EXPECTED_VERSION}' does not match approved_version '${APPROVED_VERSION}'."
+              exit 1
+            fi
             printf '%s' "$APPROVED_HEAD$APPROVED_TREE$MERGE_OID" | grep -Eq '^[0-9a-f]{120}$'
             printf '%s' "$CANDIDATE_RECEIPT" | grep -Eq '^[0-9a-f]{64}$'
             [ "$RECOVERY_REF" = "$PHASE168_MERGE_OID" ]
@@ -281,6 +294,7 @@ jobs:
           --approved-tree "${{ inputs.approved_tree }}"
           --merge-oid "${{ inputs.merge_oid }}"
           --candidate-receipt "${{ inputs.candidate_receipt }}"
+          --expected-version "${{ inputs.approved_version }}"
 
   recover-android-core:
     name: Recover approved Android core from exact merge
@@ -294,6 +308,7 @@ jobs:
         env:
           RECOVERY_PACKAGE: ${{ inputs.package }}
           RECOVERY_VERSION: ${{ inputs.release_version }}
+          APPROVED_VERSION: ${{ inputs.approved_version }}
           RECOVERY_REF: ${{ inputs.ref }}
           APPROVED_HEAD: ${{ inputs.approved_head }}
           APPROVED_TREE: ${{ inputs.approved_tree }}
@@ -305,7 +320,8 @@ jobs:
         run: |
           set -euo pipefail
           [ "$RECOVERY_PACKAGE" = "crosswake" ]
-          [ "$RECOVERY_VERSION" = "0.2.1" ]
+          [ -n "$APPROVED_VERSION" ]
+          [ "$RECOVERY_VERSION" = "$APPROVED_VERSION" ]
           [ "$RECOVERY_REF" = "$PHASE168_MERGE_OID" ]
           [ "${{ inputs.merge_oid }}" = "$PHASE168_MERGE_OID" ]
           [ "$APPROVED_HEAD" = "$PHASE168_APPROVED_HEAD" ]

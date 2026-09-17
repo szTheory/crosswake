@@ -24,7 +24,7 @@ on:
         type: string
         default: '0.2.0'
       release_ref:
-        description: 'Exact source ref: the 0.2.0 iOS tag for baseline or a 40-character 0.2.1 candidate SHA.'
+        description: 'Exact source ref: the 0.2.0 iOS tag for baseline or a full 40-character candidate commit SHA.'
         required: true
         type: string
         default: 'refs/tags/ios-core-v0.2.0'
@@ -99,12 +99,13 @@ jobs:
       CANDIDATE_TREE: "${{ inputs.candidate_tree }}"
       CANDIDATE_BASE: "${{ inputs.candidate_base }}"
       CANDIDATE_RECEIPT: "${{ inputs.candidate_receipt }}"
+      CANDIDATE_VERSION: "${{ inputs.version }}"
       CANDIDATE_RUN_ID: ${{ github.run_id }}
     steps:
       - name: Validate exact candidate authority
         run: |
           set -euo pipefail
-          [ "${{ inputs.version }}" = "0.2.1" ]
+          printf '%s' "$CANDIDATE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
           [ "${{ inputs.release_ref }}" = "$CANDIDATE_HEAD" ]
           printf '%s' "$CANDIDATE_HEAD" | grep -Eq '^[0-9a-f]{40}$'
           printf '%s' "$CANDIDATE_TREE" | grep -Eq '^[0-9a-f]{40}$'
@@ -144,7 +145,7 @@ jobs:
 
           mkdir -p "$OUTPUT_DIR"
           bash script/release_candidate/ios_mirror.sh candidate \
-            --version 0.2.1 --ref "$CANDIDATE_HEAD" | tee "$OUTPUT_DIR/mirror.json"
+            --version "$CANDIDATE_VERSION" --ref "$CANDIDATE_HEAD" | tee "$OUTPUT_DIR/mirror.json"
           python3 -c 'import json,sys; value=json.load(open(sys.argv[1])); assert value["state"]=="PASS" and value["authorization_result"]=="PROVEN" and value["external_state_changed"] is False' "$OUTPUT_DIR/mirror.json"
 
           workflow_sha256=$(sha256sum .github/workflows/ios-mirror-backfill.yml | awk '{print $1}')
@@ -175,6 +176,7 @@ jobs:
       CANDIDATE_HEAD: "${{ inputs.candidate_head }}"
       CANDIDATE_TREE: "${{ inputs.candidate_tree }}"
       CANDIDATE_BASE: "${{ inputs.candidate_base }}"
+      CANDIDATE_VERSION: "${{ inputs.version }}"
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Decode closed attestation envelope
@@ -184,6 +186,7 @@ jobs:
         run: |
           set -euo pipefail
           printf '%s' "$CANDIDATE_HEAD$CANDIDATE_TREE$CANDIDATE_BASE" | grep -Eq '^[0-9a-f]{120}$'
+          printf '%s' "$CANDIDATE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
           mkdir -p "$OUTPUT_DIR"
           python3 -c 'import base64,hashlib,json,os,pathlib,re; value=json.loads(os.environ["ATTESTATION_ENVELOPE"]); required={"candidate_ci_run_id","hex_run_id","ios_run_id","payload_base64","sha256"}; assert set(value)==required; assert re.fullmatch(r"[0-9a-f]{64}",value["sha256"]); assert all(isinstance(value[key],int) and value[key]>0 for key in ("candidate_ci_run_id","hex_run_id","ios_run_id")); payload=base64.b64decode(value["payload_base64"],validate=True); assert hashlib.sha256(payload).hexdigest()==value["sha256"]; pathlib.Path(os.environ["OUTPUT_DIR"],"candidate-receipt.json").write_bytes(payload); print("candidate_ci_run_id={}".format(value["candidate_ci_run_id"])); print("hex_run_id={}".format(value["hex_run_id"])); print("ios_run_id={}".format(value["ios_run_id"])); print("receipt_sha256={}".format(value["sha256"]))' >> "$GITHUB_OUTPUT"
 
@@ -285,12 +288,12 @@ jobs:
           export MIX_ENV=test
           mix run -e 'receipt = System.fetch_env!("CANDIDATE_RECEIPT_PATH") |> File.read!() |> Jason.decode!(keys: :atoms) |> Crosswake.ReleaseCandidate.Receipt.validate!(); File.write!(Path.join(System.fetch_env!("OUTPUT_DIR"), "candidate-receipt.md"), Crosswake.ReleaseCandidate.Projection.markdown(receipt))'
 
-          test -z "$(git ls-remote --tags origin 'refs/tags/*0.2.1*')"
-          test "$(curl -sS -o /dev/null -w '%{http_code}' https://hex.pm/api/packages/crosswake/releases/0.2.1)" = 404
-          test "$(curl -sS -o /dev/null -w '%{http_code}' https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/0.2.1/crosswake-shell-core-android-0.2.1.pom)" = 404
+          test -z "$(git ls-remote --tags origin "refs/tags/*${CANDIDATE_VERSION}*")"
+          test "$(curl -sS -o /dev/null -w '%{http_code}' "https://hex.pm/api/packages/crosswake/releases/${CANDIDATE_VERSION}")" = 404
+          test "$(curl -sS -o /dev/null -w '%{http_code}' "https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/${CANDIDATE_VERSION}/crosswake-shell-core-android-${CANDIDATE_VERSION}.pom")" = 404
           expected_mirror_main=$(jq -er '.identity.bound.mirror.main' "$OUTPUT_DIR/candidate-receipt.json")
           test "$(git ls-remote https://github.com/szTheory/crosswake-shell-core-ios.git refs/heads/main | awk '{print $1}')" = "$expected_mirror_main"
-          test -z "$(git ls-remote https://github.com/szTheory/crosswake-shell-core-ios.git refs/tags/v0.2.1)"
+          test -z "$(git ls-remote https://github.com/szTheory/crosswake-shell-core-ios.git "refs/tags/v${CANDIDATE_VERSION}")"
 
           cp "$OUTPUT_DIR/ci/artifacts/artifacts.json" "$OUTPUT_DIR/artifacts.json"
           echo 'canonical candidate receipt attestation PASS; external_state_changed=false'
@@ -333,7 +336,7 @@ jobs:
           PHASE168_MIRROR_SPLIT: 424ab96ede1b92f2b751b54bce04c6e607f0f3c8
         run: |
           set -euo pipefail
-          [ "$RELEASE_VERSION" = "0.2.1" ]
+          printf '%s' "$RELEASE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
           [ "$RELEASE_REF" = "$PHASE168_MERGE_OID" ]
           [ "$APPROVED_HEAD" = "$PHASE168_APPROVED_HEAD" ]
           [ "$APPROVED_TREE" = "$PHASE168_APPROVED_TREE" ]
@@ -428,7 +431,7 @@ jobs:
           PHASE168_MIRROR_SPLIT: 424ab96ede1b92f2b751b54bce04c6e607f0f3c8
         run: |
           set -euo pipefail
-          [ "$RELEASE_VERSION" = "0.2.1" ]
+          printf '%s' "$RELEASE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
           [ "$RELEASE_REF" = "$PHASE168_MERGE_OID" ]
           [ "$APPROVED_HEAD" = "$PHASE168_APPROVED_HEAD" ]
           [ "$APPROVED_TREE" = "$PHASE168_APPROVED_TREE" ]
