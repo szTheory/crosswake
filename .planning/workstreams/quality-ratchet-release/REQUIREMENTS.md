@@ -105,6 +105,15 @@ Deferred to a later milestone. Tracked, not in this roadmap.
   maintained implementations would eventually drift apart, and neither the ledger test nor the
   guard would be able to tell you which one is right.
 
+- **VACG-02**: `verify_repository.sh` must surface the failing stage's own child output, not just
+  `FAIL <stage-id>; corrective-command=...`. Observed 2026-09-17 on PR #176: the
+  `example-host-proof` stage failed in CI and the entire job log contained exactly one line about
+  it — no test output, no assertion, no exit detail — so the only way to learn what broke was to
+  reproduce the stage locally. This is the same shape as the defects VAC-01..03 target, one layer
+  up: a red signal that carries no information about the thing it names. Fix belongs wherever the
+  stage runner captures child stdio (`script/verify_repository.mjs`), and must apply to every
+  stage, not just this one.
+
 ### Consolidation
 
 - **CONS-01**: Delete the legacy positional clean-room path once the backport has proven stable across a release cycle
