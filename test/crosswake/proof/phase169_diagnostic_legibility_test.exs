@@ -181,6 +181,7 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
         core: [],
         companions: [],
         release_candidate: %{
+          version: "0.0.0",
           state: "BLOCKED",
           next_action: "n/a",
           linked_coordinates: [],

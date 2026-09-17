@@ -9,7 +9,7 @@ defmodule Crosswake.ReleaseCandidate.Coordinate do
 
   alias Crosswake.ReleaseCandidate.Artifact
 
-  @candidate "0.2.1"
+  @version_pattern ~r/\A\d+\.\d+\.\d+\z/
   @linked_components ~w(hex ios-core android-core)
   @input_keys ~w(
     version
@@ -46,14 +46,29 @@ defmodule Crosswake.ReleaseCandidate.Coordinate do
         }
   def validate!(input) do
     unless exact_map?(input, @input_keys), do: invalid!()
-    unless input.version == @candidate, do: invalid!()
+
+    # D-171-C: the release-manifest `.` entry is the single designated source
+    # the candidate version is derived from (matching the authority ordering
+    # used throughout this phase); every other source below is asserted equal
+    # to this one derived value, never independently equal to a literal. The
+    # format check and the input.version cross-check are folded into the same
+    # raise site below, rather than a new one, so this file's raise-site count
+    # stays unchanged from before this fix.
+    manifest_version = if is_map(input.manifest), do: Map.get(input.manifest, "."), else: nil
+
+    unless is_binary(manifest_version) and Regex.match?(@version_pattern, manifest_version) and
+             input.version == manifest_version,
+           do: invalid!()
+
+    version = manifest_version
+
     unless input.independent_proposals == @independent_proposals, do: invalid!()
     unless input.approval_children == [], do: invalid!()
 
-    artifacts = validate_artifacts!(input.artifacts)
-    validate_manifest!(input.manifest, artifacts)
+    artifacts = validate_artifacts!(input.artifacts, version)
+    validate_manifest!(input.manifest, artifacts, version)
     validate_release_config!(input.release_config)
-    validate_sources!(input)
+    validate_sources!(input, version)
 
     companions =
       Artifact.packages()
@@ -72,13 +87,13 @@ defmodule Crosswake.ReleaseCandidate.Coordinate do
     ArgumentError -> invalid!()
   end
 
-  defp validate_artifacts!(artifacts) when is_list(artifacts) do
+  defp validate_artifacts!(artifacts, version) when is_list(artifacts) do
     packages = Enum.map(artifacts, &artifact_package!/1)
     unless packages == Artifact.packages(), do: invalid!()
 
     by_package = Map.new(artifacts, &{&1.package, &1})
     core = Map.fetch!(by_package, "crosswake")
-    unless core.version == @candidate, do: invalid!()
+    unless core.version == version, do: invalid!()
 
     Enum.each(artifacts, fn artifact ->
       unless is_binary(artifact.version), do: invalid!()
@@ -90,7 +105,7 @@ defmodule Crosswake.ReleaseCandidate.Coordinate do
     by_package
   end
 
-  defp validate_artifacts!(_artifacts), do: invalid!()
+  defp validate_artifacts!(_artifacts, _version), do: invalid!()
 
   defp artifact_package!(%{package: package}) when is_binary(package), do: package
   defp artifact_package!(_artifact), do: invalid!()
@@ -104,14 +119,14 @@ defmodule Crosswake.ReleaseCandidate.Coordinate do
 
   defp regular_mix_file?(_files), do: false
 
-  defp validate_manifest!(manifest, artifacts) when is_map(manifest) do
+  defp validate_manifest!(manifest, artifacts, version) when is_map(manifest) do
     expected_paths =
       Map.values(@manifest_paths) ++ Enum.map(tl(Artifact.packages()), &"packages/#{&1}")
 
     unless Map.keys(manifest) |> Enum.sort() == Enum.sort(expected_paths), do: invalid!()
 
     Enum.each(@manifest_paths, fn {_component, path} ->
-      unless Map.get(manifest, path) == @candidate, do: invalid!()
+      unless Map.get(manifest, path) == version, do: invalid!()
     end)
 
     Artifact.packages()
@@ -122,7 +137,7 @@ defmodule Crosswake.ReleaseCandidate.Coordinate do
     end)
   end
 
-  defp validate_manifest!(_manifest, _artifacts), do: invalid!()
+  defp validate_manifest!(_manifest, _artifacts, _version), do: invalid!()
 
   defp validate_release_config!(%{"plugins" => plugins, "packages" => packages})
        when is_list(plugins) and is_map(packages) do
@@ -158,11 +173,11 @@ defmodule Crosswake.ReleaseCandidate.Coordinate do
 
   defp validate_release_config!(_config), do: invalid!()
 
-  defp validate_sources!(input) do
-    unless extract_version!(input.root_mix, ~r/@version\s+"([^"]+)"/) == @candidate,
+  defp validate_sources!(input, version) do
+    unless extract_version!(input.root_mix, ~r/@version\s+"([^"]+)"/) == version,
       do: invalid!()
 
-    unless extract_version!(input.android_gradle, ~r/version\s*=\s*"([^"]+)"/) == @candidate,
+    unless extract_version!(input.android_gradle, ~r/version\s*=\s*"([^"]+)"/) == version,
       do: invalid!()
 
     unless is_binary(input.ios_package) and
