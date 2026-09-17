@@ -612,9 +612,16 @@ version: ${{ steps.release.outputs.version }}
 **If this table is empty:** N/A — five assumptions logged above, all flagged inline at point of use
 rather than presented as verified fact.
 
-## Open Questions
+## Open Questions (RESOLVED — see the Orchestrator Addendum at the end of this file)
 
-1. **Does `Crosswake.ReleaseCandidate.Coordinate` need fixing in this phase, or is it confirmed dead code?**
+> Both questions below were open when this section was written and were **resolved by direct
+> inspection before planning began**. Their verified answers, with the commands and evidence, are in
+> the `## Orchestrator Addendum` section at the end of this file, and the plans consume those
+> resolutions as decisions D-171-C and D-171-D. The original wording is kept so the provenance of
+> each answer stays legible.
+
+1. **RESOLVED** (see Addendum, Open Question 1 — no production caller).
+   **Does `Crosswake.ReleaseCandidate.Coordinate` need fixing in this phase, or is it confirmed dead code?**
    - What we know: no production caller found via static grep this session; the module's own tests
      exercise it in isolation.
    - What's unclear: whether a Mix task, a script, or dynamic dispatch invokes it outside what a plain
@@ -624,7 +631,8 @@ rather than presented as verified fact.
      if genuinely orphaned, note it explicitly in the weld-inventory table as "orphaned, not wired into
      any production path as of this phase" rather than silently omitting the file.
 
-2. **Are `ios-mirror-backfill.yml:288-293`'s negative-control lines a fixture or a live gate?**
+2. **RESOLVED** (see Addendum, Open Question 2 — live gate, currently unsatisfiable).
+   **Are `ios-mirror-backfill.yml:288-293`'s negative-control lines a fixture or a live gate?**
    - What we know: they assert the specific 0.2.1 artifacts are NOT YET public, in a job whose
      surrounding trigger/name context was not fully re-read this session (only the two grepped lines).
    - What's unclear: whether this input mode is retained specifically to document the original 0.2.1
