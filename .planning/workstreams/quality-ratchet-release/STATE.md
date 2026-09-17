@@ -4,18 +4,18 @@ milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 172
 current_phase_name: Per-Package Proof Scope
-status: verifying
-stopped_at: Completed 172-03-PLAN.md
-last_updated: "2026-09-17T20:34:33.516Z"
+status: ready_to_plan
+stopped_at: Phase 172 complete — verified 4/4, one PR open for the whole phase; Phase 173 unblocked and unplanned
+last_updated: "2026-09-17T20:47:39.477Z"
 last_activity: 2026-09-17
-last_activity_desc: Phase 172 execution started
-state_head: ff3962bd727f11b4db946e92fedf87d7222356f5
+last_activity_desc: Phase 172 executed and verified
+state_head: 199fc1324846ab44c8612196c4c2a8ce52e1a9d8
 progress:
   total_phases: 7
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 17
   completed_plans: 17
-  percent: 43
+  percent: 57
 ---
 
 # Project State
@@ -47,7 +47,7 @@ Revisit once the post-publication proof lane can actually run.
 
 Phase: 172 (Per-Package Proof Scope) — EXECUTING
 Plan: 3 of 3
-Status: Phase complete — ready for verification
+Status: ready_to_plan
 Last activity: 2026-09-17 — Phase 172 execution started
 
 ## Performance Metrics
