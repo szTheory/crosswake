@@ -29,7 +29,7 @@ unacknowledged. See `MILESTONES.md` for the recorded overrides.
 - [x] **Phase 169: Diagnostic Legibility** - Every release/verification check surfaces its own failing message, and distinguishes "never ran" from "never defined" (completed 2026-09-16)
 - [x] **Phase 170: Vacuous Assertion Remediation** - All 173 SEED-018-flagged sites are classified and every confirmed-vacuous one is rewritten so an empty collection fails (completed 2026-09-16)
 - [x] **Phase 171: Version/Authority Split** - The release graph is version-parametric while the approval identity gate stays exact; the `0.2.1` weld and its interim tripwire are both retired atomically (completed 2026-09-17)
-- [x] **Phase 172: Per-Package Proof Scope** - Byte-exact publish verification is proven against each package's own approved ref, never one shared ref for all six
+- [x] **Phase 172: Per-Package Proof Scope** - Byte-exact publish verification is proven against each package's own approved ref, never one shared ref for all six (completed 2026-09-17)
 - [ ] **Phase 173: Recovery-Path Proof Convergence** - `exact-public-proof` runs and must pass identically whether a publish happened via the ordinary or the recovery path
 - [ ] **Phase 174: Clean-Room Host Realism & Adopter Fidelity** - The clean-room lane exercises install, not just compile, on both code paths, and the two named adopter gaps are closed or deferred with a reason
 - [ ] **Phase 175: Rehearsal and Publish** - `crosswake 0.2.2` and the two held companion PRs are live through the repaired graph, and `exact-public-proof` has actually executed and passed for 0.2.2
@@ -197,16 +197,16 @@ proof (run against a pre-fix fixture of the workflow file) as part of that same 
 
 **Plans**: 5 plans (one PR — see **Note on atomicity**; no plan is separately mergeable)
 
-- [ ] 171-01-PLAN.md — approved_version spine: guard derivation, four publish gates, the new
+- [x] 171-01-PLAN.md — approved_version spine: guard derivation, four publish gates, the new
       `release.publish_gate.no_bare_version_literal` check with its pre-repair-fixture proof, and the
       tripwire deletion (wave 1)
-- [ ] 171-02-PLAN.md — version-parametric rollup coordinates and the clean-room validator's version
+- [x] 171-02-PLAN.md — version-parametric rollup coordinates and the clean-room validator's version
       conjunct removal (wave 2)
-- [ ] 171-03-PLAN.md — CLI entrypoint format checks plus identity/mirror/status/coordinate
+- [x] 171-03-PLAN.md — CLI entrypoint format checks plus identity/mirror/status/coordinate
       generalization (wave 2)
-- [ ] 171-04-PLAN.md — publish and mirror shell scripts, the dispatch workflows, and the scanner's
+- [x] 171-04-PLAN.md — publish and mirror shell scripts, the dispatch workflows, and the scanner's
       remaining self-assertions (wave 3)
-- [ ] 171-05-PLAN.md — the committed weld inventory, the DOC-05 terminology pass, the measured sweep,
+- [x] 171-05-PLAN.md — the committed weld inventory, the DOC-05 terminology pass, the measured sweep,
       and the single-PR checkpoint (wave 4)
 
 **Research**: Standard pattern — the receipt-output idiom (`approved-release-guard.outputs.*`) is
