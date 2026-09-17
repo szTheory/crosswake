@@ -4,11 +4,7 @@ defmodule Crosswake.ReleaseCandidate.Workflow do
   @children ~w(hex ios_mirror android ios_public_proof android_public_proof exact_public)a
   @public_children ~w(hex ios_mirror android)a
   @statuses ~w(success failed skipped)
-  @coordinates %{
-    hex: "hex:crosswake@0.2.1",
-    ios_mirror: "swift:crosswake-shell-core-ios@0.2.1",
-    android: "maven:io.crosswake:crosswake-shell-core@0.2.1"
-  }
+  @version_pattern ~r/\A\d+\.\d+\.\d+\z/
   @dependencies %{
     hex: [],
     ios_mirror: [],
@@ -20,10 +16,13 @@ defmodule Crosswake.ReleaseCandidate.Workflow do
 
   @spec rollup!(map()) :: map()
   def rollup!(input) do
-    unless exact_map?(input, ~w(approved_ref candidate_receipt children)a), do: invalid!()
+    unless exact_map?(input, ~w(approved_ref candidate_receipt children version)a),
+      do: invalid!()
+
     approved_ref = exact_hex!(input.approved_ref, 40)
     candidate_receipt = exact_hex!(input.candidate_receipt, 64)
     children = children!(input.children)
+    version = version!(input.version)
 
     Enum.each(@children, fn child ->
       if children[child] == "success" and
@@ -31,10 +30,12 @@ defmodule Crosswake.ReleaseCandidate.Workflow do
          do: invalid!()
     end)
 
+    coordinates = coordinates(version)
+
     successful_coordinates =
       @public_children
       |> Enum.filter(&(children[&1] == "success"))
-      |> Enum.map(&Map.fetch!(@coordinates, &1))
+      |> Enum.map(&Map.fetch!(coordinates, &1))
       |> Enum.sort()
 
     failed_child = Enum.find(@children, &(children[&1] != "success"))
@@ -47,9 +48,10 @@ defmodule Crosswake.ReleaseCandidate.Workflow do
       end
 
     %{
-      schema_version: "1.0.0",
+      schema_version: "1.1.0",
       approved_ref: approved_ref,
       candidate_receipt: candidate_receipt,
+      version: version,
       child_states: children,
       successful_coordinates: successful_coordinates,
       failed_step: if(failed_child, do: Atom.to_string(failed_child)),
@@ -70,7 +72,7 @@ defmodule Crosswake.ReleaseCandidate.Workflow do
   def validate!(result) do
     unless exact_map?(
              result,
-             ~w(schema_version approved_ref candidate_receipt child_states successful_coordinates failed_step failed_ref state next_action receipt_external_state)a
+             ~w(schema_version approved_ref candidate_receipt version child_states successful_coordinates failed_step failed_ref state next_action receipt_external_state)a
            ),
            do: invalid!()
 
@@ -78,7 +80,8 @@ defmodule Crosswake.ReleaseCandidate.Workflow do
       rollup!(%{
         approved_ref: result.approved_ref,
         candidate_receipt: result.candidate_receipt,
-        children: result.child_states
+        children: result.child_states,
+        version: result.version
       })
 
     if rebuilt == result, do: result, else: invalid!()
@@ -96,6 +99,7 @@ defmodule Crosswake.ReleaseCandidate.Workflow do
       rollup!(%{
         approved_ref: merge_oid,
         candidate_receipt: System.fetch_env!("CANDIDATE_RECEIPT"),
+        version: System.fetch_env!("APPROVED_VERSION"),
         children: %{
           hex: workflow_status!(System.fetch_env!("HEX_STATE")),
           ios_mirror: workflow_status!(System.fetch_env!("IOS_STATE")),
@@ -125,6 +129,20 @@ defmodule Crosswake.ReleaseCandidate.Workflow do
   defp children!(children) do
     unless exact_map?(children, @children), do: invalid!()
     Map.new(@children, &{&1, enum!(Map.fetch!(children, &1), @statuses)})
+  end
+
+  defp version!(version) when is_binary(version) do
+    if Regex.match?(@version_pattern, version), do: version, else: invalid!()
+  end
+
+  defp version!(_version), do: invalid!()
+
+  defp coordinates(version) do
+    %{
+      hex: "hex:crosswake@#{version}",
+      ios_mirror: "swift:crosswake-shell-core-ios@#{version}",
+      android: "maven:io.crosswake:crosswake-shell-core@#{version}"
+    }
   end
 
   defp workflow_status!("success"), do: "success"

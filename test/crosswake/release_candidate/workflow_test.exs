@@ -84,7 +84,7 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     for job <- ~w(publish-hex publish-ios-core publish-android-core) do
       block = job_block(workflow, job)
       assert block =~ "approved-release-guard"
-      assert block =~ "0.2.1"
+      assert block =~ "needs.approved-release-guard.outputs.approved_version"
       refute block =~ "environment:"
     end
   end
@@ -309,6 +309,95 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     end
   end
 
+  test "coordinate derivation is a function of the input version, not a frozen literal" do
+    children = %{
+      hex: "success",
+      ios_mirror: "success",
+      android: "success",
+      ios_public_proof: "success",
+      android_public_proof: "success",
+      exact_public: "success"
+    }
+
+    result_a = Workflow.rollup!(rollup_input(children, "0.2.2"))
+    result_b = Workflow.rollup!(rollup_input(children, "9.9.9"))
+
+    assert [_ | _] = result_a.successful_coordinates
+    assert [_ | _] = result_b.successful_coordinates
+
+    assert result_a.successful_coordinates ==
+             Enum.sort([
+               "hex:crosswake@0.2.2",
+               "swift:crosswake-shell-core-ios@0.2.2",
+               "maven:io.crosswake:crosswake-shell-core@0.2.2"
+             ])
+
+    for {a, b} <- Enum.zip(result_a.successful_coordinates, result_b.successful_coordinates) do
+      refute a == b
+    end
+
+    assert result_a.state == result_b.state
+    assert result_a.version == "0.2.2"
+    assert result_b.version == "9.9.9"
+
+    # receipt_external_state's pass/fail topology (publication, failed_step, changed,
+    # all_linked_proven) is version-independent; its embedded successful_coordinates is
+    # necessarily version-bearing, same as the top-level field above.
+    topology_keys = [:publication, :failed_step, :changed, :all_linked_proven]
+
+    assert Map.take(result_a.receipt_external_state, topology_keys) ==
+             Map.take(result_b.receipt_external_state, topology_keys)
+
+    assert result_a.receipt_external_state.successful_coordinates ==
+             result_a.successful_coordinates
+
+    assert result_b.receipt_external_state.successful_coordinates ==
+             result_b.successful_coordinates
+  end
+
+  test "rollup! requires a version key and rejects non-semver version strings" do
+    children = %{
+      hex: "success",
+      ios_mirror: "success",
+      android: "success",
+      ios_public_proof: "success",
+      android_public_proof: "success",
+      exact_public: "success"
+    }
+
+    assert_raise ArgumentError, "release workflow observation is invalid", fn ->
+      Workflow.rollup!(%{
+        approved_ref: String.duplicate("a", 40),
+        candidate_receipt: String.duplicate("b", 64),
+        children: children
+      })
+    end
+
+    for bad_version <- ["0.2", "0.2.1-rc1", "v0.2.1", "0.2.1.0", "latest", ""] do
+      assert_raise ArgumentError, "release workflow observation is invalid", fn ->
+        Workflow.rollup!(rollup_input(children, bad_version))
+      end
+    end
+  end
+
+  test "validate! round-trips a non-candidate version and rejects a version/coordinate mismatch" do
+    children = %{
+      hex: "success",
+      ios_mirror: "success",
+      android: "success",
+      ios_public_proof: "success",
+      android_public_proof: "success",
+      exact_public: "success"
+    }
+
+    result = Workflow.rollup!(rollup_input(children, "3.4.5"))
+    assert Workflow.validate!(result) == result
+
+    assert_raise ArgumentError, "release workflow observation is invalid", fn ->
+      Workflow.validate!(%{result | version: "9.9.9"})
+    end
+  end
+
   defp job_block(workflow, job) do
     regex = ~r/(?ms)^  #{Regex.escape(job)}:\n(.*?)(?=^  [A-Za-z0-9_-]+:\n|\z)/
 
@@ -318,11 +407,12 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     end
   end
 
-  defp rollup_input(children) do
+  defp rollup_input(children, version \\ "0.2.1") do
     %{
       approved_ref: String.duplicate("a", 40),
       candidate_receipt: String.duplicate("b", 64),
-      children: children
+      children: children,
+      version: version
     }
   end
 

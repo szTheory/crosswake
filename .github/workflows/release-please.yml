@@ -816,6 +816,7 @@ jobs:
           APPROVED_HEAD: ${{ needs.approved-release-guard.outputs.approved_head }}
           APPROVED_TREE: ${{ needs.approved-release-guard.outputs.approved_tree }}
           APPROVED_REF: ${{ needs.approved-release-guard.outputs.merge_oid }}
+          APPROVED_VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
           CANDIDATE_RECEIPT: ${{ needs.approved-release-guard.outputs.candidate_receipt }}
           HEX_STATE: ${{ needs.publish-hex.result }}
           IOS_STATE: ${{ needs.publish-ios-core.result }}
