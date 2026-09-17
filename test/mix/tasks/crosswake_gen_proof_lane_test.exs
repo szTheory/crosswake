@@ -126,7 +126,9 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
       assert before == snapshot(root)
       assert diff == Enum.sort_by(diff, & &1.path)
       assert %{path: "e2e/crosswake_proof_lane/proof_lane.spec.ts", status: :different} in diff
+      refute Enum.empty?(diff)
       assert Enum.all?(diff, &(&1.status in [:missing, :different, :current]))
+      refute Enum.empty?(diff)
       refute Enum.any?(diff, &(inspect(&1) =~ "study/sync"))
     end)
   end
@@ -152,6 +154,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
         )
         |> Enum.map(fn {:ok, result} -> result end)
 
+      refute Enum.empty?(outcomes)
       assert Enum.all?(outcomes, &match?({:ok, _}, &1))
       assert File.regular?(Path.join(root, ".crosswake/proof_lane.json"))
       assert [] == staging_paths(root)
@@ -175,6 +178,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
 
         assert {:ok, _} = Generator.generate(config)
         assert :ok = Generator.check(config)
+        refute Enum.empty?(Generator.diff(config))
         assert Enum.all?(Generator.diff(config), &(&1.status in [:current, :different, :missing]))
 
         refute File.exists?(canary)

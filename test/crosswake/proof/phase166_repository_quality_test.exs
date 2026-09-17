@@ -119,6 +119,7 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
              }
            ]
 
+    refute Enum.empty?(policy["generated_contracts"])
     assert Enum.all?(policy["generated_contracts"], &valid_generated_contract?/1)
     assert no_duplicate_matchers?(policy)
   end
@@ -263,6 +264,7 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     assert source_paths == Enum.sort(source_paths)
     assert length(source_paths) == length(Enum.uniq(source_paths))
     assert "examples/phoenix_host/playwright.config.ts" in source_paths
+    refute Enum.empty?(rows)
     assert Enum.all?(rows, &(&1["result"] == "pass"))
   end
 

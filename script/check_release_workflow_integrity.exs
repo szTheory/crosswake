@@ -1,4 +1,5 @@
 #!/usr/bin/env elixir
+# exit contract: 0 clean / 1 defect found / 3 could not verify
 
 defmodule Crosswake.ReleaseWorkflowIntegrity do
   @default_workflow ".github/workflows/release-please.yml"
@@ -24,6 +25,83 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     "crosswake_chimeway" => "~> 0.2",
     "crosswake_threadline" => "~> 0.2"
   }
+
+  # Declared independently of the check bodies below (D-04/#3169). This list can rot —
+  # that is the whole point: release.scanner.roster_exact (added by a later phase task)
+  # asserts the emitted ID set equals this set exactly, in both directions, so drift
+  # between what's declared here and what the checks below actually emit is a hard FAIL,
+  # never a silent skip.
+  @roster_ids ~w(
+    recovery.hex.already_live_success_continues
+    recovery.hex.component_input
+    recovery.hex.exact_ref_only
+    recovery.hex.package_map_complete
+    recovery.ios.exact_identity_gate
+    release.aggregate_gate.behavioral_jobs_absent
+    release.android.path_gate
+    release.android_proof.decoupled
+    release.approval.linked_graph
+    release.approval.merge_tree_guard
+    release.candidate.receipt_attestation
+    release.chimeway.component_gate
+    release.chimeway.proof_gate
+    release.ci.candidate_matrix
+    release.cleanroom.exact_companion_pin
+    release.cleanroom.hex_metadata_floor
+    release.cleanroom.lockfile_postcondition
+    release.cleanroom.package_matrix_complete
+    release.cleanroom.package_profiles_preserved
+    release.cleanup.after_publish_and_proof
+    release.cleanup.deduped
+    release.cleanup.pr_only
+    release.concurrency.no_true_cancellation
+    release.concurrency.not_cancelled
+    release.concurrency.queue_max
+    release.doctor.app_config_requirement
+    release.doctor.fresh_router_loaded
+    release.hex_publish.already_live_preflight
+    release.hex_publish.no_replace
+    release.hex_publish.shared_helper
+    release.ios.checkout_ref_pinned
+    release.ios.independent_publication
+    release.ios.ordinary_atomic_push
+    release.ios.path_gate
+    release.ios.ssh_transport
+    release.ios_mirror.four_modes
+    release.ios_proof.decoupled
+    release.outputs.paths_released
+    release.partial.exact_ref_recovery
+    release.partial.phase168_recovery_routes
+    release.rehearsal.exact_identity
+    release.rehearsal.hex_candidate
+    release.rehearsal.ios_candidate
+    release.rehearsal.no_mutation
+    release.rindle.component_gate
+    release.rindle.proof_gate
+    release.root_hex.path_gate
+    release.rulestead.component_gate
+    release.rulestead.proof_gate
+    release.scanner.roster_exact
+    release.sigra.component_gate
+    release.sigra.proof_gate
+    release.threadline.component_gate
+    release.threadline.proof_gate
+    release.version_graph.companion_floors_honest
+    release.version_graph.companions_independent
+    release.version_graph.lockstep_core_native_only
+    release.version_weld.gates_match_declared_version
+    release.workflow.aggregate_gate.behavioral_jobs_absent
+    release.workflow.companion_floors_honest
+    release.workflow.concurrency_queue_max
+    release.workflow.doctor_proof_unmasked
+    release.workflow.native_proof_decoupled
+    release.workflow.native_rollup_fails_closed
+    release.workflow.native_rollup_summary
+    release.workflow.native_status_artifact
+    release.workflow.no_cancel_in_progress_true
+    release.workflow.proof_after_publish
+    release.workflow.release_failure_alert_native
+  )
 
   def run(argv \\ System.argv(), env_path \\ System.get_env("RELEASE_WORKFLOW_PATH")) do
     workflow_path = workflow_path(argv, env_path)
@@ -163,18 +241,27 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         candidate_ci_contract(ci_workflow)
       ] ++ component_gates(jobs) ++ component_proof_gates(jobs)
 
+    # D-04: appended AFTER the full eager list is built (including this check's own
+    # emitted ID), so it participates in the ROSTER/DONE counts like any other check
+    # and can compare the FULL emitted ID set — itself included — against @roster_ids.
+    checks = checks ++ [roster_exact(checks)]
+
     failures = Enum.filter(checks, &match?({:error, _, _}, &1))
+
+    IO.puts("[crosswake] ROSTER: #{length(@roster_ids)} #{Enum.join(@roster_ids, ",")}")
 
     for {status, id, detail} <- checks do
       prefix = if status == :ok, do: "OK", else: "FAIL"
       IO.puts("[crosswake] #{prefix}: #{id} - #{detail}")
     end
 
-    if failures == [] do
-      System.halt(0)
-    else
-      System.halt(1)
-    end
+    IO.puts(
+      "[crosswake] DONE: #{length(checks)} of #{length(@roster_ids)} roster checks emitted; #{length(failures)} failed."
+    )
+
+    code = if failures == [], do: 0, else: 1
+    System.stop(code)
+    Process.sleep(:infinity)
   end
 
   defp workflow_path([path | _], _env_path) when is_binary(path) and path != "", do: path
@@ -320,6 +407,44 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
   defp check(id, true, detail), do: {:ok, id, detail}
   defp check(id, false, detail), do: {:error, id, detail}
+
+  # D-04: the declared @roster_ids attribute is derived from the check bodies and can
+  # rot away from them. Neutralize that mechanically: compare the set of IDs the
+  # eager `checks` list ACTUALLY emitted — including this check's own ID, since it is
+  # about to emit "release.scanner.roster_exact" itself — against the declared
+  # @roster_ids set. A mismatch in EITHER direction (something emitted that was never
+  # declared, or something declared that was never emitted) is a hard FAIL, never
+  # advisory.
+  defp roster_exact(checks) do
+    emitted_ids =
+      checks
+      |> Enum.map(fn {_status, id, _detail} -> id end)
+      |> MapSet.new()
+      |> MapSet.put("release.scanner.roster_exact")
+
+    declared_ids = MapSet.new(@roster_ids)
+
+    extra_emitted = emitted_ids |> MapSet.difference(declared_ids) |> Enum.sort()
+    missing_emitted = declared_ids |> MapSet.difference(emitted_ids) |> Enum.sort()
+
+    detail =
+      if extra_emitted == [] and missing_emitted == [] do
+        "emitted #{MapSet.size(emitted_ids)} check IDs match the declared @roster_ids exactly"
+      else
+        [
+          if(extra_emitted != [],
+            do: "emitted but not declared in @roster_ids: #{Enum.join(extra_emitted, ", ")}"
+          ),
+          if(missing_emitted != [],
+            do: "declared in @roster_ids but never emitted: #{Enum.join(missing_emitted, ", ")}"
+          )
+        ]
+        |> Enum.reject(&is_nil/1)
+        |> Enum.join("; ")
+      end
+
+    check("release.scanner.roster_exact", extra_emitted == [] and missing_emitted == [], detail)
+  end
 
   defp candidate_ci_contract(workflow) do
     jobs = job_blocks(workflow)

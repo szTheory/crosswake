@@ -14,7 +14,7 @@ on:
 
 jobs:
   advisory-provider-sandbox-device-proof:
-    name: advisory provider sandbox/device proof (storekit + play billing)
+    name: advisory provider device proof (play billing)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}

@@ -68,6 +68,7 @@ defmodule Crosswake.ManifestTest do
 
     assert baseline_manifest.manifest_schema_version == "1.1.0"
     assert baseline_manifest.commerce_corridors == %{}
+    refute Enum.empty?(baseline_manifest.routes)
     assert Enum.all?(baseline_manifest.routes, fn {_id, route} -> is_nil(route.commerce) end)
 
     assert {:ok, %{manifest: commerce_manifest}} =

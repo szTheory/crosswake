@@ -179,10 +179,19 @@ defmodule Crosswake.SupportMatrixTest do
                  "package versions alone do not define support truth"
            end)
 
+    refute Enum.empty?(matrix.release_boundaries)
+
     refute Enum.any?(matrix.release_boundaries, fn entry ->
              entry.target in ["core", "companion"] and
                String.contains?(entry.versioning, "lockstep")
            end)
+
+    refute Enum.empty?(
+             Enum.filter(
+               matrix.release_boundaries,
+               &(&1.target in ["ios_shell", "android_shell"])
+             )
+           )
 
     assert Enum.all?(
              Enum.filter(
@@ -191,6 +200,22 @@ defmodule Crosswake.SupportMatrixTest do
              ),
              &String.contains?(&1.versioning, "lockstep")
            )
+  end
+
+  test "phase 170: an empty release-boundary target filter now fails instead of passing vacuously" do
+    matrix = SupportMatrix.canonical()
+
+    filtered =
+      Enum.filter(
+        matrix.release_boundaries,
+        &(&1.target in ["nonexistent_target"])
+      )
+
+    assert filtered == []
+
+    assert_raise ExUnit.AssertionError, fn ->
+      refute Enum.empty?(filtered)
+    end
   end
 
   test "change classes stay frozen to the four public release actions" do

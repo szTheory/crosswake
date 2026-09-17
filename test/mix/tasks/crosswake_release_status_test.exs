@@ -22,7 +22,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
   test "release status reports local graph and scanner-backed guard checks" do
     status = Crosswake.ReleaseStatus.build()
 
-    assert status.schema_version == "1.1.0"
+    assert status.schema_version == "1.2.0"
     assert status.status == :ok
     assert Enum.any?(status.core, &(&1.component == "hex"))
     assert Enum.any?(status.companions, &(&1.package == "crosswake_sigra"))
@@ -42,7 +42,15 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     end
   end
 
-  test "scanner failure outside scoped evidence IDs fails the status surface" do
+  # Phase 169 / D-06 / D-07: a scanner check failing OUTSIDE any caller's required_ids
+  # is a foreign failure. The five scoped scanner_check/7 checks now report their own
+  # honest truth (they genuinely passed), and the always-emitted
+  # release.workflow_integrity owner check is the single place the foreign failure's
+  # verbatim detail surfaces. Before Phase 169 this same fixture made every one of the
+  # five scoped checks parrot the same uninformative bare ID — the defect this phase
+  # fixes (see .planning/workstreams/quality-ratchet-release/phases/169-diagnostic-legibility/169-CONTEXT.md
+  # <verified_ground_truth>).
+  test "a foreign scanner failure is scoped away from unrelated checks and surfaced once by the owner check" do
     baseline = Crosswake.ReleaseStatus.build()
 
     checks =
@@ -64,11 +72,14 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
 
     assert status.status == :error
 
+    assert %{status: :ok} = check!(status, "release.workflow_path_gates")
+
     assert %{status: :error, evidence: evidence, message: message, next_action: next_action} =
-             check!(status, "release.workflow_path_gates")
+             check!(status, "release.workflow_integrity")
 
     assert "release.unscoped.regression" in evidence
-    assert message =~ "failing scanner IDs: release.unscoped.regression"
+    assert message =~ "release.unscoped.regression"
+    assert message =~ "fixture failure"
     assert next_action == "elixir script/check_release_workflow_integrity.exs"
   end
 
@@ -112,7 +123,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert Map.keys(decoded) |> Enum.sort() ==
              ~w(checks companions core generated_at live_checked release_candidate schema_version status)
 
-    assert decoded["schema_version"] == "1.1.0"
+    assert decoded["schema_version"] == "1.2.0"
     assert decoded["status"] == "ok"
     assert decoded["live_checked"] == false
 
@@ -158,6 +169,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert Crosswake.ReleaseStatus.exit_code(:ok) == 0
     assert Crosswake.ReleaseStatus.exit_code(:warning) == 0
     assert Crosswake.ReleaseStatus.exit_code(:error) == 1
+    assert Crosswake.ReleaseStatus.exit_code(:unverifiable) == 3
 
     assert_raise Mix.Error, fn ->
       Mix.Task.clear()
@@ -220,6 +232,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert presence_message =~ "found no release"
     # A source we merely could not reach must NOT be named as a confirmed absence.
     refute presence_message =~ "crosswake_sigra"
+    refute Enum.empty?(presence_evidence)
     refute Enum.any?(presence_evidence, &String.starts_with?(&1, "crosswake_sigra"))
 
     # Unknowns: the probe itself failed after retries. Still fatal, differently named.
@@ -262,6 +275,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
              check!(status, "release.live_registry_presence")
 
     assert message =~ "all live registry probes found manifest versions"
+    refute Enum.empty?(status.checks)
     refute Enum.any?(status.checks, &(&1.code == "release.live_registry_unverifiable"))
     assert Crosswake.ReleaseStatus.exit_code(status) == 0
   end
@@ -395,6 +409,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
 
     # Advisory, but not swallowed into a false all-clear.
     assert %{status: :ok} = check!(status, "release.live_registry_presence")
+    refute Enum.empty?(status.checks)
     refute Enum.any?(status.checks, &(&1.code == "release.live_registry_unverifiable"))
   end
 
@@ -431,6 +446,8 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert message =~ "crosswake_rindle"
 
     # The lie this guards against: claiming the registry confirmed an absence.
+    refute Enum.empty?(status.checks)
+
     refute Enum.any?(
              status.checks,
              &(&1.code == "release.live_registry_bootstrap_pending" and

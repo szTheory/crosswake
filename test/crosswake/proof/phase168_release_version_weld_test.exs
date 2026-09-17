@@ -76,10 +76,21 @@ defmodule Crosswake.Proof.Phase168ReleaseVersionWeldTest do
     )
   end
 
+  # 169-01 added an additive `[crosswake] ROSTER: <count> <comma-joined ids>` line
+  # that lists every declared check ID, including this test's @check_id — a bare
+  # String.contains?/2 substring match now finds THAT line first (it prints
+  # before any OK/FAIL line), not the actual result line for the check. Match the
+  # real `[crosswake] (OK|FAIL): <id> - ` line shape instead, which is the same
+  # consumer contract release_status.ex's parser depends on and 169-01/169-02
+  # guarantee stays byte-identical.
   defp line_for(output, id) do
     output
     |> String.split("\n")
-    |> Enum.find(&String.contains?(&1, id))
+    |> Enum.find(&String.contains?(&1, "] OK: #{id} -"))
+    |> case do
+      nil -> output |> String.split("\n") |> Enum.find(&String.contains?(&1, "] FAIL: #{id} -"))
+      line -> line
+    end
   end
 
   describe "the tripwire is silent while the weld and the manifest agree" do

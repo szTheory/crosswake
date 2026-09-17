@@ -591,6 +591,8 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
   test "rebuild_matrix carries no row with evidence_tier :device_verified (blind spot closure)" do
     rows = SupportMatrix.rebuild_matrix(SupportMatrix.canonical())
 
+    refute Enum.empty?(rows)
+
     assert Enum.all?(rows, fn row ->
              row.evidence_tier in [:none, :provider_advisory, :jvm_hermetic, :emulator_advisory]
            end),

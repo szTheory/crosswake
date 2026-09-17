@@ -1,22 +1,21 @@
 ---
 gsd_state_version: "1.0"
-milestone: v22.0
-milestone_name: Quality Ratchet & Release Readiness
-status: Awaiting next milestone
-stopped_at: Completed 168-13-PLAN.md; phase 168 closed with 1 item deferred to v23.0
-last_updated: "2026-09-15T20:31:26.703Z"
-last_activity: 2026-09-15
-last_activity_desc: Milestone v22.0 completed and archived
-state_head: 05e36baf1d58535fd5df9089321a2674f82e14b2
+milestone: v23.0
+milestone_name: Release Pipeline Repair & Proof-Lane Truth
+current_phase: 170
+current_phase_name: Vacuous Assertion Remediation
+status: verifying
+stopped_at: Completed 170-05-PLAN.md — Phase 170 fully closed
+last_updated: "2026-09-16T19:54:17.444Z"
+last_activity: 2026-09-16
+last_activity_desc: Phase 170 execution started
+state_head: e7478c7f3a3c4c2593c9d3ff48e151461f3cdbaa
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 48
-  completed_plans: 48
-  percent: 100
-workstream: quality-ratchet-release
-current_phase: 168
-current_phase_name: 0.2.1 Release Candidate Readiness
+  total_phases: 7
+  completed_phases: 1
+  total_plans: 9
+  completed_plans: 9
+  percent: 14
 ---
 
 # Project State
@@ -27,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Planning v23.0 — release pipeline repair (`SEED-017`, carrying `TODO-009`,
+**Current focus:** Phase 170 — Vacuous Assertion Remediation
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
 **Open release pull requests — triage as of 2026-09-15. None should be merged yet.**
@@ -45,16 +44,16 @@ Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
 
-Phase: Milestone v22.0 complete
-Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-09-15 — Milestone v22.0 completed and archived
+Phase: 170 (Vacuous Assertion Remediation) — EXECUTING
+Plan: 5 of 5
+Status: Phase complete — ready for verification
+Last activity: 2026-09-16 — Phase 170 execution started
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 37
+- Total plans completed: 39
 - Average duration: N/A
 - Total execution time: 0 hours
 
@@ -67,6 +66,7 @@ Last activity: 2026-09-15 — Milestone v22.0 completed and archived
 | 165 | 13 | - | - |
 | 166 | 8 | - | - |
 | 167 | 9 | - | - |
+| 169 | 4 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -110,6 +110,15 @@ Last activity: 2026-09-15 — Milestone v22.0 completed and archived
 | Phase 168 P05 | 26m | 2 tasks | 6 files |
 | Phase 168 P06 | 60m | 3 tasks | 12 files |
 | Phase 168 P07 | 22m | 2 tasks | 14 files |
+| Phase 169 P01 | 39min | 3 tasks | 4 files |
+| Phase 169 P03 | 12 min | 3 tasks | 6 files |
+| Phase 169 P02 | 95min | 3 tasks | 5 files |
+| Phase 169 P04 | 24 min | 2 tasks | 2 files |
+| Phase 170 P01 | 55min | 3 tasks | 4 files |
+| Phase 170 P02 | 55min | 3 tasks | 22 files |
+| Phase 170 P04 | 25min | 3 tasks | 4 files |
+| Phase 170 P03 | 65min | 3 tasks | 7 files |
+| Phase 170 P05 | 30min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -223,11 +232,64 @@ Last activity: 2026-09-15 — Milestone v22.0 completed and archived
 - [Phase 168]: Keep stable candidate fixtures always-on and route release-sensitive, Release Please, or ambiguous changes to exact-head full proof.
 - [Phase 168]: Keep real mirror authorization in the trusted workflow; ordinary PR CI remains credential-free.
 - [Phase 168]: Use read-only linked-coordinate status for BLOCKED/PARTIAL/COMPLETE and reserve READY FOR APPROVAL/STALE for the exact receipt authority.
+- [Phase 169]: Corrected scanner_ids_result/2's :failed clause to scope failing to required_ids (D-07) and compose failing+missing segments (D-09), fixing the live PR #164 defect where five identical bare-ID errors masked the actual root cause. — Verified ground truth in 169-CONTEXT.md established the scanner evaluates eagerly and every check emits, making scoped greens real greens.
+- [Phase 169]: [Phase 169-03]: Widened list_merge_blocking_checks.py's duplicate scan from a merge-blocking substring filter to a global check over every job producer, added a version-literal reject, and retired all six version-welded release-please.yml/phase70-proof.yml display names/artifact names in one atomic commit (D-21).
+- [Phase 169]: [Phase 169-02] Both crash evidence statuses (:unavailable and :unverifiable) route the release.workflow_integrity owner check and the five scoped checks to the same check-level :unverifiable, never :error — an :error owner check would outrank :unverifiable in aggregate_status/1's precedence and silently force exit 1 on a crash instead of exit 3.
+- [Phase 169]: [Phase 169-04]: Added a 6th exit-contract-guard entry point for Crosswake.ReleaseStatus.exit_code/1's own source clauses (extracting literal do: <n> from each def exit_code(...) head, skipping the delegating clause), alongside the 5 file-based checks the plan named, and read exit_code/1's @doc content via Code.fetch_docs/1 as a separate assertion.
+- [Phase 170]: [Phase 170-01]: Built script/inventory_collection_assertions.exs (content-hash-keyed, root-identifier backward-scan classifier) and committed the full 220-row ledger; guard/pin detection is unbounded within the enclosing test body rather than a fixed 6-line window, with one explicit manual override for a cross-field pin the heuristic cannot see.
+- [Phase 170]: Task 3's structural predicate replaces the naive display_line-1 offset check with a bounded backward-scan + join_forward technique mirrored from the classifier, to handle mix format's multi-line guard wrapping and blank-line-before-fn insertion.
+- [Phase 170]: VAC-03 convention: a check that doesn't map to any of the six vacuity shapes records the explicit 'matches none of A-F, because ___' escape form rather than a forced nearest-fit letter. — Applied retroactively to release.scanner.roster_exact and release.workflow_integrity in the Phase 169 addendum; both are structurally a roster-diff check and a message-passthrough check, neither a possibly-empty-collection predicate.
+- [Phase 170]: 170-03: coordinate_test.exs and crosswake_release_status_test.exs's flagged sites recorded as structural-test-only (compile-time-fixed companion list; check-only-emitted-when-nonempty computations), not silently dropped
+- [Phase 170]: 170-03: release_boundaries_test.exs's empty-companions regression reuses ReleaseStatus.build/1's existing :cwd override via a symlink-and-mutate-manifest helper, avoiding any lib/ change
+- [Phase 170]: Phase 170's meta-checks (ledger completeness, guard-expression-match) recorded via the vacuity_taxonomy convention's explicit escape form, mirroring Phase 169's roster_exact/workflow_integrity precedent; the convention check itself and the empty-input regression set classify as Shape A.
+
+### v23.0 Roadmap Decisions
+
+- [Roadmap]: Phase numbering continues from v22.0 (which ended at 168) — v23.0 starts at Phase 169,
+  not reset to 1.
+- [Roadmap]: Phase 171 (Version/Authority Split) merges SUMMARY.md's Phase A `no_bare_version_literal`
+  check (MSG-04/MSG-05) with Phase B's D1 fix (WELD-01..08) into one phase, landed as one PR/commit.
+  Landing the check and the fix separately would either turn `main` permanently red (check merges
+  first) or leave the check meaninglessly advisory for a window (fix merges first). The purely
+  diagnostic D6 work (MSG-01/02/03/06, plus FID-02) stays in its own earlier Phase 169 since it has
+  no such atomicity constraint.
+- [Roadmap][Revision]: VAC-01/02/03 (the SEED-018 vacuous-assertion audit — classify 173 sites, then
+  rewrite every confirmed-vacuous one) was originally bundled into Phase 169, but was pulled out into
+  its own **Phase 170 (Vacuous Assertion Remediation)** on user-directed revision. Rationale: Phase
+  169's whole purpose is being cheap, fast, and first so every later phase reads its own CI failures
+  through the new diagnostic seam; bundling a 173-site remediation project into it made 169 the long
+  pole and gated the version/authority work behind an unrelated audit. Phase 170 is independent of
+  every other phase and startable in parallel from the beginning (like Phase 174's clean-room work),
+  but must complete before Phase 175 (Rehearsal and Publish) opens. Phase 170 explicitly keeps
+  VACG-01 (the merge-blocking `absence.collection_assertion_non_empty` guard) OUT of this milestone —
+  it stays a Future Requirement — because landing the guard before the audit produces a wall of red
+  that gets waived, teaching the team red is negotiable. All phases after 169-170 renumbered by +1
+  (170→171, 171→172, 172→173, 173→174, 174→175) so reading order matches execution order.
+- [Roadmap]: FID-01 (SEED-014 adopter gaps CW-REQ-A/B) was folded into Phase 174 (Clean-Room Host
+  Realism), since both are about adopter-facing proof fidelity.
+- [Roadmap]: DOC-05 (manifest word-collision) was folded into Phase 171, since the collision is
+  release-manifest-adjacent to the version/authority work already touching that vocabulary. DOC-04
+  (delete the "only publishes 0.2.1" doc section) and DOC-06 (splitsh-lite references) were folded
+  into Phase 175, since DOC-04 only becomes true once 0.2.2 actually publishes and DOC-06 documents
+  the mirror mechanism the retire/backfill runbook (REL-10) also covers.
+- [Roadmap]: Phase 175 (Rehearsal and Publish) is strictly last and its own phase — never combined
+  with Phases 169-174 in the same plan — because it contains the milestone's only irreversible
+  operations (Hex publish, iOS mirror tag push, Maven upload; project decision D-19). REL-10's
+  retire/backfill runbook must be committed before any publish step in that phase executes.
+- [Roadmap]: Phases 172 (per-package proof scope) and 173 (recovery-path convergence) both depend
+  only on Phase 171 and touch disjoint file sets — they may be planned/executed in parallel. Phase
+  174 (clean-room realism) and Phase 170 (vacuous assertion remediation) are each independent of
+  171-173 and may start as early as Phase 169 — Phase 174's threadline/sigra diagnosis is
+  calendar-bound to a live Hex release, and Phase 170's audit has no dependency on the identity-model
+  work at all.
 
 ### Pending Todos
 
-- Phase 168 must bind and land the exact five Phase 167 closeout artifact blobs before candidate approval.
-- Phase 168 owns all further evaluation of release-only PRs 57, 115, 146, and 147.
+- Phase 168 must bind and land the exact five Phase 167 closeout artifact blobs before candidate approval. (v22.0, closed)
+- Phase 168 owns all further evaluation of release-only PRs 57, 115, 146, and 147. (v22.0, closed)
+- Phase 169 is next: `/gsd-plan-phase 169` (Diagnostic Legibility).
+- PR #164 (0.2.2), PR #147, and PR #115 all remain held/blocked until Phase 175 repairs and executes
+  the graph — do not merge any of them earlier.
 
 ### Blockers/Concerns
 
@@ -246,10 +308,11 @@ Last activity: 2026-09-15 — Milestone v22.0 completed and archived
 
 ## Session Continuity
 
-Last session: 2026-09-13T13:09:20.506Z
-Stopped at: Completed 168-07-PLAN.md
+Last session: 2026-09-16T19:54:17.425Z
+Stopped at: Completed 170-05-PLAN.md — Phase 170 fully closed
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Review the v23.0 roadmap (`ROADMAP.md`) and requirements traceability (`REQUIREMENTS.md`).
+- Once approved, run `/gsd-plan-phase 169` to begin Diagnostic Legibility.

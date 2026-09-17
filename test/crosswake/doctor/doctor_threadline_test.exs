@@ -96,6 +96,7 @@ defmodule Crosswake.Doctor.ThreadlineTest do
           cwd: target
         )
 
+      refute Enum.empty?(report.findings)
       refute Enum.any?(report.findings, &(&1.code == "threadline.plug_missing"))
     end
 
@@ -257,8 +258,12 @@ defmodule Crosswake.Doctor.ThreadlineTest do
         )
 
       # Checks ran AND passed — no false PII error, no false drift warning
+      refute Enum.empty?(report.findings)
+
       refute Enum.any?(report.findings, &(&1.code == "threadline.pii_forbidden_field_present")),
              "Canonical schema must not produce a PII false-positive (CR-01)"
+
+      refute Enum.empty?(report.findings)
 
       refute Enum.any?(report.findings, &(&1.code == "threadline.ledger_schema_drift")),
              "Canonical schema must not produce a drift warning (schema checks must have run via bare-atom config — CR-02)"
@@ -287,6 +292,7 @@ defmodule Crosswake.Doctor.ThreadlineTest do
 
       # The router plug check still requires the manifest — it must be skipped,
       # not crash, when the manifest is absent
+      refute Enum.empty?(report.findings)
       refute Enum.any?(report.findings, &(&1.code == "threadline.plug_missing"))
     end
 
@@ -317,9 +323,12 @@ defmodule Crosswake.Doctor.ThreadlineTest do
 
       # The misleading "missing all 15 columns" drift warning must NOT fire,
       # and the PII check must not silently pass alongside it (IN-06)
+      refute Enum.empty?(report.findings)
+
       refute Enum.any?(report.findings, &(&1.code == "threadline.ledger_schema_drift")),
              "Non-Ecto module must produce ledger_schema_invalid, not a drift warning for all columns"
 
+      refute Enum.empty?(report.findings)
       refute Enum.any?(report.findings, &(&1.code == "threadline.pii_forbidden_field_present"))
     end
 

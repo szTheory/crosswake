@@ -215,6 +215,12 @@ It compares each linked core component's declared version in
 | `FAIL` | 1 | **Declared version truth is behind published truth.** |
 | `BLOCKED` | 2 | Published truth could not be established. The answer is *unknown*, not clean. |
 
+This script's `BLOCKED` stays exit `2` — a separate, unchanged vocabulary from
+`mix crosswake.release.status`, which uses exit `3` for the same could-not-verify meaning. The two
+commands are not interchangeable; see [`mix crosswake.release.status` exit-code
+contract](#mix-crosswakereleasestatus-exit-code-contract) below for the canonical release-status
+table.
+
 **A `FAIL` is the condition that armed a duplicate release proposal against an
 already-live `0.2.1`.** It happens when a release merge is rolled back to
 restore an earlier version so Release Please can re-form a candidate, but
@@ -232,6 +238,18 @@ checkout with `fetch-depth: 0`). Do not read `BLOCKED` as clean.
 
 This guard runs automatically in the `release-candidate-full-proof` job, which is
 release-sensitive and already checks out with `fetch-depth: 0`.
+
+## `mix crosswake.release.status` exit-code contract
+
+The canonical exit-code table for `mix crosswake.release.status` lives in one place:
+`Crosswake.ReleaseStatus.exit_code/1`'s `@doc`, reachable via `h Crosswake.ReleaseStatus.exit_code/1`
+in `iex`, in generated ExDoc, and on hexdocs. This runbook links to it rather than copying it, so
+the two never drift apart.
+
+In one sentence: a clean run exits `0`, a run that ran and found a defect exits `1`, and a run that
+could not verify exits `3`. `mix crosswake.release.status` now reaches real exit `3` when it could
+not verify — for example when the release workflow scanner crashed before finishing. **Do not read
+exit 3 as a pass.**
 
 ## CI ownership
 

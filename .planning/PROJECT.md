@@ -47,6 +47,17 @@ BLOCKING before any release past `0.2.1`.
 
 ## Active Workstreams
 
+### v23.0 Release Pipeline Repair & Proof-Lane Truth (active)
+
+**Goal:** Repair the release pipeline's three derived-fact regressions and make every proof lane
+report a fact about the thing it names — no check stays green while asserting nothing.
+
+**Thesis:** All three defects share one root habit: *a fact that should have been derived got
+hardcoded, and nothing was built to catch it drifting.* Every requirement generalizes an existing
+mechanism; none loosens what it proves.
+
+**Planning:** `.planning/workstreams/quality-ratchet-release/` (phases 169-175)
+
 ### v22.0 Quality Ratchet & Release Readiness (shipped)
 
 **Goal:** Make Crosswake safe to change, inexpensive to verify, pleasant to review, and ready for
@@ -355,6 +366,15 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
   Exact adoption-authority tuples and blob-bound closeout receipts fail closed. Validated in Phase
   167; full detail in the quality-ratchet-release workstream verification.
 
+- ✓ **v23.0 Phase 169 Diagnostic Legibility** (MSG-01..03, MSG-06, FID-02) — a failing release
+  scanner check's own verbatim `detail` now reaches the maintainer instead of a generic "missing
+  check IDs" list; `:unverifiable` became a first-class status with OS exit 3, distinguishing
+  "never ran" and "terminated early" from "never defined"; duplicate-display-name detection was
+  widened to every job producer and six version-welded names retired; the exit-code contract is
+  pinned against doc drift across six entry points. Validated in Phase 169 (4/4 must-haves, run
+  live, not from SUMMARY claims); one non-blocking dead-code/vacuous-test warning (WR-01) carried
+  forward. Full detail in the quality-ratchet-release workstream verification.
+
 ### Active
 
 - [ ] **v20.0 Native Controls Pack 1** — ship the typed control-contract seam (`Bridge.push/3`, one typed denial, generated host-owned fallbacks, closed-vocabulary guard), prove it with menu/action-button as the first genuinely-new native control, migrate haptics onto the seam, promote share/notification_token proof, and land the SEED-003 iOS mirror fix that gates every future native release.
@@ -480,4 +500,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-09-15 after the v22.0 milestone close.*
+*Last updated: 2026-09-16 after Phase 169 (Diagnostic Legibility).*

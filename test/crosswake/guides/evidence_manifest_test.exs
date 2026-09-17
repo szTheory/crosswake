@@ -107,19 +107,36 @@ defmodule Crosswake.Guides.EvidenceManifestTest do
   test "allowed labels are literal capability-map and proof-posture vocabulary" do
     manifest = read_manifest!(@example_manifest)
 
+    refute Enum.empty?(manifest_values(manifest, "proof_class"))
     assert Enum.all?(manifest_values(manifest, "proof_class"), &(&1 in @allowed_proof_classes))
+    refute Enum.empty?(manifest_values(manifest, "support_label"))
     assert Enum.all?(manifest_values(manifest, "support_label"), &(&1 in @allowed_support_labels))
+
+    refute Enum.empty?(manifest_values(manifest, "capability_posture"))
 
     assert Enum.all?(
              manifest_values(manifest, "capability_posture"),
              &(&1 in @allowed_capability_postures)
            )
 
+    refute Enum.empty?(manifest_values(manifest, "package_owner"))
     assert Enum.all?(manifest_values(manifest, "package_owner"), &(&1 in @allowed_package_owners))
     assert "merge-blocking" in manifest_values(manifest, "proof_class")
     assert "advisory" in manifest_values(manifest, "proof_class")
     assert "Demo pressure" in manifest_values(manifest, "support_label")
     assert "Next-pack candidate" in manifest_values(manifest, "support_label")
+  end
+
+  test "phase 170: an empty manifest_values list now fails instead of passing vacuously" do
+    empty_manifest = %{"routes" => []}
+
+    values = manifest_values(empty_manifest, "proof_class")
+
+    assert values == []
+
+    assert_raise ExUnit.AssertionError, fn ->
+      refute Enum.empty?(values)
+    end
   end
 
   test "synthetic regressions reject missing D-08 root and route fields" do

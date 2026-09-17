@@ -6,7 +6,7 @@ defmodule Crosswake.ReleaseStatus do
   public registry probes for Hex, Maven Central, and the iOS SwiftPM mirror.
   """
 
-  @schema_version "1.1.0"
+  @schema_version "1.2.0"
   @candidate_version "0.2.1"
   @mirror_baseline_version "0.2.0"
   @manifest_path ".release-please-manifest.json"
@@ -103,7 +103,7 @@ defmodule Crosswake.ReleaseStatus do
     lines = [
       "Crosswake release status",
       "",
-      "status: #{status.status}",
+      "status: #{status_label(status.status)}",
       "live checks: #{if(status.live_checked, do: "enabled", else: "disabled")}",
       "",
       "Core/native lockstep:"
@@ -137,17 +137,7 @@ defmodule Crosswake.ReleaseStatus do
       [
         "",
         "Checks:"
-      ] ++
-        Enum.map(status.checks, fn check ->
-          next_action =
-            if check.status == :ok or is_nil(check.next_action) do
-              ""
-            else
-              " next action: #{check.next_action}"
-            end
-
-          "- #{String.upcase(to_string(check.status))} #{check.code}: #{check.message}#{next_action}"
-        end)
+      ] ++ Enum.flat_map(status.checks, &render_check_line/1)
 
     candidate = status.release_candidate
 
@@ -173,9 +163,94 @@ defmodule Crosswake.ReleaseStatus do
       end
 
     Enum.join(
-      lines ++ core_lines ++ companion_lines ++ candidate_lines ++ live_lines ++ check_lines,
+      lines ++
+        core_lines ++
+        companion_lines ++
+        candidate_lines ++ live_lines ++ check_lines ++ summary_block(status),
       "\n"
     ) <> "\n"
+  end
+
+  # D-17: appended to the END of render/1's assembled output, after every existing
+  # section, so no existing rendered line moves. On a clean run this emits nothing.
+  # When both a defect AND an unknown are present, BOTH blocks emit and the process
+  # still exits 1 — a confirmed defect outranks an unknown, but nothing is masked
+  # (D-13). Every status word here routes through status_label/1; no internal atom
+  # is ever printed. No count here is a hardcoded integer literal — all are derived
+  # from status.checks.
+  defp summary_block(status) do
+    total = length(status.checks)
+    failing = Enum.filter(status.checks, &(&1.status == :error))
+    unverifiable = Enum.filter(status.checks, &(&1.status == :unverifiable))
+
+    fail_lines =
+      if failing == [] do
+        []
+      else
+        [
+          "",
+          "[crosswake] FAIL (exit 1): release status ran all #{total} checks and found #{length(failing)} blocking issues."
+        ] ++
+          Enum.map(failing, fn check -> "[crosswake]   - #{check.code}: #{check.message}" end) ++
+          [
+            "[crosswake] What to do next: fix the named issues above, then re-run `mix crosswake.release.status`."
+          ]
+      end
+
+    unverifiable_lines =
+      if unverifiable == [] do
+        []
+      else
+        passed = total - length(failing) - length(unverifiable)
+
+        passed_line =
+          if failing == [] do
+            ["[crosswake] The #{passed} checks that did run passed."]
+          else
+            []
+          end
+
+        [
+          "",
+          "[crosswake] UNVERIFIED (exit 3): #{length(unverifiable)} of #{total} checks could not run, so their result is unknown — not clean."
+        ] ++
+          Enum.map(unverifiable, fn check ->
+            "[crosswake]   - #{check.code}: #{check.message}"
+          end) ++
+          passed_line ++
+          [
+            "[crosswake] What to do next: restore the missing prerequisite and re-run. Do not read exit 3 as a pass."
+          ]
+      end
+
+    fail_lines ++ unverifiable_lines
+  end
+
+  # D-10: every check renders as exactly one line, except the always-emitted
+  # release.workflow_integrity owner check when it is failing — that one gets an
+  # indented, byte-for-byte, untruncated continuation line per failing entry so the
+  # scanner's own sentence reaches the surface.
+  defp render_check_line(check) do
+    next_action =
+      if check.status == :ok or is_nil(check.next_action) do
+        ""
+      else
+        " next action: #{check.next_action}"
+      end
+
+    summary =
+      "- #{status_label(check.status)} #{check.code}: #{check.message}#{next_action}"
+
+    if check.code == "release.workflow_integrity" and check.status != :ok do
+      detail_lines =
+        check
+        |> Map.get(:entries, [])
+        |> Enum.map(fn %{id: id, detail: detail} -> "    #{id}: #{detail}" end)
+
+      [summary | detail_lines]
+    else
+      [summary]
+    end
   end
 
   defp release_candidate(_core, companions, live?, probes) do
@@ -387,7 +462,8 @@ defmodule Crosswake.ReleaseStatus do
         workflow_integrity,
         @workflow_path_gate_ids,
         workflow =~ "paths_released:" and core_path_gates?(jobs)
-      )
+      ),
+      workflow_integrity_owner_check(workflow_integrity)
     ]
 
     proof_checks = [
@@ -802,44 +878,154 @@ defmodule Crosswake.ReleaseStatus do
          required_ids,
          local_ok? \\ true
        ) do
-    {scanner_ok?, evidence, scanner_message} =
+    {scanner_status, evidence, scanner_message, cause} =
       scanner_ids_result(workflow_integrity, required_ids)
 
-    ok? = local_ok? and scanner_ok?
+    ok? = local_ok? and scanner_status == :ok
+
+    # D-08: under either crash shape the scanner could not evaluate this check's own
+    # gates. That verdict is unconditional — a scoped check never reports :ok, and
+    # never a status that maps to exit 0, regardless of what `local_ok?` says about
+    # code this process already read independently of the scanner.
+    status =
+      cond do
+        scanner_status == :unverifiable -> :unverifiable
+        ok? -> status_when_ok
+        true -> :error
+      end
+
+    message =
+      cond do
+        status == :unverifiable -> scanner_message
+        ok? -> ok_message
+        true -> "#{error_message}: #{scanner_message}"
+      end
 
     %{
-      status: if(ok?, do: status_when_ok, else: :error),
+      status: status,
       code: code,
-      message: if(ok?, do: ok_message, else: "#{error_message}: #{scanner_message}"),
+      message: message,
       next_action: if(ok?, do: nil, else: @workflow_integrity_command),
       source: @workflow_integrity_source,
       evidence: evidence
     }
+    |> maybe_put(:cause, cause)
   end
 
-  defp scanner_ids_result(%{status: :unavailable, message: message}, _required_ids),
-    do: {false, [], message}
+  # D-06/D-08: the single always-emitted owner check over the FULL parsed scanner
+  # set — not scoped to any caller's required_ids. This is the one place a failing
+  # scanner check's own verbatim `detail` reaches the surface, at a stable owning
+  # code, regardless of whether any of the five scanner_check/7 call sites happen
+  # to require that ID.
+  #
+  # Both crash shapes route here to the SAME :unverifiable status. If this owner
+  # check reported :error instead, aggregate_status/1's :error > :unverifiable
+  # precedence would force exit 1 on a crash — silently downgrading "could not
+  # verify" into "found a defect", the opposite of what exit 3 exists to say.
+  defp workflow_integrity_owner_check(%{status: status, message: message})
+       when status in [:unavailable, :unverifiable] do
+    %{
+      status: :unverifiable,
+      code: "release.workflow_integrity",
+      message: message,
+      next_action: @workflow_integrity_command,
+      source: @workflow_integrity_source,
+      evidence: [],
+      entries: []
+    }
+  end
 
-  defp scanner_ids_result(%{status: :failed, checks: checks}, required_ids) do
-    missing = Enum.reject(required_ids, &Map.has_key?(checks, &1))
-
+  defp workflow_integrity_owner_check(%{checks: checks}) do
     failing =
       checks
       |> Enum.filter(fn {_id, check} -> match?(%{status: :error}, check) end)
-      |> Enum.map(fn {id, _check} -> id end)
-      |> Enum.sort()
+      |> Enum.sort_by(fn {_id, check} -> Map.get(check, :order, 0) end)
 
-    evidence = Enum.uniq(missing ++ failing)
+    case failing do
+      [] ->
+        %{
+          status: :ok,
+          code: "release.workflow_integrity",
+          message: "release workflow integrity scanner reported no failing checks",
+          next_action: nil,
+          source: @workflow_integrity_source,
+          evidence: [],
+          entries: []
+        }
 
-    cond do
-      missing != [] ->
-        {false, evidence, "missing scanner IDs: #{Enum.join(missing, ", ")}"}
+      _ ->
+        entries = Enum.map(failing, fn {id, check} -> %{id: id, detail: check.detail} end)
 
-      failing != [] ->
-        {false, evidence, "failing scanner IDs: #{Enum.join(failing, ", ")}"}
+        message =
+          Enum.map_join(entries, "; ", fn %{id: id, detail: detail} -> "#{id}: #{detail}" end)
 
-      true ->
-        {false, evidence, "scanner exited nonzero without parseable failing IDs"}
+        %{
+          status: :error,
+          code: "release.workflow_integrity",
+          message: message,
+          next_action: @workflow_integrity_command,
+          source: @workflow_integrity_source,
+          evidence: Enum.map(entries, & &1.id),
+          entries: entries
+        }
+    end
+  end
+
+  # D-08: under EITHER crash shape (:unavailable — the scanner never started; or
+  # :unverifiable — the scanner started and terminated early) this call site's own
+  # gates genuinely could not be evaluated. The cascade pointer names the cause —
+  # the last emitted FAIL line when one exists, otherwise the raw exit code — so a
+  # maintainer reading a scoped check's message sees WHY it could not evaluate, not
+  # just THAT it could not. This clause returns :unverifiable unconditionally;
+  # scanner_check/7 maps it straight through regardless of local_ok?.
+  defp scanner_ids_result(%{status: status} = evidence, _required_ids)
+       when status in [:unavailable, :unverifiable] do
+    cause = unverifiable_cause(evidence)
+
+    message =
+      "not evaluated — the scanner stopped before these gates ran (cause: #{cause}). This is not a pass."
+
+    {:unverifiable, [], message, cause}
+  end
+
+  # D-07/D-09: `failing` is scoped to THIS call site's own `required_ids` — exactly
+  # like the catch-all sibling below — so a foreign check failing elsewhere in the
+  # scanner's full parsed set does not bleed into unrelated checks. It is safe
+  # precisely because the verified ground truth (169-CONTEXT.md) establishes the
+  # scanner evaluates eagerly and every check emits, so a scoped green here is a
+  # real green; the always-emitted `release.workflow_integrity` owner check
+  # (workflow_integrity_owner_check/1) is the one place the full unscoped failure
+  # set surfaces. `failing` is ordered by the scanner's own emission `order:`, not
+  # alphabetically. Both non-empty buckets compose into one message, failing named
+  # first, so neither shadows the other.
+  defp scanner_ids_result(%{status: :failed, checks: checks} = evidence, required_ids) do
+    missing = Enum.reject(required_ids, &Map.has_key?(checks, &1))
+
+    failing =
+      required_ids
+      |> Enum.filter(fn id -> match?(%{status: :error}, Map.get(checks, id)) end)
+      |> Enum.sort_by(fn id -> Map.get(checks, id) |> Map.get(:order, 0) end)
+
+    if missing == [] and failing == [] do
+      # D-07: this call site's own required_ids are all present and all passed —
+      # under a complete run, a foreign failure elsewhere does not make this scoped
+      # check lie about its own scope. The unscoped failure still surfaces via the
+      # always-emitted release.workflow_integrity owner check.
+      {:ok, required_ids, "all scanner IDs passed", nil}
+    else
+      evidence_ids = Enum.uniq(failing ++ missing)
+
+      segments =
+        [failing_segment(failing, checks), missing_segment(missing, evidence)]
+        |> Enum.reject(&is_nil/1)
+
+      message =
+        case segments do
+          [] -> "scanner exited nonzero without parseable failing IDs"
+          _ -> Enum.join(segments, "; ")
+        end
+
+      {:error, evidence_ids, message, nil}
     end
   end
 
@@ -852,27 +1038,76 @@ defmodule Crosswake.ReleaseStatus do
 
     cond do
       missing == [] and failing == [] ->
-        {true, required_ids, "all scanner IDs passed"}
+        {:ok, required_ids, "all scanner IDs passed", nil}
 
       missing != [] ->
-        {false, missing ++ failing, "missing scanner IDs: #{Enum.join(missing, ", ")}"}
+        {:error, missing ++ failing, "missing scanner IDs: #{Enum.join(missing, ", ")}", nil}
 
       true ->
-        {false, failing, "failing scanner IDs: #{Enum.join(failing, ", ")}"}
+        {:error, failing, "failing scanner IDs: #{Enum.join(failing, ", ")}", nil}
     end
   end
 
+  # D-08: the cause names WHY the scanner stopped — the last emitted FAIL line's ID
+  # when one exists (the scanner was already reporting a real defect when it died),
+  # otherwise the raw exit code as `scanner exit <n>`.
+  defp unverifiable_cause(%{checks: checks} = evidence) when map_size(checks) > 0 do
+    case Enum.filter(checks, fn {_id, check} -> match?(%{status: :error}, check) end) do
+      [] ->
+        "scanner exit #{Map.get(evidence, :exit_code, "?")}"
+
+      failing ->
+        {id, _check} = Enum.max_by(failing, fn {_id, check} -> Map.get(check, :order, 0) end)
+        id
+    end
+  end
+
+  defp unverifiable_cause(evidence), do: "scanner exit #{Map.get(evidence, :exit_code, "?")}"
+
+  # D-13: nothing verified is never scored as clean. An empty checks list means
+  # `build/1` produced no checks at all — that is not the same thing as every
+  # check passing, so it must not fall through to `:ok`.
+  def aggregate_status([]), do: :unverifiable
+
+  # Precedence is total and deterministic: :error > :unverifiable > :warning > :ok.
+  # A confirmed defect always outranks an unknown, and an unknown always outranks
+  # a mere warning — permuting the input list never changes the result.
   def aggregate_status(checks) do
     cond do
       Enum.any?(checks, &(&1.status == :error)) -> :error
+      Enum.any?(checks, &(&1.status == :unverifiable)) -> :unverifiable
       Enum.any?(checks, &(&1.status == :warning)) -> :warning
       true -> :ok
     end
   end
 
+  @doc """
+  Exit-code contract for `mix crosswake.release.status` and the release workflow
+  scanner (`script/check_release_workflow_integrity.exs`).
+
+  | Code | Meaning |
+  |------|---------|
+  | `0` | clean — every check ran and passed (`:ok` or `:warning`) |
+  | `1` | ran and found a defect (`:error`) |
+  | `3` | could not verify — one or more checks could not run (`:unverifiable`) |
+
+  `2` is deliberately reserved to its existing meanings elsewhere in this repo
+  (defect-found in `script/verify_generated_ios_shell.sh`, usage error in
+  `script/check_required_checks_registered.sh`, shells-behind in
+  `lib/mix/tasks/crosswake.shell.status.ex`) and is never returned here.
+  `:warning` maps to `0`.
+  """
+  @spec exit_code(atom() | map()) :: 0 | 1 | 3
   def exit_code(:error), do: 1
+  def exit_code(:unverifiable), do: 3
   def exit_code(%{status: status}), do: exit_code(status)
   def exit_code(_status), do: 0
+
+  # D-16/D-17: the internal atom must never reach the maintainer as a bare word —
+  # the human-facing verb is "UNVERIFIED". Every other status keeps its existing
+  # rendering.
+  defp status_label(:unverifiable), do: "UNVERIFIED"
+  defp status_label(status), do: status |> to_string() |> String.upcase()
 
   defp live_label(%{live: nil}), do: ""
   defp live_label(%{live: %{status: status, source: source}}), do: " live_#{source}=#{status}"
@@ -893,27 +1128,132 @@ defmodule Crosswake.ReleaseStatus do
 
   defp workflow_integrity_evidence(cwd) do
     case System.cmd("elixir", [@workflow_integrity_source], cd: cwd, stderr_to_stdout: true) do
-      {output, exit_code} ->
-        checks = parse_workflow_integrity_output(output)
-
-        cond do
-          checks == %{} ->
-            %{
-              status: :unavailable,
-              checks: %{},
-              message: "scanner output was empty or unparseable"
-            }
-
-          exit_code == 0 ->
-            %{status: :ok, checks: checks, message: "scanner passed"}
-
-          true ->
-            %{status: :failed, checks: checks, message: "scanner reported release workflow drift"}
-        end
+      {output, exit_code} -> classify_workflow_integrity_output(output, exit_code)
     end
   rescue
-    error ->
-      %{status: :unavailable, checks: %{}, message: Exception.message(error)}
+    error -> classify_workflow_integrity_output(Exception.message(error), 1)
+  end
+
+  # D-03: three (of four) states the scanner run can be in, discriminated by
+  # 169-01's ROSTER/DONE lines:
+  #
+  #   1. No ROSTER line observed at all (crash during setup, before the check list
+  #      is even built, or a raise in this function's own System.cmd/rescue path
+  #      with no scanner output whatsoever) -> :unavailable. The scanner never
+  #      started.
+  #   2. ROSTER observed but DONE is absent, or fewer OK/FAIL lines emitted than
+  #      the roster declares -> :unverifiable. The scanner started and then
+  #      terminated early. DONE is the POSITIVE completeness assertion (D-02) —
+  #      its absence is not evidence of completion, even when every roster line
+  #      that DID print looks clean.
+  #   3/4. Complete run (ROSTER + DONE + full emission count) -> :ok on exit 0,
+  #      :failed on nonzero exit. Unchanged from pre-Phase-169 behavior.
+  defp classify_workflow_integrity_output(output, exit_code) do
+    checks = parse_workflow_integrity_output(output)
+    roster_size = parse_roster_size(output)
+    emitted_count = map_size(checks)
+
+    cond do
+      is_nil(roster_size) ->
+        %{
+          status: :unavailable,
+          checks: %{},
+          message:
+            "scanner did not start: no roster line emitted (exit #{exit_code}). stderr: #{bounded_stderr_excerpt(output)}",
+          roster_size: nil,
+          exit_code: exit_code
+        }
+
+      not done_line_present?(output) or emitted_count < roster_size ->
+        %{
+          status: :unverifiable,
+          checks: checks,
+          message:
+            "scanner terminated early: #{emitted_count} of #{roster_size} roster checks ran (exit #{exit_code}). stderr: #{bounded_stderr_excerpt(output)}",
+          roster_size: roster_size,
+          exit_code: exit_code
+        }
+
+      exit_code == 0 ->
+        %{
+          status: :ok,
+          checks: checks,
+          message: "scanner passed",
+          roster_size: roster_size,
+          exit_code: exit_code
+        }
+
+      true ->
+        %{
+          status: :failed,
+          checks: checks,
+          message: "scanner reported release workflow drift",
+          roster_size: roster_size,
+          exit_code: exit_code
+        }
+    end
+  end
+
+  # D-02: the ROSTER line's count is the denominator that makes "never defined"
+  # (an ID absent from the scanner's declared roster) legible with a number, rather
+  # than a bare unexplained absence. `nil` when no ROSTER line was observed at all
+  # (e.g. a hand-built fixture map, or a crash before the roster line prints).
+  defp parse_roster_size(output) do
+    case Regex.run(~r/^\[crosswake\] ROSTER: (\d+) /m, output, capture: :all_but_first) do
+      [count] -> String.to_integer(count)
+      _ -> nil
+    end
+  end
+
+  defp done_line_present?(output), do: output =~ ~r/^\[crosswake\] DONE: /m
+
+  # T-169-04: bound the stderr excerpt embedded in a crash message to a fixed
+  # maximum so an unbounded crash payload can never carry arbitrary environment
+  # text into a rendered maintainer-facing report. This bound applies ONLY to
+  # this excerpt — never to a check's `detail`, which D-10 forbids truncating.
+  @stderr_excerpt_limit 500
+  @stderr_excerpt_truncation_marker "…(truncated)… "
+
+  defp bounded_stderr_excerpt(output) do
+    trimmed = String.trim(output)
+
+    if String.length(trimmed) > @stderr_excerpt_limit do
+      @stderr_excerpt_truncation_marker <>
+        String.slice(trimmed, -@stderr_excerpt_limit, @stderr_excerpt_limit)
+    else
+      trimmed
+    end
+  end
+
+  # D-09: one composed segment per non-empty bucket, failing named first. Each
+  # failing entry carries its ID and its verbatim `detail` — never a bare ID.
+  defp failing_segment([], _checks), do: nil
+
+  defp failing_segment(failing, checks) do
+    details =
+      Enum.map_join(failing, ", ", fn id -> "#{id}: #{Map.get(checks, id).detail}" end)
+
+    "#{length(failing)} failing (#{details})"
+  end
+
+  # D-03: a missing required ID is explained, not presented as an unexplained new
+  # problem — literal never-defined wording naming the roster size and the drift
+  # pointer back to the scanner source.
+  defp missing_segment([], _evidence), do: nil
+
+  defp missing_segment(missing, evidence) do
+    roster_size = Map.get(evidence, :roster_size)
+    details = Enum.map_join(missing, ", ", &never_defined_detail(&1, roster_size))
+
+    "#{length(missing)} never defined (#{details})"
+  end
+
+  defp never_defined_detail(id, nil) do
+    "never defined by scanner: #{id} — not in the scanner's roster; the required-ID list in Crosswake.ReleaseStatus has drifted from #{@workflow_integrity_source}"
+  end
+
+  defp never_defined_detail(id, roster_size) do
+    "never defined by scanner: #{id} — not in the scanner's #{roster_size}-check roster; the required-ID list in Crosswake.ReleaseStatus has drifted from #{@workflow_integrity_source}"
   end
 
   defp parse_workflow_integrity_output(output) do
@@ -930,6 +1270,8 @@ defmodule Crosswake.ReleaseStatus do
           []
       end
     end)
+    |> Enum.with_index()
+    |> Enum.map(fn {{id, check}, index} -> {id, Map.put(check, :order, index)} end)
     |> Map.new()
   end
 

@@ -541,6 +541,8 @@ defmodule Crosswake.Bridge.PushTest do
       render_click(view, "dispatch", %{"ref" => "tap"})
       assert_push_event(view, "crosswake:bridge", envelope)
 
+      refute Enum.empty?(Map.values(envelope))
+
       refute Enum.any?(Map.values(envelope), fn
                value when is_binary(value) -> String.contains?(value, "tap")
                _other -> false

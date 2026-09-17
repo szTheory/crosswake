@@ -124,6 +124,8 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     assert names == Enum.sort(names)
     assert Enum.uniq(names) == names
 
+    refute Enum.empty?(fixture["cases"])
+
     assert Enum.all?(
              fixture["cases"],
              &(&1["classification"] in ["documentation_only", "full_proof"])

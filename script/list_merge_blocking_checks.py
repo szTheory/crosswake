@@ -19,6 +19,7 @@ import argparse
 import glob
 import json
 import os
+import re
 import sys
 from collections import defaultdict
 
@@ -31,6 +32,7 @@ except ImportError:
 
 CROSSWAKE_CI = ".github/workflows/crosswake-ci.yml"
 REQUIRED_CHECK_POLICY = "script/required_check_policy.json"
+VERSION_LITERAL_RE = re.compile(r"\d+\.\d+\.\d+")
 MIGRATED_SOURCE_WORKFLOWS = {
     ".github/workflows/brandbook-verify.yml",
     ".github/workflows/collateral-guard.yml",
@@ -255,21 +257,54 @@ def inventory() -> tuple[list[tuple[str, str, str]], list[str]]:
 
             records.append((name, path, job_id))
 
-    required = defaultdict(list)
-    for record in records:
-        if "merge-blocking" in record[0].lower():
-            required[record[0]].append(record)
+            if VERSION_LITERAL_RE.search(name):
+                errors.append(
+                    diagnostic(
+                        "version-literal-in-display-name",
+                        path,
+                        job_id,
+                        f"display name {name!r} carries a version literal",
+                        "use the convention 'release: <subsystem-noun> <role>' with no frozen version.",
+                    )
+                )
 
-    for name, producers in sorted(required.items()):
+            steps = job.get("steps")
+            if isinstance(steps, list):
+                for step in steps:
+                    if not isinstance(step, dict):
+                        continue
+                    uses = step.get("uses")
+                    if not isinstance(uses, str) or "actions/upload-artifact" not in uses:
+                        continue
+                    with_block = step.get("with")
+                    if not isinstance(with_block, dict):
+                        continue
+                    artifact_name = with_block.get("name")
+                    if isinstance(artifact_name, str) and VERSION_LITERAL_RE.search(artifact_name):
+                        errors.append(
+                            diagnostic(
+                                "version-literal-in-display-name",
+                                path,
+                                job_id,
+                                f"upload-artifact name {artifact_name!r} carries a version literal",
+                                "use the convention 'release: <subsystem-noun> <role>' with no frozen version.",
+                            )
+                        )
+
+    duplicates = defaultdict(list)
+    for record in records:
+        duplicates[record[0]].append(record)
+
+    for name, producers in sorted(duplicates.items()):
         if len(producers) > 1:
             sources = ", ".join(f"{path} ({job})" for _, path, job in producers)
             errors.append(
                 diagnostic(
-                    "duplicate-producer/duplicate-merge-blocking-name",
+                    "duplicate-producer/duplicate-display-name",
                     sources,
                     None,
                     f"literal context {name!r} has {len(producers)} producers",
-                    "rename the later producer while retaining a stable merge-blocking name.",
+                    "rename the later producer so every display name has exactly one producer.",
                 )
             )
 

@@ -19,8 +19,13 @@ defmodule Mix.Tasks.Crosswake.Release.Status do
   The exact candidate projection uses the shared `BLOCKED`, `STALE`,
   `READY FOR APPROVAL`, `PARTIAL`, and `COMPLETE` vocabulary. This command only
   observes state; it never captures, approves, publishes, or recovers a candidate.
+
+  ## Exit codes
+
+  See `Crosswake.ReleaseStatus.exit_code/1` for the canonical `0`/`1`/`3` table.
   """
 
+  # exit contract: 0 clean / 1 defect found / 3 could not verify
   @impl Mix.Task
   def run(args) do
     {opts, _argv, invalid} =
@@ -44,10 +49,24 @@ defmodule Mix.Tasks.Crosswake.Release.Status do
         Crosswake.ReleaseStatus.render(status)
       end
 
+    # Printed BEFORE the exit-code branch, on every path, so the UNVERIFIED/FAIL
+    # microcopy is never swallowed by exit({:shutdown, 3}) — this ordering must
+    # not move.
     Mix.shell().info(output)
 
-    if Crosswake.ReleaseStatus.exit_code(status) != 0 do
-      Mix.raise("Crosswake release status found blocking release issues")
+    case Crosswake.ReleaseStatus.exit_code(status) do
+      0 ->
+        :ok
+
+      1 ->
+        Mix.raise("Crosswake release status found blocking release issues")
+
+      3 ->
+        # Mix.raise always exits 1 and cannot express 3. exit({:shutdown, 3})
+        # matches the idiom already documented at
+        # lib/mix/tasks/crosswake.demo.ex:24-25 — never System.halt/1, which
+        # skips at_exit hooks and can truncate buffered stdout under a pipe.
+        exit({:shutdown, 3})
     end
   end
 end
