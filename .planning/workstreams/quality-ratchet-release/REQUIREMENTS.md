@@ -35,8 +35,8 @@ Source: `.planning/research/v23/SUMMARY.md` (decision set, adjudicated divergenc
 ### Post-Publication Proof
 
 - [x] **XPUB-01**: Each of the six packages in the approved manifest carries its own `candidate_ref`; the single-shared-ref requirement is gone
-- [ ] **XPUB-02**: Byte-exact digest equality against the published tarball is unchanged in strength for every package it can be established for
-- [ ] **XPUB-03**: A package whose source has drifted since its own publish tag reports a separately-named weaker claim, never a `byte_exact` result and never silently averaged into one green check
+- [x] **XPUB-02**: Byte-exact digest equality against the published tarball is unchanged in strength for every package it can be established for
+- [x] **XPUB-03**: A package whose source has drifted since its own publish tag reports a separately-named weaker claim, never a `byte_exact` result and never silently averaged into one green check
 - [ ] **XPUB-04**: `exact-public-proof` runs on a publication-record signal satisfied identically by the ordinary and the recovery publish path
 - [ ] **XPUB-05**: A missing publication record fails the proof hard; it is never expressed as a skipped job
 - [ ] **XPUB-06**: The proof result outlives its 14-day artifact retention — durably recorded in-repo or with retention raised
@@ -155,8 +155,8 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 | WELD-07 | Phase 171 | Complete |
 | WELD-08 | Phase 171 | Complete |
 | XPUB-01 | Phase 172 | Complete |
-| XPUB-02 | Phase 172 | Pending |
-| XPUB-03 | Phase 172 | Pending |
+| XPUB-02 | Phase 172 | Complete |
+| XPUB-03 | Phase 172 | Complete |
 | XPUB-04 | Phase 173 | Pending |
 | XPUB-05 | Phase 173 | Pending |
 | XPUB-06 | Phase 173 | Pending |

@@ -4,17 +4,17 @@ milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 172
 current_phase_name: Per-Package Proof Scope
-status: executing
-stopped_at: Completed 172-02-PLAN.md
-last_updated: "2026-09-17T19:54:52.105Z"
+status: verifying
+stopped_at: Completed 172-03-PLAN.md
+last_updated: "2026-09-17T20:34:33.516Z"
 last_activity: 2026-09-17
 last_activity_desc: Phase 172 execution started
-state_head: 66367f1a62dc2d391157bafa39a918aff64c0520
+state_head: ff3962bd727f11b4db946e92fedf87d7222356f5
 progress:
   total_phases: 7
   completed_phases: 3
   total_plans: 17
-  completed_plans: 16
+  completed_plans: 17
   percent: 43
 ---
 
@@ -47,7 +47,7 @@ Revisit once the post-publication proof lane can actually run.
 
 Phase: 172 (Per-Package Proof Scope) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-09-17 — Phase 172 execution started
 
 ## Performance Metrics
@@ -122,6 +122,7 @@ Last activity: 2026-09-17 — Phase 172 execution started
 | Phase 170 P05 | 30min | 2 tasks | 2 files |
 | Phase 172 P01 | 55min | 3 tasks | 7 files |
 | Phase 172 P02 | 70min | 3 tasks | 4 files |
+| Phase 172 P03 | 50min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -249,6 +250,9 @@ Last activity: 2026-09-17 — Phase 172 execution started
 - [Phase 172]: 172-02: branch order in public_artifact_reason/3 (compatible -> digest_mismatch -> unproven -> nil) is load-bearing, chosen so each prescribed mutation falsifies exactly its paired test
 - [Phase 172]: 172-02: ref!/1 resolved inside each drift branch's own cond guard, not via a shared pre-cond binding, to keep the registry-missing branch reachable for a nil observed ref
 - [Phase 172]: 172-02: public_artifact_claim/1 written as an explicit case over every known reason string with a catch-all, so a future reason added without a matching clause resolves to unproven rather than crashing
+- [Phase 172]: 172-03: proof module derives roster from Artifact.packages/0 and group-width from a named @artifact_field_count attribute, never a bare literal
+- [Phase 172]: 172-03: byte-exact regression anchor mutates one real file byte, recomputes the digest through Artifact.inspect_family!/1, and carries it into Cleanroom.evaluate_public!/1 for a verdict, pinning the proof floor below the digest-string layer
+- [Phase 172]: 172-03: 172-NON-VACUITY.md records only checks with an actually-executed mutation as full rows; every other landed check is named with a decidable reason, never silently omitted
 
 ### v23.0 Roadmap Decisions
 
@@ -315,8 +319,8 @@ Last activity: 2026-09-17 — Phase 172 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-17T19:54:52.062Z
-Stopped at: Completed 172-02-PLAN.md
+Last session: 2026-09-17T20:34:33.490Z
+Stopped at: Completed 172-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
