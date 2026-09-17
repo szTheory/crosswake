@@ -1,4 +1,4 @@
-# Requirements: Crosswake v23.0 — Release Pipeline Repair & Proof-Lane Truth
+# Requirements: Crosswake v23.0 Release Pipeline Repair & Proof-Lane Truth
 
 **Defined:** 2026-09-15
 **Workstream:** quality-ratchet-release

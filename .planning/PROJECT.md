@@ -47,6 +47,17 @@ BLOCKING before any release past `0.2.1`.
 
 ## Active Workstreams
 
+### v23.0 Release Pipeline Repair & Proof-Lane Truth (active)
+
+**Goal:** Repair the release pipeline's three derived-fact regressions and make every proof lane
+report a fact about the thing it names — no check stays green while asserting nothing.
+
+**Thesis:** All three defects share one root habit: *a fact that should have been derived got
+hardcoded, and nothing was built to catch it drifting.* Every requirement generalizes an existing
+mechanism; none loosens what it proves.
+
+**Planning:** `.planning/workstreams/quality-ratchet-release/` (phases 169-175)
+
 ### v22.0 Quality Ratchet & Release Readiness (shipped)
 
 **Goal:** Make Crosswake safe to change, inexpensive to verify, pleasant to review, and ready for
