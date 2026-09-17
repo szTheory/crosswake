@@ -33,13 +33,14 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 
 | PR | Proposes | Disposition |
 |---|---|---|
-| #164 | `0.2.2` (linked core) | **BLOCKED on `SEED-017`.** The release graph is welded to `0.2.1`, so merging tags and then publishes NOTHING. An interim CI tripwire on `main` exists to fail this. |
+| #164 | `0.2.2` (linked core) | **Weld-unblocked as of Phase 171** (merged `501e4410`): the graph is version-parametric and both the `0.2.1` weld and its interim tripwire are gone, so merging this would now tag AND publish. Still hold pending the proof lane — `exact-public-proof` has never executed at any release (`TODO-011`/`TODO-012`, Phases 173-175). Publishing before the proof lane works is the thing this milestone exists to prevent. |
 | #147 | `crosswake_rulestead 0.1.1` | **Hold.** Independently versioned (D-15/D-16), so not weld-blocked — but publishing is a one-way door, and per `TODO-011` the post-publish companion clean-room lane has never been green, while `TODO-012` makes the exact-public proof structurally unsatisfiable. Publishing more of the family before the proof lane works adds unverifiable artifacts. Also stale (opened 2026-08-10). |
 | #115 | `crosswake_chimeway 0.1.1` | **Hold**, same reasoning. Stale (opened 2026-08-09). |
 
 The companion holds are a judgement call, not a hard gate: these publishes would most
 likely succeed the way `crosswake_rindle 0.1.0` did this session. The argument for waiting
-is that "it published and nothing verified it" is exactly the state `SEED-017` exists to end.
+is that "it published and nothing verified it" is exactly the state this milestone exists to end
+(`SEED-017` itself is harvested — Phase 171 closed it).
 Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
