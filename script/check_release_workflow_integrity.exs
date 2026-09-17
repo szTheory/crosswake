@@ -14,10 +14,48 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   @default_release_config "release-please-config.json"
   @default_manifest ".release-please-manifest.json"
   @default_ci_workflow ".github/workflows/crosswake-ci.yml"
+  @default_exact_public_proof_workflow ".github/workflows/exact-public-proof.yml"
   @default_companion_root "packages"
   @version_gated_jobs ~w(publish-hex publish-ios-core publish-android-core exact-public-proof)
   @components ~w(rulestead rindle sigra chimeway threadline)
   @hex_packages ~w(crosswake crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline)
+  # DECLARED, NEVER DERIVED (SEED-019).
+  #
+  # This roster is the scope selector for every per-lane publication-record
+  # assertion below. It is a literal constant on purpose: a roster computed by
+  # scanning the workflow files for "jobs that mention the emitter" would shrink
+  # to exclude the exact lane that stopped emitting a record, and the checks
+  # would then report green about a set that no longer contains the defect. A
+  # scope selector must never be derived from the artifact it polices.
+  #
+  # If you are here to replace this list with a scan: that is the defect, not a
+  # cleanup. Add a lane by hand; the roster-exactness check and the phase-173
+  # proof fixtures will tell you if the hand-written entry is wrong.
+  @proof_lanes [
+    %{
+      lane: "ordinary",
+      workflow: ".github/workflows/release-please.yml",
+      publish_job: "publish-hex",
+      caller_job: "exact-public-proof",
+      package_expr: "crosswake",
+      approved_head_expr: "${{ needs.approved-release-guard.outputs.approved_head }}"
+    },
+    %{
+      lane: "recovery",
+      workflow: ".github/workflows/hex-publish.yml",
+      publish_job: "publish",
+      caller_job: "recovery-exact-public-proof",
+      package_expr: "${{ inputs.package }}",
+      approved_head_expr: "${{ inputs.approved_head }}"
+    }
+  ]
+
+  @record_emitter "script/write_publication_record.sh"
+  @record_emitter_flags ~w(--package --version --approved-head --ref --lane --run-id --output)
+  @record_artifact_template "publication-record-{package}-{approved_head}"
+  @exact_public_proof_uses "./.github/workflows/exact-public-proof.yml"
+  @exact_public_proof_job "exact-public-proof"
+
   @companion_floors %{
     "crosswake_rulestead" => "~> 0.2",
     "crosswake_rindle" => "~> 0.2",
@@ -37,6 +75,9 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     recovery.hex.exact_ref_only
     recovery.hex.package_map_complete
     recovery.ios.exact_identity_gate
+    release.recovery.proof_applicability_lane_gated
+    release.recovery.proof_record_fails_closed
+    release.recovery.publication_record_identical
     release.aggregate_gate.behavioral_jobs_absent
     release.android.path_gate
     release.android_proof.decoupled
@@ -155,6 +196,13 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
     companion_root = path_from_env("COMPANION_MIX_ROOT", @default_companion_root)
 
+    exact_public_proof_workflow =
+      File.read!(
+        path_from_env("EXACT_PUBLIC_PROOF_WORKFLOW_PATH", @default_exact_public_proof_workflow)
+      )
+
+    lane_workflows = %{"ordinary" => workflow, "recovery" => recovery_workflow}
+
     ci_workflow =
       path_from_env("CROSSWAKE_CI_WORKFLOW_PATH", @default_ci_workflow)
       |> File.read!()
@@ -226,6 +274,9 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         recovery_exact_ref_only(non_comment_recovery),
         recovery_package_map_complete(non_comment_helper, non_comment_recovery),
         recovery_already_live_success_continues(non_comment_helper),
+        publication_record_identical(lane_workflows, exact_public_proof_workflow),
+        proof_record_fails_closed(exact_public_proof_workflow),
+        proof_applicability_lane_gated(exact_public_proof_workflow),
         cleanroom_hex_metadata_floor(non_comment_cleanroom_script),
         cleanroom_exact_companion_pin(non_comment_cleanroom_script),
         cleanroom_lockfile_postcondition(non_comment_cleanroom_script),
@@ -565,6 +616,234 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(helper, "proof=continue"),
       "already-live package/version state must exit successfully with proof continuation state"
     )
+  end
+
+  # -- Phase 173: both publication lanes satisfy ONE publication-record contract --
+  #
+  # Every predicate below iterates @proof_lanes, the DECLARED roster. See the
+  # comment on that attribute for why it is a literal and not a scan.
+
+  @rerun_checker "elixir script/check_release_workflow_integrity.exs"
+  @rerun_fixtures "mix test test/crosswake/proof/phase173_recovery_proof_convergence_test.exs"
+
+  defp publication_record_identical(lane_workflows, proof_workflow) do
+    observations =
+      Map.new(@proof_lanes, fn lane ->
+        jobs = lane_workflows |> Map.fetch!(lane.lane) |> job_blocks()
+        publish = job_block(jobs, lane.publish_job)
+        caller = job_block(jobs, lane.caller_job)
+        invocation = emitter_invocation(publish)
+
+        {lane.lane,
+         %{
+           flags: emitter_flags(invocation),
+           lane_argument: emitter_argument(invocation, "--lane"),
+           package_argument: emitter_argument(invocation, "--package"),
+           head_argument: emitter_argument(invocation, "--approved-head"),
+           artifact_name: upload_artifact_name(publish),
+           error_on_missing?: includes?(publish, "if-no-files-found: error"),
+           uses: caller |> job_key("uses") |> String.trim(),
+           actions_read?: caller |> job_key("permissions") |> includes?("actions: read")
+         }}
+      end)
+
+    per_lane_problems =
+      Enum.flat_map(@proof_lanes, fn lane ->
+        seen = Map.fetch!(observations, lane.lane)
+        where = "#{lane.lane} lane (#{lane.workflow})"
+        expected_artifact = render_record_artifact(lane.package_expr, lane.approved_head_expr)
+
+        [
+          {seen.flags == @record_emitter_flags,
+           "#{where}: job #{lane.publish_job} must invoke #{@record_emitter} with exactly #{Enum.join(@record_emitter_flags, " ")} in that order, found #{Enum.join(seen.flags, " ")}"},
+          {seen.lane_argument == lane.lane,
+           "#{where}: job #{lane.publish_job} must pass --lane \"#{lane.lane}\", found #{inspect(seen.lane_argument)}"},
+          {seen.package_argument == lane.package_expr,
+           "#{where}: job #{lane.publish_job} must pass --package \"#{lane.package_expr}\", found #{inspect(seen.package_argument)}"},
+          {seen.head_argument == lane.approved_head_expr,
+           "#{where}: job #{lane.publish_job} must pass --approved-head \"#{lane.approved_head_expr}\", found #{inspect(seen.head_argument)}"},
+          {seen.artifact_name == expected_artifact,
+           "#{where}: job #{lane.publish_job} must upload the record as #{expected_artifact}, found #{inspect(seen.artifact_name)}"},
+          {seen.error_on_missing?,
+           "#{where}: job #{lane.publish_job} must upload the record with if-no-files-found: error"},
+          {seen.uses == @exact_public_proof_uses,
+           "#{where}: job #{lane.caller_job} must reach the proof through uses: #{@exact_public_proof_uses}, found #{inspect(seen.uses)}"},
+          {seen.actions_read?,
+           "#{where}: job #{lane.caller_job} must grant actions: read in its own job-level permissions: block. This is an AUTHORIZATION property, not a shape one: both lane workflows declare a top-level permissions: key, so actions is none unless the caller job grants it, and a called workflow's permissions can only narrow the caller's token, never widen it. Drop the grant and the shared proof body's artifact reads fail with a forbidden response during a real release; actionlint cannot decide it"}
+        ]
+        |> Enum.reject(&elem(&1, 0))
+        |> Enum.map(&elem(&1, 1))
+      end)
+
+    uses_values = Enum.map(@proof_lanes, &Map.fetch!(observations, &1.lane).uses)
+    consumer_artifact = render_record_artifact("${PACKAGE}", "${APPROVED_HEAD}")
+
+    cross_lane_problems =
+      [
+        {Enum.uniq(uses_values) == [@exact_public_proof_uses],
+         "the #{length(@proof_lanes)} lane callers must name the SAME reusable workflow, compared as equal strings and not as a shared pattern: found #{inspect(uses_values)}"},
+        {includes?(
+           strip_full_line_comments(proof_workflow),
+           "artifact_name=\"#{consumer_artifact}\""
+         ),
+         "the reusable proof body must read the record under the same declared template, rendered as #{consumer_artifact}"}
+      ]
+      |> Enum.reject(&elem(&1, 0))
+      |> Enum.map(&elem(&1, 1))
+
+    problems = per_lane_problems ++ cross_lane_problems
+
+    check(
+      "release.recovery.publication_record_identical",
+      problems == [],
+      if(problems == [],
+        do:
+          "all #{length(@proof_lanes)} declared lanes (#{Enum.map_join(@proof_lanes, ", ", & &1.lane)}) emit the publication record through #{@record_emitter} with identical flags, upload it under the declared artifact template, grant actions: read, and reach the one reusable proof at #{@exact_public_proof_uses}",
+        else:
+          "#{Enum.join(problems, " | ")} -- rerun with `#{@rerun_checker}`, and `#{@rerun_fixtures}` for the fixture that names the lane"
+      )
+    )
+  end
+
+  defp proof_record_fails_closed(proof_workflow) do
+    jobs = job_blocks(proof_workflow)
+    job = job_block(jobs, @exact_public_proof_job)
+    body = strip_full_line_comments(proof_workflow)
+
+    swallowing = Enum.filter(["|| true", "continue-on-error", "set +e"], &includes?(job, &1))
+
+    provenance_missing =
+      Enum.reject(
+        [
+          "PACKAGE: ${{ inputs.package }}",
+          "VERSION: ${{ inputs.version }}",
+          "APPROVED_HEAD: ${{ inputs.approved_head }}"
+        ],
+        &includes?(job, &1)
+      )
+
+    problems =
+      [
+        {job_if(jobs, @exact_public_proof_job) == "${{ always() }}",
+         "job #{@exact_public_proof_job} must carry if: ${{ always() }} so the record decision is made by a step that RUNS, found #{inspect(job_if(jobs, @exact_public_proof_job))}"},
+        {includes?(job, "bash script/assert_publication_record.sh"),
+         "job #{@exact_public_proof_job} must run script/assert_publication_record.sh"},
+        {swallowing == [],
+         "job #{@exact_public_proof_job} carries failure-swallowing construct(s) #{Enum.join(swallowing, ", ")}"},
+        {provenance_missing == [],
+         "job #{@exact_public_proof_job} must take the expected triple from its own declared inputs; missing #{Enum.join(provenance_missing, ", ")}"},
+        {not includes?(job, ~r/(?:PACKAGE|VERSION|APPROVED_HEAD):\s*\$\{\{\s*steps\./),
+         "job #{@exact_public_proof_job} derives an expected value from a step output — the expected triple must never come from the artifact under verification (SEED-019)"},
+        {not includes?(body, ~r/^\s*secrets:/m),
+         "the reusable proof workflow must declare no secrets-inheritance key"}
+      ]
+      |> Enum.reject(&elem(&1, 0))
+      |> Enum.map(&elem(&1, 1))
+
+    check(
+      "release.recovery.proof_record_fails_closed",
+      problems == [],
+      if(problems == [],
+        do:
+          "the shared proof body both lanes (#{Enum.map_join(@proof_lanes, ", ", & &1.lane)}) call always runs, asserts the record without swallowing failure, takes its expected triple from its own inputs, and inherits no secrets",
+        else:
+          "#{Enum.join(problems, " | ")} -- in #{@default_exact_public_proof_workflow}, the body BOTH the #{Enum.map_join(@proof_lanes, " and ", & &1.lane)} lanes call; rerun with `#{@rerun_checker}`, and `#{@rerun_fixtures}` for the fixture that reproduces it"
+      )
+    )
+  end
+
+  # The one zero-exit branch in the shared proof body must be reachable from the
+  # ordinary lane ONLY. A recovery call exists only because a maintainer
+  # dispatched a publish and it succeeded, so "not a linked release" is never a
+  # truthful answer for it — and hex-publish.yml declares approved_head and
+  # merge_oid as `required: false` with empty defaults, so an un-laned branch
+  # turns a blank dispatch form into a real publish whose every proof step is
+  # skipped while the job concludes success.
+  defp proof_applicability_lane_gated(proof_workflow) do
+    jobs = job_blocks(proof_workflow)
+    job = job_block(jobs, @exact_public_proof_job)
+
+    marker = "echo \"applicable=false\""
+    gate = "if [ \"$LANE\" != \"ordinary\" ]; then"
+    lane_case = "case \"$LANE\" in"
+    token = "PROOF_APPLICABILITY_UNDETERMINED"
+
+    gated_segment =
+      case String.split(job, gate, parts: 2) do
+        [_, rest] -> rest |> String.split(marker, parts: 2) |> hd()
+        _ -> ""
+      end
+
+    problems =
+      [
+        {includes?(job, marker),
+         "job #{@exact_public_proof_job} no longer writes the applicable=false marker — the branch this check gates has vanished, so nothing here is being decided"},
+        {includes?(job, gate),
+         "the not-applicable branch is not lane-gated: expected #{gate} guarding it, so a recovery call with both approved_head and merge_oid blank would skip every proof step and still conclude success"},
+        {precedes?(job, gate, marker),
+         "the lane gate must be evaluated BEFORE the applicable=false marker is written"},
+        {precedes?(job, lane_case, marker),
+         "the lane must be validated (#{lane_case}) before any branch can exit zero on it"},
+        {includes?(gated_segment, token),
+         "the recovery-lane refusal must report the named result #{token}"},
+        {includes?(gated_segment, "exit 1"),
+         "the recovery-lane refusal must exit non-zero"}
+      ]
+      |> Enum.reject(&elem(&1, 0))
+      |> Enum.map(&elem(&1, 1))
+
+    check(
+      "release.recovery.proof_applicability_lane_gated",
+      problems == [],
+      if(problems == [],
+        do:
+          "the not-applicable branch of the shared proof body is reachable from the ordinary lane only; the recovery lane refuses with #{token} rather than skipping the proof",
+        else:
+          "recovery lane (#{Enum.find(@proof_lanes, &(&1.lane == "recovery")).workflow} job #{Enum.find(@proof_lanes, &(&1.lane == "recovery")).caller_job}): #{Enum.join(problems, " | ")} -- fix in #{@default_exact_public_proof_workflow}; rerun with `#{@rerun_checker}`, and `#{@rerun_fixtures}` for the fixture that reproduces it"
+      )
+    )
+  end
+
+  defp emitter_invocation(block) do
+    case String.split(block, "bash " <> @record_emitter, parts: 2) do
+      [_, rest] -> rest |> String.split("\n\n", parts: 2) |> hd()
+      _ -> ""
+    end
+  end
+
+  defp emitter_flags(invocation) do
+    ~r/(?m)^\s*(--[a-z][a-z-]*)/
+    |> Regex.scan(invocation, capture: :all_but_first)
+    |> List.flatten()
+  end
+
+  defp emitter_argument(invocation, flag) do
+    case Regex.run(~r/#{Regex.escape(flag)}\s+"([^"]*)"/, invocation, capture: :all_but_first) do
+      [value] -> value
+      _ -> nil
+    end
+  end
+
+  defp upload_artifact_name(block) do
+    case Regex.run(~r/(?m)^\s*name:\s*(publication-record-.*?)\s*$/, block,
+           capture: :all_but_first
+         ) do
+      [value] -> value
+      _ -> nil
+    end
+  end
+
+  defp render_record_artifact(package, approved_head) do
+    @record_artifact_template
+    |> String.replace("{package}", package)
+    |> String.replace("{approved_head}", approved_head)
+  end
+
+  defp precedes?(text, first, second) do
+    case {:binary.match(text, first), :binary.match(text, second)} do
+      {{a, _}, {b, _}} -> a < b
+      _ -> false
+    end
   end
 
   defp cleanroom_hex_metadata_floor(script) do
