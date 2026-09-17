@@ -49,7 +49,7 @@ case "$MODE" in
     RECORDED_SPLIT_SHA="$BASELINE_SPLIT_SHA"
     ;;
   candidate|publish|recovery)
-    [ "$VERSION" = "0.2.1" ] || usage
+    printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || usage
     printf '%s' "$SOURCE_REF" | grep -Eq '^[0-9a-f]{40}$' || usage
     REMOTE="$PUBLIC_REMOTE"
     RECORDED_SPLIT_SHA=""

@@ -15,10 +15,9 @@ PHASE168_MERGE_OID="b780a19863936619394087f1ffd384f1dca17c93"
 PHASE168_APPROVED_HEAD="1051ab90cf75e918c6f596f84578ac77eadf45af"
 PHASE168_APPROVED_TREE="ecf63228243bfe7c2d6a377be996aa374b31d91f"
 PHASE168_CANDIDATE_RECEIPT="359ef8a5257b54e472a2328ce3ae722222506527312b3805467d643bb8666c78"
-PUBLIC_POM="https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/0.2.1/crosswake-shell-core-android-0.2.1.pom"
 
 usage() {
-  echo "usage: android_publication.sh [--release-root <path>] --version 0.2.1 --ref <merge-sha> --approved-head <sha> --approved-tree <tree> --candidate-receipt <sha256> [--execute|--recover]" >&2
+  echo "usage: android_publication.sh [--release-root <path>] --version <semver> --ref <merge-sha> --approved-head <sha> --approved-tree <tree> --candidate-receipt <sha256> [--execute|--recover]" >&2
   exit 2
 }
 
@@ -43,7 +42,7 @@ RELEASE_ROOT=${RELEASE_ROOT:-$REPO_ROOT}
 }
 RELEASE_ROOT=$(cd "$RELEASE_ROOT" && pwd)
 
-[ "$VERSION" = "0.2.1" ] || usage
+printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || usage
 printf '%s' "$SOURCE_REF$APPROVED_HEAD$APPROVED_TREE" | grep -Eq '^[0-9a-f]{120}$' || usage
 printf '%s' "$CANDIDATE_RECEIPT" | grep -Eq '^[0-9a-f]{64}$' || usage
 [ "$SOURCE_REF" = "$PHASE168_MERGE_OID" ]
@@ -51,16 +50,18 @@ printf '%s' "$CANDIDATE_RECEIPT" | grep -Eq '^[0-9a-f]{64}$' || usage
 [ "$APPROVED_TREE" = "$PHASE168_APPROVED_TREE" ]
 [ "$CANDIDATE_RECEIPT" = "$PHASE168_CANDIDATE_RECEIPT" ]
 
+PUBLIC_POM="https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/${VERSION}/crosswake-shell-core-android-${VERSION}.pom"
+
 [ "$(git -C "$RELEASE_ROOT" rev-parse HEAD)" = "$SOURCE_REF" ]
 parent_line=$(git -C "$RELEASE_ROOT" rev-list --parents -n 1 "$SOURCE_REF")
 [ "$(printf '%s\n' "$parent_line" | awk '{print NF}')" -eq 3 ]
 [ "$(printf '%s\n' "$parent_line" | awk '{print $3}')" = "$APPROVED_HEAD" ]
 [ "$(git -C "$RELEASE_ROOT" rev-parse "${SOURCE_REF}^{tree}")" = "$APPROVED_TREE" ]
 [ "$(git -C "$RELEASE_ROOT" rev-parse "${APPROVED_HEAD}^{tree}")" = "$APPROVED_TREE" ]
-grep -q 'version = "0.2.1"' "$RELEASE_ROOT/packages/crosswake-shell-core-android/build.gradle.kts"
+grep -q "version = \"${VERSION}\"" "$RELEASE_ROOT/packages/crosswake-shell-core-android/build.gradle.kts"
 
 if [ "$MODE" = "observe" ]; then
-  echo '[crosswake] OK: Android publication identity is exact; external_state_changed=false.'
+  echo "[crosswake] OK: Android publication identity is exact; external_state_changed=false."
   exit 0
 fi
 
@@ -69,7 +70,7 @@ if [ "$MODE" = "recovery" ]; then
 
   case "$public_status" in
     200)
-      echo '[crosswake] OK: Android core 0.2.1 is already public; exact-ref recovery is complete.'
+      echo "[crosswake] OK: Android core ${VERSION} is already public; exact-ref recovery is complete."
       exit 0
       ;;
     404) ;;
@@ -97,9 +98,9 @@ if [ "$MODE" = "recovery" ]; then
     esac
   done
   [ "$public_status" = "200" ] || {
-    echo '[crosswake] FAIL: exact Android core 0.2.1 POM did not become public within the bounded recovery window.' >&2
+    echo "[crosswake] FAIL: exact Android core ${VERSION} POM did not become public within the bounded recovery window." >&2
     exit 1
   }
 fi
 
-echo "[crosswake] OK: Android core 0.2.1 ${MODE} command completed for the approved exact merge."
+echo "[crosswake] OK: Android core ${VERSION} ${MODE} command completed for the approved exact merge."

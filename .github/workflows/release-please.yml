@@ -267,6 +267,7 @@ jobs:
           --approved-tree "${{ needs.approved-release-guard.outputs.approved_tree }}"
           --merge-oid "${{ needs.approved-release-guard.outputs.merge_oid }}"
           --candidate-receipt "${{ needs.approved-release-guard.outputs.candidate_receipt }}"
+          --expected-version "${{ needs.approved-release-guard.outputs.approved_version }}"
 
   publish-hex-rulestead:
     name: Publish crosswake_rulestead to Hex.pm
