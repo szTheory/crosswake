@@ -136,3 +136,103 @@ addendum living beside its artifacts. `169-VERIFICATION.md` itself — a sealed,
 artifact — is not edited to add this coverage; editing it after the fact would invalidate the
 `covered_digest` it already carries and would blur the line between what was verified at close
 time and what was added afterward.
+
+---
+
+# Milestone v23.0 Verification Convention: `covered_files` excludes volatile bookkeeping
+
+## Why this exists
+
+`*-VERIFICATION.md` carries a `covered_digest` over its `covered_files`. When any covered file's
+bytes change, `verification status` reports **`stale`** and demands re-verification before a
+milestone transition.
+
+That is the right behavior for files a verification is *about*. It is actively wrong for the
+workstream's shared, continuously-rewritten bookkeeping artifacts — `REQUIREMENTS.md`,
+`ROADMAP.md` and `STATE.md` — because **closing a phase edits them**. The result observed on
+2026-09-16 was a loop with no exit:
+
+- **Phase 170** read `passed` the moment its verifier wrote the report, then flipped to `stale`
+  as soon as `ROADMAP.md` was committed marking phase 170 complete — its own closeout
+  un-verified it.
+- **Phase 169** flipped to `stale` because phase **170** ticked VAC-01/02/03 in the shared
+  `REQUIREMENTS.md`, while every file phase 169 is actually about stayed byte-identical.
+
+Re-running `/gsd-verify-work` cannot clear this: recording the re-verification updates the same
+shared artifacts and re-stales the report. A gate that cannot be satisfied by doing the right
+thing is not a gate; it is noise that trains people to ignore a real signal. That is this
+milestone's own defect class — a check whose green/red carries no information about the thing
+it claims to guard.
+
+## The rule
+
+**A phase's `covered_files` MUST NOT list the workstream's shared bookkeeping artifacts:**
+
+- `.planning/workstreams/<ws>/REQUIREMENTS.md`
+- `.planning/workstreams/<ws>/ROADMAP.md`
+- `.planning/workstreams/<ws>/STATE.md`
+
+`covered_files` lists the **evidence** a verification rests on: implementation files, scripts,
+workflows, tests, and that phase's own immutable plan/summary/review artifacts. Those are stable
+once a phase closes, so a digest over them means what it claims — *the thing I verified has
+changed since I verified it.*
+
+## What this deliberately gives up
+
+Requirement checkboxes live in `REQUIREMENTS.md`. Under this rule, silently unticking `VAC-01`
+would no longer trip a phase's `covered_digest`.
+
+This is an accepted, explicit trade, not an oversight. The digest never detected that
+meaningfully anyway — it fired on *every* edit to those files, which is to say on every routine
+phase close, so a real regression was indistinguishable from bookkeeping noise. Requirement-state
+integrity is covered where it is actually decidable: the per-requirement traceability table in
+`REQUIREMENTS.md`, the phase verifier's own Requirements Coverage section, and
+`gsd_run query requirements.*`.
+
+## Applying it to an already-closed phase
+
+Removing a volatile entry from a closed phase's `covered_files` is a **scope correction**, not a
+re-verification, and it MUST be recorded as such:
+
+1. Delete the volatile entries from `covered_files`.
+2. Recompute: `gsd_run query verification fingerprint <remaining covered files>`.
+3. Write the new value to `covered_digest`.
+4. Add a `revalidation_note` stating which entries were removed and why, so the edit is auditable
+   and the verdict's provenance stays legible.
+
+The phase's verdict, score and evidence are NOT restated or re-derived by this operation. If the
+evidence itself needs re-checking, that is `/gsd-verify-work`, which is a different thing.
+
+## Boundary
+
+This rule governs `covered_files` composition only. It does not change what a verifier must
+verify, does not relax any success criterion, and does not apply to a phase's own
+`*-PLAN.md` / `*-SUMMARY.md` / `*-REVIEW.md` artifacts — those are immutable after close and
+remain legitimate digest inputs.
+
+## ⚠ Tooling defect: use the reader's digest, not the CLI verb's
+
+**`gsd_run query verification fingerprint <files>` and the digest the status reader compares
+against are NOT the same value.** Verified on gsd-core 1.14.0, 2026-09-16, over an identical
+21-file list:
+
+| Source | Digest |
+|---|---|
+| `query verification fingerprint` (CLI) | `v1:sha256:34e6a808b3b810b6…` |
+| `computeCoveredDigest()` (what `readVerificationStatus` uses) | `v1:sha256:d0a1d9041afb30bd…` |
+
+Writing the CLI verb's value into `covered_digest` therefore **can never clear a stale flag** —
+the reader compares against a different function and fails closed to `stale` forever. This is why
+the obvious procedure (recompute with the documented verb, write it back) silently fails.
+
+Until this is fixed upstream, recompute with the reader's own function:
+
+```bash
+node -e 'const v=require("$HOME/.claude/gsd-core/bin/lib/verification.cjs");
+  console.log(v.computeCoveredDigest("<project root>", process.argv.slice(1)))' <covered files...>
+```
+
+Note the shape of this defect: a check that reports a real-sounding failure state which no correct
+action can resolve. It is the same family this milestone exists to remove — a signal whose value
+is uninformative about the thing it names — so it is recorded here rather than worked around
+silently.

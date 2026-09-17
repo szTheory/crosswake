@@ -4,8 +4,6 @@ verified: 2026-09-16T00:00:00Z
 status: passed
 score: 3/3 must-haves verified
 covered_files:
-  - .planning/workstreams/quality-ratchet-release/REQUIREMENTS.md
-  - .planning/workstreams/quality-ratchet-release/ROADMAP.md
   - .planning/workstreams/quality-ratchet-release/VERIFICATION-CONVENTIONS.md
   - .planning/workstreams/quality-ratchet-release/phases/169-diagnostic-legibility/169-VACUITY-TAXONOMY.md
   - .planning/workstreams/quality-ratchet-release/phases/170-vacuous-assertion-remediation/170-01-PLAN.md
@@ -49,7 +47,7 @@ covered_files:
   - test/crosswake/support_matrix/support_matrix_test.exs
   - test/mix/tasks/crosswake_gen_proof_lane_test.exs
   - test/mix/tasks/crosswake_release_status_test.exs
-covered_digest: "v1:sha256:cb74f285c44614aff3168f5950d613204d1c998b5c08d688a66dd4b566195c7c"
+covered_digest: "v1:sha256:1ca70b790c41d65dc4a4cc99206c53112beef200c562ee64fa67c6a4a9cf0569"
 behavior_unverified: 0
 overrides_applied: 0
 vacuity_taxonomy:

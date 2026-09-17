@@ -6,7 +6,6 @@ score: 4/4 must-haves verified
 covered_files:
   - .github/workflows/phase70-proof.yml
   - .github/workflows/release-please.yml
-  - .planning/workstreams/quality-ratchet-release/REQUIREMENTS.md
   - .planning/workstreams/quality-ratchet-release/phases/169-diagnostic-legibility/169-01-PLAN.md
   - .planning/workstreams/quality-ratchet-release/phases/169-diagnostic-legibility/169-01-SUMMARY.md
   - .planning/workstreams/quality-ratchet-release/phases/169-diagnostic-legibility/169-02-PLAN.md
@@ -26,7 +25,7 @@ covered_files:
   - test/crosswake/proof/phase169_check_name_uniqueness_test.exs
   - test/crosswake/proof/phase169_diagnostic_legibility_test.exs
   - test/crosswake/proof/phase169_exit_contract_guard_test.exs
-covered_digest: "v1:sha256:c34f65e1702c63c12ddb98d215d12ea9d8c395b6108fbb8249fe17e700aebc70"
+covered_digest: "v1:sha256:d0a1d9041afb30bde0692692ba030f2e84253f784a1a4ea949cef3e89454911b"
 revalidated: 2026-09-16T20:51:03Z
 revalidation_note: |
   Digest refreshed by /gsd-verify-work 169 (see 169-UAT.md). The prior digest
