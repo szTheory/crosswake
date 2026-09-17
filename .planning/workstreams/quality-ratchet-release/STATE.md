@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
-current_phase: 171
-current_phase_name: Version/Authority Split
-status: planning
-stopped_at: Phase 171 planning — research + validation committed, planner pending
-last_updated: "2026-09-17T14:09:34.767Z"
+current_phase: 172
+current_phase_name: Per-Package Proof Scope
+status: ready_to_plan
+stopped_at: Phase 172 complete — verified 4/4, one PR open for the whole phase; Phase 173 unblocked and unplanned
+last_updated: "2026-09-17T20:47:39.477Z"
 last_activity: 2026-09-17
-last_activity_desc: Phase 171 planning started
-state_head: 2a81d9ccd9ebf2d669bed5ec6b737b77daddeb4c
+last_activity_desc: Phase 172 executed and verified
+state_head: 199fc1324846ab44c8612196c4c2a8ce52e1a9d8
 progress:
   total_phases: 7
-  completed_phases: 2
-  total_plans: 9
-  completed_plans: 9
-  percent: 29
+  completed_phases: 4
+  total_plans: 17
+  completed_plans: 17
+  percent: 57
 ---
 
 # Project State
@@ -26,28 +26,29 @@ See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 171 — Version/Authority Split
+**Current focus:** Phase 172 — Per-Package Proof Scope
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
 **Open release pull requests — triage as of 2026-09-15. None should be merged yet.**
 
 | PR | Proposes | Disposition |
 |---|---|---|
-| #164 | `0.2.2` (linked core) | **BLOCKED on `SEED-017`.** The release graph is welded to `0.2.1`, so merging tags and then publishes NOTHING. An interim CI tripwire on `main` exists to fail this. |
+| #164 | `0.2.2` (linked core) | **Weld-unblocked as of Phase 171** (merged `501e4410`): the graph is version-parametric and both the `0.2.1` weld and its interim tripwire are gone, so merging this would now tag AND publish. Still hold pending the proof lane — `exact-public-proof` has never executed at any release (`TODO-011`/`TODO-012`, Phases 173-175). Publishing before the proof lane works is the thing this milestone exists to prevent. |
 | #147 | `crosswake_rulestead 0.1.1` | **Hold.** Independently versioned (D-15/D-16), so not weld-blocked — but publishing is a one-way door, and per `TODO-011` the post-publish companion clean-room lane has never been green, while `TODO-012` makes the exact-public proof structurally unsatisfiable. Publishing more of the family before the proof lane works adds unverifiable artifacts. Also stale (opened 2026-08-10). |
 | #115 | `crosswake_chimeway 0.1.1` | **Hold**, same reasoning. Stale (opened 2026-08-09). |
 
 The companion holds are a judgement call, not a hard gate: these publishes would most
 likely succeed the way `crosswake_rindle 0.1.0` did this session. The argument for waiting
-is that "it published and nothing verified it" is exactly the state `SEED-017` exists to end.
+is that "it published and nothing verified it" is exactly the state this milestone exists to end
+(`SEED-017` itself is harvested — Phase 171 closed it).
 Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
 
-Phase: 170 (Vacuous Assertion Remediation) — EXECUTING
-Plan: 5 of 5
-Status: planning
-Last activity: 2026-09-16 — Phase 170 execution started
+Phase: 172 (Per-Package Proof Scope) — EXECUTING
+Plan: 3 of 3
+Status: ready_to_plan
+Last activity: 2026-09-17 — Phase 172 execution started
 
 ## Performance Metrics
 
@@ -119,6 +120,9 @@ Last activity: 2026-09-16 — Phase 170 execution started
 | Phase 170 P04 | 25min | 3 tasks | 4 files |
 | Phase 170 P03 | 65min | 3 tasks | 7 files |
 | Phase 170 P05 | 30min | 2 tasks | 2 files |
+| Phase 172 P01 | 55min | 3 tasks | 7 files |
+| Phase 172 P02 | 70min | 3 tasks | 4 files |
+| Phase 172 P03 | 50min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -242,6 +246,13 @@ Last activity: 2026-09-16 — Phase 170 execution started
 - [Phase 170]: 170-03: coordinate_test.exs and crosswake_release_status_test.exs's flagged sites recorded as structural-test-only (compile-time-fixed companion list; check-only-emitted-when-nonempty computations), not silently dropped
 - [Phase 170]: 170-03: release_boundaries_test.exs's empty-companions regression reuses ReleaseStatus.build/1's existing :cwd override via a symlink-and-mutate-manifest helper, avoiding any lib/ change
 - [Phase 170]: Phase 170's meta-checks (ledger completeness, guard-expression-match) recorded via the vacuity_taxonomy convention's explicit escape form, mirroring Phase 169's roster_exact/workflow_integrity precedent; the convention check itself and the empty-input regression set classify as Shape A.
+- [Phase 172]: 172-01: candidate_ref moved to per-artifact schema; observed ref (MATRIX_PUBLIC_REF) resolved independently from git rev-parse HEAD, never the approved manifest, closing the T-172-01 vacuity path for 172-02's drift comparison.
+- [Phase 172]: 172-02: branch order in public_artifact_reason/3 (compatible -> digest_mismatch -> unproven -> nil) is load-bearing, chosen so each prescribed mutation falsifies exactly its paired test
+- [Phase 172]: 172-02: ref!/1 resolved inside each drift branch's own cond guard, not via a shared pre-cond binding, to keep the registry-missing branch reachable for a nil observed ref
+- [Phase 172]: 172-02: public_artifact_claim/1 written as an explicit case over every known reason string with a catch-all, so a future reason added without a matching clause resolves to unproven rather than crashing
+- [Phase 172]: 172-03: proof module derives roster from Artifact.packages/0 and group-width from a named @artifact_field_count attribute, never a bare literal
+- [Phase 172]: 172-03: byte-exact regression anchor mutates one real file byte, recomputes the digest through Artifact.inspect_family!/1, and carries it into Cleanroom.evaluate_public!/1 for a verdict, pinning the proof floor below the digest-string layer
+- [Phase 172]: 172-03: 172-NON-VACUITY.md records only checks with an actually-executed mutation as full rows; every other landed check is named with a decidable reason, never silently omitted
 
 ### v23.0 Roadmap Decisions
 
@@ -308,8 +319,8 @@ Last activity: 2026-09-16 — Phase 170 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-16T19:54:17.425Z
-Stopped at: Completed 170-05-PLAN.md — Phase 170 fully closed
+Last session: 2026-09-17T20:34:33.490Z
+Stopped at: Completed 172-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

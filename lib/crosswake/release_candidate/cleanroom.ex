@@ -22,10 +22,11 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
     live_status
   )a
   @artifact_keys ~w(package version source unpacked_root metadata_digest payload_digest)a
-  @approved_artifact_keys ~w(package version metadata_digest payload_digest)a
+  @approved_artifact_keys ~w(package version candidate_ref metadata_digest payload_digest)a
   @public_artifact_keys ~w(
     package
     version
+    candidate_ref
     status
     source
     unpacked_root
@@ -36,6 +37,7 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
   @install_keys ~w(profile pass status scratch_root path_lock_count)a
   @profile_keys ~w(profile package status passed_checks negative_control)a
   @sha_pattern ~r/\A[0-9a-f]{64}\z/
+  @ref_pattern ~r/\A[0-9a-f]{40}\z/
 
   @common_checks ~w(
     generated_phoenix
@@ -93,8 +95,15 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
 
     approved = validate_approved_artifacts!(input.approved_artifacts)
     children = validate_public_artifacts!(input.public_artifacts, approved, source_root)
-    blocked = Enum.filter(children, &(&1.reason not in [nil, "registry_missing"]))
+
+    blocked =
+      Enum.filter(
+        children,
+        &(&1.reason not in [nil, "registry_missing", "reachable_and_compatible"])
+      )
+
     missing = Enum.filter(children, &(&1.reason == "registry_missing"))
+    attested = Enum.filter(children, &(&1.reason == "reachable_and_compatible"))
     succeeded = Enum.filter(children, &is_nil(&1.reason))
 
     {state, installs, profile_results} =
@@ -112,6 +121,9 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
         input.live_status != "PASS" ->
           {"BLOCKED", validate_complete_public_proof(input, source_root, repository_root)}
 
+        attested != [] ->
+          {"ATTESTED", validate_complete_public_proof(input, source_root, repository_root)}
+
         true ->
           {"COMPLETE", validate_complete_public_proof(input, source_root, repository_root)}
       end
@@ -128,6 +140,8 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
       succeeded_packages: Enum.map(succeeded, & &1.package),
       failed_packages:
         Enum.map(Enum.reject(children, &is_nil(&1.reason)), &Map.take(&1, [:package, :reason])),
+      attested_packages: Enum.map(attested, & &1.package),
+      package_claims: Enum.map(children, &Map.take(&1, [:package, :claim])),
       profile_results: profile_results,
       live_status: input.live_status
     }
@@ -223,6 +237,7 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
         %{
           package: package!(artifact.package),
           version: version!(artifact.version),
+          candidate_ref: ref!(artifact.candidate_ref),
           metadata_digest: sha!(artifact.metadata_digest),
           payload_digest: sha!(artifact.payload_digest)
         }
@@ -252,14 +267,17 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
           do: invalid!()
 
         reason = public_artifact_reason(artifact, expected, source_root)
+        claim = public_artifact_claim(reason)
 
         %{
           package: package,
           version: artifact.version,
+          candidate_ref: artifact.candidate_ref,
           status: artifact.status,
           source: artifact.source,
           path_lock_count: artifact.path_lock_count,
-          reason: reason
+          reason: reason,
+          claim: claim
         }
       end)
 
@@ -294,12 +312,36 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
       not public_root?(artifact.unpacked_root, source_root) ->
         "source_root_invalid"
 
-      artifact.metadata_digest != expected.metadata_digest or
-          artifact.payload_digest != expected.payload_digest ->
+      ref!(artifact.candidate_ref) != expected.candidate_ref and
+        artifact.metadata_digest == expected.metadata_digest and
+          artifact.payload_digest == expected.payload_digest ->
+        "reachable_and_compatible"
+
+      ref!(artifact.candidate_ref) == expected.candidate_ref and
+          (artifact.metadata_digest != expected.metadata_digest or
+             artifact.payload_digest != expected.payload_digest) ->
         "digest_mismatch"
+
+      ref!(artifact.candidate_ref) != expected.candidate_ref ->
+        "unproven"
 
       true ->
         nil
+    end
+  end
+
+  defp public_artifact_claim(reason) do
+    case reason do
+      nil -> "fully_proven"
+      "reachable_and_compatible" -> "reachable_and_compatible"
+      "registry_missing" -> "unproven"
+      "invalid_status" -> "unproven"
+      "source_not_registry" -> "unproven"
+      "path_lock_present" -> "unproven"
+      "source_root_invalid" -> "unproven"
+      "digest_mismatch" -> "unproven"
+      "unproven" -> "unproven"
+      _other -> "unproven"
     end
   end
 
@@ -413,6 +455,12 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
   end
 
   defp sha!(_digest), do: invalid!()
+
+  defp ref!(ref) when is_binary(ref) do
+    if Regex.match?(@ref_pattern, ref), do: ref, else: invalid!()
+  end
+
+  defp ref!(_ref), do: invalid!()
 
   defp regular_directory!(path) when is_binary(path) and path != "" do
     expanded = Path.expand(path)

@@ -1,15 +1,45 @@
 ---
 id: SEED-017
-status: dormant
+status: harvested
 planted: 2026-09-15
 planted_during: quality-ratchet-release Phase 168 (re-verification follow-up)
-trigger_when: BLOCKING — before any release of a version other than 0.2.1; surface at the next milestone scoping regardless of scope match
+trigger_when: "No longer a trigger — closed by Phase 171. Retained as the record of why the weld existed and what removing it exposed."
 scope: medium
-severity: high — the next release publishes nothing until this is closed
-blocks: any linked release after 0.2.1
+severity: "was high (the next release would have published nothing); now resolved"
+blocks: none — closed by Phase 171
+resolved_on: 2026-09-17
+resolved_by: "quality-ratchet-release Phase 171 (Version/Authority Split), merged as 501e4410 via PR #178"
 ---
 
 # SEED-017: Generalize the linked release graph past 0.2.1 without loosening its authority
+
+## RESOLVED — Phase 171, 2026-09-17
+
+This seed is closed. Phase 171 split the version from the authority: the release graph now
+derives its version from `needs.approved-release-guard.outputs.approved_version` at all four
+publish gates, while the approval-identity gate stays exact. Verified retroactively in
+`.planning/workstreams/quality-ratchet-release/phases/171-version-authority-split/171-VERIFICATION.md`
+(7/7 success criteria, each re-executed against the merged tree).
+
+Two latent failures that no plan predicted were found and fixed on the way through:
+
+- `script/guarded_hex_publish.sh`'s `verify_approved_identity()` early-returned for any
+  crosswake version other than `0.2.1`, so the entire approved-identity verification was
+  inert for every future release. It now requires `--expected-version` and fails closed.
+- Two `run:` blocks in `release-please.yml` (lines 568 and 603) still passed a literal
+  `--version 0.2.1` to the publish scripts even after their `if:` gates were parameterized —
+  the gate would have opened for the right version and then published the wrong one.
+
+Version literals went from 18 files to 4 (5 occurrences), all non-executable: two explanatory
+comments in `check_release_workflow_integrity.exs`, one comment in `release-please.yml`, one
+historical PR narrative in `check_release_version_truth.exs`, and one generated ledger display
+string. Zero live gates carry a bare version literal, enforced going forward by the
+`release.publish_gate.no_bare_version_literal` scanner check.
+
+**Consequence for release triage:** PR #164 (`0.2.2`) is no longer blocked by this seed. The
+remaining holds on the companion PRs (#147, #115) are the separate `TODO-011`/`TODO-012`
+proof-lane concerns, which Phases 173-175 address.
+
 
 ## Why This Matters
 

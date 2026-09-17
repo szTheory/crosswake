@@ -232,7 +232,7 @@ for PACKAGE in "${PACKAGES[@]}"; do
   fi
 
   OUTER_CHECKSUM=$(shasum -a 256 "$TARBALL" | awk '{print $1}')
-  ARTIFACT_ARGS+=("$PACKAGE" "$VERSION" "$TARBALL" "$UNPACKED_ROOT" "$OUTER_CHECKSUM" "built_tarball")
+  ARTIFACT_ARGS+=("$PACKAGE" "$VERSION" "$CANDIDATE_REF" "$TARBALL" "$UNPACKED_ROOT" "$OUTER_CHECKSUM" "built_tarball")
 
   if [ "$PACKAGE" = "crosswake" ]; then
     CORE_TARBALL="$TARBALL"
@@ -242,7 +242,7 @@ done
 
 echo "[crosswake] package_family=6 step=normalize"
 if ! "${RUNTIME[@]}" mix run --no-start -e 'Crosswake.ReleaseCandidate.Artifact.inspect_cli!(System.argv())' -- \
-  "$CANDIDATE_REF" "$OUTPUT_DIR" "$MANIFEST" "${ARTIFACT_ARGS[@]}" >/dev/null; then
+  "$OUTPUT_DIR" "$MANIFEST" "${ARTIFACT_ARGS[@]}" >/dev/null; then
   fail
 fi
 

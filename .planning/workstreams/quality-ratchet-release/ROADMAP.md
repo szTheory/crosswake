@@ -28,8 +28,8 @@ unacknowledged. See `MILESTONES.md` for the recorded overrides.
 
 - [x] **Phase 169: Diagnostic Legibility** - Every release/verification check surfaces its own failing message, and distinguishes "never ran" from "never defined" (completed 2026-09-16)
 - [x] **Phase 170: Vacuous Assertion Remediation** - All 173 SEED-018-flagged sites are classified and every confirmed-vacuous one is rewritten so an empty collection fails (completed 2026-09-16)
-- [ ] **Phase 171: Version/Authority Split** - The release graph is version-parametric while the approval identity gate stays exact; the `0.2.1` weld and its interim tripwire are both retired atomically
-- [ ] **Phase 172: Per-Package Proof Scope** - Byte-exact publish verification is proven against each package's own approved ref, never one shared ref for all six
+- [x] **Phase 171: Version/Authority Split** - The release graph is version-parametric while the approval identity gate stays exact; the `0.2.1` weld and its interim tripwire are both retired atomically (completed 2026-09-17)
+- [x] **Phase 172: Per-Package Proof Scope** - Byte-exact publish verification is proven against each package's own approved ref, never one shared ref for all six (completed 2026-09-17)
 - [ ] **Phase 173: Recovery-Path Proof Convergence** - `exact-public-proof` runs and must pass identically whether a publish happened via the ordinary or the recovery path
 - [ ] **Phase 174: Clean-Room Host Realism & Adopter Fidelity** - The clean-room lane exercises install, not just compile, on both code paths, and the two named adopter gaps are closed or deferred with a reason
 - [ ] **Phase 175: Rehearsal and Publish** - `crosswake 0.2.2` and the two held companion PRs are live through the repaired graph, and `exact-public-proof` has actually executed and passed for 0.2.2
@@ -197,16 +197,16 @@ proof (run against a pre-fix fixture of the workflow file) as part of that same 
 
 **Plans**: 5 plans (one PR — see **Note on atomicity**; no plan is separately mergeable)
 
-- [ ] 171-01-PLAN.md — approved_version spine: guard derivation, four publish gates, the new
+- [x] 171-01-PLAN.md — approved_version spine: guard derivation, four publish gates, the new
       `release.publish_gate.no_bare_version_literal` check with its pre-repair-fixture proof, and the
       tripwire deletion (wave 1)
-- [ ] 171-02-PLAN.md — version-parametric rollup coordinates and the clean-room validator's version
+- [x] 171-02-PLAN.md — version-parametric rollup coordinates and the clean-room validator's version
       conjunct removal (wave 2)
-- [ ] 171-03-PLAN.md — CLI entrypoint format checks plus identity/mirror/status/coordinate
+- [x] 171-03-PLAN.md — CLI entrypoint format checks plus identity/mirror/status/coordinate
       generalization (wave 2)
-- [ ] 171-04-PLAN.md — publish and mirror shell scripts, the dispatch workflows, and the scanner's
+- [x] 171-04-PLAN.md — publish and mirror shell scripts, the dispatch workflows, and the scanner's
       remaining self-assertions (wave 3)
-- [ ] 171-05-PLAN.md — the committed weld inventory, the DOC-05 terminology pass, the measured sweep,
+- [x] 171-05-PLAN.md — the committed weld inventory, the DOC-05 terminology pass, the measured sweep,
       and the single-PR checkpoint (wave 4)
 
 **Research**: Standard pattern — the receipt-output idiom (`approved-release-guard.outputs.*`) is
@@ -215,7 +215,7 @@ research.
 
 ---
 
-### Phase 172: Per-Package Proof Scope
+### Phase 172: Per-Package Proof Scope (completed 2026-09-17)
 
 **Goal**: Byte-exact publish verification is proven against each of the six packages' own approved
 ref, never collapsed onto a single shared ref, and a package whose source has drifted past every
@@ -240,10 +240,24 @@ same module, same test fixtures)
    `unproven`) — never `byte_exact`, and never silently averaged into one green result — confirmed by
    a fixture that forces drift and inspects the reported result type.
 
-**Plans**: TBD
+**Plans**:
 
-**Research**: Standard pattern — schema loosening (removing a `unique | length == 1` collapse) with
-an established per-entry field already present in the manifest shape. Skip phase-level research.
+- [x] 172-01-PLAN.md (Wave 1) — thread a per-package `candidate_ref` through the producer, the schema and both shell consumers
+- [x] 172-02-PLAN.md (Wave 2) — the four-branch classifier, the derived `claim` field and the distinct `attested` bucket
+- [x] 172-03-PLAN.md (Wave 3) — the non-vacuity proofs, including a single-byte real-tarball mutation, and `172-NON-VACUITY.md`
+
+**Research**: Standard pattern — schema loosening with an established per-entry field already
+present in the manifest shape. Skipped at phase level, as planned.
+
+**Note (corrected during planning, 2026-09-17)**: this section previously implied the
+`unique | length == 1` collapse lives in `cleanroom.ex`. It does not — it is a jq filter at
+`script/verify_companion_cleanroom.sh:207`, with a producer-side twin at
+`lib/crosswake/release_candidate/artifact.ex:18` (`@input_keys` carries ONE top-level
+`candidate_ref` that `inspect_family!/1` broadcasts to all six packages). `cleanroom.ex` has no
+`candidate_ref` field at all today, so the concept must be newly threaded in. Two further call
+sites the pattern map missed: `script/release_candidate/hex_artifacts.sh:244` and the
+observation-assembly comprehension at `verify_companion_cleanroom.sh:692-699`, which whitelists
+four keys and drops `candidate_ref` before it reaches the evaluator.
 
 ---
 
@@ -385,7 +399,7 @@ before the real one-way door.
 | 169. Diagnostic Legibility | 4/4 | Complete    | 2026-09-16 |
 | 170. Vacuous Assertion Remediation | 5/5 | Complete   | 2026-09-16 |
 | 171. Version/Authority Split | 0/TBD | Not started | - |
-| 172. Per-Package Proof Scope | 0/TBD | Not started | - |
+| 172. Per-Package Proof Scope | 3/3 | In Progress|  |
 | 173. Recovery-Path Proof Convergence | 0/TBD | Not started | - |
 | 174. Clean-Room Host Realism & Adopter Fidelity | 0/TBD | Not started | - |
 | 175. Rehearsal and Publish | 0/TBD | Not started | - |

@@ -198,20 +198,26 @@ PYEOF
   matrix_fetch_public_family() {
     local public_root="$MATRIX_INVOCATION_ROOT/public-artifacts"
     local normalized_manifest="$public_root/artifacts.json"
-    local candidate_ref package version tarball unpacked_root outer_checksum
+    local package version approved_ref tarball unpacked_root outer_checksum
     local -a artifact_args=()
     local -a succeeded=()
     local -a failed=()
 
     mkdir -p "$public_root/tarballs" "$public_root/unpacked"
-    candidate_ref=$(jq -er 'map(.candidate_ref) | unique | if length == 1 then .[0] else error("candidate ref") end' "$MATRIX_APPROVED_MANIFEST") || matrix_fail
+
+    # The observed ref is resolved independently from the checked-out repository head, never
+    # from the approved manifest it is later compared against (D-172-B, T-172-01) — deriving it
+    # from that manifest would make the 172-02 provenance comparison true by construction.
+    MATRIX_PUBLIC_REF=$(git -C "$MATRIX_REPO_ROOT" rev-parse HEAD) || matrix_fail
+    printf '%s' "$MATRIX_PUBLIC_REF" | grep -Eq '^[0-9a-f]{40}$' || matrix_fail
 
     for package in crosswake crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline; do
       version=$(jq -er --arg package "$package" '.[] | select(.package == $package) | .version' "$MATRIX_APPROVED_MANIFEST") || matrix_fail
+      approved_ref=$(jq -er --arg package "$package" '.[] | select(.package == $package) | .candidate_ref' "$MATRIX_APPROVED_MANIFEST") || matrix_fail
       tarball="$public_root/tarballs/$package-$version.tar"
       unpacked_root="$public_root/unpacked/$package"
 
-      echo "[crosswake] source_mode=exact-public package=$package version=$version step=fetch"
+      echo "[crosswake] source_mode=exact-public package=$package version=$version candidate_ref=$approved_ref step=fetch"
       if ! env MIX_HOME="$MATRIX_GENERATOR_MIX_HOME" HEX_HOME="$MATRIX_GENERATOR_HEX_HOME" \
         ASDF_ERLANG_VERSION="$MATRIX_ASDF_ERLANG_VERSION" \
         ASDF_ELIXIR_VERSION="$MATRIX_ASDF_ELIXIR_VERSION" \
@@ -240,7 +246,7 @@ PYEOF
       fi
 
       outer_checksum=$(shasum -a 256 "$tarball" | awk '{print $1}')
-      artifact_args+=("$package" "$version" "$tarball" "$unpacked_root" "$outer_checksum" "built_tarball")
+      artifact_args+=("$package" "$version" "$MATRIX_PUBLIC_REF" "$tarball" "$unpacked_root" "$outer_checksum" "built_tarball")
       succeeded+=("$package")
     done
 
@@ -266,7 +272,7 @@ PYEOF
     (
       cd "$MATRIX_REPO_ROOT"
       "${RUNTIME[@]}" mix run --no-start -e 'Crosswake.ReleaseCandidate.Artifact.inspect_cli!(System.argv())' -- \
-        "$candidate_ref" "$public_root" "$normalized_manifest" "${artifact_args[@]}" >/dev/null
+        "$public_root" "$normalized_manifest" "${artifact_args[@]}" >/dev/null
     ) || matrix_fail
 
     MATRIX_ARTIFACT_MANIFEST="$normalized_manifest"
@@ -693,6 +699,7 @@ elif source_mode == "exact-public":
             {
                 "package": item["package"],
                 "version": item["version"],
+                "candidate_ref": item["candidate_ref"],
                 "metadata_digest": item["metadata_digest"],
                 "payload_digest": item["payload_digest"],
             }
@@ -700,12 +707,17 @@ elif source_mode == "exact-public":
         ],
         "public_artifacts": [
             {
-                **item,
+                "package": item["package"],
+                "version": item["version"],
+                "unpacked_root": item["unpacked_root"],
+                "metadata_digest": item["metadata_digest"],
+                "payload_digest": item["payload_digest"],
+                "candidate_ref": item["candidate_ref"],
                 "source": "hex_registry",
                 "status": "PASS",
                 "path_lock_count": 0,
             }
-            for item in artifacts
+            for item in source_artifacts
         ],
         "installs": installs,
         "profile_results": profile_results,
@@ -731,7 +743,7 @@ PYEOF
       "$MATRIX_INPUT" "$MATRIX_RESULT" >/dev/null
   ) || matrix_fail
 
-  jq -c '{state,source_mode,generator_version,install_count,package_count,profile_count,path_lock_count,succeeded_packages,failed_packages,profile_results,live_status}' "$MATRIX_RESULT"
+  jq -c '{state,source_mode,generator_version,install_count,package_count,profile_count,path_lock_count,succeeded_packages,failed_packages,attested_packages,package_claims,profile_results,live_status}' "$MATRIX_RESULT"
 
   if [ "$MATRIX_SOURCE_MODE" = "exact-public" ]; then
     [ "$(jq -r '.state' "$MATRIX_RESULT")" = "COMPLETE" ] || matrix_fail

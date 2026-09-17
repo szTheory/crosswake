@@ -12,6 +12,8 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     crosswake_threadline
   )
   @profiles ~w(rulestead rindle sigra chimeway threadline)
+  @candidate_ref String.duplicate("a", 40)
+  @second_candidate_ref String.duplicate("b", 40)
 
   test "candidate-local proof normalizes six payloads, five profiles, and two isolated installs" do
     assert Code.ensure_loaded?(Cleanroom),
@@ -151,7 +153,131 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     assert result.live_status == "PASS"
     assert result.succeeded_packages == @packages
     assert result.failed_packages == []
+    assert result.attested_packages == []
+    assert Enum.map(result.package_claims, & &1.package) == @packages
+    assert Enum.all?(result.package_claims, &(&1.claim == "fully_proven"))
     assert Enum.map(result.profile_results, & &1.profile) == @profiles
+  end
+
+  @tag :post_publication
+  test "one attested package with five fully-proven packages reports ATTESTED, not COMPLETE" do
+    input =
+      update_public_artifact(
+        public_fixture(),
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.state == "ATTESTED"
+    assert result.attested_packages == ["crosswake_sigra"]
+    refute "crosswake_sigra" in result.succeeded_packages
+    assert result.succeeded_packages == Enum.reject(@packages, &(&1 == "crosswake_sigra"))
+    assert result.package_count == 5
+
+    claim_by_package = Map.new(result.package_claims, &{&1.package, &1.claim})
+    assert claim_by_package["crosswake_sigra"] == "reachable_and_compatible"
+
+    assert claim_by_package
+           |> Map.delete("crosswake_sigra")
+           |> Map.values()
+           |> Enum.all?(&(&1 == "fully_proven"))
+  end
+
+  @tag :post_publication
+  test "a blocked package outranks an attested package - the run still reports BLOCKED" do
+    input =
+      public_fixture()
+      |> update_public_artifact(
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+      |> update_public_artifact(
+        "crosswake",
+        &Map.put(&1, :payload_digest, String.duplicate("f", 64))
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.state == "BLOCKED"
+  end
+
+  @tag :post_publication
+  test "a registry-missing package still reports PARTIAL even alongside an attested package" do
+    input =
+      public_fixture()
+      |> update_public_artifact(
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+      |> update_public_artifact("crosswake_threadline", fn artifact ->
+        %{
+          artifact
+          | status: "MISSING",
+            source: "unavailable",
+            unpacked_root: nil,
+            metadata_digest: nil,
+            payload_digest: nil
+        }
+      end)
+      |> Map.put(:installs, [])
+      |> Map.put(:profile_results, [])
+      |> Map.put(:live_status, "not_run")
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.state == "PARTIAL"
+  end
+
+  @tag :post_publication
+  test "the four public-artifact buckets are disjoint and sum to six" do
+    input =
+      update_public_artifact(
+        public_fixture(),
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    succeeded_count = length(result.succeeded_packages)
+    attested_count = length(result.attested_packages)
+    missing_count = Enum.count(result.failed_packages, &(&1.reason == "registry_missing"))
+
+    blocked_count =
+      Enum.count(
+        result.failed_packages,
+        &(&1.reason not in ["registry_missing", "reachable_and_compatible"])
+      )
+
+    assert succeeded_count + attested_count + missing_count + blocked_count == 6
+    assert succeeded_count == 5
+    assert attested_count == 1
+    assert missing_count == 0
+    assert blocked_count == 0
+  end
+
+  @tag :post_publication
+  test "package_claims and succeeded_packages agree on which packages are fully proven" do
+    result = Cleanroom.evaluate_public!(public_fixture())
+
+    fully_proven_from_claims =
+      result.package_claims
+      |> Enum.filter(&(&1.claim == "fully_proven"))
+      |> Enum.map(& &1.package)
+      |> Enum.sort()
+
+    assert fully_proven_from_claims == Enum.sort(result.succeeded_packages)
+  end
+
+  @tag :post_publication
+  test "package_claims always carries exactly six non-empty claims in canonical order" do
+    result = Cleanroom.evaluate_public!(public_fixture())
+
+    assert Enum.map(result.package_claims, & &1.package) == @packages
+    assert length(result.package_claims) == 6
+    assert Enum.all?(result.package_claims, &(is_binary(&1.claim) and &1.claim != ""))
   end
 
   @tag :post_publication
@@ -210,6 +336,166 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
   end
 
   @tag :post_publication
+  test "a package whose observed ref drifts but keeps matching bytes reports reachable_and_compatible" do
+    input =
+      update_public_artifact(
+        public_fixture(),
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.failed_packages == [
+             %{package: "crosswake_sigra", reason: "reachable_and_compatible"}
+           ]
+
+    approved = Enum.find(input.approved_artifacts, &(&1.package == "crosswake_sigra"))
+    public = Enum.find(input.public_artifacts, &(&1.package == "crosswake_sigra"))
+    assert public.metadata_digest == approved.metadata_digest
+    assert public.payload_digest == approved.payload_digest
+  end
+
+  @tag :post_publication
+  test "a package whose observed ref drifts AND whose digests differ reports unproven, not digest_mismatch" do
+    input =
+      public_fixture()
+      |> update_public_artifact(
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+      |> update_public_artifact(
+        "crosswake_sigra",
+        &Map.put(&1, :payload_digest, String.duplicate("f", 64))
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.failed_packages == [
+             %{package: "crosswake_sigra", reason: "unproven"}
+           ]
+  end
+
+  @tag :post_publication
+  test "SC#3 regression anchor: a payload_digest change with no ref drift still reports digest_mismatch" do
+    input =
+      update_public_artifact(
+        public_fixture(),
+        "crosswake_sigra",
+        &Map.put(&1, :payload_digest, String.duplicate("f", 64))
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.failed_packages == [
+             %{package: "crosswake_sigra", reason: "digest_mismatch"}
+           ]
+  end
+
+  @tag :post_publication
+  test "SC#3 regression anchor: a metadata_digest change with no ref drift still reports digest_mismatch" do
+    input =
+      update_public_artifact(
+        public_fixture(),
+        "crosswake_sigra",
+        &Map.put(&1, :metadata_digest, String.duplicate("f", 64))
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.failed_packages == [
+             %{package: "crosswake_sigra", reason: "digest_mismatch"}
+           ]
+  end
+
+  @tag :post_publication
+  test "a registry-missing package still reports registry_missing even with a drifted approved ref" do
+    input =
+      public_fixture()
+      |> update_approved_artifact(
+        "crosswake_threadline",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+      |> update_public_artifact("crosswake_threadline", fn artifact ->
+        %{
+          artifact
+          | status: "MISSING",
+            source: "unavailable",
+            unpacked_root: nil,
+            metadata_digest: nil,
+            payload_digest: nil
+        }
+      end)
+      |> Map.put(:installs, [])
+      |> Map.put(:profile_results, [])
+      |> Map.put(:live_status, "not_run")
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.failed_packages == [
+             %{package: "crosswake_threadline", reason: "registry_missing"}
+           ]
+  end
+
+  @tag :post_publication
+  test "drift never masks a harder pre-drift failure" do
+    input = public_fixture()
+
+    mutations = [
+      invalid_status:
+        input
+        |> update_approved_artifact(
+          "crosswake",
+          &Map.put(&1, :candidate_ref, @second_candidate_ref)
+        )
+        |> update_public_artifact("crosswake", &Map.put(&1, :status, "FAIL")),
+      source_not_registry:
+        input
+        |> update_approved_artifact(
+          "crosswake",
+          &Map.put(&1, :candidate_ref, @second_candidate_ref)
+        )
+        |> update_public_artifact("crosswake", &Map.put(&1, :source, "repository_path")),
+      path_lock_present:
+        input
+        |> update_approved_artifact(
+          "crosswake",
+          &Map.put(&1, :candidate_ref, @second_candidate_ref)
+        )
+        |> update_public_artifact("crosswake", &Map.put(&1, :path_lock_count, 1)),
+      source_root_invalid:
+        input
+        |> update_approved_artifact(
+          "crosswake",
+          &Map.put(&1, :candidate_ref, @second_candidate_ref)
+        )
+        |> update_public_artifact("crosswake", &Map.put(&1, :unpacked_root, System.tmp_dir!()))
+    ]
+
+    for {expected_reason, mutation} <- mutations do
+      result = Cleanroom.evaluate_public!(mutation)
+
+      assert result.failed_packages == [
+               %{package: "crosswake", reason: Atom.to_string(expected_reason)}
+             ],
+             "#{expected_reason} passed"
+    end
+  end
+
+  @tag :post_publication
+  test "a malformed observed candidate_ref on an otherwise-healthy package raises ArgumentError" do
+    input =
+      update_public_artifact(
+        public_fixture(),
+        "crosswake",
+        &Map.put(&1, :candidate_ref, "not-a-ref")
+      )
+
+    error = assert_raise ArgumentError, fn -> Cleanroom.evaluate_public!(input) end
+    assert Exception.message(error) == "candidate clean-room input is invalid"
+  end
+
+  @tag :post_publication
   test "approved-artifacts validator accepts any well-formed semver, not just the current candidate" do
     input =
       public_fixture()
@@ -221,6 +507,65 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     assert result.state == "COMPLETE"
     assert result.succeeded_packages == @packages
     assert result.failed_packages == []
+  end
+
+  @tag :post_publication
+  test "approved-artifacts schema accepts six independent candidate_ref values in one run" do
+    refs = for digit <- ~w(0 1 2 3 4 5), do: String.duplicate(digit, 40)
+
+    input =
+      Enum.zip(@packages, refs)
+      |> Enum.reduce(public_fixture(), fn {package, ref}, acc ->
+        acc
+        |> update_approved_artifact(package, &Map.put(&1, :candidate_ref, ref))
+        |> update_public_artifact(package, &Map.put(&1, :candidate_ref, ref))
+      end)
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.state == "COMPLETE"
+    assert result.succeeded_packages == @packages
+    assert result.failed_packages == []
+  end
+
+  @tag :post_publication
+  test "two packages with different candidate_ref values both validate independently in one run" do
+    input =
+      public_fixture()
+      |> update_approved_artifact(
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+      |> update_public_artifact(
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.state == "COMPLETE"
+    assert "crosswake_sigra" in result.succeeded_packages
+    assert "crosswake" in result.succeeded_packages
+    assert result.succeeded_packages == @packages
+    assert result.failed_packages == []
+  end
+
+  @tag :post_publication
+  test "approved-artifacts validator rejects a malformed or absent candidate_ref" do
+    malformed =
+      update_approved_artifact(
+        public_fixture(),
+        "crosswake",
+        &Map.put(&1, :candidate_ref, "not-a-ref")
+      )
+
+    absent =
+      update_approved_artifact(public_fixture(), "crosswake", &Map.delete(&1, :candidate_ref))
+
+    for {name, mutation} <- [malformed: malformed, absent: absent] do
+      error = assert_raise ArgumentError, fn -> Cleanroom.evaluate_public!(mutation) end
+      assert Exception.message(error) == "candidate clean-room input is invalid", "#{name} passed"
+    end
   end
 
   @tag :post_publication
@@ -279,8 +624,57 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     assert script =~ "mix hex.package fetch"
     assert script =~ "source_mode=exact-public"
     assert script =~ "crosswake.release.status --live"
+
+    assert script =~
+             ~S{select(.package == $package) | .candidate_ref}
+
+    assert script =~
+             ~S{MATRIX_PUBLIC_REF=$(git -C "$MATRIX_REPO_ROOT" rev-parse HEAD)}
+
+    refute script =~ "unique"
     refute candidate_task =~ "verify_companion_cleanroom"
     refute candidate_task =~ "exact-public"
+  end
+
+  @tag :post_publication
+  test "the exact-public terminal gate still requires the completion state, not the attested state" do
+    script = File.read!("script/verify_companion_cleanroom.sh")
+
+    assert script =~
+             ~S(jq -c '{state,source_mode,generator_version,install_count,package_count,profile_count,path_lock_count,succeeded_packages,failed_packages,attested_packages,package_claims,profile_results,live_status}')
+
+    # Scope this refutation to the terminal-assertion line itself (the line comparing jq's
+    # extracted `.state` against a literal string), not the whole script — "ATTESTED"
+    # legitimately appears elsewhere in the file as a projected jq key name
+    # (`attested_packages`, asserted above) that is not itself a comparison, and a
+    # whole-file refutation would false-positive on that unrelated occurrence.
+    terminal_assertion_line =
+      script
+      |> String.split("\n")
+      |> Enum.find(&(&1 =~ ~S{jq -r '.state' "$MATRIX_RESULT"}))
+
+    refute is_nil(terminal_assertion_line),
+           "expected to find the terminal state-comparison line in the script"
+
+    assert terminal_assertion_line =~
+             ~S{[ "$(jq -r '.state' "$MATRIX_RESULT")" = "COMPLETE" ] || matrix_fail}
+
+    refute terminal_assertion_line =~ "ATTESTED"
+  end
+
+  @tag :post_publication
+  test "an attested run's state is never the completion string (semantic anchor for the terminal gate)" do
+    input =
+      update_public_artifact(
+        public_fixture(),
+        "crosswake_sigra",
+        &Map.put(&1, :candidate_ref, @second_candidate_ref)
+      )
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.state == "ATTESTED"
+    refute result.state == "COMPLETE"
   end
 
   defp candidate_fixture do
@@ -355,7 +749,9 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
 
     approved_artifacts =
       Enum.map(candidate.artifacts, fn artifact ->
-        Map.take(artifact, [:package, :version, :metadata_digest, :payload_digest])
+        artifact
+        |> Map.take([:package, :version, :metadata_digest, :payload_digest])
+        |> Map.put(:candidate_ref, @candidate_ref)
       end)
 
     public_artifacts =
@@ -368,6 +764,7 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
         |> Map.put(:unpacked_root, root)
         |> Map.put(:status, "PASS")
         |> Map.put(:path_lock_count, 0)
+        |> Map.put(:candidate_ref, @candidate_ref)
       end)
 
     %{
