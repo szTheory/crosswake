@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
-current_phase: 171
-current_phase_name: Version/Authority Split
-status: planning
-stopped_at: Phase 171 planning — research + validation committed, planner pending
-last_updated: "2026-09-17T14:09:34.767Z"
+current_phase: 172
+current_phase_name: Per-Package Proof Scope
+status: ready_to_plan
+stopped_at: Phase 171 complete (PR #178 merged 501e4410, retroactive VERIFICATION.md landed) — Phase 172 unplanned
+last_updated: "2026-09-17T18:30:00.000Z"
 last_activity: 2026-09-17
-last_activity_desc: Phase 171 planning started
-state_head: 2a81d9ccd9ebf2d669bed5ec6b737b77daddeb4c
+last_activity_desc: Phase 171 verified and closed
+state_head: 501e44106e6ac7a7f77ea248134cf3bcda404b43
 progress:
   total_phases: 7
-  completed_phases: 2
-  total_plans: 9
-  completed_plans: 9
-  percent: 29
+  completed_phases: 3
+  total_plans: 14
+  completed_plans: 14
+  percent: 43
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 171 — Version/Authority Split
+**Current focus:** Phase 172 — Per-Package Proof Scope
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
 **Open release pull requests — triage as of 2026-09-15. None should be merged yet.**
