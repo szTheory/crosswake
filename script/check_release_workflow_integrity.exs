@@ -1206,10 +1206,16 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(recovery, "#{name}: #{value}")
       end)
 
+    # T-171-01 (171-04, D-171-C follow-on): RELEASE_VERSION is no longer pinned to the
+    # phase168 literal "0.2.1" -- Task 2b of 171-04-PLAN.md generalized it to an anchored
+    # semver format check (WELD-06), since a bare version literal here would refuse the
+    # workflow's own reuse for a differently-versioned dispatch. Every other identity
+    # field in this job remains pinned to the phase168 event on purpose; this one needle
+    # tracks that deliberate change instead of the retired literal comparison.
     compared? =
       Enum.all?(
         [
-          ~s([ "$RELEASE_VERSION" = "0.2.1" ]),
+          ~S(printf '%s' "$RELEASE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'),
           ~s([ "$RELEASE_REF" = "$PHASE168_MERGE_OID" ]),
           ~s([ "$APPROVED_HEAD" = "$PHASE168_APPROVED_HEAD" ]),
           ~s([ "$APPROVED_TREE" = "$PHASE168_APPROVED_TREE" ]),
@@ -1283,6 +1289,9 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
     check(
       "release.partial.phase168_recovery_routes",
+      # 171-04 Task 1b generalized android_publication.sh's PUBLIC_POM to interpolate
+      # ${VERSION} instead of the phase168 literal 0.2.1 (WELD-06); this needle tracks
+      # that post-fix shape so it still fails if the interpolation regresses.
       exact_registry_identity? and exact_ios_identity? and
         includes?(hex_recovery, ~s([ "$RECOVERY_REF" = "$PHASE168_MERGE_OID" ])) and
         includes?(android_recovery, "github.event.inputs.operation == 'android-recovery'") and
@@ -1310,9 +1319,9 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         not includes?(ios_publish, "force") and
         includes?(
           android_publication,
-          "io/github/sztheory/crosswake-shell-core-android/0.2.1/crosswake-shell-core-android-0.2.1.pom"
+          ~S(https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/${VERSION}/crosswake-shell-core-android-${VERSION}.pom)
         ) and
-        not includes?(android_publication, "io/crosswake/crosswake-shell-core/0.2.1") and
+        not includes?(android_publication, "io/crosswake/crosswake-shell-core/") and
         not includes?(android_publication, "--replace") and
         not includes?(android_publication, "--force"),
       "Phase 168 partial recovery must bind Hex, Maven, and atomic iOS publication to the approved immutable b780/1051/ecf/359 identity, correct public coordinates, and no tag movement or package replacement"
