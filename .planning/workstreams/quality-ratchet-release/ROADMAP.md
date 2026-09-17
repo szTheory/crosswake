@@ -240,10 +240,23 @@ same module, same test fixtures)
    `unproven`) — never `byte_exact`, and never silently averaged into one green result — confirmed by
    a fixture that forces drift and inspects the reported result type.
 
-**Plans**: TBD
+**Plans**:
+- [ ] 172-01-PLAN.md (Wave 1) — thread a per-package `candidate_ref` through the producer, the schema and both shell consumers
+- [ ] 172-02-PLAN.md (Wave 2) — the four-branch classifier, the derived `claim` field and the distinct `attested` bucket
+- [ ] 172-03-PLAN.md (Wave 3) — the non-vacuity proofs, including a single-byte real-tarball mutation, and `172-NON-VACUITY.md`
 
-**Research**: Standard pattern — schema loosening (removing a `unique | length == 1` collapse) with
-an established per-entry field already present in the manifest shape. Skip phase-level research.
+**Research**: Standard pattern — schema loosening with an established per-entry field already
+present in the manifest shape. Skipped at phase level, as planned.
+
+**Note (corrected during planning, 2026-09-17)**: this section previously implied the
+`unique | length == 1` collapse lives in `cleanroom.ex`. It does not — it is a jq filter at
+`script/verify_companion_cleanroom.sh:207`, with a producer-side twin at
+`lib/crosswake/release_candidate/artifact.ex:18` (`@input_keys` carries ONE top-level
+`candidate_ref` that `inspect_family!/1` broadcasts to all six packages). `cleanroom.ex` has no
+`candidate_ref` field at all today, so the concept must be newly threaded in. Two further call
+sites the pattern map missed: `script/release_candidate/hex_artifacts.sh:244` and the
+observation-assembly comprehension at `verify_companion_cleanroom.sh:692-699`, which whitelists
+four keys and drops `candidate_ref` before it reaches the evaluator.
 
 ---
 

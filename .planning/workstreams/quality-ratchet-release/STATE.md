@@ -4,16 +4,16 @@ milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 172
 current_phase_name: Per-Package Proof Scope
-status: ready_to_plan
-stopped_at: Phase 171 complete (PR #178 merged 501e4410, retroactive VERIFICATION.md landed) — Phase 172 unplanned
+status: ready_to_execute
+stopped_at: Phase 172 planned — 3 plans, plan-checker PASS after one revision cycle; ready to execute
 last_updated: "2026-09-17T18:30:00.000Z"
 last_activity: 2026-09-17
-last_activity_desc: Phase 171 verified and closed
+last_activity_desc: Phase 172 planning complete
 state_head: 501e44106e6ac7a7f77ea248134cf3bcda404b43
 progress:
   total_phases: 7
   completed_phases: 3
-  total_plans: 14
+  total_plans: 17
   completed_plans: 14
   percent: 43
 ---
