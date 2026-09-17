@@ -72,6 +72,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.outputs.paths_released
     release.partial.exact_ref_recovery
     release.partial.phase168_recovery_routes
+    release.publish_gate.no_bare_version_literal
     release.rehearsal.exact_identity
     release.rehearsal.hex_candidate
     release.rehearsal.ios_candidate
@@ -206,6 +207,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         ),
         phase168_ios_recovery_exact_identity(non_comment_ios_backfill_workflow),
         release_version_weld(jobs, release_manifest),
+        no_bare_version_literal(jobs),
         native_rollup_fails_closed(jobs),
         release_failure_alert_native(jobs),
         ios_mirror_four_mode_adapter(non_comment_ios_backfill_script),
@@ -403,6 +405,36 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       |> Enum.join("; ")
 
     ".release-please-manifest.json declares #{inspect(declared)} but the release graph is welded to #{inspect(accepted)} (#{sites}). Those jobs would SKIP, so the release would tag and then publish NOTHING while the linked rollup reported PARTIAL. This is TODO-009 / SEED-017: generalize the version WITHOUT generalizing the authority — the per-release exact-identity binding must replace the version literal, not disappear with it. Do not simply delete the comparison; that leaves publication gated on linked_release alone"
+  end
+
+  # Permanent structural check (MSG-04, replaces release_version_weld/2,
+  # WELD-07). No publish-gating if: clause may compare
+  # needs.release-please.outputs.version against a bare semver literal --
+  # every gated job must compare against
+  # needs.approved-release-guard.outputs.approved_version instead (WELD-03).
+  # A bare literal here is the defect class this whole phase exists to make
+  # impossible: it silently welds the graph to one release forever, exactly
+  # as release_version_weld/2 used to detect only for the one already-known
+  # drift.
+  defp no_bare_version_literal(jobs) do
+    offenders =
+      @version_gated_jobs
+      |> Enum.flat_map(fn job ->
+        job
+        |> then(&job_if(jobs, &1))
+        |> then(&Regex.scan(~r/outputs\.version\s*==\s*'\d+\.\d+\.\d+'/, &1))
+        |> Enum.map(&{job, &1})
+      end)
+
+    check(
+      "release.publish_gate.no_bare_version_literal",
+      offenders == [],
+      if(offenders == [],
+        do: "no publish-gating if: clause compares against a bare version literal",
+        else:
+          "bare version literal(s) found in publish-gating if: clauses for #{Enum.map(offenders, &elem(&1, 0)) |> Enum.uniq() |> Enum.join(", ")} — compare against needs.approved-release-guard.outputs.approved_version instead"
+      )
+    )
   end
 
   defp check(id, true, detail), do: {:ok, id, detail}
