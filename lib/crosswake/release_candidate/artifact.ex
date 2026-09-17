@@ -14,8 +14,8 @@ defmodule Crosswake.ReleaseCandidate.Artifact do
     crosswake_chimeway
     crosswake_threadline
   )
-  @artifact_keys ~w(package version tarball unpacked_root outer_checksum source)a
-  @input_keys ~w(candidate_ref output_root artifacts)a
+  @artifact_keys ~w(package version candidate_ref tarball unpacked_root outer_checksum source)a
+  @input_keys ~w(output_root artifacts)a
   @metadata_keys ~w(app build_tools description elixir files licenses links name requirements version)
   @required_metadata_keys ~w(build_tools files name requirements version)
   @sha_pattern ~r/\A[0-9a-f]{64}\z/
@@ -43,7 +43,6 @@ defmodule Crosswake.ReleaseCandidate.Artifact do
   def inspect_family!(input) do
     unless exact_map?(input, @input_keys), do: invalid!()
 
-    candidate_ref = sha!(input.candidate_ref, @ref_pattern)
     output_root = regular_directory!(input.output_root)
     artifacts = input.artifacts
 
@@ -54,7 +53,7 @@ defmodule Crosswake.ReleaseCandidate.Artifact do
     unless package_names == @packages, do: invalid!()
 
     artifacts
-    |> Enum.map(&inspect_artifact!(&1, candidate_ref, output_root))
+    |> Enum.map(&inspect_artifact!(&1, output_root))
     |> Enum.sort_by(&Enum.find_index(@packages, fn package -> package == &1.package end))
   rescue
     File.Error -> invalid!()
@@ -64,16 +63,25 @@ defmodule Crosswake.ReleaseCandidate.Artifact do
 
   @doc false
   @spec inspect_cli!([String.t()]) :: :ok
-  def inspect_cli!([candidate_ref, output_root, manifest_path | artifact_args]) do
-    unless rem(length(artifact_args), 6) == 0, do: invalid!()
+  def inspect_cli!([output_root, manifest_path | artifact_args]) do
+    unless rem(length(artifact_args), 7) == 0, do: invalid!()
 
     artifacts =
       artifact_args
-      |> Enum.chunk_every(6)
-      |> Enum.map(fn [package, version, tarball, unpacked_root, outer_checksum, source] ->
+      |> Enum.chunk_every(7)
+      |> Enum.map(fn [
+                       package,
+                       version,
+                       candidate_ref,
+                       tarball,
+                       unpacked_root,
+                       outer_checksum,
+                       source
+                     ] ->
         %{
           package: package,
           version: version,
+          candidate_ref: candidate_ref,
           tarball: tarball,
           unpacked_root: unpacked_root,
           outer_checksum: outer_checksum,
@@ -83,7 +91,6 @@ defmodule Crosswake.ReleaseCandidate.Artifact do
 
     observations =
       inspect_family!(%{
-        candidate_ref: candidate_ref,
         output_root: output_root,
         artifacts: artifacts
       })
@@ -98,12 +105,13 @@ defmodule Crosswake.ReleaseCandidate.Artifact do
 
   def inspect_cli!(_args), do: invalid!()
 
-  defp inspect_artifact!(artifact, candidate_ref, output_root) do
+  defp inspect_artifact!(artifact, output_root) do
     unless exact_map?(artifact, @artifact_keys), do: invalid!()
     unless artifact.source == "built_tarball", do: invalid!()
 
     package = package!(artifact.package)
     version = version!(artifact.version)
+    candidate_ref = sha!(artifact.candidate_ref, @ref_pattern)
     tarball = regular_file!(artifact.tarball, output_root)
     unpacked_root = regular_directory!(artifact.unpacked_root, output_root)
     outer_checksum = sha!(artifact.outer_checksum, @sha_pattern)

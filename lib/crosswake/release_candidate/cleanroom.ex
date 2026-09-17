@@ -22,10 +22,11 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
     live_status
   )a
   @artifact_keys ~w(package version source unpacked_root metadata_digest payload_digest)a
-  @approved_artifact_keys ~w(package version metadata_digest payload_digest)a
+  @approved_artifact_keys ~w(package version candidate_ref metadata_digest payload_digest)a
   @public_artifact_keys ~w(
     package
     version
+    candidate_ref
     status
     source
     unpacked_root
@@ -36,6 +37,7 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
   @install_keys ~w(profile pass status scratch_root path_lock_count)a
   @profile_keys ~w(profile package status passed_checks negative_control)a
   @sha_pattern ~r/\A[0-9a-f]{64}\z/
+  @ref_pattern ~r/\A[0-9a-f]{40}\z/
 
   @common_checks ~w(
     generated_phoenix
@@ -223,6 +225,7 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
         %{
           package: package!(artifact.package),
           version: version!(artifact.version),
+          candidate_ref: ref!(artifact.candidate_ref),
           metadata_digest: sha!(artifact.metadata_digest),
           payload_digest: sha!(artifact.payload_digest)
         }
@@ -256,6 +259,7 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
         %{
           package: package,
           version: artifact.version,
+          candidate_ref: artifact.candidate_ref,
           status: artifact.status,
           source: artifact.source,
           path_lock_count: artifact.path_lock_count,
@@ -413,6 +417,12 @@ defmodule Crosswake.ReleaseCandidate.Cleanroom do
   end
 
   defp sha!(_digest), do: invalid!()
+
+  defp ref!(ref) when is_binary(ref) do
+    if Regex.match?(@ref_pattern, ref), do: ref, else: invalid!()
+  end
+
+  defp ref!(_ref), do: invalid!()
 
   defp regular_directory!(path) when is_binary(path) and path != "" do
     expanded = Path.expand(path)
