@@ -2,6 +2,7 @@ defmodule Crosswake.ReleaseCandidate.ArtifactTest do
   use ExUnit.Case, async: true
 
   alias Crosswake.ReleaseCandidate.Artifact
+  alias Crosswake.ReleaseCandidate.Cleanroom
 
   @candidate_ref String.duplicate("a", 40)
   @second_candidate_ref String.duplicate("b", 40)
@@ -175,6 +176,139 @@ defmodule Crosswake.ReleaseCandidate.ArtifactTest do
     refute encoded =~ "private-token"
     refute encoded =~ "https://"
     refute encoded =~ "stderr"
+  end
+
+  # SC#3 / XPUB-02: the existing digest comparisons above stop at the digest-string layer. A
+  # digest-string comparison can pass while the underlying byte-for-byte check has silently
+  # stopped running. These two tests pin the floor one layer lower by mutating a real file's
+  # bytes and carrying the recomputed digest into an exact-public evaluation, so a verdict is
+  # actually reached on the mutated content rather than merely comparing two strings.
+  describe "byte-exact floor at the tarball layer (SC#3, XPUB-02)" do
+    test "byte-exact regression anchor: a single real byte flip still fails the proof -- silent weakening would show as fully_proven/COMPLETE" do
+      baseline_observations = Artifact.inspect_family!(fixture_family())
+      baseline = by_package(baseline_observations, "crosswake")
+
+      mutated_input = fixture_family()
+
+      mutate_artifact(mutated_input, "crosswake", fn artifact ->
+        File.write!(Path.join(artifact.unpacked_root, "lib/crosswake.ex"), "byte-exact mutation")
+        artifact
+      end)
+
+      mutated = mutated_input |> Artifact.inspect_family!() |> by_package("crosswake")
+
+      assert mutated.payload_digest != baseline.payload_digest,
+             "the fixture mutation must actually change the recomputed payload digest"
+
+      result =
+        baseline_observations
+        |> public_evaluation_input()
+        |> override_public("crosswake", &Map.put(&1, :payload_digest, mutated.payload_digest))
+        |> Cleanroom.evaluate_public!()
+
+      assert result.failed_packages == [%{package: "crosswake", reason: "digest_mismatch"}]
+      assert result.state == "BLOCKED"
+    end
+
+    test "drift cannot launder a byte change: same mutation plus a drifted ref reports unproven, never reachable_and_compatible or fully_proven" do
+      baseline_observations = Artifact.inspect_family!(fixture_family())
+      baseline = by_package(baseline_observations, "crosswake")
+
+      mutated_input = fixture_family()
+
+      mutate_artifact(mutated_input, "crosswake", fn artifact ->
+        File.write!(Path.join(artifact.unpacked_root, "lib/crosswake.ex"), "byte-exact mutation")
+        artifact
+      end)
+
+      mutated = mutated_input |> Artifact.inspect_family!() |> by_package("crosswake")
+
+      assert mutated.payload_digest != baseline.payload_digest,
+             "the fixture mutation must actually change the recomputed payload digest"
+
+      result =
+        baseline_observations
+        |> public_evaluation_input()
+        |> override_public("crosswake", &Map.put(&1, :payload_digest, mutated.payload_digest))
+        |> override_public("crosswake", &Map.put(&1, :candidate_ref, @second_candidate_ref))
+        |> Cleanroom.evaluate_public!()
+
+      assert result.failed_packages == [%{package: "crosswake", reason: "unproven"}]
+      refute result.state == "COMPLETE"
+    end
+  end
+
+  defp public_evaluation_input(observations) do
+    scratch_root =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-artifact-proof-scratch-#{System.unique_integer([:positive, :monotonic])}"
+      )
+
+    File.mkdir_p!(scratch_root)
+    on_exit(fn -> File.rm_rf!(scratch_root) end)
+
+    source_root = observations |> hd() |> Map.fetch!(:unpacked_root) |> Path.dirname()
+
+    approved_artifacts =
+      Enum.map(
+        observations,
+        &Map.take(&1, [:package, :version, :candidate_ref, :metadata_digest, :payload_digest])
+      )
+
+    public_artifacts =
+      Enum.map(observations, fn observation ->
+        observation
+        |> Map.take([
+          :package,
+          :version,
+          :candidate_ref,
+          :unpacked_root,
+          :metadata_digest,
+          :payload_digest
+        ])
+        |> Map.put(:status, "PASS")
+        |> Map.put(:source, "hex_registry")
+        |> Map.put(:path_lock_count, 0)
+      end)
+
+    installs =
+      for profile <- Cleanroom.profiles(), pass <- [1, 2] do
+        root = Path.join(scratch_root, "#{profile}-#{pass}")
+        File.mkdir!(root)
+        %{profile: profile, pass: pass, status: "PASS", scratch_root: root, path_lock_count: 0}
+      end
+
+    profile_results =
+      Enum.map(Cleanroom.profiles(), fn profile ->
+        %{
+          profile: profile,
+          package: "crosswake_#{profile}",
+          status: "PASS",
+          passed_checks: Cleanroom.expected_checks(profile),
+          negative_control: "PASS"
+        }
+      end)
+
+    %{
+      source_mode: "exact-public",
+      generator_version: "1.8.13",
+      repository_root: File.cwd!(),
+      source_root: source_root,
+      approved_artifacts: approved_artifacts,
+      public_artifacts: public_artifacts,
+      installs: installs,
+      profile_results: profile_results,
+      live_status: "PASS"
+    }
+  end
+
+  defp override_public(input, package, callback) do
+    update_in(input.public_artifacts, fn artifacts ->
+      Enum.map(artifacts, fn artifact ->
+        if artifact.package == package, do: callback.(artifact), else: artifact
+      end)
+    end)
   end
 
   defp fixture_family do
