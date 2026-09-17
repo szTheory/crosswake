@@ -65,13 +65,68 @@ defmodule Crosswake.ReleaseCandidate.CoordinateTest do
       update_artifact(fixture(), "crosswake_sigra", fn artifact ->
         put_in(artifact, [:requirements, Access.at(0), :requirement], "~> 0.3")
       end),
-      put_in(fixture(), [:approval_children], [115])
+      put_in(fixture(), [:approval_children], [115]),
+      put_in(fixture(), [:version], "9.9.9")
     ]
 
     for mutation <- mutations do
       assert_raise ArgumentError, ~r/candidate coordinate input is invalid/, fn ->
         Coordinate.validate!(mutation)
       end
+    end
+  end
+
+  # D-171-C, Task 3 <behavior>: validate!/1 accepts any well-formed semver
+  # once every one of the five sources agrees on it -- not just the historical
+  # 0.2.1 literal. The derivation source is the release-manifest `.` entry.
+  test "accepts a fully self-consistent input at any well-formed semver, not just 0.2.1" do
+    for version <- ["0.2.1", "9.9.9", "12.34.5"] do
+      result = Coordinate.validate!(fixture(version))
+
+      assert result.version == version
+
+      assert result.linked_coordinates == %{
+               "android-core" => version,
+               "hex" => version,
+               "ios-core" => version
+             }
+
+      assert length(result.companions) == 5
+      refute Enum.any?(result.companions, &(&1.version == version))
+    end
+  end
+
+  # Five independent negative tests -- one per comparison site -- so a site
+  # that silently stopped checking is named individually, rather than being
+  # masked by a single "something disagreed" assertion.
+  test "rejects when exactly one of the five cross-source comparison sites disagrees" do
+    base = fixture("9.9.9")
+
+    mutations = [
+      input_version: put_in(base, [:version], "1.0.0"),
+      artifact_core_version: update_artifact(base, "crosswake", &Map.put(&1, :version, "1.0.0")),
+      manifest_ios_path: put_in(base, [:manifest, "packages/crosswake-shell-core-ios"], "1.0.0"),
+      root_mix: put_in(base, [:root_mix], "defmodule Candidate do\n  @version \"1.0.0\"\nend\n"),
+      android_gradle:
+        put_in(base, [:android_gradle], "version = \"1.0.0\" // x-release-please-version\n")
+    ]
+
+    for {name, mutation} <- mutations do
+      try do
+        Coordinate.validate!(mutation)
+        flunk("#{name} passed")
+      rescue
+        e in ArgumentError ->
+          assert Exception.message(e) =~ "candidate coordinate input is invalid"
+      end
+    end
+  end
+
+  test "rejects a malformed version even when all five sources agree on it" do
+    malformed = fixture("v9.9.9")
+
+    assert_raise ArgumentError, ~r/candidate coordinate input is invalid/, fn ->
+      Coordinate.validate!(malformed)
     end
   end
 
@@ -91,34 +146,36 @@ defmodule Crosswake.ReleaseCandidate.CoordinateTest do
     end
   end
 
-  defp fixture do
+  defp fixture(version \\ @candidate) do
     companion_versions = ["0.1.0", "0.1.0", "0.1.3", "0.1.0", "0.1.0"]
+    [major, minor, _patch] = String.split(version, ".")
+    core_requirement = "~> #{major}.#{minor}"
 
     artifacts =
       [
         %{
           package: "crosswake",
-          version: @candidate,
+          version: version,
           files: [%{path: "mix.exs", type: "file"}, %{path: "lib/crosswake.ex", type: "file"}],
           requirements: []
         }
       ] ++
-        Enum.zip_with(@companions, companion_versions, fn package, version ->
+        Enum.zip_with(@companions, companion_versions, fn package, companion_version ->
           %{
             package: package,
-            version: version,
+            version: companion_version,
             files: [%{path: "mix.exs", type: "file"}, %{path: "lib/#{package}.ex", type: "file"}],
-            requirements: [%{name: "crosswake", requirement: "~> 0.2", optional: false}]
+            requirements: [%{name: "crosswake", requirement: core_requirement, optional: false}]
           }
         end)
 
     %{
-      version: @candidate,
+      version: version,
       artifacts: artifacts,
       manifest: %{
-        "." => @candidate,
-        "packages/crosswake-shell-core-ios" => @candidate,
-        "packages/crosswake-shell-core-android" => @candidate,
+        "." => version,
+        "packages/crosswake-shell-core-ios" => version,
+        "packages/crosswake-shell-core-android" => version,
         "packages/crosswake_rulestead" => "0.1.0",
         "packages/crosswake_rindle" => "0.1.0",
         "packages/crosswake_sigra" => "0.1.3",
@@ -135,9 +192,9 @@ defmodule Crosswake.ReleaseCandidate.CoordinateTest do
         ],
         "packages" => release_packages()
       },
-      root_mix: "defmodule Candidate do\n  @version \"0.2.1\"\nend\n",
+      root_mix: "defmodule Candidate do\n  @version \"#{version}\"\nend\n",
       ios_package: File.read!("packages/crosswake-shell-core-ios/Package.swift"),
-      android_gradle: "version = \"0.2.1\" // x-release-please-version\n",
+      android_gradle: "version = \"#{version}\" // x-release-please-version\n",
       independent_proposals: [115, 146, 147],
       approval_children: []
     }

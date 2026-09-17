@@ -52,6 +52,33 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
     end
   end
 
+  # WELD-06, end to end: a well-formed version two minor releases ahead of the
+  # declared candidate reaches the full evaluation graph and produces a real
+  # receipt -- proving the CLI entrypoint (parse!/1,
+  # validate_command_identity!/3) AND the identity self-consistency layer
+  # (Identity.normalize!/2) both accept it, not just format-check it.
+  @tag :tmp_dir
+  test "a well-formed version two minor releases ahead reaches evaluation and produces a real receipt",
+       %{tmp_dir: tmp_dir} do
+    output_dir = Path.join(tmp_dir, "non-candidate")
+    version = "1.4.0"
+
+    terminal =
+      capture_io(fn ->
+        Candidate.run(
+          ["--version", version, "--ref", @sha_a, "--output-dir", output_dir],
+          candidate_opts: [input: input(version)]
+        )
+      end)
+
+    receipt =
+      Path.join(output_dir, "candidate-receipt.json") |> File.read!() |> Jason.decode!()
+
+    assert receipt["state"] == "READY FOR APPROVAL"
+    assert receipt["identity"]["bound"]["version"] == version
+    assert String.starts_with?(terminal, "READY FOR APPROVAL")
+  end
+
   @tag :tmp_dir
   test "unknown, missing, duplicate, and malformed options fail before evaluation or output", %{
     tmp_dir: tmp_dir
@@ -66,7 +93,10 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
     invalid_argv = [
       [],
       ["--version", "0.2.1", "--ref", @sha_a],
-      ["--version", "0.2.0", "--ref", @sha_a, "--output-dir", tmp_dir],
+      ["--version", "1.2", "--ref", @sha_a, "--output-dir", tmp_dir],
+      ["--version", "v1.2.3", "--ref", @sha_a, "--output-dir", tmp_dir],
+      ["--version", "1.2.3-rc1", "--ref", @sha_a, "--output-dir", tmp_dir],
+      ["--version", "", "--ref", @sha_a, "--output-dir", tmp_dir],
       ["--version", "0.2.1", "--ref", "abc1234", "--output-dir", tmp_dir],
       ["--version", "0.2.1", "--ref", @sha_a, "--output-dir", tmp_dir, "--bogus"],
       [
@@ -165,10 +195,10 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
     end
   end
 
-  defp input do
+  defp input(version \\ "0.2.1") do
     %{
-      identity: identity(),
-      observed_identity: identity(),
+      identity: identity(version),
+      observed_identity: identity(version),
       checks: [%{id: "candidate.package", status: "PASS"}],
       external_state: %{
         publication: "NONE",
@@ -181,14 +211,14 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
     }
   end
 
-  defp identity do
+  defp identity(version) do
     %{
-      version: "0.2.1",
+      version: version,
       ref: @sha_a,
       head: @sha_a,
       tree: @sha_b,
       base: @sha_c,
-      coordinates: [%{id: "hex-core", coordinate: "crosswake@0.2.1"}],
+      coordinates: [%{id: "hex-core", coordinate: "crosswake@#{version}"}],
       config_digests: [%{id: "release-please-config", sha256: @digest_a}],
       workflow_digests: [%{id: "release-please", sha256: @digest_b}],
       package_digests: [
@@ -203,7 +233,7 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
       mirror: %{
         split: @sha_a,
         main: @sha_b,
-        tag: "v0.2.1",
+        tag: "v#{version}",
         plan_sha256: @digest_c
       },
       run: %{id: 1234, head: @sha_a, status: "COMPLETED", conclusion: "SUCCESS"}

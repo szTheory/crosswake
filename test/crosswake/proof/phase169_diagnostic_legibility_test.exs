@@ -9,13 +9,14 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
   `release.scanner.roster_exact` guard.
 
   Runs `async: false` — this module mutates process environment
-  (`RELEASE_PLEASE_MANIFEST_PATH`) to drive real scanner subprocess runs.
+  (`RELEASE_PLEASE_MANIFEST_PATH`, `RELEASE_WORKFLOW_PATH`) to drive real
+  scanner subprocess runs.
   """
 
   use ExUnit.Case, async: false
 
   @scanner "script/check_release_workflow_integrity.exs"
-  @manifest_path ".release-please-manifest.json"
+  @workflow ".github/workflows/release-please.yml"
   @line_regex ~r/^\[crosswake\] (OK|FAIL): ([^\s]+) - (.*)$/
 
   # The five pre-existing scoped scanner_check/7 call sites (D-07) — unaffected by
@@ -180,6 +181,7 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
         core: [],
         companions: [],
         release_candidate: %{
+          version: "0.0.0",
           state: "BLOCKED",
           next_action: "n/a",
           linked_coordinates: [],
@@ -655,21 +657,20 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
       refute output =~ "[crosswake] UNVERIFIED (exit"
     end
 
-    test "the drifted-manifest fixture terminates with exit status exactly 1 and prints the FAIL (exit 1) summary block" do
-      manifest = @manifest_path |> File.read!() |> JSON.decode!()
-      drifted = Map.put(manifest, ".", "0.2.2")
+    test "the reintroduced-bare-literal fixture terminates with exit status exactly 1 and prints the FAIL (exit 1) summary block" do
+      mutated = reintroduce_bare_version_literal(File.read!(@workflow), "publish-hex", "0.2.1")
 
       path =
         Path.join(
           System.tmp_dir!(),
-          "crosswake-phase169-mixtask-manifest-#{System.unique_integer([:positive])}.json"
+          "crosswake-phase169-mixtask-workflow-#{System.unique_integer([:positive])}.yml"
         )
 
-      File.write!(path, JSON.encode!(drifted))
+      File.write!(path, mutated)
       on_exit(fn -> File.rm(path) end)
 
       {output, exit_status} =
-        run_mix_release_status(env: [{"RELEASE_PLEASE_MANIFEST_PATH", path}])
+        run_mix_release_status(env: [{"RELEASE_WORKFLOW_PATH", path}])
 
       assert exit_status == 1
       assert output =~ "[crosswake] FAIL (exit 1): release status ran all "
@@ -740,32 +741,78 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
 
   # --- Task 1 helpers -------------------------------------------------------
 
+  defp job_block(workflow, job) do
+    case Regex.run(
+           ~r/(?ms)^  #{Regex.escape(job)}:\n.*?(?=^  [A-Za-z0-9_-]+:\n|\z)/,
+           workflow
+         ) do
+      [block] -> block
+      _ -> ""
+    end
+  end
+
+  # Phase 171 (WELD-02/WELD-03) made the publish gates derive their version
+  # comparison from the same release manifest the guard already reads, so a
+  # release-manifest-only drift (the pre-171 fixture technique this helper used) no
+  # longer produces ANY scanner FAIL -- that is the intended effect of the
+  # fix, not a regression. Reintroducing a bare version literal into one
+  # gated job's if: clause (the shape release.publish_gate.no_bare_version_literal
+  # exists to catch) is the current way to produce a genuine, legible FAIL.
+  defp reintroduce_bare_version_literal(workflow, job, version) do
+    block = job_block(workflow, job)
+
+    expected =
+      "needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version"
+
+    unless String.contains?(block, expected) do
+      raise """
+      reintroduce_bare_version_literal/3 found no approved_version comparison in job #{inspect(job)}.
+
+      The mutation would be a no-op, so the negative control would assert nothing.
+      """
+    end
+
+    mutated =
+      String.replace(block, expected, "needs.release-please.outputs.version == '#{version}'")
+
+    if mutated == block do
+      raise """
+      reintroduce_bare_version_literal/3 produced an IDENTICAL block for job #{inspect(job)}.
+
+      The replacement matched but changed nothing.
+      """
+    end
+
+    String.replace(workflow, block, mutated, global: false)
+  end
+
   defp run_drifted_scanner_and_capture_fail do
-    manifest = @manifest_path |> File.read!() |> JSON.decode!()
-    drifted = Map.put(manifest, ".", "0.2.2")
+    mutated = reintroduce_bare_version_literal(File.read!(@workflow), "publish-hex", "0.2.1")
 
     path =
       Path.join(
         System.tmp_dir!(),
-        "crosswake-phase169-manifest-#{System.unique_integer([:positive])}.json"
+        "crosswake-phase169-workflow-#{System.unique_integer([:positive])}.yml"
       )
 
-    File.write!(path, JSON.encode!(drifted))
+    File.write!(path, mutated)
 
-    previous_env = System.get_env("RELEASE_PLEASE_MANIFEST_PATH")
-    System.put_env("RELEASE_PLEASE_MANIFEST_PATH", path)
+    previous_env = System.get_env("RELEASE_WORKFLOW_PATH")
+    System.put_env("RELEASE_WORKFLOW_PATH", path)
 
     on_exit(fn ->
       File.rm(path)
 
       case previous_env do
-        nil -> System.delete_env("RELEASE_PLEASE_MANIFEST_PATH")
-        value -> System.put_env("RELEASE_PLEASE_MANIFEST_PATH", value)
+        nil -> System.delete_env("RELEASE_WORKFLOW_PATH")
+        value -> System.put_env("RELEASE_WORKFLOW_PATH", value)
       end
     end)
 
     {output, exit_code} = run_scanner()
-    assert exit_code == 1, "expected the drifted manifest to make the scanner exit 1:\n#{output}"
+
+    assert exit_code == 1,
+           "expected the reintroduced bare version literal to make the scanner exit 1:\n#{output}"
 
     fail_line =
       output

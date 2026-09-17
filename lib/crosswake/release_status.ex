@@ -7,7 +7,6 @@ defmodule Crosswake.ReleaseStatus do
   """
 
   @schema_version "1.2.0"
-  @candidate_version "0.2.1"
   @mirror_baseline_version "0.2.0"
   @manifest_path ".release-please-manifest.json"
   @config_path "release-please-config.json"
@@ -74,13 +73,19 @@ defmodule Crosswake.ReleaseStatus do
     config = read_json!(cwd, @config_path)
     workflow = read_file!(cwd, @workflow_path)
     probes = live_probes(opts)
+    # D-171-A: the release manifest's `.` entry is the single-producer source
+    # for the candidate version, read once here and threaded to every
+    # consumer below -- never re-derived from mix.exs or re-read from disk.
+    candidate_version = Map.fetch!(manifest, ".")
 
     workflow_integrity =
       Keyword.get_lazy(opts, :workflow_integrity, fn -> workflow_integrity_evidence(cwd) end)
 
-    core = core_components(cwd, manifest, live?, probes)
+    core = core_components(cwd, manifest, candidate_version, live?, probes)
     companions = companion_components(cwd, manifest, config, live?, probes)
-    release_candidate = release_candidate(core, companions, live?, probes)
+
+    release_candidate =
+      release_candidate(core, companions, candidate_version, live?, probes)
 
     checks =
       checks(manifest, workflow, core, companions, workflow_integrity) ++
@@ -143,7 +148,7 @@ defmodule Crosswake.ReleaseStatus do
 
     candidate_lines = [
       "",
-      "Exact 0.2.1 candidate (read-only):",
+      "Exact #{candidate.version} candidate (read-only):",
       "- state: #{candidate.state}",
       "- next action: #{candidate.next_action}",
       "- linked coordinates: #{Enum.map_join(candidate.linked_coordinates, ", ", & &1.coordinate)}",
@@ -253,34 +258,34 @@ defmodule Crosswake.ReleaseStatus do
     end
   end
 
-  defp release_candidate(_core, companions, live?, probes) do
+  defp release_candidate(_core, companions, version, live?, probes) do
     candidate_live = %{
-      hex: maybe_hex_live("crosswake", @candidate_version, live?, probes),
-      ios: maybe_ios_mirror_live(@candidate_version, live?, probes),
-      android: maybe_maven_live(@candidate_version, live?, probes)
+      hex: maybe_hex_live("crosswake", version, live?, probes),
+      ios: maybe_ios_mirror_live(version, live?, probes),
+      android: maybe_maven_live(version, live?, probes)
     }
 
     {state, next_action} = candidate_state(candidate_live, live?)
     baseline_ios = maybe_ios_mirror_live(@mirror_baseline_version, live?, probes)
 
     %{
-      version: @candidate_version,
+      version: version,
       state: state,
       next_action: next_action,
       linked_coordinates: [
         candidate_coordinate(
           "hex",
-          "hex:crosswake@#{@candidate_version}",
+          "hex:crosswake@#{version}",
           candidate_live.hex
         ),
         candidate_coordinate(
           "ios-core",
-          "swiftpm:crosswake-shell-core-ios@#{@candidate_version}",
+          "swiftpm:crosswake-shell-core-ios@#{version}",
           candidate_live.ios
         ),
         candidate_coordinate(
           "android-core",
-          "maven:io.github.sztheory:crosswake-shell-core-android:#{@candidate_version}",
+          "maven:io.github.sztheory:crosswake-shell-core-android:#{version}",
           candidate_live.android
         )
       ],
@@ -296,7 +301,7 @@ defmodule Crosswake.ReleaseStatus do
       mirror: %{
         baseline_ref: "refs/tags/v#{@mirror_baseline_version}",
         baseline_status: public_status(baseline_ios),
-        public_ref: "refs/tags/v#{@candidate_version}",
+        public_ref: "refs/tags/v#{version}",
         public_status: public_status(candidate_live.ios),
         write_authority: "NOT CHECKED"
       },
@@ -359,16 +364,14 @@ defmodule Crosswake.ReleaseStatus do
         next_action: if(status == :ok, do: nil, else: candidate.next_action),
         message:
           if(status == :ok,
-            do: "all three linked 0.2.1 coordinates are public",
-            else: "0.2.1 linked-coordinate state is #{candidate.state}"
+            do: "all three linked #{candidate.version} coordinates are public",
+            else: "#{candidate.version} linked-coordinate state is #{candidate.state}"
           )
       }
     ]
   end
 
-  defp core_components(cwd, manifest, live?, probes) do
-    version = Map.fetch!(manifest, ".")
-
+  defp core_components(cwd, manifest, version, live?, probes) do
     [
       %{
         kind: "core",

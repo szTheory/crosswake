@@ -11,6 +11,7 @@ defmodule Crosswake.ReleaseCandidate do
   @input_keys ~w(identity observed_identity checks external_state credentials)a
   @run_keys ~w(version ref output_dir input input_adapter)a
   @sha_pattern ~r/\A[0-9a-f]{40}\z/
+  @version_pattern ~r/\A\d+\.\d+\.\d+\z/
   @output_files %{
     json: "candidate-receipt.json",
     markdown: "candidate-receipt.md",
@@ -97,10 +98,10 @@ defmodule Crosswake.ReleaseCandidate do
     end
   end
 
-  defp validate_command_identity!("0.2.1", ref, output_dir)
-       when is_binary(ref) and is_binary(output_dir) do
-    unless Regex.match?(@sha_pattern, ref) and output_dir != "" and
-             not String.contains?(output_dir, <<0>>) do
+  defp validate_command_identity!(version, ref, output_dir)
+       when is_binary(version) and is_binary(ref) and is_binary(output_dir) do
+    unless Regex.match?(@version_pattern, version) and Regex.match?(@sha_pattern, ref) and
+             output_dir != "" and not String.contains?(output_dir, <<0>>) do
       raise ArgumentError, "candidate command identity is invalid"
     end
   end

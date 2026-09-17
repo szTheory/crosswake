@@ -77,7 +77,7 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
     assert result.correction == "WRITE AUTHORITY NOT CHECKED"
 
     mutations = [
-      wrong_version: %{input | version: "0.2.0"},
+      malformed_version: %{input | version: "v0.2.1"},
       short_ref: %{input | source_ref: String.duplicate("b", 39)},
       changed_split: %{input | split_sha: String.duplicate("c", 40)},
       unreachable: put_in(input.remote.status, "UNREACHABLE"),
@@ -98,6 +98,30 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
 
     assert Mirror.evaluate!(%{input | external_state_changed: true}).external_state_changed ==
              true
+  end
+
+  test "candidate mode follows any well-formed supplied version, not just the historical 0.2.1" do
+    input = candidate_fixture() |> Map.put(:version, "9.9.9")
+    result = Mirror.evaluate!(input)
+
+    assert result.state == "PASS"
+    assert result.mode == "candidate"
+
+    assert result.push_arguments == [
+             "--dry-run",
+             "--porcelain",
+             "--atomic",
+             "#{@candidate_sha}:refs/heads/main",
+             "#{@candidate_sha}:refs/tags/v9.9.9"
+           ]
+  end
+
+  test "baseline mode still refuses anything but the historical baseline version (Pitfall 2)" do
+    input = baseline_fixture() |> Map.put(:version, "9.9.9")
+    result = Mirror.evaluate!(input)
+
+    assert result.state == "BLOCKED"
+    refute result.correction == "none"
   end
 
   test "adapter exposes separate baseline and candidate modes with bounded output" do

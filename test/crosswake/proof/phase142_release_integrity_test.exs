@@ -740,7 +740,7 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
       real_workflow()
       |> replace_in_job(
         "publish-hex",
-        "if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == '0.2.1' && contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}",
+        "if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}",
         "if: ${{ false }}\n    env:\n      DECOY: \"contains(fromJSON(needs.release-please.outputs.paths_released), '.')\""
       )
 

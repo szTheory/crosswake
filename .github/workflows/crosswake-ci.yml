@@ -289,7 +289,7 @@ jobs:
             echo "Exact candidate: ${CANDIDATE_REF}."
             echo 'Observed packages/profiles/installs: 6/5/2.'
             echo 'Credentialed real-mirror rehearsal remains owned by the trusted iOS release workflow.'
-            echo 'The approval receipt remains operator-owned: mix crosswake.release.candidate --version 0.2.1 --ref <40sha> --output-dir <new-directory>.'
+            echo 'The approval receipt remains operator-owned: mix crosswake.release.candidate --version <semver> --ref <40sha> --output-dir <new-directory>.'
             echo 'Remediation: rerun the release-candidate-full-proof leaf at this exact head; zero, stale, missing, or partial evidence blocks the umbrella.'
           } >> "$GITHUB_STEP_SUMMARY"
 

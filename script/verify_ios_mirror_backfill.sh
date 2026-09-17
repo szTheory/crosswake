@@ -3,7 +3,7 @@
 #
 # Usage:
 #   script/verify_ios_mirror_backfill.sh --version 0.2.0 --ref refs/tags/ios-core-v0.2.0
-#   script/verify_ios_mirror_backfill.sh --mode candidate --version 0.2.1 --ref <40sha>
+#   script/verify_ios_mirror_backfill.sh --mode candidate --version <semver> --ref <40sha>
 #
 # Verification is the default and uses the credential-free immutable baseline.
 # Candidate rehearsal accepts a full source SHA and never mutates a remote. Publish and
@@ -46,7 +46,7 @@ Usage: $0 [--mode baseline|candidate|publish|recovery] --version VERSION --ref R
           [--expected-old-ref SHA] [--expected-new-ref SHA]
 
 Default mode verifies the credential-free 0.2.0 baseline. Candidate mode
-requires exact 0.2.1 and a full 40-SHA and performs only a porcelain dry-run.
+requires an exact well-formed semver and a full 40-SHA and performs only a porcelain dry-run.
 Publish performs only an approved ordinary atomic update. Recovery is the sole
 mode that permits exact-ref force-with-lease semantics.
 EOF

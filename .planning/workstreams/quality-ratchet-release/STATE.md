@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
-current_phase: 170
-current_phase_name: Vacuous Assertion Remediation
-status: verifying
-stopped_at: Completed 170-05-PLAN.md — Phase 170 fully closed
-last_updated: "2026-09-16T19:54:17.444Z"
-last_activity: 2026-09-16
-last_activity_desc: Phase 170 execution started
-state_head: e7478c7f3a3c4c2593c9d3ff48e151461f3cdbaa
+current_phase: 171
+current_phase_name: Version/Authority Split
+status: planning
+stopped_at: Phase 171 planning — research + validation committed, planner pending
+last_updated: "2026-09-17T14:09:34.767Z"
+last_activity: 2026-09-17
+last_activity_desc: Phase 171 planning started
+state_head: 2a81d9ccd9ebf2d669bed5ec6b737b77daddeb4c
 progress:
   total_phases: 7
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 9
   completed_plans: 9
-  percent: 14
+  percent: 29
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 170 — Vacuous Assertion Remediation
+**Current focus:** Phase 171 — Version/Authority Split
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
 **Open release pull requests — triage as of 2026-09-15. None should be merged yet.**
@@ -46,7 +46,7 @@ Revisit once the post-publication proof lane can actually run.
 
 Phase: 170 (Vacuous Assertion Remediation) — EXECUTING
 Plan: 5 of 5
-Status: Phase complete — ready for verification
+Status: planning
 Last activity: 2026-09-16 — Phase 170 execution started
 
 ## Performance Metrics

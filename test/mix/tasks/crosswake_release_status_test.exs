@@ -42,6 +42,55 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     end
   end
 
+  # D-171-A/T-171-10: ReleaseStatus.build/1 must probe and render whatever
+  # version the release manifest actually declares, not a version compiled in
+  # as a module attribute -- so the probed value and the displayed value can
+  # never disagree.
+  test "candidate probes and rendered report lines both name the release-manifest declared version" do
+    version = "9.9.9"
+    cwd = version_bumped_checkout(version)
+    {:ok, agent} = Agent.start_link(fn -> [] end)
+    on_exit(fn -> if Process.alive?(agent), do: Agent.stop(agent) end)
+
+    status =
+      Crosswake.ReleaseStatus.build(
+        cwd: cwd,
+        live?: true,
+        http_probe: fn url, context ->
+          Agent.update(agent, &[{:http, url, context} | &1])
+          %{status: :ok, evidence: ["fixture"]}
+        end,
+        git_ref_probe: fn remote, ref ->
+          Agent.update(agent, &[{:git_ref, remote, ref} | &1])
+          %{status: :ok, evidence: ["fixture"]}
+        end
+      )
+
+    probes = Agent.get(agent, & &1)
+
+    assert Enum.any?(probes, fn
+             {:http, url, %{kind: :hex, package: "crosswake", version: ^version}} ->
+               String.contains?(url, version)
+
+             _other ->
+               false
+           end)
+
+    assert Enum.any?(probes, fn
+             {:git_ref, _remote, ref} -> ref == "refs/tags/v#{version}"
+             _other -> false
+           end)
+
+    assert status.release_candidate.version == version
+    assert status.release_candidate.mirror.public_ref == "refs/tags/v#{version}"
+
+    rendered = Crosswake.ReleaseStatus.render(status)
+    assert rendered =~ "Exact #{version} candidate (read-only):"
+
+    json = Jason.decode!(Jason.encode!(status))
+    assert json["release_candidate"]["version"] == version
+  end
+
   # Phase 169 / D-06 / D-07: a scanner check failing OUTSIDE any caller's required_ids
   # is a foreign failure. The five scoped scanner_check/7 checks now report their own
   # honest truth (they genuinely passed), and the always-emitted
@@ -568,6 +617,75 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
       )
 
     File.write!(Path.join(cwd, "release-please-config.json"), Jason.encode!(pinned))
+    cwd
+  end
+
+  # A throwaway checkout identical to this repository except the core/native
+  # trio's declared version is bumped away from whatever this repo currently
+  # ships. `.release-please-manifest.json`, `mix.exs`, and the Android Gradle
+  # file are rewritten in lockstep; everything else (including the release
+  # workflow the scanner reads) is symlinked unchanged. `.git` is deliberately
+  # NOT linked -- this fixture only exercises core/native probing, which never
+  # calls `release_as_tag_exists?`.
+  defp version_bumped_checkout(version) do
+    root = File.cwd!()
+
+    cwd =
+      Path.join(System.tmp_dir!(), "crosswake-version-bump-#{System.unique_integer([:positive])}")
+
+    File.mkdir_p!(cwd)
+    on_exit(fn -> File.rm_rf!(cwd) end)
+
+    skip = [".git", ".release-please-manifest.json", "mix.exs", "packages"]
+
+    for entry <- File.ls!(root), entry not in skip do
+      File.ln_s!(Path.join(root, entry), Path.join(cwd, entry))
+    end
+
+    manifest = Path.join(root, ".release-please-manifest.json") |> File.read!() |> Jason.decode!()
+
+    bumped_manifest =
+      manifest
+      |> Map.put(".", version)
+      |> Map.put("packages/crosswake-shell-core-ios", version)
+      |> Map.put("packages/crosswake-shell-core-android", version)
+
+    File.write!(Path.join(cwd, ".release-please-manifest.json"), Jason.encode!(bumped_manifest))
+
+    mix_exs = Path.join(root, "mix.exs") |> File.read!()
+
+    bumped_mix_exs =
+      Regex.replace(~r/@version\s+"[^"]+"/, mix_exs, "@version \"#{version}\"", global: false)
+
+    File.write!(Path.join(cwd, "mix.exs"), bumped_mix_exs)
+
+    packages_root = Path.join(cwd, "packages")
+    File.mkdir_p!(packages_root)
+
+    for entry <- File.ls!(Path.join(root, "packages")) do
+      source = Path.join(root, "packages/#{entry}")
+      target = Path.join(packages_root, entry)
+
+      if entry == "crosswake-shell-core-android" do
+        File.mkdir_p!(target)
+
+        for sub <- File.ls!(source), sub != "build.gradle.kts" do
+          File.ln_s!(Path.join(source, sub), Path.join(target, sub))
+        end
+
+        gradle = Path.join(source, "build.gradle.kts") |> File.read!()
+
+        bumped_gradle =
+          Regex.replace(~r/version\s*=\s*"[^"]+"/, gradle, "version = \"#{version}\"",
+            global: false
+          )
+
+        File.write!(Path.join(target, "build.gradle.kts"), bumped_gradle)
+      else
+        File.ln_s!(source, target)
+      end
+    end
+
     cwd
   end
 end

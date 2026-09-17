@@ -43,6 +43,7 @@ jobs:
       candidate_receipt: ${{ steps.guard.outputs.candidate_receipt }}
       candidate_run_id: ${{ steps.guard.outputs.candidate_run_id }}
       candidate_receipt_run_id: ${{ steps.guard.outputs.candidate_receipt_run_id }}
+      approved_version: ${{ steps.guard.outputs.approved_version }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -70,10 +71,13 @@ jobs:
             mix.exs .release-please-manifest.json \
             packages/crosswake-shell-core-android/build.gradle.kts | wc -l | tr -d ' ')
           [ "$linked_delta" -eq 3 ] || exit 0
+          manifest_version=$(jq -er '."."' .release-please-manifest.json)
           linked_candidate=false
-          if grep -q '@version "0.2.1"' mix.exs &&
-            grep -q 'version = "0.2.1"' packages/crosswake-shell-core-android/build.gradle.kts &&
-            jq -e '."." == "0.2.1" and ."packages/crosswake-shell-core-ios" == "0.2.1" and ."packages/crosswake-shell-core-android" == "0.2.1"' .release-please-manifest.json >/dev/null; then
+          if grep -q "@version \"${manifest_version}\"" mix.exs &&
+            grep -q "version = \"${manifest_version}\"" packages/crosswake-shell-core-android/build.gradle.kts &&
+            jq -e --arg v "$manifest_version" \
+              '."." == $v and ."packages/crosswake-shell-core-ios" == $v and ."packages/crosswake-shell-core-android" == $v' \
+              .release-please-manifest.json >/dev/null; then
             linked_candidate=true
           fi
           [ "$linked_candidate" = "true" ] || exit 0
@@ -148,6 +152,7 @@ jobs:
           emit_output "candidate_receipt=$candidate_receipt"
           emit_output "candidate_run_id=$candidate_run_id"
           emit_output "candidate_receipt_run_id=$candidate_receipt_run_id"
+          emit_output "approved_version=$manifest_version"
 
   release-please:
     name: Release Please
@@ -220,7 +225,7 @@ jobs:
   publish-hex:
     name: Publish to Hex.pm
     needs: [approved-release-guard, release-please]
-    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == '0.2.1' && contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -262,6 +267,7 @@ jobs:
           --approved-tree "${{ needs.approved-release-guard.outputs.approved_tree }}"
           --merge-oid "${{ needs.approved-release-guard.outputs.merge_oid }}"
           --candidate-receipt "${{ needs.approved-release-guard.outputs.candidate_receipt }}"
+          --expected-version "${{ needs.approved-release-guard.outputs.approved_version }}"
 
   publish-hex-rulestead:
     name: Publish crosswake_rulestead to Hex.pm
@@ -522,7 +528,7 @@ jobs:
   publish-ios-core:
     name: Mirror iOS core to split repo
     needs: [approved-release-guard, release-please]
-    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == '0.2.1' && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') }}
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -559,7 +565,7 @@ jobs:
           CROSSWAKE_IOS_MIRROR_EXECUTE: "true"
         run: >
           bash script/release_candidate/ios_mirror.sh publish
-          --version 0.2.1
+          --version "${{ needs.approved-release-guard.outputs.approved_version }}"
           --ref "${{ needs.approved-release-guard.outputs.merge_oid }}"
           --approval-receipt "${{ needs.approved-release-guard.outputs.candidate_receipt }}"
           --expected-old-ref "$(git ls-remote git@github.com:szTheory/crosswake-shell-core-ios.git refs/heads/main | awk '{print $1}')"
@@ -568,7 +574,7 @@ jobs:
   publish-android-core:
     name: Publish Android core to Maven Central
     needs: [approved-release-guard, release-please]
-    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == '0.2.1' && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-android') }}
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-android') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -594,7 +600,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
         run: >
           bash script/release_candidate/android_publication.sh
-          --version 0.2.1
+          --version "${{ needs.approved-release-guard.outputs.approved_version }}"
           --ref "${{ needs.approved-release-guard.outputs.merge_oid }}"
           --approved-head "${{ needs.approved-release-guard.outputs.approved_head }}"
           --approved-tree "${{ needs.approved-release-guard.outputs.approved_tree }}"
@@ -725,7 +731,7 @@ jobs:
       - publish-android-core
       - clean-room-proof-ios
       - clean-room-proof-android
-    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == '0.2.1' }}
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
@@ -811,6 +817,7 @@ jobs:
           APPROVED_HEAD: ${{ needs.approved-release-guard.outputs.approved_head }}
           APPROVED_TREE: ${{ needs.approved-release-guard.outputs.approved_tree }}
           APPROVED_REF: ${{ needs.approved-release-guard.outputs.merge_oid }}
+          APPROVED_VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
           CANDIDATE_RECEIPT: ${{ needs.approved-release-guard.outputs.candidate_receipt }}
           HEX_STATE: ${{ needs.publish-hex.result }}
           IOS_STATE: ${{ needs.publish-ios-core.result }}

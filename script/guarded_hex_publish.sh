@@ -20,6 +20,7 @@ APPROVED_HEAD=""
 APPROVED_TREE=""
 MERGE_OID=""
 CANDIDATE_RECEIPT=""
+EXPECTED_VERSION=""
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -27,6 +28,7 @@ while [ "$#" -gt 0 ]; do
     --approved-tree) [ "$#" -ge 2 ] || exit 2; APPROVED_TREE="$2"; shift 2 ;;
     --merge-oid) [ "$#" -ge 2 ] || exit 2; MERGE_OID="$2"; shift 2 ;;
     --candidate-receipt) [ "$#" -ge 2 ] || exit 2; CANDIDATE_RECEIPT="$2"; shift 2 ;;
+    --expected-version) [ "$#" -ge 2 ] || exit 2; EXPECTED_VERSION="$2"; shift 2 ;;
     *) exit 2 ;;
   esac
 done
@@ -137,8 +139,16 @@ validate_inputs() {
 }
 
 verify_approved_identity() {
-  if [ "$PACKAGE" != "crosswake" ] || [ "$VERSION" != "0.2.1" ]; then
+  if [ "$PACKAGE" != "crosswake" ]; then
     return 0
+  fi
+
+  if [ -z "$EXPECTED_VERSION" ]; then
+    fail "expected version is required to verify the approved release identity for ${PACKAGE}, but none was supplied." "Pass --expected-version with the approved release version before retrying."
+  fi
+
+  if [ "$VERSION" != "$EXPECTED_VERSION" ]; then
+    fail "requested version ${VERSION} does not match the approved expected version ${EXPECTED_VERSION} for ${PACKAGE}." "Stop and confirm which version is actually approved before publishing."
   fi
 
   printf '%s' "$APPROVED_HEAD$APPROVED_TREE$MERGE_OID" | grep -Eq '^[0-9a-f]{120}$' ||

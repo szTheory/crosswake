@@ -15,16 +15,17 @@ defmodule Crosswake.ReleaseCandidate.Identity do
   def normalize!(identity, opts \\ []) do
     unless exact_map?(identity, @keys), do: invalid!()
     consistent? = Keyword.get(opts, :consistent?, true)
+    version = version!(identity.version, consistent?)
 
     normalized = %{
-      version: version!(identity.version, consistent?),
+      version: version,
       ref: sha!(identity.ref),
       head: sha!(identity.head),
       tree: sha!(identity.tree),
       base: sha!(identity.base),
       coordinates:
         normalize_list!(identity.coordinates, ~w(id coordinate)a, fn coordinate ->
-          normalize_coordinate!(coordinate, consistent?)
+          normalize_coordinate!(coordinate, version, consistent?)
         end),
       config_digests:
         normalize_list!(identity.config_digests, ~w(id sha256)a, &normalize_digest!/1),
@@ -61,14 +62,14 @@ defmodule Crosswake.ReleaseCandidate.Identity do
       identity.run.status == "COMPLETED" and identity.run.conclusion == "SUCCESS"
   end
 
-  defp normalize_coordinate!(entry, consistent?) do
+  defp normalize_coordinate!(entry, version, consistent?) do
     id = id!(entry.id)
     coordinate = bounded_string!(entry.coordinate)
 
     unless Regex.match?(~r/\A[a-z0-9._-]+@[0-9]+\.[0-9]+\.[0-9]+\z/, coordinate),
       do: invalid!()
 
-    if consistent? and not String.ends_with?(coordinate, "@0.2.1"), do: invalid!()
+    if consistent? and not String.ends_with?(coordinate, "@" <> version), do: invalid!()
     %{id: id, coordinate: coordinate}
   end
 
@@ -125,9 +126,7 @@ defmodule Crosswake.ReleaseCandidate.Identity do
 
   defp normalize_list!(_entries, _keys, _mapper), do: invalid!()
 
-  defp version!("0.2.1", _consistent?), do: "0.2.1"
-
-  defp version!(version, false) when is_binary(version) do
+  defp version!(version, _consistent?) when is_binary(version) do
     if Regex.match?(~r/\A[0-9]+\.[0-9]+\.[0-9]+\z/, version), do: version, else: invalid!()
   end
 

@@ -17,20 +17,20 @@ Source: `.planning/research/v23/SUMMARY.md` (decision set, adjudicated divergenc
 - [x] **MSG-01**: A maintainer reading a failed release check sees the failing check's own message verbatim, not a list of check IDs
 - [x] **MSG-02**: A failed scanner that terminated early is reported as "terminated early" and distinguished from a check ID that was never defined
 - [x] **MSG-03**: A check that fails while other required IDs are absent surfaces the failure, not the absence — `missing` never shadows `failing`
-- [ ] **MSG-04**: `release.publish_gate.no_bare_version_literal` fails when any publish-gating `if:` clause contains a bare version literal
-- [ ] **MSG-05**: `release.publish_gate.no_bare_version_literal` is proven non-vacuous against a pre-repair fixture of the workflow file — it demonstrably would have caught the original weld
+- [x] **MSG-04**: `release.publish_gate.no_bare_version_literal` fails when any publish-gating `if:` clause contains a bare version literal
+- [x] **MSG-05**: `release.publish_gate.no_bare_version_literal` is proven non-vacuous against a pre-repair fixture of the workflow file — it demonstrably would have caught the original weld
 - [x] **MSG-06**: The three release check display names carrying `0.2.1` are renamed to version-neutral names, and duplicate required-check names fail a uniqueness assertion
 
 ### Version / Authority Split
 
-- [ ] **WELD-01**: A completed weld inventory classifies every `0.2.1` occurrence across the 18 affected files as live gate, fixture, docstring, or display string, and is recorded in-repo
-- [ ] **WELD-02**: `approved-release-guard` emits an `approved_version` output bound into the same receipt that already binds approved head, tree, and base
-- [ ] **WELD-03**: `publish-hex`, `publish-ios-core`, `publish-android-core`, and `exact-public-proof` gate on the release version matching `approved_version`, not on a literal
-- [ ] **WELD-04**: `Crosswake.ReleaseCandidate.Workflow` derives `@coordinates` and `@dependencies` from the release version rather than frozen module attributes
-- [ ] **WELD-05**: The Elixir-side weld at `cleanroom.ex:236` is removed as the same defect class one layer down
-- [ ] **WELD-06**: A release of any semver version runs the full publish → proof → rollup graph with no workflow edit
-- [ ] **WELD-07**: The interim `release.version_weld.gates_match_declared_version` tripwire is deleted — not disabled, not weakened — in the same change that removes the literals it guarded
-- [ ] **WELD-08**: An unapproved merge still cannot publish at any version — the identity gate remains exact after the version gate generalizes
+- [x] **WELD-01**: A completed weld inventory classifies every `0.2.1` occurrence across the 18 affected files as live gate, fixture, docstring, or display string, and is recorded in-repo
+- [x] **WELD-02**: `approved-release-guard` emits an `approved_version` output bound into the same receipt that already binds approved head, tree, and base
+- [x] **WELD-03**: `publish-hex`, `publish-ios-core`, `publish-android-core`, and `exact-public-proof` gate on the release version matching `approved_version`, not on a literal
+- [x] **WELD-04**: `Crosswake.ReleaseCandidate.Workflow` derives `@coordinates` and `@dependencies` from the release version rather than frozen module attributes
+- [x] **WELD-05**: The Elixir-side weld at `cleanroom.ex:236` is removed as the same defect class one layer down
+- [x] **WELD-06**: A release of any semver version runs the full publish → proof → rollup graph with no workflow edit
+- [x] **WELD-07**: The interim `release.version_weld.gates_match_declared_version` tripwire is deleted — not disabled, not weakened — in the same change that removes the literals it guarded
+- [x] **WELD-08**: An unapproved merge still cannot publish at any version — the identity gate remains exact after the version gate generalizes
 
 ### Post-Publication Proof
 
@@ -75,7 +75,7 @@ Source: `.planning/research/v23/SUMMARY.md` (decision set, adjudicated divergenc
 ### Documentation Truth
 
 - [ ] **DOC-04**: `docs/COMPANION-PUBLISH-RUNBOOK.md`'s "this pipeline only publishes 0.2.1" section is deleted the moment it becomes false — not softened
-- [ ] **DOC-05**: One word is used for each domain concept across CLI, CI check names, docs, and code; the "manifest" collision is resolved
+- [x] **DOC-05**: One word is used for each domain concept across CLI, CI check names, docs, and code; the "manifest" collision is resolved
 - [ ] **DOC-06**: Residual `splitsh-lite` references are removed; `git subtree split` is documented as the durable mirror-split mechanism
 
 ## Future Requirements
@@ -143,17 +143,17 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 | MSG-01 | Phase 169 | Complete |
 | MSG-02 | Phase 169 | Complete |
 | MSG-03 | Phase 169 | Complete |
-| MSG-04 | Phase 171 | Pending |
-| MSG-05 | Phase 171 | Pending |
+| MSG-04 | Phase 171 | Complete |
+| MSG-05 | Phase 171 | Complete |
 | MSG-06 | Phase 169 | Complete |
-| WELD-01 | Phase 171 | Pending |
-| WELD-02 | Phase 171 | Pending |
-| WELD-03 | Phase 171 | Pending |
-| WELD-04 | Phase 171 | Pending |
-| WELD-05 | Phase 171 | Pending |
-| WELD-06 | Phase 171 | Pending |
-| WELD-07 | Phase 171 | Pending |
-| WELD-08 | Phase 171 | Pending |
+| WELD-01 | Phase 171 | Complete |
+| WELD-02 | Phase 171 | Complete |
+| WELD-03 | Phase 171 | Complete |
+| WELD-04 | Phase 171 | Complete |
+| WELD-05 | Phase 171 | Complete |
+| WELD-06 | Phase 171 | Complete |
+| WELD-07 | Phase 171 | Complete |
+| WELD-08 | Phase 171 | Complete |
 | XPUB-01 | Phase 172 | Pending |
 | XPUB-02 | Phase 172 | Pending |
 | XPUB-03 | Phase 172 | Pending |
@@ -180,7 +180,7 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 | REL-15 | Phase 175 | Pending |
 | REL-16 | Phase 175 | Pending |
 | DOC-04 | Phase 175 | Pending |
-| DOC-05 | Phase 171 | Pending |
+| DOC-05 | Phase 171 | Complete |
 | DOC-06 | Phase 175 | Pending |
 
 **Coverage:**

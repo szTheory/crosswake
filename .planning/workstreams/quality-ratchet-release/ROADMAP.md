@@ -195,7 +195,19 @@ proof (run against a pre-fix fixture of the workflow file) as part of that same 
    asserting the identity gate (head/tree/base match) remains exact after the version comparison
    generalizes.
 
-**Plans**: TBD
+**Plans**: 5 plans (one PR — see **Note on atomicity**; no plan is separately mergeable)
+
+- [ ] 171-01-PLAN.md — approved_version spine: guard derivation, four publish gates, the new
+      `release.publish_gate.no_bare_version_literal` check with its pre-repair-fixture proof, and the
+      tripwire deletion (wave 1)
+- [ ] 171-02-PLAN.md — version-parametric rollup coordinates and the clean-room validator's version
+      conjunct removal (wave 2)
+- [ ] 171-03-PLAN.md — CLI entrypoint format checks plus identity/mirror/status/coordinate
+      generalization (wave 2)
+- [ ] 171-04-PLAN.md — publish and mirror shell scripts, the dispatch workflows, and the scanner's
+      remaining self-assertions (wave 3)
+- [ ] 171-05-PLAN.md — the committed weld inventory, the DOC-05 terminology pass, the measured sweep,
+      and the single-PR checkpoint (wave 4)
 
 **Research**: Standard pattern — the receipt-output idiom (`approved-release-guard.outputs.*`) is
 already established for head/tree/base; extending it one field is mechanical. Skip phase-level

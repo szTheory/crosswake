@@ -210,6 +210,67 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
   end
 
   @tag :post_publication
+  test "approved-artifacts validator accepts any well-formed semver, not just the current candidate" do
+    input =
+      public_fixture()
+      |> update_approved_artifact("crosswake", &Map.put(&1, :version, "9.9.9"))
+      |> update_public_artifact("crosswake", &Map.put(&1, :version, "9.9.9"))
+
+    result = Cleanroom.evaluate_public!(input)
+
+    assert result.state == "COMPLETE"
+    assert result.succeeded_packages == @packages
+    assert result.failed_packages == []
+  end
+
+  @tag :post_publication
+  test "approved-artifacts validator rejects missing, duplicate, and unexpected packages" do
+    input = public_fixture()
+
+    mutations = [
+      missing: %{input | approved_artifacts: tl(input.approved_artifacts)},
+      duplicate: %{
+        input
+        | approved_artifacts: [hd(input.approved_artifacts) | input.approved_artifacts]
+      },
+      extra: %{
+        input
+        | approved_artifacts:
+            input.approved_artifacts ++ [%{hd(input.approved_artifacts) | package: "other"}]
+      }
+    ]
+
+    for {name, mutation} <- mutations do
+      error = assert_raise ArgumentError, fn -> Cleanroom.evaluate_public!(mutation) end
+      assert Exception.message(error) == "candidate clean-room input is invalid", "#{name} passed"
+    end
+  end
+
+  @tag :post_publication
+  test "approved-artifacts validator still rejects a malformed version" do
+    input =
+      update_approved_artifact(
+        public_fixture(),
+        "crosswake",
+        &Map.put(&1, :version, "not-a-version")
+      )
+
+    assert_raise ArgumentError, fn -> Cleanroom.evaluate_public!(input) end
+  end
+
+  test "the deleted crosswake-version identity comparison cannot come back" do
+    source = File.read!("lib/crosswake/release_candidate/cleanroom.ex")
+
+    cleaned =
+      source
+      |> String.split("\n")
+      |> Enum.reject(&(&1 |> String.trim() |> String.starts_with?("#")))
+      |> Enum.join("\n")
+
+    refute Regex.match?(~r/version == "[0-9]+\.[0-9]+\.[0-9]+"/, cleaned)
+  end
+
+  @tag :post_publication
   test "post-publication adapter fetches exact packages and preapproval command cannot count it" do
     script = File.read!("script/verify_companion_cleanroom.sh")
     candidate_task = File.read!("lib/mix/tasks/crosswake.release.candidate.ex")
@@ -358,6 +419,14 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
     update_in(input.profile_results, fn profiles ->
       Enum.map(profiles, fn observation ->
         if observation.profile == profile, do: callback.(observation), else: observation
+      end)
+    end)
+  end
+
+  defp update_approved_artifact(input, package, callback) do
+    update_in(input.approved_artifacts, fn artifacts ->
+      Enum.map(artifacts, fn artifact ->
+        if artifact.package == package, do: callback.(artifact), else: artifact
       end)
     end)
   end
