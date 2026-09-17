@@ -565,7 +565,7 @@ jobs:
           CROSSWAKE_IOS_MIRROR_EXECUTE: "true"
         run: >
           bash script/release_candidate/ios_mirror.sh publish
-          --version 0.2.1
+          --version "${{ needs.approved-release-guard.outputs.approved_version }}"
           --ref "${{ needs.approved-release-guard.outputs.merge_oid }}"
           --approval-receipt "${{ needs.approved-release-guard.outputs.candidate_receipt }}"
           --expected-old-ref "$(git ls-remote git@github.com:szTheory/crosswake-shell-core-ios.git refs/heads/main | awk '{print $1}')"
@@ -600,7 +600,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
         run: >
           bash script/release_candidate/android_publication.sh
-          --version 0.2.1
+          --version "${{ needs.approved-release-guard.outputs.approved_version }}"
           --ref "${{ needs.approved-release-guard.outputs.merge_oid }}"
           --approved-head "${{ needs.approved-release-guard.outputs.approved_head }}"
           --approved-tree "${{ needs.approved-release-guard.outputs.approved_tree }}"
