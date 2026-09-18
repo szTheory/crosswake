@@ -761,7 +761,8 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
 
     # Absence must never score as success: an empty map would make the caller
     # loop above iterate zero times and assert nothing at all.
-    assert grants != %{}, "#{@proof_workflow} declares no job-level permissions; the caller grant check would be vacuous"
+    assert grants != %{},
+           "#{@proof_workflow} declares no job-level permissions; the caller grant check would be vacuous"
 
     grants
   end
