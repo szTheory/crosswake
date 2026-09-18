@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 34
+open_count: 35
 waived_count: 0
 fixed_count: 0
-total_count: 34
-last_updated: 2026-09-17T21:53:26.882Z
+total_count: 35
+last_updated: 2026-09-18T17:14:45.028Z
 ---
 
 # Broken Windows Ledger
@@ -49,6 +49,7 @@ last_updated: 2026-09-17T21:53:26.882Z
 | 32 | 168 | deviation | lib/crosswake/release_candidate/receipt.ex | 185 | Extended bounded receipt coordinates to accept the fixed Maven group/artifact identity | open |  | 2026-09-13T05:29:51.445Z |  |
 | 33 | 173 | deviation | .github/workflows/exact-public-proof.yml |  | Record-assertion step carries a step-level if: on the applicability marker; the job itself is if: always() and the marker step is unconditional | open |  | 2026-09-17T21:53:26.882Z |  |
 | 34 | 173 | deviation | .github/workflows/exact-public-proof.yml |  | record-ledger is gated on needs.exact-public-proof.outputs.applicable == 'true'; when the proof job fails INSIDE the applicability step (bad lane, or recovery lane with blank approved_head/merge_oid) no output is emitted, so a recovery publish that already succeeded records no ledger row for its failed verdict. Run is red, so not a false green, but the durable record XPUB-06 promises is absent for exactly the XPUB-05 failure mode. | open |  | 2026-09-18T00:45:00.000Z |  |
+| 35 | 174 | unmet-truth | scripts/ci_monitor.cjs | 270 | check-actions defaults to a hardcoded 3-path list (crosswake-ci.yml + 2 composite actions), so it reports mutable_refs=0 while 31 mutable action refs exist across 10 other workflow files. The phase165 tests only exercise the classifier against tmp-dir fixtures passed as explicit arguments, so nothing asserts the default scope covers the repo. Absence-scored-as-success, shape A: a predicate over a silently-truncated collection. Fix = discover .github/workflows/*.yml and .github/actions/**/action.yml by default, add a scope-cardinality gate, then SHA-pin the 31 refs. | open |  | 2026-09-18T17:14:45.028Z |  |
 
 ````json
 [
@@ -446,8 +447,7 @@ last_updated: 2026-09-17T21:53:26.882Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-17T21:53:26.882Z",
-    "resolved_at": null,
-    "milestone": null
+    "resolved_at": null
   },
   {
     "id": 34,
@@ -459,8 +459,19 @@ last_updated: 2026-09-17T21:53:26.882Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-18T00:45:00.000Z",
-    "resolved_at": null,
-    "milestone": null
+    "resolved_at": null
+  },
+  {
+    "id": 35,
+    "kind": "unmet-truth",
+    "phase": "174",
+    "file": "scripts/ci_monitor.cjs",
+    "line": 270,
+    "description": "check-actions defaults to a hardcoded 3-path list (crosswake-ci.yml + 2 composite actions), so it reports mutable_refs=0 while 31 mutable action refs exist across 10 other workflow files. The phase165 tests only exercise the classifier against tmp-dir fixtures passed as explicit arguments, so nothing asserts the default scope covers the repo. Absence-scored-as-success, shape A: a predicate over a silently-truncated collection. Fix = discover .github/workflows/*.yml and .github/actions/**/action.yml by default, add a scope-cardinality gate, then SHA-pin the 31 refs.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-18T17:14:45.028Z",
+    "resolved_at": null
   }
 ]
 ````

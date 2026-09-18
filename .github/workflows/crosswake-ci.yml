@@ -275,7 +275,7 @@ jobs:
               raise SystemExit("candidate receipt: canonical receipt could not be reread")
           PY
       - name: Upload exact candidate proof
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: phase168-candidate-ci-${{ github.event.pull_request.head.sha }}
           if-no-files-found: error
@@ -1370,7 +1370,7 @@ jobs:
         run: script/verify_repository.sh --stage browser-proof
       - name: Upload E2E failure evidence
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: crosswake-e2e-proof-failure-evidence
           path: |
@@ -1479,7 +1479,7 @@ jobs:
           test -s brandbook/collateral/see-it-run/web-offline.png
           test -s brandbook/collateral/see-it-run/web-bridge-proof.png
       - name: Upload route-tour evidence bundle
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: crosswake-route-tour-evidence
           path: |
