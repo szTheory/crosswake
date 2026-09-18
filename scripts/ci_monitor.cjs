@@ -17,7 +17,9 @@ Commands:
   test-summary <run-id>
   grep <run-id> --pattern <regex>
   wait-for <run-id> <job> --keyword <text>
-  check-actions [workflow-or-action-file ...]
+  check-actions [workflow-or-action-file ...] (default scope is derived from
+    the tree: every .github/workflows/*.yml plus every .github/actions/**/action.yml)
+  test-check-actions-scope
   capture-evidence <output.json>
   capture-evidence --source <final-source.json> --cohorts matched --output <output.json>
   capture-required-context-snapshot <output.json>
@@ -266,12 +268,76 @@ function waitFor(args) {
   process.stdout.write(`matched ${JSON.stringify(keyword)} in job ${JSON.stringify(job)}\n`);
 }
 
+// Enumerates the files `check-actions` is responsible for auditing, derived from
+// the working tree at run time rather than a hardcoded list. `check_release_workflow_integrity.exs`
+// declares its roster as a literal constant, DECLARED NEVER DERIVED, because that roster is a scope
+// selector for per-lane emission checks and deriving it from the artifact it polices would let the
+// exact lane that stopped emitting silently drop out of scope. This function inverts that: a
+// hardcoded roster here WAS the defect (WINDOWS entry 35 — `mutable_refs=0` over a three-file
+// default while 31 mutable refs sat unscanned in ten other workflow files), so discovery must be
+// derived from `.github/` itself, and the *expected* count is what `assertFullScope` verifies rather
+// than trusting a written-down number.
+function discoverActionSources() {
+  const files = [];
+  const workflowsDir = ".github/workflows";
+  if (fs.existsSync(workflowsDir)) {
+    for (const entry of fs.readdirSync(workflowsDir, { withFileTypes: true })) {
+      if (entry.isFile() && entry.name.endsWith(".yml")) {
+        files.push(path.join(workflowsDir, entry.name));
+      }
+    }
+  }
+  const actionsDir = ".github/actions";
+  const walk = (dir) => {
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (entry.isFile() && entry.name === "action.yml") {
+        files.push(full);
+      }
+    }
+  };
+  walk(actionsDir);
+  return files.sort();
+}
+
+// Reusable scope-cardinality guard (D-25): fails when `actual` is a proper subset of `expected`, or
+// when `expected` is empty (an empty expectation is itself a truncation the caller should never
+// treat as "nothing to scan"). Written standalone so a future check inherits it by construction
+// rather than copying an assertion inlined into the one function that needed it first.
+function assertFullScope(actual, expected) {
+  if (expected.length === 0) {
+    return { ok: false, reason: "expected scope is empty" };
+  }
+  const expectedSet = new Set(expected);
+  const isSubset = actual.every((file) => expectedSet.has(file));
+  const isProperSubset = isSubset && actual.length < expected.length;
+  if (isProperSubset) {
+    return { ok: false, reason: "actual scope is a proper subset of expected scope" };
+  }
+  return { ok: true };
+}
+
 function checkActions(args) {
-  const paths = args.length ? args : [
-    ".github/workflows/crosswake-ci.yml",
-    ".github/actions/setup-android-jvm/action.yml",
-    ".github/actions/setup-elixir-cache/action.yml",
-  ];
+  const usingDefaultScope = args.length === 0;
+  const paths = usingDefaultScope ? discoverActionSources() : args;
+
+  if (usingDefaultScope) {
+    // Re-derive the expectation immediately before reading, so a scope that shrank between
+    // derivation and read (e.g. a file deleted mid-run) is a failure rather than a smaller green.
+    const freshExpected = discoverActionSources();
+    const scopeResult = assertFullScope(paths, freshExpected);
+    if (!scopeResult.ok) {
+      process.stderr.write(
+        `check-actions scope shrank: expected=${freshExpected.length} scanned=${paths.length} (${scopeResult.reason})\n`,
+      );
+      process.exitCode = 1;
+      return;
+    }
+  }
+
   const lines = paths.flatMap((file) => {
     let source;
     try {
@@ -294,10 +360,45 @@ function checkActions(args) {
   });
 
   process.stdout.write(lines.join("\n") + (lines.length ? "\n" : ""));
-  process.stdout.write(`actions=${lines.length} mutable_refs=${mutable.length}\n`);
+  process.stdout.write(`files=${paths.length} actions=${lines.length} mutable_refs=${mutable.length}\n`);
   if (mutable.length) {
     process.stderr.write("mutable third-party action refs are forbidden in required CI authority\n");
     process.exitCode = 1;
+  }
+}
+
+// Self-test guarding the WINDOWS entry 35 regression: `check-actions` reported `mutable_refs=0`
+// over a hardcoded three-file default while 31 mutable refs sat unscanned in ten other workflow
+// files — the assertion that ran was correct, but the set it ran against was truncated. This
+// subcommand drives `assertFullScope` red against a deliberately narrowed scope and green against
+// an equal-scope control, so the scope gate itself is proven to have teeth rather than being a
+// checkbox that never fires.
+function testCheckActionsScope() {
+  const expected = discoverActionSources();
+  const narrowCount = Math.min(3, Math.max(expected.length - 1, 0));
+  const narrowed = expected.slice(0, narrowCount);
+
+  const narrowedResult = assertFullScope(narrowed, expected);
+  const narrowedOutcome = narrowedResult.ok ? "green" : "red";
+  process.stdout.write(
+    `case=narrowed expected=${expected.length} actual=${narrowed.length} outcome=${narrowedOutcome}\n`,
+  );
+
+  const controlResult = assertFullScope(expected, expected);
+  const controlOutcome = controlResult.ok ? "green" : "red";
+  process.stdout.write(
+    `case=control expected=${expected.length} actual=${expected.length} outcome=${controlOutcome}\n`,
+  );
+
+  if (narrowedOutcome !== "red") {
+    process.stderr.write("scope gate is vacuous: the narrowed case did not report red\n");
+    process.exitCode = 1;
+    return;
+  }
+  if (controlOutcome !== "green") {
+    process.stderr.write("scope gate always fails: the equal-scope control did not report green\n");
+    process.exitCode = 1;
+    return;
   }
 }
 
@@ -1519,6 +1620,8 @@ if (!command || command === "--help" || command === "help") {
   compareEvidence(args);
 } else if (command === "test-evidence") {
   testEvidence();
+} else if (command === "test-check-actions-scope") {
+  testCheckActionsScope();
 } else {
   fail(`unknown command: ${command}\n\n${HELP}`);
 }
