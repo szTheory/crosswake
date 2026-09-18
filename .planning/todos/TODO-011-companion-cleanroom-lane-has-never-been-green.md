@@ -29,6 +29,13 @@ This is not specific to rindle. Every companion clean-room run inspected has fai
 | 2026-08-09 | `crosswake_sigra` | failure | smoke test, `test/smoke_test.exs:21` |
 | 2026-09-15 | `crosswake_rindle` | failure | `doctor` — `manifest_contract (manifest_invalid)` |
 
+> **2026-09-18 (Phase 174 Plan 5):** the threadline row above is now diagnosed —
+> `174-FINDING-THREADLINE.md`.
+> **2026-09-18 (Phase 174 Plan 5):** the sigra row above is now diagnosed —
+> `174-FINDING-SIGRA.md`.
+> This table is left intact as the historical record and the independent roster source the
+> `Crosswake.Proof.Phase174CompanionFindingsTest` mechanical check reads from.
+
 The lane has essentially never been green, and the packages published anyway.
 
 ## Root cause of the rindle failure
@@ -62,6 +69,19 @@ flags as an advisory warning.
 **`crosswake_rindle 0.1.0` itself is not implicated.** It resolved, compiled clean, registered, and
 passed its smoke test. The failure is the proof host being too minimal to satisfy the contract the
 proof asserts.
+
+## Current status (2026-09-18, Phase 174 Plan 5)
+
+All three rows in the failure table above now have a named root cause: rindle's is recorded in
+this file (above); threadline's and sigra's are recorded in their own separate findings
+(`174-FINDING-THREADLINE.md`, `174-FINDING-SIGRA.md`) per ROADMAP SC#5 / ROOM-05, which forbids
+one finding covering more than one companion. Diagnosis is complete for all three. **This todo
+stays `open`**: the repair decision this file asks for (make the clean-room host realistic vs.
+narrow `doctor`'s route requirement) has been acted on for the harness paths threadline and
+rindle share with the router-then-doctor sequence (Phase 174 Plan 1, commit `d04397a4`) and for
+sigra's smoke-test template (commit `d16e475a`, pre-dating this phase), but the release-lane's own
+`clean-room-proof-*` jobs have never executed in CI (confirmed in
+`174-CLEANROOM-EVIDENCE.md`) — the lane's live green run is still the open item this todo tracks.
 
 ## Why this went unnoticed
 
