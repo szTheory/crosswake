@@ -53,7 +53,7 @@ Source: `.planning/research/v23/SUMMARY.md` (decision set, adjudicated divergenc
 
 ### Adopter Proof Fidelity
 
-- [ ] **FID-01**: SEED-014's two high-severity adopter gaps (CW-REQ-A, CW-REQ-B) are closed or explicitly deferred with a recorded reason
+- [x] **FID-01**: SEED-014's two high-severity adopter gaps (CW-REQ-A, CW-REQ-B) are closed or explicitly deferred with a recorded reason
 - [x] **FID-02**: A verification command that ran and found a defect exits differently from one that could not run at all
 
 ### Vacuous Assertion Audit
@@ -168,7 +168,7 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 | ROOM-04 | Phase 174 | Complete |
 | ROOM-05 | Phase 174 | Pending |
 | ROOM-06 | Phase 174 | Complete |
-| FID-01 | Phase 174 | Pending |
+| FID-01 | Phase 174 | Complete |
 | FID-02 | Phase 169 | Complete |
 | VAC-01 | Phase 170 | Complete |
 | VAC-02 | Phase 170 | Complete |

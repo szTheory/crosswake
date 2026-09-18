@@ -364,7 +364,7 @@ reproduces against a live Hex release.
 7. SEED-014's CW-REQ-A and CW-REQ-B are each either closed, with a passing check demonstrating the
    close, or carry an explicit recorded deferral reason in-repo.
 
-**Plans**: 2/6 plans executed
+**Plans**: 3/6 plans executed
 
 Plans:
 **Wave 1**
@@ -376,7 +376,7 @@ Plans:
 - [x] 174-02-PLAN.md — The `manifest_contract` byte-identity guard, pinned to pre-phase commit
       `8bc77c35`, red on drift, on rename, on a deleted call site, and on an empty extraction (ROOM-06)
 
-- [ ] 174-03-PLAN.md — SEED-014's two high-severity adopter gaps: a blocking decision on CW-REQ-A's
+- [x] 174-03-PLAN.md — SEED-014's two high-severity adopter gaps: a blocking decision on CW-REQ-A's
       breaking vocabulary bump, and CW-REQ-B's refuted-versus-could-not-run exit split (FID-01)
 
 **Wave 2** *(blocked on 174-01)*
@@ -486,5 +486,5 @@ before the real one-way door.
 | 171. Version/Authority Split | 0/TBD | Not started | - |
 | 172. Per-Package Proof Scope | 3/3 | In Progress|  |
 | 173. Recovery-Path Proof Convergence | 0/TBD | Not started | - |
-| 174. Clean-Room Host Realism & Adopter Fidelity | 2/6 | In Progress|  |
+| 174. Clean-Room Host Realism & Adopter Fidelity | 3/6 | In Progress|  |
 | 175. Rehearsal and Publish | 0/TBD | Not started | - |
