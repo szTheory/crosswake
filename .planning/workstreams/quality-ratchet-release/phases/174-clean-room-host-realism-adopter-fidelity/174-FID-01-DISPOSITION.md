@@ -34,4 +34,35 @@ reason in-repo."
 - **Recorded also in:** `.planning/seeds/SEED-014-proof-lane-and-doctor-fidelity.md`, CW-REQ-A
   section, dated disposition line.
 
-<!-- CW-REQ-B section added by Task 3 of plan 174-03. -->
+## CW-REQ-B — the runner cannot say "ran, and found a real defect"
+
+- **Disposition:** closed
+- **Evidence:** `mix test test/mix/tasks --max-cases 1` — 140 tests, 0 failures.
+- **What shipped:**
+  - `Mix.Tasks.Crosswake.ProofLane.PhysicalIphone.exit_status_for/1` — an explicit `case`
+    classifier over known rule ids with an explicit catch-all clause. `"PI-REPORT-OUTCOME"` (the
+    `join_reports/3` rule that fires only for a validated, complete, correctly-owned,
+    correctly-ordered report carrying a non-passing outcome) maps to `1`. Every other known rule
+    id, and the catch-all for any unrecognised one, maps to `2`.
+  - `handle_result/1` — routes every one of the module's `System.halt` call sites (3 sites,
+    unchanged in count before and after) through the classifier and attaches an
+    `exit_classification` field (`"refuted"` / `"could_not_run"`) to the emitted JSON for every
+    non-passing outcome. A passing run emits no such field and triggers no halt (implicit exit
+    `0`).
+  - A bug fix in `join_reports/3`: its completeness check compared the full report against the
+    expected set with every entry's outcome forced to `:passed`, so a report with any non-passing
+    outcome was misclassified as `PI-REPORT-COMPLETE` before the outcome rule could ever fire —
+    `PI-REPORT-OUTCOME` was dead code. The completeness check now compares only `[:id, :owner]`
+    positionally; a separate, pre-existing check still fires `PI-REPORT-OUTCOME` when any entry's
+    outcome is not `:passed`.
+  - Five separately named tests in
+    `test/mix/tasks/crosswake.proof_lane.physical_iphone_test.exs`: refuted-outcome exits 1;
+    no-report (bad envelope) exits 2; blocked readiness exits 2; a fully passing run halts on
+    nothing; an unrecognised rule id falls through the explicit catch-all to 2.
+- **Documentation:** no exit-status documentation existed anywhere in the repo for this task
+  before this change (checked `guides/`, `docs/`, and repo-root `*.md`). Created one: a
+  `@moduledoc` on `Mix.Tasks.Crosswake.ProofLane.PhysicalIphone` stating the full 0/1/2 contract
+  and noting it is unrelated to `Crosswake.ReleaseStatus`'s distinct exit `3` (Phase 169).
+- **Date:** 2026-09-18
+- **Recorded also in:** `.planning/seeds/SEED-014-proof-lane-and-doctor-fidelity.md`, CW-REQ-B
+  section, dated disposition line.

@@ -101,6 +101,22 @@ could-not-run) so a red CI run is interpretable without reading logs. This one n
 collapses that, and a red run requires opening the report to tell "device wasn't there" from
 "device was there and something is broken."
 
+> **Disposition — 2026-09-18, quality-ratchet-release Phase 174 (174-03), closed.** Added an
+> explicit `exit_status_for/1` classifier (a `case` over known rule ids with an explicit
+> catch-all) and a `handle_result/1` router that every `System.halt` call in `run/1` now resolves
+> through: the `join_reports/3` outcome rule (`PI-REPORT-OUTCOME`) maps to exit `1`
+> ("refuted"); every other rule id, including an unrecognised one, maps to exit `2`
+> ("could_not_run") through the catch-all. Along the way, found and fixed a bug that made
+> `PI-REPORT-OUTCOME` unreachable: `join_reports/3`'s completeness check compared the full report
+> against the expected set with every outcome forced to `:passed`, so any non-passing outcome was
+> misclassified as `PI-REPORT-COMPLETE` before the outcome rule could ever fire — the exact
+> defect this ask names. The emitted JSON now also carries an `exit_classification` field
+> (`"refuted"` / `"could_not_run"`) so a consumer reading stdout does not have to infer the
+> classification from the process status. Five separately named tests cover: refuted-outcome
+> exits 1, no-report exits 2, blocked-readiness exits 2, a fully passing run halts on nothing, and
+> an unrecognised rule id falls through the catch-all to 2. See `174-FID-01-DISPOSITION.md` for
+> the full record.
+
 ## CW-REQ-C — `verify_navigation_shell` hardcodes placeholder provenance (medium)
 
 `lib/mix/tasks/crosswake.proof_lane.verify_navigation_shell.ex:105-114` hardcodes

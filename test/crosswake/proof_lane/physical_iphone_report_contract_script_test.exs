@@ -56,7 +56,10 @@ defmodule Crosswake.ProofLane.PhysicalIphoneReportContractScriptTest do
                :device_local
              )
 
-    assert {:error, "PI-REPORT-COMPLETE"} =
+    # Complete, correctly-owned, correctly-ordered — but the device_local entries carry
+    # `outcome: :unavailable`, not `:passed`. Since 174-03 (CW-REQ-B) this is a *refuted*
+    # report, not an incomplete one: `PI-REPORT-OUTCOME`, not `PI-REPORT-COMPLETE`.
+    assert {:error, "PI-REPORT-OUTCOME"} =
              PhysicalIphone.join_report_entries(unavailable_entries, backend_entries)
 
     assert {:error, "PI-REPORT-ENVELOPE"} =

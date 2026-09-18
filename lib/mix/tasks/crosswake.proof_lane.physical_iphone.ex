@@ -1,6 +1,29 @@
 defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
   use Mix.Task
 
+  @moduledoc """
+  Runs the host-owned physical-iPhone proof only after closed preflight.
+
+  ## Exit status contract
+
+  * `0` — every assertion passed.
+  * `1` — a validated, complete, correctly-owned, correctly-ordered report was produced and it
+    contains at least one non-passing assertion outcome: a real, provable defect
+    (`join_reports/3`'s `PI-REPORT-OUTCOME` rule).
+  * `2` — no such report was produced: a bad envelope, a missing device or backend report, a
+    command-options error, a blocked preflight or readiness result, a host-callback or cleanup
+    failure, or any rule id this module does not otherwise recognise. `2` is the conservative
+    "could not run" status, reached through `exit_status_for/1`'s explicit catch-all.
+
+  This mirrors the adopter's own host-owned 0/1/2 convention. It is unrelated to
+  `Crosswake.ReleaseStatus`'s distinct exit `3` for a could-not-verify outcome (Phase 169) — that
+  is a different command with its own documented contract, not this one retrofitted onto it.
+
+  The emitted JSON for a non-passing run also carries an `exit_classification` field
+  (`"refuted"` for `1`, `"could_not_run"` for `2`), so a consumer reading stdout does not have to
+  infer the classification from the process status alone.
+  """
+
   alias Crosswake.ProofLane.{
     Evidence,
     PhysicalIphoneContract,
@@ -41,26 +64,69 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
         {:error, _} -> []
       end
 
-    case run_with(args, options) do
-      {:ready, contract} ->
-        emit(%{outcome: "ready", schema_version: contract.schema_version})
+    {status, json} = handle_result(run_with(args, options))
+    emit(json)
+    if status, do: System.halt(status)
+  end
 
-      {:readiness, result} ->
-        emit(result)
-        if result.outcome == "blocked", do: System.halt(2)
+  @doc false
+  @spec handle_result(
+          {:ready, map()}
+          | {:readiness, map()}
+          | {:passed, map()}
+          | {:blocked, map()}
+          | {:error, String.t()}
+        ) :: {nil | 1 | 2, map()}
+  def handle_result({:ready, contract}) do
+    {nil, %{outcome: "ready", schema_version: contract.schema_version}}
+  end
 
-      {:passed, candidate} ->
-        emit(candidate)
-
-      {:blocked, result} ->
-        emit(result)
-        System.halt(2)
-
-      {:error, rule} ->
-        emit(%{outcome: "blocked", rule_id: rule})
-        System.halt(2)
+  def handle_result({:readiness, result}) do
+    if result.outcome == "blocked" do
+      status = exit_status_for(:readiness_blocked)
+      {status, Map.put(result, :exit_classification, classification_label(status))}
+    else
+      {nil, result}
     end
   end
+
+  def handle_result({:passed, candidate}), do: {nil, candidate}
+
+  def handle_result({:blocked, result}) do
+    status = exit_status_for(result.rule_id)
+    {status, Map.put(result, :exit_classification, classification_label(status))}
+  end
+
+  def handle_result({:error, rule}) do
+    status = exit_status_for(rule)
+
+    {status,
+     %{outcome: "blocked", rule_id: rule, exit_classification: classification_label(status)}}
+  end
+
+  @doc false
+  @spec exit_status_for(String.t() | :readiness_blocked) :: 1 | 2
+  def exit_status_for("PI-REPORT-OUTCOME"), do: 1
+  def exit_status_for(:readiness_blocked), do: 2
+
+  def exit_status_for(rule_id) when is_binary(rule_id) do
+    case rule_id do
+      "PI-COMMAND-OPTIONS" -> 2
+      "PI-REPORT-ENVELOPE" -> 2
+      "PI-REPORT-OWNER" -> 2
+      "PI-REPORT-COMPLETE" -> 2
+      "PI-REPORT-DEVICE" -> 2
+      "PI-REPORT-BACKEND" -> 2
+      "PI-HOST-CLEANUP" -> 2
+      "PI-PROMOTION" -> 2
+      # Explicit catch-all: a rule id added later without a classification decision must
+      # degrade to "could not run", never to "found a defect" (CW-REQ-B).
+      _unrecognised -> 2
+    end
+  end
+
+  defp classification_label(1), do: "refuted"
+  defp classification_label(2), do: "could_not_run"
 
   @spec run_with([String.t()], keyword()) ::
           {:ready, map()} | {:blocked, map()} | {:error, String.t()}
@@ -238,8 +304,8 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
           not owned_by?(backend_report, :backend_authority) ->
         {:error, "PI-REPORT-OWNER"}
 
-      Enum.map(report, &Map.take(&1, [:id, :owner, :outcome])) !=
-          Enum.map(expected, &Map.put(&1, :outcome, :passed)) ->
+      Enum.map(report, &Map.take(&1, [:id, :owner])) !=
+          Enum.map(expected, &Map.take(&1, [:id, :owner])) ->
         {:error, "PI-REPORT-COMPLETE"}
 
       not Enum.all?(report, &(&1.outcome == :passed)) ->
