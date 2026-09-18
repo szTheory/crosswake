@@ -362,9 +362,14 @@ mirror-split logic already uses `git subtree split`.
 |---|-------|---------|---------------|
 | A1 | `crosswake_rulestead` has fewer downstream consumers / lower blast radius than `crosswake_chimeway`, based on all-time Hex download counts (75 vs 106) and the absence of any other package in this repo depending on either at runtime | "Held companion blast-radius pick" below | If download counts do not reflect real external adopter dependency depth (e.g., an external, non-repo consumer depends heavily on one), the "fire drill first" pick could carry more real-world blast radius than assumed. Low risk: this repo has no visibility into external consumers beyond what's public on Hex.pm, and the milestone's own framing treats this as a judgment call requiring justification, not a provably correct answer. |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+All three were open at research time and are now resolved by locked decisions in `175-CONTEXT.md`.
+The substance below is unchanged; each question carries its resolution inline.
 
 1. **Which of PR #147 / #115 is "lower blast radius" — is download count the right proxy?**
+   - **RESOLVED: see D-01, D-02, D-03.** The companion pick, the impact-if-wrong meaning of "blast
+     radius", and the "no signal found" (not "definitively zero") qualification are all locked.
    - What we know: `crosswake_rulestead` (PR #147) has 75 all-time Hex downloads; `crosswake_chimeway`
      (PR #115) has 106 [VERIFIED: `curl https://hex.pm/api/packages/crosswake_rulestead` and
      `.../crosswake_chimeway`, 2026-09-18]. Neither is depended on by any other package in this repo
@@ -382,6 +387,8 @@ mirror-split logic already uses `git subtree split`.
      rather than treating it as self-evident.
 
 2. **Do PR #147/#115's `BEHIND` merge states require action before merge?**
+   - **RESOLVED: see D-33.** Re-confirm the head immediately before dispatching a rehearsal and again
+     immediately before merging; a mismatch means redoing the rehearsal, not reconciling.
    - What we know: `gh pr view` reports `mergeable: MERGEABLE` but `mergeStateStatus: BEHIND` for
      both PRs [VERIFIED: `gh pr view 147/115 --json mergeable,mergeStateStatus`].
    - What's unclear: whether this repo's branch protection requires a branch to be up-to-date with
@@ -392,6 +399,7 @@ mirror-split logic already uses `git subtree split`.
      Pitfall 1 (rehearse the exact head that will actually merge).
 
 3. **Does REL-16's response table need to be a new document, or an extension of the existing runbook?**
+   - **RESOLVED: see D-13.** One document covering both REL-10 and REL-16.
    - What we know: `docs/COMPANION-PUBLISH-RUNBOOK.md` already documents general partial-failure
      principles ("Ordinary publication and recovery", "Five states and one correction") but not a
      literal per-registry × per-failure-mode table.
