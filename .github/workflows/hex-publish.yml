@@ -345,9 +345,17 @@ jobs:
     name: "recovery: exact-public artifact proof"
     needs: [publish]
     if: ${{ needs.publish.result == 'success' }}
+    # `contents: write` / `pull-requests: write` are for the called workflow's
+    # `record-ledger` job ONLY (XPUB-06), which commits the proof verdict and opens
+    # a pull request against the protected default branch. The proof body itself
+    # declares `actions: read` / `contents: read`, narrowing this token back down,
+    # so the write scopes never reach it. The recovery lane needs the ledger row as
+    # much as the ordinary one does -- more so, since a recovery publish is exactly
+    # the case a reader will come back to months later.
     permissions:
       actions: read
-      contents: read
+      contents: write
+      pull-requests: write
     uses: ./.github/workflows/exact-public-proof.yml
     with:
       package: ${{ inputs.package }}

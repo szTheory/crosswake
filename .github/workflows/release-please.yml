@@ -770,9 +770,19 @@ jobs:
     # it. Drop this block and both the candidate-receipt download and the
     # publication-record download fail with a forbidden response -- at release
     # time, on a real release. actionlint cannot catch that (T-173-15).
+    #
+    # `contents: write` / `pull-requests: write` are here for the called
+    # workflow's `record-ledger` job ONLY (XPUB-06): it commits the proof verdict
+    # to docs/release-ledger/RELEASE-LEDGER.jsonl on a run-scoped branch and opens
+    # a pull request, because main is protected. The grant cannot reach the proof
+    # body: that job declares its own `actions: read` / `contents: read` block,
+    # which narrows this token back down. Drop these two scopes and the ledger job
+    # fails its push at release time -- visibly, in the job summary, but the verdict
+    # never lands in git.
     permissions:
       actions: read
-      contents: read
+      contents: write
+      pull-requests: write
     uses: ./.github/workflows/exact-public-proof.yml
     with:
       package: crosswake
