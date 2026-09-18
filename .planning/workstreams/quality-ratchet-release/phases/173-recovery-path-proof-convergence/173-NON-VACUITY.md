@@ -14,19 +14,52 @@ platform-refusal case the plan names.
 
 ### Why this is Case B, and why the reason differs from the plan's anticipated one
 
-The plan's Task 2d anticipates GitHub *rejecting* a branch-scoped dispatch because the new
-`recovery-fire-drill` operation option does not yet exist on the default branch (`workflow_dispatch`
-resolves the workflow definition itself from the default branch, even though it runs the file at the
-named ref). That specific rejection was never reached here, because a precondition earlier in the
-chain was never satisfied: **a `workflow_dispatch` of a ref requires that ref to exist on the
-remote**, and this execution session operates under an explicit governing constraint —
+**The binding reason is structural, and it is exactly what the plan's Task 2d anticipated:**
+`operation` is a `type: choice` input, and GitHub validates a `workflow_dispatch` call's choice-input
+*values* against the workflow definition on the **default branch**, not against the definition at the
+dispatched ref — even though the run itself, once accepted, executes the file at the named ref.
+`recovery-fire-drill` is a new option this plan's Task 1 added; it is not present in `main`'s
+definition of `hex-publish.yml`. Verified directly, contrasting the two option lists:
+
+```
+$ git show origin/main:.github/workflows/hex-publish.yml | sed -n '/operation:/,/package:/p'
+      operation:
+        description: 'Rehearse the exact candidate or recover one immutable registry coordinate.'
+        ...
+        options:
+          - candidate-rehearsal
+          - recovery
+          - android-recovery
+      package:
+
+$ sed -n '/operation:/,/package:/p' .github/workflows/hex-publish.yml
+      operation:
+        description: 'Rehearse the exact candidate, recover one immutable registry coordinate, or fire-drill the recovery proof with no record and no credential.'
+        ...
+        options:
+          - candidate-rehearsal
+          - recovery
+          - android-recovery
+          - recovery-fire-drill
+      package:
+```
+
+`main` has three options; this branch has four. Dispatching `operation=recovery-fire-drill` at ANY
+ref — branch-scoped or not — would be rejected by GitHub's own input validation against `main`'s
+definition, because the value does not appear in the accepted set there. This is not a consequence of
+anything this session did or declined to do: **the live observation is structurally post-merge-only**,
+regardless of push policy. This is the exact shape Task 2d names: "GitHub refuses the branch-scoped
+dispatch because the new operation option is not yet present on the default branch."
+
+**A second, incidental reason also applied in this session, and is recorded for completeness but is
+not the binding one:** this execution session additionally operated under an explicit governing
+constraint —
 
 > "Do NOT push, do NOT open a PR. I handle the single phase PR at the end."
 
 — issued because Phase 173 lands as ONE pull request covering 173-01 through 173-04 together (the
 `<atomicity_constraint>` all four plans carry), opened by the requesting maintainer after this plan
-closes, not by the executor mid-phase. Pushing the branch to attempt a pre-merge dispatch would
-violate that constraint directly. Verified before writing this section:
+closes, not by the executor mid-phase. Verified before writing this section:
 
 ```
 $ git rev-parse HEAD
@@ -35,12 +68,14 @@ $ git ls-remote origin refs/heads/gsd/phase-173-recovery-path-proof-convergence
 (no output — the branch does not exist on the remote)
 ```
 
-The branch is not on the remote, no push was performed, and therefore no `workflow_dispatch` API
-call was made at all — there is nothing to quote as a rejection message, because the attempt itself
-was never made. This is recorded explicitly rather than glossed over: **an unattempted dispatch and
-a rejected dispatch are not the same fact**, and reporting the former as the latter would itself be
-the vacuity this phase exists to remove. No static assertion is presented anywhere in this file as a
-substitute for the runtime observation the plan asks for.
+The branch was never pushed, so no `workflow_dispatch` API call was attempted at all in this session
+— but even had the branch been pushed, the choice-input validation above would have refused the call
+on `operation=recovery-fire-drill` regardless. The push constraint changes *whether an attempt was
+made*; it does not change *whether an attempt could have succeeded*. Both facts are recorded, and
+neither is allowed to stand in for the other: **an unattempted dispatch, a structurally-impossible
+dispatch, and a rejected dispatch are three distinct facts**, and collapsing any two of them would
+itself be the vacuity this phase exists to remove. No static assertion is presented anywhere in this
+file as a substitute for the runtime observation the plan asks for.
 
 ### What must happen next, and who
 
