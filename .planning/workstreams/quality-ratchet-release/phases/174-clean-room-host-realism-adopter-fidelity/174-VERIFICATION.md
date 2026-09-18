@@ -1,8 +1,8 @@
 ---
 phase: 174-clean-room-host-realism-adopter-fidelity
 verified: 2026-09-18T15:35:00Z
-status: gaps_found
-score: 6/7 requirements verified (ROOM-03 not satisfied)
+status: complete
+score: 7/7 requirements verified (ROOM-03 closed post-merge by run 35366337182)
 behavior_unverified: 0
 overrides_applied: 0
 gaps:
@@ -216,3 +216,40 @@ until the rehearsal workflow reaches the default branch (the same root cause as 
 NOT-SATISFIED verdict), so a guard added now would go red over a measurement nobody can complete.
 Faking red is the same class of error as faking green. Finding A records the gap, the mutation
 that exposed it, and the condition that closes it.
+
+
+## Post-Merge Closure — ROOM-03 and SC#4 (2026-09-18)
+
+This report was written while the phase branch was unmerged, when ROOM-03 could not be satisfied
+for a platform reason: GitHub will not dispatch a `workflow_dispatch` workflow absent from the
+default branch. That condition no longer holds.
+
+PR #184 merged to `main` as `bb570820`. The dispatch was re-run against `main` and **succeeded**:
+
+| Field | Value |
+|---|---|
+| Run id | `35366337182` |
+| Job | `Clean-room proof rehearsal` |
+| Conclusion | `success` (read from the run) |
+| Under test | live published `crosswake_rindle 0.1.0` |
+| Log | `evidence/174-rindle-ci-run.log` (1270 lines) |
+
+`[crosswake] OK: verify_companion_cleanroom: package=crosswake_rindle version=0.1.0 core_floor=~> 0.2 selected_core=0.2.1 profile=engine-present state=passed`
+
+All nine `step=` markers appear in the declared order, with `step=install` (line 1108) genuinely
+before `step=doctor` (line 1234). This also closes code review's IN-01: the `mix crosswake.install`
+step added by plan 174-01 had never executed in CI, and now has, successfully.
+
+**SC#4 is also closed by the same run.** Its required method — grep two captured CI logs rather
+than read the script — is now possible because the legacy-path log exists:
+
+| Path | Captured log | Distinct `step=` markers |
+|---|---|---|
+| legacy positional | `evidence/174-rindle-ci-run.log` (run `35366337182`) | 9 |
+| matrix | `evidence/174-matrix-ci-run.log` (run `35324177344`) | 6 |
+
+9 >= 6, so the legacy roster's granularity is finer than the matrix roster's. Criterion satisfied
+from real logs on both sides.
+
+**Revised verdict: 7/7 requirements satisfied.** The gap this report recorded was real when
+recorded and is now closed by observation, not by reinterpretation.

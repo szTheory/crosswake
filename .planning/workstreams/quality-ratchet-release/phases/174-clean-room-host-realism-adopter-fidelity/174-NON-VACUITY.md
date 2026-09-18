@@ -190,3 +190,32 @@ clean-room-proof-rehearsal.yml not found on the default branch`; `gh run list
 was fabricated to paper over this. ROOM-03 carries an explicit **NOT SATISFIED** disposition above,
 naming the exact post-merge command that closes it — this phase does not read as complete on that
 requirement, and it is not.
+
+
+## Post-Merge Update (2026-09-18) — Findings A and C are closed by observation
+
+**Finding C (ROOM-03 / SC#4 not satisfied) is CLOSED.** PR #184 merged as `bb570820`, putting
+`clean-room-proof-rehearsal.yml` on the default branch. The dispatch that returned
+`HTTP 404: workflow clean-room-proof-rehearsal.yml not found on the default branch` throughout
+the phase then succeeded: run `35366337182`, job `Clean-room proof rehearsal`, conclusion
+`success`, against the live published `crosswake_rindle 0.1.0`. Log captured to
+`evidence/174-rindle-ci-run.log`. SC#4's legacy-side CI log exists as a result, and the parity
+measurement is now made the required way — from two captured CI logs — at 9 legacy markers
+versus 6 matrix markers.
+
+**Finding A (the SC#4 marker measurement is unguarded) REMAINS OPEN, and its reason has changed.**
+During the phase it was unguarded because the legacy log could not be captured, so a guard would
+have gone red over an un-completable measurement. That justification has now expired: both logs
+exist and the comparison is mechanically checkable. The taxonomy entry keeps its escape form, but
+the reason is no longer "cannot be measured" — it is "can now be measured and has not yet been
+wired into a test."
+
+Concretely, what would close Finding A: extend `phase174_cleanroom_lane_parity_test.exs` to read
+both `evidence/174-rindle-ci-run.log` and `evidence/174-matrix-ci-run.log`, assert each carries a
+non-zero `step=` marker count BEFORE comparing them (so an absent or truncated log fails loudly
+rather than comparing 0 against 0), and assert legacy count >= matrix count. The non-vacuity
+control is already known to be needed: moving either log out of the tree, or truncating it to
+zero bytes, currently leaves that suite at 6 tests / 0 failures.
+
+This is recorded as carried-forward work rather than done, because doing it is a code change
+outside this closure's scope. It must not be described as satisfied.

@@ -8,7 +8,42 @@ verdict; none is left to be inferred.
 
 ## SC#3 — the clean-room proof has actually executed in CI, recorded by run id and job conclusion
 
-**Verdict: NOT SATISFIED — PENDING POST-MERGE OBSERVATION.**
+**Verdict: SATISFIED — closed 2026-09-18 by a real post-merge dispatch.**
+
+> **CLOSED.** PR #184 merged to `main` as `bb570820`, putting
+> `clean-room-proof-rehearsal.yml` on the default branch and removing the platform restriction
+> recorded below. The dispatch was then re-run and succeeded:
+>
+> ```
+> gh workflow run clean-room-proof-rehearsal.yml --ref main \
+>   -f package=crosswake_rindle -f version=0.1.0 \
+>   -f engine_package=rindle -f engine_module=Rindle
+> ```
+>
+> | Field | Value |
+> |---|---|
+> | Run id | `35366337182` |
+> | URL | https://github.com/szTheory/crosswake/actions/runs/35366337182 |
+> | Job | `Clean-room proof rehearsal` |
+> | Job conclusion | `success` (read from the run, not inferred) |
+> | Package under test | live published `crosswake_rindle 0.1.0` from hex.pm |
+> | Captured log | `evidence/174-rindle-ci-run.log` (1270 lines) |
+>
+> Final harness line from that log, verbatim:
+>
+> ```
+> [crosswake] OK: verify_companion_cleanroom: package=crosswake_rindle version=0.1.0 \
+> core_floor=~> 0.2 selected_core=0.2.1 profile=engine-present state=passed
+> ```
+>
+> The `mix crosswake.install` step (Step 6.5, added by plan 174-01 and never previously exercised
+> in CI — the Info finding IN-01 in `174-REVIEW.md`) executed and passed, at log line 1108,
+> genuinely before `step=doctor` at line 1234.
+>
+> The original pending record is preserved below, unaltered, because it is the honest account of
+> what was true during the phase.
+
+**Original verdict during phase execution: NOT SATISFIED — PENDING POST-MERGE OBSERVATION.**
 
 `clean-room-proof-rehearsal.yml` is a new `workflow_dispatch` workflow added on this feature
 branch (`phase-174-clean-room-host-realism`), which has never been pushed to `szTheory/crosswake`
@@ -74,8 +109,28 @@ not-satisfied verdict, before ROOM-03 can be marked closed.
 
 ## SC#4 — `step=` marker granularity parity between the legacy and matrix paths, measured from captured logs
 
-**Verdict: PARTIALLY MEASURED — matrix side is real-CI-log-backed; legacy side's CI-log
-requirement is PENDING the same post-merge dispatch as SC#3, for the same root cause.**
+**Verdict: SATISFIED — closed 2026-09-18. Both sides are now measured from captured CI logs.**
+
+> **CLOSED.** The SC#3 dispatch above produced the missing legacy-path CI log, so the comparison
+> SC#4 actually asks for — grep two captured CI logs, do not read the script — is now possible
+> and has been performed:
+>
+> | Path | Captured log | Distinct `step=` markers | Roster |
+> |---|---|---|---|
+> | legacy positional | `evidence/174-rindle-ci-run.log` (run `35366337182`) | **9** | compile, deps, doctor, generate, install, metadata, register, router, smoke |
+> | matrix | `evidence/174-matrix-ci-run.log` (run `35324177344`) | **6** | build, dry-run, generate, install-generator, normalize, official-unpack |
+>
+> Measurement command, run unpiped against each file:
+> `grep -oE 'step=[a-z0-9-]+' <log> | sort -u | wc -l`
+>
+> **9 ≥ 6** — the legacy roster's granularity is finer than the matrix roster's, satisfying the
+> criterion. Both counts come from real captured CI logs; neither was read off the script.
+>
+> The original partially-measured record is preserved below, unaltered.
+
+**Original verdict during phase execution: PARTIALLY MEASURED — matrix side is real-CI-log-backed;
+legacy side's CI-log requirement is PENDING the same post-merge dispatch as SC#3, for the same
+root cause.**
 
 SC#4 asks for the parity measurement to be made by grepping two **captured CI logs**, not by
 reading the script. The matrix path runs routinely in ordinary CI (`crosswake-ci.yml`'s
@@ -147,6 +202,7 @@ from real captured CI logs) explicitly.
 | # | Command | Result |
 |---|---|---|
 | 1 | `gh workflow run clean-room-proof-rehearsal.yml --ref phase-174-clean-room-host-realism -f package=crosswake_rindle -f version=0.1.0 -f engine_package=rindle -f engine_module=Rindle` | `HTTP 404: workflow clean-room-proof-rehearsal.yml not found on the default branch` — no run created |
+| 2 | `gh workflow run clean-room-proof-rehearsal.yml --ref main -f package=crosswake_rindle -f version=0.1.0 -f engine_package=rindle -f engine_module=Rindle` (2026-09-18, after PR #184 merged as `bb570820`) | **Accepted.** Run `35366337182`, job `Clean-room proof rehearsal`, conclusion `success`. Log captured to `evidence/174-rindle-ci-run.log`. |
 
 No `script/verify_companion_cleanroom.sh` edit was made in this task: the refusal is a GitHub
 platform-level restriction on dispatching a not-yet-merged `workflow_dispatch` workflow, not a

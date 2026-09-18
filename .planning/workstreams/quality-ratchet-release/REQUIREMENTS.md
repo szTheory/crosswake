@@ -46,7 +46,7 @@ Source: `.planning/research/v23/SUMMARY.md` (decision set, adjudicated divergenc
 
 - [x] **ROOM-01**: The clean-room host declares a real Crosswake route with capability metadata before `doctor` runs
 - [x] **ROOM-02**: The clean-room host runs `mix crosswake.install` before `doctor`, exercising what an adopter actually performs
-- [ ] **ROOM-03**: `clean-room-proof-rindle` passes against the live published `crosswake_rindle 0.1.0`
+- [x] **ROOM-03**: `clean-room-proof-rindle` passes against the live published `crosswake_rindle 0.1.0`
 - [x] **ROOM-04**: The legacy positional path's logging reaches grep-able parity with the matrix path's `step=` markers
 - [x] **ROOM-05**: The threadline and sigra clean-room failures are diagnosed as separate findings with their own recorded root causes
 - [x] **ROOM-06**: `doctor`'s `manifest_contract` check is unchanged in strength — the harness was fixed, not the contract
@@ -164,7 +164,7 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 | XPUB-07 | Phase 173 | Complete |
 | ROOM-01 | Phase 174 | Complete |
 | ROOM-02 | Phase 174 | Complete |
-| ROOM-03 | Phase 174 | Pending — dispatch refused (`HTTP 404: workflow clean-room-proof-rehearsal.yml not found on the default branch`), no run created; post-merge command and closing criteria recorded in `174-CLEANROOM-EVIDENCE.md` / `174-NON-VACUITY.md`. |
+| ROOM-03 | Phase 174 | Complete — dispatched post-merge against `main` (PR #184 merged as `bb570820`); run `35366337182`, job `Clean-room proof rehearsal`, conclusion `success` against live published `crosswake_rindle 0.1.0`. Log: `evidence/174-rindle-ci-run.log`, final line `state=passed`. |
 | ROOM-04 | Phase 174 | Complete |
 | ROOM-05 | Phase 174 | Complete — `174-FINDING-THREADLINE.md` / `174-FINDING-SIGRA.md`, `Crosswake.Proof.Phase174CompanionFindingsTest` (7 tests, 0 failures). |
 | ROOM-06 | Phase 174 | Complete |
