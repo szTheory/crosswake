@@ -465,7 +465,7 @@ lower-blast-radius held companion first, as the fire-drill for the repaired clea
    the same change window that makes it false, and residual `splitsh-lite` references across the repo
    are replaced with `git subtree split` documentation.
 
-**Plans**: 1/10 plans executed
+**Plans**: 2/10 plans executed
 
 Plans:
 **Wave 1**
@@ -474,7 +474,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 175-02-PLAN.md — Wave 0 triage: SHA-pin the 31 mutable action refs across the ten affected workflow files
+- [x] 175-02-PLAN.md — Wave 0 triage: SHA-pin the 31 mutable action refs across the ten affected workflow files
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -530,4 +530,4 @@ evidence.
 | 172. Per-Package Proof Scope | 3/3 | Complete | 2026-09-17 |
 | 173. Recovery-Path Proof Convergence | 4/4 | Complete | 2026-09-18 |
 | 174. Clean-Room Host Realism & Adopter Fidelity | 6/6 | Complete | 2026-09-18 |
-| 175. Rehearsal and Publish | 1/10 | In Progress|  |
+| 175. Rehearsal and Publish | 2/10 | In Progress|  |
