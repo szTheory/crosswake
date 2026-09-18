@@ -4,11 +4,11 @@ milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 174
 current_phase_name: Clean-Room Host Realism & Adopter Fidelity
-status: verifying
-stopped_at: Completed 174-06-PLAN.md (phase 174 execution complete)
-last_updated: "2026-09-18T14:49:38.774Z"
+status: phase_complete
+stopped_at: Phase 174 verified complete at 7/7 requirements; next action is planning Phase 175
+last_updated: "2026-09-18T19:10:00.000Z"
 last_activity: 2026-09-18
-last_activity_desc: Phase 174 planned — 6 plans, 4 waves, verified with 0 blockers; two roster-scope warnings fixed in the plans
+last_activity_desc: Phase 174 closed at 7/7 — ROOM-03 and SC#4 satisfied by post-merge dispatch run 35366337182 against live crosswake_rindle 0.1.0; closure merged as #185
 progress:
   total_phases: 7
   completed_phases: 6
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 174 — Clean-Room Host Realism & Adopter Fidelity
+**Current focus:** Phase 175 — Rehearsal and Publish (unplanned)
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
 **Open release pull requests — triage as of 2026-09-15. None should be merged yet.**
@@ -45,10 +45,19 @@ Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
 
-Phase: 174 (Clean-Room Host Realism & Adopter Fidelity) — EXECUTING
+Phase: 174 (Clean-Room Host Realism & Adopter Fidelity) — COMPLETE (7/7 requirements)
 Plan: 6 of 6
-Status: Phase complete — ready for verification
-Last activity: 2026-09-18 — Phase 174 execution started
+Status: Verified complete. `174-VERIFICATION.md` is `complete`; ROOM-03 and SC#4 closed
+2026-09-18 by the post-merge clean-room dispatch (run 35366337182) against the live
+published `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install`
+before `step=doctor`, log captured at `evidence/174-rindle-ci-run.log`.
+Carried forward: Finding A (the clean-room parity test does not assert on evidence-log
+content, so it stays green against a zero-byte log) remains OPEN in `deferred-items.md`.
+Both logs now exist, so the SC#4 marker comparison is measurable and simply is not wired
+into a test.
+
+Next: Phase 175 (Rehearsal and Publish) is unplanned.
+Last activity: 2026-09-18 — Phase 174 closed; closure PR #185 merged as 6717afdc
 
 ## Performance Metrics
 
