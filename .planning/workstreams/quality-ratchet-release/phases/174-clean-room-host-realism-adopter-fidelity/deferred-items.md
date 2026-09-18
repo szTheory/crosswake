@@ -46,7 +46,19 @@ It survived plan-level verification because that verification asked whether the 
 files passed, not whether the tree did. A plan's verification step should run the suite the
 plan's artifacts can affect, not only the files it authored.
 
-## Deferred — `.planning/WINDOWS.md`'s frontmatter counts disagree with its entry list
+## RESOLVED — `.planning/WINDOWS.md`'s frontmatter counts disagreed with its entry list
+
+**Status: fixed by the phase-close orchestrator (commit `eadf9ffe`). `gsd-tools windows status` now
+reports `ok: true` at 34/34.** The original record follows, unmodified.
+
+The cause was not a stale count alone: `.planning/WINDOWS.md` carries **two** representations of
+the same ledger — a markdown table and a ```` ```json ```` block, and `gsd-tools` parses the JSON.
+Entry 34 existed only in the JSON block, so a grep of the table found 33 rows and agreed with the
+frontmatter, which made the drift look like a phantom. The fix inserted the missing table row and
+bumped `open_count`/`total_count` from 33 to 34. Note also that the 34 open entries are a quality
+backlog, not a hard gate — `workflow.windows_enforce` is `false`.
+
+**Original record, as written by plan 174-06:**
 
 **Status: not fixed. Not in this plan's `files_modified` scope (only `174-NON-VACUITY.md` and
 `REQUIREMENTS.md`), and `.planning/WINDOWS.md` is a repository-root shared artifact this plan has
@@ -69,3 +81,25 @@ Finding A is therefore recorded in `174-NON-VACUITY.md` only, not in `.planning/
 ledger append is best-effort per the executor's own protocol, and this failure does not block this
 plan's completion. Whoever next touches `.planning/WINDOWS.md` (likely Phase 175's own record, or
 a dedicated ledger-repair pass) should reconcile the frontmatter counts before appending further.
+
+
+## RESOLVED — Finding A: the SC#4 marker measurement was asserted by nothing on disk
+
+**Status: fixed by the phase-close orchestrator, 2026-09-18.**
+
+`174-NON-VACUITY.md` recorded Finding A as deliberately not patched, for a decidable reason: the
+legacy path's own CI log could not be captured until `clean-room-proof-rehearsal.yml` merged to the
+default branch. Writing a guard before both halves of the comparison existed would have asserted a
+false completeness or fabricated the missing half.
+
+That dependency resolved. The post-merge dispatch (run `35366337182`) produced
+`evidence/174-rindle-ci-run.log`, so the comparison became measurable — at which point the finding's
+reason changed from "pending a real dependency" to "measurable and simply not wired into a test,"
+and it was closed.
+
+`test/crosswake/proof/phase174_cleanroom_lane_parity_test.exs` went 6 tests → 10: a non-emptiness
+gate on both logs that runs before any comparison, the SC#4 count comparison itself, a set-equality
+check against the `LEGACY_STEP_MARKERS` roster read out of `script/verify_companion_cleanroom.sh`
+(an independent source), and a D-14 non-vacuity control. Demonstrated red by three mutations against
+the real evidence files and restored byte-identical. Full detail, including the mutation table, is
+under "Closure (2026-09-18)" in [`174-NON-VACUITY.md`](174-NON-VACUITY.md).

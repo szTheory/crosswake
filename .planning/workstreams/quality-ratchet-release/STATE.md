@@ -8,7 +8,7 @@ status: phase_complete
 stopped_at: Phase 174 verified complete at 7/7 requirements; next action is planning Phase 175
 last_updated: "2026-09-18T19:10:00.000Z"
 last_activity: 2026-09-18
-last_activity_desc: Phase 174 closed at 7/7 — ROOM-03 and SC#4 satisfied by post-merge dispatch run 35366337182 against live crosswake_rindle 0.1.0; closure merged as #185
+last_activity_desc: Phase 174 closed at 7/7 (ROOM-03/SC#4 via post-merge dispatch run 35366337182); Finding A closed by wiring the SC#4 marker comparison into the parity test
 progress:
   total_phases: 7
   completed_phases: 6
@@ -51,10 +51,11 @@ Status: Verified complete. `174-VERIFICATION.md` is `complete`; ROOM-03 and SC#4
 2026-09-18 by the post-merge clean-room dispatch (run 35366337182) against the live
 published `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install`
 before `step=doctor`, log captured at `evidence/174-rindle-ci-run.log`.
-Carried forward: Finding A (the clean-room parity test does not assert on evidence-log
-content, so it stays green against a zero-byte log) remains OPEN in `deferred-items.md`.
-Both logs now exist, so the SC#4 marker comparison is measurable and simply is not wired
-into a test.
+Finding A is CLOSED (2026-09-18). It had been deferred because the legacy path's CI log did
+not exist yet; the post-merge dispatch produced it, so the SC#4 comparison became measurable
+and was wired into `phase174_cleanroom_lane_parity_test.exs` (6 tests -> 10), with a
+non-emptiness gate on both logs before any comparison and three demonstrated red mutations.
+No phase-174 findings remain open.
 
 Next: Phase 175 (Rehearsal and Publish) is unplanned.
 Last activity: 2026-09-18 — Phase 174 closed; closure PR #185 merged as 6717afdc

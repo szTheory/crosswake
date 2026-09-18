@@ -31,6 +31,12 @@ defmodule Crosswake.Proof.Phase174CleanRoomLaneParityTest do
   @rehearsal_workflow ".github/workflows/clean-room-proof-rehearsal.yml"
   @script "script/verify_companion_cleanroom.sh"
   @expected_lane_cardinality 5
+  @harness_script "script/verify_companion_cleanroom.sh"
+  @expected_legacy_marker_cardinality 9
+  @live_phase_dir ".planning/workstreams/quality-ratchet-release/phases/174-clean-room-host-realism-adopter-fidelity"
+  @archived_phase_dir ".planning/workstreams/quality-ratchet-release/milestones/v23.0/phases/174-clean-room-host-realism-adopter-fidelity"
+  @legacy_ci_log "evidence/174-rindle-ci-run.log"
+  @matrix_ci_log "evidence/174-matrix-ci-run.log"
 
   describe "Task 2: the lane roster is discovered from release-please.yml's own script invocation" do
     test "exactly five jobs invoke the harness script with a package argument (cardinality gate before comparison)" do
@@ -152,6 +158,80 @@ defmodule Crosswake.Proof.Phase174CleanRoomLaneParityTest do
     end
   end
 
+  describe "Task 2: SC#4 marker parity is asserted against the captured CI logs (Finding A closure)" do
+    test "both captured CI logs yield a non-empty step= marker set before any comparison is made" do
+      legacy = step_markers_in(read_evidence!(@legacy_ci_log))
+      matrix = step_markers_in(read_evidence!(@matrix_ci_log))
+
+      # These two assertions exist because Finding A was a measurement that scored absence as
+      # success: the SC#4 comparison was recorded in prose, and this file passed unchanged when
+      # `174-matrix-ci-run.log` was moved away and when it was truncated to zero bytes. A
+      # zero-byte log yields an empty marker set, and `MapSet.size(empty) >= MapSet.size(empty)`
+      # is true, so the comparison below would report parity against nothing at all. Both sides
+      # must be proven non-empty FIRST, per this milestone's absence-scored-as-success rule.
+      refute MapSet.size(legacy) == 0,
+             "expected #{@legacy_ci_log} to contain at least one `step=` marker; an empty, " <>
+               "missing, or truncated log would make the parity comparison below vacuously true"
+
+      refute MapSet.size(matrix) == 0,
+             "expected #{@matrix_ci_log} to contain at least one `step=` marker; an empty, " <>
+               "missing, or truncated log would make the parity comparison below vacuously true"
+    end
+
+    test "the legacy path's captured CI log emits at least as many distinct step= markers as the matrix path's (SC#4)" do
+      legacy = step_markers_in(read_evidence!(@legacy_ci_log))
+      matrix = step_markers_in(read_evidence!(@matrix_ci_log))
+
+      refute MapSet.size(legacy) == 0, "precondition: legacy marker set must be non-empty"
+      refute MapSet.size(matrix) == 0, "precondition: matrix marker set must be non-empty"
+
+      assert MapSet.size(legacy) >= MapSet.size(matrix),
+             "SC#4 requires the legacy positional path to reach grep-able parity with the matrix " <>
+               "path, but the captured CI logs show legacy=#{MapSet.size(legacy)} " <>
+               "#{inspect(Enum.sort(legacy))} vs matrix=#{MapSet.size(matrix)} " <>
+               "#{inspect(Enum.sort(matrix))}"
+    end
+
+    test "the legacy CI log's marker set is exactly the roster verify_companion_cleanroom.sh declares" do
+      declared = declared_legacy_markers(File.read!(@harness_script))
+
+      assert MapSet.size(declared) == @expected_legacy_marker_cardinality,
+             "expected #{@expected_legacy_marker_cardinality} names in LEGACY_STEP_MARKERS in " <>
+               "#{@harness_script}, found #{MapSet.size(declared)}: #{inspect(Enum.sort(declared))} " <>
+               "— an empty or shrunk roster would make the set comparison below vacuously satisfied."
+
+      observed = step_markers_in(read_evidence!(@legacy_ci_log))
+
+      assert observed == declared,
+             "the markers actually emitted by the captured legacy CI run do not match the roster " <>
+               "the harness declares. Declared but never emitted: " <>
+               "#{inspect(Enum.sort(MapSet.difference(declared, observed)))}; emitted but not " <>
+               "declared: #{inspect(Enum.sort(MapSet.difference(observed, declared)))}"
+    end
+
+    test "a truncated evidence log is caught rather than scored as parity (non-vacuity control, D-14)" do
+      # The exact mutation that exposed Finding A, run in-process against a copy so the real
+      # evidence files are never touched: an emptied log must not read as parity.
+      truncated = step_markers_in("")
+      matrix = step_markers_in(read_evidence!(@matrix_ci_log))
+
+      assert MapSet.size(truncated) == 0,
+             "expected an empty log body to yield no markers, got #{inspect(truncated)}"
+
+      refute MapSet.size(matrix) == 0,
+             "expected the real matrix log to be non-empty, so the control below is a real assertion"
+
+      # Without the non-emptiness gate above, this is the comparison SC#4 would have rested on --
+      # and it passes, which is precisely why the gate is not optional.
+      assert MapSet.size(truncated) >= MapSet.size(MapSet.new()),
+             "a bare size comparison between two empty sets is satisfiable; documented here so " <>
+               "that removing the non-emptiness gate cannot look harmless"
+
+      refute MapSet.size(truncated) >= MapSet.size(matrix),
+             "expected a truncated legacy log to FAIL the SC#4 comparison against the real matrix log"
+    end
+  end
+
   # --- fixture / source-reading helpers --------------------------------------
 
   # Scans `workflow` for every top-level job block, keeping only the ones whose body invokes
@@ -195,5 +275,43 @@ defmodule Crosswake.Proof.Phase174CleanRoomLaneParityTest do
     regex = ~r/(?ms)^  #{Regex.escape(job)}:\n(.*?)(?=^  [A-Za-z0-9_-]+:\n|\z)/
 
     Regex.replace(regex, workflow, "")
+  end
+
+  # Resolves an evidence path that may live under the live phase directory or, after milestone
+  # archival moves it, under the archived one. Raises with both candidates named rather than
+  # returning "" -- a missing evidence file must fail loudly, never read as an empty marker set.
+  defp read_evidence!(relative) do
+    candidates = [
+      Path.join(@live_phase_dir, relative),
+      Path.join(@archived_phase_dir, relative)
+    ]
+
+    case Enum.find(candidates, &File.exists?/1) do
+      nil ->
+        raise "evidence file not found at any known location: #{inspect(candidates)}"
+
+      path ->
+        File.read!(path)
+    end
+  end
+
+  # Returns the set of distinct `step=<name>` marker names appearing in `log`.
+  defp step_markers_in(log) do
+    ~r/\bstep=([a-z0-9][a-z0-9-]*)/
+    |> Regex.scan(log, capture: :all_but_first)
+    |> Enum.map(fn [name] -> name end)
+    |> MapSet.new()
+  end
+
+  # Reads the `LEGACY_STEP_MARKERS=(...)` bash array from the harness script -- an independent
+  # source from the evidence log it is compared against.
+  defp declared_legacy_markers(script) do
+    case Regex.run(~r/^LEGACY_STEP_MARKERS=\(([^)]*)\)/m, script, capture: :all_but_first) do
+      [names] ->
+        names |> String.split(~r/\s+/, trim: true) |> MapSet.new()
+
+      nil ->
+        raise "could not find a LEGACY_STEP_MARKERS=(...) array in #{@harness_script}"
+    end
   end
 end
