@@ -44,10 +44,10 @@ Source: `.planning/research/v23/SUMMARY.md` (decision set, adjudicated divergenc
 
 ### Clean-Room Host Realism
 
-- [ ] **ROOM-01**: The clean-room host declares a real Crosswake route with capability metadata before `doctor` runs
-- [ ] **ROOM-02**: The clean-room host runs `mix crosswake.install` before `doctor`, exercising what an adopter actually performs
+- [x] **ROOM-01**: The clean-room host declares a real Crosswake route with capability metadata before `doctor` runs
+- [x] **ROOM-02**: The clean-room host runs `mix crosswake.install` before `doctor`, exercising what an adopter actually performs
 - [ ] **ROOM-03**: `clean-room-proof-rindle` passes against the live published `crosswake_rindle 0.1.0`
-- [ ] **ROOM-04**: The legacy positional path's logging reaches grep-able parity with the matrix path's `step=` markers
+- [x] **ROOM-04**: The legacy positional path's logging reaches grep-able parity with the matrix path's `step=` markers
 - [ ] **ROOM-05**: The threadline and sigra clean-room failures are diagnosed as separate findings with their own recorded root causes
 - [ ] **ROOM-06**: `doctor`'s `manifest_contract` check is unchanged in strength — the harness was fixed, not the contract
 
@@ -95,6 +95,7 @@ Deferred to a later milestone. Tracked, not in this roadmap.
   **Sunset step (D-08), recorded here so the later deletion is a documented step and not a cold
   judgment call):** when VACG-01 lands, lift `script/inventory_collection_assertions.exs`'s
   detection core into the new guard rather than rewriting it from scratch, then **delete**:
+
   - `script/inventory_collection_assertions.exs`
   - `script/collection_assertion_ledger.json`
   - `script/collection_assertion_remediation.json`
@@ -161,10 +162,10 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 | XPUB-05 | Phase 173 | Met — fire-drill run 35302554800 (2026-09-18): the proof job is present and concludes `failure` at `PUBLICATION_RECORD_MISSING` (exit 4), while five sibling jobs in the same run read `skipped`, so the value is not a constant. Evidence in `173-NON-VACUITY.md`. |
 | XPUB-06 | Phase 173 | Complete |
 | XPUB-07 | Phase 173 | Complete |
-| ROOM-01 | Phase 174 | Pending |
-| ROOM-02 | Phase 174 | Pending |
+| ROOM-01 | Phase 174 | Complete |
+| ROOM-02 | Phase 174 | Complete |
 | ROOM-03 | Phase 174 | Pending |
-| ROOM-04 | Phase 174 | Pending |
+| ROOM-04 | Phase 174 | Complete |
 | ROOM-05 | Phase 174 | Pending |
 | ROOM-06 | Phase 174 | Pending |
 | FID-01 | Phase 174 | Pending |

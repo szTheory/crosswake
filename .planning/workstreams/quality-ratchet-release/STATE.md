@@ -4,16 +4,16 @@ milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 174
 current_phase_name: Clean-Room Host Realism & Adopter Fidelity
-status: ready_to_execute
-stopped_at: "Phase 174 PLANNED — six plans across four waves, branch phase-174-clean-room-host-realism (planner commit 5ab04eab). Plan-checker: 0 blockers, 4 warnings; the two roster-underspecification warnings were fixed in place (174-04 selector keys on the script invocation, not the clean-room-proof-* name prefix — 7 job ids match but only 5 call the harness; 174-05 roster filter excludes rindle because TODO-011 diagnoses rindle itself). Nothing pushed. Two things will interrupt execution: 174-03 opens with a blocking checkpoint:decision on CW-REQ-A (breaking @schema_version bump vs recorded deferral), and ROOM-03 cannot close on a feature branch because GitHub will not dispatch a workflow absent from the default branch — 174-04 records the refusal and marks it pending post-merge, the Phase 173 precedent. Still open: 34 WINDOWS entries block /gsd-ship before Phase 175, and no roadmap phase owns them."
-last_updated: "2026-09-18T12:52:19.736Z"
+status: executing
+stopped_at: Completed 174-01-PLAN.md
+last_updated: "2026-09-18T13:18:20.773Z"
 last_activity: 2026-09-18
 last_activity_desc: Phase 174 planned — 6 plans, 4 waves, verified with 0 blockers; two roster-scope warnings fixed in the plans
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 27
-  completed_plans: 21
+  completed_plans: 22
   percent: 71
 state_head: ec505c087fcabc6dfb352bfceb5dc7d2e22e2c30
 ---
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 174 planned and verified (6 plans, 4 waves) on branch `phase-174-clean-room-host-realism`; nothing pushed. Next: `/gsd-execute-phase 174 --ws quality-ratchet-release` — it will pause at 174-03's blocking decision checkpoint on CW-REQ-A.
+**Current focus:** Phase 174 — Clean-Room Host Realism & Adopter Fidelity
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
 **Open release pull requests — triage as of 2026-09-15. None should be merged yet.**
@@ -45,10 +45,10 @@ Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
 
-Phase: 172 (Per-Package Proof Scope) — EXECUTING
-Plan: 3 of 3
-Status: ready_to_plan
-Last activity: 2026-09-17 — Phase 172 execution started
+Phase: 174 (Clean-Room Host Realism & Adopter Fidelity) — EXECUTING
+Plan: 2 of 6
+Status: Ready to execute
+Last activity: 2026-09-18 — Phase 174 execution started
 
 ## Performance Metrics
 
@@ -123,6 +123,7 @@ Last activity: 2026-09-17 — Phase 172 execution started
 | Phase 172 P01 | 55min | 3 tasks | 7 files |
 | Phase 172 P02 | 70min | 3 tasks | 4 files |
 | Phase 172 P03 | 50min | 3 tasks | 6 files |
+| Phase 174 P01 | 12min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -253,6 +254,9 @@ Last activity: 2026-09-17 — Phase 172 execution started
 - [Phase 172]: 172-03: proof module derives roster from Artifact.packages/0 and group-width from a named @artifact_field_count attribute, never a bare literal
 - [Phase 172]: 172-03: byte-exact regression anchor mutates one real file byte, recomputes the digest through Artifact.inspect_family!/1, and carries it into Cleanroom.evaluate_public!/1 for a verdict, pinning the proof floor below the digest-string layer
 - [Phase 172]: 172-03: 172-NON-VACUITY.md records only checks with an actually-executed mutation as full rows; every other landed check is named with a decidable reason, never silently omitted
+- [Phase ?]: 174-01: controller split into its own file — mix crosswake.install's infer_router_module!/1 requires exactly one top-level defmodule per --router file
+- [Phase ?]: 174-01: reordered the Done section's closing log lines so state=passed is genuinely the committed log's final line
+- [Phase ?]: 174-01: legacy path installer lands as new Step 6.5 (not a renumbered Step 7); Step 7's doctor invocation stays byte-unchanged
 
 ### v23.0 Roadmap Decisions
 
@@ -326,8 +330,8 @@ Last activity: 2026-09-17 — Phase 172 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-17T20:34:33.490Z
-Stopped at: Completed 172-03-PLAN.md
+Last session: 2026-09-18T13:18:20.753Z
+Stopped at: Completed 174-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
