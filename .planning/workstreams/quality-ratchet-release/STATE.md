@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 175 — Rehearsal and Publish (unplanned)
+**Current focus:** Phase 175 — Rehearsal and Publish (unplanned; plan it with a broken-windows triage wave gating the publish tasks — see Planning guidance below)
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
 **Open release pull requests — triage as of 2026-09-15. None should be merged yet.**
@@ -58,6 +58,26 @@ non-emptiness gate on both logs before any comparison and three demonstrated red
 No phase-174 findings remain open.
 
 Next: Phase 175 (Rehearsal and Publish) is unplanned.
+
+**Planning guidance for Phase 175 (recorded 2026-09-18).** Open the phase with a broken-windows
+triage wave that gates every publish task, rather than inserting a separate triage phase between
+174 and 175. Phase 175's number is load-bearing — REQUIREMENTS.md maps REL-10 through REL-16,
+DOC-04 and DOC-06 to it, and SEED-014 defers a breaking contract bump to "after Phase 175
+publishes" — so renumbering the publish phase to make room would mean rewriting the requirement
+coverage map, which is precisely the drift class this milestone exists to remove. The triage
+belongs inside 175 on its merits anyway: ROADMAP.md:107-108 already records that unaudited
+vacuous checks must be resolved before the publish phase opens, because publish is where one
+would silently pass.
+
+WINDOWS entry 35 is the concrete driver. `scripts/ci_monitor.cjs check-actions` reports
+`actions=114 mutable_refs=0` while defaulting to a hardcoded three-path list, so 31 mutable
+action refs across ten unopened workflow files are scored as absent. The publishing workflows
+themselves (`release-please.yml`, `hex-publish.yml`, `ios-mirror-backfill.yml`,
+`exact-public-proof.yml`) are fully SHA-pinned, so this does not block publishing on safety
+grounds; it blocks the claim that the pin audit means anything. Fix = discover
+`.github/workflows/*.yml` and `.github/actions/**/action.yml` by default, gate on scope
+cardinality so a truncated scope cannot read as green, then SHA-pin the 31 refs.
+
 Last activity: 2026-09-18 — Phase 174 closed; closure PR #185 merged as 6717afdc
 
 ## Performance Metrics
