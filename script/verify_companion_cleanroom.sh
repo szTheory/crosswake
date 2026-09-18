@@ -792,6 +792,20 @@ fail() {
   exit 1
 }
 
+# ROOM-04: the legacy positional path's declared step roster, at the same granularity the
+# matrix path already emits. Declared once as a single source of truth so a future step added
+# to the legacy path without a matching marker is a diff to this one line, not a silent
+# omission. test/crosswake/proof/phase174_cleanroom_host_realism_test.exs asserts against a
+# run log independently-authored roster of the same nine names — it does not read this array.
+LEGACY_STEP_MARKERS=(metadata generate deps compile router smoke register install doctor)
+
+# Emits one machine-grep-able step=<name> marker line, additive to whatever human-readable
+# `Step N:` line already exists at that point in the legacy path (ROOM-04).
+legacy_step_marker() {
+  local step_name="$1"
+  echo "[crosswake] source_mode=legacy-positional package=${PACKAGE} version=${VERSION} step=${step_name}"
+}
+
 package_config() {
   case "$PACKAGE" in
     crosswake_rulestead)
@@ -1038,6 +1052,7 @@ log "clean-room deps: crosswake ${CORE_REQUIREMENT}; ${PACKAGE} ${PACKAGE_REQUIR
 # ---------------------------------------------------------------------------
 
 ok "Step 1: package=${PACKAGE} version=${VERSION} core_floor=${CORE_REQUIREMENT} state=hex-release-authority"
+legacy_step_marker metadata
 
 # ---------------------------------------------------------------------------
 # Step 2: Create throwaway Phoenix host OUTSIDE the monorepo (D-17)
@@ -1126,6 +1141,7 @@ PYEOF
 fi
 
 echo "[crosswake] Step 2 OK: throwaway app created at ${CLEAN_ROOM_DIR}"
+legacy_step_marker generate
 
 # ---------------------------------------------------------------------------
 # Step 3: deps.get + compile --warnings-as-errors (D-17)
@@ -1134,32 +1150,67 @@ echo "[crosswake] Step 2 OK: throwaway app created at ${CLEAN_ROOM_DIR}"
 echo "[crosswake] Step 3: mix deps.get..."
 mix deps.get
 assert_lockfile_postconditions
+legacy_step_marker deps
 
 echo "[crosswake] Step 3: mix compile --warnings-as-errors..."
 mix compile --warnings-as-errors
+legacy_step_marker compile
 
 echo "[crosswake] Step 3 OK: compiled clean"
 
 # ---------------------------------------------------------------------------
-# Step 4: Write minimal Phoenix router stub (D-17, Open Question 1 default)
-# required by mix crosswake.doctor --router CleanRoomHost.Router
+# Step 4: Write a real Phoenix router (TODO-011, ROOM-01) required by
+# mix crosswake.doctor --router CleanRoomHost.Router
 # ---------------------------------------------------------------------------
+#
+# TODO-011 found the prior stub here: a routeless router compiles to a manifest with no
+# `:routes` section, which blocks doctor's manifest_contract check. That is the harness's own
+# defect, not a `crosswake_rindle` defect (`crosswake_rindle 0.1.0` resolves, compiles, and
+# passes its smoke test cleanly). ROOM-01 fixes it by declaring a real Crosswake route here,
+# carrying the same four metadata keys (`id`, `runtime`, `offline`, `security`) the matrix
+# path's `matrix_write_host` already proves out, so the legacy host exercises what an adopter
+# actually has instead of a shape doctor merely tolerates.
 
-echo "[crosswake] Step 4: writing minimal Phoenix router stub..."
+echo "[crosswake] Step 4: writing a real Phoenix router with a Crosswake route..."
 
 mkdir -p lib/clean_room_host
+
+# The controller lives in its own file — mix crosswake.install's infer_router_module!/1
+# requires the --router file to contain exactly one top-level defmodule.
+cat > lib/clean_room_host/page_controller.ex <<'CONTROLLEREOF'
+defmodule CleanRoomHost.PageController do
+  use Phoenix.Controller, formats: [:html]
+
+  def home(conn, _params) do
+    send_resp(conn, 200, "clean room")
+  end
+end
+CONTROLLEREOF
 
 cat > lib/clean_room_host/router.ex <<'ROUTEREOF'
 defmodule CleanRoomHost.Router do
   use Phoenix.Router
-  # minimal router stub — no routes required for doctor smoke (Open Question 1)
+
+  # TODO-011 / ROOM-01: a real Crosswake route, not a routeless stub — this route id is
+  # distinct from the matrix path's "clean-room-home" so a log or manifest read later cannot
+  # confuse the two hosts.
+  get "/", CleanRoomHost.PageController, :home,
+    metadata: %{
+      crosswake: [
+        id: "legacy-clean-room-home",
+        runtime: :live_view,
+        offline: :unavailable,
+        security: :standard
+      ]
+    }
 end
 ROUTEREOF
 
 # Compile setup only; the doctor command below is the router loadability proof.
 mix compile
+legacy_step_marker router
 
-echo "[crosswake] Step 4 OK: router stub compiled"
+echo "[crosswake] Step 4 OK: router with a real Crosswake route compiled"
 
 # ---------------------------------------------------------------------------
 # Step 5: Write and run inline ExUnit smoke test (D-18)
@@ -1385,6 +1436,7 @@ fi
 
 echo "[crosswake] Step 5: running smoke test..."
 mix test test/smoke_test.exs
+legacy_step_marker smoke
 
 echo "[crosswake] Step 5 OK: inline smoke test passed"
 
@@ -1434,6 +1486,35 @@ if [ "$PACKAGE" = "crosswake_threadline" ]; then
 else
   ok "Step 6: package=${PACKAGE} version=${VERSION} profile=${PROFILE} state=companion-registered"
 fi
+legacy_step_marker register
+
+# ---------------------------------------------------------------------------
+# Step 6.5: Run the adopter's installer before doctor (TODO-011, ROOM-02)
+# ---------------------------------------------------------------------------
+#
+# doctor's load_install_manifest/1 advisory (install_manifest_missing) exists precisely
+# because an adopter is expected to run `mix crosswake.install` before `mix crosswake.doctor`.
+# The legacy path never did. infer_router_path!/1 globs lib/*_web/router.ex, and this host's
+# router lives at lib/clean_room_host/router.ex (no `_web` directory), so --router is passed
+# explicitly. infer_web_module!/1 derives the web module by stripping the router module's
+# `.Router` suffix — CleanRoomHost.Router yields CleanRoomHost, which is already the module
+# name doctor's own `--router CleanRoomHost.Router` argument depends on — so --web-module and
+# --policy-module need no override.
+#
+# This host has no lib/*_web/endpoint.ex (it was `mix new --sup`, not `mix phx.new`); the
+# installer's own patch_endpoint/2 `nil` clause prints a notice rather than failing, which is
+# correct adopter-facing behavior for a host with no endpoint and is not worked around here.
+# The installer runs without any failure-swallowing construct — if it fails, this run fails.
+
+echo "[crosswake] Step 6.5: running the Crosswake installer..."
+
+mix crosswake.install --router lib/clean_room_host/router.ex
+
+# Recompile after the installer patches the router; Step 7's doctor run is the proof.
+mix compile
+legacy_step_marker install
+
+echo "[crosswake] Step 6.5 OK: installer complete"
 
 # ---------------------------------------------------------------------------
 # Step 7: Run mix crosswake.doctor --router and assert exit 0 (D-19/D-20)
@@ -1441,10 +1522,8 @@ fi
 
 echo "[crosswake] Step 7: running mix crosswake.doctor --router CleanRoomHost.Router..."
 
-# Compile setup only after runtime config changes; mix crosswake.doctor is the proof.
-mix compile
-
 mix crosswake.doctor --router CleanRoomHost.Router
+legacy_step_marker doctor
 
 ok "Step 7: package=${PACKAGE} version=${VERSION} core_floor=${CORE_REQUIREMENT} selected_core=${SELECTED_CORE_VERSION} profile=${PROFILE} state=doctor-green"
 
@@ -1452,5 +1531,7 @@ ok "Step 7: package=${PACKAGE} version=${VERSION} core_floor=${CORE_REQUIREMENT}
 # Done
 # ---------------------------------------------------------------------------
 
-ok "verify_companion_cleanroom: package=${PACKAGE} version=${VERSION} core_floor=${CORE_REQUIREMENT} selected_core=${SELECTED_CORE_VERSION} profile=${PROFILE} state=passed"
+# `state=passed` is the run's completion evidence and must be the log's final line (Task 1d) —
+# the next-command hint is printed BEFORE it, not after.
 log "Next safe command: elixir script/check_release_workflow_integrity.exs"
+ok "verify_companion_cleanroom: package=${PACKAGE} version=${VERSION} core_floor=${CORE_REQUIREMENT} selected_core=${SELECTED_CORE_VERSION} profile=${PROFILE} state=passed"
