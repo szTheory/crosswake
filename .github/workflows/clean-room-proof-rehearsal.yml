@@ -1,0 +1,85 @@
+# Clean-room proof rehearsal (Phase 174 / ROOM-03).
+#
+# This is a second, on-demand DOOR onto the same clean-room proof the release lane runs — it
+# does not gate a publish, and it does not replace `clean-room-proof-*` in
+# `.github/workflows/release-please.yml`, which keeps its `needs: publish-hex-*` ordering
+# guarantee (D-15 / PROOF-02). Deleting this workflow restores the prior state exactly; no
+# release path depends on it.
+#
+# Before this workflow existed, the clean-room proof for an already-published companion could
+# only be re-checked by waiting for the next release-please publish to create a lane run —
+# there was no way to cheaply re-run the identical proof against a package already live on Hex.
+# This workflow exists to close that gap: an operator picks a published companion package and
+# version, and this workflow runs the exact same script invocation the release lane runs.
+#
+# Requires no secrets — the clean-room proof only resolves already-published Hex packages.
+
+name: Clean-room proof rehearsal
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Published companion Hex package to rehearse the clean-room proof for.'
+        required: true
+        type: choice
+        options:
+          - crosswake_rulestead
+          - crosswake_rindle
+          - crosswake_sigra
+          - crosswake_chimeway
+          - crosswake_threadline
+      version:
+        description: 'Exact published Hex version to verify (e.g. 0.1.0).'
+        required: true
+        type: string
+      engine_package:
+        description: 'Optional engine Hex package override. Leave empty for the package profile default (rulestead/rindle are engine-present; sigra/chimeway/threadline are no-engine).'
+        required: false
+        default: ''
+        type: string
+      engine_module:
+        description: 'Engine top-level Elixir module atom; required only when overriding engine_package.'
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  clean-room-proof-rehearsal:
+    name: Clean-room proof rehearsal — ${{ inputs.package }}@${{ inputs.version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+
+      - name: Run clean-room proof (identical invocation to the release lane's clean-room-proof-* jobs)
+        env:
+          REHEARSAL_PACKAGE: ${{ inputs.package }}
+          REHEARSAL_VERSION: ${{ inputs.version }}
+          REHEARSAL_ENGINE_PACKAGE: ${{ inputs.engine_package }}
+          REHEARSAL_ENGINE_MODULE: ${{ inputs.engine_module }}
+        run: |
+          set -euo pipefail
+          # Empty engine_package means "let the script's own per-package profile apply" —
+          # the SAME two-argument form clean-room-proof-rulestead/sigra/chimeway/threadline
+          # invoke. A non-empty engine_package matches clean-room-proof-rindle's four-argument
+          # form exactly. Passing an explicit empty string as $3 would instead force NO_ENGINE
+          # mode regardless of package (see script/verify_companion_cleanroom.sh's
+          # validate_inputs), so the argument is omitted entirely rather than passed empty.
+          ARGS=("$REHEARSAL_PACKAGE" "$REHEARSAL_VERSION")
+          if [ -n "$REHEARSAL_ENGINE_PACKAGE" ]; then
+            ARGS+=("$REHEARSAL_ENGINE_PACKAGE" "$REHEARSAL_ENGINE_MODULE")
+          fi
+          bash script/verify_companion_cleanroom.sh "${ARGS[@]}"
