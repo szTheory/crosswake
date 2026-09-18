@@ -465,12 +465,26 @@ lower-blast-radius held companion first, as the fire-drill for the repaired clea
    the same change window that makes it false, and residual `splitsh-lite` references across the repo
    are replaced with `git subtree split` documentation.
 
-**Plans**: TBD
+**Plans**: 10 plans
 
-**Research**: Needs phase-level research (`/gsd-plan-phase --research-phase 175`) — confirm whether a
-scratch/throwaway Hex organization or a `mix hex.publish --dry-run`-shaped mechanism actually exists
-for full-graph rehearsal beyond `mix hex.build`; this affects how much of the graph can be exercised
-before the real one-way door.
+Plans:
+- [ ] 175-01-PLAN.md — Wave 0 triage: derive the `check-actions` scan scope from the tree and prove the scope gate fails on a narrowed scope
+- [ ] 175-02-PLAN.md — Wave 0 triage: SHA-pin the 31 mutable action refs across the ten affected workflow files
+- [ ] 175-03-PLAN.md — Wave 0 exit: the five-part exit record, the gate's vacuity row, and the blocking merge gate before Wave 1
+- [ ] 175-04-PLAN.md — REL-10 + REL-16: `docs/RELEASE-INCIDENT-RESPONSE.md` with its irreversibility summary, registry-grouped failure matrix, and recorded commit SHA
+- [ ] 175-05-PLAN.md — DOC-04 + DOC-06: delete the false runbook section, de-version its prose, document `git subtree split`, and add the version-literal CI check
+- [ ] 175-06-PLAN.md — REL-11: rehearse all three publish legs against the real `0.2.2` candidate and record the evidence (phase tracer)
+- [ ] 175-07-PLAN.md — REL-12: gate 1, publish the lower-blast-radius companion, confirm live on Hex
+- [ ] 175-08-PLAN.md — REL-13: gate 2, publish `crosswake 0.2.2` to Hex, the iOS mirror and Maven, confirm all three independently
+- [ ] 175-09-PLAN.md — REL-14: prove the post-publication proof lane executed and passed for `0.2.2`, with the rollup's six children enumerated
+- [ ] 175-10-PLAN.md — REL-15: gate 3, publish the second companion, discharge SC7 as two facts, and disposition all nine requirements
+
+**Research**: Complete — `175-RESEARCH.md` (2026-09-18). The rehearsal-ceiling question is answered by
+this repo's own code: `hex-publish.yml` and `ios-mirror-backfill.yml` each already carry a
+`candidate-rehearsal` operation, and `release-please.yml`'s `android-publish-fire-drill` performs a real
+signed Central Portal upload through `VALIDATED` then `DROP`. No scratch Hex organization is needed and
+no new rehearsal tooling is to be built; this phase dispatches the existing mechanisms and records their
+evidence.
 
 ## Progress
 
@@ -487,4 +501,4 @@ before the real one-way door.
 | 172. Per-Package Proof Scope | 3/3 | Complete | 2026-09-17 |
 | 173. Recovery-Path Proof Convergence | 4/4 | Complete | 2026-09-18 |
 | 174. Clean-Room Host Realism & Adopter Fidelity | 6/6 | Complete | 2026-09-18 |
-| 175. Rehearsal and Publish | 0/TBD | Not started | - |
+| 175. Rehearsal and Publish | 0/10 | Planned | - |
