@@ -74,9 +74,9 @@ Source: `.planning/research/v23/SUMMARY.md` (decision set, adjudicated divergenc
 
 ### Documentation Truth
 
-- [ ] **DOC-04**: `docs/COMPANION-PUBLISH-RUNBOOK.md`'s "this pipeline only publishes 0.2.1" section is deleted the moment it becomes false — not softened
+- [x] **DOC-04**: `docs/COMPANION-PUBLISH-RUNBOOK.md`'s "this pipeline only publishes 0.2.1" section is deleted the moment it becomes false — not softened
 - [x] **DOC-05**: One word is used for each domain concept across CLI, CI check names, docs, and code; the "manifest" collision is resolved
-- [ ] **DOC-06**: Residual `splitsh-lite` references are removed; `git subtree split` is documented as the durable mirror-split mechanism
+- [x] **DOC-06**: Residual `splitsh-lite` references are removed; `git subtree split` is documented as the durable mirror-split mechanism
 
 ## Future Requirements
 
@@ -180,9 +180,9 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 | REL-14 | Phase 175 | Pending |
 | REL-15 | Phase 175 | Pending |
 | REL-16 | Phase 175 | Complete |
-| DOC-04 | Phase 175 | Pending |
+| DOC-04 | Phase 175 | Complete |
 | DOC-05 | Phase 171 | Complete |
-| DOC-06 | Phase 175 | Pending |
+| DOC-06 | Phase 175 | Complete |
 
 **Coverage:**
 

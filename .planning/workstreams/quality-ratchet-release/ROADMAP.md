@@ -463,9 +463,15 @@ lower-blast-radius held companion first, as the fire-drill for the repaired clea
 
 8. `docs/COMPANION-PUBLISH-RUNBOOK.md`'s "this pipeline only publishes 0.2.1" section is deleted in
    the same change window that makes it false, and residual `splitsh-lite` references across the repo
-   are replaced with `git subtree split` documentation.
+   are replaced with `git subtree split` documentation. *(Satisfied 2026-09-18 by 175-05: the section
+   deleted at `ed0006e4` (DOC-04), `git subtree split` named in all three mirror-split locations at
+   `21b093aa` (DOC-06); the one residual `splitsh` reference — a comment in
+   `script/check_ios_mirror_parity.sh:31` — is not a live invocation and was left as-is. A new
+   merge-blocking `script/check_release_doc_version_literals.exs` check, wired into
+   `crosswake-ci.yml` at `7219968a`, now fails the build if either release document regains a bare
+   version literal outside a code fence or loses its invariant sentence.)*
 
-**Plans**: 3/10 plans executed
+**Plans**: 5/10 plans executed
 
 Plans:
 **Wave 1**
@@ -486,9 +492,9 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion — unblocked)*
 
-- [ ] 175-05-PLAN.md — DOC-04 + DOC-06: delete the false runbook section, de-version its prose, document `git subtree split`, and add the version-literal CI check
+- [x] 175-05-PLAN.md — DOC-04 + DOC-06: delete the false runbook section, de-version its prose, document `git subtree split`, and add the version-literal CI check — deletion at `ed0006e4`, subtree docs at `21b093aa`, CI check driven red-then-green and wired at `7219968a`; Wave 6 unblocked
 
-**Wave 6** *(blocked on Wave 5 completion)*
+**Wave 6** *(blocked on Wave 5 completion — unblocked)*
 
 - [ ] 175-06-PLAN.md — REL-11: rehearse all three publish legs against the real `0.2.2` candidate and record the evidence (phase tracer)
 
@@ -530,4 +536,4 @@ evidence.
 | 172. Per-Package Proof Scope | 3/3 | Complete | 2026-09-17 |
 | 173. Recovery-Path Proof Convergence | 4/4 | Complete | 2026-09-18 |
 | 174. Clean-Room Host Realism & Adopter Fidelity | 6/6 | Complete | 2026-09-18 |
-| 175. Rehearsal and Publish | 4/10 | In Progress|  |
+| 175. Rehearsal and Publish | 5/10 | In Progress|  |

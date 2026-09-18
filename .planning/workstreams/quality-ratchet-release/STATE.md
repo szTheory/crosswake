@@ -5,17 +5,17 @@ milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 175
 current_phase_name: rehearsal-and-publish
 status: executing
-stopped_at: Completed 175-04-PLAN.md
-last_updated: "2026-09-18T21:45:00.000Z"
+stopped_at: Completed 175-05-PLAN.md
+last_updated: "2026-09-18T22:30:00.000Z"
 last_activity: 2026-09-18
-last_activity_desc: "175-04 complete: docs/RELEASE-INCIDENT-RESPONSE.md committed (REL-10 + REL-16) with the irreversibility summary, 15-row registry-grouped partial-failure matrix, and retire/backfill procedures for Hex/iOS mirror/Maven; commit SHA d3401e51 recorded and confirmed an ancestor of HEAD, discharging SC1's one-way-door bar. Wave 5 (175-05) is next."
+last_activity_desc: "175-05 complete: docs/COMPANION-PUBLISH-RUNBOOK.md's stale single-version warning deleted (DOC-04), its prose de-versioned, git subtree split documented in all three mirror-split locations (DOC-06), and a new merge-blocking script/check_release_doc_version_literals.exs check landed — driven red on an injected literal and green on its removal before being wired into crosswake-ci.yml. Wave 6 (175-06) is next."
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 37
-  completed_plans: 31
-  percent: 84
-state_head: d0e831ea7e1abee0968fa6313b29b44a118fdf88
+  completed_plans: 32
+  percent: 86
+state_head: 7219968a2b20f1ef9f739d1eaf845ff37cd6c306
 ---
 
 # Project State
@@ -46,8 +46,8 @@ Revisit once the post-publication proof lane can actually run.
 ## Current Position
 
 Phase: 175 (rehearsal-and-publish) — EXECUTING
-Plan: 5 of 10
-Status: 175-04 complete (Wave 4: docs/RELEASE-INCIDENT-RESPONSE.md committed at d3401e51, one-way-door bar discharged). Wave 5 (175-05, DOC-04 + DOC-06) is next.
+Plan: 6 of 10
+Status: 175-05 complete (Wave 5: DOC-04 section deletion + de-versioning committed at ed0006e4, DOC-06 git subtree split documentation committed at 21b093aa, version-literal CI check committed at 7219968a). Wave 6 (175-06, REL-11 tracer rehearsal) is next.
 2026-09-18 by the post-merge clean-room dispatch (run 35366337182) against the live
 published `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install`
 before `step=doctor`, log captured at `evidence/174-rindle-ci-run.log`.
