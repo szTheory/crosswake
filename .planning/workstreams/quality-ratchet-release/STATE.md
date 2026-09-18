@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
-current_phase: 174
-current_phase_name: Clean-Room Host Realism & Adopter Fidelity
-status: phase_complete
-stopped_at: Phase 175 context gathered
-last_updated: "2026-09-18T18:57:02.524Z"
+current_phase: 175
+current_phase_name: rehearsal-and-publish
+status: executing
+stopped_at: Completed 175-01-PLAN.md
+last_updated: "2026-09-18T19:02:50.916Z"
 last_activity: 2026-09-18
 last_activity_desc: "Phase 174 closed at 7/7 (ROOM-03/SC#4 via post-merge dispatch run 35366337182); Finding A closed by wiring the SC#4 marker comparison into the parity test"
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 37
-  completed_plans: 27
-  percent: 73
+  completed_plans: 28
+  percent: 76
 state_head: ec505c087fcabc6dfb352bfceb5dc7d2e22e2c30
 ---
 
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 175 — Rehearsal and Publish (unplanned; plan it with a broken-windows triage wave gating the publish tasks — see Planning guidance below)
+**Current focus:** Phase 175 — rehearsal-and-publish
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
 **Open release pull requests — triage as of 2026-09-15. None should be merged yet.**
@@ -45,9 +45,9 @@ Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
 
-Phase: 174 (Clean-Room Host Realism & Adopter Fidelity) — COMPLETE (7/7 requirements)
-Plan: 6 of 6
-Status: Verified complete. `174-VERIFICATION.md` is `complete`; ROOM-03 and SC#4 closed
+Phase: 175 (rehearsal-and-publish) — EXECUTING
+Plan: 2 of 10
+Status: Ready to execute
 2026-09-18 by the post-merge clean-room dispatch (run 35366337182) against the live
 published `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install`
 before `step=doctor`, log captured at `evidence/174-rindle-ci-run.log`.
@@ -78,7 +78,7 @@ grounds; it blocks the claim that the pin audit means anything. Fix = discover
 `.github/workflows/*.yml` and `.github/actions/**/action.yml` by default, gate on scope
 cardinality so a truncated scope cannot read as green, then SHA-pin the 31 refs.
 
-Last activity: 2026-09-18 — Phase 174 closed; closure PR #185 merged as 6717afdc
+Last activity: 2026-09-18 — Phase 175 execution started
 
 ## Performance Metrics
 
@@ -159,6 +159,7 @@ Last activity: 2026-09-18 — Phase 174 closed; closure PR #185 merged as 6717af
 | Phase 174 P04 | 24min | 3 tasks | 4 files |
 | Phase 174 P05 | 30min | 3 tasks | 7 files |
 | Phase 174 P06 | 40min | 2 tasks | 2 files |
+| Phase 175 P01 | 4min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -298,6 +299,7 @@ Last activity: 2026-09-18 — Phase 174 closed; closure PR #185 merged as 6717af
 - [Phase ?]: Threadline's clean-room failure diagnosed as the same shared manifest_contract defect rindle hit, via unconditional Step 4/Step 7 code paths, confirmed fixed by plan 174-01's harness fix and a real run this phase.
 - [Phase ?]: Sigra's clean-room failure diagnosed as a package-unaware smoke-test template branch (refute instead of assert on enabled?/1's default), fixed in commit d16e475a; confirmed still fixed by a real run this phase.
 - [Phase ?]: 174-06: ROOM-05 ticked complete; ROOM-03 recorded genuinely NOT SATISFIED with the exact post-merge dispatch command that closes it
+- [Phase ?]: 175-01: check-actions default scope now derived from .github/workflows/*.yml + .github/actions/**/action.yml at run time, gated by a reusable assertFullScope guard proven red/green via test-check-actions-scope
 
 ### v23.0 Roadmap Decisions
 
@@ -371,9 +373,9 @@ Last activity: 2026-09-18 — Phase 174 closed; closure PR #185 merged as 6717af
 
 ## Session Continuity
 
-Last session: 2026-09-18T18:11:17.953Z
-Stopped at: Phase 175 context gathered
-Resume file: .planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-CONTEXT.md
+Last session: 2026-09-18T19:02:50.907Z
+Stopped at: Completed 175-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 

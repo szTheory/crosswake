@@ -465,12 +465,12 @@ lower-blast-radius held companion first, as the fire-drill for the repaired clea
    the same change window that makes it false, and residual `splitsh-lite` references across the repo
    are replaced with `git subtree split` documentation.
 
-**Plans**: 10 plans
+**Plans**: 1/10 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 175-01-PLAN.md — Wave 0 triage: derive the `check-actions` scan scope from the tree and prove the scope gate fails on a narrowed scope
+- [x] 175-01-PLAN.md — Wave 0 triage: derive the `check-actions` scan scope from the tree and prove the scope gate fails on a narrowed scope
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -530,4 +530,4 @@ evidence.
 | 172. Per-Package Proof Scope | 3/3 | Complete | 2026-09-17 |
 | 173. Recovery-Path Proof Convergence | 4/4 | Complete | 2026-09-18 |
 | 174. Clean-Room Host Realism & Adopter Fidelity | 6/6 | Complete | 2026-09-18 |
-| 175. Rehearsal and Publish | 0/10 | Planned | - |
+| 175. Rehearsal and Publish | 1/10 | In Progress|  |
