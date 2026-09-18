@@ -1,20 +1,22 @@
 # Companion Publish Runbook
 
-This is the operator contract for the Crosswake `0.2.1` release candidate. It keeps the
-three linked coordinates together, keeps all five companions independently versioned, and
-separates reversible evidence from publication. The status and candidate commands are
+This is the operator contract for the Crosswake release candidate carrying `approved-release-guard`'s
+approval. It keeps the three linked coordinates together, keeps all five companions independently
+versioned, and separates reversible evidence from publication. The status and candidate commands are
 read-only: neither command publishes, pushes a ref, merges a pull request, or changes a registry.
+
+**This document makes no version-specific claims.**
 
 ## Candidate authority
 
 The linked release unit is exactly:
 
-- Hex `crosswake 0.2.1`;
-- SwiftPM mirror tag `refs/tags/v0.2.1` for `crosswake-shell-core-ios`;
-- Maven `io.github.sztheory:crosswake-shell-core-android:0.2.1`.
+- Hex `crosswake` at the approved version;
+- SwiftPM mirror tag `refs/tags/v<approved version>` for `crosswake-shell-core-ios`;
+- Maven `io.github.sztheory:crosswake-shell-core-android` at the approved version.
 
 The five `crosswake_*` Hex packages are independent companions. Their current versions and
-`crosswake` floors are evidence, not members of the linked `0.2.1` approval. Companion pull
+`crosswake` floors are evidence, not members of the linked approval. Companion pull
 requests are excluded from this runbook.
 
 | Package | Required `crosswake` floor |
@@ -25,25 +27,6 @@ requests are excluded from this runbook.
 The exact Release Please head, tree, merge base, workflow blobs, artifact digests, run identity,
 and credential checks form the candidate identity. A branch name, a moving pull-request head,
 or a successful test count without those bindings is not candidate evidence.
-
-## Before releasing any version other than 0.2.1
-
-**STOP — this pipeline currently publishes exactly one version.**
-
-`publish-hex`, `publish-ios-core`, `publish-android-core`, and `exact-public-proof` in
-`.github/workflows/release-please.yml` are each gated on
-`needs.release-please.outputs.version == '0.2.1'`. For any other version every one of them skips,
-so the release **tags and then publishes nothing**. The linked rollup reports `PARTIAL` — correctly,
-but only because everything downstream was skipped. Do not read that `PARTIAL` as a transient
-failure to retry.
-
-Close `TODO-009` / `SEED-017` before attempting a release of `0.2.2` or later. The fix must
-generalize the version **without** generalizing the authority: the per-release exact-identity
-binding has to replace the version literal, not disappear with it.
-
-Related: a release completing through exact-ref recovery does not run `exact-public-proof` at all,
-because that job `needs:` the ordinary publish jobs. 0.2.1 shipped this way, which is why the
-post-publication proof has never executed.
 
 ## Exact seven-step operator sequence
 
@@ -104,7 +87,7 @@ Use the existing trusted iOS release workflow candidate-rehearsal operation at t
 The ordinary pull-request workflow stays credential-free. Only the trusted job may check the
 scoped deploy key, and it must record `credentials_exercised=true`,
 `authorization_result=AUTHORIZED`, and `external_state_changed=false`. The rehearsal may inspect
-the recorded `v0.2.0` baseline and dry-run the `v0.2.1` split; it must not push either ref.
+the recorded mirror baseline and dry-run the candidate split; it must not push either ref.
 
 ### 6. Review the exact receipt
 
@@ -152,8 +135,12 @@ proves payload content and host compatibility without registry or mirror write a
 public sources, repeats the five profiles, and requires live linked-coordinate truth. Cached,
 repository-local, or merely configured coordinates cannot satisfy exact-public proof.
 
-The read-only status surface shows the `v0.2.0` mirror baseline and the candidate public ref
-`v0.2.1` separately. `missing` is a definite public absence; `unavailable` is an unknown after
+A release completing through exact-ref recovery does not run `exact-public-proof` at all,
+because that job `needs:` the ordinary publish jobs. The previously approved candidate shipped
+this way, which is why the post-publication proof has never executed.
+
+The read-only status surface shows the recorded mirror baseline and the candidate public ref
+separately. `missing` is a definite public absence; `unavailable` is an unknown after
 bounded retries. Both fail closed for linked candidate truth, but the operator copy must not call
 an unavailable probe a confirmed absence.
 
@@ -222,7 +209,7 @@ contract](#mix-crosswakereleasestatus-exit-code-contract) below for the canonica
 table.
 
 **A `FAIL` is the condition that armed a duplicate release proposal against an
-already-live `0.2.1`.** It happens when a release merge is rolled back to
+already-published version.** It happens when a release merge is rolled back to
 restore an earlier version so Release Please can re-form a candidate, but
 publication then completes anyway through exact-ref recovery against the
 already-created tag, and the rollback is never undone. Release Please then
