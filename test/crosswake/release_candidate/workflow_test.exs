@@ -642,6 +642,19 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
                {@hex_workflow, "recovery-fire-drill"}
              ])
 
+    # `record_verdict: false` is the one way a caller reaches the proof body
+    # without its verdict entering the release ledger, the copy of record that
+    # outlives the proof artifact. Exactly one caller may do that: the drill,
+    # which is not a release and must not be written down as one. A REAL lane
+    # acquiring this input is a release that quietly stops being recorded --
+    # absence scored as success, invisible by construction unless pinned here.
+    opted_out =
+      for {path, job, block} <- callers,
+          block =~ ~r/^\s+record_verdict:\s+false\s*$/m,
+          do: {path, job}
+
+    assert Enum.sort(opted_out) == [{@hex_workflow, "recovery-fire-drill"}]
+
     # Character-identical `uses:` from both lanes. A near-copy is how two lanes
     # drift while each still looks correct in isolation.
     assert callers
@@ -663,29 +676,33 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
       assert block =~ "permissions:", "#{path} job #{job} declares no job-level permissions block"
       assert block =~ "actions: read", "#{path} job #{job} does not grant actions: read"
 
-      # `contents` is asserted by VALUE, not by substring, because the grant is
-      # no longer uniform: the called workflow's proof body needs read, while its
-      # record-ledger job commits and opens a pull request and needs write
-      # (XPUB-06). Both satisfy the read the artifact downloads depend on, and
-      # anything else -- absent, `none`, a typo -- still fails here. A bare
-      # `block =~ "contents: read"` would have gone red on a strictly WIDER
-      # grant, which is the wrong direction for this check to fail in.
-      contents_grant =
-        case Regex.run(~r/^\s+contents:\s+(\S+)/m, block, capture: :all_but_first) do
-          [value] -> value
-          _ -> nil
-        end
+      # Every scope the called file asks for anywhere, asserted by VALUE against
+      # what this caller grants. The requirement is DERIVED from
+      # #{@proof_workflow} rather than written down here, because the binding
+      # rule is a property of that file: GitHub validates EVERY nested job's
+      # `permissions:` request against the calling job's grant when the workflow
+      # is parsed -- before any `if:` runs, and for every job in the file no
+      # matter which operation was dispatched. So the real requirement on a
+      # caller is the scope-wise MAXIMUM over the called file's jobs, not the
+      # need of whichever job comes to mind.
+      #
+      # This check previously hard-coded `contents in ["read", "write"]` on the
+      # reasoning that the proof body only reads. That reasoning is true and
+      # irrelevant: `record-ledger` in the same file requests `contents: write`
+      # and `pull-requests: write`, so `contents: read` is never sufficient. A
+      # caller shipped under-granted on exactly that permissive branch and made
+      # the ENTIRE hex-publish.yml invalid -- every dispatch of it, candidate
+      # rehearsal and real emergency recovery alike, ended in `startup_failure`
+      # with no job at all (runs 35299245680 and 35299415965 on 91bcb093).
+      for {scope, needed} <- required_caller_grants() do
+        granted =
+          case Regex.run(~r/^\s+#{Regex.escape(scope)}:\s+(\S+)/m, block, capture: :all_but_first) do
+            [value] -> value
+            _ -> nil
+          end
 
-      assert contents_grant in ["read", "write"],
-             "#{path} job #{job} grants contents: #{inspect(contents_grant)}; the called workflow's artifact reads need at least read"
-
-      # The ONLY reason a caller of a read-only proof body grants write is the
-      # ledger's pull request. A write grant with no pull-request grant beside it
-      # is privilege the call cannot use -- and privilege nothing uses is
-      # privilege nobody notices (T-173-13).
-      if contents_grant == "write" do
-        assert block =~ ~r/^\s+pull-requests:\s+write/m,
-               "#{path} job #{job} grants contents: write without pull-requests: write; the ledger job needs both or neither"
+        assert permission_rank(granted) >= permission_rank(needed),
+               "#{path} job #{job} grants #{scope}: #{inspect(granted)}, but #{@proof_workflow} has a job requesting #{scope}: #{needed}. A called workflow can only NARROW the caller's token, so GitHub rejects the whole calling file at parse time and every dispatch of it fails to start."
       end
 
       refute block =~ "secrets: inherit"
@@ -716,6 +733,44 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     [invocation | _] = String.split(rest, "\n\n", parts: 2)
     invocation
   end
+
+  # The scope-wise maximum of every job-level `permissions:` request in the
+  # called workflow -- the grant a caller must meet or exceed for GitHub to
+  # accept the calling file at all. Read from the file so that a job added there
+  # tomorrow raises the bar here automatically instead of silently outrunning a
+  # literal written down in this test (SEED-019: a roster derived from the thing
+  # it polices is the one shape that cannot catch a new non-compliant subject).
+  defp required_caller_grants do
+    workflow = File.read!(@proof_workflow)
+
+    [_, jobs_section] = String.split(workflow, ~r/^jobs:\n/m, parts: 2)
+
+    grants =
+      ~r/(?ms)^  [A-Za-z0-9_-]+:\n(.*?)(?=^  [A-Za-z0-9_-]+:\n|\z)/
+      |> Regex.scan(jobs_section, capture: :all_but_first)
+      |> Enum.flat_map(fn [block] ->
+        Regex.scan(~r/^\s+([a-z-]+):\s+(read|write)\s*$/m, strip_full_line_comments(block),
+          capture: :all_but_first
+        )
+      end)
+      |> Enum.reduce(%{}, fn [scope, value], acc ->
+        Map.update(acc, scope, value, fn existing ->
+          if permission_rank(value) > permission_rank(existing), do: value, else: existing
+        end)
+      end)
+
+    # Absence must never score as success: an empty map would make the caller
+    # loop above iterate zero times and assert nothing at all.
+    assert grants != %{}, "#{@proof_workflow} declares no job-level permissions; the caller grant check would be vacuous"
+
+    grants
+  end
+
+  defp permission_rank(nil), do: 0
+  defp permission_rank("none"), do: 0
+  defp permission_rank("read"), do: 1
+  defp permission_rank("write"), do: 2
+  defp permission_rank(_other), do: 0
 
   defp proof_callers do
     ".github/workflows/*.yml"
