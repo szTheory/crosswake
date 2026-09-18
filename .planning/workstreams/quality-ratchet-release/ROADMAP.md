@@ -465,7 +465,7 @@ lower-blast-radius held companion first, as the fire-drill for the repaired clea
    the same change window that makes it false, and residual `splitsh-lite` references across the repo
    are replaced with `git subtree split` documentation.
 
-**Plans**: 2/10 plans executed
+**Plans**: 3/10 plans executed
 
 Plans:
 **Wave 1**
@@ -478,9 +478,9 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 175-03-PLAN.md — Wave 0 exit: the five-part exit record, the gate's vacuity row, and the blocking merge gate before Wave 1
+- [x] 175-03-PLAN.md — Wave 0 exit: the five-part exit record, the gate's vacuity row, and the blocking merge gate before Wave 1 — closed via PR #189, merged as `c0774e29`; Wave 1 released
 
-**Wave 4** *(blocked on Wave 3 completion)*
+**Wave 4** *(blocked on Wave 3 completion — unblocked)*
 
 - [ ] 175-04-PLAN.md — REL-10 + REL-16: `docs/RELEASE-INCIDENT-RESPONSE.md` with its irreversibility summary, registry-grouped failure matrix, and recorded commit SHA
 
@@ -530,4 +530,4 @@ evidence.
 | 172. Per-Package Proof Scope | 3/3 | Complete | 2026-09-17 |
 | 173. Recovery-Path Proof Convergence | 4/4 | Complete | 2026-09-18 |
 | 174. Clean-Room Host Realism & Adopter Fidelity | 6/6 | Complete | 2026-09-18 |
-| 175. Rehearsal and Publish | 2/10 | In Progress|  |
+| 175. Rehearsal and Publish | 3/10 | In Progress|  |

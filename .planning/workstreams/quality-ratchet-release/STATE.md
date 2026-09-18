@@ -5,16 +5,16 @@ milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 175
 current_phase_name: rehearsal-and-publish
 status: executing
-stopped_at: Completed 175-02-PLAN.md
-last_updated: "2026-09-18T19:10:45.253Z"
+stopped_at: Completed 175-03-PLAN.md
+last_updated: "2026-09-18T21:30:00.000Z"
 last_activity: 2026-09-18
-last_activity_desc: "Phase 174 closed at 7/7 (ROOM-03/SC#4 via post-merge dispatch run 35366337182); Finding A closed by wiring the SC#4 marker comparison into the parity test"
+last_activity_desc: "Wave 0 exit closed: PR #189 merged as c0774e29 with 48 checks passing / 1 pre-existing skip / 0 failures; post-merge check-actions re-verified files=27 actions=252 mutable_refs=0; Wave 1 (publish waves, 175-04+) released"
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 37
-  completed_plans: 29
-  percent: 78
+  completed_plans: 30
+  percent: 81
 state_head: ec505c087fcabc6dfb352bfceb5dc7d2e22e2c30
 ---
 
@@ -46,8 +46,8 @@ Revisit once the post-publication proof lane can actually run.
 ## Current Position
 
 Phase: 175 (rehearsal-and-publish) — EXECUTING
-Plan: 3 of 10
-Status: Ready to execute
+Plan: 4 of 10
+Status: Ready to execute — Wave 1 released (175-03's blocking merge checkpoint closed: PR #189 merged as c0774e29)
 2026-09-18 by the post-merge clean-room dispatch (run 35366337182) against the live
 published `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install`
 before `step=doctor`, log captured at `evidence/174-rindle-ci-run.log`.
@@ -84,7 +84,7 @@ Last activity: 2026-09-18 — Phase 175 execution started
 
 **Velocity:**
 
-- Total plans completed: 39
+- Total plans completed: 40
 - Average duration: N/A
 - Total execution time: 0 hours
 
@@ -161,6 +161,7 @@ Last activity: 2026-09-18 — Phase 175 execution started
 | Phase 174 P06 | 40min | 2 tasks | 2 files |
 | Phase 175 P01 | 4min | 2 tasks | 2 files |
 | Phase 175 P02 | 6min | 2 tasks | 11 files |
+| Phase 175 P03 | 25min | 2 tasks | 1 file |
 
 ## Accumulated Context
 
@@ -375,8 +376,8 @@ Last activity: 2026-09-18 — Phase 175 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-18T19:10:45.244Z
-Stopped at: Completed 175-02-PLAN.md
+Last session: 2026-09-18T21:30:00.000Z
+Stopped at: Completed 175-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
