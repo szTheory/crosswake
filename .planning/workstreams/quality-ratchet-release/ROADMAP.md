@@ -364,7 +364,7 @@ reproduces against a live Hex release.
 7. SEED-014's CW-REQ-A and CW-REQ-B are each either closed, with a passing check demonstrating the
    close, or carry an explicit recorded deferral reason in-repo.
 
-**Plans**: 3/6 plans executed
+**Plans**: 4/6 plans executed
 
 Plans:
 **Wave 1**
@@ -381,7 +381,7 @@ Plans:
 
 **Wave 2** *(blocked on 174-01)*
 
-- [ ] 174-04-PLAN.md — A dispatchable clean-room rehearsal lane, the real rindle CI run recorded by
+- [x] 174-04-PLAN.md — A dispatchable clean-room rehearsal lane, the real rindle CI run recorded by
       run id and job conclusion, and the measured `step=` marker parity between both paths (ROOM-03,
       ROOM-04)
 
@@ -486,5 +486,5 @@ before the real one-way door.
 | 171. Version/Authority Split | 0/TBD | Not started | - |
 | 172. Per-Package Proof Scope | 3/3 | In Progress|  |
 | 173. Recovery-Path Proof Convergence | 0/TBD | Not started | - |
-| 174. Clean-Room Host Realism & Adopter Fidelity | 3/6 | In Progress|  |
+| 174. Clean-Room Host Realism & Adopter Fidelity | 4/6 | In Progress|  |
 | 175. Rehearsal and Publish | 0/TBD | Not started | - |
