@@ -26,8 +26,9 @@ defmodule Crosswake.Proof.Phase173RecoveryProofConvergenceTest do
   @identical "release.recovery.publication_record_identical"
   @fails_closed "release.recovery.proof_record_fails_closed"
   @lane_gated "release.recovery.proof_applicability_lane_gated"
+  @fire_drill_shares_body "release.recovery.fire_drill_shares_proof_body"
 
-  @new_check_ids [@identical, @fails_closed, @lane_gated]
+  @new_check_ids [@identical, @fails_closed, @lane_gated, @fire_drill_shares_body]
 
   describe "the real tree" do
     test "emits every phase-173 check as passing" do
@@ -230,6 +231,69 @@ defmodule Crosswake.Proof.Phase173RecoveryProofConvergenceTest do
       assert moved =~ ~s(if [ "$LANE" != "ordinary" ]; then)
 
       assert_red!(@lane_gated, %{exact_public_proof_workflow: moved})
+    end
+  end
+
+  describe "the recovery fire drill cannot drift from the real recovery lane" do
+    # A fire drill that exercises a private copy of the proof logic tells you about the
+    # copy, not about the lane (T-173-17). Path equality is the whole basis on which a real
+    # run of the drill (Phase 173-04 Task 2) is allowed to stand in for an observation of
+    # the real recovery lane, so it is asserted here as a check rather than as a convention.
+    test "the drill naming a different reusable workflow turns the identity check red, while an unmutated control stays green" do
+      mutated =
+        Fixtures.replace_in_job(
+          real_recovery(),
+          "recovery-fire-drill",
+          "uses: ./.github/workflows/exact-public-proof.yml",
+          "uses: ./.github/workflows/exact-public-proof-drill.yml"
+        )
+
+      # The recovery caller's own record-writing and uses: path are untouched -- this
+      # mutation only moves the DRILL's reference, precisely the drift a check on the
+      # real lane's own shape would never catch.
+      assert mutated =~ "recovery-exact-public-proof:"
+      assert mutated =~ "uses: ./.github/workflows/exact-public-proof.yml"
+
+      {mutated_output, mutated_code} = Fixtures.run_fixture_set(%{recovery_workflow: mutated})
+
+      assert mutated_code == 1, mutated_output
+      assert mutated_output =~ "[crosswake] FAIL: #{@fire_drill_shares_body}"
+      assert mutated_output =~ "recovery-fire-drill"
+
+      {control_output, control_code} =
+        Fixtures.run_fixture_set(%{recovery_workflow: real_recovery()})
+
+      assert control_code == 0, control_output
+      assert control_output =~ "[crosswake] OK: #{@fire_drill_shares_body}"
+      refute control_output =~ "[crosswake] FAIL:"
+    end
+
+    test "the drill gaining a credentialed publish step turns the identity check red, while an unmutated control stays green" do
+      mutated =
+        Fixtures.replace_in_job(
+          real_recovery(),
+          "recovery-fire-drill",
+          "uses: ./.github/workflows/exact-public-proof.yml",
+          "uses: ./.github/workflows/exact-public-proof.yml\n    env:\n      HEX_API_KEY: ${{ secrets.HEX_API_KEY }}\n      SNEAKY: bash script/guarded_hex_publish.sh"
+        )
+
+      assert mutated =~ "HEX_API_KEY"
+      assert mutated =~ "script/guarded_hex_publish.sh"
+
+      {mutated_output, mutated_code} = Fixtures.run_fixture_set(%{recovery_workflow: mutated})
+
+      assert mutated_code == 1, mutated_output
+      assert mutated_output =~ "[crosswake] FAIL: #{@fire_drill_shares_body}"
+
+      assert mutated_output =~ "registry credential" or
+               mutated_output =~ "guarded_hex_publish.sh"
+
+      {control_output, control_code} =
+        Fixtures.run_fixture_set(%{recovery_workflow: real_recovery()})
+
+      assert control_code == 0, control_output
+      assert control_output =~ "[crosswake] OK: #{@fire_drill_shares_body}"
+      refute control_output =~ "[crosswake] FAIL:"
     end
   end
 

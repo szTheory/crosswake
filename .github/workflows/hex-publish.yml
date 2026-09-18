@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: 'Rehearse the exact candidate or recover one immutable registry coordinate.'
+        description: 'Rehearse the exact candidate, recover one immutable registry coordinate, or fire-drill the recovery proof with no record and no credential.'
         required: true
         type: choice
         default: recovery
@@ -22,6 +22,7 @@ on:
           - candidate-rehearsal
           - recovery
           - android-recovery
+          - recovery-fire-drill
       package:
         description: 'Hex package to recover.'
         required: false
@@ -356,6 +357,43 @@ jobs:
       actions: read
       contents: write
       pull-requests: write
+    uses: ./.github/workflows/exact-public-proof.yml
+    with:
+      package: ${{ inputs.package }}
+      version: ${{ inputs.release_version }}
+      approved_head: ${{ inputs.approved_head }}
+      merge_oid: ${{ inputs.merge_oid }}
+      candidate_receipt_run_id: ${{ inputs.candidate_receipt_run_id }}
+      lane: recovery
+
+  # Permanent dispatch-only fire drill: proves the recovery lane's own proof
+  # body fails closed on a missing publication record, without ever touching
+  # a registry credential or the publish job. This is the ONE observation a
+  # static fixture cannot make -- whether GitHub reports the proof job's own
+  # `conclusion` as `failure` rather than `skipped` is the platform's runtime
+  # behavior, not something `check_release_workflow_integrity.exs` can decide
+  # by reading YAML as text (Phase 173-04, XPUB-05).
+  #
+  # EXPECTED OUTCOME: FAILURE. Dispatch this with an approved_head for which
+  # no publication-record artifact exists and this job's own conclusion must
+  # read `failure`. A green run here is not a fix landing -- it means the
+  # shared proof body stopped asserting the missing record, and that is a
+  # regression to investigate, not a result to celebrate.
+  #
+  # No `needs:` on the publish job (it is never run), no secret is read
+  # anywhere in this job, and script/guarded_hex_publish.sh is never invoked
+  # -- this drill can never reach a real Hex publish (T-173-19). The
+  # `permissions:` grant below exists for the identical reason
+  # recovery-exact-public-proof's does: this workflow declares a top-level
+  # `permissions:` key listing only `contents: read`, so `actions` is `none`
+  # for any job that does not grant it, and a called workflow's own
+  # `permissions:` can only narrow the caller's token, never widen it.
+  recovery-fire-drill:
+    name: "fire drill: recovery proof fails closed on a missing record"
+    if: ${{ github.event.inputs.operation == 'recovery-fire-drill' }}
+    permissions:
+      actions: read
+      contents: read
     uses: ./.github/workflows/exact-public-proof.yml
     with:
       package: ${{ inputs.package }}

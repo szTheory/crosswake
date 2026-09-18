@@ -75,6 +75,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     recovery.hex.exact_ref_only
     recovery.hex.package_map_complete
     recovery.ios.exact_identity_gate
+    release.recovery.fire_drill_shares_proof_body
     release.recovery.proof_applicability_lane_gated
     release.recovery.proof_record_fails_closed
     release.recovery.publication_record_identical
@@ -274,6 +275,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         recovery_exact_ref_only(non_comment_recovery),
         recovery_package_map_complete(non_comment_helper, non_comment_recovery),
         recovery_already_live_success_continues(non_comment_helper),
+        fire_drill_shares_proof_body(non_comment_recovery),
         publication_record_identical(lane_workflows, exact_public_proof_workflow),
         proof_record_fails_closed(exact_public_proof_workflow),
         proof_applicability_lane_gated(exact_public_proof_workflow),
@@ -615,6 +617,43 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(helper, "emit_outputs \"already_live\"") and
         includes?(helper, "proof=continue"),
       "already-live package/version state must exit successfully with proof continuation state"
+    )
+  end
+
+  # A drill that exercises a private copy of the proof logic tells you about the copy, not
+  # about the lane. Equality of the referenced path is the whole basis on which a real run
+  # of this drill is allowed to stand in for an observation of the real recovery lane
+  # (Phase 173-04), so it is a check rather than a convention.
+  defp fire_drill_shares_proof_body(recovery_workflow) do
+    jobs = job_blocks(recovery_workflow)
+    drill = job_block(jobs, "recovery-fire-drill")
+    caller = job_block(jobs, "recovery-exact-public-proof")
+
+    drill_uses = drill |> job_key("uses") |> String.trim()
+    caller_uses = caller |> job_key("uses") |> String.trim()
+
+    problems =
+      [
+        {drill_uses != "" and drill_uses == caller_uses,
+         "job recovery-fire-drill must reach the proof through a uses: value character-identical to job recovery-exact-public-proof's, found #{inspect(drill_uses)} vs #{inspect(caller_uses)}"},
+        {not includes?(drill, "HEX_API_KEY"),
+         "job recovery-fire-drill must read no registry credential; HEX_API_KEY was found referenced in it"},
+        {not includes?(drill, "script/guarded_hex_publish.sh"),
+         "job recovery-fire-drill must never invoke script/guarded_hex_publish.sh"},
+        {not job_needs?(jobs, "recovery-fire-drill", "publish"),
+         "job recovery-fire-drill must not depend on the publish job"}
+      ]
+      |> Enum.reject(&elem(&1, 0))
+      |> Enum.map(&elem(&1, 1))
+
+    check(
+      "release.recovery.fire_drill_shares_proof_body",
+      problems == [],
+      if(problems == [],
+        do:
+          "job recovery-fire-drill reaches the proof through the same reusable workflow reference as recovery-exact-public-proof, reads no registry credential, invokes no guarded publish helper, and does not depend on the publish job",
+        else: Enum.join(problems, " | ")
+      )
     )
   end
 
