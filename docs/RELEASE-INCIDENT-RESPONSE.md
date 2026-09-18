@@ -56,3 +56,71 @@ milestone's named recurring defect (absence scored as success).
 | `deploymentState` reads `VALIDATED` and this was a rehearsal (fire-drill), not a real release publish. | Free the coordinate; a `VALIDATED` deployment has not reached the immutability boundary. | `curl -fsS -X DELETE -H "Authorization: Bearer <token>" "https://central.sonatype.com/api/v1/publisher/deployment/<deployment-id>"` — this is the `android-publish-fire-drill` job's own documented step. | **Reversible, but only in this `VALIDATED` state.** Per `release-please.yml`'s own comment on this job: "immutability is scoped to `PUBLISHED` only; `VALIDATED` deployments are safely droppable." That affordance belongs to the rehearsal path and must never be read as meaning a real publish is droppable. |
 | The coordinate is confirmed `PUBLISHED` (`curl -o /dev/null -w '%{http_code}' https://repo1.maven.org/maven2/<group>/<artifact>/<version>/` returns `200`) and is later found broken. | Do not attempt to delete, drop, or overwrite it — no such operation exists once `PUBLISHED`. Publish a new superseding version and document the defective one in the changelog. | No corrective command against the broken coordinate itself; the fix is publishing the next version through the ordinary pipeline. | **Irreversible.** The broken artifact stays at that coordinate forever; only a newer version can supersede it in practice, and it never removes the old one from the repository. |
 | An upload attempt targets a coordinate that is already `PUBLISHED` (duplicate-publish attempt, version reused). | Central rejects the upload outright; there is no overwrite path. Confirm via the `repo1.maven.org` `200`/`404` check before assuming the retry will work. | `curl -sS -o /dev/null -w '%{http_code}\n' https://repo1.maven.org/maven2/<group>/<artifact>/<version>/` — a `200` means the coordinate is already live and a new upload will fail closed; cut a new version instead. | **Irreversible.** The existing published coordinate cannot be replaced under any circumstance. |
+
+## Retire / backfill after a bad publish
+
+Three subsections, one per registry. Each opens with a copy-runnable command block; the only values
+that need editing are the package name and version, and neither appears as a bare literal outside a
+fence anywhere in this document.
+
+### Hex
+
+```bash
+mix hex.retire PACKAGE VERSION REASON --message "<human-readable explanation>"
+```
+
+- `REASON` must be exactly one of the tool's accepted values, each requiring its own `--message`:
+  `renamed`, `deprecated`, `security`, `invalid`, `other`.
+- Retirement is **advisory only**. The package and version remain resolvable and installable;
+  `mix hex.info` and the Hex registry UI display the retirement message to anyone who looks, but
+  nothing is removed and nothing stops working for consumers already pinned to that version.
+- **Retirement is not a rollback of the publish and must never be treated as one.** The only way to
+  reverse the advisory flag itself — not the publish — is:
+
+```bash
+mix hex.retire PACKAGE VERSION --unretire
+```
+
+### iOS mirror
+
+```bash
+bash script/release_candidate/ios_mirror.sh recovery \
+  --version <VERSION> \
+  --ref <RELEASE_REF> \
+  --approval-receipt <RECEIPT> \
+  --expected-old-ref <CURRENT_MIRROR_MAIN_SHA> \
+  --expected-new-ref <CORRECT_SPLIT_SHA>
+```
+
+This is `recover-ios-mirror`'s underlying operation in `ios-mirror-backfill.yml`. As noted in the
+matrix above, that job's validation step currently pins every input except `expected_old_ref` to a
+single hardcoded approved transaction — the identity landed for the release it was originally built
+for — and refuses anything else. That is a fact stated here because it changes what "just run
+recovery" means for any later release: a new release's identity must be landed in the workflow first.
+
+State plainly, because it is documented nowhere else in this repository: **re-pointing a mirror tag
+does not un-resolve consumers who already fetched the old commit.** SwiftPM's resolved-package cache
+holds the previously resolved revision on the consumer's machine. Moving the tag changes what a *new*
+`swift package resolve` gets; it does not reach anyone who has already resolved the bad commit. There
+is no remote un-resolve operation — the only mitigation is publishing the correction quickly and
+communicating it, the same as any other software supply chain.
+
+### Maven
+
+```bash
+# There is no retire or delete command for Maven Central. Recovery is always
+# forward: publish a new, superseding version through the ordinary pipeline
+# and document the defective coordinate (changelog, release notes, GitHub
+# advisory if severity warrants it).
+```
+
+A coordinate is permanent the instant Central reports it `PUBLISHED`; per `release-please.yml`'s own
+comment on the fire-drill job, "immutability is scoped to `PUBLISHED` only; `VALIDATED` deployments
+are safely droppable." That `VALIDATED`-to-`DROP` path is the *rehearsal's* affordance for freeing a
+coordinate before it ever reaches `PUBLISHED` — it does not apply to a real publish, which always
+proceeds through to `PUBLISHED` and is never dropped. Reading rehearsal droppability as meaning a
+real publish is droppable is the exact mistake this document exists to prevent.
+
+For pre-flight procedure — the seven-step operator sequence, candidate authority, and the
+five-states table for a release still in progress rather than already broken — see
+[`docs/COMPANION-PUBLISH-RUNBOOK.md`](COMPANION-PUBLISH-RUNBOOK.md).
