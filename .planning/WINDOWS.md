@@ -447,6 +447,19 @@ last_updated: 2026-09-17T21:53:26.882Z
     "recorded_at": "2026-09-17T21:53:26.882Z",
     "resolved_at": null,
     "milestone": null
+  },
+  {
+    "id": 34,
+    "kind": "deviation",
+    "phase": "173",
+    "file": ".github/workflows/exact-public-proof.yml",
+    "line": null,
+    "description": "record-ledger is gated on needs.exact-public-proof.outputs.applicable == 'true'; when the proof job fails INSIDE the applicability step (bad lane, or recovery lane with blank approved_head/merge_oid) no output is emitted, so a recovery publish that already succeeded records no ledger row for its failed verdict. Run is red, so not a false green, but the durable record XPUB-06 promises is absent for exactly the XPUB-05 failure mode.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-18T00:45:00.000Z",
+    "resolved_at": null,
+    "milestone": null
   }
 ]
 ````
