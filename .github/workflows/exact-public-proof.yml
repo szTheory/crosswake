@@ -49,6 +49,19 @@ on:
         description: 'Publication lane that reached this proof: ordinary or recovery.'
         required: true
         type: string
+      # A drill is not a release. The ledger below is the copy of record that
+      # outlives the proof artifact, so a call that exists only to watch the
+      # proof fail must not append a row to it -- that would invent a release
+      # event, the same defect the applicability gate refuses for a push that is
+      # not a linked release. Defaulting to `true` means a lane records unless it
+      # explicitly opts out, and test/crosswake/release_candidate/workflow_test.exs
+      # asserts that the fire drill is the ONLY caller that opts out, so this
+      # input can never become a quiet way for a real lane to stop recording.
+      record_verdict:
+        description: 'Whether this call should append its verdict to the release ledger. False only for the credential-free fire drill.'
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   actions: read
@@ -254,7 +267,7 @@ jobs:
     # be conditioned on the proof having succeeded. It is conditioned only on the
     # proof having applied at all — a push that is not a linked release has no
     # verdict, and writing a row for it would be inventing a release event.
-    if: ${{ always() && needs.exact-public-proof.outputs.applicable == 'true' }}
+    if: ${{ always() && needs.exact-public-proof.outputs.applicable == 'true' && inputs.record_verdict }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # The ledger writes a commit and opens a pull request, so unlike the proof body

@@ -391,9 +391,23 @@ jobs:
   recovery-fire-drill:
     name: "fire drill: recovery proof fails closed on a missing record"
     if: ${{ github.event.inputs.operation == 'recovery-fire-drill' }}
+    # The write scopes here are a CEILING, not a use. GitHub validates a called
+    # workflow's nested-job `permissions:` requests against the calling job's
+    # grant when the file is PARSED -- before any `if:` is evaluated, and for
+    # every job in the file regardless of which operation was dispatched. The
+    # shared proof body's `record-ledger` job requests `contents: write` /
+    # `pull-requests: write`, so a caller granting less makes the WHOLE
+    # workflow file invalid and every dispatch of it -- candidate rehearsal and
+    # real recovery included -- ends in `startup_failure` with no job at all.
+    # Observed live: runs 35299245680 and 35299415965 on 91bcb093.
+    #
+    # Nothing in a drill run receives these scopes. The proof body declares its
+    # own read-only `permissions:` block, and `record_verdict: false` below
+    # keeps `record-ledger` -- the only job that would use them -- from running.
     permissions:
       actions: read
-      contents: read
+      contents: write
+      pull-requests: write
     uses: ./.github/workflows/exact-public-proof.yml
     with:
       package: ${{ inputs.package }}
@@ -402,6 +416,8 @@ jobs:
       merge_oid: ${{ inputs.merge_oid }}
       candidate_receipt_run_id: ${{ inputs.candidate_receipt_run_id }}
       lane: recovery
+      # A drill is not a release: no row in the copy of record.
+      record_verdict: false
 
   recover-android-core:
     name: Recover approved Android core from exact merge
