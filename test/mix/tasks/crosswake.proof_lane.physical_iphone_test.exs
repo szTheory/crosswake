@@ -191,6 +191,77 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
              )
   end
 
+  describe "exit_status_for/1 and handle_result/1 (CW-REQ-B)" do
+    test "a validated, complete, correctly-owned, correctly-ordered report with a non-passing outcome exits 1 and classifies as refuted" do
+      parent = self()
+
+      refuted_device_report =
+        device_report() |> List.update_at(0, &Map.put(&1, :outcome, :blocked))
+
+      assert {:blocked, %{outcome: "blocked", rule_id: "PI-REPORT-OUTCOME"} = result} =
+               PhysicalIphone.run_with(
+                 ["--run", "--json"],
+                 ready_options() ++
+                   [
+                     device_report: fn _ -> refuted_device_report end,
+                     backend_report: fn _ -> backend_report() end,
+                     cleanup_run: fn ->
+                       send(parent, :cleanup_run)
+                       :ok
+                     end
+                   ]
+               )
+
+      assert PhysicalIphone.exit_status_for(result.rule_id) == 1
+
+      assert {1, json} = PhysicalIphone.handle_result({:blocked, result})
+      assert json.exit_classification == "refuted"
+      assert json.rule_id == "PI-REPORT-OUTCOME"
+    end
+
+    test "a failure where no validated report was produced exits 2 and classifies as could-not-run" do
+      assert {:blocked, %{outcome: "blocked", rule_id: "PI-REPORT-ENVELOPE"} = result} =
+               PhysicalIphone.run_with(
+                 ["--run", "--json"],
+                 ready_options() ++ [device_report: fn _ -> "not-a-report" end]
+               )
+
+      assert PhysicalIphone.exit_status_for(result.rule_id) == 2
+
+      assert {2, json} = PhysicalIphone.handle_result({:blocked, result})
+      assert json.exit_classification == "could_not_run"
+      assert json.rule_id == "PI-REPORT-ENVELOPE"
+    end
+
+    test "a blocked readiness result exits 2 and classifies as could-not-run, because readiness reports a precondition" do
+      assert {:readiness, %{outcome: "blocked"} = result} =
+               PhysicalIphone.run_with(["--readiness", "--json"], inventory: [])
+
+      assert {2, json} = PhysicalIphone.handle_result({:readiness, result})
+      assert json.exit_classification == "could_not_run"
+    end
+
+    test "a fully passing run produces no halt status" do
+      assert {:passed, candidate} =
+               PhysicalIphone.run_with(
+                 ["--run", "--json"],
+                 ready_options() ++
+                   [
+                     device_report: fn _ -> device_report() end,
+                     backend_report: fn _ -> backend_report() end,
+                     cleanup_run: fn -> :ok end
+                   ]
+               )
+
+      assert {nil, ^candidate} = PhysicalIphone.handle_result({:passed, candidate})
+      refute Map.has_key?(candidate, :exit_classification)
+    end
+
+    test "a rule id the classifier does not recognise falls through the explicit catch-all to could-not-run" do
+      assert PhysicalIphone.exit_status_for("PI-SOME-FUTURE-RULE-NOT-YET-CLASSIFIED") == 2
+    end
+  end
+
   defp device_report do
     Crosswake.ProofLane.PhysicalIphoneContract.assertions()
     |> Enum.filter(&(&1.owner == :device_local))
