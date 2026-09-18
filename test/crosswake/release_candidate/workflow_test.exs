@@ -659,7 +659,31 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
       # is why it is asserted here rather than linted.
       assert block =~ "permissions:", "#{path} job #{job} declares no job-level permissions block"
       assert block =~ "actions: read", "#{path} job #{job} does not grant actions: read"
-      assert block =~ "contents: read", "#{path} job #{job} does not grant contents: read"
+
+      # `contents` is asserted by VALUE, not by substring, because the grant is
+      # no longer uniform: the called workflow's proof body needs read, while its
+      # record-ledger job commits and opens a pull request and needs write
+      # (XPUB-06). Both satisfy the read the artifact downloads depend on, and
+      # anything else -- absent, `none`, a typo -- still fails here. A bare
+      # `block =~ "contents: read"` would have gone red on a strictly WIDER
+      # grant, which is the wrong direction for this check to fail in.
+      contents_grant =
+        case Regex.run(~r/^\s+contents:\s+(\S+)/m, block, capture: :all_but_first) do
+          [value] -> value
+          _ -> nil
+        end
+
+      assert contents_grant in ["read", "write"],
+             "#{path} job #{job} grants contents: #{inspect(contents_grant)}; the called workflow's artifact reads need at least read"
+
+      # The ONLY reason a caller of a read-only proof body grants write is the
+      # ledger's pull request. A write grant with no pull-request grant beside it
+      # is privilege the call cannot use -- and privilege nothing uses is
+      # privilege nobody notices (T-173-13).
+      if contents_grant == "write" do
+        assert block =~ ~r/^\s+pull-requests:\s+write/m,
+               "#{path} job #{job} grants contents: write without pull-requests: write; the ledger job needs both or neither"
+      end
 
       refute block =~ "secrets: inherit"
 
