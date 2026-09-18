@@ -86,8 +86,10 @@ proves the reversible payloads; it does not prove that any public registry serve
 Use the existing trusted iOS release workflow candidate-rehearsal operation at the captured SHA.
 The ordinary pull-request workflow stays credential-free. Only the trusted job may check the
 scoped deploy key, and it must record `credentials_exercised=true`,
-`authorization_result=AUTHORIZED`, and `external_state_changed=false`. The rehearsal may inspect
-the recorded mirror baseline and dry-run the candidate split; it must not push either ref.
+`authorization_result=AUTHORIZED`, and `external_state_changed=false`. The rehearsal computes the
+mirror commit with `git subtree split` over the iOS package path and validates the push with a dry
+run; it must not push either ref. The split SHA is deterministic for a given source tree, which is
+why the rehearsal's SHA and the publish's SHA are comparable.
 
 ### 6. Review the exact receipt
 
@@ -148,7 +150,9 @@ an unavailable probe a confirmed absence.
 
 Ordinary publication is the fixed postapproval Release Please graph: guarded root Hex, iOS
 mirror, and Android Maven children followed by exact-public proof and a linked rollup. It uses the
-approved merge parent and identical tree; it never selects a mutable branch name.
+approved merge parent and identical tree; it never selects a mutable branch name. The iOS mirror
+child computes the mirror commit with the same `git subtree split` invocation the rehearsal used
+at step 5, so the recovery path and the ordinary path cannot diverge in mechanism.
 
 The ordinary publication path never doubles as recovery. Recovery is reachable only after a
 `PARTIAL` receipt. It preserves coordinates already proven
@@ -183,6 +187,10 @@ decision that belongs in a reviewed change, not in dispatch inputs. The
 `recovery.ios.exact_identity_gate` check in
 `script/check_release_workflow_integrity.exs` fails closed if the gate is ever
 removed or reordered behind the checkout or the credential load.
+
+`git subtree split` is the durable mechanism for computing the mirror commit in both the
+ordinary and recovery paths; the previously used external splitter is not to be reinstalled or
+referenced going forward.
 
 ### Verifying declared version truth after a recovery
 
