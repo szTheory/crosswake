@@ -335,10 +335,51 @@ reproduces against a live Hex release.
 7. SEED-014's CW-REQ-A and CW-REQ-B are each either closed, with a passing check demonstrating the
    close, or carry an explicit recorded deferral reason in-repo.
 
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 174-01-PLAN.md — Tracer: the legacy path's host gets a real metadata-bearing route, runs
+      `mix crosswake.install`, and emits nine `step=` markers — proven by an actual run against live
+      `crosswake_rindle 0.1.0` (ROOM-01, ROOM-02, ROOM-04)
+- [ ] 174-02-PLAN.md — The `manifest_contract` byte-identity guard, pinned to pre-phase commit
+      `8bc77c35`, red on drift, on rename, on a deleted call site, and on an empty extraction (ROOM-06)
+- [ ] 174-03-PLAN.md — SEED-014's two high-severity adopter gaps: a blocking decision on CW-REQ-A's
+      breaking vocabulary bump, and CW-REQ-B's refuted-versus-could-not-run exit split (FID-01)
+
+**Wave 2** *(blocked on 174-01)*
+
+- [ ] 174-04-PLAN.md — A dispatchable clean-room rehearsal lane, the real rindle CI run recorded by
+      run id and job conclusion, and the measured `step=` marker parity between both paths (ROOM-03,
+      ROOM-04)
+
+**Wave 3** *(blocked on 174-01 and 174-04)*
+
+- [ ] 174-05-PLAN.md — Threadline and sigra diagnosed separately, one root-cause finding each, plus
+      the check that neither finding can silently go missing (ROOM-05)
+
+**Wave 4** *(blocked on 174-05)*
+
+- [ ] 174-06-PLAN.md — The phase's `vacuity_taxonomy` non-vacuity record and the seven-row
+      per-requirement disposition table (ROOM-01..ROOM-06, FID-01)
+
+**Wave structure**: Wave 1 = 174-01, 174-02 and 174-03 in parallel (disjoint file sets) · Wave 2 =
+174-04 · Wave 3 = 174-05 · Wave 4 = 174-06.
 
 **Research**: Standard pattern — pure backport of an already-working, already-tested function
 (`matrix_write_host`) into a sibling code path in the same file. Skip phase-level research.
+Skipped at phase level, as planned — there is no `174-RESEARCH.md` and therefore no
+`174-VALIDATION.md` (Nyquist Dimension 8 not applicable), recorded rather than fabricated around.
+
+**Note (surfaced during planning, 2026-09-18)**: the backport is not a literal copy.
+`matrix_write_host` operates on a `phx.new`-generated host; the legacy path generates its host with
+`mix new --sup`, so its router lives at `lib/clean_room_host/router.ex` with the module
+`CleanRoomHost.Router` and there is no endpoint file. The route-metadata block transfers, the
+surrounding mechanics do not. Also: `ROOM-02`'s wording ("the clean-room host") is broader than
+Success Criterion 2's ("the legacy path"); only the legacy path is changed, and the matrix path's
+install step is a recorded, reasoned deferral rather than an omission — the matrix path's ten profile
+runs sit on the pull-request critical path.
 
 ---
 
@@ -407,5 +448,5 @@ before the real one-way door.
 | 171. Version/Authority Split | 0/TBD | Not started | - |
 | 172. Per-Package Proof Scope | 3/3 | In Progress|  |
 | 173. Recovery-Path Proof Convergence | 0/TBD | Not started | - |
-| 174. Clean-Room Host Realism & Adopter Fidelity | 0/TBD | Not started | - |
+| 174. Clean-Room Host Realism & Adopter Fidelity | 0/6 | Planned | - |
 | 175. Rehearsal and Publish | 0/TBD | Not started | - |
