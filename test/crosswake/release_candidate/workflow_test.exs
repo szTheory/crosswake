@@ -630,13 +630,16 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     # guarding anything.
     assert callers != [], "no job anywhere calls #{@proof_uses}"
 
-    # Both lanes, by name. `callers != []` alone would still pass if the recovery
-    # lane silently stopped calling the shared proof -- which is the exact
-    # convergence this phase exists to establish.
+    # Both lanes, by name, plus the credential-free fire drill (Phase 173-04):
+    # `callers != []` alone would still pass if the recovery lane silently
+    # stopped calling the shared proof, or if the fire drill silently started
+    # calling a private copy instead -- which is the exact convergence and
+    # non-drift this phase exists to establish and hold.
     assert Enum.sort(Enum.map(callers, fn {path, job, _block} -> {path, job} end)) ==
              Enum.sort([
                {@release_workflow, "exact-public-proof"},
-               {@hex_workflow, "recovery-exact-public-proof"}
+               {@hex_workflow, "recovery-exact-public-proof"},
+               {@hex_workflow, "recovery-fire-drill"}
              ])
 
     # Character-identical `uses:` from both lanes. A near-copy is how two lanes
