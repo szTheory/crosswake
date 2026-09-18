@@ -35,9 +35,14 @@ below the table, not counted as a landed check because no assertion for it exist
 | `Crosswake.Proof.Phase174ManifestContractImmutabilityTest` (5 tests, 174-02) | matches none of A-F, because it is a byte-identity comparison against a git-history-pinned fixed baseline, not a predicate over a possibly-empty runtime collection, a `needs:`/`if:`/matrix condition, or a shell exit-code-misuse idiom itself — the risk it guards against (an extraction that returns empty and compares equal to another empty extraction) is caught by its own internal non-emptiness assertion, not by this test's shape. | 5 tests, 0 failures, each invoking the real shell script via `System.cmd/3` (no Elixir re-implementation of the extraction rule). Demonstrated red against the real repository source for all four required failure modes plus one extra (174-02-SUMMARY.md's own measured table, reproduced here): unmodified tree → exit 0, `MANIFEST_CONTRACT_UNCHANGED_VERIFIED`; one byte changed inside the function body → exit 4, `MANIFEST_CONTRACT_DEF_DRIFT`; function renamed → exit 3, `MANIFEST_CONTRACT_EXTRACTION_EMPTY`; call-site capture deleted → exit 3, `MANIFEST_CONTRACT_EXTRACTION_EMPTY`; empty source file → exit 3, `MANIFEST_CONTRACT_EXTRACTION_EMPTY`; call line reformatted with capture syntax intact → exit 5, `MANIFEST_CONTRACT_CALL_DRIFT` (this sixth mutation was run specifically to exercise the DRIFT path on its own, not merely as a mirror of the DEF-drift case). `doctor.ex` itself was never modified — every mutation ran against a `--source` override pointing at a throwaway copy. |
 | `manifest_contract.byte_identity` (`script/assert_manifest_contract_unchanged.sh`, 174-02) | A, mitigated | The guard's own `grep -Ec`/`awk` extraction of a live source file is a possibly-empty-collection risk (a renamed or deleted function could otherwise extract empty on both sides and compare equal). Mitigated by an explicit non-emptiness-and-exact-occurrence-count assertion that runs before either byte-identity comparison. Measured directly this execution session: `bash script/assert_manifest_contract_unchanged.sh` → exit `0`, `MANIFEST_CONTRACT_UNCHANGED_VERIFIED`, against the real, unmodified `lib/crosswake/doctor/doctor.ex`. |
 | `Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest` — the 5 tests added by 174-03 for `exit_status_for/1`/`handle_result/1` (`"a validated, complete, correctly-owned, correctly-ordered report with a non-passing outcome exits 1 and classifies as refuted"`, `"a failure where no validated report was produced exits 2 and classifies as could-not-run"`, `"a blocked readiness result exits 2 and classifies as could-not-run"`, `"a fully passing run produces no halt status"`, `"a rule id the classifier does not recognise falls through the explicit catch-all to could-not-run"`) | matches none of A-F, because it is an explicit `case` classifier's exhaustiveness proof over a closed rule-id vocabulary with an unconditional catch-all clause — a control-flow-completeness property, not a possibly-empty runtime collection, a `needs:`/`if:`/matrix condition, or a shell exit-code idiom. | TDD-demonstrated red-to-green, not a post-hoc mutation: the RED commit (`3de2bf47`) ran these 5 tests against `join_reports/3`'s pre-fix `Enum.map(expected, &Map.put(&1, :outcome, :passed))` completeness check and failed with `PI-REPORT-COMPLETE` where `PI-REPORT-OUTCOME` (exit 1) was expected — the classifier had nothing reachable to classify. The GREEN commit (`414ad9fd`) fixed the completeness comparison to `Map.take(&1, [:id, :owner])` and all 5 passed; a sixth, pre-existing test in `test/crosswake/proof_lane/physical_iphone_report_contract_script_test.exs` that had asserted the old buggy `PI-REPORT-COMPLETE` outcome was updated to the corrected expectation in the same commit. Full `test/mix/tasks test/crosswake/proof_lane` suite: 219 tests, 0 failures after the fix. |
-| `phase174_cleanroom_lane_parity_test.exs` — SC#4's `step=` marker-parity measurement over the captured CI logs | Finding (A): unguarded measurement, no shape assigned — recorded below the table, not as a landed check | See "Finding A" immediately below. |
+| `phase174_cleanroom_lane_parity_test.exs` — SC#4's `step=` marker-parity measurement over the captured CI logs (4 tests, added at Finding A's closure) | A, mitigated — a predicate over two possibly-empty marker sets, gated by an explicit non-emptiness assertion on both sides that runs before any comparison. | 10 tests, 0 failures on the unmutated tree. Demonstrated red by three mutations against the real evidence files: matrix log truncated → 3 failures; legacy CI log truncated → 3 failures; `step=doctor` renamed to `step=physician` → 1 failure naming both sides of the set difference. All files restored byte-identical. See "Finding A" below. |
 
-## Finding A — the parity check does not guard the evidence logs; the SC#4 measurement is unguarded
+## Finding A — CLOSED 2026-09-18: the SC#4 measurement is now guarded by a test
+
+> **The original finding is preserved verbatim below, in its original present tense, and is not
+> rewritten.** It describes the state of the tree when it was written. The closure, including the
+> mutation evidence, follows it under "Closure (2026-09-18)". Read the paragraphs immediately
+> below as a record of what was true at authoring time, not as a claim about the tree today.
 
 `test/crosswake/proof/phase174_cleanroom_lane_parity_test.exs` asserts roster parity between
 `release-please.yml`'s `clean-room-proof-*` lane and the rehearsal workflow (the row above, with a
@@ -66,6 +71,50 @@ doubling the chance of the two entries drifting apart. Writing a guard now, befo
 to compare exists, would either assert a false completeness or fabricate the missing half — the
 same class of error as faking a green result. The reason is recorded here so this gap reads as
 "pending a real dependency," not "we forgot."
+
+### Closure (2026-09-18, phase-close orchestrator)
+
+The dependency this finding was waiting on has arrived: the post-merge dispatch (run
+`35366337182`) produced `evidence/174-rindle-ci-run.log`, so the legacy CI side of the
+comparison exists and the pair SC#4 needs can be compared without fabricating either half.
+
+`test/crosswake/proof/phase174_cleanroom_lane_parity_test.exs` gained four tests (6 → 10):
+
+1. **Non-emptiness gate, before any comparison.** Both captured CI logs must yield a non-empty
+   `step=` marker set. This is the assertion whose absence *was* Finding A: with two empty sets,
+   `size(legacy) >= size(matrix)` is `0 >= 0`, which is true, so the criterion would have
+   reported parity against nothing.
+2. **The SC#4 comparison itself** — legacy distinct-marker count ≥ matrix distinct-marker count,
+   with both preconditions re-asserted locally so the test cannot pass by ordering accident.
+3. **Roster equality against an independent source** — the legacy CI log's marker set must equal
+   the `LEGACY_STEP_MARKERS=(...)` array read out of `script/verify_companion_cleanroom.sh`,
+   with a cardinality gate (9) on the declared roster first. The roster is read from the harness,
+   never from the log it polices.
+4. **A non-vacuity control (D-14)** that runs the truncation mutation in-process and shows that
+   an emptied log fails the comparison, while documenting that the bare size comparison between
+   two empty sets is satisfiable.
+
+**Measured, not assumed.** Three mutations against the real evidence files (each restored
+byte-identical afterwards; `git diff --stat` on `evidence/` empty at the end):
+
+| Mutation | Result |
+|---|---|
+| `evidence/174-matrix-ci-run.log` truncated to zero bytes | **10 tests, 3 failures** (was 6 tests, 0 failures before this change — the original Finding A observation) |
+| `evidence/174-rindle-ci-run.log` truncated to zero bytes | **10 tests, 3 failures** |
+| `step=doctor` renamed to `step=physician` in the legacy CI log | **10 tests, 1 failure**, reporting `Declared but never emitted: ["doctor"]; emitted but not declared: ["physician"]` |
+| unmutated tree | **10 tests, 0 failures** |
+
+Observed values on the real logs: legacy CI 9 distinct markers (`compile`, `deps`, `doctor`,
+`generate`, `install`, `metadata`, `register`, `router`, `smoke`) ≥ matrix CI 6 (`build`,
+`dry-run`, `generate`, `install-generator`, `normalize`, `official-unpack`).
+
+**Vacuity shape:** the landed guard is shape **A** (predicate over a possibly-empty collection),
+mitigated by the explicit non-emptiness gate that runs before the comparison — the same mitigation
+pattern the `manifest_contract.byte_identity` row above uses.
+
+**Read-path note:** the evidence paths resolve live-or-archived, so the guard survives milestone
+archival moving the phase directory.
+
 
 ## Real-run observations this phase made
 
