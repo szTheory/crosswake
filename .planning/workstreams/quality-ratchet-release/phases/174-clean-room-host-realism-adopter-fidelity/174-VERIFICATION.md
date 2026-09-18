@@ -192,3 +192,27 @@ what the phase record already, honestly, says about itself.
 
 _Verified: 2026-09-18T15:35:00Z_
 _Verifier: Claude (gsd-verifier)_
+
+## Vacuity Taxonomy
+
+Per `VERIFICATION-CONVENTIONS.md`. The full record — every check this phase landed, each with a
+measured non-vacuity fact or an explicit escape form and reason — is in the sibling document
+[`174-NON-VACUITY.md`](174-NON-VACUITY.md), which carries its own `## Vacuity Taxonomy` section
+plus Findings A, B and C. This section single-sources the verdict; that file holds the detail.
+
+Summary of the phase's non-vacuity evidence:
+
+| Check | Non-vacuity evidence | Shape |
+|---|---|---|
+| `script/assert_manifest_contract_unchanged.sh` (174-02) | Executed mutations, re-run independently by the orchestrator: byte drift → exit 4, function rename → exit 3, empty source file → exit 3, restore → exit 0. Distinct exit codes for drift vs. extraction-empty. | demonstrated |
+| `phase174_cleanroom_host_realism_test.exs` (174-01) | 9 `step=` markers asserted against a real 1042-line run log, roster declared literally in the test rather than grepped from the script under test. | demonstrated |
+| `exit_status_for/1` (174-03) | Five separately-named tests, one per outcome; un-shadowed a real bug (`PI-REPORT-OUTCOME` was unreachable dead code). Ordinal-position enforcement proved by a reversed-order test shown red under an order-insensitive mutation (WR-01, commit `e7e9b925`). | demonstrated |
+| `phase174_companion_findings_test.exs` (174-05) | Roster derived from TODO-011's failure table, not the findings directory; fixture with one finding removed goes red and names the missing companion. | demonstrated |
+| `phase174_cleanroom_lane_parity_test.exs` — roster half (174-04) | Fixture with `clean-room-proof-rindle` deleted goes red and names `crosswake_rindle`. | demonstrated |
+| `phase174_cleanroom_lane_parity_test.exs` — SC#4 marker half (174-04) | **None. Unguarded.** The test never reads either evidence log: moving `evidence/174-matrix-ci-run.log` out of the tree, and separately truncating it to zero bytes, both left the suite at 6 tests / 0 failures. The `step=` measurement was performed by hand into `174-CLEANROOM-EVIDENCE.md`. | **escape — see Finding A** |
+
+The escape is deliberate and reasoned, not an omission: the legacy-path CI log cannot be captured
+until the rehearsal workflow reaches the default branch (the same root cause as ROOM-03's
+NOT-SATISFIED verdict), so a guard added now would go red over a measurement nobody can complete.
+Faking red is the same class of error as faking green. Finding A records the gap, the mutation
+that exposed it, and the condition that closes it.
