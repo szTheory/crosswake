@@ -105,7 +105,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
   end
 
   @doc false
-  @spec exit_status_for(String.t() | :readiness_blocked) :: 1 | 2
+  @spec exit_status_for(term()) :: 1 | 2
   def exit_status_for("PI-REPORT-OUTCOME"), do: 1
   def exit_status_for(:readiness_blocked), do: 2
 
@@ -124,6 +124,12 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
       _unrecognised -> 2
     end
   end
+
+  # Universal catch-all. The binary clause above cannot match a non-binary, non-atom argument,
+  # and without this clause such a value would raise FunctionClauseError rather than degrade --
+  # a crash is not fail-closed, and the moduledoc promises fail-closed. Unreachable from any
+  # call site today; present so that a future one cannot turn "could not run" into a crash.
+  def exit_status_for(_unrecognised), do: 2
 
   defp classification_label(1), do: "refuted"
   defp classification_label(2), do: "could_not_run"

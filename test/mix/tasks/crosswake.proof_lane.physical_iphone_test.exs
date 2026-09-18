@@ -260,6 +260,39 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
     test "a rule id the classifier does not recognise falls through the explicit catch-all to could-not-run" do
       assert PhysicalIphone.exit_status_for("PI-SOME-FUTURE-RULE-NOT-YET-CLASSIFIED") == 2
     end
+
+    test "a non-binary rule id degrades to could-not-run rather than raising, per the fail-closed contract" do
+      assert PhysicalIphone.exit_status_for(:some_future_atom_rule) == 2
+      assert PhysicalIphone.exit_status_for(nil) == 2
+      assert PhysicalIphone.exit_status_for(%{unexpected: :shape}) == 2
+    end
+  end
+
+  describe "join_reports/3 still enforces ordinal position (174-REVIEW WR-01)" do
+    test "a complete, correctly-owned report whose assertions are out of contract order is rejected as incomplete" do
+      # Guards the 174-03 change that narrowed the completeness comparison from
+      # [:id, :owner, :outcome] to [:id, :owner]. That change un-shadowed the
+      # PI-REPORT-OUTCOME branch, and must NOT have cost the contract its ordinal-position
+      # requirement: PhysicalIphoneContract is a closed, ORDERED vocabulary. Reversing the
+      # device half leaves the id/owner SET identical and only the ORDER wrong, so this
+      # report passes any set-equality check and fails only a positional one.
+      reversed_device_report = Enum.reverse(device_report())
+
+      assert Enum.sort_by(reversed_device_report, & &1.id) ==
+               Enum.sort_by(device_report(), & &1.id),
+             "precondition: reversal must change only order, never the member set"
+
+      assert {:blocked, %{outcome: "blocked", rule_id: "PI-REPORT-COMPLETE"}} =
+               PhysicalIphone.run_with(
+                 ["--run", "--json"],
+                 ready_options() ++
+                   [
+                     device_report: fn _ -> reversed_device_report end,
+                     backend_report: fn _ -> backend_report() end,
+                     cleanup_run: fn -> :ok end
+                   ]
+               )
+    end
   end
 
   defp device_report do
