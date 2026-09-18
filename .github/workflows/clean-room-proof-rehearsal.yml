@@ -46,7 +46,7 @@ on:
 
 jobs:
   clean-room-proof-rehearsal:
-    name: Clean-room proof rehearsal — ${{ inputs.package }}@${{ inputs.version }}
+    name: Clean-room proof rehearsal
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
