@@ -44,16 +44,16 @@ Source: `.planning/research/v23/SUMMARY.md` (decision set, adjudicated divergenc
 
 ### Clean-Room Host Realism
 
-- [ ] **ROOM-01**: The clean-room host declares a real Crosswake route with capability metadata before `doctor` runs
-- [ ] **ROOM-02**: The clean-room host runs `mix crosswake.install` before `doctor`, exercising what an adopter actually performs
+- [x] **ROOM-01**: The clean-room host declares a real Crosswake route with capability metadata before `doctor` runs
+- [x] **ROOM-02**: The clean-room host runs `mix crosswake.install` before `doctor`, exercising what an adopter actually performs
 - [ ] **ROOM-03**: `clean-room-proof-rindle` passes against the live published `crosswake_rindle 0.1.0`
-- [ ] **ROOM-04**: The legacy positional path's logging reaches grep-able parity with the matrix path's `step=` markers
-- [ ] **ROOM-05**: The threadline and sigra clean-room failures are diagnosed as separate findings with their own recorded root causes
-- [ ] **ROOM-06**: `doctor`'s `manifest_contract` check is unchanged in strength — the harness was fixed, not the contract
+- [x] **ROOM-04**: The legacy positional path's logging reaches grep-able parity with the matrix path's `step=` markers
+- [x] **ROOM-05**: The threadline and sigra clean-room failures are diagnosed as separate findings with their own recorded root causes
+- [x] **ROOM-06**: `doctor`'s `manifest_contract` check is unchanged in strength — the harness was fixed, not the contract
 
 ### Adopter Proof Fidelity
 
-- [ ] **FID-01**: SEED-014's two high-severity adopter gaps (CW-REQ-A, CW-REQ-B) are closed or explicitly deferred with a recorded reason
+- [x] **FID-01**: SEED-014's two high-severity adopter gaps (CW-REQ-A, CW-REQ-B) are closed or explicitly deferred with a recorded reason
 - [x] **FID-02**: A verification command that ran and found a defect exits differently from one that could not run at all
 
 ### Vacuous Assertion Audit
@@ -95,6 +95,7 @@ Deferred to a later milestone. Tracked, not in this roadmap.
   **Sunset step (D-08), recorded here so the later deletion is a documented step and not a cold
   judgment call):** when VACG-01 lands, lift `script/inventory_collection_assertions.exs`'s
   detection core into the new guard rather than rewriting it from scratch, then **delete**:
+
   - `script/inventory_collection_assertions.exs`
   - `script/collection_assertion_ledger.json`
   - `script/collection_assertion_remediation.json`
@@ -161,13 +162,13 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 | XPUB-05 | Phase 173 | Met — fire-drill run 35302554800 (2026-09-18): the proof job is present and concludes `failure` at `PUBLICATION_RECORD_MISSING` (exit 4), while five sibling jobs in the same run read `skipped`, so the value is not a constant. Evidence in `173-NON-VACUITY.md`. |
 | XPUB-06 | Phase 173 | Complete |
 | XPUB-07 | Phase 173 | Complete |
-| ROOM-01 | Phase 174 | Pending |
-| ROOM-02 | Phase 174 | Pending |
-| ROOM-03 | Phase 174 | Pending |
-| ROOM-04 | Phase 174 | Pending |
-| ROOM-05 | Phase 174 | Pending |
-| ROOM-06 | Phase 174 | Pending |
-| FID-01 | Phase 174 | Pending |
+| ROOM-01 | Phase 174 | Complete |
+| ROOM-02 | Phase 174 | Complete |
+| ROOM-03 | Phase 174 | Pending — dispatch refused (`HTTP 404: workflow clean-room-proof-rehearsal.yml not found on the default branch`), no run created; post-merge command and closing criteria recorded in `174-CLEANROOM-EVIDENCE.md` / `174-NON-VACUITY.md`. |
+| ROOM-04 | Phase 174 | Complete |
+| ROOM-05 | Phase 174 | Complete — `174-FINDING-THREADLINE.md` / `174-FINDING-SIGRA.md`, `Crosswake.Proof.Phase174CompanionFindingsTest` (7 tests, 0 failures). |
+| ROOM-06 | Phase 174 | Complete |
+| FID-01 | Phase 174 | Complete |
 | FID-02 | Phase 169 | Complete |
 | VAC-01 | Phase 170 | Complete |
 | VAC-02 | Phase 170 | Complete |

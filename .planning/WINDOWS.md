@@ -1,9 +1,9 @@
 ---
 schema_version: 1
-open_count: 33
+open_count: 34
 waived_count: 0
 fixed_count: 0
-total_count: 33
+total_count: 34
 last_updated: 2026-09-17T21:53:26.882Z
 ---
 
@@ -48,6 +48,7 @@ last_updated: 2026-09-17T21:53:26.882Z
 | 31 | 168 | deviation | lib/crosswake/release_candidate/workflow.ex |  | Added executable linked-release workflow policy required for validated PARTIAL truth | open |  | 2026-09-13T05:29:51.085Z |  |
 | 32 | 168 | deviation | lib/crosswake/release_candidate/receipt.ex | 185 | Extended bounded receipt coordinates to accept the fixed Maven group/artifact identity | open |  | 2026-09-13T05:29:51.445Z |  |
 | 33 | 173 | deviation | .github/workflows/exact-public-proof.yml |  | Record-assertion step carries a step-level if: on the applicability marker; the job itself is if: always() and the marker step is unconditional | open |  | 2026-09-17T21:53:26.882Z |  |
+| 34 | 173 | deviation | .github/workflows/exact-public-proof.yml |  | record-ledger is gated on needs.exact-public-proof.outputs.applicable == 'true'; when the proof job fails INSIDE the applicability step (bad lane, or recovery lane with blank approved_head/merge_oid) no output is emitted, so a recovery publish that already succeeded records no ledger row for its failed verdict. Run is red, so not a false green, but the durable record XPUB-06 promises is absent for exactly the XPUB-05 failure mode. | open |  | 2026-09-18T00:45:00.000Z |  |
 
 ````json
 [
