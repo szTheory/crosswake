@@ -4,18 +4,18 @@ milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 173
 current_phase_name: Recovery-Path Proof Convergence
-status: ready_to_ship
-stopped_at: Phase 173 executed (4/4 plans, 819 tests 0 failures, 73/73 roster checks) on branch gsd/phase-173-recovery-path-proof-convergence; single phase PR not yet opened. SC#2 (live failed-not-skipped dispatch observation) is PENDING post-merge — XPUB-05 stays open until it is taken.
+status: phase_complete
+stopped_at: Phase 173 COMPLETE. Merged as #180; SC#2 taken 2026-09-18 by fire-drill run 35302554800 (proof job present, conclusion failure at PUBLICATION_RECORD_MISSING, publish never executed) — XPUB-05 closed. The first dispatch (35299245680) instead exposed a real defect: an under-granted caller made the whole of hex-publish.yml invalid, so every dispatch including real emergency recovery ended in startup_failure; repaired in #181. Next: Phase 174 is unplanned, and 34 open WINDOWS entries will block /gsd-ship before Phase 175.
 last_updated: "2026-09-18T01:35:00.000Z"
 last_activity: 2026-09-18
-last_activity_desc: Phase 173 plans 01-04 executed and verified; ROADMAP/REQUIREMENTS reconciled
+last_activity_desc: Phase 173 merged and closed; fire-drill observation taken, recovery-workflow startup defect found and repaired
 state_head: ec505c087fcabc6dfb352bfceb5dc7d2e22e2c30
 progress:
   total_phases: 7
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 21
   completed_plans: 21
-  percent: 57
+  percent: 71
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 173 — Recovery-Path Proof Convergence (executed; awaiting single phase PR + post-merge fire-drill observation)
+**Current focus:** Phase 173 complete (merged #180, fire-drill observation taken, follow-up repair #181). Next: plan Phase 174.
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
 **Open release pull requests — triage as of 2026-09-15. None should be merged yet.**

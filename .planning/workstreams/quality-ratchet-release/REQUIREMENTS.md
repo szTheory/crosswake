@@ -38,7 +38,7 @@ Source: `.planning/research/v23/SUMMARY.md` (decision set, adjudicated divergenc
 - [x] **XPUB-02**: Byte-exact digest equality against the published tarball is unchanged in strength for every package it can be established for
 - [x] **XPUB-03**: A package whose source has drifted since its own publish tag reports a separately-named weaker claim, never a `byte_exact` result and never silently averaged into one green check
 - [x] **XPUB-04**: `exact-public-proof` runs on a publication-record signal satisfied identically by the ordinary and the recovery publish path
-- [ ] **XPUB-05**: A missing publication record fails the proof hard; it is never expressed as a skipped job
+- [x] **XPUB-05**: A missing publication record fails the proof hard; it is never expressed as a skipped job
 - [x] **XPUB-06**: The proof result outlives its 14-day artifact retention — durably recorded in-repo or with retention raised
 - [x] **XPUB-07**: The fail-closed rollup semantics are preserved verbatim — `skipped` still counts as not-success
 
@@ -158,7 +158,7 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 | XPUB-02 | Phase 172 | Complete |
 | XPUB-03 | Phase 172 | Complete |
 | XPUB-04 | Phase 173 | Complete |
-| XPUB-05 | Phase 173 | Pending — implemented and fixture-proven; awaiting post-merge fire-drill dispatch (ROADMAP SC#2) |
+| XPUB-05 | Phase 173 | Met — fire-drill run 35302554800 (2026-09-18): the proof job is present and concludes `failure` at `PUBLICATION_RECORD_MISSING` (exit 4), while five sibling jobs in the same run read `skipped`, so the value is not a constant. Evidence in `173-NON-VACUITY.md`. |
 | XPUB-06 | Phase 173 | Complete |
 | XPUB-07 | Phase 173 | Complete |
 | ROOM-01 | Phase 174 | Pending |

@@ -8,9 +8,142 @@ non-vacuity facts for every check this phase (173-01 through 173-04) landed.
 
 ## Task 2/3 — the fire-drill runtime observation
 
-**Status: PENDING.** No `workflow_dispatch` of `recovery-fire-drill` was attempted in this
-execution session — this is Case B of Task 3's checkpoint, but for a reason distinct from the
-platform-refusal case the plan names.
+**Status: TAKEN — 2026-09-18.** The dispatch was made against `main` once the phase merged, and
+the observation the static fixtures could not make has now been made. It did not go the way the
+plan expected on the first attempt, and that is the most important thing this file records.
+
+### The observation, in the order it actually happened
+
+**First dispatch: `startup_failure`, no job at all.** Run
+[35299245680](https://github.com/szTheory/crosswake/actions/runs/35299245680), dispatched against
+`main` at `91bcb093` immediately after PR #180 merged:
+
+```
+Invalid workflow file: .github/workflows/hex-publish.yml#L391
+The workflow is not valid. .github/workflows/hex-publish.yml (Line: 391, Col: 3):
+Error calling workflow 'szTheory/crosswake/.github/workflows/exact-public-proof.yml@91bcb093'.
+The nested job 'record-ledger' is requesting 'contents: write, pull-requests: write',
+but is only allowed 'contents: read, pull-requests: none'.
+```
+
+`gh run view 35299245680 --json jobs` returned an **empty** job list. This is precisely the shape
+criterion 1 below exists to reject: a job list with no proof job in it cannot be read as "the proof
+was not skipped", because there was nothing there to skip. Had this file's criteria been written as
+"the run concluded `failure`", the run's own top-level `conclusion` of `startup_failure` would have
+been close enough to wave through — and a broken workflow would have been recorded as a successful
+drill. The per-job criterion is what stopped that.
+
+**The drill found a real defect, not a drill defect.** GitHub validates a called workflow's
+nested-job `permissions:` requests against the calling job's grant when the file is **parsed** —
+before any `if:` is evaluated, and for every job in the file regardless of which `operation` was
+dispatched. So the under-granted `recovery-fire-drill` job did not merely break itself: it
+invalidated the whole of `hex-publish.yml`. Verified rather than assumed, by dispatching an
+unrelated operation that shares nothing with the drill:
+
+| run | operation | conclusion | jobs |
+| --- | --- | --- | --- |
+| [35299245680](https://github.com/szTheory/crosswake/actions/runs/35299245680) | `recovery-fire-drill` | `startup_failure` | none |
+| [35299415965](https://github.com/szTheory/crosswake/actions/runs/35299415965) | `candidate-rehearsal` | `startup_failure` | none |
+
+**The emergency Hex recovery lane was un-dispatchable on `main` for the entire window between
+#180 merging and #181 merging.** No proof body, no rehearsal, no recovery — the whole file was
+rejected at parse time. This is the defect the fire drill exists to find, found on its first use,
+in the lane that by definition is only reached when something has already gone wrong.
+
+Repaired in PR [#181](https://github.com/szTheory/crosswake/pull/181) (`a2761a55`): the drill job
+now grants `contents: write` / `pull-requests: write` as a **ceiling** rather than a use, the shared
+proof body gained a `record_verdict` input (default `true`) so a drill appends no row to the release
+ledger, and `workflow_test.exs` now **derives** the required caller grant from
+`exact-public-proof.yml` instead of hard-coding `contents in ["read", "write"]` — the permissive
+literal that let the under-grant ship. See "What the old caller-permission check could not see"
+below.
+
+### The dispatch that satisfied the criteria
+
+Run [35302554800](https://github.com/szTheory/crosswake/actions/runs/35302554800), dispatched
+against `main` at `a2761a55`:
+
+```bash
+gh workflow run hex-publish.yml --ref main \
+  -f operation=recovery-fire-drill \
+  -f package=crosswake \
+  -f release_version=0.2.1 \
+  -f approved_head=a2761a55ca67d1ac437028d22b2f35b2529770fa \
+  -f merge_oid=a2761a55ca67d1ac437028d22b2f35b2529770fa \
+  -f candidate_receipt_run_id=0
+```
+
+`gh run view 35302554800 --json jobs --jq '.jobs[] | {name, conclusion}'`, verbatim:
+
+```json
+{"conclusion":"failure","name":"fire drill: recovery proof fails closed on a missing record / shared: exact-public artifact proof body"}
+{"conclusion":"skipped","name":"Rehearse exact six-package Hex candidate"}
+{"conclusion":"skipped","name":"recovery: exact-public artifact proof"}
+{"conclusion":"skipped","name":"Recover Hex package"}
+{"conclusion":"skipped","name":"Recover approved Android core from exact merge"}
+{"conclusion":"skipped","name":"fire drill: recovery proof fails closed on a missing record / shared: record the proof verdict in the release ledger"}
+```
+
+Against the five criteria stated further down this section:
+
+1. **Present, not absent.** The proof job appears under the caller's composite name
+   `fire drill: ... / shared: exact-public artifact proof body`, exactly the child-job shape the
+   criterion anticipated for a pure `uses:` call. Contrast the first dispatch, where the list was
+   empty — the criterion discriminated between the two.
+2. **`conclusion` reads `failure`.** ✓
+3. **`conclusion` does not read `skipped`.** ✓ — and the same job list shows five jobs that DID
+   read `skipped`, so the value is not a constant in this run.
+4. **`publish` never executed.** `Recover Hex package` is `skipped`. No `needs:` edge reaches it
+   from the drill, and its `if:` gates on `operation == 'recovery'`.
+5. **The failing step names the missing-record condition**, quoted from the run log:
+
+```
+[crosswake] no artifact named publication-record-crosswake-a2761a55ca67d1ac437028d22b2f35b2529770fa was uploaded by run 35302554800; the assertion step decides what that means.
+[crosswake] FAIL: PUBLICATION_RECORD_MISSING: no publication record at '/home/runner/work/_temp/publication-record/publication-record.json' for package 'crosswake', version '0.2.1', approved_head 'a2761a55ca67d1ac437028d22b2f35b2529770fa'.
+[crosswake] What to do next: confirm the publish job for that coordinate ran and uploaded its publication-record artifact; a publish that left no record is not provably a publish.
+##[error]Process completed with exit code 4.
+```
+
+The proof body reached its applicability decision first and answered `true` —
+`[crosswake] OK: exact-public proof applies to crosswake@0.2.1 (lane recovery, head a2761a55...)` —
+so the failure is the record assertion firing, not the lane gate refusing to start. Exit code 4 is
+`assert_publication_record.sh`'s MISSING branch, distinct from a generic non-zero exit.
+
+**Two further facts the run establishes, neither of which a static fixture could:**
+
+- **The write ceiling is a ceiling, not a use.** The proof body job's own token, as GitHub logged it
+  at job start, was `Actions: read` / `Contents: read` / `Metadata: read`. The `contents: write` the
+  caller job declares never reached the job that runs the proof.
+- **No drill row entered the release ledger.** `shared: record the proof verdict in the release
+  ledger` is `skipped`, which is the `record_verdict: false` gate working. A drill is not a release,
+  and the ledger is the copy of record.
+
+### What the old caller-permission check could not see
+
+`workflow_test.exs`'s caller check asserted `contents_grant in ["read", "write"]`, reasoning that
+the shared proof body only reads while the ledger job writes, so either value is legitimate. The
+reasoning is true and irrelevant. Because GitHub validates **every** nested job's request against
+the caller's grant at parse time, the binding requirement on a caller is the scope-wise **maximum**
+over the called file's jobs — `contents: read` is never sufficient once `record-ledger` exists in
+that file. A check that accepts a value the platform rejects is a check that reports green on a
+workflow that cannot start.
+
+This is the SEED-019 shape one level up: the requirement was written down as a literal beside the
+thing it polices, so a job added to the called file outran it silently. The check now reads
+`exact-public-proof.yml` and derives the requirement, so the next job added there raises the bar
+automatically. Mutation-verified in both directions — restoring `contents: read` on a caller fails
+with `.github/workflows/hex-publish.yml job recovery-exact-public-proof grants contents: "read", but
+.github/workflows/exact-public-proof.yml has a job requesting contents: write.`; renaming the drill's
+`record_verdict: false` fails the opt-out roster assertion; reverting each restored green.
+
+### Original Case-B reasoning, retained
+
+The reasoning below is kept as written, because it correctly predicted why no dispatch was possible
+before merge. It is history now, not status.
+
+**Status at the time of Plan 04's execution: PENDING.** No `workflow_dispatch` of
+`recovery-fire-drill` was attempted in that execution session — this was Case B of Task 3's
+checkpoint, but for a reason distinct from the platform-refusal case the plan names.
 
 ### Why this is Case B, and why the reason differs from the plan's anticipated one
 
@@ -117,12 +250,14 @@ The criterion is satisfied when:
    `script/assert_publication_record.sh`'s `MISSING` branch, e.g. `PUBLICATION_RECORD_MISSING` or
    equivalent record-not-found wording, quoted verbatim from `gh run view --log` once available.
 
-Whoever runs this must update this section — replacing "PENDING" with "TAKEN" and filling in the run
-URL, run id, the quoted per-job conclusion, the quoted record-missing message, and the confirmed
-job list — before ROADMAP Success Criterion 2 for Phase 173 is considered met. Until then, **Success
-Criterion 2 is explicitly NOT satisfied by this file** — it is pending a maintainer action named
-above, and no phase-close verifier may read this file as satisfying it on the strength of the static
-fixtures landed in Task 1 alone.
+**This instruction has been discharged.** It was carried out on 2026-09-18 across two dispatches
+(35299245680, then 35302554800 after the defect the first one exposed was repaired); the run URLs,
+run ids, quoted per-job conclusions, quoted record-missing message and confirmed job list are
+recorded in "The observation, in the order it actually happened" at the top of this section, and
+ROADMAP Success Criterion 2 for Phase 173 is satisfied by that record. The bar it set — that no
+phase-close verifier may read this file as satisfying SC2 on the strength of the static fixtures
+landed in Task 1 alone — was the right bar, and it held: the first dispatch returned an empty job
+list, which only a per-job criterion could tell apart from a passing drill.
 
 ### What Task 1's static fixtures already prove, and what they cannot
 
@@ -333,8 +468,18 @@ $ cd /tmp && git --git-dir=/Users/jon/projects/crosswake/.git \
 readable. ROADMAP Success Criterion 4 is satisfied by this pair, not by the architectural observation
 that git has no expiry.
 
-**Fire-drill observation status (from Tasks 2 and 3, this plan).** **PENDING.** No `workflow_dispatch`
-of `recovery-fire-drill` has been taken. The dispatch is structurally impossible pre-merge —
+**Fire-drill observation status (from Tasks 2 and 3, this plan).** **TAKEN — 2026-09-18**, run
+[35302554800](https://github.com/szTheory/crosswake/actions/runs/35302554800) against `main` at
+`a2761a55`. The proof body job is **present** and its `conclusion` reads **`failure`**, not
+`skipped`, failing at `PUBLICATION_RECORD_MISSING` with exit code 4; `publish` never executed. The
+first attempt (run 35299245680, at `91bcb093`) instead ended in `startup_failure` with an empty job
+list and exposed a real defect — the entire `hex-publish.yml` was invalid, making the emergency
+recovery lane un-dispatchable — repaired in PR #181. Full evidence, quoted job list and log lines are
+in "Task 2/3 — the fire-drill runtime observation" above. **ROADMAP Success Criterion 2 is now
+satisfied by this record.**
+
+The pre-merge reasoning below is retained as history. The dispatch was structurally impossible
+pre-merge —
 `operation` is a `type: choice` input validated by GitHub against the default branch's definition,
 which does not carry the `recovery-fire-drill` option (`main`'s option list is
 `candidate-rehearsal, recovery, android-recovery`; this branch's is those three plus
@@ -342,9 +487,7 @@ which does not carry the `recovery-fire-drill` option (`main`'s option list is
 against the working tree) — and, secondarily and incidentally, this session's own "do not push" policy
 meant no attempt was made regardless. See "Task 2/3 — the fire-drill runtime observation" above for
 the full reasoning, the exact post-merge command, and the named owner (Jon, maintainer of
-`szTheory/crosswake`). **ROADMAP Success Criterion 2 is NOT satisfied by this record** — it is
-satisfied only once that command is run and this section (and the Task 2/3 section above) is updated
-from PENDING to TAKEN with the quoted per-job `conclusion`.
+`szTheory/crosswake`). That command has since been run; see the TAKEN record above.
 
 ### Reconciliation
 
