@@ -31,7 +31,7 @@ unacknowledged. See `MILESTONES.md` for the recorded overrides.
 - [x] **Phase 171: Version/Authority Split** - The release graph is version-parametric while the approval identity gate stays exact; the `0.2.1` weld and its interim tripwire are both retired atomically (completed 2026-09-17)
 - [x] **Phase 172: Per-Package Proof Scope** - Byte-exact publish verification is proven against each package's own approved ref, never one shared ref for all six (completed 2026-09-17)
 - [x] **Phase 173: Recovery-Path Proof Convergence** - `exact-public-proof` runs and must pass identically whether a publish happened via the ordinary or the recovery path *(all 4 plans executed and merged (#180); SC#2 satisfied 2026-09-18 by the post-merge fire-drill dispatch, run 35302554800 — the proof job is present and concludes `failure` at `PUBLICATION_RECORD_MISSING`. The first dispatch instead exposed a real defect that made the whole recovery workflow un-dispatchable; repaired in #181. Evidence in `173-NON-VACUITY.md`.)*
-- [ ] **Phase 174: Clean-Room Host Realism & Adopter Fidelity** - The clean-room lane exercises install, not just compile, on both code paths, and the two named adopter gaps are closed or deferred with a reason
+- [x] **Phase 174: Clean-Room Host Realism & Adopter Fidelity** - The clean-room lane exercises install, not just compile, on both code paths, and the two named adopter gaps are closed or deferred with a reason *(7/7 requirements; ROOM-03 and SC#4 closed 2026-09-18 by the post-merge dispatch run 35366337182 against live `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install` before `step=doctor`. Evidence in `174-CLEANROOM-EVIDENCE.md`. Finding A remains OPEN in `deferred-items.md`.)*
 - [ ] **Phase 175: Rehearsal and Publish** - `crosswake 0.2.2` and the two held companion PRs are live through the repaired graph, and `exact-public-proof` has actually executed and passed for 0.2.2
 
 ## Milestone Conventions
@@ -483,8 +483,8 @@ before the real one-way door.
 | 168. 0.2.1 Release Candidate Readiness | 13/13 | Shipped | 2026-09-16 |
 | 169. Diagnostic Legibility | 4/4 | Complete    | 2026-09-16 |
 | 170. Vacuous Assertion Remediation | 5/5 | Complete   | 2026-09-16 |
-| 171. Version/Authority Split | 0/TBD | Not started | - |
-| 172. Per-Package Proof Scope | 3/3 | In Progress|  |
-| 173. Recovery-Path Proof Convergence | 0/TBD | Not started | - |
-| 174. Clean-Room Host Realism & Adopter Fidelity | 6/6 | In Progress|  |
+| 171. Version/Authority Split | 5/5 | Complete | 2026-09-17 |
+| 172. Per-Package Proof Scope | 3/3 | Complete | 2026-09-17 |
+| 173. Recovery-Path Proof Convergence | 4/4 | Complete | 2026-09-18 |
+| 174. Clean-Room Host Realism & Adopter Fidelity | 6/6 | Complete | 2026-09-18 |
 | 175. Rehearsal and Publish | 0/TBD | Not started | - |
