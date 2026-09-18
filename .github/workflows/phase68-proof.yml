@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       # android-emulator-runner needs /dev/kvm readable by the runner user.
       - name: Enable KVM
@@ -30,7 +30,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Setup BEAM
-        uses: erlef/setup-beam@v1
+        uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1
         with:
           elixir-version: "1.19.5"
           otp-version: "27.3"
@@ -49,7 +49,7 @@ jobs:
       - name: Run Emulator Advisory Proof
         # MUST be continue-on-error per AVER-03
         continue-on-error: true
-        uses: ReactiveCircus/android-emulator-runner@v2
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
         with:
           api-level: 35
           arch: x86_64
