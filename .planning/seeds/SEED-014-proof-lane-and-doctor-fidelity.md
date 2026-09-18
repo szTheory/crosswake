@@ -72,6 +72,20 @@ vocabulary while the offline/persistence criteria the vocabulary *does* cover st
 `mix crosswake.proof_lane.physical_iphone` in the same tethered session — two gates, two records,
 for one device session.
 
+> **Disposition — 2026-09-18, quality-ratchet-release Phase 174 (174-03), `defer-with-reason`.**
+> `PhysicalIphoneContract` is a closed, ordered, versioned vocabulary: `validate_report/1` rejects
+> ids outside it and `join_reports/3` requires exact set equality including ordinal position.
+> Adding a CW-REQ-A assertion to the contract therefore hard-rejects any out-of-tree producer
+> still emitting the previous id set, and that break would land at publish — which is exactly what
+> Phase 175 is. Shipping a breaking contract change inside the milestone whose exit criterion is
+> proving the release pipeline would mean the release being proved is also the release that breaks
+> the adopter's producer. The adopter is not blocked today: they already run a host-owned
+> three-layer haptics gate, so the cost of deferring is a dual gate, not a missing capability.
+> **Reopen trigger:** revisit CW-REQ-A once the v23.0 release pipeline has been proven end-to-end
+> (i.e. after Phase 175 publishes), so the contract-vocabulary change can ship in a release whose
+> pipeline is already known-good rather than in the one being proved. See
+> `174-FID-01-DISPOSITION.md` for the full record.
+
 ## CW-REQ-B — the runner cannot say "ran, and found a real defect" (high)
 
 `lib/mix/tasks/crosswake.proof_lane.physical_iphone.ex` calls `System.halt(2)` on every failure path,
