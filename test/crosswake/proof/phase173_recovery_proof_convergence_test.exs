@@ -90,8 +90,8 @@ defmodule Crosswake.Proof.Phase173RecoveryProofConvergenceTest do
         Fixtures.replace_in_job(
           real_recovery(),
           "recovery-exact-public-proof",
-          "    permissions:\n      actions: read\n      contents: read\n",
-          "    permissions:\n      contents: read\n"
+          "    permissions:\n      actions: read\n      contents: write\n      pull-requests: write\n",
+          "    permissions:\n      contents: write\n      pull-requests: write\n"
         )
 
       {output, exit_code} = Fixtures.run_fixture_set(%{recovery_workflow: mutated})
