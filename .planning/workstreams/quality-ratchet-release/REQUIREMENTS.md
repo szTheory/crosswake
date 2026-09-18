@@ -64,13 +64,13 @@ Source: `.planning/research/v23/SUMMARY.md` (decision set, adjudicated divergenc
 
 ### Release Execution
 
-- [ ] **REL-10**: A retire/backfill runbook covering Hex, the iOS mirror, and Maven is committed before the first publish of this milestone
+- [x] **REL-10**: A retire/backfill runbook covering Hex, the iOS mirror, and Maven is committed before the first publish of this milestone
 - [ ] **REL-11**: All three publish legs are rehearsed to the last safe step — through `mix hex.build` not `hex.publish`, through subtree extraction not tag push
 - [ ] **REL-12**: The lower-blast-radius held companion PR publishes live as the fire-drill for the repaired clean-room lane
 - [ ] **REL-13**: `crosswake 0.2.2` publishes through the version-generalized graph to Hex, the iOS mirror, and Maven
 - [ ] **REL-14**: `exact-public-proof` executed and passed for `0.2.2` — confirmed by run evidence, not by inspection of the workflow
 - [ ] **REL-15**: The second held companion PR publishes, and the linked release rollup reports `COMPLETE`
-- [ ] **REL-16**: A multi-registry partial-failure response table exists before the first publish, not derived during an incident
+- [x] **REL-16**: A multi-registry partial-failure response table exists before the first publish, not derived during an incident
 
 ### Documentation Truth
 
@@ -173,13 +173,13 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 | VAC-01 | Phase 170 | Complete |
 | VAC-02 | Phase 170 | Complete |
 | VAC-03 | Phase 170 | Complete |
-| REL-10 | Phase 175 | Pending |
+| REL-10 | Phase 175 | Complete |
 | REL-11 | Phase 175 | Pending |
 | REL-12 | Phase 175 | Pending |
 | REL-13 | Phase 175 | Pending |
 | REL-14 | Phase 175 | Pending |
 | REL-15 | Phase 175 | Pending |
-| REL-16 | Phase 175 | Pending |
+| REL-16 | Phase 175 | Complete |
 | DOC-04 | Phase 175 | Pending |
 | DOC-05 | Phase 171 | Complete |
 | DOC-06 | Phase 175 | Pending |

@@ -5,17 +5,17 @@ milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 175
 current_phase_name: rehearsal-and-publish
 status: executing
-stopped_at: Completed 175-03-PLAN.md
-last_updated: "2026-09-18T21:30:00.000Z"
+stopped_at: Completed 175-04-PLAN.md
+last_updated: "2026-09-18T21:45:00.000Z"
 last_activity: 2026-09-18
-last_activity_desc: "Wave 0 exit closed: PR #189 merged as c0774e29 with 48 checks passing / 1 pre-existing skip / 0 failures; post-merge check-actions re-verified files=27 actions=252 mutable_refs=0; Wave 1 (publish waves, 175-04+) released"
+last_activity_desc: "175-04 complete: docs/RELEASE-INCIDENT-RESPONSE.md committed (REL-10 + REL-16) with the irreversibility summary, 15-row registry-grouped partial-failure matrix, and retire/backfill procedures for Hex/iOS mirror/Maven; commit SHA d3401e51 recorded and confirmed an ancestor of HEAD, discharging SC1's one-way-door bar. Wave 5 (175-05) is next."
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 37
-  completed_plans: 30
-  percent: 81
-state_head: ec505c087fcabc6dfb352bfceb5dc7d2e22e2c30
+  completed_plans: 31
+  percent: 84
+state_head: d0e831ea7e1abee0968fa6313b29b44a118fdf88
 ---
 
 # Project State
@@ -46,8 +46,8 @@ Revisit once the post-publication proof lane can actually run.
 ## Current Position
 
 Phase: 175 (rehearsal-and-publish) — EXECUTING
-Plan: 4 of 10
-Status: Ready to execute — Wave 1 released (175-03's blocking merge checkpoint closed: PR #189 merged as c0774e29)
+Plan: 5 of 10
+Status: 175-04 complete (Wave 4: docs/RELEASE-INCIDENT-RESPONSE.md committed at d3401e51, one-way-door bar discharged). Wave 5 (175-05, DOC-04 + DOC-06) is next.
 2026-09-18 by the post-merge clean-room dispatch (run 35366337182) against the live
 published `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install`
 before `step=doctor`, log captured at `evidence/174-rindle-ci-run.log`.
