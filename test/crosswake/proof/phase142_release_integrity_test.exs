@@ -10,6 +10,8 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
 
   use ExUnit.Case, async: true
 
+  alias Crosswake.ReleaseWorkflowFixtures
+
   @workflow ".github/workflows/release-please.yml"
   @recovery_workflow ".github/workflows/hex-publish.yml"
   @scanner "script/check_release_workflow_integrity.exs"
@@ -999,69 +1001,12 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     run_scanner(path)
   end
 
-  defp run_fixture_set(fixtures) do
-    env =
-      fixtures
-      |> Enum.map(fn {name, contents} ->
-        path =
-          Path.join(
-            System.tmp_dir!(),
-            "crosswake-phase143-#{name}-#{System.unique_integer([:positive])}"
-          )
+  defp run_fixture_set(fixtures), do: ReleaseWorkflowFixtures.run_fixture_set(fixtures)
 
-        File.write!(path, contents)
-        on_exit(fn -> File.rm(path) end)
+  defp run_scanner(path, env \\ []), do: ReleaseWorkflowFixtures.run_scanner(path, env)
 
-        {fixture_env_name(name), path}
-      end)
-
-    run_scanner(@workflow, env)
-  end
-
-  defp fixture_env_name(:recovery_workflow), do: "HEX_PUBLISH_WORKFLOW_PATH"
-  defp fixture_env_name(:helper), do: "GUARDED_HEX_PUBLISH_PATH"
-  defp fixture_env_name(:release_config), do: "RELEASE_PLEASE_CONFIG_PATH"
-  defp fixture_env_name(:cleanroom_script), do: "CLEANROOM_SCRIPT_PATH"
-  defp fixture_env_name(:doctor_task), do: "DOCTOR_TASK_PATH"
-  defp fixture_env_name(:ios_backfill_script), do: "IOS_BACKFILL_SCRIPT_PATH"
-  defp fixture_env_name(:ios_backfill_workflow), do: "IOS_BACKFILL_WORKFLOW_PATH"
-
-  defp run_scanner(path, env \\ []) do
-    System.cmd("elixir", [@scanner, path], stderr_to_stdout: true, env: env)
-  end
-
-  # Fails loudly when `pattern` is absent from the job block. Without this a mutation
-  # test silently degrades: `String.replace/4` returns the block untouched, the scanner
-  # then passes on an UNMUTATED workflow, and the negative control stops proving
-  # anything about the check it names. Drift in the workflow must break the mutation
-  # test at the mutation site, not somewhere downstream.
-  defp replace_in_job(workflow, job, pattern, replacement) do
-    mutated =
-      Regex.replace(
-        ~r/(?ms)^  #{Regex.escape(job)}:\n.*?(?=^  [A-Za-z0-9_-]+:\n|\z)/,
-        workflow,
-        fn block ->
-          unless String.contains?(block, pattern) do
-            raise """
-            replace_in_job/4 found no #{inspect(pattern)} in job #{inspect(job)}.
-
-            The mutation would be a no-op, so the negative control would assert nothing.
-            The workflow drifted away from the pattern — update the test to the current
-            shape, do not delete the control.
-            """
-          end
-
-          String.replace(block, pattern, replacement, global: false)
-        end,
-        global: false
-      )
-
-    if mutated == workflow do
-      raise "replace_in_job/4 did not locate job #{inspect(job)} — the job was renamed or removed"
-    end
-
-    mutated
-  end
+  defp replace_in_job(workflow, job, pattern, replacement),
+    do: ReleaseWorkflowFixtures.replace_in_job(workflow, job, pattern, replacement)
 
   defp real_workflow, do: File.read!(@workflow)
   defp recovery_workflow, do: File.read!(@recovery_workflow)

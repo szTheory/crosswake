@@ -252,6 +252,30 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     end)
   end
 
+  test "the release ledger is scanned by the privacy gate, not exempted from it" do
+    # Phase 173 committed docs/release-ledger/RELEASE-LEDGER.jsonl as the durable
+    # record of each release's exact-public proof verdict. `.json` was already
+    # scannable but `.jsonl` was not, so the ledger fell through to the
+    # fail-closed `:unclassified` default and turned documentation-contracts and
+    # hex-page-proof red.
+    #
+    # The fix declares .jsonl SCANNABLE rather than excluded on purpose. This is a
+    # public repository and the ledger grows a line per release; routing it around
+    # the adopter-privacy gate would create a blind spot that widens over time.
+    # This test pins the direction, so a later "just exclude it" cannot pass.
+    private_term = Enum.join(["ledger", "jsonl", "canary"], "-")
+    path = "docs/release-ledger/RELEASE-LEDGER.jsonl"
+
+    with_temporary_repository([path], ~s({"note":"#{private_term}"}), fn root ->
+      assert path in FirstAdopterContext.discover_paths(root)
+
+      assert [%{rule_id: "privacy.private_term", path: ^path}] =
+               FirstAdopterContext.scan_filesystem(root, [private_term])
+
+      refute inspect(FirstAdopterContext.scan_filesystem(root, [private_term])) =~ private_term
+    end)
+  end
+
   test "filesystem scanning classifies nested gitignore policy files as durable text" do
     private_term = Enum.join(["nested", "gitignore", "canary"], "-")
     path = ".planning/ui-reviews/.gitignore"

@@ -269,6 +269,35 @@ jobs:
           --candidate-receipt "${{ needs.approved-release-guard.outputs.candidate_receipt }}"
           --expected-version "${{ needs.approved-release-guard.outputs.approved_version }}"
 
+      # The post-publish record is a WORKFLOW STEP, never a write inside
+      # guarded_hex_publish.sh: that helper treats an already-live release as
+      # success and returns through more than one path, so a write placed inside
+      # it would be reached inconsistently. Here it runs exactly when the publish
+      # step returned success.
+      #
+      # Identical invocation to the recovery lane in hex-publish.yml -- same
+      # script, same flags, same order -- differing only in the lane name and in
+      # where the values come from. One emitter is what makes "both lanes are
+      # satisfied identically" a checkable claim rather than a resemblance.
+      - name: Write the publication record
+        run: >
+          bash script/write_publication_record.sh
+          --package "crosswake"
+          --version "${{ needs.release-please.outputs.version }}"
+          --approved-head "${{ needs.approved-release-guard.outputs.approved_head }}"
+          --ref "${{ needs.release-please.outputs.tag_name }}"
+          --lane "ordinary"
+          --run-id "${{ github.run_id }}"
+          --output "${{ runner.temp }}/publication-record.json"
+
+      - name: Upload the publication record
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: publication-record-crosswake-${{ needs.approved-release-guard.outputs.approved_head }}
+          path: ${{ runner.temp }}/publication-record.json
+          if-no-files-found: error
+          retention-days: 14
+
   publish-hex-rulestead:
     name: Publish crosswake_rulestead to Hex.pm
     needs: release-please
@@ -732,42 +761,36 @@ jobs:
       - clean-room-proof-ios
       - clean-room-proof-android
     if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # LOAD-BEARING, NOT COSMETIC. This workflow declares a top-level
+    # `permissions:` key, so every scope it does not list -- `actions` among them
+    # -- is `none` at workflow level; `actions: read` exists only as a job-level
+    # grant here and on approved-release-guard. A called workflow's own
+    # `permissions:` can only NARROW the token this job hands it, never widen it,
+    # so declaring `actions: read` inside exact-public-proof.yml does not grant
+    # it. Drop this block and both the candidate-receipt download and the
+    # publication-record download fail with a forbidden response -- at release
+    # time, on a real release. actionlint cannot catch that (T-173-15).
+    #
+    # `contents: write` / `pull-requests: write` are here for the called
+    # workflow's `record-ledger` job ONLY (XPUB-06): it commits the proof verdict
+    # to docs/release-ledger/RELEASE-LEDGER.jsonl on a run-scoped branch and opens
+    # a pull request, because main is protected. The grant cannot reach the proof
+    # body: that job declares its own `actions: read` / `contents: read` block,
+    # which narrows this token back down. Drop these two scopes and the ledger job
+    # fails its push at release time -- visibly, in the job summary, but the verdict
+    # never lands in git.
     permissions:
       actions: read
-      contents: read
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          ref: ${{ needs.approved-release-guard.outputs.merge_oid }}
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
-        with:
-          version-file: .tool-versions
-          version-type: strict
-      - name: Download approved candidate payload manifest
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ needs.approved-release-guard.outputs.candidate_receipt_run_id }}
-        run: |
-          set -euo pipefail
-          gh run download "$RUN_ID" --name "phase168-candidate-receipt-${{ needs.approved-release-guard.outputs.approved_head }}" --dir "$RUNNER_TEMP/approved-candidate"
-          test -f "$RUNNER_TEMP/approved-candidate/artifacts.json"
-      - name: Re-fetch and prove exact public package family
-        run: >
-          bash script/verify_companion_cleanroom.sh
-          --source-mode exact-public
-          --approved-manifest "$RUNNER_TEMP/approved-candidate/artifacts.json"
-          --result "$RUNNER_TEMP/exact-public-result.json"
-      - name: Upload exact-public proof
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
-        with:
-          name: exact-public-proof
-          path: ${{ runner.temp }}/exact-public-result.json
-          if-no-files-found: error
-          retention-days: 14
+      contents: write
+      pull-requests: write
+    uses: ./.github/workflows/exact-public-proof.yml
+    with:
+      package: crosswake
+      version: ${{ needs.release-please.outputs.version }}
+      approved_head: ${{ needs.approved-release-guard.outputs.approved_head }}
+      merge_oid: ${{ needs.approved-release-guard.outputs.merge_oid }}
+      candidate_receipt_run_id: ${{ needs.approved-release-guard.outputs.candidate_receipt_run_id }}
+      lane: ordinary
 
   linked-release-rollup:
     name: "release: linked release rollup"

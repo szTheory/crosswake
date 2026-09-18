@@ -1,0 +1,360 @@
+# The ONLY copy of the exact-public artifact proof body.
+#
+# Both Hex publication lanes reach this file through the identical
+# `uses: ./.github/workflows/exact-public-proof.yml` path:
+#   - ordinary: `exact-public-proof` in .github/workflows/release-please.yml
+#   - recovery: `recovery-exact-public-proof` in .github/workflows/hex-publish.yml
+#
+# A second copy of these steps anywhere in the tree is the drift failure this
+# extraction exists to remove: two lanes cannot be "satisfied identically" if
+# each carries its own copy of the thing being satisfied.
+#
+# No `secrets:` key is declared, deliberately. The proof body reads only the
+# ambient job token; inheriting secrets a workflow does not need is an
+# elevation-of-privilege shape (T-173-02).
+#
+# PERMISSIONS ARE NOT GRANTED HERE. A called workflow's `permissions:` can only
+# NARROW the token the caller hands it — it can never widen it. Both callers
+# therefore declare their own job-level `actions: read` / `contents: read`;
+# without that grant the artifact reads below fail with a forbidden response at
+# release time (T-173-15). actionlint cannot decide this, which is why
+# test/crosswake/release_candidate/workflow_test.exs asserts it instead.
+
+name: Exact public artifact proof
+
+on:
+  workflow_call:
+    inputs:
+      package:
+        description: 'Hex package the proof is being taken for.'
+        required: true
+        type: string
+      version:
+        description: 'Approved release version being proved.'
+        required: true
+        type: string
+      approved_head:
+        description: 'Approved candidate head (40 lowercase hex).'
+        required: true
+        type: string
+      merge_oid:
+        description: 'Approved two-parent merge commit the proof checks out.'
+        required: true
+        type: string
+      candidate_receipt_run_id:
+        description: 'Run id of the trusted workflow that uploaded the approved candidate receipt.'
+        required: true
+        type: string
+      lane:
+        description: 'Publication lane that reached this proof: ordinary or recovery.'
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  exact-public-proof:
+    # DISTINCT from both callers' job names on purpose. script/list_merge_blocking_checks.py
+    # inventories literal job producers and fails closed on two producers sharing one display
+    # name; extracting this body left it carrying release-please.yml's caller name verbatim,
+    # which collided. The callers keep "release:" / "recovery:" so each lane stays identifiable
+    # in the checks list, and this body names itself as the shared body it is.
+    name: "shared: exact-public artifact proof body"
+    # always(): the record decision must be made by a step that RUNS. A job-level
+    # condition that declines to run is exactly the skip-instead-of-fail shape
+    # XPUB-05 exists to close — a skipped proof and a passing proof must never be
+    # indistinguishable downstream.
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # Published so the ledger job below can tell "this was not a linked release,
+    # there is no verdict to record" from "the proof ran and reached one". Without
+    # it the ledger job would have to guess from empty inputs, and guessing is how
+    # a non-event gets written down as a release.
+    outputs:
+      applicable: ${{ steps.applicability.outputs.applicable }}
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      # Tier 1 of the two-tier pattern approved-release-guard already uses: the
+      # ONE legitimate not-applicable outcome writes a marker and exits zero.
+      # Every other condition below it is a bare assertion under
+      # `set -euo pipefail`, so a malformed call fails the job rather than
+      # quietly proving nothing.
+      - name: Decide exact-public proof applicability
+        id: applicability
+        env:
+          PACKAGE: ${{ inputs.package }}
+          VERSION: ${{ inputs.version }}
+          APPROVED_HEAD: ${{ inputs.approved_head }}
+          MERGE_OID: ${{ inputs.merge_oid }}
+          CANDIDATE_RECEIPT_RUN_ID: ${{ inputs.candidate_receipt_run_id }}
+          LANE: ${{ inputs.lane }}
+        run: |
+          set -euo pipefail
+
+          # The lane is decided FIRST, before any branch can exit zero, because
+          # the single not-applicable branch below is reachable from exactly one
+          # lane and an unvalidated lane cannot be used to decide that.
+          case "$LANE" in
+            ordinary|recovery) ;;
+            *)
+              echo "[crosswake] FAIL: lane '${LANE}' is not a declared publication lane."
+              echo "[crosswake] What to do next: call this workflow with lane: ordinary (release-please.yml) or lane: recovery (hex-publish.yml)."
+              exit 1
+              ;;
+          esac
+
+          if [ -z "$APPROVED_HEAD" ] && [ -z "$MERGE_OID" ]; then
+            # NOT-APPLICABLE IS AN ORDINARY-LANE-ONLY ANSWER, and the gate below
+            # is what makes that structural rather than incidental.
+            #
+            # The ordinary caller sits in a release workflow that runs on pushes
+            # which produce no linked release at all, so "this is not a linked
+            # release" is a truthful outcome there. A recovery call exists only
+            # because a maintainer dispatched a publish AND that publish
+            # succeeded, so the same answer is never truthful for it.
+            #
+            # Both recovery inputs are `required: false` with `default: ''` on
+            # hex-publish.yml's workflow_dispatch. Without this gate, a
+            # maintainer who leaves those two fields blank gets a real recovery
+            # publish, every proof step skipped by the applicability marker, and
+            # a job that concludes success having proved nothing -- absence
+            # scored as success, inside the artifact built to remove it.
+            # Form-level `required: true` cannot close this: workflow_call and
+            # the REST dispatch API both bypass it.
+            if [ "$LANE" != "ordinary" ]; then
+              echo "[crosswake] FAIL: PROOF_APPLICABILITY_UNDETERMINED - the ${LANE} lane reached the exact-public proof with neither an approved head nor a merge oid."
+              echo "[crosswake] A ${LANE} call follows a publish that already happened, so the proof always applies to it; skipping it here would conclude success having proved nothing."
+              echo "[crosswake] What to do next: re-dispatch .github/workflows/hex-publish.yml supplying the approved_head and merge_oid inputs (plus candidate_receipt_run_id) for the coordinate you recovered."
+              exit 1
+            fi
+
+            echo "applicable=false" >> "$GITHUB_OUTPUT"
+            echo "[crosswake] OK: not a linked release — no approved head and no merge oid were supplied, so the exact-public proof does not apply."
+            exit 0
+          fi
+
+          printf '%s' "$APPROVED_HEAD" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$MERGE_OID" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
+          [ -n "$PACKAGE" ]
+          [ -n "$CANDIDATE_RECEIPT_RUN_ID" ]
+
+          echo "applicable=true" >> "$GITHUB_OUTPUT"
+          echo "[crosswake] OK: exact-public proof applies to ${PACKAGE}@${VERSION} (lane ${LANE}, head ${APPROVED_HEAD})."
+
+      # The checkout precedes the record assertion only because the assertion is a
+      # repository script. It performs no proof work of its own, so the record
+      # decision remains the proof's first substantive act.
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        with:
+          ref: ${{ inputs.merge_oid }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Same `gh` + artifact-count idiom approved-release-guard uses for the
+      # pre-merge candidate receipt. This step only REPORTS what it found; it
+      # never decides pass/fail, so "absent" reaches the assertion script as an
+      # absent file rather than as an opaque gh error.
+      - name: Download the publication record
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          PACKAGE: ${{ inputs.package }}
+          APPROVED_HEAD: ${{ inputs.approved_head }}
+        run: |
+          set -euo pipefail
+          artifact_name="publication-record-${PACKAGE}-${APPROVED_HEAD}"
+          record_dir="$RUNNER_TEMP/publication-record"
+          mkdir -p "$record_dir"
+
+          artifact_index=$(gh api -X GET "repos/$REPOSITORY/actions/artifacts" \
+            -f name="$artifact_name" -f per_page=100)
+          matches=$(printf '%s' "$artifact_index" | jq --argjson run "$RUN_ID" \
+            '[.artifacts[] | select(.expired == false) | select(.workflow_run.id == $run)] | length')
+
+          # More than one record for one coordinate in one run is a defect, never
+          # a tie to be broken silently.
+          [ "$matches" -le 1 ]
+
+          if [ "$matches" -eq 1 ]; then
+            gh run download "$RUN_ID" --repo "$REPOSITORY" --name "$artifact_name" --dir "$record_dir"
+            echo "[crosswake] OK: downloaded ${artifact_name} from run ${RUN_ID}."
+          else
+            echo "[crosswake] no artifact named ${artifact_name} was uploaded by run ${RUN_ID}; the assertion step decides what that means."
+          fi
+
+      # The expected triple comes from THIS workflow's own inputs — the values the
+      # caller already authenticated — and never from the downloaded record.
+      # Deriving the expected values from the artifact under verification is the
+      # scope-selector defect recorded as SEED-019 (T-173-01): a record naming the
+      # wrong version would verify itself.
+      - name: Assert the publication record for the exact coordinate
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        env:
+          PACKAGE: ${{ inputs.package }}
+          VERSION: ${{ inputs.version }}
+          APPROVED_HEAD: ${{ inputs.approved_head }}
+        run: >
+          bash script/assert_publication_record.sh
+          --package "$PACKAGE"
+          --version "$VERSION"
+          --approved-head "$APPROVED_HEAD"
+          --record "$RUNNER_TEMP/publication-record/publication-record.json"
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Download approved candidate payload manifest
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.candidate_receipt_run_id }}
+        run: |
+          set -euo pipefail
+          gh run download "$RUN_ID" --name "phase168-candidate-receipt-${{ inputs.approved_head }}" --dir "$RUNNER_TEMP/approved-candidate"
+          test -f "$RUNNER_TEMP/approved-candidate/artifacts.json"
+
+      - name: Re-fetch and prove exact public package family
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        run: >
+          bash script/verify_companion_cleanroom.sh
+          --source-mode exact-public
+          --approved-manifest "$RUNNER_TEMP/approved-candidate/artifacts.json"
+          --result "$RUNNER_TEMP/exact-public-result.json"
+
+      - name: Upload exact-public proof
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: exact-public-proof
+          path: ${{ runner.temp }}/exact-public-result.json
+          if-no-files-found: error
+          retention-days: 14
+
+  # XPUB-06: the proof's verdict, written somewhere the artifact store cannot take
+  # it away. The uploaded proof above is a fast-path signal with a retention window;
+  # this job puts the same verdict in git, which has no expiry. NOTHING here tunes
+  # `retention-days` — on a public repository no retention value reaches this
+  # project's horizon, which is why the durable copy is a committed file.
+  record-ledger:
+    name: "shared: record the proof verdict in the release ledger"
+    needs: exact-public-proof
+    # always(): the verdict most worth recording is a FAILING one, so this must not
+    # be conditioned on the proof having succeeded. It is conditioned only on the
+    # proof having applied at all — a push that is not a linked release has no
+    # verdict, and writing a row for it would be inventing a release event.
+    if: ${{ always() && needs.exact-public-proof.outputs.applicable == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # The ledger writes a commit and opens a pull request, so unlike the proof body
+    # above it needs write scopes. Both callers must grant them at the calling job:
+    # a called workflow narrows the caller's token and can never widen it (T-173-15).
+    # The proof job keeps its own read-only `permissions:` block, so the grant does
+    # not reach the proof body.
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Append the proof verdict to the release ledger and open a pull request
+        id: ledger
+        # The ledger must never turn a passing proof into a failing release: a
+        # bookkeeping step that can veto a release is a denial-of-service shape
+        # (T-173-14). Its own failure is NOT swallowed — the closing step below
+        # reports this step's real outcome into the job summary, so a ledger that
+        # quietly stops being written is visible on the run page.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE: ${{ inputs.package }}
+          VERSION: ${{ inputs.version }}
+          APPROVED_HEAD: ${{ inputs.approved_head }}
+          PUBLISHED_REF: ${{ inputs.merge_oid }}
+          LANE: ${{ inputs.lane }}
+          RUN_ID: ${{ github.run_id }}
+          OUTCOME: ${{ needs.exact-public-proof.result }}
+        run: |
+          set -euo pipefail
+
+          bash script/append_release_ledger.sh \
+            --package "$PACKAGE" \
+            --version "$VERSION" \
+            --approved-head "$APPROVED_HEAD" \
+            --ref "$PUBLISHED_REF" \
+            --lane "$LANE" \
+            --run-id "$RUN_ID" \
+            --outcome "$OUTCOME"
+
+          # The script is idempotent on the coordinate plus run id, so a re-run of
+          # this run leaves the file untouched and there is nothing to propose.
+          if [ -z "$(git status --porcelain docs/release-ledger/RELEASE-LEDGER.jsonl)" ]; then
+            echo "[crosswake] ledger already records run ${RUN_ID} — no pull request to open."
+            exit 0
+          fi
+
+          # Duplicate guard, same shape and same reason as release-as-cleanup in
+          # release-please.yml: the branch name embeds github.run_id so it never
+          # collides, which means without this check every release run would mint
+          # another pull request. That is how cleanup pull requests #65/#68/#72
+          # accumulated. Uses the REST list endpoint rather than `--search`, so a
+          # lagging search index cannot let a duplicate through.
+          existing="$(gh pr list --state open --base main --limit 100 \
+            --json number,headRefName \
+            --jq '[.[] | select(.headRefName | startswith("chore/release-ledger-"))] | .[0].number // empty')"
+          if [ -n "$existing" ]; then
+            echo "[crosswake] Ledger pull request #${existing} is already open — not opening a duplicate."
+            echo "[crosswake] Merge #${existing}, then re-run this job to record any later verdict."
+            exit 0
+          fi
+
+          # The default branch is protected: a direct push is not available and is
+          # deliberately not attempted. The verdict lands the same way every other
+          # bot-authored change to main does — as a pull request (T-173-13).
+          branch="chore/release-ledger-${RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add docs/release-ledger/RELEASE-LEDGER.jsonl
+          git commit -m "chore(release): record exact-public proof verdict '${OUTCOME}' for ${PACKAGE}@${VERSION} (XPUB-06)"
+          git push origin "$branch"
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "chore(release): record exact-public proof verdict for ${PACKAGE}@${VERSION}" \
+            --body "Auto-generated (XPUB-06). Run ${RUN_ID} reached the exact-public proof for \`${PACKAGE}@${VERSION}\` (lane ${LANE}, head ${APPROVED_HEAD}) with result \`${OUTCOME}\`. This appends one line to \`docs/release-ledger/RELEASE-LEDGER.jsonl\`, the copy of record that outlives the proof artifact's retention window. Append-only: no existing line is modified."
+
+      - name: Report the ledger step's own outcome
+        if: ${{ always() }}
+        env:
+          LEDGER_OUTCOME: ${{ steps.ledger.outcome }}
+          OUTCOME: ${{ needs.exact-public-proof.result }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### Release ledger (XPUB-06)"
+            echo ""
+            echo "- proof verdict recorded: \`${OUTCOME}\`"
+            echo "- ledger write step outcome: \`${LEDGER_OUTCOME}\`"
+            echo "- run id: \`${RUN_ID}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$LEDGER_OUTCOME" != "success" ]; then
+            echo "[crosswake] WARNING: the release-ledger write did not succeed (${LEDGER_OUTCOME})."
+            echo "[crosswake] The proof verdict for run ${RUN_ID} is NOT yet in docs/release-ledger/RELEASE-LEDGER.jsonl."
+            echo "[crosswake] What to do next: re-run this job, or append the line locally with script/append_release_ledger.sh --run-id ${RUN_ID} and open the pull request by hand."
+          fi

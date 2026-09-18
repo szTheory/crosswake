@@ -817,10 +817,36 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   @tag :runner_placement
   @tag timeout: 60_000
   test "every workflow job is bounded and every macOS job invokes native tooling" do
+    bounded = ~r/^    timeout-minutes:\s*[1-9][0-9]*\s*$/m
+
     for path <- Path.wildcard(".github/workflows/*.{yml,yaml}"),
         {job, body} <- workflow_jobs(File.read!(path)) do
-      assert body =~ ~r/^    timeout-minutes:\s*[1-9][0-9]*\s*$/m,
-             "#{path}:#{job} must have a positive job timeout"
+      case Regex.run(~r/^    uses:\s*(\S+)/m, body, capture: :all_but_first) do
+        # A job that CALLS a reusable workflow cannot declare timeout-minutes -- the
+        # key is not among the ones GitHub accepts for a `uses:` job. The bound lives
+        # in the CALLED workflow's own job instead, so follow the reference and require
+        # it there. Exempting the caller without following it would score absence as
+        # success: an unbounded reusable body would pass by having no local timeout to
+        # examine.
+        [ref] ->
+          local = String.replace_prefix(ref, "./", "")
+
+          assert File.exists?(local),
+                 "#{path}:#{job} calls #{ref}, which this check cannot follow to verify its bound"
+
+          called_jobs = workflow_jobs(File.read!(local))
+
+          assert called_jobs != [],
+                 "#{path}:#{job} calls #{ref}, which declares no jobs to bound"
+
+          for {called_job, called_body} <- called_jobs do
+            assert called_body =~ bounded,
+                   "#{path}:#{job} calls #{ref}, whose job #{called_job} must carry the positive timeout the caller cannot declare"
+          end
+
+        nil ->
+          assert body =~ bounded, "#{path}:#{job} must have a positive job timeout"
+      end
 
       if body =~ ~r/^    runs-on:\s*macos/m do
         assert body =~
