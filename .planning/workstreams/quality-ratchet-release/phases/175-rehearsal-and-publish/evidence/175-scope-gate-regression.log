@@ -1,0 +1,3 @@
+case=narrowed expected=27 actual=3 outcome=red
+case=control expected=27 actual=27 outcome=green
+exit_status=0
