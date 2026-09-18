@@ -49,7 +49,7 @@ Source: `.planning/research/v23/SUMMARY.md` (decision set, adjudicated divergenc
 - [ ] **ROOM-03**: `clean-room-proof-rindle` passes against the live published `crosswake_rindle 0.1.0`
 - [x] **ROOM-04**: The legacy positional path's logging reaches grep-able parity with the matrix path's `step=` markers
 - [ ] **ROOM-05**: The threadline and sigra clean-room failures are diagnosed as separate findings with their own recorded root causes
-- [ ] **ROOM-06**: `doctor`'s `manifest_contract` check is unchanged in strength — the harness was fixed, not the contract
+- [x] **ROOM-06**: `doctor`'s `manifest_contract` check is unchanged in strength — the harness was fixed, not the contract
 
 ### Adopter Proof Fidelity
 
@@ -167,7 +167,7 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 | ROOM-03 | Phase 174 | Pending |
 | ROOM-04 | Phase 174 | Complete |
 | ROOM-05 | Phase 174 | Pending |
-| ROOM-06 | Phase 174 | Pending |
+| ROOM-06 | Phase 174 | Complete |
 | FID-01 | Phase 174 | Pending |
 | FID-02 | Phase 169 | Complete |
 | VAC-01 | Phase 170 | Complete |

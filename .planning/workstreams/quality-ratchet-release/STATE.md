@@ -5,15 +5,15 @@ milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 174
 current_phase_name: Clean-Room Host Realism & Adopter Fidelity
 status: executing
-stopped_at: Completed 174-01-PLAN.md
-last_updated: "2026-09-18T13:18:20.773Z"
+stopped_at: Completed 174-02-PLAN.md
+last_updated: "2026-09-18T13:28:58.489Z"
 last_activity: 2026-09-18
 last_activity_desc: Phase 174 planned — 6 plans, 4 waves, verified with 0 blockers; two roster-scope warnings fixed in the plans
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 27
-  completed_plans: 22
+  completed_plans: 23
   percent: 71
 state_head: ec505c087fcabc6dfb352bfceb5dc7d2e22e2c30
 ---
@@ -46,7 +46,7 @@ Revisit once the post-publication proof lane can actually run.
 ## Current Position
 
 Phase: 174 (Clean-Room Host Realism & Adopter Fidelity) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 Status: Ready to execute
 Last activity: 2026-09-18 — Phase 174 execution started
 
@@ -124,6 +124,7 @@ Last activity: 2026-09-18 — Phase 174 execution started
 | Phase 172 P02 | 70min | 3 tasks | 4 files |
 | Phase 172 P03 | 50min | 3 tasks | 6 files |
 | Phase 174 P01 | 12min | 2 tasks | 3 files |
+| Phase 174 P02 | 45min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -257,6 +258,7 @@ Last activity: 2026-09-18 — Phase 174 execution started
 - [Phase ?]: 174-01: controller split into its own file — mix crosswake.install's infer_router_module!/1 requires exactly one top-level defmodule per --router file
 - [Phase ?]: 174-01: reordered the Done section's closing log lines so state=passed is genuinely the committed log's final line
 - [Phase ?]: 174-01: legacy path installer lands as new Step 6.5 (not a renumbered Step 7); Step 7's doctor invocation stays byte-unchanged
+- [Phase ?]: [Phase 174]: 174-02: manifest_compile_check/1 and its call site pinned to a committed, git-history baseline (8bc77c35), extraction-non-empty asserted before comparison to close the rename/delete vacuity path
 
 ### v23.0 Roadmap Decisions
 
@@ -330,8 +332,8 @@ Last activity: 2026-09-18 — Phase 174 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-18T13:18:20.753Z
-Stopped at: Completed 174-01-PLAN.md
+Last session: 2026-09-18T13:28:58.330Z
+Stopped at: Completed 174-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
