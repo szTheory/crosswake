@@ -1,0 +1,573 @@
+[crosswake] OK: package=crosswake_sigra version=0.1.3 state=hex-metadata-found proof=continue
+[crosswake] OK: package=crosswake_sigra version=0.1.3 core_floor=~> 0.2 state=metadata-ready proof=continue
+[crosswake] verify_companion_cleanroom: package=crosswake_sigra version=0.1.3 profile=no-engine-companion core_floor=~> 0.2
+[crosswake] clean-room deps: crosswake ~> 0.2; crosswake_sigra == 0.1.3
+[crosswake] OK: Step 1: package=crosswake_sigra version=0.1.3 core_floor=~> 0.2 state=hex-release-authority
+[crosswake] source_mode=legacy-positional package=crosswake_sigra version=0.1.3 step=metadata
+[crosswake] Step 2: creating throwaway Phoenix host at /private/tmp/crosswake-cleanroom-legacy.bAuvwj/clean_room_crosswake_sigra...
+* creating README.md
+* creating .formatter.exs
+* creating .gitignore
+* creating mix.exs
+* creating lib
+* creating lib/clean_room_crosswake_sigra.ex
+* creating lib/clean_room_crosswake_sigra/application.ex
+* creating test
+* creating test/test_helper.exs
+* creating test/clean_room_crosswake_sigra_test.exs
+
+Your Mix project was created successfully.
+You can use "mix" to compile it, test it, and more:
+
+    cd clean_room_crosswake_sigra
+    mix test
+
+Run "mix help" for more commands.
+[crosswake] mix.exs deps patched (no-engine: duo — crosswake + crosswake_sigra)
+[crosswake] Step 2 OK: throwaway app created at /private/tmp/crosswake-cleanroom-legacy.bAuvwj/clean_room_crosswake_sigra
+[crosswake] source_mode=legacy-positional package=crosswake_sigra version=0.1.3 step=generate
+[crosswake] Step 3: mix deps.get...
+[33mYour authentication session has expired and could not be refreshed. Continuing without credentials; requests for private resources will fail or prompt for authentication. Run `mix hex.user auth` to re-authenticate[0m
+Resolving Hex dependencies...
+Resolution completed in 0.511s
+New:
+  crosswake 0.2.1
+  crosswake_sigra 0.1.3
+  jason 1.4.5
+  mime 2.0.7
+  nimble_options 1.1.1
+  phoenix 1.8.14
+  phoenix_html 4.3.0
+  phoenix_live_view 1.2.12
+  phoenix_pubsub 2.3.0
+  phoenix_template 1.0.4
+  plug 1.20.3
+  plug_crypto 2.2.0
+  telemetry 1.4.2
+  websock 0.5.3
+  websock_adapter 0.6.0
+* Getting phoenix (Hex package)
+* Getting phoenix_live_view (Hex package)
+* Getting crosswake (Hex package)
+* Getting crosswake_sigra (Hex package)
+* Getting jason (Hex package)
+* Getting nimble_options (Hex package)
+* Getting telemetry (Hex package)
+* Getting phoenix_html (Hex package)
+* Getting phoenix_template (Hex package)
+* Getting plug (Hex package)
+* Getting mime (Hex package)
+* Getting plug_crypto (Hex package)
+* Getting phoenix_pubsub (Hex package)
+* Getting websock_adapter (Hex package)
+* Getting websock (Hex package)
+    warning: found quoted keyword "crosswake" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  2 │   "crosswake": {:hex, :crosswake, "0.2.1", "3a7d2461adf4f287f5a9d75df9cdbcdddddd7259159405eb369ad453d25c2f8b", [:mix], [{:jason, "~> 1.4", [hex: :jason, repo: "hexpm", optional: false]}, {:nimble_options, "~> 1.1", [hex: :nimble_options, repo: "hexpm", optional: false]}, {:phoenix, "~> 1.8", [hex: :phoenix, repo: "hexpm", optional: false]}, {:phoenix_live_view, "~> 1.1", [hex: :phoenix_live_view, repo: "hexpm", optional: false]}, {:telemetry, "~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "ffa220c26980696849497479fa23d47eae44796cfc06f2775999ffca0ed7fc90"},
+    │   ~
+    │
+    └─ mix.lock:2:3
+
+    warning: found quoted keyword "crosswake_sigra" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  3 │   "crosswake_sigra": {:hex, :crosswake_sigra, "0.1.3", "7b0492d062ffba69150347fccb080a67cf308ab4caa0817105af594048feca8b", [:mix], [{:crosswake, "~> 0.2", [hex: :crosswake, repo: "hexpm", optional: false]}], "hexpm", "0c6243fe06de93dea7ae59a856a4290f9d6ac2ddfe27e2dd509a7585681feb8b"},
+    │   ~
+    │
+    └─ mix.lock:3:3
+
+    warning: found quoted keyword "jason" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  4 │   "jason": {:hex, :jason, "1.4.5", "2e3a008590b0b8d7388c20293e9dcc9cf3e5d642fd2a114e4cbbb52e595d940a", [:mix], [{:decimal, "~> 1.0 or ~> 2.0 or ~> 3.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "b0c823996102bcd0239b3c2444eb00409b72f6a140c1950bc8b457d836b30684"},
+    │   ~
+    │
+    └─ mix.lock:4:3
+
+    warning: found quoted keyword "mime" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  5 │   "mime": {:hex, :mime, "2.0.7", "b8d739037be7cd402aee1ba0306edfdef982687ee7e9859bee6198c1e7e2f128", [:mix], [], "hexpm", "6171188e399ee16023ffc5b76ce445eb6d9672e2e241d2df6050f3c771e80ccd"},
+    │   ~
+    │
+    └─ mix.lock:5:3
+
+    warning: found quoted keyword "nimble_options" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  6 │   "nimble_options": {:hex, :nimble_options, "1.1.1", "e3a492d54d85fc3fd7c5baf411d9d2852922f66e69476317787a7b2bb000a61b", [:mix], [], "hexpm", "821b2470ca9442c4b6984882fe9bb0389371b8ddec4d45a9504f00a66f650b44"},
+    │   ~
+    │
+    └─ mix.lock:6:3
+
+    warning: found quoted keyword "phoenix" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  7 │   "phoenix": {:hex, :phoenix, "1.8.14", "9279cbbcd755ac8d5f42d206915e7df13b9ab49096b98114f1c99ff908e5b42e", [:mix], [{:bandit, "~> 1.0", [hex: :bandit, repo: "hexpm", optional: true]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}, {:phoenix_pubsub, "~> 2.1", [hex: :phoenix_pubsub, repo: "hexpm", optional: false]}, {:phoenix_template, "~> 1.0", [hex: :phoenix_template, repo: "hexpm", optional: false]}, {:phoenix_view, "~> 2.0", [hex: :phoenix_view, repo: "hexpm", optional: true]}, {:plug, "~> 1.14", [hex: :plug, repo: "hexpm", optional: false]}, {:plug_cowboy, "~> 2.7", [hex: :plug_cowboy, repo: "hexpm", optional: true]}, {:plug_crypto, "~> 2.2", [hex: :plug_crypto, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}, {:websock_adapter, "~> 0.5", [hex: :websock_adapter, repo: "hexpm", optional: false]}], "hexpm", "2782ff375824b2b5e41561fbae4764ee7b875af6898483bca49f24a9d1e37816"},
+    │   ~
+    │
+    └─ mix.lock:7:3
+
+    warning: found quoted keyword "phoenix_html" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  8 │   "phoenix_html": {:hex, :phoenix_html, "4.3.0", "d3577a5df4b6954cd7890c84d955c470b5310bb49647f0a114a6eeecc850f7ad", [:mix], [], "hexpm", "3eaa290a78bab0f075f791a46a981bbe769d94bc776869f4f3063a14f30497ad"},
+    │   ~
+    │
+    └─ mix.lock:8:3
+
+    warning: found quoted keyword "phoenix_live_view" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  9 │   "phoenix_live_view": {:hex, :phoenix_live_view, "1.2.12", "35848150bbab579e9d0aff79525269d7c0801a4f61232b84f635c11222cee88f", [:mix], [{:igniter, ">= 0.6.16 and < 1.0.0-0", [hex: :igniter, repo: "hexpm", optional: true]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}, {:lazy_html, "~> 0.1.0", [hex: :lazy_html, repo: "hexpm", optional: true]}, {:phoenix, "~> 1.6.15 or ~> 1.7.0 or ~> 1.8.0", [hex: :phoenix, repo: "hexpm", optional: false]}, {:phoenix_html, "~> 3.3 or ~> 4.0", [hex: :phoenix_html, repo: "hexpm", optional: false]}, {:phoenix_template, "~> 1.0", [hex: :phoenix_template, repo: "hexpm", optional: false]}, {:phoenix_view, "~> 2.0", [hex: :phoenix_view, repo: "hexpm", optional: true]}, {:plug, "~> 1.15", [hex: :plug, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4.2 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "656810d716e3369545dd63981196a5d68b77fdb253afe02ef0c6fa14cfd8dc2b"},
+    │   ~
+    │
+    └─ mix.lock:9:3
+
+    warning: found quoted keyword "phoenix_pubsub" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 10 │   "phoenix_pubsub": {:hex, :phoenix_pubsub, "2.3.0", "03916bfbc31a5121945b3cfffe5aec647a5c97fe1dc172a319b94428562359c9", [:mix], [], "hexpm", "eec7be6e9cf02e2551d389b558402d6c637cd3973796326e7ba4bb03c6b2e91d"},
+    │   ~
+    │
+    └─ mix.lock:10:3
+
+    warning: found quoted keyword "phoenix_template" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 11 │   "phoenix_template": {:hex, :phoenix_template, "1.0.4", "e2092c132f3b5e5b2d49c96695342eb36d0ed514c5b252a77048d5969330d639", [:mix], [{:phoenix_html, "~> 2.14.2 or ~> 3.0 or ~> 4.0", [hex: :phoenix_html, repo: "hexpm", optional: true]}], "hexpm", "2c0c81f0e5c6753faf5cca2f229c9709919aba34fab866d3bc05060c9c444206"},
+    │   ~
+    │
+    └─ mix.lock:11:3
+
+    warning: found quoted keyword "plug" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 12 │   "plug": {:hex, :plug, "1.20.3", "56c480c633ec2ce10140e236e15233bf576e1d323887d7c96711bd02ab5160db", [:mix], [{:mime, "~> 1.0 or ~> 2.0", [hex: :mime, repo: "hexpm", optional: false]}, {:plug_crypto, "~> 1.1.1 or ~> 1.2 or ~> 2.0", [hex: :plug_crypto, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4.3 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "be266aee1b8536ef6409d58cf39a3121319f0ec47cfa1b24024485aa0e76ad76"},
+    │   ~
+    │
+    └─ mix.lock:12:3
+
+    warning: found quoted keyword "plug_crypto" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 13 │   "plug_crypto": {:hex, :plug_crypto, "2.2.0", "144014737daaf485407f5ed77daeaad74d651b216a28c87543f8cc7043f8efc8", [:mix], [], "hexpm", "83a95744ab1c75876542b6fab135fcc176280e0f301a111c1f757fddcec95d2c"},
+    │   ~
+    │
+    └─ mix.lock:13:3
+
+    warning: found quoted keyword "telemetry" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 14 │   "telemetry": {:hex, :telemetry, "1.4.2", "a0cb522801dffb1c49fe6e30561badffc7b6d0e180db1300df759faa22062855", [:rebar3], [], "hexpm", "928f6495066506077862c0d1646609eed891a4326bee3126ba54b60af61febb1"},
+    │   ~
+    │
+    └─ mix.lock:14:3
+
+    warning: found quoted keyword "websock" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 15 │   "websock": {:hex, :websock, "0.5.3", "2f69a6ebe810328555b6fe5c831a851f485e303a7c8ce6c5f675abeb20ebdadc", [:mix], [], "hexpm", "6105453d7fac22c712ad66fab1d45abdf049868f253cf719b625151460b8b453"},
+    │   ~
+    │
+    └─ mix.lock:15:3
+
+    warning: found quoted keyword "websock_adapter" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 16 │   "websock_adapter": {:hex, :websock_adapter, "0.6.0", "73db5ab8aaefd1a876a97ce3e6afc96562625de69ef17a4e04426e034849d0b8", [:mix], [{:bandit, ">= 0.6.0", [hex: :bandit, repo: "hexpm", optional: true]}, {:plug, "~> 1.14", [hex: :plug, repo: "hexpm", optional: false]}, {:plug_cowboy, "~> 2.6", [hex: :plug_cowboy, repo: "hexpm", optional: true]}, {:websock, "~> 0.5", [hex: :websock, repo: "hexpm", optional: false]}], "hexpm", "50021a85bce8f203b086705d9e0c5415e2c7eb05d319111b0428fe71f9934617"},
+    │   ~
+    │
+    └─ mix.lock:16:3
+
+    warning: found quoted keyword "crosswake" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  2 │   "crosswake": {:hex, :crosswake, "0.2.1", "3a7d2461adf4f287f5a9d75df9cdbcdddddd7259159405eb369ad453d25c2f8b", [:mix], [{:jason, "~> 1.4", [hex: :jason, repo: "hexpm", optional: false]}, {:nimble_options, "~> 1.1", [hex: :nimble_options, repo: "hexpm", optional: false]}, {:phoenix, "~> 1.8", [hex: :phoenix, repo: "hexpm", optional: false]}, {:phoenix_live_view, "~> 1.1", [hex: :phoenix_live_view, repo: "hexpm", optional: false]}, {:telemetry, "~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "ffa220c26980696849497479fa23d47eae44796cfc06f2775999ffca0ed7fc90"},
+    │   ~
+    │
+    └─ mix.lock:2:3
+
+    warning: found quoted keyword "crosswake_sigra" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  3 │   "crosswake_sigra": {:hex, :crosswake_sigra, "0.1.3", "7b0492d062ffba69150347fccb080a67cf308ab4caa0817105af594048feca8b", [:mix], [{:crosswake, "~> 0.2", [hex: :crosswake, repo: "hexpm", optional: false]}], "hexpm", "0c6243fe06de93dea7ae59a856a4290f9d6ac2ddfe27e2dd509a7585681feb8b"},
+    │   ~
+    │
+    └─ mix.lock:3:3
+
+    warning: found quoted keyword "jason" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  4 │   "jason": {:hex, :jason, "1.4.5", "2e3a008590b0b8d7388c20293e9dcc9cf3e5d642fd2a114e4cbbb52e595d940a", [:mix], [{:decimal, "~> 1.0 or ~> 2.0 or ~> 3.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "b0c823996102bcd0239b3c2444eb00409b72f6a140c1950bc8b457d836b30684"},
+    │   ~
+    │
+    └─ mix.lock:4:3
+
+    warning: found quoted keyword "mime" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  5 │   "mime": {:hex, :mime, "2.0.7", "b8d739037be7cd402aee1ba0306edfdef982687ee7e9859bee6198c1e7e2f128", [:mix], [], "hexpm", "6171188e399ee16023ffc5b76ce445eb6d9672e2e241d2df6050f3c771e80ccd"},
+    │   ~
+    │
+    └─ mix.lock:5:3
+
+    warning: found quoted keyword "nimble_options" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  6 │   "nimble_options": {:hex, :nimble_options, "1.1.1", "e3a492d54d85fc3fd7c5baf411d9d2852922f66e69476317787a7b2bb000a61b", [:mix], [], "hexpm", "821b2470ca9442c4b6984882fe9bb0389371b8ddec4d45a9504f00a66f650b44"},
+    │   ~
+    │
+    └─ mix.lock:6:3
+
+    warning: found quoted keyword "phoenix" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  7 │   "phoenix": {:hex, :phoenix, "1.8.14", "9279cbbcd755ac8d5f42d206915e7df13b9ab49096b98114f1c99ff908e5b42e", [:mix], [{:bandit, "~> 1.0", [hex: :bandit, repo: "hexpm", optional: true]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}, {:phoenix_pubsub, "~> 2.1", [hex: :phoenix_pubsub, repo: "hexpm", optional: false]}, {:phoenix_template, "~> 1.0", [hex: :phoenix_template, repo: "hexpm", optional: false]}, {:phoenix_view, "~> 2.0", [hex: :phoenix_view, repo: "hexpm", optional: true]}, {:plug, "~> 1.14", [hex: :plug, repo: "hexpm", optional: false]}, {:plug_cowboy, "~> 2.7", [hex: :plug_cowboy, repo: "hexpm", optional: true]}, {:plug_crypto, "~> 2.2", [hex: :plug_crypto, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}, {:websock_adapter, "~> 0.5", [hex: :websock_adapter, repo: "hexpm", optional: false]}], "hexpm", "2782ff375824b2b5e41561fbae4764ee7b875af6898483bca49f24a9d1e37816"},
+    │   ~
+    │
+    └─ mix.lock:7:3
+
+    warning: found quoted keyword "phoenix_html" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  8 │   "phoenix_html": {:hex, :phoenix_html, "4.3.0", "d3577a5df4b6954cd7890c84d955c470b5310bb49647f0a114a6eeecc850f7ad", [:mix], [], "hexpm", "3eaa290a78bab0f075f791a46a981bbe769d94bc776869f4f3063a14f30497ad"},
+    │   ~
+    │
+    └─ mix.lock:8:3
+
+    warning: found quoted keyword "phoenix_live_view" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  9 │   "phoenix_live_view": {:hex, :phoenix_live_view, "1.2.12", "35848150bbab579e9d0aff79525269d7c0801a4f61232b84f635c11222cee88f", [:mix], [{:igniter, ">= 0.6.16 and < 1.0.0-0", [hex: :igniter, repo: "hexpm", optional: true]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}, {:lazy_html, "~> 0.1.0", [hex: :lazy_html, repo: "hexpm", optional: true]}, {:phoenix, "~> 1.6.15 or ~> 1.7.0 or ~> 1.8.0", [hex: :phoenix, repo: "hexpm", optional: false]}, {:phoenix_html, "~> 3.3 or ~> 4.0", [hex: :phoenix_html, repo: "hexpm", optional: false]}, {:phoenix_template, "~> 1.0", [hex: :phoenix_template, repo: "hexpm", optional: false]}, {:phoenix_view, "~> 2.0", [hex: :phoenix_view, repo: "hexpm", optional: true]}, {:plug, "~> 1.15", [hex: :plug, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4.2 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "656810d716e3369545dd63981196a5d68b77fdb253afe02ef0c6fa14cfd8dc2b"},
+    │   ~
+    │
+    └─ mix.lock:9:3
+
+    warning: found quoted keyword "phoenix_pubsub" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 10 │   "phoenix_pubsub": {:hex, :phoenix_pubsub, "2.3.0", "03916bfbc31a5121945b3cfffe5aec647a5c97fe1dc172a319b94428562359c9", [:mix], [], "hexpm", "eec7be6e9cf02e2551d389b558402d6c637cd3973796326e7ba4bb03c6b2e91d"},
+    │   ~
+    │
+    └─ mix.lock:10:3
+
+    warning: found quoted keyword "phoenix_template" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 11 │   "phoenix_template": {:hex, :phoenix_template, "1.0.4", "e2092c132f3b5e5b2d49c96695342eb36d0ed514c5b252a77048d5969330d639", [:mix], [{:phoenix_html, "~> 2.14.2 or ~> 3.0 or ~> 4.0", [hex: :phoenix_html, repo: "hexpm", optional: true]}], "hexpm", "2c0c81f0e5c6753faf5cca2f229c9709919aba34fab866d3bc05060c9c444206"},
+    │   ~
+    │
+    └─ mix.lock:11:3
+
+    warning: found quoted keyword "plug" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 12 │   "plug": {:hex, :plug, "1.20.3", "56c480c633ec2ce10140e236e15233bf576e1d323887d7c96711bd02ab5160db", [:mix], [{:mime, "~> 1.0 or ~> 2.0", [hex: :mime, repo: "hexpm", optional: false]}, {:plug_crypto, "~> 1.1.1 or ~> 1.2 or ~> 2.0", [hex: :plug_crypto, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4.3 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "be266aee1b8536ef6409d58cf39a3121319f0ec47cfa1b24024485aa0e76ad76"},
+    │   ~
+    │
+    └─ mix.lock:12:3
+
+    warning: found quoted keyword "plug_crypto" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 13 │   "plug_crypto": {:hex, :plug_crypto, "2.2.0", "144014737daaf485407f5ed77daeaad74d651b216a28c87543f8cc7043f8efc8", [:mix], [], "hexpm", "83a95744ab1c75876542b6fab135fcc176280e0f301a111c1f757fddcec95d2c"},
+    │   ~
+    │
+    └─ mix.lock:13:3
+
+    warning: found quoted keyword "telemetry" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 14 │   "telemetry": {:hex, :telemetry, "1.4.2", "a0cb522801dffb1c49fe6e30561badffc7b6d0e180db1300df759faa22062855", [:rebar3], [], "hexpm", "928f6495066506077862c0d1646609eed891a4326bee3126ba54b60af61febb1"},
+    │   ~
+    │
+    └─ mix.lock:14:3
+
+    warning: found quoted keyword "websock" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 15 │   "websock": {:hex, :websock, "0.5.3", "2f69a6ebe810328555b6fe5c831a851f485e303a7c8ce6c5f675abeb20ebdadc", [:mix], [], "hexpm", "6105453d7fac22c712ad66fab1d45abdf049868f253cf719b625151460b8b453"},
+    │   ~
+    │
+    └─ mix.lock:15:3
+
+    warning: found quoted keyword "websock_adapter" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 16 │   "websock_adapter": {:hex, :websock_adapter, "0.6.0", "73db5ab8aaefd1a876a97ce3e6afc96562625de69ef17a4e04426e034849d0b8", [:mix], [{:bandit, ">= 0.6.0", [hex: :bandit, repo: "hexpm", optional: true]}, {:plug, "~> 1.14", [hex: :plug, repo: "hexpm", optional: false]}, {:plug_cowboy, "~> 2.6", [hex: :plug_cowboy, repo: "hexpm", optional: true]}, {:websock, "~> 0.5", [hex: :websock, repo: "hexpm", optional: false]}], "hexpm", "50021a85bce8f203b086705d9e0c5415e2c7eb05d319111b0428fe71f9934617"},
+    │   ~
+    │
+    └─ mix.lock:16:3
+
+[crosswake] OK: package=crosswake_sigra version=0.1.3 core_floor=~> 0.2 selected_core=0.2.1 state=lockfile-verified proof=continue
+[crosswake] source_mode=legacy-positional package=crosswake_sigra version=0.1.3 step=deps
+[crosswake] Step 3: mix compile --warnings-as-errors...
+==> mime
+Compiling 1 file (.ex)
+Generated mime app
+==> nimble_options
+Compiling 3 files (.ex)
+Generated nimble_options app
+==> clean_room_crosswake_sigra
+===> Analyzing applications...
+===> Compiling telemetry
+==> jason
+Compiling 10 files (.ex)
+Generated jason app
+==> phoenix_html
+Compiling 6 files (.ex)
+Generated phoenix_html app
+==> phoenix_template
+Compiling 4 files (.ex)
+Generated phoenix_template app
+==> phoenix_pubsub
+Compiling 12 files (.ex)
+Generated phoenix_pubsub app
+==> plug_crypto
+Compiling 5 files (.ex)
+Generated plug_crypto app
+==> plug
+Compiling 1 file (.erl)
+Compiling 42 files (.ex)
+Generated plug app
+==> websock
+Compiling 1 file (.ex)
+Generated websock app
+==> websock_adapter
+Compiling 4 files (.ex)
+Generated websock_adapter app
+==> phoenix
+Compiling 75 files (.ex)
+Generated phoenix app
+==> phoenix_live_view
+Compiling 55 files (.ex)
+Generated phoenix_live_view app
+==> crosswake
+Compiling 131 files (.ex)
+Generated crosswake app
+==> crosswake_sigra
+Compiling 9 files (.ex)
+Generated crosswake_sigra app
+==> clean_room_crosswake_sigra
+Compiling 2 files (.ex)
+Generated clean_room_crosswake_sigra app
+[crosswake] source_mode=legacy-positional package=crosswake_sigra version=0.1.3 step=compile
+[crosswake] Step 3 OK: compiled clean
+[crosswake] Step 4: writing a real Phoenix router with a Crosswake route...
+Compiling 2 files (.ex)
+[crosswake] source_mode=legacy-positional package=crosswake_sigra version=0.1.3 step=router
+[crosswake] Step 4 OK: router with a real Crosswake route compiled
+[crosswake] Step 5: writing inline smoke test...
+[crosswake] Step 5: running smoke test...
+==> mime
+Compiling 1 file (.ex)
+Generated mime app
+==> nimble_options
+Compiling 3 files (.ex)
+Generated nimble_options app
+==> clean_room_crosswake_sigra
+===> Analyzing applications...
+===> Compiling telemetry
+==> jason
+Compiling 10 files (.ex)
+Generated jason app
+==> phoenix_html
+Compiling 6 files (.ex)
+Generated phoenix_html app
+==> phoenix_template
+Compiling 4 files (.ex)
+Generated phoenix_template app
+==> phoenix_pubsub
+Compiling 12 files (.ex)
+Generated phoenix_pubsub app
+==> plug_crypto
+Compiling 5 files (.ex)
+Generated plug_crypto app
+==> plug
+Compiling 1 file (.erl)
+Compiling 42 files (.ex)
+Generated plug app
+==> websock
+Compiling 1 file (.ex)
+Generated websock app
+==> websock_adapter
+Compiling 4 files (.ex)
+Generated websock_adapter app
+==> phoenix
+Compiling 75 files (.ex)
+Generated phoenix app
+==> phoenix_live_view
+Compiling 55 files (.ex)
+Generated phoenix_live_view app
+==> crosswake
+Compiling 131 files (.ex)
+Generated crosswake app
+==> crosswake_sigra
+Compiling 9 files (.ex)
+Generated crosswake_sigra app
+==> clean_room_crosswake_sigra
+Compiling 4 files (.ex)
+Generated clean_room_crosswake_sigra app
+Running ExUnit with seed: 5063, max_cases: 36
+
+....
+Finished in 0.01 seconds (0.00s async, 0.01s sync)
+4 tests, 0 failures
+[crosswake] source_mode=legacy-positional package=crosswake_sigra version=0.1.3 step=smoke
+[crosswake] Step 5 OK: inline smoke test passed
+[crosswake] Step 6: writing runtime config for crosswake_sigra (no-engine-companion)...
+[crosswake] OK: Step 6: package=crosswake_sigra version=0.1.3 profile=no-engine-companion state=companion-registered
+[crosswake] source_mode=legacy-positional package=crosswake_sigra version=0.1.3 step=register
+[crosswake] Step 6.5: running the Crosswake installer...
+Crosswake installer: additive, idempotent, and marker-driven.
+Crosswake install complete for clean_room_crosswake_sigra
+  router: lib/clean_room_host/router.ex (marker_inserted, crosswake_import_added)
+  policy module: lib/clean_room_host/crosswake/policy.ex (created)
+  endpoint: not found (place the static plug block from `mix crosswake.gen.bridge_hook` by hand)
+  install manifest: priv/crosswake/install_manifest.json (created)
+
+Two things the installer will not write for you (they are host-authored):
+
+  1. Import the bridge hook and register it in your socket's hooks map:
+
+         import {CrosswakeBridge} from "/crosswake/crosswake.esm.js";
+         const liveSocket = new LiveSocket("/live", Socket, {params, hooks: {CrosswakeBridge}});
+
+  2. Put ONE hook element on the page (client events broadcast to every mounted
+     hook, so a second element posts every request to the shell twice):
+
+         <div id="crosswake-bridge" phx-hook="CrosswakeBridge" phx-update="ignore"></div>
+
+And one thing that is neither: `Crosswake.Bridge.push/3` raises
+Crosswake.Bridge.NotMountedError on a socket that never called
+`Crosswake.Bridge.attach/1` (or used `on_mount: Crosswake.Bridge`). Crosswake
+never guesses a route id. Attach in mount/3 before you push.
+
+Confirm all of it with: mix crosswake.doctor
+
+Phoenix's esbuild profile must leave the served module import external and emit ESM:
+
+    --external:/crosswake/* --format=esm
+
+If the router keeps Phoenix LiveDashboard, use the lexical import pattern documented
+in guides/install.md#live-dashboard-in-development.
+
+
+Compiling 2 files (.ex)
+    warning: unused import Phoenix.LiveView.Router
+    │
+  5 │   import Phoenix.LiveView.Router, except: [live: 2, live: 3, live: 4]
+    │   ~
+    │
+    └─ lib/clean_room_host/router.ex:5:3
+
+    warning: unused import Phoenix.Router
+    │
+  4 │   import Phoenix.Router, except: [get: 3, get: 4, post: 3, post: 4, put: 3, put: 4, patch: 3, patch: 4, delete: 3, delete: 4, options: 3, options: 4, head: 3, head: 4]
+    │   ~
+    │
+    └─ lib/clean_room_host/router.ex:4:3
+
+Generated clean_room_crosswake_sigra app
+[crosswake] source_mode=legacy-positional package=crosswake_sigra version=0.1.3 step=install
+[crosswake] Step 6.5 OK: installer complete
+[crosswake] Step 7: running mix crosswake.doctor --router CleanRoomHost.Router...
+    warning: unused import Phoenix.LiveView.Router
+    │
+  5 │   import Phoenix.LiveView.Router, except: [live: 2, live: 3, live: 4]
+    │   ~
+    │
+    └─ lib/clean_room_host/router.ex:5:3
+
+    warning: unused import Phoenix.Router
+    │
+  4 │   import Phoenix.Router, except: [get: 3, get: 4, post: 3, post: 4, put: 3, put: 4, patch: 3, patch: 4, delete: 3, delete: 4, options: 3, options: 4, head: 3, head: 4]
+    │   ~
+    │
+    └─ lib/clean_room_host/router.ex:4:3
+
+Crosswake doctor report
+status: ok
+findings: 11
+support posture: not_claimed (blocking: none)
+release policy:
+  crosswake_version=0.2.1
+  manifest_schema_version=1.1.0
+  bridge_protocol_version=1.1.0
+  native_runtime_version=1.0.0
+  Package versions alone do not determine support truth.
+  Future companions must declare minimum compatible ranges for core, manifest_schema_version, bridge_protocol_version, native_runtime_version, and exposed capability-family majors.
+  evidence posture: ios=device-verified android=jvm-hermetic (CI only)
+  capability families:
+    app_info: prerequisites=declared route capability, bounded bridge support, denial=undeclared_capability, fallback=Phoenix route continues without native app metadata
+    deep_link: prerequisites=bundled or cached manifest, shell activation support, explicit route entry approval, denial=route_unavailable, fallback=show route unavailable surface that distinguishes inactive routes from routes that reject external entry
+    document_scan: prerequisites=document-scan runtime, policy-heavy proof lane, denial=unavailable_capability, fallback=defer document scan support until native and proof posture are explicit
+    entitlement_snapshot: prerequisites=backend entitlement authority, reconciliation hook, freshness posture (fresh/stale/unknown) surfaced before access checks, denial=unavailable_capability, fallback=Fail closed for access decisions when snapshot freshness is stale or unknown until refreshed backend authority is available; pending and awaiting_verification states never grant entitlement.
+    file_picker: prerequisites=declared transfer_id, bounded bridge support, inbound native_picker transfer seam, copy-first staged handle plus transfer verification, denial=undeclared_capability, fallback=keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified
+    haptics: prerequisites=declared route capability, bounded bridge support, denial=undeclared_capability, fallback=Phoenix route continues without native confirmation feedback
+    media_capture: prerequisites=native screen route, capture pack availability, denial=pack_incompatible, fallback=fail closed instead of degrading into a bounded web upload flow
+    notification_token: prerequisites=declared route capability, bounded bridge support, notification authorization already resolved, provider token snapshot available, denial=unavailable_capability, fallback=treat notification token replies as provider-tagged evidence instead of backend registration truth
+    paywall_entry: prerequisites=backend entitlement contract, storefront guidance, denial=unavailable_capability, fallback=fall back to Phoenix-owned paywall guidance without device authority
+    permissions.status: prerequisites=declared route capability, bounded bridge support, notifications alias only, denial=undeclared_capability, fallback=route continues without native notification permission snapshot authority
+    purchase_intent: prerequisites=backend reconciliation, provider-specific adapter, denial=unavailable_capability, fallback=treat purchase events as reconciliation inputs, not entitlement truth
+    reconciliation_evidence: prerequisites=backend reconciliation, device callback or webhook, pending and awaiting_verification reconciliation states stay non-granting, denial=unavailable_capability, fallback=Treat device/storefront/webhook/support evidence as non-authoritative reconciliation input; pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority.
+    restore_intent: prerequisites=backend reconciliation, storefront-aware adapter, denial=unavailable_capability, fallback=keep restore flow backend-owned until adapter truth is explicit
+    scanner: prerequisites=scanner-native runtime, policy-heavy proof lane, denial=unavailable_capability, fallback=defer scanner support until native and proof posture are explicit
+    share: prerequisites=truthful semantic share contract, denial=undeclared_capability, fallback=keep content in the Phoenix-owned route until a share family is declared
+  package surfaces:
+    `crosswake` primary package: class=core, why="Route-policy DSL, manifest contract, compatibility axes, bounded-bridge vocabulary, shell generators, doctor, support matrix, release rules, and proof posture stay in one obvious Phoenix-first package.", burden="Hex package SemVer moves independently, while support truth still follows manifest_schema_version, bridge_protocol_version, and native_runtime_version."
+    Phoenix-facing commerce seam vocabulary: class=core, why="`paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` stay normalized and backend-truthful in core without embedding storefront providers.", burden="Semantics may evolve in core, but provider adapters and native storefront logic remain outside the base package."
+    Provider adapters and native-heavy integrations: class=companion, why="Storefront adapters, media/upload/capture, rollout, auth/session, notifications, and audit/operator seams carry native binary churn or backend coupling beyond core.", burden="First-party companions declare minimum compatible ranges against core, compatibility axes, and capability-family majors."
+    Checked-in example hosts and install walkthroughs: class=example_docs_only, why="Examples, walkthroughs, reviewer playbooks, and vendor recipes teach boundaries and proof posture without becoming separate runtime packages.", burden="Not first-class supported as package surfaces; promotion requires reclassification plus proof and support-matrix updates."
+    Standalone native shell core packages: class=core, why="The generated shell stays host-owned, while reusable native core logic resolves from SwiftPM and Maven Central packages instead of monorepo-local paths.", burden="Native core versions move in lockstep with the Hex package through release-please linked versions; clean-room proof verifies the external install path at release time."
+  release boundaries:
+    core: versioning="Independent SemVer for the `crosswake` Hex package.", rule="Manifest-major, bridge-major, and runtime-line changes must update support docs and doctor before release."
+    companion: versioning="Independent SemVer per first-party companion.", rule="Companion support cannot expand until the adapter publishes explicit compatibility ranges and fail-closed guidance."
+    ios_shell: versioning="SwiftPM core package version is lockstep with the Hex package; host app build numbers remain adopter-owned.", rule="Changes touching native code, entitlements, permissions, registration, or packaged runtime behavior move the native_runtime_version line and mark rebuild required."
+    android_shell: versioning="Maven Central core artifact version is lockstep with the Hex package; host app build numbers remain adopter-owned.", rule="Changes touching native code, entitlements, permissions, registration, or packaged runtime behavior move the native_runtime_version line and mark rebuild required."
+  change classes:
+    docs-only: signal="No compatibility-axis or capability-version change.", proof="docs integrity only"
+    core-only/no native rebuild: signal="Existing manifest_schema_version, bridge_protocol_version, native_runtime_version, and capability majors stay in line.", proof="core contract + doctor/support proof"
+    compatibility-bump only: signal="manifest_schema_version, bridge_protocol_version, native_runtime_version, or capability required-version declarations changed support windows.", proof="fail-closed compatibility fixtures"
+    native or companion rebuild required: signal="Every rebuild-required change carries explicit compatibility declarations, especially native_runtime_version, bridge_protocol_version, manifest_schema_version, and capability required-version shifts.", proof="core proof plus generated-shell or companion verification lanes"
+  rebuild & compatibility matrix:
+    1.x: ota_safe=false, rebuild_required=true, evidence_tier=jvm-hermetic (CI only), capability_surface=[haptics, share, app_info, deep_link, permissions.status, notification_token, file_picker, media_capture, scanner, document_scan]
+bridge posture: crosswake.bridge@1.1.0 commands=[app.info.get, files.pick, haptics.impact, notifications.token.get, permissions.status, share.invoke, transfer.download, transfer.export, transfer.import, transfer.upload.prepare] denials=[compatibility_mismatch, undeclared_capability, unavailable_capability, commerce_corridor, origin_denied, inactive_route, external_entry_denied, pack_incompatible, gate_denied, kill_switch_active, step_up_required, notification_open_denied, dependency_missing, shell_unreachable]
+offline posture: supported states=[cached_read_only, stale, saved_locally, queued_for_replay, replay_failed, conflict_requires_attention] routes=[]
+  telemetry: metadata_keys=[route_id, runtime, offline_mode, sync_seam, journal_entry_id, manifest_version, native_runtime_version, correlation_id, terminal_outcome] terminal_outcomes=[accepted, rejected, conflict]
+Commerce:
+  snapshot_freshness: not_applicable
+  corridors: none
+  proof_posture:
+    [merge-blocking]: none
+    [advisory]: none
+  rebuild_requirements: none
+[advisory] bridge_posture (bridge_posture_ok)
+bounded bridge exposes app.info.get, files.pick, haptics.impact, notifications.token.get, permissions.status, share.invoke, transfer.download, transfer.export, transfer.import, transfer.upload.prepare and denies compatibility_mismatch, undeclared_capability, unavailable_capability, commerce_corridor, origin_denied, inactive_route, external_entry_denied, pack_incompatible, gate_denied, kill_switch_active, step_up_required, notification_open_denied, dependency_missing, shell_unreachable
+hint: all manifest-declared bridge capabilities stay inside the bounded Phase 3 command set
+details: allowed_commands=app.info.get|files.pick|haptics.impact|notifications.token.get|permissions.status|share.invoke|transfer.download|transfer.export|transfer.import|transfer.upload.prepare, commands={"command":"app.info.get","capability":"app_info","declared_on_routes":[],"executable?":false,"manifest_version":"1.0.0"}|{"command":"files.pick","capability":"file_picker","declared_on_routes":[],"executable?":false,"manifest_version":"1.0.0"}|{"command":"haptics.impact","capability":"haptics","declared_on_routes":[],"executable?":false,"manifest_version":"1.0.0"}|{"command":"notifications.token.get","capability":"notification_token","declared_on_routes":[],"executable?":false,"manifest_version":"1.0.0"}|{"command":"permissions.status","capability":"permissions.status","declared_on_routes":[],"executable?":false,"manifest_version":"1.0.0"}|{"command":"share.invoke","capability":"share","declared_on_routes":[],"executable?":false,"manifest_version":"1.0.0"}|{"command":"transfer.download","capability":"transfer.download","declared_on_routes":[],"executable?":false,"manifest_version":null}|{"command":"transfer.export","capability":"transfer.export","declared_on_routes":[],"executable?":false,"manifest_version":null}|{"command":"transfer.import","capability":"transfer.import","declared_on_routes":[],"executable?":false,"manifest_version":null}|{"command":"transfer.upload.prepare","capability":"transfer.upload.prepare","declared_on_routes":[],"executable?":false,"manifest_version":null}, denial_reasons=compatibility_mismatch|undeclared_capability|unavailable_capability|commerce_corridor|origin_denied|inactive_route|external_entry_denied|pack_incompatible|gate_denied|kill_switch_active|step_up_required|notification_open_denied|dependency_missing|shell_unreachable, protocol=crosswake.bridge, unsupported_declared_capabilities=, version=1.1.0
+
+[advisory] support_posture (support_claim_not_claimed)
+native shell support is not claimed for this host; Phoenix and manifest checks remain active
+hint: generate a shell or pass --native-targets ios|android|all when the host begins claiming native support
+details: proof_statuses={}, shells={}, status=not_claimed
+
+[advisory] capability_posture (capability_proof_merge_blocking)
+merge-blocking capability proofs are required for: app_info, deep_link, entitlement_snapshot, file_picker, haptics, media_capture, paywall_entry, permissions.status, purchase_intent, reconciliation_evidence, restore_intent
+hint: merge-blocking capability proofs must pass to claim support truth
+details: capabilities=app_info|deep_link|entitlement_snapshot|file_picker|haptics|media_capture|paywall_entry|permissions.status|purchase_intent|reconciliation_evidence|restore_intent, proof_class=merge_blocking
+
+[advisory] capability_posture (capability_proof_advisory)
+advisory capability proofs are abstract for: document_scan, notification_token, scanner, share
+hint: advisory capabilities do not block standard CI but require environment-sensitive verification before widening claims
+details: capabilities=document_scan|notification_token|scanner|share, promotion_path=advisory-to-merge-blocking promotion requires an explicit requirement/roadmap scope change plus sustained stability evidence from the advisory lane; advisory results never assert core support truth, proof_class=advisory
+
+[advisory] offline_posture (offline_posture_ready)
+offline posture exposes route-local cached, saved locally, queued for replay, replay failed, and conflict requires attention vocabulary
+hint: doctor and JSON output now describe explicit cached-route and study-session island posture from typed contract truth
+details: routes={}, states=cached_read_only|stale|saved_locally|queued_for_replay|replay_failed|conflict_requires_attention, status=supported, telemetry_keys=route_id|runtime|offline_mode|sync_seam|journal_entry_id|manifest_version|native_runtime_version|correlation_id|terminal_outcome, terminal_outcomes=accepted|rejected|conflict
+
+[advisory] notification_posture (notification.telemetry_contract)
+Crosswake notifications expose strict telemetry for diagnostics. Raw APNs/FCM payloads, device tokens, and PII are forbidden.
+hint: Check chimeway telemetry events for delivery status. Do not attempt to log raw push tokens.
+details: authority_source=diagnostic_evidence_only, event_names=, forbidden_metadata_keys=, metadata_keys=, proof_class=merge_blocking
+
+[advisory] notification_posture (notification.delivery_deferred)
+notification-open workflow proof is hermetic route activation proof: token/open evidence is not auth authority, backend binding and one-time open intent records feed Chimeway, and RouteGate and Sigra decide activation. APNs/FCM delivery is not part of this proof and remains unsupported/advisory.
+hint: Use the local notification_token capability to read push tokens. Do not expect Crosswake to deliver remote push notifications to APNs or FCM; delivery execution remains deferred.
+details: deferred=chimeway_delivery|push_delivery_guarantees, delivery_supported=false
+
+[advisory] threadline_posture (threadline.plug_missing)
+Crosswake.Plug.Threadline is not present in the router at /private/tmp/crosswake-cleanroom-legacy.bAuvwj/clean_room_crosswake_sigra/lib/clean_room_host/router.ex
+hint: Add `plug Crosswake.Plug.Threadline` to your Phoenix router pipeline to enable X-Crosswake-Thread-Id propagation and telemetry spans. See guides/threadline.md.
+details: router_path=/private/tmp/crosswake-cleanroom-legacy.bAuvwj/clean_room_crosswake_sigra/lib/clean_room_host/router.ex
+
+[advisory] threadline_posture (threadline.ledger_not_configured)
+Crosswake audit ledger is not configured — threadline posture is ephemeral only
+hint: Configure `:audit_ledger` under `:crosswake` in your host config and run `mix crosswake.gen.audit` to scaffold the host-owned ledger schema and migration. See guides/threadline.md.
+
+[advisory] diagnostic_export_posture (diagnostic_export.contract_shipped)
+Diagnostics-export envelope and sanitize contract are shipped; the merge-blocking allowlist proof is enforced. Native MetricKit/ApplicationExitInfo transport is deferred to Phase 67.
+hint: The host owns the endpoint and the data. Configure your endpoint to receive POST payloads matching the DiagnosticExport.Envelope contract. No Elixir HTTP-sending code ships in the library.
+details: authority_source=host_configured_endpoint, deferred=native_diagnostic_export|metrickit_capture|application_exit_info_capture, delivery_supported=false, forbidden_metadata_keys=token|raw_token|device_token|registration_token|apns_token|fcm_token|provider_payload|raw_payload|notification_title|notification_body|route_params|actor_id|subject_ref|session_ref|device_id|ip|user_agent|email|provider_response_body, proof_class=merge_blocking
+
+[advisory] bridge_hook (bridge.hook.not_wired)
+no "CrosswakeBridge" hook reference was found in this host's assets tree or its HEEx templates
+hint: import the hook from /crosswake/crosswake.esm.js, register it in your socket's hooks map, and put one `phx-hook="CrosswakeBridge"` element on the page — run `mix crosswake.gen.bridge_hook` for the exact fragments. This check is a best-effort grep and is never authoritative; the runtime ack deadline is.
+details: authoritative=false, searched_assets=0, searched_templates=5
+[crosswake] source_mode=legacy-positional package=crosswake_sigra version=0.1.3 step=doctor
+[crosswake] OK: Step 7: package=crosswake_sigra version=0.1.3 core_floor=~> 0.2 selected_core=0.2.1 profile=no-engine-companion state=doctor-green
+[crosswake] Next safe command: elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: verify_companion_cleanroom: package=crosswake_sigra version=0.1.3 core_floor=~> 0.2 selected_core=0.2.1 profile=no-engine-companion state=passed

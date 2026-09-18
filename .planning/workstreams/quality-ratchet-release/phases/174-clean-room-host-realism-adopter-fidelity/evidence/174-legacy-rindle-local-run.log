@@ -1,0 +1,1042 @@
+[crosswake] OK: package=crosswake_rindle version=0.1.0 state=hex-metadata-found proof=continue
+[crosswake] OK: package=crosswake_rindle version=0.1.0 core_floor=~> 0.2 state=metadata-ready proof=continue
+[crosswake] verify_companion_cleanroom: package=crosswake_rindle version=0.1.0 profile=engine-present engine_package=rindle engine_module=Rindle core_floor=~> 0.2
+[crosswake] clean-room deps: crosswake ~> 0.2; crosswake_rindle == 0.1.0
+[crosswake] OK: Step 1: package=crosswake_rindle version=0.1.0 core_floor=~> 0.2 state=hex-release-authority
+[crosswake] source_mode=legacy-positional package=crosswake_rindle version=0.1.0 step=metadata
+[crosswake] Step 2: creating throwaway Phoenix host at /private/tmp/crosswake-cleanroom-legacy.jF0QjO/clean_room_crosswake_rindle...
+* creating README.md
+* creating .formatter.exs
+* creating .gitignore
+* creating mix.exs
+* creating lib
+* creating lib/clean_room_crosswake_rindle.ex
+* creating lib/clean_room_crosswake_rindle/application.ex
+* creating test
+* creating test/test_helper.exs
+* creating test/clean_room_crosswake_rindle_test.exs
+
+Your Mix project was created successfully.
+You can use "mix" to compile it, test it, and more:
+
+    cd clean_room_crosswake_rindle
+    mix test
+
+Run "mix help" for more commands.
+[crosswake] mix.exs deps patched (engine: trio — crosswake + crosswake_rindle + rindle)
+[crosswake] Step 2 OK: throwaway app created at /private/tmp/crosswake-cleanroom-legacy.jF0QjO/clean_room_crosswake_rindle
+[crosswake] source_mode=legacy-positional package=crosswake_rindle version=0.1.0 step=generate
+[crosswake] Step 3: mix deps.get...
+[33mYour authentication session has expired and could not be refreshed. Continuing without credentials; requests for private resources will fail or prompt for authentication. Run `mix hex.user auth` to re-authenticate[0m
+Resolving Hex dependencies...
+Resolution completed in 1.421s
+New:
+  cc_precompiler 0.1.11
+  color 0.13.0
+  crosswake 0.2.1
+  crosswake_rindle 0.1.0
+  db_connection 2.10.2
+  decimal 3.1.1
+  ecto 3.14.2
+  ecto_sql 3.14.0
+  elixir_make 0.10.0
+  ex_aws 2.7.0
+  ex_aws_s3 2.5.9
+  ex_marcel 0.2.0
+  image 0.72.0
+  jason 1.4.5
+  mime 2.0.7
+  muontrap 1.8.0
+  nimble_options 1.1.1
+  oban 2.24.1
+  phoenix 1.8.14
+  phoenix_html 4.3.0
+  phoenix_live_view 1.2.12
+  phoenix_pubsub 2.3.0
+  phoenix_template 1.0.4
+  plug 1.20.3
+  plug_crypto 2.2.0
+  postgrex 0.22.4
+  rindle 0.4.6
+  sweet_xml 0.7.5
+  telemetry 1.4.2
+  vix 0.41.0
+  websock 0.5.3
+  websock_adapter 0.6.0
+* Getting phoenix (Hex package)
+* Getting phoenix_live_view (Hex package)
+* Getting crosswake (Hex package)
+* Getting crosswake_rindle (Hex package)
+* Getting rindle (Hex package)
+* Getting ecto_sql (Hex package)
+* Getting ex_aws (Hex package)
+* Getting ex_aws_s3 (Hex package)
+* Getting ex_marcel (Hex package)
+* Getting image (Hex package)
+* Getting jason (Hex package)
+* Getting muontrap (Hex package)
+* Getting nimble_options (Hex package)
+* Getting oban (Hex package)
+* Getting plug (Hex package)
+* Getting postgrex (Hex package)
+* Getting telemetry (Hex package)
+* Getting db_connection (Hex package)
+* Getting decimal (Hex package)
+* Getting mime (Hex package)
+* Getting plug_crypto (Hex package)
+* Getting elixir_make (Hex package)
+* Getting color (Hex package)
+* Getting phoenix_html (Hex package)
+* Getting sweet_xml (Hex package)
+* Getting vix (Hex package)
+* Getting cc_precompiler (Hex package)
+* Getting ecto (Hex package)
+* Getting phoenix_template (Hex package)
+* Getting phoenix_pubsub (Hex package)
+* Getting websock_adapter (Hex package)
+* Getting websock (Hex package)
+    warning: found quoted keyword "cc_precompiler" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  2 │   "cc_precompiler": {:hex, :cc_precompiler, "0.1.11", "8c844d0b9fb98a3edea067f94f616b3f6b29b959b6b3bf25fee94ffe34364768", [:mix], [{:elixir_make, "~> 0.7", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm", "3427232caf0835f94680e5bcf082408a70b48ad68a5f5c0b02a3bea9f3a075b9"},
+    │   ~
+    │
+    └─ mix.lock:2:3
+
+    warning: found quoted keyword "color" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  3 │   "color": {:hex, :color, "0.13.0", "068110e5397ac5d3c9f97658282e0f4ab9a32468be6d7a2a91a8804e67b228d7", [:mix], [{:bandit, "~> 1.5", [hex: :bandit, repo: "hexpm", optional: true]}, {:plug, "~> 1.15", [hex: :plug, repo: "hexpm", optional: true]}], "hexpm", "de127946869931d418bac2d82dc29feae1a8f5f729f135922fbccf0059a58ab2"},
+    │   ~
+    │
+    └─ mix.lock:3:3
+
+    warning: found quoted keyword "crosswake" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  4 │   "crosswake": {:hex, :crosswake, "0.2.1", "3a7d2461adf4f287f5a9d75df9cdbcdddddd7259159405eb369ad453d25c2f8b", [:mix], [{:jason, "~> 1.4", [hex: :jason, repo: "hexpm", optional: false]}, {:nimble_options, "~> 1.1", [hex: :nimble_options, repo: "hexpm", optional: false]}, {:phoenix, "~> 1.8", [hex: :phoenix, repo: "hexpm", optional: false]}, {:phoenix_live_view, "~> 1.1", [hex: :phoenix_live_view, repo: "hexpm", optional: false]}, {:telemetry, "~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "ffa220c26980696849497479fa23d47eae44796cfc06f2775999ffca0ed7fc90"},
+    │   ~
+    │
+    └─ mix.lock:4:3
+
+    warning: found quoted keyword "crosswake_rindle" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  5 │   "crosswake_rindle": {:hex, :crosswake_rindle, "0.1.0", "c8a6004ca92963bf5f6b190a2b650c62c369b0c0af859ebc80ff488a3f395457", [:mix], [{:crosswake, "~> 0.2", [hex: :crosswake, repo: "hexpm", optional: false]}, {:rindle, "~> 0.1", [hex: :rindle, repo: "hexpm", optional: true]}], "hexpm", "0ec868b8a7fa46d39be793dfa7554064cb7f8aee77e9479e07895ddec9e4ecbd"},
+    │   ~
+    │
+    └─ mix.lock:5:3
+
+    warning: found quoted keyword "db_connection" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  6 │   "db_connection": {:hex, :db_connection, "2.10.2", "ae391e803a5adff104da913c2fc1c0c14a37f8b10001dcef568796e1fb7bf95c", [:mix], [{:telemetry, "~> 0.4 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "510b14482330f1af6490a2fa0efd8d4f1435d1529b165647df22ac0f2df0fa93"},
+    │   ~
+    │
+    └─ mix.lock:6:3
+
+    warning: found quoted keyword "decimal" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  7 │   "decimal": {:hex, :decimal, "3.1.1", "430d87b04011ce6cbd4fd205be758311a81f87d552d40904abd00f015935b1d0", [:mix], [], "hexpm", "c5f25f2ced74a0587d03e6023f595db8e924c9d3922c8c8ffd9edfc4498cf1f6"},
+    │   ~
+    │
+    └─ mix.lock:7:3
+
+    warning: found quoted keyword "ecto" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  8 │   "ecto": {:hex, :ecto, "3.14.2", "99db28a864293a789c970651de711e3cae184291e0e7ea1166c54055ac41c1f3", [:mix], [{:decimal, "~> 3.0", [hex: :decimal, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}, {:telemetry, "~> 0.4 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "25d60b8c816a07d19d85b80bdf60978bd8b102209dda198d768cd7c6745339a6"},
+    │   ~
+    │
+    └─ mix.lock:8:3
+
+    warning: found quoted keyword "ecto_sql" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  9 │   "ecto_sql": {:hex, :ecto_sql, "3.14.0", "06446ab8410d2f85bfbb80857ee224ab3b693700cbb38f6535d507449a627b2e", [:mix], [{:db_connection, "~> 2.9", [hex: :db_connection, repo: "hexpm", optional: false]}, {:decimal, "~> 3.0", [hex: :decimal, repo: "hexpm", optional: false]}, {:ecto, "~> 3.14.0", [hex: :ecto, repo: "hexpm", optional: false]}, {:myxql, "~> 0.8", [hex: :myxql, repo: "hexpm", optional: true]}, {:postgrex, "~> 0.19 or ~> 1.0", [hex: :postgrex, repo: "hexpm", optional: true]}, {:tds, "~> 2.1.1 or ~> 2.2", [hex: :tds, repo: "hexpm", optional: true]}, {:telemetry, "~> 0.4.0 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "f4d8d36faf294c9417b5a37ec7ac8217ee2abdef5fcf197ba690f361548d3949"},
+    │   ~
+    │
+    └─ mix.lock:9:3
+
+    warning: found quoted keyword "elixir_make" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 10 │   "elixir_make": {:hex, :elixir_make, "0.10.0", "16577e2583a79bb79237bbff349619ef5d80afffc07eac6e4faf0d00e2ddaf7d", [:mix], [], "hexpm", "dc1f09fb7fa68866b886abd5f0f3c83553b1a19a52359a899e92af1bb3b31982"},
+    │   ~
+    │
+    └─ mix.lock:10:3
+
+    warning: found quoted keyword "ex_aws" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 11 │   "ex_aws": {:hex, :ex_aws, "2.7.0", "e6bfd4b5fb8c791aa6c7d57fc7c45f050bb89de9576f1f6104aa974b234c01ec", [:mix], [{:configparser_ex, "~> 5.0", [hex: :configparser_ex, repo: "hexpm", optional: true]}, {:hackney, "~> 4.0", [hex: :hackney, repo: "hexpm", optional: true]}, {:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: true]}, {:jsx, "~> 2.8 or ~> 3.0", [hex: :jsx, repo: "hexpm", optional: true]}, {:mime, "~> 1.2 or ~> 2.0", [hex: :mime, repo: "hexpm", optional: false]}, {:req, "~> 0.5.10 or ~> 0.6 or ~> 1.0", [hex: :req, repo: "hexpm", optional: true]}, {:sweet_xml, "~> 0.7", [hex: :sweet_xml, repo: "hexpm", optional: true]}, {:telemetry, "~> 0.4.3 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "bfe9d744d4fd4c1f40314ee7fab504d5547d1f01cd377fff1568cbe630b06d65"},
+    │   ~
+    │
+    └─ mix.lock:11:3
+
+    warning: found quoted keyword "ex_aws_s3" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 12 │   "ex_aws_s3": {:hex, :ex_aws_s3, "2.5.9", "862b7792f2e60d7010e2920d79964e3fab289bc0fd951b0ba8457a3f7f9d1199", [:mix], [{:ex_aws, "~> 2.0", [hex: :ex_aws, repo: "hexpm", optional: false]}, {:sweet_xml, ">= 0.0.0", [hex: :sweet_xml, repo: "hexpm", optional: true]}], "hexpm", "a480d2bb2da64610014021629800e1e9457ca5e4a62f6775bffd963360c2bf90"},
+    │   ~
+    │
+    └─ mix.lock:12:3
+
+    warning: found quoted keyword "ex_marcel" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 13 │   "ex_marcel": {:hex, :ex_marcel, "0.2.0", "0aae641f4144ff9d3c37f36dc62e1ee94c4a4e8d34683be8321f9c2c7e459ada", [:mix], [], "hexpm", "fecf90bfe1cb4097d58ac7d444249afc9e8a314413f82cfb29a8a758ec65fcd5"},
+    │   ~
+    │
+    └─ mix.lock:13:3
+
+    warning: found quoted keyword "image" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 14 │   "image": {:hex, :image, "0.72.0", "d7ceb8d67fddb396b1d0262857551c92692499cce9e9cd40156e322616e53b25", [:mix], [{:color, "~> 0.13", [hex: :color, repo: "hexpm", optional: false]}, {:evision, "~> 0.1.33 or ~> 0.2", [hex: :evision, repo: "hexpm", optional: true]}, {:exla, "~> 0.12", [hex: :exla, repo: "hexpm", optional: true]}, {:kino, "~> 0.13", [hex: :kino, repo: "hexpm", optional: true]}, {:nx, "~> 0.12", [hex: :nx, repo: "hexpm", optional: true]}, {:nx_image, "~> 0.1", [hex: :nx_image, repo: "hexpm", optional: true]}, {:phoenix_html, "~> 2.1 or ~> 3.2 or ~> 4.0", [hex: :phoenix_html, repo: "hexpm", optional: false]}, {:plug, "~> 1.13", [hex: :plug, repo: "hexpm", optional: true]}, {:req, "~> 0.4", [hex: :req, repo: "hexpm", optional: true]}, {:rustler, "> 0.0.0", [hex: :rustler, repo: "hexpm", optional: true]}, {:scholar, "~> 0.3", [hex: :scholar, repo: "hexpm", optional: true]}, {:sweet_xml, "~> 0.7", [hex: :sweet_xml, repo: "hexpm", optional: false]}, {:vix, "~> 0.33", [hex: :vix, repo: "hexpm", optional: false]}, {:xav, "~> 0.10", [hex: :xav, repo: "hexpm", optional: true]}], "hexpm", "d55a6c3c90fe76e96265b655d85d6f2fafc439f66c6e792a4925f2d84378f3b0"},
+    │   ~
+    │
+    └─ mix.lock:14:3
+
+    warning: found quoted keyword "jason" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 15 │   "jason": {:hex, :jason, "1.4.5", "2e3a008590b0b8d7388c20293e9dcc9cf3e5d642fd2a114e4cbbb52e595d940a", [:mix], [{:decimal, "~> 1.0 or ~> 2.0 or ~> 3.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "b0c823996102bcd0239b3c2444eb00409b72f6a140c1950bc8b457d836b30684"},
+    │   ~
+    │
+    └─ mix.lock:15:3
+
+    warning: found quoted keyword "mime" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 16 │   "mime": {:hex, :mime, "2.0.7", "b8d739037be7cd402aee1ba0306edfdef982687ee7e9859bee6198c1e7e2f128", [:mix], [], "hexpm", "6171188e399ee16023ffc5b76ce445eb6d9672e2e241d2df6050f3c771e80ccd"},
+    │   ~
+    │
+    └─ mix.lock:16:3
+
+    warning: found quoted keyword "muontrap" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 17 │   "muontrap": {:hex, :muontrap, "1.8.0", "3c5dab5bc91d5a16d14cd85b130ae7d35a9c469564a11ba4b2ebbcd7ccf5bc05", [:make, :mix], [{:elixir_make, "~> 0.6", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm", "45ff36451303cbdefe1c66da3681b5aff078ee5737348f554f0017daa66284af"},
+    │   ~
+    │
+    └─ mix.lock:17:3
+
+    warning: found quoted keyword "nimble_options" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 18 │   "nimble_options": {:hex, :nimble_options, "1.1.1", "e3a492d54d85fc3fd7c5baf411d9d2852922f66e69476317787a7b2bb000a61b", [:mix], [], "hexpm", "821b2470ca9442c4b6984882fe9bb0389371b8ddec4d45a9504f00a66f650b44"},
+    │   ~
+    │
+    └─ mix.lock:18:3
+
+    warning: found quoted keyword "oban" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 19 │   "oban": {:hex, :oban, "2.24.1", "2a609c54697ad2c44ba339df30491df2a40eda0758c95b5b879426e4e478bd1f", [:mix], [{:ecto_sql, "~> 3.10", [hex: :ecto_sql, repo: "hexpm", optional: false]}, {:ecto_sqlite3, "~> 0.9", [hex: :ecto_sqlite3, repo: "hexpm", optional: true]}, {:igniter, "~> 0.5", [hex: :igniter, repo: "hexpm", optional: true]}, {:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: true]}, {:myxql, "~> 0.7", [hex: :myxql, repo: "hexpm", optional: true]}, {:postgrex, "~> 0.20", [hex: :postgrex, repo: "hexpm", optional: true]}, {:telemetry, "~> 1.3", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "ef8482472cf198554400b7f8e36a0ffee75c3a64de425d5c7ee625d271925ac7"},
+    │   ~
+    │
+    └─ mix.lock:19:3
+
+    warning: found quoted keyword "phoenix" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 20 │   "phoenix": {:hex, :phoenix, "1.8.14", "9279cbbcd755ac8d5f42d206915e7df13b9ab49096b98114f1c99ff908e5b42e", [:mix], [{:bandit, "~> 1.0", [hex: :bandit, repo: "hexpm", optional: true]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}, {:phoenix_pubsub, "~> 2.1", [hex: :phoenix_pubsub, repo: "hexpm", optional: false]}, {:phoenix_template, "~> 1.0", [hex: :phoenix_template, repo: "hexpm", optional: false]}, {:phoenix_view, "~> 2.0", [hex: :phoenix_view, repo: "hexpm", optional: true]}, {:plug, "~> 1.14", [hex: :plug, repo: "hexpm", optional: false]}, {:plug_cowboy, "~> 2.7", [hex: :plug_cowboy, repo: "hexpm", optional: true]}, {:plug_crypto, "~> 2.2", [hex: :plug_crypto, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}, {:websock_adapter, "~> 0.5", [hex: :websock_adapter, repo: "hexpm", optional: false]}], "hexpm", "2782ff375824b2b5e41561fbae4764ee7b875af6898483bca49f24a9d1e37816"},
+    │   ~
+    │
+    └─ mix.lock:20:3
+
+    warning: found quoted keyword "phoenix_html" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 21 │   "phoenix_html": {:hex, :phoenix_html, "4.3.0", "d3577a5df4b6954cd7890c84d955c470b5310bb49647f0a114a6eeecc850f7ad", [:mix], [], "hexpm", "3eaa290a78bab0f075f791a46a981bbe769d94bc776869f4f3063a14f30497ad"},
+    │   ~
+    │
+    └─ mix.lock:21:3
+
+    warning: found quoted keyword "phoenix_live_view" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 22 │   "phoenix_live_view": {:hex, :phoenix_live_view, "1.2.12", "35848150bbab579e9d0aff79525269d7c0801a4f61232b84f635c11222cee88f", [:mix], [{:igniter, ">= 0.6.16 and < 1.0.0-0", [hex: :igniter, repo: "hexpm", optional: true]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}, {:lazy_html, "~> 0.1.0", [hex: :lazy_html, repo: "hexpm", optional: true]}, {:phoenix, "~> 1.6.15 or ~> 1.7.0 or ~> 1.8.0", [hex: :phoenix, repo: "hexpm", optional: false]}, {:phoenix_html, "~> 3.3 or ~> 4.0", [hex: :phoenix_html, repo: "hexpm", optional: false]}, {:phoenix_template, "~> 1.0", [hex: :phoenix_template, repo: "hexpm", optional: false]}, {:phoenix_view, "~> 2.0", [hex: :phoenix_view, repo: "hexpm", optional: true]}, {:plug, "~> 1.15", [hex: :plug, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4.2 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "656810d716e3369545dd63981196a5d68b77fdb253afe02ef0c6fa14cfd8dc2b"},
+    │   ~
+    │
+    └─ mix.lock:22:3
+
+    warning: found quoted keyword "phoenix_pubsub" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 23 │   "phoenix_pubsub": {:hex, :phoenix_pubsub, "2.3.0", "03916bfbc31a5121945b3cfffe5aec647a5c97fe1dc172a319b94428562359c9", [:mix], [], "hexpm", "eec7be6e9cf02e2551d389b558402d6c637cd3973796326e7ba4bb03c6b2e91d"},
+    │   ~
+    │
+    └─ mix.lock:23:3
+
+    warning: found quoted keyword "phoenix_template" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 24 │   "phoenix_template": {:hex, :phoenix_template, "1.0.4", "e2092c132f3b5e5b2d49c96695342eb36d0ed514c5b252a77048d5969330d639", [:mix], [{:phoenix_html, "~> 2.14.2 or ~> 3.0 or ~> 4.0", [hex: :phoenix_html, repo: "hexpm", optional: true]}], "hexpm", "2c0c81f0e5c6753faf5cca2f229c9709919aba34fab866d3bc05060c9c444206"},
+    │   ~
+    │
+    └─ mix.lock:24:3
+
+    warning: found quoted keyword "plug" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 25 │   "plug": {:hex, :plug, "1.20.3", "56c480c633ec2ce10140e236e15233bf576e1d323887d7c96711bd02ab5160db", [:mix], [{:mime, "~> 1.0 or ~> 2.0", [hex: :mime, repo: "hexpm", optional: false]}, {:plug_crypto, "~> 1.1.1 or ~> 1.2 or ~> 2.0", [hex: :plug_crypto, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4.3 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "be266aee1b8536ef6409d58cf39a3121319f0ec47cfa1b24024485aa0e76ad76"},
+    │   ~
+    │
+    └─ mix.lock:25:3
+
+    warning: found quoted keyword "plug_crypto" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 26 │   "plug_crypto": {:hex, :plug_crypto, "2.2.0", "144014737daaf485407f5ed77daeaad74d651b216a28c87543f8cc7043f8efc8", [:mix], [], "hexpm", "83a95744ab1c75876542b6fab135fcc176280e0f301a111c1f757fddcec95d2c"},
+    │   ~
+    │
+    └─ mix.lock:26:3
+
+    warning: found quoted keyword "postgrex" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 27 │   "postgrex": {:hex, :postgrex, "0.22.4", "d271f595dfd25230b6398354e19d17bb5e2d20130fd2d9bdca7e15f125d43552", [:mix], [{:db_connection, "~> 2.9", [hex: :db_connection, repo: "hexpm", optional: false]}, {:decimal, "~> 1.5 or ~> 2.0 or ~> 3.0", [hex: :decimal, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}, {:table, "~> 0.1.0", [hex: :table, repo: "hexpm", optional: true]}], "hexpm", "4aae45a2d60e35b04eea2602440be152fae332901f1fc7a60fc7cb7f0f9a9c5a"},
+    │   ~
+    │
+    └─ mix.lock:27:3
+
+    warning: found quoted keyword "rindle" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 28 │   "rindle": {:hex, :rindle, "0.4.6", "35bea401dc09aac08d5c36bedc8ea9c096e92b03c6aec03698a8dced24bafc67", [:mix], [{:ecto_sql, "~> 3.11", [hex: :ecto_sql, repo: "hexpm", optional: false]}, {:ex_aws, "~> 2.5", [hex: :ex_aws, repo: "hexpm", optional: false]}, {:ex_aws_s3, "~> 2.5", [hex: :ex_aws_s3, repo: "hexpm", optional: false]}, {:ex_marcel, "~> 0.2", [hex: :ex_marcel, repo: "hexpm", optional: false]}, {:finch, "~> 0.21", [hex: :finch, repo: "hexpm", optional: true]}, {:gcs_signed_url, "~> 0.6", [hex: :gcs_signed_url, repo: "hexpm", optional: true]}, {:goth, "~> 1.4", [hex: :goth, repo: "hexpm", optional: true]}, {:image, "~> 0.65", [hex: :image, repo: "hexpm", optional: false]}, {:jason, "~> 1.4", [hex: :jason, repo: "hexpm", optional: false]}, {:jose, "~> 1.11", [hex: :jose, repo: "hexpm", optional: true]}, {:muontrap, "~> 1.7", [hex: :muontrap, repo: "hexpm", optional: false]}, {:mux, "~> 3.2", [hex: :mux, repo: "hexpm", optional: true]}, {:nimble_options, "~> 1.1", [hex: :nimble_options, repo: "hexpm", optional: false]}, {:oban, "~> 2.21", [hex: :oban, repo: "hexpm", optional: false]}, {:phoenix_live_view, "~> 1.0", [hex: :phoenix_live_view, repo: "hexpm", optional: true]}, {:plug, "~> 1.16", [hex: :plug, repo: "hexpm", optional: false]}, {:postgrex, "~> 0.18", [hex: :postgrex, repo: "hexpm", optional: false]}, {:req, "~> 0.6", [hex: :req, repo: "hexpm", optional: true]}, {:telemetry, "~> 1.2", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "61cf11552ba726fcee979524fd7b50b3a2c40a40a8719cd7ce6c0d913a397362"},
+    │   ~
+    │
+    └─ mix.lock:28:3
+
+    warning: found quoted keyword "sweet_xml" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 29 │   "sweet_xml": {:hex, :sweet_xml, "0.7.5", "803a563113981aaac202a1dbd39771562d0ad31004ddbfc9b5090bdcd5605277", [:mix], [], "hexpm", "193b28a9b12891cae351d81a0cead165ffe67df1b73fe5866d10629f4faefb12"},
+    │   ~
+    │
+    └─ mix.lock:29:3
+
+    warning: found quoted keyword "telemetry" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 30 │   "telemetry": {:hex, :telemetry, "1.4.2", "a0cb522801dffb1c49fe6e30561badffc7b6d0e180db1300df759faa22062855", [:rebar3], [], "hexpm", "928f6495066506077862c0d1646609eed891a4326bee3126ba54b60af61febb1"},
+    │   ~
+    │
+    └─ mix.lock:30:3
+
+    warning: found quoted keyword "vix" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 31 │   "vix": {:hex, :vix, "0.41.0", "a17e233d57170d8f25a960d28c87194ca4ebd28100c2620ba91ecc8bede96234", [:make, :mix], [{:cc_precompiler, "~> 0.1.4 or ~> 0.2", [hex: :cc_precompiler, repo: "hexpm", optional: false]}, {:elixir_make, "~> 0.7.3 or ~> 0.8", [hex: :elixir_make, repo: "hexpm", optional: false]}, {:kino, "~> 0.7", [hex: :kino, repo: "hexpm", optional: true]}], "hexpm", "9a16b5acd9989630cae44333fcf9de11a54609a7596bba59a0c424593b3f9570"},
+    │   ~
+    │
+    └─ mix.lock:31:3
+
+    warning: found quoted keyword "websock" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 32 │   "websock": {:hex, :websock, "0.5.3", "2f69a6ebe810328555b6fe5c831a851f485e303a7c8ce6c5f675abeb20ebdadc", [:mix], [], "hexpm", "6105453d7fac22c712ad66fab1d45abdf049868f253cf719b625151460b8b453"},
+    │   ~
+    │
+    └─ mix.lock:32:3
+
+    warning: found quoted keyword "websock_adapter" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 33 │   "websock_adapter": {:hex, :websock_adapter, "0.6.0", "73db5ab8aaefd1a876a97ce3e6afc96562625de69ef17a4e04426e034849d0b8", [:mix], [{:bandit, ">= 0.6.0", [hex: :bandit, repo: "hexpm", optional: true]}, {:plug, "~> 1.14", [hex: :plug, repo: "hexpm", optional: false]}, {:plug_cowboy, "~> 2.6", [hex: :plug_cowboy, repo: "hexpm", optional: true]}, {:websock, "~> 0.5", [hex: :websock, repo: "hexpm", optional: false]}], "hexpm", "50021a85bce8f203b086705d9e0c5415e2c7eb05d319111b0428fe71f9934617"},
+    │   ~
+    │
+    └─ mix.lock:33:3
+
+    warning: found quoted keyword "cc_precompiler" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  2 │   "cc_precompiler": {:hex, :cc_precompiler, "0.1.11", "8c844d0b9fb98a3edea067f94f616b3f6b29b959b6b3bf25fee94ffe34364768", [:mix], [{:elixir_make, "~> 0.7", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm", "3427232caf0835f94680e5bcf082408a70b48ad68a5f5c0b02a3bea9f3a075b9"},
+    │   ~
+    │
+    └─ mix.lock:2:3
+
+    warning: found quoted keyword "color" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  3 │   "color": {:hex, :color, "0.13.0", "068110e5397ac5d3c9f97658282e0f4ab9a32468be6d7a2a91a8804e67b228d7", [:mix], [{:bandit, "~> 1.5", [hex: :bandit, repo: "hexpm", optional: true]}, {:plug, "~> 1.15", [hex: :plug, repo: "hexpm", optional: true]}], "hexpm", "de127946869931d418bac2d82dc29feae1a8f5f729f135922fbccf0059a58ab2"},
+    │   ~
+    │
+    └─ mix.lock:3:3
+
+    warning: found quoted keyword "crosswake" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  4 │   "crosswake": {:hex, :crosswake, "0.2.1", "3a7d2461adf4f287f5a9d75df9cdbcdddddd7259159405eb369ad453d25c2f8b", [:mix], [{:jason, "~> 1.4", [hex: :jason, repo: "hexpm", optional: false]}, {:nimble_options, "~> 1.1", [hex: :nimble_options, repo: "hexpm", optional: false]}, {:phoenix, "~> 1.8", [hex: :phoenix, repo: "hexpm", optional: false]}, {:phoenix_live_view, "~> 1.1", [hex: :phoenix_live_view, repo: "hexpm", optional: false]}, {:telemetry, "~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "ffa220c26980696849497479fa23d47eae44796cfc06f2775999ffca0ed7fc90"},
+    │   ~
+    │
+    └─ mix.lock:4:3
+
+    warning: found quoted keyword "crosswake_rindle" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  5 │   "crosswake_rindle": {:hex, :crosswake_rindle, "0.1.0", "c8a6004ca92963bf5f6b190a2b650c62c369b0c0af859ebc80ff488a3f395457", [:mix], [{:crosswake, "~> 0.2", [hex: :crosswake, repo: "hexpm", optional: false]}, {:rindle, "~> 0.1", [hex: :rindle, repo: "hexpm", optional: true]}], "hexpm", "0ec868b8a7fa46d39be793dfa7554064cb7f8aee77e9479e07895ddec9e4ecbd"},
+    │   ~
+    │
+    └─ mix.lock:5:3
+
+    warning: found quoted keyword "db_connection" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  6 │   "db_connection": {:hex, :db_connection, "2.10.2", "ae391e803a5adff104da913c2fc1c0c14a37f8b10001dcef568796e1fb7bf95c", [:mix], [{:telemetry, "~> 0.4 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "510b14482330f1af6490a2fa0efd8d4f1435d1529b165647df22ac0f2df0fa93"},
+    │   ~
+    │
+    └─ mix.lock:6:3
+
+    warning: found quoted keyword "decimal" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  7 │   "decimal": {:hex, :decimal, "3.1.1", "430d87b04011ce6cbd4fd205be758311a81f87d552d40904abd00f015935b1d0", [:mix], [], "hexpm", "c5f25f2ced74a0587d03e6023f595db8e924c9d3922c8c8ffd9edfc4498cf1f6"},
+    │   ~
+    │
+    └─ mix.lock:7:3
+
+    warning: found quoted keyword "ecto" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  8 │   "ecto": {:hex, :ecto, "3.14.2", "99db28a864293a789c970651de711e3cae184291e0e7ea1166c54055ac41c1f3", [:mix], [{:decimal, "~> 3.0", [hex: :decimal, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}, {:telemetry, "~> 0.4 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "25d60b8c816a07d19d85b80bdf60978bd8b102209dda198d768cd7c6745339a6"},
+    │   ~
+    │
+    └─ mix.lock:8:3
+
+    warning: found quoted keyword "ecto_sql" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+  9 │   "ecto_sql": {:hex, :ecto_sql, "3.14.0", "06446ab8410d2f85bfbb80857ee224ab3b693700cbb38f6535d507449a627b2e", [:mix], [{:db_connection, "~> 2.9", [hex: :db_connection, repo: "hexpm", optional: false]}, {:decimal, "~> 3.0", [hex: :decimal, repo: "hexpm", optional: false]}, {:ecto, "~> 3.14.0", [hex: :ecto, repo: "hexpm", optional: false]}, {:myxql, "~> 0.8", [hex: :myxql, repo: "hexpm", optional: true]}, {:postgrex, "~> 0.19 or ~> 1.0", [hex: :postgrex, repo: "hexpm", optional: true]}, {:tds, "~> 2.1.1 or ~> 2.2", [hex: :tds, repo: "hexpm", optional: true]}, {:telemetry, "~> 0.4.0 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "f4d8d36faf294c9417b5a37ec7ac8217ee2abdef5fcf197ba690f361548d3949"},
+    │   ~
+    │
+    └─ mix.lock:9:3
+
+    warning: found quoted keyword "elixir_make" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 10 │   "elixir_make": {:hex, :elixir_make, "0.10.0", "16577e2583a79bb79237bbff349619ef5d80afffc07eac6e4faf0d00e2ddaf7d", [:mix], [], "hexpm", "dc1f09fb7fa68866b886abd5f0f3c83553b1a19a52359a899e92af1bb3b31982"},
+    │   ~
+    │
+    └─ mix.lock:10:3
+
+    warning: found quoted keyword "ex_aws" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 11 │   "ex_aws": {:hex, :ex_aws, "2.7.0", "e6bfd4b5fb8c791aa6c7d57fc7c45f050bb89de9576f1f6104aa974b234c01ec", [:mix], [{:configparser_ex, "~> 5.0", [hex: :configparser_ex, repo: "hexpm", optional: true]}, {:hackney, "~> 4.0", [hex: :hackney, repo: "hexpm", optional: true]}, {:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: true]}, {:jsx, "~> 2.8 or ~> 3.0", [hex: :jsx, repo: "hexpm", optional: true]}, {:mime, "~> 1.2 or ~> 2.0", [hex: :mime, repo: "hexpm", optional: false]}, {:req, "~> 0.5.10 or ~> 0.6 or ~> 1.0", [hex: :req, repo: "hexpm", optional: true]}, {:sweet_xml, "~> 0.7", [hex: :sweet_xml, repo: "hexpm", optional: true]}, {:telemetry, "~> 0.4.3 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "bfe9d744d4fd4c1f40314ee7fab504d5547d1f01cd377fff1568cbe630b06d65"},
+    │   ~
+    │
+    └─ mix.lock:11:3
+
+    warning: found quoted keyword "ex_aws_s3" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 12 │   "ex_aws_s3": {:hex, :ex_aws_s3, "2.5.9", "862b7792f2e60d7010e2920d79964e3fab289bc0fd951b0ba8457a3f7f9d1199", [:mix], [{:ex_aws, "~> 2.0", [hex: :ex_aws, repo: "hexpm", optional: false]}, {:sweet_xml, ">= 0.0.0", [hex: :sweet_xml, repo: "hexpm", optional: true]}], "hexpm", "a480d2bb2da64610014021629800e1e9457ca5e4a62f6775bffd963360c2bf90"},
+    │   ~
+    │
+    └─ mix.lock:12:3
+
+    warning: found quoted keyword "ex_marcel" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 13 │   "ex_marcel": {:hex, :ex_marcel, "0.2.0", "0aae641f4144ff9d3c37f36dc62e1ee94c4a4e8d34683be8321f9c2c7e459ada", [:mix], [], "hexpm", "fecf90bfe1cb4097d58ac7d444249afc9e8a314413f82cfb29a8a758ec65fcd5"},
+    │   ~
+    │
+    └─ mix.lock:13:3
+
+    warning: found quoted keyword "image" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 14 │   "image": {:hex, :image, "0.72.0", "d7ceb8d67fddb396b1d0262857551c92692499cce9e9cd40156e322616e53b25", [:mix], [{:color, "~> 0.13", [hex: :color, repo: "hexpm", optional: false]}, {:evision, "~> 0.1.33 or ~> 0.2", [hex: :evision, repo: "hexpm", optional: true]}, {:exla, "~> 0.12", [hex: :exla, repo: "hexpm", optional: true]}, {:kino, "~> 0.13", [hex: :kino, repo: "hexpm", optional: true]}, {:nx, "~> 0.12", [hex: :nx, repo: "hexpm", optional: true]}, {:nx_image, "~> 0.1", [hex: :nx_image, repo: "hexpm", optional: true]}, {:phoenix_html, "~> 2.1 or ~> 3.2 or ~> 4.0", [hex: :phoenix_html, repo: "hexpm", optional: false]}, {:plug, "~> 1.13", [hex: :plug, repo: "hexpm", optional: true]}, {:req, "~> 0.4", [hex: :req, repo: "hexpm", optional: true]}, {:rustler, "> 0.0.0", [hex: :rustler, repo: "hexpm", optional: true]}, {:scholar, "~> 0.3", [hex: :scholar, repo: "hexpm", optional: true]}, {:sweet_xml, "~> 0.7", [hex: :sweet_xml, repo: "hexpm", optional: false]}, {:vix, "~> 0.33", [hex: :vix, repo: "hexpm", optional: false]}, {:xav, "~> 0.10", [hex: :xav, repo: "hexpm", optional: true]}], "hexpm", "d55a6c3c90fe76e96265b655d85d6f2fafc439f66c6e792a4925f2d84378f3b0"},
+    │   ~
+    │
+    └─ mix.lock:14:3
+
+    warning: found quoted keyword "jason" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 15 │   "jason": {:hex, :jason, "1.4.5", "2e3a008590b0b8d7388c20293e9dcc9cf3e5d642fd2a114e4cbbb52e595d940a", [:mix], [{:decimal, "~> 1.0 or ~> 2.0 or ~> 3.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "b0c823996102bcd0239b3c2444eb00409b72f6a140c1950bc8b457d836b30684"},
+    │   ~
+    │
+    └─ mix.lock:15:3
+
+    warning: found quoted keyword "mime" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 16 │   "mime": {:hex, :mime, "2.0.7", "b8d739037be7cd402aee1ba0306edfdef982687ee7e9859bee6198c1e7e2f128", [:mix], [], "hexpm", "6171188e399ee16023ffc5b76ce445eb6d9672e2e241d2df6050f3c771e80ccd"},
+    │   ~
+    │
+    └─ mix.lock:16:3
+
+    warning: found quoted keyword "muontrap" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 17 │   "muontrap": {:hex, :muontrap, "1.8.0", "3c5dab5bc91d5a16d14cd85b130ae7d35a9c469564a11ba4b2ebbcd7ccf5bc05", [:make, :mix], [{:elixir_make, "~> 0.6", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm", "45ff36451303cbdefe1c66da3681b5aff078ee5737348f554f0017daa66284af"},
+    │   ~
+    │
+    └─ mix.lock:17:3
+
+    warning: found quoted keyword "nimble_options" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 18 │   "nimble_options": {:hex, :nimble_options, "1.1.1", "e3a492d54d85fc3fd7c5baf411d9d2852922f66e69476317787a7b2bb000a61b", [:mix], [], "hexpm", "821b2470ca9442c4b6984882fe9bb0389371b8ddec4d45a9504f00a66f650b44"},
+    │   ~
+    │
+    └─ mix.lock:18:3
+
+    warning: found quoted keyword "oban" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 19 │   "oban": {:hex, :oban, "2.24.1", "2a609c54697ad2c44ba339df30491df2a40eda0758c95b5b879426e4e478bd1f", [:mix], [{:ecto_sql, "~> 3.10", [hex: :ecto_sql, repo: "hexpm", optional: false]}, {:ecto_sqlite3, "~> 0.9", [hex: :ecto_sqlite3, repo: "hexpm", optional: true]}, {:igniter, "~> 0.5", [hex: :igniter, repo: "hexpm", optional: true]}, {:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: true]}, {:myxql, "~> 0.7", [hex: :myxql, repo: "hexpm", optional: true]}, {:postgrex, "~> 0.20", [hex: :postgrex, repo: "hexpm", optional: true]}, {:telemetry, "~> 1.3", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "ef8482472cf198554400b7f8e36a0ffee75c3a64de425d5c7ee625d271925ac7"},
+    │   ~
+    │
+    └─ mix.lock:19:3
+
+    warning: found quoted keyword "phoenix" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 20 │   "phoenix": {:hex, :phoenix, "1.8.14", "9279cbbcd755ac8d5f42d206915e7df13b9ab49096b98114f1c99ff908e5b42e", [:mix], [{:bandit, "~> 1.0", [hex: :bandit, repo: "hexpm", optional: true]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}, {:phoenix_pubsub, "~> 2.1", [hex: :phoenix_pubsub, repo: "hexpm", optional: false]}, {:phoenix_template, "~> 1.0", [hex: :phoenix_template, repo: "hexpm", optional: false]}, {:phoenix_view, "~> 2.0", [hex: :phoenix_view, repo: "hexpm", optional: true]}, {:plug, "~> 1.14", [hex: :plug, repo: "hexpm", optional: false]}, {:plug_cowboy, "~> 2.7", [hex: :plug_cowboy, repo: "hexpm", optional: true]}, {:plug_crypto, "~> 2.2", [hex: :plug_crypto, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}, {:websock_adapter, "~> 0.5", [hex: :websock_adapter, repo: "hexpm", optional: false]}], "hexpm", "2782ff375824b2b5e41561fbae4764ee7b875af6898483bca49f24a9d1e37816"},
+    │   ~
+    │
+    └─ mix.lock:20:3
+
+    warning: found quoted keyword "phoenix_html" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 21 │   "phoenix_html": {:hex, :phoenix_html, "4.3.0", "d3577a5df4b6954cd7890c84d955c470b5310bb49647f0a114a6eeecc850f7ad", [:mix], [], "hexpm", "3eaa290a78bab0f075f791a46a981bbe769d94bc776869f4f3063a14f30497ad"},
+    │   ~
+    │
+    └─ mix.lock:21:3
+
+    warning: found quoted keyword "phoenix_live_view" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 22 │   "phoenix_live_view": {:hex, :phoenix_live_view, "1.2.12", "35848150bbab579e9d0aff79525269d7c0801a4f61232b84f635c11222cee88f", [:mix], [{:igniter, ">= 0.6.16 and < 1.0.0-0", [hex: :igniter, repo: "hexpm", optional: true]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}, {:lazy_html, "~> 0.1.0", [hex: :lazy_html, repo: "hexpm", optional: true]}, {:phoenix, "~> 1.6.15 or ~> 1.7.0 or ~> 1.8.0", [hex: :phoenix, repo: "hexpm", optional: false]}, {:phoenix_html, "~> 3.3 or ~> 4.0", [hex: :phoenix_html, repo: "hexpm", optional: false]}, {:phoenix_template, "~> 1.0", [hex: :phoenix_template, repo: "hexpm", optional: false]}, {:phoenix_view, "~> 2.0", [hex: :phoenix_view, repo: "hexpm", optional: true]}, {:plug, "~> 1.15", [hex: :plug, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4.2 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "656810d716e3369545dd63981196a5d68b77fdb253afe02ef0c6fa14cfd8dc2b"},
+    │   ~
+    │
+    └─ mix.lock:22:3
+
+    warning: found quoted keyword "phoenix_pubsub" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 23 │   "phoenix_pubsub": {:hex, :phoenix_pubsub, "2.3.0", "03916bfbc31a5121945b3cfffe5aec647a5c97fe1dc172a319b94428562359c9", [:mix], [], "hexpm", "eec7be6e9cf02e2551d389b558402d6c637cd3973796326e7ba4bb03c6b2e91d"},
+    │   ~
+    │
+    └─ mix.lock:23:3
+
+    warning: found quoted keyword "phoenix_template" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 24 │   "phoenix_template": {:hex, :phoenix_template, "1.0.4", "e2092c132f3b5e5b2d49c96695342eb36d0ed514c5b252a77048d5969330d639", [:mix], [{:phoenix_html, "~> 2.14.2 or ~> 3.0 or ~> 4.0", [hex: :phoenix_html, repo: "hexpm", optional: true]}], "hexpm", "2c0c81f0e5c6753faf5cca2f229c9709919aba34fab866d3bc05060c9c444206"},
+    │   ~
+    │
+    └─ mix.lock:24:3
+
+    warning: found quoted keyword "plug" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 25 │   "plug": {:hex, :plug, "1.20.3", "56c480c633ec2ce10140e236e15233bf576e1d323887d7c96711bd02ab5160db", [:mix], [{:mime, "~> 1.0 or ~> 2.0", [hex: :mime, repo: "hexpm", optional: false]}, {:plug_crypto, "~> 1.1.1 or ~> 1.2 or ~> 2.0", [hex: :plug_crypto, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4.3 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "be266aee1b8536ef6409d58cf39a3121319f0ec47cfa1b24024485aa0e76ad76"},
+    │   ~
+    │
+    └─ mix.lock:25:3
+
+    warning: found quoted keyword "plug_crypto" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 26 │   "plug_crypto": {:hex, :plug_crypto, "2.2.0", "144014737daaf485407f5ed77daeaad74d651b216a28c87543f8cc7043f8efc8", [:mix], [], "hexpm", "83a95744ab1c75876542b6fab135fcc176280e0f301a111c1f757fddcec95d2c"},
+    │   ~
+    │
+    └─ mix.lock:26:3
+
+    warning: found quoted keyword "postgrex" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 27 │   "postgrex": {:hex, :postgrex, "0.22.4", "d271f595dfd25230b6398354e19d17bb5e2d20130fd2d9bdca7e15f125d43552", [:mix], [{:db_connection, "~> 2.9", [hex: :db_connection, repo: "hexpm", optional: false]}, {:decimal, "~> 1.5 or ~> 2.0 or ~> 3.0", [hex: :decimal, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}, {:table, "~> 0.1.0", [hex: :table, repo: "hexpm", optional: true]}], "hexpm", "4aae45a2d60e35b04eea2602440be152fae332901f1fc7a60fc7cb7f0f9a9c5a"},
+    │   ~
+    │
+    └─ mix.lock:27:3
+
+    warning: found quoted keyword "rindle" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 28 │   "rindle": {:hex, :rindle, "0.4.6", "35bea401dc09aac08d5c36bedc8ea9c096e92b03c6aec03698a8dced24bafc67", [:mix], [{:ecto_sql, "~> 3.11", [hex: :ecto_sql, repo: "hexpm", optional: false]}, {:ex_aws, "~> 2.5", [hex: :ex_aws, repo: "hexpm", optional: false]}, {:ex_aws_s3, "~> 2.5", [hex: :ex_aws_s3, repo: "hexpm", optional: false]}, {:ex_marcel, "~> 0.2", [hex: :ex_marcel, repo: "hexpm", optional: false]}, {:finch, "~> 0.21", [hex: :finch, repo: "hexpm", optional: true]}, {:gcs_signed_url, "~> 0.6", [hex: :gcs_signed_url, repo: "hexpm", optional: true]}, {:goth, "~> 1.4", [hex: :goth, repo: "hexpm", optional: true]}, {:image, "~> 0.65", [hex: :image, repo: "hexpm", optional: false]}, {:jason, "~> 1.4", [hex: :jason, repo: "hexpm", optional: false]}, {:jose, "~> 1.11", [hex: :jose, repo: "hexpm", optional: true]}, {:muontrap, "~> 1.7", [hex: :muontrap, repo: "hexpm", optional: false]}, {:mux, "~> 3.2", [hex: :mux, repo: "hexpm", optional: true]}, {:nimble_options, "~> 1.1", [hex: :nimble_options, repo: "hexpm", optional: false]}, {:oban, "~> 2.21", [hex: :oban, repo: "hexpm", optional: false]}, {:phoenix_live_view, "~> 1.0", [hex: :phoenix_live_view, repo: "hexpm", optional: true]}, {:plug, "~> 1.16", [hex: :plug, repo: "hexpm", optional: false]}, {:postgrex, "~> 0.18", [hex: :postgrex, repo: "hexpm", optional: false]}, {:req, "~> 0.6", [hex: :req, repo: "hexpm", optional: true]}, {:telemetry, "~> 1.2", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "61cf11552ba726fcee979524fd7b50b3a2c40a40a8719cd7ce6c0d913a397362"},
+    │   ~
+    │
+    └─ mix.lock:28:3
+
+    warning: found quoted keyword "sweet_xml" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 29 │   "sweet_xml": {:hex, :sweet_xml, "0.7.5", "803a563113981aaac202a1dbd39771562d0ad31004ddbfc9b5090bdcd5605277", [:mix], [], "hexpm", "193b28a9b12891cae351d81a0cead165ffe67df1b73fe5866d10629f4faefb12"},
+    │   ~
+    │
+    └─ mix.lock:29:3
+
+    warning: found quoted keyword "telemetry" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 30 │   "telemetry": {:hex, :telemetry, "1.4.2", "a0cb522801dffb1c49fe6e30561badffc7b6d0e180db1300df759faa22062855", [:rebar3], [], "hexpm", "928f6495066506077862c0d1646609eed891a4326bee3126ba54b60af61febb1"},
+    │   ~
+    │
+    └─ mix.lock:30:3
+
+    warning: found quoted keyword "vix" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 31 │   "vix": {:hex, :vix, "0.41.0", "a17e233d57170d8f25a960d28c87194ca4ebd28100c2620ba91ecc8bede96234", [:make, :mix], [{:cc_precompiler, "~> 0.1.4 or ~> 0.2", [hex: :cc_precompiler, repo: "hexpm", optional: false]}, {:elixir_make, "~> 0.7.3 or ~> 0.8", [hex: :elixir_make, repo: "hexpm", optional: false]}, {:kino, "~> 0.7", [hex: :kino, repo: "hexpm", optional: true]}], "hexpm", "9a16b5acd9989630cae44333fcf9de11a54609a7596bba59a0c424593b3f9570"},
+    │   ~
+    │
+    └─ mix.lock:31:3
+
+    warning: found quoted keyword "websock" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 32 │   "websock": {:hex, :websock, "0.5.3", "2f69a6ebe810328555b6fe5c831a851f485e303a7c8ce6c5f675abeb20ebdadc", [:mix], [], "hexpm", "6105453d7fac22c712ad66fab1d45abdf049868f253cf719b625151460b8b453"},
+    │   ~
+    │
+    └─ mix.lock:32:3
+
+    warning: found quoted keyword "websock_adapter" but the quotes are not required. Note that keywords are always atoms, even when quoted. Similar to atoms, keywords made exclusively of ASCII letters, numbers, and underscores and not beginning with a number do not require quotes
+    │
+ 33 │   "websock_adapter": {:hex, :websock_adapter, "0.6.0", "73db5ab8aaefd1a876a97ce3e6afc96562625de69ef17a4e04426e034849d0b8", [:mix], [{:bandit, ">= 0.6.0", [hex: :bandit, repo: "hexpm", optional: true]}, {:plug, "~> 1.14", [hex: :plug, repo: "hexpm", optional: false]}, {:plug_cowboy, "~> 2.6", [hex: :plug_cowboy, repo: "hexpm", optional: true]}, {:websock, "~> 0.5", [hex: :websock, repo: "hexpm", optional: false]}], "hexpm", "50021a85bce8f203b086705d9e0c5415e2c7eb05d319111b0428fe71f9934617"},
+    │   ~
+    │
+    └─ mix.lock:33:3
+
+[crosswake] OK: package=crosswake_rindle version=0.1.0 core_floor=~> 0.2 selected_core=0.2.1 state=lockfile-verified proof=continue
+[crosswake] source_mode=legacy-positional package=crosswake_rindle version=0.1.0 step=deps
+[crosswake] Step 3: mix compile --warnings-as-errors...
+==> decimal
+Compiling 4 files (.ex)
+Generated decimal app
+==> mime
+Compiling 1 file (.ex)
+Generated mime app
+==> nimble_options
+Compiling 3 files (.ex)
+Generated nimble_options app
+==> clean_room_crosswake_rindle
+===> Analyzing applications...
+===> Compiling telemetry
+==> ex_marcel
+Compiling 7 files (.ex)
+Generated ex_marcel app
+==> jason
+Compiling 10 files (.ex)
+Generated jason app
+==> phoenix_html
+Compiling 6 files (.ex)
+Generated phoenix_html app
+==> phoenix_template
+Compiling 4 files (.ex)
+Generated phoenix_template app
+==> db_connection
+Compiling 18 files (.ex)
+Generated db_connection app
+==> phoenix_pubsub
+Compiling 12 files (.ex)
+Generated phoenix_pubsub app
+==> plug_crypto
+Compiling 5 files (.ex)
+Generated plug_crypto app
+==> ecto
+Compiling 56 files (.ex)
+Generated ecto app
+==> plug
+Compiling 1 file (.erl)
+Compiling 42 files (.ex)
+Generated plug app
+==> color
+Compiling 93 files (.ex)
+Generated color app
+==> postgrex
+Compiling 70 files (.ex)
+Generated postgrex app
+==> ecto_sql
+Compiling 25 files (.ex)
+Generated ecto_sql app
+==> oban
+Compiling 70 files (.ex)
+Generated oban app
+==> elixir_make
+Compiling 8 files (.ex)
+Generated elixir_make app
+==> muontrap
+ CC muontrap.o
+ LD muontrap
+Compiling 5 files (.ex)
+Generated muontrap app
+==> cc_precompiler
+Compiling 3 files (.ex)
+Generated cc_precompiler app
+==> vix
+Compiling 28 files (.ex)
+Generated vix app
+==> websock
+Compiling 1 file (.ex)
+Generated websock app
+==> websock_adapter
+Compiling 4 files (.ex)
+Generated websock_adapter app
+==> phoenix
+Compiling 75 files (.ex)
+Generated phoenix app
+==> phoenix_live_view
+Compiling 55 files (.ex)
+Generated phoenix_live_view app
+==> crosswake
+Compiling 131 files (.ex)
+Generated crosswake app
+==> sweet_xml
+Compiling 2 files (.ex)
+     warning: a struct for SweetXpath is expected on struct update:
+
+         %SweetXpath{xpath | namespaces: [{to_charlist(prefix), to_charlist(uri)} | xpath.namespaces]}
+
+     but got type:
+
+         dynamic()
+
+     where "xpath" was given the type:
+
+         # type: dynamic()
+         # from: lib/sweet_xml.ex:245:21
+         xpath
+
+     when defining the variable "xpath", you must also pattern match on "%SweetXpath{}".
+
+     hint: given pattern matching is enough to catch typing errors, you may optionally convert the struct update into a map update. For example, instead of:
+
+         user = some_function()
+         %User{user | name: "John Doe"}
+
+     it is enough to write:
+
+         %User{} = user = some_function()
+         %{user | name: "John Doe"}
+
+     typing violation found at:
+     │
+ 246 │     %SweetXpath{xpath | namespaces: [{to_charlist(prefix), to_charlist(uri)}
+     │     ~
+     │
+     └─ lib/sweet_xml.ex:246:5: SweetXml.add_namespace/3
+
+Generated sweet_xml app
+==> ex_aws
+Compiling 29 files (.ex)
+Generated ex_aws app
+==> ex_aws_s3
+Compiling 7 files (.ex)
+Generated ex_aws_s3 app
+==> image
+Compiling 73 files (.ex)
+Generated image app
+==> rindle
+Compiling 136 files (.ex)
+Generated rindle app
+==> crosswake_rindle
+Compiling 3 files (.ex)
+Generated crosswake_rindle app
+==> clean_room_crosswake_rindle
+Compiling 2 files (.ex)
+Generated clean_room_crosswake_rindle app
+[crosswake] source_mode=legacy-positional package=crosswake_rindle version=0.1.0 step=compile
+[crosswake] Step 3 OK: compiled clean
+[crosswake] Step 4: writing a real Phoenix router with a Crosswake route...
+Compiling 2 files (.ex)
+Generated clean_room_crosswake_rindle app
+[crosswake] source_mode=legacy-positional package=crosswake_rindle version=0.1.0 step=router
+[crosswake] Step 4 OK: router with a real Crosswake route compiled
+[crosswake] Step 5: writing inline smoke test...
+[crosswake] Step 5: running smoke test...
+==> decimal
+Compiling 4 files (.ex)
+Generated decimal app
+==> mime
+Compiling 1 file (.ex)
+Generated mime app
+==> nimble_options
+Compiling 3 files (.ex)
+Generated nimble_options app
+==> clean_room_crosswake_rindle
+===> Analyzing applications...
+===> Compiling telemetry
+==> ex_marcel
+Compiling 7 files (.ex)
+Generated ex_marcel app
+==> jason
+Compiling 10 files (.ex)
+Generated jason app
+==> phoenix_html
+Compiling 6 files (.ex)
+Generated phoenix_html app
+==> phoenix_template
+Compiling 4 files (.ex)
+Generated phoenix_template app
+==> db_connection
+Compiling 18 files (.ex)
+Generated db_connection app
+==> phoenix_pubsub
+Compiling 12 files (.ex)
+Generated phoenix_pubsub app
+==> plug_crypto
+Compiling 5 files (.ex)
+Generated plug_crypto app
+==> ecto
+Compiling 56 files (.ex)
+Generated ecto app
+==> plug
+Compiling 1 file (.erl)
+Compiling 42 files (.ex)
+Generated plug app
+==> color
+Compiling 93 files (.ex)
+Generated color app
+==> postgrex
+Compiling 70 files (.ex)
+Generated postgrex app
+==> ecto_sql
+Compiling 25 files (.ex)
+Generated ecto_sql app
+==> oban
+Compiling 70 files (.ex)
+Generated oban app
+==> elixir_make
+Compiling 8 files (.ex)
+Generated elixir_make app
+==> muontrap
+ CC muontrap.o
+ LD muontrap
+Compiling 5 files (.ex)
+Generated muontrap app
+==> cc_precompiler
+Compiling 3 files (.ex)
+Generated cc_precompiler app
+==> vix
+Compiling 28 files (.ex)
+Generated vix app
+==> websock
+Compiling 1 file (.ex)
+Generated websock app
+==> websock_adapter
+Compiling 4 files (.ex)
+Generated websock_adapter app
+==> phoenix
+Compiling 75 files (.ex)
+Generated phoenix app
+==> phoenix_live_view
+Compiling 55 files (.ex)
+Generated phoenix_live_view app
+==> crosswake
+Compiling 131 files (.ex)
+Generated crosswake app
+==> sweet_xml
+Compiling 2 files (.ex)
+     warning: a struct for SweetXpath is expected on struct update:
+
+         %SweetXpath{xpath | namespaces: [{to_charlist(prefix), to_charlist(uri)} | xpath.namespaces]}
+
+     but got type:
+
+         dynamic()
+
+     where "xpath" was given the type:
+
+         # type: dynamic()
+         # from: lib/sweet_xml.ex:245:21
+         xpath
+
+     when defining the variable "xpath", you must also pattern match on "%SweetXpath{}".
+
+     hint: given pattern matching is enough to catch typing errors, you may optionally convert the struct update into a map update. For example, instead of:
+
+         user = some_function()
+         %User{user | name: "John Doe"}
+
+     it is enough to write:
+
+         %User{} = user = some_function()
+         %{user | name: "John Doe"}
+
+     typing violation found at:
+     │
+ 246 │     %SweetXpath{xpath | namespaces: [{to_charlist(prefix), to_charlist(uri)}
+     │     ~
+     │
+     └─ lib/sweet_xml.ex:246:5: SweetXml.add_namespace/3
+
+Generated sweet_xml app
+==> ex_aws
+Compiling 29 files (.ex)
+Generated ex_aws app
+==> ex_aws_s3
+Compiling 7 files (.ex)
+Generated ex_aws_s3 app
+==> image
+Compiling 73 files (.ex)
+Generated image app
+==> rindle
+Compiling 136 files (.ex)
+Generated rindle app
+==> crosswake_rindle
+Compiling 3 files (.ex)
+Generated crosswake_rindle app
+==> clean_room_crosswake_rindle
+Compiling 4 files (.ex)
+Generated clean_room_crosswake_rindle app
+Running ExUnit with seed: 208740, max_cases: 36
+
+    warning: comparison between distinct types found:
+
+        vocab != []
+
+    given types:
+
+        dynamic(non_empty_list(:available or :queued or :rejected or :scanning or :uploaded)) !=
+          empty_list()
+
+    where "vocab" was given the type:
+
+        # type: dynamic(non_empty_list(:available or :queued or :rejected or :scanning or :uploaded))
+        # from: test/smoke_test.exs:34:11
+        vocab = Crosswake.Companions.Rindle.Contracts.media_state_vocabulary()
+
+    While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+    typing violation found at:
+    │
+ 36 │     assert is_list(vocab) and vocab != [],
+    │                                     ~
+    │
+    └─ test/smoke_test.exs:36:37: CleanRoom.SmokeTest."test Rindle.Contracts.media_state_vocabulary/0 returns a non-empty list (canary: Contracts shipped)"/1
+
+.....
+Finished in 0.02 seconds (0.00s async, 0.02s sync)
+5 tests, 0 failures
+[crosswake] source_mode=legacy-positional package=crosswake_rindle version=0.1.0 step=smoke
+[crosswake] Step 5 OK: inline smoke test passed
+[crosswake] Step 6: writing runtime config for crosswake_rindle (engine-present)...
+[crosswake] OK: Step 6: package=crosswake_rindle version=0.1.0 profile=engine-present state=companion-registered
+[crosswake] source_mode=legacy-positional package=crosswake_rindle version=0.1.0 step=register
+[crosswake] Step 6.5: running the Crosswake installer...
+Crosswake installer: additive, idempotent, and marker-driven.
+Crosswake install complete for clean_room_crosswake_rindle
+  router: lib/clean_room_host/router.ex (marker_inserted, crosswake_import_added)
+  policy module: lib/clean_room_host/crosswake/policy.ex (created)
+  endpoint: not found (place the static plug block from `mix crosswake.gen.bridge_hook` by hand)
+  install manifest: priv/crosswake/install_manifest.json (created)
+
+Two things the installer will not write for you (they are host-authored):
+
+  1. Import the bridge hook and register it in your socket's hooks map:
+
+         import {CrosswakeBridge} from "/crosswake/crosswake.esm.js";
+         const liveSocket = new LiveSocket("/live", Socket, {params, hooks: {CrosswakeBridge}});
+
+  2. Put ONE hook element on the page (client events broadcast to every mounted
+     hook, so a second element posts every request to the shell twice):
+
+         <div id="crosswake-bridge" phx-hook="CrosswakeBridge" phx-update="ignore"></div>
+
+And one thing that is neither: `Crosswake.Bridge.push/3` raises
+Crosswake.Bridge.NotMountedError on a socket that never called
+`Crosswake.Bridge.attach/1` (or used `on_mount: Crosswake.Bridge`). Crosswake
+never guesses a route id. Attach in mount/3 before you push.
+
+Confirm all of it with: mix crosswake.doctor
+
+Phoenix's esbuild profile must leave the served module import external and emit ESM:
+
+    --external:/crosswake/* --format=esm
+
+If the router keeps Phoenix LiveDashboard, use the lexical import pattern documented
+in guides/install.md#live-dashboard-in-development.
+
+
+Compiling 2 files (.ex)
+    warning: unused import Phoenix.LiveView.Router
+    │
+  5 │   import Phoenix.LiveView.Router, except: [live: 2, live: 3, live: 4]
+    │   ~
+    │
+    └─ lib/clean_room_host/router.ex:5:3
+
+    warning: unused import Phoenix.Router
+    │
+  4 │   import Phoenix.Router, except: [get: 3, get: 4, post: 3, post: 4, put: 3, put: 4, patch: 3, patch: 4, delete: 3, delete: 4, options: 3, options: 4, head: 3, head: 4]
+    │   ~
+    │
+    └─ lib/clean_room_host/router.ex:4:3
+
+Generated clean_room_crosswake_rindle app
+[crosswake] source_mode=legacy-positional package=crosswake_rindle version=0.1.0 step=install
+[crosswake] Step 6.5 OK: installer complete
+[crosswake] Step 7: running mix crosswake.doctor --router CleanRoomHost.Router...
+    warning: unused import Phoenix.LiveView.Router
+    │
+  5 │   import Phoenix.LiveView.Router, except: [live: 2, live: 3, live: 4]
+    │   ~
+    │
+    └─ lib/clean_room_host/router.ex:5:3
+
+    warning: unused import Phoenix.Router
+    │
+  4 │   import Phoenix.Router, except: [get: 3, get: 4, post: 3, post: 4, put: 3, put: 4, patch: 3, patch: 4, delete: 3, delete: 4, options: 3, options: 4, head: 3, head: 4]
+    │   ~
+    │
+    └─ lib/clean_room_host/router.ex:4:3
+
+Crosswake doctor report
+status: ok
+findings: 11
+support posture: not_claimed (blocking: none)
+release policy:
+  crosswake_version=0.2.1
+  manifest_schema_version=1.1.0
+  bridge_protocol_version=1.1.0
+  native_runtime_version=1.0.0
+  Package versions alone do not determine support truth.
+  Future companions must declare minimum compatible ranges for core, manifest_schema_version, bridge_protocol_version, native_runtime_version, and exposed capability-family majors.
+  evidence posture: ios=device-verified android=jvm-hermetic (CI only)
+  capability families:
+    app_info: prerequisites=declared route capability, bounded bridge support, denial=undeclared_capability, fallback=Phoenix route continues without native app metadata
+    deep_link: prerequisites=bundled or cached manifest, shell activation support, explicit route entry approval, denial=route_unavailable, fallback=show route unavailable surface that distinguishes inactive routes from routes that reject external entry
+    document_scan: prerequisites=document-scan runtime, policy-heavy proof lane, denial=unavailable_capability, fallback=defer document scan support until native and proof posture are explicit
+    entitlement_snapshot: prerequisites=backend entitlement authority, reconciliation hook, freshness posture (fresh/stale/unknown) surfaced before access checks, denial=unavailable_capability, fallback=Fail closed for access decisions when snapshot freshness is stale or unknown until refreshed backend authority is available; pending and awaiting_verification states never grant entitlement.
+    file_picker: prerequisites=declared transfer_id, bounded bridge support, inbound native_picker transfer seam, copy-first staged handle plus transfer verification, denial=undeclared_capability, fallback=keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified
+    haptics: prerequisites=declared route capability, bounded bridge support, denial=undeclared_capability, fallback=Phoenix route continues without native confirmation feedback
+    media_capture: prerequisites=native screen route, capture pack availability, denial=pack_incompatible, fallback=fail closed instead of degrading into a bounded web upload flow
+    notification_token: prerequisites=declared route capability, bounded bridge support, notification authorization already resolved, provider token snapshot available, denial=unavailable_capability, fallback=treat notification token replies as provider-tagged evidence instead of backend registration truth
+    paywall_entry: prerequisites=backend entitlement contract, storefront guidance, denial=unavailable_capability, fallback=fall back to Phoenix-owned paywall guidance without device authority
+    permissions.status: prerequisites=declared route capability, bounded bridge support, notifications alias only, denial=undeclared_capability, fallback=route continues without native notification permission snapshot authority
+    purchase_intent: prerequisites=backend reconciliation, provider-specific adapter, denial=unavailable_capability, fallback=treat purchase events as reconciliation inputs, not entitlement truth
+    reconciliation_evidence: prerequisites=backend reconciliation, device callback or webhook, pending and awaiting_verification reconciliation states stay non-granting, denial=unavailable_capability, fallback=Treat device/storefront/webhook/support evidence as non-authoritative reconciliation input; pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority.
+    restore_intent: prerequisites=backend reconciliation, storefront-aware adapter, denial=unavailable_capability, fallback=keep restore flow backend-owned until adapter truth is explicit
+    scanner: prerequisites=scanner-native runtime, policy-heavy proof lane, denial=unavailable_capability, fallback=defer scanner support until native and proof posture are explicit
+    share: prerequisites=truthful semantic share contract, denial=undeclared_capability, fallback=keep content in the Phoenix-owned route until a share family is declared
+  package surfaces:
+    `crosswake` primary package: class=core, why="Route-policy DSL, manifest contract, compatibility axes, bounded-bridge vocabulary, shell generators, doctor, support matrix, release rules, and proof posture stay in one obvious Phoenix-first package.", burden="Hex package SemVer moves independently, while support truth still follows manifest_schema_version, bridge_protocol_version, and native_runtime_version."
+    Phoenix-facing commerce seam vocabulary: class=core, why="`paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` stay normalized and backend-truthful in core without embedding storefront providers.", burden="Semantics may evolve in core, but provider adapters and native storefront logic remain outside the base package."
+    Provider adapters and native-heavy integrations: class=companion, why="Storefront adapters, media/upload/capture, rollout, auth/session, notifications, and audit/operator seams carry native binary churn or backend coupling beyond core.", burden="First-party companions declare minimum compatible ranges against core, compatibility axes, and capability-family majors."
+    Checked-in example hosts and install walkthroughs: class=example_docs_only, why="Examples, walkthroughs, reviewer playbooks, and vendor recipes teach boundaries and proof posture without becoming separate runtime packages.", burden="Not first-class supported as package surfaces; promotion requires reclassification plus proof and support-matrix updates."
+    Standalone native shell core packages: class=core, why="The generated shell stays host-owned, while reusable native core logic resolves from SwiftPM and Maven Central packages instead of monorepo-local paths.", burden="Native core versions move in lockstep with the Hex package through release-please linked versions; clean-room proof verifies the external install path at release time."
+  release boundaries:
+    core: versioning="Independent SemVer for the `crosswake` Hex package.", rule="Manifest-major, bridge-major, and runtime-line changes must update support docs and doctor before release."
+    companion: versioning="Independent SemVer per first-party companion.", rule="Companion support cannot expand until the adapter publishes explicit compatibility ranges and fail-closed guidance."
+    ios_shell: versioning="SwiftPM core package version is lockstep with the Hex package; host app build numbers remain adopter-owned.", rule="Changes touching native code, entitlements, permissions, registration, or packaged runtime behavior move the native_runtime_version line and mark rebuild required."
+    android_shell: versioning="Maven Central core artifact version is lockstep with the Hex package; host app build numbers remain adopter-owned.", rule="Changes touching native code, entitlements, permissions, registration, or packaged runtime behavior move the native_runtime_version line and mark rebuild required."
+  change classes:
+    docs-only: signal="No compatibility-axis or capability-version change.", proof="docs integrity only"
+    core-only/no native rebuild: signal="Existing manifest_schema_version, bridge_protocol_version, native_runtime_version, and capability majors stay in line.", proof="core contract + doctor/support proof"
+    compatibility-bump only: signal="manifest_schema_version, bridge_protocol_version, native_runtime_version, or capability required-version declarations changed support windows.", proof="fail-closed compatibility fixtures"
+    native or companion rebuild required: signal="Every rebuild-required change carries explicit compatibility declarations, especially native_runtime_version, bridge_protocol_version, manifest_schema_version, and capability required-version shifts.", proof="core proof plus generated-shell or companion verification lanes"
+  rebuild & compatibility matrix:
+    1.x: ota_safe=false, rebuild_required=true, evidence_tier=jvm-hermetic (CI only), capability_surface=[haptics, share, app_info, deep_link, permissions.status, notification_token, file_picker, media_capture, scanner, document_scan]
+bridge posture: crosswake.bridge@1.1.0 commands=[app.info.get, files.pick, haptics.impact, notifications.token.get, permissions.status, share.invoke, transfer.download, transfer.export, transfer.import, transfer.upload.prepare] denials=[compatibility_mismatch, undeclared_capability, unavailable_capability, commerce_corridor, origin_denied, inactive_route, external_entry_denied, pack_incompatible, gate_denied, kill_switch_active, step_up_required, notification_open_denied, dependency_missing, shell_unreachable]
+offline posture: supported states=[cached_read_only, stale, saved_locally, queued_for_replay, replay_failed, conflict_requires_attention] routes=[]
+  telemetry: metadata_keys=[route_id, runtime, offline_mode, sync_seam, journal_entry_id, manifest_version, native_runtime_version, correlation_id, terminal_outcome] terminal_outcomes=[accepted, rejected, conflict]
+Commerce:
+  snapshot_freshness: not_applicable
+  corridors: none
+  proof_posture:
+    [merge-blocking]: none
+    [advisory]: none
+  rebuild_requirements: none
+[advisory] bridge_posture (bridge_posture_ok)
+bounded bridge exposes app.info.get, files.pick, haptics.impact, notifications.token.get, permissions.status, share.invoke, transfer.download, transfer.export, transfer.import, transfer.upload.prepare and denies compatibility_mismatch, undeclared_capability, unavailable_capability, commerce_corridor, origin_denied, inactive_route, external_entry_denied, pack_incompatible, gate_denied, kill_switch_active, step_up_required, notification_open_denied, dependency_missing, shell_unreachable
+hint: all manifest-declared bridge capabilities stay inside the bounded Phase 3 command set
+details: allowed_commands=app.info.get|files.pick|haptics.impact|notifications.token.get|permissions.status|share.invoke|transfer.download|transfer.export|transfer.import|transfer.upload.prepare, commands={"command":"app.info.get","capability":"app_info","declared_on_routes":[],"executable?":false,"manifest_version":"1.0.0"}|{"command":"files.pick","capability":"file_picker","declared_on_routes":[],"executable?":false,"manifest_version":"1.0.0"}|{"command":"haptics.impact","capability":"haptics","declared_on_routes":[],"executable?":false,"manifest_version":"1.0.0"}|{"command":"notifications.token.get","capability":"notification_token","declared_on_routes":[],"executable?":false,"manifest_version":"1.0.0"}|{"command":"permissions.status","capability":"permissions.status","declared_on_routes":[],"executable?":false,"manifest_version":"1.0.0"}|{"command":"share.invoke","capability":"share","declared_on_routes":[],"executable?":false,"manifest_version":"1.0.0"}|{"command":"transfer.download","capability":"transfer.download","declared_on_routes":[],"executable?":false,"manifest_version":null}|{"command":"transfer.export","capability":"transfer.export","declared_on_routes":[],"executable?":false,"manifest_version":null}|{"command":"transfer.import","capability":"transfer.import","declared_on_routes":[],"executable?":false,"manifest_version":null}|{"command":"transfer.upload.prepare","capability":"transfer.upload.prepare","declared_on_routes":[],"executable?":false,"manifest_version":null}, denial_reasons=compatibility_mismatch|undeclared_capability|unavailable_capability|commerce_corridor|origin_denied|inactive_route|external_entry_denied|pack_incompatible|gate_denied|kill_switch_active|step_up_required|notification_open_denied|dependency_missing|shell_unreachable, protocol=crosswake.bridge, unsupported_declared_capabilities=, version=1.1.0
+
+[advisory] support_posture (support_claim_not_claimed)
+native shell support is not claimed for this host; Phoenix and manifest checks remain active
+hint: generate a shell or pass --native-targets ios|android|all when the host begins claiming native support
+details: proof_statuses={}, shells={}, status=not_claimed
+
+[advisory] capability_posture (capability_proof_merge_blocking)
+merge-blocking capability proofs are required for: app_info, deep_link, entitlement_snapshot, file_picker, haptics, media_capture, paywall_entry, permissions.status, purchase_intent, reconciliation_evidence, restore_intent
+hint: merge-blocking capability proofs must pass to claim support truth
+details: capabilities=app_info|deep_link|entitlement_snapshot|file_picker|haptics|media_capture|paywall_entry|permissions.status|purchase_intent|reconciliation_evidence|restore_intent, proof_class=merge_blocking
+
+[advisory] capability_posture (capability_proof_advisory)
+advisory capability proofs are abstract for: document_scan, notification_token, scanner, share
+hint: advisory capabilities do not block standard CI but require environment-sensitive verification before widening claims
+details: capabilities=document_scan|notification_token|scanner|share, promotion_path=advisory-to-merge-blocking promotion requires an explicit requirement/roadmap scope change plus sustained stability evidence from the advisory lane; advisory results never assert core support truth, proof_class=advisory
+
+[advisory] offline_posture (offline_posture_ready)
+offline posture exposes route-local cached, saved locally, queued for replay, replay failed, and conflict requires attention vocabulary
+hint: doctor and JSON output now describe explicit cached-route and study-session island posture from typed contract truth
+details: routes={}, states=cached_read_only|stale|saved_locally|queued_for_replay|replay_failed|conflict_requires_attention, status=supported, telemetry_keys=route_id|runtime|offline_mode|sync_seam|journal_entry_id|manifest_version|native_runtime_version|correlation_id|terminal_outcome, terminal_outcomes=accepted|rejected|conflict
+
+[advisory] notification_posture (notification.telemetry_contract)
+Crosswake notifications expose strict telemetry for diagnostics. Raw APNs/FCM payloads, device tokens, and PII are forbidden.
+hint: Check chimeway telemetry events for delivery status. Do not attempt to log raw push tokens.
+details: authority_source=diagnostic_evidence_only, event_names=, forbidden_metadata_keys=, metadata_keys=, proof_class=merge_blocking
+
+[advisory] notification_posture (notification.delivery_deferred)
+notification-open workflow proof is hermetic route activation proof: token/open evidence is not auth authority, backend binding and one-time open intent records feed Chimeway, and RouteGate and Sigra decide activation. APNs/FCM delivery is not part of this proof and remains unsupported/advisory.
+hint: Use the local notification_token capability to read push tokens. Do not expect Crosswake to deliver remote push notifications to APNs or FCM; delivery execution remains deferred.
+details: deferred=chimeway_delivery|push_delivery_guarantees, delivery_supported=false
+
+[advisory] threadline_posture (threadline.plug_missing)
+Crosswake.Plug.Threadline is not present in the router at /private/tmp/crosswake-cleanroom-legacy.jF0QjO/clean_room_crosswake_rindle/lib/clean_room_host/router.ex
+hint: Add `plug Crosswake.Plug.Threadline` to your Phoenix router pipeline to enable X-Crosswake-Thread-Id propagation and telemetry spans. See guides/threadline.md.
+details: router_path=/private/tmp/crosswake-cleanroom-legacy.jF0QjO/clean_room_crosswake_rindle/lib/clean_room_host/router.ex
+
+[advisory] threadline_posture (threadline.ledger_not_configured)
+Crosswake audit ledger is not configured — threadline posture is ephemeral only
+hint: Configure `:audit_ledger` under `:crosswake` in your host config and run `mix crosswake.gen.audit` to scaffold the host-owned ledger schema and migration. See guides/threadline.md.
+
+[advisory] diagnostic_export_posture (diagnostic_export.contract_shipped)
+Diagnostics-export envelope and sanitize contract are shipped; the merge-blocking allowlist proof is enforced. Native MetricKit/ApplicationExitInfo transport is deferred to Phase 67.
+hint: The host owns the endpoint and the data. Configure your endpoint to receive POST payloads matching the DiagnosticExport.Envelope contract. No Elixir HTTP-sending code ships in the library.
+details: authority_source=host_configured_endpoint, deferred=native_diagnostic_export|metrickit_capture|application_exit_info_capture, delivery_supported=false, forbidden_metadata_keys=token|raw_token|device_token|registration_token|apns_token|fcm_token|provider_payload|raw_payload|notification_title|notification_body|route_params|actor_id|subject_ref|session_ref|device_id|ip|user_agent|email|provider_response_body, proof_class=merge_blocking
+
+[advisory] bridge_hook (bridge.hook.not_wired)
+no "CrosswakeBridge" hook reference was found in this host's assets tree or its HEEx templates
+hint: import the hook from /crosswake/crosswake.esm.js, register it in your socket's hooks map, and put one `phx-hook="CrosswakeBridge"` element on the page — run `mix crosswake.gen.bridge_hook` for the exact fragments. This check is a best-effort grep and is never authoritative; the runtime ack deadline is.
+details: authoritative=false, searched_assets=0, searched_templates=5
+[crosswake] source_mode=legacy-positional package=crosswake_rindle version=0.1.0 step=doctor
+[crosswake] OK: Step 7: package=crosswake_rindle version=0.1.0 core_floor=~> 0.2 selected_core=0.2.1 profile=engine-present state=doctor-green
+[crosswake] Next safe command: elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: verify_companion_cleanroom: package=crosswake_rindle version=0.1.0 core_floor=~> 0.2 selected_core=0.2.1 profile=engine-present state=passed

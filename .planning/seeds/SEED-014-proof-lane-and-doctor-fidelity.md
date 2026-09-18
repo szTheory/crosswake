@@ -72,6 +72,20 @@ vocabulary while the offline/persistence criteria the vocabulary *does* cover st
 `mix crosswake.proof_lane.physical_iphone` in the same tethered session — two gates, two records,
 for one device session.
 
+> **Disposition — 2026-09-18, quality-ratchet-release Phase 174 (174-03), `defer-with-reason`.**
+> `PhysicalIphoneContract` is a closed, ordered, versioned vocabulary: `validate_report/1` rejects
+> ids outside it and `join_reports/3` requires exact set equality including ordinal position.
+> Adding a CW-REQ-A assertion to the contract therefore hard-rejects any out-of-tree producer
+> still emitting the previous id set, and that break would land at publish — which is exactly what
+> Phase 175 is. Shipping a breaking contract change inside the milestone whose exit criterion is
+> proving the release pipeline would mean the release being proved is also the release that breaks
+> the adopter's producer. The adopter is not blocked today: they already run a host-owned
+> three-layer haptics gate, so the cost of deferring is a dual gate, not a missing capability.
+> **Reopen trigger:** revisit CW-REQ-A once the v23.0 release pipeline has been proven end-to-end
+> (i.e. after Phase 175 publishes), so the contract-vocabulary change can ship in a release whose
+> pipeline is already known-good rather than in the one being proved. See
+> `174-FID-01-DISPOSITION.md` for the full record.
+
 ## CW-REQ-B — the runner cannot say "ran, and found a real defect" (high)
 
 `lib/mix/tasks/crosswake.proof_lane.physical_iphone.ex` calls `System.halt(2)` on every failure path,
@@ -86,6 +100,22 @@ exit **2** for `PI-HOST-CONFIG` / `PI-HOST-CALLBACK`-class failures where no rep
 could-not-run) so a red CI run is interpretable without reading logs. This one non-host-owned gate
 collapses that, and a red run requires opening the report to tell "device wasn't there" from
 "device was there and something is broken."
+
+> **Disposition — 2026-09-18, quality-ratchet-release Phase 174 (174-03), closed.** Added an
+> explicit `exit_status_for/1` classifier (a `case` over known rule ids with an explicit
+> catch-all) and a `handle_result/1` router that every `System.halt` call in `run/1` now resolves
+> through: the `join_reports/3` outcome rule (`PI-REPORT-OUTCOME`) maps to exit `1`
+> ("refuted"); every other rule id, including an unrecognised one, maps to exit `2`
+> ("could_not_run") through the catch-all. Along the way, found and fixed a bug that made
+> `PI-REPORT-OUTCOME` unreachable: `join_reports/3`'s completeness check compared the full report
+> against the expected set with every outcome forced to `:passed`, so any non-passing outcome was
+> misclassified as `PI-REPORT-COMPLETE` before the outcome rule could ever fire — the exact
+> defect this ask names. The emitted JSON now also carries an `exit_classification` field
+> (`"refuted"` / `"could_not_run"`) so a consumer reading stdout does not have to infer the
+> classification from the process status. Five separately named tests cover: refuted-outcome
+> exits 1, no-report exits 2, blocked-readiness exits 2, a fully passing run halts on nothing, and
+> an unrecognised rule id falls through the catch-all to 2. See `174-FID-01-DISPOSITION.md` for
+> the full record.
 
 ## CW-REQ-C — `verify_navigation_shell` hardcodes placeholder provenance (medium)
 
