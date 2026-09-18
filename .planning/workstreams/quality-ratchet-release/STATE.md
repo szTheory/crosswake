@@ -1,21 +1,21 @@
 ---
-gsd_state_version: "1.0"
+gsd_state_version: 1.0
 milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
-current_phase: 173
-current_phase_name: Recovery-Path Proof Convergence
-status: phase_complete
-stopped_at: Phase 173 COMPLETE. Merged as #180; SC#2 taken 2026-09-18 by fire-drill run 35302554800 (proof job present, conclusion failure at PUBLICATION_RECORD_MISSING, publish never executed) — XPUB-05 closed. The first dispatch (35299245680) instead exposed a real defect: an under-granted caller made the whole of hex-publish.yml invalid, so every dispatch including real emergency recovery ended in startup_failure; repaired in #181. Next: Phase 174 is unplanned, and 34 open WINDOWS entries will block /gsd-ship before Phase 175.
-last_updated: "2026-09-18T01:35:00.000Z"
+current_phase: 174
+current_phase_name: Clean-Room Host Realism & Adopter Fidelity
+status: ready_to_execute
+stopped_at: "Phase 174 PLANNED — six plans across four waves, branch phase-174-clean-room-host-realism (planner commit 5ab04eab). Plan-checker: 0 blockers, 4 warnings; the two roster-underspecification warnings were fixed in place (174-04 selector keys on the script invocation, not the clean-room-proof-* name prefix — 7 job ids match but only 5 call the harness; 174-05 roster filter excludes rindle because TODO-011 diagnoses rindle itself). Nothing pushed. Two things will interrupt execution: 174-03 opens with a blocking checkpoint:decision on CW-REQ-A (breaking @schema_version bump vs recorded deferral), and ROOM-03 cannot close on a feature branch because GitHub will not dispatch a workflow absent from the default branch — 174-04 records the refusal and marks it pending post-merge, the Phase 173 precedent. Still open: 34 WINDOWS entries block /gsd-ship before Phase 175, and no roadmap phase owns them."
+last_updated: "2026-09-18T12:52:19.736Z"
 last_activity: 2026-09-18
-last_activity_desc: Phase 173 merged and closed; fire-drill observation taken, recovery-workflow startup defect found and repaired
-state_head: ec505c087fcabc6dfb352bfceb5dc7d2e22e2c30
+last_activity_desc: Phase 174 planned — 6 plans, 4 waves, verified with 0 blockers; two roster-scope warnings fixed in the plans
 progress:
   total_phases: 7
   completed_phases: 5
-  total_plans: 21
+  total_plans: 27
   completed_plans: 21
   percent: 71
+state_head: ec505c087fcabc6dfb352bfceb5dc7d2e22e2c30
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 173 complete (merged #180, fire-drill observation taken, follow-up repair #181). Next: plan Phase 174.
+**Current focus:** Phase 174 planned and verified (6 plans, 4 waves) on branch `phase-174-clean-room-host-realism`; nothing pushed. Next: `/gsd-execute-phase 174 --ws quality-ratchet-release` — it will pause at 174-03's blocking decision checkpoint on CW-REQ-A.
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
 **Open release pull requests — triage as of 2026-09-15. None should be merged yet.**
@@ -258,12 +258,14 @@ Last activity: 2026-09-17 — Phase 172 execution started
 
 - [Roadmap]: Phase numbering continues from v22.0 (which ended at 168) — v23.0 starts at Phase 169,
   not reset to 1.
+
 - [Roadmap]: Phase 171 (Version/Authority Split) merges SUMMARY.md's Phase A `no_bare_version_literal`
   check (MSG-04/MSG-05) with Phase B's D1 fix (WELD-01..08) into one phase, landed as one PR/commit.
   Landing the check and the fix separately would either turn `main` permanently red (check merges
   first) or leave the check meaninglessly advisory for a window (fix merges first). The purely
   diagnostic D6 work (MSG-01/02/03/06, plus FID-02) stays in its own earlier Phase 169 since it has
   no such atomicity constraint.
+
 - [Roadmap][Revision]: VAC-01/02/03 (the SEED-018 vacuous-assertion audit — classify 173 sites, then
   rewrite every confirmed-vacuous one) was originally bundled into Phase 169, but was pulled out into
   its own **Phase 170 (Vacuous Assertion Remediation)** on user-directed revision. Rationale: Phase
@@ -276,17 +278,21 @@ Last activity: 2026-09-17 — Phase 172 execution started
   it stays a Future Requirement — because landing the guard before the audit produces a wall of red
   that gets waived, teaching the team red is negotiable. All phases after 169-170 renumbered by +1
   (170→171, 171→172, 172→173, 173→174, 174→175) so reading order matches execution order.
+
 - [Roadmap]: FID-01 (SEED-014 adopter gaps CW-REQ-A/B) was folded into Phase 174 (Clean-Room Host
   Realism), since both are about adopter-facing proof fidelity.
+
 - [Roadmap]: DOC-05 (manifest word-collision) was folded into Phase 171, since the collision is
   release-manifest-adjacent to the version/authority work already touching that vocabulary. DOC-04
   (delete the "only publishes 0.2.1" doc section) and DOC-06 (splitsh-lite references) were folded
   into Phase 175, since DOC-04 only becomes true once 0.2.2 actually publishes and DOC-06 documents
   the mirror mechanism the retire/backfill runbook (REL-10) also covers.
+
 - [Roadmap]: Phase 175 (Rehearsal and Publish) is strictly last and its own phase — never combined
   with Phases 169-174 in the same plan — because it contains the milestone's only irreversible
   operations (Hex publish, iOS mirror tag push, Maven upload; project decision D-19). REL-10's
   retire/backfill runbook must be committed before any publish step in that phase executes.
+
 - [Roadmap]: Phases 172 (per-package proof scope) and 173 (recovery-path convergence) both depend
   only on Phase 171 and touch disjoint file sets — they may be planned/executed in parallel. Phase
   174 (clean-room realism) and Phase 170 (vacuous assertion remediation) are each independent of
@@ -306,6 +312,7 @@ Last activity: 2026-09-17 — Phase 172 execution started
 
 - The First B2C Adopter work remains parked separately at Phase 163.1 pending external route/device
   authority; do not copy or infer adopter facts into v22 artifacts.
+
 - Phase 167 code review retained five non-blocking advisories; Phase 168 should resolve the
   release-relevant full-comment marker count before relying on it for exact candidate authority.
 
