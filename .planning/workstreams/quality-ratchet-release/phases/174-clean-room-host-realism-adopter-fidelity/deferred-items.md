@@ -45,3 +45,27 @@ went correctly red and was reclassified as inherited. Same net effect — a true
 It survived plan-level verification because that verification asked whether the plan's own test
 files passed, not whether the tree did. A plan's verification step should run the suite the
 plan's artifacts can affect, not only the files it authored.
+
+## Deferred — `.planning/WINDOWS.md`'s frontmatter counts disagree with its entry list
+
+**Status: not fixed. Not in this plan's `files_modified` scope (only `174-NON-VACUITY.md` and
+`REQUIREMENTS.md`), and `.planning/WINDOWS.md` is a repository-root shared artifact this plan has
+no mandate to edit.**
+
+Discovered 2026-09-18 while attempting `gsd-tools windows append` to record Finding A (the
+unguarded SC#4 measurement, see `174-NON-VACUITY.md`) in the cross-phase defect register. The
+command failed with:
+
+```
+Error: Ledger counts disagree with entries: frontmatter open/waived/fixed/total=33/0/0/33 but
+entries yield 34/0/0/34.
+```
+
+`.planning/WINDOWS.md`'s frontmatter (`open_count: 33`, `total_count: 33`) has not been updated
+since entry #34 (Phase 173's `record-ledger`/XPUB-05 finding) was appended — the entry list already
+has 34 rows. This is a pre-existing drift from a prior phase's ledger write, not something this
+plan introduced, and fixing it would mean editing a file outside this plan's declared scope.
+Finding A is therefore recorded in `174-NON-VACUITY.md` only, not in `.planning/WINDOWS.md` — the
+ledger append is best-effort per the executor's own protocol, and this failure does not block this
+plan's completion. Whoever next touches `.planning/WINDOWS.md` (likely Phase 175's own record, or
+a dedicated ledger-repair pass) should reconcile the frontmatter counts before appending further.

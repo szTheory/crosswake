@@ -364,7 +364,7 @@ reproduces against a live Hex release.
 7. SEED-014's CW-REQ-A and CW-REQ-B are each either closed, with a passing check demonstrating the
    close, or carry an explicit recorded deferral reason in-repo.
 
-**Plans**: 5/6 plans executed
+**Plans**: 6/6 plans executed
 
 Plans:
 **Wave 1**
@@ -392,7 +392,7 @@ Plans:
 
 **Wave 4** *(blocked on 174-05)*
 
-- [ ] 174-06-PLAN.md — The phase's `vacuity_taxonomy` non-vacuity record and the seven-row
+- [x] 174-06-PLAN.md — The phase's `vacuity_taxonomy` non-vacuity record and the seven-row
       per-requirement disposition table (ROOM-01..ROOM-06, FID-01)
 
 **Wave structure**: Wave 1 = 174-01, 174-02 and 174-03 in parallel (disjoint file sets) · Wave 2 =
@@ -486,5 +486,5 @@ before the real one-way door.
 | 171. Version/Authority Split | 0/TBD | Not started | - |
 | 172. Per-Package Proof Scope | 3/3 | In Progress|  |
 | 173. Recovery-Path Proof Convergence | 0/TBD | Not started | - |
-| 174. Clean-Room Host Realism & Adopter Fidelity | 5/6 | In Progress|  |
+| 174. Clean-Room Host Realism & Adopter Fidelity | 6/6 | In Progress|  |
 | 175. Rehearsal and Publish | 0/TBD | Not started | - |
