@@ -364,7 +364,7 @@ reproduces against a live Hex release.
 7. SEED-014's CW-REQ-A and CW-REQ-B are each either closed, with a passing check demonstrating the
    close, or carry an explicit recorded deferral reason in-repo.
 
-**Plans**: 4/6 plans executed
+**Plans**: 5/6 plans executed
 
 Plans:
 **Wave 1**
@@ -387,7 +387,7 @@ Plans:
 
 **Wave 3** *(blocked on 174-01 and 174-04)*
 
-- [ ] 174-05-PLAN.md — Threadline and sigra diagnosed separately, one root-cause finding each, plus
+- [x] 174-05-PLAN.md — Threadline and sigra diagnosed separately, one root-cause finding each, plus
       the check that neither finding can silently go missing (ROOM-05)
 
 **Wave 4** *(blocked on 174-05)*
@@ -486,5 +486,5 @@ before the real one-way door.
 | 171. Version/Authority Split | 0/TBD | Not started | - |
 | 172. Per-Package Proof Scope | 3/3 | In Progress|  |
 | 173. Recovery-Path Proof Convergence | 0/TBD | Not started | - |
-| 174. Clean-Room Host Realism & Adopter Fidelity | 4/6 | In Progress|  |
+| 174. Clean-Room Host Realism & Adopter Fidelity | 5/6 | In Progress|  |
 | 175. Rehearsal and Publish | 0/TBD | Not started | - |

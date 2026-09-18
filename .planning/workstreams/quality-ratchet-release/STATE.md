@@ -5,15 +5,15 @@ milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 174
 current_phase_name: Clean-Room Host Realism & Adopter Fidelity
 status: executing
-stopped_at: Completed 174-04-PLAN.md
-last_updated: "2026-09-18T14:00:11.288Z"
+stopped_at: Completed 174-05-PLAN.md
+last_updated: "2026-09-18T14:21:11.186Z"
 last_activity: 2026-09-18
 last_activity_desc: Phase 174 planned — 6 plans, 4 waves, verified with 0 blockers; two roster-scope warnings fixed in the plans
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 27
-  completed_plans: 25
+  completed_plans: 26
   percent: 71
 state_head: ec505c087fcabc6dfb352bfceb5dc7d2e22e2c30
 ---
@@ -46,7 +46,7 @@ Revisit once the post-publication proof lane can actually run.
 ## Current Position
 
 Phase: 174 (Clean-Room Host Realism & Adopter Fidelity) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-09-18 — Phase 174 execution started
 
@@ -127,6 +127,7 @@ Last activity: 2026-09-18 — Phase 174 execution started
 | Phase 174 P02 | 45min | 2 tasks | 3 files |
 | Phase 174 P03 | 35min | 3 tasks | 5 files |
 | Phase 174 P04 | 24min | 3 tasks | 4 files |
+| Phase 174 P05 | 30min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -263,6 +264,8 @@ Last activity: 2026-09-18 — Phase 174 execution started
 - [Phase ?]: [Phase 174]: 174-02: manifest_compile_check/1 and its call site pinned to a committed, git-history baseline (8bc77c35), extraction-non-empty asserted before comparison to close the rename/delete vacuity path
 - [Phase ?]: CW-REQ-A deferred (defer-with-reason) — breaking contract bump moved past Phase 175 publish; CW-REQ-B closed via exit_status_for/1 classifier and a join_reports/3 completeness-check bug fix
 - [Phase ?]: [Phase 174-04]: ROOM-03 recorded PENDING POST-MERGE (real gh dispatch refused — workflow_dispatch requires the file on the default branch); no run id was fabricated.
+- [Phase ?]: Threadline's clean-room failure diagnosed as the same shared manifest_contract defect rindle hit, via unconditional Step 4/Step 7 code paths, confirmed fixed by plan 174-01's harness fix and a real run this phase.
+- [Phase ?]: Sigra's clean-room failure diagnosed as a package-unaware smoke-test template branch (refute instead of assert on enabled?/1's default), fixed in commit d16e475a; confirmed still fixed by a real run this phase.
 
 ### v23.0 Roadmap Decisions
 
@@ -336,8 +339,8 @@ Last activity: 2026-09-18 — Phase 174 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-18T14:00:11.278Z
-Stopped at: Completed 174-04-PLAN.md
+Last session: 2026-09-18T14:21:11.177Z
+Stopped at: Completed 174-05-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
