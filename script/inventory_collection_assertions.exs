@@ -483,7 +483,7 @@ defmodule Crosswake.CollectionAssertionInventory do
     # test/crosswake/planning/first_adopter_context_test.exs:281
     "sha256:36575ec13936cbc3" =>
       {"safe-cardinality-pinned",
-       "the enclosing test's title (\"positional placeholders are preserved\") states the intent: `$1`/`$0.0` inside a `.sh`/`.swift` file are recognized as positional placeholders, not commercial amounts, so `scan_filesystem/2` legitimately returns zero violations for this fixture — the contrast case to the same test's earlier prose-file assertion, which DOES produce `privacy.commercial_detail` violations for `.md`/`.html`/`.svg` paths with identical dollar amounts. Confirmed via `mix test test/crosswake/planning/first_adopter_context_test.exs:267`, `scan_filesystem(root, []) == []`."}
+       "the enclosing test's title (\"positional placeholders are preserved\") states the intent: `$1`/`$0.0` inside a `.sh`/`.swift` file are recognized as positional placeholders, not commercial amounts, so `scan_filesystem/2` legitimately returns zero violations for this fixture — the contrast case to the same test's earlier prose-file assertion, which DOES produce `privacy.commercial_detail` violations for `.md`/`.html`/`.svg` paths with identical dollar amounts. Confirmed via `mix test test/crosswake/planning/first_adopter_context_test.exs` (the `single-digit commercial amounts are prose-aware while positional placeholders are preserved` test), `scan_filesystem(root, []) == []`."}
   }
 
   defp classify(row, lines, test_start_line) do
