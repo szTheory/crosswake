@@ -4,17 +4,17 @@ milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 173
 current_phase_name: Recovery-Path Proof Convergence
-status: ready_to_plan
-stopped_at: Phase 172 merged as ec505c08 (49/49 CI green); Phase 173 unplanned — needs phase-level research
-last_updated: "2026-09-17T20:47:39.477Z"
-last_activity: 2026-09-17
-last_activity_desc: Phase 172 merged; main synced to origin
+status: ready_to_ship
+stopped_at: Phase 173 executed (4/4 plans, 819 tests 0 failures, 73/73 roster checks) on branch gsd/phase-173-recovery-path-proof-convergence; single phase PR not yet opened. SC#2 (live failed-not-skipped dispatch observation) is PENDING post-merge — XPUB-05 stays open until it is taken.
+last_updated: "2026-09-18T01:35:00.000Z"
+last_activity: 2026-09-18
+last_activity_desc: Phase 173 plans 01-04 executed and verified; ROADMAP/REQUIREMENTS reconciled
 state_head: ec505c087fcabc6dfb352bfceb5dc7d2e22e2c30
 progress:
   total_phases: 7
   completed_phases: 4
-  total_plans: 17
-  completed_plans: 17
+  total_plans: 21
+  completed_plans: 21
   percent: 57
 ---
 
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-09-15)
 
 **Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
 ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 172 — Per-Package Proof Scope
+**Current focus:** Phase 173 — Recovery-Path Proof Convergence (executed; awaiting single phase PR + post-merge fire-drill observation)
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
 **Open release pull requests — triage as of 2026-09-15. None should be merged yet.**
