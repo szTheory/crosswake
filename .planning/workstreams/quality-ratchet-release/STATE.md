@@ -380,7 +380,7 @@ Last activity: 2026-09-18 — Phase 175 execution started
 
 Last session: 2026-09-19T19:20:00Z
 Stopped at: 175-07 Gate 1 incident — publish succeeded, but the required remote runbook ancestry did not.
-Resume file: phases/175-rehearsal-and-publish/.continue-here.md
+Recovery instructions: the phase-local incident record for Phase 175.
 
 ## Operator Next Steps
 
