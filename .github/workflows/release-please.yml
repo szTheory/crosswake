@@ -15,6 +15,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      fire_drill_version:
+        description: 'Candidate base version for the disposable Android Maven fire-drill coordinate (for example, 0.2.2).'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -1036,6 +1041,27 @@ jobs:
           done
           echo "All 8 required secrets are set."
 
+      - name: Derive and preflight a disposable Maven coordinate
+        env:
+          FIRE_DRILL_BASE_VERSION: ${{ inputs.fire_drill_version }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$FIRE_DRILL_BASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z]+)*$ ]]; then
+            echo "FIRE_DRILL_VERSION_INVALID: supply the candidate base version, for example 0.2.2."
+            exit 1
+          fi
+
+          FIRE_DRILL_VERSION="${FIRE_DRILL_BASE_VERSION}-firedrill-${GITHUB_RUN_ID}"
+          POM_URL="https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/${FIRE_DRILL_VERSION}/crosswake-shell-core-android-${FIRE_DRILL_VERSION}.pom"
+          HTTP_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' "$POM_URL")
+          if [ "$HTTP_STATUS" != "404" ]; then
+            echo "FIRE_DRILL_COORDINATE_UNAVAILABLE: expected HTTP 404 for $FIRE_DRILL_VERSION, got $HTTP_STATUS."
+            exit 1
+          fi
+
+          echo "FIRE_DRILL_VERSION=$FIRE_DRILL_VERSION" >> "$GITHUB_ENV"
+          echo "Disposable Maven coordinate: $FIRE_DRILL_VERSION"
+
       - name: Local publish to ~/.m2 and assert artifacts
         working-directory: packages/crosswake-shell-core-android
         env:
@@ -1044,10 +1070,10 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
         run: |
           set -euo pipefail
-          ./gradlew publishToMavenLocal --no-daemon
+          : "${FIRE_DRILL_VERSION:?missing disposable fire-drill coordinate}"
+          ./gradlew -PcrosswakeVersion="$FIRE_DRILL_VERSION" publishToMavenLocal --no-daemon
 
-          VERSION=$(grep '// x-release-please-version' build.gradle.kts \
-            | sed 's/.*version = "\(.*\)" \/\/.*/\1/')
+          VERSION="$FIRE_DRILL_VERSION"
           echo "Asserting artifacts for version: $VERSION"
           ARTIFACT_DIR="$HOME/.m2/repository/io/github/sztheory/crosswake-shell-core-android/$VERSION"
 
@@ -1094,9 +1120,9 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
         run: |
           set -euo pipefail
+          : "${FIRE_DRILL_VERSION:?missing disposable fire-drill coordinate}"
 
-          VERSION=$(grep '// x-release-please-version' build.gradle.kts \
-            | sed 's/.*version = "\(.*\)" \/\/.*/\1/')
+          VERSION="$FIRE_DRILL_VERSION"
 
           # Assemble a Central Portal bundle from the local Maven repo and upload it via
           # the raw Publisher API. The API returns the deployment id, which we then poll
@@ -1104,7 +1130,7 @@ jobs:
           # surfaces the id and there is NO list-by-state endpoint, so the previous
           # `GET /deployments?state=` poll (also using Basic instead of Bearer auth)
           # could never find the deployment it had just created.
-          ./gradlew publishToMavenLocal --no-daemon
+          ./gradlew -PcrosswakeVersion="$FIRE_DRILL_VERSION" publishToMavenLocal --no-daemon
 
           REPO="$HOME/.m2/repository"
           ART_PATH="io/github/sztheory/crosswake-shell-core-android/$VERSION"
@@ -1137,13 +1163,19 @@ jobs:
           echo "Polling deployment status (up to 30 attempts, 15s interval)..."
           STATE=""
           for i in $(seq 1 30); do
-            STATE=$(curl -fsS -X POST -H "$AUTH" \
-              "https://central.sonatype.com/api/v1/publisher/status?id=${DEPLOYMENT_ID}" \
+            STATUS_JSON=$(curl -fsS -X POST -H "$AUTH" \
+              "https://central.sonatype.com/api/v1/publisher/status?id=${DEPLOYMENT_ID}")
+            STATE=$(printf '%s' "$STATUS_JSON" \
               | python3 -c "import sys,json; print(json.load(sys.stdin).get('deploymentState',''))")
             echo "Attempt $i/30: deploymentState=${STATE:-<none>}"
             case "$STATE" in
               VALIDATED) break;;
-              FAILED) echo "Deployment FAILED — retaining for inspection (not dropping)."; exit 1;;
+              FAILED)
+                echo "Deployment FAILED — retaining for inspection (not dropping)."
+                echo "Central Portal validation errors:"
+                printf '%s' "$STATUS_JSON" | python3 -c 'import json,sys; errors=json.load(sys.stdin).get("errors", []); json.dump(errors, sys.stdout, ensure_ascii=False); print()'
+                exit 1
+                ;;
             esac
             sleep 15
           done
@@ -1178,9 +1210,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Extract mix.exs @version (x-release-please-version annotation)
-          MIX_VERSION=$(grep '# x-release-please-version' mix.exs \
-            | sed 's/.*@version "\(.*\)" # x-release-please-version.*/\1/')
+          # The marker deliberately precedes @version on the next line. Extract that
+          # following declaration and reject absence before comparing coordinates.
+          MIX_VERSION=$(sed -n '/# x-release-please-version/{n;s/^[[:space:]]*@version "\([^\"]*\)".*/\1/p;}' mix.exs)
 
           # Extract build.gradle.kts version (x-release-please-version annotation)
           GRADLE_VERSION=$(grep '// x-release-please-version' packages/crosswake-shell-core-android/build.gradle.kts \
@@ -1189,6 +1221,12 @@ jobs:
           # Extract manifest baselines (. and packages/crosswake-shell-core-android)
           MANIFEST_ROOT=$(python3 -c "import json; d=json.load(open('.release-please-manifest.json')); print(d['.'])")
           MANIFEST_ANDROID=$(python3 -c "import json; d=json.load(open('.release-please-manifest.json')); print(d['packages/crosswake-shell-core-android'])")
+
+          if [ -z "$MIX_VERSION" ] || [ -z "$GRADLE_VERSION" ] || \
+             [ -z "$MANIFEST_ROOT" ] || [ -z "$MANIFEST_ANDROID" ]; then
+            echo "LOCKSTEP EXTRACTION FAILED: one or more configured version coordinates are empty."
+            exit 1
+          fi
 
           echo "mix.exs @version:               $MIX_VERSION"
           echo "build.gradle.kts version:       $GRADLE_VERSION"
