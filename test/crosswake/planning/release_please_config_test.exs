@@ -63,6 +63,19 @@ defmodule Crosswake.Planning.ReleasePleaseConfigTest do
     refute workflow =~ "Deployment FAILED — retaining for inspection (not dropping).\"; exit 1"
   end
 
+  test "Maven fire-drill uses a fresh run-scoped coordinate rather than an already-published release coordinate" do
+    workflow = File.read!(".github/workflows/release-please.yml")
+    gradle = File.read!(@android_gradle_path)
+
+    assert workflow =~ "fire_drill_version:"
+    assert workflow =~ "FIRE_DRILL_VERSION_INVALID"
+    assert workflow =~ "${FIRE_DRILL_BASE_VERSION}-firedrill-${GITHUB_RUN_ID}"
+    assert workflow =~ "FIRE_DRILL_COORDINATE_UNAVAILABLE"
+    assert workflow =~ "-PcrosswakeVersion=\"$FIRE_DRILL_VERSION\""
+    assert workflow =~ "VERSION=\"$FIRE_DRILL_VERSION\""
+    assert gradle =~ "(findProperty(\"crosswakeVersion\") as String?)?.let { version = it }"
+  end
+
   defp release_please_version(contents, regex) do
     case Regex.named_captures(regex, contents) do
       %{"version" => version} -> version
