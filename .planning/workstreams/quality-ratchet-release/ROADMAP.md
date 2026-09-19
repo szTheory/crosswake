@@ -438,8 +438,11 @@ lower-blast-radius held companion first, as the fire-drill for the repaired clea
 **Success Criteria** (what must be TRUE):
 
 1. A retire/backfill runbook covering Hex (`mix hex.retire`), the iOS mirror (re-tag/note), and
-   Maven (retire-forward) is committed to the repo — with its commit SHA recorded — before the first
-   publish command in this phase is executed.
+   Maven (retire-forward) is committed to the remote publish graph — with its commit SHA recorded and
+   verified against exact fetched PR base/head OIDs — before the first publish command in this phase
+   is executed. **Gate 1 breach (2026-09-19):** the original local-`HEAD` check passed, but PR #147's
+   base, head, and merge excluded the runbook. This criterion is historically unsatisfied and cannot
+   be repaired retroactively; remaining gates fail closed on exact remote OIDs.
 
 2. All three publish legs are rehearsed through their last safe, reversible step (`mix hex.build`,
    not `hex.publish`; `git subtree split`, not a tag push) at least once, with the rehearsal output
@@ -488,7 +491,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion — unblocked)*
 
-- [x] 175-04-PLAN.md — REL-10 + REL-16: `docs/RELEASE-INCIDENT-RESPONSE.md` with its irreversibility summary, registry-grouped failure matrix, and recorded commit SHA — committed at `d3401e51`, SHA confirmed an ancestor of `HEAD`; Wave 5 unblocked
+- [x] 175-04-PLAN.md — authored `docs/RELEASE-INCIDENT-RESPONSE.md` with its irreversibility summary, registry-grouped failure matrix, and recorded commit SHA at `d3401e51`. The later Gate 1 audit proved the plan's local-`HEAD` ancestry check was not remote release authority; REL-10 remains breached for the first publish.
 
 **Wave 5** *(blocked on Wave 4 completion — unblocked)*
 
@@ -501,6 +504,11 @@ Plans:
 **Wave 7** *(blocked on Wave 6 completion)*
 
 - [ ] 175-07-PLAN.md — REL-12: gate 1, publish the lower-blast-radius companion, confirm live on Hex
+
+  **Incident:** PR #147 merged and `crosswake_rulestead 0.1.1` published, but the runbook commit was
+  absent from the exact remote merge. The publish is not retroactively compliant; this plan remains
+  incomplete until its evidence records the breach and the repaired exact-OID guard protects the
+  remaining one-way gates.
 
 **Wave 8** *(blocked on Wave 7 completion)*
 
