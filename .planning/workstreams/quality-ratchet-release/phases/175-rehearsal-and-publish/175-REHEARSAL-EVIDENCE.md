@@ -33,6 +33,31 @@ identical to the values captured above (`state: PASS`, `package_count: 6`, `prof
 second, independent source. This is a real, reproducible, downloaded artifact — not a fabricated
 value — and is recorded here rather than silently substituted.
 
+## Current reconciliation (2026-09-19)
+
+This section supersedes the historical iOS mirror and Maven sections below, which accurately
+described the earlier tool-permission block but became stale after the user dispatched both real
+rehearsals. The retained historical text is not current evidence and must not determine REL-11.
+
+- **iOS mirror — rehearsed.** Run `35444279120` completed successfully. Its downloaded
+  `evidence/175-06-ios-rehearsal/rehearsal.json` records the captured candidate identity,
+  `run_conclusion: success`, and `external_state_changed: false`. Its downloaded `mirror.json`
+  records `state: PASS`, `authorization_result: PROVEN`, `dry_run_result: PASS`,
+  `split_sha: 424ab96ede1b92f2b751b54bce04c6e607f0f3c8`, `remote_main` equal to that split,
+  `remote_tag: null`, and a dry-run atomic push only. The run did not change the mirror.
+- **Maven — rehearsed but failed.** Run `35444298910` created Central Portal deployment
+  `fa73c999-6dc0-4f93-a669-a896cdef7ae8`, observed `VALIDATING` then `FAILED` on poll attempt
+  2 of 30, and deliberately retained that failed deployment for diagnosis. The old workflow
+  discarded the API `errors` array, and the Actions log contains no cause. This is a real red
+  rehearsal result, not a missing run and not a passing result.
+- **Repair landed for the next fire drill.** Commit `345d2095` makes failed fire drills emit only
+  the Central Portal `errors` array and repairs the independent vacuously-red lockstep check.
+  It does not change the result of run `35444298910`.
+
+**Current REL-11 status: blocked, 2 of 3 legs green.** The specific missing input is the Portal
+validation-error payload for deployment `fa73c999-6dc0-4f93-a669-a896cdef7ae8`; it requires an
+authenticated Portal session. No publish gate may proceed while this known Maven red remains.
+
 ## Hex
 
 **Status: complete.**
@@ -138,12 +163,11 @@ specifies.
 | Leg | Run / evidence | Verdict |
 |---|---|---|
 | Hex | Run `35410810853`, `rehearsal.json`: `package_count=6`, `external_state_changed=false`, `observed_head`/`tree`/`base` byte-equal to the dispatched identity | **rehearsed** |
-| iOS mirror | No run — dispatch refused twice by this session's tool-permission classifier; independent corroboration only (`git ls-remote --tags`, `v0.2.2` confirmed absent at `2026-09-19T01:00:36Z`) | **not rehearsed** |
-| Maven | No run — dispatch refused by the same classifier; independent corroboration only (live POM request, HTTP 404 at `2026-09-19T00:59:11Z`) | **not rehearsed** |
+| iOS mirror | Run `35444279120`, downloaded `rehearsal.json` and `mirror.json`: `state=PASS`, `authorization_result=PROVEN`, dry-run atomic push only, `external_state_changed=false` | **rehearsed** |
+| Maven | Run `35444298910`: Central Portal deployment `fa73c999-6dc0-4f93-a669-a896cdef7ae8` observed `VALIDATING → FAILED`; failure retained for diagnosis and no API errors were logged | **not rehearsed (known red)** |
 
-**REL-11 is only partially satisfied by this session.** The Hex leg is genuinely rehearsed against the
-real `0.2.2` candidate with a downloaded, asserted-by-value artifact. The iOS mirror and Maven legs
-are **not** rehearsed and must not be treated as satisfied — 175-07 and 175-08's evidence
-requirements for those two legs are unmet and those plans cannot proceed on this document alone. See
-`175-06-SUMMARY.md` for the full account and the specific human action needed to complete this
-plan's remaining two tasks.
+**REL-11 remains unsatisfied.** The Hex and iOS mirror legs are genuinely rehearsed against the real
+`0.2.2` candidate with downloaded, asserted-by-value artifacts. The Maven leg ran but is a known
+red; its Portal error payload was discarded by the historical workflow. 175-07 and later one-way
+publish gates cannot proceed until that cause is diagnosed, repaired, and a fresh Maven rehearsal is
+green.

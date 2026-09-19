@@ -5,10 +5,10 @@ milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 175
 current_phase_name: rehearsal-and-publish
 status: blocked
-stopped_at: 175-06-PLAN.md blocked — Hex leg rehearsed, iOS mirror and Maven legs not dispatched (tool-permission classifier refused workflow_dispatch)
-last_updated: "2026-09-19T01:04:14.826Z"
+stopped_at: 175-06-PLAN.md blocked — Hex and iOS rehearsed; Maven fire drill ran and failed, pending authenticated Central Portal error inspection
+last_updated: "2026-09-19T14:27:25.000Z"
 last_activity: 2026-09-19
-last_activity_desc: "175-06 partial: Hex candidate rehearsal dispatched and verified against the real 0.2.2 head (run 35410810853, package_count=6, external_state_changed=false). iOS mirror and Maven fire-drill dispatches were refused by this execution session's own tool-permission classifier (workflow_dispatch calls denied as 'Production Deploy'/'Auto-Mode Bypass') after the Hex dispatch had already succeeded once. Both are recorded honestly as not performed in 175-REHEARSAL-EVIDENCE.md, with independent read-only corroboration (iOS tag absence, Maven POM 404) and the exact commands a human operator needs to run to complete them. 175-07 cannot proceed until a human completes the two remaining dispatches."
+last_activity_desc: "175-06 reconciliation: Hex rehearsal passed (run 35410810853); iOS mirror rehearsal passed with downloaded PASS/PROVEN dry-run evidence (run 35444279120); Maven fire drill ran and failed at Central Portal deployment fa73c999-6dc0-4f93-a669-a896cdef7ae8 (run 35444298910). The historical poller discarded Portal errors, so commit 345d2095 now prints only that errors array on a future failure and repairs the separately vacuously-red lockstep check. REL-11 remains blocked at 2/3 green until an authenticated Portal session supplies the retained deployment's validation errors and the Maven leg is repaired and freshly green."
 progress:
   total_phases: 7
   completed_phases: 6
@@ -47,7 +47,7 @@ Revisit once the post-publication proof lane can actually run.
 
 Phase: 175 (rehearsal-and-publish) — EXECUTING
 Plan: 6 of 10 (BLOCKED — not advanced)
-Status: 175-06 partial: the Hex candidate rehearsal (Task 1) ran and is verified against the real 0.2.2 head (run 35410810853, `175-REHEARSAL-EVIDENCE.md`). Tasks 2 (iOS mirror) and 3 (Maven fire drill) could not be dispatched — this execution session's own tool-permission classifier refused every `gh workflow run` / GitHub Actions `workflow_dispatch` call after the Hex leg's own dispatch had already succeeded once, escalating to an explicit "Auto-Mode Bypass" refusal on retry. Both legs are recorded as not-performed with the exact commands to complete them (see `175-06-SUMMARY.md` "User Setup Required"). **175-07 cannot proceed on this evidence** — do not advance the plan counter past 6 until a human operator completes the two remaining dispatches and `175-REHEARSAL-EVIDENCE.md`'s verdict table reads all three legs rehearsed.
+Status: 175-06 partial: the Hex candidate rehearsal passed (run 35410810853) and the user-dispatched iOS mirror rehearsal passed (run 35444279120; downloaded `mirror.json` records `PASS`/`PROVEN`, dry-run only, no external mutation). The user-dispatched Maven fire drill ran but failed at retained Central Portal deployment `fa73c999-6dc0-4f93-a669-a896cdef7ae8` (run 35444298910). Its historical poller discarded the Portal `errors` array, so its cause remains unknown without Portal authentication; commit `345d2095` makes future failed fire drills surface that bounded diagnostic. **175-07 cannot proceed on 2/3 green evidence** — do not advance the plan counter past 6 until the Maven cause is repaired and a fresh fire drill reaches `VALIDATED` then confirms the drop.
 2026-09-18 by the post-merge clean-room dispatch (run 35366337182) against the live
 published `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install`
 before `step=doctor`, log captured at `evidence/174-rindle-ci-run.log`.
@@ -378,9 +378,9 @@ Last activity: 2026-09-18 — Phase 175 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-18T21:30:00.000Z
-Stopped at: Completed 175-03-PLAN.md
-Resume file: None
+Last session: 2026-09-19T14:27:25Z
+Stopped at: 175-06 reconciled — Portal validation errors required before Maven repair and fresh rehearsal
+Resume file: phases/175-rehearsal-and-publish/.continue-here.md
 
 ## Operator Next Steps
 
