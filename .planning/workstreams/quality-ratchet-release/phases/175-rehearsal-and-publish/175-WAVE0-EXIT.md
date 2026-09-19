@@ -13,15 +13,30 @@ artifact on disk.
 | 2 | Zero mutable refs over the full scope | **met** | Same re-run: `node scripts/ci_monitor.cjs check-actions` → summary line `files=27 actions=252 mutable_refs=0`, exit status `0` (checked directly via `$?`, not through a pipeline). Matches the recorded `evidence/175-check-actions-full-scope.log`, whose appended tail lines read `observed_exit_status=0` and `freshly_computed_expected_file_count=27`. |
 | 3 | The cardinality assertion has been exercised against a deliberate regression | **met** | `node scripts/ci_monitor.cjs test-check-actions-scope` (re-run this session), exit `0`: `case=narrowed expected=27 actual=3 outcome=red` and `case=control expected=27 actual=27 outcome=green`. Matches `evidence/175-scope-gate-regression.log` verbatim (`case=narrowed expected=27 actual=3 outcome=red`, `case=control expected=27 actual=27 outcome=green`, `exit_status=0`). The narrowed case is a genuine proper-subset (3 of 27 files); the control is the full 27-file scope compared against itself. |
 | 4 | Diff confinement | **met, against `origin/main` — see note below** | `git diff --name-only origin/main...HEAD` (re-run this session) lists exactly: `scripts/ci_monitor.cjs`; the ten workflow files carrying mutable refs (`required-checks-audit.yml`, `see-it-run-collateral.yml`, `native-collateral-advisory.yml`, `phase68-proof.yml`, `phase45-proof.yml`, `phase43-proof.yml`, `phase132-proof.yml`, `phase130-proof.yml`, `phase34-proof.yml`, `phase23-proof.yml`); the two evidence logs under `evidence/`; this record; and this phase's own planning artifacts (`175-*-PLAN.md`, `175-CONTEXT.md`, `175-DISCUSSION-LOG.md`, `175-PATTERNS.md`, `175-RESEARCH.md`, `175-VALIDATION.md`, `ROADMAP.md`, `STATE.md`). Count of already-pinned publish workflows appearing (`release-please.yml`, `hex-publish.yml`, `ios-mirror-backfill.yml`, `exact-public-proof.yml`): **0**. No CI redesign present — every touched workflow's diff is `uses:` pin lines only, per 175-02-SUMMARY.md's own per-file accounting. |
-| 5 | Landed as its own pull request, CI fully green, merged | **not met** | No pull request exists yet for this work. Verified this session: `git status -sb` reports local `main` is `ahead 13` of `origin/main`, and `gh pr list --state all` shows no open or merged PR containing the 175-01/175-02 commits (`2b8e3025`, `d368b945`, `dddc88f7`, `91c3fdb7`, plus their `docs(175-*)` companions) — the commits exist only on the local `main` branch and have not been pushed to any branch, so there is nothing yet to merge. Task 2's checkpoint is where this closes, per this plan's own design. |
+| 5 | Landed as its own pull request, CI fully green, merged | **met** | **PR #189** ("Phase 175 Wave 0: make the action-pin audit audit its real scope, then pin all 31 mutable refs") was opened from branch `gsd/phase-175-wave0`, cut at the tip of the 14 Wave-0 commits that had been sitting on local `main` with no PR (the human's explicit choice: one PR, all 14 commits, rather than one PR per plan). `gh pr view 189 --json statusCheckRollup` (re-run this session) reports 49 checks: 48 `SUCCESS`, 1 `SKIPPED` (`release-candidate-full-proof`, a pre-existing conditional skip unrelated to this change), 0 failures — `mergeStateStatus` reads `MERGED`. The four checks that could not run on a pull-request event (`phase68-proof`, `native-collateral-advisory`, `see-it-run-collateral`, and `required-checks-audit`, all `workflow_dispatch:`-only or push/schedule-only) were separately dispatched by the orchestrator against the PR branch before merge: `required-checks-audit` (run `35387460901`) succeeded; `phase68-proof` (run `35387453614`) succeeded; `native-collateral-advisory` (run `35387456198`) had its `ios-simulator-advisory` job succeed and its `android-emulator-advisory` job cancelled at 40m25s against its own 40-minute job timeout — step-level evidence from that cancelled run shows every pinned action resolving and succeeding (`actions/checkout@3d3c42e5...` success, `actions/setup-node@82076278...` success, `erlef/setup-beam@fc68ffb9...` success), and only the final "Capture Android emulator advisory evidence" step was cancelled; `see-it-run-collateral` (run `35387458593`) had its `web-and-gif` job succeed and its `native` job cancelled at 35m52s against its own 35-minute job timeout, the same class of expiry, not a pin failure. Both cancellations are recorded here as what they are — an unexercised advisory lane, not a demonstrated pass — rather than rounded up to "all green." PR #189 was **merged as a merge commit** (not squashed, to preserve the 175-01/175-02/175-03 commit lineage for GSD spot-checks): merge commit `c0774e29616272bc37b980ea76b6522224c5d4ad` (short `c0774e29`), confirmed this session via `git log --oneline main \| grep c0774e29` (present, exactly once) and `git status -sb` (`main...origin/main`, no divergence — the merge landed on `origin/main` and local `main` is synced to it). Post-merge, `node scripts/ci_monitor.cjs check-actions` (re-run this session, exit status read via `$?` directly, not through a pipeline) reports `EXIT=0`, `files=27 actions=252 mutable_refs=0`. Commit lineage survived the merge: `git log --oneline main --grep=175-01` -> 4, `--grep=175-02` -> 3, `--grep=175-03` -> 1 (this plan's own docs commit, added after this row). Diff confinement re-checked against the actual merge (`git diff --name-only c0774e29^1 c0774e29^2`, i.e. the PR's real content, not the `origin/main` stand-in Row 4 used before a PR existed): 33 paths — `scripts/ci_monitor.cjs`; the ten workflow files carrying mutable refs; the two evidence logs; this record and the rest of this phase's planning artifacts (`175-01` through `175-10` `-PLAN.md`/`-SUMMARY.md`, `175-CONTEXT.md`, `175-DISCUSSION-LOG.md`, `175-PATTERNS.md`, `175-RESEARCH.md`, `175-VALIDATION.md`) plus `ROADMAP.md`/`STATE.md`; zero already-pinned publish workflows present. |
 
-**Note on Row 4's base.** D-28 criterion 4 says "changes confined to... against the pull request
-base." No pull request exists yet (Row 5), so there is no PR diff to read. `origin/main` is the
-only comparable base available at verification time, and it is the correct one: it is what a
-future PR's base would be. If a PR is opened from a different point (e.g. a squash, or a rebase
-onto a moved `origin/main`), Row 4 must be re-checked against that PR's actual diff before Row 5
-is marked met — this row's "met" verdict is scoped to the diff as measured against `origin/main`
-right now, not a promise about whatever diff a not-yet-created PR ends up presenting.
+**Note on Row 4's base.** Row 4's verdict above was recorded before a pull request existed, against
+`origin/main` as the best available stand-in for a future PR base. Per that row's own caveat, it has
+now been re-checked against PR #189's actual merge diff (`c0774e29^1..c0774e29^2`) as part of closing
+Row 5 above, and the same "0 already-pinned publish workflows, no CI redesign" verdict holds against
+the real diff, not just the stand-in.
+
+**Additional finding, recorded but not gating Row 5 (adjacent to SEED-022, filed separately below
+rather than folded into it).** `erlef/setup-beam@v1` now resolves, repo-wide, to two different
+pinned SHAs: 31 pre-existing refs at `fc68ffb90438ef2936bbb3251622353b3dcb2f93` (a real upstream
+commit from 2026-03-30, confirmed as genuine history, not fabricated — `175-02`'s own key-decisions
+already recorded this as a pre-existing dual-SHA state it deliberately left untouched) and 10 refs
+at `54075bcc5e249e4758d363f27d099f55d843f124`, of which 5 predate this PR (`crosswake-ci.yml`) and 5
+were introduced by `175-02` across `phase68-proof.yml`, `phase45-proof.yml`, `phase43-proof.yml`,
+`phase132-proof.yml`, `phase130-proof.yml`. Resolving the `v1` tag fresh this session
+(`gh api repos/erlef/setup-beam/git/refs/tags/v1`, dereferenced via `git/tags/<sha>`) confirms
+`54075bcc...` is exactly what `v1` points to today — so every ref this phase pinned is current, and
+the `fc68ffb9...` refs elsewhere are "pinned but drifted," not wrong at the time they were written.
+This is a variant of SEED-022's "pinned SHAs are unaudited" framing (same root cause: nobody has
+looked at whether a stale-but-valid pin should be refreshed) but a distinct symptom (two different
+valid pins for one tag, coexisting in the same repo, rather than a single unaudited pin) — noted here
+as a fact on the record; per this plan's Task 1 instructions, no new SEED is filed for it and
+SEED-022 is left as originally worded.
 
 ## Section 2 — Vacuity-taxonomy row for the scope-cardinality gate (VAC-03)
 
@@ -55,4 +70,4 @@ project's standard SEED frontmatter (`id`, `title`, `status: dormant`, `severity
 
 *Phase: 175-rehearsal-and-publish*
 *Record authored: 2026-09-18*
-*Row 5 pending: Task 2's human checkpoint*
+*Row 5 closed 2026-09-18: PR #189 merged as `c0774e29616272bc37b980ea76b6522224c5d4ad`. Wave 1 is released.*

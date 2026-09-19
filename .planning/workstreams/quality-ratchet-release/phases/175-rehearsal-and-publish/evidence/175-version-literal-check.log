@@ -1,0 +1,17 @@
+=== RUN 1: injected literal on scratch copy (expect exit 1) ===
+[crosswake] FAIL: doc.version_literals.no_bare_literal_outside_fence
+[crosswake]   where: .planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/evidence/scratch/scratch-runbook.md:276
+[crosswake]   what:  bare version literal outside a code fence: Injected test claim: this scratch copy pins the release to 1.2.3 for the check's own red demonstration.
+
+[crosswake] FAIL: 1 version-literal finding(s) in release documentation.
+exit_status=1
+
+=== RUN 2: literal removed from scratch copy (expect exit 0, control case) ===
+[crosswake] OK: no bare version literal appears outside a code fence in any rostered document.
+[crosswake] OK: every rostered document states the no-version-specific-claims invariant.
+exit_status=0
+
+=== RUN 3: real no-argument invocation over the declared roster (expect exit 0) ===
+[crosswake] OK: no bare version literal appears outside a code fence in any rostered document.
+[crosswake] OK: every rostered document states the no-version-specific-claims invariant.
+exit_status=0

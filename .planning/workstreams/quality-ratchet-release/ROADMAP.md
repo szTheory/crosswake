@@ -438,8 +438,11 @@ lower-blast-radius held companion first, as the fire-drill for the repaired clea
 **Success Criteria** (what must be TRUE):
 
 1. A retire/backfill runbook covering Hex (`mix hex.retire`), the iOS mirror (re-tag/note), and
-   Maven (retire-forward) is committed to the repo — with its commit SHA recorded — before the first
-   publish command in this phase is executed.
+   Maven (retire-forward) is committed to the remote publish graph — with its commit SHA recorded and
+   verified against exact fetched PR base/head OIDs — before the first publish command in this phase
+   is executed. **Gate 1 breach (2026-09-19):** the original local-`HEAD` check passed, but PR #147's
+   base, head, and merge excluded the runbook. This criterion is historically unsatisfied and cannot
+   be repaired retroactively; remaining gates fail closed on exact remote OIDs.
 
 2. All three publish legs are rehearsed through their last safe, reversible step (`mix hex.build`,
    not `hex.publish`; `git subtree split`, not a tag push) at least once, with the rehearsal output
@@ -463,9 +466,15 @@ lower-blast-radius held companion first, as the fire-drill for the repaired clea
 
 8. `docs/COMPANION-PUBLISH-RUNBOOK.md`'s "this pipeline only publishes 0.2.1" section is deleted in
    the same change window that makes it false, and residual `splitsh-lite` references across the repo
-   are replaced with `git subtree split` documentation.
+   are replaced with `git subtree split` documentation. *(Satisfied 2026-09-18 by 175-05: the section
+   deleted at `ed0006e4` (DOC-04), `git subtree split` named in all three mirror-split locations at
+   `21b093aa` (DOC-06); the one residual `splitsh` reference — a comment in
+   `script/check_ios_mirror_parity.sh:31` — is not a live invocation and was left as-is. A new
+   merge-blocking `script/check_release_doc_version_literals.exs` check, wired into
+   `crosswake-ci.yml` at `7219968a`, now fails the build if either release document regains a bare
+   version literal outside a code fence or loses its invariant sentence.)*
 
-**Plans**: 2/10 plans executed
+**Plans**: 5/10 plans executed
 
 Plans:
 **Wave 1**
@@ -478,23 +487,28 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 175-03-PLAN.md — Wave 0 exit: the five-part exit record, the gate's vacuity row, and the blocking merge gate before Wave 1
+- [x] 175-03-PLAN.md — Wave 0 exit: the five-part exit record, the gate's vacuity row, and the blocking merge gate before Wave 1 — closed via PR #189, merged as `c0774e29`; Wave 1 released
 
-**Wave 4** *(blocked on Wave 3 completion)*
+**Wave 4** *(blocked on Wave 3 completion — unblocked)*
 
-- [ ] 175-04-PLAN.md — REL-10 + REL-16: `docs/RELEASE-INCIDENT-RESPONSE.md` with its irreversibility summary, registry-grouped failure matrix, and recorded commit SHA
+- [x] 175-04-PLAN.md — authored `docs/RELEASE-INCIDENT-RESPONSE.md` with its irreversibility summary, registry-grouped failure matrix, and recorded commit SHA at `d3401e51`. The later Gate 1 audit proved the plan's local-`HEAD` ancestry check was not remote release authority; REL-10 remains breached for the first publish.
 
-**Wave 5** *(blocked on Wave 4 completion)*
+**Wave 5** *(blocked on Wave 4 completion — unblocked)*
 
-- [ ] 175-05-PLAN.md — DOC-04 + DOC-06: delete the false runbook section, de-version its prose, document `git subtree split`, and add the version-literal CI check
+- [x] 175-05-PLAN.md — DOC-04 + DOC-06: delete the false runbook section, de-version its prose, document `git subtree split`, and add the version-literal CI check — deletion at `ed0006e4`, subtree docs at `21b093aa`, CI check driven red-then-green and wired at `7219968a`; Wave 6 unblocked
 
-**Wave 6** *(blocked on Wave 5 completion)*
+**Wave 6** *(blocked on Wave 5 completion — unblocked)*
 
-- [ ] 175-06-PLAN.md — REL-11: rehearse all three publish legs against the real `0.2.2` candidate and record the evidence (phase tracer)
+- [x] 175-06-PLAN.md — REL-11: all three publish legs rehearsed against the real `0.2.2` candidate. Hex passed (35410810853); iOS mirror passed (35444279120); repaired Maven fire drill passed (35452376752), reached `VALIDATED` as deployment `8cacc3da-2613-407c-8df1-238b2ad0710c`, then dropped its disposable coordinate. Wave 7 is unblocked, but its publish gate remains explicitly one-way.
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
 - [ ] 175-07-PLAN.md — REL-12: gate 1, publish the lower-blast-radius companion, confirm live on Hex
+
+  **Incident:** PR #147 merged and `crosswake_rulestead 0.1.1` published, but the runbook commit was
+  absent from the exact remote merge. The publish is not retroactively compliant; this plan remains
+  incomplete until its evidence records the breach and the repaired exact-OID guard protects the
+  remaining one-way gates.
 
 **Wave 8** *(blocked on Wave 7 completion)*
 
@@ -530,4 +544,4 @@ evidence.
 | 172. Per-Package Proof Scope | 3/3 | Complete | 2026-09-17 |
 | 173. Recovery-Path Proof Convergence | 4/4 | Complete | 2026-09-18 |
 | 174. Clean-Room Host Realism & Adopter Fidelity | 6/6 | Complete | 2026-09-18 |
-| 175. Rehearsal and Publish | 2/10 | In Progress|  |
+| 175. Rehearsal and Publish | 5/10 | In Progress|  |

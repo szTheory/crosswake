@@ -5,7 +5,6 @@ approval. It keeps the three linked coordinates together, keeps all five compani
 versioned, and separates reversible evidence from publication. The status and candidate commands are
 read-only: neither command publishes, pushes a ref, merges a pull request, or changes a registry.
 
-**This document makes no version-specific claims.**
 
 ## Candidate authority
 

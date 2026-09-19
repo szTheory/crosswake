@@ -4,18 +4,18 @@ milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 175
 current_phase_name: rehearsal-and-publish
-status: executing
-stopped_at: Completed 175-02-PLAN.md
-last_updated: "2026-09-18T19:10:45.253Z"
-last_activity: 2026-09-18
-last_activity_desc: "Phase 174 closed at 7/7 (ROOM-03/SC#4 via post-merge dispatch run 35366337182); Finding A closed by wiring the SC#4 marker comparison into the parity test"
+status: active
+stopped_at: 175-07 Gate 1 published, then exact remote audit proved REL-10 ancestry was absent from PR #147's merge
+last_updated: "2026-09-19T19:20:00.000Z"
+last_activity: 2026-09-19
+last_activity_desc: "Gate 1 published crosswake_rulestead 0.1.1, but the required runbook commit d3401e51 was reachable only from divergent local main. PR #147 base 4627170f, head 491c7a74, and merge 096371e3 all exclude it and the runbook file. REL-10 is breached for the historical first publish; remaining gates are blocked until exact-remote ancestry passes."
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 37
-  completed_plans: 29
-  percent: 78
-state_head: ec505c087fcabc6dfb352bfceb5dc7d2e22e2c30
+  completed_plans: 32
+  percent: 86
+state_head: 7219968a2b20f1ef9f739d1eaf845ff37cd6c306
 ---
 
 # Project State
@@ -29,12 +29,12 @@ ready to release without weakening Phoenix-first runtime contracts or honest sup
 **Current focus:** Phase 175 — rehearsal-and-publish
 `TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
 
-**Open release pull requests — triage as of 2026-09-15. None should be merged yet.**
+**Release pull-request triage — refreshed 2026-09-19 after Gate 1. Core and second companion remain held.**
 
 | PR | Proposes | Disposition |
 |---|---|---|
 | #164 | `0.2.2` (linked core) | **Weld-unblocked as of Phase 171** (merged `501e4410`): the graph is version-parametric and both the `0.2.1` weld and its interim tripwire are gone, so merging this would now tag AND publish. Still hold pending the proof lane — `exact-public-proof` has never executed at any release (`TODO-011`/`TODO-012`, Phases 173-175). Publishing before the proof lane works is the thing this milestone exists to prevent. |
-| #147 | `crosswake_rulestead 0.1.1` | **Hold.** Independently versioned (D-15/D-16), so not weld-blocked — but publishing is a one-way door, and per `TODO-011` the post-publish companion clean-room lane has never been green, while `TODO-012` makes the exact-public proof structurally unsatisfiable. Publishing more of the family before the proof lane works adds unverifiable artifacts. Also stale (opened 2026-08-10). |
+| #147 | `crosswake_rulestead 0.1.1` | **MERGED/PUBLISHED with Gate 1 ancestry breach.** Merged as `096371e3`; the required runbook commit `d3401e51` was not an ancestor of its base, head, or merge and the runbook file was absent. The local-`HEAD` gate was a false pass. Do not describe REL-10 or Gate 1 as compliant. |
 | #115 | `crosswake_chimeway 0.1.1` | **Hold**, same reasoning. Stale (opened 2026-08-09). |
 
 The companion holds are a judgement call, not a hard gate: these publishes would most
@@ -45,9 +45,9 @@ Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
 
-Phase: 175 (rehearsal-and-publish) — EXECUTING
-Plan: 3 of 10
-Status: Ready to execute
+Phase: 175 (rehearsal-and-publish) — BLOCKED ON INCIDENT REPAIR
+Plan: 7 of 10 (Gate 1 publish occurred; plan verification is non-passing)
+Status: `crosswake_rulestead 0.1.1` is live, but the before-any-publish runbook ancestry bar was checked against divergent local `HEAD` rather than the remote publish graph. Exact audit: base `4627170f` = no, head `491c7a74` = no, merge `096371e3` = no. REL-10 is historically breached. Do not proceed to 175-08 until the runbook is landed on remote `main`, the release PR is refreshed, and the repaired explicit-OID guard passes for live remote base/head.
 2026-09-18 by the post-merge clean-room dispatch (run 35366337182) against the live
 published `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install`
 before `step=doctor`, log captured at `evidence/174-rindle-ci-run.log`.
@@ -84,7 +84,7 @@ Last activity: 2026-09-18 — Phase 175 execution started
 
 **Velocity:**
 
-- Total plans completed: 39
+- Total plans completed: 40
 - Average duration: N/A
 - Total execution time: 0 hours
 
@@ -161,6 +161,7 @@ Last activity: 2026-09-18 — Phase 175 execution started
 | Phase 174 P06 | 40min | 2 tasks | 2 files |
 | Phase 175 P01 | 4min | 2 tasks | 2 files |
 | Phase 175 P02 | 6min | 2 tasks | 11 files |
+| Phase 175 P03 | 25min | 2 tasks | 1 file |
 
 ## Accumulated Context
 
@@ -365,6 +366,8 @@ Last activity: 2026-09-18 — Phase 175 execution started
 - Phase 167 code review retained five non-blocking advisories; Phase 168 should resolve the
   release-relevant full-comment marker count before relying on it for exact candidate authority.
 
+- 175-06: iOS mirror and Maven rehearsal legs (REL-11) not dispatched — session tool-permission classifier refused workflow_dispatch calls after the Hex leg's own dispatch succeeded once. Human must run the two gh workflow run commands recorded in 175-06-SUMMARY.md before 175-07 can proceed.
+
 ## Deferred Items
 
 | Category | Item | Status | Deferred At | Milestone |
@@ -375,9 +378,9 @@ Last activity: 2026-09-18 — Phase 175 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-18T19:10:45.244Z
-Stopped at: Completed 175-02-PLAN.md
-Resume file: None
+Last session: 2026-09-19T19:20:00Z
+Stopped at: 175-07 Gate 1 incident — publish succeeded, but the required remote runbook ancestry did not.
+Recovery instructions: the phase-local incident record for Phase 175.
 
 ## Operator Next Steps
 

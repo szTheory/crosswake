@@ -99,6 +99,12 @@ separately funded business-line mandate. Durable reasoning is in
 `.planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md`.
 
 ## Current State
+- **v23.0 Phase 175 Gate 1 — PUBLISHED WITH ANCESTRY BREACH 2026-09-19.**
+  `crosswake_rulestead 0.1.1` is live, but the required incident-response runbook commit
+  `d3401e51` existed only on divergent local `main`. PR #147's exact base, head, and merge
+  excluded both that commit and the runbook file. REL-10 is historically unsatisfied and cannot be
+  repaired retroactively. Remaining publish gates are blocked until the runbook and the new
+  explicit-OID guard land on remote `main` and pass against freshly fetched PR base/head identities.
 - **v22.0 Quality Ratchet & Release Readiness — PHASE 167 COMPLETE 2026-09-12.** Dependency
   security, authoritative and efficient CI, deterministic clean-checkout repository proof,
   documentation truth, parked-lane isolation, and explicit pull-request dispositions are verified.
@@ -500,4 +506,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-09-16 after Phase 169 (Diagnostic Legibility).*
+*Last updated: 2026-09-19 after the Phase 175 Gate 1 remote-ancestry audit.*
