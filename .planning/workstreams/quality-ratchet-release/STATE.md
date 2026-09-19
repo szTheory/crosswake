@@ -4,11 +4,11 @@ milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 175
 current_phase_name: rehearsal-and-publish
-status: executing
-stopped_at: Completed 175-05-PLAN.md
-last_updated: "2026-09-18T22:30:00.000Z"
-last_activity: 2026-09-18
-last_activity_desc: "175-05 complete: docs/COMPANION-PUBLISH-RUNBOOK.md's stale single-version warning deleted (DOC-04), its prose de-versioned, git subtree split documented in all three mirror-split locations (DOC-06), and a new merge-blocking script/check_release_doc_version_literals.exs check landed — driven red on an injected literal and green on its removal before being wired into crosswake-ci.yml. Wave 6 (175-06) is next."
+status: blocked
+stopped_at: 175-06-PLAN.md blocked — Hex leg rehearsed, iOS mirror and Maven legs not dispatched (tool-permission classifier refused workflow_dispatch)
+last_updated: "2026-09-19T01:04:14.826Z"
+last_activity: 2026-09-19
+last_activity_desc: "175-06 partial: Hex candidate rehearsal dispatched and verified against the real 0.2.2 head (run 35410810853, package_count=6, external_state_changed=false). iOS mirror and Maven fire-drill dispatches were refused by this execution session's own tool-permission classifier (workflow_dispatch calls denied as 'Production Deploy'/'Auto-Mode Bypass') after the Hex dispatch had already succeeded once. Both are recorded honestly as not performed in 175-REHEARSAL-EVIDENCE.md, with independent read-only corroboration (iOS tag absence, Maven POM 404) and the exact commands a human operator needs to run to complete them. 175-07 cannot proceed until a human completes the two remaining dispatches."
 progress:
   total_phases: 7
   completed_phases: 6
@@ -46,8 +46,8 @@ Revisit once the post-publication proof lane can actually run.
 ## Current Position
 
 Phase: 175 (rehearsal-and-publish) — EXECUTING
-Plan: 6 of 10
-Status: 175-05 complete (Wave 5: DOC-04 section deletion + de-versioning committed at ed0006e4, DOC-06 git subtree split documentation committed at 21b093aa, version-literal CI check committed at 7219968a). Wave 6 (175-06, REL-11 tracer rehearsal) is next.
+Plan: 6 of 10 (BLOCKED — not advanced)
+Status: 175-06 partial: the Hex candidate rehearsal (Task 1) ran and is verified against the real 0.2.2 head (run 35410810853, `175-REHEARSAL-EVIDENCE.md`). Tasks 2 (iOS mirror) and 3 (Maven fire drill) could not be dispatched — this execution session's own tool-permission classifier refused every `gh workflow run` / GitHub Actions `workflow_dispatch` call after the Hex leg's own dispatch had already succeeded once, escalating to an explicit "Auto-Mode Bypass" refusal on retry. Both legs are recorded as not-performed with the exact commands to complete them (see `175-06-SUMMARY.md` "User Setup Required"). **175-07 cannot proceed on this evidence** — do not advance the plan counter past 6 until a human operator completes the two remaining dispatches and `175-REHEARSAL-EVIDENCE.md`'s verdict table reads all three legs rehearsed.
 2026-09-18 by the post-merge clean-room dispatch (run 35366337182) against the live
 published `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install`
 before `step=doctor`, log captured at `evidence/174-rindle-ci-run.log`.
@@ -365,6 +365,8 @@ Last activity: 2026-09-18 — Phase 175 execution started
 
 - Phase 167 code review retained five non-blocking advisories; Phase 168 should resolve the
   release-relevant full-comment marker count before relying on it for exact candidate authority.
+
+- 175-06: iOS mirror and Maven rehearsal legs (REL-11) not dispatched — session tool-permission classifier refused workflow_dispatch calls after the Hex leg's own dispatch succeeded once. Human must run the two gh workflow run commands recorded in 175-06-SUMMARY.md before 175-07 can proceed.
 
 ## Deferred Items
 
