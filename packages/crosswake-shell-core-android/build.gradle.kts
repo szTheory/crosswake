@@ -9,6 +9,10 @@ plugins {
 
 version = "0.2.1" // x-release-please-version
 
+// A fire-drill may exercise the signed Portal upload with an invocation-owned coordinate.
+// Release Please still owns the literal above; the override never changes the checked-in version.
+(findProperty("crosswakeVersion") as String?)?.let { version = it }
+
 android {
     namespace = "dev.crosswake.shell.core"
     compileSdk = 34
