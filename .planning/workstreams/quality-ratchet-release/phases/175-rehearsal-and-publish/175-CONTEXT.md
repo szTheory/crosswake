@@ -216,9 +216,13 @@ and that this phase dispatches and records them rather than designing replacemen
   that ran for `0.2.1` during Phase 168 does not satisfy REL-11, and the existence of working
   rehearsal mechanisms is not a reason to skip dispatching them.
 
-- **D-33:** Both companion PRs report `mergeStateStatus: BEHIND`. Each publish wave must re-confirm
-  the PR head SHA immediately before dispatching its rehearsal AND again immediately before merging,
-  so the rehearsed ref is the ref that actually merges.
+- **D-33:** Both companion PRs report `mergeStateStatus: BEHIND`. A core candidate rehearsal is
+  evidence that the shared release infrastructure is ready; it is not, and cannot be, provenance for
+  either independently-versioned companion PR. Before either companion gate, require its current
+  `headRefOid`, base SHA, `mergeable`/`mergeStateStatus`, and completed required checks for that head.
+  A `BEHIND` PR must be updated with its base and have its required checks rerun before it can pass the
+  gate. Re-confirm the exact companion head and non-`BEHIND` state immediately before merging; record
+  the merge commit separately. Never compare a companion head to the core rehearsal head.
 
 ### Claude's Discretion
 
