@@ -38,6 +38,31 @@ defmodule Crosswake.Planning.ReleasePleaseConfigTest do
              get_in(config, ["packages", "packages/crosswake-shell-core-android", "extra-files"])
   end
 
+  test "dispatch-only lockstep check reads the declaration after the marker and rejects empty values" do
+    workflow = File.read!(".github/workflows/release-please.yml")
+
+    assert workflow =~ "MIX_VERSION=$(sed -n '/# x-release-please-version/"
+    assert workflow =~ "@version \"\\([^\\\"]*\\)\""
+
+    assert workflow =~ "LOCKSTEP EXTRACTION FAILED: one or more configured version coordinates are empty."
+    assert workflow =~ "[ -z \"$MIX_VERSION\" ]"
+    assert workflow =~ "[ -z \"$GRADLE_VERSION\" ]"
+    assert workflow =~ "[ -z \"$MANIFEST_ROOT\" ]"
+    assert workflow =~ "[ -z \"$MANIFEST_ANDROID\" ]"
+  end
+
+  test "Maven fire-drill retains and prints only the Portal validation errors on failure" do
+    workflow = File.read!(".github/workflows/release-please.yml")
+
+    assert workflow =~ "STATUS_JSON=$(curl -fsS -X POST -H \"$AUTH\""
+    assert workflow =~ "Central Portal validation errors:"
+
+    assert workflow =~
+             "errors=json.load(sys.stdin).get(\"errors\", []); json.dump(errors, sys.stdout, ensure_ascii=False); print()"
+
+    refute workflow =~ "Deployment FAILED — retaining for inspection (not dropping).\"; exit 1"
+  end
+
   defp release_please_version(contents, regex) do
     case Regex.named_captures(regex, contents) do
       %{"version" => version} -> version
