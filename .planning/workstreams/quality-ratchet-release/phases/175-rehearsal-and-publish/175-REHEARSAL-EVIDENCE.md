@@ -47,12 +47,16 @@ rehearsals. The retained historical text is not current evidence and must not de
   `remote_tag: null`, and a dry-run atomic push only. The run did not change the mirror.
 - **Maven — rehearsed but failed.** Run `35444298910` created Central Portal deployment
   `fa73c999-6dc0-4f93-a669-a896cdef7ae8`, observed `VALIDATING` then `FAILED` on poll attempt
-  2 of 30, and deliberately retained that failed deployment for diagnosis. The old workflow
-  discarded the API `errors` array, and the Actions log contains no cause. This is a real red
-  rehearsal result, not a missing run and not a passing result.
+  2 of 30, and deliberately retained that failed deployment for diagnosis. The authenticated
+  Portal record reports exactly one failed component validation: `pkg:maven/io.github.sztheory/
+  crosswake-shell-core-android@0.2.1?type=aar already exists`. This is the correct immutable-
+  coordinate rejection of the already-published `0.2.1` Android artifact, not a signing or POM
+  metadata failure. It is a real red rehearsal result, not a missing run and not a passing result.
 - **Repair landed for the next fire drill.** Commit `345d2095` makes failed fire drills emit only
   the Central Portal `errors` array and repairs the independent vacuously-red lockstep check.
-  It does not change the result of run `35444298910`.
+  Commit `e2453599` also makes the fire drill require a candidate base version and derive a
+  run-scoped disposable Maven coordinate, so it exercises the candidate source without retrying
+  a permanent public coordinate. Neither repair changes the result of run `35444298910`.
 
 **Current REL-11 status: blocked, 2 of 3 legs green.** The specific missing input is the Portal
 validation-error payload for deployment `fa73c999-6dc0-4f93-a669-a896cdef7ae8`; it requires an
@@ -164,10 +168,10 @@ specifies.
 |---|---|---|
 | Hex | Run `35410810853`, `rehearsal.json`: `package_count=6`, `external_state_changed=false`, `observed_head`/`tree`/`base` byte-equal to the dispatched identity | **rehearsed** |
 | iOS mirror | Run `35444279120`, downloaded `rehearsal.json` and `mirror.json`: `state=PASS`, `authorization_result=PROVEN`, dry-run atomic push only, `external_state_changed=false` | **rehearsed** |
-| Maven | Run `35444298910`: Central Portal deployment `fa73c999-6dc0-4f93-a669-a896cdef7ae8` observed `VALIDATING → FAILED`; failure retained for diagnosis and no API errors were logged | **not rehearsed (known red)** |
+| Maven | Run `35444298910`: Central Portal deployment `fa73c999-6dc0-4f93-a669-a896cdef7ae8` observed `VALIDATING → FAILED` because the already-published `0.2.1` AAR coordinate exists; failure retained | **not rehearsed (known red)** |
 
 **REL-11 remains unsatisfied.** The Hex and iOS mirror legs are genuinely rehearsed against the real
 `0.2.2` candidate with downloaded, asserted-by-value artifacts. The Maven leg ran but is a known
-red; its Portal error payload was discarded by the historical workflow. 175-07 and later one-way
-publish gates cannot proceed until that cause is diagnosed, repaired, and a fresh Maven rehearsal is
-green.
+red because its workflow retried the already-published `0.2.1` coordinate. 175-07 and later one-way
+publish gates cannot proceed until the disposable-coordinate repair is on the remote and a fresh Maven
+rehearsal is green.
