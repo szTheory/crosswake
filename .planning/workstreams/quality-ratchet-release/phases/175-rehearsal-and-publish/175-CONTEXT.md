@@ -219,10 +219,12 @@ and that this phase dispatches and records them rather than designing replacemen
 - **D-33:** Both companion PRs report `mergeStateStatus: BEHIND`. A core candidate rehearsal is
   evidence that the shared release infrastructure is ready; it is not, and cannot be, provenance for
   either independently-versioned companion PR. Before either companion gate, require its current
-  `headRefOid`, base SHA, `mergeable`/`mergeStateStatus`, and completed required checks for that head.
-  A `BEHIND` PR must be updated with its base and have its required checks rerun before it can pass the
-  gate. Re-confirm the exact companion head and non-`BEHIND` state immediately before merging; record
-  the merge commit separately. Never compare a companion head to the core rehearsal head.
+  `headRefOid`, base SHA, `mergeable`/`mergeStateStatus`, and a successful `Crosswake CI` workflow for
+  that head. Record the configured required-check result separately: if `gh pr checks --required`
+  reports none, it is policy evidence, not a vacuous passing test. A `BEHIND` PR must be updated with
+  its base and have `Crosswake CI` rerun before it can pass the gate. Re-confirm the exact companion
+  head and non-`BEHIND` state immediately before merging; record the merge commit separately. Never
+  compare a companion head to the core rehearsal head.
 
 ### Claude's Discretion
 
