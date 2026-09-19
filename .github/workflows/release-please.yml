@@ -1137,13 +1137,19 @@ jobs:
           echo "Polling deployment status (up to 30 attempts, 15s interval)..."
           STATE=""
           for i in $(seq 1 30); do
-            STATE=$(curl -fsS -X POST -H "$AUTH" \
-              "https://central.sonatype.com/api/v1/publisher/status?id=${DEPLOYMENT_ID}" \
+            STATUS_JSON=$(curl -fsS -X POST -H "$AUTH" \
+              "https://central.sonatype.com/api/v1/publisher/status?id=${DEPLOYMENT_ID}")
+            STATE=$(printf '%s' "$STATUS_JSON" \
               | python3 -c "import sys,json; print(json.load(sys.stdin).get('deploymentState',''))")
             echo "Attempt $i/30: deploymentState=${STATE:-<none>}"
             case "$STATE" in
               VALIDATED) break;;
-              FAILED) echo "Deployment FAILED — retaining for inspection (not dropping)."; exit 1;;
+              FAILED)
+                echo "Deployment FAILED — retaining for inspection (not dropping)."
+                echo "Central Portal validation errors:"
+                printf '%s' "$STATUS_JSON" | python3 -c 'import json,sys; errors=json.load(sys.stdin).get("errors", []); json.dump(errors, sys.stdout, ensure_ascii=False); print()'
+                exit 1
+                ;;
             esac
             sleep 15
           done
@@ -1178,9 +1184,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Extract mix.exs @version (x-release-please-version annotation)
-          MIX_VERSION=$(grep '# x-release-please-version' mix.exs \
-            | sed 's/.*@version "\(.*\)" # x-release-please-version.*/\1/')
+          # The marker deliberately precedes @version on the next line. Extract that
+          # following declaration and reject absence before comparing coordinates.
+          MIX_VERSION=$(sed -n '/# x-release-please-version/{n;s/^[[:space:]]*@version "\([^\"]*\)".*/\1/p;}' mix.exs)
 
           # Extract build.gradle.kts version (x-release-please-version annotation)
           GRADLE_VERSION=$(grep '// x-release-please-version' packages/crosswake-shell-core-android/build.gradle.kts \
@@ -1189,6 +1195,12 @@ jobs:
           # Extract manifest baselines (. and packages/crosswake-shell-core-android)
           MANIFEST_ROOT=$(python3 -c "import json; d=json.load(open('.release-please-manifest.json')); print(d['.'])")
           MANIFEST_ANDROID=$(python3 -c "import json; d=json.load(open('.release-please-manifest.json')); print(d['packages/crosswake-shell-core-android'])")
+
+          if [ -z "$MIX_VERSION" ] || [ -z "$GRADLE_VERSION" ] || \
+             [ -z "$MANIFEST_ROOT" ] || [ -z "$MANIFEST_ANDROID" ]; then
+            echo "LOCKSTEP EXTRACTION FAILED: one or more configured version coordinates are empty."
+            exit 1
+          fi
 
           echo "mix.exs @version:               $MIX_VERSION"
           echo "build.gradle.kts version:       $GRADLE_VERSION"
