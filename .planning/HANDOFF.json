@@ -1,77 +1,59 @@
 {
   "version": "1.0",
-  "timestamp": "2026-08-28T16:11:46.000Z",
-  "phase": "163.1",
-  "phase_name": "close-gap-v21-physical-adopter-composition",
-  "phase_dir": ".planning/phases/163.1-close-gap-v21-physical-adopter-composition",
-  "plan": 8,
-  "task": 2,
-  "total_tasks": 2,
-  "status": "parked_external_dependency",
+  "timestamp": "2026-09-19T13:49:50.517Z",
+  "workstream": "quality-ratchet-release",
+  "phase": "175",
+  "phase_name": "rehearsal-and-publish",
+  "phase_dir": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish",
+  "plan": 6,
+  "task": 3,
+  "total_tasks": 3,
+  "status": "paused",
   "completed_tasks": [
-    {
-      "id": 1,
-      "name": "Version exact device/backend evidence transaction",
-      "status": "done",
-      "commit": "8736683e"
-    },
-    {
-      "id": 2,
-      "name": "Execute source-bound physical proof and record observed truth",
-      "status": "in_progress",
-      "progress": "Automation-first preflight is committed; every prerequisite except the validated private adopter handoff reports ready. No physical transaction or evidence promotion was attempted."
-    }
+    {"id": 1, "name": "175-01 scope the pin audit", "status": "done", "commit": "25d6602e"},
+    {"id": 2, "name": "175-02 pin the 31 mutable refs", "status": "done", "commit": "7512f050"},
+    {"id": 3, "name": "175-03 Wave 0 exit verdict (PR #189 merged)", "status": "done", "commit": "8d91ce53"},
+    {"id": 4, "name": "175-04 release incident response doc (REL-10, REL-16)", "status": "done", "commit": "3249e021"},
+    {"id": 5, "name": "175-05 doc truth + version-literal CI check (DOC-04, DOC-06)", "status": "done", "commit": "e517b943"},
+    {"id": 6, "name": "175-06 rehearsal evidence (REL-11)", "status": "in_progress", "progress": "Hex leg rehearsed (run 35410810853) and iOS mirror leg rehearsed PASS (run 35444279120). Maven fire drill DISPATCHED AND FAILED (run 35444298910). Evidence doc still records iOS/Maven as 'not performed' — STALE, predates the user's dispatches.", "commit": "a8c9b3de"}
   ],
   "remaining_tasks": [
-    {
-      "id": 2,
-      "name": "Execute source-bound physical proof and record observed truth",
-      "status": "blocked"
-    },
-    {
-      "id": 9,
-      "name": "Refresh Nyquist validations and independently re-audit the milestone",
-      "status": "not_started"
-    },
-    {
-      "id": 10,
-      "name": "Reconcile final requirement, policy, capability, support, and guide truth",
-      "status": "not_started"
-    }
+    {"id": 7, "name": "175-06: diagnose Maven deployment failure, fill iOS + Maven sections of 175-REHEARSAL-EVIDENCE.md, close REL-11", "status": "blocked"},
+    {"id": 8, "name": "175-07 publish gate 1 (autonomous: false, one-way door)", "status": "not_started"},
+    {"id": 9, "name": "175-08 publish gate 2 (autonomous: false, one-way door)", "status": "not_started"},
+    {"id": 10, "name": "175-09 (autonomous: true)", "status": "not_started"},
+    {"id": 11, "name": "175-10 publish gate 3 (autonomous: false, one-way door)", "status": "not_started"}
   ],
   "blockers": [
     {
-      "description": "PI-PREFLIGHT-ADOPTER-HANDOFF: no genuinely validated sanitized First B2C Adopter route handoff exists at the conventional private path or an explicit override.",
+      "description": "Maven Central Portal deployment fa73c999-6dc0-4f93-a669-a896cdef7ae8 went VALIDATING -> FAILED in the android-publish-fire-drill job (run 35444298910). The reason is unknown because the polling step discards the API's errors array.",
       "type": "external",
-      "workaround": "None. Do not substitute fixtures, defaults, guessed route facts, or reference-host data. Resume only when adopter-supplied sanitized route facts exist."
+      "workaround": "Read the validation errors at central.sonatype.com -> Deployments -> fa73c999-6dc0-4f93-a669-a896cdef7ae8. Requires Portal credentials."
+    },
+    {
+      "description": "The FAILED deployment was deliberately RETAINED, not dropped ('retaining for inspection'). This is live external state created by the rehearsal and may need a manual drop once diagnosed.",
+      "type": "external",
+      "workaround": "Drop via Portal UI or Publisher API once the errors have been read."
+    },
+    {
+      "description": "REL-11 cannot be marked satisfied: 2 of 3 rehearsal legs green, Maven leg is a known red.",
+      "type": "technical",
+      "workaround": "None. 175-07 is a one-way door and must not proceed on a known-broken Maven path."
     }
   ],
   "async_jobs": [],
   "human_actions_pending": [
-    {
-      "action": "Provide a genuinely sanitized adopter route handoff at ~/.config/crosswake/first-adopter-handoff.json, or through CROSSWAKE_FIRST_ADOPTER_HANDOFF_PATH.",
-      "context": "The handoff must be derived from real adopter route facts and validate through AdopterHandoff, RouteInventory, and NavigationTopology. Device discovery and local host setup are automated.",
-      "blocking": true
-    }
+    {"action": "Read validation errors for deployment fa73c999-6dc0-4f93-a669-a896cdef7ae8 at central.sonatype.com", "context": "Only path to diagnosing the Maven fire-drill failure; needs Portal credentials the agent does not have.", "blocking": true},
+    {"action": "Decide: fix lockstep-truth sed bug + fire-drill error surfacing now, or file as SEEDs", "context": "Both defects sit directly on the publish path that 175-07/08/10 will walk three times.", "blocking": false},
+    {"action": "All three publish gates (175-07, 175-08, 175-10) require explicit human go", "context": "autonomous: false; irreversible.", "blocking": true}
   ],
   "decisions": [
-    {
-      "decision": "Use convention-over-configuration for physical proof setup.",
-      "rationale": "Exactly one connected iPhone and the local reference host are auto-discoverable; environment variables remain optional ambiguity/CI overrides.",
-      "phase": "163.1"
-    },
-    {
-      "decision": "Never synthesize an eligible adopter handoff from repository fixtures or defaults.",
-      "rationale": "Concrete route safety facts are external product authority; fabricating them would invalidate the physical support claim and violate the governing ADR.",
-      "phase": "163.1"
-    },
-    {
-      "decision": "Pause Crosswake when adopter route facts do not exist.",
-      "rationale": "The governing ADR says the public-v1 mobile path is the forcing function and prohibits framework work beyond demonstrated evidence defects.",
-      "phase": "163.1"
-    }
+    {"decision": "Wave 0 shipped as ONE PR (#189) with all 14 commits, merged with a merge commit not a squash", "rationale": "GSD spot-checks grep git log for per-plan commits; a squash would collapse 175-01/02/03 lineage.", "phase": "175"},
+    {"decision": "Isolation forced to none for every dispatch this phase", "rationale": "Originally a #683 fork-base degrade; kept for consistency once the base resynced, since each wave is a single plan and parallelism buys nothing.", "phase": "175"},
+    {"decision": "Refused to re-run the dispatches a subagent had been denied", "rationale": "Performing a denied action on a subagent's behalf is permission laundering. The user ran them directly instead.", "phase": "175"},
+    {"decision": "Stale-but-pinned erlef/setup-beam drift recorded as prose beside SEED-022 rather than a third SEED", "rationale": "Adjacent to SEED-022's framing, not a distinct finding.", "phase": "175"}
   ],
   "uncommitted_files": [],
-  "next_action": "Confirm a real sanitized adopter handoff exists, place it at the conventional private path, then run $gsd-resume-work. The resumed executor must first validate the handoff and rerun readiness; it must not execute or promote physical evidence unless every check is ready and the fixed evidence destination is absent.",
-  "context_notes": "v21 is intentionally parked, not completed or archived, at Plan 163.1-08 Task 2. Plans 01-07 are complete. Plan 08 evidence schema, transaction contract, and automation-first preflight are committed. Plans 09-10 have not started. No async job or server is running. The ignored .env.local is not an authority source and need not be populated for device or host discovery. A separate v22 quality-ratchet workstream may proceed without changing this support gate."
+  "next_action": "Read the Central Portal validation errors for deployment fa73c999-6dc0-4f93-a669-a896cdef7ae8, then fix or re-run the Maven leg and fill the iOS + Maven sections of 175-REHEARSAL-EVIDENCE.md from the real artifacts.",
+  "context_notes": "Phase 175 is the rehearsal-and-publish phase of the v23.0 milestone whose entire purpose is eliminating 'absence scored as success' — checks that pass green while asserting nothing. Wave 0 fixed one such defect (check-actions reported mutable_refs=0 while scanning ~12% of its scope; now files=27 actions=252 mutable_refs=0). Two MORE instances of the same defect class were found during wave 6 and are NOT yet fixed: (1) lockstep-truth fails unconditionally because its sed expects the x-release-please-version annotation on the same line as @version, but mix.exs has it on the line above — a vacuously RED check; (2) the Maven fire drill discards the Portal API's errors array, so it can report failure but never the reason. The rehearsal working as designed is the good news here: it caught a real Maven problem before the one-way door, which is exactly what it is for."
 }
