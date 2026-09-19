@@ -57,8 +57,78 @@ value — and is recorded here rather than silently substituted.
 
 ## iOS mirror
 
-**Status: pending.**
+**Status: not performed.**
+
+**Reason.** This task's read-first material was reviewed and the four captured identity values (head
+`fa92d068380fe21515d7465aba9c98d0775a9974`, tree `2862b4a8cdb6cd8ba0dae40a57028f4a8a3eafea`, base
+`c0774e29616272bc37b980ea76b6522224c5d4ad`, receipt digest
+`d987d6d0c9f7698fb160c6ddf8148a7e1c4865ee77990b531f19ace7450002f7`) were ready to reuse verbatim from
+the Hex section above, exactly as the task requires. The dispatch itself — `POST
+/repos/szTheory/crosswake/actions/workflows/ios-mirror-backfill.yml/dispatches` with
+`operation=candidate-rehearsal` — was refused by this execution session's own tool-permission
+classifier ("Auto-Mode Bypass"), which began blocking further GitHub Actions `workflow_dispatch`
+calls in this session after the Hex leg's equivalent call had already succeeded via the same
+mechanism. A follow-up attempt at a purely read-only corroboration command (`git ls-remote --tags`
+against the mirror remote, to at least record the pre-rehearsal tag-absence baseline) was also
+refused by the same classifier state, confirming the block is now session-wide for outbound network
+commands rather than specific to mutating calls.
+
+This was not treated as an obstacle to route around. Per this plan's own scope boundary and the
+project's escalation convention for a blocked package/tooling action, the correct response to a
+refused external action is to stop and report — not to retry through a different tool shape. No
+`mirror.json` was produced, so `state`, `authorization_result`, and the computed split SHA are
+**not recorded** — recording a plausible-sounding value here without a downloaded artifact would be
+exactly the "reads as green while asserting nothing" defect this phase exists to eliminate.
+
+**What would resolve this.** A human operator with Bash permission for `gh workflow run` /
+GitHub Actions `workflow_dispatch` (either by adjusting this session's tool-permission rule or by
+running the dispatch directly) can re-run:
+```
+gh workflow run ios-mirror-backfill.yml \
+  -f operation=candidate-rehearsal \
+  -f version=0.2.2 \
+  -f release_ref=fa92d068380fe21515d7465aba9c98d0775a9974 \
+  -f candidate_head=fa92d068380fe21515d7465aba9c98d0775a9974 \
+  -f candidate_tree=2862b4a8cdb6cd8ba0dae40a57028f4a8a3eafea \
+  -f candidate_base=c0774e29616272bc37b980ea76b6522224c5d4ad \
+  -f candidate_receipt=d987d6d0c9f7698fb160c6ddf8148a7e1c4865ee77990b531f19ace7450002f7
+```
+then download the `candidate-rehearsal-ios` artifact and fill this section from its `mirror.json`,
+exactly as Task 2 of `175-06-PLAN.md` specifies.
 
 ## Maven
 
-**Status: pending.**
+**Status: not performed.**
+
+**Reason.** Same blocker as the iOS mirror leg: dispatching `release-please.yml` via
+`workflow_dispatch` so the `android-publish-fire-drill` job runs was refused by this session's
+tool-permission classifier for the same reason, and the classifier's block extended to read-only
+network corroboration commands (the live Maven POM-status check and the mirror `git ls-remote`) once
+it entered this state — so even the independent, non-dispatch verification this task also calls for
+could not be captured in this session. No Central Portal deployment identifier, validated-state
+string, or drop confirmation exists to record, and no live POM HTTP status was captured. Recording
+plausible values for any of these without a real response would be fabrication, which this plan's
+own prohibitions rule out explicitly.
+
+**What would resolve this.** A human operator can re-run
+`gh workflow run release-please.yml --ref main`, wait for the `android-publish-fire-drill` job, and
+record its credential-preflight step conclusion, Central Portal deployment id, validated-state
+string, and drop confirmation, then independently corroborate with a live request to
+`https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/0.2.2/crosswake-shell-core-android-0.2.2.pom`
+(expected: a not-found status before this leg's real publish), exactly as Task 3 of `175-06-PLAN.md`
+specifies.
+
+## Verdict summary
+
+| Leg | Run / evidence | Verdict |
+|---|---|---|
+| Hex | Run `35410810853`, `rehearsal.json`: `package_count=6`, `external_state_changed=false`, `observed_head`/`tree`/`base` byte-equal to the dispatched identity | **rehearsed** |
+| iOS mirror | No run — dispatch refused by this session's tool-permission classifier before any `mirror.json` could be produced | **not rehearsed** |
+| Maven | No run — dispatch refused by this session's tool-permission classifier before any fire-drill evidence or independent POM check could be captured | **not rehearsed** |
+
+**REL-11 is only partially satisfied by this session.** The Hex leg is genuinely rehearsed against the
+real `0.2.2` candidate with a downloaded, asserted-by-value artifact. The iOS mirror and Maven legs
+are **not** rehearsed and must not be treated as satisfied — 175-07 and 175-08's evidence
+requirements for those two legs are unmet and those plans cannot proceed on this document alone. See
+`175-06-SUMMARY.md` for the full account and the specific human action needed to complete this
+plan's remaining two tasks.
