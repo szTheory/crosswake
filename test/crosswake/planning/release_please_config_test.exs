@@ -44,7 +44,9 @@ defmodule Crosswake.Planning.ReleasePleaseConfigTest do
     assert workflow =~ "MIX_VERSION=$(sed -n '/# x-release-please-version/"
     assert workflow =~ "@version \"\\([^\\\"]*\\)\""
 
-    assert workflow =~ "LOCKSTEP EXTRACTION FAILED: one or more configured version coordinates are empty."
+    assert workflow =~
+             "LOCKSTEP EXTRACTION FAILED: one or more configured version coordinates are empty."
+
     assert workflow =~ "[ -z \"$MIX_VERSION\" ]"
     assert workflow =~ "[ -z \"$GRADLE_VERSION\" ]"
     assert workflow =~ "[ -z \"$MANIFEST_ROOT\" ]"
