@@ -4,11 +4,11 @@ milestone: v23.0
 milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 175
 current_phase_name: rehearsal-and-publish
-status: blocked
-stopped_at: 175-06-PLAN.md blocked — Hex and iOS rehearsed; Maven fire drill ran and failed, pending authenticated Central Portal error inspection
-last_updated: "2026-09-19T14:27:25.000Z"
+status: active
+stopped_at: 175-06-PLAN.md complete — all three reversible rehearsal legs passed; 175-07 awaits explicit one-way approval
+last_updated: "2026-09-19T15:42:00.000Z"
 last_activity: 2026-09-19
-last_activity_desc: "175-06 reconciliation: Hex rehearsal passed (run 35410810853); iOS mirror rehearsal passed with downloaded PASS/PROVEN dry-run evidence (run 35444279120); Maven fire drill ran and failed at Central Portal deployment fa73c999-6dc0-4f93-a669-a896cdef7ae8 (run 35444298910). Authenticated Portal inspection found the exact cause: the already-published 0.2.1 AAR coordinate exists. Commit 345d2095 now prints only Portal errors on a future failure and repairs the separately vacuously-red lockstep check; commit e2453599 derives a candidate-version/run-ID disposable coordinate so the next fire drill cannot retry a permanent coordinate. REL-11 remains blocked at 2/3 green until that repair is on the remote and a fresh Maven rehearsal is green."
+last_activity_desc: "175-06 reconciliation complete: Hex passed (35410810853), iOS mirror passed (35444279120), and repaired Maven fire drill passed (35452376752). Disposable coordinate 0.2.2-firedrill-35452376752 reached VALIDATED as deployment 8cacc3da-2613-407c-8df1-238b2ad0710c and was dropped. REL-11 is 3/3 green; 175-07 is the next explicit one-way gate."
 progress:
   total_phases: 7
   completed_phases: 6
@@ -46,8 +46,8 @@ Revisit once the post-publication proof lane can actually run.
 ## Current Position
 
 Phase: 175 (rehearsal-and-publish) — EXECUTING
-Plan: 6 of 10 (BLOCKED — not advanced)
-Status: 175-06 partial: the Hex candidate rehearsal passed (run 35410810853) and the user-dispatched iOS mirror rehearsal passed (run 35444279120; downloaded `mirror.json` records `PASS`/`PROVEN`, dry-run only, no external mutation). The user-dispatched Maven fire drill ran but failed at retained Central Portal deployment `fa73c999-6dc0-4f93-a669-a896cdef7ae8` (run 35444298910) because the public `0.2.1` AAR already exists. Commit `e2453599` repairs the workflow with a candidate-version/run-ID disposable coordinate. **175-07 cannot proceed on 2/3 green evidence** — do not advance the plan counter past 6 until that repair is remote and a fresh Maven fire drill reaches `VALIDATED` then confirms the drop.
+Plan: 6 of 10 (COMPLETE — gate 175-07 awaits explicit approval)
+Status: Hex passed (35410810853), iOS mirror passed (35444279120), and repaired Maven fire drill passed (35452376752). Disposable coordinate `0.2.2-firedrill-35452376752` reached `VALIDATED` as deployment `8cacc3da-2613-407c-8df1-238b2ad0710c`, then was dropped. **175-07 is a one-way publish gate and requires explicit approval.**
 2026-09-18 by the post-merge clean-room dispatch (run 35366337182) against the live
 published `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install`
 before `step=doctor`, log captured at `evidence/174-rindle-ci-run.log`.
@@ -378,8 +378,8 @@ Last activity: 2026-09-18 — Phase 175 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-19T14:27:25Z
-Stopped at: 175-06 reconciled — Maven duplicate-coordinate defect fixed locally; remote proof dispatch pending
+Last session: 2026-09-19T15:42:00Z
+Stopped at: 175-06 complete — REL-11 has three green rehearsal legs; wait for an explicit go before the 175-07 one-way publish gate.
 Resume file: phases/175-rehearsal-and-publish/.continue-here.md
 
 ## Operator Next Steps

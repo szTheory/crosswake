@@ -496,7 +496,7 @@ Plans:
 
 **Wave 6** *(blocked on Wave 5 completion — unblocked)*
 
-- [~] 175-06-PLAN.md — REL-11: rehearse all three publish legs against the real `0.2.2` candidate and record the evidence (phase tracer) — **BLOCKED, partial.** Hex leg rehearsed and verified (run `35410810853`, `package_count=6`, `external_state_changed=false`, committed at `b47dc5f5`). iOS mirror and Maven legs NOT dispatched — this session's own tool-permission classifier refused `workflow_dispatch` calls after the Hex leg's dispatch had already succeeded once (`3332555d`, `3b0f248b`). Wave 7 stays blocked until a human operator completes both remaining dispatches per `175-06-SUMMARY.md`.
+- [x] 175-06-PLAN.md — REL-11: all three publish legs rehearsed against the real `0.2.2` candidate. Hex passed (35410810853); iOS mirror passed (35444279120); repaired Maven fire drill passed (35452376752), reached `VALIDATED` as deployment `8cacc3da-2613-407c-8df1-238b2ad0710c`, then dropped its disposable coordinate. Wave 7 is unblocked, but its publish gate remains explicitly one-way.
 
 **Wave 7** *(blocked on Wave 6 completion)*
 

@@ -45,22 +45,18 @@ rehearsals. The retained historical text is not current evidence and must not de
   records `state: PASS`, `authorization_result: PROVEN`, `dry_run_result: PASS`,
   `split_sha: 424ab96ede1b92f2b751b54bce04c6e607f0f3c8`, `remote_main` equal to that split,
   `remote_tag: null`, and a dry-run atomic push only. The run did not change the mirror.
-- **Maven — rehearsed but failed.** Run `35444298910` created Central Portal deployment
-  `fa73c999-6dc0-4f93-a669-a896cdef7ae8`, observed `VALIDATING` then `FAILED` on poll attempt
-  2 of 30, and deliberately retained that failed deployment for diagnosis. The authenticated
-  Portal record reports exactly one failed component validation: `pkg:maven/io.github.sztheory/
-  crosswake-shell-core-android@0.2.1?type=aar already exists`. This is the correct immutable-
-  coordinate rejection of the already-published `0.2.1` Android artifact, not a signing or POM
-  metadata failure. It is a real red rehearsal result, not a missing run and not a passing result.
-- **Repair landed for the next fire drill.** Commit `345d2095` makes failed fire drills emit only
-  the Central Portal `errors` array and repairs the independent vacuously-red lockstep check.
-  Commit `e2453599` also makes the fire drill require a candidate base version and derive a
-  run-scoped disposable Maven coordinate, so it exercises the candidate source without retrying
-  a permanent public coordinate. Neither repair changes the result of run `35444298910`.
+- **Maven — initial red correctly diagnosed.** Run `35444298910` retained failed deployment
+  `fa73c999-6dc0-4f93-a669-a896cdef7ae8`: the public `0.2.1` AAR coordinate already existed.
+  This was an immutable-coordinate rejection, not a signing or POM metadata failure.
+- **Repair merged and fresh Maven rehearsal passed.** PR #190 merged as
+  `4627170fffb6688dcb2750c07fae3a18c6d0ee19`. Run `35452376752` passed its secret preflight,
+  used disposable coordinate `0.2.2-firedrill-35452376752`, uploaded Central Portal deployment
+  `8cacc3da-2613-407c-8df1-238b2ad0710c`, observed `VALIDATING` then `VALIDATED`, and dropped it.
+  The job log records `SUCCESS: Deployment ... dropped. Version coordinate is FREE.`
 
-**Current REL-11 status: blocked, 2 of 3 legs green.** The specific missing input is the Portal
-validation-error payload for deployment `fa73c999-6dc0-4f93-a669-a896cdef7ae8`; it requires an
-authenticated Portal session. No publish gate may proceed while this known Maven red remains.
+**Current REL-11 status: complete, 3 of 3 legs green.** The Maven leg exercised a real signed
+bundle and Central Portal validation without publishing a coordinate; the validated deployment was
+dropped before the real release.
 
 ## Hex
 
@@ -168,10 +164,8 @@ specifies.
 |---|---|---|
 | Hex | Run `35410810853`, `rehearsal.json`: `package_count=6`, `external_state_changed=false`, `observed_head`/`tree`/`base` byte-equal to the dispatched identity | **rehearsed** |
 | iOS mirror | Run `35444279120`, downloaded `rehearsal.json` and `mirror.json`: `state=PASS`, `authorization_result=PROVEN`, dry-run atomic push only, `external_state_changed=false` | **rehearsed** |
-| Maven | Run `35444298910`: Central Portal deployment `fa73c999-6dc0-4f93-a669-a896cdef7ae8` observed `VALIDATING → FAILED` because the already-published `0.2.1` AAR coordinate exists; failure retained | **not rehearsed (known red)** |
+| Maven | Run `35452376752`: disposable `0.2.2-firedrill-35452376752` deployment `8cacc3da-2613-407c-8df1-238b2ad0710c` observed `VALIDATING → VALIDATED`, then dropped | **rehearsed** |
 
-**REL-11 remains unsatisfied.** The Hex and iOS mirror legs are genuinely rehearsed against the real
-`0.2.2` candidate with downloaded, asserted-by-value artifacts. The Maven leg ran but is a known
-red because its workflow retried the already-published `0.2.1` coordinate. 175-07 and later one-way
-publish gates cannot proceed until the disposable-coordinate repair is on the remote and a fresh Maven
-rehearsal is green.
+**REL-11 is satisfied.** Hex and iOS mirror rehearsed the captured `0.2.2` candidate with their
+downloaded artifacts; Maven completed its real signed, validated-upload-then-drop path using a
+disposable coordinate. The publish gates may now evaluate this evidence.
