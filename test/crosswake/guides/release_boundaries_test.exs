@@ -80,9 +80,10 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
 
   test "read-only release status projects the exact candidate boundary" do
     status = Crosswake.ReleaseStatus.build()
+    candidate_version = Crosswake.MixProject.project()[:version]
 
     assert %{
-             version: "0.2.1",
+             version: ^candidate_version,
              state: "BLOCKED",
              next_action: next_action,
              linked_coordinates: linked,
@@ -93,15 +94,15 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
            } = status.release_candidate
 
     assert Enum.map(linked, & &1.coordinate) == [
-             "hex:crosswake@0.2.1",
-             "swiftpm:crosswake-shell-core-ios@0.2.1",
-             "maven:io.github.sztheory:crosswake-shell-core-android:0.2.1"
+             "hex:crosswake@#{candidate_version}",
+             "swiftpm:crosswake-shell-core-ios@#{candidate_version}",
+             "maven:io.github.sztheory:crosswake-shell-core-android:#{candidate_version}"
            ]
 
     refute Enum.empty?(companions)
     assert Enum.all?(companions, &(&1.relationship == "independent"))
     assert mirror.baseline_ref == "refs/tags/v0.2.0"
-    assert mirror.public_ref == "refs/tags/v0.2.1"
+    assert mirror.public_ref == "refs/tags/v#{candidate_version}"
 
     assert next_action ==
              "run mix crosswake.release.status --live, then capture the exact candidate receipt"
@@ -123,15 +124,17 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
   end
 
   test "live candidate status preserves partial linked-coordinate truth" do
+    candidate_version = Crosswake.MixProject.project()[:version]
+
     status =
       Crosswake.ReleaseStatus.build(
         live?: true,
         http_probe: fn _url, context ->
           case context do
-            %{kind: :hex, package: "crosswake", version: "0.2.1"} ->
+            %{kind: :hex, package: "crosswake", version: ^candidate_version} ->
               %{status: :ok, evidence: ["candidate Hex fixture"]}
 
-            %{kind: :maven, version: "0.2.1"} ->
+            %{kind: :maven, version: ^candidate_version} ->
               %{status: :missing, evidence: ["candidate Maven fixture"]}
 
             _ ->
@@ -139,7 +142,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
           end
         end,
         git_ref_probe: fn _remote, ref ->
-          if ref == "refs/tags/v0.2.1" do
+          if ref == "refs/tags/v#{candidate_version}" do
             %{status: :missing, evidence: ["candidate mirror fixture"]}
           else
             %{status: :ok, evidence: ["baseline mirror fixture"]}
