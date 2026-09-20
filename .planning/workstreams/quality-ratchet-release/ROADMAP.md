@@ -474,7 +474,7 @@ lower-blast-radius held companion first, as the fire-drill for the repaired clea
    `crosswake-ci.yml` at `7219968a`, now fails the build if either release document regains a bare
    version literal outside a code fence or loses its invariant sentence.)*
 
-**Plans**: 5/10 plans executed
+**Plans**: 7/10 plans executed
 
 Plans:
 **Wave 1**
@@ -503,12 +503,12 @@ Plans:
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
-- [ ] 175-07-PLAN.md — REL-12: gate 1, publish the lower-blast-radius companion, confirm live on Hex
+- [x] 175-07-PLAN.md — REL-12: `crosswake_rulestead 0.1.1` is live on Hex and its clean-room proof passed; the manual closeout preserves the independent publish/registry evidence and the Gate 1 incident record.
 
   **Incident:** PR #147 merged and `crosswake_rulestead 0.1.1` published, but the runbook commit was
   absent from the exact remote merge. The publish is not retroactively compliant; this plan remains
-  incomplete until its evidence records the breach and the repaired exact-OID guard protects the
-  remaining one-way gates.
+  closed only as a historical-incident reconciliation: REL-10 remains breached, while the repaired
+  exact-OID guard has passed for the remaining core candidate's live base/head.
 
 **Wave 8** *(blocked on Wave 7 completion)*
 
@@ -544,4 +544,4 @@ evidence.
 | 172. Per-Package Proof Scope | 3/3 | Complete | 2026-09-17 |
 | 173. Recovery-Path Proof Convergence | 4/4 | Complete | 2026-09-18 |
 | 174. Clean-Room Host Realism & Adopter Fidelity | 6/6 | Complete | 2026-09-18 |
-| 175. Rehearsal and Publish | 5/10 | In Progress|  |
+| 175. Rehearsal and Publish | 7/10 | In Progress|  |

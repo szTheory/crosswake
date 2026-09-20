@@ -175,7 +175,7 @@ Explicitly excluded, with reasoning, to prevent re-adding.
 | VAC-03 | Phase 170 | Complete |
 | REL-10 | Phase 175 | Breached at Gate 1; remote-ancestry repair required before Gate 2, historical first-publish condition remains unsatisfied |
 | REL-11 | Phase 175 | Complete — Hex run 35410810853, iOS mirror run 35444279120, and Maven fire-drill run 35452376752 (validated deployment dropped) |
-| REL-12 | Phase 175 | Pending |
+| REL-12 | Phase 175 | Complete — `crosswake_rulestead 0.1.1` is live on Hex, confirmed directly on 2026-09-20; Release Please run 35461665164 and its clean-room proof both passed. Gate 1's REL-10 breach remains recorded separately. |
 | REL-13 | Phase 175 | Pending |
 | REL-14 | Phase 175 | Pending |
 | REL-15 | Phase 175 | Pending |
