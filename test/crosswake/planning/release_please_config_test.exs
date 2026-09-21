@@ -78,6 +78,38 @@ defmodule Crosswake.Planning.ReleasePleaseConfigTest do
     assert gradle =~ "(findProperty(\"crosswakeVersion\") as String?)?.let { version = it }"
   end
 
+  test "workflow dispatch isolates the fire drill from Release Please housekeeping" do
+    conditions =
+      workflow_json!(
+        ".github/workflows/release-please.yml",
+        "{name: job.get('if') for name, job in doc['jobs'].items() if name in " <>
+          "['release-please', 'android-publish-fire-drill', 'lockstep-truth']}"
+      )
+
+    assert conditions["release-please"] == "${{ github.event_name == 'push' }}"
+
+    assert conditions["android-publish-fire-drill"] ==
+             "${{ github.event_name == 'workflow_dispatch' }}"
+
+    assert conditions["lockstep-truth"] == "${{ github.event_name == 'workflow_dispatch' }}"
+  end
+
+  defp workflow_json!(path, extractor) do
+    {output, 0} =
+      System.cmd("python3", [
+        "-c",
+        """
+        import json, sys, yaml
+        with open(sys.argv[1], encoding="utf-8") as workflow:
+            doc = yaml.safe_load(workflow)
+        print(json.dumps(#{extractor}))
+        """,
+        path
+      ])
+
+    Jason.decode!(output)
+  end
+
   defp release_please_version(contents, regex) do
     case Regex.named_captures(regex, contents) do
       %{"version" => version} -> version
