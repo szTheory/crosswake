@@ -5,10 +5,10 @@ milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 175
 current_phase_name: rehearsal-and-publish
 status: active
-stopped_at: 175-08 Gate 2 is eligible for presentation only; it remains a separate one-way-door authorization
-last_updated: "2026-09-20T13:30:00.000Z"
-last_activity: 2026-09-20
-last_activity_desc: "175-07 was reconciled without replay: PR #147 published crosswake_rulestead 0.1.1, REL-12 is complete, and REL-10 remains historically breached. After PR #192, exact-OID ancestry passed for PR #164's live base 392a6b21 and head fc6d28dc; fresh Crosswake CI run 35512555806 passed."
+stopped_at: 175-08 preflight failed — the Maven fire-drill dispatch advanced PR #164 after all three fresh rehearsals, so no current-head Gate 2 evidence exists
+last_updated: "2026-09-21T01:09:21.000Z"
+last_activity: 2026-09-21
+last_activity_desc: "Fresh candidate rehearsals passed for PR #164 head fc6d28dc (Hex 35549524778; iOS 35549667199; Maven 35549803592, deployment d7a987ad-e0e4-4b1e-b195-8dabb48d09ed validated then dropped), but the Release Please job in the fire-drill run replaced the release PR head with 374ac0cf. Re-running the same fire drill would repeat the stale-evidence cycle; do not present Gate 2 or merge until the workflow is made non-mutating for rehearsals."
 progress:
   total_phases: 7
   completed_phases: 6
@@ -45,9 +45,9 @@ Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
 
-Phase: 175 (rehearsal-and-publish) — GATE 2 READY TO PRESENT
+Phase: 175 (rehearsal-and-publish) — GATE 2 BLOCKED BY SELF-INVALIDATING REHEARSAL
 Plan: 7 of 10 reconciled (Gate 1's historic publish is closed as REL-12 evidence, with a non-repairable REL-10 breach)
-Status: `crosswake_rulestead 0.1.1` is live. The historical exact audit remains base `4627170f` = no, head `491c7a74` = no, merge `096371e3` = no; REL-10 remains breached. The repaired `script/check_release_runbook_ancestry.sh` now passes against live PR #164 base `392a6b21` and head `fc6d28dc`, and fresh Crosswake CI run `35512555806` passed. Gate 2 may be presented but never auto-merged.
+Status: `crosswake_rulestead 0.1.1` is live. The historical exact audit remains base `4627170f` = no, head `491c7a74` = no, merge `096371e3` = no; REL-10 remains breached. The repaired `script/check_release_runbook_ancestry.sh` passes against the remote graph, but Gate 2 may not be presented: run `35549803592`'s required Maven fire drill also ran Release Please and advanced PR #164 from rehearsed head `fc6d28dc` to `374ac0cf`. The new head has no three-leg rehearsal evidence. Do not re-dispatch the current fire-drill shape, merge, or publish; first separate the fire drill from mutating Release Please housekeeping (or otherwise produce all three rehearsals without advancing the release PR), then re-run the exact-head preflight and Gate 2.
 2026-09-18 by the post-merge clean-room dispatch (run 35366337182) against the live
 published `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install`
 before `step=doctor`, log captured at `evidence/174-rindle-ci-run.log`.
