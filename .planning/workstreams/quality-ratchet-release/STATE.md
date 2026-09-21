@@ -5,17 +5,17 @@ milestone_name: Release Pipeline Repair & Proof-Lane Truth
 current_phase: 175
 current_phase_name: rehearsal-and-publish
 status: active
-stopped_at: 175-07 Gate 1 published, then exact remote audit proved REL-10 ancestry was absent from PR #147's merge
-last_updated: "2026-09-19T19:20:00.000Z"
-last_activity: 2026-09-19
-last_activity_desc: "Gate 1 published crosswake_rulestead 0.1.1, but the required runbook commit d3401e51 was reachable only from divergent local main. PR #147 base 4627170f, head 491c7a74, and merge 096371e3 all exclude it and the runbook file. REL-10 is breached for the historical first publish; remaining gates are blocked until exact-remote ancestry passes."
+stopped_at: 175-08 preflight failed — the Maven fire-drill dispatch advanced PR #164 after all three fresh rehearsals, so no current-head Gate 2 evidence exists
+last_updated: "2026-09-21T01:09:21.000Z"
+last_activity: 2026-09-21
+last_activity_desc: "Fresh candidate rehearsals passed for PR #164 head fc6d28dc (Hex 35549524778; iOS 35549667199; Maven 35549803592, deployment d7a987ad-e0e4-4b1e-b195-8dabb48d09ed validated then dropped), but the Release Please job in the fire-drill run replaced the release PR head with 374ac0cf. Re-running the same fire drill would repeat the stale-evidence cycle; do not present Gate 2 or merge until the workflow is made non-mutating for rehearsals."
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 37
-  completed_plans: 32
-  percent: 86
-state_head: 7219968a2b20f1ef9f739d1eaf845ff37cd6c306
+  completed_plans: 33
+  percent: 89
+state_head: 392a6b21a2282fc9e4dd05c265588ac73767f547
 ---
 
 # Project State
@@ -45,9 +45,9 @@ Revisit once the post-publication proof lane can actually run.
 
 ## Current Position
 
-Phase: 175 (rehearsal-and-publish) — BLOCKED ON INCIDENT REPAIR
-Plan: 7 of 10 (Gate 1 publish occurred; plan verification is non-passing)
-Status: `crosswake_rulestead 0.1.1` is live, but the before-any-publish runbook ancestry bar was checked against divergent local `HEAD` rather than the remote publish graph. Exact audit: base `4627170f` = no, head `491c7a74` = no, merge `096371e3` = no. REL-10 is historically breached. Do not proceed to 175-08 until the runbook is landed on remote `main`, the release PR is refreshed, and the repaired explicit-OID guard passes for live remote base/head.
+Phase: 175 (rehearsal-and-publish) — GATE 2 BLOCKED BY SELF-INVALIDATING REHEARSAL
+Plan: 7 of 10 reconciled (Gate 1's historic publish is closed as REL-12 evidence, with a non-repairable REL-10 breach)
+Status: `crosswake_rulestead 0.1.1` is live. The historical exact audit remains base `4627170f` = no, head `491c7a74` = no, merge `096371e3` = no; REL-10 remains breached. The repaired `script/check_release_runbook_ancestry.sh` passes against the remote graph, but Gate 2 may not be presented: run `35549803592`'s required Maven fire drill also ran Release Please and advanced PR #164 from rehearsed head `fc6d28dc` to `374ac0cf`. The new head has no three-leg rehearsal evidence. Do not re-dispatch the current fire-drill shape, merge, or publish; first separate the fire drill from mutating Release Please housekeeping (or otherwise produce all three rehearsals without advancing the release PR), then re-run the exact-head preflight and Gate 2.
 2026-09-18 by the post-merge clean-room dispatch (run 35366337182) against the live
 published `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install`
 before `step=doctor`, log captured at `evidence/174-rindle-ci-run.log`.
@@ -57,7 +57,7 @@ and was wired into `phase174_cleanroom_lane_parity_test.exs` (6 tests -> 10), wi
 non-emptiness gate on both logs before any comparison and three demonstrated red mutations.
 No phase-174 findings remain open.
 
-Next: Phase 175 (Rehearsal and Publish) is unplanned.
+Next: Present Phase 175 Gate 2 with its distinct iOS-rehearsal resume signal; do not merge or dispatch until that one-way authorization is explicit.
 
 **Planning guidance for Phase 175 (recorded 2026-09-18).** Open the phase with a broken-windows
 triage wave that gates every publish task, rather than inserting a separate triage phase between
@@ -366,7 +366,7 @@ Last activity: 2026-09-18 — Phase 175 execution started
 - Phase 167 code review retained five non-blocking advisories; Phase 168 should resolve the
   release-relevant full-comment marker count before relying on it for exact candidate authority.
 
-- 175-06: iOS mirror and Maven rehearsal legs (REL-11) not dispatched — session tool-permission classifier refused workflow_dispatch calls after the Hex leg's own dispatch succeeded once. Human must run the two gh workflow run commands recorded in 175-06-SUMMARY.md before 175-07 can proceed.
+- REL-10 remains historically breached for Gate 1. No later artifact, code change, or remote run may describe it as compliant.
 
 ## Deferred Items
 
@@ -378,9 +378,9 @@ Last activity: 2026-09-18 — Phase 175 execution started
 
 ## Session Continuity
 
-Last session: 2026-09-19T19:20:00Z
-Stopped at: 175-07 Gate 1 incident — publish succeeded, but the required remote runbook ancestry did not.
-Recovery instructions: the phase-local incident record for Phase 175.
+Last session: 2026-09-20T13:30:00Z
+Stopped at: 175-07 manually reconciled. The historical Gate 1 publish remains noncompliant under REL-10, but PR #164 is now current, mergeable, and clean with fresh passing Crosswake CI `35512555806`; the repaired exact-OID guard passed its live remote base/head.
+Recovery instructions: present Gate 2's distinct iOS rehearsal resume signal and evidence. Do not merge or dispatch the core release until the operator authorizes that specific one-way gate.
 
 ## Operator Next Steps
 

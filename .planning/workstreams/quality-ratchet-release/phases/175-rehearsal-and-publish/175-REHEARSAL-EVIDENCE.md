@@ -1,5 +1,25 @@
 # Phase 175 Rehearsal Evidence (REL-11)
 
+## Stale re-rehearsal incident — 2026-09-21 (not Gate 2 evidence)
+
+All three reversible rehearsals were successfully repeated for PR #164 head
+`fc6d28dcf176fd68f48b5e858c790fad3e78f526` (tree
+`d1a6132b9bf5e172090eb43cf7c8960bc5ff5097`, base
+`392a6b21a2282fc9e4dd05c265588ac73767f547`, exact-head CI receipt digest
+`5eaedd39b9dddc9c5dbf543a1069ccc6a80bc7e5f9a420be1ebd1ad6c01a289d`):
+
+| Leg | Run | Observed result |
+|---|---:|---|
+| Hex | `35549524778` | `package_count=6`, `external_state_changed=false`, and the artifact's requested/observed head, tree, and base exactly matched the identity above. |
+| iOS mirror | `35549667199` | `state=PASS`, `authorization_result=PROVEN`, `external_state_changed=false`, and `split_sha=424ab96ede1b92f2b751b54bce04c6e607f0f3c8`; `v0.2.2` remained absent. |
+| Maven | `35549803592` | Disposable deployment `d7a987ad-e0e4-4b1e-b195-8dabb48d09ed` moved `VALIDATING -> VALIDATED` and was dropped; the real `0.2.2` POM remained HTTP 404. |
+
+These results are deliberately **stale** and cannot authorize Gate 2. The Maven fire-drill dispatch
+also ran the repository's Release Please housekeeping job, which replaced PR #164's head with
+`374ac0cf1af5410a7d6691bf9eef9856837b4542` at `2026-09-21T01:09:19Z`. A Gate 2 head comparison
+therefore fails. Re-running the present fire-drill shape would recreate this same condition, so the
+publish flow stops until the rehearsal path no longer mutates the candidate PR.
+
 All three publish legs rehearsed against the actual `0.2.2` candidate ref — the head of core release
 pull request #164 (`chore: release main`) — as far as each mechanism's read-only property allows, with
 no public registry state changed by any rehearsal.
