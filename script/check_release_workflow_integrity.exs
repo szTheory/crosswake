@@ -121,6 +121,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.rehearsal.ios_candidate
     release.rehearsal.no_mutation
     release.rehearsal.maven_isolated
+    release.recovery.receipt_exact_authority
+    release.recovery.no_retry_or_bypass
     release.rindle.component_gate
     release.rindle.proof_gate
     release.root_hex.path_gate
@@ -273,6 +275,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         trusted_rehearsal_identity(non_comment_recovery, non_comment_ios_backfill_workflow),
         trusted_rehearsal_no_mutation(non_comment_recovery, non_comment_ios_backfill_workflow),
         maven_fire_drill_isolated(non_comment_workflow, non_comment_maven_fire_drill),
+        receipt_exact_authority(jobs),
+        no_retry_or_bypass(jobs),
         workflow_concurrency_queue_max(non_comment_workflow),
         workflow_no_cancel_in_progress_true(non_comment_workflow),
         cleanup_after_publish_and_proof(jobs),
@@ -503,6 +507,43 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         Enum.all?(required_drill_tokens, &includes?(maven_workflow, &1)) and
         Enum.all?(forbidden_drill_tokens, &(not includes?(maven_workflow, &1))),
       "Maven drill must be the declared manual-only VALIDATED-to-DROP workflow, absent from Release Please and free of Release Please, PR/issue, cleanup, and ordinary publish machinery"
+    )
+  end
+
+  # D-34: an exact approval has one (not zero or many) live receipt bound to
+  # the approved head, tree, and merge base.
+  defp receipt_exact_authority(jobs) do
+    guard = job_block(jobs, "approved-release-guard")
+
+    required = [
+      "select(.expired == false)] | length')\" -eq 1 ]",
+      "--arg head \"$approved_head\" --arg tree \"$approved_tree\" --arg base \"$first_parent\"",
+      ".identity.bound.head == $head",
+      ".identity.bound.tree == $tree",
+      ".identity.bound.base == $base"
+    ]
+
+    check(
+      "release.recovery.receipt_exact_authority",
+      Enum.all?(required, &includes?(guard, &1)),
+      "approved-release-guard must require exactly one unexpired canonical receipt bound to exact head, tree, and base identity"
+    )
+  end
+
+  # D-37: no dispatch, rerun, or individual-registry route can surround the
+  # canonical receipt guard. Existing exact-ref recovery remains separate and
+  # does not weaken this ordinary publication boundary.
+  defp no_retry_or_bypass(jobs) do
+    guard = job_block(jobs, "approved-release-guard")
+    release_please = job_block(jobs, "release-please")
+    prohibited = ["gh run rerun", "gh workflow run", "retry_failed", "individual-registry"]
+
+    check(
+      "release.recovery.no_retry_or_bypass",
+      Enum.all?(prohibited, fn needle ->
+        not includes?(guard, needle) and not includes?(release_please, needle)
+      end),
+      "ordinary receipt authority must expose no dispatch, rerun, retry, or individual-registry bypass around the approved-release guard"
     )
   end
 

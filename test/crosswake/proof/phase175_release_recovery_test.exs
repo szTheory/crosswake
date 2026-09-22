@@ -14,6 +14,8 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
   @release_workflow ".github/workflows/release-please.yml"
   @maven_fire_drill_workflow ".github/workflows/maven-publish-fire-drill.yml"
   @isolation "release.rehearsal.maven_isolated"
+  @receipt_authority "release.recovery.receipt_exact_authority"
+  @no_bypass "release.recovery.no_retry_or_bypass"
 
   test "the ordinary release workflow cannot retain the Maven drill" do
     workflow = File.read!(@release_workflow)
@@ -44,6 +46,49 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
       maven_fire_drill_workflow:
         Fixtures.replace_once!(maven, "contents: read", "contents: read\n      - run: gh pr create")
     )
+  end
+
+  test "exact canonical receipt and every identity comparison are seed-red" do
+    release = File.read!(@release_workflow)
+
+    assert_failure!(
+      @receipt_authority,
+      release_workflow:
+        Fixtures.replace_in_job(
+          release,
+          "approved-release-guard",
+          "select(.expired == false)] | length')\" -eq 1 ]",
+          "select(.expired == false)] | length')\" -ge 1 ]"
+        )
+    )
+
+    for {needle, replacement} <- [
+          {".identity.bound.head == $head", ".identity.bound.head == $stale_head"},
+          {".identity.bound.tree == $tree", ".identity.bound.tree == $stale_tree"},
+          {".identity.bound.base == $base", ".identity.bound.base == $stale_base"}
+        ] do
+      assert_failure!(
+        @receipt_authority,
+        release_workflow: Fixtures.replace_in_job(release, "approved-release-guard", needle, replacement)
+      )
+    end
+  end
+
+  test "dispatch, rerun, and individual-registry bypass seeds fail closed" do
+    release = File.read!(@release_workflow)
+
+    for seed <- ["gh run rerun 123", "gh workflow run release-please.yml", "retry_failed", "individual-registry"] do
+      assert_failure!(
+        @no_bypass,
+        release_workflow:
+          Fixtures.replace_in_job(
+            release,
+            "approved-release-guard",
+            "emit_output \"linked_release=false\"",
+            "emit_output \"linked_release=false\"\n          #{seed}"
+          )
+      )
+    end
   end
 
   defp assert_failure!(check_id, fixtures) do
