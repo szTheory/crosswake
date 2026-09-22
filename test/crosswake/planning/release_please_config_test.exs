@@ -54,7 +54,7 @@ defmodule Crosswake.Planning.ReleasePleaseConfigTest do
   end
 
   test "Maven fire-drill retains and prints only the Portal validation errors on failure" do
-    workflow = File.read!(".github/workflows/release-please.yml")
+    workflow = File.read!(".github/workflows/maven-publish-fire-drill.yml")
 
     assert workflow =~ "STATUS_JSON=$(curl -fsS -X POST -H \"$AUTH\""
     assert workflow =~ "Central Portal validation errors:"
@@ -66,7 +66,7 @@ defmodule Crosswake.Planning.ReleasePleaseConfigTest do
   end
 
   test "Maven fire-drill uses a fresh run-scoped coordinate rather than an already-published release coordinate" do
-    workflow = File.read!(".github/workflows/release-please.yml")
+    workflow = File.read!(".github/workflows/maven-publish-fire-drill.yml")
     gradle = File.read!(@android_gradle_path)
 
     assert workflow =~ "fire_drill_version:"
@@ -88,8 +88,7 @@ defmodule Crosswake.Planning.ReleasePleaseConfigTest do
 
     assert conditions["release-please"] == "${{ github.event_name == 'push' }}"
 
-    assert conditions["android-publish-fire-drill"] ==
-             "${{ github.event_name == 'workflow_dispatch' }}"
+    refute Map.has_key?(conditions, "android-publish-fire-drill")
 
     assert conditions["lockstep-truth"] == "${{ github.event_name == 'workflow_dispatch' }}"
   end

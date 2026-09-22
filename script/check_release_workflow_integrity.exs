@@ -3,6 +3,7 @@
 
 defmodule Crosswake.ReleaseWorkflowIntegrity do
   @default_workflow ".github/workflows/release-please.yml"
+  @default_maven_fire_drill_workflow ".github/workflows/maven-publish-fire-drill.yml"
   @default_recovery_workflow ".github/workflows/hex-publish.yml"
   @default_helper "script/guarded_hex_publish.sh"
   @default_cleanroom_script "script/verify_companion_cleanroom.sh"
@@ -119,6 +120,9 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.rehearsal.hex_candidate
     release.rehearsal.ios_candidate
     release.rehearsal.no_mutation
+    release.rehearsal.maven_isolated
+    release.recovery.receipt_exact_authority
+    release.recovery.no_retry_or_bypass
     release.rindle.component_gate
     release.rindle.proof_gate
     release.root_hex.path_gate
@@ -150,6 +154,13 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     workflow = File.read!(workflow_path)
     non_comment_workflow = strip_full_line_comments(workflow)
     jobs = job_blocks(workflow)
+
+    maven_fire_drill_workflow =
+      File.read!(
+        path_from_env("MAVEN_FIRE_DRILL_WORKFLOW_PATH", @default_maven_fire_drill_workflow)
+      )
+
+    non_comment_maven_fire_drill = strip_full_line_comments(maven_fire_drill_workflow)
 
     recovery_workflow =
       File.read!(path_from_env("HEX_PUBLISH_WORKFLOW_PATH", @default_recovery_workflow))
@@ -263,6 +274,9 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         trusted_candidate_receipt_attestation(non_comment_ios_backfill_workflow),
         trusted_rehearsal_identity(non_comment_recovery, non_comment_ios_backfill_workflow),
         trusted_rehearsal_no_mutation(non_comment_recovery, non_comment_ios_backfill_workflow),
+        maven_fire_drill_isolated(non_comment_workflow, non_comment_maven_fire_drill),
+        receipt_exact_authority(jobs),
+        no_retry_or_bypass(jobs),
         workflow_concurrency_queue_max(non_comment_workflow),
         workflow_no_cancel_in_progress_true(non_comment_workflow),
         cleanup_after_publish_and_proof(jobs),
@@ -462,6 +476,78 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       end
 
     check("release.scanner.roster_exact", extra_emitted == [] and missing_emitted == [], detail)
+  end
+
+  # D-36: the Central Portal rehearsal must be a separate manual workflow. It
+  # deliberately has only the Maven/signing path needed to upload, observe
+  # VALIDATED, and DROP a disposable coordinate.
+  defp maven_fire_drill_isolated(release_workflow, maven_workflow) do
+    required_drill_tokens = [
+      "workflow_dispatch:",
+      "maven-publish-fire-drill:",
+      "FIRE_DRILL_VERSION",
+      "publishingType=USER_MANAGED",
+      "VALIDATED",
+      "-X DELETE",
+      "contents: read"
+    ]
+
+    forbidden_drill_tokens = [
+      "googleapis/release-please-action",
+      "gh pr ",
+      "gh issue ",
+      "release-as-cleanup",
+      "publish-hex:"
+    ]
+
+    check(
+      "release.rehearsal.maven_isolated",
+      # Release Please retains its own manual lockstep assertion. Isolation
+      # means the Maven-specific input/job cannot live there, not that the
+      # ordinary workflow can never be manually dispatched.
+      not includes?(release_workflow, "fire_drill_version:") and
+        not includes?(release_workflow, "maven-publish-fire-drill:") and
+        Enum.all?(required_drill_tokens, &includes?(maven_workflow, &1)) and
+        Enum.all?(forbidden_drill_tokens, &(not includes?(maven_workflow, &1))),
+      "Maven drill must be the declared manual-only VALIDATED-to-DROP workflow, absent from Release Please and free of Release Please, PR/issue, cleanup, and ordinary publish machinery"
+    )
+  end
+
+  # D-34: an exact approval has one (not zero or many) live receipt bound to
+  # the approved head, tree, and merge base.
+  defp receipt_exact_authority(jobs) do
+    guard = job_block(jobs, "approved-release-guard")
+
+    required = [
+      "select(.expired == false)] | length')\" -eq 1 ]",
+      "--arg head \"$approved_head\" --arg tree \"$approved_tree\" --arg base \"$first_parent\"",
+      ".identity.bound.head == $head",
+      ".identity.bound.tree == $tree",
+      ".identity.bound.base == $base"
+    ]
+
+    check(
+      "release.recovery.receipt_exact_authority",
+      Enum.all?(required, &includes?(guard, &1)),
+      "approved-release-guard must require exactly one unexpired canonical receipt bound to exact head, tree, and base identity"
+    )
+  end
+
+  # D-37: no dispatch, rerun, or individual-registry route can surround the
+  # canonical receipt guard. Existing exact-ref recovery remains separate and
+  # does not weaken this ordinary publication boundary.
+  defp no_retry_or_bypass(jobs) do
+    guard = job_block(jobs, "approved-release-guard")
+    release_please = job_block(jobs, "release-please")
+    prohibited = ["gh run rerun", "gh workflow run", "retry_failed", "individual-registry"]
+
+    check(
+      "release.recovery.no_retry_or_bypass",
+      Enum.all?(prohibited, fn needle ->
+        not includes?(guard, needle) and not includes?(release_please, needle)
+      end),
+      "ordinary receipt authority must expose no dispatch, rerun, retry, or individual-registry bypass around the approved-release guard"
+    )
   end
 
   defp candidate_ci_contract(workflow) do

@@ -28,6 +28,7 @@ defmodule Crosswake.ReleaseWorkflowFixtures do
   real file with no live GitHub Actions run.
   """
   def fixture_env_name(:recovery_workflow), do: "HEX_PUBLISH_WORKFLOW_PATH"
+  def fixture_env_name(:maven_fire_drill_workflow), do: "MAVEN_FIRE_DRILL_WORKFLOW_PATH"
   def fixture_env_name(:helper), do: "GUARDED_HEX_PUBLISH_PATH"
   def fixture_env_name(:release_config), do: "RELEASE_PLEASE_CONFIG_PATH"
   def fixture_env_name(:cleanroom_script), do: "CLEANROOM_SCRIPT_PATH"
@@ -136,5 +137,20 @@ defmodule Crosswake.ReleaseWorkflowFixtures do
       [block] -> block
       _ -> raise "job_block!/2 did not locate job #{inspect(job)}"
     end
+  end
+
+  @doc "Replace one required occurrence in real text or raise on a no-op mutation."
+  def replace_once!(text, pattern, replacement) do
+    unless String.contains?(text, pattern) do
+      raise "replace_once!/3 found no #{inspect(pattern)}; the seed-red mutation would be a no-op"
+    end
+
+    mutated = String.replace(text, pattern, replacement, global: false)
+
+    if mutated == text do
+      raise "replace_once!/3 did not change the fixture text"
+    end
+
+    mutated
   end
 end
