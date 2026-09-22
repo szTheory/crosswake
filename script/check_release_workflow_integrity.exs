@@ -502,7 +502,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
     check(
       "release.rehearsal.maven_isolated",
-      not includes?(release_workflow, "workflow_dispatch:") and
+      # Release Please retains its own manual lockstep assertion. Isolation
+      # means the Maven-specific input/job cannot live there, not that the
+      # ordinary workflow can never be manually dispatched.
+      not includes?(release_workflow, "fire_drill_version:") and
         not includes?(release_workflow, "maven-publish-fire-drill:") and
         Enum.all?(required_drill_tokens, &includes?(maven_workflow, &1)) and
         Enum.all?(forbidden_drill_tokens, &(not includes?(maven_workflow, &1))),
