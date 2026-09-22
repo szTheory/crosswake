@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: 'Baseline, trusted rehearsal, canonical receipt attestation, publication, or approved recovery.'
+        description: 'Baseline, trusted rehearsal, receipt attestation, publication, approved recovery, or exact tag repair.'
         required: true
         type: choice
         default: baseline
@@ -18,6 +18,7 @@ on:
           - candidate-receipt-attestation
           - publish
           - recovery
+          - tag-repair
       version:
         description: 'Exact Crosswake lockstep version.'
         required: true
@@ -392,6 +393,73 @@ jobs:
           --approval-receipt "${{ inputs.approval_receipt }}"
           --expected-old-ref "${{ inputs.expected_old_ref }}"
           --expected-new-ref "${{ inputs.expected_new_ref }}"
+
+  repair-missing-ios-mirror-tag:
+    name: Repair exact missing iOS mirror tag
+    if: ${{ github.event.inputs.operation == 'tag-repair' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Validate exact Phase 168 tag-repair authority
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_REF: ${{ inputs.release_ref }}
+          APPROVED_HEAD: ${{ inputs.candidate_head }}
+          APPROVED_TREE: ${{ inputs.candidate_tree }}
+          APPROVED_BASE: ${{ inputs.candidate_base }}
+          APPROVAL_RECEIPT: ${{ inputs.approval_receipt }}
+          EXPECTED_MAIN: ${{ inputs.expected_new_ref }}
+          PHASE168_MERGE_OID: b780a19863936619394087f1ffd384f1dca17c93
+          PHASE168_APPROVED_HEAD: 1051ab90cf75e918c6f596f84578ac77eadf45af
+          PHASE168_APPROVED_TREE: ecf63228243bfe7c2d6a377be996aa374b31d91f
+          PHASE168_APPROVED_BASE: 9533049d1ee5239b122b43749ff90f8ace7c7f6b
+          PHASE168_CANDIDATE_RECEIPT: 359ef8a5257b54e472a2328ce3ae722222506527312b3805467d643bb8666c78
+          PHASE168_MIRROR_SPLIT: 424ab96ede1b92f2b751b54bce04c6e607f0f3c8
+        run: |
+          set -euo pipefail
+          [ "$RELEASE_VERSION" = "0.2.2" ]
+          [ "$RELEASE_REF" = "$PHASE168_MERGE_OID" ]
+          [ "$APPROVED_HEAD" = "$PHASE168_APPROVED_HEAD" ]
+          [ "$APPROVED_TREE" = "$PHASE168_APPROVED_TREE" ]
+          [ "$APPROVED_BASE" = "$PHASE168_APPROVED_BASE" ]
+          [ "$APPROVAL_RECEIPT" = "$PHASE168_CANDIDATE_RECEIPT" ]
+          [ "$EXPECTED_MAIN" = "$PHASE168_MIRROR_SPLIT" ]
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.release_ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.MIRROR_DEPLOY_KEY }}
+
+      - name: Add GitHub to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+
+      - name: Create only the missing exact public tag
+        env:
+          RELEASE_REF: ${{ inputs.release_ref }}
+          EXPECTED_MAIN: ${{ inputs.expected_new_ref }}
+        run: |
+          set -euo pipefail
+          remote=git@github.com:szTheory/crosswake-shell-core-ios.git
+          split=$(git subtree split --prefix=packages/crosswake-shell-core-ios "$RELEASE_REF" 2>/dev/null | tail -1)
+          [ "$split" = "$EXPECTED_MAIN" ]
+          refs=$(git ls-remote "$remote" refs/heads/main refs/tags/v0.2.2)
+          main=$(printf '%s\n' "$refs" | awk '$2 == "refs/heads/main" {print $1}')
+          tag=$(printf '%s\n' "$refs" | awk '$2 == "refs/tags/v0.2.2" {print $1}')
+          [ "$main" = "$EXPECTED_MAIN" ]
+          [ -z "$tag" ]
+          git push --porcelain "$remote" "$split:refs/tags/v0.2.2"
+          final=$(git ls-remote "$remote" refs/heads/main refs/tags/v0.2.2)
+          [ "$(printf '%s\n' "$final" | awk '$2 == "refs/heads/main" {print $1}')" = "$EXPECTED_MAIN" ]
+          [ "$(printf '%s\n' "$final" | awk '$2 == "refs/tags/v0.2.2" {print $1}')" = "$EXPECTED_MAIN" ]
 
   recover-ios-mirror:
     name: Recover approved iOS mirror main
