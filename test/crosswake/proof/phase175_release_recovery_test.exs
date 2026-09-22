@@ -38,13 +38,21 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
     assert_failure!(
       @isolation,
       maven_fire_drill_workflow:
-        Fixtures.replace_once!(maven, "maven-publish-fire-drill:", "maven-publish-fire-drill:\n    uses: googleapis/release-please-action@deadbeef")
+        Fixtures.replace_once!(
+          maven,
+          "maven-publish-fire-drill:",
+          "maven-publish-fire-drill:\n    uses: googleapis/release-please-action@deadbeef"
+        )
     )
 
     assert_failure!(
       @isolation,
       maven_fire_drill_workflow:
-        Fixtures.replace_once!(maven, "contents: read", "contents: read\n      - run: gh pr create")
+        Fixtures.replace_once!(
+          maven,
+          "contents: read",
+          "contents: read\n      - run: gh pr create"
+        )
     )
   end
 
@@ -69,7 +77,8 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
         ] do
       assert_failure!(
         @receipt_authority,
-        release_workflow: Fixtures.replace_in_job(release, "approved-release-guard", needle, replacement)
+        release_workflow:
+          Fixtures.replace_in_job(release, "approved-release-guard", needle, replacement)
       )
     end
   end
@@ -77,7 +86,12 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
   test "dispatch, rerun, and individual-registry bypass seeds fail closed" do
     release = File.read!(@release_workflow)
 
-    for seed <- ["gh run rerun 123", "gh workflow run release-please.yml", "retry_failed", "individual-registry"] do
+    for seed <- [
+          "gh run rerun 123",
+          "gh workflow run release-please.yml",
+          "retry_failed",
+          "individual-registry"
+        ] do
       assert_failure!(
         @no_bypass,
         release_workflow:
