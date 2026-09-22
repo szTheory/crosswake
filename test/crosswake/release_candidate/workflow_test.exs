@@ -103,6 +103,8 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert attestation =~ "phase168-candidate-ci-${CANDIDATE_HEAD}"
     assert attestation =~ "candidate-rehearsal-hex"
     assert attestation =~ "candidate-rehearsal-ios"
+    assert attestation =~ "Decode closed attestation run selector"
+    assert attestation =~ "assemble_attested_receipt.exs"
     assert attestation =~ "Crosswake.ReleaseCandidate.Receipt.validate!"
     assert attestation =~ "phase168-candidate-receipt-${{ inputs.candidate_head }}"
     assert attestation =~ "candidate-receipt.json"

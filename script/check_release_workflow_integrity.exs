@@ -1872,6 +1872,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(workflow, "phase168-candidate-ci-${CANDIDATE_HEAD}") and
         includes?(workflow, "candidate-rehearsal-hex") and
         includes?(workflow, "candidate-rehearsal-ios") and
+        includes?(workflow, "assemble_attested_receipt.exs") and
         includes?(workflow, "Crosswake.ReleaseCandidate.Receipt.validate!") and
         includes?(workflow, "phase168-candidate-receipt-${{ inputs.candidate_head }}") and
         includes?(workflow, "candidate-receipt.json") and
