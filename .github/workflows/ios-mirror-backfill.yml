@@ -444,16 +444,19 @@ jobs:
 
       - name: Create only the missing exact public tag
         env:
+          RELEASE_REF: ${{ inputs.release_ref }}
           EXPECTED_MAIN: ${{ inputs.expected_new_ref }}
         run: |
           set -euo pipefail
           remote=git@github.com:szTheory/crosswake-shell-core-ios.git
+          split=$(git subtree split --prefix=packages/crosswake-shell-core-ios "$RELEASE_REF" 2>/dev/null | tail -1)
+          [ "$split" = "$EXPECTED_MAIN" ]
           refs=$(git ls-remote "$remote" refs/heads/main refs/tags/v0.2.2)
           main=$(printf '%s\n' "$refs" | awk '$2 == "refs/heads/main" {print $1}')
           tag=$(printf '%s\n' "$refs" | awk '$2 == "refs/tags/v0.2.2" {print $1}')
           [ "$main" = "$EXPECTED_MAIN" ]
           [ -z "$tag" ]
-          git push --porcelain "$remote" "$EXPECTED_MAIN:refs/tags/v0.2.2"
+          git push --porcelain "$remote" "$split:refs/tags/v0.2.2"
           final=$(git ls-remote "$remote" refs/heads/main refs/tags/v0.2.2)
           [ "$(printf '%s\n' "$final" | awk '$2 == "refs/heads/main" {print $1}')" = "$EXPECTED_MAIN" ]
           [ "$(printf '%s\n' "$final" | awk '$2 == "refs/tags/v0.2.2" {print $1}')" = "$EXPECTED_MAIN" ]
