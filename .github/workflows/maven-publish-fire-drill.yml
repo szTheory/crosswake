@@ -127,7 +127,14 @@ jobs:
           for i in $(seq 1 30); do
             STATUS_JSON=$(curl -fsS -X POST -H "$AUTH" "https://central.sonatype.com/api/v1/publisher/status?id=${DEPLOYMENT_ID}")
             STATE=$(printf '%s' "$STATUS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('deploymentState',''))")
-            case "$STATE" in VALIDATED) break;; FAILED) printf '%s' "$STATUS_JSON"; exit 1;; esac
+            case "$STATE" in
+              VALIDATED) break;;
+              FAILED)
+                echo "Central Portal validation errors:"
+                printf '%s' "$STATUS_JSON" | python3 -c 'import json,sys; errors=json.load(sys.stdin).get("errors", []); json.dump(errors, sys.stdout, ensure_ascii=False); print()'
+                exit 1
+                ;;
+            esac
             sleep 15
           done
           [ "$STATE" = "VALIDATED" ]

@@ -875,6 +875,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   @tag :release_trust
   test "Release Please retains non-cancelling and approval-aware publish authority" do
     workflow = File.read!(@release_please)
+    maven_fire_drill = File.read!(".github/workflows/maven-publish-fire-drill.yml")
 
     assert workflow =~
              ~r/concurrency:\n  group: release-please-.*\n  cancel-in-progress: false/
@@ -882,7 +883,10 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     refute workflow =~ ~r/concurrency:\n(?:  .*\n)*?  cancel-in-progress: true/
     refute workflow =~ ~r/^  queue:/m
     assert workflow =~ "HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
-    assert workflow =~ "MAVEN_USERNAME: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}"
+
+    assert maven_fire_drill =~
+             "MAVEN_USERNAME: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}"
+
     assert workflow =~ "MIRROR_DEPLOY_KEY: ${{ secrets.MIRROR_DEPLOY_KEY }}"
   end
 
