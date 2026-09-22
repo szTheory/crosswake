@@ -3,6 +3,7 @@
 
 defmodule Crosswake.ReleaseWorkflowIntegrity do
   @default_workflow ".github/workflows/release-please.yml"
+  @default_maven_fire_drill_workflow ".github/workflows/maven-publish-fire-drill.yml"
   @default_recovery_workflow ".github/workflows/hex-publish.yml"
   @default_helper "script/guarded_hex_publish.sh"
   @default_cleanroom_script "script/verify_companion_cleanroom.sh"
@@ -119,6 +120,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.rehearsal.hex_candidate
     release.rehearsal.ios_candidate
     release.rehearsal.no_mutation
+    release.rehearsal.maven_isolated
     release.rindle.component_gate
     release.rindle.proof_gate
     release.root_hex.path_gate
@@ -150,6 +152,13 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     workflow = File.read!(workflow_path)
     non_comment_workflow = strip_full_line_comments(workflow)
     jobs = job_blocks(workflow)
+
+    maven_fire_drill_workflow =
+      File.read!(
+        path_from_env("MAVEN_FIRE_DRILL_WORKFLOW_PATH", @default_maven_fire_drill_workflow)
+      )
+
+    non_comment_maven_fire_drill = strip_full_line_comments(maven_fire_drill_workflow)
 
     recovery_workflow =
       File.read!(path_from_env("HEX_PUBLISH_WORKFLOW_PATH", @default_recovery_workflow))
@@ -263,6 +272,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         trusted_candidate_receipt_attestation(non_comment_ios_backfill_workflow),
         trusted_rehearsal_identity(non_comment_recovery, non_comment_ios_backfill_workflow),
         trusted_rehearsal_no_mutation(non_comment_recovery, non_comment_ios_backfill_workflow),
+        maven_fire_drill_isolated(non_comment_workflow, non_comment_maven_fire_drill),
         workflow_concurrency_queue_max(non_comment_workflow),
         workflow_no_cancel_in_progress_true(non_comment_workflow),
         cleanup_after_publish_and_proof(jobs),
@@ -462,6 +472,38 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       end
 
     check("release.scanner.roster_exact", extra_emitted == [] and missing_emitted == [], detail)
+  end
+
+  # D-36: the Central Portal rehearsal must be a separate manual workflow. It
+  # deliberately has only the Maven/signing path needed to upload, observe
+  # VALIDATED, and DROP a disposable coordinate.
+  defp maven_fire_drill_isolated(release_workflow, maven_workflow) do
+    required_drill_tokens = [
+      "workflow_dispatch:",
+      "maven-publish-fire-drill:",
+      "FIRE_DRILL_VERSION",
+      "publishingType=USER_MANAGED",
+      "VALIDATED",
+      "-X DELETE",
+      "contents: read"
+    ]
+
+    forbidden_drill_tokens = [
+      "googleapis/release-please-action",
+      "gh pr ",
+      "gh issue ",
+      "release-as-cleanup",
+      "publish-hex:"
+    ]
+
+    check(
+      "release.rehearsal.maven_isolated",
+      not includes?(release_workflow, "workflow_dispatch:") and
+        not includes?(release_workflow, "maven-publish-fire-drill:") and
+        Enum.all?(required_drill_tokens, &includes?(maven_workflow, &1)) and
+        Enum.all?(forbidden_drill_tokens, &(not includes?(maven_workflow, &1))),
+      "Maven drill must be the declared manual-only VALIDATED-to-DROP workflow, absent from Release Please and free of Release Please, PR/issue, cleanup, and ordinary publish machinery"
+    )
   end
 
   defp candidate_ci_contract(workflow) do
