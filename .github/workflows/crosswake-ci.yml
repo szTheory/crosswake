@@ -1528,7 +1528,12 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
+      - name: Validate exact one-time 0.2.3 tag recovery
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 200 }}
+        run: bash script/release_candidate/ios_tag_recovery.sh validate
       - name: Check iOS SwiftPM mirror parity
+        env:
+          CROSSWAKE_IOS_PARITY_ALLOW_MISSING_VERSION: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 200 && '0.2.3' || '' }}
         run: ./script/check_ios_mirror_parity.sh
       - name: Summarize iOS mirror parity proof
         if: always()

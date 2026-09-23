@@ -177,6 +177,16 @@ main() {
 
   missing="$(comm -23 <(printf '%s\n' "$local_list") <(printf '%s\n' "$mirror_list") | sed '/^$/d')"
 
+  # This exception is enabled by Crosswake CI only for the reviewed PR #200
+  # recovery transaction, after ios_tag_recovery.sh has independently proven
+  # the pinned source, receipt, split, mirror main, and absent tag.
+  if [ "${CROSSWAKE_IOS_PARITY_ALLOW_MISSING_VERSION:-}" = "0.2.3" ]; then
+    if printf '%s\n' "$missing" | grep -qx '0.2.3'; then
+      missing="$(printf '%s\n' "$missing" | grep -vx '0.2.3' || true)"
+      log "0.2.3 parity is pending the exact protected-main tag-only recovery; all other released tags remain enforced."
+    fi
+  fi
+
   if [ -n "$missing" ]; then
     fail_parity "$missing"
   fi
