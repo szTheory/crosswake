@@ -2,7 +2,7 @@ defmodule Crosswake.MixProject do
   use Mix.Project
 
   # x-release-please-version
-  @version "0.2.2"
+  @version "0.2.3"
   @source_url "https://github.com/szTheory/crosswake"
 
   def project do
