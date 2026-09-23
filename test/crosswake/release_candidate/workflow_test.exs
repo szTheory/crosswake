@@ -244,6 +244,27 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     refute workflow =~ "merge-companion"
   end
 
+  test "linked release rollup resolves locked dependencies before evaluating project code" do
+    workflow = File.read!(@release_workflow)
+    rollup = job_block(workflow, "linked-release-rollup")
+
+    assert rollup != "", "no linked-release-rollup job found in #{@release_workflow}"
+
+    assert {deps_offset, _length} =
+             :binary.match(rollup, "mix deps.get --check-locked"),
+           "linked-release-rollup must resolve the locked dependency graph"
+
+    assert {evaluator_offset, _length} =
+             :binary.match(
+               rollup,
+               "mix run --no-start -e 'Crosswake.ReleaseCandidate.Workflow.evaluate_cli!()'"
+             ),
+           "linked-release-rollup must execute the release evaluator"
+
+    assert deps_offset < evaluator_offset,
+           "linked-release-rollup must resolve dependencies before invoking project code"
+  end
+
   test "every child failure preserves exact prior public success as PARTIAL" do
     assert Code.ensure_loaded?(Workflow)
     assert function_exported?(Workflow, :rollup!, 1)

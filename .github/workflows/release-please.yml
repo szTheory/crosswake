@@ -833,6 +833,9 @@ jobs:
         with:
           version-file: .tool-versions
           version-type: strict
+      - name: Resolve locked Mix dependencies
+        if: ${{ steps.linked-release.outputs.applicable == 'true' }}
+        run: mix deps.get --check-locked
       - name: Preserve exact linked child states
         # The executable policy emits COMPLETE only for all six successes and
         # PARTIAL whenever an immutable public coordinate survives a failure.
