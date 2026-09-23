@@ -221,6 +221,25 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
     refute output =~ "missing refs/tags/v0.1.2"
   end
 
+  test "one-time recovery exception ignores only v0.2.3 and leaves every other release blocking" do
+    exact = parity_fixture(["0.1.2", "0.2.3"], ["0.1.2"])
+
+    {output, exit_code} =
+      run_parity(exact, [{"CROSSWAKE_IOS_PARITY_ALLOW_MISSING_VERSION", "0.2.3"}])
+
+    assert exit_code == 0, output
+    assert output =~ "0.2.3 parity is pending the exact protected-main tag-only recovery"
+
+    other_missing = parity_fixture(["0.2.1", "0.2.3"], [])
+
+    {output, exit_code} =
+      run_parity(other_missing, [{"CROSSWAKE_IOS_PARITY_ALLOW_MISSING_VERSION", "0.2.3"}])
+
+    assert exit_code == 1, output
+    assert output =~ "missing refs/tags/v0.2.1"
+    refute output =~ "missing refs/tags/v0.2.3"
+  end
+
   @tag :phase153_ios_mirror_unblock
   test "the invariant is one-directional: extra mirror tags are not a violation" do
     fixture = parity_fixture(["0.1.2", "0.2.0"], ["0.1.2", "0.2.0", "9.9.9"])
