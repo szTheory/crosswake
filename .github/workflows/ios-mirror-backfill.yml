@@ -45,7 +45,7 @@ on:
         default: ''
         type: string
       candidate_receipt:
-        description: 'Capture digest for rehearsal, or closed JSON envelope for canonical receipt attestation.'
+        description: 'Capture digest for rehearsal, or closed exact-run selector for canonical receipt attestation.'
         required: false
         default: ''
         type: string
@@ -173,14 +173,14 @@ jobs:
       actions: read
       contents: read
     env:
-      ATTESTATION_ENVELOPE: "${{ inputs.candidate_receipt }}"
+      ATTESTATION_RUNS: "${{ inputs.candidate_receipt }}"
       CANDIDATE_HEAD: "${{ inputs.candidate_head }}"
       CANDIDATE_TREE: "${{ inputs.candidate_tree }}"
       CANDIDATE_BASE: "${{ inputs.candidate_base }}"
       CANDIDATE_VERSION: "${{ inputs.version }}"
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Decode closed attestation envelope
+      - name: Decode closed attestation run selector
         id: envelope
         env:
           OUTPUT_DIR: ${{ runner.temp }}/candidate-receipt-attestation
@@ -189,7 +189,7 @@ jobs:
           printf '%s' "$CANDIDATE_HEAD$CANDIDATE_TREE$CANDIDATE_BASE" | grep -Eq '^[0-9a-f]{120}$'
           printf '%s' "$CANDIDATE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
           mkdir -p "$OUTPUT_DIR"
-          python3 -c 'import base64,hashlib,json,os,pathlib,re; value=json.loads(os.environ["ATTESTATION_ENVELOPE"]); required={"candidate_ci_run_id","hex_run_id","ios_run_id","payload_base64","sha256"}; assert set(value)==required; assert re.fullmatch(r"[0-9a-f]{64}",value["sha256"]); assert all(isinstance(value[key],int) and value[key]>0 for key in ("candidate_ci_run_id","hex_run_id","ios_run_id")); payload=base64.b64decode(value["payload_base64"],validate=True); assert hashlib.sha256(payload).hexdigest()==value["sha256"]; pathlib.Path(os.environ["OUTPUT_DIR"],"candidate-receipt.json").write_bytes(payload); print("candidate_ci_run_id={}".format(value["candidate_ci_run_id"])); print("hex_run_id={}".format(value["hex_run_id"])); print("ios_run_id={}".format(value["ios_run_id"])); print("receipt_sha256={}".format(value["sha256"]))' >> "$GITHUB_OUTPUT"
+          python3 -c 'import json,os; value=json.loads(os.environ["ATTESTATION_RUNS"]); required={"candidate_ci_run_id","hex_run_id","ios_run_id"}; assert set(value)==required; assert all(isinstance(value[key],int) and value[key]>0 for key in required); [print("{}={}".format(key, value[key])) for key in sorted(required)]' >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -260,6 +260,12 @@ jobs:
             --arg base "$CANDIDATE_BASE" --arg run "${{ steps.envelope.outputs.ios_run_id }}" \
             '.requested_head == $head and .observed_head == $head and .observed_tree == $tree and .observed_base == $base and (.run_id | tostring) == $run and .run_conclusion == "success" and .external_state_changed == false' \
             "$OUTPUT_DIR/ios/rehearsal.json" >/dev/null
+
+          export CANDIDATE_CI_RUN_ID="${{ steps.envelope.outputs.candidate_ci_run_id }}"
+          export HEX_RUN_ID="${{ steps.envelope.outputs.hex_run_id }}"
+          export IOS_RUN_ID="${{ steps.envelope.outputs.ios_run_id }}"
+          export MIX_ENV=test
+          mix run script/release_candidate/assemble_attested_receipt.exs
 
           jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
             --arg base "$CANDIDATE_BASE" --argjson run "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
