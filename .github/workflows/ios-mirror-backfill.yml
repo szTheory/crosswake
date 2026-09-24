@@ -45,7 +45,27 @@ on:
         default: ''
         type: string
       candidate_receipt:
-        description: 'Capture digest for rehearsal, or closed exact-run selector for canonical receipt attestation.'
+        description: 'Capture digest for a candidate rehearsal or approval digest for publication/recovery.'
+        required: false
+        default: ''
+        type: string
+      candidate_ci_run_id:
+        description: 'Exact successful Crosswake CI run ID for receipt attestation.'
+        required: false
+        default: ''
+        type: string
+      hex_run_id:
+        description: 'Exact successful Hex rehearsal run ID for receipt attestation.'
+        required: false
+        default: ''
+        type: string
+      ios_run_id:
+        description: 'Exact successful iOS rehearsal run ID for receipt attestation.'
+        required: false
+        default: ''
+        type: string
+      maven_run_id:
+        description: 'Exact successful Maven rehearsal run ID for receipt attestation.'
         required: false
         default: ''
         type: string
@@ -173,23 +193,31 @@ jobs:
       actions: read
       contents: read
     env:
-      ATTESTATION_RUNS: "${{ inputs.candidate_receipt }}"
       CANDIDATE_HEAD: "${{ inputs.candidate_head }}"
       CANDIDATE_TREE: "${{ inputs.candidate_tree }}"
       CANDIDATE_BASE: "${{ inputs.candidate_base }}"
       CANDIDATE_VERSION: "${{ inputs.version }}"
+      CANDIDATE_CI_RUN_ID: "${{ inputs.candidate_ci_run_id }}"
+      HEX_RUN_ID: "${{ inputs.hex_run_id }}"
+      IOS_RUN_ID: "${{ inputs.ios_run_id }}"
+      MAVEN_RUN_ID: "${{ inputs.maven_run_id }}"
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Decode closed attestation run selector
+      - name: Validate exact run selectors
         id: envelope
-        env:
-          OUTPUT_DIR: ${{ runner.temp }}/candidate-receipt-attestation
         run: |
           set -euo pipefail
           printf '%s' "$CANDIDATE_HEAD$CANDIDATE_TREE$CANDIDATE_BASE" | grep -Eq '^[0-9a-f]{120}$'
           printf '%s' "$CANDIDATE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
-          mkdir -p "$OUTPUT_DIR"
-          python3 -c 'import json,os; value=json.loads(os.environ["ATTESTATION_RUNS"]); required={"candidate_ci_run_id","hex_run_id","ios_run_id"}; assert set(value)==required; assert all(isinstance(value[key],int) and value[key]>0 for key in required); [print("{}={}".format(key, value[key])) for key in sorted(required)]' >> "$GITHUB_OUTPUT"
+          for value in "$CANDIDATE_CI_RUN_ID" "$HEX_RUN_ID" "$IOS_RUN_ID" "$MAVEN_RUN_ID"; do
+            printf '%s' "$value" | grep -Eq '^[1-9][0-9]*$'
+          done
+          {
+            printf 'candidate_ci_run_id=%s\n' "$CANDIDATE_CI_RUN_ID"
+            printf 'hex_run_id=%s\n' "$HEX_RUN_ID"
+            printf 'ios_run_id=%s\n' "$IOS_RUN_ID"
+            printf 'maven_run_id=%s\n' "$MAVEN_RUN_ID"
+          } >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -201,24 +229,27 @@ jobs:
         with:
           mix-env: test
 
-      - name: Download exact CI and trusted rehearsal evidence
+      - name: Download exact CI and all three trusted rehearsal artifacts
         env:
           OUTPUT_DIR: ${{ runner.temp }}/candidate-receipt-attestation
         run: |
           set -euo pipefail
-          mkdir -p "$OUTPUT_DIR/ci" "$OUTPUT_DIR/hex" "$OUTPUT_DIR/ios"
+          mkdir -p "$OUTPUT_DIR/ci" "$OUTPUT_DIR/hex" "$OUTPUT_DIR/ios" "$OUTPUT_DIR/maven"
           gh run download "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
             --name "phase168-candidate-ci-${CANDIDATE_HEAD}" --dir "$OUTPUT_DIR/ci"
           gh run download "${{ steps.envelope.outputs.hex_run_id }}" \
             --name candidate-rehearsal-hex --dir "$OUTPUT_DIR/hex"
           gh run download "${{ steps.envelope.outputs.ios_run_id }}" \
             --name candidate-rehearsal-ios --dir "$OUTPUT_DIR/ios"
+          gh run download "${{ steps.envelope.outputs.maven_run_id }}" \
+            --name candidate-rehearsal-maven --dir "$OUTPUT_DIR/maven"
           test -f "$OUTPUT_DIR/ci/release-candidate-ci-receipt.json"
           test -f "$OUTPUT_DIR/ci/artifacts/artifacts.json"
           test -f "$OUTPUT_DIR/hex/rehearsal.json"
           test -f "$OUTPUT_DIR/hex/packages/artifacts.json"
           test -f "$OUTPUT_DIR/ios/rehearsal.json"
           test -f "$OUTPUT_DIR/ios/mirror.json"
+          test -f "$OUTPUT_DIR/maven/rehearsal.json"
 
       - name: Validate canonical receipt against immutable evidence
         env:
@@ -234,19 +265,24 @@ jobs:
           printf '%s' "$candidate_run" | jq -e --arg head "$CANDIDATE_HEAD" \
             '.conclusion == "success" and .headSha == $head and .workflowName == "Crosswake CI"' >/dev/null
           hex_run=$(gh run view "${{ steps.envelope.outputs.hex_run_id }}" \
-            --json conclusion,workflowName)
-          printf '%s' "$hex_run" | jq -e \
-            '.conclusion == "success" and .workflowName == "Hex candidate rehearsal and recovery"' >/dev/null
+            --json conclusion,headSha,workflowName)
+          printf '%s' "$hex_run" | jq -e --arg head "$CANDIDATE_HEAD" \
+            '.conclusion == "success" and .headSha == $head and .workflowName == "Hex candidate rehearsal and recovery"' >/dev/null
           ios_run=$(gh run view "${{ steps.envelope.outputs.ios_run_id }}" \
-            --json conclusion,workflowName)
-          printf '%s' "$ios_run" | jq -e \
-            '.conclusion == "success" and .workflowName == "iOS mirror authority"' >/dev/null
+            --json conclusion,headSha,workflowName)
+          printf '%s' "$ios_run" | jq -e --arg head "$CANDIDATE_HEAD" \
+            '.conclusion == "success" and .headSha == $head and .workflowName == "iOS mirror authority"' >/dev/null
+          maven_run=$(gh run view "${{ steps.envelope.outputs.maven_run_id }}" \
+            --json conclusion,headSha,workflowName)
+          printf '%s' "$maven_run" | jq -e --arg head "$CANDIDATE_HEAD" \
+            '.conclusion == "success" and .headSha == $head and .workflowName == "Maven publish fire-drill"' >/dev/null
 
           ci_receipt_sha=$(sha256sum "$OUTPUT_DIR/ci/release-candidate-ci-receipt.json" | awk '{print $1}')
           package_sha=$(sha256sum "$OUTPUT_DIR/hex/packages/artifacts.json" | awk '{print $1}')
           hex_sha=$(sha256sum "$OUTPUT_DIR/hex/rehearsal.json" | awk '{print $1}')
           ios_sha=$(sha256sum "$OUTPUT_DIR/ios/rehearsal.json" | awk '{print $1}')
           mirror_sha=$(sha256sum "$OUTPUT_DIR/ios/mirror.json" | awk '{print $1}')
+          maven_sha=$(sha256sum "$OUTPUT_DIR/maven/rehearsal.json" | awk '{print $1}')
 
           jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
             --arg base "$CANDIDATE_BASE" --arg run "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
@@ -261,17 +297,30 @@ jobs:
             '.requested_head == $head and .observed_head == $head and .observed_tree == $tree and .observed_base == $base and (.run_id | tostring) == $run and .run_conclusion == "success" and .external_state_changed == false' \
             "$OUTPUT_DIR/ios/rehearsal.json" >/dev/null
 
-          export CANDIDATE_CI_RUN_ID="${{ steps.envelope.outputs.candidate_ci_run_id }}"
-          export HEX_RUN_ID="${{ steps.envelope.outputs.hex_run_id }}"
-          export IOS_RUN_ID="${{ steps.envelope.outputs.ios_run_id }}"
-          export MIX_ENV=test
-          mix run script/release_candidate/assemble_attested_receipt.exs
+          jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
+            --arg base "$CANDIDATE_BASE" --arg version "$CANDIDATE_VERSION" \
+            --arg run "${{ steps.envelope.outputs.maven_run_id }}" \
+            '.candidate_version == $version and .requested_head == $head and .observed_head == $head and .observed_tree == $tree and .observed_base == $base and (.run_id | tostring) == $run and .run_conclusion == "success" and .state == "VALIDATED" and .deployment_result == "DROP" and .dropped == true and .external_state_changed == false' \
+            "$OUTPUT_DIR/maven/rehearsal.json" >/dev/null
+
+          mix deps.get --check-locked
+          mix crosswake.release.candidate \
+            --version "$CANDIDATE_VERSION" \
+            --ref "$CANDIDATE_HEAD" \
+            --evidence-dir "$OUTPUT_DIR" \
+            --output-dir "$OUTPUT_DIR" \
+            --ci-run-id "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
+            --hex-run-id "${{ steps.envelope.outputs.hex_run_id }}" \
+            --ios-run-id "${{ steps.envelope.outputs.ios_run_id }}" \
+            --maven-run-id "${{ steps.envelope.outputs.maven_run_id }}"
+          CANDIDATE_RECEIPT_PATH="$OUTPUT_DIR/candidate-receipt.json" MIX_ENV=test \
+            mix run --no-start -e 'receipt = System.fetch_env!("CANDIDATE_RECEIPT_PATH") |> File.read!() |> Jason.decode!(keys: :atoms) |> Crosswake.ReleaseCandidate.Receipt.validate!(); IO.write(Crosswake.ReleaseCandidate.Projection.markdown(receipt))' >/dev/null
 
           jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
             --arg base "$CANDIDATE_BASE" --argjson run "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
             --arg ci "$ci_receipt_sha" --arg package "$package_sha" --arg hex "$hex_sha" \
-            --arg ios "$ios_sha" --arg mirror "$mirror_sha" \
-            '.state == "READY FOR APPROVAL" and .identity.bound == .identity.observed and .identity.bound.head == $head and .identity.bound.tree == $tree and .identity.bound.base == $base and .identity.bound.run.id == $run and .credentials == {"exercised":true,"mirror_write_authority":"PROVEN"} and .external_state.changed == false and .external_state.publication == "NONE" and (([.checks[] | select(.status == "PASS")] | length) == 12) and any(.identity.bound.proofs[]; .id == "candidate.ci" and .sha256 == $ci) and any(.identity.bound.proofs[]; .id == "package.family" and .sha256 == $package) and any(.identity.bound.proofs[]; .id == "hex.rehearsal" and .sha256 == $hex) and any(.identity.bound.proofs[]; .id == "ios.rehearsal" and .sha256 == $ios) and any(.identity.bound.proofs[]; .id == "mirror.authority" and .sha256 == $mirror)' \
+            --arg ios "$ios_sha" --arg maven "$maven_sha" --arg mirror "$mirror_sha" \
+            '.state == "READY FOR APPROVAL" and .identity.bound == .identity.observed and .identity.bound.head == $head and .identity.bound.tree == $tree and .identity.bound.base == $base and .identity.bound.run.id == $run and .credentials == {"exercised":true,"mirror_write_authority":"PROVEN"} and .external_state.changed == false and .external_state.publication == "NONE" and ([.checks[].id] == (["candidate.ci","candidate.identity","candidate.workflows","candidate.config","candidate.coordinates","candidate.cleanroom","candidate.external-state","candidate.credentials","package.family","hex.rehearsal","ios.rehearsal","maven.rehearsal","mirror.authority"] | sort)) and all(.checks[]; .status == "PASS") and any(.identity.bound.proofs[]; .id == "candidate.ci" and .sha256 == $ci) and any(.identity.bound.proofs[]; .id == "package.family" and .sha256 == $package) and any(.identity.bound.proofs[]; .id == "hex.rehearsal" and .sha256 == $hex) and any(.identity.bound.proofs[]; .id == "ios.rehearsal" and .sha256 == $ios) and any(.identity.bound.proofs[]; .id == "maven.rehearsal" and .sha256 == $maven) and any(.identity.bound.proofs[]; .id == "mirror.authority" and .sha256 == $mirror)' \
             "$OUTPUT_DIR/candidate-receipt.json" >/dev/null
 
           receipt_digest() {
@@ -285,15 +334,10 @@ jobs:
           test "$(sha256sum .github/workflows/crosswake-ci.yml | awk '{print $1}')" = "$(receipt_digest crosswake-ci)"
           test "$(sha256sum .github/workflows/hex-publish.yml | awk '{print $1}')" = "$(receipt_digest hex-publish)"
           test "$(sha256sum .github/workflows/ios-mirror-backfill.yml | awk '{print $1}')" = "$(receipt_digest ios-mirror-backfill)"
+          test "$(sha256sum .github/workflows/maven-publish-fire-drill.yml | awk '{print $1}')" = "$(receipt_digest maven-publish-fire-drill)"
           test "$(sha256sum .github/workflows/release-please.yml | awk '{print $1}')" = "$(receipt_digest release-please)"
           test "$(sha256sum release-please-config.json | awk '{print $1}')" = "$(config_digest release-please-config)"
           test "$(sha256sum .release-please-manifest.json | awk '{print $1}')" = "$(config_digest release-please-manifest)"
-
-          mix deps.get --check-locked
-          CANDIDATE_RECEIPT_PATH="$OUTPUT_DIR/candidate-receipt.json"
-          export CANDIDATE_RECEIPT_PATH
-          export MIX_ENV=test
-          mix run -e 'receipt = System.fetch_env!("CANDIDATE_RECEIPT_PATH") |> File.read!() |> Jason.decode!(keys: :atoms) |> Crosswake.ReleaseCandidate.Receipt.validate!(); File.write!(Path.join(System.fetch_env!("OUTPUT_DIR"), "candidate-receipt.md"), Crosswake.ReleaseCandidate.Projection.markdown(receipt))'
 
           test -z "$(git ls-remote --tags origin "refs/tags/*${CANDIDATE_VERSION}*")"
           test "$(curl -sS -o /dev/null -w '%{http_code}' "https://hex.pm/api/packages/crosswake/releases/${CANDIDATE_VERSION}")" = 404

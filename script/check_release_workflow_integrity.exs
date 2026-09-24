@@ -278,8 +278,16 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         trusted_hex_candidate_rehearsal(non_comment_recovery),
         trusted_ios_candidate_rehearsal(non_comment_ios_backfill_workflow),
         trusted_candidate_receipt_attestation(non_comment_ios_backfill_workflow),
-        trusted_rehearsal_identity(non_comment_recovery, non_comment_ios_backfill_workflow),
-        trusted_rehearsal_no_mutation(non_comment_recovery, non_comment_ios_backfill_workflow),
+        trusted_rehearsal_identity(
+          non_comment_recovery,
+          non_comment_ios_backfill_workflow,
+          non_comment_maven_fire_drill
+        ),
+        trusted_rehearsal_no_mutation(
+          non_comment_recovery,
+          non_comment_ios_backfill_workflow,
+          non_comment_maven_fire_drill
+        ),
         maven_fire_drill_isolated(non_comment_workflow, non_comment_maven_fire_drill),
         receipt_exact_authority(jobs),
         no_retry_or_bypass(jobs),
@@ -352,6 +360,16 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     ~r/(?ms)^  ([A-Za-z0-9_-]+):\n(.*?)(?=^  [A-Za-z0-9_-]+:\n|\z)/
     |> Regex.scan(workflow, capture: :all_but_first)
     |> Map.new(fn [name, block] -> {name, strip_full_line_comments(block)} end)
+  end
+
+  defp step_block(workflow, step_name) do
+    case Regex.run(
+           ~r/(?ms)^      - name: #{Regex.escape(step_name)}\n.*?(?=^      - |\z)/,
+           workflow
+         ) do
+      [block] -> block
+      _ -> ""
+    end
   end
 
   defp strip_full_line_comments(text) do
@@ -488,6 +506,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   # deliberately has only the Maven/signing path needed to upload, observe
   # VALIDATED, and DROP a disposable coordinate.
   defp maven_fire_drill_isolated(release_workflow, maven_workflow) do
+    receipt_step = step_block(maven_workflow, "Write redacted exact-candidate rehearsal receipt")
+
     required_drill_tokens = [
       "workflow_dispatch:",
       "maven-publish-fire-drill:",
@@ -495,7 +515,24 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       "publishingType=USER_MANAGED",
       "VALIDATED",
       "-X DELETE",
-      "contents: read"
+      "contents: read",
+      "candidate_head:",
+      "candidate_tree:",
+      "candidate_base:",
+      "ref: ${{ inputs.candidate_head }}",
+      "test \"$(git rev-parse HEAD)\" = \"$CANDIDATE_HEAD\"",
+      "git rev-parse \"${CANDIDATE_HEAD}^{tree}\"",
+      "git merge-base \"$CANDIDATE_BASE\" \"$CANDIDATE_HEAD\"",
+      "candidate-rehearsal-maven",
+      "deployment_result",
+      "external_state_changed",
+      "candidate_version",
+      "observed_head",
+      "observed_tree",
+      "observed_base",
+      "run_head",
+      "run_conclusion",
+      "coordinate"
     ]
 
     forbidden_drill_tokens = [
@@ -514,7 +551,19 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       not includes?(release_workflow, "fire_drill_version:") and
         not includes?(release_workflow, "maven-publish-fire-drill:") and
         Enum.all?(required_drill_tokens, &includes?(maven_workflow, &1)) and
-        Enum.all?(forbidden_drill_tokens, &(not includes?(maven_workflow, &1))),
+        Enum.all?(forbidden_drill_tokens, &(not includes?(maven_workflow, &1))) and
+        receipt_step != "" and
+        includes?(receipt_step, "\"requested_head\": os.environ[\"CANDIDATE_HEAD\"]") and
+        includes?(receipt_step, "\"observed_head\": os.environ[\"CANDIDATE_HEAD\"]") and
+        includes?(receipt_step, "\"observed_tree\": os.environ[\"CANDIDATE_TREE\"]") and
+        includes?(receipt_step, "\"observed_base\": os.environ[\"CANDIDATE_BASE\"]") and
+        includes?(receipt_step, "\"run_id\": run_id") and
+        includes?(receipt_step, "\"run_head\": os.environ[\"CANDIDATE_HEAD\"]") and
+        Enum.all?(
+          ["DEPLOYMENT_ID", "STATUS_JSON", "MAVEN_PASSWORD", "signingInMemoryKey"],
+          &(not includes?(receipt_step, &1))
+        ) and
+        not includes?(maven_workflow, "payload_base64"),
       "Maven drill must be the declared manual-only VALIDATED-to-DROP workflow, absent from Release Please and free of Release Please, PR/issue, cleanup, and ordinary publish machinery"
     )
   end
@@ -917,8 +966,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
          "the lane must be validated (#{lane_case}) before any branch can exit zero on it"},
         {includes?(gated_segment, token),
          "the recovery-lane refusal must report the named result #{token}"},
-        {includes?(gated_segment, "exit 1"),
-         "the recovery-lane refusal must exit non-zero"}
+        {includes?(gated_segment, "exit 1"), "the recovery-lane refusal must exit non-zero"}
       ]
       |> Enum.reject(&elem(&1, 0))
       |> Enum.map(&elem(&1, 1))
@@ -1950,17 +1998,35 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(workflow, "phase168-candidate-ci-${CANDIDATE_HEAD}") and
         includes?(workflow, "candidate-rehearsal-hex") and
         includes?(workflow, "candidate-rehearsal-ios") and
-        includes?(workflow, "assemble_attested_receipt.exs") and
+        includes?(workflow, "candidate-rehearsal-maven") and
+        includes?(workflow, "candidate_ci_run_id:") and
+        includes?(workflow, "hex_run_id:") and includes?(workflow, "ios_run_id:") and
+        includes?(workflow, "maven_run_id:") and
+        includes?(workflow, "mix crosswake.release.candidate") and
+        includes?(workflow, "--evidence-dir") and includes?(workflow, "--maven-run-id") and
+        includes?(workflow, "gh run download \"${{ steps.envelope.outputs.maven_run_id }}\"") and
+        includes?(workflow, "gh run view \"${{ steps.envelope.outputs.maven_run_id }}\"") and
+        includes?(workflow, "Maven publish fire-drill") and
+        includes?(workflow, "maven.rehearsal") and
+        includes?(workflow, "([.checks[].id] == ([\"candidate.ci\"") and
+        includes?(workflow, "\"ios.rehearsal\",\"maven.rehearsal\",\"mirror.authority\"") and
+        includes?(workflow, "payload_base64") == false and
+        includes?(workflow, "ATTESTATION_ENVELOPE") == false and
+        includes?(workflow, "Validate exact run selectors") and
+        not includes?(workflow, "assemble_attested_receipt.exs") and
+        not includes?(workflow, "ATTESTATION_RUNS") and
         includes?(workflow, "Crosswake.ReleaseCandidate.Receipt.validate!") and
         includes?(workflow, "phase168-candidate-receipt-${{ inputs.candidate_head }}") and
         includes?(workflow, "candidate-receipt.json") and
         includes?(workflow, "artifacts.json") and
-        includes?(workflow, "external_state_changed=false"),
-      "the existing trusted iOS workflow must attest one canonical READY receipt against exact CI, Hex, iOS, mirror, and zero-mutation evidence"
+        includes?(workflow, "external_state_changed=false") and
+        not includes?(workflow, "gh pr merge") and
+        not includes?(workflow, "gh workflow run release-please"),
+      "the trusted workflow must generate and independently attest one exact-head receipt from CI, Hex, iOS, Maven, and mirror evidence without caller payload or release-mutation authority"
     )
   end
 
-  defp trusted_rehearsal_identity(hex_workflow, ios_workflow) do
+  defp trusted_rehearsal_identity(hex_workflow, ios_workflow, maven_workflow) do
     required =
       ~w(requested_head observed_head observed_tree observed_base candidate_receipt run_id run_head run_conclusion workflow_sha256)
 
@@ -1969,12 +2035,17 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       Enum.all?([hex_workflow, ios_workflow], fn workflow ->
         Enum.all?(required, &includes?(workflow, &1)) and
           includes?(workflow, "if-no-files-found: error")
-      end),
-      "both trusted rehearsal artifacts must bind requested/observed Git identity, receipt, workflow blob, and exact run identity"
+      end) and
+        Enum.all?(
+          ~w(candidate_version requested_head observed_head observed_tree observed_base run_id run_head run_conclusion workflow_sha256 state deployment_result dropped coordinate),
+          &includes?(maven_workflow, &1)
+        ) and
+        includes?(maven_workflow, "candidate-rehearsal-maven"),
+      "all trusted rehearsal artifacts must bind the exact candidate and run identity; Maven must attest its validated-then-dropped disposable coordinate"
     )
   end
 
-  defp trusted_rehearsal_no_mutation(hex_workflow, ios_workflow) do
+  defp trusted_rehearsal_no_mutation(hex_workflow, ios_workflow, maven_workflow) do
     hex = job_block(job_blocks(hex_workflow), "rehearse-hex-candidate")
     ios = job_block(job_blocks(ios_workflow), "rehearse-ios-mirror-candidate")
 
@@ -1982,6 +2053,9 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       "release.rehearsal.no_mutation",
       includes?(hex, "external_state_changed=false") and
         includes?(ios, "external_state_changed=false") and
+        includes?(maven_workflow, "external_state_changed") and
+        includes?(maven_workflow, "\"deployment_result\": \"DROP\"") and
+        includes?(maven_workflow, "\"dropped\": True") and
         not includes?(hex, "HEX_API_KEY") and
         not includes?(hex, "guarded_hex_publish.sh") and
         not includes?(ios, "CROSSWAKE_IOS_MIRROR_EXECUTE"),

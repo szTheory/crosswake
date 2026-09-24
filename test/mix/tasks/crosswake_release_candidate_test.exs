@@ -8,6 +8,7 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
   @sha_a String.duplicate("a", 40)
   @sha_b String.duplicate("b", 40)
   @sha_c String.duplicate("c", 40)
+  @sha_d String.duplicate("d", 40)
   @digest_a String.duplicate("1", 64)
   @digest_b String.duplicate("2", 64)
   @digest_c String.duplicate("3", 64)
@@ -195,6 +196,183 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
     end
   end
 
+  @tag :tmp_dir
+  test "the public evidence-directory command builds a deterministic receipt from exact artifacts",
+       %{
+         tmp_dir: tmp_dir
+       } do
+    fixture = Crosswake.ReleaseCandidateReceiptFixtures.build!(Path.join(tmp_dir, "evidence"))
+    output_dir = Path.join(tmp_dir, "receipt")
+
+    args = evidence_args(fixture, output_dir)
+    terminal = capture_io(fn -> Candidate.run(args) end)
+    receipt = Path.join(output_dir, "candidate-receipt.json") |> File.read!() |> Jason.decode!()
+    receipt_bytes = File.read!(Path.join(output_dir, "candidate-receipt.json"))
+    second_output_dir = Path.join(tmp_dir, "receipt-second")
+
+    second_terminal =
+      capture_io(fn -> Candidate.run(evidence_args(fixture, second_output_dir)) end)
+
+    assert receipt["state"] == "READY FOR APPROVAL"
+    assert Enum.any?(receipt["identity"]["bound"]["proofs"], &(&1["id"] == "maven.rehearsal"))
+    assert receipt["external_state"]["publication"] == "NONE"
+    assert receipt["external_state"]["changed"] == false
+    assert terminal =~ "READY FOR APPROVAL"
+    assert second_terminal == terminal
+    assert File.read!(Path.join(second_output_dir, "candidate-receipt.json")) == receipt_bytes
+  end
+
+  @tag :tmp_dir
+  test "missing, stale identity/run bindings and unexpected sensitive fields fail closed", %{
+    tmp_dir: tmp_dir
+  } do
+    mutations = [
+      {:missing_ci_receipt,
+       fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.ci)) end},
+      {:missing_ci_manifest,
+       fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.ci_packages)) end},
+      {:missing_cleanroom,
+       fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.cleanroom)) end},
+      {:missing_hex_rehearsal,
+       fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.hex)) end},
+      {:missing_hex_manifest,
+       fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.hex_packages)) end},
+      {:missing_ios_rehearsal,
+       fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.ios)) end},
+      {:missing_mirror_observation,
+       fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.mirror)) end},
+      {:missing_maven, fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.maven)) end},
+      {:stale_candidate_head,
+       fn fixture ->
+         Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(
+           fixture,
+           :ci,
+           &Map.put(&1, "head", @sha_b)
+         )
+       end},
+      {:stale_candidate_tree,
+       fn fixture ->
+         Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(
+           fixture,
+           :ci,
+           &Map.put(&1, "tree", @sha_d)
+         )
+       end},
+      {:stale_candidate_base,
+       fn fixture ->
+         Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(
+           fixture,
+           :ci,
+           &Map.put(&1, "base", @sha_d)
+         )
+       end},
+      {:maven_not_dropped,
+       fn fixture ->
+         Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(
+           fixture,
+           :maven,
+           &Map.put(&1, "deployment_result", "VALIDATED")
+         )
+       end},
+      {:mismatched_package_payload,
+       fn fixture ->
+         Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(fixture, :ci_packages, fn rows ->
+           List.update_at(rows, 0, &Map.put(&1, "payload_digest", @digest_c))
+         end)
+       end},
+      {:stale_ci_run,
+       fn fixture ->
+         Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(
+           fixture,
+           :ci,
+           &Map.put(&1, "run_id", "9999")
+         )
+       end},
+      {:stale_cleanroom_digest,
+       fn fixture ->
+         Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(
+           fixture,
+           :ci,
+           &Map.put(&1, "cleanroom_result_sha256", @digest_b)
+         )
+       end},
+      {:stale_hex_run,
+       fn fixture ->
+         Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(
+           fixture,
+           :hex,
+           &Map.put(&1, "run_id", "9999")
+         )
+       end},
+      {:stale_ios_run,
+       fn fixture ->
+         Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(
+           fixture,
+           :ios,
+           &Map.put(&1, "run_id", "9999")
+         )
+       end},
+      {:stale_maven_run,
+       fn fixture ->
+         Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(
+           fixture,
+           :maven,
+           &Map.put(&1, "run_id", "9999")
+         )
+       end},
+      {:sensitive_unknown_key,
+       fn fixture ->
+         Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(
+           fixture,
+           :maven,
+           &Map.put(&1, @privacy_canary, "private")
+         )
+       end}
+    ]
+
+    for {name, mutate} <- mutations do
+      fixture =
+        Crosswake.ReleaseCandidateReceiptFixtures.build!(Path.join(tmp_dir, Atom.to_string(name)))
+
+      mutate.(fixture)
+      output_dir = Path.join(tmp_dir, "out-#{name}")
+
+      error =
+        assert_raise ArgumentError, "candidate evidence is invalid", fn ->
+          capture_io(fn -> Candidate.run(evidence_args(fixture, output_dir)) end)
+        end
+
+      refute Exception.message(error) =~ @privacy_canary
+      refute File.exists?(output_dir)
+    end
+  end
+
+  @tag :tmp_dir
+  test "public evidence command rejects duplicate selectors and caller-supplied receipt payload",
+       %{
+         tmp_dir: tmp_dir
+       } do
+    fixture = Crosswake.ReleaseCandidateReceiptFixtures.build!(Path.join(tmp_dir, "evidence"))
+    args = evidence_args(fixture, Path.join(tmp_dir, "output"))
+
+    for invalid <- [args ++ ["--ci-run-id", "1001"], args ++ ["--receipt", "{}"]] do
+      error = assert_raise Mix.Error, fn -> Candidate.run(invalid) end
+      assert Exception.message(error) == "invalid release candidate command"
+    end
+
+    stale_version_args =
+      args
+      |> Enum.chunk_every(2)
+      |> Enum.flat_map(fn
+        ["--version", _value] -> ["--version", "0.2.5"]
+        pair -> pair
+      end)
+
+    assert_raise ArgumentError, "candidate evidence is invalid", fn ->
+      capture_io(fn -> Candidate.run(stale_version_args) end)
+    end
+  end
+
   defp input(version \\ "0.2.1") do
     %{
       identity: identity(version),
@@ -209,6 +387,27 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
       },
       credentials: %{mirror_write_authority: "PROVEN", exercised: true}
     }
+  end
+
+  defp evidence_args(fixture, output_dir) do
+    [
+      "--version",
+      fixture.version,
+      "--ref",
+      fixture.ref,
+      "--evidence-dir",
+      fixture.root,
+      "--output-dir",
+      output_dir,
+      "--ci-run-id",
+      Integer.to_string(fixture.runs.ci),
+      "--hex-run-id",
+      Integer.to_string(fixture.runs.hex),
+      "--ios-run-id",
+      Integer.to_string(fixture.runs.ios),
+      "--maven-run-id",
+      Integer.to_string(fixture.runs.maven)
+    ]
   end
 
   defp identity(version) do
