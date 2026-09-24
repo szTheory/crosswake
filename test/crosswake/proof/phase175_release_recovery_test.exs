@@ -16,6 +16,7 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
   @ios_recovery_workflow ".github/workflows/ios-tag-recovery.yml"
   @ci_workflow ".github/workflows/crosswake-ci.yml"
   @ios_recovery_script "script/release_candidate/ios_tag_recovery.sh"
+  @ios_workflow ".github/workflows/ios-mirror-backfill.yml"
   @isolation "release.rehearsal.maven_isolated"
   @receipt_authority "release.recovery.receipt_exact_authority"
   @no_bypass "release.recovery.no_retry_or_bypass"
@@ -55,6 +56,87 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
           maven,
           "contents: read",
           "contents: read\n      - run: gh pr create"
+        )
+    )
+  end
+
+  test "Maven candidate identity and redacted receipt are required" do
+    maven = File.read!(@maven_fire_drill_workflow)
+    control = Fixtures.run_fixture_set(maven_fire_drill_workflow: maven)
+    assert elem(control, 1) == 0, elem(control, 0)
+
+    assert_failure!(
+      @isolation,
+      maven_fire_drill_workflow:
+        Fixtures.replace_once!(
+          maven,
+          "\"observed_head\": os.environ[\"CANDIDATE_HEAD\"]",
+          "\"observed_head\": os.environ[\"CANDIDATE_TREE\"]"
+        )
+    )
+
+    assert_failure!(
+      @isolation,
+      maven_fire_drill_workflow:
+        Fixtures.replace_once!(maven, "\"run_id\": run_id", "\"run_id\": \"1\"")
+    )
+  end
+
+  test "receipt attestation requires Maven download, producer, complete roster, and independent validation" do
+    ios = File.read!(@ios_workflow)
+
+    assert_failure!(
+      "release.candidate.receipt_attestation",
+      ios_backfill_workflow:
+        Fixtures.replace_in_job(
+          ios,
+          "attest-candidate-receipt",
+          "--name candidate-rehearsal-maven",
+          ""
+        )
+    )
+
+    assert_failure!(
+      "release.candidate.receipt_attestation",
+      ios_backfill_workflow:
+        Fixtures.replace_in_job(
+          ios,
+          "attest-candidate-receipt",
+          "mix crosswake.release.candidate",
+          "mix run"
+        )
+    )
+
+    assert_failure!(
+      "release.candidate.receipt_attestation",
+      ios_backfill_workflow:
+        Fixtures.replace_in_job(
+          ios,
+          "attest-candidate-receipt",
+          "\"ios.rehearsal\",\"maven.rehearsal\",\"mirror.authority\"",
+          "\"ios.rehearsal\",\"mirror.authority\""
+        )
+    )
+
+    assert_failure!(
+      "release.candidate.receipt_attestation",
+      ios_backfill_workflow:
+        Fixtures.replace_in_job(
+          ios,
+          "attest-candidate-receipt",
+          "|> Crosswake.ReleaseCandidate.Receipt.validate!()",
+          ""
+        )
+    )
+
+    assert_failure!(
+      "release.candidate.receipt_attestation",
+      ios_backfill_workflow:
+        Fixtures.replace_in_job(
+          ios,
+          "attest-candidate-receipt",
+          "CANDIDATE_HEAD: \"${{ inputs.candidate_head }}\"",
+          "CANDIDATE_HEAD: \"${{ inputs.candidate_head }}\"\n      ATTESTATION_ENVELOPE: payload_base64"
         )
     )
   end
