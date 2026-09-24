@@ -21,9 +21,10 @@ defmodule Crosswake.ReleaseCandidateReceiptFixtures do
 
   def build!(root) do
     File.mkdir_p!(root)
-    packages = package_rows()
-    write!(root, @files.ci_packages, packages)
-    write!(root, @files.hex_packages, packages)
+    ci_packages = package_rows("a")
+    hex_packages = package_rows("b")
+    write!(root, @files.ci_packages, ci_packages)
+    write!(root, @files.hex_packages, hex_packages)
 
     write!(root, @files.ci, %{
       "schema_version" => 1,
@@ -117,7 +118,7 @@ defmodule Crosswake.ReleaseCandidateReceiptFixtures do
     write!(root, Map.fetch!(files, kind), fun.(value))
   end
 
-  defp package_rows do
+  defp package_rows(outer_prefix) do
     Crosswake.ReleaseCandidate.Artifact.packages()
     |> Enum.map(fn package ->
       version = if package == "crosswake", do: @version, else: "0.1.0"
@@ -131,7 +132,7 @@ defmodule Crosswake.ReleaseCandidateReceiptFixtures do
         "package" => package,
         "version" => version,
         "candidate_ref" => @head,
-        "outer_checksum" => String.duplicate(suffix, 64),
+        "outer_checksum" => String.duplicate(outer_prefix, 63) <> suffix,
         "metadata_digest" => @digest,
         "payload_digest" => String.duplicate("2", 64),
         "files" => [%{"path" => "mix.exs", "type" => "file"}],
