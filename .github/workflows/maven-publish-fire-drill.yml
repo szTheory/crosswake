@@ -7,7 +7,19 @@ on:
   workflow_dispatch:
     inputs:
       fire_drill_version:
-        description: 'Candidate base version for the disposable Maven coordinate (for example, 0.2.2).'
+        description: 'Exact candidate core version (for example, 0.2.4).'
+        required: true
+        type: string
+      candidate_head:
+        description: 'Exact candidate commit SHA.'
+        required: true
+        type: string
+      candidate_tree:
+        description: 'Exact candidate tree SHA.'
+        required: true
+        type: string
+      candidate_base:
+        description: 'Exact protected-default base SHA.'
         required: true
         type: string
 
@@ -24,7 +36,26 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
+          ref: ${{ inputs.candidate_head }}
+          fetch-depth: 0
           persist-credentials: false
+
+      - name: Validate exact candidate before credential use
+        env:
+          CANDIDATE_VERSION: ${{ inputs.fire_drill_version }}
+          CANDIDATE_HEAD: ${{ inputs.candidate_head }}
+          CANDIDATE_TREE: ${{ inputs.candidate_tree }}
+          CANDIDATE_BASE: ${{ inputs.candidate_base }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$CANDIDATE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
+          printf '%s' "$CANDIDATE_HEAD$CANDIDATE_TREE$CANDIDATE_BASE" | grep -Eq '^[0-9a-f]{120}$'
+          test "$(git rev-parse HEAD)" = "$CANDIDATE_HEAD"
+          test "$(git rev-parse "${CANDIDATE_HEAD}^{tree}")" = "$CANDIDATE_TREE"
+          git cat-file -e "${CANDIDATE_BASE}^{commit}"
+          test "$(git merge-base "$CANDIDATE_BASE" "$CANDIDATE_HEAD")" = "$CANDIDATE_BASE"
+          root_version=$(sed -nE 's/^[[:space:]]*@version "([0-9]+\.[0-9]+\.[0-9]+)"[[:space:]]*$/\1/p' mix.exs | head -1)
+          test "$root_version" = "$CANDIDATE_VERSION"
 
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
         with:
@@ -124,7 +155,7 @@ jobs:
           DEPLOYMENT_ID=$(curl -fsS -X POST -H "$AUTH" -F "bundle=@$BUNDLE" "https://central.sonatype.com/api/v1/publisher/upload?name=firedrill-${VERSION}&publishingType=USER_MANAGED")
           test -n "$DEPLOYMENT_ID"
           STATE=""
-          for i in $(seq 1 30); do
+          for _ in $(seq 1 30); do
             STATUS_JSON=$(curl -fsS -X POST -H "$AUTH" "https://central.sonatype.com/api/v1/publisher/status?id=${DEPLOYMENT_ID}")
             STATE=$(printf '%s' "$STATUS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('deploymentState',''))")
             case "$STATE" in
@@ -139,4 +170,50 @@ jobs:
           done
           [ "$STATE" = "VALIDATED" ]
           curl -fsS -X DELETE -H "$AUTH" "https://central.sonatype.com/api/v1/publisher/deployment/${DEPLOYMENT_ID}"
-          echo "SUCCESS: VALIDATED deployment $DEPLOYMENT_ID dropped."
+          echo "SUCCESS: disposable Maven deployment reached VALIDATED and DROP completed."
+
+      - name: Write redacted exact-candidate rehearsal receipt
+        env:
+          CANDIDATE_VERSION: ${{ inputs.fire_drill_version }}
+          CANDIDATE_HEAD: ${{ inputs.candidate_head }}
+          CANDIDATE_TREE: ${{ inputs.candidate_tree }}
+          CANDIDATE_BASE: ${{ inputs.candidate_base }}
+          OUTPUT_DIR: ${{ runner.temp }}/candidate-rehearsal-maven
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUTPUT_DIR"
+          workflow_sha256=$(sha256sum .github/workflows/maven-publish-fire-drill.yml | awk '{print $1}')
+          WORKFLOW_SHA256="$workflow_sha256" python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          version = os.environ["CANDIDATE_VERSION"]
+          run_id = os.environ["GITHUB_RUN_ID"]
+          record = {
+              "schema_version": "1.0.0",
+              "candidate_version": version,
+              "requested_head": os.environ["CANDIDATE_HEAD"],
+              "observed_head": os.environ["CANDIDATE_HEAD"],
+              "observed_tree": os.environ["CANDIDATE_TREE"],
+              "observed_base": os.environ["CANDIDATE_BASE"],
+              "run_id": run_id,
+              "run_head": os.environ["CANDIDATE_HEAD"],
+              "run_conclusion": "success",
+              "workflow_sha256": os.environ["WORKFLOW_SHA256"],
+              "state": "VALIDATED",
+              "deployment_result": "DROP",
+              "dropped": True,
+              "external_state_changed": False,
+              "coordinate": f"io.github.sztheory:crosswake-shell-core-android:{version}-firedrill-{run_id}",
+          }
+          path = Path(os.environ["OUTPUT_DIR"]) / "rehearsal.json"
+          path.write_text(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
+          PY
+
+      - name: Upload redacted Maven rehearsal evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: candidate-rehearsal-maven
+          path: ${{ runner.temp }}/candidate-rehearsal-maven/rehearsal.json
+          if-no-files-found: error
+          retention-days: 14

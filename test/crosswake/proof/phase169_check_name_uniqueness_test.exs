@@ -243,8 +243,15 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
   # Extracted as pure predicates (rather than inline asserts against the live file) so a
   # synthetic violating fixture can prove each guard is capable of going red (D-23 non-vacuity)
   # instead of resting on "it currently passes against a currently-clean file."
-  defp on_trigger_clean?(triggers) do
-    is_map(triggers) and Enum.sort(Map.keys(triggers)) == ["push", "workflow_dispatch"]
+  defp trigger_partition_clean?(release_please_triggers, maven_fire_drill_triggers) do
+    is_map(release_please_triggers) and
+      is_map(maven_fire_drill_triggers) and
+      Map.has_key?(release_please_triggers, "push") and
+      MapSet.subset?(
+        MapSet.new(Map.keys(release_please_triggers)),
+        MapSet.new(["push", "workflow_dispatch"])
+      ) and
+      Enum.sort(Map.keys(maven_fire_drill_triggers)) == ["workflow_dispatch"]
   end
 
   defp release_prefix_lowercase?(name) do
@@ -252,19 +259,44 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
     rest == String.downcase(rest)
   end
 
-  test "Task 3: release-please.yml's on: mapping has exactly push and workflow_dispatch keys" do
-    triggers =
+  test "Task 3: release-please.yml is push-triggered while maven-publish-fire-drill.yml is workflow_dispatch-only" do
+    release_please_triggers =
       workflow_json!(".github/workflows/release-please.yml", "doc.get('on', doc.get(True, {}))")
 
-    assert on_trigger_clean?(triggers)
-    refute Map.has_key?(triggers, "pull_request")
+    maven_fire_drill_triggers =
+      workflow_json!(
+        ".github/workflows/maven-publish-fire-drill.yml",
+        "doc.get('on', doc.get(True, {}))"
+      )
+
+    assert trigger_partition_clean?(release_please_triggers, maven_fire_drill_triggers)
+    refute Map.has_key?(release_please_triggers, "pull_request")
   end
 
-  test "Task 3: on:-trigger guard fires on a synthetic trigger set with pull_request added" do
+  test "Task 3: trigger-partition guard rejects synthetic re-coupling and empty scopes" do
     # Non-vacuity proof: the real file cannot be safely mutated by this test (it is live CI
-    # config asserted elsewhere), so this proves the PREDICATE the real-file test relies on is
+    # config asserted elsewhere), so this proves the PREDICATE the real-file tests rely on is
     # capable of going false, not just currently true.
-    refute on_trigger_clean?(%{"push" => %{}, "workflow_dispatch" => nil, "pull_request" => %{}})
+    release_please = %{"push" => %{}}
+    maven_fire_drill = %{"workflow_dispatch" => nil}
+
+    assert trigger_partition_clean?(release_please, maven_fire_drill)
+
+    refute trigger_partition_clean?(
+             Map.put(release_please, "schedule", []),
+             maven_fire_drill
+           )
+
+    refute trigger_partition_clean?(
+             Map.put(release_please, "pull_request", %{}),
+             maven_fire_drill
+           )
+
+    refute trigger_partition_clean?(release_please, Map.put(maven_fire_drill, "push", %{}))
+    refute trigger_partition_clean?(%{}, maven_fire_drill)
+    refute trigger_partition_clean?(release_please, %{})
+    refute trigger_partition_clean?(nil, maven_fire_drill)
+    refute trigger_partition_clean?(release_please, [])
   end
 
   test "Task 3: required_check_policy.json declares exactly one target context bound to app id 15368" do

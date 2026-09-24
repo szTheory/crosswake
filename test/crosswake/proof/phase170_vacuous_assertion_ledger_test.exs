@@ -24,8 +24,8 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   # under test — a contract cannot silently drift when the assertion re-reads the same file it
   # is checking. These are the numbers the script ACTUALLY produced against this tree on
   # 2026-09-16 (Task 2), never the numbers this plan predicted going in.
-  @audited_site_count 229
-  @shape_counts %{"assert_all" => 48, "assert_any" => 133, "refute_any" => 48, "refute_all" => 0}
+  @audited_site_count 230
+  @shape_counts %{"assert_all" => 48, "assert_any" => 134, "refute_any" => 48, "refute_all" => 0}
   # Plan 170-02 Task 2 regenerated this after inserting guards at every needs-fix row: 8 of the
   # 60 rows were reclassified from needs-fix to safe-cardinality-pinned via manual override after
   # real test execution proved their collections are permanently empty by design (positive-path
@@ -35,7 +35,7 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   # `needs-fix` is intentionally absent: `Enum.frequencies_by/2` never emits a key for zero
   # occurrences, and the committed ledger now has zero `needs-fix` rows (VAC-02 complete).
   @bucket_counts %{
-    "safe-by-construction" => 133,
+    "safe-by-construction" => 134,
     "safe-compile-time-literal" => 4,
     "safe-cardinality-pinned" => 32,
     "safe-guarded" => 60

@@ -5,6 +5,7 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
 
   @hex_workflow ".github/workflows/hex-publish.yml"
   @ios_workflow ".github/workflows/ios-mirror-backfill.yml"
+  @maven_workflow ".github/workflows/maven-publish-fire-drill.yml"
   @release_workflow ".github/workflows/release-please.yml"
   @proof_workflow ".github/workflows/exact-public-proof.yml"
   @proof_uses "uses: ./.github/workflows/exact-public-proof.yml"
@@ -103,12 +104,23 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert attestation =~ "phase168-candidate-ci-${CANDIDATE_HEAD}"
     assert attestation =~ "candidate-rehearsal-hex"
     assert attestation =~ "candidate-rehearsal-ios"
-    assert attestation =~ "Decode closed attestation run selector"
-    assert attestation =~ "assemble_attested_receipt.exs"
+    assert attestation =~ "Validate exact run selectors"
+    assert attestation =~ "candidate-rehearsal-maven"
+    assert attestation =~ "mix crosswake.release.candidate"
+    assert attestation =~ "--maven-run-id"
+    refute attestation =~ "assemble_attested_receipt.exs"
     assert attestation =~ "Crosswake.ReleaseCandidate.Receipt.validate!"
+    refute attestation =~ "payload_base64"
+    refute attestation =~ "ATTESTATION_ENVELOPE"
     assert attestation =~ "phase168-candidate-receipt-${{ inputs.candidate_head }}"
     assert attestation =~ "candidate-receipt.json"
     assert attestation =~ "artifacts.json"
+
+    maven = File.read!(@maven_workflow)
+    assert maven =~ "ref: ${{ inputs.candidate_head }}"
+    assert maven =~ "candidate-rehearsal-maven"
+    assert maven =~ "deployment_result"
+    assert maven =~ "external_state_changed"
 
     assert guard =~ "phase168-candidate-receipt-${approved_head}"
     assert guard =~ "candidate_receipt_run_id"
