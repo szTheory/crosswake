@@ -227,6 +227,18 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
     tmp_dir: tmp_dir
   } do
     mutations = [
+      {:missing_ci_receipt,
+       fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.ci)) end},
+      {:missing_ci_manifest,
+       fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.ci_packages)) end},
+      {:missing_hex_rehearsal,
+       fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.hex)) end},
+      {:missing_hex_manifest,
+       fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.hex_packages)) end},
+      {:missing_ios_rehearsal,
+       fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.ios)) end},
+      {:missing_mirror_observation,
+       fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.mirror)) end},
       {:missing_maven, fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.maven)) end},
       {:stale_candidate_head,
        fn fixture ->

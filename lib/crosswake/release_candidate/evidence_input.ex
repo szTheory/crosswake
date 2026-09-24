@@ -78,6 +78,16 @@ defmodule Crosswake.ReleaseCandidate.EvidenceInput do
     mirror = read_json!(mirror_path)
     maven = read_json!(maven_path)
 
+    paths = %{
+      ci: ci_path,
+      ci_packages: ci_manifest_path,
+      hex: hex_path,
+      hex_packages: hex_manifest_path,
+      ios: ios_path,
+      mirror: mirror_path,
+      maven: maven_path
+    }
+
     identity =
       identity!(
         version,
@@ -90,20 +100,32 @@ defmodule Crosswake.ReleaseCandidate.EvidenceInput do
         ios,
         mirror,
         maven,
+        paths
+      )
+
+    observed_identity =
+      identity!(
+        maven["candidate_version"],
+        sha!(ci["head"]),
         %{
-          ci: ci_path,
-          ci_packages: ci_manifest_path,
-          hex: hex_path,
-          hex_packages: hex_manifest_path,
-          ios: ios_path,
-          mirror: mirror_path,
-          maven: maven_path
-        }
+          ci: artifact_run_id!(ci["run_id"]),
+          hex: artifact_run_id!(hex["run_id"]),
+          ios: artifact_run_id!(ios["run_id"]),
+          maven: artifact_run_id!(maven["run_id"])
+        },
+        ci,
+        ci_packages,
+        hex,
+        hex_packages,
+        ios,
+        mirror,
+        maven,
+        paths
       )
 
     %{
       identity: identity,
-      observed_identity: identity,
+      observed_identity: observed_identity,
       checks: Enum.map(@check_ids, &%{id: &1, status: "PASS"}),
       external_state: %{
         publication: "NONE",
@@ -411,6 +433,15 @@ defmodule Crosswake.ReleaseCandidate.EvidenceInput do
 
   defp positive_integer_string?(value),
     do: is_binary(value) and Regex.match?(~r/\A[1-9]\d*\z/, value)
+
+  defp artifact_run_id!(value) when is_binary(value) do
+    case Integer.parse(value) do
+      {run_id, ""} when run_id > 0 -> run_id
+      _ -> invalid!()
+    end
+  end
+
+  defp artifact_run_id!(_value), do: invalid!()
 
   defp invalid!, do: raise(ArgumentError, "candidate evidence is invalid")
 end
