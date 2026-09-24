@@ -12,6 +12,7 @@ defmodule Crosswake.ReleaseCandidate.EvidenceInput do
   @files [
     "ci/release-candidate-ci-receipt.json",
     "ci/artifacts/artifacts.json",
+    "ci/cleanroom.json",
     "hex/rehearsal.json",
     "hex/packages/artifacts.json",
     "ios/rehearsal.json",
@@ -64,6 +65,7 @@ defmodule Crosswake.ReleaseCandidate.EvidenceInput do
 
     ci_path = Path.join(root, "ci/release-candidate-ci-receipt.json")
     ci_manifest_path = Path.join(root, "ci/artifacts/artifacts.json")
+    cleanroom_path = Path.join(root, "ci/cleanroom.json")
     hex_path = Path.join(root, "hex/rehearsal.json")
     hex_manifest_path = Path.join(root, "hex/packages/artifacts.json")
     ios_path = Path.join(root, "ios/rehearsal.json")
@@ -81,6 +83,7 @@ defmodule Crosswake.ReleaseCandidate.EvidenceInput do
     paths = %{
       ci: ci_path,
       ci_packages: ci_manifest_path,
+      cleanroom: cleanroom_path,
       hex: hex_path,
       hex_packages: hex_manifest_path,
       ios: ios_path,
@@ -158,7 +161,7 @@ defmodule Crosswake.ReleaseCandidate.EvidenceInput do
     tree = sha!(ci["tree"])
     base = sha!(ci["base"])
 
-    verify_ci!(ci, ref, tree, base, runs.ci, digest(paths.ci_packages))
+    verify_ci!(ci, ref, tree, base, runs.ci, digest(paths.ci_packages), digest(paths.cleanroom))
     package_digests = verify_packages!(ci_packages, hex_packages, ref, version)
 
     verify_rehearsal!(
@@ -227,7 +230,7 @@ defmodule Crosswake.ReleaseCandidate.EvidenceInput do
     }
   end
 
-  defp verify_ci!(ci, ref, tree, base, run_id, manifest_digest) do
+  defp verify_ci!(ci, ref, tree, base, run_id, manifest_digest, cleanroom_digest) do
     exact_keys!(
       ci,
       ~w(schema_version state head tree base run_id run_attempt package_count profile_count install_count artifact_manifest_sha256 cleanroom_result_sha256 external_state_changed credentials_exercised)
@@ -239,7 +242,7 @@ defmodule Crosswake.ReleaseCandidate.EvidenceInput do
              positive_integer_string?(ci["run_attempt"]) and ci["package_count"] == 6 and
              ci["profile_count"] == 5 and ci["install_count"] == 2 and
              ci["artifact_manifest_sha256"] == manifest_digest and
-             digest?(ci["cleanroom_result_sha256"]) and
+             ci["cleanroom_result_sha256"] == cleanroom_digest and
              ci["external_state_changed"] == false and ci["credentials_exercised"] == false,
            do: invalid!()
   end
