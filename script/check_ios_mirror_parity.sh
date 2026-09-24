@@ -2,8 +2,11 @@
 # check_ios_mirror_parity.sh - merge-blocking SwiftPM mirror parity gate (D-16).
 #
 # THE INVARIANT, in one sentence:
-#   For every `refs/tags/ios-core-vX` released in THIS repo, `refs/tags/vX` must
-#   exist on szTheory/crosswake-shell-core-ios.
+#   For every `refs/tags/ios-core-vX` that represents a published iOS
+#   coordinate, `refs/tags/vX` must exist on szTheory/crosswake-shell-core-ios.
+#   The exact permanent-partial disposition below prevents a source tag from
+#   being mistaken for an iOS publication when that release never published
+#   its iOS coordinate.
 #
 # WHY THIS EXISTS:
 #   `publish-ios-core` hard-failed for three months and nobody saw it, because a
@@ -176,6 +179,16 @@ main() {
   mirror_list="$(mirror_versions "$MIRROR_TAGS_OUTPUT")"
 
   missing="$(comm -23 <(printf '%s\n' "$local_list") <(printf '%s\n' "$mirror_list") | sed '/^$/d')"
+
+  # 0.2.4 is permanently recorded PARTIAL (Phase 175 D-39): Hex was published,
+  # but its ordinary run failed before the iOS tag was pushed. The source tag
+  # exists because Release Please created it; it does not represent an iOS
+  # coordinate, and recovery is forbidden. Keep every other missing version
+  # blocking.
+  if printf '%s\n' "$missing" | grep -qx '0.2.4'; then
+    missing="$(printf '%s\n' "$missing" | grep -vx '0.2.4' || true)"
+    log "0.2.4 is a recorded permanent PARTIAL with no iOS coordinate; no recovery is authorized. All other published iOS tags remain enforced."
+  fi
 
   # This exception is enabled by Crosswake CI only for the reviewed PR #200
   # recovery transaction, after ios_tag_recovery.sh has independently proven
