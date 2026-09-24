@@ -25,12 +25,14 @@ defmodule Crosswake.ReleaseCandidateReceiptFixtures do
     ci_packages = package_rows("a")
     hex_packages = package_rows("b")
     write!(root, @files.ci_packages, ci_packages)
+
     write!(root, @files.cleanroom, %{
       "package_count" => 6,
       "profile_count" => 5,
       "install_count" => 2,
       "profile_results" => []
     })
+
     write!(root, @files.hex_packages, hex_packages)
 
     write!(root, @files.ci, %{
