@@ -231,6 +231,8 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
        fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.ci)) end},
       {:missing_ci_manifest,
        fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.ci_packages)) end},
+      {:missing_cleanroom,
+       fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.cleanroom)) end},
       {:missing_hex_rehearsal,
        fn fixture -> File.rm!(Path.join(fixture.root, fixture.files.hex)) end},
       {:missing_hex_manifest,
@@ -284,6 +286,14 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
            fixture,
            :ci,
            &Map.put(&1, "run_id", "9999")
+         )
+       end},
+      {:stale_cleanroom_digest,
+       fn fixture ->
+         Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(
+           fixture,
+           :ci,
+           &Map.put(&1, "cleanroom_result_sha256", @digest_b)
          )
        end},
       {:stale_hex_run,

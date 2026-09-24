@@ -12,6 +12,7 @@ defmodule Crosswake.ReleaseCandidateReceiptFixtures do
   @files %{
     ci: "ci/release-candidate-ci-receipt.json",
     ci_packages: "ci/artifacts/artifacts.json",
+    cleanroom: "ci/cleanroom.json",
     hex: "hex/rehearsal.json",
     hex_packages: "hex/packages/artifacts.json",
     ios: "ios/rehearsal.json",
@@ -24,6 +25,14 @@ defmodule Crosswake.ReleaseCandidateReceiptFixtures do
     ci_packages = package_rows("a")
     hex_packages = package_rows("b")
     write!(root, @files.ci_packages, ci_packages)
+
+    write!(root, @files.cleanroom, %{
+      "package_count" => 6,
+      "profile_count" => 5,
+      "install_count" => 2,
+      "profile_results" => []
+    })
+
     write!(root, @files.hex_packages, hex_packages)
 
     write!(root, @files.ci, %{
@@ -38,7 +47,7 @@ defmodule Crosswake.ReleaseCandidateReceiptFixtures do
       "profile_count" => 5,
       "install_count" => 2,
       "artifact_manifest_sha256" => file_digest(root, @files.ci_packages),
-      "cleanroom_result_sha256" => @digest,
+      "cleanroom_result_sha256" => file_digest(root, @files.cleanroom),
       "external_state_changed" => false,
       "credentials_exercised" => false
     })
