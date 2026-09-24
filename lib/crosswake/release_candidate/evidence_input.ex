@@ -251,7 +251,16 @@ defmodule Crosswake.ReleaseCandidate.EvidenceInput do
 
     ci_normalized = normalize_packages!(ci_packages, ref, version)
     hex_normalized = normalize_packages!(hex_packages, ref, version)
-    unless ci_normalized == hex_normalized, do: invalid!()
+
+    # CI and the Hex rehearsal independently build the same candidate packages.
+    # Hex outer tarball checksums can vary across builds even when the unpacked
+    # file payload and metadata are identical, so compare those semantic fields
+    # while validating and retaining each manifest's own outer checksum.
+    equivalent_packages? =
+      Enum.map(ci_normalized, &Map.delete(&1, "outer_checksum")) ==
+        Enum.map(hex_normalized, &Map.delete(&1, "outer_checksum"))
+
+    unless equivalent_packages?, do: invalid!()
 
     Enum.map(hex_normalized, fn package ->
       %{

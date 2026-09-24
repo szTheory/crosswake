@@ -272,6 +272,12 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
            &Map.put(&1, "deployment_result", "VALIDATED")
          )
        end},
+      {:mismatched_package_payload,
+       fn fixture ->
+         Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(fixture, :ci_packages, fn rows ->
+           List.update_at(rows, 0, &Map.put(&1, "payload_digest", @digest_c))
+         end)
+       end},
       {:stale_ci_run,
        fn fixture ->
          Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(
