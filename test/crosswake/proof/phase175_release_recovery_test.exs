@@ -152,6 +152,79 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
     refute script =~ "refs/heads/main\" \"${SPLIT}:refs/heads/main"
   end
 
+  test "ordinary iOS job requires its own pinned Beam setup before mirror publish" do
+    release = File.read!(@release_workflow)
+
+    assert_failure!(
+      "release.ios.ordinary_mix_setup",
+      release_workflow:
+        Fixtures.replace_in_job(
+          release,
+          "publish-ios-core",
+          "      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0\n        with:\n          version-file: .tool-versions\n          version-type: strict\n\n      - name: Resolve locked Mix dependencies\n        run: mix deps.get --check-locked\n",
+          ""
+        )
+    )
+
+    late_setup =
+      Fixtures.replace_in_job(
+        release,
+        "publish-ios-core",
+        "      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0\n        with:\n          version-file: .tool-versions\n          version-type: strict\n\n      - name: Resolve locked Mix dependencies\n        run: mix deps.get --check-locked\n",
+        ""
+      )
+      |> Fixtures.replace_in_job(
+        "publish-ios-core",
+        "--expected-new-ref \"$(git subtree split --prefix=packages/crosswake-shell-core-ios '${{ needs.approved-release-guard.outputs.merge_oid }}' | tail -1)\"",
+        "--expected-new-ref \"$(git subtree split --prefix=packages/crosswake-shell-core-ios '${{ needs.approved-release-guard.outputs.merge_oid }}' | tail -1)\"\n\n      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93\n        with:\n          version-file: .tool-versions\n          version-type: strict\n      - run: mix deps.get --check-locked"
+      )
+
+    assert_failure!("release.ios.ordinary_mix_setup", release_workflow: late_setup)
+
+    {output, status} = Fixtures.run_fixture_set(release_workflow: release)
+    assert status == 0, output
+    assert output =~ "[crosswake] OK: release.ios.ordinary_mix_setup"
+  end
+
+  test "iOS candidate adapter refuses without deploy credentials or execute authority" do
+    remote =
+      Path.join(
+        System.tmp_dir!(),
+        "phase175-ios-candidate-#{System.unique_integer([:positive])}.git"
+      )
+
+    {_output, 0} = System.cmd("git", ["init", "--bare", remote], stderr_to_stdout: true)
+    on_exit(fn -> File.rm_rf!(remote) end)
+
+    ref =
+      System.cmd("git", ["rev-parse", "HEAD"], stderr_to_stdout: true) |> elem(0) |> String.trim()
+
+    {output, status} =
+      System.cmd(
+        "bash",
+        [
+          "script/release_candidate/ios_mirror.sh",
+          "candidate",
+          "--version",
+          "0.2.4",
+          "--ref",
+          ref
+        ],
+        env: [
+          {"SSH_AUTH_SOCK", nil},
+          {"MIRROR_DEPLOY_KEY", nil},
+          {"CROSSWAKE_IOS_MIRROR_EXECUTE", "false"},
+          {"CROSSWAKE_IOS_MIRROR_SPLIT_SHA", String.duplicate("b", 40)},
+          {"CROSSWAKE_IOS_MIRROR_PUBLIC_REMOTE", remote}
+        ],
+        stderr_to_stdout: true
+      )
+
+    assert status == 1, output
+    assert output =~ "WRITE AUTHORITY NOT CHECKED", output
+    assert output =~ "\"external_state_changed\":false", output
+  end
+
   defp assert_failure!(check_id, fixtures) do
     {output, status} = Fixtures.run_fixture_set(fixtures)
     assert status != 0, output

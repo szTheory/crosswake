@@ -570,6 +570,14 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Resolve locked Mix dependencies
+        run: mix deps.get --check-locked
+
       - name: Preflight — assert MIRROR_DEPLOY_KEY is configured
         env:
           MIRROR_DEPLOY_KEY: ${{ secrets.MIRROR_DEPLOY_KEY }}

@@ -106,6 +106,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.hex_publish.no_replace
     release.hex_publish.shared_helper
     release.ios.checkout_ref_pinned
+    release.ios.ordinary_mix_setup
     release.ios.independent_publication
     release.ios.ordinary_atomic_push
     release.ios.path_gate
@@ -252,6 +253,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         linked_release_children(jobs, non_comment_helper, non_comment_android_publication),
         release_ios_ordinary_atomic_push(jobs),
         release_ios_checkout_ref_pinned(jobs),
+        release_ios_ordinary_mix_setup(jobs),
         release_ios_independent_publication(jobs),
         partial_release_truth(
           jobs,
@@ -1526,6 +1528,21 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       includes?(block, "ref: ${{ needs.release-please.outputs.tag_name }}") and
         includes?(block, "fetch-depth: 0"),
       "publish-ios-core must checkout at the release tag with full history, not the retroactive github.sha; run elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  # Keep the ordinary publish job independently executable. The rehearsal job
+  # has its own Beam setup and must never satisfy this job-scoped contract.
+  defp release_ios_ordinary_mix_setup(jobs) do
+    block = job_block(jobs, "publish-ios-core")
+
+    check(
+      "release.ios.ordinary_mix_setup",
+      Regex.match?(
+        ~r/ref: \$\{\{ needs\.release-please\.outputs\.tag_name \}\}[\s\S]*?fetch-depth: 0[\s\S]*?uses: erlef\/setup-beam@[0-9a-f]{40}[\s\S]*?version-file: \.tool-versions[\s\S]*?version-type: strict[\s\S]*?run: mix deps\.get --check-locked[\s\S]*?script\/release_candidate\/ios_mirror\.sh publish/,
+        block
+      ),
+      "publish-ios-core must install the pinned Beam runtime and locked Mix dependencies after exact tag checkout and before mirror publication"
     )
   end
 
