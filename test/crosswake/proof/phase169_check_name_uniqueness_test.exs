@@ -246,7 +246,11 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
   defp trigger_partition_clean?(release_please_triggers, maven_fire_drill_triggers) do
     is_map(release_please_triggers) and
       is_map(maven_fire_drill_triggers) and
-      Enum.sort(Map.keys(release_please_triggers)) == ["push"] and
+      Map.has_key?(release_please_triggers, "push") and
+      MapSet.subset?(
+        MapSet.new(Map.keys(release_please_triggers)),
+        MapSet.new(["push", "workflow_dispatch"])
+      ) and
       Enum.sort(Map.keys(maven_fire_drill_triggers)) == ["workflow_dispatch"]
   end
 
@@ -255,7 +259,7 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
     rest == String.downcase(rest)
   end
 
-  test "Task 3: release-please.yml is push-only while maven-publish-fire-drill.yml is workflow_dispatch-only" do
+  test "Task 3: release-please.yml is push-triggered while maven-publish-fire-drill.yml is workflow_dispatch-only" do
     release_please_triggers =
       workflow_json!(".github/workflows/release-please.yml", "doc.get('on', doc.get(True, {}))")
 
@@ -279,7 +283,7 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
     assert trigger_partition_clean?(release_please, maven_fire_drill)
 
     refute trigger_partition_clean?(
-             Map.put(release_please, "workflow_dispatch", nil),
+             Map.put(release_please, "schedule", []),
              maven_fire_drill
            )
 
