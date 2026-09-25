@@ -241,6 +241,25 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
   end
 
   @tag :phase153_ios_mirror_unblock
+  test "the permanent 0.2.4 partial is not treated as an iOS publication, while other gaps block" do
+    partial_only = parity_fixture(["0.1.2", "0.2.4"], ["0.1.2"])
+
+    {output, exit_code} = run_parity(partial_only)
+
+    assert exit_code == 0, output
+    assert output =~ "0.2.4 is a recorded permanent PARTIAL with no iOS coordinate"
+    refute output =~ "missing refs/tags/v0.2.4"
+
+    another_missing = parity_fixture(["0.2.1", "0.2.4"], [])
+
+    {output, exit_code} = run_parity(another_missing)
+
+    assert exit_code == 1, output
+    assert output =~ "missing refs/tags/v0.2.1"
+    refute output =~ "missing refs/tags/v0.2.4"
+  end
+
+  @tag :phase153_ios_mirror_unblock
   test "the invariant is one-directional: extra mirror tags are not a violation" do
     fixture = parity_fixture(["0.1.2", "0.2.0"], ["0.1.2", "0.2.0", "9.9.9"])
 

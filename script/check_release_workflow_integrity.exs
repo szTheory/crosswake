@@ -82,6 +82,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.recovery.publication_record_identical
     release.aggregate_gate.behavioral_jobs_absent
     release.android.path_gate
+    release.android.ordinary_receipt_chain
+    release.android.recovery_identity_scope
     release.android_proof.decoupled
     release.approval.linked_graph
     release.approval.merge_tree_guard
@@ -106,6 +108,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.hex_publish.no_replace
     release.hex_publish.shared_helper
     release.ios.checkout_ref_pinned
+    release.ios.ordinary_mix_setup
     release.ios.independent_publication
     release.ios.ordinary_atomic_push
     release.ios.path_gate
@@ -252,6 +255,9 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         linked_release_children(jobs, non_comment_helper, non_comment_android_publication),
         release_ios_ordinary_atomic_push(jobs),
         release_ios_checkout_ref_pinned(jobs),
+        release_ios_ordinary_mix_setup(jobs),
+        android_ordinary_receipt_chain(jobs),
+        android_recovery_identity_scope(non_comment_android_publication),
         release_ios_independent_publication(jobs),
         partial_release_truth(
           jobs,
@@ -1574,6 +1580,78 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       includes?(block, "ref: ${{ needs.release-please.outputs.tag_name }}") and
         includes?(block, "fetch-depth: 0"),
       "publish-ios-core must checkout at the release tag with full history, not the retroactive github.sha; run elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  # Keep the ordinary publish job independently executable. The rehearsal job
+  # has its own Beam setup and must never satisfy this job-scoped contract.
+  defp release_ios_ordinary_mix_setup(jobs) do
+    block = job_block(jobs, "publish-ios-core")
+
+    check(
+      "release.ios.ordinary_mix_setup",
+      Regex.match?(
+        ~r/ref: \$\{\{ needs\.release-please\.outputs\.tag_name \}\}[\s\S]*?fetch-depth: 0[\s\S]*?uses: erlef\/setup-beam@[0-9a-f]{40}[\s\S]*?version-file: \.tool-versions[\s\S]*?version-type: strict[\s\S]*?run: mix deps\.get --check-locked[\s\S]*?script\/release_candidate\/ios_mirror\.sh publish/,
+        block
+      ),
+      "publish-ios-core must install the pinned Beam runtime and locked Mix dependencies after exact tag checkout and before mirror publication"
+    )
+  end
+
+  defp android_ordinary_receipt_chain(jobs) do
+    block = job_block(jobs, "publish-android-core")
+    guard = job_block(jobs, "approved-release-guard")
+    download = index_of(block, "Download and validate the approved candidate receipt")
+    credentials = index_of(block, "ORG_GRADLE_PROJECT_mavenCentralUsername")
+    publish = index_of(block, "android_publication.sh")
+
+    check(
+      "release.android.ordinary_receipt_chain",
+      download != nil and credentials != nil and publish != nil and download < credentials and
+        download < publish and includes?(block, "actions: read") and
+        includes?(guard, "base_oid: ${{ steps.guard.outputs.base_oid }}") and
+        includes?(guard, "emit_output \"base_oid=$first_parent\"") and
+        includes?(block, "GH_TOKEN: ${{ github.token }}") and
+        includes?(block, "${{ needs.approved-release-guard.outputs.candidate_receipt_run_id }}") and
+        includes?(
+          block,
+          "gh api \"repos/$GITHUB_REPOSITORY/actions/runs/$RECEIPT_RUN_ID/artifacts?per_page=100\""
+        ) and
+        includes?(block, "select(.name == $name and .expired == false)] | length')\" -eq 1 ]") and
+        includes?(block, "gh run download \"$RECEIPT_RUN_ID\"") and
+        includes?(block, "phase168-candidate-receipt-${APPROVED_HEAD}") and
+        includes?(block, "actual_files") and includes?(block, "candidate-receipt.json") and
+        includes?(block, "[ \"$receipt_digest\" = \"$APPROVED_RECEIPT\" ]") and
+        includes?(block, ".identity.bound == .identity.observed") and
+        includes?(
+          block,
+          "--receipt-file \"$RUNNER_TEMP/approved-candidate-receipt/candidate-receipt.json\""
+        ) and
+        includes?(
+          block,
+          "--candidate-receipt \"${{ needs.approved-release-guard.outputs.candidate_receipt }}\""
+        ),
+      "publish-android-core must download and validate the exact guard-selected receipt before Maven credentials and pass the file/digest to the publication adapter"
+    )
+  end
+
+  defp android_recovery_identity_scope(android_publication) do
+    recovery_guard =
+      Regex.match?(
+        ~r/if \[ "\$MODE" = "recovery" \]; then[\s\S]*?\[ "\$SOURCE_REF" = "\$PHASE168_MERGE_OID" \][\s\S]*?\[ "\$APPROVED_HEAD" = "\$PHASE168_APPROVED_HEAD" \][\s\S]*?\[ "\$APPROVED_TREE" = "\$PHASE168_APPROVED_TREE" \][\s\S]*?\[ "\$CANDIDATE_RECEIPT" = "\$PHASE168_CANDIDATE_RECEIPT" \]/,
+        android_publication
+      )
+
+    ordinary_receipt_guard =
+      Regex.match?(
+        ~r/if \[ "\$MODE" != "recovery" \]; then[\s\S]*?jq -e/,
+        android_publication
+      )
+
+    check(
+      "release.android.recovery_identity_scope",
+      recovery_guard and ordinary_receipt_guard,
+      "Phase 168's four identity pins must apply only to recovery; ordinary mode must verify the supplied exact receipt"
     )
   end
 

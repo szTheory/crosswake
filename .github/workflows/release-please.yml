@@ -38,6 +38,7 @@ jobs:
       approved_head: ${{ steps.guard.outputs.approved_head }}
       approved_tree: ${{ steps.guard.outputs.approved_tree }}
       merge_oid: ${{ steps.guard.outputs.merge_oid }}
+      base_oid: ${{ steps.guard.outputs.base_oid }}
       merge_parents: ${{ steps.guard.outputs.merge_parents }}
       merge_tree: ${{ steps.guard.outputs.merge_tree }}
       candidate_receipt: ${{ steps.guard.outputs.candidate_receipt }}
@@ -147,6 +148,7 @@ jobs:
           emit_output "approved_head=$approved_head"
           emit_output "approved_tree=$approved_tree"
           emit_output "merge_oid=$merge_oid"
+          emit_output "base_oid=$first_parent"
           emit_output "merge_parents=$first_parent,$second_parent"
           emit_output "merge_tree=$merge_tree"
           emit_output "candidate_receipt=$candidate_receipt"
@@ -570,6 +572,14 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Resolve locked Mix dependencies
+        run: mix deps.get --check-locked
+
       - name: Preflight — assert MIRROR_DEPLOY_KEY is configured
         env:
           MIRROR_DEPLOY_KEY: ${{ secrets.MIRROR_DEPLOY_KEY }}
@@ -609,12 +619,46 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
+      actions: read
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ needs.release-please.outputs.tag_name }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Download and validate the approved candidate receipt
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APPROVED_HEAD: ${{ needs.approved-release-guard.outputs.approved_head }}
+          APPROVED_TREE: ${{ needs.approved-release-guard.outputs.approved_tree }}
+          APPROVED_BASE: ${{ needs.approved-release-guard.outputs.base_oid }}
+          APPROVED_VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
+          APPROVED_RECEIPT: ${{ needs.approved-release-guard.outputs.candidate_receipt }}
+          RECEIPT_RUN_ID: ${{ needs.approved-release-guard.outputs.candidate_receipt_run_id }}
+        run: |
+          set -euo pipefail
+          artifact_name="phase168-candidate-receipt-${APPROVED_HEAD}"
+          receipt_dir="$RUNNER_TEMP/approved-candidate-receipt"
+          mkdir -p "$receipt_dir"
+          artifact_index=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RECEIPT_RUN_ID/artifacts?per_page=100")
+          [ "$(printf '%s' "$artifact_index" | jq --arg name "$artifact_name" '[.artifacts[] | select(.name == $name and .expired == false)] | length')" -eq 1 ]
+          gh run download "$RECEIPT_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+            --name "$artifact_name" --dir "$receipt_dir"
+          actual_files=$(find "$receipt_dir" -type f -printf '%P\n' | LC_ALL=C sort)
+          [ "$actual_files" = $'artifacts.json\ncandidate-receipt.json' ]
+          receipt="$receipt_dir/candidate-receipt.json"
+          receipt_digest=$(sha256sum "$receipt" | awk '{print $1}')
+          [ "$receipt_digest" = "$APPROVED_RECEIPT" ]
+          jq -e --arg head "$APPROVED_HEAD" --arg tree "$APPROVED_TREE" \
+            --arg base "$APPROVED_BASE" --arg version "$APPROVED_VERSION" \
+            '.state == "READY FOR APPROVAL" and
+             .identity.bound == .identity.observed and
+             .identity.bound.ref == $head and .identity.bound.head == $head and
+             .identity.bound.tree == $tree and .identity.bound.base == $base and
+             .identity.bound.version == $version and
+             .external_state.publication == "NONE" and .external_state.changed == false' \
+            "$receipt" >/dev/null
 
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
         with:
@@ -635,6 +679,7 @@ jobs:
           --approved-head "${{ needs.approved-release-guard.outputs.approved_head }}"
           --approved-tree "${{ needs.approved-release-guard.outputs.approved_tree }}"
           --candidate-receipt "${{ needs.approved-release-guard.outputs.candidate_receipt }}"
+          --receipt-file "$RUNNER_TEMP/approved-candidate-receipt/candidate-receipt.json"
           --execute
 
   clean-room-proof-ios:
