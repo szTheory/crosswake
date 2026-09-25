@@ -49,7 +49,10 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
   test "candidate probes and rendered report lines both name the release-manifest declared version" do
     version = "9.9.9"
     cwd = version_bumped_checkout(version)
-    {:ok, agent} = Agent.start_link(fn -> [] end)
+    # This callback runs after the test process exits. Keep the collector
+    # unlinked so its lifetime is controlled by on_exit rather than racing the
+    # link shutdown with Process.alive?/Agent.stop.
+    {:ok, agent} = Agent.start(fn -> [] end)
     on_exit(fn -> if Process.alive?(agent), do: Agent.stop(agent) end)
 
     status =
