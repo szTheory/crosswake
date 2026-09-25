@@ -49,7 +49,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
   test "candidate probes and rendered report lines both name the release-manifest declared version" do
     version = "9.9.9"
     cwd = version_bumped_checkout(version)
-    {:ok, agent} = Agent.start_link(fn -> [] end)
+    {:ok, agent} = Agent.start(fn -> [] end)
     on_exit(fn -> if Process.alive?(agent), do: Agent.stop(agent) end)
 
     status =
