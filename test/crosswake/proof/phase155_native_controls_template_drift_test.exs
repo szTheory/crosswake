@@ -35,7 +35,8 @@ defmodule Crosswake.Proof.Phase155NativeControlsTemplateDriftTest do
   alias Crosswake.SupportMatrix
   alias Crosswake.TestSupport.ProofAssertions
 
-  @template_dir Path.join([File.cwd!(), "priv", "templates", "crosswake", "native_controls_ui"])
+  @repo_root Path.expand("../../..", __DIR__)
+  @template_dir Path.join([@repo_root, "priv", "templates", "crosswake", "native_controls_ui"])
 
   @checked_in_hash "cff393da15476ab12a643b6851eb50c171e0ec96e5e13bbf8eb8f772809a6a1e"
 
@@ -75,7 +76,7 @@ defmodule Crosswake.Proof.Phase155NativeControlsTemplateDriftTest do
 
   test "generator and fallback template preserve Phoenix-owned confirmation and the exhaustive reversal gate" do
     generator =
-      Path.join([File.cwd!(), "lib", "mix", "tasks", "crosswake.gen.native_controls_ui.ex"])
+      Path.join([@repo_root, "lib", "mix", "tasks", "crosswake.gen.native_controls_ui.ex"])
       |> File.read!()
 
     template = Path.join(@template_dir, "crosswake_fallbacks.ex.eex") |> File.read!()
@@ -127,7 +128,7 @@ defmodule Crosswake.Proof.Phase155NativeControlsTemplateDriftTest do
   end
 
   defp source!(relative_path) do
-    File.read!(Path.join(File.cwd!(), relative_path))
+    File.read!(Path.join(@repo_root, relative_path))
   end
 
   defp live_template_hash do

@@ -18,15 +18,16 @@ defmodule Crosswake.Proof.Phase172PerPackageRefTest do
   (`.planning/workstreams/quality-ratchet-release/VERIFICATION-CONVENTIONS.md`).
   """
 
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Crosswake.ReleaseCandidate.Artifact
   alias Crosswake.ReleaseCandidate.Cleanroom
 
-  @script "script/verify_companion_cleanroom.sh"
-  @hex_artifacts_script "script/release_candidate/hex_artifacts.sh"
-  @artifact_source "lib/crosswake/release_candidate/artifact.ex"
-  @cleanroom_source "lib/crosswake/release_candidate/cleanroom.ex"
+  @repo_root Path.expand("../../..", __DIR__)
+  @script Path.join(@repo_root, "script/verify_companion_cleanroom.sh")
+  @hex_artifacts_script Path.join(@repo_root, "script/release_candidate/hex_artifacts.sh")
+  @artifact_source Path.join(@repo_root, "lib/crosswake/release_candidate/artifact.ex")
+  @cleanroom_source Path.join(@repo_root, "lib/crosswake/release_candidate/cleanroom.ex")
 
   # The fixed positional width of one artifact's chunk across the CLI boundary
   # (package, version, candidate_ref, tarball, unpacked_root, outer_checksum, source).

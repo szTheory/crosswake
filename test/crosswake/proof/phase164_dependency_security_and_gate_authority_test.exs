@@ -3,7 +3,8 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
   SEC-01..03: dependency security has two independently audited lock authorities,
   one inactive advisory-bearing negative control, and one literal CI producer.
   """
-  use ExUnit.Case, async: true
+  # The script and lock fixtures are repository-relative; keep them out of concurrent cwd changes.
+  use ExUnit.Case, async: false
 
   @script "script/check_dependency_security.sh"
   @fixture "test/fixtures/security/advisory-bearing.lock"

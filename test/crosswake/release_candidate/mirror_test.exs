@@ -3,6 +3,9 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
 
   alias Crosswake.ReleaseCandidate.Mirror
 
+  @repo_root Path.expand("../../..", __DIR__)
+  @mirror_script Path.join(@repo_root, "script/release_candidate/ios_mirror.sh")
+
   @baseline_sha String.duplicate("a", 40)
   @candidate_sha String.duplicate("b", 40)
 
@@ -269,7 +272,7 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
       System.cmd(
         "bash",
         [
-          "script/release_candidate/ios_mirror.sh",
+          @mirror_script,
           "publish",
           "--version",
           "0.2.1",
@@ -282,6 +285,7 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
           "--expected-new-ref",
           fixture.new_split
         ],
+        cd: @repo_root,
         env: env,
         stderr_to_stdout: true
       )
@@ -303,9 +307,11 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
   end
 
   test "publish and recovery remain unreachable from candidate readiness evaluation" do
-    script = File.read!("script/release_candidate/ios_mirror.sh")
-    wrapper = File.read!("script/verify_ios_mirror_backfill.sh")
-    candidate_task = File.read!("lib/mix/tasks/crosswake.release.candidate.ex")
+    script = File.read!(@mirror_script)
+    wrapper = File.read!(Path.join(@repo_root, "script/verify_ios_mirror_backfill.sh"))
+
+    candidate_task =
+      File.read!(Path.join(@repo_root, "lib/mix/tasks/crosswake.release.candidate.ex"))
 
     assert script =~ "publish"
     assert script =~ "recovery"
@@ -398,7 +404,7 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
 
     source_file = Path.join(release_repo, "packages/crosswake-shell-core-ios/Sources/Core.swift")
     File.write!(source_file, "public let version = 1\n")
-    git!(release_repo, ["add", "."])
+    git!(release_repo, ["add", source_file])
     git!(release_repo, ["commit", "-qm", "baseline"])
 
     old_split =
@@ -415,7 +421,7 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
     git!(release_repo, ["push", "-q", mirror_repo, "#{old_split}:refs/tags/v0.2.0"])
 
     File.write!(source_file, "public let version = 2\n")
-    git!(release_repo, ["add", "."])
+    git!(release_repo, ["add", source_file])
     git!(release_repo, ["commit", "-qm", "candidate"])
     candidate_ref = git!(release_repo, ["rev-parse", "HEAD"])
 

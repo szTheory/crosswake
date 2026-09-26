@@ -14,7 +14,6 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
 
   @workflow ".github/workflows/release-please.yml"
   @recovery_workflow ".github/workflows/hex-publish.yml"
-  @scanner "script/check_release_workflow_integrity.exs"
   @cleanroom_script "script/verify_companion_cleanroom.sh"
   @guarded_helper "script/guarded_hex_publish.sh"
   @release_config "release-please-config.json"
@@ -355,8 +354,8 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
       real_workflow()
       |> replace_in_job(
         "publish-hex-rindle",
-        "if: ${{ needs.release-please.outputs.rindle_release_created == 'true' }}",
-        "if: ${{ needs.release-please.outputs.releases_created == 'true' }}"
+        "needs.release-please.outputs.rindle_release_created == 'true'",
+        "needs.release-please.outputs.releases_created == 'true'"
       )
 
     assert_failure!("release.workflow.aggregate_gate.behavioral_jobs_absent", workflow)

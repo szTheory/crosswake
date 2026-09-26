@@ -13,12 +13,13 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
   """
   use ExUnit.Case, async: true
 
-  @script "script/check_absence_is_not_success.exs"
+  @repo_root Path.expand("../../..", __DIR__)
+  @script Path.join(@repo_root, "script/check_absence_is_not_success.exs")
 
   describe "the repository itself" do
     @tag :tmp_dir
     test "is clean: no mutation control and no open finding asserts nothing" do
-      {output, code} = run(File.cwd!())
+      {output, code} = run(@repo_root)
 
       assert code == 0, "the repository has regressed:\n#{output}"
       assert output =~ "no mutation control asserts a change it never verified"
@@ -169,7 +170,7 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
   defp run(root) do
     System.cmd("elixir", [@script, "--root", Path.expand(root)],
       stderr_to_stdout: true,
-      cd: File.cwd!()
+      cd: @repo_root
     )
   end
 
