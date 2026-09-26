@@ -1,5 +1,7 @@
 defmodule Crosswake.Offline.SafeObservationTest do
-  use ExUnit.Case, async: true
+  # Mix-task proofs can temporarily change the VM-wide cwd during parallel tests,
+  # which makes this module's runtime struct lookups miss the project code path.
+  use ExUnit.Case, async: false
 
   alias Crosswake.Offline.SafeObservation
 
