@@ -35,6 +35,7 @@ defmodule Crosswake.ReleaseWorkflowFixtures do
   def fixture_env_name(:doctor_task), do: "DOCTOR_TASK_PATH"
   def fixture_env_name(:ios_backfill_script), do: "IOS_BACKFILL_SCRIPT_PATH"
   def fixture_env_name(:ios_backfill_workflow), do: "IOS_BACKFILL_WORKFLOW_PATH"
+  def fixture_env_name(:android_publication), do: "ANDROID_PUBLICATION_PATH"
   def fixture_env_name(:exact_public_proof_workflow), do: "EXACT_PUBLIC_PROOF_WORKFLOW_PATH"
 
   @doc """

@@ -151,6 +151,27 @@ fi
 
 dash_if_empty() { if [ -n "$1" ]; then printf '%s' "$1"; else printf '%s' '-'; fi; }
 
+require_rel17_publish_evidence() {
+  local expected_operation="linked_release"
+  [ "$MODE" != "recovery" ] || expected_operation="recovery"
+
+  [ "${REL17_OPERATION:-}" = "$expected_operation" ] || {
+    echo "[crosswake] FAIL: REL-17 operation does not match the iOS publication mode." >&2
+    exit 1
+  }
+  [ "${REL17_PACKAGE:-}" = "crosswake" ] &&
+    [ "${REL17_VERSION:-}" = "$VERSION" ] &&
+    [ "${REL17_MERGE_OID:-}" = "$SOURCE_REF" ] || {
+      echo "[crosswake] FAIL: REL-17 candidate identity does not match the iOS publication." >&2
+      exit 1
+    }
+
+  (
+    cd "$REPO_ROOT"
+    REL17_STAGE=post_merge bash script/release_candidate/require_release_evidence.sh
+  )
+}
+
 evaluate() {
   local dry_status="$1"
   local after_main="$2"
@@ -191,9 +212,11 @@ if [ "$STATE" = "PASS" ] && { [ "$MODE" = "publish" ] || [ "$MODE" = "recovery" 
   [ "$CURRENT_TAG" = "$REMOTE_TAG" ] || exit 1
 
   if [ "$MODE" = "publish" ]; then
+    require_rel17_publish_evidence
     git -C "$RELEASE_REPO" push --porcelain --atomic "$REMOTE" \
       "$SPLIT_SHA:refs/heads/main" "$SPLIT_SHA:refs/tags/v${VERSION}" >/dev/null
   else
+    require_rel17_publish_evidence
     git -C "$RELEASE_REPO" push --porcelain \
       "--force-with-lease=refs/heads/main:${EXPECTED_OLD_REF}" "$REMOTE" \
       "${EXPECTED_NEW_REF}:refs/heads/main" >/dev/null

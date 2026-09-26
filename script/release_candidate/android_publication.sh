@@ -115,6 +115,16 @@ if [ "$MODE" = "recovery" ]; then
 fi
 
 cd "$RELEASE_ROOT/packages/crosswake-shell-core-android"
+expected_operation="linked_release"
+[ "$MODE" != "recovery" ] || expected_operation="recovery"
+[ "${REL17_OPERATION:-}" = "$expected_operation" ] &&
+  [ "${REL17_PACKAGE:-}" = "crosswake" ] &&
+  [ "${REL17_VERSION:-}" = "$VERSION" ] &&
+  [ "${REL17_MERGE_OID:-}" = "$SOURCE_REF" ] || {
+    echo "[crosswake] FAIL: REL-17 operation identity does not match the Android publication." >&2
+    exit 1
+  }
+(cd "$REPO_ROOT" && REL17_STAGE=post_merge bash script/release_candidate/require_release_evidence.sh)
 ./gradlew publishToMavenCentral --no-daemon -PcrosswakeAutomaticRelease=true
 
 if [ "$MODE" = "recovery" ]; then
