@@ -17,6 +17,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: write
   issues: write
   pull-requests: write
@@ -33,6 +34,7 @@ jobs:
     permissions:
       actions: read
       contents: read
+      pull-requests: read
     outputs:
       linked_release: ${{ steps.guard.outputs.linked_release }}
       approved_head: ${{ steps.guard.outputs.approved_head }}
@@ -45,11 +47,18 @@ jobs:
       candidate_run_id: ${{ steps.guard.outputs.candidate_run_id }}
       candidate_receipt_run_id: ${{ steps.guard.outputs.candidate_receipt_run_id }}
       approved_version: ${{ steps.guard.outputs.approved_version }}
+      rel17_context: ${{ steps.guard.outputs.rel17_context }}
+      rel17_operation: ${{ steps.guard.outputs.rel17_operation }}
+      rel17_package: ${{ steps.guard.outputs.rel17_package }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
+
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
 
       - name: Require approved head parentage, identical tree, and exact receipt
         id: guard
@@ -71,17 +80,64 @@ jobs:
           linked_delta=$(git diff --name-only "$first_parent" "$RUN_HEAD" -- \
             mix.exs .release-please-manifest.json \
             packages/crosswake-shell-core-android/build.gradle.kts | wc -l | tr -d ' ')
-          [ "$linked_delta" -eq 3 ] || exit 0
+          candidate_scope_delta=$(git diff --name-only "$first_parent" "$RUN_HEAD" -- \
+            mix.exs .release-please-manifest.json \
+            packages/crosswake-shell-core-android/build.gradle.kts \
+            packages/crosswake_rulestead/mix.exs packages/crosswake_rindle/mix.exs \
+            packages/crosswake_sigra/mix.exs packages/crosswake_chimeway/mix.exs \
+            packages/crosswake_threadline/mix.exs | wc -l | tr -d ' ')
           manifest_version=$(jq -er '."."' .release-please-manifest.json)
           linked_candidate=false
-          if grep -q "@version \"${manifest_version}\"" mix.exs &&
+          if [ "$linked_delta" -eq 3 ] && grep -q "@version \"${manifest_version}\"" mix.exs &&
             grep -q "version = \"${manifest_version}\"" packages/crosswake-shell-core-android/build.gradle.kts &&
             jq -e --arg v "$manifest_version" \
               '."." == $v and ."packages/crosswake-shell-core-ios" == $v and ."packages/crosswake-shell-core-android" == $v' \
               .release-please-manifest.json >/dev/null; then
             linked_candidate=true
           fi
-          [ "$linked_candidate" = "true" ] || exit 0
+          candidate_operation=""
+          candidate_package=""
+          candidate_version=""
+          if [ "$linked_candidate" = "true" ]; then
+            candidate_operation="linked_release"
+            candidate_package="crosswake"
+            candidate_version="$manifest_version"
+          fi
+
+          candidate_count=0
+          for package in crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline; do
+            package_path="packages/$package"
+            package_version=$(jq -er --arg path "$package_path" '.[$path]' .release-please-manifest.json 2>/dev/null || true)
+            package_delta=$(git diff --name-only "$first_parent" "$RUN_HEAD" -- "$package_path/mix.exs" | wc -l | tr -d ' ')
+            if [ "$package_delta" -eq 1 ] && [ -n "$package_version" ] &&
+              grep -q "@version \"${package_version}\"" "$package_path/mix.exs"; then
+              candidate_count=$((candidate_count + 1))
+              candidate_operation="companion_publish"
+              candidate_package="$package"
+              candidate_version="$package_version"
+            fi
+          done
+
+          [ "$candidate_count" -le 1 ] || {
+            echo "REL-17 BLOCKED reason=ambiguous_companion_release" >&2
+            exit 1
+          }
+          if [ "$linked_candidate" = "true" ]; then
+            [ "$candidate_count" -eq 0 ] || {
+              echo "REL-17 BLOCKED reason=mixed_core_and_companion_release" >&2
+              exit 1
+            }
+            candidate_operation="linked_release"
+            candidate_package="crosswake"
+            candidate_version="$manifest_version"
+          elif [ "$candidate_count" -eq 1 ] && [ "$linked_delta" -eq 0 ]; then
+            :
+          elif [ "$candidate_scope_delta" -gt 0 ]; then
+            echo "REL-17 BLOCKED reason=unclassified_release_version_change" >&2
+            exit 1
+          else
+            exit 0
+          fi
 
           # A linked release must be a two-parent merge. The approved Release Please
           # head is the second parent; its tree must be byte-identical to the merge.
@@ -94,6 +150,14 @@ jobs:
           [ "$approved_head" = "$second_parent" ]
           [ "$merge_tree" = "$approved_tree" ]
 
+          # The incident runbook must exist in every exact object authorizing this
+          # publication. Check the remote base, approved PR head, and resulting merge
+          # commit; a local checkout or a later commit cannot repair missing ancestry.
+          RUNBOOK_SHA="d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
+          for target in "$first_parent" "$approved_head" "$merge_oid"; do
+            bash script/check_release_runbook_ancestry.sh "$RUNBOOK_SHA" "$target"
+          done
+
           # Crosswake CI owns credential-free candidate proof; the trusted iOS
           # workflow separately attests the canonical READY receipt against CI,
           # Hex, iOS, and live zero-mutation evidence. Require one unexpired exact-head
@@ -104,6 +168,8 @@ jobs:
           [ "$(printf '%s' "$artifact_index" | jq '[.artifacts[] | select(.expired == false)] | length')" -eq 1 ]
           candidate_receipt_run_id=$(printf '%s' "$artifact_index" | jq -er \
             '[.artifacts[] | select(.expired == false)] | first | .workflow_run.id')
+          candidate_receipt_artifact_id=$(printf '%s' "$artifact_index" | jq -er \
+            '[.artifacts[] | select(.expired == false)] | first | .id')
           receipt_run=$(gh run view "$candidate_receipt_run_id" --repo "$REPOSITORY" \
             --json conclusion,event,workflowName)
           printf '%s' "$receipt_run" | jq -e \
@@ -115,12 +181,24 @@ jobs:
             --name "$artifact_name" --dir "$receipt_dir"
           receipt="$receipt_dir/candidate-receipt.json"
           test -f "$receipt"
-          test -f "$receipt_dir/artifacts.json"
-          jq -e --arg head "$approved_head" --arg tree "$approved_tree" --arg base "$first_parent" \
-            '.state == "READY FOR APPROVAL" and .identity.bound == .identity.observed and .identity.bound.head == $head and .identity.bound.tree == $tree and .identity.bound.base == $base and .external_state.changed == false and .external_state.publication == "NONE" and .credentials == {"exercised":true,"mirror_write_authority":"PROVEN"}' \
-            "$receipt" >/dev/null
-          candidate_receipt=$(sha256sum "$receipt" | awk '{print $1}')
-          candidate_run_id=$(jq -er '.identity.bound.run.id' "$receipt")
+          if [ "$candidate_operation" = "linked_release" ]; then
+            test -f "$receipt_dir/artifacts.json"
+            jq -e --arg head "$approved_head" --arg tree "$approved_tree" --arg base "$first_parent" \
+              '.state == "READY FOR APPROVAL" and .identity.bound == .identity.observed and .identity.bound.head == $head and .identity.bound.tree == $tree and .identity.bound.base == $base and .external_state.changed == false and .external_state.publication == "NONE" and .credentials == {"exercised":true,"mirror_write_authority":"PROVEN"}' \
+              "$receipt" >/dev/null
+            candidate_receipt=$(sha256sum "$receipt" | awk '{print $1}')
+            candidate_run_id=$(jq -er '.identity.bound.run.id' "$receipt")
+          else
+            jq -e --arg package "$candidate_package" --arg version "$candidate_version" \
+              --arg head "$approved_head" --arg base "$first_parent" --arg tree "$approved_tree" \
+              '.schema_version == 1 and .receipt.package == $package and
+               .receipt.version == $version and .receipt.candidate.head_oid == $head and
+               .receipt.candidate.base_oid == $base and .receipt.candidate.tree_oid == $tree and
+               .receipt.external_state_changed == false and .receipt.target_absent == true' \
+              "$receipt" >/dev/null
+            candidate_receipt=$(jq -er '.receipt_digest' "$receipt")
+            candidate_run_id=$(jq -er '.receipt.ci.run_id' "$receipt")
+          fi
 
           runs=$(gh run list --repo "$REPOSITORY" --workflow crosswake-ci.yml \
             --commit "$approved_head" --status success --limit 20 \
@@ -139,12 +217,88 @@ jobs:
             '.state == "PASS" and .head == $head and .tree == $tree and .base == $base and (.run_id | tostring) == $run and .external_state_changed == false' \
             "$ci_receipt" >/dev/null
           ci_receipt_sha=$(sha256sum "$ci_receipt" | awk '{print $1}')
-          jq -e --arg digest "$ci_receipt_sha" \
-            'any(.identity.bound.proofs[]; .id == "candidate.ci" and .sha256 == $digest)' \
-            "$receipt" >/dev/null
-          cmp "$receipt_dir/artifacts.json" "$ci_dir/artifacts/artifacts.json"
+          if [ "$candidate_operation" = "linked_release" ]; then
+            jq -e --arg digest "$ci_receipt_sha" \
+              'any(.identity.bound.proofs[]; .id == "candidate.ci" and .sha256 == $digest)' \
+              "$receipt" >/dev/null
+            cmp "$receipt_dir/artifacts.json" "$ci_dir/artifacts/artifacts.json"
+          else
+            jq -e --arg digest "$ci_receipt_sha" \
+              'any(.receipt.proofs[]; .id == "ci" and .sha256 == $digest)' "$receipt" >/dev/null
+          fi
 
-          emit_output "linked_release=true"
+          # The exact pre-merge choice travels in the immutable merge message. A
+          # missing or malformed trailer blocks before Release Please can create tags.
+          trailer_lines=$(git show -s --format=%B "$merge_oid" | sed -n 's/^REL17-AUTHORIZATION: //p')
+          [ "$(printf '%s\n' "$trailer_lines" | sed '/^$/d' | wc -l | tr -d ' ')" -eq 1 ]
+          authorization_trailer=$(printf '%s\n' "$trailer_lines")
+          authorization_file="$RUNNER_TEMP/rel17-authorization.json"
+          printf '%s' "$authorization_trailer" | jq -e \
+            --arg operation "$candidate_operation" --arg package "$candidate_package" \
+            --arg version "$candidate_version" \
+            --arg digest "$candidate_receipt" --argjson ci_run "$candidate_run_id" \
+            --argjson receipt_run "$candidate_receipt_run_id" \
+            --argjson artifact_id "$candidate_receipt_artifact_id" \
+            --arg base "$first_parent" --arg head "$approved_head" --arg tree "$approved_tree" \
+            --arg repository "$REPOSITORY" --arg runbook "$RUNBOOK_SHA" \
+            '((keys | sort) == ["authorization","authorization_run_id","base_oid","ci_run_id","consumed","head_oid","leg_run_id","operation","package","policy_sha256","pr","receipt_artifact_id","receipt_digest","receipt_run_id","repository","runbook_commit","schema_version","state","tree_oid","version"]) and
+             (.schema_version == 1) and (.state == "AUTHORIZED") and (.consumed == false) and
+             (.operation == $operation) and (.package == $package) and (.version == $version) and
+             (.receipt_digest == $digest) and (.ci_run_id == $ci_run) and
+             (.receipt_run_id == $receipt_run) and (.receipt_artifact_id == $artifact_id) and
+             (.base_oid == $base) and (.head_oid == $head) and (.tree_oid == $tree) and
+             (.repository == $repository) and (.runbook_commit == $runbook) and
+             (.policy_sha256 | type == "string" and test("^[0-9a-f]{64}$")) and
+             (.leg_run_id | type == "number" and . > 0) and
+             (.pr | type == "number" and . > 0) and
+             (if $operation == "linked_release" then
+                .authorization_run_id == null and
+                .authorization == ("publish successor core " + (.leg_run_id|tostring))
+              elif .package == "crosswake_chimeway" and .pr == 115 then
+                (.authorization_run_id | type == "number" and . > 0) and
+                .authorization == ("publish leg 3 " + (.authorization_run_id|tostring))
+              else
+                .authorization_run_id == null and
+                .authorization == ("publish companion " + $package + " " + (.leg_run_id|tostring))
+              end)' >/dev/null
+          printf '%s' "$authorization_trailer" | jq -c \
+            '{stage:"pre_merge",state:"CONSUMED",receipt_digest:.receipt_digest,
+              operation:.operation,leg_run_id:.leg_run_id,candidate_package:.package,
+              candidate_head:.head_oid}' > "$authorization_file"
+          chmod 600 "$authorization_file"
+          rel17_policy_sha256=$(printf '%s' "$authorization_trailer" | jq -er '.policy_sha256')
+          rel17_pr=$(printf '%s' "$authorization_trailer" | jq -er '.pr')
+          rel17_leg_run_id=$(printf '%s' "$authorization_trailer" | jq -er '.leg_run_id')
+
+          REL17_OPERATION="$candidate_operation" \
+          REL17_STAGE="post_merge" \
+          REL17_PACKAGE="$candidate_package" \
+          REL17_VERSION="$candidate_version" \
+          REL17_PR="$rel17_pr" \
+          REL17_RECEIPT_DIGEST="$candidate_receipt" \
+          REL17_LEG_RUN_ID="$rel17_leg_run_id" \
+          REL17_CI_RUN_ID="$candidate_run_id" \
+          REL17_RECEIPT_RUN_ID="$candidate_receipt_run_id" \
+          REL17_RECEIPT_ARTIFACT_ID="$candidate_receipt_artifact_id" \
+          REL17_REPOSITORY="$REPOSITORY" \
+          REL17_RUNBOOK_COMMIT="$RUNBOOK_SHA" \
+          REL17_EXPECTED_POLICY_SHA256="$rel17_policy_sha256" \
+          REL17_EXPECTED_BASE_OID="$first_parent" \
+          REL17_EXPECTED_HEAD_OID="$approved_head" \
+          REL17_EXPECTED_TREE_OID="$approved_tree" \
+          REL17_MERGE_OID="$merge_oid" \
+          REL17_AUTHORIZATION_FILE="$authorization_file" \
+          bash script/release_candidate/require_release_evidence.sh
+
+          rel17_context=$(printf '%s' "$authorization_trailer" | jq -c \
+            --arg repository "$REPOSITORY" --arg runbook "$RUNBOOK_SHA" \
+            --arg merge "$merge_oid" --arg auth_json "$(cat "$authorization_file")" \
+            '. + {schema_version:1,stage:"post_merge",repository:$repository,
+                  runbook_commit:$runbook,merge_oid:$merge,authorization_json:$auth_json,
+                  expected_policy_sha256:.policy_sha256,expected_base_oid:.base_oid,
+                  expected_head_oid:.head_oid,expected_tree_oid:.tree_oid}')
+
+          [ "$candidate_operation" != "linked_release" ] || emit_output "linked_release=true"
           emit_output "approved_head=$approved_head"
           emit_output "approved_tree=$approved_tree"
           emit_output "merge_oid=$merge_oid"
@@ -154,7 +308,10 @@ jobs:
           emit_output "candidate_receipt=$candidate_receipt"
           emit_output "candidate_run_id=$candidate_run_id"
           emit_output "candidate_receipt_run_id=$candidate_receipt_run_id"
-          emit_output "approved_version=$manifest_version"
+          emit_output "approved_version=$candidate_version"
+          emit_output "rel17_operation=$candidate_operation"
+          emit_output "rel17_package=$candidate_package"
+          emit_output "rel17_context=$rel17_context"
 
   release-please:
     name: Release Please
@@ -215,6 +372,26 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+
+      - name: Load the consumed REL-17 decision
+        if: ${{ needs.approved-release-guard.outputs.rel17_context != '' }}
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: ${{ needs.approved-release-guard.outputs.rel17_operation }}
+          REL17_EXPECTED_PACKAGE: ${{ needs.approved-release-guard.outputs.rel17_package }}
+          REL17_EXPECTED_VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
+      - name: Re-fetch REL-17 evidence before Release Please
+        if: ${{ needs.approved-release-guard.outputs.rel17_context != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
       - name: Run Release Please
         id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v4.1.3
@@ -232,13 +409,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      actions: read
       contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ needs.release-please.outputs.tag_name }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Load the consumed REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: linked_release
+          REL17_EXPECTED_PACKAGE: crosswake
+          REL17_EXPECTED_VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
 
       - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
         with:
@@ -257,10 +445,17 @@ jobs:
         run: |
           mix local.hex --force
           mix local.rebar --force
+          mix deps.get --check-locked
+
+      - name: Re-fetch REL-17 evidence before Hex credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
         run: >
           bash script/guarded_hex_publish.sh
           crosswake
@@ -303,16 +498,18 @@ jobs:
 
   publish-hex-rulestead:
     name: Publish crosswake_rulestead to Hex.pm
-    needs: release-please
+    needs: [approved-release-guard, release-please]
     # D-07: Gate on the PER-COMPONENT output, never the aggregate `releases_created`.
     # `releases_created` is true if ANY package released — gating on it would publish the
     # companion on every core-only release. `rulestead_release_created` is set only when
     # release-please cuts a crosswake_rulestead release PR.
-    if: ${{ needs.release-please.outputs.rulestead_release_created == 'true' }}
+    if: ${{ needs.release-please.outputs.rulestead_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_rulestead' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      actions: read
       contents: read
+      pull-requests: read
     # D-13: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver in
     # packages/crosswake_rulestead/mix.exs so every mix step emits the Hex dep (not path:).
     # Without this, mix hex.build (called by hex.publish) errors: "path: deps excluded".
@@ -324,6 +521,15 @@ jobs:
           # D-09: Checkout the companion tag (not the core tag) so the tarball is built
           # from the exact commit release-please tagged for crosswake_rulestead.
           ref: ${{ needs.release-please.outputs.rulestead_tag_name }}
+
+      - name: Load the package-scoped REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: companion_publish
+          REL17_EXPECTED_PACKAGE: crosswake_rulestead
+          REL17_EXPECTED_VERSION: ${{ needs.release-please.outputs.rulestead_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
 
       - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
         with:
@@ -342,10 +548,17 @@ jobs:
         run: |
           mix local.hex --force
           mix local.rebar --force
+          mix deps.get --check-locked
+
+      - name: Re-fetch REL-17 evidence before companion credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
         run: >
           bash script/guarded_hex_publish.sh
           crosswake_rulestead
@@ -354,16 +567,18 @@ jobs:
 
   publish-hex-rindle:
     name: Publish crosswake_rindle to Hex.pm
-    needs: release-please
+    needs: [approved-release-guard, release-please]
     # D-07: Gate on the PER-COMPONENT output, never the aggregate `releases_created`.
     # `releases_created` is true if ANY package released — gating on it would publish the
     # companion on every core-only release. `rindle_release_created` is set only when
     # release-please cuts a crosswake_rindle release PR.
-    if: ${{ needs.release-please.outputs.rindle_release_created == 'true' }}
+    if: ${{ needs.release-please.outputs.rindle_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_rindle' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      actions: read
       contents: read
+      pull-requests: read
     # D-13: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver in
     # packages/crosswake_rindle/mix.exs so every mix step emits the Hex dep (not path:).
     # Without this, mix hex.build (called by hex.publish) errors: "path: deps excluded".
@@ -375,6 +590,15 @@ jobs:
           # D-09: Checkout the companion tag (not the core tag) so the tarball is built
           # from the exact commit release-please tagged for crosswake_rindle.
           ref: ${{ needs.release-please.outputs.rindle_tag_name }}
+
+      - name: Load the package-scoped REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: companion_publish
+          REL17_EXPECTED_PACKAGE: crosswake_rindle
+          REL17_EXPECTED_VERSION: ${{ needs.release-please.outputs.rindle_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
 
       - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
         with:
@@ -393,10 +617,17 @@ jobs:
         run: |
           mix local.hex --force
           mix local.rebar --force
+          mix deps.get --check-locked
+
+      - name: Re-fetch REL-17 evidence before companion credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
         run: >
           bash script/guarded_hex_publish.sh
           crosswake_rindle
@@ -405,16 +636,18 @@ jobs:
 
   publish-hex-sigra:
     name: Publish crosswake_sigra to Hex.pm
-    needs: release-please
+    needs: [approved-release-guard, release-please]
     # D-8 / D-07: Gate on the PER-COMPONENT output, never the aggregate `releases_created`.
     # `releases_created` is true if ANY package released — gating on it would publish the
     # companion on every core-only release. `sigra_release_created` is set only when
     # release-please cuts a crosswake_sigra release PR.
-    if: ${{ needs.release-please.outputs.sigra_release_created == 'true' }}
+    if: ${{ needs.release-please.outputs.sigra_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_sigra' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      actions: read
       contents: read
+      pull-requests: read
     # D-13 / T-137-15: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver
     # in packages/crosswake_sigra/mix.exs so every mix step emits the Hex dep (not path:).
     # Without this, mix hex.build (called by hex.publish) errors: "path: deps excluded".
@@ -426,6 +659,15 @@ jobs:
           # D-09: Checkout the companion tag (not the core tag) so the tarball is built
           # from the exact commit release-please tagged for crosswake_sigra.
           ref: ${{ needs.release-please.outputs.sigra_tag_name }}
+
+      - name: Load the package-scoped REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: companion_publish
+          REL17_EXPECTED_PACKAGE: crosswake_sigra
+          REL17_EXPECTED_VERSION: ${{ needs.release-please.outputs.sigra_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
 
       - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
         with:
@@ -444,10 +686,17 @@ jobs:
         run: |
           mix local.hex --force
           mix local.rebar --force
+          mix deps.get --check-locked
+
+      - name: Re-fetch REL-17 evidence before companion credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
         run: >
           bash script/guarded_hex_publish.sh
           crosswake_sigra
@@ -456,16 +705,18 @@ jobs:
 
   publish-hex-chimeway:
     name: Publish crosswake_chimeway to Hex.pm
-    needs: release-please
+    needs: [approved-release-guard, release-please]
     # D-8 / D-07: Gate on the PER-COMPONENT output, never the aggregate `releases_created`.
     # `releases_created` is true if ANY package released — gating on it would publish the
     # companion on every core-only release. `chimeway_release_created` is set only when
     # release-please cuts a crosswake_chimeway release PR.
-    if: ${{ needs.release-please.outputs.chimeway_release_created == 'true' }}
+    if: ${{ needs.release-please.outputs.chimeway_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_chimeway' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      actions: read
       contents: read
+      pull-requests: read
     # D-13 / T-138-12: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver
     # in packages/crosswake_chimeway/mix.exs so every mix step emits the Hex dep (not path:).
     # Without this, mix hex.build (called by hex.publish) errors: "path: deps excluded".
@@ -477,6 +728,15 @@ jobs:
           # D-09: Checkout the companion tag (not the core tag) so the tarball is built
           # from the exact commit release-please tagged for crosswake_chimeway.
           ref: ${{ needs.release-please.outputs.chimeway_tag_name }}
+
+      - name: Load the package-scoped REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: companion_publish
+          REL17_EXPECTED_PACKAGE: crosswake_chimeway
+          REL17_EXPECTED_VERSION: ${{ needs.release-please.outputs.chimeway_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
 
       - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
         with:
@@ -495,10 +755,17 @@ jobs:
         run: |
           mix local.hex --force
           mix local.rebar --force
+          mix deps.get --check-locked
+
+      - name: Re-fetch REL-17 evidence before companion credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
         run: >
           bash script/guarded_hex_publish.sh
           crosswake_chimeway
@@ -507,16 +774,18 @@ jobs:
 
   publish-hex-threadline:
     name: Publish crosswake_threadline to Hex.pm
-    needs: release-please
+    needs: [approved-release-guard, release-please]
     # D-8 / D-07: Gate on the PER-COMPONENT output, never the aggregate `releases_created`.
     # `releases_created` is true if ANY package released — gating on it would publish the
     # observer on every core-only release. `threadline_release_created` is set only when
     # release-please cuts a crosswake_threadline release PR (THREAD-03).
-    if: ${{ needs.release-please.outputs.threadline_release_created == 'true' }}
+    if: ${{ needs.release-please.outputs.threadline_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_threadline' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      actions: read
       contents: read
+      pull-requests: read
     # D-13 / T-139-12: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver
     # in packages/crosswake_threadline/mix.exs so every mix step emits the Hex dep (not path:).
     # Without this, mix hex.build (called by hex.publish) errors: "path: deps excluded".
@@ -529,6 +798,15 @@ jobs:
           # D-09: Checkout the observer tag (not the core tag) so the tarball is built
           # from the exact commit release-please tagged for crosswake_threadline.
           ref: ${{ needs.release-please.outputs.threadline_tag_name }}
+
+      - name: Load the package-scoped REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: companion_publish
+          REL17_EXPECTED_PACKAGE: crosswake_threadline
+          REL17_EXPECTED_VERSION: ${{ needs.release-please.outputs.threadline_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
 
       - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
         with:
@@ -547,10 +825,17 @@ jobs:
         run: |
           mix local.hex --force
           mix local.rebar --force
+          mix deps.get --check-locked
+
+      - name: Re-fetch REL-17 evidence before companion credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
         run: >
           bash script/guarded_hex_publish.sh
           crosswake_threadline
@@ -564,13 +849,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      actions: read
       contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ needs.release-please.outputs.tag_name }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Load the consumed REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: linked_release
+          REL17_EXPECTED_PACKAGE: crosswake
+          REL17_EXPECTED_VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
 
       - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
         with:
@@ -579,6 +875,11 @@ jobs:
 
       - name: Resolve locked Mix dependencies
         run: mix deps.get --check-locked
+
+      - name: Re-fetch REL-17 evidence before mirror credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Preflight — assert MIRROR_DEPLOY_KEY is configured
         env:
@@ -603,6 +904,7 @@ jobs:
       - name: Publish immutable fast-forward iOS mirror refs
         env:
           CROSSWAKE_IOS_MIRROR_EXECUTE: "true"
+          GH_TOKEN: ${{ github.token }}
         run: >
           bash script/release_candidate/ios_mirror.sh publish
           --version "${{ needs.approved-release-guard.outputs.approved_version }}"
@@ -620,12 +922,22 @@ jobs:
     permissions:
       contents: read
       actions: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ needs.release-please.outputs.tag_name }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Load the consumed REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: linked_release
+          REL17_EXPECTED_PACKAGE: crosswake
+          REL17_EXPECTED_VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
 
       - name: Download and validate the approved candidate receipt
         env:
@@ -645,8 +957,7 @@ jobs:
           [ "$(printf '%s' "$artifact_index" | jq --arg name "$artifact_name" '[.artifacts[] | select(.name == $name and .expired == false)] | length')" -eq 1 ]
           gh run download "$RECEIPT_RUN_ID" --repo "$GITHUB_REPOSITORY" \
             --name "$artifact_name" --dir "$receipt_dir"
-          actual_files=$(find "$receipt_dir" -type f -printf '%P\n' | LC_ALL=C sort)
-          [ "$actual_files" = $'artifacts.json\ncandidate-receipt.json' ]
+          bash script/release_candidate/assert_candidate_receipt_artifact.sh "$receipt_dir"
           receipt="$receipt_dir/candidate-receipt.json"
           receipt_digest=$(sha256sum "$receipt" | awk '{print $1}')
           [ "$receipt_digest" = "$APPROVED_RECEIPT" ]
@@ -660,6 +971,15 @@ jobs:
              .external_state.publication == "NONE" and .external_state.changed == false' \
             "$receipt" >/dev/null
 
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+
+      - name: Re-fetch REL-17 evidence before Maven credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
         with:
           java-version: '17'
@@ -672,6 +992,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyId }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
+          GH_TOKEN: ${{ github.token }}
         run: >
           bash script/release_candidate/android_publication.sh
           --version "${{ needs.approved-release-guard.outputs.approved_version }}"
@@ -703,18 +1024,15 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
 
-      - name: Install crosswake archive at just-cut version
+      - name: Generate iOS shell from an external consumer host
         env:
           VERSION: ${{ needs.release-please.outputs.version }}
-        run: mix archive.install hex crosswake "$VERSION" --force
-
-      - name: Generate iOS shell outside monorepo
         run: |
           set -euo pipefail
-          TARGET="$RUNNER_TEMP/clean-room-proof-ios"
-          rm -rf "$TARGET"
-          mkdir -p "$TARGET"
-          mix crosswake.gen.shell ios --target "$TARGET"
+          bash script/verify_ios_release_host.sh \
+            --version "$VERSION" \
+            --host-root "$RUNNER_TEMP/clean-room-proof-ios-host" \
+            --target "$RUNNER_TEMP/clean-room-proof-ios"
 
       - name: swift build with mirror tag retry
         run: |

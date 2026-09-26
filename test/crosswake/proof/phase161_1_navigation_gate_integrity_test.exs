@@ -3,9 +3,10 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
 
   alias Crosswake.ProofLane.NavigationShellAdvisory
 
-  @script "scripts/verify_phase_161_1.sh"
-  @workflow ".github/workflows/crosswake-ci.yml"
-  @mix_project "mix.exs"
+  @repo_root Path.expand("../../..", __DIR__)
+  @script Path.join(@repo_root, "scripts/verify_phase_161_1.sh")
+  @workflow Path.join(@repo_root, ".github/workflows/crosswake-ci.yml")
+  @mix_project Path.join(@repo_root, "mix.exs")
   @phase41_dedicated_command "test --only phase41_nested_process --seed 748644 --max-cases 1"
   @phase41_hosted_broad_command "test --exclude phase41_nested_process --exclude requires_example_host --seed 748644 --max-cases 8"
   @phase41_alias_broad_command "test --exclude phase41_nested_process --exclude requires_example_host --exclude advisory_only --seed 748644 --max-cases 8"
@@ -79,7 +80,7 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
 
   defp assert_phase41_partition_contract! do
     tagged_tests =
-      "test/**/*_test.exs"
+      Path.join(@repo_root, "test/**/*_test.exs")
       |> Path.wildcard()
       |> Enum.flat_map(fn path ->
         path
@@ -207,7 +208,7 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
     write_shims(bin)
 
     System.cmd("bash", [@script, destination],
-      cd: File.cwd!(),
+      cd: @repo_root,
       env: [
         {"PATH", bin <> ":" <> System.get_env("PATH", "")},
         {"CROSSWAKE_REAL_MIX", real_mix},

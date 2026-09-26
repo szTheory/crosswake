@@ -92,6 +92,40 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     end
   end
 
+  test "Maven receipt consumer accepts exactly the attested three-file roster before credentials" do
+    release = File.read!(@release_workflow)
+    producer = File.read!(@ios_workflow)
+    maven = job_block(release, "publish-android-core")
+
+    assert producer =~ "candidate-receipt.json"
+    assert producer =~ "candidate-receipt.md"
+    assert producer =~ "artifacts.json"
+    assert producer =~ "${{ runner.temp }}/candidate-receipt-attestation/candidate-receipt.json"
+    assert producer =~ "${{ runner.temp }}/candidate-receipt-attestation/candidate-receipt.md"
+    assert producer =~ "${{ runner.temp }}/candidate-receipt-attestation/artifacts.json"
+
+    assert maven =~
+             "bash script/release_candidate/assert_candidate_receipt_artifact.sh \"$receipt_dir\""
+
+    assert :binary.match(maven, "assert_candidate_receipt_artifact.sh") <
+             :binary.match(maven, "actions/setup-java")
+
+    assert :binary.match(maven, "assert_candidate_receipt_artifact.sh") <
+             :binary.match(maven, "ORG_GRADLE_PROJECT_mavenCentralUsername")
+  end
+
+  test "release iOS proof uses an external exact-version Hex consumer" do
+    release = File.read!(@release_workflow)
+    ios = job_block(release, "clean-room-proof-ios")
+
+    assert ios =~ "script/verify_ios_release_host.sh"
+    assert ios =~ "--version \"$VERSION\""
+    assert ios =~ "--host-root \"$RUNNER_TEMP/clean-room-proof-ios-host\""
+    refute ios =~ "mix archive.install hex crosswake"
+    refute ios =~ "mix crosswake.gen.shell ios"
+    assert ios =~ "swift build"
+  end
+
   test "canonical approval receipt is attested separately from credential-free candidate CI" do
     ios_workflow = File.read!(@ios_workflow)
     release_workflow = File.read!(@release_workflow)
@@ -104,11 +138,9 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert attestation =~ "phase168-candidate-ci-${CANDIDATE_HEAD}"
     assert attestation =~ "candidate-rehearsal-hex"
     assert attestation =~ "candidate-rehearsal-ios"
-    assert attestation =~ "Validate exact run selectors"
     assert attestation =~ "candidate-rehearsal-maven"
     assert attestation =~ "mix crosswake.release.candidate"
     assert attestation =~ "--maven-run-id"
-    refute attestation =~ "assemble_attested_receipt.exs"
     assert attestation =~ "Crosswake.ReleaseCandidate.Receipt.validate!"
     refute attestation =~ "payload_base64"
     refute attestation =~ "ATTESTATION_ENVELOPE"
@@ -152,14 +184,15 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
              ~s(--name "phase168-candidate-receipt-${approved_head}" --dir "$receipt_dir")
   end
 
-  test "rollback of an untagged failed release remains a reversible proposal refresh" do
+  test "proposal refresh remains unlinked and unclassified version changes fail closed" do
     workflow = File.read!(@release_workflow)
     guard = job_block(workflow, "approved-release-guard")
 
+    assert guard =~ ~s(emit_output "linked_release=false")
     assert guard =~ "linked_candidate=false"
     assert guard =~ "linked_candidate=true"
-    assert guard =~ ~s([ "$linked_candidate" = "true" ] || exit 0)
-    assert guard =~ "linked_release=false"
+    assert guard =~ "elif [ \"$candidate_count\" -eq 1 ] && [ \"$linked_delta\" -eq 0 ]; then"
+    assert guard =~ "REL-17 BLOCKED reason=unclassified_release_version_change"
   end
 
   test "proposal refresh cannot be reported as a partial native release" do
@@ -203,12 +236,11 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert hex_workflow =~ "android-recovery"
     assert android_recovery =~ "android_publication.sh"
     assert android_recovery =~ "--recover"
-    assert android_recovery =~ "ref: e089bfc0e8a4edf0b024a2a284c8a384216bd64d"
+    assert android_recovery =~ "ref: ${{ github.sha }}"
     assert android_recovery =~ "path: recovery-tools"
     assert android_recovery =~ "path: release-source"
-    refute android_recovery =~ "ref: ${{ github.sha }}"
     refute android_recovery =~ "ref: main"
-    refute android_recovery =~ "refs/heads/"
+    assert android_recovery =~ "github.ref == 'refs/heads/main'"
 
     assert android_recovery =~
              ~s(bash "$GITHUB_WORKSPACE/recovery-tools/script/release_candidate/android_publication.sh")

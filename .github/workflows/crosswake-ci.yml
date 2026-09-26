@@ -150,6 +150,7 @@ jobs:
         run: >-
           mix test
           test/crosswake/release_candidate
+          test/crosswake/proof/phase175_runbook_ancestry_test.exs
           test/crosswake/proof/phase173_recovery_proof_convergence_test.exs
           test/mix/tasks/crosswake_release_candidate_test.exs
           test/mix/tasks/crosswake_release_status_test.exs
@@ -167,7 +168,7 @@ jobs:
             echo "Candidate scope: ${RELEASE_CANDIDATE_SCOPE}."
             echo "Candidate reason: ${RELEASE_CANDIDATE_REASON}."
             echo 'Stable candidate artifact, coordinate, mirror, clean-room, workflow, and receipt fixtures passed.'
-            echo 'Remediation: mix test test/crosswake/release_candidate test/crosswake/proof/phase173_recovery_proof_convergence_test.exs test/mix/tasks/crosswake_release_candidate_test.exs test/mix/tasks/crosswake_release_status_test.exs --max-cases 1 && elixir script/check_release_workflow_integrity.exs && elixir script/check_release_doc_version_literals.exs'
+            echo 'Remediation: mix test test/crosswake/release_candidate test/crosswake/proof/phase175_runbook_ancestry_test.exs test/crosswake/proof/phase173_recovery_proof_convergence_test.exs test/mix/tasks/crosswake_release_candidate_test.exs test/mix/tasks/crosswake_release_status_test.exs --max-cases 1 && elixir script/check_release_workflow_integrity.exs && elixir script/check_release_doc_version_literals.exs'
           } >> "$GITHUB_STEP_SUMMARY"
 
   release-candidate-full-proof:
@@ -1528,12 +1529,7 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: Validate exact one-time 0.2.3 tag recovery
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 200 }}
-        run: bash script/release_candidate/ios_tag_recovery.sh validate
       - name: Check iOS SwiftPM mirror parity
-        env:
-          CROSSWAKE_IOS_PARITY_ALLOW_MISSING_VERSION: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 200 && '0.2.3' || '' }}
         run: ./script/check_ios_mirror_parity.sh
       - name: Summarize iOS mirror parity proof
         if: always()

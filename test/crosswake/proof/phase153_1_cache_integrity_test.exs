@@ -21,8 +21,9 @@ defmodule Crosswake.Proof.Phase153_1CacheIntegrityTest do
   """
   use ExUnit.Case, async: true
 
-  @workflow_dir ".github/workflows"
-  @actions_dir ".github/actions"
+  @repo_root Path.expand("../../..", __DIR__)
+  @workflow_dir Path.join(@repo_root, ".github/workflows")
+  @actions_dir Path.join(@repo_root, ".github/actions")
 
   # Files whose caches are deliberately NOT held to the six-dimension invariant.
   #

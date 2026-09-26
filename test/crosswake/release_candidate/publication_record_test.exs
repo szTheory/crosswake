@@ -20,8 +20,9 @@ defmodule Crosswake.ReleaseCandidate.PublicationRecordTest do
 
   use ExUnit.Case, async: true
 
-  @emitter "script/write_publication_record.sh"
-  @asserter "script/assert_publication_record.sh"
+  @repo_root Path.expand("../../..", __DIR__)
+  @emitter Path.join(@repo_root, "script/write_publication_record.sh")
+  @asserter Path.join(@repo_root, "script/assert_publication_record.sh")
 
   @verified_token "PUBLICATION_RECORD_VERIFIED"
   @missing_token "PUBLICATION_RECORD_MISSING"
@@ -61,7 +62,7 @@ defmodule Crosswake.ReleaseCandidate.PublicationRecordTest do
   end
 
   defp emit(args) do
-    System.cmd("bash", [@emitter | args], stderr_to_stdout: true)
+    System.cmd("bash", [@emitter | args], cd: @repo_root, stderr_to_stdout: true)
   end
 
   defp emit_args(out, overrides \\ %{}) do
@@ -116,6 +117,7 @@ defmodule Crosswake.ReleaseCandidate.PublicationRecordTest do
         "--record",
         record
       ],
+      cd: @repo_root,
       stderr_to_stdout: true
     )
   end

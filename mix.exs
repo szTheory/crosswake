@@ -12,6 +12,10 @@ defmodule Crosswake.MixProject do
       name: "crosswake",
       elixir: "~> 1.19",
       elixirc_paths: elixirc_paths(Mix.env()),
+      # Mix compiles test files while ExUnit runs already-loaded async tests.
+      # Dependency loading can temporarily change the VM-wide cwd, so give the
+      # parallel test compiler absolute paths for the remaining test files.
+      test_paths: [Path.expand("test", __DIR__)],
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),

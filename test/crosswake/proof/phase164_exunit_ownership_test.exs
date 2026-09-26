@@ -8,7 +8,8 @@ defmodule Crosswake.Proof.Phase164ExUnitOwnershipTest do
   """
   use ExUnit.Case, async: true
 
-  @script "script/check_exunit_ownership.exs"
+  @repo_root Path.expand("../../..", __DIR__)
+  @script Path.join(@repo_root, "script/check_exunit_ownership.exs")
 
   defp prepare_tree!(tmp, source, opts \\ []) do
     path = Keyword.get(opts, :path, "test/sample_test.exs")
@@ -48,7 +49,7 @@ defmodule Crosswake.Proof.Phase164ExUnitOwnershipTest do
   end
 
   defp run_detector(root) do
-    System.cmd("elixir", [@script, "--root", root], stderr_to_stdout: true)
+    System.cmd("elixir", [@script, "--root", root], cd: @repo_root, stderr_to_stdout: true)
   end
 
   test "the live test tree has a merge-blocking owner for every intended file" do
