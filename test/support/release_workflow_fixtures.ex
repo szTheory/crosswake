@@ -14,8 +14,9 @@ defmodule Crosswake.ReleaseWorkflowFixtures do
 
   import ExUnit.Callbacks, only: [on_exit: 1]
 
-  @scanner "script/check_release_workflow_integrity.exs"
-  @release_workflow ".github/workflows/release-please.yml"
+  @repo_root Path.expand("../..", __DIR__)
+  @scanner Path.join(@repo_root, "script/check_release_workflow_integrity.exs")
+  @release_workflow Path.join(@repo_root, ".github/workflows/release-please.yml")
 
   def scanner, do: @scanner
   def release_workflow_path, do: @release_workflow

@@ -1,9 +1,10 @@
 defmodule Crosswake.Planning.MilestoneArcCloseoutParityTest do
   use ExUnit.Case, async: true
 
-  @arc_path Path.join(File.cwd!(), ".planning/MILESTONE-ARC.md")
-  @project_path Path.join(File.cwd!(), ".planning/PROJECT.md")
-  @closeout_path Path.join(File.cwd!(), ".planning/milestones/v3.6-CLOSEOUT.md")
+  @repo_root Path.expand("../../..", __DIR__)
+  @arc_path Path.join(@repo_root, ".planning/MILESTONE-ARC.md")
+  @project_path Path.join(@repo_root, ".planning/PROJECT.md")
+  @closeout_path Path.join(@repo_root, ".planning/milestones/v3.6-CLOSEOUT.md")
 
   @shipped_milestones [
     "v1.0 Route-Policy Substrate",
