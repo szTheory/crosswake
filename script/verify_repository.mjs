@@ -31,6 +31,10 @@ const browserDiagnosticCategories = [
   "browser_test_timeout"
 ];
 const browserDiagnosticKeys = ["category", "job", "owner", "schema_version"];
+const exampleHostDiagnosticSeeds = new Set([17, 101, 1009]);
+const exampleHostDiagnosticClasses = new Set(["tagged", "complete"]);
+const exampleHostDiagnosticKinds = ["command_failure", "owned_temp_residue", "tracked_path_residue"];
+const exampleHostDiagnosticKeys = ["class", "exit_code", "kind", "owner", "schema_version", "seed"];
 const pythonChildStageOwners = new Set(["root-proof", "example-host-proof"]);
 
 export function spawnStage(command, args, options) {
@@ -78,6 +82,50 @@ export function classifyBrowserFailure(result, context) {
   else if (/expect(?:ed|\()|assertion/i.test(output)) category = "browser_assertion_failed";
   else category = "browser_process_exit_nonzero";
   return validateBrowserDiagnostic({ schema_version: 1, owner: "browser", category, job: context.job });
+}
+
+export function validateExampleHostDiagnostic(value) {
+  sameKeys(value, exampleHostDiagnosticKeys, "example-host diagnostic");
+  const validExitCode = Number.isInteger(value.exit_code) && value.exit_code >= 0 && value.exit_code <= 255;
+  const exitCodeMatchesKind = value.kind === "command_failure" ? validExitCode : value.exit_code === null;
+  if (
+    value.schema_version !== 1 ||
+    value.owner !== "example-host-proof" ||
+    !exampleHostDiagnosticSeeds.has(value.seed) ||
+    !exampleHostDiagnosticClasses.has(value.class) ||
+    !exampleHostDiagnosticKinds.includes(value.kind) ||
+    !exitCodeMatchesKind
+  ) throw new Error("example-host diagnostic value is outside the closed schema");
+  return value;
+}
+
+export function classifyExampleHostFailure(result) {
+  const output = `${String(result?.stdout ?? "")}\n${String(result?.stderr ?? "")}`;
+  const commandFailure = output.match(/^\[crosswake\] FAIL example-host-isolation seed=(17|101|1009) class=(tagged|complete) exit=(\d+)$/m);
+  if (commandFailure) {
+    return validateExampleHostDiagnostic({
+      schema_version: 1,
+      owner: "example-host-proof",
+      seed: Number(commandFailure[1]),
+      class: commandFailure[2],
+      kind: "command_failure",
+      exit_code: Number(commandFailure[3])
+    });
+  }
+
+  const residueFailure = output.match(/^\[crosswake\] FAIL example-host-isolation seed=(17|101|1009) class=(tagged|complete) residue=(owned-temp|tracked-path) path=.+$/m);
+  if (residueFailure) {
+    return validateExampleHostDiagnostic({
+      schema_version: 1,
+      owner: "example-host-proof",
+      seed: Number(residueFailure[1]),
+      class: residueFailure[2],
+      kind: residueFailure[3] === "owned-temp" ? "owned_temp_residue" : "tracked_path_residue",
+      exit_code: null
+    });
+  }
+
+  return null;
 }
 
 export function loadStageManifest(source = manifestPath) {
@@ -227,9 +275,16 @@ export function runPreflight(_manifest, selected, options = {}) {
 function renderSummary(records) {
   const byPurpose = new Map();
   for (const record of records) byPurpose.set(record.purpose, record);
-  return [...byPurpose.values()].map(record => record.result === "PASS"
-    ? `PASS ${record.purpose}`
-    : `${record.result} ${record.purpose}${record.category ? ` category=${record.category}` : ""}${record.path ? ` path=${JSON.stringify(record.path)}` : ""}; corrective-command=${record.remediation_command}${record.diagnostic ? `\nBROWSER_DIAGNOSTIC ${JSON.stringify(validateBrowserDiagnostic(record.diagnostic))}` : ""}`).join("\n");
+  return [...byPurpose.values()].map(record => {
+    if (record.result === "PASS") return `PASS ${record.purpose}`;
+
+    const diagnostic = record.diagnostic?.owner === "browser"
+      ? `\nBROWSER_DIAGNOSTIC ${JSON.stringify(validateBrowserDiagnostic(record.diagnostic))}`
+      : record.diagnostic?.owner === "example-host-proof"
+        ? `\nEXAMPLE_HOST_DIAGNOSTIC ${JSON.stringify(validateExampleHostDiagnostic(record.diagnostic))}`
+        : "";
+    return `${record.result} ${record.purpose}${record.category ? ` category=${record.category}` : ""}${record.path ? ` path=${JSON.stringify(record.path)}` : ""}; corrective-command=${record.remediation_command}${diagnostic}`;
+  }).join("\n");
 }
 
 function validateRunRoot(runRoot, root, captureRoot) {
@@ -477,7 +532,9 @@ export function runVerification(options = {}) {
       const stageResult = passed ? "PASS" : "FAIL";
       const diagnostic = !passed && stage.stage_id === "browser-proof" && browserDiagnostic
         ? classifyBrowserFailure(result, browserDiagnostic)
-        : undefined;
+        : !passed && stage.stage_id === "example-host-proof"
+          ? classifyExampleHostFailure(result)
+          : undefined;
       records.push({
         result: stageResult,
         purpose: stage.stage_id,

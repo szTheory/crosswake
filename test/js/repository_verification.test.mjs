@@ -11,6 +11,7 @@ import {
   BROWSER_DIAGNOSTIC_MODE,
   browserDiagnosticContext,
   classifyBrowserFailure,
+  classifyExampleHostFailure,
   loadArtifactPolicy,
   loadStageManifest,
   runPreflight,
@@ -21,7 +22,8 @@ import {
   validateCiParity,
   validateArtifactPolicy,
   validateStageManifest,
-  validateBrowserDiagnostic
+  validateBrowserDiagnostic,
+  validateExampleHostDiagnostic
 } from "../../script/verify_repository.mjs";
 
 const root = new URL("../../", import.meta.url);
@@ -408,6 +410,60 @@ test("hosted browser diagnostic redaction rejects unknown values and private chi
   });
   const serialized = JSON.stringify(diagnostic);
   for (const privateValue of privateValues) assert.equal(serialized.includes(privateValue), false);
+});
+
+test("example-host failure classifier emits only a closed seed, class, and failure kind", () => {
+  const privateOutput = "raw fixture payload https://invalid.example /private/runner/path SECRET_ENV=value";
+  const diagnostic = classifyExampleHostFailure({
+    status: 1,
+    stdout: privateOutput,
+    stderr: `[crosswake] FAIL example-host-isolation seed=101 class=complete exit=2\n${privateOutput}`
+  });
+
+  assert.deepEqual(diagnostic, {
+    schema_version: 1,
+    owner: "example-host-proof",
+    seed: 101,
+    class: "complete",
+    kind: "command_failure",
+    exit_code: 2
+  });
+  assert(!JSON.stringify(diagnostic).includes(privateOutput));
+
+  const residue = classifyExampleHostFailure({
+    status: 1,
+    stdout: "",
+    stderr: "[crosswake] FAIL example-host-isolation seed=17 class=tagged residue=owned-temp path=/private/runner/crosswake-example-host-secret.sqlite3"
+  });
+  assert.equal(residue.kind, "owned_temp_residue");
+  assert(!JSON.stringify(residue).includes("/private/runner"));
+  assert.equal(classifyExampleHostFailure({ status: 1, stdout: "unstructured private output", stderr: "" }), null);
+  assert.throws(() => validateExampleHostDiagnostic({ ...diagnostic, detail: privateOutput }), /unknown or missing keys/);
+  assert.throws(() => validateExampleHostDiagnostic({ ...diagnostic, exit_code: null }), /outside the closed schema/);
+  assert.throws(() => validateExampleHostDiagnostic({ ...residue, exit_code: 2 }), /outside the closed schema/);
+});
+
+test("repository verifier renders safe example-host failure coordinates", () => {
+  const repository = makeRepository();
+  const runRoot = mkdtempSync(path.join(tmpdir(), "crosswake-repository-verify.test-"));
+  const privateOutput = "fixture payload /private/runner/test-results";
+  try {
+    const result = runVerification(verificationOptions(repository, {
+      selection: "example-host-proof",
+      runRoot,
+      spawn: (command, argv) => [command, ...argv].join(" ") === "script/check_example_host_isolation.sh --matrix-only"
+        ? { status: 1, stdout: "", stderr: `[crosswake] FAIL example-host-isolation seed=101 class=complete exit=2\n${privateOutput}` }
+        : { status: 0, stdout: "", stderr: "" }
+    }));
+
+    assert.equal(result.status, 1);
+    assert.match(result.output, /FAIL example-host-proof/);
+    assert.match(result.output, /EXAMPLE_HOST_DIAGNOSTIC \{"schema_version":1,"owner":"example-host-proof","seed":101,"class":"complete","kind":"command_failure","exit_code":2\}/);
+    assert(!result.output.includes(privateOutput));
+  } finally {
+    rmSync(runRoot, { recursive: true, force: true });
+    rmSync(repository, { recursive: true, force: true });
+  }
 });
 
 test("hosted diagnostic keeps ordinary browser proof and nonzero failure authority", () => {
