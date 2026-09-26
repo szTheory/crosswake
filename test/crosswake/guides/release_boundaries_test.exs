@@ -105,7 +105,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert mirror.public_ref == "refs/tags/v#{candidate_version}"
 
     assert next_action ==
-             "run mix crosswake.release.status --live, then capture the exact candidate receipt"
+             "gather fresh evidence and request a new gate"
   end
 
   test "phase 170: an empty independent-companion list now fails instead of passing vacuously" do
@@ -153,7 +153,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert status.release_candidate.state == "PARTIAL"
 
     assert status.release_candidate.next_action ==
-             "recover only the missing linked coordinate from its exact approved ref"
+             "preserve this partial history; gather fresh evidence and request a new gate"
 
     assert status.release_candidate.mirror.baseline_status == "OK"
     assert status.release_candidate.mirror.public_status == "MISSING"
