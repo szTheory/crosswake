@@ -20,6 +20,14 @@ defmodule Mix.Tasks.Crosswake.Release.Gate do
 
   @impl Mix.Task
   def run(args) do
+    if "--capture-live" in args do
+      run_live(args)
+    else
+      run_local(args)
+    end
+  end
+
+  defp run_local(args) do
     outcome =
       try do
         Mix.Task.run("app.config")
@@ -38,6 +46,56 @@ defmodule Mix.Tasks.Crosswake.Release.Gate do
           {:error, reason} ->
             {:blocked, Map.get(envelope, "stage", "unknown"),
              get_in(envelope, ["identity", "operation"]) || "unknown", reason}
+        end
+      rescue
+        _error -> {:blocked, "unknown", "unknown", "invalid_evidence"}
+      end
+
+    case outcome do
+      {:pass, result} ->
+        Mix.shell().info(
+          "REL-17 PASS stage=#{result.stage} operation=#{result.operation} next=#{result.next_step}"
+        )
+
+      {:blocked, stage, operation, reason} ->
+        blocked!(stage, operation, reason)
+    end
+  end
+
+  defp run_live(args) do
+    outcome =
+      try do
+        Mix.Task.run("app.config")
+        options = parse_live!(args)
+        authorization = read_authorization!(options.authorization_file)
+
+        capture_options =
+          options
+          |> Map.drop([:capture_live, :authorization_file])
+          |> Map.to_list()
+          |> Keyword.put(:authorization, authorization)
+
+        case Crosswake.ReleaseCandidate.EvidenceLive.capture(capture_options) do
+          {:ok, %{envelope: envelope, sources: sources, source_dir: source_dir}} ->
+            envelope_path = Path.join(source_dir, "envelope.json")
+            File.write!(envelope_path, Jason.encode!(envelope), [:binary, :sync])
+            File.chmod!(envelope_path, 0o600)
+
+            case Crosswake.ReleaseCandidate.EvidenceGate.validate(envelope, sources) do
+              {:ok, result} ->
+                if matches_live_expected?(result, envelope, options) do
+                  {:pass, result}
+                else
+                  {:blocked, result.stage, result.operation, "identity_mismatch"}
+                end
+
+              {:error, reason} ->
+                {:blocked, envelope["stage"], envelope["identity"]["operation"], reason}
+            end
+
+          {:error, reason} ->
+            {:blocked, Map.get(options, :stage, "unknown"),
+             Map.get(options, :operation, "unknown"), reason}
         end
       rescue
         _error -> {:blocked, "unknown", "unknown", "invalid_evidence"}
@@ -80,7 +138,8 @@ defmodule Mix.Tasks.Crosswake.Release.Gate do
 
     unless values.operation in ~w(linked_release recovery companion_publish) and
              values.stage == "post_merge" and is_binary(values.package) and
-             values.package != "" and is_integer(values.leg_run_id) and
+             valid_operation_package?(values.operation, values.package) and
+             is_integer(values.leg_run_id) and
              values.leg_run_id > 0 and
              is_binary(values.receipt_digest) and
              Regex.match?(@digest_pattern, values.receipt_digest) and
@@ -92,12 +151,112 @@ defmodule Mix.Tasks.Crosswake.Release.Gate do
     values
   end
 
+  defp parse_live!(args) do
+    {opts, argv, invalid} =
+      OptionParser.parse(args,
+        strict: [
+          capture_live: :boolean,
+          operation: :string,
+          stage: :string,
+          package: :string,
+          version: :string,
+          pr: :integer,
+          receipt_digest: :string,
+          leg_run_id: :integer,
+          ci_run_id: :integer,
+          receipt_run_id: :integer,
+          receipt_artifact_id: :integer,
+          repository: :string,
+          runbook_commit: :string,
+          expected_policy_sha256: :string,
+          expected_base_oid: :string,
+          expected_head_oid: :string,
+          expected_tree_oid: :string,
+          merge_oid: :string,
+          source_dir: :string,
+          authorization_file: :string
+        ]
+      )
+
+    required =
+      ~w(capture_live operation stage package version pr receipt_digest leg_run_id ci_run_id receipt_run_id receipt_artifact_id repository runbook_commit expected_policy_sha256 expected_base_oid expected_head_oid expected_tree_oid source_dir authorization_file)a
+
+    unless invalid == [] and argv == [] and opts[:capture_live] == true and
+             Enum.all?(required, &Keyword.has_key?(opts, &1)),
+           do: Mix.raise("invalid REL-17 live capture command")
+
+    values =
+      opts
+      |> Keyword.delete(:capture_live)
+      |> Map.new()
+
+    unless values.operation in ~w(linked_release recovery companion_publish) and
+             values.stage in ~w(pre_merge post_merge) and is_binary(values.package) and
+             valid_operation_package?(values.operation, values.package) and
+             is_binary(values.version) and
+             Regex.match?(~r/\A\d+\.\d+\.\d+\z/, values.version) and
+             is_integer(values.pr) and values.pr > 0 and
+             Enum.all?(
+               ~w(leg_run_id ci_run_id receipt_run_id receipt_artifact_id)a,
+               &(is_integer(values[&1]) and values[&1] > 0)
+             ) and
+             Regex.match?(@digest_pattern, values.receipt_digest) and
+             Regex.match?(@digest_pattern, values.expected_policy_sha256) and
+             Regex.match?(@sha_pattern, values.runbook_commit) and
+             Regex.match?(@sha_pattern, values.expected_base_oid) and
+             Regex.match?(@sha_pattern, values.expected_head_oid) and
+             Regex.match?(@sha_pattern, values.expected_tree_oid) and
+             Regex.match?(~r/\A[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\z/, values.repository) and
+             values.repository == "szTheory/crosswake" and
+             is_binary(values.source_dir) and values.source_dir != "" and
+             is_binary(values.authorization_file) and values.authorization_file != "" and
+             ((values.stage == "pre_merge" and is_nil(values[:merge_oid])) or
+                (values.stage == "post_merge" and is_binary(values[:merge_oid]) and
+                   Regex.match?(@sha_pattern, values.merge_oid))),
+           do: Mix.raise("invalid REL-17 live capture command")
+
+    values
+  end
+
+  defp read_authorization!(path) do
+    path
+    |> read_regular!(65_536)
+    |> Jason.decode!()
+  end
+
+  defp valid_operation_package?("linked_release", "crosswake"), do: true
+  defp valid_operation_package?("recovery", "crosswake"), do: true
+
+  defp valid_operation_package?("companion_publish", package) do
+    package in Enum.drop(Crosswake.ReleaseCandidate.Artifact.packages(), 1)
+  end
+
+  defp valid_operation_package?(_, _), do: false
+
+  defp matches_live_expected?(result, envelope, options) do
+    identity = envelope["identity"]
+    candidate = envelope["candidate"]
+
+    result.stage == options.stage and result.operation == options.operation and
+      identity["receipt_digest"] == options.receipt_digest and
+      identity["leg_run_id"] == options.leg_run_id and
+      candidate["merge_oid"] == Map.get(options, :merge_oid) and
+      candidate["package"] == options.package and
+      candidate["version"] == options.version and candidate["pr"] == options.pr and
+      candidate["base_oid"] == Map.get(options, :expected_base_oid) and
+      candidate["head_oid"] == Map.get(options, :expected_head_oid) and
+      candidate["tree_oid"] == options.expected_tree_oid
+  end
+
   defp load_sources!(%{"conditions" => conditions}, source_dir) when is_map(conditions) do
     root = Path.expand(source_dir)
 
-    Map.new(conditions, fn {_id, condition} ->
-      path = condition["source_path"]
-
+    conditions
+    |> Enum.flat_map(fn {_id, condition} ->
+      [condition["source_path"], condition["raw_source_path"]]
+    end)
+    |> Enum.uniq()
+    |> Map.new(fn path ->
       unless safe_relative_path?(path), do: Mix.raise("invalid REL-17 evidence source")
 
       full_path = Path.expand(path, root)

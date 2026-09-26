@@ -1,6 +1,8 @@
 defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
   use ExUnit.Case, async: true
 
+  import ExUnit.CaptureIO
+
   alias Crosswake.ReleaseCandidate.EvidenceGate
 
   @base String.duplicate("a", 40)
@@ -8,6 +10,7 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
   @tree String.duplicate("c", 40)
   @merge String.duplicate("d", 40)
   @receipt_digest String.duplicate("e", 64)
+  @policy_digest String.duplicate("1", 64)
   @runbook_commit String.duplicate("f", 40)
   @leg_run_id 52001
 
@@ -18,7 +21,7 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
              EvidenceGate.validate(envelope, sources)
   end
 
-  test "the shell seam and Mix task accept a complete seeded post-merge envelope" do
+  test "the Mix task validates a seeded envelope, while the shell seam rejects cached evidence" do
     {envelope, sources} = fixture("post_merge")
     root = Path.join(System.tmp_dir!(), "crosswake-rel17-#{System.unique_integer([:positive])}")
     source_dir = Path.join(root, "sources")
@@ -33,26 +36,51 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
 
     File.write!(envelope_file, Jason.encode!(envelope))
 
-    env = [
-      {"MIX_ENV", "test"},
-      {"REL17_OPERATION", "linked_release"},
-      {"REL17_PACKAGE", "crosswake"},
-      {"REL17_RECEIPT_DIGEST", @receipt_digest},
-      {"REL17_LEG_RUN_ID", Integer.to_string(@leg_run_id)},
-      {"REL17_MERGE_OID", @merge},
-      {"REL17_ENVELOPE_FILE", envelope_file},
-      {"REL17_SOURCE_DIR", source_dir}
-    ]
+    task_output =
+      capture_io(fn ->
+        Mix.Task.clear()
+
+        Mix.Tasks.Crosswake.Release.Gate.run([
+          "--operation",
+          "linked_release",
+          "--stage",
+          "post_merge",
+          "--package",
+          "crosswake",
+          "--receipt-digest",
+          @receipt_digest,
+          "--leg-run-id",
+          Integer.to_string(@leg_run_id),
+          "--merge-oid",
+          @merge,
+          "--envelope-file",
+          envelope_file,
+          "--source-dir",
+          source_dir
+        ])
+      end)
+
+    assert task_output =~ "REL-17 PASS stage=post_merge operation=linked_release"
 
     {output, status} =
       System.cmd("bash", ["script/release_candidate/require_release_evidence.sh"],
-        env: env,
+        env: [
+          {"MIX_ENV", "test"},
+          {"REL17_OPERATION", "linked_release"},
+          {"REL17_PACKAGE", "crosswake"},
+          {"REL17_RECEIPT_DIGEST", @receipt_digest},
+          {"REL17_LEG_RUN_ID", Integer.to_string(@leg_run_id)},
+          {"REL17_MERGE_OID", @merge},
+          {"REL17_ENVELOPE_FILE", envelope_file},
+          {"REL17_SOURCE_DIR", source_dir}
+        ],
         stderr_to_stdout: true
       )
 
     File.rm_rf!(root)
-    assert status == 0, output
-    assert output =~ "REL-17 PASS stage=post_merge operation=linked_release"
+    assert status != 0
+    assert output =~ "REL-17 BLOCKED"
+    assert output =~ "reason=missing_evidence"
   end
 
   test "a complete pre-merge envelope validates as evidence without granting publication authority" do
@@ -104,9 +132,15 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
         "head_oid" => @head,
         "tree_oid" => @tree,
         "merge_state" => "MERGEABLE",
+        "ci_run_id" => 52002,
         "ci_conclusion" => "success",
+        "required_check_ids" => ["Crosswake CI"],
         "required_checks_complete" => true,
-        "policy_current" => false
+        "policy_sha256" => @policy_digest,
+        "policy_current" => false,
+        "pagination_complete" => true,
+        "receipt_artifact_id" => 52003,
+        "receipt_artifact_live" => true
       }),
       replace_facts(envelope, sources, "registry_response", %{
         "package" => "crosswake",
@@ -162,15 +196,24 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
     path = fn name -> "evidence/#{name}.json" end
 
     evidence = fn name, facts, bytes ->
+      {facts_bytes, raw_bytes} =
+        case bytes do
+          {facts_bytes, raw_bytes} -> {facts_bytes, raw_bytes}
+          other -> {other, other}
+        end
+
       source_path = path.(name)
+      raw_source_path = path.("raw-#{name}")
 
       source = %{
         "source_path" => source_path,
-        "source_sha256" => digest(bytes),
+        "source_sha256" => digest(facts_bytes),
+        "raw_source_path" => raw_source_path,
+        "raw_source_sha256" => digest(raw_bytes),
         "facts" => facts
       }
 
-      {source, {source_path, bytes}}
+      {source, [{source_path, facts_bytes}, {raw_source_path, raw_bytes}]}
     end
 
     {leg, leg_source} =
@@ -194,9 +237,15 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
           "head_oid" => @head,
           "tree_oid" => @tree,
           "merge_state" => "MERGEABLE",
+          "ci_run_id" => 52002,
           "ci_conclusion" => "success",
+          "required_check_ids" => ["Crosswake CI"],
           "required_checks_complete" => true,
-          "policy_current" => true
+          "policy_sha256" => @policy_digest,
+          "policy_current" => true,
+          "pagination_complete" => true,
+          "receipt_artifact_id" => 52003,
+          "receipt_artifact_live" => true
         },
         Jason.encode!(%{
           "package" => "crosswake",
@@ -205,9 +254,15 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
           "head_oid" => @head,
           "tree_oid" => @tree,
           "merge_state" => "MERGEABLE",
+          "ci_run_id" => 52002,
           "ci_conclusion" => "success",
+          "required_check_ids" => ["Crosswake CI"],
           "required_checks_complete" => true,
-          "policy_current" => true
+          "policy_sha256" => @policy_digest,
+          "policy_current" => true,
+          "pagination_complete" => true,
+          "receipt_artifact_id" => 52003,
+          "receipt_artifact_live" => true
         })
       )
 
@@ -217,7 +272,14 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
       evidence.(
         "registry",
         %{"package" => "crosswake", "version" => "0.2.4", "parsed" => parsed_registry},
-        Jason.encode!(parsed_registry)
+        {
+          Jason.encode!(%{
+            "package" => "crosswake",
+            "version" => "0.2.4",
+            "parsed" => parsed_registry
+          }),
+          Jason.encode!(parsed_registry)
+        }
       )
 
     merge_facts =
@@ -301,14 +363,14 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
     }
 
     sources =
-      Map.new([
-        leg_source,
-        candidate_source,
-        registry_source,
-        merge_source,
-        response_source,
-        ancestry_source
-      ])
+      Map.new(
+        leg_source ++
+          candidate_source ++
+          registry_source ++
+          merge_source ++
+          response_source ++
+          ancestry_source
+      )
 
     {envelope, sources}
   end
@@ -316,18 +378,24 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
   defp replace_facts(envelope, sources, condition_id, facts) do
     condition = envelope["conditions"][condition_id]
 
-    bytes =
-      if condition_id == "registry_response",
-        do: Jason.encode!(facts["parsed"]),
-        else: Jason.encode!(facts)
+    bytes = Jason.encode!(facts)
+
+    raw_bytes =
+      if condition_id == "registry_response", do: Jason.encode!(facts["parsed"]), else: bytes
 
     updated_condition =
       condition
       |> Map.put("facts", facts)
       |> Map.put("source_sha256", digest(bytes))
+      |> Map.put("raw_source_sha256", digest(raw_bytes))
 
     updated_envelope = put_in(envelope, ["conditions", condition_id], updated_condition)
-    updated_sources = Map.put(sources, condition["source_path"], bytes)
+
+    updated_sources =
+      sources
+      |> Map.put(condition["source_path"], bytes)
+      |> Map.put(condition["raw_source_path"], raw_bytes)
+
     {updated_envelope, updated_sources}
   end
 

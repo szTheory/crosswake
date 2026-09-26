@@ -75,6 +75,34 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGate do
   def validate(nil, _sources), do: {:error, "missing_evidence"}
   def validate(_envelope, _sources), do: {:error, "invalid_envelope"}
 
+  @doc """
+  Returns the read-only operator projection of the closed validator result.
+
+  A passing envelope describes evidence only; it never records or consumes authorization.
+  """
+  @spec status(map() | nil, map()) :: map()
+  def status(envelope, sources) do
+    case validate(envelope, sources) do
+      {:ok, %{stage: stage, operation: operation, next_step: next_step}} ->
+        %{
+          state: "EVIDENCE_VALID",
+          condition: "all_conditions_pass",
+          operation: operation,
+          stage: stage,
+          next_step: next_step
+        }
+
+      {:error, reason} ->
+        %{
+          state: "BLOCKED",
+          condition: reason,
+          operation: "unknown",
+          stage: "unknown",
+          next_step: "gather fresh evidence and request a new gate"
+        }
+    end
+  end
+
   defp valid_schema(%{"schema_version" => 1, "stage" => stage})
        when stage in ["pre_merge", "post_merge"],
        do: :ok
@@ -218,11 +246,12 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGate do
            check(
              Enum.all?(
                entries,
-               &(Map.keys(&1) |> Enum.sort() == ~w(facts source_path source_sha256))
+               &(Map.keys(&1) |> Enum.sort() ==
+                   ~w(facts raw_source_path raw_source_sha256 source_path source_sha256))
              ),
              "source_mismatch"
            ),
-         paths <- Enum.map(entries, & &1["source_path"]),
+         paths <- Enum.flat_map(entries, &[&1["source_path"], &1["raw_source_path"]]),
          :ok <- check(length(paths) == length(Enum.uniq(paths)), "source_mismatch"),
          :ok <- check(Enum.sort(Map.keys(sources)) == Enum.sort(paths), "source_mismatch"),
          {:ok, loaded} <- load_sources(entries, sources) do
@@ -234,14 +263,22 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGate do
     Enum.reduce_while(entries, {:ok, %{}}, fn entry, {:ok, loaded} ->
       path = entry["source_path"]
       bytes = Map.get(sources, path)
+      raw_path = entry["raw_source_path"]
+      raw_bytes = Map.get(sources, raw_path)
 
       valid? =
         safe_relative_path?(path) and is_binary(bytes) and
           byte_size(bytes) in 1..@max_source_bytes and
           digest(bytes) == entry["source_sha256"] and digest?(entry["source_sha256"])
 
-      if valid? do
-        {:cont, {:ok, Map.put(loaded, path, bytes)}}
+      raw_valid? =
+        safe_relative_path?(raw_path) and is_binary(raw_bytes) and
+          byte_size(raw_bytes) in 1..@max_source_bytes and
+          digest(raw_bytes) == entry["raw_source_sha256"] and
+          digest?(entry["raw_source_sha256"])
+
+      if valid? and raw_valid? do
+        {:cont, {:ok, loaded |> Map.put(path, bytes) |> Map.put(raw_path, raw_bytes)}}
       else
         {:halt, {:error, "source_mismatch"}}
       end
@@ -268,7 +305,7 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGate do
     with :ok <-
            exact_keys(
              facts,
-             ~w(package receipt_digest base_oid head_oid tree_oid merge_state ci_conclusion required_checks_complete policy_current)
+             ~w(package receipt_digest base_oid head_oid tree_oid merge_state ci_run_id ci_conclusion required_check_ids required_checks_complete policy_sha256 policy_current pagination_complete receipt_artifact_id receipt_artifact_live)
            ),
          :ok <- source_matches_facts(evidence, loaded, facts),
          :ok <-
@@ -285,6 +322,22 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGate do
            ),
          :ok <-
            check(
+             positive_integer?(facts["ci_run_id"]) and
+               is_list(facts["required_check_ids"]) and
+               "Crosswake CI" in facts["required_check_ids"] and
+               Enum.all?(facts["required_check_ids"], &is_binary/1) and
+               facts["required_check_ids"] == Enum.uniq(facts["required_check_ids"]),
+             "condition_failed"
+           ),
+         :ok <-
+           check(
+             digest?(facts["policy_sha256"]) and facts["pagination_complete"] == true and
+               positive_integer?(facts["receipt_artifact_id"]) and
+               facts["receipt_artifact_live"] == true,
+             "condition_failed"
+           ),
+         :ok <-
+           check(
              facts["merge_state"] == "MERGEABLE" and facts["ci_conclusion"] == "success" and
                facts["required_checks_complete"] == true and facts["policy_current"] == true,
              "condition_failed"
@@ -297,12 +350,13 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGate do
 
   defp validate_registry(facts, loaded, evidence, candidate) when is_map(facts) do
     with :ok <- exact_keys(facts, ~w(package version parsed)),
+         :ok <- source_matches_facts(evidence, loaded, facts),
          :ok <-
            check(
              facts["package"] == candidate.package and facts["version"] == candidate.version,
              "condition_failed"
            ),
-         {:ok, body} <- Map.fetch(loaded, evidence["source_path"]),
+         {:ok, body} <- Map.fetch(loaded, evidence["raw_source_path"]),
          {:ok, parsed} <- Jason.decode(body),
          true <- parsed == facts["parsed"],
          %{"releases" => releases} when is_list(releases) and releases != [] <- parsed do

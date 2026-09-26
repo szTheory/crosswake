@@ -86,6 +86,13 @@ defmodule Crosswake.ReleaseStatus do
 
     release_candidate =
       release_candidate(core, companions, candidate_version, live?, probes)
+      |> Map.put(
+        :authorization_gate,
+        Crosswake.ReleaseCandidate.EvidenceGate.status(
+          Keyword.get(opts, :rel17_envelope),
+          Keyword.get(opts, :rel17_sources, %{})
+        )
+      )
 
     checks =
       checks(manifest, workflow, core, companions, workflow_integrity) ++
@@ -151,6 +158,8 @@ defmodule Crosswake.ReleaseStatus do
       "Exact #{candidate.version} candidate (read-only):",
       "- state: #{candidate.state}",
       "- next action: #{candidate.next_action}",
+      "- REL-17 evidence: #{candidate.authorization_gate.state} (#{candidate.authorization_gate.condition})",
+      "- REL-17 next step: #{candidate.authorization_gate.next_step}",
       "- linked coordinates: #{Enum.map_join(candidate.linked_coordinates, ", ", & &1.coordinate)}",
       "- independent companions: #{Enum.map_join(candidate.independent_companions, ", ", & &1.package)}",
       "- mirror baseline/public: #{candidate.mirror.baseline_ref} / #{candidate.mirror.public_ref}",
@@ -323,8 +332,7 @@ defmodule Crosswake.ReleaseStatus do
   defp public_status(%{status: status}), do: status |> to_string() |> String.upcase()
 
   defp candidate_state(_candidate_live, false) do
-    {"BLOCKED",
-     "run mix crosswake.release.status --live, then capture the exact candidate receipt"}
+    {"BLOCKED", "gather fresh evidence and request a new gate"}
   end
 
   defp candidate_state(candidate_live, true) do
@@ -333,17 +341,16 @@ defmodule Crosswake.ReleaseStatus do
 
     cond do
       :unavailable in statuses ->
-        {"BLOCKED", "restore live probe access and rerun mix crosswake.release.status --live"}
+        {"BLOCKED", "gather fresh evidence and request a new gate"}
 
       ok_count == length(statuses) ->
         {"COMPLETE", "no action required; preserve the exact public receipt"}
 
       ok_count > 0 ->
-        {"PARTIAL", "recover only the missing linked coordinate from its exact approved ref"}
+        {"PARTIAL", "preserve this partial history; gather fresh evidence and request a new gate"}
 
       true ->
-        {"BLOCKED",
-         "capture candidate-local proof and the trusted mirror rehearsal before approval"}
+        {"BLOCKED", "gather fresh evidence and request a new gate"}
     end
   end
 
