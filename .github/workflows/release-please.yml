@@ -144,6 +144,15 @@ jobs:
             "$receipt" >/dev/null
           cmp "$receipt_dir/artifacts.json" "$ci_dir/artifacts/artifacts.json"
 
+          # REL-17 is a hard hold on every future publication. This call revalidates
+          # the exact post-merge envelope before the workflow exposes release authority.
+          REL17_OPERATION="linked_release" \
+          REL17_PACKAGE="crosswake" \
+          REL17_RECEIPT_DIGEST="$candidate_receipt" \
+          REL17_LEG_RUN_ID="$candidate_run_id" \
+          REL17_MERGE_OID="$merge_oid" \
+          bash script/release_candidate/require_release_evidence.sh
+
           emit_output "linked_release=true"
           emit_output "approved_head=$approved_head"
           emit_output "approved_tree=$approved_tree"
