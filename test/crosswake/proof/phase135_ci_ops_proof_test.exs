@@ -15,6 +15,8 @@ defmodule Crosswake.Proof.Phase135CiOpsProofTest do
 
   alias Crosswake.TestSupport.ProofAssertions
 
+  @repo_root Path.expand("../../..", Path.expand(__DIR__, System.get_env("PWD") || File.cwd!()))
+
   # ---------------------------------------------------------------------------
   # SC1: staleness guard RED→GREEN via GIT_DIR-env injection
   # Marquee proof: demonstrates the guard (not merely asserts it).
@@ -578,6 +580,7 @@ defmodule Crosswake.Proof.Phase135CiOpsProofTest do
       System.cmd(
         "mix",
         ["test", "test/crosswake/planning/milestone_transition_reset_test.exs", "--seed", "0"],
+        cd: @repo_root,
         stderr_to_stdout: true
       )
 
@@ -598,6 +601,7 @@ defmodule Crosswake.Proof.Phase135CiOpsProofTest do
       System.cmd(
         "mix",
         ["test", "test/crosswake/proof/phase52_operator_truth_test.exs", "--seed", "0"],
+        cd: @repo_root,
         stderr_to_stdout: true
       )
 

@@ -1,16 +1,16 @@
 Code.require_file(
   "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex",
-  __DIR__
+  Path.expand(__DIR__, System.get_env("PWD") || File.cwd!())
 )
 
 Code.require_file(
   "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex",
-  __DIR__
+  Path.expand(__DIR__, System.get_env("PWD") || File.cwd!())
 )
 
 Code.require_file(
   "../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex",
-  __DIR__
+  Path.expand(__DIR__, System.get_env("PWD") || File.cwd!())
 )
 
 defmodule Crosswake.Proof.Phase21ReconciliationExampleTest do

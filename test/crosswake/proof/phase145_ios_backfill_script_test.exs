@@ -1,7 +1,8 @@
 defmodule Crosswake.Proof.Phase145IosBackfillScriptTest do
   use ExUnit.Case, async: true
 
-  @script "script/verify_ios_mirror_backfill.sh"
+  @repo_root Path.expand("../../..", __DIR__)
+  @script Path.join(@repo_root, "script/verify_ios_mirror_backfill.sh")
   @version "0.2.1"
 
   @tag :phase145_ios_backfill_script

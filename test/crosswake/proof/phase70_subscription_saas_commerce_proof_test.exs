@@ -1,36 +1,36 @@
 Code.require_file(
   "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex",
-  __DIR__
+  Path.expand(__DIR__, System.get_env("PWD") || File.cwd!())
 )
 
 Code.require_file(
   "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex",
-  __DIR__
+  Path.expand(__DIR__, System.get_env("PWD") || File.cwd!())
 )
 
 Code.require_file(
   "../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex",
-  __DIR__
+  Path.expand(__DIR__, System.get_env("PWD") || File.cwd!())
 )
 
 Code.require_file(
   "../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_backend_verifier.ex",
-  __DIR__
+  Path.expand(__DIR__, System.get_env("PWD") || File.cwd!())
 )
 
 Code.require_file(
   "../../../examples/phoenix_host/lib/crosswake_example/commerce/storefront_adapter.ex",
-  __DIR__
+  Path.expand(__DIR__, System.get_env("PWD") || File.cwd!())
 )
 
 Code.require_file(
   "../../../examples/phoenix_host/lib/crosswake_example/commerce/provider_adapter_storefront.ex",
-  __DIR__
+  Path.expand(__DIR__, System.get_env("PWD") || File.cwd!())
 )
 
 Code.require_file(
   "../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex",
-  __DIR__
+  Path.expand(__DIR__, System.get_env("PWD") || File.cwd!())
 )
 
 defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do

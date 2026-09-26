@@ -21,8 +21,12 @@ defmodule Crosswake.Proof.Phase170VacuityTaxonomyConventionTest do
   """
   use ExUnit.Case, async: true
 
-  @conventions_doc ".planning/workstreams/quality-ratchet-release/VERIFICATION-CONVENTIONS.md"
-  @phases_glob ".planning/workstreams/quality-ratchet-release/phases/*"
+  @repo_root Path.expand("../../..", Path.expand(__DIR__, System.get_env("PWD") || File.cwd!()))
+  @conventions_doc Path.join(
+                     @repo_root,
+                     ".planning/workstreams/quality-ratchet-release/VERIFICATION-CONVENTIONS.md"
+                   )
+  @phases_glob Path.join(@repo_root, ".planning/workstreams/quality-ratchet-release/phases/*")
   @vacuity_taxonomy_heading "## Vacuity Taxonomy"
   @addendum_suffix "-VACUITY-TAXONOMY.md"
 
