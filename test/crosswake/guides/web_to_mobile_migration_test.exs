@@ -1,7 +1,8 @@
 defmodule Crosswake.Guides.WebToMobileMigrationTest do
   use ExUnit.Case, async: true
 
-  @guide_path "guides/web_to_mobile_migration.md"
+  @repo_root Path.expand("../../..", __DIR__)
+  @guide_path Path.join(@repo_root, "guides/web_to_mobile_migration.md")
 
   @promotion_reasons [
     "degradable bounded native affordance",

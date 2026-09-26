@@ -21,9 +21,10 @@ defmodule Crosswake.Proof.Phase171ApprovedVersionOutputTest do
 
   use ExUnit.Case, async: true
 
-  @workflow ".github/workflows/release-please.yml"
-  @manifest ".release-please-manifest.json"
-  @scanner "script/check_release_workflow_integrity.exs"
+  @repo_root Path.expand("../../..", __DIR__)
+  @workflow Path.join(@repo_root, ".github/workflows/release-please.yml")
+  @manifest Path.join(@repo_root, ".release-please-manifest.json")
+  @scanner Path.join(@repo_root, "script/check_release_workflow_integrity.exs")
 
   defp tmp_dir!(name) do
     dir =
