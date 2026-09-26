@@ -550,7 +550,10 @@ defmodule Crosswake.ReleaseStatus do
 
   defp component_publish_gates?(jobs) do
     Enum.all?(@release_components, fn component ->
-      job_if(jobs, "publish-hex-#{component}") == component_gate_expression(component)
+      includes?(
+        job_if(jobs, "publish-hex-#{component}"),
+        "needs.release-please.outputs.#{component}_release_created == 'true'"
+      )
     end)
   end
 

@@ -254,7 +254,7 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
     end
   end
 
-  test "local bare mirror publication uses ordinary atomic fast-forward and preserves old tags" do
+  test "local bare mirror publication blocks without REL-17 authority and preserves refs" do
     fixture = git_fixture()
 
     env = [
@@ -286,21 +286,20 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
         stderr_to_stdout: true
       )
 
-    assert status == 0, output
-    assert git!(fixture.mirror_repo, ["rev-parse", "refs/heads/main"]) == fixture.new_split
-    assert git!(fixture.mirror_repo, ["rev-parse", "refs/tags/v0.2.1"]) == fixture.new_split
+    assert status != 0, output
+    assert output =~ "REL-17 operation does not match the iOS publication mode"
+    assert git!(fixture.mirror_repo, ["rev-parse", "refs/heads/main"]) == fixture.old_split
+
+    {_, missing_tag_status} =
+      System.cmd(
+        "git",
+        ["-C", fixture.mirror_repo, "show-ref", "--verify", "refs/tags/v0.2.1"],
+        stderr_to_stdout: true
+      )
+
+    assert missing_tag_status != 0
     assert git!(fixture.mirror_repo, ["rev-parse", "refs/tags/v0.2.0"]) == fixture.old_split
-    refute output =~ "force-with-lease"
-
-    expected_split = fixture.new_split
-
-    assert %{
-             "state" => "PASS",
-             "operation" => "PUBLISHED",
-             "external_state_changed" => true,
-             "remote_main" => ^expected_split,
-             "remote_tag" => ^expected_split
-           } = Jason.decode!(output)
+    refute output =~ "external_state_changed=true"
   end
 
   test "publish and recovery remain unreachable from candidate readiness evaluation" do
