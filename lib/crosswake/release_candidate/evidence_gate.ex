@@ -8,7 +8,8 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGate do
   """
 
   @operations ~w(linked_release recovery companion_publish)
-  @companion_packages Crosswake.ReleaseCandidate.Artifact.packages() |> tl()
+  @hex_packages Crosswake.ReleaseCandidate.Artifact.packages()
+  @companion_packages Enum.drop(@hex_packages, 1)
   @condition_ids ~w(
     leg_run
     candidate_readiness
@@ -459,8 +460,8 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGate do
 
   defp safe_relative_path?(_), do: false
 
-  defp valid_package?("crosswake", operation) when operation in ["linked_release", "recovery"],
-    do: true
+  defp valid_package?("crosswake", "linked_release"), do: true
+  defp valid_package?(package, "recovery"), do: package in @hex_packages
 
   defp valid_package?(package, "companion_publish"), do: package in @companion_packages
   defp valid_package?(_, _), do: false

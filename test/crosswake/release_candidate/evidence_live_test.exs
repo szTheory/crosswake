@@ -307,6 +307,33 @@ defmodule Crosswake.ReleaseCandidate.EvidenceLiveTest do
              )
   end
 
+  test "recovery capture permits live selectors for all six Hex package identities" do
+    {:ok, requests} = Agent.start(fn -> [] end)
+    on_exit(fn -> Agent.stop(requests) end)
+
+    fetch = fn url ->
+      Agent.update(requests, &[url | &1])
+      {:error, :offline_fixture}
+    end
+
+    {_responses, _registry, expected_policy} = fixture()
+
+    for package <- Crosswake.ReleaseCandidate.Artifact.packages() do
+      Agent.update(requests, fn _ -> [] end)
+
+      assert {:error, _reason} =
+               EvidenceLive.capture(
+                 options(fetch, expected_policy,
+                   operation: "recovery",
+                   package: package
+                 )
+               )
+
+      assert Agent.get(requests, & &1) != [],
+             "#{package} must pass the operation/package selector and begin fresh live capture"
+    end
+  end
+
   defp options(fetch, expected_policy, overrides \\ []) do
     source_dir =
       Path.join(System.tmp_dir!(), "crosswake-rel17-live-#{System.unique_integer([:positive])}")

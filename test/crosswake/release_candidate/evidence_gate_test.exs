@@ -90,6 +90,30 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
              EvidenceGate.validate(envelope, sources)
   end
 
+  test "recovery accepts each package in the Hex family while preserving operation scope" do
+    for package <- Crosswake.ReleaseCandidate.Artifact.packages() do
+      {envelope, sources} = fixture("post_merge", operation: "recovery", package: package)
+
+      assert {:ok, %{stage: "post_merge", operation: "recovery"}} =
+               EvidenceGate.validate(envelope, sources)
+    end
+  end
+
+  test "companion publication remains package-scoped and core cannot use that operation" do
+    for package <- Enum.drop(Crosswake.ReleaseCandidate.Artifact.packages(), 1) do
+      {envelope, sources} =
+        fixture("post_merge", operation: "companion_publish", package: package)
+
+      assert {:ok, %{stage: "post_merge", operation: "companion_publish"}} =
+               EvidenceGate.validate(envelope, sources)
+    end
+
+    {core_envelope, core_sources} =
+      fixture("post_merge", operation: "companion_publish", package: "crosswake")
+
+    assert {:error, "candidate_mismatch"} = EvidenceGate.validate(core_envelope, core_sources)
+  end
+
   test "missing evidence, wrong operation, wrong leg, or a ready receipt without exact authority is blocked" do
     {envelope, sources} = fixture("post_merge")
 
@@ -191,8 +215,10 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
     assert gate < authority
   end
 
-  defp fixture(stage) do
+  defp fixture(stage, opts \\ []) do
     post_merge? = stage == "post_merge"
+    package = Keyword.get(opts, :package, "crosswake")
+    operation = Keyword.get(opts, :operation, "linked_release")
     path = fn name -> "evidence/#{name}.json" end
 
     evidence = fn name, facts, bytes ->
@@ -231,7 +257,7 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
       evidence.(
         "candidate",
         %{
-          "package" => "crosswake",
+          "package" => package,
           "receipt_digest" => @receipt_digest,
           "base_oid" => @base,
           "head_oid" => @head,
@@ -248,7 +274,7 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
           "receipt_artifact_live" => true
         },
         Jason.encode!(%{
-          "package" => "crosswake",
+          "package" => package,
           "receipt_digest" => @receipt_digest,
           "base_oid" => @base,
           "head_oid" => @head,
@@ -271,10 +297,10 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
     {registry, registry_source} =
       evidence.(
         "registry",
-        %{"package" => "crosswake", "version" => "0.2.4", "parsed" => parsed_registry},
+        %{"package" => package, "version" => "0.2.4", "parsed" => parsed_registry},
         {
           Jason.encode!(%{
-            "package" => "crosswake",
+            "package" => package,
             "version" => "0.2.4",
             "parsed" => parsed_registry
           }),
@@ -302,13 +328,13 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
         "hex-response-row",
         %{
           "run_id" => @leg_run_id,
-          "package" => "crosswake",
+          "package" => package,
           "version" => "0.2.4",
           "candidate_ref" => @head
         },
         Jason.encode!(%{
           "run_id" => @leg_run_id,
-          "package" => "crosswake",
+          "package" => package,
           "version" => "0.2.4",
           "candidate_ref" => @head
         })
@@ -328,9 +354,9 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
       "stage" => "pre_merge",
       "state" => if(post_merge?, do: "CONSUMED", else: "PENDING"),
       "receipt_digest" => @receipt_digest,
-      "operation" => "linked_release",
+      "operation" => operation,
       "leg_run_id" => @leg_run_id,
-      "candidate_package" => "crosswake",
+      "candidate_package" => package,
       "candidate_head" => @head
     }
 
@@ -338,12 +364,12 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
       "schema_version" => 1,
       "identity" => %{
         "receipt_digest" => @receipt_digest,
-        "operation" => "linked_release",
+        "operation" => operation,
         "leg_run_id" => @leg_run_id
       },
       "stage" => stage,
       "candidate" => %{
-        "package" => "crosswake",
+        "package" => package,
         "pr" => 147,
         "version" => "0.2.4",
         "base_oid" => @base,

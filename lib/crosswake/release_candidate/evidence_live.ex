@@ -811,7 +811,10 @@ defmodule Crosswake.ReleaseCandidate.EvidenceLive do
   defp valid_repo?(_), do: false
 
   defp valid_operation_package?("linked_release", "crosswake"), do: true
-  defp valid_operation_package?("recovery", "crosswake"), do: true
+
+  defp valid_operation_package?("recovery", package) do
+    package in Crosswake.ReleaseCandidate.Artifact.packages()
+  end
 
   defp valid_operation_package?("companion_publish", package) do
     package in Enum.drop(Crosswake.ReleaseCandidate.Artifact.packages(), 1)
