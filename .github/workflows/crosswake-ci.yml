@@ -149,11 +149,11 @@ jobs:
       - name: Run stable candidate contract fixtures
         run: >-
           mix test
-          test/crosswake/release_candidate
-          test/crosswake/proof/phase175_runbook_ancestry_test.exs
-          test/crosswake/proof/phase173_recovery_proof_convergence_test.exs
-          test/mix/tasks/crosswake_release_candidate_test.exs
-          test/mix/tasks/crosswake_release_status_test.exs
+          "$GITHUB_WORKSPACE/test/crosswake/release_candidate"
+          "$GITHUB_WORKSPACE/test/crosswake/proof/phase175_runbook_ancestry_test.exs"
+          "$GITHUB_WORKSPACE/test/crosswake/proof/phase173_recovery_proof_convergence_test.exs"
+          "$GITHUB_WORKSPACE/test/mix/tasks/crosswake_release_candidate_test.exs"
+          "$GITHUB_WORKSPACE/test/mix/tasks/crosswake_release_status_test.exs"
           --max-cases 1
       - name: Check candidate workflow structure
         run: elixir script/check_release_workflow_integrity.exs
