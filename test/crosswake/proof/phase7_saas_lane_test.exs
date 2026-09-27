@@ -1,5 +1,6 @@
 defmodule Crosswake.Proof.Phase7SaaSLaneTest do
   use ExUnit.Case, async: false
+  @repo_root Path.expand("../../..", __DIR__)
 
   # Depends on the checked-in example Phoenix app (CrosswakeExample.*) being
   # compiled. Run by phase5-proof.yml, which builds the example host first;
@@ -115,7 +116,9 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
   test "ordinary Phoenix boundaries and the guarded approval action re-check authorization" do
     approvals = CrosswakeExample.SaaSPortal.Approvals
     fixtures = CrosswakeExample.SaaSPortal.Fixtures
-    router = File.read!("examples/phoenix_host/lib/crosswake_example/router.ex")
+
+    router =
+      File.read!(Path.join(@repo_root, "examples/phoenix_host/lib/crosswake_example/router.ex"))
 
     assert router =~ ~r/pipe_through\(?\[:browser, :saas_portal\]\)?/
     assert router =~ "live_session :saas_portal"
@@ -232,7 +235,8 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
   end
 
   test "the base checked-in proof entrypoint layers in the SaaS lane" do
-    example_host_script = File.read!("script/verify_phase5_example_hosts.sh")
+    example_host_script =
+      File.read!(Path.join(@repo_root, "script/verify_phase5_example_hosts.sh"))
 
     assert example_host_script =~ "test/crosswake/proof/adopter_profile_contract_test.exs"
     assert example_host_script =~ "test/crosswake/proof/phase7_saas_lane_test.exs"

@@ -6,6 +6,8 @@ defmodule Crosswake.Proof.Phase63NotificationSeamProofTest do
   Validates token binding, open intent resolution, routing policy, and telemetry redaction.
   """
 
+  @repo_root Path.expand("../../..", __DIR__)
+
   # Shells into examples/phoenix_host via System.cmd; excluded from hermetic CI
   # lanes (deps not built there) and run locally, matching the project convention.
   @moduletag :requires_example_host
@@ -178,7 +180,7 @@ defmodule Crosswake.Proof.Phase63NotificationSeamProofTest do
 
     assert {output, 0} =
              System.cmd("mix", ["run", "--no-start", "-e", script],
-               cd: "examples/phoenix_host",
+               cd: Path.join(@repo_root, "examples/phoenix_host"),
                stderr_to_stdout: true
              )
 

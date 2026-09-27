@@ -1,4 +1,5 @@
 defmodule Crosswake.Proof.Phase154AdvisoryActionabilityTest do
+  @repo_root Path.expand("../../..", __DIR__)
   @moduledoc """
   Phase 154 Plan 08, Task 2 check G — the automated form of "are the doctor
   advisories actionable?"
@@ -83,7 +84,7 @@ defmodule Crosswake.Proof.Phase154AdvisoryActionabilityTest do
   setup_all do
     Crosswake.TestSupport.ExampleHost.load!()
 
-    report = Doctor.run(route_source: CrosswakeExample.Router, cwd: File.cwd!())
+    report = Doctor.run(route_source: CrosswakeExample.Router, cwd: @repo_root)
 
     # TWO id sets, deliberately kept apart.
     #
@@ -142,7 +143,7 @@ defmodule Crosswake.Proof.Phase154AdvisoryActionabilityTest do
 
   describe "exit-status neutrality — neither advisory can flip doctor's status" do
     test "doctor's status rule is the literal this file's argument depends on" do
-      source = File.read!(Path.join(File.cwd!(), "lib/crosswake/doctor/doctor.ex"))
+      source = File.read!(Path.join(@repo_root, "lib/crosswake/doctor/doctor.ex"))
 
       assert String.contains?(source, @status_rule),
              """
