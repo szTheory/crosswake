@@ -98,7 +98,9 @@ defmodule Crosswake.Proof.Phase171ApprovedVersionOutputTest do
     test "the derivation reads the release manifest's \".\" key via jq -er, not a second grep of mix.exs" do
       block = job_block(File.read!(@workflow), "approved-release-guard")
 
-      assert block =~ ~s|manifest_version=$(jq -er '."."' .release-please-manifest.json)|
+      assert block =~ ~s|head_manifest=$(git show "$RUN_HEAD:.release-please-manifest.json")|
+      assert block =~ ~s|manifest_version=$(jq -er '."."' <<<"$head_manifest")|
+      refute block =~ ~s|manifest_version=$(jq -er '."."' .release-please-manifest.json)|
     end
   end
 
