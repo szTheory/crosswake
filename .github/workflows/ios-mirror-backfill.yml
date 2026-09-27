@@ -100,7 +100,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -138,7 +138,7 @@ jobs:
           printf '%s' "$CANDIDATE_BASE" | grep -Eq '^[0-9a-f]{40}$'
           printf '%s' "$CANDIDATE_RECEIPT" | grep -Eq '^[0-9a-f]{64}$'
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.candidate_head }}
           fetch-depth: 0
@@ -224,7 +224,7 @@ jobs:
             printf 'maven_run_id=%s\n' "$MAVEN_RUN_ID"
           } >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.candidate_head }}
           fetch-depth: 0
@@ -406,7 +406,7 @@ jobs:
           [ "$EXPECTED_OLD_REF" = "$PHASE168_MIRROR_MAIN" ]
           [ "$EXPECTED_NEW_REF" = "$PHASE168_MIRROR_SPLIT" ]
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
@@ -431,7 +431,7 @@ jobs:
         run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Check out the exact immutable mirror payload
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.release_ref }}
           path: release-source
@@ -512,7 +512,7 @@ jobs:
           [ "$APPROVAL_RECEIPT" = "$PHASE168_CANDIDATE_RECEIPT" ]
           [ "$EXPECTED_MAIN" = "$PHASE168_MIRROR_SPLIT" ]
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.release_ref }}
           fetch-depth: 0
@@ -596,7 +596,7 @@ jobs:
           printf '%s' "$EXPECTED_OLD_REF" | grep -Eq '^[0-9a-f]{40}$'
           [ "$EXPECTED_OLD_REF" != "$EXPECTED_NEW_REF" ]
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
@@ -620,7 +620,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: bash script/release_candidate/require_release_evidence.sh
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.release_ref }}
           path: release-source
