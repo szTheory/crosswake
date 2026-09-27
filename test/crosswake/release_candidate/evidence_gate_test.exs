@@ -1,5 +1,8 @@
 defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
-  use ExUnit.Case, async: true
+  # This suite clears Mix's global task registry and runs app.config, which can
+  # recompile dependencies. Keep it after the async phase so test-file loading
+  # never observes the temporary dependency cwd or code-path state.
+  use ExUnit.Case, async: false
 
   import ExUnit.CaptureIO
 
