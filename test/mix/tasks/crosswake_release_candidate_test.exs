@@ -40,6 +40,7 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
 
     receipt = receipt_path |> File.read!() |> Jason.decode!()
     assert receipt["state"] == "READY FOR APPROVAL"
+
     assert receipt["identity"]["bound"]["ref"] == @sha_a
 
     for projection <- [
@@ -214,7 +215,13 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
       capture_io(fn -> Candidate.run(evidence_args(fixture, second_output_dir)) end)
 
     assert receipt["state"] == "READY FOR APPROVAL"
-    assert Enum.any?(receipt["identity"]["bound"]["proofs"], &(&1["id"] == "maven.rehearsal"))
+
+    assert Enum.any?(receipt["identity"]["bound"]["proofs"], &(&1["id"] == "maven.rehearsal")) and
+             Enum.any?(
+               receipt["identity"]["bound"]["proofs"],
+               &(&1["id"] == "candidate.cleanroom")
+             )
+
     assert receipt["external_state"]["publication"] == "NONE"
     assert receipt["external_state"]["changed"] == false
     assert terminal =~ "READY FOR APPROVAL"

@@ -214,6 +214,7 @@ defmodule Crosswake.ReleaseCandidate.EvidenceInput do
       package_digests: package_digests,
       proofs: [
         proof("candidate.ci", paths.ci),
+        proof("candidate.cleanroom", paths.cleanroom),
         proof("package.family", paths.hex_packages),
         proof("hex.rehearsal", paths.hex),
         proof("ios.rehearsal", paths.ios),
