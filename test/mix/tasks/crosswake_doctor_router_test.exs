@@ -1,6 +1,7 @@
 defmodule Mix.Tasks.Crosswake.DoctorRouterTest do
   use ExUnit.Case, async: false
 
+  @moduletag :requires_example_host
   @moduletag timeout: 120_000
 
   @repo_root Path.expand("../../..", __DIR__)
