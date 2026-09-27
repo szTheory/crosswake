@@ -320,16 +320,24 @@ jobs:
             --hex-run-id "${{ steps.envelope.outputs.hex_run_id }}" \
             --ios-run-id "${{ steps.envelope.outputs.ios_run_id }}" \
             --maven-run-id "${{ steps.envelope.outputs.maven_run_id }}"
-          CANDIDATE_RECEIPT_PATH="$OUTPUT_DIR/candidate-receipt.json" MIX_ENV=test \
-            mix run --no-start -e 'receipt = System.fetch_env!("CANDIDATE_RECEIPT_PATH") |> File.read!() |> Jason.decode!(keys: :atoms) |> Crosswake.ReleaseCandidate.Receipt.validate!(); IO.write(Crosswake.ReleaseCandidate.Projection.markdown(receipt))' >/dev/null
+          if ! CANDIDATE_RECEIPT_PATH="$OUTPUT_DIR/candidate-receipt.json" MIX_ENV=test \
+            mix run --no-start -e 'receipt = System.fetch_env!("CANDIDATE_RECEIPT_PATH") |> File.read!() |> Jason.decode!(keys: :atoms) |> Crosswake.ReleaseCandidate.Receipt.validate!(); IO.write(Crosswake.ReleaseCandidate.Projection.markdown(receipt))' >/dev/null; then
+            echo "::error::canonical candidate receipt failed Mix domain validation"
+            exit 1
+          fi
+          echo "canonical candidate receipt Mix validation PASS"
 
-          jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
+          if ! jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
             --arg base "$CANDIDATE_BASE" --argjson run "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
             --arg ci "$ci_receipt_sha" --arg cleanroom "$cleanroom_sha" \
             --arg package "$package_sha" --arg hex "$hex_sha" \
             --arg ios "$ios_sha" --arg maven "$maven_sha" --arg mirror "$mirror_sha" \
             '.state == "READY FOR APPROVAL" and .identity.bound == .identity.observed and .identity.bound.head == $head and .identity.bound.tree == $tree and .identity.bound.base == $base and .identity.bound.run.id == $run and .credentials == {"exercised":true,"mirror_write_authority":"PROVEN"} and .external_state.changed == false and .external_state.publication == "NONE" and ([.checks[].id] == (["candidate.ci","candidate.identity","candidate.workflows","candidate.config","candidate.coordinates","candidate.cleanroom","candidate.external-state","candidate.credentials","package.family","hex.rehearsal","ios.rehearsal","maven.rehearsal","mirror.authority"] | sort)) and all(.checks[]; .status == "PASS") and any(.identity.bound.proofs[]; .id == "candidate.ci" and .sha256 == $ci) and any(.identity.bound.proofs[]; .id == "candidate.cleanroom" and .sha256 == $cleanroom) and any(.identity.bound.proofs[]; .id == "package.family" and .sha256 == $package) and any(.identity.bound.proofs[]; .id == "hex.rehearsal" and .sha256 == $hex) and any(.identity.bound.proofs[]; .id == "ios.rehearsal" and .sha256 == $ios) and any(.identity.bound.proofs[]; .id == "maven.rehearsal" and .sha256 == $maven) and any(.identity.bound.proofs[]; .id == "mirror.authority" and .sha256 == $mirror)' \
-            "$OUTPUT_DIR/candidate-receipt.json" >/dev/null
+            "$OUTPUT_DIR/candidate-receipt.json" >/dev/null; then
+            echo "::error::canonical candidate receipt failed the exact proof roster and digest assertions"
+            exit 1
+          fi
+          echo "canonical candidate receipt proof roster and digests PASS"
 
           receipt_digest() {
             jq -er --arg id "$1" '.identity.bound.workflow_digests[] | select(.id == $id) | .sha256' \
@@ -339,20 +347,85 @@ jobs:
             jq -er --arg id "$1" '.identity.bound.config_digests[] | select(.id == $id) | .sha256' \
               "$OUTPUT_DIR/candidate-receipt.json"
           }
-          test "$(sha256sum .github/workflows/crosswake-ci.yml | awk '{print $1}')" = "$(receipt_digest crosswake-ci)"
-          test "$(sha256sum .github/workflows/hex-publish.yml | awk '{print $1}')" = "$(receipt_digest hex-publish)"
-          test "$(sha256sum .github/workflows/ios-mirror-backfill.yml | awk '{print $1}')" = "$(receipt_digest ios-mirror-backfill)"
-          test "$(sha256sum .github/workflows/maven-publish-fire-drill.yml | awk '{print $1}')" = "$(receipt_digest maven-publish-fire-drill)"
-          test "$(sha256sum .github/workflows/release-please.yml | awk '{print $1}')" = "$(receipt_digest release-please)"
-          test "$(sha256sum release-please-config.json | awk '{print $1}')" = "$(config_digest release-please-config)"
-          test "$(sha256sum .release-please-manifest.json | awk '{print $1}')" = "$(config_digest release-please-manifest)"
+          receipt_digest_check() {
+            local id="$1" file="$2" expected actual
+            expected=$(receipt_digest "$id")
+            actual=$(sha256sum "$file" | awk '{print $1}')
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::candidate receipt source digest mismatch: $id"
+              return 1
+            fi
+            echo "candidate receipt source digest PASS: $id"
+          }
+          config_digest_check() {
+            local id="$1" file="$2" expected actual
+            expected=$(config_digest "$id")
+            actual=$(sha256sum "$file" | awk '{print $1}')
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::candidate receipt config digest mismatch: $id"
+              return 1
+            fi
+            echo "candidate receipt config digest PASS: $id"
+          }
+          receipt_digest_check crosswake-ci .github/workflows/crosswake-ci.yml
+          receipt_digest_check hex-publish .github/workflows/hex-publish.yml
+          receipt_digest_check ios-mirror-backfill .github/workflows/ios-mirror-backfill.yml
+          receipt_digest_check maven-publish-fire-drill .github/workflows/maven-publish-fire-drill.yml
+          receipt_digest_check release-please .github/workflows/release-please.yml
+          config_digest_check release-please-config release-please-config.json
+          config_digest_check release-please-manifest .release-please-manifest.json
 
-          test -z "$(git ls-remote --tags origin "refs/tags/*${CANDIDATE_VERSION}*")"
-          test "$(curl -sS -o /dev/null -w '%{http_code}' "https://hex.pm/api/packages/crosswake/releases/${CANDIDATE_VERSION}")" = 404
-          test "$(curl -sS -o /dev/null -w '%{http_code}' "https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/${CANDIDATE_VERSION}/crosswake-shell-core-android-${CANDIDATE_VERSION}.pom")" = 404
+          expect_equal() {
+            local label="$1" expected="$2" actual="$3"
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::candidate attestation check failed: $label (expected $expected, observed $actual)"
+              return 1
+            fi
+            echo "candidate attestation check PASS: $label"
+          }
+          expect_absent() {
+            local label="$1" observed="$2"
+            if [ -n "$observed" ]; then
+              echo "::error::candidate attestation target is present: $label"
+              return 1
+            fi
+            echo "candidate attestation target absent: $label"
+          }
+          expect_http_404() {
+            local label="$1" url="$2" status
+            if ! status=$(curl -sS --connect-timeout 10 --max-time 20 --retry 2 \
+              --retry-all-errors --retry-delay 1 --retry-max-time 30 \
+              -o /dev/null -w '%{http_code}' "$url"); then
+              echo "::error::candidate attestation HTTP probe failed to complete: $label"
+              return 1
+            fi
+            expect_equal "$label HTTP status" 404 "$status"
+          }
+          remote_ref() {
+            local label="$1" remote="$2" ref="$3" observed
+            if ! observed=$(git ls-remote "$remote" "$ref" | awk '{print $1}'); then
+              echo "::error::candidate attestation Git reference probe failed: $label"
+              return 1
+            fi
+            printf '%s' "$observed"
+          }
+
+          if ! root_tags=$(git ls-remote --tags origin "refs/tags/*${CANDIDATE_VERSION}*"); then
+            echo "::error::candidate attestation Git tag probe failed: root release tags"
+            exit 1
+          fi
+          expect_absent "root release tags for ${CANDIDATE_VERSION}" "$root_tags"
+          expect_http_404 "Hex release ${CANDIDATE_VERSION}" \
+            "https://hex.pm/api/packages/crosswake/releases/${CANDIDATE_VERSION}"
+          expect_http_404 "Maven POM ${CANDIDATE_VERSION}" \
+            "https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/${CANDIDATE_VERSION}/crosswake-shell-core-android-${CANDIDATE_VERSION}.pom"
           expected_mirror_main=$(jq -er '.identity.bound.mirror.main' "$OUTPUT_DIR/candidate-receipt.json")
-          test "$(git ls-remote https://github.com/szTheory/crosswake-shell-core-ios.git refs/heads/main | awk '{print $1}')" = "$expected_mirror_main"
-          test -z "$(git ls-remote https://github.com/szTheory/crosswake-shell-core-ios.git "refs/tags/v${CANDIDATE_VERSION}")"
+          observed_mirror_main=$(remote_ref "iOS mirror main" \
+            https://github.com/szTheory/crosswake-shell-core-ios.git refs/heads/main)
+          expect_equal "iOS mirror main" "$expected_mirror_main" "$observed_mirror_main"
+          observed_mirror_tag=$(remote_ref "iOS mirror release tag" \
+            https://github.com/szTheory/crosswake-shell-core-ios.git "refs/tags/v${CANDIDATE_VERSION}")
+          expect_absent "iOS mirror tag v${CANDIDATE_VERSION}" "$observed_mirror_tag"
 
           cp "$OUTPUT_DIR/ci/artifacts/artifacts.json" "$OUTPUT_DIR/artifacts.json"
           echo 'canonical candidate receipt attestation PASS; external_state_changed=false'
