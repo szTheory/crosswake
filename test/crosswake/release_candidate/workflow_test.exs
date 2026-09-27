@@ -191,7 +191,15 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert guard =~ ~s(emit_output "linked_release=false")
     assert guard =~ "linked_candidate=false"
     assert guard =~ "linked_candidate=true"
-    assert guard =~ "elif [ \"$candidate_count\" -eq 1 ] && [ \"$linked_delta\" -eq 0 ]; then"
+    assert guard =~ "core_version_changed=true"
+    assert guard =~ "companion_version_changed=true"
+    assert guard =~ "changed_manifest_keys"
+
+    assert guard =~
+             "elif [ \"$candidate_count\" -eq 1 ] && [ \"$core_version_changed\" = false ] &&"
+
+    refute guard =~ "linked_delta"
+    refute guard =~ "candidate_scope_delta"
     assert guard =~ "REL-17 BLOCKED reason=unclassified_release_version_change"
   end
 

@@ -1729,7 +1729,11 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
           "[ \"$(printf '%s\\n' \"$trailer_lines\" | sed '/^$/d' | wc -l | tr -d ' ')\" -eq 1 ]"
         ) and
         includes?(block, "candidate_operation") and includes?(block, "candidate_package") and
-        includes?(block, "candidate_scope_delta") and
+        includes?(block, "mix_version_at") and includes?(block, "gradle_version_at") and
+        includes?(block, "manifest_version_at") and includes?(block, "core_version_changed") and
+        includes?(block, "companion_version_changed") and
+        includes?(block, "changed_manifest_keys") and
+        not includes?(block, "candidate_scope_delta") and
         includes?(block, "reason=unclassified_release_version_change") and
         includes?(block, "reason=mixed_core_and_companion_release") and
         includes?(block, "rel17_context=$(printf '%s' \"$authorization_trailer\" | jq -c") and
