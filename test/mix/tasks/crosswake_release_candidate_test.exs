@@ -40,7 +40,6 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
 
     receipt = receipt_path |> File.read!() |> Jason.decode!()
     assert receipt["state"] == "READY FOR APPROVAL"
-
     assert receipt["identity"]["bound"]["ref"] == @sha_a
 
     for projection <- [
