@@ -41,8 +41,9 @@ defmodule Crosswake.Proof.Phase174ManifestContractImmutabilityTest do
 
   use ExUnit.Case, async: true
 
-  @script "script/assert_manifest_contract_unchanged.sh"
-  @real_source "lib/crosswake/doctor/doctor.ex"
+  @repo_root Path.expand("../../..", Path.expand(__DIR__, System.get_env("PWD") || File.cwd!()))
+  @script Path.join(@repo_root, "script/assert_manifest_contract_unchanged.sh")
+  @real_source Path.join(@repo_root, "lib/crosswake/doctor/doctor.ex")
 
   @verified_token "MANIFEST_CONTRACT_UNCHANGED_VERIFIED"
   @extraction_empty_token "MANIFEST_CONTRACT_EXTRACTION_EMPTY"

@@ -1,6 +1,8 @@
 defmodule Crosswake.Guides.SeeItRunTest do
   use ExUnit.Case, async: true
 
+  @repo_root Path.expand("../../..", __DIR__)
+
   # The guide this test guards against drift.
   @target_path "guides/see_it_run.md"
 
@@ -34,16 +36,16 @@ defmodule Crosswake.Guides.SeeItRunTest do
     assert phoenix_host_port() =~ ~r/^\d+$/,
            "expected a numeric port from #{@phoenix_config_path}"
 
-    assert File.exists?(@target_path),
+    assert source_exists?(@target_path),
            "expected #{@target_path} to exist"
 
-    assert File.exists?(@quick_start_path),
+    assert source_exists?(@quick_start_path),
            "expected #{@quick_start_path} to exist"
 
-    assert File.exists?(@hero_command_path),
+    assert source_exists?(@hero_command_path),
            "expected #{@hero_command_path} to exist"
 
-    assert File.exists?(@router_path),
+    assert source_exists?(@router_path),
            "expected #{@router_path} to exist (canonical route source)"
   end
 
@@ -54,7 +56,7 @@ defmodule Crosswake.Guides.SeeItRunTest do
   test "guide contains source-derived facts" do
     guide = {
       @target_path,
-      File.read!(@target_path)
+      source_read!(@target_path)
     }
 
     assert_no_drift_failures(scan_guide(guide))
@@ -66,7 +68,7 @@ defmodule Crosswake.Guides.SeeItRunTest do
   # ---------------------------------------------------------------------------
 
   test "scanner rejects wrong port" do
-    guide = File.read!(@target_path)
+    guide = source_read!(@target_path)
     port = phoenix_host_port()
 
     mutated = String.replace(guide, "localhost:#{port}", "localhost:4000")
@@ -78,7 +80,7 @@ defmodule Crosswake.Guides.SeeItRunTest do
   end
 
   test "scanner rejects missing route" do
-    guide = File.read!(@target_path)
+    guide = source_read!(@target_path)
 
     mutated = String.replace(guide, "/bridge-proof", "/nope")
 
@@ -89,7 +91,7 @@ defmodule Crosswake.Guides.SeeItRunTest do
   end
 
   test "scanner rejects missing native posture label" do
-    guide = File.read!(@target_path)
+    guide = source_read!(@target_path)
 
     mutated =
       guide
@@ -103,7 +105,7 @@ defmodule Crosswake.Guides.SeeItRunTest do
   end
 
   test "scanner rejects missing showcase-first proof-secondary copy" do
-    guide = File.read!(@target_path)
+    guide = source_read!(@target_path)
 
     missing_showcase = String.replace(guide, ~r/showcase/i, "home")
 
@@ -145,12 +147,12 @@ defmodule Crosswake.Guides.SeeItRunTest do
   # ---------------------------------------------------------------------------
 
   test "guide carries the gameplan blockquote and 7 JTBD sections in order" do
-    contents = File.read!(@target_path)
+    contents = source_read!(@target_path)
     assert_no_drift_failures(scan_structure({@target_path, contents}))
   end
 
   test "structure scanner rejects a missing JTBD section" do
-    contents = File.read!(@target_path)
+    contents = source_read!(@target_path)
     mutated = String.replace(contents, "## Go Deeper", "## Somewhere Else")
 
     assert_failure_category(
@@ -160,7 +162,7 @@ defmodule Crosswake.Guides.SeeItRunTest do
   end
 
   test "structure scanner rejects out-of-order JTBD sections" do
-    contents = File.read!(@target_path)
+    contents = source_read!(@target_path)
 
     # Swap the first and last section headings to break the canonical order.
     mutated =
@@ -176,7 +178,7 @@ defmodule Crosswake.Guides.SeeItRunTest do
   end
 
   test "structure scanner rejects a missing gameplan blockquote" do
-    contents = File.read!(@target_path)
+    contents = source_read!(@target_path)
     mutated = String.replace(contents, @gameplan_opener, "> Something else entirely.")
 
     assert_failure_category(
@@ -411,7 +413,7 @@ defmodule Crosswake.Guides.SeeItRunTest do
   # Regex: System.get_env("PORT") || "NNNN" — never hardcode 4700 here.
   defp phoenix_host_port do
     @phoenix_config_path
-    |> File.read!()
+    |> source_read!()
     |> source_port!(
       ~r/System\.get_env\("PORT"\)\s*\|\|\s*"(\d+)"/,
       @phoenix_config_path
@@ -520,7 +522,7 @@ defmodule Crosswake.Guides.SeeItRunTest do
   defp documented_path_failures(doc_path, contents) do
     contents
     |> documented_paths()
-    |> Enum.reject(&File.exists?/1)
+    |> Enum.reject(&source_exists?/1)
     |> Enum.map(fn missing_path ->
       failure(doc_path, :missing_path,
         line: line_number(contents, missing_path),
@@ -529,6 +531,10 @@ defmodule Crosswake.Guides.SeeItRunTest do
       )
     end)
   end
+
+  defp source_path(path), do: Path.join(@repo_root, path)
+  defp source_read!(path), do: path |> source_path() |> File.read!()
+  defp source_exists?(path), do: path |> source_path() |> File.exists?()
 
   defp wrong_port_failures(path, contents, expected_port) do
     contents

@@ -19,6 +19,8 @@ defmodule Crosswake.Proof.Phase169ExitContractGuardTest do
 
   use ExUnit.Case, async: true
 
+  @repo_root Path.expand("../../..", __DIR__)
+
   @located_floor 4
   @header_comment "# exit contract: 0 clean / 1 defect found / 3 could not verify"
 
@@ -86,10 +88,12 @@ defmodule Crosswake.Proof.Phase169ExitContractGuardTest do
     test "every entry point's extracted literal exit values equal the declared set exactly, in both directions" do
       results =
         Enum.map(@entry_points, fn entry ->
-          assert File.exists?(entry.path),
+          path = Path.join(@repo_root, entry.path)
+
+          assert File.exists?(path),
                  "declared entry point not found on disk: #{entry.path} (#{entry.id})"
 
-          source = File.read!(entry.path)
+          source = File.read!(path)
           extracted = extract_exit_values(entry.kind, source)
 
           missing = MapSet.difference(entry.expected, extracted)
@@ -116,7 +120,7 @@ defmodule Crosswake.Proof.Phase169ExitContractGuardTest do
     end
 
     test "script/check_release_workflow_integrity.exs contains no System.halt( call (D-14)" do
-      source = File.read!("script/check_release_workflow_integrity.exs")
+      source = File.read!(Path.join(@repo_root, "script/check_release_workflow_integrity.exs"))
 
       refute source =~ "System.halt(",
              "expected D-14's System.stop/Process.sleep replacement; found a System.halt( call"
@@ -124,7 +128,7 @@ defmodule Crosswake.Proof.Phase169ExitContractGuardTest do
 
     test "each entry point D-16 requires to carry the exit-contract header comment carries it byte-for-byte" do
       for entry <- @entry_points, entry.header_required do
-        source = File.read!(entry.path)
+        source = File.read!(Path.join(@repo_root, entry.path))
 
         assert String.contains?(source, @header_comment),
                "#{entry.path} is missing the byte-for-byte D-16 header comment: #{inspect(@header_comment)}"
@@ -144,7 +148,7 @@ defmodule Crosswake.Proof.Phase169ExitContractGuardTest do
     end
 
     test "mutation test: a changed literal exit value makes the guard report a mismatch (teeth proof)" do
-      source = File.read!("script/check_release_version_truth.exs")
+      source = File.read!(Path.join(@repo_root, "script/check_release_version_truth.exs"))
       mutated = mutate_literal(source, "System.halt(1)", "System.halt(9)")
 
       tmp_path =
@@ -165,7 +169,7 @@ defmodule Crosswake.Proof.Phase169ExitContractGuardTest do
     end
 
     test "the mutation helper raises when its target pattern is absent from the source" do
-      source = File.read!("script/check_release_version_truth.exs")
+      source = File.read!(Path.join(@repo_root, "script/check_release_version_truth.exs"))
 
       assert_raise RuntimeError, ~r/found no/, fn ->
         mutate_literal(source, "System.halt(999)", "System.halt(4)")

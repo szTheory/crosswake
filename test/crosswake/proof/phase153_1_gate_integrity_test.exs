@@ -13,16 +13,20 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
   """
   use ExUnit.Case, async: true
 
-  @discover "script/list_merge_blocking_checks.py"
-  @checker "script/check_required_checks_registered.sh"
-  @normalizer "script/normalize_required_checks.py"
+  @repo_root Path.expand("../../..", __DIR__)
+  @discover_relative "script/list_merge_blocking_checks.py"
+  @checker_relative "script/check_required_checks_registered.sh"
+  @normalizer_relative "script/normalize_required_checks.py"
+  @discover Path.join(@repo_root, @discover_relative)
+  @checker Path.join(@repo_root, @checker_relative)
+  @normalizer Path.join(@repo_root, @normalizer_relative)
 
   defp prepare_fixture!(tmp, workflows) do
     File.mkdir_p!(Path.join(tmp, "script"))
     File.mkdir_p!(Path.join(tmp, ".github/workflows"))
-    File.cp!(@discover, Path.join(tmp, @discover))
-    File.cp!(@checker, Path.join(tmp, @checker))
-    File.cp!(@normalizer, Path.join(tmp, @normalizer))
+    File.cp!(@discover, Path.join(tmp, @discover_relative))
+    File.cp!(@checker, Path.join(tmp, @checker_relative))
+    File.cp!(@normalizer, Path.join(tmp, @normalizer_relative))
 
     Enum.each(workflows, fn {name, source} ->
       File.write!(Path.join(tmp, ".github/workflows/#{name}"), source)
@@ -30,7 +34,7 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
   end
 
   defp run_detector(tmp, args \\ ["--emitters"]) do
-    System.cmd("python3", [@discover | args],
+    System.cmd("python3", [@discover_relative | args],
       cd: tmp,
       stderr_to_stdout: true
     )
@@ -42,7 +46,7 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
         do: [{"CROSSWAKE_REQUIRED_CHECKS_JSON", registered_json}],
         else: []
 
-    System.cmd("bash", [@checker],
+    System.cmd("bash", [@checker_relative],
       cd: tmp,
       env: env,
       stderr_to_stdout: true
@@ -50,7 +54,8 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
   end
 
   defp emitters do
-    {out, 0} = System.cmd("python3", [@discover, "--emitters"])
+    {out, 0} =
+      System.cmd("python3", [@discover, "--emitters"], cd: @repo_root)
 
     out
     |> String.split("\n", trim: true)
@@ -96,8 +101,8 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
     # so copying it into the fixture makes it operate on the fixture's workflows.
     File.mkdir_p!(Path.join(tmp, "script"))
     File.mkdir_p!(Path.join(tmp, ".github/workflows"))
-    File.cp!(@discover, Path.join(tmp, @discover))
-    File.cp!(@checker, Path.join(tmp, @checker))
+    File.cp!(@discover, Path.join(tmp, @discover_relative))
+    File.cp!(@checker, Path.join(tmp, @checker_relative))
 
     workflow = fn wf_name, job_id ->
       """
@@ -115,7 +120,8 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
     File.write!(Path.join(tmp, ".github/workflows/a.yml"), workflow.("A", "alpha"))
     File.write!(Path.join(tmp, ".github/workflows/b.yml"), workflow.("B", "beta"))
 
-    {out, status} = System.cmd("bash", [@checker], cd: tmp, stderr_to_stdout: true)
+    {out, status} =
+      System.cmd("bash", [@checker_relative], cd: tmp, stderr_to_stdout: true)
 
     assert status == 1,
            "expected the uniqueness assertion to fail (exit 1), got #{status}:\n#{out}"
@@ -139,8 +145,8 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
     # associative arrays (4.0), and case-conversion expansions (4.0).
     for script <- [
           @checker,
-          "script/register_required_checks.sh",
-          "script/verify_generated_ios_shell.sh"
+          Path.join(@repo_root, "script/register_required_checks.sh"),
+          Path.join(@repo_root, "script/verify_generated_ios_shell.sh")
         ] do
       src = File.read!(script)
 
@@ -161,8 +167,8 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
     # Guards the other direction: a check that always fails is as useless as one that never does.
     File.mkdir_p!(Path.join(tmp, "script"))
     File.mkdir_p!(Path.join(tmp, ".github/workflows"))
-    File.cp!(@discover, Path.join(tmp, @discover))
-    File.cp!(@checker, Path.join(tmp, @checker))
+    File.cp!(@discover, Path.join(tmp, @discover_relative))
+    File.cp!(@checker, Path.join(tmp, @checker_relative))
 
     File.write!(Path.join(tmp, ".github/workflows/a.yml"), """
     name: A
@@ -175,7 +181,8 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
           - run: "true"
     """)
 
-    {out, _status} = System.cmd("bash", [@checker], cd: tmp, stderr_to_stdout: true)
+    {out, _status} =
+      System.cmd("bash", [@checker_relative], cd: tmp, stderr_to_stdout: true)
 
     refute out =~ "duplicate-merge-blocking-name"
   end
@@ -272,7 +279,7 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
     File.chmod!(Path.join(fake_bin, "gh"), 0o755)
 
     {out, status} =
-      System.cmd("bash", [@checker, "--local-only"],
+      System.cmd("bash", [@checker_relative, "--local-only"],
         cd: tmp,
         env: [{"PATH", fake_bin <> ":" <> System.get_env("PATH")}],
         stderr_to_stdout: true
@@ -296,7 +303,7 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
     File.chmod!(Path.join(fake_bin, "gh"), 0o755)
 
     {out, status} =
-      System.cmd("bash", [@checker],
+      System.cmd("bash", [@checker_relative],
         cd: tmp,
         env: [{"PATH", fake_bin <> ":" <> System.get_env("PATH")}],
         stderr_to_stdout: true

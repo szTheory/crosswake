@@ -1,7 +1,8 @@
 defmodule Crosswake.Proof.Phase175RunbookAncestryTest do
   use ExUnit.Case, async: true
 
-  @script Path.expand("script/check_release_runbook_ancestry.sh")
+  @repo_root Path.expand("../../..", __DIR__)
+  @script Path.join(@repo_root, "script/check_release_runbook_ancestry.sh")
   @runbook_path "docs/RELEASE-INCIDENT-RESPONSE.md"
 
   setup do
@@ -87,7 +88,7 @@ defmodule Crosswake.Proof.Phase175RunbookAncestryTest do
           ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-08-PLAN.md",
           ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-10-PLAN.md"
         ] do
-      contents = File.read!(plan)
+      contents = File.read!(Path.join(@repo_root, plan))
 
       assert contents =~ "script/check_release_runbook_ancestry.sh"
       assert contents =~ "baseRefOid"
@@ -100,7 +101,10 @@ defmodule Crosswake.Proof.Phase175RunbookAncestryTest do
 
     record =
       File.read!(
-        ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-INCIDENT-DOC-COMMIT.md"
+        Path.join(
+          @repo_root,
+          ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-INCIDENT-DOC-COMMIT.md"
+        )
       )
 
     assert record =~ "historically noncompliant"

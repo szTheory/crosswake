@@ -1,5 +1,6 @@
 defmodule Crosswake.Proof.Phase8SelectiveNativeLaneTest do
   use ExUnit.Case, async: false
+  @repo_root Path.expand("../../..", __DIR__)
 
   # Depends on the checked-in example Phoenix app (CrosswakeExample.*) being
   # compiled. Run by phase5-proof.yml, which builds the example host first;
@@ -90,10 +91,20 @@ defmodule Crosswake.Proof.Phase8SelectiveNativeLaneTest do
 
   test "the data boundary keeps local capture, staging, upload, and submission as distinct states" do
     claim_code =
-      File.read!("examples/phoenix_host/lib/crosswake_example/selective_native/claim.ex")
+      File.read!(
+        Path.join(
+          @repo_root,
+          "examples/phoenix_host/lib/crosswake_example/selective_native/claim.ex"
+        )
+      )
 
     submission_code =
-      File.read!("examples/phoenix_host/lib/crosswake_example/selective_native/submission.ex")
+      File.read!(
+        Path.join(
+          @repo_root,
+          "examples/phoenix_host/lib/crosswake_example/selective_native/submission.ex"
+        )
+      )
 
     assert claim_code =~ "field :status, :string"
     assert claim_code =~ "schema \"selective_native_claims\""

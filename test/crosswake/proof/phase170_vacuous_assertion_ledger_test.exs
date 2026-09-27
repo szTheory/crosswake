@@ -17,8 +17,9 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
 
   use ExUnit.Case, async: true
 
-  @script "script/inventory_collection_assertions.exs"
-  @ledger "script/collection_assertion_ledger.json"
+  @repo_root Path.expand("../../..", __DIR__)
+  @script Path.join(@repo_root, "script/inventory_collection_assertions.exs")
+  @ledger Path.join(@repo_root, "script/collection_assertion_ledger.json")
 
   # D-14 / D-24 (Phase 169 precedent): hard-coded measured facts, not derived from the ledger
   # under test — a contract cannot silently drift when the assertion re-reads the same file it
@@ -43,7 +44,7 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
 
   describe "Task 1: a clean run against the committed ledger" do
     test "elixir script/inventory_collection_assertions.exs --check exits 0 and prints [crosswake] OK: naming a non-zero row count" do
-      {output, exit_code} = run_check(File.cwd!())
+      {output, exit_code} = run_check(@repo_root)
 
       assert exit_code == 0, output
       assert output =~ ~r/^\[crosswake\] OK: \d+ classified collection-assertion site\(s\)/m
@@ -58,8 +59,8 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
     test "running --emit-snapshot twice on an unchanged tree produces byte-identical stdout" do
       committed = @ledger |> File.read!() |> JSON.decode!()
 
-      {first, exit_1} = run_emit_snapshot(File.cwd!(), committed["scope"])
-      {second, exit_2} = run_emit_snapshot(File.cwd!(), committed["scope"])
+      {first, exit_1} = run_emit_snapshot(@repo_root, committed["scope"])
+      {second, exit_2} = run_emit_snapshot(@repo_root, committed["scope"])
 
       assert exit_1 == 0 and exit_2 == 0
       assert first == second
@@ -70,7 +71,7 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
     test "the regenerated snapshot's row keys equal the committed snapshot's row keys exactly" do
       committed = @ledger |> File.read!() |> JSON.decode!()
 
-      {regenerated_output, regen_exit} = run_emit_snapshot(File.cwd!(), committed["scope"])
+      {regenerated_output, regen_exit} = run_emit_snapshot(@repo_root, committed["scope"])
       assert regen_exit == 0, regenerated_output
 
       regenerated = JSON.decode!(regenerated_output)
@@ -133,7 +134,7 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
       {output, exit_code} =
         System.cmd("elixir", [@script, "--ledger", mutated_path, "--check"],
           stderr_to_stdout: true,
-          cd: File.cwd!()
+          cd: @repo_root
         )
 
       assert exit_code != 0,
@@ -167,7 +168,7 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
       {output, exit_code} =
         System.cmd("elixir", [@script, "--ledger", mutated_path, "--check"],
           stderr_to_stdout: true,
-          cd: File.cwd!()
+          cd: @repo_root
         )
 
       assert exit_code != 0,
@@ -194,7 +195,7 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
       {output, exit_code} =
         System.cmd("elixir", [@script, "--ledger", mutated_path, "--check"],
           stderr_to_stdout: true,
-          cd: File.cwd!()
+          cd: @repo_root
         )
 
       assert exit_code != 0,
@@ -265,7 +266,7 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
           "elixir",
           [@script, "--root", Path.expand(tmp), "--ledger", ledger_path, "--check"],
           stderr_to_stdout: true,
-          cd: File.cwd!()
+          cd: @repo_root
         )
 
       assert check_exit == 0, check_output
@@ -363,8 +364,8 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
     test "regenerating the committed-scope ledger twice on an unchanged tree produces byte-identical output" do
       committed = @ledger |> File.read!() |> JSON.decode!()
 
-      {first, exit_1} = run_emit_snapshot(File.cwd!(), committed["scope"])
-      {second, exit_2} = run_emit_snapshot(File.cwd!(), committed["scope"])
+      {first, exit_1} = run_emit_snapshot(@repo_root, committed["scope"])
+      {second, exit_2} = run_emit_snapshot(@repo_root, committed["scope"])
 
       assert exit_1 == 0 and exit_2 == 0
       assert first == second
@@ -449,10 +450,14 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
       # instruction that any delta be reconciled by naming the specific excluded sites, not
       # absorbed silently.
       {assert_output, 0} =
-        System.cmd("grep", ["-rnE", "assert Enum\\.(all\\?|any\\?)", "test", "--include=*.exs"])
+        System.cmd("grep", ["-rnE", "assert Enum\\.(all\\?|any\\?)", "test", "--include=*.exs"],
+          cd: @repo_root
+        )
 
       {refute_output, 0} =
-        System.cmd("grep", ["-rnE", "refute Enum\\.any\\?", "test", "--include=*.exs"])
+        System.cmd("grep", ["-rnE", "refute Enum\\.any\\?", "test", "--include=*.exs"],
+          cd: @repo_root
+        )
 
       raw_count =
         (assert_output |> String.split("\n", trim: true) |> length()) +
@@ -478,7 +483,7 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   defp run_check(root) do
     System.cmd("elixir", [@script, "--root", Path.expand(root), "--check"],
       stderr_to_stdout: true,
-      cd: File.cwd!()
+      cd: @repo_root
     )
   end
 
@@ -487,7 +492,7 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
       "elixir",
       [@script, "--root", Path.expand(root), "--scope", scope, "--emit-snapshot"],
       stderr_to_stdout: true,
-      cd: File.cwd!()
+      cd: @repo_root
     )
   end
 

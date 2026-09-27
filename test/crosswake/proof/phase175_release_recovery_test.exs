@@ -190,20 +190,14 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
     end
   end
 
-  test "0.2.3 parity exception is limited to PR 200 and the exact recovery validator" do
+  test "iOS mirror parity runs on the current full-proof lane without a PR-specific exception" do
     workflow = File.read!(@ci_workflow)
     parity_job = job_section!(workflow, "ios-mirror-parity-proof")
 
-    assert parity_job =~
-             "if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 200 }}"
-
-    assert parity_job =~ "bash script/release_candidate/ios_tag_recovery.sh validate"
-    assert parity_job =~ "CROSSWAKE_IOS_PARITY_ALLOW_MISSING_VERSION"
-
-    assert parity_job =~
-             "CROSSWAKE_IOS_PARITY_ALLOW_MISSING_VERSION: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 200 && '0.2.3' || '' }}"
-
+    assert parity_job =~ "needs.classify-change.outputs.classification == 'full_proof'"
     assert parity_job =~ "./script/check_ios_mirror_parity.sh"
+    refute parity_job =~ "pull_request.number == 200"
+    refute parity_job =~ "CROSSWAKE_IOS_PARITY_ALLOW_MISSING_VERSION"
   end
 
   test "post-merge recovery validates before loading credentials and writes only the exact tag" do
@@ -319,8 +313,9 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
     File.write!(gradlew, "#!/bin/sh\nprintf invoked > \"$ANDROID_FIXTURE_GRADLE_MARKER\"\n")
     File.chmod!(gradlew, 0o755)
     {output, status} = run_android(fixture, execute: true)
-    assert status == 0, output
-    assert File.read!(fixture.gradle_marker) == "invoked"
+    assert status != 0, output
+    assert output =~ "REL-17 operation identity does not match the Android publication"
+    refute File.exists?(fixture.gradle_marker)
   end
 
   test "ordinary Android observe rejects wrong bindings before publication" do

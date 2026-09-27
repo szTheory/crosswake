@@ -34,7 +34,8 @@ while [ "$#" -gt 0 ]; do
 done
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
+SCRIPT_REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
+REPO_ROOT=${CROSSWAKE_RELEASE_ROOT:-$SCRIPT_REPO_ROOT}
 CHECKED_SHA=$(git -C "$REPO_ROOT" rev-parse HEAD)
 
 WORKDIR=""
@@ -265,10 +266,29 @@ dry_run_publish() {
 }
 
 publish_package() {
+  require_rel17_publish_evidence
   log "registry=hex.pm state=publishing package=${PACKAGE} version=${VERSION}"
   (
     cd "$REPO_ROOT/$WORKDIR"
     run_with_release_env bash -lc "HEX_API_KEY=\"${HEX_API_KEY}\" ${PUBLISH_CMD}"
+  )
+}
+
+require_rel17_publish_evidence() {
+  [ "${REL17_PACKAGE:-}" = "$PACKAGE" ] ||
+    fail "REL-17 package identity is missing or does not match ${PACKAGE}."
+  [ "${REL17_VERSION:-}" = "$VERSION" ] ||
+    fail "REL-17 version identity is missing or does not match ${VERSION}."
+
+  case "$PACKAGE:${REL17_OPERATION:-}" in
+    crosswake:linked_release|crosswake:recovery|crosswake_*:recovery) ;;
+    crosswake_*:companion_publish) ;;
+    *) fail "REL-17 operation is missing or does not match the selected package." ;;
+  esac
+
+  (
+    cd "$SCRIPT_REPO_ROOT"
+    REL17_STAGE=post_merge bash script/release_candidate/require_release_evidence.sh
   )
 }
 

@@ -3,6 +3,8 @@ defmodule Crosswake.ProofLane.EvidenceTest do
 
   alias Crosswake.ProofLane.Evidence
 
+  @repo_root Path.expand("../../..", __DIR__)
+
   @valid %{
     schema_version: "1",
     crosswake_version: "1.0.0",
@@ -651,7 +653,7 @@ defmodule Crosswake.ProofLane.EvidenceTest do
   end
 
   defp compile_barrier_helper!(executable) do
-    source = Path.join(:code.priv_dir(:crosswake), "native/crosswake_evidence_promote.c")
+    source = Path.join(@repo_root, "priv/native/crosswake_evidence_promote.c")
 
     assert {_, 0} =
              System.cmd(

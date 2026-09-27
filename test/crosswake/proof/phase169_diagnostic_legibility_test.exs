@@ -183,6 +183,11 @@ defmodule Crosswake.Proof.Phase169DiagnosticLegibilityTest do
         release_candidate: %{
           version: "0.0.0",
           state: "BLOCKED",
+          authorization_gate: %{
+            state: "BLOCKED",
+            condition: "missing_evidence",
+            next_step: "gather fresh evidence and request a new gate"
+          },
           next_action: "n/a",
           linked_coordinates: [],
           independent_companions: [],

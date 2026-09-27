@@ -1,8 +1,10 @@
 defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
-  use ExUnit.Case, async: true
+  # Mix task state and Application.app_dir/1 are process-wide test resources.
+  use ExUnit.Case, async: false
 
   import ExUnit.CaptureIO
 
+  @repo_root Path.expand("../../..", __DIR__)
   @task "crosswake.gen.shell"
 
   test "generator coordinate parity holds on non-local template renders" do
@@ -18,7 +20,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     ios_rendered =
       EEx.eval_file(
         Path.join(
-          File.cwd!(),
+          @repo_root,
           "priv/templates/crosswake/shell/ios/CrosswakeShell.xcodeproj/project.pbxproj.eex"
         ),
         assigns: assigns
@@ -26,7 +28,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
 
     android_rendered =
       EEx.eval_file(
-        Path.join(File.cwd!(), "priv/templates/crosswake/shell/android/app/build.gradle.eex"),
+        Path.join(@repo_root, "priv/templates/crosswake/shell/android/app/build.gradle.eex"),
         assigns: assigns
       )
 
@@ -135,7 +137,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_pack_inventory) =~ "\"integrity_status\": \"verified\""
     assert File.read!(ios_pack_inventory) =~ "\"verified_at\""
 
-    verify_script = Path.join(File.cwd!(), "script/verify_generated_ios_shell.sh")
+    verify_script = Path.join(@repo_root, "script/verify_generated_ios_shell.sh")
     assert File.read!(verify_script) =~ "xcodebuild"
     assert File.read!(verify_script) =~ "-showdestinations"
     assert File.read!(verify_script) =~ "SCHEME=\"${CROSSWAKE_IOS_SCHEME:-CrosswakeShell}\""
@@ -249,7 +251,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_pack_inventory) =~ "\"integrity_status\": \"verified\""
     assert File.read!(android_pack_inventory) =~ "\"verified_at\""
 
-    android_verify_script = Path.join(File.cwd!(), "script/verify_generated_android_shell.sh")
+    android_verify_script = Path.join(@repo_root, "script/verify_generated_android_shell.sh")
     assert File.read!(android_verify_script) =~ "sdkmanager"
     assert File.read!(android_verify_script) =~ "connectedDebugAndroidTest"
     assert File.read!(android_verify_script) =~ "commandlinetools-mac-14742923_latest.zip"

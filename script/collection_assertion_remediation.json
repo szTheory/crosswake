@@ -51,9 +51,9 @@
     {"key": "sha256:581fa063c5b02c4e", "shape": "refute_any", "display": "test/mix/tasks/crosswake_gen_proof_lane_test.exs:132", "enclosing": "check and diff are byte-for-byte read-only and diff reports only safe sorted statuses", "expression": "diff"},
     {"key": "sha256:f4f5a3b9405ace35", "shape": "assert_all", "display": "test/mix/tasks/crosswake_gen_proof_lane_test.exs:158", "enclosing": "concurrent generators preserve host-owned destinations", "expression": "outcomes"},
     {"key": "sha256:de76c4df733d37b3", "shape": "assert_all", "display": "test/mix/tasks/crosswake_gen_proof_lane_test.exs:182", "enclosing": "generator actions ignore a poisoned former shared helper cache", "expression": "Generator.diff(config)"},
-    {"key": "sha256:55b005e664b00714", "shape": "refute_any", "display": "test/mix/tasks/crosswake_release_status_test.exs:236", "enclosing": "live probes split definite absence from unverifiable, and both fail closed (D-18)", "expression": "presence_evidence"},
-    {"key": "sha256:986013509ce2bd25", "shape": "refute_any", "display": "test/mix/tasks/crosswake_release_status_test.exs:279", "enclosing": "all-ok live probes produce one ok presence check, no unverifiable check, and exit 0", "expression": "status.checks"},
-    {"key": "sha256:a92b0dd53c7807c5", "shape": "refute_any", "display": "test/mix/tasks/crosswake_release_status_test.exs:413", "enclosing": "an unreleased bootstrap companion is advisory, not fatal", "expression": "status.checks"},
-    {"key": "sha256:0d2ba1d9e100fa3c", "shape": "refute_any", "display": "test/mix/tasks/crosswake_release_status_test.exs:451", "enclosing": "an unreachable registry is never laundered into the bootstrap carve-out", "expression": "status.checks"}
+    {"key": "sha256:55b005e664b00714", "shape": "refute_any", "display": "test/mix/tasks/crosswake_release_status_test.exs:340", "enclosing": "live probes split definite absence from unverifiable, and both fail closed (D-18)", "expression": "presence_evidence"},
+    {"key": "sha256:986013509ce2bd25", "shape": "refute_any", "display": "test/mix/tasks/crosswake_release_status_test.exs:383", "enclosing": "all-ok live probes produce one ok presence check, no unverifiable check, and exit 0", "expression": "status.checks"},
+    {"key": "sha256:a92b0dd53c7807c5", "shape": "refute_any", "display": "test/mix/tasks/crosswake_release_status_test.exs:517", "enclosing": "an unreleased bootstrap companion is advisory, not fatal", "expression": "status.checks"},
+    {"key": "sha256:0d2ba1d9e100fa3c", "shape": "refute_any", "display": "test/mix/tasks/crosswake_release_status_test.exs:555", "enclosing": "an unreachable registry is never laundered into the bootstrap carve-out", "expression": "status.checks"}
 ]
 }

@@ -87,6 +87,25 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.android_proof.decoupled
     release.approval.linked_graph
     release.approval.merge_tree_guard
+    release.approval.runbook_ancestry_guard
+    release.rel17.approved_guard
+    release.rel17.roster_exact
+    release.rel17.release_creation_guard
+    release.rel17.core_hex_job_guard
+    release.rel17.core_ios_job_guard
+    release.rel17.core_maven_job_guard
+    release.rel17.recovery_hex_job_guard
+    release.rel17.recovery_ios_job_guard
+    release.rel17.recovery_maven_job_guard
+    release.rel17.legacy_ios_job_guard
+    release.rel17.companion_rulestead_job_guard
+    release.rel17.companion_rindle_job_guard
+    release.rel17.companion_sigra_job_guard
+    release.rel17.companion_chimeway_job_guard
+    release.rel17.companion_threadline_job_guard
+    release.rel17.hex_final_boundary
+    release.rel17.ios_final_boundary
+    release.rel17.maven_final_boundary
     release.candidate.receipt_attestation
     release.chimeway.component_gate
     release.chimeway.proof_gate
@@ -150,6 +169,28 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.workflow.no_cancel_in_progress_true
     release.workflow.proof_after_publish
     release.workflow.release_failure_alert_native
+  )
+
+  # REL-17 release-side-effect sites are independently declared. The general
+  # scanner roster below proves that every one of these named checks is emitted.
+  @rel17_guard_roster ~w(
+    release.rel17.approved_guard
+    release.rel17.release_creation_guard
+    release.rel17.core_hex_job_guard
+    release.rel17.core_ios_job_guard
+    release.rel17.core_maven_job_guard
+    release.rel17.recovery_hex_job_guard
+    release.rel17.recovery_ios_job_guard
+    release.rel17.recovery_maven_job_guard
+    release.rel17.legacy_ios_job_guard
+    release.rel17.companion_rulestead_job_guard
+    release.rel17.companion_rindle_job_guard
+    release.rel17.companion_sigra_job_guard
+    release.rel17.companion_chimeway_job_guard
+    release.rel17.companion_threadline_job_guard
+    release.rel17.hex_final_boundary
+    release.rel17.ios_final_boundary
+    release.rel17.maven_final_boundary
   )
 
   def run(argv \\ System.argv(), env_path \\ System.get_env("RELEASE_WORKFLOW_PATH")) do
@@ -290,6 +331,109 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         ),
         maven_fire_drill_isolated(non_comment_workflow, non_comment_maven_fire_drill),
         receipt_exact_authority(jobs),
+        approved_release_runbook_guard(jobs),
+        rel17_approved_guard(jobs),
+        rel17_roster_exact(),
+        rel17_release_creation_guard(jobs),
+        rel17_publisher_job_guard(
+          jobs,
+          "publish-hex",
+          "release.rel17.core_hex_job_guard",
+          "linked_release",
+          "crosswake",
+          "HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
+        ),
+        rel17_publisher_job_guard(
+          jobs,
+          "publish-ios-core",
+          "release.rel17.core_ios_job_guard",
+          "linked_release",
+          "crosswake",
+          "webfactory/ssh-agent@"
+        ),
+        rel17_publisher_job_guard(
+          jobs,
+          "publish-android-core",
+          "release.rel17.core_maven_job_guard",
+          "linked_release",
+          "crosswake",
+          "ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}"
+        ),
+        rel17_recovery_job_guard(
+          non_comment_recovery,
+          "publish",
+          "release.rel17.recovery_hex_job_guard",
+          "recovery",
+          "${{ inputs.package }}",
+          "HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
+        ),
+        rel17_recovery_job_guard(
+          non_comment_recovery,
+          "recover-android-core",
+          "release.rel17.recovery_maven_job_guard",
+          "recovery",
+          "crosswake",
+          "ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}"
+        ),
+        rel17_recovery_job_guard(
+          non_comment_ios_backfill_workflow,
+          "recover-ios-mirror",
+          "release.rel17.recovery_ios_job_guard",
+          "recovery",
+          "crosswake",
+          "webfactory/ssh-agent@"
+        ),
+        rel17_recovery_job_guard(
+          non_comment_ios_backfill_workflow,
+          "publish-ios-mirror",
+          "release.rel17.legacy_ios_job_guard",
+          "linked_release",
+          "crosswake",
+          "webfactory/ssh-agent@"
+        ),
+        rel17_publisher_job_guard(
+          jobs,
+          "publish-hex-rulestead",
+          "release.rel17.companion_rulestead_job_guard",
+          "companion_publish",
+          "crosswake_rulestead",
+          "HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
+        ),
+        rel17_publisher_job_guard(
+          jobs,
+          "publish-hex-rindle",
+          "release.rel17.companion_rindle_job_guard",
+          "companion_publish",
+          "crosswake_rindle",
+          "HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
+        ),
+        rel17_publisher_job_guard(
+          jobs,
+          "publish-hex-sigra",
+          "release.rel17.companion_sigra_job_guard",
+          "companion_publish",
+          "crosswake_sigra",
+          "HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
+        ),
+        rel17_publisher_job_guard(
+          jobs,
+          "publish-hex-chimeway",
+          "release.rel17.companion_chimeway_job_guard",
+          "companion_publish",
+          "crosswake_chimeway",
+          "HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
+        ),
+        rel17_publisher_job_guard(
+          jobs,
+          "publish-hex-threadline",
+          "release.rel17.companion_threadline_job_guard",
+          "companion_publish",
+          "crosswake_threadline",
+          "HEX_API_KEY: ${{ secrets.HEX_API_KEY }}"
+        ),
+        rel17_hex_final_boundary(non_comment_helper),
+        rel17_ios_final_boundary(non_comment_ios_backfill_script),
+        rel17_maven_final_boundary(non_comment_android_publication),
         no_retry_or_bypass(jobs),
         workflow_concurrency_queue_max(non_comment_workflow),
         workflow_no_cancel_in_progress_true(non_comment_workflow),
@@ -624,6 +768,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       job_if(jobs, "release-candidate-fixtures") ==
         "needs.classify-change.result == 'success'" and
         includes?(fixtures, "test/crosswake/release_candidate") and
+        includes?(fixtures, "test/crosswake/proof/phase175_runbook_ancestry_test.exs") and
         includes?(fixtures, "script/check_release_workflow_integrity.exs")
 
     full_complete? =
@@ -1501,7 +1646,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(block, ~s([ "$approved_head" = "$second_parent" ])) and
         includes?(block, ~s([ "$merge_tree" = "$approved_tree" ])) and
         includes?(block, "linked_candidate=false") and
-        includes?(block, ~s([ "$linked_candidate" = "true" ] || exit 0)) and
+        includes?(block, ~s(if [ "$linked_candidate" = "true" ]; then)) and
+        includes?(block, "candidate_operation=\"linked_release\"") and
+        includes?(block, "candidate_operation=\"companion_publish\"") and
+        includes?(block, "[ \"$candidate_count\" -le 1 ]") and
         includes?(block, "phase168-candidate-receipt-${approved_head}") and
         includes?(block, "phase168-candidate-ci-${approved_head}") and
         includes?(block, "release-candidate-ci-receipt.json") and
@@ -1510,6 +1658,247 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(block, ".external_state.changed == false") and
         job_needs?(jobs, "release-please", "approved-release-guard"),
       "Release Please must run only after exact approved-head parentage, identical tree, and READY receipt validation"
+    )
+  end
+
+  defp approved_release_runbook_guard(jobs) do
+    block = job_block(jobs, "approved-release-guard")
+    runbook_sha = "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
+    helper = "bash script/check_release_runbook_ancestry.sh \"$RUNBOOK_SHA\" \"$target\""
+    linked_output = index_of(block, ~s(emit_output "linked_release=true"))
+    ancestry_call = index_of(block, helper)
+    targets = ~s(for target in "$first_parent" "$approved_head" "$merge_oid"; do)
+
+    record =
+      File.read!(
+        ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-INCIDENT-DOC-COMMIT.md"
+      )
+
+    check(
+      "release.approval.runbook_ancestry_guard",
+      includes?(block, "RUNBOOK_SHA=\"#{runbook_sha}\"") and
+        includes?(record, runbook_sha) and
+        includes?(block, targets) and ancestry_call > 0 and
+        linked_output > ancestry_call and
+        includes?(block, "set -euo pipefail") and
+        not includes?(block, "script/check_release_runbook_ancestry.sh \"$RUNBOOK_SHA\" HEAD"),
+      "approved-release-guard must fail closed unless the recorded runbook commit and path are ancestors of the exact base, approved head, and merge OIDs before publishing"
+    )
+  end
+
+  defp rel17_approved_guard(jobs) do
+    block = job_block(jobs, "approved-release-guard")
+    gate = "bash script/release_candidate/require_release_evidence.sh"
+    gate_at = index_of(block, gate)
+    authorization_output_at = index_of(block, ~s(emit_output "rel17_context=$rel17_context"))
+
+    required_selectors = [
+      "REL17_OPERATION=\"$candidate_operation\"",
+      "REL17_STAGE=\"post_merge\"",
+      "REL17_PACKAGE=\"$candidate_package\"",
+      "REL17_VERSION=\"$candidate_version\"",
+      "REL17_RECEIPT_DIGEST=\"$candidate_receipt\"",
+      "REL17_LEG_RUN_ID=\"$rel17_leg_run_id\"",
+      "REL17_CI_RUN_ID=\"$candidate_run_id\"",
+      "REL17_RECEIPT_RUN_ID=\"$candidate_receipt_run_id\"",
+      "REL17_RECEIPT_ARTIFACT_ID=\"$candidate_receipt_artifact_id\"",
+      "REL17_REPOSITORY=\"$REPOSITORY\"",
+      "REL17_RUNBOOK_COMMIT=\"$RUNBOOK_SHA\"",
+      "REL17_PR=\"$rel17_pr\"",
+      "REL17_MERGE_OID=\"$merge_oid\"",
+      "REL17_EXPECTED_POLICY_SHA256=\"$rel17_policy_sha256\"",
+      "REL17_EXPECTED_BASE_OID=\"$first_parent\"",
+      "REL17_EXPECTED_HEAD_OID=\"$approved_head\"",
+      "REL17_EXPECTED_TREE_OID=\"$approved_tree\""
+    ]
+
+    check(
+      "release.rel17.approved_guard",
+      is_integer(gate_at) and is_integer(authorization_output_at) and
+        gate_at > 0 and authorization_output_at > gate_at and
+        Enum.all?(required_selectors, &includes?(block, &1)) and
+        includes?(block, "set -euo pipefail") and
+        includes?(block, "REL17-AUTHORIZATION: ") and
+        includes?(block, "((keys | sort) == [\"authorization\",\"authorization_run_id\"") and
+        includes?(block, "publish successor core ") and
+        includes?(block, "publish companion ") and
+        includes?(block, "publish leg 3 ") and
+        includes?(block, "GH_TOKEN: ${{ github.token }}") and
+        includes?(
+          block,
+          "[ \"$(printf '%s\\n' \"$trailer_lines\" | sed '/^$/d' | wc -l | tr -d ' ')\" -eq 1 ]"
+        ) and
+        includes?(block, "candidate_operation") and includes?(block, "candidate_package") and
+        includes?(block, "candidate_scope_delta") and
+        includes?(block, "reason=unclassified_release_version_change") and
+        includes?(block, "reason=mixed_core_and_companion_release") and
+        includes?(block, "rel17_context=$(printf '%s' \"$authorization_trailer\" | jq -c") and
+        includes?(block, "chmod 600 \"$authorization_file\"") and
+        Enum.all?(@rel17_guard_roster, &(&1 in @roster_ids)),
+      "approved-release-guard must consume one exact typed trailer, bind the live merge, candidate, receipt, CI, runbook and policy selectors, then expose its context only after a fresh shared-gate pass"
+    )
+  end
+
+  defp rel17_roster_exact do
+    check(
+      "release.rel17.roster_exact",
+      length(@rel17_guard_roster) == 17 and
+        length(Enum.uniq(@rel17_guard_roster)) == length(@rel17_guard_roster) and
+        Enum.all?(@rel17_guard_roster, &(&1 in @roster_ids)),
+      "the independently declared REL-17 guard roster has exactly 17 unique named checks, all enforced by the scanner's exact emitted roster"
+    )
+  end
+
+  defp rel17_release_creation_guard(jobs) do
+    block = job_block(jobs, "release-please")
+    loader = index_of(block, "bash script/release_candidate/load_release_evidence_context.sh")
+    gate = index_of(block, "bash script/release_candidate/require_release_evidence.sh")
+    action = index_of(block, "uses: googleapis/release-please-action@")
+
+    check(
+      "release.rel17.release_creation_guard",
+      is_integer(loader) and is_integer(gate) and is_integer(action) and
+        loader > 0 and gate > loader and action > gate and
+        includes?(block, "needs.approved-release-guard.outputs.rel17_context != ''") and
+        includes?(
+          block,
+          "REL17_EXPECTED_OPERATION: ${{ needs.approved-release-guard.outputs.rel17_operation }}"
+        ) and
+        includes?(
+          block,
+          "REL17_EXPECTED_PACKAGE: ${{ needs.approved-release-guard.outputs.rel17_package }}"
+        ) and
+        includes?(
+          block,
+          "REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}"
+        ) and
+        includes?(
+          block,
+          "REL17_EXPECTED_VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}"
+        ) and includes?(block, "GH_TOKEN: ${{ github.token }}"),
+      "Release Please must load and re-fetch the exact consumed REL-17 context before its release-creation action"
+    )
+  end
+
+  defp rel17_publisher_job_guard(
+         jobs,
+         job,
+         id,
+         operation,
+         package,
+         credential,
+         require_main \\ false
+       ) do
+    block = job_block(jobs, job)
+    loader = index_of(block, "bash script/release_candidate/load_release_evidence_context.sh")
+    gate = index_of(block, "bash script/release_candidate/require_release_evidence.sh")
+    credential_at = index_of(block, credential)
+
+    credential_suffix =
+      if is_integer(credential_at),
+        do: binary_part(block, credential_at, byte_size(block) - credential_at),
+        else: ""
+
+    mutation_token = index_of(credential_suffix, "GH_TOKEN: ${{ github.token }}")
+
+    check(
+      id,
+      block != "" and is_integer(loader) and is_integer(gate) and is_integer(credential_at) and
+        is_integer(mutation_token) and loader > 0 and gate > loader and credential_at > gate and
+        mutation_token > 0 and
+        (not require_main or
+           includes?(job_if(jobs, job), "github.ref == 'refs/heads/main'")) and
+        includes?(block, "REL17_EXPECTED_OPERATION: #{operation}") and
+        includes?(block, "REL17_EXPECTED_PACKAGE: #{package}") and
+        includes?(block, "REL17_EXPECTED_VERSION:") and
+        includes?(block, "REL17_EXPECTED_MERGE_OID:") and
+        includes?(block, "actions: read") and includes?(block, "pull-requests: read"),
+      "#{job} must bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step"
+    )
+  end
+
+  defp rel17_recovery_job_guard(workflow, job, id, operation, package, credential) do
+    jobs = job_blocks(workflow)
+    rel17_publisher_job_guard(jobs, job, id, operation, package, credential, true)
+  end
+
+  defp rel17_hex_final_boundary(helper) do
+    publish_fn = index_of(helper, "publish_package() {\n  require_rel17_publish_evidence")
+    gate_fn = index_of(helper, "require_rel17_publish_evidence() {")
+
+    shared_gate =
+      index_of(
+        helper,
+        "REL17_STAGE=post_merge bash script/release_candidate/require_release_evidence.sh"
+      )
+
+    publish_body =
+      if is_integer(publish_fn),
+        do: binary_part(helper, publish_fn, byte_size(helper) - publish_fn),
+        else: ""
+
+    actual_publish = index_of(publish_body, "${PUBLISH_CMD}")
+
+    check(
+      "release.rel17.hex_final_boundary",
+      is_integer(publish_fn) and is_integer(gate_fn) and is_integer(shared_gate) and
+        is_integer(actual_publish) and publish_fn > 0 and gate_fn > publish_fn and
+        shared_gate > gate_fn and actual_publish > 0 and
+        index_of(publish_body, "  require_rel17_publish_evidence\n") < actual_publish and
+        includes?(helper, "cd \"$SCRIPT_REPO_ROOT\"") and
+        includes?(helper, "[ \"${REL17_PACKAGE:-}\" = \"$PACKAGE\" ]") and
+        includes?(helper, "[ \"${REL17_VERSION:-}\" = \"$VERSION\" ]") and
+        includes?(helper, "crosswake:linked_release|crosswake:recovery") and
+        includes?(helper, "crosswake_*:recovery") and
+        includes?(helper, "crosswake_*:companion_publish"),
+      "the common Hex helper must re-fetch the package-bound REL-17 context from trusted tooling immediately before every Hex publish command"
+    )
+  end
+
+  defp rel17_ios_final_boundary(script) do
+    shared_gate =
+      index_of(
+        script,
+        "REL17_STAGE=post_merge bash script/release_candidate/require_release_evidence.sh"
+      )
+
+    ordinary =
+      index_of(
+        script,
+        "require_rel17_publish_evidence\n    git -C \"$RELEASE_REPO\" push --porcelain --atomic"
+      )
+
+    recovery =
+      index_of(
+        script,
+        "require_rel17_publish_evidence\n    git -C \"$RELEASE_REPO\" push --porcelain \\"
+      )
+
+    check(
+      "release.rel17.ios_final_boundary",
+      is_integer(shared_gate) and is_integer(ordinary) and is_integer(recovery) and
+        shared_gate > 0 and ordinary > shared_gate and recovery > ordinary and
+        includes?(script, "[ \"${REL17_OPERATION:-}\" = \"$expected_operation\" ]") and
+        includes?(script, "[ \"${REL17_MERGE_OID:-}\" = \"$SOURCE_REF\" ]") and
+        includes?(script, "--force-with-lease=refs/heads/main:${EXPECTED_OLD_REF}"),
+      "iOS ordinary atomic publication and exact-ref recovery must each pass the operation-bound live gate immediately before their push"
+    )
+  end
+
+  defp rel17_maven_final_boundary(script) do
+    gate =
+      index_of(
+        script,
+        "REL17_STAGE=post_merge bash script/release_candidate/require_release_evidence.sh)\n./gradlew publishToMavenCentral"
+      )
+
+    check(
+      "release.rel17.maven_final_boundary",
+      is_integer(gate) and gate > 0 and
+        includes?(script, "[ \"${REL17_OPERATION:-}\" = \"$expected_operation\" ]") and
+        includes?(script, "[ \"${REL17_MERGE_OID:-}\" = \"$SOURCE_REF\" ]") and
+        includes?(script, "publishToMavenCentral --no-daemon -PcrosswakeAutomaticRelease=true"),
+      "Android ordinary publication and recovery must pass the operation-bound live gate at the final boundary before Maven Central upload"
     )
   end
 
@@ -1536,14 +1925,23 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     graph_children =
       ~w(publish-hex publish-ios-core publish-android-core clean-room-proof-ios clean-room-proof-android exact-public-proof)
 
-    companions_excluded? =
+    companions_rel17_scoped? =
       Enum.all?(@components, fn component ->
-        not job_needs?(jobs, "publish-hex-#{component}", "approved-release-guard")
+        job_needs?(jobs, "publish-hex-#{component}", "approved-release-guard") and
+          job_needs?(jobs, "publish-hex-#{component}", "release-please") and
+          includes?(
+            job_if(jobs, "publish-hex-#{component}"),
+            "needs.approved-release-guard.outputs.rel17_operation == 'companion_publish'"
+          ) and
+          includes?(
+            job_if(jobs, "publish-hex-#{component}"),
+            "needs.approved-release-guard.outputs.rel17_package == 'crosswake_#{component}'"
+          )
       end)
 
     check(
       "release.approval.linked_graph",
-      guarded_children? and companions_excluded? and
+      guarded_children? and companions_rel17_scoped? and
         includes?(job_block(jobs, "publish-hex"), "--candidate-receipt") and
         includes?(helper, "verify_approved_identity") and
         includes?(job_block(jobs, "publish-android-core"), "android_publication.sh") and
@@ -1601,6 +1999,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   defp android_ordinary_receipt_chain(jobs) do
     block = job_block(jobs, "publish-android-core")
     guard = job_block(jobs, "approved-release-guard")
+
+    receipt_roster_guard =
+      File.read!("script/release_candidate/assert_candidate_receipt_artifact.sh")
+
     download = index_of(block, "Download and validate the approved candidate receipt")
     credentials = index_of(block, "ORG_GRADLE_PROJECT_mavenCentralUsername")
     publish = index_of(block, "android_publication.sh")
@@ -1620,7 +2022,13 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(block, "select(.name == $name and .expired == false)] | length')\" -eq 1 ]") and
         includes?(block, "gh run download \"$RECEIPT_RUN_ID\"") and
         includes?(block, "phase168-candidate-receipt-${APPROVED_HEAD}") and
-        includes?(block, "actual_files") and includes?(block, "candidate-receipt.json") and
+        includes?(
+          block,
+          "bash script/release_candidate/assert_candidate_receipt_artifact.sh \"$receipt_dir\""
+        ) and
+        includes?(receipt_roster_guard, "artifacts.json") and
+        includes?(receipt_roster_guard, "candidate-receipt.json") and
+        includes?(receipt_roster_guard, "candidate-receipt.md") and
         includes?(block, "[ \"$receipt_digest\" = \"$APPROVED_RECEIPT\" ]") and
         includes?(block, ".identity.bound == .identity.observed") and
         includes?(
@@ -1826,13 +2234,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(hex_recovery, ~s([ "$RECOVERY_REF" = "$PHASE168_MERGE_OID" ])) and
         includes?(android_recovery, "github.event.inputs.operation == 'android-recovery'") and
         includes?(android_recovery, "android_publication.sh") and
-        includes?(
-          android_recovery,
-          "ref: e089bfc0e8a4edf0b024a2a284c8a384216bd64d"
-        ) and
-        not includes?(android_recovery, "ref: ${{ github.sha }}") and
-        not includes?(android_recovery, "ref: main") and
-        not includes?(android_recovery, "refs/heads/") and
+        includes?(android_recovery, "ref: ${{ github.sha }}") and
+        includes?(android_recovery, "github.ref == 'refs/heads/main'") and
         includes?(android_recovery, "path: recovery-tools") and
         includes?(android_recovery, "path: release-source") and
         includes?(
@@ -2144,7 +2547,19 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
       check(
         "release.#{component}.component_gate",
-        job_if(jobs, job) == component_gate_expression(component),
+        includes?(
+          job_if(jobs, job),
+          "needs.release-please.outputs.#{component}_release_created == 'true'"
+        ) and
+          includes?(
+            job_if(jobs, job),
+            "needs.approved-release-guard.outputs.rel17_operation == 'companion_publish'"
+          ) and
+          includes?(
+            job_if(jobs, job),
+            "needs.approved-release-guard.outputs.rel17_package == 'crosswake_#{component}'"
+          ) and
+          job_needs?(jobs, job, "approved-release-guard"),
         "#{job} must gate on #{component}_release_created, not aggregate releases_created; run elixir script/check_release_workflow_integrity.exs"
       )
     end

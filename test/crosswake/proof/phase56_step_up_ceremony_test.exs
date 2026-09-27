@@ -3,6 +3,7 @@ defmodule Crosswake.Proof.Phase56StepUpCeremonyTest do
   # Only the @requires_example_host integration test remains in core because it runs
   # `mix run` in the examples/phoenix_host directory and needs example-host DB context.
   use ExUnit.Case, async: true
+  @repo_root Path.expand("../../..", __DIR__)
 
   @tag :requires_example_host
   test "example host proves issue challenge consume replay expiry cancel revoke binding and renewal" do
@@ -216,7 +217,7 @@ defmodule Crosswake.Proof.Phase56StepUpCeremonyTest do
 
     assert {output, 0} =
              System.cmd("mix", ["run", "--no-start", "-e", script],
-               cd: "examples/phoenix_host",
+               cd: Path.join(@repo_root, "examples/phoenix_host"),
                stderr_to_stdout: true
              )
 

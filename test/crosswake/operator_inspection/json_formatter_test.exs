@@ -1,5 +1,7 @@
 defmodule Crosswake.OperatorInspection.JSONFormatterTest do
-  use ExUnit.Case, async: true
+  # The suite's Mix-task proofs change the VM-wide cwd. Keep the lazy-loaded nested
+  # `Types.Condition` struct lookup out of that concurrent window.
+  use ExUnit.Case, async: false
 
   alias Crosswake.OperatorInspection.JSONFormatter
   alias Crosswake.OperatorInspection.Types

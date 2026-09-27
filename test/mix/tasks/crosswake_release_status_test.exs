@@ -144,6 +144,8 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert output =~ "Companions"
     assert output =~ "Checks:"
     assert output =~ "release.workflow_path_gates"
+    assert output =~ "REL-17 evidence: BLOCKED (missing_evidence)"
+    assert output =~ "gather fresh evidence and request a new gate"
     assert output =~ "clean-room proof uses Hex metadata floors and exact companion pins"
     assert output =~ "release-as pin"
     refute output =~ @stale_phrase
@@ -186,9 +188,17 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     ))
 
     assert_required_fields(decoded["release_candidate"], ~w(
-      credentials_exercised external_state_changed independent_companions linked_coordinates
+      authorization_gate credentials_exercised external_state_changed independent_companions linked_coordinates
       mirror next_action state version
     ))
+
+    assert decoded["release_candidate"]["authorization_gate"] == %{
+             "condition" => "missing_evidence",
+             "next_step" => "gather fresh evidence and request a new gate",
+             "operation" => "unknown",
+             "stage" => "unknown",
+             "state" => "BLOCKED"
+           }
 
     for check <- decoded["checks"] do
       assert_required_fields(check, ~w(code message next_action source status))
@@ -224,6 +234,51 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
       Mix.Task.clear()
       Mix.Tasks.Crosswake.Release.Status.run(["--bogus"])
     end
+  end
+
+  test "REL-17 status is read-only, hides raw response bytes, and keeps receipt state non-authorizing" do
+    sentinel = "raw-registry-sentinel-must-not-be-rendered"
+
+    status =
+      Crosswake.ReleaseStatus.build(
+        rel17_receipt_state: "READY FOR APPROVAL",
+        rel17_envelope: %{"raw" => sentinel},
+        rel17_sources: %{}
+      )
+
+    assert status.release_candidate.authorization_gate.state == "BLOCKED"
+    assert status.release_candidate.authorization_gate.condition == "invalid_envelope"
+
+    output = Crosswake.ReleaseStatus.render(status)
+    assert output =~ "REL-17 evidence: BLOCKED (invalid_envelope)"
+    assert output =~ "REL-17 next step: gather fresh evidence and request a new gate"
+    refute output =~ sentinel
+
+    complete =
+      Crosswake.ReleaseStatus.build(
+        live?: true,
+        http_probe: fn _url, _context -> %{status: :ok, evidence: ["fixture"]} end,
+        git_ref_probe: fn _remote, _ref -> %{status: :ok, evidence: ["fixture"]} end
+      )
+
+    partial =
+      Crosswake.ReleaseStatus.build(
+        live?: true,
+        http_probe: fn _url, context ->
+          if context[:kind] == :hex and context[:package] == "crosswake",
+            do: %{status: :ok, evidence: ["fixture"]},
+            else: %{status: :missing, evidence: ["fixture"]}
+        end,
+        git_ref_probe: fn _remote, _ref -> %{status: :missing, evidence: ["fixture"]} end
+      )
+
+    assert complete.release_candidate.state == "COMPLETE"
+    assert partial.release_candidate.state == "PARTIAL"
+    assert complete.release_candidate.authorization_gate.state == "BLOCKED"
+    assert partial.release_candidate.authorization_gate.state == "BLOCKED"
+    assert partial.release_candidate.next_action =~ "preserve this partial history"
+    refute partial.release_candidate.next_action =~ "recover"
+    refute partial.release_candidate.next_action =~ "retry"
   end
 
   # D-18: a missing mirror tag used to surface as :warning, so

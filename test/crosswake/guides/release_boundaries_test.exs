@@ -1,6 +1,8 @@
 defmodule Crosswake.Guides.ReleaseBoundariesTest do
   use ExUnit.Case, async: true
 
+  @repo_root Path.expand("../../..", __DIR__)
+
   @public_release_truth_docs [
     "README.md",
     "CHANGELOG.md",
@@ -20,10 +22,10 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
   ]
 
   test "guide surfaces publish the four change classes and rebuild-first wording" do
-    install = File.read!("guides/install.md")
-    native_shell = File.read!("guides/native_shell.md")
-    compatibility = File.read!("guides/compatibility.md")
-    example_host = File.read!("examples/phoenix_host/README.md")
+    install = File.read!(repo_path("guides/install.md"))
+    native_shell = File.read!(repo_path("guides/native_shell.md"))
+    compatibility = File.read!(repo_path("guides/compatibility.md"))
+    example_host = File.read!(repo_path("examples/phoenix_host/README.md"))
 
     assert install =~ "Do I need to rebuild?"
     assert install =~ "docs-only"
@@ -47,9 +49,9 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
   end
 
   test "install compatibility and troubleshooting lead to executable owners" do
-    install = File.read!("guides/install.md")
-    compatibility = File.read!("guides/compatibility.md")
-    troubleshooting = File.read!("guides/troubleshooting.md")
+    install = File.read!(repo_path("guides/install.md"))
+    compatibility = File.read!(repo_path("guides/compatibility.md"))
+    troubleshooting = File.read!(repo_path("guides/troubleshooting.md"))
 
     assert install =~ "**Current setup answer:**"
     assert install =~ "`mix.exs` owns the package version and dependency ranges"
@@ -68,7 +70,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
   end
 
   test "publish runbook keeps candidate evaluation reversible until exact-head approval" do
-    runbook = File.read!("docs/COMPANION-PUBLISH-RUNBOOK.md")
+    runbook = File.read!(repo_path("docs/COMPANION-PUBLISH-RUNBOOK.md"))
 
     assert runbook =~ "separates reversible evidence from publication"
     assert runbook =~ "exact Release Please head, tree, merge base"
@@ -79,7 +81,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
   end
 
   test "read-only release status projects the exact candidate boundary" do
-    status = Crosswake.ReleaseStatus.build()
+    status = Crosswake.ReleaseStatus.build(cwd: @repo_root)
     candidate_version = Crosswake.MixProject.project()[:version]
 
     assert %{
@@ -105,7 +107,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert mirror.public_ref == "refs/tags/v#{candidate_version}"
 
     assert next_action ==
-             "run mix crosswake.release.status --live, then capture the exact candidate receipt"
+             "gather fresh evidence and request a new gate"
   end
 
   test "phase 170: an empty independent-companion list now fails instead of passing vacuously" do
@@ -128,6 +130,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
 
     status =
       Crosswake.ReleaseStatus.build(
+        cwd: @repo_root,
         live?: true,
         http_probe: fn _url, context ->
           case context do
@@ -153,7 +156,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert status.release_candidate.state == "PARTIAL"
 
     assert status.release_candidate.next_action ==
-             "recover only the missing linked coordinate from its exact approved ref"
+             "preserve this partial history; gather fresh evidence and request a new gate"
 
     assert status.release_candidate.mirror.baseline_status == "OK"
     assert status.release_candidate.mirror.public_status == "MISSING"
@@ -164,7 +167,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
   end
 
   test "candidate runbook fixes the seven-step sequence and single approval boundary" do
-    runbook = File.read!("docs/COMPANION-PUBLISH-RUNBOOK.md")
+    runbook = File.read!(repo_path("docs/COMPANION-PUBLISH-RUNBOOK.md"))
 
     steps = [
       "1. Land the exact five-blob stack",
@@ -214,7 +217,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     ]
 
     for path <- guide_paths do
-      guide = File.read!(path)
+      guide = File.read!(repo_path(path))
 
       assert guide =~ "Do I need to rebuild?"
       assert guide =~ "Promotion rules"
@@ -238,9 +241,9 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
   end
 
   test "public start surfaces expose route-owner guides and support-truth labels" do
-    readme = File.read!("README.md")
-    install = File.read!("guides/install.md")
-    user_flows = File.read!("guides/user_flows.md")
+    readme = File.read!(repo_path("README.md"))
+    install = File.read!(repo_path("guides/install.md"))
+    user_flows = File.read!(repo_path("guides/user_flows.md"))
     docs = Crosswake.MixProject.project()[:docs]
     extras = docs[:extras]
     groups = docs[:groups_for_extras]
@@ -276,7 +279,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert "guides/web_to_mobile_migration.md" in extras
 
     for path <- extras do
-      assert File.exists?(path), "ExDoc extra #{path} must exist"
+      assert File.exists?(repo_path(path)), "ExDoc extra #{path} must exist"
     end
 
     assert Keyword.keys(groups) == [
@@ -383,7 +386,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
   end
 
   defp published_version do
-    "CHANGELOG.md"
+    repo_path("CHANGELOG.md")
     |> File.read!()
     |> then(&Regex.run(~r/^## \[(\d+\.\d+\.\d+)\]/m, &1))
     |> case do
@@ -393,11 +396,11 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
   end
 
   defp public_release_truth_docs do
-    Enum.map(@public_release_truth_docs, &{&1, File.read!(&1)})
+    Enum.map(@public_release_truth_docs, &{&1, File.read!(repo_path(&1))})
   end
 
   defp public_manifests do
-    Enum.map(@manifest_paths, &{&1, File.read!(&1) |> Jason.decode!()})
+    Enum.map(@manifest_paths, &{&1, File.read!(repo_path(&1)) |> Jason.decode!()})
   end
 
   defp scan_public_docs(docs, current_version) do
@@ -555,7 +558,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
   defp scan_manifest_shell(_path, _shell, _index, _stale_versions), do: []
 
   defp stale_package_versions(current_version) do
-    "CHANGELOG.md"
+    repo_path("CHANGELOG.md")
     |> File.read!()
     |> then(&Regex.scan(~r/^## \[(\d+\.\d+\.\d+)\]/m, &1))
     |> Enum.map(fn [_match, version] -> version end)
@@ -718,7 +721,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
   ]
 
   test "upgrade impact — structural: every versioned release has exactly one block" do
-    changelog = File.read!("CHANGELOG.md")
+    changelog = File.read!(repo_path("CHANGELOG.md"))
     lines = String.split(changelog, "\n")
 
     # Use historical_changelog_line?/1 to identify ## [x.y.z] heading lines (versioned releases).
@@ -749,8 +752,8 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
   end
 
   test "upgrade impact — vocabulary/legend parity: labels use the locked 4-string set and exist in support_matrix.md" do
-    changelog = File.read!("CHANGELOG.md")
-    support_matrix = File.read!("guides/support_matrix.md")
+    changelog = File.read!(repo_path("CHANGELOG.md"))
+    support_matrix = File.read!(repo_path("guides/support_matrix.md"))
 
     # Collect all ### Upgrade Impact label lines from CHANGELOG.md.
     # A label is the bold line immediately following "### Upgrade Impact"
@@ -891,7 +894,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
   # `companions` (and therefore `independent_companions`) solely from those
   # manifest keys.
   defp with_manifest_without_companions_cwd(fun) do
-    real_cwd = File.cwd!()
+    real_cwd = @repo_root
 
     temp_root =
       Path.join(
@@ -925,4 +928,6 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
       File.rm_rf!(temp_root)
     end
   end
+
+  defp repo_path(relative_path), do: Path.join(@repo_root, relative_path)
 end

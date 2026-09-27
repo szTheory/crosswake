@@ -12,10 +12,11 @@ defmodule Crosswake.ComponentTierGuardTest do
   ever calls the underlying `check_*` predicates directly and hopes the
   composition matches the raiser's.
 
-  Runs UNTAGGED and repo-root-only (D-39): CI's hermetic step excludes the
-  example-host-only tag, so a tagged test would drop into the single serial
-  lane capped at one case. This file carries no such tag, so it rides the
-  five-lane hermetic parallelism instead.
+  Runs untagged (D-39). Control 3 deliberately calls the zero-argument
+  production entry point, whose root is the process working directory. The
+  broad Mix suite contains tests that temporarily change that process-wide
+  directory, so this module runs synchronously to keep its repo-root
+  precondition stable under CI parallelism.
 
   ## The mutation control (not a permanent test here)
 
@@ -31,7 +32,7 @@ defmodule Crosswake.ComponentTierGuardTest do
   marker-free template directory) safely and repeatably.
   """
 
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Crosswake.ComponentTierGuard
 

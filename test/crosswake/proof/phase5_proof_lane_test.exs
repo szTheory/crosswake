@@ -1,5 +1,6 @@
 defmodule Crosswake.Proof.Phase5ProofLaneTest do
   use ExUnit.Case, async: false
+  @repo_root Path.expand("../../..", __DIR__)
 
   # Depends on the checked-in example Phoenix app (CrosswakeExample.*) being
   # compiled. Run by the phase5-proof leaf in crosswake-ci.yml, which builds the host first;
@@ -45,23 +46,47 @@ defmodule Crosswake.Proof.Phase5ProofLaneTest do
   end
 
   test "checked-in iOS and Android example hosts stay aligned to the same example route truth" do
-    router = File.read!("examples/phoenix_host/lib/crosswake_example/router.ex")
+    router =
+      File.read!(Path.join(@repo_root, "examples/phoenix_host/lib/crosswake_example/router.ex"))
 
     approval_live =
-      File.read!("examples/phoenix_host/lib/crosswake_example/saas_portal/approval_live.ex")
+      File.read!(
+        Path.join(
+          @repo_root,
+          "examples/phoenix_host/lib/crosswake_example/saas_portal/approval_live.ex"
+        )
+      )
 
-    ios_activation = File.read!("examples/ios_shell_host/Fixtures/route_activation.json")
-    ios_manifest = File.read!("examples/ios_shell_host/Fixtures/crosswake_manifest.json")
+    ios_activation =
+      File.read!(Path.join(@repo_root, "examples/ios_shell_host/Fixtures/route_activation.json"))
+
+    ios_manifest =
+      File.read!(
+        Path.join(@repo_root, "examples/ios_shell_host/Fixtures/crosswake_manifest.json")
+      )
 
     android_activation =
-      File.read!("examples/android_shell_host/app/src/main/assets/route_activation.json")
+      File.read!(
+        Path.join(
+          @repo_root,
+          "examples/android_shell_host/app/src/main/assets/route_activation.json"
+        )
+      )
 
     android_manifest =
-      File.read!("examples/android_shell_host/app/src/main/assets/crosswake_manifest.json")
+      File.read!(
+        Path.join(
+          @repo_root,
+          "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json"
+        )
+      )
 
     android_instrumented =
       File.read!(
-        "examples/android_shell_host/app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt"
+        Path.join(
+          @repo_root,
+          "examples/android_shell_host/app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt"
+        )
       )
 
     assert router =~ "lesson_library"
@@ -89,8 +114,8 @@ defmodule Crosswake.Proof.Phase5ProofLaneTest do
   end
 
   test "phase 5 proof workflow keeps native shell proof delegated to Phase 18" do
-    example_script = File.read!("script/verify_phase5_example_hosts.sh")
-    workflow = File.read!(".github/workflows/crosswake-ci.yml")
+    example_script = File.read!(Path.join(@repo_root, "script/verify_phase5_example_hosts.sh"))
+    workflow = File.read!(Path.join(@repo_root, ".github/workflows/crosswake-ci.yml"))
     phase5 = job_section!(workflow, "phase5-proof")
 
     assert example_script =~ "test/crosswake/proof/phase5_proof_lane_test.exs"

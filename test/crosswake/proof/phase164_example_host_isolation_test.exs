@@ -1,5 +1,6 @@
 defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
   use ExUnit.Case, async: false
+  @repo_root Path.expand("../../..", __DIR__)
 
   alias Crosswake.TestSupport.ExampleHost
 
@@ -174,7 +175,7 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
   end
 
   test "the shared helper contains no detached-global or broad reset strategy" do
-    source = File.read!("test/support/example_host.ex")
+    source = File.read!(Path.join(@repo_root, "test/support/example_host.ex"))
 
     refute source =~ "Process.unlink"
     refute source =~ "Application.stop_all"
@@ -182,7 +183,7 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
   end
 
   test "the bounded evidence command owns all six seed and execution-class runs" do
-    script = "script/check_example_host_isolation.sh"
+    script = Path.join(@repo_root, "script/check_example_host_isolation.sh")
     source = File.read!(script)
     stat = File.stat!(script)
 
@@ -211,7 +212,7 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
   end
 
   test "the stable example-host lane delegates to the matrix without serial or fixed-count claims" do
-    workflow = File.read!(".github/workflows/crosswake-ci.yml")
+    workflow = File.read!(Path.join(@repo_root, ".github/workflows/crosswake-ci.yml"))
     leaf = job_section!(workflow, "proof-requires-example-host")
 
     assert leaf =~ "name: proof-requires-example-host"

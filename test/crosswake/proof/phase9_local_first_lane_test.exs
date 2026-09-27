@@ -1,5 +1,6 @@
 defmodule Crosswake.Proof.Phase9LocalFirstLaneTest do
   use ExUnit.Case, async: false
+  @repo_root Path.expand("../../..", __DIR__)
 
   # Depends on the checked-in example Phoenix app (CrosswakeExample.*) being
   # compiled. Run by phase5-proof.yml, which builds the example host first;
@@ -40,14 +41,25 @@ defmodule Crosswake.Proof.Phase9LocalFirstLaneTest do
   end
 
   test "checked-in shell fixtures carry the local-first route truth" do
-    ios_manifest = File.read!("examples/ios_shell_host/Fixtures/crosswake_manifest.json")
+    ios_manifest =
+      File.read!(
+        Path.join(@repo_root, "examples/ios_shell_host/Fixtures/crosswake_manifest.json")
+      )
 
     android_manifest =
-      File.read!("examples/android_shell_host/app/src/main/assets/crosswake_manifest.json")
+      File.read!(
+        Path.join(
+          @repo_root,
+          "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json"
+        )
+      )
 
     android_instrumented =
       File.read!(
-        "examples/android_shell_host/app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt"
+        Path.join(
+          @repo_root,
+          "examples/android_shell_host/app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt"
+        )
       )
 
     assert ios_manifest =~ "\"local-first-study-session\""

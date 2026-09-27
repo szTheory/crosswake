@@ -19,6 +19,8 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
     rolled-back transactions.
   """
 
+  @repo_root Path.expand("../../..", __DIR__)
+
   # ---------------------------------------------------------------------------
   # Source-level assertions (no DB, no example-host modules required)
   # ---------------------------------------------------------------------------
@@ -26,7 +28,9 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
   test "binding migration does not define raw-token column names" do
     source =
       File.read!(
-        "examples/phoenix_host/priv/repo/migrations/20260602100000_create_chimeway_token_bindings.exs"
+        repo_path(
+          "examples/phoenix_host/priv/repo/migrations/20260602100000_create_chimeway_token_bindings.exs"
+        )
       )
 
     for forbidden_col <- [
@@ -44,7 +48,9 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
   test "binding migration defines the required partial unique index names" do
     source =
       File.read!(
-        "examples/phoenix_host/priv/repo/migrations/20260602100000_create_chimeway_token_bindings.exs"
+        repo_path(
+          "examples/phoenix_host/priv/repo/migrations/20260602100000_create_chimeway_token_bindings.exs"
+        )
       )
 
     assert source =~ "chimeway_token_bindings_active_token_identity_index"
@@ -55,7 +61,9 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
   test "audit migration defines the required index names and no cascade-delete" do
     source =
       File.read!(
-        "examples/phoenix_host/priv/repo/migrations/20260602100100_create_chimeway_token_binding_events.exs"
+        repo_path(
+          "examples/phoenix_host/priv/repo/migrations/20260602100100_create_chimeway_token_binding_events.exs"
+        )
       )
 
     assert source =~ "chimeway_token_binding_events_event_ref_index"
@@ -69,7 +77,9 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
 
   test "TokenBinding schema does not include raw-token field declarations" do
     source =
-      File.read!("examples/phoenix_host/lib/crosswake_example/chimeway/token_binding.ex")
+      File.read!(
+        repo_path("examples/phoenix_host/lib/crosswake_example/chimeway/token_binding.ex")
+      )
 
     for forbidden_field <- [:token, :raw_token, :device_token, :apns_token, :fcm_token] do
       refute source =~ "field(:#{forbidden_field},",
@@ -79,7 +89,9 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
 
   test "TokenBindingEvent schema does not include raw-token field declarations" do
     source =
-      File.read!("examples/phoenix_host/lib/crosswake_example/chimeway/token_binding_event.ex")
+      File.read!(
+        repo_path("examples/phoenix_host/lib/crosswake_example/chimeway/token_binding_event.ex")
+      )
 
     for forbidden_field <- [:token, :raw_token, :device_token, :apns_token, :fcm_token] do
       refute source =~ "field(:#{forbidden_field},",
@@ -88,7 +100,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
   end
 
   test "example host mix.exs does not include worker dependencies" do
-    source = File.read!("examples/phoenix_host/mix.exs")
+    source = File.read!(repo_path("examples/phoenix_host/mix.exs"))
 
     refute source =~ ":oban", "examples/phoenix_host must not depend on Oban"
     refute source =~ ":quantum", "examples/phoenix_host must not depend on Quantum"
@@ -96,7 +108,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
   end
 
   test "no compiled chimeway file uses Oban, Quantum, Broadway, or in-tree scheduler loops" do
-    chimeway_dir = "examples/phoenix_host/lib/crosswake_example/chimeway"
+    chimeway_dir = repo_path("examples/phoenix_host/lib/crosswake_example/chimeway")
 
     if File.dir?(chimeway_dir) do
       {:ok, files} = File.ls(chimeway_dir)
@@ -123,7 +135,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
   end
 
   test "example host mix.exs dependency list does not widen to worker or scheduler packages" do
-    source = File.read!("examples/phoenix_host/mix.exs")
+    source = File.read!(repo_path("examples/phoenix_host/mix.exs"))
 
     # Strict package-name denial list per D-34 and D-37
     refute source =~ ~s({:oban,), "examples/phoenix_host must not depend on Oban"
@@ -140,12 +152,16 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
     sentinel = "raw_apns_token_should_not_leak_123"
 
     production_files = [
-      "examples/phoenix_host/priv/repo/migrations/20260602100000_create_chimeway_token_bindings.exs",
-      "examples/phoenix_host/priv/repo/migrations/20260602100100_create_chimeway_token_binding_events.exs",
-      "examples/phoenix_host/lib/crosswake_example/chimeway/token_binding.ex",
-      "examples/phoenix_host/lib/crosswake_example/chimeway/token_binding_event.ex",
-      "examples/phoenix_host/lib/crosswake_example/chimeway/metadata_sanitizer.ex",
-      "examples/phoenix_host/lib/crosswake_example/chimeway/registry.ex"
+      repo_path(
+        "examples/phoenix_host/priv/repo/migrations/20260602100000_create_chimeway_token_bindings.exs"
+      ),
+      repo_path(
+        "examples/phoenix_host/priv/repo/migrations/20260602100100_create_chimeway_token_binding_events.exs"
+      ),
+      repo_path("examples/phoenix_host/lib/crosswake_example/chimeway/token_binding.ex"),
+      repo_path("examples/phoenix_host/lib/crosswake_example/chimeway/token_binding_event.ex"),
+      repo_path("examples/phoenix_host/lib/crosswake_example/chimeway/metadata_sanitizer.ex"),
+      repo_path("examples/phoenix_host/lib/crosswake_example/chimeway/registry.ex")
     ]
 
     for file <- production_files do
@@ -159,7 +175,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
   end
 
   test "example host README contains Optional Chimeway background jobs section with correct scope and API names" do
-    readme = File.read!("examples/phoenix_host/README.md")
+    readme = File.read!(repo_path("examples/phoenix_host/README.md"))
 
     # Section must exist
     assert readme =~ "Optional Chimeway background jobs",
@@ -368,7 +384,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
 
     assert {output, 0} =
              System.cmd("mix", ["run", "--no-start", "-e", script],
-               cd: "examples/phoenix_host",
+               cd: repo_path("examples/phoenix_host"),
                stderr_to_stdout: true
              )
 
@@ -452,7 +468,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
 
     assert {output, 0} =
              System.cmd("mix", ["run", "--no-start", "-e", script],
-               cd: "examples/phoenix_host",
+               cd: repo_path("examples/phoenix_host"),
                stderr_to_stdout: true
              )
 
@@ -619,7 +635,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
 
     assert {output, 0} =
              System.cmd("mix", ["run", "--no-start", "-e", script],
-               cd: "examples/phoenix_host",
+               cd: repo_path("examples/phoenix_host"),
                stderr_to_stdout: true
              )
 
@@ -966,7 +982,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
 
     assert {output, 0} =
              System.cmd("mix", ["run", "--no-start", "-e", script],
-               cd: "examples/phoenix_host",
+               cd: repo_path("examples/phoenix_host"),
                stderr_to_stdout: true
              )
 
@@ -1074,7 +1090,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
 
     assert {output, 0} =
              System.cmd("mix", ["run", "--no-start", "-e", script],
-               cd: "examples/phoenix_host",
+               cd: repo_path("examples/phoenix_host"),
                stderr_to_stdout: true
              )
 
@@ -1123,7 +1139,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
 
     assert {output, 0} =
              System.cmd("mix", ["run", "--no-start", "-e", script],
-               cd: "examples/phoenix_host",
+               cd: repo_path("examples/phoenix_host"),
                stderr_to_stdout: true
              )
 
@@ -1183,10 +1199,12 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
 
     assert {output, 0} =
              System.cmd("mix", ["run", "--no-start", "-e", script],
-               cd: "examples/phoenix_host",
+               cd: repo_path("examples/phoenix_host"),
                stderr_to_stdout: true
              )
 
     assert output =~ "phase60-wr05-regression-proof: ok"
   end
+
+  defp repo_path(relative_path), do: Path.join(@repo_root, relative_path)
 end

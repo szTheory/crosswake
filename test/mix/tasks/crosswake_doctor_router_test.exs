@@ -14,12 +14,13 @@ defmodule Mix.Tasks.Crosswake.DoctorRouterTest do
 
     File.mkdir_p!(Path.join(target, "lib/clean_room_host"))
     write_mix_project!(target)
+    File.cp!(Path.join(@repo_root, "mix.lock"), Path.join(target, "mix.lock"))
     write_install_fixture!(target)
     write_shell_artifacts!(target)
     write_proof_hook!(target, "ios", 0, "ios proof passed")
     write_proof_hook!(target, "android", 0, "android proof passed")
 
-    {output, exit_code} = run_mix(target, ["deps.get"])
+    {output, exit_code} = run_mix(target, ["deps.get", "--check-locked"])
     assert exit_code == 0, output
 
     on_exit(fn -> File.rm_rf(target) end)

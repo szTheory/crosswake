@@ -8,7 +8,9 @@ defmodule Crosswake.Guides.CollateralTableTest do
   # UAT 6 — fully automated. (Reads the repo file directly; brandbook is
   # Hex-excluded but tests run from the repo, consistent with the sibling guides.)
 
+  @repo_root Path.expand("../../..", __DIR__)
   @table_path "brandbook/collateral/see-it-run/README.md"
+  @table_file Path.join(@repo_root, @table_path)
 
   @web_rows ["web-home.png", "web-offline.png", "web-bridge-proof.png"]
   @native_rows ["ios-simulator.png", "android-emulator.png", "three-runtime-montage.png"]
@@ -22,7 +24,7 @@ defmodule Crosswake.Guides.CollateralTableTest do
   # ---------------------------------------------------------------------------
 
   test "collateral table file is readable" do
-    assert File.exists?(@table_path), "expected #{@table_path} to exist"
+    assert File.exists?(@table_file), "expected #{@table_path} to exist"
   end
 
   # ---------------------------------------------------------------------------
@@ -30,7 +32,7 @@ defmodule Crosswake.Guides.CollateralTableTest do
   # ---------------------------------------------------------------------------
 
   test "collateral table lists all seven assets with honest labels" do
-    assert_no_drift_failures(scan_table({@table_path, File.read!(@table_path)}))
+    assert_no_drift_failures(scan_table({@table_path, File.read!(@table_file)}))
   end
 
   # ---------------------------------------------------------------------------
@@ -38,7 +40,7 @@ defmodule Crosswake.Guides.CollateralTableTest do
   # ---------------------------------------------------------------------------
 
   test "scanner rejects a missing asset row" do
-    mutated = String.replace(File.read!(@table_path), "see-it-run.gif", "demo.gif")
+    mutated = String.replace(File.read!(@table_file), "see-it-run.gif", "demo.gif")
 
     assert_failure_category(
       scan_table({"synthetic/missing_row.md", mutated}),
@@ -48,7 +50,7 @@ defmodule Crosswake.Guides.CollateralTableTest do
 
   test "scanner rejects a web row that drops the Web proof label" do
     mutated =
-      String.replace(File.read!(@table_path), "Web proof — localhost:4700/ ", "screenshot ")
+      String.replace(File.read!(@table_file), "Web proof — localhost:4700/ ", "screenshot ")
 
     assert_failure_category(
       scan_table({"synthetic/no_web_label.md", mutated}),
@@ -59,7 +61,7 @@ defmodule Crosswake.Guides.CollateralTableTest do
   test "scanner rejects a native row that drops the advisory disclaimer" do
     mutated =
       String.replace(
-        File.read!(@table_path),
+        File.read!(@table_file),
         "emulator evidence — iOS Simulator (advisory, not physical device)",
         "iOS Simulator screenshot"
       )
@@ -71,7 +73,7 @@ defmodule Crosswake.Guides.CollateralTableTest do
   end
 
   test "scanner rejects a missing raw reference URL" do
-    mutated = String.replace(File.read!(@table_path), @raw_url_prefix, "example.com/")
+    mutated = String.replace(File.read!(@table_file), @raw_url_prefix, "example.com/")
 
     assert_failure_category(
       scan_table({"synthetic/no_raw_url.md", mutated}),

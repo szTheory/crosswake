@@ -14,8 +14,9 @@ defmodule Crosswake.ReleaseWorkflowFixtures do
 
   import ExUnit.Callbacks, only: [on_exit: 1]
 
-  @scanner "script/check_release_workflow_integrity.exs"
-  @release_workflow ".github/workflows/release-please.yml"
+  @repo_root Path.expand("../..", __DIR__)
+  @scanner Path.join(@repo_root, "script/check_release_workflow_integrity.exs")
+  @release_workflow Path.join(@repo_root, ".github/workflows/release-please.yml")
 
   def scanner, do: @scanner
   def release_workflow_path, do: @release_workflow
@@ -35,6 +36,7 @@ defmodule Crosswake.ReleaseWorkflowFixtures do
   def fixture_env_name(:doctor_task), do: "DOCTOR_TASK_PATH"
   def fixture_env_name(:ios_backfill_script), do: "IOS_BACKFILL_SCRIPT_PATH"
   def fixture_env_name(:ios_backfill_workflow), do: "IOS_BACKFILL_WORKFLOW_PATH"
+  def fixture_env_name(:android_publication), do: "ANDROID_PUBLICATION_PATH"
   def fixture_env_name(:exact_public_proof_workflow), do: "EXACT_PUBLIC_PROOF_WORKFLOW_PATH"
 
   @doc """

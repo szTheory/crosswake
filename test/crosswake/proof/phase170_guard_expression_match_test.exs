@@ -40,8 +40,9 @@ defmodule Crosswake.Proof.Phase170GuardExpressionMatchTest do
 
   use ExUnit.Case, async: true
 
-  @manifest_path "script/collection_assertion_remediation.json"
-  @ledger_path "script/collection_assertion_ledger.json"
+  @repo_root Path.expand("../../..", __DIR__)
+  @manifest_path Path.join(@repo_root, "script/collection_assertion_remediation.json")
+  @ledger_path Path.join(@repo_root, "script/collection_assertion_ledger.json")
 
   # D-14 / D-24 (Phase 169 precedent): the manifest's real, measured row count as a
   # hard-coded literal, so the closed world cannot silently shrink to nothing. Taken from
@@ -321,7 +322,7 @@ defmodule Crosswake.Proof.Phase170GuardExpressionMatchTest do
 
   defp read_source_lines(relative_path) do
     relative_path
-    |> then(&Path.join(File.cwd!(), &1))
+    |> then(&Path.join(@repo_root, &1))
     |> File.read!()
     |> String.split("\n")
   end

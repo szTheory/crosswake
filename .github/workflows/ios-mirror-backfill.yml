@@ -84,6 +84,11 @@ on:
         required: false
         default: ''
         type: string
+      rel17_context:
+        description: 'Fresh post-merge REL-17 selector and consumed authorization envelope for this exact publication or recovery.'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -245,6 +250,7 @@ jobs:
             --name candidate-rehearsal-maven --dir "$OUTPUT_DIR/maven"
           test -f "$OUTPUT_DIR/ci/release-candidate-ci-receipt.json"
           test -f "$OUTPUT_DIR/ci/artifacts/artifacts.json"
+          test -f "$OUTPUT_DIR/ci/cleanroom.json"
           test -f "$OUTPUT_DIR/hex/rehearsal.json"
           test -f "$OUTPUT_DIR/hex/packages/artifacts.json"
           test -f "$OUTPUT_DIR/ios/rehearsal.json"
@@ -278,6 +284,7 @@ jobs:
             '.conclusion == "success" and .headSha == $head and .workflowName == "Maven publish fire-drill"' >/dev/null
 
           ci_receipt_sha=$(sha256sum "$OUTPUT_DIR/ci/release-candidate-ci-receipt.json" | awk '{print $1}')
+          cleanroom_sha=$(sha256sum "$OUTPUT_DIR/ci/cleanroom.json" | awk '{print $1}')
           package_sha=$(sha256sum "$OUTPUT_DIR/hex/packages/artifacts.json" | awk '{print $1}')
           hex_sha=$(sha256sum "$OUTPUT_DIR/hex/rehearsal.json" | awk '{print $1}')
           ios_sha=$(sha256sum "$OUTPUT_DIR/ios/rehearsal.json" | awk '{print $1}')
@@ -318,9 +325,10 @@ jobs:
 
           jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
             --arg base "$CANDIDATE_BASE" --argjson run "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
-            --arg ci "$ci_receipt_sha" --arg package "$package_sha" --arg hex "$hex_sha" \
+            --arg ci "$ci_receipt_sha" --arg cleanroom "$cleanroom_sha" \
+            --arg package "$package_sha" --arg hex "$hex_sha" \
             --arg ios "$ios_sha" --arg maven "$maven_sha" --arg mirror "$mirror_sha" \
-            '.state == "READY FOR APPROVAL" and .identity.bound == .identity.observed and .identity.bound.head == $head and .identity.bound.tree == $tree and .identity.bound.base == $base and .identity.bound.run.id == $run and .credentials == {"exercised":true,"mirror_write_authority":"PROVEN"} and .external_state.changed == false and .external_state.publication == "NONE" and ([.checks[].id] == (["candidate.ci","candidate.identity","candidate.workflows","candidate.config","candidate.coordinates","candidate.cleanroom","candidate.external-state","candidate.credentials","package.family","hex.rehearsal","ios.rehearsal","maven.rehearsal","mirror.authority"] | sort)) and all(.checks[]; .status == "PASS") and any(.identity.bound.proofs[]; .id == "candidate.ci" and .sha256 == $ci) and any(.identity.bound.proofs[]; .id == "package.family" and .sha256 == $package) and any(.identity.bound.proofs[]; .id == "hex.rehearsal" and .sha256 == $hex) and any(.identity.bound.proofs[]; .id == "ios.rehearsal" and .sha256 == $ios) and any(.identity.bound.proofs[]; .id == "maven.rehearsal" and .sha256 == $maven) and any(.identity.bound.proofs[]; .id == "mirror.authority" and .sha256 == $mirror)' \
+            '.state == "READY FOR APPROVAL" and .identity.bound == .identity.observed and .identity.bound.head == $head and .identity.bound.tree == $tree and .identity.bound.base == $base and .identity.bound.run.id == $run and .credentials == {"exercised":true,"mirror_write_authority":"PROVEN"} and .external_state.changed == false and .external_state.publication == "NONE" and ([.checks[].id] == (["candidate.ci","candidate.identity","candidate.workflows","candidate.config","candidate.coordinates","candidate.cleanroom","candidate.external-state","candidate.credentials","package.family","hex.rehearsal","ios.rehearsal","maven.rehearsal","mirror.authority"] | sort)) and all(.checks[]; .status == "PASS") and any(.identity.bound.proofs[]; .id == "candidate.ci" and .sha256 == $ci) and any(.identity.bound.proofs[]; .id == "candidate.cleanroom" and .sha256 == $cleanroom) and any(.identity.bound.proofs[]; .id == "package.family" and .sha256 == $package) and any(.identity.bound.proofs[]; .id == "hex.rehearsal" and .sha256 == $hex) and any(.identity.bound.proofs[]; .id == "ios.rehearsal" and .sha256 == $ios) and any(.identity.bound.proofs[]; .id == "maven.rehearsal" and .sha256 == $maven) and any(.identity.bound.proofs[]; .id == "mirror.authority" and .sha256 == $mirror)' \
             "$OUTPUT_DIR/candidate-receipt.json" >/dev/null
 
           receipt_digest() {
@@ -362,11 +370,13 @@ jobs:
 
   publish-ios-mirror:
     name: Publish approved iOS mirror tag and main atomically
-    if: ${{ github.event.inputs.operation == 'publish' }}
+    if: ${{ github.event.inputs.operation == 'publish' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      actions: read
       contents: read
+      pull-requests: read
     steps:
       - name: Validate exact Phase 168 iOS publication authority
         env:
@@ -398,15 +408,38 @@ jobs:
 
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          ref: ${{ inputs.release_ref }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Load the exact REL-17 publication context
+        env:
+          REL17_CONTEXT_JSON: ${{ inputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: linked_release
+          REL17_EXPECTED_PACKAGE: crosswake
+          REL17_EXPECTED_VERSION: ${{ inputs.version }}
+          REL17_EXPECTED_MERGE_OID: ${{ inputs.release_ref }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
       - uses: ./.github/actions/setup-elixir-cache
         with:
-          mix-env: dev
+          mix-env: test
+
+      - name: Re-fetch REL-17 evidence before mirror credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - name: Check out the exact immutable mirror payload
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.release_ref }}
+          path: release-source
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Prove merge, tree, and split identity
+        working-directory: release-source
         env:
           RELEASE_REF: ${{ inputs.release_ref }}
           APPROVED_HEAD: ${{ inputs.candidate_head }}
@@ -436,6 +469,8 @@ jobs:
       - name: Publish the exact missing mirror refs
         env:
           CROSSWAKE_IOS_MIRROR_EXECUTE: "true"
+          CROSSWAKE_IOS_MIRROR_RELEASE_REPO: ${{ github.workspace }}/release-source
+          GH_TOKEN: ${{ github.token }}
         run: >
           bash script/release_candidate/ios_mirror.sh publish
           --version "${{ inputs.version }}"
@@ -513,11 +548,13 @@ jobs:
 
   recover-ios-mirror:
     name: Recover approved iOS mirror main
-    if: ${{ github.event.inputs.operation == 'recovery' }}
+    if: ${{ github.event.inputs.operation == 'recovery' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
+      actions: read
       contents: read
+      pull-requests: read
     steps:
       # This job is the only mode able to replace the public mirror's `main` with a
       # leased force push, so it must prove the exact approved Phase 168 transaction
@@ -561,12 +598,35 @@ jobs:
 
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          ref: ${{ inputs.release_ref }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Load the exact iOS recovery authorization context
+        env:
+          REL17_CONTEXT_JSON: ${{ inputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: recovery
+          REL17_EXPECTED_PACKAGE: crosswake
+          REL17_EXPECTED_VERSION: ${{ inputs.version }}
+          REL17_EXPECTED_MERGE_OID: ${{ inputs.release_ref }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
       - uses: ./.github/actions/setup-elixir-cache
         with:
-          mix-env: dev
+          mix-env: test
+
+      - name: Re-fetch REL-17 evidence before iOS recovery credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.release_ref }}
+          path: release-source
+          fetch-depth: 0
+          persist-credentials: false
+
       - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:
           ssh-private-key: ${{ secrets.MIRROR_DEPLOY_KEY }}
@@ -577,6 +637,8 @@ jobs:
       - name: Run separately approved exact-ref recovery
         env:
           CROSSWAKE_IOS_MIRROR_EXECUTE: "true"
+          CROSSWAKE_IOS_MIRROR_RELEASE_REPO: ${{ github.workspace }}/release-source
+          GH_TOKEN: ${{ github.token }}
         run: >
           bash script/release_candidate/ios_mirror.sh recovery
           --version "${{ inputs.version }}"

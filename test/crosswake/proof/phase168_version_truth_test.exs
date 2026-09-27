@@ -11,7 +11,8 @@ defmodule Crosswake.Proof.Phase168VersionTruthTest do
 
   use ExUnit.Case, async: true
 
-  @script "script/check_release_version_truth.exs"
+  @repo_root Path.expand("../../..", __DIR__)
+  @script Path.join(@repo_root, "script/check_release_version_truth.exs")
 
   @components %{
     "." => "hex-v",
@@ -41,7 +42,7 @@ defmodule Crosswake.Proof.Phase168VersionTruthTest do
   end
 
   defp run(args) do
-    System.cmd("elixir", [@script | args], stderr_to_stdout: true, cd: File.cwd!())
+    System.cmd("elixir", [@script | args], stderr_to_stdout: true, cd: @repo_root)
   end
 
   defp all_at(version) do

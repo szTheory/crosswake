@@ -1,5 +1,6 @@
 defmodule Crosswake.Planning.FirstAdopterContextTest do
-  use ExUnit.Case, async: true
+  # Repository-relative scans must not race tests that temporarily change the process cwd.
+  use ExUnit.Case, async: false
 
   alias Crosswake.Planning.FirstAdopterContext
 

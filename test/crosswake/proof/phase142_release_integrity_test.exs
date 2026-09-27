@@ -12,13 +12,13 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
 
   alias Crosswake.ReleaseWorkflowFixtures
 
-  @workflow ".github/workflows/release-please.yml"
-  @recovery_workflow ".github/workflows/hex-publish.yml"
-  @scanner "script/check_release_workflow_integrity.exs"
-  @cleanroom_script "script/verify_companion_cleanroom.sh"
-  @guarded_helper "script/guarded_hex_publish.sh"
-  @release_config "release-please-config.json"
-  @doctor_task "lib/mix/tasks/crosswake.doctor.ex"
+  @repo_root Path.expand("../../..", __DIR__)
+  @workflow Path.join(@repo_root, ".github/workflows/release-please.yml")
+  @recovery_workflow Path.join(@repo_root, ".github/workflows/hex-publish.yml")
+  @cleanroom_script Path.join(@repo_root, "script/verify_companion_cleanroom.sh")
+  @guarded_helper Path.join(@repo_root, "script/guarded_hex_publish.sh")
+  @release_config Path.join(@repo_root, "release-please-config.json")
+  @doctor_task Path.join(@repo_root, "lib/mix/tasks/crosswake.doctor.ex")
 
   @phase143_ids ~w(
     release.hex_publish.already_live_preflight
@@ -193,10 +193,11 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
 
     assert adapter =~ ~S|REMOTE_TAG=$(printf '%s\n'|
 
-    assert File.read!("lib/crosswake/release_candidate/mirror.ex") =~
+    assert File.read!(Path.join(@repo_root, "lib/crosswake/release_candidate/mirror.ex")) =~
              "resolve_immutable_tag_conflict"
 
-    assert File.read!("lib/crosswake/release_candidate/mirror.ex") =~ "external_state_changed"
+    assert File.read!(Path.join(@repo_root, "lib/crosswake/release_candidate/mirror.ex")) =~
+             "external_state_changed"
 
     assert adapter =~ "--force-with-lease=refs/heads/main:${EXPECTED_OLD_REF}"
   end
@@ -355,8 +356,8 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
       real_workflow()
       |> replace_in_job(
         "publish-hex-rindle",
-        "if: ${{ needs.release-please.outputs.rindle_release_created == 'true' }}",
-        "if: ${{ needs.release-please.outputs.releases_created == 'true' }}"
+        "needs.release-please.outputs.rindle_release_created == 'true'",
+        "needs.release-please.outputs.releases_created == 'true'"
       )
 
     assert_failure!("release.workflow.aggregate_gate.behavioral_jobs_absent", workflow)
@@ -949,7 +950,7 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
 
     for package <-
           ~w(crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline) do
-      source = Path.join(["packages", package, "mix.exs"])
+      source = Path.join([@repo_root, "packages", package, "mix.exs"])
       target_dir = Path.join(temp_root, package)
       File.mkdir_p!(target_dir)
 
@@ -1014,6 +1015,10 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   defp release_config, do: File.read!(@release_config)
   defp cleanroom_script, do: File.read!(@cleanroom_script)
   defp doctor_task, do: File.read!(@doctor_task)
-  defp ios_backfill_script, do: File.read!("script/release_candidate/ios_mirror.sh")
-  defp ios_backfill_workflow, do: File.read!(".github/workflows/ios-mirror-backfill.yml")
+
+  defp ios_backfill_script,
+    do: File.read!(Path.join(@repo_root, "script/release_candidate/ios_mirror.sh"))
+
+  defp ios_backfill_workflow,
+    do: File.read!(Path.join(@repo_root, ".github/workflows/ios-mirror-backfill.yml"))
 end

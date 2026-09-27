@@ -4,6 +4,7 @@ defmodule Crosswake.Contract.ContractDriftTest do
   # Canonical version source — THE authoritative value this test guards against.
   # Never use a literal "1.1.0" here; always read from the canonical Elixir function
   # so the test stays drift-proof as the contract version is bumped.
+  @repo_root Path.expand("../../..", __DIR__)
   @canonical_version Crosswake.Bridge.Contract.version()
 
   # ---------------------------------------------------------------------------
@@ -59,7 +60,7 @@ defmodule Crosswake.Contract.ContractDriftTest do
            "Crosswake.Bridge.Contract.version() must return a semver string; got: #{inspect(@canonical_version)}"
 
     for path <- @all_surface_paths do
-      assert File.exists?(path),
+      assert File.exists?(Path.join(@repo_root, path)),
              "Expected committed contract surface to exist: #{path}"
     end
   end
@@ -71,7 +72,7 @@ defmodule Crosswake.Contract.ContractDriftTest do
   test "all committed contract surfaces carry the canonical bridge_protocol_version" do
     manifest_failures =
       Enum.flat_map(@manifest_paths, fn path ->
-        path
+        Path.join(@repo_root, path)
         |> File.read!()
         |> Jason.decode!()
         |> compare_manifest_surface(path, @canonical_version)
@@ -79,7 +80,7 @@ defmodule Crosswake.Contract.ContractDriftTest do
 
     generated_failures =
       Enum.flat_map(@generated_json_paths, fn path ->
-        path
+        Path.join(@repo_root, path)
         |> File.read!()
         |> Jason.decode!()
         |> compare_generated_surface(path, @canonical_version)
@@ -104,7 +105,7 @@ defmodule Crosswake.Contract.ContractDriftTest do
   test "dev fixtures carry the canonical bridge_protocol_version" do
     generated_failures =
       Enum.flat_map(@dev_generated_json_paths, fn path ->
-        path
+        Path.join(@repo_root, path)
         |> File.read!()
         |> Jason.decode!()
         |> compare_generated_surface(path, @canonical_version)
