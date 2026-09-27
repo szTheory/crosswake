@@ -72,27 +72,80 @@ jobs:
           emit_output "linked_release=false"
 
           # Proposal-refresh pushes remain reversible. The strict gate activates only
-          # for the merge that changes all three linked coordinates to 0.2.1.
+          # for a merged candidate with source and manifest version changes.
           parent_line=$(git rev-list --parents -n 1 "$RUN_HEAD")
           parent_count=$(printf '%s\n' "$parent_line" | awk '{print NF}')
           [ "$parent_count" -ge 2 ] || exit 0
           first_parent=$(printf '%s\n' "$parent_line" | awk '{print $2}')
-          linked_delta=$(git diff --name-only "$first_parent" "$RUN_HEAD" -- \
-            mix.exs .release-please-manifest.json \
-            packages/crosswake-shell-core-android/build.gradle.kts | wc -l | tr -d ' ')
-          candidate_scope_delta=$(git diff --name-only "$first_parent" "$RUN_HEAD" -- \
-            mix.exs .release-please-manifest.json \
-            packages/crosswake-shell-core-android/build.gradle.kts \
-            packages/crosswake_rulestead/mix.exs packages/crosswake_rindle/mix.exs \
-            packages/crosswake_sigra/mix.exs packages/crosswake_chimeway/mix.exs \
-            packages/crosswake_threadline/mix.exs | wc -l | tr -d ' ')
-          manifest_version=$(jq -er '."."' .release-please-manifest.json)
+          mix_version_at() {
+            matches=$(git show "$1:$2" | sed -nE 's/^[[:space:]]*@version[[:space:]]+"([^"]+)".*/\1/p')
+            [ -n "$matches" ] || return 1
+            [ "$(printf '%s\n' "$matches" | wc -l | tr -d ' ')" -eq 1 ] || return 1
+            printf '%s\n' "$matches"
+          }
+          gradle_version_at() {
+            matches=$(git show "$1:$2" | sed -nE 's/^[[:space:]]*version[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/p')
+            [ -n "$matches" ] || return 1
+            [ "$(printf '%s\n' "$matches" | wc -l | tr -d ' ')" -eq 1 ] || return 1
+            printf '%s\n' "$matches"
+          }
+          manifest_version_at() {
+            git show "$1:.release-please-manifest.json" | jq -er --arg key "$2" '.[$key]'
+          }
+
+          base_manifest=$(git show "$first_parent:.release-please-manifest.json")
+          head_manifest=$(git show "$RUN_HEAD:.release-please-manifest.json")
+          base_manifest_version=$(jq -er '."."' <<<"$base_manifest")
+          manifest_version=$(jq -er '."."' <<<"$head_manifest")
+          base_ios_version=$(jq -er '."packages/crosswake-shell-core-ios"' <<<"$base_manifest")
+          ios_version=$(jq -er '."packages/crosswake-shell-core-ios"' <<<"$head_manifest")
+          base_android_manifest_version=$(jq -er '."packages/crosswake-shell-core-android"' <<<"$base_manifest")
+          android_manifest_version=$(jq -er '."packages/crosswake-shell-core-android"' <<<"$head_manifest")
+          base_root_version=$(mix_version_at "$first_parent" mix.exs)
+          root_version=$(mix_version_at "$RUN_HEAD" mix.exs)
+          base_android_version=$(gradle_version_at "$first_parent" packages/crosswake-shell-core-android/build.gradle.kts)
+          android_version=$(gradle_version_at "$RUN_HEAD" packages/crosswake-shell-core-android/build.gradle.kts)
+          [ -n "$base_root_version" ] && [ -n "$root_version" ] &&
+            [ -n "$base_android_version" ] && [ -n "$android_version" ]
+
+          core_version_changed=false
+          if [ "$base_root_version" != "$root_version" ] ||
+            [ "$base_manifest_version" != "$manifest_version" ] ||
+            [ "$base_ios_version" != "$ios_version" ] ||
+            [ "$base_android_manifest_version" != "$android_manifest_version" ] ||
+            [ "$base_android_version" != "$android_version" ]; then
+            core_version_changed=true
+          fi
+
+          changed_manifest_keys=$(jq -n --argjson before "$base_manifest" --argjson after "$head_manifest" '
+            (($before | keys_unsorted) + ($after | keys_unsorted) | unique) as $keys |
+            [$keys[] | select($before[.] != $after[.])]
+          ')
+          manifest_unclassified_change=false
+          while IFS= read -r changed_key; do
+            case "$changed_key" in
+              .|packages/crosswake-shell-core-ios|packages/crosswake-shell-core-android|\
+              packages/crosswake_rulestead|packages/crosswake_rindle|packages/crosswake_sigra|\
+              packages/crosswake_chimeway|packages/crosswake_threadline) ;;
+              *) manifest_unclassified_change=true ;;
+            esac
+          done < <(jq -r '.[]' <<<"$changed_manifest_keys")
+          [ "$manifest_unclassified_change" = false ] || {
+            echo "REL-17 BLOCKED reason=unclassified_release_version_change" >&2
+            exit 1
+          }
+
           linked_candidate=false
-          if [ "$linked_delta" -eq 3 ] && grep -q "@version \"${manifest_version}\"" mix.exs &&
-            grep -q "version = \"${manifest_version}\"" packages/crosswake-shell-core-android/build.gradle.kts &&
-            jq -e --arg v "$manifest_version" \
-              '."." == $v and ."packages/crosswake-shell-core-ios" == $v and ."packages/crosswake-shell-core-android" == $v' \
-              .release-please-manifest.json >/dev/null; then
+          if [ "$core_version_changed" = true ] &&
+            [ "$base_root_version" != "$root_version" ] &&
+            [ "$base_manifest_version" != "$manifest_version" ] &&
+            [ "$base_ios_version" != "$ios_version" ] &&
+            [ "$base_android_manifest_version" != "$android_manifest_version" ] &&
+            [ "$base_android_version" != "$android_version" ] &&
+            [ "$root_version" = "$manifest_version" ] &&
+            [ "$ios_version" = "$manifest_version" ] &&
+            [ "$android_manifest_version" = "$manifest_version" ] &&
+            [ "$android_version" = "$manifest_version" ]; then
             linked_candidate=true
           fi
           candidate_operation=""
@@ -105,16 +158,28 @@ jobs:
           fi
 
           candidate_count=0
+          companion_version_changed=false
+          companion_unclassified_change=false
           for package in crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline; do
             package_path="packages/$package"
-            package_version=$(jq -er --arg path "$package_path" '.[$path]' .release-please-manifest.json 2>/dev/null || true)
-            package_delta=$(git diff --name-only "$first_parent" "$RUN_HEAD" -- "$package_path/mix.exs" | wc -l | tr -d ' ')
-            if [ "$package_delta" -eq 1 ] && [ -n "$package_version" ] &&
-              grep -q "@version \"${package_version}\"" "$package_path/mix.exs"; then
-              candidate_count=$((candidate_count + 1))
-              candidate_operation="companion_publish"
-              candidate_package="$package"
-              candidate_version="$package_version"
+            base_package_version=$(manifest_version_at "$first_parent" "$package_path")
+            package_version=$(manifest_version_at "$RUN_HEAD" "$package_path")
+            base_package_source_version=$(mix_version_at "$first_parent" "$package_path/mix.exs")
+            package_source_version=$(mix_version_at "$RUN_HEAD" "$package_path/mix.exs")
+            [ -n "$base_package_source_version" ] && [ -n "$package_source_version" ]
+            if [ "$base_package_version" != "$package_version" ] ||
+              [ "$base_package_source_version" != "$package_source_version" ]; then
+              companion_version_changed=true
+              if [ "$base_package_version" != "$package_version" ] &&
+                [ "$base_package_source_version" != "$package_source_version" ] &&
+                [ "$package_source_version" = "$package_version" ]; then
+                candidate_count=$((candidate_count + 1))
+                candidate_operation="companion_publish"
+                candidate_package="$package"
+                candidate_version="$package_version"
+              else
+                companion_unclassified_change=true
+              fi
             fi
           done
 
@@ -123,6 +188,10 @@ jobs:
             exit 1
           }
           if [ "$linked_candidate" = "true" ]; then
+            [ "$companion_unclassified_change" = false ] || {
+              echo "REL-17 BLOCKED reason=mixed_core_and_companion_release" >&2
+              exit 1
+            }
             [ "$candidate_count" -eq 0 ] || {
               echo "REL-17 BLOCKED reason=mixed_core_and_companion_release" >&2
               exit 1
@@ -130,9 +199,12 @@ jobs:
             candidate_operation="linked_release"
             candidate_package="crosswake"
             candidate_version="$manifest_version"
-          elif [ "$candidate_count" -eq 1 ] && [ "$linked_delta" -eq 0 ]; then
+          elif [ "$candidate_count" -eq 1 ] && [ "$core_version_changed" = false ] &&
+            [ "$companion_unclassified_change" = false ]; then
             :
-          elif [ "$candidate_scope_delta" -gt 0 ]; then
+          elif [ "$core_version_changed" = true ] ||
+            [ "$companion_version_changed" = true ] ||
+            [ "$companion_unclassified_change" = true ]; then
             echo "REL-17 BLOCKED reason=unclassified_release_version_change" >&2
             exit 1
           else
