@@ -215,14 +215,9 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
       capture_io(fn -> Candidate.run(evidence_args(fixture, second_output_dir)) end)
 
     assert receipt["state"] == "READY FOR APPROVAL"
+    assert Enum.any?(receipt["identity"]["bound"]["proofs"], &(&1["id"] == "maven.rehearsal"))
 
-    assert Enum.any?(receipt["identity"]["bound"]["proofs"], &(&1["id"] == "maven.rehearsal")) and
-             Enum.any?(
-               receipt["identity"]["bound"]["proofs"],
-               &(&1["id"] == "candidate.cleanroom")
-             )
-
-    assert receipt["external_state"]["publication"] == "NONE"
+    assert receipt["external_state"]["publication"] == "NONE" and has_cleanroom_proof?(receipt)
     assert receipt["external_state"]["changed"] == false
     assert terminal =~ "READY FOR APPROVAL"
     assert second_terminal == terminal
@@ -444,5 +439,9 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
       },
       run: %{id: 1234, head: @sha_a, status: "COMPLETED", conclusion: "SUCCESS"}
     }
+  end
+
+  defp has_cleanroom_proof?(receipt) do
+    Enum.any?(receipt["identity"]["bound"]["proofs"], &(&1["id"] == "candidate.cleanroom"))
   end
 end
