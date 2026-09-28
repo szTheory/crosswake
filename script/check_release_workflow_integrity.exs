@@ -1690,6 +1690,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     block = job_block(jobs, "approved-release-guard")
     gate = "bash script/release_candidate/require_release_evidence.sh"
     gate_at = index_of(block, gate)
+    linked_selector = ~s<.authorization == ("publish successor core " + (.leg_run_id|tostring))>
+    linked_selector_at = index_of(block, linked_selector)
     authorization_output_at = index_of(block, ~s(emit_output "rel17_context=$rel17_context"))
 
     required_selectors = [
@@ -1714,8 +1716,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
     check(
       "release.rel17.approved_guard",
-      is_integer(gate_at) and is_integer(authorization_output_at) and
-        gate_at > 0 and authorization_output_at > gate_at and
+      is_integer(gate_at) and is_integer(linked_selector_at) and
+        is_integer(authorization_output_at) and gate_at > 0 and
+        linked_selector_at > 0 and linked_selector_at < gate_at and
+        authorization_output_at > gate_at and
         Enum.all?(required_selectors, &includes?(block, &1)) and
         includes?(block, "set -euo pipefail") and
         includes?(block, "REL17-AUTHORIZATION: ") and
@@ -1739,7 +1743,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(block, "rel17_context=$(printf '%s' \"$authorization_trailer\" | jq -c") and
         includes?(block, "chmod 600 \"$authorization_file\"") and
         Enum.all?(@rel17_guard_roster, &(&1 in @roster_ids)),
-      "approved-release-guard must consume one exact typed trailer, bind the live merge, candidate, receipt, CI, runbook and policy selectors, then expose its context only after a fresh shared-gate pass"
+      "approved-release-guard must consume one exact typed trailer, bind the linked Hex leg ID to its authorization phrase, bind the live merge, candidate, receipt, CI, runbook and policy selectors, then expose its context only after a fresh shared-gate pass"
     )
   end
 

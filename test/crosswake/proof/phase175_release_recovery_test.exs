@@ -21,9 +21,14 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
   @receipt_authority "release.recovery.receipt_exact_authority"
   @no_bypass "release.recovery.no_retry_or_bypass"
 
-  test "the ordinary release workflow cannot retain the Maven drill" do
+  test "manual Release Please authority remains separate from the Maven drill" do
     workflow = File.read!(@release_workflow)
     {output, status} = Fixtures.run_scanner(@release_workflow)
+
+    assert workflow =~ "workflow_dispatch:"
+
+    assert workflow =~
+             ".event == \"workflow_dispatch\" and .workflowName == \"iOS mirror authority\""
 
     refute workflow =~ "android-publish-fire-drill:"
     assert status == 0, output

@@ -307,6 +307,142 @@ defmodule Crosswake.ReleaseCandidate.EvidenceLiveTest do
              )
   end
 
+  test "linked post-merge capture requires the exact fetched authorization trailer" do
+    {responses, _registry, expected_policy} = fixture(post_merge: true)
+    fetch = fn url -> Map.fetch!(responses, url) end
+
+    assert {:ok, capture} =
+             EvidenceLive.capture(
+               options(fetch, expected_policy,
+                 stage: "post_merge",
+                 merge_oid: @merge,
+                 authorization: authorization("CONSUMED")
+               )
+             )
+
+    on_exit(fn -> File.rm_rf!(capture.source_dir) end)
+
+    wrong_leg =
+      valid_authorization_trailer(expected_policy)
+      |> Map.put("authorization", "publish successor core 901")
+
+    wrong_responses = put_merge_message(responses, authorization_message(wrong_leg))
+
+    wrong_result =
+      EvidenceLive.capture(
+        options(fn url -> Map.fetch!(wrong_responses, url) end, expected_policy,
+          stage: "post_merge",
+          merge_oid: @merge,
+          authorization: authorization("CONSUMED")
+        )
+      )
+
+    assert_safe_blocked(wrong_result, "authorization_mismatch")
+
+    missing_responses = put_merge_message(responses, :missing)
+
+    missing_result =
+      EvidenceLive.capture(
+        options(fn url -> Map.fetch!(missing_responses, url) end, expected_policy,
+          stage: "post_merge",
+          merge_oid: @merge,
+          authorization: authorization("CONSUMED")
+        )
+      )
+
+    assert_safe_blocked(missing_result, "authorization_mismatch")
+  end
+
+  test "malformed and mismatched linked-release trailers block with one safe reason" do
+    {responses, _registry, expected_policy} = fixture(post_merge: true)
+    trailer = valid_authorization_trailer(expected_policy)
+
+    wrong_leg =
+      trailer
+      |> Map.put("leg_run_id", 901)
+      |> Map.put("authorization", "publish successor core 901")
+
+    mutations = [
+      {"duplicate prefix", authorization_message(trailer) <> authorization_message(trailer)},
+      {"multiline JSON", "REL17-AUTHORIZATION: " <> Jason.encode!(trailer, pretty: true)},
+      {"malformed JSON", "REL17-AUTHORIZATION: {not-json"},
+      {"extra key", authorization_message(Map.put(trailer, "unexpected", true))},
+      {"missing key", authorization_message(Map.delete(trailer, "version"))},
+      {"wrong operation", authorization_message(Map.put(trailer, "operation", "recovery"))},
+      {"wrong receipt",
+       authorization_message(Map.put(trailer, "receipt_digest", String.duplicate("9", 64)))},
+      {"wrong policy",
+       authorization_message(Map.put(trailer, "policy_sha256", String.duplicate("9", 64)))},
+      {"wrong base",
+       authorization_message(Map.put(trailer, "base_oid", String.duplicate("9", 40)))},
+      {"wrong head",
+       authorization_message(Map.put(trailer, "head_oid", String.duplicate("9", 40)))},
+      {"wrong tree",
+       authorization_message(Map.put(trailer, "tree_oid", String.duplicate("9", 40)))},
+      {"wrong leg run", authorization_message(wrong_leg)},
+      {"wrong CI run", authorization_message(Map.put(trailer, "ci_run_id", 801))},
+      {"wrong receipt run", authorization_message(Map.put(trailer, "receipt_run_id", 701))},
+      {"wrong receipt artifact",
+       authorization_message(Map.put(trailer, "receipt_artifact_id", 711))}
+    ]
+
+    for {label, message} <- mutations do
+      changed = put_merge_message(responses, message)
+
+      result =
+        EvidenceLive.capture(
+          options(fn url -> Map.fetch!(changed, url) end, expected_policy,
+            stage: "post_merge",
+            merge_oid: @merge,
+            authorization: authorization("CONSUMED")
+          )
+        )
+
+      assert_safe_blocked(result, "authorization_mismatch", label)
+    end
+  end
+
+  test "recovery and companion post-merge captures keep their operation-specific authorization" do
+    {responses, registry_bytes, expected_policy} = fixture(post_merge: true)
+    missing_trailer = put_merge_message(responses, :missing)
+
+    for {operation, package} <- [
+          {"recovery", "crosswake"},
+          {"companion_publish", "crosswake_rulestead"}
+        ] do
+      package_responses =
+        Map.put(
+          missing_trailer,
+          "https://hex.pm/api/packages/#{package}",
+          {:ok, %{status: 200, headers: [], body: registry_bytes}}
+        )
+
+      compact_authorization = %{
+        "stage" => "pre_merge",
+        "state" => "CONSUMED",
+        "receipt_digest" => @receipt,
+        "operation" => operation,
+        "leg_run_id" => 900,
+        "candidate_package" => package,
+        "candidate_head" => @head
+      }
+
+      result =
+        EvidenceLive.capture(
+          options(fn url -> Map.fetch!(package_responses, url) end, expected_policy,
+            operation: operation,
+            package: package,
+            stage: "post_merge",
+            merge_oid: @merge,
+            authorization: compact_authorization
+          )
+        )
+
+      assert {:ok, capture} = result
+      File.rm_rf!(capture.source_dir)
+    end
+  end
+
   test "recovery capture permits live selectors for all six Hex package identities" do
     {:ok, requests} = Agent.start(fn -> [] end)
     on_exit(fn -> Agent.stop(requests) end)
@@ -380,7 +516,9 @@ defmodule Crosswake.ReleaseCandidate.EvidenceLiveTest do
     }
   end
 
-  defp fixture(opts \\ []) do
+  # Shared with the workflow-parity proof so both validators consume one live response fixture.
+  @doc false
+  def fixture(opts \\ []) do
     post? = Keyword.get(opts, :post_merge, false)
     required = [%{"context" => "Crosswake CI", "app_id" => nil}]
 
@@ -492,7 +630,13 @@ defmodule Crosswake.ReleaseCandidate.EvidenceLiveTest do
         Map.put(
           responses,
           github("/commits/#{@merge}"),
-          response_json(%{"sha" => @merge, "parents" => [%{"sha" => @base}, %{"sha" => @head}]})
+          response_json(%{
+            "sha" => @merge,
+            "parents" => [%{"sha" => @base}, %{"sha" => @head}],
+            "commit" => %{
+              "message" => authorization_message(valid_authorization_trailer(expected_policy))
+            }
+          })
         )
       else
         responses
@@ -522,6 +666,62 @@ defmodule Crosswake.ReleaseCandidate.EvidenceLiveTest do
   end
 
   defp response_json(value), do: {:ok, %{status: 200, headers: [], body: Jason.encode!(value)}}
+
+  defp valid_authorization_trailer(expected_policy) do
+    %{
+      "schema_version" => 1,
+      "state" => "AUTHORIZED",
+      "consumed" => false,
+      "authorization_run_id" => nil,
+      "authorization" => "publish successor core 900",
+      "receipt_digest" => @receipt,
+      "operation" => "linked_release",
+      "leg_run_id" => 900,
+      "package" => "crosswake",
+      "version" => "0.2.6",
+      "pr" => 147,
+      "repository" => "szTheory/crosswake",
+      "base_oid" => @base,
+      "head_oid" => @head,
+      "tree_oid" => @tree,
+      "ci_run_id" => 800,
+      "receipt_run_id" => 700,
+      "receipt_artifact_id" => 710,
+      "policy_sha256" => expected_policy,
+      "runbook_commit" => @runbook
+    }
+  end
+
+  defp authorization_message(trailer) do
+    "Merge candidate\n\nREL17-AUTHORIZATION: #{Jason.encode!(trailer)}\n"
+  end
+
+  defp put_merge_message(responses, :missing) do
+    url = github("/commits/#{@merge}")
+    {:ok, response} = Map.fetch!(responses, url)
+    commit = Jason.decode!(response.body) |> Map.put("commit", %{})
+    Map.put(responses, url, response_json(commit))
+  end
+
+  defp put_merge_message(responses, message) when is_binary(message) do
+    url = github("/commits/#{@merge}")
+    {:ok, response} = Map.fetch!(responses, url)
+    commit = Jason.decode!(response.body) |> put_in(["commit", "message"], message)
+    Map.put(responses, url, response_json(commit))
+  end
+
+  defp assert_safe_blocked(result, expected, label \\ "capture")
+
+  defp assert_safe_blocked({:error, actual}, expected, _label) when actual == expected, do: :ok
+
+  defp assert_safe_blocked({:error, _other_code}, _expected, label),
+    do: flunk("#{label} returned an unexpected safe block reason")
+
+  defp assert_safe_blocked({:ok, _capture}, _expected, label),
+    do: flunk("#{label} produced a passing capture")
+
+  defp assert_safe_blocked(_other, _expected, label),
+    do: flunk("#{label} returned an unexpected capture result")
 
   defp response_body(body), do: {:ok, %{status: 200, headers: [], body: Jason.encode!(body)}}
 
