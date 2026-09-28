@@ -650,6 +650,14 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   # deliberately has only the Maven/signing path needed to upload, observe
   # VALIDATED, and DROP a disposable coordinate.
   defp maven_fire_drill_isolated(release_workflow, maven_workflow) do
+    release_jobs = job_blocks(release_workflow)
+
+    release_please_push_only =
+      job_if(release_jobs, "release-please") == "${{ github.event_name == 'push' }}"
+
+    lockstep_truth_manual_only =
+      job_if(release_jobs, "lockstep-truth") == "${{ github.event_name == 'workflow_dispatch' }}"
+
     receipt_step = step_block(maven_workflow, "Write redacted exact-candidate rehearsal receipt")
 
     required_drill_tokens = [
@@ -690,9 +698,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     check(
       "release.rehearsal.maven_isolated",
       # Release Please retains its own manual lockstep assertion. Isolation
-      # means the Maven-specific input/job cannot live there, not that the
-      # ordinary workflow can never be manually dispatched.
-      not includes?(release_workflow, "fire_drill_version:") and
+      # means only the lockstep assertion may use that dispatch; the proposal
+      # job stays push-only and the Maven-specific input/job stays separate.
+      release_please_push_only and lockstep_truth_manual_only and
+        not includes?(release_workflow, "fire_drill_version:") and
         not includes?(release_workflow, "maven-publish-fire-drill:") and
         Enum.all?(required_drill_tokens, &includes?(maven_workflow, &1)) and
         Enum.all?(forbidden_drill_tokens, &(not includes?(maven_workflow, &1))) and
@@ -708,7 +717,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
           &(not includes?(receipt_step, &1))
         ) and
         not includes?(maven_workflow, "payload_base64"),
-      "Maven drill must be the declared manual-only VALIDATED-to-DROP workflow, absent from Release Please and free of Release Please, PR/issue, cleanup, and ordinary publish machinery"
+      "Release Please proposal must be push-only while its lockstep assertion remains manual-only; the separate Maven drill must be manual-only VALIDATED-to-DROP and free of Release Please, PR/issue, cleanup, and ordinary publish machinery"
     )
   end
 
@@ -1690,6 +1699,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     block = job_block(jobs, "approved-release-guard")
     gate = "bash script/release_candidate/require_release_evidence.sh"
     gate_at = index_of(block, gate)
+    linked_selector = ~s<.authorization == ("publish successor core " + (.leg_run_id|tostring))>
+    linked_selector_at = index_of(block, linked_selector)
     authorization_output_at = index_of(block, ~s(emit_output "rel17_context=$rel17_context"))
 
     required_selectors = [
@@ -1714,8 +1725,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
     check(
       "release.rel17.approved_guard",
-      is_integer(gate_at) and is_integer(authorization_output_at) and
-        gate_at > 0 and authorization_output_at > gate_at and
+      is_integer(gate_at) and is_integer(linked_selector_at) and
+        is_integer(authorization_output_at) and gate_at > 0 and
+        linked_selector_at > 0 and linked_selector_at < gate_at and
+        authorization_output_at > gate_at and
         Enum.all?(required_selectors, &includes?(block, &1)) and
         includes?(block, "set -euo pipefail") and
         includes?(block, "REL17-AUTHORIZATION: ") and
@@ -1739,7 +1752,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(block, "rel17_context=$(printf '%s' \"$authorization_trailer\" | jq -c") and
         includes?(block, "chmod 600 \"$authorization_file\"") and
         Enum.all?(@rel17_guard_roster, &(&1 in @roster_ids)),
-      "approved-release-guard must consume one exact typed trailer, bind the live merge, candidate, receipt, CI, runbook and policy selectors, then expose its context only after a fresh shared-gate pass"
+      "approved-release-guard must consume one exact typed trailer, bind the linked Hex leg ID to its authorization phrase, bind the live merge, candidate, receipt, CI, runbook and policy selectors, then expose its context only after a fresh shared-gate pass"
     )
   end
 

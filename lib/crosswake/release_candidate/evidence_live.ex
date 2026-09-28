@@ -15,6 +15,12 @@ defmodule Crosswake.ReleaseCandidate.EvidenceLive do
   @runbook_path "docs/RELEASE-INCIDENT-RESPONSE.md"
   @candidate_artifact_prefix "phase168-candidate-receipt-"
   @repository "szTheory/crosswake"
+  @linked_release_authorization_prefix "REL17-AUTHORIZATION: "
+  @linked_release_authorization_keys ~w(
+    authorization authorization_run_id base_oid ci_run_id consumed head_oid leg_run_id operation
+    package policy_sha256 pr receipt_artifact_id receipt_digest receipt_run_id repository
+    runbook_commit schema_version state tree_oid version
+  )
 
   @type capture_result ::
           {:ok, %{envelope: map(), sources: map(), source_dir: String.t()}} | {:error, String.t()}
@@ -401,7 +407,8 @@ defmodule Crosswake.ReleaseCandidate.EvidenceLive do
          {:ok, commit, raw} <- get_json(fetch, api(input, "/commits/#{merge_oid}")),
          parents when is_list(parents) <- commit["parents"],
          true <- Enum.map(parents, & &1["sha"]) == [base_oid, head_oid],
-         true <- commit["sha"] == merge_oid do
+         true <- commit["sha"] == merge_oid,
+         :ok <- validate_linked_release_authorization(input, commit, base_oid, head_oid) do
       normal = get_in(pr, ["merged_by", "login"]) != nil
 
       facts = %{
@@ -413,8 +420,72 @@ defmodule Crosswake.ReleaseCandidate.EvidenceLive do
 
       {:ok, %{facts: facts, merge_oid: merge_oid}, raw}
     else
+      {:error, "authorization_mismatch"} = error -> error
       _ -> {:error, "protected_merge_invalid"}
     end
+  end
+
+  defp validate_linked_release_authorization(
+         %{operation: "linked_release"} = input,
+         commit,
+         base,
+         head
+       ) do
+    message = get_in(commit, ["commit", "message"])
+
+    with true <- is_binary(message),
+         [line] <-
+           message
+           |> String.split("\n")
+           |> Enum.filter(&String.starts_with?(&1, @linked_release_authorization_prefix)),
+         encoded <- String.replace_prefix(line, @linked_release_authorization_prefix, ""),
+         {:ok, trailer} when is_map(trailer) <- Jason.decode(encoded),
+         true <- Enum.sort(Map.keys(trailer)) == Enum.sort(@linked_release_authorization_keys),
+         true <- trailer == expected_linked_release_authorization(input, base, head),
+         true <- input.authorization == consumed_authorization_projection(trailer) do
+      :ok
+    else
+      _ -> {:error, "authorization_mismatch"}
+    end
+  end
+
+  defp validate_linked_release_authorization(_input, _commit, _base, _head), do: :ok
+
+  defp expected_linked_release_authorization(input, base, head) do
+    %{
+      "schema_version" => 1,
+      "state" => "AUTHORIZED",
+      "consumed" => false,
+      "authorization_run_id" => nil,
+      "authorization" => "publish successor core #{input.leg_run_id}",
+      "receipt_digest" => input.receipt_digest,
+      "operation" => "linked_release",
+      "leg_run_id" => input.leg_run_id,
+      "package" => input.package,
+      "version" => input.version,
+      "pr" => input.pr,
+      "repository" => input.repository,
+      "base_oid" => base,
+      "head_oid" => head,
+      "tree_oid" => input.expected_tree_oid,
+      "ci_run_id" => input.ci_run_id,
+      "receipt_run_id" => input.receipt_run_id,
+      "receipt_artifact_id" => input.receipt_artifact_id,
+      "policy_sha256" => input.expected_policy_sha256,
+      "runbook_commit" => input.runbook_commit
+    }
+  end
+
+  defp consumed_authorization_projection(trailer) do
+    %{
+      "stage" => "pre_merge",
+      "state" => "CONSUMED",
+      "receipt_digest" => trailer["receipt_digest"],
+      "operation" => trailer["operation"],
+      "leg_run_id" => trailer["leg_run_id"],
+      "candidate_package" => trailer["package"],
+      "candidate_head" => trailer["head_oid"]
+    }
   end
 
   defp check_ancestry(git_ancestor, input, base_oid, head_oid, merge_oid) do

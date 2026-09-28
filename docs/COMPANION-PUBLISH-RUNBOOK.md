@@ -161,6 +161,34 @@ publication is atomic fast-forward publication; iOS recovery alone may use the s
 approved exact force-with-lease contract. Hex and Maven artifacts are immutable and must not be
 replaced. A lost public success, ambiguous ref, or mismatched receipt blocks recovery.
 
+### Gate 2 phrase for a future linked core release
+
+For a later, separately planned candidate, render the Gate 2 phrase from its passing `pre_merge`
+result, the retained source `envelope.json`, and its pending Gate 2 record:
+
+```sh
+bash script/release_candidate/linked_release_authorization.sh render \
+  <pre_merge-result.json> <retained-envelope.json> <pending-gate-2.json>
+```
+
+Show that exact output for the candidate's one-way Gate 2 decision. The renderer derives the number
+from the operation-bound Hex `identity.leg_run_id`; the iOS rehearsal run has a different purpose and
+must not select the phrase.
+
+After a separate exact authorization produces an unconsumed authorized Gate 2 record and a proposed
+`REL17-AUTHORIZATION` trailer JSON file, check those files against the same result and source
+envelope before attempting the protected merge:
+
+```sh
+bash script/release_candidate/linked_release_authorization.sh check \
+  <pre_merge-result.json> <retained-envelope.json> <authorized-gate-2.json> <proposed-trailer.json>
+```
+
+The check fails closed on a changed source/result binding, candidate, operation tuple, digest, path,
+verdict, phrase, or consumed authorization. This local read-only command neither authorizes nor
+performs a merge. Plan 175-38's iOS-derived resume signal records a historical PARTIAL attempt; it is
+not a selector for any future candidate and cannot be reused.
+
 ### Scope of the iOS mirror recovery mode
 
 The `recovery` operation of `ios-mirror-backfill.yml` is the only mode that can
