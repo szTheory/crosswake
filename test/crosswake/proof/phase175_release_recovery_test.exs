@@ -41,6 +41,20 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
     assert_failure!(@isolation, release_workflow: embedded)
   end
 
+  test "manual dispatch cannot run the Release Please proposal job" do
+    release = File.read!(@release_workflow)
+
+    dispatched_proposal =
+      Fixtures.replace_in_job(
+        release,
+        "release-please",
+        "if: ${{ github.event_name == 'push' }}",
+        "if: ${{ always() }}"
+      )
+
+    assert_failure!(@isolation, release_workflow: dispatched_proposal)
+  end
+
   test "Maven drill rejects Release Please and PR-mutating machinery" do
     maven = File.read!(@maven_fire_drill_workflow)
 

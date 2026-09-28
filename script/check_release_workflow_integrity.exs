@@ -650,6 +650,14 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   # deliberately has only the Maven/signing path needed to upload, observe
   # VALIDATED, and DROP a disposable coordinate.
   defp maven_fire_drill_isolated(release_workflow, maven_workflow) do
+    release_jobs = job_blocks(release_workflow)
+
+    release_please_push_only =
+      job_if(release_jobs, "release-please") == "${{ github.event_name == 'push' }}"
+
+    lockstep_truth_manual_only =
+      job_if(release_jobs, "lockstep-truth") == "${{ github.event_name == 'workflow_dispatch' }}"
+
     receipt_step = step_block(maven_workflow, "Write redacted exact-candidate rehearsal receipt")
 
     required_drill_tokens = [
@@ -690,9 +698,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     check(
       "release.rehearsal.maven_isolated",
       # Release Please retains its own manual lockstep assertion. Isolation
-      # means the Maven-specific input/job cannot live there, not that the
-      # ordinary workflow can never be manually dispatched.
-      not includes?(release_workflow, "fire_drill_version:") and
+      # means only the lockstep assertion may use that dispatch; the proposal
+      # job stays push-only and the Maven-specific input/job stays separate.
+      release_please_push_only and lockstep_truth_manual_only and
+        not includes?(release_workflow, "fire_drill_version:") and
         not includes?(release_workflow, "maven-publish-fire-drill:") and
         Enum.all?(required_drill_tokens, &includes?(maven_workflow, &1)) and
         Enum.all?(forbidden_drill_tokens, &(not includes?(maven_workflow, &1))) and
@@ -708,7 +717,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
           &(not includes?(receipt_step, &1))
         ) and
         not includes?(maven_workflow, "payload_base64"),
-      "Maven drill must be the declared manual-only VALIDATED-to-DROP workflow, absent from Release Please and free of Release Please, PR/issue, cleanup, and ordinary publish machinery"
+      "Release Please proposal must be push-only while its lockstep assertion remains manual-only; the separate Maven drill must be manual-only VALIDATED-to-DROP and free of Release Please, PR/issue, cleanup, and ordinary publish machinery"
     )
   end
 
