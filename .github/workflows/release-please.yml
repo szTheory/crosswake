@@ -1196,26 +1196,11 @@ jobs:
             --target "$RUNNER_TEMP/clean-room-proof-android"
 
       - name: gradle build with Maven Central propagation polling
+        env:
+          VERSION: ${{ needs.release-please.outputs.version }}
         run: |
-          set -euo pipefail
           PROJECT_ROOT="$RUNNER_TEMP/clean-room-proof-android/native/android/crosswake_shell"
-          cd "$PROJECT_ROOT"
-          chmod +x gradlew
-
-          MAX_ATTEMPTS=40
-          DELAY=45
-          for i in $(seq 1 "$MAX_ATTEMPTS"); do
-            if ./gradlew build --no-daemon; then
-              echo "gradle build succeeded on attempt $i"
-              exit 0
-            fi
-
-            echo "Attempt $i/$MAX_ATTEMPTS: gradle build failed; Maven Central may not have propagated. Retrying in ${DELAY}s..."
-            sleep "$DELAY"
-          done
-
-          echo "gradle build failed after $MAX_ATTEMPTS attempts (~30 min). Maven Central propagation timeout."
-          exit 1
+          bash script/verify_android_public_build.sh "$PROJECT_ROOT" "$VERSION"
 
   exact-public-proof:
     name: "release: exact-public artifact proof"

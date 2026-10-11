@@ -1105,6 +1105,8 @@ jobs:
         run: ./gradlew publishToMavenLocal --no-daemon -PcrosswakeSkipSigning=true
       - name: Run hermetic Android generated-shell verification
         run: script/verify_generated_android_shell.sh
+      - name: Check public Android propagation and build failure handling
+        run: python3 script/verify_android_public_build_test.py
       - name: Summarize generated Android proof
         if: always()
         run: |

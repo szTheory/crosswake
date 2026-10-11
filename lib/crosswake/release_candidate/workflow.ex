@@ -141,7 +141,7 @@ defmodule Crosswake.ReleaseCandidate.Workflow do
     %{
       hex: "hex:crosswake@#{version}",
       ios_mirror: "swift:crosswake-shell-core-ios@#{version}",
-      android: "maven:io.crosswake:crosswake-shell-core@#{version}"
+      android: "maven:io.github.sztheory:crosswake-shell-core-android@#{version}"
     }
   end
 
