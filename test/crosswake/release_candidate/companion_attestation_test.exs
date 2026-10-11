@@ -19,7 +19,10 @@ defmodule Crosswake.ReleaseCandidate.CompanionAttestationTest do
     assert job =~ "contents: read"
     [settings, steps] = String.split(job, "    steps:", parts: 2)
     refute settings =~ "runner.temp"
-    assert steps =~ "        env:\n          OUTPUT_DIR: ${{ runner.temp }}/companion-receipt-attestation"
+
+    assert steps =~
+             "        env:\n          OUTPUT_DIR: ${{ runner.temp }}/companion-receipt-attestation"
+
     assert job =~ "mix crosswake.release.receipt"
     assert job =~ "phase168-candidate-receipt-${{ inputs.candidate_head }}"
 
