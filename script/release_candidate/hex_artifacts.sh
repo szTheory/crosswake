@@ -97,6 +97,7 @@ CORE_UNPACKED_ROOT=""
 
 prepare_companion_source() {
   local package="$1"
+  local package_ref="$2"
   local source_root="$OUTPUT_DIR/.scratch/sources/$package"
   local package_dir="$source_root/packages/$package"
   local dependency_source
@@ -104,7 +105,7 @@ prepare_companion_source() {
   mkdir -p "$source_root"
   # Preserve exact-candidate path dependencies between companions (for example,
   # Chimeway's test-only Sigra dependency) inside the isolated source tree.
-  git archive "$CANDIDATE_REF" packages | tar -x -C "$source_root"
+  git archive "$package_ref" packages | tar -xp -C "$source_root"
   mkdir -p "$package_dir/deps"
 
   for dependency_source in "$REPO_ROOT/packages/$package/deps/"*; do
@@ -179,10 +180,17 @@ prepare_companion_source() {
 
 for PACKAGE in "${PACKAGES[@]}"; do
   if [ "$PACKAGE" = "crosswake" ]; then
+    DECLARED_DIR="$REPO_ROOT"
+  else
+    DECLARED_DIR="$REPO_ROOT/packages/$PACKAGE"
+  fi
+  DECLARED_VERSION=$(sed -n 's/^[[:space:]]*@version "\([^"]*\)".*/\1/p' "$DECLARED_DIR/mix.exs")
+  PACKAGE_REF=$(bash "$SCRIPT_DIR/package_source_ref.sh" "$REPO_ROOT" "$PACKAGE" "$DECLARED_VERSION" "$CANDIDATE_REF") || fail
+  if [ "$PACKAGE" = "crosswake" ]; then
     PACKAGE_DIR="$REPO_ROOT"
   else
     [ -n "$CORE_TARBALL" ] && [ -n "$CORE_UNPACKED_ROOT" ] || fail
-    PACKAGE_DIR=$(prepare_companion_source "$PACKAGE") || fail
+    PACKAGE_DIR=$(prepare_companion_source "$PACKAGE" "$PACKAGE_REF") || fail
   fi
 
   VERSION=$(cd "$PACKAGE_DIR" && env \
@@ -232,7 +240,8 @@ for PACKAGE in "${PACKAGES[@]}"; do
   fi
 
   OUTER_CHECKSUM=$(shasum -a 256 "$TARBALL" | awk '{print $1}')
-  ARTIFACT_ARGS+=("$PACKAGE" "$VERSION" "$CANDIDATE_REF" "$TARBALL" "$UNPACKED_ROOT" "$OUTER_CHECKSUM" "built_tarball")
+  [ "$VERSION" = "$DECLARED_VERSION" ] || fail
+  ARTIFACT_ARGS+=("$PACKAGE" "$VERSION" "$PACKAGE_REF" "$TARBALL" "$UNPACKED_ROOT" "$OUTER_CHECKSUM" "built_tarball")
 
   if [ "$PACKAGE" = "crosswake" ]; then
     CORE_TARBALL="$TARBALL"

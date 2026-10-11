@@ -208,12 +208,13 @@ PYEOF
     # The observed ref is resolved independently from the checked-out repository head, never
     # from the approved manifest it is later compared against (D-172-B, T-172-01) — deriving it
     # from that manifest would make the 172-02 provenance comparison true by construction.
-    MATRIX_PUBLIC_REF=$(git -C "$MATRIX_REPO_ROOT" rev-parse HEAD) || matrix_fail
-    printf '%s' "$MATRIX_PUBLIC_REF" | grep -Eq '^[0-9a-f]{40}$' || matrix_fail
+    MATRIX_CORE_REF=$(git -C "$MATRIX_REPO_ROOT" rev-parse HEAD) || matrix_fail
+    printf '%s' "$MATRIX_CORE_REF" | grep -Eq '^[0-9a-f]{40}$' || matrix_fail
 
     for package in crosswake crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline; do
       version=$(jq -er --arg package "$package" '.[] | select(.package == $package) | .version' "$MATRIX_APPROVED_MANIFEST") || matrix_fail
       approved_ref=$(jq -er --arg package "$package" '.[] | select(.package == $package) | .candidate_ref' "$MATRIX_APPROVED_MANIFEST") || matrix_fail
+      MATRIX_PUBLIC_REF=$(bash "$MATRIX_REPO_ROOT/script/release_candidate/package_source_ref.sh" "$MATRIX_REPO_ROOT" "$package" "$version" "$MATRIX_CORE_REF" public) || matrix_fail
       tarball="$public_root/tarballs/$package-$version.tar"
       unpacked_root="$public_root/unpacked/$package"
 
@@ -221,7 +222,7 @@ PYEOF
       if ! env MIX_HOME="$MATRIX_GENERATOR_MIX_HOME" HEX_HOME="$MATRIX_GENERATOR_HEX_HOME" \
         ASDF_ERLANG_VERSION="$MATRIX_ASDF_ERLANG_VERSION" \
         ASDF_ELIXIR_VERSION="$MATRIX_ASDF_ELIXIR_VERSION" \
-        "${RUNTIME[@]}" mix hex.package fetch "$package" "$version" --output "$tarball" \
+        "${RUNTIME[@]}" mix hex.package fetch "$package" "$version" --output "$public_root/tarballs" \
           >"$MATRIX_INVOCATION_ROOT/fetch-$package.log" 2>&1; then
         failed+=("$package")
         continue
@@ -251,7 +252,7 @@ PYEOF
     done
 
     if [ "${#failed[@]}" -gt 0 ]; then
-      SUCCEEDED_PACKAGES=$(IFS=,; echo "${succeeded[*]}")
+      SUCCEEDED_PACKAGES=$(IFS=,; echo "${succeeded[*]:-}")
       FAILED_PACKAGES=$(IFS=,; echo "${failed[*]}")
       SUCCEEDED_PACKAGES="$SUCCEEDED_PACKAGES" FAILED_PACKAGES="$FAILED_PACKAGES" python3 - <<'PYEOF'
 import json

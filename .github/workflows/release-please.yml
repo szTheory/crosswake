@@ -298,8 +298,19 @@ jobs:
               "$receipt" >/dev/null
             cmp "$receipt_dir/artifacts.json" "$ci_dir/artifacts/artifacts.json"
           else
-            jq -e --arg digest "$ci_receipt_sha" \
-              'any(.receipt.proofs[]; .id == "ci" and .sha256 == $digest)' "$receipt" >/dev/null
+            # CompanionReceipt binds the normalized same-head CI fact. Derive it
+            # independently from the downloaded trusted CI receipt, preserving its
+            # exact source digest rather than comparing two different JSON schemas.
+            companion_ci_sha=$(python3 - "$ci_receipt" <<'PYCI'
+          import hashlib,json,sys
+          observed=json.load(open(sys.argv[1]))
+          fact={"run_id":int(observed["run_id"]),"head_oid":observed["head"],"conclusion":"success"}
+          print(hashlib.sha256(json.dumps(fact,sort_keys=True,separators=(",",":")).encode()).hexdigest())
+          PYCI
+            )
+            jq -e --arg digest "$companion_ci_sha" --arg head "$approved_head" --argjson run "$candidate_run_id" \
+              '.receipt.ci == {"run_id":$run,"head_oid":$head,"conclusion":"success"} and
+               any(.receipt.proofs[]; .id == "ci" and .sha256 == $digest)' "$receipt" >/dev/null
           fi
 
           # The exact pre-merge choice travels in the immutable merge message. A
@@ -1135,24 +1146,18 @@ jobs:
             --host-root "$RUNNER_TEMP/clean-room-proof-ios-host" \
             --target "$RUNNER_TEMP/clean-room-proof-ios"
 
-      - name: swift build with mirror tag retry
+      - name: Build generated iOS application against the public mirror
         run: |
           set -euo pipefail
           PROJECT_ROOT="$RUNNER_TEMP/clean-room-proof-ios/native/ios/crosswake_shell"
-          cd "$PROJECT_ROOT"
-
-          for i in 1 2 3; do
-            if swift build; then
-              echo "swift build succeeded on attempt $i"
-              exit 0
-            fi
-
-            echo "swift build attempt $i/3 failed; retrying in 30s for mirror tag availability..."
-            sleep 30
-          done
-
-          echo "swift build failed after 3 attempts."
-          exit 1
+          xcodebuild \
+            -project "$PROJECT_ROOT/CrosswakeShell.xcodeproj" \
+            -scheme CrosswakeShell \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/clean-room-proof-ios-derived" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/clean-room-proof-ios-packages" \
+            CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=YES ARCHS="$(uname -m)" build
 
   clean-room-proof-android:
     name: Clean-room proof — Android gradle build
@@ -1180,18 +1185,15 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
 
-      - name: Install crosswake archive at just-cut version
+      - name: Generate Android shell from an external consumer host
         env:
           VERSION: ${{ needs.release-please.outputs.version }}
-        run: mix archive.install hex crosswake "$VERSION" --force
-
-      - name: Generate Android shell outside monorepo
         run: |
           set -euo pipefail
-          TARGET="$RUNNER_TEMP/clean-room-proof-android"
-          rm -rf "$TARGET"
-          mkdir -p "$TARGET"
-          mix crosswake.gen.shell android --target "$TARGET"
+          bash script/verify_android_release_host.sh \
+            --version "$VERSION" \
+            --host-root "$RUNNER_TEMP/clean-room-proof-android-host" \
+            --target "$RUNNER_TEMP/clean-room-proof-android"
 
       - name: gradle build with Maven Central propagation polling
         run: |
