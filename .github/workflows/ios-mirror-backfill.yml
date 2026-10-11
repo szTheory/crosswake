@@ -19,6 +19,19 @@ on:
           - publish
           - recovery
           - tag-repair
+      package:
+        description: 'Core receipt or the planned Chimeway companion receipt.'
+        required: false
+        default: crosswake
+        type: choice
+        options:
+          - crosswake
+          - crosswake_chimeway
+      candidate_pr:
+        description: 'Exact open companion release PR number, for companion receipt attestation only.'
+        required: false
+        default: ''
+        type: string
       version:
         description: 'Exact Crosswake lockstep version.'
         required: true
@@ -189,9 +202,56 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  attest-companion-receipt:
+    name: Attest planned companion receipt without publication credentials
+    if: ${{ github.event.inputs.operation == 'candidate-receipt-attestation' && inputs.package == 'crosswake_chimeway' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+    env:
+      CANDIDATE_HEAD: "${{ inputs.candidate_head }}"
+      CANDIDATE_TREE: "${{ inputs.candidate_tree }}"
+      CANDIDATE_BASE: "${{ inputs.candidate_base }}"
+      CANDIDATE_VERSION: "${{ inputs.version }}"
+      CANDIDATE_PR: "${{ inputs.candidate_pr }}"
+      CANDIDATE_CI_RUN_ID: "${{ inputs.candidate_ci_run_id }}"
+      HEX_RUN_ID: "${{ inputs.hex_run_id }}"
+      OUTPUT_DIR: ${{ runner.temp }}/companion-receipt-attestation
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.candidate_head }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Read exact candidate, successful CI, safe Hex artifact and absent target
+        run: |
+          set -euo pipefail
+          [ "$(git rev-parse HEAD)" = "$CANDIDATE_HEAD" ]
+          [ "$(git rev-parse HEAD^{tree})" = "$CANDIDATE_TREE" ]
+          python3 script/release_candidate/companion_attestation.py
+          mix crosswake.release.receipt --input "$OUTPUT_DIR/input.json" --output "$OUTPUT_DIR/candidate-receipt.json"
+      - name: Upload source-bound companion receipt
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase168-candidate-receipt-${{ inputs.candidate_head }}
+          path: |
+            ${{ runner.temp }}/companion-receipt-attestation/candidate-receipt.json
+            ${{ runner.temp }}/companion-receipt-attestation/candidate.json
+            ${{ runner.temp }}/companion-receipt-attestation/ci.json
+            ${{ runner.temp }}/companion-receipt-attestation/hex-rehearsal.json
+            ${{ runner.temp }}/companion-receipt-attestation/package-row.json
+          if-no-files-found: error
+          retention-days: 7
+
   attest-candidate-receipt:
     name: Attest canonical exact-head candidate receipt
-    if: ${{ github.event.inputs.operation == 'candidate-receipt-attestation' }}
+    if: ${{ github.event.inputs.operation == 'candidate-receipt-attestation' && inputs.package == 'crosswake' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -310,6 +370,13 @@ jobs:
             '.candidate_version == $version and .requested_head == $head and .observed_head == $head and .observed_tree == $tree and .observed_base == $base and (.run_id | tostring) == $run and .run_conclusion == "success" and .state == "VALIDATED" and .deployment_result == "DROP" and .dropped == true and .external_state_changed == false' \
             "$OUTPUT_DIR/maven/rehearsal.json" >/dev/null
 
+          # Independently resolve each package owner before accepting downloaded rows.
+          for manifest in "$OUTPUT_DIR/ci/artifacts/artifacts.json" "$OUTPUT_DIR/hex/packages/artifacts.json"; do
+            while IFS=$'\t' read -r package version ref; do
+              resolved=$(bash script/release_candidate/package_source_ref.sh "$PWD" "$package" "$version" "$CANDIDATE_HEAD")
+              [ "$ref" = "$resolved" ]
+            done < <(jq -r '.[] | [.package,.version,.candidate_ref] | @tsv' "$manifest")
+          done
           mix deps.get --check-locked
           mix crosswake.release.candidate \
             --version "$CANDIDATE_VERSION" \
