@@ -575,12 +575,18 @@ PYEOF
 
         "${RUNTIME[@]}" mix deps.get >/dev/null || matrix_fail
         "${RUNTIME[@]}" mix compile --warnings-as-errors >/dev/null || matrix_fail
+        if ! "${RUNTIME[@]}" mix crosswake.install --router lib/clean_room_host_web/router.ex; then
+          matrix_fail
+        fi
+        echo "[crosswake] source_mode=$MATRIX_SOURCE_MODE profile=$MATRIX_PROFILE install=$INSTALL_PASS step=install"
+        "${RUNTIME[@]}" mix compile --warnings-as-errors >/dev/null || matrix_fail
         "${RUNTIME[@]}" mix run --no-compile -e 'unless CleanRoomHostWeb.Router.__routes__() != [], do: System.halt(22)' >/dev/null || matrix_fail
         "${RUNTIME[@]}" mix test test/crosswake_cleanroom_smoke_test.exs >/dev/null || matrix_fail
         matrix_registration_check "$MATRIX_PROFILE" positive
         matrix_registration_check "$MATRIX_PROFILE" negative
         "${RUNTIME[@]}" mix crosswake.doctor --router CleanRoomHostWeb.Router > "$MATRIX_PASS_ROOT/doctor.log" || matrix_fail
         [ -s "$MATRIX_PASS_ROOT/doctor.log" ] || matrix_fail
+        echo "[crosswake] source_mode=$MATRIX_SOURCE_MODE profile=$MATRIX_PROFILE install=$INSTALL_PASS step=doctor"
 
         MATRIX_PATH_LOCK_COUNT=$("${RUNTIME[@]}" elixir -e '
           {lock, _binding} = Code.eval_file("mix.lock")
