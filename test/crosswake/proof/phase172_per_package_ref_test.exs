@@ -51,7 +51,7 @@ defmodule Crosswake.Proof.Phase172PerPackageRefTest do
              "a per-package candidate_ref lookup, keyed on $package, must be present in its place"
     end
 
-    test "the observed ref is assigned exactly once, from a repository head resolution, never from the approved manifest" do
+    test "the observed ref is assigned per package from independently resolved source ownership" do
       source = non_comment_source!(@script)
 
       assignments = Regex.scan(~r/^\s*MATRIX_PUBLIC_REF=.*$/m, source) |> List.flatten()
@@ -61,8 +61,8 @@ defmodule Crosswake.Proof.Phase172PerPackageRefTest do
 
       [assignment] = assignments
 
-      assert assignment =~ ~r/git -C "\$MATRIX_REPO_ROOT" rev-parse HEAD/,
-             "the single MATRIX_PUBLIC_REF assignment must resolve independently from git rev-parse HEAD"
+      assert assignment =~ "package_source_ref.sh",
+             "the per-package observed ref must resolve independently from GitHub release tags or the checked-out core head"
 
       refute assignment =~ "MATRIX_APPROVED_MANIFEST",
              "MATRIX_PUBLIC_REF must never be resolved from the approved manifest it is later compared against (T-172-01)"
@@ -108,7 +108,7 @@ defmodule Crosswake.Proof.Phase172PerPackageRefTest do
              "ARTIFACT_ARGS must append exactly #{@artifact_field_count} positional fields per " <>
                "package; found #{quoted_token_count(line)} in: #{line}"
 
-      assert line =~ "\"$CANDIDATE_REF\"",
+      assert line =~ "\"$PACKAGE_REF\"",
              "the candidate ref must still be one of the appended fields"
     end
   end

@@ -166,7 +166,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         if: ${{ steps.applicability.outputs.applicable == 'true' }}
         with:
-          ref: ${{ inputs.merge_oid }}
+          # The guard proves this candidate is the actual merge's second parent
+          # and has the identical tree. Fetch it independently of the manifest
+          # so registry observations retain the approved candidate provenance.
+          ref: ${{ inputs.approved_head }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -227,6 +230,13 @@ jobs:
         with:
           version-file: .tool-versions
           version-type: strict
+
+      - name: Install exact-public proof dependencies
+        if: ${{ steps.applicability.outputs.applicable == 'true' }}
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get --check-locked
 
       - name: Download approved candidate payload manifest
         if: ${{ steps.applicability.outputs.applicable == 'true' }}

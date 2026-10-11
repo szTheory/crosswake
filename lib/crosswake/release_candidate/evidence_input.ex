@@ -286,7 +286,9 @@ defmodule Crosswake.ReleaseCandidate.EvidenceInput do
 
       unless row["package"] == expected_package and is_binary(row["version"]) and
                Regex.match?(~r/\A\d+\.\d+\.\d+\z/, row["version"]) and
-               row["candidate_ref"] == ref and row["source"] == "built_tarball" and
+               sha?(row["candidate_ref"]) and
+               (expected_package != "crosswake" or row["candidate_ref"] == ref) and
+               row["source"] == "built_tarball" and
                is_list(row["files"]) and row["files"] != [] and is_list(row["requirements"]) and
                digest?(row["outer_checksum"]) and digest?(row["payload_digest"]) and
                digest?(row["metadata_digest"]),

@@ -260,13 +260,14 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
   test "local bare mirror publication blocks without REL-17 authority and preserves refs" do
     fixture = git_fixture()
 
-    env = [
-      {"CROSSWAKE_IOS_MIRROR_RELEASE_REPO", fixture.release_repo},
-      {"CROSSWAKE_IOS_MIRROR_PUBLIC_REMOTE", fixture.mirror_repo},
-      {"CROSSWAKE_IOS_MIRROR_WRITE_REMOTE", fixture.mirror_repo},
-      {"CROSSWAKE_IOS_MIRROR_AUTHORIZATION_CHECKED", "true"},
-      {"CROSSWAKE_IOS_MIRROR_EXECUTE", "true"}
-    ]
+    env =
+      isolated_release_env([
+        {"CROSSWAKE_IOS_MIRROR_RELEASE_REPO", fixture.release_repo},
+        {"CROSSWAKE_IOS_MIRROR_PUBLIC_REMOTE", fixture.mirror_repo},
+        {"CROSSWAKE_IOS_MIRROR_WRITE_REMOTE", fixture.mirror_repo},
+        {"CROSSWAKE_IOS_MIRROR_AUTHORIZATION_CHECKED", "true"},
+        {"CROSSWAKE_IOS_MIRROR_EXECUTE", "true"}
+      ])
 
     {output, status} =
       System.cmd(
@@ -454,5 +455,15 @@ defmodule Crosswake.ReleaseCandidate.MirrorTest do
     |> then(&Regex.scan(~r/[0-9a-f]{40}/, &1))
     |> List.last()
     |> hd()
+  end
+
+  # Fixture subprocesses must not inherit a live publisher's authorization.
+  # Keep the real release context intact in the parent workflow process.
+  defp isolated_release_env(overrides) do
+    System.get_env()
+    |> Enum.filter(fn {key, _value} -> String.starts_with?(key, "REL17_") end)
+    |> Map.new(fn {key, _value} -> {key, nil} end)
+    |> Map.merge(Map.new(overrides))
+    |> Enum.to_list()
   end
 end

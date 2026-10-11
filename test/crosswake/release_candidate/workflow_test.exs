@@ -524,6 +524,31 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     end
   end
 
+  test "linked rollup rejects the obsolete Maven coordinate" do
+    children =
+      Map.new(
+        ~w(hex ios_mirror android ios_public_proof android_public_proof exact_public)a,
+        &{&1, "success"}
+      )
+
+    valid = Workflow.rollup!(rollup_input(children, "0.2.10"))
+
+    assert "maven:io.github.sztheory:crosswake-shell-core-android@0.2.10" in valid.successful_coordinates
+
+    obsolete =
+      Enum.map(valid.successful_coordinates, fn coordinate ->
+        String.replace(
+          coordinate,
+          "io.github.sztheory:crosswake-shell-core-android",
+          "io.crosswake:crosswake-shell-core"
+        )
+      end)
+
+    assert_raise ArgumentError, "release workflow observation is invalid", fn ->
+      Workflow.validate!(%{valid | successful_coordinates: obsolete})
+    end
+  end
+
   test "coordinate derivation is a function of the input version, not a frozen literal" do
     children = %{
       hex: "success",
@@ -544,7 +569,7 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
              Enum.sort([
                "hex:crosswake@0.2.2",
                "swift:crosswake-shell-core-ios@0.2.2",
-               "maven:io.crosswake:crosswake-shell-core@0.2.2"
+               "maven:io.github.sztheory:crosswake-shell-core-android@0.2.2"
              ])
 
     for {a, b} <- Enum.zip(result_a.successful_coordinates, result_b.successful_coordinates) do
@@ -883,5 +908,5 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
 
   defp coordinate(:hex), do: "hex:crosswake@0.2.1"
   defp coordinate(:ios_mirror), do: "swift:crosswake-shell-core-ios@0.2.1"
-  defp coordinate(:android), do: "maven:io.crosswake:crosswake-shell-core@0.2.1"
+  defp coordinate(:android), do: "maven:io.github.sztheory:crosswake-shell-core-android@0.2.1"
 end

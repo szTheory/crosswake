@@ -18,7 +18,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
   @diff_excluded_templates ["CrosswakeShell.xcodeproj/project.pbxproj"]
   @platforms ~w(ios android)
 
-  @template_version 2
+  @template_version 3
 
   @doc """
   Returns the current integer template epoch.
@@ -44,7 +44,8 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
      "android/app/src/main/java/dev/crosswake/shell/MainActivity.kt.eex"},
     {"app/src/main/java/dev/crosswake/shell/CrosswakeViewModel.kt",
      "android/app/src/main/java/dev/crosswake/shell/CrosswakeViewModel.kt.eex"},
-    {"app/src/main/res/values/themes.xml", "android/app/src/main/res/values/themes.xml.eex"}
+    {"app/src/main/res/values/themes.xml", "android/app/src/main/res/values/themes.xml.eex"},
+    {"app/src/main/res/values-v28/themes.xml", "android/app/src/main/res/values/themes.xml.eex"}
   ]
   @ios_templates [
     {"CrosswakeShell/CrosswakeShellApp.swift", "ios/CrosswakeShellApp.swift.eex"},
@@ -193,7 +194,15 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
             {ota, rebuild, unch, miss}
           else
             on_disk_path = Path.join(root, relative_path)
-            re_rendered = render_template(template_path, capabilities, effective_local, assigns)
+
+            re_rendered =
+              render_template(
+                template_path,
+                capabilities,
+                effective_local,
+                assigns,
+                relative_path
+              )
 
             case File.read(on_disk_path) do
               {:error, :enoent} ->
@@ -410,7 +419,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     Enum.each(@android_templates, fn {relative_path, template_path} ->
       ensure_file(
         Path.join(root, relative_path),
-        render_template(template_path, capabilities, local, assigns)
+        render_template(template_path, capabilities, local, assigns, relative_path)
       )
     end)
   end
@@ -426,7 +435,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     end)
   end
 
-  defp render_template(template_path, capabilities, local, assigns) do
+  defp render_template(template_path, capabilities, local, assigns, relative_path \\ "") do
     template =
       Application.app_dir(:crosswake, Path.join("priv/templates/crosswake/shell", template_path))
 
@@ -439,7 +448,8 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
           capabilities: capabilities,
           local: local,
           version: version,
-          template_version: @template_version
+          template_version: @template_version,
+          cutout_mode: String.contains?(relative_path, "/values-v28/")
         ] ++ assigns
     )
   end

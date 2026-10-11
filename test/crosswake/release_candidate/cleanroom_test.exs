@@ -629,7 +629,7 @@ defmodule Crosswake.ReleaseCandidate.CleanroomTest do
              ~S{select(.package == $package) | .candidate_ref}
 
     assert script =~
-             ~S{MATRIX_PUBLIC_REF=$(git -C "$MATRIX_REPO_ROOT" rev-parse HEAD)}
+             ~S{MATRIX_CORE_REF=$(git -C "$MATRIX_REPO_ROOT" rev-parse HEAD)}
 
     refute script =~ "unique"
     refute candidate_task =~ "verify_companion_cleanroom"

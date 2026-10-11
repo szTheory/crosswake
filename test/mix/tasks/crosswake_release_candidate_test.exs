@@ -224,6 +224,62 @@ defmodule Mix.Tasks.Crosswake.Release.CandidateTest do
   end
 
   @tag :tmp_dir
+  test "companion refs remain per package while core and independent builders stay bound", %{
+    tmp_dir: tmp_dir
+  } do
+    for {scenario, ref} <- [
+          {"matching", @sha_b},
+          {"mismatch", @sha_c},
+          {"malformed", "not-a-ref"}
+        ] do
+      fixture = Crosswake.ReleaseCandidateReceiptFixtures.build!(Path.join(tmp_dir, scenario))
+
+      for {kind, source_ref} <- [{:ci_packages, @sha_b}, {:hex_packages, ref}] do
+        Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(fixture, kind, fn rows ->
+          Enum.map(rows, fn row ->
+            if row["package"] == "crosswake_sigra",
+              do: Map.put(row, "candidate_ref", source_ref),
+              else: row
+          end)
+        end)
+      end
+
+      digest = fn key ->
+        fixture.root
+        |> Path.join(fixture.files[key])
+        |> File.read!()
+        |> then(&:crypto.hash(:sha256, &1))
+        |> Base.encode16(case: :lower)
+      end
+
+      Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(
+        fixture,
+        :ci,
+        &Map.put(&1, "artifact_manifest_sha256", digest.(:ci_packages))
+      )
+
+      Crosswake.ReleaseCandidateReceiptFixtures.mutate_json!(
+        fixture,
+        :hex,
+        &Map.put(&1, "package_artifacts_sha256", digest.(:hex_packages))
+      )
+
+      output = Path.join(tmp_dir, scenario <> "-receipt")
+
+      if scenario == "matching" do
+        assert capture_io(fn -> Candidate.run(evidence_args(fixture, output)) end) =~
+                 "READY FOR APPROVAL"
+      else
+        assert_raise ArgumentError, "candidate evidence is invalid", fn ->
+          capture_io(fn -> Candidate.run(evidence_args(fixture, output)) end)
+        end
+
+        refute File.exists?(output)
+      end
+    end
+  end
+
+  @tag :tmp_dir
   test "missing, stale identity/run bindings and unexpected sensitive fields fail closed", %{
     tmp_dir: tmp_dir
   } do

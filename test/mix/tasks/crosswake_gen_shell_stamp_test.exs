@@ -38,7 +38,8 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellStampTest do
     "app/src/main/AndroidManifest.xml",
     "app/src/main/java/dev/crosswake/shell/MainActivity.kt",
     "app/src/main/java/dev/crosswake/shell/CrosswakeViewModel.kt",
-    "app/src/main/res/values/themes.xml"
+    "app/src/main/res/values/themes.xml",
+    "app/src/main/res/values-v28/themes.xml"
   ]
 
   # D-02 stamp exclusions: these MUST NOT carry a stamp.
@@ -88,6 +89,27 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellStampTest do
       assert contents =~ @stamp_marker,
              "Expected stamp '#{@stamp_marker}' in Android generated file: #{relative_path}\n" <>
                "First 200 bytes: #{String.slice(contents, 0, 200)}"
+    end
+  end
+
+  test "Android cutout mode is confined to API 28 resources" do
+    target = tmp_dir!("cutout-api")
+
+    capture_io(fn ->
+      Mix.Task.reenable(@task)
+      Mix.Task.run(@task, ["android", "--target", target])
+    end)
+
+    root = Path.join(target, "native/android/crosswake_shell/app/src/main/res")
+    base = File.read!(Path.join(root, "values/themes.xml"))
+    qualified = File.read!(Path.join(root, "values-v28/themes.xml"))
+    refute base =~ "windowLayoutInDisplayCutoutMode"
+    assert qualified =~ "windowLayoutInDisplayCutoutMode"
+    assert qualified =~ "Theme.AppCompat.DayNight.NoActionBar"
+
+    for item <- ["android:statusBarColor", "android:navigationBarColor"] do
+      assert base =~ item
+      assert qualified =~ item
     end
   end
 
