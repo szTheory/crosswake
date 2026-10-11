@@ -902,7 +902,13 @@ defmodule Crosswake.ReleaseCandidate.EvidenceLive do
   end
 
   defp gh_get(url) do
-    case bounded_cmd("gh", ["api", "--include", url], [stderr_to_stdout: true, env: []], 20_000) do
+    env =
+      Crosswake.ReleaseCandidate.PolicyRead.github_env(
+        url,
+        System.get_env("REL17_POLICY_READ_TOKEN")
+      )
+
+    case bounded_cmd("gh", ["api", "--include", url], [stderr_to_stdout: true, env: env], 20_000) do
       {output, 0} -> parse_included_response(output)
       _ -> {:error, "api_request_failed"}
     end

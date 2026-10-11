@@ -17,6 +17,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  checks: read
   actions: read
   contents: write
   issues: write
@@ -32,6 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
+      checks: read
       actions: read
       contents: read
       pull-requests: read
@@ -64,6 +66,7 @@ jobs:
         id: guard
         env:
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
           REPOSITORY: ${{ github.repository }}
           RUN_HEAD: ${{ github.sha }}
         run: |
@@ -462,6 +465,7 @@ jobs:
         if: ${{ needs.approved-release-guard.outputs.rel17_context != '' }}
         env:
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Run Release Please
@@ -473,6 +477,8 @@ jobs:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          # Repair/proposal pushes may update PRs but cannot release an older failed merge.
+          skip-github-release: ${{ needs.approved-release-guard.outputs.rel17_context == '' }}
 
   publish-hex:
     name: Publish to Hex.pm
@@ -481,6 +487,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      checks: read
       actions: read
       contents: read
       pull-requests: read
@@ -522,12 +529,14 @@ jobs:
       - name: Re-fetch REL-17 evidence before Hex credentials
         env:
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: >
           bash script/guarded_hex_publish.sh
           crosswake
@@ -579,6 +588,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      checks: read
       actions: read
       contents: read
       pull-requests: read
@@ -625,12 +635,14 @@ jobs:
       - name: Re-fetch REL-17 evidence before companion credentials
         env:
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: >
           bash script/guarded_hex_publish.sh
           crosswake_rulestead
@@ -648,6 +660,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      checks: read
       actions: read
       contents: read
       pull-requests: read
@@ -694,12 +707,14 @@ jobs:
       - name: Re-fetch REL-17 evidence before companion credentials
         env:
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: >
           bash script/guarded_hex_publish.sh
           crosswake_rindle
@@ -717,6 +732,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      checks: read
       actions: read
       contents: read
       pull-requests: read
@@ -763,12 +779,14 @@ jobs:
       - name: Re-fetch REL-17 evidence before companion credentials
         env:
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: >
           bash script/guarded_hex_publish.sh
           crosswake_sigra
@@ -786,6 +804,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      checks: read
       actions: read
       contents: read
       pull-requests: read
@@ -832,12 +851,14 @@ jobs:
       - name: Re-fetch REL-17 evidence before companion credentials
         env:
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: >
           bash script/guarded_hex_publish.sh
           crosswake_chimeway
@@ -855,6 +876,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      checks: read
       actions: read
       contents: read
       pull-requests: read
@@ -902,12 +924,14 @@ jobs:
       - name: Re-fetch REL-17 evidence before companion credentials
         env:
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: >
           bash script/guarded_hex_publish.sh
           crosswake_threadline
@@ -921,6 +945,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      checks: read
       actions: read
       contents: read
       pull-requests: read
@@ -951,6 +976,7 @@ jobs:
       - name: Re-fetch REL-17 evidence before mirror credentials
         env:
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: bash script/release_candidate/require_release_evidence.sh
 
       - name: Preflight — assert MIRROR_DEPLOY_KEY is configured
@@ -977,6 +1003,7 @@ jobs:
         env:
           CROSSWAKE_IOS_MIRROR_EXECUTE: "true"
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: >
           bash script/release_candidate/ios_mirror.sh publish
           --version "${{ needs.approved-release-guard.outputs.approved_version }}"
@@ -1050,6 +1077,7 @@ jobs:
       - name: Re-fetch REL-17 evidence before Maven credentials
         env:
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: bash script/release_candidate/require_release_evidence.sh
 
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
@@ -1065,6 +1093,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyId }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
           GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: >
           bash script/release_candidate/android_publication.sh
           --version "${{ needs.approved-release-guard.outputs.approved_version }}"

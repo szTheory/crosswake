@@ -57,7 +57,7 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
     "bandit" => "1.12.5",
     "cc_precompiler" => "0.1.11",
     "db_connection" => "2.10.1",
-    "decimal" => "3.1.0",
+    "decimal" => "3.1.2",
     "ecto" => "3.13.6",
     "ecto_sql" => "3.13.5",
     "ecto_sqlite3" => "0.23.0",
