@@ -257,9 +257,11 @@ prepare_generated_shell() {
   # keying off the env var alone selects a non-existent prod task and the build fails.
   if grep -q "productFlavors" app/build.gradle 2>/dev/null; then
     UNIT_TEST_TASK="testProdDebugUnitTest"
+    LINT_TASK="lintProdDebug"
     CONNECTED_TEST_TASK="connectedProdDebugAndroidTest"
   else
     UNIT_TEST_TASK="testDebugUnitTest"
+    LINT_TASK="lintDebug"
     CONNECTED_TEST_TASK="connectedDebugAndroidTest"
   fi
 
@@ -267,7 +269,7 @@ prepare_generated_shell() {
 
 run_generated_shell_jvm_proof() {
   prepare_generated_shell
-  ./gradlew --no-daemon --stacktrace "${UNIT_TEST_TASK}"
+  ./gradlew --no-daemon --stacktrace "${UNIT_TEST_TASK}" "${LINT_TASK}"
 }
 
 run_connected_shell_proof() {
