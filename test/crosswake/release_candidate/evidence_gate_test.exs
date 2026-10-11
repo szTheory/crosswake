@@ -67,16 +67,17 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
 
     {output, status} =
       System.cmd("bash", ["script/release_candidate/require_release_evidence.sh"],
-        env: [
-          {"MIX_ENV", "test"},
-          {"REL17_OPERATION", "linked_release"},
-          {"REL17_PACKAGE", "crosswake"},
-          {"REL17_RECEIPT_DIGEST", @receipt_digest},
-          {"REL17_LEG_RUN_ID", Integer.to_string(@leg_run_id)},
-          {"REL17_MERGE_OID", @merge},
-          {"REL17_ENVELOPE_FILE", envelope_file},
-          {"REL17_SOURCE_DIR", source_dir}
-        ],
+        env:
+          isolated_release_env([
+            {"MIX_ENV", "test"},
+            {"REL17_OPERATION", "linked_release"},
+            {"REL17_PACKAGE", "crosswake"},
+            {"REL17_RECEIPT_DIGEST", @receipt_digest},
+            {"REL17_LEG_RUN_ID", Integer.to_string(@leg_run_id)},
+            {"REL17_MERGE_OID", @merge},
+            {"REL17_ENVELOPE_FILE", envelope_file},
+            {"REL17_SOURCE_DIR", source_dir}
+          ]),
         stderr_to_stdout: true
       )
 
@@ -429,4 +430,13 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
   end
 
   defp digest(bytes), do: :crypto.hash(:sha256, bytes) |> Base.encode16(case: :lower)
+  # Fixture subprocesses must not inherit a live publisher's authorization.
+  # Keep the real release context intact in the parent workflow process.
+  defp isolated_release_env(overrides) do
+    System.get_env()
+    |> Enum.filter(fn {key, _value} -> String.starts_with?(key, "REL17_") end)
+    |> Map.new(fn {key, _value} -> {key, nil} end)
+    |> Map.merge(Map.new(overrides))
+    |> Enum.to_list()
+  end
 end
