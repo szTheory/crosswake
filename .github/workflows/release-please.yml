@@ -614,6 +614,7 @@ jobs:
           # D-09: Checkout the companion tag (not the core tag) so the tarball is built
           # from the exact commit release-please tagged for crosswake_rulestead.
           ref: ${{ needs.release-please.outputs.rulestead_tag_name }}
+          fetch-depth: 0
 
       - name: Load the package-scoped REL-17 decision
         env:
@@ -686,6 +687,7 @@ jobs:
           # D-09: Checkout the companion tag (not the core tag) so the tarball is built
           # from the exact commit release-please tagged for crosswake_rindle.
           ref: ${{ needs.release-please.outputs.rindle_tag_name }}
+          fetch-depth: 0
 
       - name: Load the package-scoped REL-17 decision
         env:
@@ -758,6 +760,7 @@ jobs:
           # D-09: Checkout the companion tag (not the core tag) so the tarball is built
           # from the exact commit release-please tagged for crosswake_sigra.
           ref: ${{ needs.release-please.outputs.sigra_tag_name }}
+          fetch-depth: 0
 
       - name: Load the package-scoped REL-17 decision
         env:
@@ -830,6 +833,7 @@ jobs:
           # D-09: Checkout the companion tag (not the core tag) so the tarball is built
           # from the exact commit release-please tagged for crosswake_chimeway.
           ref: ${{ needs.release-please.outputs.chimeway_tag_name }}
+          fetch-depth: 0
 
       - name: Load the package-scoped REL-17 decision
         env:
@@ -903,6 +907,7 @@ jobs:
           # D-09: Checkout the observer tag (not the core tag) so the tarball is built
           # from the exact commit release-please tagged for crosswake_threadline.
           ref: ${{ needs.release-please.outputs.threadline_tag_name }}
+          fetch-depth: 0
 
       - name: Load the package-scoped REL-17 decision
         env:

@@ -1778,7 +1778,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(block, "REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}") and
         loader > 0 and gate > loader and action > gate and
         includes?(block, "needs.approved-release-guard.outputs.rel17_context != ''") and
-        includes?(block, "skip-github-release: ${{ needs.approved-release-guard.outputs.rel17_context == '' }}") and
+        includes?(
+          block,
+          "skip-github-release: ${{ needs.approved-release-guard.outputs.rel17_context == '' }}"
+        ) and
         includes?(
           block,
           "REL17_EXPECTED_OPERATION: ${{ needs.approved-release-guard.outputs.rel17_operation }}"
@@ -1825,6 +1828,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       block != "" and is_integer(loader) and is_integer(gate) and is_integer(credential_at) and
         is_integer(mutation_token) and loader > 0 and gate > loader and credential_at > gate and
         mutation_token > 0 and
+        includes?(block, "fetch-depth: 0") and
         (not require_main or
            includes?(job_if(jobs, job), "github.ref == 'refs/heads/main'")) and
         includes?(block, "REL17_EXPECTED_OPERATION: #{operation}") and
@@ -1832,7 +1836,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(block, "REL17_EXPECTED_VERSION:") and
         includes?(block, "REL17_EXPECTED_MERGE_OID:") and
         includes?(block, "actions: read") and includes?(block, "pull-requests: read"),
-      "#{job} must bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step"
+      "#{job} must fetch full Git history, bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step"
     )
   end
 

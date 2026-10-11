@@ -456,7 +456,7 @@ defmodule Crosswake.SupportMatrix do
           proof_status: :verification_required,
           proof: "clean-room-proof-ios; script/verify_generated_ios_shell.sh",
           notes:
-            "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority. Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; release-time clean-room proof confirms external resolution and `swift build`. advisory — not wired as a required CI lane; macOS/Xcode toolchain not guaranteed in CI.",
+            "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority. Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; Release consumer proof resolves that public SwiftPM tag and builds a generated iOS app with `xcodebuild`. It must pass for the ordinary core release's six-child COMPLETE result. CI build proof does not establish physical-device or adopter-topology support.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         ),
         # D-17/D-18/D-20 (LIFE-01a, Phase 134): android-generated-shell-unit lane is now

@@ -1037,4 +1037,13 @@ defmodule Crosswake.SupportMatrixTest do
       assert entry.telemetry.metadata_keys == DiagnosticExport.allowed_keys()
     end
   end
+
+  test "iOS release notes describe required generated-app proof and preserve device limits" do
+    [ios_shell] = Enum.filter(SupportMatrix.canonical().shells, &(&1.target == "ios_shell"))
+    assert ios_shell.notes =~ "builds a generated iOS app with `xcodebuild`"
+    assert ios_shell.notes =~ "six-child COMPLETE"
+    assert ios_shell.notes =~ "does not establish physical-device or adopter-topology support"
+    refute ios_shell.notes =~ "`swift build`"
+    refute ios_shell.notes =~ "not wired as a required CI lane"
+  end
 end
