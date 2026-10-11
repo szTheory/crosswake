@@ -475,6 +475,8 @@ jobs:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          # Repair/proposal pushes may update PRs but cannot release an older failed merge.
+          skip-github-release: ${{ needs.approved-release-guard.outputs.rel17_context == '' }}
 
   publish-hex:
     name: Publish to Hex.pm
