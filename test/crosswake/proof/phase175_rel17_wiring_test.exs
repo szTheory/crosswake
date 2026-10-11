@@ -95,6 +95,26 @@ defmodule Crosswake.Proof.Phase175Rel17WiringTest do
     end
   end
 
+  test "every companion publisher requires full checkout history for ancestry proof" do
+    workflow = File.read!(@release_workflow)
+
+    for component <- ~w(rulestead rindle sigra chimeway threadline),
+        depth <- [nil, "1", "2"] do
+      job = "publish-hex-#{component}"
+      block = Scanner.job_block!(workflow, job)
+      assert block =~ "fetch-depth: 0"
+      replacement = if is_nil(depth), do: "", else: "          fetch-depth: #{depth}\n"
+
+      mutated =
+        Scanner.replace_in_job(workflow, job, "          fetch-depth: 0\n", replacement)
+
+      assert_scanner_failure(
+        %{release_workflow: mutated},
+        "release.rel17.companion_#{component}_job_guard"
+      )
+    end
+  end
+
   test "a missing companion job fails the named job guard and rostered component gate" do
     workflow = File.read!(@release_workflow)
     mutated = remove_job!(workflow, "publish-hex-threadline")

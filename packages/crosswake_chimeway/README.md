@@ -26,3 +26,7 @@ config :crosswake, :companions, [Crosswake.Companions.Chimeway]
 ## Package-family discipline
 
 `crosswake_chimeway` is part of the Crosswake package family. Core (`crosswake`) never compile-depends on a companion; companions never depend on each other. See the [companion contract guide](https://hexdocs.pm/crosswake/companion_contract.html) for the stable seam surface.
+
+## Release checks
+
+The release workflow checks the runbook ancestry before publication. Its tagged checkout must include the full Git history (`fetch-depth: 0`); a shallow checkout cannot prove the protected release prerequisites.
