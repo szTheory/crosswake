@@ -1775,6 +1775,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     check(
       "release.rel17.release_creation_guard",
       is_integer(loader) and is_integer(gate) and is_integer(action) and
+        includes?(block, "REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}") and
         loader > 0 and gate > loader and action > gate and
         includes?(block, "needs.approved-release-guard.outputs.rel17_context != ''") and
         includes?(block, "skip-github-release: ${{ needs.approved-release-guard.outputs.rel17_context == '' }}") and
