@@ -218,7 +218,6 @@ jobs:
       CANDIDATE_PR: "${{ inputs.candidate_pr }}"
       CANDIDATE_CI_RUN_ID: "${{ inputs.candidate_ci_run_id }}"
       HEX_RUN_ID: "${{ inputs.hex_run_id }}"
-      OUTPUT_DIR: ${{ runner.temp }}/companion-receipt-attestation
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -230,10 +229,12 @@ jobs:
         with:
           mix-env: test
       - name: Read exact candidate, successful CI, safe Hex artifact and absent target
+        env:
+          OUTPUT_DIR: ${{ runner.temp }}/companion-receipt-attestation
         run: |
           set -euo pipefail
           [ "$(git rev-parse HEAD)" = "$CANDIDATE_HEAD" ]
-          [ "$(git rev-parse HEAD^{tree})" = "$CANDIDATE_TREE" ]
+          [ "$(git rev-parse 'HEAD^{tree}')" = "$CANDIDATE_TREE" ]
           python3 script/release_candidate/companion_attestation.py
           mix crosswake.release.receipt --input "$OUTPUT_DIR/input.json" --output "$OUTPUT_DIR/candidate-receipt.json"
       - name: Upload source-bound companion receipt
