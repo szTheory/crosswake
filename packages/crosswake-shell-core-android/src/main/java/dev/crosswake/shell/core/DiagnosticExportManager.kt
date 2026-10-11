@@ -43,6 +43,10 @@ object DiagnosticExportManager {
     }
 
     private fun exportExitInfo(info: ApplicationExitInfo, endpointUrl: String, runtimeVersion: String) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            return
+        }
+
         val (kind, exitReason) = mapExitReason(info.reason)
         
         val nativeDiagnostic = JSONObject().apply {
