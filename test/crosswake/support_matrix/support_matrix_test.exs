@@ -77,11 +77,6 @@ defmodule Crosswake.SupportMatrixTest do
     assert ios_shell.notes =~ "generic navigation"
     assert ios_shell.notes =~ "native leaf rendering"
     assert ios_shell.notes =~ "browser-history authority"
-    assert ios_shell.notes =~ "builds a generated iOS app with `xcodebuild`"
-    assert ios_shell.notes =~ "six-child COMPLETE"
-    assert ios_shell.notes =~ "does not establish physical-device or adopter-topology support"
-    refute ios_shell.notes =~ "`swift build`"
-    refute ios_shell.notes =~ "not wired as a required CI lane"
 
     [android] = matrix.android
 
@@ -1041,5 +1036,14 @@ defmodule Crosswake.SupportMatrixTest do
       entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
       assert entry.telemetry.metadata_keys == DiagnosticExport.allowed_keys()
     end
+  end
+
+  test "iOS release notes describe required generated-app proof and preserve device limits" do
+    [ios_shell] = Enum.filter(SupportMatrix.canonical().shells, &(&1.target == "ios_shell"))
+    assert ios_shell.notes =~ "builds a generated iOS app with `xcodebuild`"
+    assert ios_shell.notes =~ "six-child COMPLETE"
+    assert ios_shell.notes =~ "does not establish physical-device or adopter-topology support"
+    refute ios_shell.notes =~ "`swift build`"
+    refute ios_shell.notes =~ "not wired as a required CI lane"
   end
 end
