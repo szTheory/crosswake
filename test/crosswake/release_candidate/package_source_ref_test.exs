@@ -33,6 +33,38 @@ defmodule Crosswake.ReleaseCandidate.PackageSourceRefTest do
     assert {@head <> "\n", 0} == run(ctx.tmp_dir, "provider_failed", "crosswake", "public")
   end
 
+  @tag :tmp_dir
+  test "archive permissions are canonical across Git defaults and private scratch umask", ctx do
+    producer = File.read!("script/release_candidate/hex_artifacts.sh")
+    assert producer =~ ~S{git -c tar.umask=0022 archive "$package_ref" packages | tar -xp}
+
+    shell = """
+    set -euo pipefail
+    umask 077
+    git init --bare "$1/repo" >/dev/null 2>&1
+    blob=$(printf 'public package fixture' | git --git-dir="$1/repo" hash-object -w --stdin)
+    tree=$(printf '100644 blob %s\\tfixture.txt\\n' "$blob" | git --git-dir="$1/repo" mktree)
+    mkdir "$1/runner-default" "$1/canonical"
+    git -c tar.umask=0002 --git-dir="$1/repo" archive "$tree" | tar -xp -C "$1/runner-default"
+    git -c tar.umask=0002 -c tar.umask=0022 --git-dir="$1/repo" archive "$tree" | tar -xp -C "$1/canonical"
+    """
+
+    {output, status} =
+      System.cmd("bash", ["-c", shell, "archive-permissions", ctx.tmp_dir],
+        stderr_to_stdout: true
+      )
+
+    assert status == 0, output
+
+    assert Bitwise.band(
+             File.stat!(Path.join(ctx.tmp_dir, "runner-default/fixture.txt")).mode,
+             0o777
+           ) == 0o664
+
+    assert Bitwise.band(File.stat!(Path.join(ctx.tmp_dir, "canonical/fixture.txt")).mode, 0o777) ==
+             0o644
+  end
+
   defp run(tmp, scenario, package, mode) do
     shim = Path.join(tmp, "git")
 

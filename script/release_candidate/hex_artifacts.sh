@@ -105,7 +105,7 @@ prepare_companion_source() {
   mkdir -p "$source_root"
   # Preserve exact-candidate path dependencies between companions (for example,
   # Chimeway's test-only Sigra dependency) inside the isolated source tree.
-  git archive "$package_ref" packages | tar -xp -C "$source_root"
+  git -c tar.umask=0022 archive "$package_ref" packages | tar -xp -C "$source_root"
   mkdir -p "$package_dir/deps"
 
   for dependency_source in "$REPO_ROOT/packages/$package/deps/"*; do
