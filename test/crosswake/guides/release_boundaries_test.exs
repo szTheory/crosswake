@@ -80,6 +80,30 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert runbook =~ "does not publish"
   end
 
+  test "README release path reaches supported status and source-bound candidate tasks" do
+    readme = File.read!(repo_path("README.md"))
+    runbook = File.read!(repo_path("docs/COMPANION-PUBLISH-RUNBOOK.md"))
+    status_task = File.read!(repo_path("lib/mix/tasks/crosswake.release.status.ex"))
+    candidate_task = File.read!(repo_path("lib/mix/tasks/crosswake.release.candidate.ex"))
+
+    assert readme =~ "docs/COMPANION-PUBLISH-RUNBOOK.md"
+    assert readme =~ "docs/RELEASE-INCIDENT-RESPONSE.md"
+    assert readme =~ "mix crosswake.release.status [--json] [--live]"
+    assert runbook =~ "mix crosswake.release.candidate"
+    assert runbook =~ "--evidence-dir <evidence-directory> --output-dir <new-receipt-directory>"
+    assert runbook =~ "--ci-run-id <id> --hex-run-id <id> --ios-run-id <id> --maven-run-id <id>"
+
+    assert status_task =~
+             "@shortdoc \"Report read-only package-family and exact-candidate release truth\""
+
+    for option <- ["evidence_dir", "ci_run_id", "hex_run_id", "ios_run_id", "maven_run_id"] do
+      assert candidate_task =~ "#{option}: :string"
+    end
+
+    assert runbook =~ "Historical candidate-read and mirror-tag modes remain historical"
+    assert runbook =~ "Correct the named evidence or selector at its owner"
+  end
+
   test "read-only release status projects the exact candidate boundary" do
     status = Crosswake.ReleaseStatus.build(cwd: @repo_root)
     candidate_version = Crosswake.MixProject.project()[:version]
@@ -197,7 +221,6 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
           "one next action",
           "credentials_exercised",
           "external_state_changed",
-          "mix crosswake.release.candidate --version 0.2.1 --ref <40sha>",
           "Companion pull requests are excluded",
           "Android breadth is excluded",
           "first-adopter activation is excluded",
