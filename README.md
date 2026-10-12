@@ -148,7 +148,7 @@ Read:
 - [guides/native_shell.md](guides/native_shell.md)
 - [guides/packs.md](guides/packs.md)
 - [guides/offline.md](guides/offline.md)
-- [docs/COMPANION-PUBLISH-RUNBOOK.md](https://github.com/szTheory/crosswake/blob/main/docs/COMPANION-PUBLISH-RUNBOOK.md) and `mix crosswake.release.status [--json] [--live]` for package-family release status.
+- [docs/COMPANION-PUBLISH-RUNBOOK.md](https://github.com/szTheory/crosswake/blob/main/docs/COMPANION-PUBLISH-RUNBOOK.md) for pre-release procedure and [docs/RELEASE-INCIDENT-RESPONSE.md](https://github.com/szTheory/crosswake/blob/main/docs/RELEASE-INCIDENT-RESPONSE.md) if a publish fails. `mix crosswake.release.status [--json] [--live]` reports package-family status; it is read-only, and `--live` adds best-effort public registry probes. It reports findings and a next action but does not create a candidate receipt or authorize publication.
 
 The checked-in example hosts under `examples/` are the primary public proof artifacts.
 
