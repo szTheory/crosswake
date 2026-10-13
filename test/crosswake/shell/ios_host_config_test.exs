@@ -22,6 +22,29 @@ defmodule Crosswake.Shell.IOSHostConfigTest do
     refute reason =~ canary
   end
 
+  test "rejects malformed and out-of-range ports and canonicalizes valid authorities" do
+    for origin <- [
+          "https://study.crosswake.test:abc",
+          "https://study.crosswake.test:",
+          "https://study.crosswake.test:0",
+          "https://study.crosswake.test:65536",
+          "https://study.crosswake.test:443abc"
+        ] do
+      assert {:error, reason} = IOSHostConfig.normalize(%{@valid | origin: origin})
+      assert reason =~ "origin"
+    end
+
+    assert {:ok, config} =
+             IOSHostConfig.normalize(%{@valid | origin: "HTTPS://Study.Crosswake.Test:8443"})
+
+    assert config.origin == "https://study.crosswake.test:8443"
+
+    assert {:ok, default_port} =
+             IOSHostConfig.normalize(%{@valid | origin: "https://Study.Crosswake.Test:443"})
+
+    assert default_port.origin == "https://study.crosswake.test"
+  end
+
   test "accepts only the declared host keys and unique keyword entries" do
     assert {:ok, %IOSHostConfig{router: ManagedRouter}} = IOSHostConfig.normalize(@valid)
 

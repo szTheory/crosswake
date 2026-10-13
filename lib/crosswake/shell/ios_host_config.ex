@@ -42,13 +42,13 @@ defmodule Crosswake.Shell.IOSHostConfig do
 
   defp validate(input) do
     with :ok <- valid_router(input.router),
-         :ok <- valid_origin(input.origin),
+         {:ok, origin} <- valid_origin(input.origin),
          :ok <- valid_entry(input.entry_route_id),
          :ok <- valid_bundle(input.app_bundle_id, :app_bundle_id),
          :ok <- valid_bundle(input.proof_app_bundle_id, :proof_app_bundle_id),
          :ok <- valid_identity_collision(input.app_bundle_id, input.proof_app_bundle_id),
          {:ok, signing} <- valid_signing(input.device_signing) do
-      {:ok, struct!(__MODULE__, %{input | device_signing: signing})}
+      {:ok, struct!(__MODULE__, %{input | origin: origin, device_signing: signing})}
     end
   end
 
@@ -62,14 +62,36 @@ defmodule Crosswake.Shell.IOSHostConfig do
 
   defp valid_origin(origin) when is_binary(origin) do
     uri = URI.parse(origin)
-
     host = uri.host && String.downcase(uri.host)
 
+    authority =
+      case Regex.run(~r{\Ahttps://([^/?#]*)}i, origin, capture: :all_but_first) do
+        [value] -> value
+        _ -> nil
+      end
+
+    {authority_host, raw_port} =
+      case authority && String.split(authority, ":", parts: 2) do
+        [value] -> {String.downcase(value), nil}
+        [value, port] -> {String.downcase(value), port}
+        _ -> {nil, nil}
+      end
+
+    valid_port =
+      case raw_port do
+        nil -> true
+        value -> Regex.match?(~r/\A[0-9]+\z/, value) and String.to_integer(value) in 1..65_535
+      end
+
     cond do
-      (uri.scheme != "https" or is_nil(host) or uri.userinfo) || uri.query || uri.fragment ||
+      (String.downcase(uri.scheme || "") != "https" or is_nil(host) or uri.userinfo) || uri.query ||
+        uri.fragment ||
           uri.path not in [nil, ""] ->
         {:error,
          "invalid origin; use an absolute HTTPS origin without credentials, path, query, or fragment"}
+
+      authority_host != host or not valid_port ->
+        {:error, "invalid origin; use a valid HTTPS authority and decimal port from 1 to 65535"}
 
       not valid_host?(host) ->
         {:error, "invalid origin; use a valid DNS host without spaces or placeholder values"}
@@ -79,8 +101,13 @@ defmodule Crosswake.Shell.IOSHostConfig do
          "invalid origin; replace the example or placeholder host with the production host origin"}
 
       true ->
-        :ok
+        canonical_port =
+          if raw_port in [nil, "443"], do: "", else: ":#{String.to_integer(raw_port)}"
+
+        {:ok, "https://#{host}#{canonical_port}"}
     end
+  rescue
+    _ -> {:error, "invalid origin; use an absolute HTTPS origin with a valid decimal port"}
   end
 
   defp valid_origin(_), do: {:error, "invalid origin; use an absolute HTTPS origin"}
