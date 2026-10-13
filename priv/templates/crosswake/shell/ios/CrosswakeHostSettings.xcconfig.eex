@@ -2,3 +2,5 @@ CROSSWAKE_APP_BUNDLE_ID = <%= @app_bundle_id %>
 CROSSWAKE_SHELL_TEST_BUNDLE_ID = $(CROSSWAKE_APP_BUNDLE_ID).tests
 CODE_SIGN_STYLE = <%= @code_sign_style %>
 DEVELOPMENT_TEAM = <%= @team_id %>
+CODE_SIGNING_ALLOWED[sdk=iphonesimulator*] = NO
+CODE_SIGNING_REQUIRED[sdk=iphonesimulator*] = NO

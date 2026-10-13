@@ -13,6 +13,10 @@
 		A10000000000000000000008 /* pronunciation-pack-fixture.bin in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000018 /* pronunciation-pack-fixture.bin */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		A10000000000000000000088 /* Crosswake proof settings guard */ = {isa = PBXShellScriptBuildPhase; buildActionMask = 2147483647; files = (); inputPaths = (); name = "Crosswake proof settings guard"; outputPaths = (); runOnlyForDeploymentPostprocessing = 0; shellPath = /bin/sh; shellScript = "if [ -e \"$PROJECT_DIR/.crosswake/ios_proof_settings.pending\" ]; then echo CROSSWAKE_IOS_PROOF_SETTINGS_INTERRUPTED >&2; exit 1; fi"; };
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXFileReference section */
 		A10000000000000000000001 /* CrosswakeProofLane.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = CrosswakeProofLane.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10000000000000000000002 /* CrosswakeProofLaneTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = CrosswakeProofLaneTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -22,6 +26,7 @@
 		A10000000000000000000016 /* ProofLaneContractTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProofLaneContractTests.swift; sourceTree = "<group>"; };
 		A10000000000000000000017 /* ProofLaneUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProofLaneUITests.swift; sourceTree = "<group>"; };
 		A10000000000000000000018 /* pronunciation-pack-fixture.bin */ = {isa = PBXFileReference; lastKnownFileType = file; path = Resources/pronunciation-pack-fixture.bin; sourceTree = "<group>"; };
+		A10000000000000000000019 /* CrosswakeProofSettings.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = CrosswakeProofSettings.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,7 +36,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A10000000000000000000020 = {isa = PBXGroup; children = (A10000000000000000000022 /* CrosswakeProofLane */, A10000000000000000000023 /* CrosswakeProofLaneTests */, A10000000000000000000024 /* CrosswakeProofLaneUITests */, A10000000000000000000021 /* Products */,); sourceTree = "<group>"; };
+		A10000000000000000000020 = {isa = PBXGroup; children = (A10000000000000000000022 /* CrosswakeProofLane */, A10000000000000000000023 /* CrosswakeProofLaneTests */, A10000000000000000000024 /* CrosswakeProofLaneUITests */, A10000000000000000000021 /* Products */, A10000000000000000000019 /* CrosswakeProofSettings.xcconfig */,); sourceTree = "<group>"; };
 		A10000000000000000000021 /* Products */ = {isa = PBXGroup; children = (A10000000000000000000001 /* CrosswakeProofLane.app */, A10000000000000000000002 /* CrosswakeProofLaneTests.xctest */, A10000000000000000000003 /* CrosswakeProofLaneUITests.xctest */,); name = Products; sourceTree = "<group>"; };
 		A10000000000000000000022 /* CrosswakeProofLane */ = {isa = PBXGroup; children = (A10000000000000000000014 /* ProofLaneApp.swift */, A10000000000000000000015 /* ProofLaneDriver.swift */, A10000000000000000000018 /* pronunciation-pack-fixture.bin */,); path = CrosswakeProofLane; sourceTree = "<group>"; };
 		A10000000000000000000023 /* CrosswakeProofLaneTests */ = {isa = PBXGroup; children = (A10000000000000000000016 /* ProofLaneContractTests.swift */,); path = CrosswakeProofLaneTests; sourceTree = "<group>"; };
@@ -39,7 +44,7 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A10000000000000000000030 /* CrosswakeProofLane */ = {isa = PBXNativeTarget; buildConfigurationList = A10000000000000000000040 /* Build configuration list for PBXNativeTarget "CrosswakeProofLane" */; buildPhases = (A10000000000000000000050 /* Sources */, A10000000000000000000053 /* Resources */, A10000000000000000000010 /* Frameworks */,); buildRules = (); dependencies = (); name = CrosswakeProofLane; productName = CrosswakeProofLane; productReference = A10000000000000000000001 /* CrosswakeProofLane.app */; productType = "com.apple.product-type.application"; };
+		A10000000000000000000030 /* CrosswakeProofLane */ = {isa = PBXNativeTarget; buildConfigurationList = A10000000000000000000040 /* Build configuration list for PBXNativeTarget "CrosswakeProofLane" */; buildPhases = (A10000000000000000000050 /* Sources */, A10000000000000000000053 /* Resources */, A10000000000000000000010 /* Frameworks */, A10000000000000000000088 /* Crosswake proof settings guard */,); buildRules = (); dependencies = (); name = CrosswakeProofLane; productName = CrosswakeProofLane; productReference = A10000000000000000000001 /* CrosswakeProofLane.app */; productType = "com.apple.product-type.application"; };
 		A10000000000000000000031 /* CrosswakeProofLaneTests */ = {isa = PBXNativeTarget; buildConfigurationList = A10000000000000000000041 /* Build configuration list for PBXNativeTarget "CrosswakeProofLaneTests" */; buildPhases = (A10000000000000000000051 /* Sources */, A10000000000000000000011 /* Frameworks */,); buildRules = (); dependencies = (A10000000000000000000082 /* PBXTargetDependency */,); name = CrosswakeProofLaneTests; productName = CrosswakeProofLaneTests; productReference = A10000000000000000000002 /* CrosswakeProofLaneTests.xctest */; productType = "com.apple.product-type.bundle.unit-test"; };
 		A10000000000000000000032 /* CrosswakeProofLaneUITests */ = {isa = PBXNativeTarget; buildConfigurationList = A10000000000000000000042 /* Build configuration list for PBXNativeTarget "CrosswakeProofLaneUITests" */; buildPhases = (A10000000000000000000052 /* Sources */, A10000000000000000000012 /* Frameworks */,); buildRules = (); dependencies = (A10000000000000000000083 /* PBXTargetDependency */,); name = CrosswakeProofLaneUITests; productName = CrosswakeProofLaneUITests; productReference = A10000000000000000000003 /* CrosswakeProofLaneUITests.xctest */; productType = "com.apple.product-type.bundle.ui-testing"; };
 /* End PBXNativeTarget section */
