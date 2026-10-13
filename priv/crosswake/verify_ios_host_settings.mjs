@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { readFileSync, readSync, realpathSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const TARGETS = [
   ['shell', 'CrosswakeShell', 'CrosswakeShell.xcodeproj'],
@@ -206,4 +207,15 @@ function readStdinLine() {
   return line;
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) runCli();
+function isDirectEntrypoint(moduleUrl) {
+  if (!process.argv[1]) return false;
+  const argumentPath = path.resolve(process.argv[1]);
+  const modulePath = path.resolve(fileURLToPath(moduleUrl));
+  try {
+    return realpathSync(argumentPath) === realpathSync(modulePath);
+  } catch {
+    return argumentPath === modulePath;
+  }
+}
+
+if (isDirectEntrypoint(import.meta.url)) runCli();

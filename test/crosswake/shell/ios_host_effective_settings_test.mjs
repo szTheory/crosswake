@@ -191,6 +191,25 @@ test('rejects shell and proof settings referenced through PBX resource object ID
   }
 });
 
+test('CLI entrypoint handles space-containing and symlinked package paths', t => {
+  const directory = mkdtempSync(path.join('/private/tmp', 'crosswake checker path '));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const source = path.join(process.cwd(), 'priv/crosswake/verify_ios_host_settings.mjs');
+  const copied = path.join(directory, 'ios settings checker.mjs');
+  const dependencyPriv = path.join(directory, 'dependency priv checker.mjs');
+  copyFileSync(source, copied);
+  symlinkSync(source, dependencyPriv);
+
+  for (const entrypoint of [copied, dependencyPriv]) {
+    const result = spawnSync(process.execPath, [entrypoint, '--host-root', '/unused'], {
+      input: '{}\n', encoding: 'utf8',
+    });
+    assert.equal(result.status, 1);
+    assert.equal(JSON.parse(result.stdout).findings[0].field, 'expected_input');
+    assert.doesNotMatch(result.stdout, /ABCDE12345|org\.crosswake/);
+  }
+});
+
 test('missing expected declaration fails before invoking Xcode', () => {
   const result = verifyIosHostSettings({ hostRoot: '/missing', expectedSettings: null, xcodebuild: 'missing-xcodebuild' });
   assert.equal(result.ok, false);
