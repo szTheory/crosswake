@@ -249,7 +249,7 @@ defmodule Crosswake.ProofLane.Generator do
   end
 
   defp publish_managed_settings(root, relative, contents, pending, stage, temp, prior) do
-    with :ok <- write_stage(root, stage, prior),
+    with :ok <- write_stage(root, stage, prior, contents),
          {:ok, _} <- GeneratorFS.write(root, pending, "crosswake proof settings update pending\n"),
          {:ok, _} <- GeneratorFS.write(root, temp, contents),
          :ok <- replace_regular(root, temp, relative),
@@ -266,10 +266,11 @@ defmodule Crosswake.ProofLane.Generator do
     end
   end
 
-  defp write_stage(root, stage, prior) do
+  defp write_stage(root, stage, prior, desired) do
     payload = %{
-      "version" => 1,
-      "prior" => if(is_binary(prior), do: Base.encode64(prior), else: nil)
+      "version" => 2,
+      "prior" => if(is_binary(prior), do: Base.encode64(prior), else: nil),
+      "desired" => Base.encode64(desired)
     }
 
     case GeneratorFS.write(root, stage, Jason.encode!(payload)) do
@@ -363,7 +364,9 @@ defmodule Crosswake.ProofLane.Generator do
 
     with :regular <- GeneratorFS.status(root, pending),
          {:ok, bytes} <- GeneratorFS.read(root, stage),
-         {:ok, %{"version" => 1, "prior" => prior}} <- Jason.decode(bytes),
+         {:ok, %{"version" => version, "prior" => prior} = staged} <- Jason.decode(bytes),
+         true <- version in [1, 2],
+         :ok <- recovery_current_is_known(root, settings, prior, Map.get(staged, "desired")),
          :ok <- restore_prior(root, settings, temp, prior),
          :ok <- remove_regular(root, pending),
          :ok <- remove_regular(root, stage) do
@@ -390,6 +393,31 @@ defmodule Crosswake.ProofLane.Generator do
       _ -> {:error, {"PL-GENERATE-MIGRATION", "proof project"}}
     end
   end
+
+  defp recovery_current_is_known(root, settings, prior, desired) do
+    with {:ok, expected} <- decode_staged_bytes(desired),
+         {:ok, prior_bytes} <- decode_optional_staged_bytes(prior) do
+      case GeneratorFS.read(root, settings) do
+        {:ok, current} when current == expected or current == prior_bytes -> :ok
+        {:error, :missing} when is_nil(prior_bytes) -> :ok
+        _ -> {:error, {"PL-GENERATE-RECOVERY-CONFLICT", "settings"}}
+      end
+    else
+      _ -> {:error, {"PL-GENERATE-RECOVERY", "settings"}}
+    end
+  end
+
+  defp decode_staged_bytes(encoded) when is_binary(encoded) do
+    case Base.decode64(encoded) do
+      {:ok, bytes} -> {:ok, bytes}
+      _ -> :error
+    end
+  end
+
+  defp decode_staged_bytes(_), do: :error
+
+  defp decode_optional_staged_bytes(nil), do: {:ok, nil}
+  defp decode_optional_staged_bytes(encoded), do: decode_staged_bytes(encoded)
 
   defp restore_prior(root, settings, _temp, nil), do: remove_regular(root, settings)
 
