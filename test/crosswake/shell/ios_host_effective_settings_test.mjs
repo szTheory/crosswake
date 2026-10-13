@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, mkdirSync, symlinkSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -161,6 +161,34 @@ test('automatic device signing uses the same declaration oracle and reports no i
   const result = verifyIosHostSettings({ hostRoot: root, expectedSettings: automatic });
   assert.equal(result.ok, true, JSON.stringify({ observedCells: result.observedCells, findings: result.findings }));
   assert.equal(result.observedCells, 20);
+});
+
+test('rejects shell and proof settings referenced through PBX resource object IDs', { timeout: 600000 }, t => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'crosswake-ios-resource-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  generateHost(root, declaration);
+  const fakeXcode = path.join(root, 'fake-xcodebuild');
+  writeFileSync(fakeXcode, '#!/bin/sh\nprintf "[]\\n"\n');
+  chmodSync(fakeXcode, 0o700);
+
+  for (const [kind, projectPath, settingsRef, buildFileId] of [
+    ['shell', path.join(root, 'native/ios/crosswake_shell/CrosswakeShell.xcodeproj/project.pbxproj'), 'A10000400000000000000001', 'A10000991000000000000001'],
+    ['proof', path.join(root, 'native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj'), 'A10000000000000000000019', 'A10000000000000000000099'],
+  ]) {
+    const original = readFileSync(projectPath, 'utf8');
+    const buildFile = '\n\t\t' + buildFileId + ' = {isa = PBXBuildFile; fileRef = ' + settingsRef + '; };';
+    let changed = original.replace('/* End PBXBuildFile section */', buildFile + '\n/* End PBXBuildFile section */');
+    const resourceStart = changed.indexOf('/* Begin PBXResourcesBuildPhase section */');
+    const resourceEnd = changed.indexOf('/* End PBXResourcesBuildPhase section */', resourceStart);
+    const resourceSection = changed.slice(resourceStart, resourceEnd).replace('files = (', 'files = (' + buildFileId + ', ');
+    changed = changed.slice(0, resourceStart) + resourceSection + changed.slice(resourceEnd);
+    writeFileSync(projectPath, changed);
+    const parsed = spawnSync('xcodebuild', ['-list', '-project', path.dirname(projectPath)], { encoding: 'utf8', timeout: 120000 });
+    assert.equal(parsed.status, 0, kind + ' PBX resource fixture is accepted by Xcode');
+    const result = verifyIosHostSettings({ hostRoot: root, expectedSettings: declaration, xcodebuild: fakeXcode });
+    assert.ok(result.findings.some(finding => finding.field === 'managed_settings' && finding.cause === 'metadata_invalid'));
+    writeFileSync(projectPath, original);
+  }
 });
 
 test('missing expected declaration fails before invoking Xcode', () => {
