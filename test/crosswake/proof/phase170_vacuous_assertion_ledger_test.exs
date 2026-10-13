@@ -25,8 +25,8 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   # under test — a contract cannot silently drift when the assertion re-reads the same file it
   # is checking. These are the numbers the script ACTUALLY produced against this tree on
   # 2026-09-16 (Task 2), never the numbers this plan predicted going in.
-  @audited_site_count 230
-  @shape_counts %{"assert_all" => 48, "assert_any" => 134, "refute_any" => 48, "refute_all" => 0}
+  @audited_site_count 231
+  @shape_counts %{"assert_all" => 48, "assert_any" => 135, "refute_any" => 48, "refute_all" => 0}
   # Plan 170-02 Task 2 regenerated this after inserting guards at every needs-fix row: 8 of the
   # 60 rows were reclassified from needs-fix to safe-cardinality-pinned via manual override after
   # real test execution proved their collections are permanently empty by design (positive-path
@@ -36,7 +36,7 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   # `needs-fix` is intentionally absent: `Enum.frequencies_by/2` never emits a key for zero
   # occurrences, and the committed ledger now has zero `needs-fix` rows (VAC-02 complete).
   @bucket_counts %{
-    "safe-by-construction" => 134,
+    "safe-by-construction" => 135,
     "safe-compile-time-literal" => 4,
     "safe-cardinality-pinned" => 32,
     "safe-guarded" => 60
@@ -444,9 +444,8 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
       # Raw grep has no notion of a heredoc fixture string — it counts source TEXT, including the
       # flagged-shape occurrences quoted inside this very test file's own fixture
       # sources (the adjacency/encoding-edge tests above). The scanner's strip_heredocs/1
-      # correctly excludes them, which is exactly why the committed count (220) is 6 LOWER than
-      # a naive `grep -rnE 'assert Enum\\.(all\\?|any\\?)' test | wc -l` (179) plus
-      # `grep -rnE 'refute Enum\\.any\\?' test | wc -l` (47) = 226. Named here per Task 2's
+      # correctly excludes them, which is exactly why the committed count is 6 LOWER than
+      # a naive grep over both assertion shapes. Named here per Task 2's
       # instruction that any delta be reconciled by naming the specific excluded sites, not
       # absorbed silently.
       {assert_output, 0} =

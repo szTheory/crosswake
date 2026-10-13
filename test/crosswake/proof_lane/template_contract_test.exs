@@ -84,7 +84,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
       assert adapter =~ "export const proofLaneHostAdapter"
       assert adapter =~ "satisfies ProofLaneAdapter"
       assert adapter =~ "PL-BROWSER-HOST-ADAPTER"
-      assert manifest =~ "\"template_version\":5"
+      assert manifest =~ "\"template_version\":6"
       assert manifest =~ "e2e/crosswake_proof_lane/support/proof_lane_host_adapter.ts"
     after
       File.rm_rf!(root)
@@ -281,7 +281,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
       )
 
     assert generator =~ "pronunciation-pack-fixture.bin"
-    assert generator =~ "@template_version 5"
+    assert generator =~ "@template_version 6"
     assert fixture != ""
     assert driver =~ "installPronunciationPackForeground"
     assert driver =~ "exerciseInstalledPronunciationAudioOffline"
@@ -316,7 +316,7 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
       )
 
     assert generator =~ "ProofLaneContractTests.swift"
-    assert generator =~ "@template_version 5"
+    assert generator =~ "@template_version 6"
     assert driver =~ "ProofLaneNavigationHostAdapter"
     assert driver =~ "PL-IOS-NAV-TOPOLOGY"
     assert driver =~ "PL-IOS-NAV-PATCH-DEPTH"
