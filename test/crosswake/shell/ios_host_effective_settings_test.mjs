@@ -106,10 +106,11 @@ test('five generated targets resolve all 20 settings cells from the original dec
   assert.ok(unsignedDevice.findings.some(finding => finding.field === 'device_signing' && finding.cause === 'settings_mismatch'));
   writeFileSync(proofSettings(root), originalSettings);
 
-  writeFileSync(projectPath, originalProject.replace(
-    'A10000000000000000000008 /* pronunciation-pack-fixture.bin in Resources */,',
-    'A10000000000000000000008 /* pronunciation-pack-fixture.bin in Resources */, CrosswakeProofSettings.xcconfig,',
-  ));
+  const resourceBuildFile = 'A1000000000000000000009A';
+  const resourceMutation = originalProject
+    .replace('/* End PBXBuildFile section */', `\t\t${resourceBuildFile} = {isa = PBXBuildFile; fileRef = A10000000000000000000019; };\n/* End PBXBuildFile section */`)
+    .replace('A10000000000000000000053 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (', 'A10000000000000000000053 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (' + resourceBuildFile + ', ');
+  writeFileSync(projectPath, resourceMutation);
   const bundledSettings = verifyIosHostSettings({ hostRoot: root, expectedSettings: declaration });
   assert.equal(bundledSettings.ok, false);
   assert.ok(bundledSettings.findings.some(finding => finding.field === 'managed_settings' && finding.cause === 'metadata_invalid'));
