@@ -1,7 +1,11 @@
 defmodule Mix.Tasks.Crosswake.Gen.Shell do
   use Mix.Task
 
+  @requirements ["compile"]
+
   alias Crosswake.Shell.Fixtures
+  alias Crosswake.Shell.IOSHostConfig
+  alias Crosswake.Shell.IOSHostGeneration
 
   @shortdoc "Generates host-owned native shell baselines for Crosswake"
 
@@ -76,6 +80,35 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     target = Path.expand(opts[:target] || File.cwd!())
     router = opts[:router]
     local = Keyword.get(opts, :local, false)
+    host_input = Application.get_env(:crosswake, :ios_host)
+
+    host_config =
+      if platform == "ios" and (host_input || Mix.env() == :prod) do
+        if is_nil(host_input) do
+          Mix.raise(
+            "missing :crosswake, :ios_host declaration; configure the selected router and app identity"
+          )
+        end
+
+        if router || local do
+          Mix.raise(
+            "legacy --router/--local overrides are not accepted with :ios_host; remove the CLI override"
+          )
+        end
+
+        case IOSHostConfig.normalize(host_input) do
+          {:ok, config} -> config
+          {:error, reason} -> Mix.raise(reason)
+        end
+      end
+
+    host_outputs =
+      if host_config do
+        case IOSHostGeneration.render(host_config) do
+          {:ok, outputs} -> outputs
+          {:error, reason} -> Mix.raise(reason)
+        end
+      end
 
     # D-13: Fork BEFORE any write — if --diff, we never reach ensure_file/2 or File.write!/2.
     if opts[:diff] do
@@ -86,7 +119,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
 
       generated =
         case platform do
-          "ios" -> generate_ios_shell(target, capabilities, local, router)
+          "ios" -> generate_ios_shell(target, capabilities, local, router, host_outputs)
           "android" -> generate_android_shell(target, capabilities, local, router)
         end
 
@@ -368,7 +401,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
   # Generation branch (normal, non-diff)
   # ---------------------------------------------------------------------------
 
-  defp generate_ios_shell(target, capabilities, local, router) do
+  defp generate_ios_shell(target, capabilities, local, router, host_outputs) do
     root = Path.join(target, "native/ios/crosswake_shell")
     fixtures = Fixtures.export("ios")
 
@@ -379,6 +412,12 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     render_ios_templates(root, capabilities, local)
     write_fixture_files(root, fixtures)
     write_shell_manifest(root, "ios", router, local, target)
+
+    if host_outputs do
+      File.write!(Path.join(root, "Fixtures/crosswake_manifest.json"), host_outputs.manifest)
+      File.write!(Path.join(root, "Fixtures/route_activation.json"), host_outputs.activation)
+      File.write!(Path.join(root, "CrosswakeHostSettings.xcconfig"), host_outputs.settings)
+    end
 
     %{
       root: root,
