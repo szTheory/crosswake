@@ -43,7 +43,8 @@ defmodule Crosswake.ProofLane.Generator do
 
     GeneratorFS.with_lifecycle(fn ->
       :global.trans({{__MODULE__, root}, self()}, fn ->
-        with {:ok, results} <- ensure_files(root, desired),
+        with :ok <- preflight_destinations(root, desired),
+             {:ok, results} <- ensure_files(root, desired),
              :ok <- interrupt_before_manifest(),
              {:ok, manifest_result} <- ensure_manifest(root, desired) do
           {:ok, Enum.sort_by(results ++ [manifest_result], & &1.path)}
@@ -146,6 +147,34 @@ defmodule Crosswake.ProofLane.Generator do
         relative: destination_relative(relative),
         contents: render(template, config, proof_app_bundle_id, device_signing)
       }
+    end)
+  end
+
+  defp preflight_destinations(root, desired) do
+    settings = Enum.find(desired, &(&1.path == "CrosswakeProofSettings.xcconfig"))
+    all_destinations = desired ++ [manifest_desired(desired)]
+
+    with :ok <- preflight_files(root, all_destinations),
+         {:ok, _prior} <- managed_prior(root, settings.relative),
+         :missing <- GeneratorFS.status(root, "native/ios/.crosswake/ios_proof_settings.pending"),
+         :missing <-
+           GeneratorFS.status(root, "native/ios/.crosswake/ios_proof_settings.stage.json"),
+         :missing <- GeneratorFS.status(root, "native/ios/.crosswake/ios_proof_settings.next") do
+      :ok
+    else
+      :unrecognized -> {:error, {"PL-GENERATE-OWNERSHIP", settings.path}}
+      :regular -> {:error, {"PL-GENERATE-INTERRUPTED", "settings"}}
+      :unsafe -> {:error, {"PL-GENERATE-DESTINATION", "settings"}}
+      {:error, _} = error -> error
+    end
+  end
+
+  defp preflight_files(root, destinations) do
+    Enum.reduce_while(destinations, :ok, fn %{path: path, relative: relative}, :ok ->
+      case GeneratorFS.status(root, relative) do
+        status when status in [:regular, :missing] -> {:cont, :ok}
+        :unsafe -> {:halt, {:error, {"PL-GENERATE-DESTINATION", path}}}
+      end
     end)
   end
 

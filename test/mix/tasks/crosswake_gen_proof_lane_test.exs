@@ -127,6 +127,19 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     end)
   end
 
+  test "unsafe later proof destinations are rejected before settings or scaffold publication" do
+    with_root(fn root, config ->
+      outside = temporary_root()
+      File.mkdir_p!(root)
+      File.mkdir_p!(outside)
+      File.ln_s!(outside, Path.join(root, "test"))
+
+      assert {:error, {"PL-GENERATE-DESTINATION", _}} = Generator.generate(config)
+      refute File.exists?(Path.join(root, "native/ios/CrosswakeProofSettings.xcconfig"))
+      assert File.ls!(outside) == []
+    end)
+  end
+
   test "proof settings refresh only under recognized ownership and recover an interrupted replacement" do
     with_root(fn root, config ->
       declaration = %{
