@@ -6,6 +6,23 @@
 	objectVersion = 56;
 	objects = {
 
+/* Begin PBXShellScriptBuildPhase section */
+		A10000410000000000000001 /* Crosswake managed output guard */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Crosswake managed output guard";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ -e \"$PROJECT_DIR/.crosswake/ios_host_generation.pending\" ]; then echo CROSSWAKE_IOS_GENERATION_INTERRUPTED >&2; exit 1; fi";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXBuildFile section */
 		B10000050000000000000001 /* CrosswakeShellCore in Frameworks */ = {isa = PBXBuildFile; productRef = B10000020000000000000001 /* CrosswakeShellCore */; };
 		A100000C0000000000000001 /* CrosswakeCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001C000000000000000A /* CrosswakeCoordinator.swift */; };
@@ -150,6 +167,7 @@
 				A10000230000000000000002 /* Sources */,
 				A10000230000000000000001 /* Frameworks */,
 				A10000230000000000000003 /* Resources */,
+				A10000410000000000000001 /* Crosswake managed output guard */,
 			);
 			buildRules = (
 			);

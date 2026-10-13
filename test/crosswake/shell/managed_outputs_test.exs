@@ -37,6 +37,26 @@ defmodule Crosswake.Shell.ManagedOutputsTest do
     refute inspect(repair) =~ "secret-origin-canary"
   end
 
+  test "interrupted publication remains blocked until recovery restores one prior generation" do
+    root = temp_root("managed-recovery")
+    prior = desired_outputs()
+    desired = Map.put(prior, "Fixtures/crosswake_manifest.json", "new manifest\n")
+
+    assert :ok = ManagedOutputs.publish(root, prior)
+
+    assert {:error, %{cause: :interrupted}} =
+             ManagedOutputs.publish(root, desired, interrupt_after_first: true)
+
+    interrupted_snapshot = snapshot(root)
+    assert {:error, %{cause: :interrupted, repair: repair}} = ManagedOutputs.check(root, prior)
+    assert repair =~ "--recover"
+    assert snapshot(root) == interrupted_snapshot
+
+    assert {:ok, %{status: :recovered}} = ManagedOutputs.recover(root)
+    assert {:ok, %{status: :current}} = ManagedOutputs.check(root, prior)
+    refute File.exists?(Path.join(root, ".crosswake/ios_host_generation.pending"))
+  end
+
   test "unsafe symlink destinations are denied before publication" do
     root = temp_root("managed-symlink")
     File.mkdir_p!(root)
@@ -46,6 +66,61 @@ defmodule Crosswake.Shell.ManagedOutputsTest do
 
     assert {:error, %{cause: :unsafe_path}} = ManagedOutputs.publish(root, desired_outputs())
     assert File.ls!(outside) == []
+  end
+
+  test "bounded PBX migration preview removes only known identity overrides" do
+    pbx = project_fixture() <> "\n// unrelated host comment\n"
+
+    assert {:ok, %{status: :migration_required, contents: migrated}} =
+             Crosswake.Shell.IOSHostProjectMigration.preview_contents(pbx)
+
+    assert String.ends_with?(migrated, "// unrelated host comment\n")
+    refute migrated =~ "PRODUCT_BUNDLE_IDENTIFIER ="
+    refute migrated =~ "CODE_SIGNING_ALLOWED = NO;"
+    assert migrated =~ "baseConfigurationReference = A10000400000000000000001"
+  end
+
+  test "bounded PBX migration refuses unfamiliar configuration identities" do
+    pbx = String.replace(project_fixture(), "name = Debug;", "name = Preview;", global: false)
+
+    assert {:error, %{cause: :unrecognized_project, repair: repair}} =
+             Crosswake.Shell.IOSHostProjectMigration.preview_contents(pbx)
+
+    assert repair =~ "restore the recognized shell project structure"
+  end
+
+  defp project_fixture do
+    configs =
+      for {id, name, target?} <- [
+            {"A10000370000000000000001", "Debug", false},
+            {"A10000380000000000000001", "Release", false},
+            {"A10000390000000000000001", "Debug", true},
+            {"A100003A0000000000000001", "Release", true},
+            {"A100003B0000000000000001", "Debug", true},
+            {"A100003C0000000000000001", "Release", true}
+          ] do
+        base =
+          if target?, do: "baseConfigurationReference = A10000400000000000000001;\n", else: ""
+
+        identity =
+          if target?,
+            do: "PRODUCT_BUNDLE_IDENTIFIER = dev.crosswake.app;\nCODE_SIGNING_ALLOWED = NO;\n",
+            else: ""
+
+        """
+        #{id} = {
+          isa = XCBuildConfiguration;
+          #{base}buildSettings = {
+            #{identity}SWIFT_VERSION = 5.0;
+          };
+          name = #{name};
+        };
+        """
+      end
+
+    "/* Begin XCBuildConfiguration section */\n" <>
+      Enum.join(configs) <>
+      "/* End XCBuildConfiguration section */\n"
   end
 
   defp desired_outputs do

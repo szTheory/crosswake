@@ -5,6 +5,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell.HostTest do
   @candidate_root Path.expand("../../..", __DIR__)
   @task "crosswake.gen.shell"
 
+  @tag timeout: 120_000
   test "generates the declared Phoenix host route and resolves its configured shell identity" do
     host =
       Path.join(
@@ -187,6 +188,122 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell.HostTest do
 
     assert shell_settings["buildSettings"]["PRODUCT_BUNDLE_IDENTIFIER"] == expected_app_bundle_id,
            "xcodebuild target metadata did not include the expected identity; targets=#{inspect(Enum.map(decoded, & &1["target"]))}, setting_keys=#{inspect(Map.keys(shell_settings["buildSettings"] || %{}) |> Enum.filter(&String.contains?(&1, "PRODUCT")))}"
+
+    current_outputs = %{
+      "Fixtures/crosswake_manifest.json" => File.read!(manifest_path),
+      "Fixtures/route_activation.json" =>
+        File.read!(Path.join(shell_root, "Fixtures/route_activation.json")),
+      "CrosswakeHostSettings.xcconfig" =>
+        File.read!(Path.join(shell_root, "CrosswakeHostSettings.xcconfig"))
+    }
+
+    interrupted_outputs =
+      current_outputs
+      |> Map.update!(
+        "Fixtures/crosswake_manifest.json",
+        &String.replace(&1, updated_origin, "https://next-generation.test")
+      )
+      |> Map.update!("CrosswakeHostSettings.xcconfig", &(&1 <> "\n# next generation\n"))
+
+    assert interrupted_outputs["Fixtures/crosswake_manifest.json"] !=
+             current_outputs["Fixtures/crosswake_manifest.json"]
+
+    assert Jason.decode!(interrupted_outputs["Fixtures/crosswake_manifest.json"])
+           |> get_in(["host", "origin"]) == "https://next-generation.test"
+
+    assert {:error, %{cause: :interrupted}} =
+             Crosswake.Shell.ManagedOutputs.publish(shell_root, interrupted_outputs,
+               interrupt_after_first: true
+             )
+
+    {build_output, build_status} =
+      System.cmd(
+        "xcodebuild",
+        [
+          "-project",
+          project,
+          "-scheme",
+          "CrosswakeShell",
+          "-configuration",
+          "Debug",
+          "-sdk",
+          "iphonesimulator",
+          "build",
+          "-derivedDataPath",
+          Path.join(xcode_cache, "interrupted-derived"),
+          "-clonedSourcePackagesDirPath",
+          Path.join(xcode_cache, "packages"),
+          "-packageCachePath",
+          Path.join(xcode_cache, "cache"),
+          "-disablePackageRepositoryCache"
+        ],
+        stderr_to_stdout: true
+      )
+
+    assert build_status != 0
+
+    assert build_output =~ "CROSSWAKE_IOS_GENERATION_INTERRUPTED",
+           "the generated Xcode build must reject a pending managed-output generation: #{build_output}"
+
+    {recovery_output, recovery_status} =
+      System.cmd(
+        "mix",
+        ["crosswake.gen.shell", "ios", "--target", output_root, "--recover"],
+        cd: host,
+        env: command_env,
+        stderr_to_stdout: true
+      )
+
+    assert recovery_status == 0, "explicit recovery command failed: #{recovery_output}"
+    assert recovery_output =~ "recovered managed iOS outputs: coherent"
+
+    assert {:ok, %{status: :current}} =
+             Crosswake.Shell.ManagedOutputs.check(shell_root, current_outputs)
+
+    {recovered_output, recovered_status} =
+      System.cmd(
+        "xcodebuild",
+        [
+          "-project",
+          project,
+          "-scheme",
+          "CrosswakeShell",
+          "-configuration",
+          "Debug",
+          "-sdk",
+          "iphonesimulator",
+          "build",
+          "-derivedDataPath",
+          Path.join(xcode_cache, "recovered-derived"),
+          "-clonedSourcePackagesDirPath",
+          Path.join(xcode_cache, "packages"),
+          "-packageCachePath",
+          Path.join(xcode_cache, "cache"),
+          "-disablePackageRepositoryCache"
+        ],
+        stderr_to_stdout: true
+      )
+
+    assert recovered_status == 0,
+           "xcodebuild did not pass after explicit managed-output recovery: #{recovered_output}"
+
+    refute recovered_output =~ "CROSSWAKE_IOS_GENERATION_INTERRUPTED"
+
+    {migration_output, migration_status} =
+      System.cmd(
+        "mix",
+        ["crosswake.gen.shell", "ios", "--target", output_root, "--migrate-project-settings"],
+        cd: host,
+        env: command_env,
+        stderr_to_stdout: true
+      )
+
+    assert migration_status == 0, "bounded project migration failed: #{migration_output}"
+
+    migrated_project = File.read!(Path.join(project, "project.pbxproj"))
+    assert String.ends_with?(migrated_project, "// host-owned edit\n")
+    refute migrated_project =~ "PRODUCT_BUNDLE_IDENTIFIER ="
+    assert migrated_project =~ "baseConfigurationReference = A10000400000000000000001"
   end
 
   test "--check is a read-only inspection for a missing production host" do

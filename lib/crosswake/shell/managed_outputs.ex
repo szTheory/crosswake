@@ -200,8 +200,8 @@ defmodule Crosswake.Shell.ManagedOutputs do
   end
 
   defp replace_outputs(root, d, opts) do
-    d
-    |> Enum.sort_by(&elem(&1, 0))
+    @paths
+    |> Enum.map(fn path -> {path, Map.fetch!(d, path)} end)
     |> Enum.reduce_while(0, fn {p, b}, n ->
       case atomic_replace(root, p, b) do
         :ok ->
