@@ -142,7 +142,8 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLane do
   defp verify_effective_settings(config, host_config) do
     with {:ok, host_root} <- Config.host_root(config),
          node when is_binary(node) <- System.find_executable("node") do
-      script = Path.expand("../../../script/verify_ios_host_settings.mjs", __DIR__)
+      script =
+        Path.join(to_string(:code.priv_dir(:crosswake)), "crosswake/verify_ios_host_settings.mjs")
 
       expected =
         Jason.encode!(%{

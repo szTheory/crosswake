@@ -237,6 +237,12 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     end)
   end
 
+  test "proof settings checker resolves from the packaged priv directory" do
+    checker = Path.join(:code.priv_dir(:crosswake), "crosswake/verify_ios_host_settings.mjs")
+    assert File.regular?(checker)
+    assert {_, 0} = System.cmd(System.find_executable("node"), ["--check", checker])
+  end
+
   test "version-1 manifests remain host-owned but fail the version-2 provenance check" do
     with_root(fn root, config ->
       old_spec = "// host-owned inert spec\n"
