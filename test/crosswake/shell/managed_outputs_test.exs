@@ -68,6 +68,18 @@ defmodule Crosswake.Shell.ManagedOutputsTest do
     assert File.ls!(outside) == []
   end
 
+  test "ancestor symlinks outside the requested managed root are denied before publication" do
+    base = temp_root("managed-ancestor")
+    outside = temp_root("managed-ancestor-outside")
+    File.mkdir_p!(outside)
+    File.mkdir_p!(base)
+    File.ln_s!(outside, Path.join(base, "parent-link"))
+    root = Path.join(base, "parent-link/host")
+
+    assert {:error, %{cause: :unsafe_path}} = ManagedOutputs.publish(root, desired_outputs())
+    assert File.ls!(outside) == []
+  end
+
   test "bounded PBX migration preview removes only known identity overrides" do
     pbx = project_fixture() <> "\n// unrelated host comment\n"
 

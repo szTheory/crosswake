@@ -304,32 +304,77 @@ defmodule Crosswake.Shell.ManagedOutputs do
   defp safe_layout(root) when is_binary(root) do
     r = Path.expand(root)
 
-    case File.lstat(r) do
-      {:error, :enoent} ->
-        :ok
+    with :ok <- safe_ancestors(r) do
+      case File.lstat(r) do
+        {:error, :enoent} ->
+          :ok
 
-      {:ok, %{type: :directory}} ->
-        Enum.reduce_while([@metadata, @pending, @stage] ++ @paths, :ok, fn p, :ok ->
-          case safe_components(r, Path.dirname(p)) do
-            :ok ->
-              case File.lstat(Path.join(r, p)) do
-                {:ok, %{type: :regular}} -> {:cont, :ok}
-                {:ok, %{type: :directory}} when p == @stage -> {:cont, :ok}
-                {:error, :enoent} -> {:cont, :ok}
-                _ -> {:halt, {:error, :unsafe_path}}
-              end
+        {:ok, %{type: :directory}} ->
+          Enum.reduce_while([@metadata, @pending, @stage] ++ @paths, :ok, fn p, :ok ->
+            case safe_components(r, Path.dirname(p)) do
+              :ok ->
+                case File.lstat(Path.join(r, p)) do
+                  {:ok, %{type: :regular}} -> {:cont, :ok}
+                  {:ok, %{type: :directory}} when p == @stage -> {:cont, :ok}
+                  {:error, :enoent} -> {:cont, :ok}
+                  _ -> {:halt, {:error, :unsafe_path}}
+                end
 
-            _ ->
-              {:halt, {:error, :unsafe_path}}
-          end
-        end)
+              _ ->
+                {:halt, {:error, :unsafe_path}}
+            end
+          end)
 
-      _ ->
-        {:error, :unsafe_path}
+        _ ->
+          {:error, :unsafe_path}
+      end
     end
   end
 
   defp safe_layout(_), do: {:error, :unsafe_path}
+
+  defp safe_ancestors(path) do
+    path
+    |> Path.split()
+    |> Enum.reject(&(&1 == "/"))
+    |> Enum.reduce_while("/", fn part, parent ->
+      candidate = Path.join(parent, part)
+
+      case File.lstat(candidate) do
+        {:ok, %{type: :directory}} ->
+          {:cont, candidate}
+
+        {:ok, %{type: :symlink}} ->
+          if trusted_temp_alias?(candidate, parent),
+            do: {:cont, candidate},
+            else: {:halt, {:error, :unsafe_path}}
+
+        {:error, :enoent} ->
+          {:halt, :missing}
+
+        _ ->
+          {:halt, {:error, :unsafe_path}}
+      end
+    end)
+    |> case do
+      :missing -> :ok
+      {:error, :unsafe_path} = error -> error
+      _ -> :ok
+    end
+  end
+
+  # macOS exposes these stable logical aliases for private temporary roots.
+  # Permit only the two known one-way aliases; arbitrary links stay rejected.
+  defp trusted_temp_alias?(candidate, parent) when candidate in ["/tmp", "/var"] do
+    expected = if candidate == "/tmp", do: "/private/tmp", else: "/private/var"
+
+    case File.read_link(candidate) do
+      {:ok, target} -> Path.expand(target, parent) == expected
+      _ -> false
+    end
+  end
+
+  defp trusted_temp_alias?(_, _), do: false
 
   defp safe_components(root, rel) do
     rel
