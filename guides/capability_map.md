@@ -5,6 +5,16 @@ Regenerate with `mix crosswake.docs.sync`.
 
 This guide is rendered from `Crosswake.CapabilityMap`. It classifies what Crosswake supports today, what existing proof demonstrates, what the first adopter pressures, and what remains a future gap.
 
+## Declared iOS Host Setup
+
+One ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled router, entry route, HTTPS origin, app/proof identities, and device-signing settings. Compile-only generation projects selected-router manifest and static activation data without starting the Phoenix application or reading runtime-server configuration.
+
+The checked outputs cover recognized manifest, activation, and xcconfig files. `--diff` and `--check` are read-only; interrupted output publication has an explicit recovery path, and existing PBX settings migration is opt-in and limited to recognized target blocks. Host Swift, entitlements, and unrelated project customization remain host-owned.
+
+Effective Xcode settings have been observed across 20 shell/proof target, configuration, and simulator/device SDK cells. Simulator settings are unsigned. Device settings inspection is not signing or installation evidence. Static activation grants no session, account, scope, installed-media, or replay authority.
+
+This verifies a reusable host-setup path. It does not verify or promote a physical iPhone, a first adopter's host, or runtime/replay authority.
+
 ## What works today
 
 Available today means the support claim is backed by typed route policy, manifest/support truth, and an explicit fallback. It is not a blanket device, provider, or plugin claim.

@@ -73,6 +73,16 @@ Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` n
 |--------|---------|----------|--------------|------------|------------|-------|
 | ios | 17.0 | supported | supported | script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion. |
 
+## iOS Host Generation and Xcode Settings
+
+The host's ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled Phoenix router, declared entry route, HTTPS primary origin, app/proof identities, and device-signing settings. Compile-only generation compiles the router without starting the host application or loading its runtime-server configuration.
+
+`mix crosswake.gen.shell ios --diff` and `--check` inspect managed output without writing. Recognized manifest, static activation, and xcconfig projections have explicit ownership; interrupted publication blocks the Xcode build guard until `--recover`. Existing project settings use a separate opt-in migration limited to the recognized shell target blocks.
+
+The effective-settings check observes 20 Xcode cells across the shell, proof app, unit-test, and UI-test targets, Debug/Release, and simulator/device SDK classes. Simulator settings are unsigned. Device settings inspection reports configuration only; it does not claim signing or installation.
+
+Manifest and entry activation carry static route and origin configuration. They grant no session, account, scope, installed-media, or replay authority. These host-generation and settings checks do not establish physical-iPhone support or activate a first adopter's host.
+
 ## Android
 
 | Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |

@@ -49,6 +49,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "",
       section("iOS", support_matrix.ios),
       "",
+      ios_host_generation_section(),
+      "",
       section("Android", support_matrix.android),
       "",
       section("Shell Artifacts", support_matrix.shells),
@@ -124,6 +126,21 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "| Family | Owner | Posture | Baseline | Proof Status | Package | Proof | Rebuild | Prerequisites | Denial | Fallback | Guide |",
       "|--------|-------|---------|----------|--------------|---------|-------|---------|---------------|--------|----------|-------|",
       Enum.map_join(entries, "\n", &capability_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp ios_host_generation_section do
+    [
+      "## iOS Host Generation and Xcode Settings",
+      "",
+      "The host's ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled Phoenix router, declared entry route, HTTPS primary origin, app/proof identities, and device-signing settings. Compile-only generation compiles the router without starting the host application or loading its runtime-server configuration.",
+      "",
+      "`mix crosswake.gen.shell ios --diff` and `--check` inspect managed output without writing. Recognized manifest, static activation, and xcconfig projections have explicit ownership; interrupted publication blocks the Xcode build guard until `--recover`. Existing project settings use a separate opt-in migration limited to the recognized shell target blocks.",
+      "",
+      "The effective-settings check observes 20 Xcode cells across the shell, proof app, unit-test, and UI-test targets, Debug/Release, and simulator/device SDK classes. Simulator settings are unsigned. Device settings inspection reports configuration only; it does not claim signing or installation.",
+      "",
+      "Manifest and entry activation carry static route and origin configuration. They grant no session, account, scope, installed-media, or replay authority. These host-generation and settings checks do not establish physical-iPhone support or activate a first adopter's host."
     ]
     |> Enum.join("\n")
   end
