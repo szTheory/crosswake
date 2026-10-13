@@ -75,6 +75,21 @@ defmodule Crosswake.Guides.NativeShellUpgradeTest do
     upgrade = File.read!(@guide_path)
     task = File.read!(@gen_shell_path)
     config = File.read!(Path.join([File.cwd!(), "lib", "crosswake", "shell", "ios_host_config.ex"]))
+    host_settings =
+      File.read!(
+        Path.join([
+          File.cwd!(),
+          "priv",
+          "templates",
+          "crosswake",
+          "shell",
+          "ios",
+          "CrosswakeHostSettings.xcconfig.eex"
+        ])
+      )
+
+    proof_generator =
+      File.read!(Path.join([File.cwd!(), "lib", "crosswake", "proof_lane", "generator.ex"]))
 
     for key <- ~w(router origin entry_route_id app_bundle_id proof_app_bundle_id device_signing) do
       assert guide =~ key
@@ -102,6 +117,10 @@ defmodule Crosswake.Guides.NativeShellUpgradeTest do
       assert guide =~ contract or upgrade =~ contract,
              "[proof.ios_host_guide_contract] missing #{inspect(contract)}"
     end
+
+    assert host_settings =~ "$(CROSSWAKE_APP_BUNDLE_ID).tests"
+    assert proof_generator =~ "proof_app_bundle_id <> \".tests\""
+    assert proof_generator =~ "proof_app_bundle_id <> \".uitests\""
 
     refute (guide <> upgrade) =~ "signed-device installation"
     refute (guide <> upgrade) =~ "physical iPhone support is proven"

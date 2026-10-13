@@ -13,6 +13,43 @@ before deciding whether to incorporate changes.
 Use `mix crosswake.shell.status` to check whether your generated shell manifest matches the
 current `template_version`.
 
+## Declared iOS host settings (Phase 179)
+
+The iOS host build inputs now come from the ordinary `:crosswake, :ios_host`
+configuration documented in [Native Shell Guide](native_shell.md#declared-ios-host-setup).
+The supported keys are `router`, `origin`, `entry_route_id`, `app_bundle_id`,
+`proof_app_bundle_id`, and `device_signing` (`mode` plus `team_id`). The shell test
+identity is `app_bundle_id <> ".tests"`; the proof app uses the declared proof identity,
+with `".tests"` and `".uitests"` suffixes for its unit and UI test targets.
+
+The managed outputs are the host manifest, static route activation, and
+`CrosswakeHostSettings.xcconfig`. `--diff` inspects those outputs and the recognized
+Xcode settings migration without writing. `--check` verifies the managed outputs
+against the selected declaration. Both keep diagnostics to safe paths, causes, and
+repair instructions.
+
+When `--diff` identifies an older recognized project that has not been connected to
+the managed settings file, review the proposed scope and explicitly run
+`mix crosswake.gen.shell ios --migrate-project-settings`, then rerun `--check`. The
+migration changes only recognized shell target configuration blocks and removes the
+identity/signing overrides in those blocks. It preserves unrelated PBX customizations
+and host-owned Swift and entitlement files. A changed or unrecognized project structure
+is refused; review its edits and restore the recognized target structure before
+retrying. The migration does not replace an entire project file.
+
+If an interrupted managed-output update is detected, inspect the staged generation,
+run `mix crosswake.gen.shell ios --recover`, then rerun `--check`. Recovery restores a
+coherent recognized managed state. Do not treat this as a filesystem-wide atomic
+transaction: Crosswake stages the output set, publishes files individually, and uses
+the recovery record to detect and repair an interrupted set.
+
+The generated simulator configuration is explicitly unsigned. Device settings expose
+the declared signing style and team for Xcode inspection, but settings inspection
+does not claim signing, installation, or physical-iPhone support. Static route
+activation carries no session, account, scope, media-availability, or replay authority.
+Existing `mix crosswake.gen.proof_lane --config PATH` remains the separate owner for
+unrelated proof-lane configuration.
+
 ---
 
 ## Template Version 2 (Phase 134 — stamp, manifest, diff)
