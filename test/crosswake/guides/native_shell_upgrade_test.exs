@@ -69,4 +69,42 @@ defmodule Crosswake.Guides.NativeShellUpgradeTest do
       flunk("lib/mix/tasks/crosswake.gen.shell.ex not found at #{@gen_shell_path}")
     end
   end
+
+  test "native shell guide documents the implemented host declaration and flags" do
+    guide = File.read!(Path.join([File.cwd!(), "guides", "native_shell.md"]))
+    upgrade = File.read!(@guide_path)
+    task = File.read!(@gen_shell_path)
+    config = File.read!(Path.join([File.cwd!(), "lib", "crosswake", "shell", "ios_host_config.ex"]))
+
+    for key <- ~w(router origin entry_route_id app_bundle_id proof_app_bundle_id device_signing) do
+      assert guide =~ key
+      assert config =~ key
+    end
+
+    for flag <- ["--diff", "--check", "--recover", "--migrate-project-settings"] do
+      assert guide =~ flag
+      assert task =~ String.replace(flag, "-", "_") or task =~ flag
+    end
+
+    for contract <- [
+          "MIX_ENV=prod",
+          ".tests",
+          ".uitests",
+          "--config",
+          "CrosswakeHostSettings.xcconfig",
+          "Swift",
+          "entitlement",
+          "unsigned",
+          "settings",
+          "session",
+          "replay"
+        ] do
+      assert guide =~ contract or upgrade =~ contract,
+             "[proof.ios_host_guide_contract] missing #{inspect(contract)}"
+    end
+
+    refute (guide <> upgrade) =~ "signed-device installation"
+    refute (guide <> upgrade) =~ "physical iPhone support is proven"
+    refute (guide <> upgrade) =~ "replay authority is granted"
+  end
 end
