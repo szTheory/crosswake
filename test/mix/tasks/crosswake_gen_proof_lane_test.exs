@@ -140,6 +140,37 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     end)
   end
 
+  test "proof migration rejects extra and remapped configuration graph nodes" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project_path = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project_path)
+
+      extra =
+        "\n\t\tA10000000000000000000099 = {isa = XCBuildConfiguration; buildSettings = {}; name = Preview; };\n"
+
+      with_extra =
+        String.replace(
+          original,
+          "/* End XCBuildConfiguration section */",
+          extra <> "/* End XCBuildConfiguration section */"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(with_extra)
+
+      remapped =
+        String.replace(
+          original,
+          "buildConfigurations = (A10000000000000000000070, A10000000000000000000071,);",
+          "buildConfigurations = (A10000000000000000000070, A10000000000000000000072,);"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(remapped)
+    end)
+  end
+
   test "proof settings refresh only under recognized ownership and recover an interrupted replacement" do
     with_root(fn root, config ->
       declaration = %{
