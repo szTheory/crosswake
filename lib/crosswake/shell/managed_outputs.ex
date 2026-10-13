@@ -11,6 +11,45 @@ defmodule Crosswake.Shell.ManagedOutputs do
   @max_bytes 8 * 1024 * 1024
   def paths, do: @paths
 
+  @doc false
+  def read_migration_project(root) do
+    with :ok <- safe_layout(root),
+         :ok <- no_pending(root),
+         :ok <- safe_components(root, "CrosswakeShell.xcodeproj"),
+         {:ok, bytes} <- safe_read(root, "CrosswakeShell.xcodeproj/project.pbxproj") do
+      {:ok, bytes}
+    else
+      {:error, :missing} -> error(:missing_project)
+      {:error, :interrupted} -> error(:interrupted)
+      {:error, :unsafe_path} -> error(:unsafe_path)
+      _ -> error(:unsafe_path)
+    end
+  end
+
+  @doc false
+  def write_migration_project(root, expected, bytes)
+      when is_binary(expected) and is_binary(bytes) and byte_size(bytes) <= @max_bytes do
+    relative = "CrosswakeShell.xcodeproj/project.pbxproj"
+
+    with :ok <- safe_layout(root),
+         :ok <- no_pending(root),
+         :ok <- safe_components(root, "CrosswakeShell.xcodeproj"),
+         {:ok, current} <- safe_read(root, relative),
+         true <- current == expected,
+         :ok <- atomic_replace(root, relative, bytes) do
+      :ok
+    else
+      false -> error(:conflict)
+      {:error, :missing} -> error(:missing_project)
+      {:error, :interrupted} -> error(:interrupted)
+      {:error, :unsafe_path} -> error(:unsafe_path)
+      {:error, :conflict} -> error(:conflict)
+      _ -> error(:unsafe_path)
+    end
+  end
+
+  def write_migration_project(_root, _expected, _bytes), do: error(:unsafe_path)
+
   def generated_at(root) do
     with :ok <- safe_layout(root),
          {:ok, metadata} when is_map(metadata) <- read_metadata(root),

@@ -193,17 +193,21 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
   end
 
   defp report_project_migration(root, apply?) do
-    project = Path.join(root, "CrosswakeShell.xcodeproj/project.pbxproj")
-
-    case File.read(project) do
+    case Crosswake.Shell.ManagedOutputs.read_migration_project(root) do
       {:ok, bytes} ->
         case Crosswake.Shell.IOSHostProjectMigration.preview_contents(bytes) do
           {:ok, %{contents: migrated}} when apply? ->
-            File.write!(project, migrated)
+            case Crosswake.Shell.ManagedOutputs.write_migration_project(root, bytes, migrated) do
+              :ok ->
+                Mix.shell().info(
+                  "[crosswake] migrated project settings: applied bounded wiring; cause: recognized shell target configs; repair: rerun --check"
+                )
 
-            Mix.shell().info(
-              "[crosswake] migrated project settings: applied bounded wiring; cause: recognized shell target configs; repair: rerun --check"
-            )
+              {:error, %{cause: cause, repair: repair}} ->
+                Mix.raise(
+                  "[crosswake] project migration blocked; cause: #{cause}; repair: #{repair}"
+                )
+            end
 
           {:ok, _} ->
             Mix.shell().info(
@@ -214,10 +218,8 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
             Mix.raise("[crosswake] project migration blocked; cause: #{cause}; repair: #{repair}")
         end
 
-      {:error, _} ->
-        Mix.raise(
-          "[crosswake] project migration blocked; cause: missing_project; repair: generate the declared iOS shell first"
-        )
+      {:error, %{cause: cause, repair: repair}} ->
+        Mix.raise("[crosswake] project migration blocked; cause: #{cause}; repair: #{repair}")
     end
   end
 
