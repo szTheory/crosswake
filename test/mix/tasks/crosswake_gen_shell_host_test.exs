@@ -1,5 +1,6 @@
 defmodule Mix.Tasks.Crosswake.Gen.Shell.HostTest do
   use ExUnit.Case, async: false
+  import ExUnit.CaptureIO
 
   @candidate_root Path.expand("../../..", __DIR__)
   @task "crosswake.gen.shell"
@@ -92,6 +93,57 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell.HostTest do
     assert manifest["host"]["origin"] == declared_origin
     assert Map.has_key?(manifest["routes"], declared_entry_route)
 
+    shell_root = Path.join(output_root, "native/ios/crosswake_shell")
+
+    native_paths = [
+      Path.join(shell_root, "CrosswakeShell/CrosswakeShellApp.swift"),
+      Path.join(shell_root, "CrosswakeShell/CrosswakeShell.entitlements"),
+      Path.join(shell_root, "CrosswakeShell.xcodeproj/project.pbxproj")
+    ]
+
+    original_native = Map.new(native_paths, &{&1, File.read!(&1)})
+
+    Enum.each(native_paths, fn path ->
+      File.write!(path, original_native[path] <> "\n// host-owned edit\n")
+    end)
+
+    updated_origin = "https://crosswake-host-updated.test"
+    config_bytes = File.read!(config)
+    assert String.contains?(config_bytes, declared_origin)
+    File.write!(config, String.replace(config_bytes, declared_origin, updated_origin))
+
+    {rerun_output, rerun_status} =
+      System.cmd("mix", ["crosswake.host_probe", "ios", "--target", output_root],
+        cd: host,
+        env: command_env,
+        stderr_to_stdout: true
+      )
+
+    assert rerun_status == 0, "host rerun failed with status #{rerun_status}: #{rerun_output}"
+
+    Enum.each(native_paths, fn path ->
+      assert File.read!(path) == original_native[path] <> "\n// host-owned edit\n"
+    end)
+
+    refreshed_manifest = manifest_path |> File.read!() |> Jason.decode!()
+    assert refreshed_manifest["host"]["origin"] == updated_origin
+
+    before_inspection = snapshot_tree(output_root)
+
+    for option <- ["--check", "--diff"] do
+      {inspection_output, inspection_status} =
+        System.cmd("mix", ["crosswake.gen.shell", "ios", "--target", output_root, option],
+          cd: host,
+          env: command_env,
+          stderr_to_stdout: true
+        )
+
+      assert inspection_status == 0, "host #{option} failed: #{inspection_output}"
+      assert inspection_output =~ "checked managed iOS outputs"
+      assert inspection_output =~ "current"
+      assert snapshot_tree(output_root) == before_inspection
+    end
+
     activation =
       Path.join(output_root, "native/ios/crosswake_shell/Fixtures/route_activation.json")
       |> File.read!()
@@ -135,6 +187,60 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell.HostTest do
 
     assert shell_settings["buildSettings"]["PRODUCT_BUNDLE_IDENTIFIER"] == expected_app_bundle_id,
            "xcodebuild target metadata did not include the expected identity; targets=#{inspect(Enum.map(decoded, & &1["target"]))}, setting_keys=#{inspect(Map.keys(shell_settings["buildSettings"] || %{}) |> Enum.filter(&String.contains?(&1, "PRODUCT")))}"
+  end
+
+  test "--check is a read-only inspection for a missing production host" do
+    previous = Application.get_env(:crosswake, :ios_host)
+
+    target =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-check-missing-#{System.unique_integer([:positive])}"
+      )
+
+    Application.put_env(:crosswake, :ios_host, %{
+      router: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+      origin: "https://crosswake-host.test",
+      entry_route_id: "study-session",
+      app_bundle_id: "dev.crosswake.hostapp",
+      proof_app_bundle_id: "dev.crosswake.hostapp.proof",
+      device_signing: [mode: :automatic, team_id: "ABCDE12345"]
+    })
+
+    try do
+      output =
+        capture_io(fn ->
+          error =
+            assert_raise Mix.Error, fn ->
+              Mix.Task.reenable(@task)
+              Mix.Task.run(@task, ["ios", "--target", target, "--check"])
+            end
+
+          assert error.message =~ "missing"
+        end)
+
+      assert output =~ "checked managed iOS outputs"
+      assert output =~ "mix crosswake.gen.shell ios"
+      refute File.exists?(target)
+    after
+      if is_nil(previous),
+        do: Application.delete_env(:crosswake, :ios_host),
+        else: Application.put_env(:crosswake, :ios_host, previous)
+    end
+  end
+
+  defp snapshot_tree(root) do
+    root
+    |> Path.join("**/*")
+    |> Path.wildcard(match_dot: true)
+    |> Enum.sort()
+    |> Map.new(fn path ->
+      case File.lstat(path) do
+        {:ok, %{type: :directory}} -> {Path.relative_to(path, root), :directory}
+        {:ok, %{type: :regular}} -> {Path.relative_to(path, root), File.read!(path)}
+        other -> {Path.relative_to(path, root), other}
+      end
+    end)
   end
 
   test "invalid production host input and legacy overrides fail before creating output" do

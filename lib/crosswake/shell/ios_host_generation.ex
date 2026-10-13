@@ -5,8 +5,15 @@ defmodule Crosswake.Shell.IOSHostGeneration do
   alias Crosswake.Shell.Activation
   alias Crosswake.Shell.IOSHostConfig
 
-  def render(%IOSHostConfig{} = config) do
-    with {:ok, %{manifest: manifest}} <- Manifest.compile(config.router, origin: config.origin),
+  def render(%IOSHostConfig{} = config, opts \\ []) do
+    compile_opts =
+      [origin: config.origin] ++
+        if(is_binary(Keyword.get(opts, :generated_at)),
+          do: [generated_at: Keyword.fetch!(opts, :generated_at)],
+          else: []
+        )
+
+    with {:ok, %{manifest: manifest}} <- Manifest.compile(config.router, compile_opts),
          :ok <- entry_exists(manifest, config.entry_route_id) do
       entry = Map.fetch!(manifest.routes, config.entry_route_id)
 
@@ -22,12 +29,21 @@ defmodule Crosswake.Shell.IOSHostGeneration do
           correlation_id: "ios-build-entry"
         )
 
+      manifest_bytes = Manifest.render(manifest)
+      activation_bytes = Jason.encode!(Activation.to_map(activation), pretty: true) <> "\n"
+      settings_bytes = render_settings(config)
+
       {
         :ok,
         %{
-          manifest: Manifest.render(manifest),
-          activation: Jason.encode!(Activation.to_map(activation), pretty: true) <> "\n",
-          settings: render_settings(config)
+          manifest: manifest_bytes,
+          activation: activation_bytes,
+          settings: settings_bytes,
+          managed_outputs: %{
+            "Fixtures/crosswake_manifest.json" => manifest_bytes,
+            "Fixtures/route_activation.json" => activation_bytes,
+            "CrosswakeHostSettings.xcconfig" => settings_bytes
+          }
         }
       }
     else

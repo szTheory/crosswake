@@ -15,7 +15,15 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
   behavior Crosswake has not proven yet.
   """
 
-  @switches [target: :string, router: :string, local: :boolean, diff: :boolean]
+  @switches [
+    target: :string,
+    router: :string,
+    local: :boolean,
+    diff: :boolean,
+    check: :boolean,
+    recover: :boolean,
+    migrate_project_settings: :boolean
+  ]
 
   # Templates excluded from --diff output (Xcode-managed UUIDs always diverge — noise only).
   # Note: gradlew/gradlew.bat are NOT excluded from diff (D-02 excludes only stamps, not diffs).
@@ -102,38 +110,114 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
         end
       end
 
+    actions =
+      Enum.count(
+        [opts[:diff], opts[:check], opts[:recover], opts[:migrate_project_settings]],
+        &(&1 == true)
+      )
+
+    if actions > 1,
+      do: Mix.raise("--diff, --check, --recover and --migrate-project-settings are exclusive")
+
+    if (opts[:check] == true or opts[:recover] == true or opts[:migrate_project_settings] == true) and
+         (platform != "ios" or is_nil(host_config)) do
+      Mix.raise("managed iOS actions require the declared :crosswake, :ios_host configuration")
+    end
+
+    managed_root = Path.join(target, "native/ios/crosswake_shell")
+
     host_outputs =
-      if host_config do
-        case IOSHostGeneration.render(host_config) do
+      if not is_nil(host_config) and opts[:recover] != true do
+        generated_at = Crosswake.Shell.ManagedOutputs.generated_at(managed_root)
+
+        case IOSHostGeneration.render(host_config, generated_at: generated_at) do
           {:ok, outputs} -> outputs
           {:error, reason} -> Mix.raise(reason)
         end
       end
 
-    # D-13: Fork BEFORE any write — if --diff, we never reach ensure_file/2 or File.write!/2.
-    if opts[:diff] do
-      Mix.shell().info("[crosswake] diff — read-only, no files changed")
-      run_diff(platform, target, router, local)
-    else
-      capabilities = fetch_capabilities(router)
+    cond do
+      opts[:recover] ->
+        report_recovery(managed_root)
 
-      generated =
-        case platform do
-          "ios" -> generate_ios_shell(target, capabilities, local, router, host_outputs)
-          "android" -> generate_android_shell(target, capabilities, local, router)
-        end
+      opts[:check] ->
+        report_managed_check(managed_root, host_outputs.managed_outputs, true)
 
-      Mix.shell().info(
-        "Crosswake #{platform} shell scaffold complete\n" <>
-          "  generated root: #{generated.root}\n" <>
-          "  ownership docs: #{generated.readme}\n" <>
-          "  manifest fixture: #{generated.manifest}\n" <>
-          "  activation fixture: #{generated.activation}\n" <>
-          "  denial fixture: #{generated.denial}\n" <>
-          "  baseline entrypoint: #{generated.entrypoint}\n" <>
-          "  ownership: host-owned, scaffold once, and not safely regeneratable over host edits\n"
-      )
+      opts[:diff] == true and not is_nil(host_config) ->
+        report_managed_check(managed_root, host_outputs.managed_outputs, false)
+
+      opts[:diff] ->
+        Mix.shell().info("[crosswake] diff — read-only, no files changed")
+        run_diff(platform, target, router, local)
+
+      true ->
+        capabilities = fetch_capabilities(router)
+
+        generated =
+          case platform do
+            "ios" -> generate_ios_shell(target, capabilities, local, router, host_outputs)
+            "android" -> generate_android_shell(target, capabilities, local, router)
+          end
+
+        Mix.shell().info(
+          "Crosswake #{platform} shell scaffold complete\n" <>
+            "  generated root: #{generated.root}\n" <>
+            "  ownership docs: #{generated.readme}\n" <>
+            "  manifest fixture: #{generated.manifest}\n" <>
+            "  activation fixture: #{generated.activation}\n" <>
+            "  denial fixture: #{generated.denial}\n" <>
+            "  baseline entrypoint: #{generated.entrypoint}\n" <>
+            "  ownership: host-owned, scaffold once, and not safely regeneratable over host edits\n"
+        )
     end
+  end
+
+  defp report_managed_check(root, desired, strict?) do
+    case Crosswake.Shell.ManagedOutputs.check(root, desired) do
+      {:ok, _result} ->
+        Mix.shell().info(
+          "[crosswake] checked managed iOS outputs: current; cause: none; repair: none"
+        )
+
+      {:error, %{cause: cause, repair: repair}} ->
+        Mix.shell().info(
+          "[crosswake] checked managed iOS outputs: #{if(strict?, do: "blocked", else: "needs-attention")}; cause: #{cause}; repair: #{repair}"
+        )
+
+        if strict?, do: Mix.raise("managed iOS outputs are #{cause}; #{repair}")
+    end
+  end
+
+  defp report_recovery(root) do
+    case Crosswake.Shell.ManagedOutputs.recover(root) do
+      {:ok, _result} ->
+        Mix.shell().info(
+          "[crosswake] recovered managed iOS outputs: coherent; cause: interrupted update; repair: rerun --check"
+        )
+
+      {:error, %{cause: cause, repair: repair}} ->
+        Mix.shell().info(
+          "[crosswake] recovered managed iOS outputs: blocked; cause: #{cause}; repair: #{repair}"
+        )
+
+        Mix.raise("managed iOS recovery is #{cause}; #{repair}")
+    end
+  end
+
+  defp managed_failure(cause, raise?) do
+    repair =
+      case cause do
+        :conflict -> "restore recognized output bytes or review the native host edit"
+        :unsafe_path -> "remove unsafe managed path components and retry"
+        :interrupted -> "run mix crosswake.gen.shell ios --recover"
+        _ -> "inspect the host output and retry"
+      end
+
+    Mix.shell().info(
+      "[crosswake] checked managed iOS outputs: blocked; cause: #{cause}; repair: #{repair}"
+    )
+
+    if raise?, do: Mix.raise("managed iOS outputs are #{cause}; #{repair}")
   end
 
   # ---------------------------------------------------------------------------
@@ -405,18 +489,36 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     root = Path.join(target, "native/ios/crosswake_shell")
     fixtures = Fixtures.export("ios")
 
+    if host_outputs do
+      case Crosswake.Shell.ManagedOutputs.preflight(root, host_outputs.managed_outputs) do
+        :ok -> :ok
+        {:error, cause} -> managed_failure(cause, true)
+      end
+    end
+
     readme = Path.join(root, "README.md")
     entrypoint = Path.join(root, "CrosswakeShell/CrosswakeShellApp.swift")
 
     ensure_file(readme, shell_readme("ios"))
     render_ios_templates(root, capabilities, local)
-    write_fixture_files(root, fixtures)
+    managed_paths = if host_outputs, do: Map.keys(host_outputs.managed_outputs), else: []
+
+    fixtures
+    |> Enum.reject(fn {relative, _bytes} -> relative in managed_paths end)
+    |> then(&write_fixture_files(root, &1))
+
     write_shell_manifest(root, "ios", router, local, target)
 
     if host_outputs do
-      File.write!(Path.join(root, "Fixtures/crosswake_manifest.json"), host_outputs.manifest)
-      File.write!(Path.join(root, "Fixtures/route_activation.json"), host_outputs.activation)
-      File.write!(Path.join(root, "CrosswakeHostSettings.xcconfig"), host_outputs.settings)
+      case Crosswake.Shell.ManagedOutputs.publish(root, host_outputs.managed_outputs) do
+        :ok ->
+          :ok
+
+        {:error, %{cause: cause, repair: repair}} ->
+          Mix.raise(
+            "[crosswake] generated iOS outputs: blocked; cause: #{cause}; repair: #{repair}"
+          )
+      end
     end
 
     %{
