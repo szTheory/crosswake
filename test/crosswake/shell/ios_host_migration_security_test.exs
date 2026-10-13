@@ -95,18 +95,39 @@ defmodule Crosswake.Shell.IOSHostMigrationSecurityTest do
     end)
   end
 
+  test "legacy shell migration restores declared app and test bundle IDs in both configurations" do
+    with_generated_shell(fn root ->
+      declaration = host_declaration()
+      project = project_file(root)
+
+      legacy =
+        File.read!(project)
+        |> String.replace("$(CROSSWAKE_APP_BUNDLE_ID)", "org.crosswake.legacy.app")
+        |> String.replace("$(CROSSWAKE_SHELL_TEST_BUNDLE_ID)", "org.crosswake.legacy.tests")
+
+      File.write!(project, legacy)
+      assert :ok = run_task(root, "--migrate-project-settings")
+      assert_xcode_bundle_ids(project, declaration)
+    end)
+  end
+
+  test "current shell migration is idempotent and preserves declared app/test IDs in Xcode" do
+    with_generated_shell(fn root ->
+      declaration = host_declaration()
+      project = project_file(root)
+      assert :ok = run_task(root, "--migrate-project-settings")
+      migrated = File.read!(project)
+      assert :ok = run_task(root, "--migrate-project-settings")
+      assert File.read!(project) == migrated
+      assert_xcode_bundle_ids(project, declaration)
+    end)
+  end
+
   defp with_generated_shell(fun) do
     previous = Application.get_env(:crosswake, :ios_host)
     root = temp_root("shell-migration-generated")
 
-    Application.put_env(:crosswake, :ios_host, %{
-      router: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
-      origin: "https://migration-host.test",
-      entry_route_id: "study-session",
-      app_bundle_id: "org.crosswake.migration.host",
-      proof_app_bundle_id: "org.crosswake.migration.proof",
-      device_signing: [mode: :manual, team_id: "ABCDE12345"]
-    })
+    Application.put_env(:crosswake, :ios_host, host_declaration())
 
     try do
       Mix.Task.reenable(@task)
@@ -119,6 +140,17 @@ defmodule Crosswake.Shell.IOSHostMigrationSecurityTest do
 
       File.rm_rf!(root)
     end
+  end
+
+  defp host_declaration do
+    %{
+      router: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+      origin: "https://migration-host.test",
+      entry_route_id: "study-session",
+      app_bundle_id: "org.crosswake.migration.host",
+      proof_app_bundle_id: "org.crosswake.migration.proof",
+      device_signing: [mode: :manual, team_id: "ABCDE12345"]
+    }
   end
 
   defp run_task(target, action) do
@@ -154,5 +186,41 @@ defmodule Crosswake.Shell.IOSHostMigrationSecurityTest do
     path = Path.join(System.tmp_dir!(), "#{prefix}-#{System.unique_integer([:positive])}")
     File.rm_rf!(path)
     path
+  end
+
+  defp assert_xcode_bundle_ids(project, declaration) do
+    for configuration <- ["Debug", "Release"] do
+      assert xcode_target_settings(project, "CrosswakeShell", configuration)[
+               "PRODUCT_BUNDLE_IDENTIFIER"
+             ] == declaration.app_bundle_id
+
+      assert xcode_target_settings(project, "CrosswakeShellTests", configuration)[
+               "PRODUCT_BUNDLE_IDENTIFIER"
+             ] == declaration.app_bundle_id <> ".tests"
+    end
+  end
+
+  defp xcode_target_settings(project, target, configuration) do
+    {output, status} =
+      System.cmd(
+        "xcodebuild",
+        [
+          "-project",
+          Path.dirname(project),
+          "-target",
+          target,
+          "-configuration",
+          configuration,
+          "-sdk",
+          "iphonesimulator",
+          "-showBuildSettings",
+          "-json"
+        ],
+        stderr_to_stdout: false
+      )
+
+    assert status == 0
+    [row] = Jason.decode!(output)
+    row["buildSettings"]
   end
 end

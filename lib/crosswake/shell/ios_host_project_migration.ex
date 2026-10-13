@@ -51,6 +51,25 @@ defmodule Crosswake.Shell.IOSHostProjectMigration do
               |> String.replace(~r/^\s*PRODUCT_BUNDLE_IDENTIFIER = [^;]+;\n/m, "")
 
             clean =
+              if target? do
+                variable =
+                  if id in Enum.slice(@known_ids, 2, 2),
+                    do: "CROSSWAKE_APP_BUNDLE_ID",
+                    else: "CROSSWAKE_SHELL_TEST_BUNDLE_ID"
+
+                Regex.replace(
+                  ~r/(buildSettings\s*=\s*\{)/,
+                  clean,
+                  fn prefix ->
+                    prefix <> "\n\t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = \"$(#{variable})\";"
+                  end,
+                  global: false
+                )
+              else
+                clean
+              end
+
+            clean =
               if target? and refs == [] do
                 String.replace(
                   clean,
@@ -83,82 +102,79 @@ defmodule Crosswake.Shell.IOSHostProjectMigration do
 
     configs = Regex.scan(pattern, contents)
 
-    if length(configs) != 6 or not proof_configuration_graph?(contents, ids) do
+    graph_valid? = proof_configuration_graph?(contents, ids)
+
+    if not graph_valid? do
       error()
     else
-      try do
-        migrated =
-          Enum.reduce(configs, contents, fn [block, indent, id], acc ->
-            if not Regex.match?(~r/name = (Debug|Release);/, block),
-              do: throw(:unrecognized_project)
-
-            refs =
-              Regex.scan(~r/baseConfigurationReference = ([A-F0-9]{24})/, block,
-                capture: :all_but_first
-              )
-
-            if refs != [] and refs != [[ref]], do: throw(:unrecognized_project)
-
-            clean =
-              block
-              |> String.replace(~r/PRODUCT_BUNDLE_IDENTIFIER = [^;]+; /, "")
-              |> String.replace(~r/CODE_SIGNING_(?:ALLOWED|REQUIRED) = [^;]+; /, "")
-              |> String.replace(~r/CODE_SIGN_STYLE = [^;]+; /, "")
-              |> String.replace(~r/DEVELOPMENT_TEAM = [^;]+; /, "")
-              |> String.replace(~r/PROVISIONING_PROFILE_SPECIFIER = [^;]+; /, "")
-
-            variable =
-              cond do
-                id in Enum.take(ids, 2) -> "CROSSWAKE_PROOF_APP_BUNDLE_ID"
-                id in Enum.slice(ids, 2, 2) -> "CROSSWAKE_PROOF_TEST_BUNDLE_ID"
-                true -> "CROSSWAKE_PROOF_UI_BUNDLE_ID"
-              end
-
-            clean =
-              clean
-              |> String.replace(
-                "buildSettings = {",
-                "buildSettings = { PRODUCT_BUNDLE_IDENTIFIER = \"$(#{variable})\";",
-                global: false
-              )
-
-            clean =
-              if refs == [],
-                do:
-                  String.replace(
-                    clean,
-                    "isa = XCBuildConfiguration;",
-                    "isa = XCBuildConfiguration; baseConfigurationReference = #{ref} /* CrosswakeProofSettings.xcconfig */;",
-                    global: false
-                  ),
-                else: clean
-
-            _ = {indent, id}
-            String.replace(acc, block, clean, global: false)
-          end)
-
-        {:ok, %{status: :migration_required, contents: migrated}}
-      catch
-        :unrecognized_project -> error()
+      if length(configs) != 6 do
+        {:ok, %{status: :migration_required, contents: contents}}
+      else
+        migrate_proof_configs(contents, configs, ids, ref)
       end
     end
   end
 
+  defp migrate_proof_configs(contents, configs, ids, ref) do
+    try do
+      migrated =
+        Enum.reduce(configs, contents, fn [block, indent, id], acc ->
+          if not Regex.match?(~r/name = (Debug|Release);/, block),
+            do: throw(:unrecognized_project)
+
+          refs =
+            Regex.scan(~r/baseConfigurationReference = ([A-F0-9]{24})/, block,
+              capture: :all_but_first
+            )
+
+          if refs != [] and refs != [[ref]], do: throw(:unrecognized_project)
+
+          clean =
+            block
+            |> String.replace(~r/PRODUCT_BUNDLE_IDENTIFIER = [^;]+; /, "")
+            |> String.replace(~r/CODE_SIGNING_(?:ALLOWED|REQUIRED) = [^;]+; /, "")
+            |> String.replace(~r/CODE_SIGN_STYLE = [^;]+; /, "")
+            |> String.replace(~r/DEVELOPMENT_TEAM = [^;]+; /, "")
+            |> String.replace(~r/PROVISIONING_PROFILE_SPECIFIER = [^;]+; /, "")
+
+          variable =
+            cond do
+              id in Enum.take(ids, 2) -> "CROSSWAKE_PROOF_APP_BUNDLE_ID"
+              id in Enum.slice(ids, 2, 2) -> "CROSSWAKE_PROOF_TEST_BUNDLE_ID"
+              true -> "CROSSWAKE_PROOF_UI_BUNDLE_ID"
+            end
+
+          clean =
+            clean
+            |> String.replace(
+              "buildSettings = {",
+              "buildSettings = { PRODUCT_BUNDLE_IDENTIFIER = \"$(#{variable})\";",
+              global: false
+            )
+
+          clean =
+            if refs == [],
+              do:
+                String.replace(
+                  clean,
+                  "isa = XCBuildConfiguration;",
+                  "isa = XCBuildConfiguration; baseConfigurationReference = #{ref} /* CrosswakeProofSettings.xcconfig */;",
+                  global: false
+                ),
+              else: clean
+
+          _ = indent
+          String.replace(acc, block, clean, global: false)
+        end)
+
+      {:ok, %{status: :migration_required, contents: migrated}}
+    catch
+      :unrecognized_project -> error()
+    end
+  end
+
   defp proof_configuration_graph?(contents, target_ids) do
-    config_section = section(contents, "XCBuildConfiguration")
-    list_section = section(contents, "XCConfigurationList")
-    target_section = section(contents, "PBXNativeTarget")
-    project_section = section(contents, "PBXProject")
     all_ids = Enum.map(70..77, &("A100000000000000000000" <> Integer.to_string(&1)))
-
-    expected_names =
-      Map.new(Enum.with_index(all_ids), fn {id, index} ->
-        {id, if(rem(index, 2) == 0, do: "Debug", else: "Release")}
-      end)
-
-    configs =
-      Regex.scan(~r/(?m)^\s*([A-F0-9]{24}) = \{(.*?)\};/, config_section, capture: :all_but_first)
-      |> Map.new(fn [id, body] -> {id, body} end)
 
     config_sets = %{
       "A10000000000000000000040" => Enum.take(all_ids, 2),
@@ -167,92 +183,60 @@ defmodule Crosswake.Shell.IOSHostProjectMigration do
       "A10000000000000000000043" => Enum.slice(all_ids, 6, 2)
     }
 
-    config_lists_valid =
-      Enum.all?(config_sets, fn {id, expected} ->
-        with body when is_binary(body) <- object_body(list_section, id),
-             [_, values] <- Regex.run(~r/buildConfigurations = \(([^)]*)\)/, body),
-             actual <- Regex.scan(~r/[A-F0-9]{24}/, values) |> List.flatten() do
-          actual == expected
-        else
-          _ -> false
-        end
-      end)
+    with {:ok, plist} <- Crosswake.Shell.PBXProject.parse(contents),
+         objects when is_map(objects) <- plist["objects"],
+         configs <-
+           objects
+           |> Enum.filter(fn {_id, object} -> object["isa"] == "XCBuildConfiguration" end)
+           |> Map.new(),
+         lists <-
+           objects
+           |> Enum.filter(fn {_id, object} -> object["isa"] == "XCConfigurationList" end)
+           |> Map.new(),
+         targets <-
+           objects
+           |> Enum.filter(fn {_id, object} -> object["isa"] == "PBXNativeTarget" end)
+           |> Map.new(),
+         projects <-
+           objects
+           |> Enum.filter(fn {_id, object} -> object["isa"] == "PBXProject" end)
+           |> Map.new(),
+         true <- Map.keys(configs) |> Enum.sort() == Enum.sort(all_ids),
+         true <- map_size(lists) == 4,
+         true <-
+           Enum.all?(all_ids, fn id ->
+             object = configs[id]
 
-    names_valid =
-      map_size(configs) == 8 and
-        Enum.all?(expected_names, fn {id, name} ->
-          case {Map.get(configs, id),
-                Regex.run(~r/\bname = (Debug|Release);/, object_body(config_section, id) || "",
-                  capture: :all_but_first
-                )} do
-            {body, [^name]} when is_binary(body) -> true
-            _ -> false
-          end
-        end)
+             expected =
+               if rem(Enum.find_index(all_ids, &(&1 == id)), 2) == 0, do: "Debug", else: "Release"
 
-    targets_valid =
-      Enum.all?(
-        [
-          {"A10000000000000000000030", "A10000000000000000000040"},
-          {"A10000000000000000000031", "A10000000000000000000041"},
-          {"A10000000000000000000032", "A10000000000000000000042"}
-        ],
-        fn {id, list_id} ->
-          body = object_body(target_section, id)
-
-          is_binary(body) and
-            Regex.match?(Regex.compile!("buildConfigurationList = " <> list_id <> "\\b"), body)
-        end
-      )
-
-    project_valid =
-      case object_body(project_section, "A10000000000000000000060") do
-        body when is_binary(body) ->
-          Regex.match?(~r/buildConfigurationList = A10000000000000000000043\b/, body)
-
-        _ ->
-          false
-      end
-
-    target_ids == Enum.take(all_ids, 6) and names_valid and config_lists_valid and targets_valid and
-      project_valid
+             object["name"] == expected
+           end),
+         true <-
+           Enum.all?(config_sets, fn {id, expected} ->
+             lists[id]["buildConfigurations"] == expected
+           end),
+         true <-
+           Enum.all?(
+             [
+               {"A10000000000000000000030", "A10000000000000000000040"},
+               {"A10000000000000000000031", "A10000000000000000000041"},
+               {"A10000000000000000000032", "A10000000000000000000042"}
+             ],
+             fn {id, list_id} -> targets[id]["buildConfigurationList"] == list_id end
+           ),
+         true <- map_size(targets) == 3,
+         true <- map_size(projects) == 1,
+         true <-
+           projects["A10000000000000000000060"]["buildConfigurationList"] ==
+             "A10000000000000000000043",
+         true <- target_ids == Enum.take(all_ids, 6) do
+      true
+    else
+      _ -> false
+    end
   rescue
     _ -> false
-  end
-
-  defp section(contents, name) do
-    opening = "/* Begin #{name} section */"
-    closing = "/* End #{name} section */"
-
-    case String.split(contents, opening, parts: 2) do
-      [_, remainder] ->
-        case String.split(remainder, closing, parts: 2) do
-          [value, _] -> value
-          _ -> ""
-        end
-
-      _ ->
-        ""
-    end
-  end
-
-  defp object_body(section, id) do
-    lines = String.split(section, "\n")
-    opening = Regex.compile!("^\\s*" <> id <> ".*= \\{")
-    next_object = ~r/^\s*[A-F0-9]{24}(?: \/\*.*?\*\/)? = \{/
-
-    case Enum.find_index(lines, &Regex.match?(opening, &1)) do
-      nil ->
-        nil
-
-      index ->
-        lines
-        |> Enum.drop(index)
-        |> Enum.take_while(fn line ->
-          line == hd(Enum.drop(lines, index)) or not Regex.match?(next_object, line)
-        end)
-        |> Enum.join("\n")
-    end
   end
 
   defp error,

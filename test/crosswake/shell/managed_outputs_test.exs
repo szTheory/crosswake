@@ -87,7 +87,21 @@ defmodule Crosswake.Shell.ManagedOutputsTest do
              Crosswake.Shell.IOSHostProjectMigration.preview_contents(pbx)
 
     assert String.ends_with?(migrated, "// unrelated host comment\n")
-    refute migrated =~ "PRODUCT_BUNDLE_IDENTIFIER ="
+
+    assert length(
+             Regex.scan(
+               ~r/PRODUCT_BUNDLE_IDENTIFIER\s*=\s*"\$\(CROSSWAKE_APP_BUNDLE_ID\)";/,
+               migrated
+             )
+           ) == 2
+
+    assert length(
+             Regex.scan(
+               ~r/PRODUCT_BUNDLE_IDENTIFIER\s*=\s*"\$\(CROSSWAKE_SHELL_TEST_BUNDLE_ID\)";/,
+               migrated
+             )
+           ) == 2
+
     refute migrated =~ "CODE_SIGNING_ALLOWED = NO;"
     assert migrated =~ "baseConfigurationReference = A10000400000000000000001"
   end

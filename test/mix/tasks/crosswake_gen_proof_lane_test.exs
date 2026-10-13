@@ -580,4 +580,115 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     )
     |> then(&"import Config\nconfig :crosswake, :proof_lane, #{&1}\n")
   end
+
+  test "proof migration rejects a multiline unrecognized build configuration" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project)
+
+      extra = """
+      \t\tA10000000000000000000099 = {
+      \t\t\tisa = XCBuildConfiguration;
+      \t\t\tbuildSettings = {
+      \t\t\t\tSWIFT_VERSION = 5.0;
+      \t\t\t};
+      \t\t\tname = Preview;
+      \t\t};
+      """
+
+      changed =
+        String.replace(
+          original,
+          "/* End XCBuildConfiguration section */",
+          extra <> "/* End XCBuildConfiguration section */"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(changed)
+    end)
+  end
+
+  test "proof migration rejects duplicate configuration-list IDs" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project)
+
+      duplicate = """
+      \t\tA10000000000000000000040 = {
+      \t\t\tisa = XCConfigurationList;
+      \t\t\tbuildConfigurations = (A10000000000000000000070, A10000000000000000000071,);
+      \t\t\tdefaultConfigurationIsVisible = 0;
+      \t\t\tdefaultConfigurationName = Release;
+      \t\t};
+      """
+
+      changed =
+        String.replace(
+          original,
+          "/* End XCConfigurationList section */",
+          duplicate <> "/* End XCConfigurationList section */"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(changed)
+    end)
+  end
+
+  test "proof migration accepts legal whitespace and comment reformatting of recognized objects" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project)
+
+      reformatted =
+        String.replace(
+          original,
+          "A10000000000000000000070 = {isa = XCBuildConfiguration;",
+          "A10000000000000000000070 /* Debug config */\n\t\t\t=\n\t\t\t{\n\t\t\t\tisa\t=\tXCBuildConfiguration;"
+        )
+
+      assert {:ok, %{status: :migration_required}} =
+               IOSHostProjectMigration.preview_proof_contents(reformatted)
+    end)
+  end
+
+  test "proof migration rejects remapped target references and duplicate configuration IDs" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project)
+
+      remapped_target =
+        String.replace(
+          original,
+          "buildConfigurationList = A10000000000000000000040",
+          "buildConfigurationList = A10000000000000000000041",
+          global: false
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(remapped_target)
+
+      duplicate_config = """
+
+      A10000000000000000000070 = {
+      isa = XCBuildConfiguration;
+      buildSettings = {};
+      name = Debug;
+      };
+      """
+
+      duplicate =
+        String.replace(
+          original,
+          "/* End XCBuildConfiguration section */",
+          duplicate_config <> "/* End XCBuildConfiguration section */"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(duplicate)
+    end)
+  end
 end

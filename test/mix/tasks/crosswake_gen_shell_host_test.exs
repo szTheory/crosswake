@@ -302,7 +302,21 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell.HostTest do
 
     migrated_project = File.read!(Path.join(project, "project.pbxproj"))
     assert String.ends_with?(migrated_project, "// host-owned edit\n")
-    refute migrated_project =~ "PRODUCT_BUNDLE_IDENTIFIER ="
+
+    assert length(
+             Regex.scan(
+               ~r/PRODUCT_BUNDLE_IDENTIFIER\s*=\s*"\$\(CROSSWAKE_APP_BUNDLE_ID\)";/,
+               migrated_project
+             )
+           ) == 2
+
+    assert length(
+             Regex.scan(
+               ~r/PRODUCT_BUNDLE_IDENTIFIER\s*=\s*"\$\(CROSSWAKE_SHELL_TEST_BUNDLE_ID\)";/,
+               migrated_project
+             )
+           ) == 2
+
     assert migrated_project =~ "baseConfigurationReference = A10000400000000000000001"
   end
 
