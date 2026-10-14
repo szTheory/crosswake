@@ -238,7 +238,7 @@ defmodule Crosswake.Manifest.HostCommandsTest do
     end
 
     test "a router with no host commands has no seam key" do
-      rendered = rendered(Fixtures.NoRegistryRouter) |> Jason.decode!()
+      rendered = rendered(Crosswake.TestSupport.RouterFixtures.ManagedRouter) |> Jason.decode!()
 
       refute Map.has_key?(rendered["compatibility"], "host_command_seam_version")
       assert rendered["manifest_schema_version"] == "1.2.0"

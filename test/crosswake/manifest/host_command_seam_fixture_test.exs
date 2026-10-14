@@ -1,7 +1,6 @@
 defmodule Crosswake.Manifest.HostCommandSeamFixtureTest do
   use ExUnit.Case, async: true
 
-  alias Crosswake.Manifest
   alias Crosswake.Shell.IOSHostConfig
   alias Crosswake.Shell.IOSHostGeneration
   alias Crosswake.TestSupport.HostCommandFixtures.DeclaringRouter
