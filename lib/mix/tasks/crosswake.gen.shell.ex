@@ -230,7 +230,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
       repair = "rerun mix crosswake.gen.shell ios"
 
       Mix.shell().info(
-        "[crosswake] checked managed iOS outputs: #{if(strict?, do: "blocked", else: "needs-attention")}; cause: origin mode changed; repair: #{repair}"
+        "[crosswake] checked managed iOS outputs: #{if(strict?, do: "blocked", else: "needs-attention")}; cause: origin mode changed; repair: rerun mix crosswake.gen.shell ios"
       )
 
       if strict?, do: Mix.raise("managed iOS outputs are origin mode changed; #{repair}")

@@ -170,4 +170,174 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellOriginModeTest do
 
     assert final == File.read!(@golden)
   end
+
+  @anchor "    <key>LSRequiresIPhoneOS</key>\n    <true/>"
+  @d13 "origin mode: local loopback (http://127.0.0.1:4790); Simulator only; not production-ready; before distributing, switch to your HTTPS production origin and regenerate"
+  @drift "cause: origin mode changed; repair: rerun mix crosswake.gen.shell ios"
+
+  defp run_task(target, flags) do
+    Mix.Task.reenable("crosswake.gen.shell")
+
+    ExUnit.CaptureIO.capture_io(fn ->
+      send(self(), {:result, try_run(["ios" | flags] ++ ["--target", target])})
+    end)
+    |> then(fn out ->
+      receive do
+        {:result, result} -> {out, result}
+      end
+    end)
+  end
+
+  defp try_run(args) do
+    Mix.Tasks.Crosswake.Gen.Shell.run(args)
+    :ok
+  rescue
+    e in Mix.Error -> {:raised, Exception.message(e)}
+  end
+
+  defp plist(target), do: Path.join(target, @info_plist)
+
+  defp host_ats_plist(production_bytes),
+    do:
+      String.replace(
+        production_bytes,
+        @anchor,
+        @anchor <>
+          "\n    <key>NSAppTransportSecurity</key>\n    <dict>\n        <key>NSAllowsLocalNetworking</key>\n        <true/>\n        <key>NSExceptionDomains</key>\n        <dict/>\n    </dict>"
+      )
+
+  test "a host-edited local plist is refused and left unchanged", %{target: target} do
+    generate(target, declaration(@local_declaration))
+
+    edited =
+      String.replace(
+        File.read!(plist(target)),
+        "<true/>\n    </dict>",
+        "<true/>\n        <key>Other</key>\n        <true/>\n    </dict>"
+      )
+
+    File.write!(plist(target), edited)
+
+    {_out, result} = run_task(target, [])
+    assert {:raised, message} = result
+    assert message =~ "info_plist_conflict"
+    assert File.read!(plist(target)) == edited
+  end
+
+  test "production host with its own ATS dict is untouched and --check is current", %{
+    target: target
+  } do
+    generate(target, declaration())
+    hosted = host_ats_plist(File.read!(plist(target)))
+    File.write!(plist(target), hosted)
+
+    {_out, result} = run_task(target, [])
+    assert result == :ok
+    assert File.read!(plist(target)) == hosted
+
+    {out, result} = run_task(target, ["--check"])
+    assert result == :ok
+    assert out =~ "checked managed iOS outputs: current"
+    refute out =~ "origin mode:"
+
+    # same plist, declaration switched to local: refused, unchanged
+    Application.put_env(:crosswake, :ios_host, declaration(@local_declaration))
+    {_out, result} = run_task(target, [])
+    assert {:raised, message} = result
+    assert message =~ "info_plist_conflict"
+    assert File.read!(plist(target)) == hosted
+  end
+
+  test "--check right after local generation is current with exactly one D-13 line", %{
+    target: target
+  } do
+    generate(target, declaration(@local_declaration))
+    {out, result} = run_task(target, ["--check"])
+    assert result == :ok
+    assert out =~ "checked managed iOS outputs: current"
+    assert length(String.split(out, @d13)) == 2
+    assert length(Regex.scan(~r/^origin mode:/m, out)) == 1
+  end
+
+  test "--check right after HTTPS generation prints no origin mode line", %{target: target} do
+    generate(target, declaration())
+    {out, result} = run_task(target, ["--check"])
+    assert result == :ok
+    assert out =~ "current"
+    refute out =~ ~r/^origin mode:/m
+  end
+
+  test "declaration toggled without regenerating is blocked in both directions", %{target: target} do
+    generate(target, declaration())
+    Application.put_env(:crosswake, :ios_host, declaration(@local_declaration))
+    {out, result} = run_task(target, ["--check"])
+    assert out =~ "blocked; " <> @drift
+    assert {:raised, _} = result
+
+    generate(target, declaration(@local_declaration))
+    Application.put_env(:crosswake, :ios_host, declaration())
+    {out, result} = run_task(target, ["--check"])
+    assert out =~ "blocked; " <> @drift
+    assert {:raised, _} = result
+  end
+
+  test "declared local with missing or unreadable plist is drift", %{target: target} do
+    generate(target, declaration(@local_declaration))
+    original = File.read!(plist(target))
+
+    File.rm!(plist(target))
+    {out, result} = run_task(target, ["--check"])
+    assert out =~ "blocked; " <> @drift
+    assert {:raised, _} = result
+
+    File.write!(plist(target), original)
+    File.chmod!(plist(target), 0o000)
+    {out, result} = run_task(target, ["--check"])
+    File.chmod!(plist(target), 0o644)
+    assert out =~ "blocked; " <> @drift
+    assert {:raised, _} = result
+  end
+
+  test "--diff reports needs-attention for a toggle without raising", %{target: target} do
+    generate(target, declaration())
+    Application.put_env(:crosswake, :ios_host, declaration(@local_declaration))
+    {out, result} = run_task(target, ["--diff"])
+    assert out =~ "needs-attention; " <> @drift
+    assert result == :ok
+  end
+
+  test "README banner appears once for fresh local generation and never for production", %{
+    target: target
+  } do
+    banner = Crosswake.Shell.IOSHostOriginMode.readme_banner()
+    readme = Path.join(target, "native/ios/crosswake_shell/README.md")
+
+    generate(target, declaration(@local_declaration))
+    assert length(String.split(File.read!(readme), banner)) == 2
+
+    prod =
+      Path.join(System.tmp_dir!(), "gen-shell-origin-prod-#{System.unique_integer([:positive])}")
+
+    File.mkdir_p!(prod)
+    on_exit(fn -> File.rm_rf!(prod) end)
+    generate(prod, declaration())
+    refute File.read!(Path.join(prod, "native/ios/crosswake_shell/README.md")) =~ banner
+    refute File.read!(Path.join(prod, "native/ios/crosswake_shell/README.md")) =~ "Local loopback"
+  end
+
+  test "generated Info.plist has no forbidden ATS keys and keeps WKAppBoundDomains", %{
+    target: target
+  } do
+    for decl <- [declaration(), declaration(@local_declaration)] do
+      File.rm_rf!(Path.join(target, "native"))
+      generate(target, decl)
+      bytes = File.read!(plist(target))
+
+      for key <- Crosswake.Shell.IOSHostOriginMode.forbidden_ats_keys(),
+          do: refute(bytes =~ key)
+
+      assert bytes =~
+               "<key>WKAppBoundDomains</key>\n    <array>\n        <string>example.com</string>\n    </array>"
+    end
+  end
 end
