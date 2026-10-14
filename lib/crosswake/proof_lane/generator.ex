@@ -69,20 +69,33 @@ defmodule Crosswake.ProofLane.Generator do
     relative = "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj"
 
     GeneratorFS.with_lifecycle(fn ->
-      with {:ok, bytes} <- GeneratorFS.read(root, relative),
-           {:ok, preview} <- IOSHostProjectMigration.preview_proof_contents(bytes),
-           :ok <-
-             maybe_apply_project_migration(
-               root,
-               relative,
-               preview.contents,
-               Keyword.get(opts, :apply, false)
-             ) do
-        {:ok, preview}
-      else
-        {:error, _} = error -> error
-        _ -> {:error, {"PL-GENERATE-MIGRATION", "proof project"}}
-      end
+      :global.trans({{__MODULE__, root}, self()}, fn ->
+        with :ok <- no_settings_recovery(root),
+             {:ok, bytes} <- GeneratorFS.read(root, relative),
+             {:ok, preview} <- IOSHostProjectMigration.preview_proof_contents(bytes),
+             :ok <-
+               maybe_apply_project_migration(
+                 root,
+                 relative,
+                 bytes,
+                 preview.contents,
+                 opts
+               ) do
+          {:ok, preview}
+        else
+          {:error, :unsafe} ->
+            {:error, {"PL-GENERATE-DESTINATION", "proof project"}}
+
+          {:error, :missing} ->
+            {:error, {"PL-GENERATE-MISSING", "proof project"}}
+
+          {:error, {rule, path}} when is_binary(rule) and is_binary(path) ->
+            {:error, {rule, path}}
+
+          _ ->
+            {:error, {"PL-GENERATE-MIGRATION", "proof project"}}
+        end
+      end)
     end)
   end
 
@@ -156,10 +169,7 @@ defmodule Crosswake.ProofLane.Generator do
 
     with :ok <- preflight_files(root, all_destinations),
          {:ok, _prior} <- managed_prior(root, settings.relative),
-         :missing <- GeneratorFS.status(root, "native/ios/.crosswake/ios_proof_settings.pending"),
-         :missing <-
-           GeneratorFS.status(root, "native/ios/.crosswake/ios_proof_settings.stage.json"),
-         :missing <- GeneratorFS.status(root, "native/ios/.crosswake/ios_proof_settings.next") do
+         :ok <- no_settings_recovery(root) do
       :ok
     else
       :unrecognized -> {:error, {"PL-GENERATE-OWNERSHIP", settings.path}}
@@ -219,7 +229,7 @@ defmodule Crosswake.ProofLane.Generator do
     stage = "native/ios/.crosswake/ios_proof_settings.stage.json"
     temp = "native/ios/.crosswake/ios_proof_settings.next"
 
-    with :missing <- GeneratorFS.status(root, pending),
+    with :ok <- no_settings_recovery(root),
          {:ok, prior} <- managed_prior(root, relative),
          :ok <- publish_managed_settings(root, relative, contents, pending, stage, temp, prior) do
       {:ok, %{path: display_path, status: if(is_nil(prior), do: :created, else: :reused)}}
@@ -310,12 +320,15 @@ defmodule Crosswake.ProofLane.Generator do
   defp managed_settings_findings(root) do
     settings = "native/ios/CrosswakeProofSettings.xcconfig"
     pending = "native/ios/.crosswake/ios_proof_settings.pending"
+    journal = no_settings_recovery(root)
 
     cond do
-      GeneratorFS.status(root, pending) == :regular ->
+      journal != :ok ->
+        {:error, {rule, _}} = journal
+
         [
           finding(
-            "PL-GENERATE-INTERRUPTED",
+            rule,
             pending,
             "run mix crosswake.gen.proof_lane ios --recover"
           )
@@ -362,48 +375,105 @@ defmodule Crosswake.ProofLane.Generator do
     settings = "native/ios/CrosswakeProofSettings.xcconfig"
     temp = "native/ios/.crosswake/ios_proof_settings.restore"
 
-    with :regular <- GeneratorFS.status(root, pending),
+    with :ok <- recoverable_journal(root, pending, stage),
          {:ok, bytes} <- GeneratorFS.read(root, stage),
          {:ok, %{"version" => version, "prior" => prior} = staged} <- Jason.decode(bytes),
          true <- version in [1, 2],
-         :ok <- recovery_current_is_known(root, settings, prior, Map.get(staged, "desired")),
-         :ok <- restore_prior(root, settings, temp, prior),
+         {:ok, prior_bytes} <- decode_optional_staged_bytes(prior),
+         {:ok, desired_bytes} <- recovery_desired(version, staged),
+         {:ok, current} <- recovery_current_is_known(root, settings, prior_bytes, desired_bytes),
+         :ok <-
+           recovery_temporary_is_known(
+             root,
+             "native/ios/.crosswake/ios_proof_settings.next",
+             desired_bytes
+           ),
+         :ok <- recovery_temporary_is_known(root, temp, prior_bytes),
+         :ok <- restore_prior(root, settings, temp, prior, current),
+         :ok <- remove_regular(root, "native/ios/.crosswake/ios_proof_settings.next"),
+         :ok <- remove_regular(root, temp),
          :ok <- remove_regular(root, pending),
          :ok <- remove_regular(root, stage) do
       {:ok, :recovered}
     else
       :missing -> {:error, {"PL-GENERATE-NO-RECOVERY", "settings"}}
       :unsafe -> {:error, {"PL-GENERATE-DESTINATION", pending}}
-      {:error, _} = error -> error
+      {:error, :unsafe} -> {:error, {"PL-GENERATE-DESTINATION", "settings"}}
+      {:error, {rule, path}} when is_binary(rule) and is_binary(path) -> {:error, {rule, path}}
       _ -> {:error, {"PL-GENERATE-RECOVERY", "settings"}}
     end
   end
 
-  defp maybe_apply_project_migration(_root, _relative, _contents, false), do: :ok
+  defp maybe_apply_project_migration(root, relative, expected, contents, opts) do
+    if Keyword.get(opts, :apply, false) do
+      temp = relative <> ".crosswake-migration-tmp"
 
-  defp maybe_apply_project_migration(root, relative, contents, true) do
-    temp = relative <> ".crosswake-migration-tmp"
-
-    with {:ok, _} <- GeneratorFS.write(root, temp, contents),
-         :regular <- GeneratorFS.status(root, relative),
-         :ok <- File.rename(Path.join(root, temp), Path.join(root, relative)),
-         true <- GeneratorFS.read(root, relative) == {:ok, contents} do
-      :ok
-    else
-      _ -> {:error, {"PL-GENERATE-MIGRATION", "proof project"}}
-    end
-  end
-
-  defp recovery_current_is_known(root, settings, prior, desired) do
-    with {:ok, expected} <- decode_staged_bytes(desired),
-         {:ok, prior_bytes} <- decode_optional_staged_bytes(prior) do
-      case GeneratorFS.read(root, settings) do
-        {:ok, current} when current == expected or current == prior_bytes -> :ok
-        {:error, :missing} when is_nil(prior_bytes) -> :ok
-        _ -> {:error, {"PL-GENERATE-RECOVERY-CONFLICT", "settings"}}
+      with {:ok, _} <-
+             GeneratorFS.write(root, temp, contents,
+               before_publish: Keyword.get(opts, :before_apply)
+             ),
+           {:ok, ^contents} <- GeneratorFS.read(root, temp),
+           {:ok, ^expected} <- GeneratorFS.read(root, relative),
+           :ok <- File.rename(Path.join(root, temp), Path.join(root, relative)),
+           true <- GeneratorFS.read(root, relative) == {:ok, contents} do
+        :ok
+      else
+        _ -> {:error, {"PL-GENERATE-MIGRATION-CONFLICT", "proof project"}}
       end
     else
+      :ok
+    end
+  end
+
+  defp recovery_current_is_known(root, settings, prior_bytes, desired_bytes) do
+    case GeneratorFS.read(root, settings) do
+      {:ok, current} when current == desired_bytes or current == prior_bytes ->
+        {:ok, {:ok, current}}
+
+      {:error, :missing} when is_nil(prior_bytes) ->
+        {:ok, {:error, :missing}}
+
+      _ when desired_bytes == :legacy ->
+        {:error, {"PL-GENERATE-RECOVERY-LEGACY", "settings"}}
+
+      _ ->
+        {:error, {"PL-GENERATE-RECOVERY-CONFLICT", "settings"}}
+    end
+  end
+
+  defp recovery_desired(1, _), do: {:ok, :legacy}
+  defp recovery_desired(2, staged), do: decode_staged_bytes(Map.get(staged, "desired"))
+
+  defp recovery_temporary_is_known(root, relative, expected) do
+    case GeneratorFS.read(root, relative) do
+      {:error, :missing} -> :ok
+      {:ok, ^expected} when is_binary(expected) -> :ok
+      {:error, :unsafe} -> {:error, {"PL-GENERATE-DESTINATION", "settings"}}
+      _ -> {:error, {"PL-GENERATE-RECOVERY-CONFLICT", "settings"}}
+    end
+  end
+
+  defp recoverable_journal(root, pending, stage) do
+    case {GeneratorFS.status(root, pending), GeneratorFS.status(root, stage)} do
+      {:missing, :missing} -> {:error, {"PL-GENERATE-NO-RECOVERY", "settings"}}
+      {:unsafe, _} -> {:error, {"PL-GENERATE-DESTINATION", "settings"}}
+      {_, :unsafe} -> {:error, {"PL-GENERATE-DESTINATION", "settings"}}
+      {_, :regular} -> :ok
       _ -> {:error, {"PL-GENERATE-RECOVERY", "settings"}}
+    end
+  end
+
+  defp no_settings_recovery(root) do
+    statuses =
+      Enum.map(
+        ["pending", "stage.json", "next", "restore"],
+        &GeneratorFS.status(root, "native/ios/.crosswake/ios_proof_settings." <> &1)
+      )
+
+    cond do
+      :unsafe in statuses -> {:error, {"PL-GENERATE-DESTINATION", "settings"}}
+      :regular in statuses -> {:error, {"PL-GENERATE-INTERRUPTED", "settings"}}
+      true -> :ok
     end
   end
 
@@ -419,21 +489,27 @@ defmodule Crosswake.ProofLane.Generator do
   defp decode_optional_staged_bytes(nil), do: {:ok, nil}
   defp decode_optional_staged_bytes(encoded), do: decode_staged_bytes(encoded)
 
-  defp restore_prior(root, settings, _temp, nil), do: remove_regular(root, settings)
+  defp restore_prior(root, settings, _temp, nil, current) do
+    if GeneratorFS.read(root, settings) == current,
+      do: remove_regular(root, settings),
+      else: {:error, {"PL-GENERATE-RECOVERY-CONFLICT", "settings"}}
+  end
 
-  defp restore_prior(root, settings, temp, encoded) when is_binary(encoded) do
+  defp restore_prior(root, settings, temp, encoded, current) when is_binary(encoded) do
     with {:ok, prior} <- Base.decode64(encoded),
          {:ok, _} <- GeneratorFS.write(root, temp, prior),
-         :regular <- GeneratorFS.status(root, settings),
+         {:ok, ^prior} <- GeneratorFS.read(root, temp),
+         true <- GeneratorFS.read(root, settings) == current,
          :ok <- File.rename(Path.join(root, temp), Path.join(root, settings)),
          true <- GeneratorFS.read(root, settings) == {:ok, prior} do
       :ok
     else
+      false -> {:error, {"PL-GENERATE-RECOVERY-CONFLICT", "settings"}}
       _ -> {:error, {"PL-GENERATE-RECOVERY", "settings"}}
     end
   end
 
-  defp restore_prior(_, _, _, _), do: {:error, {"PL-GENERATE-RECOVERY", "settings"}}
+  defp restore_prior(_, _, _, _, _), do: {:error, {"PL-GENERATE-RECOVERY", "settings"}}
 
   defp interrupt_before_manifest do
     if Process.get(:crosswake_proof_lane_interrupt_before_manifest) do
