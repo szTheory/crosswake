@@ -90,16 +90,12 @@ defmodule Crosswake.Guides.HostCommandSeamGuideTest do
     assert text =~ "leave `host_commands` undeclared"
   end
 
-  test "upgrade guide and template README tell hosts to add case .offlineIsland" do
+  test "upgrade guide tells hosts to add case .offlineIsland" do
     upgrade = guide("native_shell_upgrade.md")
-    readme = flat(File.read!("priv/templates/crosswake/shell/ios/README.md.eex"))
 
     assert upgrade =~ "case .offlineIsland"
     assert upgrade =~ "same web container"
     assert upgrade =~ "source break is intended"
-    assert readme =~ "case .offlineIsland"
-    assert readme =~ "same web container as `.liveView`"
-    assert readme =~ "crosswake_host_commands"
   end
 
   test "offline and native_shell guides list every offline non-promise" do
@@ -126,7 +122,6 @@ defmodule Crosswake.Guides.HostCommandSeamGuideTest do
     files =
       ~w(route_policy.md bridge.md native_shell_upgrade.md native_shell.md offline.md)
       |> Enum.map(&Path.join("guides", &1))
-      |> Kernel.++(["priv/templates/crosswake/shell/ios/README.md.eex"])
 
     for path <- files do
       text = path |> File.read!() |> flat()

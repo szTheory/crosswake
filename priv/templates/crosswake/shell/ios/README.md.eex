@@ -29,11 +29,3 @@ the native project files.
 
 Run `mix crosswake.install` first so the Phoenix host has a router-local policy
 surface before you wire any native shell behavior.
-
-## Host commands and ShellPresentation
-
-Declare host commands on the router (`crosswake_host_commands` or
-`use Crosswake.Router, host_commands:`), register them in your
-`HostBridgeCommandDelegate`, and run `mix crosswake.gen.shell ios`. If your app switches
-exhaustively over `ShellPresentation`, add `case .offlineIsland` and map it to the same
-web container as `.liveView`. This source break is intended.
