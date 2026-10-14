@@ -30,7 +30,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
   @diff_excluded_templates ["CrosswakeShell.xcodeproj/project.pbxproj"]
   @platforms ~w(ios android)
 
-  @template_version 4
+  @template_version 5
 
   @doc """
   Returns the current integer template epoch.
