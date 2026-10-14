@@ -6,7 +6,9 @@ defmodule Crosswake.Guides.HostCommandSeamGuideTest do
   repository files only.
   """
 
-  defp guide(name), do: File.read!(Path.join(["guides", name]))
+  defp flat(text), do: text |> String.split() |> Enum.join(" ")
+
+  defp guide(name), do: flat(File.read!(Path.join(["guides", name])))
 
   test "route_policy documents the author path and both error codes" do
     text = guide("route_policy.md")
@@ -40,5 +42,101 @@ defmodule Crosswake.Guides.HostCommandSeamGuideTest do
     assert entry =~ "not released"
     assert entry =~ "This entry is not a release and claims no device or adopter result"
     assert entry =~ "The Android shell, its vectors and its assets are unchanged"
+  end
+
+  test "bridge states the per-route grant rule and keeps undeclared_capability" do
+    text = guide("bridge.md")
+
+    for needle <- [
+          "registeredCommands",
+          "declares it",
+          "1.x.y",
+          "every navigation, deep link and back step",
+          "never inherited by another",
+          "keeps the shared reason `undeclared_capability`",
+          "No new reason code exists",
+          "names the route and the command",
+          "Authors never edit manifest or activation fixtures",
+          "[crosswake.route.unknown_host_command]",
+          "[crosswake.route.host_command_runtime]"
+        ] do
+      assert text =~ needle, "bridge.md is missing: #{needle}"
+    end
+  end
+
+  test "upgrade guide has the combination table and the entry-route deviation" do
+    text = guide("native_shell_upgrade.md")
+
+    for needle <- [
+          "| Host with no declaring routes |",
+          "| New shell with an old manifest (before 1.2.0) |",
+          "| New shell with a 1.2.0 manifest, declared command, no registered delegate |",
+          "| Old shell with a new manifest |",
+          "keeps working for the entry route only",
+          "Upgrade core and the iOS shell together",
+          "host_commands_stale",
+          "host_command_shell_unsupported"
+        ] do
+      assert text =~ needle, "native_shell_upgrade.md is missing: #{needle}"
+    end
+  end
+
+  test "upgrade guide explains the remote shell package gate and its fix" do
+    text = guide("native_shell_upgrade.md")
+    assert text =~ "remote crosswake-shell-core-ios package cannot declare host commands"
+    assert text =~ "until a published shell release carries the seam"
+    assert text =~ "local `crosswake-shell-core-ios` path"
+    assert text =~ "`HostCommandSeam` version 1.0.0"
+    assert text =~ "leave `host_commands` undeclared"
+  end
+
+  test "upgrade guide and template README tell hosts to add case .offlineIsland" do
+    upgrade = guide("native_shell_upgrade.md")
+    readme = flat(File.read!("priv/templates/crosswake/shell/ios/README.md.eex"))
+
+    assert upgrade =~ "case .offlineIsland"
+    assert upgrade =~ "same web container"
+    assert upgrade =~ "source break is intended"
+    assert readme =~ "case .offlineIsland"
+    assert readme =~ "same web container as `.liveView`"
+    assert readme =~ "crosswake_host_commands"
+  end
+
+  test "offline and native_shell guides list every offline non-promise" do
+    offline = guide("offline.md")
+    shell = guide("native_shell.md")
+
+    for needle <- [
+          "offline cold start",
+          "outbox durability, replay or auth",
+          "service workers",
+          "data-store survival under storage pressure",
+          "generic sync, background sync or native storage",
+          "Phase 180 relaunch evidence is its own observation"
+        ] do
+      assert offline =~ needle, "offline.md is missing: #{needle}"
+    end
+
+    assert shell =~ "`offline_island`"
+    assert shell =~ "offline.md#what-the-shell-does-not-promise"
+    assert shell =~ "Admission is not an offline guarantee"
+  end
+
+  test "edited guides make no release-done claim and name no adopter detail" do
+    files =
+      ~w(route_policy.md bridge.md native_shell_upgrade.md native_shell.md offline.md)
+      |> Enum.map(&Path.join("guides", &1))
+      |> Kernel.++(["priv/templates/crosswake/shell/ios/README.md.eex"])
+
+    for path <- files do
+      text = path |> File.read!() |> flat()
+
+      refute text =~ ~r/host.command seam[^.\n]*\b(has shipped|is released|was released)/i,
+             "#{path} claims the seam is released"
+
+      refute text =~ ~r/\$\d/, "#{path} contains a price-like token"
+    end
+
+    assert guide("native_shell_upgrade.md") =~ "Nothing described here is a release"
   end
 end

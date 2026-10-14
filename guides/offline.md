@@ -91,6 +91,21 @@ Until those native proof hooks pass on the real generated projects, shell suppor
 stays `verification required` even though the repo-local offline contract itself
 is hermetically proven.
 
+## What the shell does not promise
+
+The iOS shell admits an `offline_island` route as its own presentation, sharing the web
+container with `live_view`. Admission is not an offline guarantee. The shell does not
+promise:
+
+- offline cold start (the shell does not cache or serve island HTML or JavaScript);
+- outbox durability, replay or auth (the island and the backend own these);
+- service workers (host app-bound-domain configuration);
+- data-store survival under storage pressure;
+- generic sync, background sync or native storage.
+
+One offline island is not generic sync, and cached read-only is not local mutation.
+Phase 180 relaunch evidence is its own observation, not a shell guarantee.
+
 ## Boundary Warnings & Rough Edges
 
 Crosswake's offline support is intentionally narrow. Adopters should be aware of these boundaries:

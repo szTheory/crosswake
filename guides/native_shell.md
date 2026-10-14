@@ -241,6 +241,17 @@ Everything else is denied.
 
 `permissions.status` is intentionally narrow in Phase 16: it is read-only, one-shot, and supports the `notifications` alias only. It does not request permissions, observe background changes, or expose a generic permission dashboard.
 
+## Offline island admission
+
+The bounded shell opens `live_view` and `offline_island` routes. An `offline_island`
+route resolves to `ShellPresentation.offlineIsland` and passes the same ordered checks as
+`live_view`. Any other runtime is denied. Admission is not an offline guarantee: see
+[What the shell does not promise](offline.md#what-the-shell-does-not-promise) for the
+plain list (no offline cold start, no outbox durability, replay or auth promise, no
+service workers, no storage-pressure survival, no generic sync, background sync or native
+storage). Host apps that switch exhaustively over `ShellPresentation` add
+`case .offlineIsland`; see [Native Shell Upgrade](native_shell_upgrade.md).
+
 ## Boundary Warnings & Rough Edges
 
 - Command-only bridge, not a generic message bus

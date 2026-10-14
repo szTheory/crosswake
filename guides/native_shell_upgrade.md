@@ -50,6 +50,43 @@ activation carries no session, account, scope, media-availability, or replay aut
 Existing `mix crosswake.gen.proof_lane --config PATH` remains the separate owner for
 unrelated proof-lane configuration.
 
+## Host-command seam and offline-island admission (Phase 181)
+
+Manifest schema 1.2.0 adds a per-route `host_commands` field. The change is additive
+and iOS only. Nothing described here is a release. The Android shell is unchanged.
+
+Upgrade core and the iOS shell together. An older Swift package already built into an
+app, fed by newer fixtures generated outside the generation gate, would still reuse the
+entry baseline on navigation. `mix crosswake.doctor` reports `host_commands_stale` when
+the generated manifest no longer matches the router's per-route host commands, and
+`host_command_shell_unsupported` when it can determine that the shell package is older
+than the seam.
+
+| Combination | Outcome |
+| --- | --- |
+| Host with no declaring routes | Output is unchanged apart from the schema string. Old shells keep working. |
+| New shell with an old manifest (before 1.2.0) | The field is absent, so each route keeps today's behavior. An activation that already carries a registered command keeps working for the entry route only. |
+| New shell with a 1.2.0 manifest, declared command, no registered delegate | Denied at dispatch with the route and command named. |
+| Old shell with a new manifest | The old shell ignores `host_commands`. It grants nothing it did not already grant. |
+
+The entry-route sentence matters. A pre-1.2.0 manifest, together with an activation that
+already carries a registered command, keeps working for the entry route only. Other
+routes get nothing until the manifest is regenerated. A present `host_commands` field,
+including an empty one, is the only authority.
+
+Generation blocks when any route declares host commands and Crosswake cannot establish
+that the host's `crosswake-shell-core-ios` carries the seam. A host using a remote
+crosswake-shell-core-ios package cannot declare host commands until a published shell
+release carries the seam, because generation blocks it. The fix is one of: point the host
+at a local `crosswake-shell-core-ios` path that contains `HostCommandSeam` version 1.0.0
+or later, or leave `host_commands` undeclared until a shell release includes the seam.
+
+The shell also admits `offline_island` routes as their own presentation. Host apps with
+an exhaustive `switch` over `ShellPresentation` must add `case .offlineIsland` and map it
+to the same web container they use for `.liveView`. This source break is intended: it
+makes ownership visible. See [Offline](offline.md#what-the-shell-does-not-promise) for
+what island admission does not promise.
+
 ---
 
 ## Template Version 2 (Phase 134 — stamp, manifest, diff)

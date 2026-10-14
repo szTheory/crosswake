@@ -207,6 +207,35 @@ The bridge examples that remain honest in this posture are family-first:
 - `share` as a future semantic handoff family once Crosswake publishes a truthful
   route-local share contract beyond compatibility-only command seams
 
+## Host commands
+
+A `host.*` command is host-owned. Crosswake grants it to a route only when all
+three of these hold for that route:
+
+1. the route's manifest `host_commands` declares it;
+2. the app's `HostBridgeCommandDelegate.registeredCommands` contains it;
+3. the declared version is inside 1.x.y (`^1.0.0`), the range this shell supports.
+
+The shell re-resolves the grant on every navigation, deep link and back step. A
+command granted to one route is never inherited by another. Other versions fail at
+registry declaration and are never granted by the shell.
+
+A refused command keeps the shared reason `undeclared_capability`. No new reason code
+exists. The message names the route and the command and gives one fix, for example:
+"Route offline-study did not declare host command host.study.audio.play." with the
+hint to add it to the route's `capabilities` and to the router's `host_commands`, then
+regenerate. When the command is declared but the app did not register it, or the shell
+is older than the manifest's seam version, or the version is outside 1.x.y, the message
+says which.
+
+Host authors touch three places: the router (`crosswake_host_commands` or
+`use Crosswake.Router, host_commands:`, plus the route's `capabilities` reference),
+the Swift delegate (`registeredCommands` and `handle`), and the existing
+`mix crosswake.gen.shell ios` command. Authors never edit manifest or activation
+fixtures. See [Route Policy](route_policy.md#host-commands) for the compile-time
+errors `[crosswake.route.unknown_host_command]` and
+`[crosswake.route.host_command_runtime]`.
+
 ## Denial Reasons
 
 Bridge denials reuse the shared shell denial vocabulary:
