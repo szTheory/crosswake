@@ -102,7 +102,7 @@ test('five generated targets resolve all 20 settings cells from the original dec
 
   const reformatted = originalProject
     .replaceAll('isa = XCBuildConfiguration;', '/* host format */ "isa" = XCBuildConfiguration;\n')
-    .replaceAll('PRODUCT_BUNDLE_IDENTIFIER = "$(CROSSWAKE_PROOF_APP_BUNDLE_ID)";', '"PRODUCT_BUNDLE_IDENTIFIER" = org.crosswake.masked; "CODE_SIGN_STYLE[sdk=iphoneos*]" = Automatic;')
+    .replaceAll('PRODUCT_BUNDLE_IDENTIFIER = "$(CROSSWAKE_PROOF_APP_BUNDLE_ID)";', '"PRODUCT_BUNDLE_IDENTIFIER" = org.crosswake.masked; CROSSWAKE_PROOF_APP_BUNDLE_ID = org.crosswake.variable.mask; "CROSSWAKE_PROOF_APP_BUNDLE_ID[sdk=iphonesimulator*]" = org.crosswake.variable.mask; "CODE_SIGN_STYLE[sdk=iphoneos*]" = Automatic;')
     .replace('PRODUCT_NAME = CrosswakeProofLane;', 'PRODUCT_NAME = CrosswakeProofLane; /* untouched 🦉 { } */');
   writeFileSync(projectPath, reformatted);
   execFileSync('mix', ['run', '-e', `
