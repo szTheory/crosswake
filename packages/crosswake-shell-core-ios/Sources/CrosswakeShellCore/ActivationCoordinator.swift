@@ -207,6 +207,14 @@ public struct LiveViewSession: Equatable {
     public var hostCommandDenials: [String: String] = [:]
     /// Manifest-declared version of each denied command (message text only).
     public var hostCommandDeniedVersions: [String: String] = [:]
+    /// Which admitted web runtime this session was resolved for (D-11).
+    public var runtime: WebRuntime = .liveView
+}
+
+/// The two web runtimes the bounded shell admits. Closed set (D-11).
+public enum WebRuntime: String, Equatable {
+    case liveView = "live_view"
+    case offlineIsland = "offline_island"
 }
 
 /// Shell-side record of a host command that was not granted. Carries only route id,
@@ -309,6 +317,7 @@ public enum ShellPresentation: Equatable {
     case requiredPack(RequiredPackPresentation)
     case nativeCapture(NativeCapturePresentation)
     case liveView(LiveViewSession)
+    case offlineIsland(LiveViewSession)
     case denied(RouteDenialPresentation)
 }
 
@@ -489,7 +498,7 @@ public final class ActivationCoordinator: ObservableObject {
             return .requiredPack(
                 RequiredPackPresentation(
                     routeID: route.id,
-                    runtimeLabel: "LiveView",
+                    runtimeLabel: route.runtime == "offline_island" ? "Offline island" : "LiveView",
                     status: blockingPack
                 )
             )
@@ -534,7 +543,13 @@ public final class ActivationCoordinator: ObservableObject {
             )
         }
 
-        guard route.runtime == "live_view" else {
+        let admittedRuntime: WebRuntime
+        switch route.runtime {
+        case "live_view":
+            admittedRuntime = .liveView
+        case "offline_island":
+            admittedRuntime = .offlineIsland
+        default:
             transferCoordinator = nil
             return .denied(
                 denial(
@@ -542,7 +557,7 @@ public final class ActivationCoordinator: ObservableObject {
                     routeID: route.id,
                     manifest: manifest,
                     message: "This runtime is not available in the bounded shell.",
-                    hint: "Open the declared native capture route instead of falling back into the bounded web container."
+                    hint: "The bounded shell opens live_view and offline_island routes only. Use a declared native capture route or update the shell."
                 )
             )
         }
@@ -580,22 +595,25 @@ public final class ActivationCoordinator: ObservableObject {
         sessionCapabilities.merge(grant.granted) { _, new in new }
         recordHostCommandDenials(routeID: route.id, denials: grant.denials)
 
-        return .liveView(
-            LiveViewSession(
-                routeID: route.id,
-                url: resolvedURL,
-                allowedOrigin: allowedOrigin,
-                bridgeProtocolVersion: request.bridgeProtocolVersion,
-                nativeRuntimeVersion: request.nativeRuntimeVersion,
-                threadID: currentThreadID,
-                installedPacks: request.installedPacks,
-                routeRequiredPacks: route.packs,
-                capabilities: sessionCapabilities,
-                declaredTransfers: route.transfers,
-                hostCommandDenials: grant.denials,
-                hostCommandDeniedVersions: (route.hostCommands ?? [:]).filter { grant.denials[$0.key] != nil }
-            )
+        let session = LiveViewSession(
+            routeID: route.id,
+            url: resolvedURL,
+            allowedOrigin: allowedOrigin,
+            bridgeProtocolVersion: request.bridgeProtocolVersion,
+            nativeRuntimeVersion: request.nativeRuntimeVersion,
+            threadID: currentThreadID,
+            installedPacks: request.installedPacks,
+            routeRequiredPacks: route.packs,
+            capabilities: sessionCapabilities,
+            declaredTransfers: route.transfers,
+            hostCommandDenials: grant.denials,
+            hostCommandDeniedVersions: (route.hostCommands ?? [:]).filter { grant.denials[$0.key] != nil },
+            runtime: admittedRuntime
         )
+        switch admittedRuntime {
+        case .liveView: return .liveView(session)
+        case .offlineIsland: return .offlineIsland(session)
+        }
     }
 
     /// Builds the shell-owned navigation resolver from the same manifest/request
