@@ -50,6 +50,45 @@ defmodule Crosswake.Shell.ManagedOutputs do
 
   def write_migration_project(_root, _expected, _bytes), do: error(:unsafe_path)
 
+  @origin_plist "CrosswakeShell/Info.plist"
+
+  @doc false
+  def read_origin_plist(root) do
+    with :ok <- safe_layout(root),
+         :ok <- no_pending(root),
+         :ok <- safe_components(root, "CrosswakeShell"),
+         {:ok, bytes} <- safe_read(root, @origin_plist) do
+      {:ok, bytes}
+    else
+      {:error, :missing} -> error(:missing)
+      {:error, :interrupted} -> error(:interrupted)
+      _ -> error(:unsafe_path)
+    end
+  end
+
+  @doc false
+  def write_origin_plist(root, expected, bytes)
+      when is_binary(expected) and is_binary(bytes) and byte_size(bytes) <= @max_bytes do
+    with :ok <- safe_layout(root),
+         :ok <- no_pending(root),
+         :ok <- safe_components(root, "CrosswakeShell"),
+         {:ok, current} <- safe_read(root, @origin_plist),
+         true <- current == expected,
+         {:ok, %{mode: mode}} <- File.stat(Path.join(root, @origin_plist)),
+         :ok <- atomic_replace(root, @origin_plist, bytes),
+         :ok <- File.chmod(Path.join(root, @origin_plist), Bitwise.band(mode, 0o777)) do
+      :ok
+    else
+      false -> error(:conflict)
+      {:error, :missing} -> error(:missing)
+      {:error, :interrupted} -> error(:interrupted)
+      {:error, :conflict} -> error(:conflict)
+      _ -> error(:unsafe_path)
+    end
+  end
+
+  def write_origin_plist(_root, _expected, _bytes), do: error(:unsafe_path)
+
   def generated_at(root) do
     with :ok <- safe_layout(root),
          {:ok, metadata} when is_map(metadata) <- read_metadata(root),

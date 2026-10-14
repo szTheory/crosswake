@@ -119,4 +119,55 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellOriginModeTest do
     activation = target |> Path.join(@activation) |> File.read!() |> Jason.decode!()
     assert activation["origin"] == "http://127.0.0.1:4790"
   end
+
+  @local_declaration [origin: "http://127.0.0.1:4790", origin_mode: :local_loopback]
+
+  test "prod -> local -> prod round trip on one target restores the production golden", %{
+    target: target
+  } do
+    plist_path = Path.join(target, @info_plist)
+
+    generate(target, declaration())
+    assert File.read!(plist_path) == File.read!(@golden)
+
+    generate(target, declaration(@local_declaration))
+    local = File.read!(plist_path)
+    assert length(String.split(local, @local_block)) == 2
+    assert local =~ "NSAllowsLocalNetworking"
+
+    activation = target |> Path.join(@activation) |> File.read!() |> Jason.decode!()
+    assert activation["origin"] == "http://127.0.0.1:4790"
+
+    generate(target, declaration())
+    assert File.read!(plist_path) == File.read!(@golden)
+    refute File.read!(plist_path) =~ "NSAppTransportSecurity"
+    refute File.read!(plist_path) =~ "CrosswakeOriginMode"
+
+    # local -> prod -> local leaves exactly one block
+    generate(target, declaration(@local_declaration))
+    assert length(String.split(File.read!(plist_path), @local_block)) == 2
+  end
+
+  test "legacy path without :ios_host strips exactly the Crosswake block", %{target: target} do
+    plist_path = Path.join(target, @info_plist)
+
+    generate(target, declaration(@local_declaration))
+    local = File.read!(plist_path)
+
+    Application.delete_env(:crosswake, :ios_host)
+    Mix.Task.reenable("crosswake.gen.shell")
+
+    ExUnit.CaptureIO.capture_io(fn ->
+      Mix.Tasks.Crosswake.Gen.Shell.run(["ios", "--target", target])
+    end)
+
+    final = File.read!(plist_path)
+    refute final =~ "NSAppTransportSecurity"
+    refute final =~ "CrosswakeOriginMode"
+
+    assert final ==
+             String.replace(local, Crosswake.Shell.IOSHostOriginMode.block(:local_loopback), "")
+
+    assert final == File.read!(@golden)
+  end
 end

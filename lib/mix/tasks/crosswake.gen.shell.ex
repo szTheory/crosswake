@@ -6,6 +6,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
   alias Crosswake.Shell.Fixtures
   alias Crosswake.Shell.IOSHostConfig
   alias Crosswake.Shell.IOSHostGeneration
+  alias Crosswake.Shell.IOSHostOriginMode
 
   @shortdoc "Generates host-owned native shell baselines for Crosswake"
 
@@ -149,10 +150,14 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
         report_project_migration(managed_root, true)
 
       opts[:check] ->
-        report_managed_check(managed_root, host_outputs.managed_outputs, true)
+        drift = report_origin_mode_drift(managed_root, host_config, true)
+        current = report_managed_check(managed_root, host_outputs.managed_outputs, true)
+        report_origin_mode_line(host_config, drift, current)
 
       opts[:diff] == true and not is_nil(host_config) ->
-        report_managed_check(managed_root, host_outputs.managed_outputs, false)
+        drift = report_origin_mode_drift(managed_root, host_config, false)
+        current = report_managed_check(managed_root, host_outputs.managed_outputs, false)
+        report_origin_mode_line(host_config, drift, current)
         report_project_migration(managed_root, false)
 
       opts[:diff] ->
@@ -198,14 +203,88 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
           "[crosswake] checked managed iOS outputs: current; cause: none; repair: none"
         )
 
+        :current
+
       {:error, %{cause: cause, repair: repair}} ->
         Mix.shell().info(
           "[crosswake] checked managed iOS outputs: #{if(strict?, do: "blocked", else: "needs-attention")}; cause: #{cause}; repair: #{repair}"
         )
 
         if strict?, do: Mix.raise("managed iOS outputs are #{cause}; #{repair}")
+        :attention
     end
   end
+
+  # D-09: the declaration is the only source of the mode; the plist is checked against it.
+  # A declared local mode with an unreadable or missing plist is a mismatch (D-23, D-08).
+  defp report_origin_mode_drift(root, host_config, strict?) do
+    declared = host_config.origin_mode
+
+    inspection =
+      case Crosswake.Shell.ManagedOutputs.read_origin_plist(root) do
+        {:ok, bytes} -> IOSHostOriginMode.inspect_plist(bytes)
+        {:error, _} = error -> error
+      end
+
+    if IOSHostOriginMode.mismatch?(declared, inspection) do
+      repair = "rerun mix crosswake.gen.shell ios"
+
+      Mix.shell().info(
+        "[crosswake] checked managed iOS outputs: #{if(strict?, do: "blocked", else: "needs-attention")}; cause: origin mode changed; repair: #{repair}"
+      )
+
+      if strict?, do: Mix.raise("managed iOS outputs are origin mode changed; #{repair}")
+      :drift
+    else
+      :ok
+    end
+  end
+
+  # D-13: a current local build keeps its result and prints one extra line; production prints none.
+  defp report_origin_mode_line(host_config, :ok, :current) do
+    if line = IOSHostOriginMode.check_line(host_config.origin, host_config.origin_mode),
+      do: Mix.shell().info(line)
+
+    :ok
+  end
+
+  defp report_origin_mode_line(_host_config, _drift, _current), do: :ok
+
+  # D-23: reconcile exactly the Crosswake-owned Info.plist block with the declared mode
+  # (nil when no declaration exists). Host edits are refused without writing.
+  defp reconcile_origin_plist(root, mode) do
+    case Crosswake.Shell.ManagedOutputs.read_origin_plist(root) do
+      {:ok, bytes} ->
+        case IOSHostOriginMode.desired(bytes, mode) do
+          {:ok, ^bytes} ->
+            :ok
+
+          {:ok, desired} ->
+            case Crosswake.Shell.ManagedOutputs.write_origin_plist(root, bytes, desired) do
+              :ok ->
+                Mix.shell().info(
+                  "[crosswake] reconciled Info.plist origin mode: applied; cause: origin mode changed; repair: none"
+                )
+
+              {:error, %{cause: cause, repair: repair}} ->
+                origin_plist_blocked(cause, repair)
+            end
+
+          {:error, %{cause: cause, repair: repair}} ->
+            origin_plist_blocked(cause, repair)
+        end
+
+      {:error, %{cause: :missing}} when is_nil(mode) ->
+        :ok
+
+      {:error, %{cause: cause, repair: repair}} ->
+        origin_plist_blocked(cause, repair)
+    end
+  end
+
+  defp origin_plist_blocked(cause, repair),
+    do:
+      Mix.raise("[crosswake] Info.plist origin mode: blocked; cause: #{cause}; repair: #{repair}")
 
   defp report_project_migration(root, apply?) do
     case Crosswake.Shell.ManagedOutputs.read_migration_project(root) do
@@ -549,8 +628,9 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     readme = Path.join(root, "README.md")
     entrypoint = Path.join(root, "CrosswakeShell/CrosswakeShellApp.swift")
 
-    ensure_file(readme, shell_readme("ios"))
+    ensure_file(readme, shell_readme("ios", origin_mode))
     render_ios_templates(root, capabilities, local, origin_mode)
+    reconcile_origin_plist(root, origin_mode)
     managed_paths = if host_outputs, do: Map.keys(host_outputs.managed_outputs), else: []
 
     fixtures
@@ -771,7 +851,15 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     end)
   end
 
-  defp shell_readme(platform) do
+  defp shell_readme(platform, origin_mode \\ nil) do
+    base = shell_readme_base(platform)
+
+    if origin_mode == :local_loopback,
+      do: base <> "\n> " <> IOSHostOriginMode.readme_banner() <> "\n",
+      else: base
+  end
+
+  defp shell_readme_base(platform) do
     """
     # Crosswake #{String.upcase(platform)} Shell Baseline
 
