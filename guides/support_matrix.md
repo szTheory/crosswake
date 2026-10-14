@@ -39,6 +39,8 @@ Bridge is not high-frequency or mutation authority.
 
 `manifest_schema_version` moved `1.0.0` -> `1.1.0` (Phase 154, CTRL-05/D-55): additive, native-inert — the iOS and Android shells decode neither the new `interaction` field nor the widened `Capability` enforce-keys, so this is `compatibility-bump only`, not rebuild-required.
 
+`manifest_schema_version` then moved `1.1.0` -> `1.2.0` (Phase 181): additive and iOS-only. Routes may carry `host_commands`, and `compatibility` may carry `host_command_seam_version`. The Android shell does not read either field. This is `compatibility-bump only` for hosts that declare no host commands.
+
 Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` now also declares an explicit `Capability.interaction` value alongside `Capability.rebuild`, enforced at compile time by `@enforce_keys`. Use these labels literally.
 
 **Guarantee strength, stated honestly (D-45/D-52).** That `@enforce_keys` widening is the only part of the Phase 154 catalog line that is structurally impossible to violate: a capability declaring neither `interaction` nor `rebuild` does not compile, and no reviewer or CI job is involved. Every other part of the bounded-bridge contract is CI-caught rather than structural. `Crosswake.Bridge.CatalogGuard` is a merge-blocking structural test proving there is no dynamic-registration seam, no streaming seam, no external SDK inside the bridge tree, and native command enum parity in both directions — but a gate caught in CI is a gate a maintainer can still walk through deliberately, one honest control at a time. Read `guides/bridge.md#guarantee-strength-what-is-structural-and-what-is-ci-caught` before treating either as airtight.
