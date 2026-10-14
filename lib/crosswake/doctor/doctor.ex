@@ -18,6 +18,7 @@ defmodule Crosswake.Doctor do
   alias Crosswake.Policy.Compiler
   alias Crosswake.Policy.Diagnostic
   alias Crosswake.Shell.Denial
+  alias Crosswake.Shell.IOSHostOriginMode
   alias Crosswake.SupportMatrix
 
   @doc false
@@ -162,6 +163,7 @@ defmodule Crosswake.Doctor do
     phase_65_findings = phase_65_diagnostic_export_findings()
     phase_66_findings = phase_66_generator_drift_findings(manifest, cwd, opts)
     host_command_findings = host_command_seam_findings(manifest, cwd, opts)
+    ios_host_origin_findings = ios_host_origin_findings(cwd, opts)
 
     phase_154_findings =
       legacy_capability_id_findings(manifest) ++
@@ -189,6 +191,7 @@ defmodule Crosswake.Doctor do
         phase_65_findings ++
         phase_66_findings ++
         host_command_findings ++
+        ios_host_origin_findings ++
         phase_154_findings ++
         phase_155_findings ++
         publish_findings
@@ -2371,6 +2374,46 @@ defmodule Crosswake.Doctor do
 
   # D-16(d), D-23: stale generated host_commands and the shell-package gate verdict. Details
   # carry only route ids, command names, versions, package location and platform.
+  defp ios_host_origin_findings(cwd, opts) do
+    case ios_host_origin_observation(cwd, opts) do
+      :none ->
+        []
+
+      {:local, origin} ->
+        [
+          check(
+            :warning,
+            "ios_host.local_loopback_origin",
+            "ios_host_origin",
+            IOSHostOriginMode.local_message(origin),
+            IOSHostOriginMode.local_hint(),
+            %{origin: origin, mode: "local_loopback"}
+          )
+        ]
+
+      {:mismatch, origin} ->
+        [
+          check(
+            :error,
+            "ios_host.origin_mode_mismatch",
+            "ios_host_origin",
+            IOSHostOriginMode.mismatch_message(),
+            IOSHostOriginMode.mismatch_hint(),
+            %{origin: origin, mode: "local_loopback"}
+          )
+        ]
+    end
+  end
+
+  defp ios_host_origin_observation(cwd, opts) do
+    root = shell_root(:ios, cwd, opts)
+
+    declaration =
+      Keyword.get_lazy(opts, :ios_host, fn -> Application.get_env(:crosswake, :ios_host) end)
+
+    IOSHostOriginMode.observe(root, declaration)
+  end
+
   defp host_command_seam_findings(nil, _cwd, _opts), do: []
 
   defp host_command_seam_findings(manifest, cwd, opts) do
