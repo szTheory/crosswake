@@ -168,11 +168,13 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
               generate_ios_shell(
                 target,
                 capabilities,
-                local or (not is_nil(host_outputs) and not is_nil(local_ios_package())),
+                local or declaring_with_local_package?(host_outputs),
                 router,
                 host_outputs
               )
-            "android" -> generate_android_shell(target, capabilities, local, router)
+
+            "android" ->
+              generate_android_shell(target, capabilities, local, router)
           end
 
         Mix.shell().info(
@@ -652,8 +654,33 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
       File.exists?(Path.join(managed_root, "CrosswakeShell.xcodeproj/project.pbxproj")) ->
         {:project, managed_root}
 
-      local_package -> {:local, local_package}
-      true -> {:remote, nil}
+      local_package ->
+        {:local, local_package}
+
+      true ->
+        {:remote, nil}
+    end
+  end
+
+  # Only a router that declares host commands switches the generated project to the
+  # monorepo-local package reference; non-declaring routers render exactly as before.
+  defp declaring_with_local_package?(nil), do: false
+
+  defp declaring_with_local_package?(%{manifest: manifest_bytes}) do
+    not is_nil(local_ios_package()) and declares_host_commands?(manifest_bytes)
+  end
+
+  defp declares_host_commands?(manifest_bytes) do
+    case Jason.decode(manifest_bytes) do
+      {:ok, %{"routes" => routes}} when is_map(routes) ->
+        routes
+        |> Map.values()
+        |> Enum.any?(fn route ->
+          match?(%{"host_commands" => commands} when is_map(commands) and commands != %{}, route)
+        end)
+
+      _other ->
+        false
     end
   end
 
