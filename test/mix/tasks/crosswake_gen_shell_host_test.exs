@@ -20,6 +20,15 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell.HostTest do
       on_conflict: fn _source, _destination -> :ok end
     )
 
+    # The example router declares a host command, so generation needs a seam-carrying shell
+    # (D-16c); the in-repo local package is the one that carries it.
+    File.mkdir_p!(Path.join(host, "packages"))
+
+    File.ln_s!(
+      Path.join(@candidate_root, "packages/crosswake-shell-core-ios"),
+      Path.join(host, "packages/crosswake-shell-core-ios")
+    )
+
     config = Path.join(host, "config/config.exs")
     declared_origin = "https://crosswake-host.test"
     declared_entry_route = "learnloop-study-session"

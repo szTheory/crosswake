@@ -73,4 +73,78 @@ defmodule Crosswake.Shell.IOSHostGenerationHostCommandsTest do
 
     assert IOSHostGeneration.entry_host_commands(manifest, "plain") == %{}
   end
+
+  describe "shell package gate (D-16c)" do
+    @seam_swift_prefix "import Foundation\n\n"
+
+    defp package_dir(version_line) do
+      dir = Path.join(System.tmp_dir!(), "seam-gate-#{System.unique_integer([:positive])}")
+      source = Path.join(dir, "Sources/CrosswakeShellCore")
+      File.mkdir_p!(source)
+      File.write!(Path.join(source, "ActivationCoordinator.swift"), @seam_swift_prefix <> version_line)
+      on_exit(fn -> File.rm_rf!(dir) end)
+      dir
+    end
+
+    defp enum_at(version) do
+      "public enum HostCommandSeam {\n    public static let version = \"#{version}\"\n}\n"
+    end
+
+    defp gated(router, entry, source),
+      do: IOSHostGeneration.render(config(router, entry), shell_package: source)
+
+    test "a local package carrying seam 1.0.0 is allowed and projects capabilities" do
+      assert {:ok, rendered} = gated(Fixtures.DeclaringRouter, "lesson", {:local, package_dir(enum_at("1.0.0"))})
+      assert activation_capabilities(rendered) == %{"host.lesson.audio.play" => "1.0.0"}
+    end
+
+    test "a local package at 0.9.0 is blocked, naming the route, command, package and fix" do
+      assert {:error, message} =
+               gated(Fixtures.DeclaringRouter, "lesson", {:local, package_dir(enum_at("0.9.0"))})
+
+      assert message =~ "route lesson"
+      assert message =~ "host.lesson.audio.play"
+      assert message =~ "crosswake-shell-core-ios"
+      assert message =~ "0.9.0 is older than 1.0.0"
+      assert message =~ "Fix:"
+    end
+
+    test "a local package without the seam constant is blocked" do
+      assert {:error, message} =
+               gated(Fixtures.DeclaringRouter, "lesson", {:local, package_dir("struct Other {}\n")})
+
+      assert message =~ "no HostCommandSeam version declaration was found"
+      assert message =~ "crosswake-shell-core-ios"
+    end
+
+    test "a remote package is blocked because no release carries the seam" do
+      assert {:error, message} = gated(Fixtures.DeclaringRouter, "lesson", {:remote, "0.2.11"})
+      assert message =~ "route lesson"
+      assert message =~ "host.lesson.audio.play"
+      assert message =~ "remote crosswake-shell-core-ios 0.2.11 carries no host-command seam release"
+    end
+
+    test "an unresolvable project is blocked, never allowed" do
+      assert {:error, message} =
+               gated(Fixtures.DeclaringRouter, "lesson", {:project, "/nonexistent/crosswake-managed"})
+
+      assert message =~ "could not be determined"
+    end
+
+    test "a non-declaring router passes in every context" do
+      for source <- [
+            {:remote, nil},
+            {:remote, "0.2.11"},
+            {:local, package_dir("struct Other {}\n")},
+            {:project, "/nonexistent/crosswake-managed"}
+          ] do
+        assert {:ok, _} = gated(Crosswake.TestSupport.RouterFixtures.ManagedRouter, "dashboard", source)
+      end
+    end
+
+    test "render/1 without a context stays the pure projection" do
+      assert activation_capabilities(render!(Fixtures.DeclaringRouter, "lesson")) ==
+               %{"host.lesson.audio.play" => "1.0.0"}
+    end
+  end
 end

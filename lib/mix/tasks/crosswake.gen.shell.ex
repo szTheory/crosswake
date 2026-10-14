@@ -130,7 +130,12 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
       if not is_nil(host_config) and opts[:recover] != true do
         generated_at = Crosswake.Shell.ManagedOutputs.generated_at(managed_root)
 
-        case IOSHostGeneration.render(host_config, generated_at: generated_at) do
+        render_opts = [
+          generated_at: generated_at,
+          shell_package: shell_package_context(managed_root, local_ios_package())
+        ]
+
+        case IOSHostGeneration.render(host_config, render_opts) do
           {:ok, outputs} -> outputs
           {:error, reason} -> Mix.raise(reason)
         end
@@ -159,7 +164,14 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
 
         generated =
           case platform do
-            "ios" -> generate_ios_shell(target, capabilities, local, router, host_outputs)
+            "ios" ->
+              generate_ios_shell(
+                target,
+                capabilities,
+                local or (not is_nil(host_outputs) and not is_nil(local_ios_package())),
+                router,
+                host_outputs
+              )
             "android" -> generate_android_shell(target, capabilities, local, router)
           end
 
@@ -628,6 +640,26 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
           cutout_mode: String.contains?(relative_path, "/values-v28/")
         ] ++ assigns
     )
+  end
+
+  # D-16(c): the gate always receives the package context the managed project will use. An
+  # existing managed project is authoritative; otherwise a monorepo-local
+  # crosswake-shell-core-ios (packages/ under the working directory) is referenced by the
+  # generated project and checked directly; otherwise the remote reference is rendered, which
+  # carries no seam release yet.
+  defp shell_package_context(managed_root, local_package) do
+    cond do
+      File.exists?(Path.join(managed_root, "CrosswakeShell.xcodeproj/project.pbxproj")) ->
+        {:project, managed_root}
+
+      local_package -> {:local, local_package}
+      true -> {:remote, nil}
+    end
+  end
+
+  defp local_ios_package do
+    path = Path.expand("packages/crosswake-shell-core-ios", File.cwd!())
+    if File.dir?(path), do: path
   end
 
   defp local_package_assigns(root) do
