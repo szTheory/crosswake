@@ -157,7 +157,7 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
   end
 
   @tag :rline_02
-  test "canonical manifest compatibility.manifest_schema_version is 1.1.0 (Phase 154 bump, D-55)" do
+  test "canonical manifest compatibility.manifest_schema_version is 1.2.0 (Phase 181 additive host_commands bump, D-15)" do
     # SupportMatrix.canonical/0 returns a %SupportMatrix{} (no :compatibility field).
     # The canonical compatibility record is Types.new_compatibility/0 — the same
     # source Manifest.Builder.build/3 uses when constructing the full manifest root.
@@ -165,15 +165,15 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
     # Bumped 1.0.0 -> 1.1.0 in Phase 154 (D-55): additive Capability.rebuild
     # enforce-keys hardening plus the new Capability.interaction field. Native
     # shells decode neither field, so this bump is compatibility-bump only,
-    # not rebuild-required.
+    # not rebuild-required. Bumped 1.1.0 -> 1.2.0 in Phase 181 (D-15).
     compat = Types.new_compatibility()
 
-    assert compat.manifest_schema_version == "1.1.0",
+    assert compat.manifest_schema_version == "1.2.0",
            ProofAssertions.stable_id_message(
              "proof.rline_02.manifest_schema_version",
              "manifest_schema_version",
              "Crosswake.Manifest.Types.new_compatibility/0 → manifest_schema_version",
-             "manifest_schema_version value differs from locked \"1.1.0\"",
+             "manifest_schema_version value differs from locked \"1.2.0\"",
              "lib/crosswake/manifest/types.ex",
              "bump manifest_schema_version only through a phase — NOT by editing the field value",
              :merge_blocking

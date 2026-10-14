@@ -278,11 +278,11 @@ defmodule Crosswake.Manifest.BuilderTest do
                registry["totally.unknown.capability"]
     end
 
-    test "the built manifest reports manifest_schema_version 1.1.0" do
+    test "the built manifest reports manifest_schema_version 1.2.0" do
       manifest = Builder.build([], [])
 
-      assert manifest.manifest_schema_version == "1.1.0"
-      assert Types.new_compatibility().manifest_schema_version == "1.1.0"
+      assert manifest.manifest_schema_version == "1.2.0"
+      assert Types.new_compatibility().manifest_schema_version == "1.2.0"
     end
   end
 

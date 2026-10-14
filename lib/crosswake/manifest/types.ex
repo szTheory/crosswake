@@ -139,7 +139,6 @@ defmodule Crosswake.Manifest.Types do
       :bridge_protocol_version,
       :native_runtime_version,
       :remote_updates,
-      :host_command_seam_version,
       supported_manifest_sources: [:bundled, :cached, :remote]
     ]
 
@@ -150,8 +149,7 @@ defmodule Crosswake.Manifest.Types do
             bridge_protocol_version: String.t(),
             native_runtime_version: String.t(),
             supported_manifest_sources: [Crosswake.Manifest.Types.Host.manifest_source()],
-            remote_updates: [remote_update_mode()],
-            host_command_seam_version: String.t() | nil
+            remote_updates: [remote_update_mode()]
           }
   end
 
@@ -1141,6 +1139,23 @@ defmodule Crosswake.Manifest.Types do
     })
   end
 
+  # D-29: the seam version is a pure projection of the routes. It is present only when at
+  # least one route declares a host command, so the Compatibility struct stays at its five
+  # locked fields and the key can never disagree with the route entries.
+  defp compatibility_map(%Root{} = root) do
+    base = to_map(root.compatibility)
+
+    declaring =
+      Enum.reject(root.routes, fn {_id, entry} ->
+        Map.get(entry, :host_commands) in [nil, %{}]
+      end)
+
+    case declaring do
+      [] -> base
+      _ -> Map.put(base, "host_command_seam_version", Crosswake.HostCommands.seam_version())
+    end
+  end
+
   @spec to_map(term()) :: term()
   def to_map(%Root{} = root) do
     %{
@@ -1148,7 +1163,7 @@ defmodule Crosswake.Manifest.Types do
       "crosswake_version" => root.crosswake_version,
       "generated_at" => root.generated_at,
       "host" => to_map(root.host),
-      "compatibility" => to_map(root.compatibility),
+      "compatibility" => compatibility_map(root),
       "support_matrix" => to_map(root.support_matrix),
       "capability_registry" => to_map(root.capability_registry),
       "pack_registry" => to_map(root.pack_registry),
@@ -1168,7 +1183,7 @@ defmodule Crosswake.Manifest.Types do
   end
 
   def to_map(%Compatibility{} = compatibility) do
-    base = %{
+    %{
       "manifest_schema_version" => compatibility.manifest_schema_version,
       "bridge_protocol_version" => compatibility.bridge_protocol_version,
       "native_runtime_version" => compatibility.native_runtime_version,
@@ -1176,12 +1191,6 @@ defmodule Crosswake.Manifest.Types do
         Enum.map(compatibility.supported_manifest_sources, &Atom.to_string/1),
       "remote_updates" => Enum.map(compatibility.remote_updates, &Atom.to_string/1)
     }
-
-    # D-29: the seam version key is present only when a route declares a host command.
-    case compatibility.host_command_seam_version do
-      nil -> base
-      version -> Map.put(base, "host_command_seam_version", version)
-    end
   end
 
   def to_map(%Capability{} = capability) do

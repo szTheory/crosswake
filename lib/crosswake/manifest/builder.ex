@@ -64,13 +64,6 @@ defmodule Crosswake.Manifest.Builder do
     manifest_schema_version = Types.manifest_schema_version()
     route_entries = route_entries(routes, managed_routes, host.origin, host_command_registry)
 
-    compatibility =
-      if declares_host_commands?(route_entries) do
-        %{compatibility | host_command_seam_version: Crosswake.HostCommands.seam_version()}
-      else
-        compatibility
-      end
-
     Types.new_root(
       manifest_schema_version: manifest_schema_version,
       crosswake_version: Keyword.get(opts, :crosswake_version, crosswake_version()),
@@ -89,12 +82,6 @@ defmodule Crosswake.Manifest.Builder do
       navigation_topology: navigation_topology(routes, managed_routes),
       routes: route_entries
     )
-  end
-
-  defp declares_host_commands?(route_entries) do
-    route_entries
-    |> Enum.reject(fn {_id, entry} -> entry.host_commands in [nil, %{}] end)
-    |> Kernel.!=([])
   end
 
   defp crosswake_version do
