@@ -1,0 +1,61 @@
+{
+  "base_head": "12f84cd950d4574921767df823faed6797c17c26",
+  "declaration": {
+    "app_bundle_id": "dev.crosswake.hostapp",
+    "device_signing": {
+      "mode": "automatic",
+      "team_id": "ABCDE12345"
+    },
+    "entry_route_id": "study-session",
+    "origin": "https://study.crosswake.test",
+    "proof_app_bundle_id": "dev.crosswake.hostapp.proof",
+    "router": "Crosswake.TestSupport.RouterFixtures.ManagedRouter"
+  },
+  "files": {
+    "native/ios/crosswake_shell/.crosswake/ios_host_generation.json": "2575f46eb180325387285e5fd94726e77f83658475edd1ac25ef2e1c5dfb4d54",
+    "native/ios/crosswake_shell/.crosswake/shell.json": "c4418f7b837465d80f5f074463a5508d57af5bdcc5375ade905a914480317ff7",
+    "native/ios/crosswake_shell/CrosswakeHostSettings.xcconfig": "0083b747f6d8b847e8c03969c4a7730bee8e481fc11bb7af58fca8609e736761",
+    "native/ios/crosswake_shell/CrosswakeShell.xcodeproj/project.pbxproj": "8d7f7776c38e1d6db82ddb0569d47ccbd849d2fc612e76986c46c7bdf62dd2a1",
+    "native/ios/crosswake_shell/CrosswakeShell.xcodeproj/xcshareddata/xcschemes/CrosswakeShell.xcscheme": "cd7a46c87aa3bdb1200e42751f923eeafcd40768ffa4780db7927992a27089a6",
+    "native/ios/crosswake_shell/CrosswakeShell/CrosswakeCoordinator.swift": "019cd0ba3a3b6043685691530d3723260adc2936f6a6f61d1c1f55a9a2831b59",
+    "native/ios/crosswake_shell/CrosswakeShell/CrosswakeShell.entitlements": "e7cf7e5f7c76dd35b978ca8b9b98cadac239aade58aad20e1f297fbc07e175f0",
+    "native/ios/crosswake_shell/CrosswakeShell/CrosswakeShellApp.swift": "ad07cc2effe04448cb3dce76ac1a629f5055fd15a11730b47f5522e44549df38",
+    "native/ios/crosswake_shell/CrosswakeShell/Info.plist": "11e97fa81642e477364e9f347c649cc936d8b79e1d1bf6d0c5526e5d8bc62886",
+    "native/ios/crosswake_shell/CrosswakeShell/PrivacyInfo.xcprivacy": "c5945a8562185436ab28fbcb527787b51d29fd1f6ba6c000c9d606485427515a",
+    "native/ios/crosswake_shell/Fixtures/crosswake_manifest.json": "68d5622b3656247d219a0c7c43969df4fcb3a2ef20c7533309b407ce97a525c9",
+    "native/ios/crosswake_shell/Fixtures/declared_pack_requirements.json": "a6cae73ae313866d3d070590d077cf2da58bae36dfa43ae632d363e5e58e8ba5",
+    "native/ios/crosswake_shell/Fixtures/installed_packs.json": "a6cae73ae313866d3d070590d077cf2da58bae36dfa43ae632d363e5e58e8ba5",
+    "native/ios/crosswake_shell/Fixtures/pack_inventory.json": "5bc4537a6805e7359256c63e12b3a44bcba697fec6ea6783f9b329b61c8b2078",
+    "native/ios/crosswake_shell/Fixtures/route_activation.json": "7fa26f9a17d8d510da20a25188d2f25a8eee2df0858cadaf1b56f4423ab15fa5",
+    "native/ios/crosswake_shell/Fixtures/route_denial.json": "b6b7d16e5128c7f45ecce771f15154e98ffcd6bb638a64d40ec8b80abf350251",
+    "native/ios/crosswake_shell/README.md": "7d8e25c7951b6e199425aff146069f2a536232cce7935959c439f800e9de924e"
+  },
+  "normalization": [
+    {
+      "path": "native/ios/crosswake_shell/Fixtures/crosswake_manifest.json",
+      "pattern": "(?<=\"generated_at\": \")[^\"]*",
+      "token": "<GENERATED_AT>"
+    },
+    {
+      "path": "native/ios/crosswake_shell/.crosswake/shell.json",
+      "pattern": "(?<=\"generated_at\": \")[^\"]*",
+      "token": "<GENERATED_AT>"
+    },
+    {
+      "path": "native/ios/crosswake_shell/.crosswake/shell.json",
+      "pattern": "(?<=\"target\": \")[^\"]*",
+      "token": "<TARGET>"
+    },
+    {
+      "path": "native/ios/crosswake_shell/.crosswake/ios_host_generation.json",
+      "pattern": "(?<=\"generation_id\":\")[0-9a-f]{64}",
+      "token": "<GENERATION_ID_DERIVED_FROM_GENERATED_AT>"
+    },
+    {
+      "path": "native/ios/crosswake_shell/.crosswake/ios_host_generation.json",
+      "pattern": "(?<=\"Fixtures/crosswake_manifest.json\":\")[0-9a-f]{64}",
+      "token": "<MANIFEST_SHA_DERIVED_FROM_GENERATED_AT>"
+    }
+  ],
+  "schema": "crosswake.phase182.production_generation_manifest/1"
+}
