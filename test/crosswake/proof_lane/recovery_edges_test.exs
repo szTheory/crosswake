@@ -4,6 +4,7 @@ defmodule Crosswake.ProofLane.RecoveryEdgesTest do
 
   setup do
     root = Path.join(System.tmp_dir!(), "crosswake-recovery-edges-#{System.unique_integer([:positive])}")
+    File.mkdir_p!(root)
     config = %Config{route_id: "route-0123456789abcdef", route_path: "/study/:id", indexed_db_database: "proof_lane", indexed_db_store: "mutations", mutation_id_path: "client_mutation_id", sync_path: "/study/sync", evidence_path: "/_proof/evidence", router: CrosswakeWeb.Router, ios_shell_root: Path.join(root, "native/ios")}
     on_exit(fn -> File.rm_rf!(root) end)
     assert {:ok, _} = Generator.generate(config)
