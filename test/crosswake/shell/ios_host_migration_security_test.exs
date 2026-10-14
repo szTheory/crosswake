@@ -21,6 +21,7 @@ defmodule Crosswake.Shell.IOSHostMigrationSecurityTest do
           run_task(link, action)
         end)
 
+      assert length(outcomes) == 2
       assert Enum.all?(outcomes, &migration_failure?(&1, "unsafe_path"))
       assert File.read!(project) == legacy
       File.rm_rf!(base)
@@ -44,6 +45,7 @@ defmodule Crosswake.Shell.IOSHostMigrationSecurityTest do
           run_task(root, action)
         end)
 
+      assert length(outcomes) == 2
       assert Enum.all?(outcomes, &migration_failure?(&1, "unsafe_path"))
       assert File.read!(project) == before
       File.rm_rf!(outside)
@@ -66,6 +68,7 @@ defmodule Crosswake.Shell.IOSHostMigrationSecurityTest do
           run_task(root, action)
         end)
 
+      assert length(outcomes) == 2
       assert Enum.all?(outcomes, &migration_failure?(&1, "unsafe_path"))
       assert File.read!(outside) == legacy
       File.rm!(outside)
@@ -90,6 +93,7 @@ defmodule Crosswake.Shell.IOSHostMigrationSecurityTest do
           run_task(root, action)
         end)
 
+      assert length(outcomes) == 2
       assert Enum.all?(outcomes, &migration_failure?(&1, "interrupted"))
       assert File.read!(project) == legacy
     end)
@@ -203,8 +207,11 @@ defmodule Crosswake.Shell.IOSHostMigrationSecurityTest do
   defp xcode_target_settings(project, target, configuration) do
     {output, status} =
       System.cmd(
-        "xcodebuild",
+        "/bin/sh",
         [
+          "-c",
+          "exec xcodebuild \"$@\" 2>/dev/null",
+          "crosswake-xcode",
           "-project",
           Path.dirname(project),
           "-target",

@@ -160,8 +160,11 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell.HostTest do
 
     {settings, xcode_status} =
       System.cmd(
-        "xcodebuild",
+        "/bin/sh",
         [
+          "-c",
+          "exec xcodebuild \"$@\" 2>/dev/null",
+          "crosswake-xcode",
           "-project",
           project,
           "-scheme",
@@ -285,7 +288,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell.HostTest do
       )
 
     assert recovered_status == 0,
-           "xcodebuild did not pass after explicit managed-output recovery: #{recovered_output}"
+           "xcodebuild did not pass after explicit managed-output recovery; status=#{recovered_status}"
 
     refute recovered_output =~ "CROSSWAKE_IOS_GENERATION_INTERRUPTED"
 
