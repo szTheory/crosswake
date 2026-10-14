@@ -153,6 +153,7 @@ final class HostCommandSeamTests: XCTestCase {
 
         let reply = dispatch(review, command: seamLessonCommand, delegate: delegate)
         XCTAssertEqual(reply?.denial?.denial.reason, "undeclared_capability")
+        XCTAssertEqual(reply?.denial?.denial.message, "Route \(seamReviewID) did not declare host command \(seamLessonCommand).")
         XCTAssertEqual(delegate.commands, [])
     }
 
@@ -315,5 +316,52 @@ final class HostCommandSeamTests: XCTestCase {
             XCTAssertFalse(HostCommandSeam.supportsCommandVersion(bad), bad)
         }
         XCTAssertEqual(HostCommandSeam.supportedCommandMajor, 1)
+    }
+
+    // MARK: Task 3 messages
+
+    func test_denial_message_not_registered() throws {
+        let world = try SeamWorld.load()
+        let delegate = SeamRecordingDelegate(registered: [])
+        let coordinator = world.coordinator(entry: seamLessonID, delegate: delegate)
+        coordinator.bootstrapIfNeeded()
+        let reply = dispatch(try session(coordinator.presentation), command: seamLessonCommand, delegate: delegate)
+        XCTAssertEqual(reply?.denial?.denial.reason, "undeclared_capability")
+        XCTAssertEqual(reply?.denial?.denial.message, "Route \(seamLessonID) declared host command \(seamLessonCommand), but this app has not registered it.")
+        XCTAssertEqual(reply?.denial?.denial.hint, "Add the command to HostBridgeCommandDelegate.registeredCommands in the app's CrosswakeShellConfig.")
+    }
+
+    func test_denial_message_seam_unsupported() throws {
+        let world = try SeamWorld.load().withSeam("2.0.0")
+        let delegate = SeamRecordingDelegate(registered: [seamLessonCommand])
+        let coordinator = world.coordinator(entry: seamLessonID, delegate: delegate)
+        coordinator.bootstrapIfNeeded()
+        let reply = dispatch(try session(coordinator.presentation), command: seamLessonCommand, delegate: delegate)
+        XCTAssertEqual(reply?.denial?.denial.reason, "undeclared_capability")
+        XCTAssertEqual(reply?.denial?.denial.message, "Route \(seamLessonID) declared host command \(seamLessonCommand), but this app's shell does not support the manifest's host command contract.")
+        XCTAssertEqual(reply?.denial?.denial.hint, "Update the app's crosswake-shell-core-ios package to a version that supports this host command contract.")
+        XCTAssertEqual(delegate.commands, [])
+    }
+
+    func test_denial_message_version_unsupported() throws {
+        let world = try SeamWorld.load().replacing(seamLessonID, hostCommands: [seamLessonCommand: "2.0.0"])
+        let delegate = SeamRecordingDelegate(registered: [seamLessonCommand])
+        let coordinator = world.coordinator(entry: seamLessonID, delegate: delegate)
+        coordinator.bootstrapIfNeeded()
+        let reply = dispatch(try session(coordinator.presentation), command: seamLessonCommand, delegate: delegate)
+        XCTAssertEqual(reply?.denial?.denial.reason, "undeclared_capability")
+        XCTAssertEqual(reply?.denial?.denial.message, "Route \(seamLessonID) declared host command \(seamLessonCommand) at 2.0.0, which this shell does not support.")
+        XCTAssertEqual(reply?.denial?.denial.hint, "This shell supports host command versions 1.x.y. Declare the command at a 1.x.y version in crosswake_host_commands, then regenerate.")
+        XCTAssertEqual(delegate.commands, [])
+    }
+
+    func test_denial_message_undeclared_hint() throws {
+        let world = try SeamWorld.load()
+        let delegate = SeamRecordingDelegate(registered: [seamLessonCommand])
+        let coordinator = world.coordinator(entry: seamPlainID, delegate: delegate)
+        coordinator.bootstrapIfNeeded()
+        let reply = dispatch(try session(coordinator.presentation), command: seamLessonCommand, delegate: delegate)
+        XCTAssertEqual(reply?.denial?.denial.reason, "undeclared_capability")
+        XCTAssertEqual(reply?.denial?.denial.hint, "Add the command to this route's crosswake: capabilities and to host_commands on the router, then regenerate.")
     }
 }

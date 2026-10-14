@@ -414,11 +414,12 @@ public final class BridgeChannel: NSObject, WKScriptMessageHandler {
               let delegate = config.hostBridgeCommandDelegate,
               delegate.registeredCommands.contains(request.command),
               capabilityAvailable(for: request) else {
+            let (message, hint) = hostCommandDenialText(for: request)
             completion(deny(
                 request,
                 reason: "undeclared_capability",
-                message: "The bridge command is outside the host-declared contract.",
-                hint: "Declare the command for this host and active route before retrying."
+                message: message,
+                hint: hint
             ))
             return
         }
@@ -431,6 +432,35 @@ public final class BridgeChannel: NSObject, WKScriptMessageHandler {
             case let .deny(reason, message, hint):
                 completion(self.deny(request, reason: reason, message: message, hint: hint))
             }
+        }
+    }
+
+    /// Names the route and command and one fix. The wire reason stays undeclared_capability.
+    private func hostCommandDenialText(for request: BridgeRequestEnvelope) -> (String, String) {
+        let route = session.routeID
+        let command = request.command
+        switch session.hostCommandDenials[command] {
+        case "not_registered":
+            return (
+                "Route \(route) declared host command \(command), but this app has not registered it.",
+                "Add the command to HostBridgeCommandDelegate.registeredCommands in the app's CrosswakeShellConfig."
+            )
+        case "seam_unsupported":
+            return (
+                "Route \(route) declared host command \(command), but this app's shell does not support the manifest's host command contract.",
+                "Update the app's crosswake-shell-core-ios package to a version that supports this host command contract."
+            )
+        case "version_unsupported":
+            let declared = session.hostCommandDeniedVersions[command] ?? "an unsupported version"
+            return (
+                "Route \(route) declared host command \(command) at \(declared), which this shell does not support.",
+                "This shell supports host command versions \(HostCommandSeam.supportedCommandMajor).x.y. Declare the command at a \(HostCommandSeam.supportedCommandMajor).x.y version in crosswake_host_commands, then regenerate."
+            )
+        default:
+            return (
+                "Route \(route) did not declare host command \(command).",
+                "Add the command to this route's crosswake: capabilities and to host_commands on the router, then regenerate."
+            )
         }
     }
 
