@@ -227,6 +227,22 @@ test('CLI entrypoint handles space-containing and symlinked package paths', t =>
   }
 });
 
+test('one total checker deadline stops remaining cells with a bounded cause', { timeout: 20000 }, t => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'crosswake-ios-deadline-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  generateHost(root, declaration);
+  const calls = path.join(root, 'calls');
+  const fakeXcode = path.join(root, 'slow-xcode.mjs');
+  writeFileSync(fakeXcode, `#!/usr/bin/env node\nimport { appendFileSync } from 'node:fs';\nappendFileSync(${JSON.stringify(calls)}, 'call\\n');\nAtomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);\n`);
+  chmodSync(fakeXcode, 0o700);
+  const result = verifyIosHostSettings({ hostRoot: root, expectedSettings: declaration, xcodebuild: fakeXcode, timeoutMs: 50 });
+  assert.equal(result.ok, false);
+  assert.ok(result.findings.some(finding => finding.cause === 'checker_timeout'));
+  let invocations = 0;
+  try { invocations = readFileSync(calls, 'utf8').trim().split('\n').length; } catch {}
+  assert.ok(invocations <= 1, 'expired cells do not launch another Xcode query');
+});
+
 test('missing expected declaration fails before invoking Xcode', () => {
   const result = verifyIosHostSettings({ hostRoot: '/missing', expectedSettings: null, xcodebuild: 'missing-xcodebuild' });
   assert.equal(result.ok, false);
