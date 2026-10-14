@@ -1,6 +1,43 @@
 defmodule Crosswake.TestSupport.HostCommandFixtures do
   @moduledoc false
 
+  @doc """
+  Independent expectation: each managed route's own declaration, mapped to the
+  router-declared versions. Reads only the router's route metadata and registry, never
+  the Builder, so it cannot share a defect with the projection under test.
+  """
+  def declared(router) do
+    versions = Map.new(router.__crosswake_host_commands__())
+
+    for route <- router.__routes__(),
+        opts = get_in(route, [:metadata, :crosswake]),
+        is_list(opts),
+        into: %{} do
+      names =
+        opts
+        |> Keyword.get(:capabilities, [])
+        |> Enum.filter(&String.starts_with?(&1, "host."))
+
+      {Keyword.fetch!(opts, :id), Map.new(names, &{&1, Map.fetch!(versions, &1)})}
+    end
+  end
+
+  @doc """
+  D-10 matrix checker. `projection_fun.(manifest, route_id)` must return the host
+  commands for that route; every route whose projection differs from its own
+  declaration yields one violation string.
+  """
+  def check_matrix(projection_fun, router) do
+    {:ok, %{manifest: manifest}} =
+      Crosswake.Manifest.compile(router, origin: "https://study.crosswake.test")
+
+    for {route_id, expected} <- declared(router),
+        actual = projection_fun.(manifest, route_id),
+        actual != expected do
+      "route #{route_id}: projected #{inspect(actual)}, declared #{inspect(expected)}"
+    end
+  end
+
   defmodule DeclaringRouter do
     use Phoenix.Router
 
@@ -193,6 +230,59 @@ defmodule Crosswake.TestSupport.HostCommandFixtures do
           offline: :cached_read_only,
           security: :standard,
           capabilities: ["host.review.camera.scan"]
+        ]
+      )
+
+      live("/plain", Crosswake.TestSupport.LibraryLive,
+        crosswake: [id: "plain", runtime: :live_view, offline: :unavailable]
+      )
+    end
+  end
+
+  defmodule UnreferencedRouter do
+    use Crosswake.Router
+
+    crosswake_host_commands([
+      {"host.lesson.audio.play", "1.0.0"},
+      {"host.review.camera.scan", "1.1.0"}
+    ])
+
+    scope "/" do
+      live("/lesson", Crosswake.TestSupport.DashboardLive,
+        crosswake: [
+          id: "lesson",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard,
+          capabilities: ["host.lesson.audio.play"]
+        ]
+      )
+    end
+  end
+
+  defmodule SameCommandRouter do
+    use Crosswake.Router
+
+    crosswake_host_commands([{"host.lesson.audio.play", "1.0.0"}])
+
+    scope "/" do
+      live("/lesson", Crosswake.TestSupport.DashboardLive,
+        crosswake: [
+          id: "lesson",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard,
+          capabilities: ["host.lesson.audio.play"]
+        ]
+      )
+
+      live("/practice", Crosswake.TestSupport.LibraryLive,
+        crosswake: [
+          id: "practice",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard,
+          capabilities: ["host.lesson.audio.play"]
         ]
       )
 
