@@ -24,23 +24,26 @@ defmodule Crosswake.Policy.Validator do
   @provider_specific_commerce_terms MapSet.new(["storekit", "play_billing", "revenuecat"])
 
   @spec validate([Route.t()], [map()]) :: [Error.t()]
-  def validate(routes, managed_routes) do
+  def validate(routes, managed_routes), do: validate(routes, managed_routes, [])
+
+  @spec validate([Route.t()], [map()], keyword()) :: [Error.t()]
+  def validate(routes, managed_routes, opts) do
     routes
     |> Enum.zip(managed_routes)
     |> Enum.flat_map(fn {route, managed_route} ->
       route
-      |> route_errors()
+      |> route_errors(opts)
       |> Enum.map(&build_error(managed_route, route, &1))
     end)
   end
 
-  defp route_errors(route) do
+  defp route_errors(route, opts) do
     []
     |> validate_runtime_offline(route)
     |> validate_entry(route)
     |> validate_sync(route)
     |> validate_security(route)
-    |> validate_capabilities(route)
+    |> validate_capabilities(route, opts)
     |> validate_commerce(route)
     |> validate_unique_list(route, :capabilities, route.capabilities)
     |> validate_unique_pack_ids(route)
@@ -117,7 +120,14 @@ defmodule Crosswake.Policy.Validator do
     end
   end
 
-  defp validate_capabilities(errors, %Route{capabilities: capabilities}) do
+  defp validate_capabilities(errors, %Route{capabilities: capabilities} = route, opts) do
+    {host, core} = Enum.split_with(capabilities, &String.starts_with?(&1, "host."))
+
+    errors = validate_core_capabilities(errors, core)
+    Enum.reduce(host, errors, &validate_host_capability(&2, route, &1, opts))
+  end
+
+  defp validate_core_capabilities(errors, capabilities) do
     Enum.reduce(capabilities, errors, fn capability, acc ->
       if MapSet.member?(@known_capabilities, capability) do
         acc
@@ -133,6 +143,53 @@ defmodule Crosswake.Policy.Validator do
         ]
       end
     end)
+  end
+
+  # Host commands are a separate input (D-03): they never join @known_capabilities.
+  defp validate_host_capability(errors, route, capability, opts) do
+    case Keyword.fetch(opts, :host_commands) do
+      {:ok, registry} ->
+        declared = registry |> Enum.map(&registry_name/1) |> Enum.sort()
+
+        if capability in declared do
+          errors
+        else
+          [unknown_host_command_error(route, capability, declared) | errors]
+        end
+
+      :error ->
+        errors
+    end
+  end
+
+  defp registry_name({name, _version}), do: name
+  defp registry_name(name) when is_binary(name), do: name
+
+  defp unknown_host_command_error(route, capability, declared) do
+    suggestion =
+      declared
+      |> Enum.map(&{&1, String.jaro_distance(&1, capability)})
+      |> Enum.filter(fn {_name, distance} -> distance >= 0.85 end)
+      |> Enum.max_by(fn {_name, distance} -> distance end, fn -> nil end)
+
+    did_you_mean =
+      case suggestion do
+        {name, _distance} -> " Did you mean #{inspect(name)}?"
+        nil -> ""
+      end
+
+    fix_name = if suggestion, do: elem(suggestion, 0), else: capability
+
+    %{
+      key: :capabilities,
+      message:
+        "[crosswake.route.unknown_host_command] route #{inspect(route.id)} references host " <>
+          "command #{inspect(capability)}, which the router never declared.#{did_you_mean} " <>
+          "Declared host commands: #{inspect(declared)}.",
+      hint:
+        "declare it once on the router with crosswake_host_commands [{#{inspect(fix_name)}, \"1.0.0\"}] " <>
+          "and keep capabilities: #{inspect(Enum.uniq(route.capabilities -- ([capability] ++ [fix_name])))} on route #{inspect(route.id)}"
+    }
   end
 
   defp validate_commerce(errors, %Route{commerce: nil}), do: errors

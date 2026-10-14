@@ -18,6 +18,7 @@ defmodule Crosswake.Policy.Compiler do
   def compile(source, opts \\ []) do
     routes = routes_from_source(source)
     source_module = source_module(source)
+    registry = host_command_registry(source, opts)
 
     {managed_routes, unmanaged_routes} =
       Enum.split_with(routes, fn route ->
@@ -42,7 +43,7 @@ defmodule Crosswake.Policy.Compiler do
       errors
       |> Enum.reverse()
       |> Kernel.++(duplicate_id_errors(compiled_routes, managed_routes))
-      |> Kernel.++(Validator.validate(compiled_routes, managed_routes))
+      |> Kernel.++(Validator.validate(compiled_routes, managed_routes, host_commands: registry))
 
     case errors do
       [] ->
@@ -51,6 +52,15 @@ defmodule Crosswake.Policy.Compiler do
 
       _errors ->
         {:error, Diagnostic.new(module: source_module, errors: errors, warnings: [])}
+    end
+  end
+
+  defp host_command_registry(source, opts) do
+    if is_atom(source) and not is_nil(source) and Code.ensure_loaded?(source) and
+         function_exported?(source, :__crosswake_host_commands__, 0) do
+      source.__crosswake_host_commands__()
+    else
+      Keyword.get(opts, :host_commands, [])
     end
   end
 
