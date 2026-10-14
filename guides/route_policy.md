@@ -318,6 +318,65 @@ live("/scan/document", DocumentScanLive,
   a declared `{:fallback_phoenix, route_id}` when a real fallback exists.
 - **Rough edge:** a deferred owner is not hidden support. It is a visible boundary.
 
+## Host commands
+
+A route can reference a host-owned `host.*` command, such as one that plays audio
+the host app supplies. The router declares each command once, with its version.
+Routes then name the command in `capabilities`. Versions live only on the router
+and names live only on routes.
+
+```elixir
+defmodule MyAppWeb.Router do
+  use Crosswake.Router,
+    host_commands: [{"host.study.audio.play", "1.0.0"}]
+
+  live("/study/session", StudySessionLive,
+    crosswake: [
+      id: "local-first-study-session",
+      runtime: :offline_island,
+      offline: :local_first,
+      island_contract: :study_session_v1,
+      capabilities: ["host.study.audio.play"]
+    ]
+  )
+end
+```
+
+`use Crosswake.Router, host_commands: [...]` is sugar for the
+`crosswake_host_commands/1` macro. Both styles declare the same registry, and a
+router may declare it once.
+
+- **Name grammar:** `host.<namespace>.<action>`, with lowercase letters, digits and
+  underscores, in 3 or 4 dot-separated segments. The prefixes `host.crosswake.` and
+  `host.bridge.` are reserved.
+- **Supported versions:** this shell supports host-command versions 1.x.y
+  (`^1.0.0`). Versions are strict three-part SemVer. Any other version fails at
+  registry declaration, and the shell never grants it.
+- **Allowed runtimes:** only `live_view` and `offline_island` routes can reference a
+  host command. They are the runtimes that carry a web bridge session.
+- **Compile-time errors:** a route that names a command the router never declared
+  fails with `[crosswake.route.unknown_host_command]`. It names the route, the
+  command, the declared list and one fix. A route on another runtime fails with
+  `[crosswake.route.host_command_runtime]`.
+
+```text
+[crosswake.route.unknown_host_command] route "local-first-study-session" references
+host command "host.study.audio.plya", which the router never declared. Did you mean
+"host.study.audio.play"? Declared host commands: ["host.study.audio.play"].
+```
+
+### Three touch points for a host author
+
+1. The router: the `host_commands:` registry (or `crosswake_host_commands`) plus the
+   route's `capabilities` reference.
+2. The Swift `HostBridgeCommandDelegate`: `registeredCommands` and `handle`.
+3. The existing generation command, `mix crosswake.gen.shell ios`.
+
+Authors never edit manifest or activation fixtures. Generation writes the per-route
+`host_commands` into the manifest, and a stale manifest is a doctor finding. See
+[Bridge](bridge.md#host-commands) for the per-route grant rule and
+[Native Shell Upgrade](native_shell_upgrade.md) for old and new combinations.
+
 ## Field Checklist
 
 Route policies should use the current semantic DSL fields instead of a simplified
