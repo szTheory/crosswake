@@ -30,9 +30,9 @@ defmodule Crosswake.Policy.HostCommandsTest do
   test "the same reference without a registry is denied" do
     assert {:error, %Diagnostic{errors: errors}} = Compiler.compile(Fixtures.NoRegistryRouter)
 
-    assert Enum.any?(errors, fn error ->
-             error.key == :capabilities and error.message =~ "host.lesson.audio.play"
-           end)
+    assert [error] = errors
+    assert error.key == :capabilities
+    assert error.message =~ "host.lesson.audio.play"
   end
 
   defp errors_for(source, opts \\ []) do
