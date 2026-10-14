@@ -108,7 +108,10 @@ defmodule Crosswake.Shell.IOSHostMigrationSecurityTest do
         File.read!(project)
         |> String.replace("$(CROSSWAKE_APP_BUNDLE_ID)", "org.crosswake.legacy.app")
         |> String.replace("$(CROSSWAKE_SHELL_TEST_BUNDLE_ID)", "org.crosswake.legacy.tests")
-        |> String.replace("buildSettings = {", "buildSettings = { CROSSWAKE_APP_BUNDLE_ID = org.crosswake.variable.mask; \"CROSSWAKE_SHELL_TEST_BUNDLE_ID[sdk=iphonesimulator*]\" = org.crosswake.variable.mask;")
+        |> String.replace(
+          "buildSettings = {",
+          "buildSettings = { CROSSWAKE_APP_BUNDLE_ID = org.crosswake.variable.mask; \"CROSSWAKE_SHELL_TEST_BUNDLE_ID[sdk=iphonesimulator*]\" = org.crosswake.variable.mask;"
+        )
 
       File.write!(project, legacy)
       assert :ok = run_task(root, "--migrate-project-settings")

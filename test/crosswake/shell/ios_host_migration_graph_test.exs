@@ -144,13 +144,25 @@ defmodule Crosswake.Shell.IOSHostMigrationGraphTest do
   end
 
   test "shell migration removes managed identity variables at project and target precedence" do
-    changed = String.replace(shell(), "buildSettings = {", "buildSettings = { CROSSWAKE_APP_BUNDLE_ID = org.crosswake.variable.mask; \"CROSSWAKE_SHELL_TEST_BUNDLE_ID[sdk=iphonesimulator*]\" = org.crosswake.variable.mask;")
+    changed =
+      String.replace(
+        shell(),
+        "buildSettings = {",
+        "buildSettings = { CROSSWAKE_APP_BUNDLE_ID = org.crosswake.variable.mask; \"CROSSWAKE_SHELL_TEST_BUNDLE_ID[sdk=iphonesimulator*]\" = org.crosswake.variable.mask;"
+      )
+
     assert {:ok, %{contents: migrated}} = IOSHostProjectMigration.preview_contents(changed)
     refute migrated =~ "org.crosswake.variable.mask"
   end
 
   test "proof migration removes every managed identity variable including conditional forms" do
-    changed = String.replace(proof(), "buildSettings = {", "buildSettings = { CROSSWAKE_PROOF_APP_BUNDLE_ID = org.crosswake.variable.mask; \"CROSSWAKE_PROOF_TEST_BUNDLE_ID[sdk=iphoneos*]\" = org.crosswake.variable.mask; CROSSWAKE_PROOF_UI_BUNDLE_ID = org.crosswake.variable.mask;")
+    changed =
+      String.replace(
+        proof(),
+        "buildSettings = {",
+        "buildSettings = { CROSSWAKE_PROOF_APP_BUNDLE_ID = org.crosswake.variable.mask; \"CROSSWAKE_PROOF_TEST_BUNDLE_ID[sdk=iphoneos*]\" = org.crosswake.variable.mask; CROSSWAKE_PROOF_UI_BUNDLE_ID = org.crosswake.variable.mask;"
+      )
+
     assert {:ok, %{contents: migrated}} = IOSHostProjectMigration.preview_proof_contents(changed)
     refute migrated =~ "org.crosswake.variable.mask"
   end
