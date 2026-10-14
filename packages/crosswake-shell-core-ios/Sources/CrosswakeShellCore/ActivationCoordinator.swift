@@ -104,9 +104,11 @@ public struct ActivationRequest: Codable, Equatable {
 public struct ShellManifest: Codable, Equatable {
     public struct Compatibility: Codable, Equatable {
         let nativeRuntimeVersion: String
+        var hostCommandSeamVersion: String? = nil
 
         enum CodingKeys: String, CodingKey {
             case nativeRuntimeVersion = "native_runtime_version"
+            case hostCommandSeamVersion = "host_command_seam_version"
         }
     }
 
@@ -141,6 +143,8 @@ public struct ShellManifest: Codable, Equatable {
         let packs: [String]
         let transfers: [TransferSeam]
         let allowlistedOrigins: [String]
+        /// nil: field absent (pre-1.2.0 manifest, legacy path). [:]: none declared.
+        var hostCommands: [String: String]? = nil
 
         enum CodingKeys: String, CodingKey {
             case id
@@ -151,6 +155,7 @@ public struct ShellManifest: Codable, Equatable {
             case packs
             case transfers
             case allowlistedOrigins = "allowlisted_origins"
+            case hostCommands = "host_commands"
         }
     }
 
@@ -198,6 +203,92 @@ public struct LiveViewSession: Equatable {
     public let routeRequiredPacks: [String]
     public let capabilities: [String: String]
     public let declaredTransfers: [ShellManifest.TransferSeam]
+    /// Declared host commands that were not granted, command to issue name (D-09).
+    public var hostCommandDenials: [String: String] = [:]
+    /// Manifest-declared version of each denied command (message text only).
+    public var hostCommandDeniedVersions: [String: String] = [:]
+}
+
+/// Shell-side record of a host command that was not granted. Carries only route id,
+/// command and an issue name; never payloads, scope, account, token or device ids (D-09).
+public struct HostCommandDiagnostic: Equatable {
+    public let routeID: String?
+    public let command: String?
+    public let issue: String
+
+    public init(routeID: String?, command: String?, issue: String) {
+        self.routeID = routeID
+        self.command = command
+        self.issue = issue
+    }
+}
+
+extension ShellManifest.Route {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(String.self, forKey: .id)
+        self.path = try container.decode(String.self, forKey: .path)
+        self.runtime = try container.decode(String.self, forKey: .runtime)
+        self.entry = try container.decode(String.self, forKey: .entry)
+        self.capabilities = try container.decode([String].self, forKey: .capabilities)
+        self.packs = try container.decode([String].self, forKey: .packs)
+        self.transfers = try container.decode([ShellManifest.TransferSeam].self, forKey: .transfers)
+        self.allowlistedOrigins = try container.decode([String].self, forKey: .allowlistedOrigins)
+
+        if !container.contains(.hostCommands) {
+            self.hostCommands = nil
+        } else if try container.decodeNil(forKey: .hostCommands) {
+            self.hostCommands = [:]
+        } else {
+            let commands = try container.decode([String: String].self, forKey: .hostCommands)
+            for name in commands.keys where !HostCommandSeam.isValidName(name) {
+                throw DecodingError.dataCorruptedError(
+                    forKey: .hostCommands,
+                    in: container,
+                    debugDescription: "host_commands key \(name) does not match the host command grammar"
+                )
+            }
+            self.hostCommands = commands
+        }
+    }
+}
+
+/// Computes one route's host.* session capabilities (D-08, D-28). Pure.
+/// Granted: declared by the route, registered by the host, version inside the shell range,
+/// and the manifest seam demand satisfied. Everything else declared is recorded in `denials`.
+func grantHostCommands(
+    route: ShellManifest.Route,
+    request: ActivationRequest,
+    entryRouteID: String?,
+    registered: [String],
+    seamDemand: String?
+) -> (granted: [String: String], denials: [String: String]) {
+    guard let declared = route.hostCommands else {
+        // D-28 legacy path: absent field keeps today's behavior, entry route only.
+        guard let entryRouteID, route.id == entryRouteID else { return ([:], [:]) }
+        var granted: [String: String] = [:]
+        for (key, version) in request.capabilities where key.hasPrefix("host.") && registered.contains(key) {
+            granted[key] = version
+        }
+        return (granted, [:])
+    }
+
+    var granted: [String: String] = [:]
+    var denials: [String: String] = [:]
+    let seamOK = seamDemand.map { SemVer.compatible(provides: HostCommandSeam.version, demands: $0) } ?? true
+
+    for (command, version) in declared {
+        if !seamOK {
+            denials[command] = "seam_unsupported"
+        } else if !registered.contains(command) {
+            denials[command] = "not_registered"
+        } else if !HostCommandSeam.supportsCommandVersion(version) {
+            denials[command] = "version_unsupported"
+        } else {
+            granted[command] = version
+        }
+    }
+    return (granted, denials)
 }
 
 public struct RequiredPackPresentation: Equatable {
@@ -234,6 +325,7 @@ public final class ActivationCoordinator: ObservableObject {
     private var hasBootstrapped = false
     private var lastRequest: ActivationRequest?
     private var cachedManifest: ShellManifest?
+    public private(set) var hostCommandDiagnostics: [HostCommandDiagnostic] = []
 
     /// Existing host WebView bootstrap needs the configuration's declared bridge capabilities.
     public var registeredCapabilities: [String] {
@@ -475,6 +567,19 @@ public final class ActivationCoordinator: ObservableObject {
 
         transferCoordinator = routeTransferCoordinator
 
+        let entryRouteID = (try? requestLoader())?.routeID
+        let registeredHostCommands = config.hostBridgeCommandDelegate?.registeredCommands ?? []
+        let grant = grantHostCommands(
+            route: route,
+            request: request,
+            entryRouteID: entryRouteID,
+            registered: registeredHostCommands,
+            seamDemand: manifest.compatibility.hostCommandSeamVersion
+        )
+        var sessionCapabilities = request.capabilities.filter { !$0.key.hasPrefix("host.") }
+        sessionCapabilities.merge(grant.granted) { _, new in new }
+        recordHostCommandDenials(routeID: route.id, denials: grant.denials)
+
         return .liveView(
             LiveViewSession(
                 routeID: route.id,
@@ -485,8 +590,10 @@ public final class ActivationCoordinator: ObservableObject {
                 threadID: currentThreadID,
                 installedPacks: request.installedPacks,
                 routeRequiredPacks: route.packs,
-                capabilities: request.capabilities,
-                declaredTransfers: route.transfers
+                capabilities: sessionCapabilities,
+                declaredTransfers: route.transfers,
+                hostCommandDenials: grant.denials,
+                hostCommandDeniedVersions: (route.hostCommands ?? [:]).filter { grant.denials[$0.key] != nil }
             )
         )
     }
@@ -494,13 +601,34 @@ public final class ActivationCoordinator: ObservableObject {
     /// Builds the shell-owned navigation resolver from the same manifest/request
     /// authority as activation. Candidate transitions never bypass this resolver.
     public func makeNavigationCoordinator(topology: NavigationTopology) -> NavigationCoordinator {
-        let manifest = (try? loadManifest()) ?? ShellManifest(compatibility: .init(nativeRuntimeVersion: "0.0.0"), routes: [:])
+        let loaded = try? loadManifest()
+        if loaded == nil {
+            hostCommandDiagnostics.append(HostCommandDiagnostic(routeID: nil, command: nil, issue: "manifest_unavailable"))
+        }
+        let manifest = loaded ?? ShellManifest(compatibility: .init(nativeRuntimeVersion: "0.0.0"), routes: [:])
         return NavigationCoordinator(topology: topology, manifest: manifest) { [weak self] routeID, manifest in
-            guard let self, let baseline = try? self.requestLoader() else { return .denied }
-            let request = ActivationRequest(routeID: routeID, url: nil, source: .inAppNavigation, origin: baseline.origin, manifestSource: baseline.manifestSource, bridgeProtocolVersion: baseline.bridgeProtocolVersion, nativeRuntimeVersion: baseline.nativeRuntimeVersion, correlationID: baseline.correlationID, threadID: baseline.threadID, declaredPackRequirements: baseline.declaredPackRequirements, installedPacks: baseline.installedPacks, capabilities: baseline.capabilities)
+            guard let self else { return .denied }
+            guard let baseline = try? self.loadAndFilterRequest() else {
+                self.hostCommandDiagnostics.append(HostCommandDiagnostic(routeID: nil, command: nil, issue: "request_unavailable"))
+                return .denied
+            }
+            // No route inherits another route's host.* grants. Only the entry route keeps its
+            // own baseline entries, which the D-28 legacy path (absent host_commands) consumes.
+            let inherited = routeID == baseline.routeID
+            let capabilities = baseline.capabilities.filter { inherited || !$0.key.hasPrefix("host.") }
+            let request = ActivationRequest(routeID: routeID, url: nil, source: .inAppNavigation, origin: baseline.origin, manifestSource: baseline.manifestSource, bridgeProtocolVersion: baseline.bridgeProtocolVersion, nativeRuntimeVersion: baseline.nativeRuntimeVersion, correlationID: baseline.correlationID, threadID: baseline.threadID, declaredPackRequirements: baseline.declaredPackRequirements, installedPacks: baseline.installedPacks, capabilities: capabilities)
             let presentation = self.resolve(request: request, manifest: manifest)
             if case .denied = presentation { return .denied }
             return .authorized(presentation)
+        }
+    }
+
+    private func recordHostCommandDenials(routeID: String, denials: [String: String]) {
+        for command in denials.keys.sorted() {
+            let diagnostic = HostCommandDiagnostic(routeID: routeID, command: command, issue: denials[command]!)
+            if !hostCommandDiagnostics.contains(diagnostic) {
+                hostCommandDiagnostics.append(diagnostic)
+            }
         }
     }
 
@@ -706,4 +834,37 @@ extension URL {
 
 public enum HostCommandSeam {
     public static let version = "1.0.0"
+    /// Shell-supported host command contract range: ^1.0.0 (mirrors Crosswake.HostCommands).
+    public static let supportedCommandMajor = 1
+
+    /// Same grammar as Crosswake.HostCommands: ASCII lowercase host.<ns>.<action>, 3 or 4
+    /// dot segments, no reserved host.crosswake. or host.bridge. prefix.
+    public static func isValidName(_ name: String) -> Bool {
+        guard name.hasPrefix("host."),
+              !name.hasPrefix("host.crosswake."), !name.hasPrefix("host.bridge.") else { return false }
+        let segments = name.split(separator: ".", omittingEmptySubsequences: false)
+        guard segments.count == 3 || segments.count == 4 else { return false }
+        for (index, segment) in segments.enumerated() {
+            let bytes = Array(segment.utf8)
+            if index == 0 {
+                guard segment == "host" else { return false }
+                continue
+            }
+            guard let first = bytes.first, first >= 97, first <= 122 else { return false }
+            for byte in bytes where !((byte >= 97 && byte <= 122) || (byte >= 48 && byte <= 57) || byte == 95) {
+                return false
+            }
+        }
+        return true
+    }
+
+    /// True exactly for strict MAJOR.MINOR.PATCH (digits only) whose major is supportedCommandMajor.
+    public static func supportsCommandVersion(_ version: String) -> Bool {
+        let parts = version.split(separator: ".", omittingEmptySubsequences: false)
+        guard parts.count == 3 else { return false }
+        for part in parts where part.isEmpty || !part.utf8.allSatisfy({ $0 >= 48 && $0 <= 57 }) {
+            return false
+        }
+        return Int(parts[0]) == supportedCommandMajor
+    }
 }
