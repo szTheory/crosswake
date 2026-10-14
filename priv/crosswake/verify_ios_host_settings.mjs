@@ -13,7 +13,8 @@ const TARGETS = [
 ];
 const CONFIGURATIONS = ['Debug', 'Release'];
 const SDKS = ['iphonesimulator', 'iphoneos'];
-const SAFE_CAUSES = new Set(['settings_mismatch', 'project_missing', 'metadata_invalid', 'xcodebuild_missing', 'macos_service_denied', 'target_missing', 'project_invalid', 'sdk_unavailable', 'xcodebuild_failed', 'output_invalid']);
+const TOTAL_TIMEOUT_MS = 150000;
+const SAFE_CAUSES = new Set(['settings_mismatch', 'project_missing', 'metadata_invalid', 'xcodebuild_missing', 'macos_service_denied', 'target_missing', 'project_invalid', 'sdk_unavailable', 'xcodebuild_failed', 'output_invalid', 'checker_timeout']);
 
 function safeFinding(target, configuration, sdk, field, cause) {
   return { target, configuration, sdk, field, cause: SAFE_CAUSES.has(cause) ? cause : 'output_invalid' };
@@ -94,6 +95,7 @@ function checkManagedSettings(projectRoot, kind) {
 function subprocessCause(child) {
   const diagnostic = `${child.error?.message ?? ''}\n${child.stderr ?? ''}\n${child.stdout ?? ''}`;
   if (child.error?.code === 'ENOENT') return 'xcodebuild_missing';
+  if (child.error?.code === 'ETIMEDOUT') return 'checker_timeout';
   if (/operation not permitted|sandbox|not authorized/i.test(diagnostic) || child.error?.code === 'EPERM') return 'macos_service_denied';
   if (/does not contain a target named|target .* not found/i.test(diagnostic)) return 'target_missing';
   if (/project.*(?:malformed|parse|syntax)|could not read project/i.test(diagnostic)) return 'project_invalid';
@@ -120,8 +122,10 @@ function expectedFor(expectedSettings, target, sdk) {
   return expected;
 }
 
-export function verifyIosHostSettings({ hostRoot, expectedSettings, xcodebuild = 'xcodebuild' }) {
+export function verifyIosHostSettings({ hostRoot, expectedSettings, xcodebuild = 'xcodebuild', timeoutMs = TOTAL_TIMEOUT_MS }) {
+  const deadline = performance.now() + timeoutMs;
   if (!expectedSettings || typeof expectedSettings !== 'object' ||
+      !Number.isSafeInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > TOTAL_TIMEOUT_MS ||
       typeof expectedSettings.appBundleId !== 'string' ||
       typeof expectedSettings.proofAppBundleId !== 'string' ||
       !['automatic', 'manual'].includes(expectedSettings.deviceSigning?.mode) ||
@@ -141,10 +145,15 @@ export function verifyIosHostSettings({ hostRoot, expectedSettings, xcodebuild =
       continue;
     }
     for (const configuration of CONFIGURATIONS) for (const sdk of SDKS) {
+      const remaining = Math.floor(deadline - performance.now());
+      if (remaining <= 0) {
+        findings.push(safeFinding(target, configuration, sdk, 'build_settings', 'checker_timeout'));
+        continue;
+      }
       const args = ['-project', project, '-target', target, '-configuration', configuration, '-sdk', sdk, '-showBuildSettings', '-json'];
       let child;
       try {
-        child = spawnSync(xcodebuild, args, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, timeout: 120000 });
+        child = spawnSync(xcodebuild, args, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, timeout: Math.min(120000, remaining) });
       } catch {
         findings.push(safeFinding(target, configuration, sdk, 'build_settings', 'subprocess_failed'));
         continue;
@@ -180,7 +189,7 @@ export function verifyIosHostSettings({ hostRoot, expectedSettings, xcodebuild =
 
 export function runCli() {
   const args = process.argv.slice(2);
-  if (args.length !== 2 || args[0] !== '--host-root') {
+  if (![2, 4].includes(args.length) || args[0] !== '--host-root' || (args.length === 4 && args[2] !== '--timeout-ms')) {
     process.stdout.write(JSON.stringify({ ok: false, observedCells: 0, findings: [safeFinding('all', 'all', 'all', 'arguments', 'output_invalid')] }));
     process.exitCode = 2;
     return;
@@ -191,7 +200,7 @@ export function runCli() {
     process.exitCode = 1;
     return;
   }
-  const result = verifyIosHostSettings({ hostRoot: path.resolve(args[1]), expectedSettings });
+  const result = verifyIosHostSettings({ hostRoot: path.resolve(args[1]), expectedSettings, timeoutMs: args.length === 4 ? Number(args[3]) : TOTAL_TIMEOUT_MS });
   process.stdout.write(JSON.stringify(result));
   if (!result.ok) process.exitCode = 1;
 }

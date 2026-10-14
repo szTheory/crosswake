@@ -1,6 +1,9 @@
 defmodule Mix.Tasks.Crosswake.Gen.ProofLane do
   use Mix.Task
 
+  @checker_total_timeout_ms 150_000
+  @checker_shutdown_grace_ms 30_000
+
   alias Crosswake.ProofLane.{Config, Generator}
   alias Crosswake.Shell.IOSHostConfig
 
@@ -163,11 +166,22 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLane do
           :in,
           :out,
           :eof,
-          args: [String.to_charlist(script), ~c"--host-root", String.to_charlist(host_root)]
+          args: [
+            String.to_charlist(script),
+            ~c"--host-root",
+            String.to_charlist(host_root),
+            ~c"--timeout-ms",
+            Integer.to_charlist(@checker_total_timeout_ms)
+          ]
         ])
 
       true = Port.command(port, expected <> "\n")
-      {status, output} = collect_output(port, "")
+
+      deadline =
+        System.monotonic_time(:millisecond) + @checker_total_timeout_ms +
+          @checker_shutdown_grace_ms
+
+      {status, output} = collect_output(port, "", deadline)
 
       case Jason.decode(output) do
         {:ok, %{"ok" => true, "observedCells" => 20}} when status == 0 ->
@@ -191,12 +205,14 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLane do
     end
   end
 
-  defp collect_output(port, output) do
+  defp collect_output(port, output, deadline) do
+    remaining = max(0, deadline - System.monotonic_time(:millisecond))
+
     receive do
-      {^port, {:data, bytes}} -> collect_output(port, output <> bytes)
+      {^port, {:data, bytes}} -> collect_output(port, output <> bytes, deadline)
       {^port, {:exit_status, status}} -> {status, output}
     after
-      180_000 ->
+      remaining ->
         Port.close(port)
         Mix.raise("IOS-HOST-SETTINGS: blocked; cause: checker timed out")
     end
