@@ -13,6 +13,7 @@ defmodule Crosswake.Doctor.Formatter do
     [
       "Crosswake doctor report",
       "status: #{Map.get(report, :status)}",
+      format_origin_mode(findings),
       "findings: #{length(findings)}",
       format_support(Map.get(report, :support, %{})),
       format_shells(Map.get(report, :shells, %{})),
@@ -24,6 +25,18 @@ defmodule Crosswake.Doctor.Formatter do
     ]
     |> Enum.reject(&(&1 in [nil, ""]))
     |> Enum.join("\n")
+  end
+
+  # 182 D-12/D-15: canonical origin only, read from the finding details.
+  defp format_origin_mode(findings) do
+    with %{details: details} <-
+           Enum.find(findings, &(&1.code == "ios_host.local_loopback_origin")),
+         origin when is_binary(origin) <-
+           Map.get(details, :origin) || get_in(details, [:readiness_details, :origin]) do
+      "origin mode: local loopback (#{origin}); Simulator only; not production-ready"
+    else
+      _ -> nil
+    end
   end
 
   defp format_support(%{

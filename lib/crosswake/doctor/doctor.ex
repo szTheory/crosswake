@@ -163,7 +163,14 @@ defmodule Crosswake.Doctor do
     phase_65_findings = phase_65_diagnostic_export_findings()
     phase_66_findings = phase_66_generator_drift_findings(manifest, cwd, opts)
     host_command_findings = host_command_seam_findings(manifest, cwd, opts)
-    ios_host_origin_findings = ios_host_origin_findings(cwd, opts)
+    ios_host_observation = ios_host_origin_observation(cwd, opts)
+
+    # Under --check-publish the readiness check carries the code at :error, so the
+    # doctor-level finding is suppressed to keep each code once in the report.
+    ios_host_origin_findings =
+      if Keyword.get(opts, :check_publish?) == true,
+        do: [],
+        else: ios_host_origin_findings(ios_host_observation)
 
     phase_154_findings =
       legacy_capability_id_findings(manifest) ++
@@ -171,7 +178,13 @@ defmodule Crosswake.Doctor do
         bridge_hook_wiring_findings(cwd, opts)
 
     phase_155_findings = native_controls_ui_findings(cwd)
-    publish_readiness = publish_readiness(manifest, opts, cwd)
+
+    publish_readiness =
+      publish_readiness(
+        manifest,
+        Keyword.put(opts, :ios_host_origin_observation, ios_host_observation),
+        cwd
+      )
 
     publish_findings =
       if publish_readiness, do: PublishReadiness.findings(publish_readiness), else: []
@@ -2374,8 +2387,8 @@ defmodule Crosswake.Doctor do
 
   # D-16(d), D-23: stale generated host_commands and the shell-package gate verdict. Details
   # carry only route ids, command names, versions, package location and platform.
-  defp ios_host_origin_findings(cwd, opts) do
-    case ios_host_origin_observation(cwd, opts) do
+  defp ios_host_origin_findings(observation) do
+    case observation do
       :none ->
         []
 
