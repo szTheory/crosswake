@@ -1,15 +1,18 @@
 defmodule Crosswake.Shell.PBXProject do
   @moduledoc false
-
   @punctuation [?{, ?}, ?(, ?), ?=, ?;, ?,]
   @whitespace [9, 10, 13, 32]
 
-  def parse(contents) when is_binary(contents) do
-    with {:ok, tokens} <- tokenize(String.to_charlist(contents), []),
-         {:ok, value, []} <- parse_value(tokens),
-         {:ok, normalized} <- normalize(value),
-         true <- is_map(normalized) do
-      {:ok, normalized}
+  def parse(contents) do
+    with {:ok, document} <- parse_document(contents), do: {:ok, document.value}
+  end
+
+  # Keep byte ranges from the same parse that establishes the semantic graph.
+  # Migration can then edit owned values without reserializing host-owned bytes.
+  def parse_document(contents) when is_binary(contents) do
+    with {:ok, tokens} <- tokenize(contents, 0, []),
+         {:ok, %{kind: :dictionary} = document, []} <- parse_value(tokens) do
+      {:ok, document}
     else
       _ -> {:error, :invalid_project}
     end
@@ -17,120 +20,129 @@ defmodule Crosswake.Shell.PBXProject do
     _ -> {:error, :invalid_project}
   end
 
-  defp tokenize([], acc), do: {:ok, Enum.reverse(acc)}
-  defp tokenize([char | rest], acc) when char in @whitespace, do: tokenize(rest, acc)
-  defp tokenize([?/, ?* | rest], acc), do: skip_block_comment(rest, acc)
-  defp tokenize([?/, ?/ | rest], acc), do: skip_line_comment(rest, acc)
+  defp tokenize(<<>>, _offset, acc), do: {:ok, Enum.reverse(acc)}
 
-  defp tokenize([?" | rest], acc) do
+  defp tokenize(<<char, rest::binary>>, offset, acc) when char in @whitespace,
+    do: tokenize(rest, offset + 1, acc)
+
+  defp tokenize(<<"/*", rest::binary>>, offset, acc) do
+    case :binary.match(rest, "*/") do
+      {size, 2} ->
+        tokenize(binary_part(rest, size + 2, byte_size(rest) - size - 2), offset + size + 4, acc)
+
+      :nomatch ->
+        {:error, :invalid_project}
+    end
+  end
+
+  defp tokenize(<<"//", rest::binary>>, offset, acc) do
+    case :binary.match(rest, "\n") do
+      {size, 1} ->
+        tokenize(binary_part(rest, size + 1, byte_size(rest) - size - 1), offset + size + 3, acc)
+
+      :nomatch ->
+        {:ok, Enum.reverse(acc)}
+    end
+  end
+
+  defp tokenize(<<char, rest::binary>>, offset, acc) when char in @punctuation,
+    do: tokenize(rest, offset + 1, [{char, offset, offset + 1} | acc])
+
+  defp tokenize(<<"\"", rest::binary>> = input, offset, acc) do
     with {:ok, value, tail} <- quoted(rest, []) do
-      tokenize(tail, [{:scalar, value} | acc])
+      finish = offset + byte_size(input) - byte_size(tail)
+      tokenize(tail, finish, [{value, offset, finish} | acc])
     end
   end
 
-  defp tokenize([char | rest], acc) when char in @punctuation,
-    do: tokenize(rest, [char | acc])
+  defp tokenize(input, offset, acc) do
+    case atom(input, []) do
+      {[], _} ->
+        {:error, :invalid_project}
 
-  defp tokenize(chars, acc) do
-    case atom(chars, []) do
-      {[], _} -> {:error, :invalid_project}
-      {value, rest} -> tokenize(rest, [{:scalar, List.to_string(value)} | acc])
+      {value, rest} ->
+        finish = offset + byte_size(input) - byte_size(rest)
+
+        tokenize(rest, finish, [
+          {value |> Enum.reverse() |> IO.iodata_to_binary(), offset, finish} | acc
+        ])
     end
   end
 
-  defp skip_block_comment([?*, ?/ | rest], acc), do: tokenize(rest, acc)
-  defp skip_block_comment([_ | rest], acc), do: skip_block_comment(rest, acc)
-  defp skip_block_comment([], _acc), do: {:error, :invalid_project}
-
-  defp skip_line_comment([?\n | rest], acc), do: tokenize(rest, acc)
-  defp skip_line_comment([_ | rest], acc), do: skip_line_comment(rest, acc)
-  defp skip_line_comment([], acc), do: tokenize([], acc)
-
-  defp quoted([?\\, escaped | rest], acc) do
+  defp quoted(<<"\\", char, rest::binary>>, acc) when char in [?n, ?r, ?t, ?\\, ?"] do
     value =
-      case escaped do
-        ?n -> ?\n
-        ?r -> ?\r
-        ?t -> ?\t
-        other -> other
+      case char do
+        ?n -> "\n"
+        ?r -> "\r"
+        ?t -> "\t"
+        other -> <<other>>
       end
 
     quoted(rest, [value | acc])
   end
 
-  defp quoted([?" | rest], acc), do: {:ok, acc |> Enum.reverse() |> List.to_string(), rest}
-  defp quoted([char | rest], acc), do: quoted(rest, [char | acc])
-  defp quoted([], _acc), do: {:error, :invalid_project}
+  defp quoted(<<"\\", _::binary>>, _acc), do: {:error, :invalid_project}
 
-  defp atom([char | _] = chars, acc) when char in @whitespace or char in @punctuation,
-    do: {Enum.reverse(acc), chars}
+  defp quoted(<<"\"", rest::binary>>, acc),
+    do: {:ok, acc |> Enum.reverse() |> IO.iodata_to_binary(), rest}
 
-  defp atom([?/, next | _] = chars, acc) when next in [?*, ?/],
-    do: {Enum.reverse(acc), chars}
+  defp quoted(<<char::utf8, rest::binary>>, acc), do: quoted(rest, [<<char::utf8>> | acc])
+  defp quoted(<<>>, _acc), do: {:error, :invalid_project}
 
-  defp atom([char | rest], acc), do: atom(rest, [char | acc])
-  defp atom([], acc), do: {Enum.reverse(acc), []}
+  defp atom(<<char, _::binary>> = rest, acc)
+       when char in @whitespace or char in @punctuation or char == ?",
+       do: {acc, rest}
 
-  defp parse_value([?{ | rest]), do: parse_dictionary(rest, [])
-  defp parse_value([?( | rest]), do: parse_array(rest, [])
-  defp parse_value([{:scalar, value} | rest]), do: {:ok, {:scalar, value}, rest}
+  defp atom(<<"/", next, _::binary>> = rest, acc) when next in [?*, ?/], do: {acc, rest}
+  defp atom(<<char::utf8, rest::binary>>, acc), do: atom(rest, [<<char::utf8>> | acc])
+  defp atom(<<>>, acc), do: {acc, <<>>}
+
+  defp parse_value([{?{, start, _} | rest]), do: dictionary(rest, %{}, %{}, start)
+  defp parse_value([{?(, start, _} | rest]), do: array(rest, [], [], start)
+
+  defp parse_value([{value, start, finish} | rest]) when is_binary(value),
+    do: {:ok, %{kind: :scalar, value: value, range: {start, finish}}, rest}
+
   defp parse_value(_), do: {:error, :invalid_project}
 
-  defp parse_dictionary([?} | rest], pairs), do: {:ok, {:dictionary, Enum.reverse(pairs)}, rest}
+  defp dictionary([{?}, _, finish} | rest], value, children, start),
+    do:
+      {:ok, %{kind: :dictionary, value: value, children: children, range: {start, finish}}, rest}
 
-  defp parse_dictionary([{:scalar, key}, ?= | rest], pairs) do
-    with {:ok, value, [?; | tail]} <- parse_value(rest) do
-      parse_dictionary(tail, [{key, value} | pairs])
-    end
-  end
-
-  defp parse_dictionary(_, _), do: {:error, :invalid_project}
-
-  defp parse_array([?) | rest], values), do: {:ok, {:array, Enum.reverse(values)}, rest}
-
-  defp parse_array(tokens, values) do
-    with {:ok, value, rest} <- parse_value(tokens) do
-      case rest do
-        [?, | tail] ->
-          case tail do
-            [?) | after_array] -> {:ok, {:array, Enum.reverse([value | values])}, after_array}
-            _ -> parse_array(tail, [value | values])
-          end
-
-        [?) | after_array] ->
-          {:ok, {:array, Enum.reverse([value | values])}, after_array}
-
-        _ ->
-          {:error, :invalid_project}
-      end
-    end
-  end
-
-  defp normalize({:scalar, value}), do: {:ok, value}
-
-  defp normalize({:array, values}) do
-    Enum.reduce_while(values, {:ok, []}, fn value, {:ok, acc} ->
-      case normalize(value) do
-        {:ok, normalized} -> {:cont, {:ok, [normalized | acc]}}
-        error -> {:halt, error}
-      end
-    end)
-    |> case do
-      {:ok, normalized} -> {:ok, Enum.reverse(normalized)}
-      error -> error
-    end
-  end
-
-  defp normalize({:dictionary, pairs}) do
-    if length(pairs) != MapSet.size(MapSet.new(Enum.map(pairs, &elem(&1, 0)))) do
-      {:error, :duplicate_key}
+  defp dictionary([{key, key_start, _}, {?=, _, _} | rest], value, children, start)
+       when is_binary(key) do
+    with false <- Map.has_key?(value, key),
+         {:ok, child, [{?;, _, pair_end} | tail]} <- parse_value(rest) do
+      dictionary(
+        tail,
+        Map.put(value, key, child.value),
+        Map.put(children, key, Map.put(child, :pair, {key_start, pair_end})),
+        start
+      )
     else
-      Enum.reduce_while(pairs, {:ok, %{}}, fn {key, value}, {:ok, acc} ->
-        case normalize(value) do
-          {:ok, normalized} -> {:cont, {:ok, Map.put(acc, key, normalized)}}
-          error -> {:halt, error}
-        end
-      end)
+      _ -> {:error, :invalid_project}
+    end
+  end
+
+  defp dictionary(_, _, _, _), do: {:error, :invalid_project}
+
+  defp array([{?), _, finish} | rest], values, children, start),
+    do:
+      {:ok,
+       %{
+         kind: :array,
+         value: Enum.reverse(values),
+         children: Enum.reverse(children),
+         range: {start, finish}
+       }, rest}
+
+  defp array(tokens, values, children, start) do
+    with {:ok, child, rest} <- parse_value(tokens) do
+      case rest do
+        [{?,, _, _} | tail] -> array(tail, [child.value | values], [child | children], start)
+        [{?), _, _} | _] -> array(rest, [child.value | values], [child | children], start)
+        _ -> {:error, :invalid_project}
+      end
     end
   end
 end

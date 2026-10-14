@@ -76,7 +76,7 @@ test('five generated targets resolve all 20 settings cells from the original dec
     '-target', 'CrosswakeProofLane', '-configuration', 'Debug', '-sdk', 'iphonesimulator', 'build',
   ], { encoding: 'utf8', timeout: 120000, maxBuffer: 16 * 1024 * 1024 });
   assert.notEqual(interruptedBuild.status, 0);
-  assert.match(`${interruptedBuild.stdout}\n${interruptedBuild.stderr}`, /CROSSWAKE_IOS_PROOF_SETTINGS_INTERRUPTED/);
+  assert.ok(`${interruptedBuild.stdout}\n${interruptedBuild.stderr}`.includes('CROSSWAKE_IOS_PROOF_SETTINGS_INTERRUPTED'), 'the build reports the bounded interruption cause');
   rmSync(pending);
 
   const originalSettings = readFileSync(proofSettings(root), 'utf8');
@@ -98,6 +98,22 @@ test('five generated targets resolve all 20 settings cells from the original dec
   const masked = verifyIosHostSettings({ hostRoot: root, expectedSettings: declaration });
   assert.equal(masked.ok, false);
   assert.ok(masked.findings.some(finding => finding.field === 'PRODUCT_BUNDLE_IDENTIFIER' && finding.cause === 'settings_mismatch'));
+  writeFileSync(projectPath, originalProject);
+
+  const reformatted = originalProject
+    .replaceAll('isa = XCBuildConfiguration;', '/* host format */ "isa" = XCBuildConfiguration;\n')
+    .replaceAll('PRODUCT_BUNDLE_IDENTIFIER = "$(CROSSWAKE_PROOF_APP_BUNDLE_ID)";', '"PRODUCT_BUNDLE_IDENTIFIER" = org.crosswake.masked; "CODE_SIGN_STYLE[sdk=iphoneos*]" = Automatic;')
+    .replace('PRODUCT_NAME = CrosswakeProofLane;', 'PRODUCT_NAME = CrosswakeProofLane; /* untouched 🦉 { } */');
+  writeFileSync(projectPath, reformatted);
+  execFileSync('mix', ['run', '-e', `
+    project = System.fetch_env!("CROSSWAKE_MATRIX_PROJECT")
+    {:ok, %{contents: migrated}} = Crosswake.Shell.IOSHostProjectMigration.preview_proof_contents(File.read!(project))
+    File.write!(project, migrated)
+  `], { env: { ...process.env, MIX_ENV: 'test', CROSSWAKE_MATRIX_PROJECT: projectPath }, stdio: 'pipe' });
+  assert.ok(readFileSync(projectPath, 'utf8').includes('/* untouched 🦉 { } */'));
+  const migratedSettings = verifyIosHostSettings({ hostRoot: root, expectedSettings: declaration });
+  assert.equal(migratedSettings.ok, true, JSON.stringify(migratedSettings.findings));
+  assert.equal(migratedSettings.observedCells, 20);
   writeFileSync(projectPath, originalProject);
 
   rewriteManagedSettings(proofSettings(root), body => `${body}CODE_SIGNING_ALLOWED[sdk=iphoneos*] = NO\n`);

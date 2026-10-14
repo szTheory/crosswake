@@ -116,37 +116,13 @@ defmodule Crosswake.Shell.ManagedOutputsTest do
   end
 
   defp project_fixture do
-    configs =
-      for {id, name, target?} <- [
-            {"A10000370000000000000001", "Debug", false},
-            {"A10000380000000000000001", "Release", false},
-            {"A10000390000000000000001", "Debug", true},
-            {"A100003A0000000000000001", "Release", true},
-            {"A100003B0000000000000001", "Debug", true},
-            {"A100003C0000000000000001", "Release", true}
-          ] do
-        base =
-          if target?, do: "baseConfigurationReference = A10000400000000000000001;\n", else: ""
-
-        identity =
-          if target?,
-            do: "PRODUCT_BUNDLE_IDENTIFIER = dev.crosswake.app;\nCODE_SIGNING_ALLOWED = NO;\n",
-            else: ""
-
-        """
-        #{id} = {
-          isa = XCBuildConfiguration;
-          #{base}buildSettings = {
-            #{identity}SWIFT_VERSION = 5.0;
-          };
-          name = #{name};
-        };
-        """
-      end
-
-    "/* Begin XCBuildConfiguration section */\n" <>
-      Enum.join(configs) <>
-      "/* End XCBuildConfiguration section */\n"
+    EEx.eval_file(
+      "priv/templates/crosswake/shell/ios/CrosswakeShell.xcodeproj/project.pbxproj.eex",
+      assigns: [local: true, local_ios_core_path: "/tmp/unused-local-core", version: "1.0.0"]
+    )
+    |> String.replace("$(CROSSWAKE_APP_BUNDLE_ID)", "dev.crosswake.legacy.app")
+    |> String.replace("$(CROSSWAKE_SHELL_TEST_BUNDLE_ID)", "dev.crosswake.legacy.tests")
+    |> String.replace("SWIFT_VERSION = 5.0;", "CODE_SIGNING_ALLOWED = NO; SWIFT_VERSION = 5.0;")
   end
 
   defp desired_outputs do
