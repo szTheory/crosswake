@@ -218,4 +218,30 @@ defmodule Crosswake.Manifest.HostCommandsTest do
       assert Builder.host_commands_for(%{capabilities: ["share"]}, registry) == %{}
     end
   end
+
+  describe "manifest schema 1.2.0 and the seam version key (D-15, D-29)" do
+    test "schema is 1.2.0 while the bridge protocol stays 1.1.0" do
+      manifest = compile!(Fixtures.DeclaringRouter)
+
+      assert Crosswake.Manifest.Types.manifest_schema_version() == "1.2.0"
+      assert manifest.manifest_schema_version == "1.2.0"
+      assert Crosswake.Bridge.Contract.version() == "1.1.0"
+    end
+
+    test "a declaring router carries the seam version" do
+      rendered = rendered(Fixtures.DeclaringRouter) |> Jason.decode!()
+
+      assert rendered["compatibility"]["host_command_seam_version"] ==
+               Crosswake.HostCommands.seam_version()
+
+      assert rendered["compatibility"]["host_command_seam_version"] == "1.0.0"
+    end
+
+    test "a router with no host commands has no seam key" do
+      rendered = rendered(Fixtures.NoRegistryRouter) |> Jason.decode!()
+
+      refute Map.has_key?(rendered["compatibility"], "host_command_seam_version")
+      assert rendered["manifest_schema_version"] == "1.2.0"
+    end
+  end
 end

@@ -139,6 +139,7 @@ defmodule Crosswake.Manifest.Types do
       :bridge_protocol_version,
       :native_runtime_version,
       :remote_updates,
+      :host_command_seam_version,
       supported_manifest_sources: [:bundled, :cached, :remote]
     ]
 
@@ -149,7 +150,8 @@ defmodule Crosswake.Manifest.Types do
             bridge_protocol_version: String.t(),
             native_runtime_version: String.t(),
             supported_manifest_sources: [Crosswake.Manifest.Types.Host.manifest_source()],
-            remote_updates: [remote_update_mode()]
+            remote_updates: [remote_update_mode()],
+            host_command_seam_version: String.t() | nil
           }
   end
 
@@ -768,7 +770,7 @@ defmodule Crosswake.Manifest.Types do
           }
   end
 
-  @manifest_schema_version "1.1.0"
+  @manifest_schema_version "1.2.0"
   @bridge_protocol_version Crosswake.Bridge.Contract.version()
   @native_runtime_version "1.0.0"
   @default_origin "https://example.crosswake.invalid"
@@ -1166,7 +1168,7 @@ defmodule Crosswake.Manifest.Types do
   end
 
   def to_map(%Compatibility{} = compatibility) do
-    %{
+    base = %{
       "manifest_schema_version" => compatibility.manifest_schema_version,
       "bridge_protocol_version" => compatibility.bridge_protocol_version,
       "native_runtime_version" => compatibility.native_runtime_version,
@@ -1174,6 +1176,12 @@ defmodule Crosswake.Manifest.Types do
         Enum.map(compatibility.supported_manifest_sources, &Atom.to_string/1),
       "remote_updates" => Enum.map(compatibility.remote_updates, &Atom.to_string/1)
     }
+
+    # D-29: the seam version key is present only when a route declares a host command.
+    case compatibility.host_command_seam_version do
+      nil -> base
+      version -> Map.put(base, "host_command_seam_version", version)
+    end
   end
 
   def to_map(%Capability{} = capability) do
