@@ -161,6 +161,7 @@ defmodule Crosswake.Doctor do
     phase_95_findings = phase_95_threadline_findings(install_manifest, cwd)
     phase_65_findings = phase_65_diagnostic_export_findings()
     phase_66_findings = phase_66_generator_drift_findings(manifest, cwd, opts)
+    host_command_findings = host_command_seam_findings(manifest, cwd, opts)
 
     phase_154_findings =
       legacy_capability_id_findings(manifest) ++
@@ -187,6 +188,7 @@ defmodule Crosswake.Doctor do
         phase_95_findings ++
         phase_65_findings ++
         phase_66_findings ++
+        host_command_findings ++
         phase_154_findings ++
         phase_155_findings ++
         publish_findings
@@ -2365,6 +2367,114 @@ defmodule Crosswake.Doctor do
         else: []
 
     placeholder_findings ++ ios_drift ++ android_drift
+  end
+
+  # D-16(d), D-23: stale generated host_commands and the shell-package gate verdict. Details
+  # carry only route ids, command names, versions, package location and platform.
+  defp host_command_seam_findings(nil, _cwd, _opts), do: []
+
+  defp host_command_seam_findings(manifest, cwd, opts) do
+    declaring =
+      manifest.routes
+      |> Enum.filter(fn {_id, entry} -> entry.host_commands != %{} end)
+      |> Enum.sort_by(&elem(&1, 0))
+
+    root = shell_root(:ios, cwd, opts)
+
+    if File.dir?(root) do
+      stale_host_command_findings(manifest, root) ++
+        host_command_shell_findings(declaring, root)
+    else
+      []
+    end
+  end
+
+  defp stale_host_command_findings(manifest, root) do
+    with {:ok, bytes} <- File.read(Path.join(root, "Fixtures/crosswake_manifest.json")),
+         {:ok, %{"routes" => generated}} when is_map(generated) <- Jason.decode(bytes) do
+      manifest.routes
+      |> Enum.sort_by(&elem(&1, 0))
+      |> Enum.flat_map(fn {route_id, entry} ->
+        generated_commands =
+          case Map.get(generated, route_id) do
+            %{"host_commands" => commands} when is_map(commands) -> commands
+            _ -> %{}
+          end
+
+        if Map.has_key?(generated, route_id) and generated_commands != entry.host_commands do
+          commands = entry.host_commands |> Map.keys() |> Enum.sort()
+
+          [
+            check(
+              :error,
+              "host_commands_stale",
+              "host_commands",
+              "Route #{route_id} host commands in the generated iOS manifest differ from the router declaration",
+              "Run mix crosswake.gen.shell ios to regenerate the manifest; do not edit generated fixtures",
+              %{route_id: route_id, commands: commands, platform: :ios}
+            )
+          ]
+        else
+          []
+        end
+      end)
+    else
+      _ -> []
+    end
+  end
+
+  defp host_command_shell_findings([], _root), do: []
+
+  defp host_command_shell_findings([{route_id, entry} | _], root) do
+    required = Crosswake.HostCommands.seam_version()
+    commands = entry.host_commands |> Map.keys() |> Enum.sort()
+
+    case Crosswake.Shell.ShellPackage.resolve({:project, root}) do
+      {:error, :no_project} ->
+        []
+
+      {:ok, package} ->
+        case Crosswake.Shell.ShellPackage.satisfies?(package, required) do
+          :ok ->
+            []
+
+          {:error, found} ->
+            [shell_unsupported_finding(route_id, commands, package, found, required)]
+        end
+
+      {:error, reason} ->
+        package = %{location: "the managed project", seam_version: nil, version: nil}
+
+        [
+          shell_unsupported_finding(
+            route_id,
+            commands,
+            package,
+            "undeterminable (#{reason})",
+            required
+          )
+        ]
+    end
+  end
+
+  defp shell_unsupported_finding(route_id, commands, package, found, required) do
+    check(
+      :error,
+      "host_command_shell_unsupported",
+      "host_commands",
+      "Route #{route_id} declares host command #{hd(commands)}, but the crosswake-shell-core-ios " <>
+        "at #{package.location} cannot honor it: #{found}",
+      "Point the host at a crosswake-shell-core-ios local path that contains HostCommandSeam " <>
+        "version #{required} or later, or remove the host_commands declaration until a shell release includes it",
+      %{
+        route_id: route_id,
+        commands: commands,
+        platform: :ios,
+        package_location: package.location,
+        found_version: package.seam_version || package.version,
+        required_version: required
+      }
+    )
   end
 
   defp check_shell_unreplaced_placeholders(path) do
