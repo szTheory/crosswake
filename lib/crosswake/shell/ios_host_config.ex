@@ -9,47 +9,65 @@ defmodule Crosswake.Shell.IOSHostConfig do
     :proof_app_bundle_id,
     :device_signing
   ]
-  defstruct @enforce_keys
+  defstruct @enforce_keys ++ [origin_mode: nil]
 
   @keys @enforce_keys
+  @optional_keys [:origin_mode]
 
-  def normalize(input) when is_list(input) do
+  def normalize(input, opts \\ [])
+
+  def normalize(input, opts) when is_list(input) do
     if Keyword.keyword?(input) and
          length(Keyword.keys(input)) == length(Enum.uniq(Keyword.keys(input))) do
-      normalize(Map.new(input))
+      normalize(Map.new(input), opts)
     else
       {:error, "invalid :ios_host declaration; use unique supported keys"}
     end
   end
 
-  def normalize(input) when is_map(input) do
+  def normalize(input, opts) when is_map(input) do
     keys = Map.keys(input)
+    required_present = Enum.sort(keys -- @optional_keys)
 
     cond do
       Enum.any?(keys, &(not is_atom(&1))) ->
         {:error, "invalid :ios_host declaration keys; use atom keys supported by Crosswake"}
 
-      Enum.sort(keys) != Enum.sort(@keys) ->
+      required_present != Enum.sort(@keys) ->
         {:error,
          "invalid :ios_host declaration keys; set router, origin, entry_route_id, app_bundle_id, proof_app_bundle_id, and device_signing"}
 
       true ->
-        validate(input)
+        validate(input, opts)
     end
   end
 
-  def normalize(_), do: {:error, "invalid :ios_host declaration; expected a keyword list or map"}
+  def normalize(_, _opts),
+    do: {:error, "invalid :ios_host declaration; expected a keyword list or map"}
 
-  defp validate(input) do
+  defp validate(input, opts) do
+    mode = Map.get(input, :origin_mode)
+    _env = Keyword.get(opts, :env, current_env())
+
     with :ok <- valid_router(input.router),
-         {:ok, origin} <- valid_origin(input.origin),
+         {:ok, origin} <- valid_origin(input.origin, mode),
          :ok <- valid_entry(input.entry_route_id),
          :ok <- valid_bundle(input.app_bundle_id, :app_bundle_id),
          :ok <- valid_bundle(input.proof_app_bundle_id, :proof_app_bundle_id),
          :ok <- valid_identity_collision(input.app_bundle_id, input.proof_app_bundle_id),
          {:ok, signing} <- valid_signing(input.device_signing) do
-      {:ok, struct!(__MODULE__, %{input | origin: origin, device_signing: signing})}
+      {:ok,
+       struct!(__MODULE__, %{
+         Map.put(input, :origin_mode, mode)
+         | origin: origin,
+           device_signing: signing
+       })}
     end
+  end
+
+  # Fail closed: without Mix loaded the environment is production.
+  defp current_env do
+    if Code.ensure_loaded?(Mix) and function_exported?(Mix, :env, 0), do: Mix.env(), else: :prod
   end
 
   defp valid_router(router) when is_atom(router) and router not in [nil, true, false] do
@@ -60,7 +78,50 @@ defmodule Crosswake.Shell.IOSHostConfig do
 
   defp valid_router(_), do: {:error, "invalid router; use a compiled Phoenix router module"}
 
-  defp valid_origin(origin) when is_binary(origin) do
+  defp valid_origin(origin, :local_loopback) when is_binary(origin) do
+    uri = URI.parse(origin)
+    host = uri.host && String.downcase(uri.host)
+
+    authority =
+      case Regex.run(~r{\Ahttp://([^/?#]*)}i, origin, capture: :all_but_first) do
+        [value] -> value
+        _ -> nil
+      end
+
+    {authority_host, raw_port} =
+      case authority && String.split(authority, ":", parts: 2) do
+        [value] -> {String.downcase(value), nil}
+        [value, port] -> {String.downcase(value), port}
+        _ -> {nil, nil}
+      end
+
+    valid_port =
+      case raw_port do
+        nil -> true
+        value -> Regex.match?(~r/\A[0-9]+\z/, value) and String.to_integer(value) in 1..65_535
+      end
+
+    if String.downcase(uri.scheme || "") == "http" and host in ["127.0.0.1", "localhost"] and
+         authority_host == host and valid_port and is_nil(uri.userinfo) and is_nil(uri.query) and
+         is_nil(uri.fragment) and uri.path in [nil, ""] do
+      port =
+        case raw_port do
+          nil -> ""
+          value -> if String.to_integer(value) == 80, do: "", else: ":#{String.to_integer(value)}"
+        end
+
+      {:ok, "http://" <> host <> port}
+    else
+      {:error,
+       "invalid local origin; origin_mode :local_loopback accepts only http://127.0.0.1 or http://localhost with an optional port"}
+    end
+  rescue
+    _ ->
+      {:error,
+       "invalid local origin; origin_mode :local_loopback accepts only http://127.0.0.1 or http://localhost with an optional port"}
+  end
+
+  defp valid_origin(origin, _mode) when is_binary(origin) do
     uri = URI.parse(origin)
     host = uri.host && String.downcase(uri.host)
 
@@ -110,7 +171,7 @@ defmodule Crosswake.Shell.IOSHostConfig do
     _ -> {:error, "invalid origin; use an absolute HTTPS origin with a valid decimal port"}
   end
 
-  defp valid_origin(_), do: {:error, "invalid origin; use an absolute HTTPS origin"}
+  defp valid_origin(_, _mode), do: {:error, "invalid origin; use an absolute HTTPS origin"}
 
   defp valid_host?(host) do
     labels = String.split(host, ".")

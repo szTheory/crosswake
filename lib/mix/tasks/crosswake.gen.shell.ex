@@ -170,7 +170,8 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
                 capabilities,
                 local or declaring_with_local_package?(host_outputs),
                 router,
-                host_outputs
+                host_outputs,
+                host_config && host_config.origin_mode
               )
 
             "android" ->
@@ -534,7 +535,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
   # Generation branch (normal, non-diff)
   # ---------------------------------------------------------------------------
 
-  defp generate_ios_shell(target, capabilities, local, router, host_outputs) do
+  defp generate_ios_shell(target, capabilities, local, router, host_outputs, origin_mode) do
     root = Path.join(target, "native/ios/crosswake_shell")
     fixtures = Fixtures.export("ios")
 
@@ -549,7 +550,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     entrypoint = Path.join(root, "CrosswakeShell/CrosswakeShellApp.swift")
 
     ensure_file(readme, shell_readme("ios"))
-    render_ios_templates(root, capabilities, local)
+    render_ios_templates(root, capabilities, local, origin_mode)
     managed_paths = if host_outputs, do: Map.keys(host_outputs.managed_outputs), else: []
 
     fixtures
@@ -614,13 +615,18 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     end)
   end
 
-  defp render_ios_templates(root, capabilities, local) do
+  defp render_ios_templates(root, capabilities, local, origin_mode) do
     assigns = local_package_assigns(root)
 
     Enum.each(@ios_templates, fn {relative_path, template_path} ->
+      template_assigns =
+        if relative_path == "CrosswakeShell/Info.plist",
+          do: [origin_mode: origin_mode] ++ assigns,
+          else: assigns
+
       ensure_file(
         Path.join(root, relative_path),
-        render_template(template_path, capabilities, local, assigns)
+        render_template(template_path, capabilities, local, template_assigns)
       )
     end)
   end
@@ -634,13 +640,17 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     EEx.eval_file(
       template,
       assigns:
-        [
-          capabilities: capabilities,
-          local: local,
-          version: version,
-          template_version: @template_version,
-          cutout_mode: String.contains?(relative_path, "/values-v28/")
-        ] ++ assigns
+        Keyword.merge(
+          [
+            capabilities: capabilities,
+            local: local,
+            version: version,
+            template_version: @template_version,
+            cutout_mode: String.contains?(relative_path, "/values-v28/"),
+            origin_mode: nil
+          ],
+          assigns
+        )
     )
   end
 
