@@ -40,7 +40,8 @@ defmodule Crosswake.Manifest.Builder do
   @spec build([Route.t()], [map()], keyword()) :: Types.Root.t()
   def build(routes, managed_routes, opts \\ [])
       when is_list(routes) and is_list(managed_routes) do
-    capability_registry = capability_registry(routes)
+    host_command_registry = Keyword.get(opts, :host_commands, [])
+    capability_registry = capability_registry(routes, host_command_registry)
 
     host =
       Keyword.get_lazy(opts, :host, fn ->
@@ -61,7 +62,7 @@ defmodule Crosswake.Manifest.Builder do
       )
 
     manifest_schema_version = Types.manifest_schema_version()
-    route_entries = route_entries(routes, managed_routes, host.origin)
+    route_entries = route_entries(routes, managed_routes, host.origin, host_command_registry)
 
     Types.new_root(
       manifest_schema_version: manifest_schema_version,
@@ -152,8 +153,42 @@ defmodule Crosswake.Manifest.Builder do
 
   defp ensure_topology_routes_match(topology, _routes), do: topology
 
-  @spec capability_registry([Route.t()]) :: %{String.t() => Types.Capability.t()}
-  def capability_registry(routes) do
+  @doc """
+  Returns `%{command => version}` for exactly the `host.*` entries of the route's own
+  `capabilities`, with each version taken from the router-declared registry.
+
+  This is the single projection used by the manifest route entry and by the generated
+  entry activation (D-06, D-07). A command that is not in the registry is omitted
+  (fail closed); route policy compilation already rejects that case.
+  """
+  @spec host_commands_for(Route.t() | map(), [{String.t(), String.t()}] | map()) :: %{
+          String.t() => String.t()
+        }
+  def host_commands_for(route, registry) do
+    versions = Map.new(registry)
+
+    route.capabilities
+    |> Enum.filter(&host_command_id?/1)
+    |> Enum.flat_map(fn name ->
+      case Map.fetch(versions, name) do
+        {:ok, version} -> [{name, version}]
+        :error -> []
+      end
+    end)
+    |> Map.new()
+  end
+
+  defp host_command_id?(id), do: is_binary(id) and String.starts_with?(id, "host.")
+
+  @spec capability_registry([Route.t()], [{String.t(), String.t()}] | map()) :: %{
+          String.t() => Types.Capability.t()
+        }
+  def capability_registry(routes, host_command_registry \\ []) do
+    host_versions =
+      routes
+      |> Enum.flat_map(&Map.to_list(host_commands_for(&1, host_command_registry)))
+      |> Map.new()
+
     public_registry =
       capability_catalog()
       |> Enum.map(fn attrs ->
@@ -167,6 +202,7 @@ defmodule Crosswake.Manifest.Builder do
       |> Enum.flat_map(& &1.capabilities)
       |> Enum.uniq()
       |> Enum.reject(&Map.has_key?(public_registry, &1))
+      |> Enum.reject(&Map.has_key?(host_versions, &1))
       |> Enum.map(fn capability_id ->
         family_capability = family_capability_for(capability_id)
 
@@ -179,7 +215,27 @@ defmodule Crosswake.Manifest.Builder do
       end)
       |> Map.new()
 
-    Map.merge(public_registry, compatibility_registry)
+    host_registry =
+      Map.new(host_versions, fn {name, version} ->
+        # A host command needs a host-registered native delegate, so rebuild is
+        # :native_required (discretion A6). Family is "host_command", never the id,
+        # so no support-matrix family row is produced.
+        capability =
+          Types.new_capability(
+            id: name,
+            version: version,
+            family: "host_command",
+            owner: :host,
+            rebuild: :native_required,
+            interaction: :fire_and_forget
+          )
+
+        {name, capability}
+      end)
+
+    public_registry
+    |> Map.merge(compatibility_registry)
+    |> Map.merge(host_registry)
   end
 
   @spec public_route_capability_ids() :: [String.t()]
@@ -188,7 +244,7 @@ defmodule Crosswake.Manifest.Builder do
   @spec compatibility_route_capability_ids() :: [String.t()]
   def compatibility_route_capability_ids, do: @compatibility_route_capability_ids
 
-  defp route_entries(routes, managed_routes, origin) do
+  defp route_entries(routes, managed_routes, origin, host_command_registry) do
     routes
     |> Enum.zip(managed_routes)
     |> Map.new(fn {%Route{} = route, managed_route} ->
@@ -216,7 +272,8 @@ defmodule Crosswake.Manifest.Builder do
           requires_recent_auth: route.requires_recent_auth,
           auth_posture: route.auth_posture,
           auth_return: route_auth_return(route),
-          notification_open: route.notification_open
+          notification_open: route.notification_open,
+          host_commands: host_commands_for(route, host_command_registry)
         )
 
       {route.id, entry}

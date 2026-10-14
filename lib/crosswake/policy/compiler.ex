@@ -55,7 +55,8 @@ defmodule Crosswake.Policy.Compiler do
     end
   end
 
-  defp host_command_registry(source, opts) do
+  @doc false
+  def host_command_registry(source, opts) do
     if is_atom(source) and not is_nil(source) and Code.ensure_loaded?(source) and
          function_exported?(source, :__crosswake_host_commands__, 0) do
       source.__crosswake_host_commands__()

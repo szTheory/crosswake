@@ -26,6 +26,7 @@ defmodule Crosswake.Shell.IOSHostGeneration do
           manifest_source: :bundled,
           bridge_protocol_version: Crosswake.Bridge.Contract.version(),
           native_runtime_version: "1.0.0",
+          capabilities: entry_host_commands(manifest, config.entry_route_id),
           correlation_id: "ios-build-entry"
         )
 
@@ -53,6 +54,14 @@ defmodule Crosswake.Shell.IOSHostGeneration do
       {:error, _diagnostic} ->
         {:error, "router policy could not be compiled; repair the declared route policy"}
     end
+  end
+
+  @doc false
+  # D-07: the entry activation carries only the entry route's own host commands,
+  # read from the compiled manifest entry (built by Builder.host_commands_for/2).
+  # No config, no route id literal, no other route is consulted.
+  def entry_host_commands(manifest, entry_route_id) do
+    Map.fetch!(manifest.routes, entry_route_id).host_commands
   end
 
   defp entry_exists(manifest, route_id) do

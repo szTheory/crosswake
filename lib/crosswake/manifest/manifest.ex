@@ -19,7 +19,11 @@ defmodule Crosswake.Manifest do
     case Compiler.compile(source, opts) do
       {:ok, %{routes: routes, warnings: warnings}} ->
         managed_routes = managed_routes(source)
-        manifest = Builder.build(routes, managed_routes, opts)
+        registry = Compiler.host_command_registry(source, opts)
+
+        manifest =
+          Builder.build(routes, managed_routes, Keyword.put(opts, :host_commands, registry))
+
         errors = Validator.validate(manifest)
 
         case errors do

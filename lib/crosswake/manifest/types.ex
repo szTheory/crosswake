@@ -175,7 +175,7 @@ defmodule Crosswake.Manifest.Types do
     ]
 
     @type status :: :supported | :verification_required | :unsupported
-    @type owner :: :bounded_bridge | :native_screen | :backend_seam | :activation | :defer
+    @type owner :: :bounded_bridge | :native_screen | :backend_seam | :activation | :host | :defer
     @type package_class :: :core | :companion | :example_docs_only | :defer
     @type proof_class :: :merge_blocking | :advisory
     @type rebuild :: :none | :native_required | :companion_required
@@ -302,7 +302,8 @@ defmodule Crosswake.Manifest.Types do
       packs: [],
       sync: [],
       transfers: [],
-      allowlisted_origins: []
+      allowlisted_origins: [],
+      host_commands: %{}
     ]
 
     @typedoc "Route definition struct passed to companion gate callbacks."
@@ -327,7 +328,8 @@ defmodule Crosswake.Manifest.Types do
             requires_recent_auth: pos_integer() | nil,
             auth_posture: Crosswake.Policy.Schema.auth_posture() | nil,
             auth_return: Crosswake.Manifest.Types.RouteAuthReturn.t() | nil,
-            notification_open: Crosswake.Policy.Schema.notification_open_declaration() | nil
+            notification_open: Crosswake.Policy.Schema.notification_open_declaration() | nil,
+            host_commands: %{optional(String.t()) => String.t()}
           }
   end
 
@@ -889,7 +891,8 @@ defmodule Crosswake.Manifest.Types do
       requires_recent_auth: Keyword.get(attrs, :requires_recent_auth),
       auth_posture: Keyword.get(attrs, :auth_posture),
       auth_return: Keyword.get(attrs, :auth_return),
-      notification_open: Keyword.get(attrs, :notification_open)
+      notification_open: Keyword.get(attrs, :notification_open),
+      host_commands: Keyword.get(attrs, :host_commands, %{})
     })
   end
 
@@ -1252,7 +1255,8 @@ defmodule Crosswake.Manifest.Types do
       "auth_min_level" => route.auth_min_level && Atom.to_string(route.auth_min_level),
       "requires_recent_auth" => route.requires_recent_auth,
       "auth_posture" => route.auth_posture && Atom.to_string(route.auth_posture),
-      "notification_open" => serialize_notification_open(route.notification_open)
+      "notification_open" => serialize_notification_open(route.notification_open),
+      "host_commands" => host_commands_object(route.host_commands)
     }
     |> Enum.reject(fn {k, v} ->
       k in [
@@ -1463,6 +1467,11 @@ defmodule Crosswake.Manifest.Types do
   defp serialize_on_unavailable(nil), do: nil
   defp serialize_on_unavailable(:deny), do: "deny"
   defp serialize_on_unavailable({:fallback_phoenix, route_id}), do: "fallback_phoenix:#{route_id}"
+
+  # D-06: always an object (empty when the route references no host command).
+  # Key order is fixed by the serializer, which sorts every object's keys.
+  defp host_commands_object(nil), do: %{}
+  defp host_commands_object(commands) when is_map(commands), do: commands
 
   defp serialize_notification_open(nil), do: nil
   defp serialize_notification_open(true), do: true

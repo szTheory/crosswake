@@ -105,6 +105,8 @@ defmodule CrosswakeExample.Router do
   _ = @crosswake_policy_module
   # crosswake:install:end
 
+  crosswake_host_commands([{"host.study.audio.play", "1.0.0"}])
+
   pipeline :browser do
     plug(:accepts, ["html"])
     plug(:fetch_session)
@@ -247,6 +249,7 @@ defmodule CrosswakeExample.Router do
         crosswake: [
           id: "offline-study",
           runtime: :offline_island,
+          capabilities: ["host.study.audio.play"],
           offline: :local_first,
           security: :standard
         ]
