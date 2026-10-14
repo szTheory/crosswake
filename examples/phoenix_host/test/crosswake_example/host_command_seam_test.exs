@@ -60,4 +60,68 @@ defmodule CrosswakeExample.HostCommandSeamTest do
 
     assert Jason.decode!(rendered.activation)["capabilities"] == %{}
   end
+
+  describe "generated entry activation against the compiled manifest" do
+    alias Crosswake.Compatibility
+    alias Crosswake.Compatibility.Target
+    alias Crosswake.Shell.Activation
+
+    defp request_from(rendered, capabilities) do
+      decoded = Jason.decode!(rendered.activation)
+
+      Activation.new_request(
+        route_id: decoded["route_id"],
+        url: decoded["url"],
+        source: :cold_start,
+        origin: decoded["origin"],
+        manifest_source: :bundled,
+        bridge_protocol_version: decoded["bridge_protocol_version"],
+        native_runtime_version: decoded["native_runtime_version"],
+        correlation_id: "seam-test",
+        capabilities: capabilities
+      )
+    end
+
+    defp compiled_manifest do
+      {:ok, %{manifest: manifest}} =
+        Crosswake.Manifest.compile(CrosswakeExample.Router,
+          origin: "https://study.crosswake.test",
+          generated_at: "2026-10-14T00:00:00Z"
+        )
+
+      manifest
+    end
+
+    defp findings(manifest, request) do
+      Compatibility.route_findings(manifest, "offline-study", %Target{
+        manifest_schema_version: Crosswake.Manifest.Types.manifest_schema_version(),
+        bridge_protocol_version: request.bridge_protocol_version,
+        native_runtime_version: request.native_runtime_version,
+        origin: request.origin,
+        manifest_source: request.manifest_source,
+        capabilities: request.capabilities,
+        packs: request.installed_packs
+      })
+    end
+
+    test "offline-study resolves with the generated entry activation and has no capability_version finding" do
+      assert {:ok, rendered} = IOSHostGeneration.render(config("offline-study"))
+      manifest = compiled_manifest()
+      request = request_from(rendered, Jason.decode!(rendered.activation)["capabilities"])
+
+      assert findings(manifest, request) == []
+
+      decision = Activation.resolve(manifest, request)
+      assert decision.status == :allow
+      assert decision.runtime == :offline_island
+    end
+
+    test "control: an activation lacking the declared command does produce a capability_version finding" do
+      assert {:ok, rendered} = IOSHostGeneration.render(config("offline-study"))
+      manifest = compiled_manifest()
+
+      assert [%{axis: :capability_version, subject: "host.study.audio.play"}] =
+               findings(manifest, request_from(rendered, %{}))
+    end
+  end
 end
