@@ -142,8 +142,9 @@ defmodule Crosswake.Doctor.HostCommandsTest do
     found = findings(dir, DeclaringRouter, root)
     assert codes(found) == ["host_command_shell_unsupported", "host_commands_stale"]
 
-    assert Enum.all?(found, fn finding ->
-             Map.keys(finding.details) -- @allowed_detail_keys == []
-           end)
+    # codes/1 above pinned exactly two findings, so this loop is never empty.
+    for finding <- found do
+      assert Map.keys(finding.details) -- @allowed_detail_keys == []
+    end
   end
 end
