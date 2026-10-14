@@ -1,5 +1,11 @@
 defmodule Crosswake.Shell.IOSHostConfig do
-  @moduledoc false
+  @moduledoc """
+  Strictly validated `:ios_host` declaration.
+
+  `origin_mode` is an optional qualifier on the one `:ios_host` origin. The only accepted value
+  is `:local_loopback`, which admits `http://127.0.0.1[:port]` and `http://localhost[:port]`
+  outside production. Omit it for HTTPS production origins.
+  """
 
   @enforce_keys [
     :router,
@@ -10,6 +16,8 @@ defmodule Crosswake.Shell.IOSHostConfig do
     :device_signing
   ]
   defstruct @enforce_keys ++ [origin_mode: nil]
+
+  @production_http_message "invalid origin; use an absolute HTTPS origin without credentials, path, query, or fragment; for a local iOS Simulator host set origin_mode: :local_loopback with http://127.0.0.1:PORT or http://localhost:PORT"
 
   @keys @enforce_keys
   @optional_keys [:origin_mode]
@@ -47,9 +55,10 @@ defmodule Crosswake.Shell.IOSHostConfig do
 
   defp validate(input, opts) do
     mode = Map.get(input, :origin_mode)
-    _env = Keyword.get(opts, :env, current_env())
+    env = Keyword.get(opts, :env, current_env())
 
-    with :ok <- valid_router(input.router),
+    with :ok <- valid_mode(mode, env),
+         :ok <- valid_router(input.router),
          {:ok, origin} <- valid_origin(input.origin, mode),
          :ok <- valid_entry(input.entry_route_id),
          :ok <- valid_bundle(input.app_bundle_id, :app_bundle_id),
@@ -65,6 +74,20 @@ defmodule Crosswake.Shell.IOSHostConfig do
     end
   end
 
+  defp valid_mode(nil, _env), do: :ok
+
+  defp valid_mode(:local_loopback, :prod),
+    do:
+      {:error,
+       "origin_mode :local_loopback is not accepted when MIX_ENV=prod; remove it from production config"}
+
+  defp valid_mode(:local_loopback, _env), do: :ok
+
+  defp valid_mode(_other, _env),
+    do:
+      {:error,
+       "invalid origin_mode; use :local_loopback or omit the key for HTTPS production origins"}
+
   # Fail closed: without Mix loaded the environment is production.
   defp current_env do
     if Code.ensure_loaded?(Mix) and function_exported?(Mix, :env, 0), do: Mix.env(), else: :prod
@@ -79,6 +102,69 @@ defmodule Crosswake.Shell.IOSHostConfig do
   defp valid_router(_), do: {:error, "invalid router; use a compiled Phoenix router module"}
 
   defp valid_origin(origin, :local_loopback) when is_binary(origin) do
+    if Regex.match?(~r{\Ahttps://}i, origin),
+      do:
+        {:error,
+         "invalid origin_mode; :local_loopback requires an http loopback origin; remove origin_mode to use an HTTPS origin"},
+      else: valid_loopback_origin(origin)
+  end
+
+  defp valid_origin(origin, _mode) when is_binary(origin) do
+    uri = URI.parse(origin)
+    host = uri.host && String.downcase(uri.host)
+
+    authority =
+      case Regex.run(~r{\Ahttps://([^/?#]*)}i, origin, capture: :all_but_first) do
+        [value] -> value
+        _ -> nil
+      end
+
+    {authority_host, raw_port} =
+      case authority && String.split(authority, ":", parts: 2) do
+        [value] -> {String.downcase(value), nil}
+        [value, port] -> {String.downcase(value), port}
+        _ -> {nil, nil}
+      end
+
+    valid_port =
+      case raw_port do
+        nil -> true
+        value -> Regex.match?(~r/\A[0-9]+\z/, value) and String.to_integer(value) in 1..65_535
+      end
+
+    cond do
+      String.downcase(uri.scheme || "") == "http" ->
+        {:error, @production_http_message}
+
+      (String.downcase(uri.scheme || "") != "https" or is_nil(host) or uri.userinfo) || uri.query ||
+        uri.fragment ||
+          uri.path not in [nil, ""] ->
+        {:error,
+         "invalid origin; use an absolute HTTPS origin without credentials, path, query, or fragment"}
+
+      authority_host != host or not valid_port ->
+        {:error, "invalid origin; use a valid HTTPS authority and decimal port from 1 to 65535"}
+
+      not valid_host?(host) ->
+        {:error, "invalid origin; use a valid DNS host without spaces or placeholder values"}
+
+      String.contains?(host, "example") or String.ends_with?(host, ".invalid") ->
+        {:error,
+         "invalid origin; replace the example or placeholder host with the production host origin"}
+
+      true ->
+        canonical_port =
+          if raw_port in [nil, "443"], do: "", else: ":#{String.to_integer(raw_port)}"
+
+        {:ok, "https://#{host}#{canonical_port}"}
+    end
+  rescue
+    _ -> {:error, "invalid origin; use an absolute HTTPS origin with a valid decimal port"}
+  end
+
+  defp valid_origin(_, _mode), do: {:error, "invalid origin; use an absolute HTTPS origin"}
+
+  defp valid_loopback_origin(origin) do
     uri = URI.parse(origin)
     host = uri.host && String.downcase(uri.host)
 
@@ -120,58 +206,6 @@ defmodule Crosswake.Shell.IOSHostConfig do
       {:error,
        "invalid local origin; origin_mode :local_loopback accepts only http://127.0.0.1 or http://localhost with an optional port"}
   end
-
-  defp valid_origin(origin, _mode) when is_binary(origin) do
-    uri = URI.parse(origin)
-    host = uri.host && String.downcase(uri.host)
-
-    authority =
-      case Regex.run(~r{\Ahttps://([^/?#]*)}i, origin, capture: :all_but_first) do
-        [value] -> value
-        _ -> nil
-      end
-
-    {authority_host, raw_port} =
-      case authority && String.split(authority, ":", parts: 2) do
-        [value] -> {String.downcase(value), nil}
-        [value, port] -> {String.downcase(value), port}
-        _ -> {nil, nil}
-      end
-
-    valid_port =
-      case raw_port do
-        nil -> true
-        value -> Regex.match?(~r/\A[0-9]+\z/, value) and String.to_integer(value) in 1..65_535
-      end
-
-    cond do
-      (String.downcase(uri.scheme || "") != "https" or is_nil(host) or uri.userinfo) || uri.query ||
-        uri.fragment ||
-          uri.path not in [nil, ""] ->
-        {:error,
-         "invalid origin; use an absolute HTTPS origin without credentials, path, query, or fragment"}
-
-      authority_host != host or not valid_port ->
-        {:error, "invalid origin; use a valid HTTPS authority and decimal port from 1 to 65535"}
-
-      not valid_host?(host) ->
-        {:error, "invalid origin; use a valid DNS host without spaces or placeholder values"}
-
-      String.contains?(host, "example") or String.ends_with?(host, ".invalid") ->
-        {:error,
-         "invalid origin; replace the example or placeholder host with the production host origin"}
-
-      true ->
-        canonical_port =
-          if raw_port in [nil, "443"], do: "", else: ":#{String.to_integer(raw_port)}"
-
-        {:ok, "https://#{host}#{canonical_port}"}
-    end
-  rescue
-    _ -> {:error, "invalid origin; use an absolute HTTPS origin with a valid decimal port"}
-  end
-
-  defp valid_origin(_, _mode), do: {:error, "invalid origin; use an absolute HTTPS origin"}
 
   defp valid_host?(host) do
     labels = String.split(host, ".")

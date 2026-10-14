@@ -81,7 +81,12 @@ defmodule Crosswake.Shell.IOSHostGenerationHostCommandsTest do
       dir = Path.join(System.tmp_dir!(), "seam-gate-#{System.unique_integer([:positive])}")
       source = Path.join(dir, "Sources/CrosswakeShellCore")
       File.mkdir_p!(source)
-      File.write!(Path.join(source, "ActivationCoordinator.swift"), @seam_swift_prefix <> version_line)
+
+      File.write!(
+        Path.join(source, "ActivationCoordinator.swift"),
+        @seam_swift_prefix <> version_line
+      )
+
       on_exit(fn -> File.rm_rf!(dir) end)
       dir
     end
@@ -94,7 +99,9 @@ defmodule Crosswake.Shell.IOSHostGenerationHostCommandsTest do
       do: IOSHostGeneration.render(config(router, entry), shell_package: source)
 
     test "a local package carrying seam 1.0.0 is allowed and projects capabilities" do
-      assert {:ok, rendered} = gated(Fixtures.DeclaringRouter, "lesson", {:local, package_dir(enum_at("1.0.0"))})
+      assert {:ok, rendered} =
+               gated(Fixtures.DeclaringRouter, "lesson", {:local, package_dir(enum_at("1.0.0"))})
+
       assert activation_capabilities(rendered) == %{"host.lesson.audio.play" => "1.0.0"}
     end
 
@@ -111,7 +118,11 @@ defmodule Crosswake.Shell.IOSHostGenerationHostCommandsTest do
 
     test "a local package without the seam constant is blocked" do
       assert {:error, message} =
-               gated(Fixtures.DeclaringRouter, "lesson", {:local, package_dir("struct Other {}\n")})
+               gated(
+                 Fixtures.DeclaringRouter,
+                 "lesson",
+                 {:local, package_dir("struct Other {}\n")}
+               )
 
       assert message =~ "no HostCommandSeam version declaration was found"
       assert message =~ "crosswake-shell-core-ios"
@@ -121,12 +132,18 @@ defmodule Crosswake.Shell.IOSHostGenerationHostCommandsTest do
       assert {:error, message} = gated(Fixtures.DeclaringRouter, "lesson", {:remote, "0.2.11"})
       assert message =~ "route lesson"
       assert message =~ "host.lesson.audio.play"
-      assert message =~ "remote crosswake-shell-core-ios 0.2.11 carries no host-command seam release"
+
+      assert message =~
+               "remote crosswake-shell-core-ios 0.2.11 carries no host-command seam release"
     end
 
     test "an unresolvable project is blocked, never allowed" do
       assert {:error, message} =
-               gated(Fixtures.DeclaringRouter, "lesson", {:project, "/nonexistent/crosswake-managed"})
+               gated(
+                 Fixtures.DeclaringRouter,
+                 "lesson",
+                 {:project, "/nonexistent/crosswake-managed"}
+               )
 
       assert message =~ "could not be determined"
     end
@@ -138,13 +155,39 @@ defmodule Crosswake.Shell.IOSHostGenerationHostCommandsTest do
             {:local, package_dir("struct Other {}\n")},
             {:project, "/nonexistent/crosswake-managed"}
           ] do
-        assert {:ok, _} = gated(Crosswake.TestSupport.RouterFixtures.ManagedRouter, "dashboard", source)
+        assert {:ok, _} =
+                 gated(Crosswake.TestSupport.RouterFixtures.ManagedRouter, "dashboard", source)
       end
     end
 
     test "render/1 without a context stays the pure projection" do
       assert activation_capabilities(render!(Fixtures.DeclaringRouter, "lesson")) ==
                %{"host.lesson.audio.play" => "1.0.0"}
+    end
+  end
+
+  describe "http origin defense in depth" do
+    test "a hand-built struct with an http origin and no origin_mode is refused" do
+      hand_built = %{config(Fixtures.DeclaringRouter, "lesson") | origin: "http://127.0.0.1:4790"}
+
+      assert {:error, reason} = IOSHostGeneration.render(hand_built)
+      assert reason =~ "origin_mode"
+      refute reason =~ "4790"
+    end
+
+    test "with origin_mode :local_loopback the http origin renders into activation and manifest" do
+      local = %{
+        config(Fixtures.DeclaringRouter, "lesson")
+        | origin: "http://127.0.0.1:4790",
+          origin_mode: :local_loopback
+      }
+
+      assert {:ok, rendered} = IOSHostGeneration.render(local)
+      assert Jason.decode!(rendered.activation)["origin"] == "http://127.0.0.1:4790"
+
+      manifest = Jason.decode!(rendered.manifest)
+      assert manifest["host"]["origin"] == "http://127.0.0.1:4790"
+      assert manifest["routes"]["lesson"]["allowlisted_origins"] == ["http://127.0.0.1:4790"]
     end
   end
 end

@@ -14,7 +14,8 @@ defmodule Crosswake.Shell.IOSHostGeneration do
           else: []
         )
 
-    with {:ok, %{manifest: manifest}} <- Manifest.compile(config.router, compile_opts),
+    with :ok <- origin_transport(config),
+         {:ok, %{manifest: manifest}} <- Manifest.compile(config.router, compile_opts),
          :ok <- entry_exists(manifest, config.entry_route_id),
          :ok <- shell_gate(manifest, Keyword.fetch(opts, :shell_package)) do
       entry = Map.fetch!(manifest.routes, config.entry_route_id)
@@ -56,6 +57,17 @@ defmodule Crosswake.Shell.IOSHostGeneration do
       {:error, _diagnostic} ->
         {:error, "router policy could not be compiled; repair the declared route policy"}
     end
+  end
+
+  # Defense in depth for hand-built structs: an http origin is only legal in the explicit
+  # local loopback mode that IOSHostConfig.normalize/2 validates.
+  defp origin_transport(%IOSHostConfig{origin: origin, origin_mode: mode}) do
+    if is_binary(origin) and String.starts_with?(String.downcase(origin), "http://") and
+         mode != :local_loopback,
+       do:
+         {:error,
+          "http origin requires origin_mode: :local_loopback; use an HTTPS origin or declare origin_mode"},
+       else: :ok
   end
 
   @doc false
