@@ -1,8 +1,21 @@
 defmodule Crosswake.Policy.Validator do
   @moduledoc """
   Semantic invariant checks for normalized Crosswake route policy.
+
+  ## Host commands
+
+  `host.*` capabilities are a separate input and never join the closed core capability
+  set. `validate/3` takes the router's host-command registry as `opts[:host_commands]`
+  (a list of `{name, version}` tuples or names). `validate/2` has no registry, so it
+  checks only grammar, reserved prefixes and runtime for `host.*` capabilities.
+
+  `Crosswake.Policy.Compiler.compile/2` is the only production caller and always passes a
+  registry (the router's declaration, else `opts[:host_commands]`, else `[]`), so real
+  routers are membership-checked fail-closed: a router that declares nothing denies every
+  `host.*` reference. Versions are not read here; the registry declaration enforces them.
   """
 
+  alias Crosswake.HostCommands
   alias Crosswake.Policy.Error
   alias Crosswake.Policy.Route
 
@@ -146,7 +159,25 @@ defmodule Crosswake.Policy.Validator do
   end
 
   # Host commands are a separate input (D-03): they never join @known_capabilities.
+  # Checks run in order and stop at the first failure for a capability: grammar,
+  # reserved prefix, runtime, then registry membership (only when a registry is given).
   defp validate_host_capability(errors, route, capability, opts) do
+    cond do
+      not HostCommands.valid_name?(capability) ->
+        [invalid_host_command_error(route, capability) | errors]
+
+      HostCommands.reserved?(capability) ->
+        [reserved_host_command_error(route, capability) | errors]
+
+      route.runtime not in HostCommands.bridge_runtimes() ->
+        [host_command_runtime_error(route, capability) | errors]
+
+      true ->
+        validate_host_command_membership(errors, route, capability, opts)
+    end
+  end
+
+  defp validate_host_command_membership(errors, route, capability, opts) do
     case Keyword.fetch(opts, :host_commands) do
       {:ok, registry} ->
         declared = registry |> Enum.map(&registry_name/1) |> Enum.sort()
@@ -160,6 +191,45 @@ defmodule Crosswake.Policy.Validator do
       :error ->
         errors
     end
+  end
+
+  defp invalid_host_command_error(route, capability) do
+    %{
+      key: :capabilities,
+      message:
+        "[crosswake.route.invalid_host_command] route #{inspect(route.id)} references " <>
+          "#{inspect(capability)}, which is not a valid host command name. " <>
+          "Expected #{HostCommands.shape()}.",
+      hint:
+        "rename it to a lowercase name such as capabilities: [\"host.study.audio.play\"]; " <>
+          "wildcards and globs are never accepted"
+    }
+  end
+
+  defp reserved_host_command_error(route, capability) do
+    %{
+      key: :capabilities,
+      message:
+        "[crosswake.route.reserved_host_command] route #{inspect(route.id)} references " <>
+          "#{inspect(capability)}, which uses a reserved prefix " <>
+          "(#{Enum.join(HostCommands.reserved_prefixes(), ", ")}).",
+      hint:
+        "choose a host-owned name such as capabilities: [\"host.study.audio.play\"] " <>
+          "outside the reserved prefixes"
+    }
+  end
+
+  defp host_command_runtime_error(route, capability) do
+    %{
+      key: :capabilities,
+      message:
+        "[crosswake.route.host_command_runtime] route #{inspect(route.id)} has runtime " <>
+          "#{inspect(route.runtime)} and cannot reference host command #{inspect(capability)}; " <>
+          "only routes with a web bridge session can.",
+      hint:
+        "use runtime: :live_view or runtime: :offline_island for route #{inspect(route.id)}, " <>
+          "or remove #{inspect(capability)} from its capabilities"
+    }
   end
 
   defp registry_name({name, _version}), do: name
