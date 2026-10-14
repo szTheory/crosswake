@@ -11,6 +11,12 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Unreleased: host-command seam (additive, iOS only, not released)
+
+* Routes can declare `host_commands`, and an `offline_island` route is admitted to the iOS shell as its own presentation. `manifest_schema_version` is now `1.2.0`; `compatibility.host_command_seam_version` is emitted only when a route declares host commands. `bridge_protocol_version` stays `1.1.0`. Host-command versions supported by this shell are `1.x.y`.
+* The Android shell, its vectors and its assets are unchanged. This entry is not a release and claims no device or adopter result.
+* Source note for iOS hosts: the shell presentation enum gained an offline-island case, so exhaustive `switch` statements need a new branch.
+
 ### Unpublished support claims
 
 * No new support claims have been cut after `0.2.1` yet. Future entries here must distinguish planning milestone work from published Hex release truth.
