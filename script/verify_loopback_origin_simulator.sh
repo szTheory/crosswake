@@ -15,7 +15,7 @@ HELPERS="${ROOT_DIR}/script/loopback_origin_simulator"
 XCODEBUILD="${CROSSWAKE_IOS_XCODEBUILD_BIN:-xcodebuild}"
 EVIDENCE=""
 SCHEME="CrosswakeShell"
-CORE_TAG="0.2.99"
+CORE_TAG=""
 
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
@@ -265,9 +265,15 @@ fi
 CORE_CLONE="$RUN/core"
 mkdir -p "$CORE_CLONE"
 tar -C "$ROOT_DIR/packages/crosswake-shell-core-ios" --exclude=.build -cf - . | tar -C "$CORE_CLONE" -xf -
+# SwiftPM records a fingerprint per (URL, tag) in the user-level security store, so a
+# reused tag with different bytes is refused. Derive a hermetic tag in the 0.9.x band
+# from the package tree and make the commit deterministic: same bytes, same revision.
 git -C "$CORE_CLONE" -c init.defaultBranch=main init -q
 git -C "$CORE_CLONE" -c user.email=ci@crosswake -c user.name=ci add -A
-git -C "$CORE_CLONE" -c user.email=ci@crosswake -c user.name=ci commit -q -m "hermetic ${CORE_TAG}"
+CORE_TREE="$(git -C "$CORE_CLONE" write-tree)"
+CORE_TAG="0.9.$(( 16#${CORE_TREE:0:6} % 90000 + 1000 ))"
+GIT_AUTHOR_DATE="2000-01-01T00:00:00Z" GIT_COMMITTER_DATE="2000-01-01T00:00:00Z" \
+  git -C "$CORE_CLONE" -c user.email=ci@crosswake -c user.name=ci commit -q -m "hermetic ${CORE_TAG}"
 git -C "$CORE_CLONE" tag "$CORE_TAG"
 git -C "$CORE_CLONE" tag "v${CORE_TAG}"
 
