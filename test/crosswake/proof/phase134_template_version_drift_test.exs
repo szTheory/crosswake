@@ -23,7 +23,9 @@ defmodule Crosswake.Proof.Phase134TemplateVersionDriftTest do
 
   @template_dir Path.join([File.cwd!(), "priv", "templates", "crosswake", "shell"])
 
-  @checked_in_hash "a6009f2c7ea273c15d241ca4cb397e3fad02fc2ec9945ff77caf0b8b60578183"
+  # Phase 182 kept @template_version 4: Info.plist.eex gained a local-loopback-only
+  # branch; production output is byte-identical (see production_generation.sha256.json).
+  @checked_in_hash "8dedb0d06cb31313dd471333fac34ace29ccf316d6ebd01ddb98d4d1dd78434a"
 
   # ---------------------------------------------------------------------------
   # SC#1 — drift guard: live template hash must match the checked-in hash.
