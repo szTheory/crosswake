@@ -674,13 +674,28 @@ defmodule Crosswake.ProofLane.Generator do
     end)
   end
 
+  @local_mode_refusal "physical proof lane refuses origin_mode :local_loopback; loopback reaches the device itself, so use the HTTPS production origin"
+
+  @doc false
+  def local_mode_refusal, do: @local_mode_refusal
+
   defp normalize_host!(nil), do: nil
+
+  defp normalize_host!(%IOSHostConfig{origin_mode: :local_loopback}),
+    do: raise(ArgumentError, @local_mode_refusal)
+
   defp normalize_host!(%IOSHostConfig{} = config), do: config
 
   defp normalize_host!(config) do
     case IOSHostConfig.normalize(config) do
-      {:ok, normalized} -> normalized
-      {:error, reason} -> raise ArgumentError, "invalid iOS host configuration: #{reason}"
+      {:ok, %IOSHostConfig{origin_mode: :local_loopback}} ->
+        raise ArgumentError, @local_mode_refusal
+
+      {:ok, normalized} ->
+        normalized
+
+      {:error, reason} ->
+        raise ArgumentError, "invalid iOS host configuration: #{reason}"
     end
   end
 

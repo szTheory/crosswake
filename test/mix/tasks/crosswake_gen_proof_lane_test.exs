@@ -571,6 +571,147 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     Path.wildcard(Path.join(System.tmp_dir!(), "crosswake-proof-lane-helper-*"))
   end
 
+  @d10 "physical proof lane refuses origin_mode :local_loopback; loopback reaches the device itself, so use the HTTPS production origin"
+
+  defp local_declaration do
+    [
+      router: ManagedRouter,
+      origin: "http://127.0.0.1:4790",
+      entry_route_id: "route-0123456789abcdef",
+      app_bundle_id: "org.crosswake.host",
+      proof_app_bundle_id: "org.crosswake.host.proof",
+      device_signing: [mode: :manual, team_id: "ABCDE12345"],
+      origin_mode: :local_loopback
+    ]
+  end
+
+  defp https_declaration,
+    do:
+      Keyword.delete(local_declaration(), :origin_mode)
+      |> Keyword.put(:origin, "https://phoenix-host.test")
+
+  defp with_ios_host(declaration, fun) do
+    previous = Application.get_env(:crosswake, :ios_host)
+    previous_lane = Application.get_env(:crosswake, :proof_lane)
+
+    if declaration,
+      do: Application.put_env(:crosswake, :ios_host, declaration),
+      else: Application.delete_env(:crosswake, :ios_host)
+
+    try do
+      fun.()
+    after
+      if previous,
+        do: Application.put_env(:crosswake, :ios_host, previous),
+        else: Application.delete_env(:crosswake, :ios_host)
+
+      if previous_lane,
+        do: Application.put_env(:crosswake, :proof_lane, previous_lane),
+        else: Application.delete_env(:crosswake, :proof_lane)
+    end
+  end
+
+  test "proof lane task refuses a local-mode :ios_host declaration" do
+    with_root(fn root, config ->
+      Application.put_env(:crosswake, :proof_lane, Map.from_struct(config))
+
+      with_ios_host(local_declaration(), fn ->
+        before = snapshot(root)
+
+        error =
+          assert_raise Mix.Error, fn -> Mix.Task.rerun("crosswake.gen.proof_lane", ["ios"]) end
+
+        assert error.message == "IOS-HOST-CONFIG: " <> @d10
+        refute error.message =~ "127.0.0.1"
+        assert before == snapshot(root)
+      end)
+    end)
+  end
+
+  test "proof lane --config branch refuses a local-mode :ios_host declaration" do
+    with_root(fn root, config ->
+      config_path = Path.join(root, "proof_lane_selected.exs")
+      File.write!(config_path, selected_config(Map.from_struct(config)))
+
+      with_ios_host(local_declaration(), fn ->
+        before = snapshot(root)
+
+        error =
+          assert_raise Mix.Error, fn ->
+            Mix.Task.rerun("crosswake.gen.proof_lane", ["ios", "--config", config_path])
+          end
+
+        assert error.message == "IOS-HOST-CONFIG: " <> @d10
+        assert before == snapshot(root)
+      end)
+
+      with_ios_host(Map.new(local_declaration()), fn ->
+        assert_raise Mix.Error, "IOS-HOST-CONFIG: " <> @d10, fn ->
+          Mix.Task.rerun("crosswake.gen.proof_lane", ["ios", "--config", config_path])
+        end
+      end)
+    end)
+  end
+
+  test "proof lane --config branch is unchanged with an HTTPS or absent :ios_host" do
+    for declaration <- [https_declaration(), nil] do
+      with_root(fn root, config ->
+        config_path = Path.join(root, "proof_lane_selected.exs")
+        File.write!(config_path, selected_config(Map.from_struct(config)))
+
+        with_ios_host(declaration, fn ->
+          Mix.Task.rerun("crosswake.gen.proof_lane", ["ios", "--config", config_path])
+
+          assert File.exists?(Path.join(root, "native/ios/CrosswakeProofSettings.xcconfig")) or
+                   File.dir?(Path.join(root, "native/ios"))
+        end)
+      end)
+    end
+  end
+
+  test "generate, check and diff refuse a normalized local-mode struct" do
+    with_root(fn root, config ->
+      assert {:ok, host} = IOSHostConfig.normalize(local_declaration())
+      assert host.origin_mode == :local_loopback
+      before = snapshot(root)
+
+      for action <- [&Generator.generate/2, &Generator.check/2, &Generator.diff/2] do
+        error = assert_raise ArgumentError, fn -> action.(config, host) end
+        assert error.message == @d10
+      end
+
+      assert before == snapshot(root)
+    end)
+  end
+
+  test "generate, check and diff refuse a raw local-mode declaration" do
+    with_root(fn root, config ->
+      before = snapshot(root)
+
+      for declaration <- [local_declaration(), Map.new(local_declaration())],
+          action <- [&Generator.generate/2, &Generator.check/2, &Generator.diff/2] do
+        error = assert_raise ArgumentError, fn -> action.(config, declaration) end
+        assert error.message == @d10
+      end
+
+      assert before == snapshot(root)
+    end)
+  end
+
+  test "generate, check and diff accept an HTTPS host declaration as before" do
+    with_root(fn _root, config ->
+      assert {:ok, host} = IOSHostConfig.normalize(https_declaration())
+      assert {:ok, _} = Generator.generate(config, host)
+      assert :ok = Generator.check(config, host)
+      assert [_ | _] = Generator.diff(config, host)
+    end)
+  end
+
+  test "the refusal message names no origin" do
+    refute Generator.local_mode_refusal() =~ "127.0.0.1"
+    refute Generator.local_mode_refusal() =~ "localhost"
+  end
+
   defp selected_config(config) do
     inspect(config,
       limit: :infinity,

@@ -126,21 +126,46 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLane do
   end
 
   defp load_host_config(opts) do
-    if opts[:config] do
-      {:ok, nil}
-    else
-      case Application.get_env(:crosswake, :ios_host) do
-        nil ->
-          {:ok, nil}
+    declaration = Application.get_env(:crosswake, :ios_host)
 
-        declaration ->
-          case IOSHostConfig.normalize(declaration) do
-            {:ok, host_config} -> {:ok, host_config}
-            {:error, reason} -> Mix.raise("IOS-HOST-CONFIG: #{reason}")
-          end
-      end
+    cond do
+      opts[:config] ->
+        # The selected config path does not use :ios_host, but a local-mode declaration
+        # must never sit beside a physical proof-lane run.
+        if local_declaration?(declaration), do: refuse_local_mode!()
+        {:ok, nil}
+
+      is_nil(declaration) ->
+        {:ok, nil}
+
+      true ->
+        case IOSHostConfig.normalize(declaration) do
+          {:ok, %IOSHostConfig{origin_mode: :local_loopback}} ->
+            refuse_local_mode!()
+
+          {:ok, host_config} ->
+            {:ok, host_config}
+
+          {:error, reason} ->
+            if local_declaration?(declaration),
+              do: refuse_local_mode!(),
+              else: Mix.raise("IOS-HOST-CONFIG: #{reason}")
+        end
     end
   end
+
+  defp refuse_local_mode! do
+    Mix.raise("IOS-HOST-CONFIG: " <> Crosswake.ProofLane.Generator.local_mode_refusal())
+  end
+
+  defp local_declaration?(declaration) when is_list(declaration) do
+    Keyword.keyword?(declaration) and Keyword.get(declaration, :origin_mode) == :local_loopback
+  end
+
+  defp local_declaration?(declaration) when is_map(declaration),
+    do: Map.get(declaration, :origin_mode) == :local_loopback
+
+  defp local_declaration?(_), do: false
 
   defp verify_effective_settings(config, host_config) do
     with {:ok, host_root} <- Config.host_root(config),
