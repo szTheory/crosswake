@@ -444,6 +444,10 @@ defmodule Crosswake.CollectionAssertionInventory do
   # The `# file:line` comment above each entry is retained purely for human navigation — it plays
   # no role in the lookup.
   @manual_overrides %{
+    # test/crosswake/proof/phase180_twin_feasibility_test.exs:40
+    "sha256:af020bc44efa8111" =>
+      {"safe-cardinality-pinned",
+       "the enclosing test is the G1 negative control of the SHA-pinned Phase 180 feasibility gate (\"G1 control: validator accepts a known capability without a capabilities error\"): `Validator.validate/2` on a route declaring only the known capability \"share\" is asserted to return no capabilities error, by design. The paired G1 gate test in the same file asserts exactly one capabilities error (`[error] = errors`) for an unknown capability, so the validator is shown to report the error when it exists. The file is SHA-pinned by the gate and is not edited, so the guard cannot be added in place."},
     # test/mix/tasks/crosswake.proof_lane.physical_iphone_test.exs:92
     "sha256:cce3a74c3adbbdca" =>
       {"safe-cardinality-pinned",

@@ -25,8 +25,10 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   # under test — a contract cannot silently drift when the assertion re-reads the same file it
   # is checking. These are the numbers the script ACTUALLY produced against this tree on
   # 2026-09-16 (Task 2), never the numbers this plan predicted going in.
-  @audited_site_count 235
-  @shape_counts %{"assert_all" => 52, "assert_any" => 135, "refute_any" => 48, "refute_all" => 0}
+  # Phase 180 (2026-10-15) added 8 sites in the twin runner tests: 7 guarded or pinned in place
+  # and 1 manual override for the SHA-pinned G1 negative control (see @manual_overrides).
+  @audited_site_count 243
+  @shape_counts %{"assert_all" => 57, "assert_any" => 135, "refute_any" => 51, "refute_all" => 0}
   # Plan 170-02 Task 2 regenerated this after inserting guards at every needs-fix row: 8 of the
   # 60 rows were reclassified from needs-fix to safe-cardinality-pinned via manual override after
   # real test execution proved their collections are permanently empty by design (positive-path
@@ -38,8 +40,8 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   @bucket_counts %{
     "safe-by-construction" => 135,
     "safe-compile-time-literal" => 4,
-    "safe-cardinality-pinned" => 36,
-    "safe-guarded" => 60
+    "safe-cardinality-pinned" => 41,
+    "safe-guarded" => 63
   }
 
   describe "Task 1: a clean run against the committed ledger" do
