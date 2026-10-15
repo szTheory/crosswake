@@ -1,0 +1,469 @@
+defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
+  use ExUnit.Case, async: false
+
+  import Bitwise
+
+  alias Crosswake.ProofLane.{TwinReceipt, TwinRuntime}
+  alias Mix.Tasks.Crosswake.ProofLane.VerifyTwin
+
+  @head String.duplicate("a", 40)
+  @tree String.duplicate("b", 40)
+
+  setup do
+    base =
+      Path.join(
+        System.tmp_dir!(),
+        "twin-test-" <> Base.encode16(:crypto.strong_rand_bytes(6), case: :lower)
+      )
+
+    File.mkdir_p!(base)
+    File.chmod!(base, 0o700)
+    on_exit(fn -> File.rm_rf(base) end)
+
+    candidate = Path.join(base, "candidate")
+    File.mkdir_p!(candidate)
+    File.write!(Path.join(candidate, "mix.lock"), "%{}\n")
+    run_root = Path.join(base, "run")
+    File.mkdir!(run_root)
+    File.chmod!(run_root, 0o700)
+    {:ok, base: base, candidate: candidate, run_root: run_root}
+  end
+
+  # The pre-journey default: no producers, so every observation is missing.
+  def empty_producers(_runtime, _expectations), do: {:ok, %{}, []}
+
+  defp free_port do
+    {:ok, l} = :gen_tcp.listen(0, ip: {127, 0, 0, 1}, reuseaddr: false)
+    {:ok, port} = :inet.port(l)
+    :gen_tcp.close(l)
+    port
+  end
+
+  defp record(ctx, port \\ nil, mode \\ 0o600) do
+    path = Path.join(ctx.base, "candidate-record-#{System.unique_integer([:positive])}.json")
+
+    File.write!(
+      path,
+      Jason.encode!(%{
+        candidate_path: ctx.candidate,
+        expected_head: @head,
+        expected_tree: @tree,
+        origin: "http://127.0.0.1:#{port || free_port()}",
+        resource_digests: [String.duplicate("d", 64)],
+        fixture_digests: [String.duplicate("e", 64)]
+      })
+    )
+
+    File.chmod!(path, mode)
+    path
+  end
+
+  defp args(ctx, record), do: ["ios", "--candidate", record, "--run-root", ctx.run_root]
+
+  defp full_producers(overrides \\ %{}) do
+    fn runtime, expectations ->
+      observations =
+        for %{sub_observations: subs} <- TwinReceipt.roster(),
+            %{id: id, owner: owner} <- subs,
+            id != "TW-T10-02" do
+          attrs =
+            Map.merge(
+              %{
+                id: id,
+                owner: owner,
+                run_id: runtime.run_id,
+                outcome: :passed,
+                measure: nil,
+                cause: nil
+              },
+              Map.get(overrides, id, %{})
+            )
+
+          {:ok, o} = TwinReceipt.observation(attrs)
+          o
+        end
+
+      {:ok, expectations.joins, observations}
+    end
+  end
+
+  test "unknown switches and extra positionals raise before creating any file", ctx do
+    before = File.ls!(ctx.base) |> Enum.sort()
+
+    for bad <- [["ios", "--bogus"], ["ios", "extra"], ["android"], [], ["ios", "--candidate"]] do
+      assert_raise Mix.Error, "verify_twin.invalid_options", fn -> VerifyTwin.execute(bad, []) end
+    end
+
+    assert File.ls!(ctx.base) |> Enum.sort() == before
+    assert File.ls!(ctx.run_root) == []
+  end
+
+  test "missing or non-private run root or candidate exits 2 with prerequisite_missing", ctx do
+    rec = record(ctx)
+
+    assert {2, [_, "first cause: prerequisite_missing", "report: none written", _]} =
+             VerifyTwin.execute(
+               ["ios", "--candidate", rec, "--run-root", Path.join(ctx.base, "absent")],
+               producers: &empty_producers/2
+             )
+
+    File.chmod!(ctx.run_root, 0o755)
+
+    assert {2, [_, "first cause: prerequisite_missing" | _]} =
+             VerifyTwin.execute(args(ctx, rec), producers: &empty_producers/2)
+
+    File.chmod!(ctx.run_root, 0o700)
+
+    loose = record(ctx, nil, 0o644)
+
+    assert {2, [_, "first cause: prerequisite_missing" | _]} =
+             VerifyTwin.execute(args(ctx, loose), producers: &empty_producers/2)
+
+    assert {2, [_, "first cause: prerequisite_missing" | _]} =
+             VerifyTwin.execute(["ios", "--run-root", ctx.run_root],
+               producers: &empty_producers/2
+             )
+
+    assert File.ls!(ctx.run_root) == []
+  end
+
+  test "an occupied origin port exits 2 with a concrete action and leaves the occupant alone",
+       ctx do
+    {:ok, occupant} =
+      :gen_tcp.listen(0, [:binary, ip: {127, 0, 0, 1}, reuseaddr: false, active: false])
+
+    {:ok, port} = :inet.port(occupant)
+    rec = record(ctx, port)
+
+    assert {2, [_, "first cause: origin_port_occupied", _, action]} =
+             VerifyTwin.execute(args(ctx, rec), producers: &empty_producers/2)
+
+    assert action ==
+             "next action: Free 127.0.0.1:#{port} (another process is listening on it), then run again with a new run root"
+
+    # The occupant is untouched and still accepts connections.
+    assert {:ok, client} = :gen_tcp.connect({127, 0, 0, 1}, port, [:binary, active: false], 1_000)
+    :gen_tcp.close(client)
+    assert {:ok, _} = :inet.port(occupant)
+    :gen_tcp.close(occupant)
+    assert File.ls!(ctx.run_root) == []
+  end
+
+  test "the origin stays held between prepare and stop_all", ctx do
+    port = free_port()
+    rec = record(ctx, port)
+    assert {:ok, runtime} = TwinRuntime.prepare(candidate: rec, run_root: ctx.run_root)
+
+    assert {:error, :eaddrinuse} =
+             :gen_tcp.listen(port, ip: {127, 0, 0, 1}, reuseaddr: false, active: false)
+
+    assert :ok = TwinRuntime.stop_all(runtime)
+
+    assert {:ok, again} =
+             :gen_tcp.listen(port, ip: {127, 0, 0, 1}, reuseaddr: false, active: false)
+
+    :gen_tcp.close(again)
+    assert (File.stat!(ctx.run_root).mode &&& 0o077) == 0
+  end
+
+  test "a run root that already holds a receipt is refused and left unchanged", ctx do
+    receipt = Path.join(ctx.run_root, "receipt.json")
+    File.write!(receipt, "first result")
+    parent = self()
+    producers = fn _rt, _exp -> send(parent, :producers_called) && {:ok, %{}, []} end
+
+    assert {2, [_, "first cause: run_root_reused", "report: none written", _]} =
+             VerifyTwin.execute(args(ctx, record(ctx)), producers: producers)
+
+    refute_received :producers_called
+    assert File.read!(receipt) == "first result"
+  end
+
+  test "a database path outside the run root or already present exits 2 before migration", ctx do
+    rec = record(ctx)
+    outside = Path.join(ctx.base, "elsewhere.sqlite3")
+
+    assert {:error, %{cause: :database_path_rejected}} =
+             TwinRuntime.prepare(candidate: rec, run_root: ctx.run_root, database_path: outside)
+
+    existing = Path.join(ctx.run_root, "taken.sqlite3")
+    File.write!(existing, "")
+
+    assert {:error, %{cause: :database_path_rejected}} =
+             TwinRuntime.prepare(candidate: rec, run_root: ctx.run_root, database_path: existing)
+
+    traversal = Path.join([ctx.run_root, "..", "escape.sqlite3"])
+
+    assert {:error, %{cause: :database_path_rejected}} =
+             TwinRuntime.prepare(candidate: rec, run_root: ctx.run_root, database_path: traversal)
+
+    previous = System.get_env("DATABASE_PATH")
+    System.put_env("DATABASE_PATH", outside)
+
+    try do
+      assert {2, [_, "first cause: database_path_rejected" | _]} =
+               VerifyTwin.execute(args(ctx, rec), producers: &empty_producers/2)
+    after
+      if previous,
+        do: System.put_env("DATABASE_PATH", previous),
+        else: System.delete_env("DATABASE_PATH")
+    end
+
+    assert {:ok, runtime} = TwinRuntime.prepare(candidate: rec, run_root: ctx.run_root)
+    assert String.starts_with?(runtime.database_path, ctx.run_root <> "/")
+    refute File.exists?(runtime.database_path)
+    TwinRuntime.stop_all(runtime)
+  end
+
+  test "a child past its deadline is terminated and reaped and the first failure is kept", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    sleep = System.find_executable("sleep")
+
+    {:ok, child} =
+      TwinRuntime.start_child(runtime, :slow, %{path: sleep, args: ["30"], deadline_ms: 100})
+
+    assert TwinRuntime.alive?(child.os_pid)
+
+    assert {:error, :child_timeout} = TwinRuntime.await_exit(runtime, child)
+    refute TwinRuntime.alive?(child.os_pid)
+    assert TwinRuntime.first_failure(runtime) == :child_timeout
+
+    TwinRuntime.record_failure(runtime, :host_denied)
+    assert TwinRuntime.first_failure(runtime) == :child_timeout
+
+    {:ok, quick} =
+      TwinRuntime.start_child(runtime, :quick, %{path: System.find_executable("true"), args: []})
+
+    assert {:ok, 0} = TwinRuntime.await_exit(runtime, quick)
+    assert :ok = TwinRuntime.stop_all(runtime)
+  end
+
+  test "stop_all terminates and reaps a still-running tracked child by its own handle", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    sleep = System.find_executable("sleep")
+    {:ok, a} = TwinRuntime.start_child(runtime, :a, %{path: sleep, args: ["30"]})
+    {:ok, b} = TwinRuntime.start_child(runtime, :b, %{path: sleep, args: ["30"]})
+    assert TwinRuntime.alive?(a.os_pid) and TwinRuntime.alive?(b.os_pid)
+
+    assert :ok = TwinRuntime.stop_all(runtime)
+    refute TwinRuntime.alive?(a.os_pid)
+    refute TwinRuntime.alive?(b.os_pid)
+  end
+
+  test "backend environment is closed and flag names are gated", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+
+    env =
+      TwinRuntime.env_for_backend(runtime, 4801, [
+        {"CROSSWAKE_TWIN_FLAG", "on"},
+        {"SECRET_TOKEN", "x"},
+        {"HOME", "/"}
+      ])
+
+    assert {"MIX_ENV", "test"} in env
+    assert {"PORT", "4801"} in env
+    assert {"DATABASE_PATH", runtime.database_path} in env
+    assert {"PHX_SERVER", "true"} in env
+    assert {"CROSSWAKE_TWIN_FLAG", "on"} in env
+    refute Enum.empty?(env)
+    refute Enum.any?(env, fn {k, _} -> k in ["SECRET_TOKEN", "HOME"] end)
+    TwinRuntime.stop_all(runtime)
+  end
+
+  test "exit_status_for maps passed 0, failed 1, blocked 2 and unknown rule ids to 2" do
+    assert VerifyTwin.exit_status_for(:passed) == 0
+    assert VerifyTwin.exit_status_for(:failed) == 1
+    assert VerifyTwin.exit_status_for(:blocked) == 2
+    assert VerifyTwin.exit_status_for("TW-NEVER-SEEN") == 2
+    assert VerifyTwin.exit_status_for(:surprise) == 2
+  end
+
+  test "a completed passing run writes private receipt and projection and prints four lines",
+       ctx do
+    assert {0, lines} = VerifyTwin.execute(args(ctx, record(ctx)), producers: full_producers())
+
+    assert [
+             "result: passed (exit 0)",
+             "first cause: none",
+             "report: " <> report,
+             "next action: " <> _
+           ] = lines
+
+    assert report == Path.join(ctx.run_root, "receipt.json")
+    assert length(lines) == 4
+    refute Enum.any?(lines, &(&1 =~ "127.0.0.1"))
+
+    for name <- ["receipt.json", "twin-result.json"] do
+      assert (File.stat!(Path.join(ctx.run_root, name)).mode &&& 0o777) == 0o600
+    end
+
+    bytes = File.read!(report)
+    assert {:ok, receipt} = TwinReceipt.decode(bytes)
+    projection = ctx.run_root |> Path.join("twin-result.json") |> File.read!() |> Jason.decode!()
+    assert projection["exit_status"] == 0
+    assert projection["overall_status"] == "passed"
+
+    assert projection["receipt_sha256"] ==
+             :crypto.hash(:sha256, bytes) |> Base.encode16(case: :lower)
+
+    assert {:ok, expected} = TwinReceipt.project(receipt, 0)
+    assert projection == Jason.decode!(Jason.encode!(expected))
+    assert File.ls!(ctx.run_root) |> Enum.sort() == ["receipt.json", "twin-result.json"]
+
+    # A second run on the same root is refused and keeps the first result.
+    assert {2, [_, "first cause: run_root_reused" | _]} =
+             VerifyTwin.execute(args(ctx, record(ctx)), producers: full_producers())
+
+    assert File.read!(report) == bytes
+  end
+
+  test "the real journey path requires --identity", ctx do
+    assert_raise Mix.Error, "verify_twin.identity_required", fn ->
+      VerifyTwin.execute(args(ctx, record(ctx)), [])
+    end
+  end
+
+  test "a preflight block on the real journey path still writes a receipt with every id blocked",
+       ctx do
+    identity = Path.join(ctx.base, "absent-identity.json")
+
+    assert {2, [_, "first cause: identity_unknown", report, _]} =
+             VerifyTwin.execute(args(ctx, record(ctx)) ++ ["--identity", identity], [])
+
+    assert report == "report: " <> Path.join(ctx.run_root, "receipt.json")
+    {:ok, receipt} = TwinReceipt.decode(File.read!(Path.join(ctx.run_root, "receipt.json")))
+    assert receipt.overall_status == :blocked
+    assert length(Enum.flat_map(receipt.groups, & &1.sub_observations)) == 49
+
+    assert Enum.all?(
+             Enum.flat_map(receipt.groups, & &1.sub_observations),
+             &(&1.outcome == :blocked)
+           )
+
+    assert File.exists?(Path.join(ctx.run_root, "twin-result.json"))
+  end
+
+  test "observed failure exits 1, missing observation exits 2, both write a receipt", ctx do
+    failing =
+      full_producers(%{"TW-T05-04" => %{outcome: :failed, cause: :contradiction_observed}})
+
+    assert {1, [_, "first cause: TW-T05-04 contradiction_observed", _, _]} =
+             VerifyTwin.execute(args(ctx, record(ctx)), producers: failing)
+
+    assert File.exists?(Path.join(ctx.run_root, "receipt.json"))
+
+    other = Path.join(ctx.base, "run2")
+    File.mkdir!(other)
+    File.chmod!(other, 0o700)
+
+    assert {2, [_, "first cause: TW-T01-01 observation_missing", _, _]} =
+             VerifyTwin.execute(["ios", "--candidate", record(ctx), "--run-root", other],
+               producers: &empty_producers/2
+             )
+
+    {:ok, receipt} = TwinReceipt.decode(File.read!(Path.join(other, "receipt.json")))
+    assert receipt.overall_status == :blocked
+  end
+
+  test "a producer that hits a child deadline preserves child_timeout as the first cause", ctx do
+    producers = fn runtime, expectations ->
+      {:ok, child} =
+        TwinRuntime.start_child(runtime, :slow, %{
+          path: System.find_executable("sleep"),
+          args: ["30"],
+          deadline_ms: 100
+        })
+
+      {:error, :child_timeout} = TwinRuntime.await_exit(runtime, child)
+
+      {:ok, observed, observations} =
+        full_producers(%{"TW-T02-04" => %{outcome: :blocked, cause: :child_timeout}}).(
+          runtime,
+          expectations
+        )
+
+      send(self(), {:pid, child.os_pid})
+      {:ok, observed, observations}
+    end
+
+    assert {2, [_, "first cause: TW-T02-04 child_timeout" | _]} =
+             VerifyTwin.execute(args(ctx, record(ctx)), producers: producers)
+
+    assert_received {:pid, os_pid}
+    refute TwinRuntime.alive?(os_pid)
+  end
+
+  test "a journey that released its children and then blocks still writes its receipt and exits 2",
+       ctx do
+    producers = fn runtime, _expectations ->
+      :ok = TwinRuntime.stop_children(runtime)
+      {:blocked, :attachment_check_unavailable}
+    end
+
+    assert {2, [_, "first cause: attachment_check_unavailable", report, _]} =
+             VerifyTwin.execute(args(ctx, record(ctx)), producers: producers)
+
+    assert report == "report: " <> Path.join(ctx.run_root, "receipt.json")
+    {:ok, receipt} = TwinReceipt.decode(File.read!(Path.join(ctx.run_root, "receipt.json")))
+    assert receipt.overall_status == :blocked
+  end
+
+  test "a registry already released before the receipt never crashes the command", ctx do
+    blocked = fn runtime, _expectations ->
+      :ok = TwinRuntime.stop_all(runtime)
+      {:blocked, :attachment_check_unavailable}
+    end
+
+    assert {2, [_, "first cause: attachment_check_unavailable", _, _]} =
+             VerifyTwin.execute(args(ctx, record(ctx)), producers: blocked)
+
+    other = Path.join(ctx.base, "run-released")
+    File.mkdir!(other)
+    File.chmod!(other, 0o700)
+
+    passing = fn runtime, expectations ->
+      :ok = TwinRuntime.stop_all(runtime)
+      full_producers().(runtime, expectations)
+    end
+
+    assert {0, ["result: passed (exit 0)", "first cause: none" | _]} =
+             VerifyTwin.execute(["ios", "--candidate", record(ctx), "--run-root", other],
+               producers: passing
+             )
+  end
+
+  test "producer results and public strings stay closed", ctx do
+    bad = fn _rt, _exp -> :nonsense end
+
+    assert {2, [_, "first cause: TW-PRODUCERS-RESULT", "report: none written", _]} =
+             VerifyTwin.execute(args(ctx, record(ctx)), producers: bad)
+
+    stale = fn runtime, expectations ->
+      {:ok, o} =
+        TwinReceipt.observation(%{
+          id: "TW-T01-01",
+          owner: :host_adapter,
+          run_id: "twin-0000000000000000",
+          outcome: :passed,
+          measure: nil,
+          cause: nil
+        })
+
+      {:ok, expectations.joins, [o | elem(full_producers().(runtime, expectations), 2)]}
+    end
+
+    other = Path.join(ctx.base, "run3")
+    File.mkdir!(other)
+    File.chmod!(other, 0o700)
+
+    assert {2, [_, "first cause: TW-OBS-STALE", "report: none written", _]} =
+             VerifyTwin.execute(["ios", "--candidate", record(ctx), "--run-root", other],
+               producers: stale
+             )
+
+    source = File.read!("lib/mix/tasks/crosswake.proof_lane.verify_twin.ex")
+    refute source =~ "gen.shell"
+    refute source =~ "B2C"
+    refute File.read!("lib/crosswake/proof_lane/twin_runtime.ex") =~ "B2C"
+  end
+end
