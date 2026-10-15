@@ -1,0 +1,27 @@
+{
+  "configurations" : [
+    {
+      "id" : "5E1B2C8A-4D3F-4B7A-9C10-7A6D0E5F1A21",
+      "name" : "Twin journey",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "systemAttachmentLifetime" : "keepNever",
+    "uiTestingScreenshotsLifetime" : "keepNever",
+    "userAttachmentLifetime" : "keepNever"
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:CrosswakeShell.xcodeproj",
+        "identifier" : "A1900000000000000000E001",
+        "name" : "CrosswakeShellUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
