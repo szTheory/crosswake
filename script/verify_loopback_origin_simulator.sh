@@ -282,7 +282,7 @@ if ! TMPDIR="$RUN/TMPDIR" "$XCODEBUILD" build \
   -project "$PROJ/CrosswakeShell.xcodeproj" -scheme "$SCHEME" \
   -destination 'generic/platform=iOS Simulator' \
   -derivedDataPath "$DD" -clonedSourcePackagesDirPath "$SPM" \
-  CODE_SIGNING_ALLOWED=NO >"$RUN/build.log" 2>&1; then
+  -packageCachePath "$RUN/pkgcache" CODE_SIGNING_ALLOWED=NO >"$RUN/build.log" 2>&1; then
   cp "$RUN/build.log" "${TMPDIR:-/tmp}/crosswake-loopback-build.last.log" 2>/dev/null || true
   block "LOOP-IOS-BUILD" "xcodebuild could not build the generated local-mode shell"
 fi
