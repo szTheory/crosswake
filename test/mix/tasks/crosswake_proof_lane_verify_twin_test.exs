@@ -566,14 +566,16 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
     marker = "zz-leak-marker-" <> Base.encode16(:crypto.strong_rand_bytes(4), case: :lower)
     File.write!(Path.join(ctx.candidate, marker), "x")
 
-    assert {2, [first, "first cause: source_dirty", report, action] = lines} =
-             VerifyTwin.execute(args(ctx, record(ctx)), producers: dirty_producers())
+    {code, lines} = VerifyTwin.execute(args(ctx, record(ctx)), producers: dirty_producers())
 
-    assert first == "result: blocked (exit 2)"
-    assert report == "report: " <> Path.join(ctx.run_root, "receipt.json")
+    assert code == 2
 
-    assert action =~
-             "next action: The candidate has 1 uncommitted or untracked files. Commit or remove"
+    assert lines == [
+             "result: blocked (exit 2)",
+             "first cause: source_dirty",
+             "report: " <> Path.join(ctx.run_root, "receipt.json"),
+             "next action: The candidate has 1 changed or untracked file. Commit or remove the changes, then write a new prepared record and run into a new run root."
+           ]
 
     assert blocked_pairs(ctx) |> Enum.uniq() == [{1, :source_dirty}]
 
@@ -591,7 +593,52 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
     assert {2, [_, "first cause: source_dirty", _, action]} =
              VerifyTwin.execute(args(ctx, record(ctx)), producers: dirty_producers())
 
-    assert action =~ "next action: The candidate has uncommitted or untracked files."
+    assert action ==
+             "next action: " <>
+               Crosswake.ProofLane.TwinProducers.source_block_action(:unavailable)
+
+    refute action =~ ~r/\d/
     assert blocked_pairs(ctx) |> Enum.uniq() == [{nil, :source_dirty}]
+  end
+
+  test "a flag-hidden edit reports separate counts and measure two", ctx do
+    git_in(ctx.candidate, ["init", "-q"])
+    git_in(ctx.candidate, ["add", "mix.lock"])
+    git_in(ctx.candidate, ["commit", "-q", "-m", "fixture"])
+    git_in(ctx.candidate, ["update-index", "--assume-unchanged", "mix.lock"])
+    File.write!(Path.join(ctx.candidate, "mix.lock"), "%{changed: true}\n")
+
+    assert {2, [_, "first cause: source_dirty", _, action]} =
+             VerifyTwin.execute(args(ctx, record(ctx)), producers: dirty_producers())
+
+    assert action ==
+             "next action: " <>
+               Crosswake.ProofLane.TwinProducers.source_block_action(
+                 {:ok, %{modified: 1, flagged: 1, excludes: 0}}
+               )
+
+    assert action =~ "1 changed or untracked file; and 1 tracked file marked unchanged"
+    assert blocked_pairs(ctx) |> Enum.uniq() == [{2, :source_dirty}]
+  end
+
+  test "no source_dirty output carries the candidate path or home directory", ctx do
+    git_in(ctx.candidate, ["init", "-q"])
+    git_in(ctx.candidate, ["add", "mix.lock"])
+    git_in(ctx.candidate, ["commit", "-q", "-m", "fixture"])
+    marker = "zz-leak-marker-" <> Base.encode16(:crypto.strong_rand_bytes(4), case: :lower)
+    File.write!(Path.join(ctx.candidate, marker), "x")
+
+    {2, lines} = VerifyTwin.execute(args(ctx, record(ctx)), producers: dirty_producers())
+
+    texts =
+      lines ++
+        [
+          File.read!(Path.join(ctx.run_root, "receipt.json")),
+          File.read!(Path.join(ctx.run_root, "twin-result.json"))
+        ]
+
+    for text <- texts, secret <- [ctx.candidate, System.user_home!(), marker] do
+      refute text =~ secret
+    end
   end
 end

@@ -145,7 +145,12 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwin do
   # first cause, so each accepted run root ends with receipt.json and twin-result.json.
   defp blocked_receipt(runtime, cause) do
     cause = TwinReceipt.safe_cause(cause)
-    count = if cause == :source_dirty, do: TwinProducers.dirty_count(runtime.candidate_path)
+
+    probe =
+      if cause == :source_dirty,
+        do: TwinProducers.probe_source(runtime.candidate_path, run_root: runtime.run_root)
+
+    count = measure_of(probe)
     zero = String.duplicate("0", 64)
 
     with {:ok, expectations} <-
@@ -183,7 +188,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwin do
 
       action =
         if cause == :source_dirty,
-          do: source_dirty_action(count),
+          do: TwinProducers.source_block_action(probe),
           else: next_action(receipt, cause)
 
       summarize(:blocked, Atom.to_string(cause), report, action)
@@ -281,22 +286,25 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwin do
   defp next_action(%{overall_status: :failed}, _),
     do: "Fix the first observed failure named above, then run again with a new run root"
 
-  defp next_action(%{overall_status: :blocked}, :source_dirty), do: source_dirty_action(nil)
+  # Chosen mechanism: keep the unknown text plus a reachability note and grep gate. The probe
+  # result is not available in finish/4, and routing it there would add a second probe call
+  # on the passing path. A counted source_dirty block reaches line 4 through blocked_receipt/2
+  # and source_block_action(probe); only blocked_receipt/2 and the :child_timeout call in
+  # twin_runtime.ex call record_failure/2, so this clause is a defensive fallback.
+  defp next_action(%{overall_status: :blocked}, :source_dirty),
+    do: TwinProducers.source_block_action(:unavailable)
 
   defp next_action(%{overall_status: :blocked}, _),
     do:
       "Supply the first missing observation or prerequisite named above, then run again with a new run root"
 
-  # Only the count is shown; no path or file name from the candidate ever reaches the output.
-  defp source_dirty_action(n) when is_integer(n),
-    do: "The candidate has #{n} uncommitted or untracked files. " <> source_dirty_steps()
+  # M+F+X of a countable probe within the receipt bound; nil is unknown, never clean.
+  defp measure_of({:ok, %{modified: m, flagged: f, excludes: x}}) do
+    sum = m + f + x
+    if sum <= TwinProducers.max_dirty_count(), do: sum
+  end
 
-  defp source_dirty_action(nil),
-    do: "The candidate has uncommitted or untracked files. " <> source_dirty_steps()
-
-  defp source_dirty_steps,
-    do:
-      "Commit or remove the uncommitted changes in the candidate, write a new prepared record, and run into a new run root. Run git status in the candidate to see them."
+  defp measure_of(_), do: nil
 
   defp summarize(status, cause, report, action) do
     code = exit_status_for(status)

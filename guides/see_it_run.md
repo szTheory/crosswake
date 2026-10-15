@@ -173,7 +173,17 @@ Prerequisites: a prepared candidate record (a private, mode 0600 JSON file namin
 path, expected head and tree, the declared loopback origin, and resource and fixture digests; this
 is a file, not the candidate directory), a free loopback origin port, an Xcode Simulator runtime,
 and an identity file. Every run needs a new run root; a run root that already holds a receipt is
-refused so a first result is never overwritten. The candidate tree must be clean at the recorded head; a dirty tree is refused.
+refused so a first result is never overwritten. The candidate tree must be clean at the recorded head; a dirty tree is refused. Changes hidden by index flags (assume-unchanged or skip-worktree) or by git settings still count, a candidate whose git configuration can hide changes (a worktree redirect, a filter, or .git/info/attributes) or that is not the repository's top-level directory is refused, and git 2.41 or newer is required. Untracked files that a .gitignore ignores are not counted; this is a known limit of the check, not something it detects.
+
+Before a run, check whether it would be allowed with the read-only preflight:
+
+```bash
+MIX_ENV=test mix crosswake.proof_lane.twin_preflight ios \
+  --candidate <prepared candidate record> --run-root <new private directory> \
+  --identity <identity file>
+```
+
+The preflight prints four lines (result allowed or blocked, first cause, `report: none written; no run root was created or consumed`, and one next action) and exits `0` when allowed and `2` when blocked. It writes no receipt and never creates or consumes a run root, so the same run root can be used for the real run. Allowed means the source, the identity digests and the run root pass and the origin port is free at that moment, while the backend build and the live journey are checked only by the real run, which repeats every check. Dirty counts are findings, not distinct files (a file can be both changed and flagged). Because the check ignores global git configuration, `safe.directory` entries do not apply, a filesystem without file modes reports changes, and repositories that rely on LFS or end-of-line filters are refused.
 
 Exit codes: `0` complete pass, `1` observed failure, `2` missing prerequisite or missing
 observation. The command prints four lines: result, first cause, local report path and one next

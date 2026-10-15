@@ -666,10 +666,10 @@ defmodule Crosswake.ProofLane.TwinProducersTest do
       assert TwinProducers.dirty_count(ctx.dir) == 1
     end
 
-    test "a staged rename blocks and counts once", ctx do
+    test "a staged rename blocks and counts as two findings", ctx do
       git(ctx.dir, ["mv", "mix.lock", "renamed.lock"])
       assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
-      assert TwinProducers.dirty_count(ctx.dir) == 1
+      assert TwinProducers.dirty_count(ctx.dir) == 2
     end
 
     test "one modified and one untracked file count two", ctx do
@@ -757,15 +757,12 @@ defmodule Crosswake.ProofLane.TwinProducersTest do
       sentinel = Path.join(ctx.side, "stderr-sentinel")
       File.mkdir_p!(bin)
 
+      real_git = System.find_executable("git")
+
       script = """
       #!/bin/sh
       if [ /dev/fd/2 -ef /dev/null ]; then echo null >> "#{sentinel}"; else echo leak >> "#{sentinel}"; fi
-      case "$*" in
-        *status*) ;;
-        *--git-path*) echo ".git/info/exclude" ;;
-        *rev-parse*) echo "#{String.duplicate("a", 40)}" ;;
-      esac
-      exit 0
+      exec "#{real_git}" "$@"
       """
 
       File.write!(Path.join(bin, "git"), script)
@@ -773,19 +770,13 @@ defmodule Crosswake.ProofLane.TwinProducersTest do
       env_restore("PATH")
       System.put_env("PATH", bin <> ":" <> System.get_env("PATH"))
 
-      runtime = %{
-        ctx.runtime
-        | candidate_head: String.duplicate("a", 40),
-          candidate_tree: String.duplicate("a", 40)
-      }
-
       assert TwinProducers.clean_tree(ctx.dir) == :ok
       assert TwinProducers.dirty_count(ctx.dir) == 0
-      assert {:ok, _} = TwinProducers.freeze(runtime, ctx.identity.(%{}), frozen_opts())
+      assert {:ok, _} = TwinProducers.freeze(ctx.runtime, ctx.identity.(%{}), frozen_opts())
 
       lines = sentinel |> File.read!() |> String.split()
       assert Enum.uniq(lines) == ["null"]
-      assert length(lines) >= 4
+      assert length(lines) >= 8
     end
 
     test "the recorded twin-03 shape (untracked files plus modified tracked ones) blocks", ctx do

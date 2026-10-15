@@ -44,32 +44,60 @@ defmodule Crosswake.ProofLane.TwinRuntime do
   @type t :: %__MODULE__{}
   @type failure :: %{cause: atom(), action: String.t()}
 
-  @doc """
-  Prepares a run. Options: `:candidate` (path to the prepared candidate record,
-  required), `:run_root` (existing private directory; created under the system
-  temp dir when omitted), `:database_path` (must resolve inside the run root to
-  a path that does not exist) and `:run_deadline_ms`.
+  @type checked :: %{
+          root: %{path: String.t(), create?: boolean()},
+          record: map(),
+          db: String.t(),
+          port: pos_integer(),
+          run_deadline_ms: pos_integer() | nil
+        }
 
-  The candidate record is a private (mode 0600) JSON file with `candidate_path`,
-  `expected_head`, `expected_tree`, `origin` (the declared primary loopback
-  origin), `resource_digests` and `fixture_digests`.
+  @doc """
+  Checks a run without side effects: no directory is created, no process is
+  started and no socket is kept open. Options are those of `prepare/1` plus
+  `:current_uid` (test seam for the run-root owner check).
+
+  Checks run in order: run root (exists, is a real directory not a symlink, mode
+  0700-style private, and owned by the current user; the owner check is new
+  behaviour of the real run), not reused, candidate record, outside the
+  candidate, database path, origin port, and origin bindable (bound and
+  released at once, so it only says the port is free at this moment).
   """
-  @spec prepare(keyword()) :: {:ok, t()} | {:error, failure()}
-  def prepare(opts) when is_list(opts) do
-    with {:ok, root} <- run_root(opts[:run_root]),
+  @spec check(keyword()) :: {:ok, checked()} | {:error, failure()}
+  def check(opts) when is_list(opts) do
+    with {:ok, root} <- run_root_check(opts[:run_root], opts),
          :ok <- not_reused(root),
          {:ok, record} <- candidate_record(opts[:candidate]),
-         :ok <- outside_candidate(root, record.candidate_path),
+         :ok <- outside_candidate(root.path, record.candidate_path),
          {:ok, db} <- database_path(root, opts[:database_path]),
          {:ok, port} <- origin_port(record.origin),
-         {:ok, listener} <- acquire_origin(port) do
+         :ok <- origin_bindable(port) do
+      {:ok,
+       %{
+         root: root,
+         record: record,
+         db: db,
+         port: port,
+         run_deadline_ms: opts[:run_deadline_ms]
+       }}
+    end
+  end
+
+  @doc """
+  Commits a checked run: the only code that creates a run root (when none was
+  given), acquires and holds the origin listener, and starts the run registry.
+  """
+  @spec commit(checked()) :: {:ok, t()} | {:error, failure()}
+  def commit(%{root: root, record: record, db: db, port: port} = checked) do
+    with :ok <- maybe_create_root(root),
+         {:ok, listener} <- acquire_origin_or_cleanup(root, port) do
       {:ok, registry} = Agent.start(fn -> %{children: %{}, first_failure: nil} end)
-      deadline = now_ms() + (opts[:run_deadline_ms] || @default_run_deadline_ms)
+      deadline = now_ms() + (checked.run_deadline_ms || @default_run_deadline_ms)
 
       {:ok,
        %__MODULE__{
          run_id: "twin-" <> Base.encode16(:crypto.strong_rand_bytes(8), case: :lower),
-         run_root: root,
+         run_root: root.path,
          database_path: db,
          origin: record.origin,
          origin_port: port,
@@ -83,6 +111,21 @@ defmodule Crosswake.ProofLane.TwinRuntime do
          run_deadline_at: deadline
        }}
     end
+  end
+
+  @doc """
+  Prepares a run: `check/1` then `commit/1`. Options: `:candidate` (path to the prepared candidate record,
+  required), `:run_root` (existing private directory; created under the system
+  temp dir when omitted), `:database_path` (must resolve inside the run root to
+  a path that does not exist) and `:run_deadline_ms`.
+
+  The candidate record is a private (mode 0600) JSON file with `candidate_path`,
+  `expected_head`, `expected_tree`, `origin` (the declared primary loopback
+  origin), `resource_digests` and `fixture_digests`.
+  """
+  @spec prepare(keyword()) :: {:ok, t()} | {:error, failure()}
+  def prepare(opts) when is_list(opts) do
+    with {:ok, checked} <- check(opts), do: commit(checked)
   end
 
   @doc "Environment for the owned Phoenix child (test-gated flags only, by name)."
@@ -280,30 +323,25 @@ defmodule Crosswake.ProofLane.TwinRuntime do
     end
   end
 
-  defp run_root(nil) do
-    root =
+  defp run_root_check(nil, _opts) do
+    path =
       Path.join(
         System.tmp_dir!(),
         "crosswake-twin-" <> Base.encode16(:crypto.strong_rand_bytes(6), case: :lower)
       )
 
-    with :ok <- File.mkdir(root),
-         :ok <- File.chmod(root, 0o700) do
-      {:ok, root}
-    else
-      _ ->
-        {:error,
-         failure(:prerequisite_missing, "Make the system temp directory writable and run again")}
-    end
+    {:ok, %{path: path, create?: true}}
   end
 
-  defp run_root(path) when is_binary(path) do
+  defp run_root_check(path, opts) when is_binary(path) do
     expanded = Path.expand(path)
 
-    case File.lstat(expanded) do
-      {:ok, %{type: :directory, mode: mode}} when (mode &&& 0o077) == 0 ->
-        {:ok, expanded}
-
+    with {:ok, %{type: :directory, mode: mode, uid: uid}} when (mode &&& 0o077) == 0 <-
+           File.lstat(expanded),
+         {:ok, current} <- current_uid(opts),
+         true <- uid == current do
+      {:ok, %{path: expanded, create?: false}}
+    else
       _ ->
         {:error,
          failure(
@@ -313,11 +351,64 @@ defmodule Crosswake.ProofLane.TwinRuntime do
     end
   end
 
-  defp run_root(_),
+  defp run_root_check(_, _opts),
     do:
       {:error, failure(:prerequisite_missing, "Pass a private run root directory and run again")}
 
-  defp not_reused(root) do
+  defp current_uid(opts) do
+    case Keyword.fetch(opts, :current_uid) do
+      {:ok, uid} when is_integer(uid) and uid >= 0 ->
+        {:ok, uid}
+
+      {:ok, _} ->
+        :error
+
+      :error ->
+        try do
+          {out, 0} =
+            System.cmd(System.find_executable("id") || "/usr/bin/id", ["-u"],
+              stderr_to_stdout: true
+            )
+
+          case Integer.parse(String.trim(out)) do
+            {uid, ""} when uid >= 0 -> {:ok, uid}
+            _ -> :error
+          end
+        rescue
+          _ in [ErlangError, ArgumentError, MatchError] -> :error
+        end
+    end
+  end
+
+  defp maybe_create_root(%{create?: false}), do: :ok
+
+  defp maybe_create_root(%{path: path}) do
+    with :ok <- File.mkdir(path),
+         :ok <- File.chmod(path, 0o700) do
+      :ok
+    else
+      _ ->
+        File.rm_rf(path)
+
+        {:error,
+         failure(:prerequisite_missing, "Make the system temp directory writable and run again")}
+    end
+  end
+
+  defp acquire_origin_or_cleanup(root, port) do
+    case acquire_origin(port) do
+      {:ok, _} = ok ->
+        ok
+
+      error ->
+        if root.create?, do: File.rm_rf(root.path)
+        error
+    end
+  end
+
+  defp not_reused(%{create?: true}), do: :ok
+
+  defp not_reused(%{path: root}) do
     case File.lstat(Path.join(root, @receipt_name)) do
       {:error, :enoent} ->
         :ok
@@ -416,9 +507,15 @@ defmodule Crosswake.ProofLane.TwinRuntime do
 
   defp candidate_fields(_), do: :error
 
-  defp database_path(root, nil), do: database_path(root, Path.join(root, "twin.sqlite3"))
+  defp database_path(%{create?: true, path: root}, nil),
+    do: {:ok, Path.join(root, "twin.sqlite3")}
 
-  defp database_path(root, path) when is_binary(path) do
+  defp database_path(%{create?: true}, _), do: {:error, db_failure()}
+
+  defp database_path(%{path: root} = r, nil),
+    do: database_path(r, Path.join(root, "twin.sqlite3"))
+
+  defp database_path(%{path: root}, path) when is_binary(path) do
     expanded = Path.expand(path)
 
     cond do
@@ -465,6 +562,20 @@ defmodule Crosswake.ProofLane.TwinRuntime do
            :prerequisite_missing,
            "Declare a primary origin of the form http://127.0.0.1:<port> in the prepared candidate and run again"
          )}
+    end
+  end
+
+  defp origin_bindable(port) do
+    case acquire_origin(port) do
+      {:ok, listener} ->
+        try do
+          :ok
+        after
+          :gen_tcp.close(listener)
+        end
+
+      error ->
+        error
     end
   end
 
