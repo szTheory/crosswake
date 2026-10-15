@@ -275,7 +275,9 @@ defmodule Crosswake.Doctor.OriginModeTest do
       with_host = run(dir, root(dir, production_plist(), @https_origin), check_publish?: true)
       without = run(dir, Path.join(dir, "no_such_root"), check_publish?: true)
 
-      refute Enum.any?(with_host.publish_readiness.checks, &(&1.category == :ios_host_origin))
+      assert Enum.filter(with_host.publish_readiness.checks, &(&1.category == :ios_host_origin)) ==
+               []
+
       assert with_host.publish_readiness.status == without.publish_readiness.status
       assert length(with_host.publish_readiness.checks) == 11
     end
@@ -283,7 +285,7 @@ defmodule Crosswake.Doctor.OriginModeTest do
     test "readiness without an observation keeps eleven checks" do
       report = Crosswake.Doctor.PublishReadiness.run(cwd: File.cwd!())
       assert length(report.checks) == 11
-      refute Enum.any?(report.checks, &(&1.category == :ios_host_origin))
+      assert Enum.filter(report.checks, &(&1.category == :ios_host_origin)) == []
     end
 
     test "the Mix task raises for the local fixture and prints the code", %{dir: dir} do
@@ -321,7 +323,7 @@ defmodule Crosswake.Doctor.OriginModeTest do
       assert Enum.at(lines, index + 1) ==
                "origin mode: local loopback (#{@local_origin}); Simulator only; not production-ready"
 
-      refute Enum.any?(lines, &Regex.match?(~r/(?<!not )production-ready/, &1))
+      assert Enum.filter(lines, &Regex.match?(~r/(?<!not )production-ready/, &1)) == []
     end
 
     test "no origin mode line for an HTTPS host", %{dir: dir} do
