@@ -43,6 +43,8 @@ coherent recognized managed state. Do not treat this as a filesystem-wide atomic
 transaction: Crosswake stages the output set, publishes files individually, and uses
 the recovery record to detect and repair an interrupted set.
 
+`Info.plist` stays host-owned: `mix crosswake.gen.shell` reconciles only the exact Crosswake origin-mode block inside it and refuses any other `NSAppTransportSecurity` edit with a repair message.
+
 The generated simulator configuration is explicitly unsigned. Device settings expose
 the declared signing style and team for Xcode inspection, but settings inspection
 does not claim signing, installation, or physical-iPhone support. Static route

@@ -7,7 +7,7 @@ This guide is rendered from `Crosswake.CapabilityMap`. It classifies what Crossw
 
 ## Declared iOS Host Setup
 
-One ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled router, entry route, HTTPS origin, app/proof identities, and device-signing settings. Compile-only generation projects selected-router manifest and static activation data without starting the Phoenix application or reading runtime-server configuration.
+One ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled router, entry route, HTTPS origin, app/proof identities, and device-signing settings. An explicit `origin_mode: :local_loopback` allows only `http://127.0.0.1` or `http://localhost` (optional port) for Simulator demonstration and is reported as not production-ready. Compile-only generation projects selected-router manifest and static activation data without starting the Phoenix application or reading runtime-server configuration.
 
 The checked outputs cover recognized manifest, activation, and xcconfig files. `--diff` and `--check` are read-only; interrupted output publication has an explicit recovery path, and existing PBX settings migration is opt-in and limited to recognized target blocks. Host Swift, entitlements, and unrelated project customization remain host-owned.
 

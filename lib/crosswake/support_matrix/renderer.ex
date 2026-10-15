@@ -134,7 +134,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
     [
       "## iOS Host Generation and Xcode Settings",
       "",
-      "The host's ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled Phoenix router, declared entry route, HTTPS primary origin, app/proof identities, and device-signing settings. Compile-only generation compiles the router without starting the host application or loading its runtime-server configuration.",
+      "The host's ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled Phoenix router, declared entry route, HTTPS primary origin, app/proof identities, and device-signing settings. An explicit `origin_mode: :local_loopback` allows only `http://127.0.0.1` or `http://localhost` (optional port) for Simulator demonstration and is reported as not production-ready. Compile-only generation compiles the router without starting the host application or loading its runtime-server configuration.",
       "",
       "`mix crosswake.gen.shell ios --diff` and `--check` inspect managed output without writing. Recognized manifest, static activation, and xcconfig projections have explicit ownership; interrupted publication blocks the Xcode build guard until `--recover`. Existing project settings use a separate opt-in migration limited to the recognized shell target blocks.",
       "",

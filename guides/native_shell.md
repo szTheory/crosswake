@@ -79,6 +79,19 @@ must be distinct. Crosswake derives the shell unit-test identity by adding `.tes
 to `app_bundle_id`, and derives the proof unit/UI test identities by adding `.tests`
 and `.uitests` to `proof_app_bundle_id`.
 
+For a Simulator-only demonstration against a local Phoenix server, add
+`origin_mode: :local_loopback` and set `origin` to `http://127.0.0.1:PORT` or
+`http://localhost:PORT`. Put the key only in dev or runner-owned config, never in shared
+`config/config.exs` or prod; generation refuses it under `MIX_ENV=prod`, so generate under
+`MIX_ENV=dev` or `MIX_ENV=test`. To switch back, remove the key, set the HTTPS origin, and
+rerun `mix crosswake.gen.shell ios`. While the mode is on, the generated `Info.plist` gains
+only `NSAllowsLocalNetworking` and a `CrosswakeOriginMode` marker, and regeneration removes
+both. ATS is a backstop; the origin allowlist is what keeps the app on loopback. Loopback on a
+physical iPhone is the phone itself, so the physical proof lane refuses the mode. `mix
+crosswake.doctor` warns about it and `--check-publish` fails. The generated README banner is
+written only when the README is first created, so it may be stale after you toggle the mode;
+trust the `CrosswakeOriginMode` marker in `Info.plist` instead.
+
 For an existing generated iOS host, inspect its recognized managed outputs and project
 settings first:
 
