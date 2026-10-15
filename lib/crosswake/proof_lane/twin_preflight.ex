@@ -5,17 +5,20 @@ defmodule Crosswake.ProofLane.TwinPreflight do
 
   It runs the shared run checks (run root, record, origin port, owner check) and the
   source gate (head, tree, clean working tree, lock files, study script), then compares
-  the prepared record's digests with the identity file and the candidate. It writes no
-  receipt, creates no run root, consumes no run root and holds no port, so the same run
-  root can be used for the real run afterwards.
+  the prepared record's digests with the identity file and the candidate. No receipt or
+  report is written, no run root is created or consumed, so the same run root can be used
+  for the real run afterwards. To read git state it creates a private temporary index
+  outside the candidate and the run root and removes it before returning, and it binds
+  the origin port for an instant to test it and releases it.
 
   Nothing it returns is a token the real run trusts. The real run repeats every check,
   and the backend build and the live journey are checked only by the real run.
 
   The digest comparison covers the manifest, activation and study script digests (kept
   in the record's `resource_digests`) and the media digest (kept in `fixture_digests`).
-  The real run still re-derives these digests from the identity file; enforcing the
-  comparison in the real run is left to Phase 188's scripted check.
+  The real run does not compare the record's digests with the identity file; it re-derives
+  them from the identity file only. Phase 188's scripted pre-run check (the "matching
+  digests" requirement) is where that comparison gates the real run.
 
   Options: `:candidate` (record path), `:run_root`, `:identity` (identity file path),
   `:database_path`, `:git_cmd`, `:current_uid` (test seam) and `:checks` (test seam; an

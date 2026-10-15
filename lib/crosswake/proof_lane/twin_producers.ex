@@ -670,7 +670,13 @@ defmodule Crosswake.ProofLane.TwinProducers do
   between reads is a mismatch), that the working tree is clean, and digests the lock files
   and the served study script. The target is a plain map with `:candidate_path`,
   `:candidate_head`, `:candidate_tree` and an optional `:run_root`. It never writes a file.
-  Options: `:git_cmd`, `:git_timeout_ms`, `:tmp_dir`, `:remove_dir`.
+  Options: `:git_cmd`, `:git_timeout_ms`, `:tmp_dir`, `:remove_dir`, `:file_digest`
+  (a one-arity digest function, a test seam).
+
+  It writes nothing in the candidate or the run root. The probe creates a private temporary
+  index in the system temporary directory, outside both, and removes it before returning. A
+  lock or script file that cannot be read or digested blocks as `:identity_unknown`; it
+  never raises.
   """
   @spec source_gate(map(), Path.t(), keyword()) ::
           {:ok,
@@ -698,8 +704,9 @@ defmodule Crosswake.ProofLane.TwinProducers do
          :ok <- same(head, want_head),
          :ok <- same(tree, want_tree),
          :ok <- clean_tree(path, probe_opts),
-         {:ok, locks} <- lock_digests(path),
-         {:ok, study_js} <- file_digest(Path.join(path, @study_js_rel)) do
+         digest = Keyword.get(opts, :file_digest, &file_digest/1),
+         {:ok, locks} <- lock_digests(path, digest),
+         {:ok, study_js} <- digest.(Path.join(path, @study_js_rel)) do
       {:ok, %{identity: identity, head: head, tree: tree, locks: locks, study_js: study_js}}
     else
       {:blocked, _} = blocked -> blocked
@@ -728,6 +735,9 @@ defmodule Crosswake.ProofLane.TwinProducers do
   # the system's config, replacement objects, attribute sources, an external diff, an
   # fsmonitor and the repository-redirecting variables are all out of the picture, so the
   # candidate path alone decides which tree is read. Only GIT_INDEX_FILE varies per call.
+  # Hooks are disabled for every pinned call (`core.hooksPath=/dev/null`, D-34): `read-tree`
+  # into the private index would otherwise run the candidate's `post-index-change` hook.
+  # A command-line `-c` beats every config file, so a local `core.hooksPath` cannot undo it.
   @empty_tree "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 
   @git_scrub_names ~w(GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY
@@ -769,7 +779,9 @@ defmodule Crosswake.ProofLane.TwinProducers do
     "-c",
     "status.showUntrackedFiles=all",
     "-c",
-    "core.autocrlf=false"
+    "core.autocrlf=false",
+    "-c",
+    "core.hooksPath=/dev/null"
   ]
 
   @max_dirty_count 1_000_000
@@ -788,12 +800,16 @@ defmodule Crosswake.ProofLane.TwinProducers do
         :bare -> args
       end
 
+    # IN-02: every inherited GIT_* name is unset at spawn time (so a GIT_TRACE file is never
+    # written); the static scrub and fixed values, then the per-call index, are applied after
+    # and win.
+    inherited = for {"GIT_" <> _ = name, _} <- System.get_env(), into: %{}, do: {name, nil}
+
     env =
-      extra_env
-      |> Map.take(["GIT_INDEX_FILE"])
-      |> Enum.reduce(@git_env, fn {name, value}, acc ->
-        List.keystore(acc, name, 0, {name, value})
-      end)
+      inherited
+      |> Map.merge(Map.new(@git_env))
+      |> Map.merge(Map.take(extra_env, ["GIT_INDEX_FILE"]))
+      |> Enum.sort()
 
     {"sh", ["-c", "exec \"$@\" 2>/dev/null", "sh", "git" | argv],
      [env: env, stderr_to_stdout: false]}
@@ -812,11 +828,17 @@ defmodule Crosswake.ProofLane.TwinProducers do
 
       task =
         Task.async(fn ->
+          # IN-02: the body is total. Any raise, throw or exit is `:unavailable` and its
+          # text is never read (it can carry a path). Deferred, recorded: a git child that
+          # hangs without writing may outlive the shut-down task (no portable timeout
+          # utility on macOS; 60 s bound per call). Reopen if a hung or leftover git is
+          # observed during a preflight or twin run.
           try do
             git_cmd.(cmd, argv, cmd_opts)
           rescue
-            ArgumentError -> :unavailable
-            ErlangError -> :unavailable
+            _ -> :unavailable
+          catch
+            _, _ -> :unavailable
           end
         end)
 
@@ -861,7 +883,8 @@ defmodule Crosswake.ProofLane.TwinProducers do
   answers `{:ok, counts}` and the sum is within the receipt measure bound, else `nil`
   (refused, unavailable or out of bounds; `nil` means unknown, never clean). Counts are
   findings, not distinct files: a path can count once as modified and once as flagged, and
-  a staged rename is two findings.
+  a staged rename is two findings. An uncommitted `.gitignore` that hides untracked
+  files adds one finding per hidden path; committed ignore rules add none (deferred limit).
   """
   @spec dirty_counts(Path.t(), keyword()) ::
           %{modified: non_neg_integer(), flagged: non_neg_integer(), excludes: non_neg_integer()}
@@ -957,7 +980,10 @@ defmodule Crosswake.ProofLane.TwinProducers do
 
   The working tree is compared with a fresh index built from `HEAD` in a private,
   contained temporary directory (so index flags and stat caches cannot hide a change);
-  `modified` counts the status records of that comparison, `flagged` counts the unique
+  `modified` counts the status records of that comparison plus every ignored untracked
+  path that an uncommitted ignore rule hides (an untracked `.gitignore` that ignores itself
+  and other files is counted; paths ignored by a `.gitignore` committed in `HEAD` are not,
+  which is the deferred, disclosed limit), `flagged` counts the unique
   paths whose entry in the real index carries a tag other than `H` (assume-unchanged,
   skip-worktree, unmerged and the rest), and `excludes` counts active rules in
   `.git/info/exclude`.
@@ -1135,10 +1161,119 @@ defmodule Crosswake.ProofLane.TwinProducers do
              ],
              opts,
              {:pinned, env}
-           ) do
-      count_status(out)
+           ),
+         {:ok, changed} <- count_status(out),
+         {:ok, hidden} <- hidden_by_uncommitted_rules(path, env, entries, opts) do
+      {:ok, changed + hidden}
     else
       _ -> :unavailable
+    end
+  end
+
+  # WR-01: an untracked path that a rule not committed in HEAD ignores is invisible to
+  # status, so it is counted here as one modified finding. Rules from a `.gitignore`
+  # tracked in HEAD are the deferred, disclosed limit and stay uncounted; rules from
+  # `.git/info/exclude` are covered by the excludes count (D-03). An ignored directory
+  # entry with no deciding rule of its own (`::`) is listed only because everything in it
+  # is ignored; its members are listed and judged on their own.
+  defp hidden_by_uncommitted_rules(path, env, committed, opts) do
+    with {out, 0} <-
+           run_git(
+             path,
+             ["ls-files", "--others", "--ignored", "--exclude-standard", "--directory", "-z"],
+             opts,
+             {:pinned, env}
+           ),
+         {:ok, listed} <- parse_ignored_listing(out),
+         {:ok, sources} <- ignore_sources(path, env, listed, opts) do
+      tracked = MapSet.new(committed, fn {_tag, entry} -> entry end)
+
+      count =
+        listed
+        |> Enum.zip(sources)
+        |> Enum.count(fn {entry, source} -> uncommitted_rule?(entry, source, tracked) end)
+
+      {:ok, count}
+    else
+      _ -> :unavailable
+    end
+  end
+
+  defp parse_ignored_listing(""), do: {:ok, []}
+
+  defp parse_ignored_listing(out) do
+    records = out |> String.split(<<0>>) |> Enum.drop(-1)
+
+    if String.ends_with?(out, <<0>>) and Enum.all?(records, &(&1 != "")) and
+         length(records) <= @max_dirty_count,
+       do: {:ok, records},
+       else: :error
+  end
+
+  @ignore_batch 200
+
+  defp ignore_sources(_path, _env, [], _opts), do: {:ok, []}
+
+  defp ignore_sources(path, env, listed, opts) do
+    listed
+    |> Enum.chunk_every(@ignore_batch)
+    |> Enum.reduce_while({:ok, []}, fn chunk, {:ok, acc} ->
+      case run_git(
+             path,
+             ["check-ignore", "--verbose", "--non-matching", "--" | chunk],
+             opts,
+             {:pinned, env}
+           ) do
+        {out, status} when status in [0, 1] ->
+          case parse_ignore_sources(out, length(chunk)) do
+            {:ok, sources} -> {:cont, {:ok, acc ++ sources}}
+            :error -> {:halt, :error}
+          end
+
+        _ ->
+          {:halt, :error}
+      end
+    end)
+  end
+
+  # `<source>:<line>:<pattern>\t<path>` per line; a path with no deciding rule prints `::`.
+  defp parse_ignore_sources(out, expected) do
+    lines = if out == "", do: [], else: out |> String.split("\n") |> Enum.drop(-1)
+
+    sources =
+      Enum.map(lines, fn line ->
+        with [rule, _path] <- String.split(line, "\t", parts: 2),
+             true <- String.ends_with?(out, "\n") do
+          if rule == "::" do
+            ""
+          else
+            case Regex.run(~r/\A(.+?):(\d+):/s, rule) do
+              [_, source, _line] -> source
+              _ -> :error
+            end
+          end
+        else
+          _ -> :error
+        end
+      end)
+
+    if length(sources) == expected and :error not in sources,
+      do: {:ok, sources},
+      else: :error
+  end
+
+  defp uncommitted_rule?(entry, "", _tracked), do: not String.ends_with?(entry, "/")
+
+  defp uncommitted_rule?(_entry, source, tracked) do
+    cond do
+      Path.basename(source) == ".gitignore" ->
+        not MapSet.member?(tracked, source)
+
+      Path.basename(source) == "exclude" and Path.basename(Path.dirname(source)) == "info" ->
+        false
+
+      true ->
+        true
     end
   end
 
@@ -1264,34 +1399,48 @@ defmodule Crosswake.ProofLane.TwinProducers do
     trimmed != "" and not String.starts_with?(trimmed, "#")
   end
 
-  defp lock_digests(path) do
-    digests =
+  defp lock_digests(path, digest) do
+    results =
       for rel <- @lock_rels, match?({:ok, _}, File.stat(Path.join(path, rel))) do
-        {:ok, digest} = file_digest(Path.join(path, rel))
-        digest
+        digest.(Path.join(path, rel))
       end
 
-    if digests == [], do: {:blocked, :identity_unknown}, else: {:ok, digests}
+    cond do
+      results == [] -> {:blocked, :identity_unknown}
+      Enum.all?(results, &match?({:ok, _}, &1)) -> {:ok, Enum.map(results, fn {:ok, d} -> d end)}
+      true -> {:blocked, :identity_unknown}
+    end
   end
 
-  @doc "Streaming SHA-256 of a file, hashed in place."
-  @spec file_digest(Path.t()) :: {:ok, String.t()} | {:error, term()}
-  def file_digest(path) do
+  @doc """
+  Streaming SHA-256 of a file, hashed in place. A read error at any point returns
+  `{:error, reason}`; a prefix digest is never returned. Option `:read_chunk` is a
+  one-arity function given the open device that returns a binary, `:eof` or
+  `{:error, reason}` (a test seam for a read error mid-stream).
+  """
+  @spec file_digest(Path.t(), keyword()) :: {:ok, String.t()} | {:error, term()}
+  def file_digest(path, opts \\ []) do
+    read_chunk = Keyword.get(opts, :read_chunk, fn io -> IO.binread(io, 65_536) end)
+
     case File.open(path, [:read, :binary]) do
       {:ok, io} ->
         try do
-          digest =
+          result =
             Enum.reduce_while(
-              Stream.repeatedly(fn -> IO.binread(io, 65_536) end),
+              Stream.repeatedly(fn -> read_chunk.(io) end),
               :crypto.hash_init(:sha256),
               fn
-                :eof, ctx -> {:halt, ctx}
-                {:error, _}, ctx -> {:halt, ctx}
-                data, ctx -> {:cont, :crypto.hash_update(ctx, data)}
+                :eof, ctx -> {:halt, {:ok, ctx}}
+                {:error, reason}, _ctx -> {:halt, {:error, reason}}
+                data, ctx when is_binary(data) -> {:cont, :crypto.hash_update(ctx, data)}
+                _other, _ctx -> {:halt, {:error, :unreadable}}
               end
             )
 
-          {:ok, digest |> :crypto.hash_final() |> Base.encode16(case: :lower)}
+          case result do
+            {:ok, ctx} -> {:ok, ctx |> :crypto.hash_final() |> Base.encode16(case: :lower)}
+            {:error, _} = error -> error
+          end
         after
           File.close(io)
         end

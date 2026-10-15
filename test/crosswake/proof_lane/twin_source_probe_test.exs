@@ -546,6 +546,147 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
     assert System.monotonic_time(:millisecond) - started < 4_000
   end
 
+  # CR-01 (D-34): `read-tree` into the private index runs the candidate's post-index-change
+  # hook unless hooks are pinned off. The marker lives in the side directory so it never
+  # dirties the candidate; the unpinned positive control proves the hook really fires.
+  defp hook_marker(ctx),
+    do: Path.join(ctx.side, "hook-marker-#{System.unique_integer([:positive])}")
+
+  defp control_runs_hook!(ctx, marker) do
+    assert {_, 0} = TwinGitFixtures.unpinned_read_tree(ctx)
+    assert File.exists?(marker)
+    File.rm!(marker)
+  end
+
+  test "a candidate post-index-change hook never runs during the probe", ctx do
+    marker = hook_marker(ctx)
+    TwinGitFixtures.plant_hook!(Path.join(ctx.dir, ".git/hooks"), "post-index-change", marker)
+    control_runs_hook!(ctx, marker)
+
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+    refute File.exists?(marker)
+  end
+
+  test "a hook under a local core.hooksPath never runs and the probe stays clean", ctx do
+    marker = hook_marker(ctx)
+    hooks = Path.join(ctx.side, "local-hooks")
+    TwinGitFixtures.plant_hook!(hooks, "post-index-change", marker)
+    TwinGitFixtures.set_config!(ctx.dir, "core.hooksPath", hooks)
+    control_runs_hook!(ctx, marker)
+
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+    refute File.exists?(marker)
+  end
+
+  test "a candidate hook never runs during the source gate", ctx do
+    marker = hook_marker(ctx)
+    TwinGitFixtures.plant_hook!(Path.join(ctx.dir, ".git/hooks"), "post-index-change", marker)
+    control_runs_hook!(ctx, marker)
+
+    assert {:ok, _} = TwinProducers.source_gate(ctx.runtime, ctx.identity.(%{}))
+    refute File.exists?(marker)
+  end
+
+  # WR-01: an uncommitted .gitignore that hides untracked files must count as modified.
+  # Files ignored by a committed .gitignore stay uncounted (the deferred, disclosed limit).
+  test "an untracked .gitignore that ignores everything blocks", ctx do
+    File.write!(Path.join(ctx.dir, ".gitignore"), "*\n")
+    File.write!(Path.join(ctx.dir, "evil.ex"), "defmodule Evil do\nend\n")
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert {:ok, %{modified: m, flagged: 0, excludes: 0}} = TwinProducers.probe_source(ctx.dir)
+    assert m >= 1
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+
+    assert TwinProducers.probe_source(ctx.dir) ==
+             {:ok, %{modified: 2, flagged: 0, excludes: 0}}
+  end
+
+  test "an untracked directory whose own .gitignore ignores everything blocks", ctx do
+    dir = Path.join(ctx.dir, "hidden")
+    File.mkdir_p!(dir)
+    File.write!(Path.join(dir, ".gitignore"), "*\n")
+    File.write!(Path.join(dir, "evil.ex"), "defmodule Evil do\nend\n")
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert {:ok, %{modified: m, flagged: 0, excludes: 0}} = TwinProducers.probe_source(ctx.dir)
+    assert m >= 1
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+
+    assert TwinProducers.probe_source(ctx.dir) ==
+             {:ok, %{modified: 3, flagged: 0, excludes: 0}}
+  end
+
+  test "files ignored by a committed .gitignore are not counted", ctx do
+    File.write!(Path.join(ctx.dir, ".gitignore"), "*.log\n")
+    TwinGitFixtures.git!(ctx.dir, ["add", ".gitignore"])
+    TwinGitFixtures.git!(ctx.dir, ["commit", "-q", "-m", "ignore logs"])
+    File.write!(Path.join(ctx.dir, "x.log"), "noise")
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+    assert TwinProducers.clean_tree(ctx.dir) == :ok
+  end
+
+  test "an unreadable lock file blocks the source gate instead of raising", ctx do
+    target = %{candidate_path: ctx.dir, candidate_head: ctx.head, candidate_tree: ctx.tree}
+
+    digest = fn path ->
+      if String.ends_with?(path, "mix.lock"),
+        do: {:error, :eacces},
+        else: TwinProducers.file_digest(path)
+    end
+
+    assert TwinProducers.source_gate(target, ctx.identity.(%{}), file_digest: digest) ==
+             {:blocked, :identity_unknown}
+  end
+
+  test "file_digest of a directory returns an error", ctx do
+    assert {:error, _} = TwinProducers.file_digest(ctx.side)
+  end
+
+  test "a read error mid-stream makes file_digest return an error", ctx do
+    path = Path.join(ctx.side, "stream.bin")
+    File.write!(path, String.duplicate("x", 100))
+    {:ok, counter} = Agent.start_link(fn -> 0 end)
+
+    read_chunk = fn io ->
+      case Agent.get_and_update(counter, &{&1, &1 + 1}) do
+        0 -> IO.binread(io, 10)
+        _ -> {:error, :eio}
+      end
+    end
+
+    assert TwinProducers.file_digest(path, read_chunk: read_chunk) == {:error, :eio}
+    assert {:ok, _} = TwinProducers.file_digest(path)
+  end
+
+  test "an inherited GIT_TRACE variable is scrubbed", ctx do
+    trace = Path.join(ctx.side, "git-trace.log")
+    trace2 = Path.join(ctx.side, "git-trace2.log")
+    TwinGitFixtures.env_restore("GIT_TRACE")
+    TwinGitFixtures.env_restore("GIT_TRACE2_EVENT")
+    System.put_env("GIT_TRACE", trace)
+    System.put_env("GIT_TRACE2_EVENT", trace2)
+
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+    refute File.exists?(trace)
+    refute File.exists?(trace2)
+  end
+
+  test "a git_cmd raising an unexpected exception is unavailable and the caller survives", ctx do
+    raiser = fn _cmd, _args, _opts -> raise RuntimeError, "boom " <> ctx.dir end
+    thrower = fn _cmd, _args, _opts -> throw({:leak, ctx.dir}) end
+    exiter = fn _cmd, _args, _opts -> exit({:leak, ctx.dir}) end
+
+    for git_cmd <- [raiser, thrower, exiter] do
+      result = TwinProducers.probe_source(ctx.dir, git_cmd: git_cmd)
+      assert result == :unavailable
+      assert Process.alive?(self())
+      refute inspect(result) =~ ctx.dir
+    end
+  end
+
   @expected_pins [
     "--no-optional-locks",
     "--no-replace-objects",
@@ -565,7 +706,9 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
     "-c",
     "status.showUntrackedFiles=all",
     "-c",
-    "core.autocrlf=false"
+    "core.autocrlf=false",
+    "-c",
+    "core.hooksPath=/dev/null"
   ]
 
   defp recorder do
@@ -587,7 +730,27 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
         (Enum.take(argv, length(@expected_pins)) == @expected_pins and
            Enum.at(argv, length(@expected_pins)) == "-C")
 
-    shaped and {"GIT_CONFIG_GLOBAL", "/dev/null"} in env and {"GIT_DIR", nil} in env
+    fixed = [
+      {"GIT_CONFIG_GLOBAL", "/dev/null"},
+      {"GIT_CONFIG_NOSYSTEM", "1"},
+      {"GIT_NO_REPLACE_OBJECTS", "1"},
+      {"GIT_ATTR_NOSYSTEM", "1"},
+      {"GIT_OPTIONAL_LOCKS", "0"},
+      {"GIT_TERMINAL_PROMPT", "0"},
+      {"LC_ALL", "C"},
+      {"GIT_DIR", nil}
+    ]
+
+    # extra nil-valued GIT_* names (the inherited-variable scrub) are allowed; nothing
+    # else may carry a value beyond the fixed set and the per-call index.
+    extras_ok =
+      Enum.all?(env, fn
+        {"GIT_INDEX_FILE", _} -> true
+        {_name, nil} -> true
+        pair -> pair in fixed
+      end)
+
+    shaped and extras_ok and Enum.all?(fixed, &(&1 in env))
   end
 
   defp conforming?(_), do: false

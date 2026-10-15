@@ -139,6 +139,22 @@ defmodule Mix.Tasks.Crosswake.ProofLane.TwinPreflightTest do
     :gen_tcp.close(l)
   end
 
+  test "a candidate hook never runs during the preflight", ctx do
+    marker = Path.join(ctx.fx.side, "hook-marker")
+    TwinGitFixtures.plant_hook!(Path.join(ctx.dir, ".git/hooks"), "post-index-change", marker)
+
+    index = Path.join(ctx.fx.side, "control-index")
+
+    assert {_, 0} =
+             TwinGitFixtures.raw_git(ctx.dir, ["read-tree", "HEAD"], [{"GIT_INDEX_FILE", index}])
+
+    assert File.exists?(marker)
+    File.rm!(marker)
+
+    assert {0, ["result: allowed" | _]} = Task.execute(args(ctx), [])
+    refute File.exists?(marker)
+  end
+
   defp blocked!(ctx, run_args) do
     before_snapshot = snapshot(ctx)
     result = Task.execute(run_args, [])
@@ -319,10 +335,67 @@ defmodule Mix.Tasks.Crosswake.ProofLane.TwinPreflightTest do
     end
   end
 
+  test "a raising check is blocked with exit 2 and no message text", ctx do
+    home = System.user_home!()
+
+    checks = [
+      fn _ -> raise RuntimeError, "boom " <> ctx.dir end,
+      fn _ -> throw({:leak, ctx.dir}) end,
+      fn _ -> exit({:leak, ctx.dir}) end
+    ]
+
+    for f <- checks do
+      assert {2, lines} = Task.execute(args(ctx), check: f)
+      assert length(lines) == 4
+      assert Enum.at(lines, 0) == "result: blocked"
+      assert Enum.at(lines, 1) == "first cause: prerequisite_missing"
+      assert Enum.at(lines, 2) == @report
+
+      for line <- lines do
+        refute line =~ ctx.dir
+        refute line =~ ctx.fx.side
+        refute line =~ home
+      end
+    end
+  end
+
+  test "the probe's temporary index is created under TMPDIR, which the listings snapshot",
+       ctx do
+    parent = self()
+    before_listing = tree_listing(ctx.sandbox)
+
+    remove = fn dir ->
+      send(parent, {:temp_index_dir, dir})
+      File.rm_rf(dir)
+    end
+
+    assert TwinProducers.probe_source(ctx.dir, remove_dir: remove) ==
+             {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+
+    assert_received {:temp_index_dir, dir}
+    {:ok, parent_stat} = File.stat(Path.dirname(dir))
+    {:ok, sandbox_stat} = File.stat(ctx.sandbox)
+
+    assert {parent_stat.major_device, parent_stat.inode} ==
+             {sandbox_stat.major_device, sandbox_stat.inode}
+
+    assert tree_listing(ctx.sandbox) == before_listing
+  end
+
+  # One matcher shared by the source test and its own sample test: a bare call, an atom
+  # (apply/3, spawn by name) or a capture reference to the effectful run functions.
+  @effectful ~r/\b(prepare|commit|freeze)\(|:(prepare|commit|freeze)\b|\b(prepare|commit|freeze)\s*\/\s*\d/
+
+  defp effectful_reference?(text), do: Regex.match?(@effectful, text)
+
   test "the preflight never calls the effectful run path", _ctx do
+    root = Path.expand("../../..", __DIR__)
+
     sources = [
-      File.read!("lib/crosswake/proof_lane/twin_preflight.ex"),
-      File.read!("lib/mix/tasks/crosswake.proof_lane.twin_preflight.ex")
+      {Path.join(root, "lib/crosswake/proof_lane/twin_preflight.ex"),
+       ["defmodule Crosswake.ProofLane.TwinPreflight", "TwinRuntime.check("]},
+      {Path.join(root, "lib/mix/tasks/crosswake.proof_lane.twin_preflight.ex"),
+       ["defmodule Mix.Tasks.Crosswake.ProofLane.TwinPreflight", "TwinPreflight.check"]}
     ]
 
     forbidden = [
@@ -337,8 +410,37 @@ defmodule Mix.Tasks.Crosswake.ProofLane.TwinPreflightTest do
       "go/no-go"
     ]
 
-    for source <- sources, name <- forbidden do
-      refute source =~ name
+    for {path, anchors} <- sources do
+      source = File.read!(path)
+      assert source != ""
+
+      for anchor <- anchors do
+        assert {path, source =~ anchor} == {path, true}
+      end
+
+      for name <- forbidden do
+        refute source =~ name
+      end
+
+      refute effectful_reference?(source)
+    end
+  end
+
+  test "the effectful-path matcher catches calls, atoms and capture references" do
+    caught = [
+      "R.prepare([])",
+      "apply(R, :prepare, [[]])",
+      "&R.commit/1",
+      "&TwinRuntime.commit/1",
+      "&freeze/3"
+    ]
+
+    for sample <- caught do
+      assert {sample, effectful_reference?(sample)} == {sample, true}
+    end
+
+    for sample <- ["prepared record", "TwinRuntime.check("] do
+      assert {sample, effectful_reference?(sample)} == {sample, false}
     end
   end
 end

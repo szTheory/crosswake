@@ -382,17 +382,28 @@ defmodule Crosswake.ProofLane.TwinRuntime do
 
   defp maybe_create_root(%{create?: false}), do: :ok
 
+  # WR-04 (D-15): only a root this call created is ever removed. An existing path (the
+  # predictable temp name may already exist or be planted) is left untouched.
   defp maybe_create_root(%{path: path}) do
-    with :ok <- File.mkdir(path),
-         :ok <- File.chmod(path, 0o700) do
-      :ok
-    else
-      _ ->
-        File.rm_rf(path)
+    case File.mkdir(path) do
+      :ok ->
+        case File.chmod(path, 0o700) do
+          :ok ->
+            :ok
 
-        {:error,
-         failure(:prerequisite_missing, "Make the system temp directory writable and run again")}
+          _ ->
+            File.rm_rf(path)
+            create_failure()
+        end
+
+      _ ->
+        create_failure()
     end
+  end
+
+  defp create_failure do
+    {:error,
+     failure(:prerequisite_missing, "Make the system temp directory writable and run again")}
   end
 
   defp acquire_origin_or_cleanup(root, port) do

@@ -135,6 +135,25 @@ defmodule Crosswake.ProofLane.TwinRuntimeCheckTest do
     end)
   end
 
+  test "commit/1 never removes a run root path it did not create", ctx do
+    existing = Path.join(ctx.base, "planted-root")
+    File.mkdir!(existing)
+    sentinel = Path.join(existing, "sentinel.txt")
+    File.write!(sentinel, "keep")
+
+    checked = %{
+      root: %{path: existing, create?: true},
+      record: %{},
+      db: Path.join(existing, "twin.sqlite3"),
+      port: free_port(),
+      run_deadline_ms: nil
+    }
+
+    assert {:error, %{cause: :prerequisite_missing}} = TwinRuntime.commit(checked)
+    assert File.dir?(existing)
+    assert File.read!(sentinel) == "keep"
+  end
+
   test "a run root owned by another user is refused", ctx do
     rec = record(ctx)
     uid = File.lstat!(ctx.run_root).uid

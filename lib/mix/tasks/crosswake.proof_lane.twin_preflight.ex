@@ -3,7 +3,10 @@ defmodule Mix.Tasks.Crosswake.ProofLane.TwinPreflight do
 
   @moduledoc """
   A read-only preflight, not a run. It reports whether a reference twin run would be
-  allowed, without writing a receipt and without creating or consuming a run root.
+  allowed. No receipt or report is written and no run root is created or consumed. To read
+  the candidate's git state it creates a private temporary index outside the candidate and
+  the run root and removes it before returning, and it binds the origin port for an
+  instant to test it and releases it.
 
       mix crosswake.proof_lane.twin_preflight ios --candidate <record> --run-root <dir> \\
         --identity <identity file>
@@ -14,7 +17,8 @@ defmodule Mix.Tasks.Crosswake.ProofLane.TwinPreflight do
 
   The command exits with status 0 when allowed and 2 when blocked, for every cause
   including bad options and an unreadable identity file. It never exits with status 1
-  and never raises. Allowed means the source, the identity digests and the run root
+  and never raises: a check that raises, throws or exits is reported as a blocked result
+  with a fixed message. Allowed means the source, the identity digests and the run root
   pass and the origin port is free at that moment; the backend build and the live
   journey are checked only by the real run, which repeats every check.
   """
@@ -25,6 +29,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.TwinPreflight do
 
   @switches [candidate: :string, run_root: :string, identity: :string]
   @report "report: none written; no run root was created or consumed"
+  @stopped "The preflight stopped before finishing its checks, so the run is not known to be allowed; nothing was written. Run the preflight again"
   @usage "Run mix crosswake.proof_lane.twin_preflight ios --candidate <record> --run-root <dir> --identity <identity file>"
 
   @impl Mix.Task
@@ -36,7 +41,8 @@ defmodule Mix.Tasks.Crosswake.ProofLane.TwinPreflight do
 
   @doc """
   Runs the preflight and returns `{exit_status, four_lines}` without halting. The status
-  is 0 (allowed) or 2 (blocked). Test options: `:checks`, `:git_cmd`, `:current_uid`.
+  is 0 (allowed) or 2 (blocked). Test options: `:checks`, `:git_cmd`, `:current_uid`, `:check`
+  (a one-arity function replacing `TwinPreflight.check/1`).
   """
   @spec execute([String.t()], keyword()) :: {0 | 2, [String.t()]}
   def execute(args, opts) when is_list(args) do
@@ -55,7 +61,18 @@ defmodule Mix.Tasks.Crosswake.ProofLane.TwinPreflight do
         [candidate: parsed[:candidate], run_root: parsed[:run_root], identity: parsed[:identity]] ++
           database ++ Keyword.take(opts, [:checks, :git_cmd, :current_uid])
 
-      summarize(TwinPreflight.check(check_opts))
+      check = Keyword.get(opts, :check, &TwinPreflight.check/1)
+
+      result =
+        try do
+          check.(check_opts)
+        rescue
+          _ -> {:blocked, :prerequisite_missing, @stopped}
+        catch
+          _, _ -> {:blocked, :prerequisite_missing, @stopped}
+        end
+
+      summarize(result)
     end
   end
 

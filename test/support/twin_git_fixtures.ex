@@ -195,6 +195,27 @@ defmodule Crosswake.ProofLane.TwinGitFixtures do
     :ok
   end
 
+  @doc """
+  Writes an executable /bin/sh hook that appends one line to the absolute `marker` path.
+  The marker should live outside the repository so it never dirties the candidate.
+  """
+  def plant_hook!(hooks_dir, name, marker) do
+    File.mkdir_p!(hooks_dir)
+    path = Path.join(hooks_dir, name)
+    File.write!(path, "#!/bin/sh\necho ran >> '" <> marker <> "'\n")
+    File.chmod!(path, 0o755)
+    path
+  end
+
+  @doc """
+  Positive control: unpinned raw git `read-tree HEAD` into a private index file in the
+  side directory. Returns `{output, status}`; a planted post-index-change hook runs here.
+  """
+  def unpinned_read_tree(ctx) do
+    index = Path.join(ctx.side, "control-index-#{System.unique_integer([:positive])}")
+    raw_git(ctx.dir, ["read-tree", "HEAD"], [{"GIT_INDEX_FILE", index}])
+  end
+
   @doc "Replaces LF with CRLF in a tracked text file."
   def crlf_edit!(dir, rel) do
     path = Path.join(dir, rel)
