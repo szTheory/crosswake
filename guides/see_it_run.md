@@ -158,6 +158,31 @@ What it does not prove:
 
 "Proven" is reserved for the web path. Native is always labeled `emulator evidence`.
 
+## Run the Reference Twin (Simulator)
+
+The bounded reference twin drives one offline study island on an iOS Simulator against a local
+Phoenix backend and writes a twin-only receipt. The shipped command is:
+
+```bash
+MIX_ENV=test mix crosswake.proof_lane.verify_twin ios \
+  --candidate <prepared candidate record> --run-root <new private directory> \
+  --identity <identity file>
+```
+
+Prerequisites: a prepared candidate record (a private, mode 0600 JSON file naming the candidate
+path, expected head and tree, the declared loopback origin, and resource and fixture digests; this
+is a file, not the candidate directory), a free loopback origin port, an Xcode Simulator runtime,
+and an identity file. Every run needs a new run root; a run root that already holds a receipt is
+refused so a first result is never overwritten.
+
+Exit codes: `0` complete pass, `1` observed failure, `2` missing prerequisite or missing
+observation. The command prints four lines: result, first cause, local report path and one next
+action.
+
+What the receipt proves: a virtual twin on a simulator with synthetic test authority, run by a
+trusted local runner. What it does not prove: a physical iPhone, a signed device, a physical
+speaker, first adopter evidence, or cryptographic certification of the run.
+
 ## Go Deeper
 
 - Full proof command reference: [examples/QUICK_START.md](https://github.com/szTheory/crosswake/blob/main/examples/QUICK_START.md)
