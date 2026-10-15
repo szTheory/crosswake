@@ -633,6 +633,7 @@ defmodule Crosswake.ProofLane.TwinProducers do
          {:ok, tree} <- git(path, ["rev-parse", "HEAD^{tree}"]),
          :ok <- same(head, runtime.candidate_head),
          :ok <- same(tree, runtime.candidate_tree),
+         :ok <- clean_tree(path, Keyword.take(opts, [:git_cmd])),
          {:ok, locks} <- lock_digests(path),
          {:ok, study_js} <- file_digest(Path.join(path, @study_js_rel)),
          {:ok, backend} <- backend_digest(runtime, path, opts) do
@@ -684,11 +685,133 @@ defmodule Crosswake.ProofLane.TwinProducers do
 
   defp same(a, b), do: if(a == b, do: :ok, else: {:blocked, :identity_mismatch})
 
-  defp git(path, args) do
-    case System.cmd("git", ["-C", path | args], stderr_to_stdout: true) do
+  # Git runs with the repository-redirecting variables unset and the user's config
+  # out of the picture, so the candidate path alone decides which tree is read.
+  @git_scrub_env [
+                   "GIT_DIR",
+                   "GIT_WORK_TREE",
+                   "GIT_INDEX_FILE",
+                   "GIT_OBJECT_DIRECTORY",
+                   "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+                   "GIT_COMMON_DIR",
+                   "GIT_NAMESPACE",
+                   "GIT_CEILING_DIRECTORIES",
+                   "GIT_CONFIG",
+                   "GIT_CONFIG_COUNT",
+                   "GIT_CONFIG_PARAMETERS",
+                   "GIT_PREFIX"
+                 ]
+                 |> Enum.map(&{&1, nil})
+                 |> Kernel.++([
+                   {"GIT_OPTIONAL_LOCKS", "0"},
+                   {"GIT_CONFIG_NOSYSTEM", "1"},
+                   {"GIT_TERMINAL_PROMPT", "0"},
+                   {"LC_ALL", "C"}
+                 ])
+
+  @max_dirty_count 1_000_000
+
+  # stderr is discarded by the shell at the file-descriptor level; the candidate path
+  # is only ever an argv element, never part of the script text.
+  defp run_git(args, git_cmd) do
+    git_cmd.("sh", ["-c", "exec \"$@\" 2>/dev/null", "sh", "git" | args],
+      env: @git_scrub_env,
+      stderr_to_stdout: false
+    )
+  rescue
+    ErlangError -> :unavailable
+  end
+
+  defp git(path, args, git_cmd \\ &System.cmd/3) do
+    case run_git(["-C", path | args], git_cmd) do
       {out, 0} -> {:ok, String.trim(out)}
       _ -> {:blocked, :prerequisite_missing}
     end
+  end
+
+  @doc """
+  Fails closed unless the candidate working tree matches its commit: any modified,
+  staged, deleted, renamed or untracked non-ignored path, or any active rule in
+  `.git/info/exclude`, is `:source_dirty`. Output is only counted, never returned.
+  Option `:git_cmd` replaces `System.cmd/3` (used to model an unavailable git).
+  """
+  @spec clean_tree(Path.t(), keyword()) :: :ok | {:blocked, :source_dirty | :prerequisite_missing}
+  def clean_tree(path, opts \\ []) do
+    case probe(path, Keyword.get(opts, :git_cmd, &System.cmd/3)) do
+      {:ok, 0, 0} -> :ok
+      {:ok, _, _} -> {:blocked, :source_dirty}
+      :unavailable -> {:blocked, :prerequisite_missing}
+    end
+  end
+
+  @doc """
+  Number of dirty paths in the candidate (a rename counts once) plus active
+  `.git/info/exclude` rules, or `nil` when git cannot answer or the count is out of bounds.
+  """
+  @spec dirty_count(Path.t(), keyword()) :: non_neg_integer() | nil
+  def dirty_count(path, opts \\ []) do
+    case probe(path, Keyword.get(opts, :git_cmd, &System.cmd/3)) do
+      {:ok, records, excludes} when records + excludes <= @max_dirty_count -> records + excludes
+      _ -> nil
+    end
+  end
+
+  defp probe(path, git_cmd) do
+    status = [
+      "--no-optional-locks",
+      "-c",
+      "core.excludesFile=/dev/null",
+      "-c",
+      "core.quotePath=false",
+      "-c",
+      "core.fsmonitor=false",
+      "-C",
+      path,
+      "status",
+      "--porcelain=v1",
+      "-z",
+      "--untracked-files=all",
+      "--ignore-submodules=none"
+    ]
+
+    with {out, 0} <- run_git(status, git_cmd),
+         {:ok, excludes} <- exclude_rules(path, git_cmd) do
+      {:ok, count_records(String.split(out, <<0>>, trim: true), 0), excludes}
+    else
+      _ -> :unavailable
+    end
+  end
+
+  # A rename or copy record is followed by its origin path as a separate field.
+  defp count_records([], n), do: n
+
+  defp count_records([<<x, y, _::binary>> | [_origin | rest]], n)
+       when x in [?R, ?C] or y in [?R, ?C],
+       do: count_records(rest, n + 1)
+
+  defp count_records([_ | rest], n), do: count_records(rest, n + 1)
+
+  defp exclude_rules(path, git_cmd) do
+    with {out, 0} <- run_git(["-C", path, "rev-parse", "--git-path", "info/exclude"], git_cmd),
+         file = Path.expand(String.trim(out), path),
+         {:ok, lines} <- read_exclude(file) do
+      {:ok, Enum.count(lines, &active_rule?/1)}
+    else
+      _ -> :error
+    end
+  end
+
+  defp read_exclude(file) do
+    case File.read(file) do
+      {:ok, text} -> {:ok, String.split(text, ["\r\n", "\n"])}
+      {:error, :enoent} -> {:ok, []}
+      {:error, _} -> :error
+    end
+  end
+
+  defp active_rule?(line) do
+    trimmed = String.trim(line)
+    trimmed != "" and not String.starts_with?(trimmed, "#")
   end
 
   defp lock_digests(path) do
@@ -794,8 +917,17 @@ defmodule Crosswake.ProofLane.TwinProducers do
   @spec observe_identities(map(), map()) :: map()
   def observe_identities(frozen, live) do
     path = frozen.candidate_path
-    head = ok_or_nil(git(path, ["rev-parse", "HEAD"]))
-    tree = ok_or_nil(git(path, ["rev-parse", "HEAD^{tree}"]))
+    # HEAD and tree are read on both sides of the cleanliness probe; the source joins
+    # exist only when the tree is clean and neither read differs from the frozen commit.
+    head1 = ok_or_nil(git(path, ["rev-parse", "HEAD"]))
+    tree1 = ok_or_nil(git(path, ["rev-parse", "HEAD^{tree}"]))
+    clean = clean_tree(path) == :ok
+    head2 = ok_or_nil(git(path, ["rev-parse", "HEAD"]))
+    tree2 = ok_or_nil(git(path, ["rev-parse", "HEAD^{tree}"]))
+    steady = clean and head1 == head2 and head1 == frozen.head
+    steady = steady and tree1 == tree2 and tree1 == frozen.tree
+    head = if(steady, do: head1)
+    tree = if(steady, do: tree1)
     locks = for rel <- @lock_rels, d = digest_or_nil(Path.join(path, rel)), do: d
     tracked_manifest = digest_or_nil(Path.join(path, @manifest_rel))
     tracked_activation = digest_or_nil(Path.join(path, @activation_rel))
@@ -847,6 +979,18 @@ defmodule Crosswake.ProofLane.TwinProducers do
     }
     |> Enum.reject(fn {_k, v} -> is_nil(v) end)
     |> Map.new()
+  end
+
+  @doc """
+  Gate in front of `observe_identities/2`: a candidate that is no longer clean at the
+  frozen commit blocks the whole run with `:source_dirty` instead of yielding joins.
+  """
+  @spec checked_identities(map(), map(), keyword()) :: {:ok, map()} | {:blocked, atom()}
+  def checked_identities(frozen, live, opts \\ []) do
+    case clean_tree(frozen.candidate_path, Keyword.take(opts, [:git_cmd])) do
+      :ok -> {:ok, observe_identities(frozen, live)}
+      {:blocked, _} = blocked -> blocked
+    end
   end
 
   defp ok_or_nil({:ok, value}), do: value

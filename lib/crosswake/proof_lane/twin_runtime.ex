@@ -59,6 +59,7 @@ defmodule Crosswake.ProofLane.TwinRuntime do
     with {:ok, root} <- run_root(opts[:run_root]),
          :ok <- not_reused(root),
          {:ok, record} <- candidate_record(opts[:candidate]),
+         :ok <- outside_candidate(root, record.candidate_path),
          {:ok, db} <- database_path(root, opts[:database_path]),
          {:ok, port} <- origin_port(record.origin),
          {:ok, listener} <- acquire_origin(port) do
@@ -325,6 +326,43 @@ defmodule Crosswake.ProofLane.TwinRuntime do
         {:error,
          failure(:run_root_reused, "Start a new run root; a finished run is never overwritten")}
     end
+  end
+
+  # Run output must never land inside the candidate tree (it would dirty it).
+  # Compared by device and inode over the run root and every ancestor, so a
+  # symlink alias (/tmp vs /private/tmp) cannot hide containment and a sibling
+  # sharing only a name prefix is not mistaken for it.
+  defp outside_candidate(root, candidate_path) do
+    case File.stat(candidate_path) do
+      {:ok, %{major_device: dev, inode: ino}} ->
+        if inside?(root, {dev, ino}) do
+          {:error,
+           failure(
+             :prerequisite_missing,
+             "Use a run root outside the candidate tree and run again"
+           )}
+        else
+          :ok
+        end
+
+      _ ->
+        {:error,
+         failure(
+           :prerequisite_missing,
+           "Use a prepared candidate directory that exists and run again"
+         )}
+    end
+  end
+
+  defp inside?(path, identity) do
+    same =
+      case File.stat(path) do
+        {:ok, %{major_device: dev, inode: ino}} -> {dev, ino} == identity
+        _ -> false
+      end
+
+    parent = Path.dirname(path)
+    same or (parent != path and inside?(parent, identity))
   end
 
   defp candidate_record(path) when is_binary(path) do

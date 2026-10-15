@@ -408,6 +408,20 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
     assert receipt.overall_status == :blocked
   end
 
+  test "a dirty candidate surfaces source_dirty as the first cause and exits 2", ctx do
+    producers = fn runtime, _expectations ->
+      :ok = TwinRuntime.stop_children(runtime)
+      {:blocked, :source_dirty}
+    end
+
+    assert {2, [_, "first cause: source_dirty", report, _]} =
+             VerifyTwin.execute(args(ctx, record(ctx)), producers: producers)
+
+    assert report == "report: " <> Path.join(ctx.run_root, "receipt.json")
+    {:ok, receipt} = TwinReceipt.decode(File.read!(Path.join(ctx.run_root, "receipt.json")))
+    assert receipt.overall_status == :blocked
+  end
+
   test "a registry already released before the receipt never crashes the command", ctx do
     blocked = fn runtime, _expectations ->
       :ok = TwinRuntime.stop_all(runtime)
@@ -465,5 +479,119 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
     refute source =~ "gen.shell"
     refute source =~ "B2C"
     refute File.read!("lib/crosswake/proof_lane/twin_runtime.ex") =~ "B2C"
+  end
+
+  test "a run root inside the candidate, or aliased into it, is refused; a prefix sibling is not",
+       ctx do
+    rec = record(ctx)
+
+    inside = Path.join(ctx.candidate, "run")
+    File.mkdir_p!(inside)
+    File.chmod!(inside, 0o700)
+
+    assert {2, [_, "first cause: prerequisite_missing", "report: none written", _]} =
+             VerifyTwin.execute(
+               ["ios", "--candidate", rec, "--run-root", inside],
+               producers: &empty_producers/2
+             )
+
+    refute File.exists?(Path.join(inside, "receipt.json"))
+
+    alias_path = Path.join(ctx.base, "alias")
+    File.ln_s!(ctx.candidate, alias_path)
+    aliased = Path.join(alias_path, "run")
+
+    assert {2, [_, "first cause: prerequisite_missing", "report: none written", _]} =
+             VerifyTwin.execute(
+               ["ios", "--candidate", rec, "--run-root", aliased],
+               producers: &empty_producers/2
+             )
+
+    refute File.exists?(Path.join(inside, "receipt.json"))
+
+    sibling = ctx.candidate <> "-run"
+    File.mkdir_p!(sibling)
+    File.chmod!(sibling, 0o700)
+
+    assert {0, _} =
+             VerifyTwin.execute(
+               ["ios", "--candidate", rec, "--run-root", sibling],
+               producers: full_producers()
+             )
+  end
+
+  defp git_in(dir, args) do
+    home = dir <> "-home"
+    File.mkdir_p!(home)
+
+    {_, 0} =
+      System.cmd(
+        "git",
+        [
+          "-c",
+          "user.name=t",
+          "-c",
+          "user.email=t@example.test",
+          "-c",
+          "commit.gpgsign=false" | args
+        ],
+        cd: dir,
+        stderr_to_stdout: true,
+        env: [{"HOME", home}, {"GIT_CONFIG_GLOBAL", "/dev/null"}, {"GIT_CONFIG_NOSYSTEM", "1"}]
+      )
+
+    :ok
+  end
+
+  defp dirty_producers do
+    fn runtime, _expectations ->
+      :ok = TwinRuntime.stop_children(runtime)
+      {:blocked, :source_dirty}
+    end
+  end
+
+  defp blocked_pairs(ctx) do
+    {:ok, receipt} = TwinReceipt.decode(File.read!(Path.join(ctx.run_root, "receipt.json")))
+
+    for group <- receipt.groups,
+        o <- group.sub_observations,
+        o.id != "TW-T10-02",
+        do: {o.measure, o.cause}
+  end
+
+  test "a dirty git candidate reports the typed count in plain language and leaks no path", ctx do
+    git_in(ctx.candidate, ["init", "-q"])
+    git_in(ctx.candidate, ["add", "mix.lock"])
+    git_in(ctx.candidate, ["commit", "-q", "-m", "fixture"])
+    marker = "zz-leak-marker-" <> Base.encode16(:crypto.strong_rand_bytes(4), case: :lower)
+    File.write!(Path.join(ctx.candidate, marker), "x")
+
+    assert {2, [first, "first cause: source_dirty", report, action] = lines} =
+             VerifyTwin.execute(args(ctx, record(ctx)), producers: dirty_producers())
+
+    assert first == "result: blocked (exit 2)"
+    assert report == "report: " <> Path.join(ctx.run_root, "receipt.json")
+
+    assert action =~
+             "next action: The candidate has 1 uncommitted or untracked files. Commit or remove"
+
+    assert blocked_pairs(ctx) |> Enum.uniq() == [{1, :source_dirty}]
+
+    for text <-
+          lines ++
+            [
+              File.read!(Path.join(ctx.run_root, "receipt.json")),
+              File.read!(Path.join(ctx.run_root, "twin-result.json"))
+            ] do
+      refute text =~ marker
+    end
+  end
+
+  test "a candidate that is not a git repository reports no count", ctx do
+    assert {2, [_, "first cause: source_dirty", _, action]} =
+             VerifyTwin.execute(args(ctx, record(ctx)), producers: dirty_producers())
+
+    assert action =~ "next action: The candidate has uncommitted or untracked files."
+    assert blocked_pairs(ctx) |> Enum.uniq() == [{nil, :source_dirty}]
   end
 end

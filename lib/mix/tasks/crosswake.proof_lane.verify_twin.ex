@@ -145,6 +145,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwin do
   # first cause, so each accepted run root ends with receipt.json and twin-result.json.
   defp blocked_receipt(runtime, cause) do
     cause = TwinReceipt.safe_cause(cause)
+    count = if cause == :source_dirty, do: TwinProducers.dirty_count(runtime.candidate_path)
     zero = String.duplicate("0", 64)
 
     with {:ok, expectations} <-
@@ -169,7 +170,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwin do
                      owner: owner,
                      run_id: runtime.run_id,
                      outcome: :blocked,
-                     measure: nil,
+                     measure: count,
                      cause: cause
                    })
 
@@ -179,7 +180,13 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwin do
          {:ok, receipt} <- TwinReceipt.derive(expectations, %{}, observations),
          {:ok, report} <- write_and_verify(runtime.run_root, receipt, 2) do
       TwinRuntime.record_failure(runtime, cause)
-      summarize(:blocked, Atom.to_string(cause), report, next_action(receipt, cause))
+
+      action =
+        if cause == :source_dirty,
+          do: source_dirty_action(count),
+          else: next_action(receipt, cause)
+
+      summarize(:blocked, Atom.to_string(cause), report, action)
     else
       other -> failure(other)
     end
@@ -274,9 +281,22 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwin do
   defp next_action(%{overall_status: :failed}, _),
     do: "Fix the first observed failure named above, then run again with a new run root"
 
+  defp next_action(%{overall_status: :blocked}, :source_dirty), do: source_dirty_action(nil)
+
   defp next_action(%{overall_status: :blocked}, _),
     do:
       "Supply the first missing observation or prerequisite named above, then run again with a new run root"
+
+  # Only the count is shown; no path or file name from the candidate ever reaches the output.
+  defp source_dirty_action(n) when is_integer(n),
+    do: "The candidate has #{n} uncommitted or untracked files. " <> source_dirty_steps()
+
+  defp source_dirty_action(nil),
+    do: "The candidate has uncommitted or untracked files. " <> source_dirty_steps()
+
+  defp source_dirty_steps,
+    do:
+      "Commit or remove the uncommitted changes in the candidate, write a new prepared record, and run into a new run root. Run git status in the candidate to see them."
 
   defp summarize(status, cause, report, action) do
     code = exit_status_for(status)

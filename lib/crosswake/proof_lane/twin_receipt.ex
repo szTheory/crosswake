@@ -38,6 +38,7 @@ defmodule Crosswake.ProofLane.TwinReceipt do
     :capture_not_prevented,
     :attachment_check_unavailable,
     :session_control_unavailable,
+    :source_dirty,
     :cause_not_retained
   ]
 
@@ -58,7 +59,8 @@ defmodule Crosswake.ProofLane.TwinReceipt do
     "simulator not physical speaker",
     "simulator not signed device",
     "synthetic_test_authority not real adopter",
-    "trusted local runner not cryptographic certification"
+    "trusted local runner not cryptographic certification",
+    "source edit made and reverted during a run not detected"
   ]
 
   @residual_external_gates [

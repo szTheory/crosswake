@@ -415,98 +415,137 @@ defmodule Crosswake.ProofLane.TwinProducersTest do
     end
   end
 
-  describe "freeze/3 and observe_identities/2" do
-    setup do
-      dir =
-        Path.join(
-          System.tmp_dir!(),
-          "twin-freeze-" <> Base.encode16(:crypto.strong_rand_bytes(4))
-        )
+  defp repo_fixture(_context) do
+    dir =
+      Path.join(
+        System.tmp_dir!(),
+        "twin-freeze-" <> Base.encode16(:crypto.strong_rand_bytes(4))
+      )
 
-      host = Path.join(dir, "examples/phoenix_host")
-      fixtures = Path.join(host, "native/ios/crosswake_shell/Fixtures")
+    host = Path.join(dir, "examples/phoenix_host")
+    fixtures = Path.join(host, "native/ios/crosswake_shell/Fixtures")
 
-      media_dir =
-        Path.join(host, "native/ios/CrosswakeProofLane/Resources/ReferenceLearningBundle")
+    media_dir =
+      Path.join(host, "native/ios/CrosswakeProofLane/Resources/ReferenceLearningBundle")
 
-      File.mkdir_p!(fixtures)
-      File.mkdir_p!(media_dir)
-      File.mkdir_p!(Path.join(host, "priv/static"))
-      File.write!(Path.join(dir, "mix.lock"), "%{}\n")
-      File.write!(Path.join(host, "mix.lock"), "%{a: 1}\n")
-      File.write!(Path.join(fixtures, "crosswake_manifest.json"), "{\"m\":1}")
-      File.write!(Path.join(fixtures, "route_activation.json"), "{\"a\":1}")
-      File.write!(Path.join(media_dir, "pronunciation.aiff"), "synthetic media")
-      File.write!(Path.join(host, "priv/static/offline_study.js"), "// js")
-      git(dir, ["init", "-q"])
-      git(dir, ["add", "-A"])
+    File.mkdir_p!(fixtures)
+    File.mkdir_p!(media_dir)
+    File.mkdir_p!(Path.join(host, "priv/static"))
+    File.write!(Path.join(dir, "mix.lock"), "%{}\n")
+    File.write!(Path.join(host, "mix.lock"), "%{a: 1}\n")
+    File.write!(Path.join(fixtures, "crosswake_manifest.json"), "{\"m\":1}")
+    File.write!(Path.join(fixtures, "route_activation.json"), "{\"a\":1}")
+    File.write!(Path.join(media_dir, "pronunciation.aiff"), "synthetic media")
+    File.write!(Path.join(host, "priv/static/offline_study.js"), "// js")
+    # Identity files and the run root live beside the repository, never inside it.
+    side = dir <> "-side"
+    File.mkdir_p!(side)
+    git(dir, ["init", "-q"])
+    git(dir, ["add", "-A"])
+    git(dir, ["commit", "-q", "-m", "fixture"])
 
-      git(dir, [
-        "-c",
-        "user.email=t@example.test",
-        "-c",
-        "user.name=t",
-        "commit",
-        "-q",
-        "-m",
-        "fixture"
-      ])
+    {head, 0} = git(dir, ["rev-parse", "HEAD"])
+    {tree, 0} = git(dir, ["rev-parse", "HEAD^{tree}"])
+    on_exit(fn -> File.rm_rf(dir) end)
+    on_exit(fn -> File.rm_rf(side) end)
 
-      {head, 0} = System.cmd("git", ["-C", dir, "rev-parse", "HEAD"])
-      {tree, 0} = System.cmd("git", ["-C", dir, "rev-parse", "HEAD^{tree}"])
-      on_exit(fn -> File.rm_rf(dir) end)
+    identity = fn overrides ->
+      {:ok, media} = TwinProducers.file_digest(Path.join(media_dir, "pronunciation.aiff"))
 
-      identity = fn overrides ->
-        {:ok, media} = TwinProducers.file_digest(Path.join(media_dir, "pronunciation.aiff"))
+      {:ok, manifest} =
+        TwinProducers.file_digest(Path.join(fixtures, "crosswake_manifest.json"))
 
-        {:ok, manifest} =
-          TwinProducers.file_digest(Path.join(fixtures, "crosswake_manifest.json"))
+      {:ok, activation} =
+        TwinProducers.file_digest(Path.join(fixtures, "route_activation.json"))
 
-        {:ok, activation} =
-          TwinProducers.file_digest(Path.join(fixtures, "route_activation.json"))
-
-        base = %{
-          "media" => %{"sha256" => media, "size" => 15},
-          "generated" => %{"manifest_sha256" => manifest, "activation_sha256" => activation}
-        }
-
-        path = Path.join(dir, "identity-#{System.unique_integer([:positive])}.json")
-        File.write!(path, Jason.encode!(Map.merge(base, overrides)))
-        path
-      end
-
-      runtime = %{
-        runtime(dir)
-        | candidate_path: dir,
-          candidate_head: String.trim(head),
-          candidate_tree: String.trim(tree)
+      base = %{
+        "media" => %{"sha256" => media, "size" => 15},
+        "generated" => %{"manifest_sha256" => manifest, "activation_sha256" => activation}
       }
 
-      {:ok,
-       dir: dir,
-       runtime: runtime,
-       identity: identity,
-       media: Path.join(media_dir, "pronunciation.aiff")}
+      path = Path.join(side, "identity-#{System.unique_integer([:positive])}.json")
+      File.write!(path, Jason.encode!(Map.merge(base, overrides)))
+      path
     end
 
-    defp git(dir, args),
-      do: {_, 0} = System.cmd("git", ["-C", dir | args], stderr_to_stdout: true)
+    runtime = %{
+      runtime(side)
+      | candidate_path: dir,
+        candidate_head: String.trim(head),
+        candidate_tree: String.trim(tree)
+    }
 
-    defp live(frozen, extra \\ %{}) do
-      js = frozen.study_js
+    {:ok,
+     dir: dir,
+     side: side,
+     runtime: runtime,
+     identity: identity,
+     media: Path.join(media_dir, "pronunciation.aiff")}
 
-      Map.merge(
-        %{
-          installed_manifest: frozen.identity.manifest,
-          installed_activation: frozen.identity.activation,
-          installed_media: frozen.identity.media,
-          executable_stable: true,
-          served_js: js,
-          backend_build: frozen.backend_build
-        },
-        extra
+    {:ok,
+     dir: dir,
+     side: side,
+     runtime: runtime,
+     identity: identity,
+     media: Path.join(media_dir, "pronunciation.aiff")}
+  end
+
+  # Isolated real git: no user or system config, fixed dates, no signing.
+  defp git_env(dir) do
+    home = dir <> "-side/home"
+    File.mkdir_p!(home)
+
+    [
+      {"HOME", home},
+      {"XDG_CONFIG_HOME", Path.join(home, ".config")},
+      {"GIT_CONFIG_NOSYSTEM", "1"},
+      {"GIT_CONFIG_GLOBAL", "/dev/null"},
+      {"GIT_AUTHOR_DATE", "2026-01-01T00:00:00Z"},
+      {"GIT_COMMITTER_DATE", "2026-01-01T00:00:00Z"}
+    ]
+  end
+
+  defp git(dir, args) do
+    {out, 0} =
+      System.cmd(
+        "git",
+        [
+          "-c",
+          "user.name=t",
+          "-c",
+          "user.email=t@example.test",
+          "-c",
+          "commit.gpgsign=false",
+          "-c",
+          "core.autocrlf=false",
+          "-C",
+          dir | args
+        ],
+        env: git_env(dir),
+        stderr_to_stdout: true
       )
-    end
+
+    {String.trim(out), 0}
+  end
+
+  defp live(frozen, extra \\ %{}) do
+    js = frozen.study_js
+
+    Map.merge(
+      %{
+        installed_manifest: frozen.identity.manifest,
+        installed_activation: frozen.identity.activation,
+        installed_media: frozen.identity.media,
+        executable_stable: true,
+        served_js: js,
+        backend_build: frozen.backend_build
+      },
+      extra
+    )
+  end
+
+  describe "freeze/3 and observe_identities/2" do
+    setup :repo_fixture
 
     test "freeze blocks with identity_unknown when media or generated values are missing", ctx do
       opts = [backend_digest: fn -> {:ok, String.duplicate("9", 64)} end]
@@ -576,6 +615,259 @@ defmodule Crosswake.ProofLane.TwinProducersTest do
         )
 
       refute observed.backend_build == frozen.expectations.joins.backend_build
+    end
+  end
+
+  describe "source cleanliness" do
+    setup :repo_fixture
+
+    defp frozen_opts, do: [backend_digest: fn -> {:ok, String.duplicate("9", 64)} end]
+
+    defp env_restore(name) do
+      old = System.get_env(name)
+
+      on_exit(fn ->
+        if old, do: System.put_env(name, old), else: System.delete_env(name)
+      end)
+    end
+
+    defp expectations_path(ctx), do: Path.join(ctx.runtime.run_root, "expectations.json")
+
+    test "a clean checkout passes the guard and freezes", ctx do
+      assert TwinProducers.clean_tree(ctx.dir) == :ok
+      assert TwinProducers.dirty_count(ctx.dir) == 0
+      assert {:ok, _frozen} = TwinProducers.freeze(ctx.runtime, ctx.identity.(%{}), frozen_opts())
+    end
+
+    test "a modified tracked file blocks the freeze before anything is written", ctx do
+      File.write!(Path.join(ctx.dir, "mix.lock"), "%{changed: true}\n")
+
+      assert TwinProducers.freeze(ctx.runtime, ctx.identity.(%{}), frozen_opts()) ==
+               {:blocked, :source_dirty}
+
+      assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+      refute File.exists?(expectations_path(ctx))
+    end
+
+    test "a staged-only change blocks", ctx do
+      File.write!(Path.join(ctx.dir, "mix.lock"), "%{staged: true}\n")
+      git(ctx.dir, ["add", "mix.lock"])
+      assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+    end
+
+    test "a deleted tracked file blocks", ctx do
+      File.rm!(Path.join(ctx.dir, "mix.lock"))
+      assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+    end
+
+    test "an untracked file blocks", ctx do
+      File.write!(Path.join(ctx.dir, "new.ex"), "defmodule New do\nend\n")
+      assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+      assert TwinProducers.dirty_count(ctx.dir) == 1
+    end
+
+    test "a staged rename blocks and counts once", ctx do
+      git(ctx.dir, ["mv", "mix.lock", "renamed.lock"])
+      assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+      assert TwinProducers.dirty_count(ctx.dir) == 1
+    end
+
+    test "one modified and one untracked file count two", ctx do
+      File.write!(Path.join(ctx.dir, "mix.lock"), "%{changed: true}\n")
+      File.write!(Path.join(ctx.dir, "extra.ex"), "x\n")
+      assert TwinProducers.dirty_count(ctx.dir) == 2
+    end
+
+    test "a file ignored by the repository gitignore does not block", ctx do
+      File.write!(Path.join(ctx.dir, ".gitignore"), "ignored.tmp\n")
+      git(ctx.dir, ["add", ".gitignore"])
+      git(ctx.dir, ["commit", "-q", "-m", "ignore"])
+      File.write!(Path.join(ctx.dir, "ignored.tmp"), "x\n")
+      assert TwinProducers.clean_tree(ctx.dir) == :ok
+    end
+
+    test "a file hidden only by a user-global ignore file still blocks", ctx do
+      home = Path.join(ctx.side, "global-home")
+      File.mkdir_p!(Path.join(home, ".config/git"))
+      File.write!(Path.join(home, ".config/git/ignore"), "hidden-by-global.txt\n")
+      env_restore("HOME")
+      env_restore("XDG_CONFIG_HOME")
+      System.put_env("HOME", home)
+      System.put_env("XDG_CONFIG_HOME", Path.join(home, ".config"))
+      File.write!(Path.join(ctx.dir, "hidden-by-global.txt"), "x\n")
+
+      # Control: an ordinary git status in this environment sees nothing.
+      assert System.cmd("git", ["-C", ctx.dir, "status", "--porcelain"], stderr_to_stdout: true) ==
+               {"", 0}
+
+      assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+    end
+
+    test "an info/exclude rule blocks; comments, blanks and a missing file do not", ctx do
+      exclude = Path.join(ctx.dir, ".git/info/exclude")
+      File.rm(exclude)
+      assert TwinProducers.clean_tree(ctx.dir) == :ok
+
+      File.mkdir_p!(Path.dirname(exclude))
+      File.write!(exclude, "# only a comment\n\n   \n")
+      assert TwinProducers.clean_tree(ctx.dir) == :ok
+      assert TwinProducers.dirty_count(ctx.dir) == 0
+
+      File.write!(exclude, "# comment\nsecret.txt\n")
+      assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+      assert TwinProducers.dirty_count(ctx.dir) == 1
+    end
+
+    test "an inherited GIT_DIR does not redirect the probe", ctx do
+      other = ctx.dir <> "-other"
+      File.mkdir_p!(other)
+      on_exit(fn -> File.rm_rf(other) end)
+      git(other, ["init", "-q"])
+      git(other, ["commit", "-q", "--allow-empty", "-m", "empty"])
+      env_restore("GIT_DIR")
+      System.put_env("GIT_DIR", Path.join(other, ".git"))
+
+      File.write!(Path.join(ctx.dir, "new.ex"), "x\n")
+      assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+      File.rm!(Path.join(ctx.dir, "new.ex"))
+      assert {:ok, frozen} = TwinProducers.freeze(ctx.runtime, ctx.identity.(%{}), frozen_opts())
+      assert frozen.head == ctx.runtime.candidate_head
+    end
+
+    test "an unavailable git and a non-repository block with prerequisite_missing", ctx do
+      gone = fn _cmd, _args, _opts -> raise ErlangError, original: :enoent end
+      assert TwinProducers.clean_tree(ctx.dir, git_cmd: gone) == {:blocked, :prerequisite_missing}
+      assert TwinProducers.dirty_count(ctx.dir, git_cmd: gone) == nil
+
+      plain = Path.join(ctx.side, "not-a-repo")
+      File.mkdir_p!(plain)
+
+      captured =
+        ExUnit.CaptureIO.capture_io(:stderr, fn ->
+          send(self(), {:result, TwinProducers.clean_tree(plain)})
+        end)
+
+      assert_received {:result, {:blocked, :prerequisite_missing}}
+      assert captured == ""
+      assert TwinProducers.dirty_count(plain) == nil
+    end
+
+    test "every git invocation discards stderr at the descriptor level", ctx do
+      bin = Path.join(ctx.side, "fakebin")
+      sentinel = Path.join(ctx.side, "stderr-sentinel")
+      File.mkdir_p!(bin)
+
+      script = """
+      #!/bin/sh
+      if [ /dev/fd/2 -ef /dev/null ]; then echo null >> "#{sentinel}"; else echo leak >> "#{sentinel}"; fi
+      case "$*" in
+        *status*) ;;
+        *--git-path*) echo ".git/info/exclude" ;;
+        *rev-parse*) echo "#{String.duplicate("a", 40)}" ;;
+      esac
+      exit 0
+      """
+
+      File.write!(Path.join(bin, "git"), script)
+      File.chmod!(Path.join(bin, "git"), 0o755)
+      env_restore("PATH")
+      System.put_env("PATH", bin <> ":" <> System.get_env("PATH"))
+
+      runtime = %{
+        ctx.runtime
+        | candidate_head: String.duplicate("a", 40),
+          candidate_tree: String.duplicate("a", 40)
+      }
+
+      assert TwinProducers.clean_tree(ctx.dir) == :ok
+      assert TwinProducers.dirty_count(ctx.dir) == 0
+      assert {:ok, _} = TwinProducers.freeze(runtime, ctx.identity.(%{}), frozen_opts())
+
+      lines = sentinel |> File.read!() |> String.split()
+      assert Enum.uniq(lines) == ["null"]
+      assert length(lines) >= 4
+    end
+
+    test "the recorded twin-03 shape (untracked files plus modified tracked ones) blocks", ctx do
+      File.mkdir_p!(Path.join(ctx.dir, "lib/crosswake/proof_lane"))
+      File.write!(Path.join(ctx.dir, "lib/crosswake/proof_lane/twin_new.ex"), "x\n")
+
+      File.write!(
+        Path.join(ctx.dir, "examples/phoenix_host/priv/static/offline_study.js"),
+        "// js2"
+      )
+
+      File.write!(Path.join(ctx.dir, "mix.lock"), "%{moved: 1}\n")
+
+      assert TwinProducers.freeze(ctx.runtime, ctx.identity.(%{}), frozen_opts()) ==
+               {:blocked, :source_dirty}
+    end
+
+    test "file names never leave the probe", ctx do
+      marker = "zz-leak-marker-" <> Base.encode16(:crypto.strong_rand_bytes(4))
+      File.write!(Path.join(ctx.dir, marker), "x\n")
+      parent = self()
+
+      out =
+        ExUnit.CaptureIO.capture_io(fn ->
+          err =
+            ExUnit.CaptureIO.capture_io(:stderr, fn ->
+              send(
+                parent,
+                {:result, TwinProducers.freeze(ctx.runtime, ctx.identity.(%{}), frozen_opts())}
+              )
+            end)
+
+          send(parent, {:err, err})
+        end)
+
+      assert_received {:result, result}
+      assert_received {:err, err}
+      assert result == {:blocked, :source_dirty}
+      refute inspect(result) =~ marker
+      refute out =~ marker
+      refute err =~ marker
+      refute File.exists?(expectations_path(ctx))
+    end
+
+    test "a tree dirtied after freeze leaves the source and build joins absent", ctx do
+      {:ok, frozen} = TwinProducers.freeze(ctx.runtime, ctx.identity.(%{}), frozen_opts())
+      File.write!(Path.join(ctx.dir, "late.ex"), "x\n")
+
+      observed = TwinProducers.observe_identities(frozen, live(frozen))
+      refute Map.has_key?(observed, :source)
+      refute Map.has_key?(observed, :installed_build)
+
+      assert by_id(TwinProducers.runner(frozen.expectations, observed, []))["TW-T10-02"].outcome ==
+               :blocked
+
+      assert TwinProducers.checked_identities(frozen, live(frozen)) == {:blocked, :source_dirty}
+    end
+
+    test "a HEAD that moved after freeze leaves the source and build joins absent", ctx do
+      {:ok, frozen} = TwinProducers.freeze(ctx.runtime, ctx.identity.(%{}), frozen_opts())
+      File.write!(Path.join(ctx.dir, "later.ex"), "x\n")
+      git(ctx.dir, ["add", "later.ex"])
+      git(ctx.dir, ["commit", "-q", "-m", "later"])
+
+      observed = TwinProducers.observe_identities(frozen, live(frozen))
+      refute Map.has_key?(observed, :source)
+      refute Map.has_key?(observed, :installed_build)
+    end
+
+    test "an unchanged checkout passes through checked_identities unchanged", ctx do
+      {:ok, frozen} = TwinProducers.freeze(ctx.runtime, ctx.identity.(%{}), frozen_opts())
+
+      assert {:ok, observed} = TwinProducers.checked_identities(frozen, live(frozen))
+      assert observed == frozen.expectations.joins
+    end
+
+    test "observation also loses the backend join when the tree is not clean (fail closed)",
+         ctx do
+      {:ok, frozen} = TwinProducers.freeze(ctx.runtime, ctx.identity.(%{}), frozen_opts())
+      File.write!(Path.join(ctx.dir, "late.ex"), "x\n")
+      observed = TwinProducers.observe_identities(frozen, live(frozen))
+      refute Map.has_key?(observed, :backend_build)
     end
   end
 

@@ -153,4 +153,10 @@ defmodule Crosswake.ProofLane.TwinJourneyTest do
     source = File.read!("lib/crosswake/proof_lane/twin_journey.ex")
     refute source =~ ~r/keepAlways|--screenshot|attachmentLifetime/i
   end
+
+  test "the journey observes identities only through the checked source gate" do
+    source = File.read!("lib/crosswake/proof_lane/twin_journey.ex")
+    assert source =~ "TwinProducers.checked_identities("
+    refute source =~ "TwinProducers.observe_identities("
+  end
 end

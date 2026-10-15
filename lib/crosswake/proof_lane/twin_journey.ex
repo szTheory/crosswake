@@ -708,17 +708,17 @@ defmodule Crosswake.ProofLane.TwinJourney do
         Map.put(live, :executable_stable, stable)
       end)
 
-    observed = TwinProducers.observe_identities(ctx.frozen, live)
+    with {:ok, observed} <- TwinProducers.checked_identities(ctx.frozen, live) do
+      observations =
+        TwinProducers.host_adapter(inputs, run_id) ++
+          TwinProducers.webview(inputs, run_id) ++
+          TwinProducers.app_process(inputs, run_id) ++
+          TwinProducers.fault_boundary(inputs, run_id) ++
+          TwinProducers.phoenix_ecto(inputs, run_id)
 
-    observations =
-      TwinProducers.host_adapter(inputs, run_id) ++
-        TwinProducers.webview(inputs, run_id) ++
-        TwinProducers.app_process(inputs, run_id) ++
-        TwinProducers.fault_boundary(inputs, run_id) ++
-        TwinProducers.phoenix_ecto(inputs, run_id)
-
-    all = observations ++ TwinProducers.runner(ctx.frozen.expectations, observed, observations)
-    {:ok, observed, all}
+      all = observations ++ TwinProducers.runner(ctx.frozen.expectations, observed, observations)
+      {:ok, observed, all}
+    end
   end
 
   defp backend_build(ctx) do

@@ -173,7 +173,7 @@ Prerequisites: a prepared candidate record (a private, mode 0600 JSON file namin
 path, expected head and tree, the declared loopback origin, and resource and fixture digests; this
 is a file, not the candidate directory), a free loopback origin port, an Xcode Simulator runtime,
 and an identity file. Every run needs a new run root; a run root that already holds a receipt is
-refused so a first result is never overwritten.
+refused so a first result is never overwritten. The candidate tree must be clean at the recorded head; a dirty tree is refused.
 
 Exit codes: `0` complete pass, `1` observed failure, `2` missing prerequisite or missing
 observation. The command prints four lines: result, first cause, local report path and one next

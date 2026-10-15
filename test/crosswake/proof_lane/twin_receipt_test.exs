@@ -179,6 +179,18 @@ defmodule Crosswake.ProofLane.TwinReceiptTest do
     assert TwinReceipt.safe_cause(:child_timeout) == :child_timeout
   end
 
+  test "source_dirty is a retained cause and the fidelity limits name the edit-then-revert gap" do
+    assert TwinReceipt.safe_cause(:source_dirty) == :source_dirty
+
+    assert TwinReceipt.fidelity_limits() == [
+             "simulator not physical speaker",
+             "simulator not signed device",
+             "synthetic_test_authority not real adopter",
+             "trusted local runner not cryptographic certification",
+             "source edit made and reverted during a run not detected"
+           ]
+  end
+
   test "physical and adopter relabels and promotion fields are rejected" do
     exp = expectations()
 
