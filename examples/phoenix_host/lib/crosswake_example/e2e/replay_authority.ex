@@ -5,6 +5,7 @@ defmodule CrosswakeExample.E2E.ReplayAuthority do
 
   alias Crosswake.Companions.Sigra.Contracts
   alias Crosswake.Manifest.Types.RouteEntry
+  alias CrosswakeExample.E2E.TwinFaultController
   alias CrosswakeExample.LocalFirst.PhysicalIphoneRunProvenance
 
   @session_key :e2e_replay_session
@@ -54,21 +55,38 @@ defmodule CrosswakeExample.E2E.ReplayAuthority do
      }}
   end
 
-  def feature_enabled?(_route, _conn), do: {:ok, :allow}
+  def feature_enabled?(_route, _conn) do
+    # A prepared entry fault makes the real feature owner deny; nothing is faked as allowed.
+    if TwinFaultController.fault_active?("entry_disable"),
+      do: {:error, :feature_disabled},
+      else: {:ok, :allow}
+  end
 
-  def domain_allows?(_route, %{physical_proof: %{nonce: nonce, mutation_id: mutation_id}}, %{
-        "physical_proof_nonce" => nonce,
-        "client_mutation_id" => mutation_id
-      }) do
+  def domain_allows?(route, session, event) do
+    cond do
+      TwinFaultController.fault_active?("replay_disable", event) ->
+        {:error, :authorization_denied}
+
+      true ->
+        # Prepared rejection/conflict rows are persisted for the real Study path to meet.
+        TwinFaultController.prepare_replay_outcome(event, session)
+        authorize_domain(route, session, event)
+    end
+  end
+
+  defp authorize_domain(_route, %{physical_proof: %{nonce: nonce, mutation_id: mutation_id}}, %{
+         "physical_proof_nonce" => nonce,
+         "client_mutation_id" => mutation_id
+       }) do
     if PhysicalIphoneRunProvenance.active?(nonce, mutation_id),
       do: {:ok, :allow},
       else: {:error, :auth_required}
   end
 
-  def domain_allows?(_route, %{physical_proof: nil}, event)
-      when not is_map_key(event, "physical_proof_nonce"), do: {:ok, :allow}
+  defp authorize_domain(_route, %{physical_proof: nil}, event)
+       when not is_map_key(event, "physical_proof_nonce"), do: {:ok, :allow}
 
-  def domain_allows?(_, _, _), do: {:error, :auth_required}
+  defp authorize_domain(_, _, _), do: {:error, :auth_required}
 
   defp physical_proof(%{"physical_proof_nonce" => nonce, "client_mutation_id" => mutation_id})
        when is_binary(nonce) and is_binary(mutation_id),

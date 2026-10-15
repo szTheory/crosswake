@@ -255,6 +255,15 @@ defmodule CrosswakeExample.Router do
         ]
       )
 
+      get("/offline/review", CrosswakeExample.OfflineController, :review,
+        crosswake: [
+          id: "offline-study-review",
+          runtime: :offline_island,
+          offline: :local_first,
+          security: :standard
+        ]
+      )
+
       live("/bridge-proof", CrosswakeExample.BridgeProofLive,
         crosswake: [
           id: "bridge-proof",
@@ -594,6 +603,21 @@ defmodule CrosswakeExample.Router do
       get("/sync-state/:client_mutation_id", SyncStateController, :show)
       post("/native-claim", NativeClaimController, :create)
       post("/showcase-reset", ShowcaseResetController, :create)
+    end
+
+    # Phase 180 twin: run-owned fault preparation, reference media, closed decision
+    # counters and backend build identity. Same single guard as every /_e2e scope.
+    scope "/_e2e/twin", CrosswakeExample.E2E do
+      pipe_through([:api])
+      post("/fault", TwinFaultController, :create)
+      get("/observe", TwinFaultController, :observe)
+      get("/build", TwinFaultController, :build)
+    end
+
+    # Media is fetched by native and browser audio stacks that send their own Accept
+    # header, so it deliberately skips the JSON-only :api pipeline.
+    scope "/_e2e/twin", CrosswakeExample.E2E do
+      get("/media/:asset", TwinFaultController, :media)
     end
 
     scope "/_e2e/physical-case", CrosswakeExample.LocalFirst do
