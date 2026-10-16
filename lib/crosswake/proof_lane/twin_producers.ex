@@ -680,6 +680,10 @@ defmodule Crosswake.ProofLane.TwinProducers do
   directory, and like the index it can be left behind only if the VM is killed. A
   lock or script file that cannot be read or digested blocks as `:identity_unknown`; it
   never raises.
+
+  A folder git cannot list, or any warning git prints, makes the source probe unavailable
+  (`:prerequisite_missing`), never clean. Ignore rules are matched with exact letter case,
+  and config values are read as git spells them.
   """
   @spec source_gate(map(), Path.t(), keyword()) ::
           {:ok,
@@ -741,6 +745,10 @@ defmodule Crosswake.ProofLane.TwinProducers do
   # Hooks are disabled for every pinned call (`core.hooksPath=/dev/null`, D-34): `read-tree`
   # into the private index would otherwise run the candidate's `post-index-change` hook.
   # A command-line `-c` beats every config file, so a local `core.hooksPath` cannot undo it.
+  # `core.ignorecase` is pinned false so names compare with exact letter case: a committed
+  # rule hides only names it literally matches, and a case-only rename shows up. It is never
+  # refused, because git sets it true on every case-insensitive filesystem, including the
+  # real candidate (D-41). `core.precomposeUnicode` is left alone, for D-41 (d)'s reason.
   @empty_tree "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 
   @git_scrub_names ~w(GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY
@@ -784,20 +792,29 @@ defmodule Crosswake.ProofLane.TwinProducers do
     "-c",
     "core.autocrlf=false",
     "-c",
-    "core.hooksPath=/dev/null"
+    "core.hooksPath=/dev/null",
+    "-c",
+    "core.ignorecase=false"
   ]
 
   @max_dirty_count 1_000_000
   @min_git_version {2, 41}
   @flag_tags ~c"HhSsMmRrCcKk?"
   @git_timeout_ms 60_000
-  @stdin_script "in=$1; shift; exec \"$@\" <\"$in\" 2>/dev/null"
+  # D-39: git's stderr is a failure signal. Each script keeps git's stderr in a shell
+  # variable and tests it only for emptiness: inside the substitution git's stderr goes to
+  # the variable and its stdout to fd 3, which is the port. The shell's own stderr is
+  # /dev/null. A non-empty stderr exits 125, which no caller accepts, so the call is
+  # unavailable (D-07). The text is never read, returned, logged or written, because it can
+  # carry a path.
+  @git_script "exec 2>/dev/null 3>&1; err=$(\"$@\" 2>&1 1>&3 3>&-); rc=$?; [ -z \"$err\" ] || exit 125; exit $rc"
+  @stdin_script "in=$1; shift; exec 2>/dev/null 3>&1; err=$(\"$@\" <\"$in\" 2>&1 1>&3 3>&-); rc=$?; [ -z \"$err\" ] || exit 125; exit $rc"
 
-  # stderr is discarded by the shell at the file-descriptor level; the candidate path
-  # is only ever an argv element, never part of the script text. `mode` is `:pinned`
-  # (the pins plus `-C path`), `:pinned_stdin` (the same argv, with stdin read from a file
-  # given as the first positional argument; only for `check-ignore --stdin -z`) or `:bare`
-  # (the version call only, no pins, no `-C`); `extra_env` may only add GIT_INDEX_FILE.
+  # The candidate path is only ever an argv element, never part of the script text. `mode`
+  # is `:pinned` (the pins plus `-C path`), `:pinned_stdin` (the same argv, with stdin read
+  # from a file given as the first positional argument; only for `check-ignore --stdin -z`)
+  # or `:bare` (the version call only, no pins, no `-C`); `extra_env` may only add
+  # GIT_INDEX_FILE.
   defp git_invocation(path, args, {:pinned_stdin, extra_env, stdin_path}),
     do: git_invocation(path, args, :pinned_stdin, extra_env, stdin_path)
 
@@ -831,8 +848,7 @@ defmodule Crosswake.ProofLane.TwinProducers do
          [env: env, stderr_to_stdout: false]}
 
       _ ->
-        {"sh", ["-c", "exec \"$@\" 2>/dev/null", "sh", "git" | argv],
-         [env: env, stderr_to_stdout: false]}
+        {"sh", ["-c", @git_script, "sh", "git" | argv], [env: env, stderr_to_stdout: false]}
     end
   end
 
@@ -880,7 +896,7 @@ defmodule Crosswake.ProofLane.TwinProducers do
 
   defp git(path, args, opts) do
     case run_git(path, args, opts) do
-      {out, 0} -> {:ok, String.trim(out)}
+      {out, 0} -> {:ok, String.replace_suffix(out, "\n", "")}
       _ -> {:blocked, :prerequisite_missing}
     end
   end
@@ -893,7 +909,9 @@ defmodule Crosswake.ProofLane.TwinProducers do
   hidden-flag index entry, any untracked non-ignored path, or any active rule in
   `.git/info/exclude`, is `:source_dirty`. Output is only counted, never returned.
   Option `:git_cmd` replaces `System.cmd/3` (used to model an unavailable git). This is
-  a view over `probe_source/2`.
+  a view over `probe_source/2`. A folder git cannot list, or any git warning, makes the
+  probe unavailable (`:prerequisite_missing`), never clean. Ignore rules are matched with
+  exact letter case, and config values are read as git spells them.
   """
   @spec clean_tree(Path.t(), keyword()) :: :ok | {:blocked, :source_dirty | :prerequisite_missing}
   def clean_tree(path, opts \\ []) do
@@ -913,7 +931,9 @@ defmodule Crosswake.ProofLane.TwinProducers do
   a staged rename is two findings. Every ignored untracked path whose deciding rule is not
   a `.gitignore` committed in `HEAD` adds one finding, including paths hidden by
   `.git/info/exclude` (whose rules are also counted) and paths with no deciding rule;
-  committed `.gitignore` rules add none (deferred limit).
+  committed `.gitignore` rules add none (deferred limit). A folder git cannot list, or any
+  git warning, gives `nil` (unavailable), never a count. Ignore rules are matched with exact
+  letter case, and config values are read as git spells them.
   """
   @spec dirty_counts(Path.t(), keyword()) ::
           %{modified: non_neg_integer(), flagged: non_neg_integer(), excludes: non_neg_integer()}
@@ -1012,7 +1032,7 @@ defmodule Crosswake.ProofLane.TwinProducers do
   `modified` counts the status records of that comparison plus every ignored untracked
   path that an ignore rule hides when that rule is not in a `.gitignore` committed in `HEAD`
   (only such a `.gitignore` is trusted; any other rule, including `.git/info/exclude`, counts
-  each file it hides, whatever the folder or file is called; paths ignored by a committed
+  each file it hides, however the folder or file is named; paths ignored by a committed
   `.gitignore` are not counted, which is the deferred, disclosed limit), `flagged` counts the unique
   paths whose entry in the real index carries a tag other than `H` (assume-unchanged,
   skip-worktree, unmerged and the rest), and `excludes` counts the `.git/info/exclude`
@@ -1025,7 +1045,10 @@ defmodule Crosswake.ProofLane.TwinProducers do
   Limits, stated plainly: global git config is ignored, so `safe.directory` entries do
   not apply and a candidate owned by another user is `:unavailable`; a filesystem
   without file modes yields a false `source_dirty` because `core.filemode=true` is
-  pinned; a probe spawns about ten git processes and nothing is cached.
+  pinned; a probe spawns about ten git processes and nothing is cached. A folder git cannot
+  list, or any git warning, is `:unavailable`, never clean; ignore rules are matched with
+  exact letter case (`core.ignorecase=false` is pinned); config values are read as git
+  spells them.
 
   Options: `:git_cmd`, `:git_timeout_ms`, `:tmp_dir` (absolute base for the temporary
   index), `:remove_dir` (replaces the directory removal), `:run_root` (a directory the
@@ -1076,7 +1099,7 @@ defmodule Crosswake.ProofLane.TwinProducers do
         |> Enum.map(fn record ->
           case String.split(record, "\n", parts: 2) do
             [key] -> {String.downcase(key), nil}
-            [key, value] -> {String.downcase(key), String.downcase(String.trim(value))}
+            [key, value] -> {String.downcase(key), String.downcase(value, :ascii)}
           end
         end)
 
@@ -1087,18 +1110,21 @@ defmodule Crosswake.ProofLane.TwinProducers do
   end
 
   defp hiding_entry?({"filter." <> _, _}), do: true
-  defp hiding_entry?({"core.bare", value}), do: truthy?(value)
-  defp hiding_entry?({"core.symlinks", value}), do: falsy?(value)
-  defp hiding_entry?({"extensions.worktreeconfig", value}), do: truthy?(value)
+  # D-40 (c): values are compared as ASCII-downcased bytes with no trim, and a value is
+  # trusted only when it is a git spelling of the safe value. Git reads core.symlinks=00 as
+  # false and extensions.worktreeConfig=2 as true, so those spellings are refused.
+  defp hiding_entry?({"core.bare", value}), do: not git_false?(value)
+  defp hiding_entry?({"core.symlinks", value}), do: not git_true?(value)
+  defp hiding_entry?({"extensions.worktreeconfig", value}), do: not git_false?(value)
   defp hiding_entry?(_), do: false
 
-  defp truthy?(value), do: value in [nil, "true", "yes", "on", "1"]
-  defp falsy?(value), do: value in ["false", "no", "off", "0"]
+  defp git_true?(value), do: value in [nil, "true", "yes", "on", "1"]
+  defp git_false?(value), do: value in ["false", "no", "off", "0", ""]
 
   # D-04: an active line in info/attributes can hide or rewrite content for every command.
   defp attributes_refusal(path, opts) do
     with {out, 0} <- run_git(path, ["rev-parse", "--git-path", "info/attributes"], opts),
-         file = Path.expand(String.trim(out), path),
+         file = Path.expand(String.replace_suffix(out, "\n", ""), path),
          {:ok, lines} <- read_exclude(file) do
       if Enum.any?(lines, &attributes_line_active?/1), do: {:refused, :hiding_config}, else: :ok
     else
@@ -1143,7 +1169,7 @@ defmodule Crosswake.ProofLane.TwinProducers do
   defp absolute_git_dir(path, opts) do
     case run_git(path, ["rev-parse", "--absolute-git-dir"], opts) do
       {out, 0} ->
-        dir = String.trim(out)
+        dir = String.replace_suffix(out, "\n", "")
         if dir != "" and Path.type(dir) == :absolute, do: {:ok, dir}, else: :unavailable
 
       _ ->
@@ -1404,7 +1430,7 @@ defmodule Crosswake.ProofLane.TwinProducers do
   # their count is its own signal. Lines are read as git reads them (D-38).
   defp exclude_rules(path, opts) do
     with {out, 0} <- run_git(path, ["rev-parse", "--git-path", "info/exclude"], opts),
-         file = Path.expand(String.trim(out), path),
+         file = Path.expand(String.replace_suffix(out, "\n", ""), path),
          {:ok, lines} <- read_exclude(file) do
       {:ok, Enum.count(lines, &exclude_line_active?/1)}
     else
@@ -1414,16 +1440,21 @@ defmodule Crosswake.ProofLane.TwinProducers do
 
   defp read_exclude(file) do
     case File.read(file) do
-      {:ok, text} -> {:ok, String.split(text, ["\r\n", "\n"])}
+      {:ok, text} -> {:ok, String.split(text, "\n")}
       {:error, :enoent} -> {:ok, []}
       {:error, _} -> :error
     end
   end
 
-  # info/attributes: git's attribute reader skips leading blanks, so trimming is right here.
+  # info/attributes (D-40 (a)): git's attr.c blank set is space, tab, CR and LF only, so a
+  # no-break space, vertical tab or form feed before `#` is significant and the line is live.
+  # A BOM-led comment is refused too (accepted over-refusal, fail closed).
   defp attributes_line_active?(line) do
-    trimmed = String.trim(line)
-    trimmed != "" and not String.starts_with?(trimmed, "#")
+    case Regex.replace(~r/\A[ \t\r\n]+/, line, "") do
+      "" -> false
+      <<?#, _::binary>> -> false
+      _ -> true
+    end
   end
 
   # info/exclude (D-38): after one trailing CR is removed, a line is inactive only when it is

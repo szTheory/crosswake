@@ -8,7 +8,8 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
   alias Crosswake.ProofLane.{TwinGitFixtures, TwinProducers}
 
   @empty_tree "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
-  @stdin_script "in=$1; shift; exec \"$@\" <\"$in\" 2>/dev/null"
+  @git_script "exec 2>/dev/null 3>&1; err=$(\"$@\" 2>&1 1>&3 3>&-); rc=$?; [ -z \"$err\" ] || exit 125; exit $rc"
+  @stdin_script "in=$1; shift; exec 2>/dev/null 3>&1; err=$(\"$@\" <\"$in\" 2>&1 1>&3 3>&-); rc=$?; [ -z \"$err\" ] || exit 125; exit $rc"
 
   setup do
     {:ok, TwinGitFixtures.repo!()}
@@ -330,6 +331,115 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
 
     TwinGitFixtures.set_config!(ctx.dir, "extensions.worktreeConfig", "true")
     assert TwinProducers.probe_source(ctx.dir) == {:refused, :hiding_config}
+  end
+
+  defp write_attributes!(ctx, text) do
+    attributes = Path.join(ctx.dir, ".git/info/attributes")
+    File.mkdir_p!(Path.dirname(attributes))
+    File.write!(attributes, text)
+  end
+
+  defp attributes_prefix_probe(ctx, prefix) do
+    write_attributes!(ctx, prefix <> "#x ident\n")
+    {prefix, TwinProducers.probe_source(ctx.dir)}
+  end
+
+  defp config_spelling_probe(ctx, key, value, safe) do
+    TwinGitFixtures.set_config!(ctx.dir, key, value)
+    result = {key, value, TwinProducers.probe_source(ctx.dir)}
+    TwinGitFixtures.set_config!(ctx.dir, key, safe)
+    result
+  end
+
+  test "an info/attributes line that starts with a no-break space before # is refused", ctx do
+    name = " #x"
+    File.write!(Path.join(ctx.dir, name), "$Id$\n")
+    TwinGitFixtures.git!(ctx.dir, ["add", "--", name])
+    TwinGitFixtures.git!(ctx.dir, ["commit", "-q", "-m", "tracked nbsp file"])
+    write_attributes!(ctx, " #x ident\n")
+    File.write!(Path.join(ctx.dir, name), "$Id: CHANGED-CONTENT $\n")
+
+    {attr, 0} = TwinGitFixtures.raw_git(ctx.dir, ["check-attr", "ident", "--", name])
+    assert attr =~ "ident: set"
+    assert fresh_blind?(ctx) == {"", 0}
+    assert TwinProducers.probe_source(ctx.dir) == {:refused, :hiding_config}
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+  end
+
+  test "an info/attributes line that starts with any non-ASCII-blank character before # is refused",
+       ctx do
+    assert attributes_prefix_probe(ctx, "\v") == {"\v", {:refused, :hiding_config}}
+    assert attributes_prefix_probe(ctx, "\f") == {"\f", {:refused, :hiding_config}}
+    assert attributes_prefix_probe(ctx, " ") == {" ", {:refused, :hiding_config}}
+    assert attributes_prefix_probe(ctx, "\u0085") == {"\u0085", {:refused, :hiding_config}}
+    assert attributes_prefix_probe(ctx, "　") == {"　", {:refused, :hiding_config}}
+  end
+
+  test "an info/attributes line that starts with a space, tab or CR before # stays a comment",
+       ctx do
+    clean = {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+
+    assert attributes_prefix_probe(ctx, " ") == {" ", clean}
+    assert attributes_prefix_probe(ctx, "\t") == {"\t", clean}
+    assert attributes_prefix_probe(ctx, "\r") == {"\r", clean}
+
+    write_attributes!(ctx, " \t\r\n")
+    assert TwinProducers.probe_source(ctx.dir) == clean
+  end
+
+  test "an info/exclude line ending in two CRs is one rule", ctx do
+    write_exclude!(ctx, "\r\r\n")
+    File.write!(Path.join(ctx.dir, "\r"), "synthetic")
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 1, flagged: 0, excludes: 1}}
+  end
+
+  test "a CRLF info/exclude rule counts once and a bare CRLF line counts none", ctx do
+    write_exclude!(ctx, "lit\r\n\r\n")
+
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 0, flagged: 0, excludes: 1}}
+  end
+
+  test "core.symlinks written as 00 is refused", ctx do
+    TwinGitFixtures.set_config!(ctx.dir, "core.symlinks", "00")
+
+    assert TwinGitFixtures.raw_git(ctx.dir, ["config", "--type=bool", "core.symlinks"]) ==
+             {"false\n", 0}
+
+    assert TwinProducers.probe_source(ctx.dir) == {:refused, :hiding_config}
+  end
+
+  test "extensions.worktreeConfig written as 2 is refused", ctx do
+    TwinGitFixtures.set_config!(ctx.dir, "extensions.worktreeConfig", "2")
+
+    assert TwinGitFixtures.raw_git(ctx.dir, ["config", "--type=bool", "extensions.worktreeConfig"]) ==
+             {"true\n", 0}
+
+    assert TwinProducers.probe_source(ctx.dir) == {:refused, :hiding_config}
+  end
+
+  test "every git spelling of a safe core.bare, core.symlinks or worktreeConfig value probes clean",
+       ctx do
+    ok = {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+    bare = "core.bare"
+    sym = "core.symlinks"
+    wt = "extensions.worktreeConfig"
+
+    assert config_spelling_probe(ctx, bare, "false", "false") == {bare, "false", ok}
+    assert config_spelling_probe(ctx, bare, "no", "false") == {bare, "no", ok}
+    assert config_spelling_probe(ctx, bare, "off", "false") == {bare, "off", ok}
+    assert config_spelling_probe(ctx, bare, "0", "false") == {bare, "0", ok}
+    assert config_spelling_probe(ctx, bare, "FALSE", "false") == {bare, "FALSE", ok}
+    assert config_spelling_probe(ctx, bare, "", "false") == {bare, "", ok}
+    assert config_spelling_probe(ctx, sym, "true", "true") == {sym, "true", ok}
+    assert config_spelling_probe(ctx, sym, "yes", "true") == {sym, "yes", ok}
+    assert config_spelling_probe(ctx, sym, "on", "true") == {sym, "on", ok}
+    assert config_spelling_probe(ctx, sym, "1", "true") == {sym, "1", ok}
+    assert config_spelling_probe(ctx, sym, "TRUE", "true") == {sym, "TRUE", ok}
+    assert config_spelling_probe(ctx, wt, "false", "false") == {wt, "false", ok}
+    assert config_spelling_probe(ctx, wt, "off", "false") == {wt, "off", ok}
+    assert config_spelling_probe(ctx, wt, "0", "false") == {wt, "0", ok}
   end
 
   test "a subdirectory candidate is refused", ctx do
@@ -667,6 +777,27 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
     File.write!(Path.join(ctx.dir, ".gitignore"), "/deps/\n")
     TwinGitFixtures.git!(ctx.dir, ["add", ".gitignore"])
     TwinGitFixtures.git!(ctx.dir, ["commit", "-q", "-m", "ignore deps"])
+  end
+
+  test "a local core.ignorecase=true cannot widen a committed rule to another letter case", ctx do
+    committed_deps_rule!(ctx)
+    TwinGitFixtures.set_config!(ctx.dir, "core.ignorecase", "true")
+    File.mkdir_p!(Path.join(ctx.dir, "DEPS"))
+    File.write!(Path.join([ctx.dir, "DEPS", "evil.ex"]), "defmodule Evil do\nend\n")
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 1, flagged: 0, excludes: 0}}
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+  end
+
+  test "a case-only rename of a tracked file blocks", ctx do
+    TwinGitFixtures.set_config!(ctx.dir, "core.ignorecase", "true")
+    File.rename!(Path.join(ctx.dir, "run.sh"), Path.join(ctx.dir, "run.tmp"))
+    File.rename!(Path.join(ctx.dir, "run.tmp"), Path.join(ctx.dir, "RUN.sh"))
+
+    assert {:ok, %{modified: m, flagged: 0, excludes: 0}} = TwinProducers.probe_source(ctx.dir)
+    assert m >= 1
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
   end
 
   defp hidden_folder!(ctx, name) do
@@ -1008,7 +1139,9 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
     "-c",
     "core.autocrlf=false",
     "-c",
-    "core.hooksPath=/dev/null"
+    "core.hooksPath=/dev/null",
+    "-c",
+    "core.ignorecase=false"
   ]
 
   defp recorder do
@@ -1024,11 +1157,12 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
 
   defp recorded(agent), do: agent |> Agent.get(& &1) |> Enum.reverse()
 
-  defp conforming?({"sh", ["-c", _script, "sh", "git" | argv], env}) do
+  defp conforming?({"sh", ["-c", script, "sh", "git" | argv], env}) do
     shaped =
-      argv == ["--version"] or
-        (Enum.take(argv, length(@expected_pins)) == @expected_pins and
-           Enum.at(argv, length(@expected_pins)) == "-C")
+      script == @git_script and
+        (argv == ["--version"] or
+           (Enum.take(argv, length(@expected_pins)) == @expected_pins and
+              Enum.at(argv, length(@expected_pins)) == "-C"))
 
     fixed = [
       {"GIT_CONFIG_GLOBAL", "/dev/null"},
@@ -1062,7 +1196,7 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
         "check-ignore" in argv and "--stdin" in argv and "-z" in argv
 
     shaped and
-      conforming?({"sh", ["-c", "exec \"$@\" 2>/dev/null", "sh", "git", "--version"], env})
+      conforming?({"sh", ["-c", @git_script, "sh", "git", "--version"], env})
   end
 
   defp conforming?(_), do: false
@@ -1269,5 +1403,108 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
       Crosswake.ProofLane.TwinReceipt.roster()
 
     {id, owner}
+  end
+
+  # ---- D-39: git's stderr is a failure signal -------------------------------------------
+
+  # Rewrites the one git call whose argv holds `name` as an exact element so that git runs
+  # behind a wrapper; with `noise?` the wrapper also writes the word warn to stderr.
+  defp noisy_git(name, noise?) do
+    {:ok, rewrote} = Agent.start_link(fn -> 0 end)
+
+    wrapper =
+      if noise?,
+        do: "echo warn >&2; exec git \"$@\"",
+        else: "exec git \"$@\""
+
+    git_cmd = fn cmd, args, opts ->
+      {head, [_git | argv]} = Enum.split(args, Enum.find_index(args, &(&1 == "git")))
+
+      if name in argv do
+        Agent.update(rewrote, &(&1 + 1))
+        System.cmd(cmd, head ++ ["sh", "-c", wrapper, "sh" | argv], opts)
+      else
+        System.cmd(cmd, args, opts)
+      end
+    end
+
+    {rewrote, git_cmd}
+  end
+
+  defp evil_module, do: "defmodule Evil do\nend\n"
+
+  test "an untracked folder git cannot open makes the probe unavailable", ctx do
+    hid = Path.join(ctx.dir, "hid")
+    File.mkdir_p!(hid)
+    File.write!(Path.join(hid, "evil.ex"), evil_module())
+    TwinGitFixtures.unlistable!(hid, 0o111)
+
+    assert {out, 0} = blind?(ctx.dir)
+    assert out =~ "could not open directory"
+    refute out =~ "evil.ex"
+    assert File.read!(Path.join(hid, "evil.ex")) =~ "Evil"
+
+    assert TwinProducers.probe_source(ctx.dir) == :unavailable
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :prerequisite_missing}
+    assert TwinProducers.dirty_count(ctx.dir) == nil
+  end
+
+  test "a tracked folder git cannot list hides no new file from the probe", ctx do
+    kept = Path.join(ctx.dir, "kept")
+    File.mkdir_p!(kept)
+    File.write!(Path.join(kept, "keep.txt"), "kept\n")
+    TwinGitFixtures.git!(ctx.dir, ["add", "kept/keep.txt"])
+    TwinGitFixtures.git!(ctx.dir, ["commit", "-q", "-m", "kept"])
+    assert TwinGitFixtures.git!(ctx.dir, ["ls-files", "--", "kept"]) == "kept/keep.txt"
+
+    File.write!(Path.join(kept, "evil.js"), "// evil\n")
+    TwinGitFixtures.unlistable!(kept, 0o311)
+
+    assert {out, 0} = blind?(ctx.dir)
+    assert out =~ "could not open directory"
+    refute out =~ "evil.js"
+
+    assert TwinProducers.probe_source(ctx.dir) == :unavailable
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :prerequisite_missing}
+  end
+
+  test "an ignored folder git cannot open makes the probe unavailable", ctx do
+    committed_deps_rule!(ctx)
+    hid = Path.join(ctx.dir, "deps/hid")
+    File.mkdir_p!(hid)
+    File.write!(Path.join(hid, "evil.ex"), evil_module())
+    TwinGitFixtures.unlistable!(hid, 0o111)
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert TwinProducers.probe_source(ctx.dir) == :unavailable
+  end
+
+  test "a git call that also writes to stderr makes the probe unavailable", ctx do
+    {noisy, git_cmd} = noisy_git("status", true)
+    assert TwinProducers.probe_source(ctx.dir, git_cmd: git_cmd) == :unavailable
+    assert Agent.get(noisy, & &1) == 1
+
+    {quiet, quiet_cmd} = noisy_git("status", false)
+
+    assert TwinProducers.probe_source(ctx.dir, git_cmd: quiet_cmd) ==
+             {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+
+    assert Agent.get(quiet, & &1) == 1
+  end
+
+  test "a check-ignore call that also writes to stderr makes the probe unavailable", ctx do
+    committed_log_rule!(ctx)
+    File.write!(Path.join(ctx.dir, "x.log"), "noise")
+
+    {noisy, git_cmd} = noisy_git("check-ignore", true)
+    assert TwinProducers.probe_source(ctx.dir, git_cmd: git_cmd) == :unavailable
+    assert Agent.get(noisy, & &1) == 1
+
+    {quiet, quiet_cmd} = noisy_git("check-ignore", false)
+
+    assert TwinProducers.probe_source(ctx.dir, git_cmd: quiet_cmd) ==
+             {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+
+    assert Agent.get(quiet, & &1) == 1
   end
 end

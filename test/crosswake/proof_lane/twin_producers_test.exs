@@ -752,7 +752,7 @@ defmodule Crosswake.ProofLane.TwinProducersTest do
       assert TwinProducers.dirty_count(plain) == nil
     end
 
-    test "every git invocation discards stderr at the descriptor level", ctx do
+    test "every git invocation captures stderr in a pipe the probe tests for emptiness", ctx do
       bin = Path.join(ctx.side, "fakebin")
       sentinel = Path.join(ctx.side, "stderr-sentinel")
       File.mkdir_p!(bin)
@@ -761,7 +761,7 @@ defmodule Crosswake.ProofLane.TwinProducersTest do
 
       script = """
       #!/bin/sh
-      if [ /dev/fd/2 -ef /dev/null ]; then echo null >> "#{sentinel}"; else echo leak >> "#{sentinel}"; fi
+      if [ -p /dev/fd/2 ]; then echo pipe >> "#{sentinel}"; elif [ /dev/fd/2 -ef /dev/null ]; then echo null >> "#{sentinel}"; else echo other >> "#{sentinel}"; fi
       exec "#{real_git}" "$@"
       """
 
@@ -770,12 +770,17 @@ defmodule Crosswake.ProofLane.TwinProducersTest do
       env_restore("PATH")
       System.put_env("PATH", bin <> ":" <> System.get_env("PATH"))
 
-      assert TwinProducers.clean_tree(ctx.dir) == :ok
-      assert TwinProducers.dirty_count(ctx.dir) == 0
-      assert {:ok, _} = TwinProducers.freeze(ctx.runtime, ctx.identity.(%{}), frozen_opts())
+      captured =
+        ExUnit.CaptureIO.capture_io(:stderr, fn ->
+          assert TwinProducers.clean_tree(ctx.dir) == :ok
+          assert TwinProducers.dirty_count(ctx.dir) == 0
+          assert {:ok, _} = TwinProducers.freeze(ctx.runtime, ctx.identity.(%{}), frozen_opts())
+        end)
+
+      assert captured == ""
 
       lines = sentinel |> File.read!() |> String.split()
-      assert Enum.uniq(lines) == ["null"]
+      assert Enum.uniq(lines) == ["pipe"]
       assert length(lines) >= 8
     end
 

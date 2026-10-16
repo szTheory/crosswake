@@ -160,6 +160,23 @@ defmodule Crosswake.ProofLane.TwinGitFixtures do
     File.touch!(path, mtime)
   end
 
+  @doc """
+  Makes a folder git cannot list. One `on_exit` callback is registered before the chmod; it
+  first restores mode 0o755 on the folder and then removes the folder itself, so the
+  unreadable folder is removed by its own callback. If the cleanup of the temporary
+  repository root were to run first, its `rm_rf` could fail on the unreadable folder and
+  leave the root behind until this callback removes the folder; that cannot change a
+  test result.
+  """
+  def unlistable!(path, mode) do
+    ExUnit.Callbacks.on_exit(fn ->
+      File.chmod(path, 0o755)
+      File.rm_rf(path)
+    end)
+
+    File.chmod!(path, mode)
+  end
+
   @doc "Sets an index flag (`--assume-unchanged`, `--skip-worktree`, ...) on a path."
   def flag!(dir, flag, path), do: git!(dir, ["update-index", flag, path])
 
