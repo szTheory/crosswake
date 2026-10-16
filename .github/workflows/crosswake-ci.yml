@@ -305,7 +305,7 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22.x"
       - name: Install brandbook tool dependencies
@@ -361,7 +361,7 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22.x"
       - name: Install brand e2e dependencies
@@ -492,7 +492,7 @@ jobs:
       - uses: ./.github/actions/setup-elixir-cache
         with:
           mix-env: test
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22.14.0"
       - name: Verify repository formatting
@@ -541,7 +541,7 @@ jobs:
           version-file: .tool-versions
           version-type: strict
           install-hex: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22.14.0"
       - name: Install Hex
@@ -580,7 +580,7 @@ jobs:
         with:
           version-file: .tool-versions
           version-type: strict
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22.14.0"
       - name: Compile the example Phoenix host (dev env)
@@ -624,7 +624,7 @@ jobs:
       - uses: ./.github/actions/setup-elixir-cache
         with:
           mix-env: test
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22.14.0"
       - name: Run root and companion proof
@@ -770,7 +770,7 @@ jobs:
       - uses: ./.github/actions/setup-elixir-cache
         with:
           mix-env: test
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22.14.0"
       - name: Compile with repository warning policy
@@ -1069,7 +1069,7 @@ jobs:
       - uses: ./.github/actions/setup-android-jvm
         with:
           working-directory: packages/crosswake-shell-core-android
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22.14.0"
       - name: Run Android JVM tests
@@ -1121,7 +1121,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22.14.0"
       - id: swift-cache-identity
@@ -1294,7 +1294,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22.14.0"
       - name: Install example-host Node dependencies
@@ -1355,7 +1355,7 @@ jobs:
         with:
           mix-env: test
           working-directory: examples/phoenix_host
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22.14.0"
       - name: Compile example host with warnings as errors
@@ -1405,7 +1405,7 @@ jobs:
         with:
           mix-env: test
           working-directory: examples/phoenix_host
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22.14.0"
       - name: Compile example host with warnings as errors
