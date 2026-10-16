@@ -223,16 +223,28 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwin do
     end
   end
 
+  # Both lockfiles are part of the identity. A lockfile missing at freeze and at
+  # observation used to give the same narrowed digest list on both sides, so the
+  # join passed while comparing only half of the identity. Every lockfile must now
+  # be a regular file (lstat) that can be read, or the freeze blocks closed.
   defp lock_digests(candidate_path) do
-    digests =
-      for rel <- ["mix.lock", "examples/phoenix_host/mix.lock"],
-          path = Path.join(candidate_path, rel),
-          match?({:ok, %{type: :regular}}, File.lstat(path)),
-          {:ok, bytes} <- [File.read(path)] do
-        :crypto.hash(:sha256, bytes) |> Base.encode16(case: :lower)
+    results =
+      for rel <- ["mix.lock", "examples/phoenix_host/mix.lock"] do
+        path = Path.join(candidate_path, rel)
+
+        with {:ok, %{type: :regular}} <- File.lstat(path),
+             {:ok, bytes} <- File.read(path) do
+          {:ok, :crypto.hash(:sha256, bytes) |> Base.encode16(case: :lower)}
+        else
+          _ -> :error
+        end
       end
 
-    if digests == [], do: {:error, :lock_files_missing}, else: {:ok, digests}
+    if Enum.all?(results, &match?({:ok, _}, &1)) do
+      {:ok, for({:ok, digest} <- results, do: digest)}
+    else
+      {:blocked, :identity_unknown}
+    end
   end
 
   defp write_and_verify(root, receipt, status) do

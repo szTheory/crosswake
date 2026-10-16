@@ -254,4 +254,65 @@ defmodule Crosswake.ProofLane.TwinRuntimeCheckTest do
       :gen_tcp.close(held)
     end
   end
+
+  # The registry is the only tracker of the OS process groups a run started, so a
+  # registry that is already gone must be reported, never read as "nothing to stop".
+  test "stop_children reports registry_gone, not :ok, when the registry is already gone", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    :ok = Agent.stop(runtime.registry)
+
+    assert {:error, :registry_gone} = TwinRuntime.stop_children(runtime)
+    TwinRuntime.stop_all(runtime)
+  end
+
+  test "stop_all still closes the origin listener and returns registry_gone when the registry is already gone",
+       ctx do
+    port = free_port()
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx, port), run_root: ctx.run_root)
+    :ok = Agent.stop(runtime.registry)
+
+    assert {:error, :eaddrinuse} =
+             :gen_tcp.listen(port, ip: {127, 0, 0, 1}, reuseaddr: false, active: false)
+
+    assert {:error, :registry_gone} = TwinRuntime.stop_all(runtime)
+
+    assert {:ok, again} =
+             :gen_tcp.listen(port, ip: {127, 0, 0, 1}, reuseaddr: false, active: false)
+
+    :gen_tcp.close(again)
+  end
+
+  test "a live registry with zero children stops with :ok", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+
+    assert :ok = TwinRuntime.stop_children(runtime)
+    assert :ok = TwinRuntime.stop_all(runtime)
+  end
+
+  test "a tracked child whose registry is gone is reported by stop_all, not hidden", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    sleep = System.find_executable("sleep")
+    {:ok, child} = TwinRuntime.start_child(runtime, :orphan, %{path: sleep, args: ["30"]})
+
+    # The registry is gone, so the group is orphaned by design here; kill it ourselves.
+    on_exit(fn ->
+      System.cmd("kill", ["-s", "KILL", "--", "-" <> Integer.to_string(child.os_pid)],
+        stderr_to_stdout: true
+      )
+    end)
+
+    assert TwinRuntime.alive?(child.os_pid)
+    :ok = Agent.stop(runtime.registry)
+
+    assert {:error, :registry_gone} = TwinRuntime.stop_all(runtime)
+  end
+
+  test "first_failure and record_failure stay tolerant of a gone registry", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    :ok = Agent.stop(runtime.registry)
+
+    assert TwinRuntime.first_failure(runtime) == nil
+    assert :ok = TwinRuntime.record_failure(runtime, :host_denied)
+    TwinRuntime.stop_all(runtime)
+  end
 end

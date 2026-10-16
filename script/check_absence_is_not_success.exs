@@ -50,37 +50,167 @@ defmodule Crosswake.AbsenceIsNotSuccess do
   a record is allowed to describe where something used to be.
   """
 
-  def run(root) do
-    findings = mutation_controls(root) ++ stale_citations(root)
+  # Every scope the checker reads, as literal {label, glob, min}. A scope that is
+  # empty, narrower than an independent walk, or below its min fails closed (exit
+  # 1) before any content check runs, so a green result means files were examined.
+  #
+  # The test-files min is a minimum measured at the phase's final commit: adding
+  # files never goes red, removing files is the reviewed event (lower the entry in
+  # the same change and say why). Adding 50 files and deleting 50 others stays
+  # green: a known limit. Raising the pin is a Phase 188 freeze-checklist item.
+  # --min-test-files N replaces only the test-files min (for fixtures); nothing
+  # ratchets automatically and nothing rewrites a pin.
+  @scopes [
+    {"test-files", "test/**/*.exs", 249},
+    {"todos", ".planning/todos/*.md", 1},
+    {"seeds", ".planning/seeds/*.md", 1},
+    {"deferred-items", ".planning/**/deferred-items.md", 1}
+  ]
 
-    case findings do
-      [] ->
-        IO.puts("[crosswake] OK: no mutation control asserts a change it never verified.")
-        IO.puts("[crosswake] OK: every open finding's test citation resolves to a real test.")
-        0
+  def run(root, opts \\ []) do
+    results = Enum.map(@scopes, &derive_scope(&1, root, opts))
+    failures = Enum.filter(results, &(&1.error != nil))
 
-      _ ->
-        Enum.each(findings, fn {id, where, detail, hint} ->
-          IO.puts("[crosswake] FAIL: #{id}")
-          IO.puts("[crosswake]   where: #{where}")
-          IO.puts("[crosswake]   what:  #{detail}")
-          IO.puts(indent(hint))
-          IO.puts("")
-        end)
+    if failures != [] do
+      Enum.each(failures, fn r ->
+        IO.puts(
+          "[crosswake] FAIL: scope #{r.label}: #{r.error}: scanned=#{length(r.actual)} expected=#{length(r.expected)} pin=#{r.min}"
+        )
 
-        IO.puts("[crosswake] FAIL: #{length(findings)} check(s) would pass while asserting nothing.")
-        1
+        IO.puts(
+          "[crosswake]   Lower that @scopes entry in the same change and say why, or fix --root if it points at the wrong tree."
+        )
+      end)
+
+      IO.puts("[crosswake] FAIL: content checks were skipped because a scope floor failed.")
+      1
+    else
+      by_label = Map.new(results, &{&1.label, &1.actual})
+      test_files = Map.fetch!(by_label, "test-files")
+
+      planning =
+        ["todos", "seeds", "deferred-items"]
+        |> Enum.flat_map(&Map.fetch!(by_label, &1))
+        |> Enum.uniq()
+        |> Enum.sort()
+
+      findings = mutation_controls(test_files, root) ++ stale_citations(planning, root)
+      report(findings, results, test_files)
+    end
+  end
+
+  defp report([], results, test_files) do
+    pin = Enum.find(results, &(&1.label == "test-files")).min
+
+    counts =
+      results
+      |> Enum.reject(&(&1.label == "test-files"))
+      |> Enum.map_join(", ", &"#{&1.label} #{length(&1.actual)}")
+
+    IO.puts(
+      "[crosswake] OK: no mutation control asserts a change it never verified (scanned #{length(test_files)} test files, pin #{pin})."
+    )
+
+    IO.puts(
+      "[crosswake] OK: every open finding's test citation resolves to a real test (#{counts})."
+    )
+
+    0
+  end
+
+  defp report(findings, _results, _test_files) do
+    Enum.each(findings, fn {id, where, detail, hint} ->
+      IO.puts("[crosswake] FAIL: #{id}")
+      IO.puts("[crosswake]   where: #{where}")
+      IO.puts("[crosswake]   what:  #{detail}")
+      IO.puts(indent(hint))
+      IO.puts("")
+    end)
+
+    IO.puts("[crosswake] FAIL: #{length(findings)} check(s) would pass while asserting nothing.")
+    1
+  end
+
+  defp derive_scope({label, glob, default_min}, root, opts) do
+    min =
+      if label == "test-files",
+        do: Keyword.get(opts, :min_test_files, default_min),
+        else: default_min
+
+    # actual: the glob, filtered to regular files (a directory named x.exs is not a test).
+    actual =
+      root |> Path.join(glob) |> Path.wildcard() |> Enum.filter(&File.regular?/1) |> Enum.sort()
+
+    # expected: a separate walk, never a second wildcard and never git ls-files.
+    expected = expected_scope(label, root)
+
+    error =
+      case assert_full_scope(actual, expected) do
+        {:error, reason} -> reason
+        :ok -> if length(actual) >= min, do: nil, else: "below pinned minimum"
+      end
+
+    %{label: label, actual: actual, expected: expected, min: min, error: error}
+  end
+
+  defp expected_scope("test-files", root), do: fold(Path.join(root, "test"), ~c"\\.exs$")
+
+  defp expected_scope("deferred-items", root),
+    do: fold(Path.join(root, ".planning"), ~c"(^|/)deferred-items\\.md$")
+
+  defp expected_scope("todos", root), do: depth_one(Path.join(root, ".planning/todos"))
+  defp expected_scope("seeds", root), do: depth_one(Path.join(root, ".planning/seeds"))
+
+  # Recursive walk, dot-directories included, regular files only. A missing
+  # directory yields an empty list.
+  defp fold(dir, regex) do
+    if File.dir?(dir) do
+      dir
+      |> String.to_charlist()
+      |> :filelib.fold_files(regex, true, fn file, acc -> [List.to_string(file) | acc] end, [])
+      |> Enum.sort()
+    else
+      []
+    end
+  end
+
+  # The planning globs are depth 1: a recursive walk would count todos/pending and
+  # todos/completed, which the glob cannot see.
+  defp depth_one(dir) do
+    case File.ls(dir) do
+      {:ok, names} ->
+        names
+        |> Enum.filter(&String.ends_with?(&1, ".md"))
+        |> Enum.map(&Path.join(dir, &1))
+        |> Enum.filter(&File.regular?/1)
+        |> Enum.sort()
+
+      {:error, _} ->
+        []
+    end
+  end
+
+  # An Elixir copy of assertFullScope from scripts/ci_monitor.cjs, by design (no
+  # shared module, no Node). The JS lets extras in `actual` pass; the File.regular?
+  # filter on `actual` is what closes that loophole here. The vacuous Enum.all? over
+  # an empty actual is intentional: it makes an empty actual a proper subset.
+  defp assert_full_scope(actual, expected) do
+    cond do
+      expected == [] ->
+        {:error, "expected scope is empty"}
+
+      not Enum.all?(expected, &(&1 in actual)) ->
+        {:error, "actual scope is a proper subset of expected scope"}
+
+      true ->
+        :ok
     end
   end
 
   # ── Check 1: a mutation control must prove its mutation changed something ──
 
-  defp mutation_controls(root) do
-    root
-    |> Path.join("test/**/*.exs")
-    |> Path.wildcard()
-    |> Enum.sort()
-    |> Enum.flat_map(&mutation_findings(&1, root))
+  defp mutation_controls(test_files, root) do
+    Enum.flat_map(test_files, &mutation_findings(&1, root))
   end
 
   defp mutation_findings(path, root) do
@@ -175,16 +305,8 @@ defmodule Crosswake.AbsenceIsNotSuccess do
 
   # ── Check 2: an open finding's test citation must resolve ──
 
-  defp stale_citations(root) do
-    [
-      Path.join(root, ".planning/todos/*.md"),
-      Path.join(root, ".planning/seeds/*.md"),
-      Path.join(root, ".planning/**/deferred-items.md")
-    ]
-    |> Enum.flat_map(&Path.wildcard/1)
-    |> Enum.uniq()
-    |> Enum.sort()
-    |> Enum.flat_map(&citation_findings(&1, root))
+  defp stale_citations(planning_files, root) do
+    Enum.flat_map(planning_files, &citation_findings(&1, root))
   end
 
   defp citation_findings(path, root) do
@@ -201,7 +323,9 @@ defmodule Crosswake.AbsenceIsNotSuccess do
         {cited_file, String.to_integer(cited_line), line_number}
       end)
     end)
-    |> Enum.reject(fn {cited_file, cited_line, _} -> citation_resolves?(root, cited_file, cited_line) end)
+    |> Enum.reject(fn {cited_file, cited_line, _} ->
+      citation_resolves?(root, cited_file, cited_line)
+    end)
     |> Enum.map(fn {cited_file, cited_line, line_number} ->
       {"absence.open_finding_citation_resolves",
        "#{relative(path, root)}:#{line_number} → #{cited_file}:#{cited_line}",
@@ -325,10 +449,29 @@ defmodule Crosswake.AbsenceIsNotSuccess do
   end
 end
 
-root =
-  case System.argv() do
-    ["--root", path | _] -> path
-    _ -> File.cwd!()
-  end
+usage_fail = fn message ->
+  IO.puts("[crosswake] FAIL: #{message}")
+  System.halt(2)
+end
 
-System.halt(Crosswake.AbsenceIsNotSuccess.run(root))
+{opts, rest, invalid} =
+  OptionParser.parse(System.argv(), strict: [root: :string, min_test_files: :integer])
+
+if invalid != [] do
+  {flag, _} = hd(invalid)
+  usage_fail.("unusable argument: #{flag} (expected --root PATH and --min-test-files N)")
+end
+
+if rest != [] do
+  usage_fail.(
+    "unknown argument: #{Enum.join(rest, " ")} (expected --root PATH and --min-test-files N)"
+  )
+end
+
+root = Keyword.get(opts, :root) || File.cwd!()
+expanded = Path.expand(root)
+
+unless File.exists?(expanded), do: usage_fail.("root does not exist: #{expanded}")
+unless File.dir?(expanded), do: usage_fail.("root is not a directory: #{expanded}")
+
+System.halt(Crosswake.AbsenceIsNotSuccess.run(expanded, Keyword.take(opts, [:min_test_files])))

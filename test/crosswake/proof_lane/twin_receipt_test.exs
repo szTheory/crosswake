@@ -107,7 +107,10 @@ defmodule Crosswake.ProofLane.TwinReceiptTest do
   test "mismatched frozen identities derive failed and unknown ones block TW-T10-02" do
     exp = expectations()
 
-    for join <- TwinReceipt.identity_joins() do
+    joins = TwinReceipt.identity_joins()
+    assert length(joins) == 7
+
+    for join <- joins do
       wrong = Map.put(observed(exp), join, String.duplicate("0", 64))
       assert {:ok, receipt} = TwinReceipt.derive(exp, wrong, all_observations())
       assert receipt.overall_status == :failed
@@ -283,8 +286,14 @@ defmodule Crosswake.ProofLane.TwinReceiptTest do
     assert length(decoded["groups"]) == 10
     assert Enum.map(decoded["groups"], & &1["id"]) == ~w(T01 T02 T03 T04 T05 T06 T07 T08 T09 T10)
 
+    # The roster is a compile-time constant on a different code path from project/2, but both
+    # derive from it: this catches a projection that drops sub-observations, not a roster change.
+    expected_counts = Map.new(TwinReceipt.roster(), &{&1.id, length(&1.sub_observations)})
+
     for g <- decoded["groups"] do
       assert g |> Map.keys() |> Enum.sort() == ["id", "status", "sub_observations"]
+      assert [_ | _] = g["sub_observations"]
+      assert length(g["sub_observations"]) == Map.fetch!(expected_counts, g["id"])
 
       for e <- g["sub_observations"] do
         assert e |> Map.keys() |> Enum.sort() == ["cause", "id", "outcome", "owner"]

@@ -413,6 +413,9 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
         Map.get(entry, :verification_method) == :device_verified
       end)
 
+    assert [_ | _] = ios_entries,
+           "a canonical entry with verification_method :device_verified must exist"
+
     for entry <- ios_entries do
       assert entry.verification_method == :device_verified,
              "expected :device_verified on entry #{inspect(entry.family)}"
@@ -456,6 +459,9 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
       |> Enum.filter(fn entry ->
         Map.get(entry, :verification_method) == :jvm_hermetic
       end)
+
+    assert [_ | _] = android_entries,
+           "a canonical entry with verification_method :jvm_hermetic must exist"
 
     for entry <- android_entries do
       assert entry.verification_method == :jvm_hermetic,

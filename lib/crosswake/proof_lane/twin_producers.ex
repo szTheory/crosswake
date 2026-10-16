@@ -1466,16 +1466,15 @@ defmodule Crosswake.ProofLane.TwinProducers do
     not (line == "" or String.starts_with?(line, "#") or String.trim_trailing(line, " ") == "")
   end
 
+  # Every lockfile in @lock_rels must digest. There is no stat pre-filter: a lockfile
+  # that is missing or unreadable must block, not shrink the identity to the other one.
   defp lock_digests(path, digest) do
-    results =
-      for rel <- @lock_rels, match?({:ok, _}, File.stat(Path.join(path, rel))) do
-        digest.(Path.join(path, rel))
-      end
+    results = for rel <- @lock_rels, do: digest.(Path.join(path, rel))
 
-    cond do
-      results == [] -> {:blocked, :identity_unknown}
-      Enum.all?(results, &match?({:ok, _}, &1)) -> {:ok, Enum.map(results, fn {:ok, d} -> d end)}
-      true -> {:blocked, :identity_unknown}
+    if results != [] and Enum.all?(results, &match?({:ok, _}, &1)) do
+      {:ok, Enum.map(results, fn {:ok, d} -> d end)}
+    else
+      {:blocked, :identity_unknown}
     end
   end
 
@@ -1595,7 +1594,9 @@ defmodule Crosswake.ProofLane.TwinProducers do
     steady = steady and tree1 == tree2 and tree1 == frozen.tree
     head = if(steady, do: head1)
     tree = if(steady, do: tree1)
-    locks = for rel <- @lock_rels, d = digest_or_nil(Path.join(path, rel)), do: d
+    # Both lockfiles or neither: one missing lockfile must not narrow the identity.
+    lock_parts = for rel <- @lock_rels, do: digest_or_nil(Path.join(path, rel))
+    locks = if Enum.all?(lock_parts, & &1), do: lock_parts
     tracked_manifest = digest_or_nil(Path.join(path, @manifest_rel))
     tracked_activation = digest_or_nil(Path.join(path, @activation_rel))
     tracked_media = digest_or_nil(Path.join(path, @media_rel))
@@ -1606,7 +1607,7 @@ defmodule Crosswake.ProofLane.TwinProducers do
 
     %{
       source: if(head && tree, do: TwinReceipt.identity_digest([head, tree])),
-      dependency_lock: if(locks != [], do: TwinReceipt.identity_digest(locks)),
+      dependency_lock: if(locks, do: TwinReceipt.identity_digest(locks)),
       generated_resources:
         if(Enum.all?(installed, & &1) && tracked_js,
           do: TwinReceipt.identity_digest(installed ++ [tracked_js])
@@ -1636,7 +1637,7 @@ defmodule Crosswake.ProofLane.TwinProducers do
             )
         ),
       backend_build:
-        if(live[:backend_build] && head && tree && locks != [],
+        if(live[:backend_build] && head && tree && locks,
           do:
             if(live[:backend_build] == frozen.backend_build,
               do: TwinReceipt.identity_digest([head, tree | locks]),

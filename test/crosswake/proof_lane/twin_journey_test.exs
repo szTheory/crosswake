@@ -159,4 +159,56 @@ defmodule Crosswake.ProofLane.TwinJourneyTest do
     assert source =~ "TwinProducers.checked_identities("
     refute source =~ "TwinProducers.observe_identities("
   end
+
+  # The source pin keeps the statement bare, the next test proves the dead-registry path
+  # neither raises nor changes the verdict. Changing either is the deferred item "a stop
+  # failure changes the run verdict"; reopen it on the next twin change that already alters
+  # the cause list or receipt (Phase 188 or later), or after any run that leaves a process
+  # behind.
+  test "the journey discards the stop_children result by design until a stop failure feeds the verdict" do
+    source = File.read!("lib/crosswake/proof_lane/twin_journey.ex")
+    assert source =~ ~r/^\s+TwinRuntime\.stop_children\(runtime\)\s*$/m
+    refute source =~ "= TwinRuntime.stop_children("
+    refute source =~ "case TwinRuntime.stop_children("
+  end
+
+  test "a journey whose registry is gone before finish keeps its verdict and does not raise", %{
+    root: root
+  } do
+    build = fn name ->
+      run_root = Path.join([root, name, "run"])
+      File.mkdir_p!(run_root)
+      {:ok, registry} = Agent.start(fn -> %{children: %{}, first_failure: nil} end)
+
+      %Crosswake.ProofLane.TwinRuntime{
+        run_id: "twin-test-" <> name,
+        run_root: run_root,
+        database_path: Path.join(root, "outside.db"),
+        origin: nil,
+        origin_port: nil,
+        origin_listener: nil,
+        candidate_path: root,
+        registry: registry
+      }
+    end
+
+    dead = build.("dead")
+    live = build.("live")
+    on_exit(fn -> if Process.alive?(live.registry), do: Agent.stop(live.registry) end)
+
+    # The database path is outside the run root, so start_backend refuses before it can run
+    # ecto.migrate or phx.server; on a host missing a tool, the tool lookup blocks first.
+    refute String.starts_with?(dead.database_path, dead.run_root <> "/")
+    refute String.starts_with?(live.database_path, live.run_root <> "/")
+
+    :ok = Agent.stop(dead.registry)
+
+    dead_result = TwinJourney.run(dead, %{}, [])
+    live_result = TwinJourney.run(live, %{}, [])
+
+    assert dead_result == {:blocked, :prerequisite_missing}
+    assert live_result == {:blocked, :prerequisite_missing}
+    assert dead_result == live_result
+    assert {:error, :registry_gone} = Crosswake.ProofLane.TwinRuntime.stop_children(dead)
+  end
 end

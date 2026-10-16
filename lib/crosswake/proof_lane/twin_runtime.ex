@@ -204,41 +204,65 @@ defmodule Crosswake.ProofLane.TwinRuntime do
   @doc "First recorded failure cause for this run, or nil."
   @spec first_failure(t()) :: atom() | nil
   def first_failure(%__MODULE__{registry: registry}) do
-    if Process.alive?(registry), do: Agent.get(registry, & &1.first_failure), else: nil
+    Agent.get(registry, & &1.first_failure)
+  catch
+    :exit, _ -> nil
   end
 
   # A registry already released by stop_all/1 keeps no further causes; the caller still
   # carries the cause into the receipt, so the first written result is never lost.
   @spec record_failure(t(), atom()) :: :ok
   def record_failure(%__MODULE__{registry: registry}, cause) do
-    if Process.alive?(registry) do
-      Agent.update(registry, fn state ->
-        %{state | first_failure: state.first_failure || TwinReceipt.safe_cause(cause)}
-      end)
-    else
-      :ok
-    end
+    Agent.update(registry, fn state ->
+      %{state | first_failure: state.first_failure || TwinReceipt.safe_cause(cause)}
+    end)
+  catch
+    :exit, _ -> :ok
   end
 
   @doc """
   Terminates and reaps every tracked child and verifies each is gone, keeping the run
   registry so the first failure stays readable until stop_all/1 releases it.
   """
-  @spec stop_children(t()) :: :ok | {:error, :child_still_alive}
+  @spec stop_children(t()) :: :ok | {:error, :child_still_alive | :registry_gone}
   def stop_children(%__MODULE__{registry: registry} = runtime) do
-    children =
-      if Process.alive?(registry), do: Agent.get(registry, &Map.values(&1.children)), else: []
+    case tracked_children(registry) do
+      {:ok, children} ->
+        results = Enum.map(children, &terminate(runtime, &1))
+        if Enum.all?(results, &(&1 == :ok)), do: :ok, else: {:error, :child_still_alive}
 
-    results = Enum.map(children, &terminate(runtime, &1))
-    if Enum.all?(results, &(&1 == :ok)), do: :ok, else: {:error, :child_still_alive}
+      # The registry is the only tracker of the OS process groups this run started, so a
+      # gone registry can mean orphaned children; reporting :ok would be a false success.
+      :gone ->
+        {:error, :registry_gone}
+    end
   end
 
-  @doc "Terminates and reaps every tracked child, verifies each is gone, and closes the origin."
-  @spec stop_all(t()) :: :ok | {:error, :child_still_alive}
+  # Read inside try/catch rather than checking Process.alive? first, so a registry that
+  # dies between the check and the read cannot raise. A call timeout is also reported as
+  # gone, which is accepted.
+  defp tracked_children(registry) do
+    {:ok, Agent.get(registry, &Map.values(&1.children))}
+  catch
+    :exit, _ -> :gone
+  end
+
+  @doc """
+  Terminates and reaps every tracked child, verifies each is gone, and closes the origin.
+  The origin and the registry are always released; a registry that was already gone is
+  reported as `{:error, :registry_gone}`.
+  """
+  @spec stop_all(t()) :: :ok | {:error, :child_still_alive | :registry_gone}
   def stop_all(%__MODULE__{registry: registry} = runtime) do
     result = stop_children(runtime)
     if runtime.origin_listener, do: :gen_tcp.close(runtime.origin_listener)
-    if Process.alive?(registry), do: Agent.stop(registry)
+
+    try do
+      Agent.stop(registry)
+    catch
+      :exit, _ -> :ok
+    end
+
     result
   end
 
@@ -285,8 +309,9 @@ defmodule Crosswake.ProofLane.TwinRuntime do
   end
 
   defp mark_exited(%__MODULE__{registry: registry}, name) do
-    if Process.alive?(registry),
-      do: Agent.update(registry, &update_in(&1, [:children], fn c -> Map.delete(c, name) end))
+    Agent.update(registry, &update_in(&1, [:children], fn c -> Map.delete(c, name) end))
+  catch
+    :exit, _ -> :ok
   end
 
   defp signal_group(os_pid, signal) do

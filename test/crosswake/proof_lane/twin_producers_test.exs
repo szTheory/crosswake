@@ -618,6 +618,76 @@ defmodule Crosswake.ProofLane.TwinProducersTest do
     end
   end
 
+  describe "both lockfiles are part of the identity" do
+    setup :repo_fixture
+
+    # A committed tree that never contained `rel`: delete it and amend the one commit,
+    # so the tree is clean and the clean-tree check passes before the lock check runs.
+    defp commit_without(ctx, rel) do
+      File.rm!(Path.join(ctx.dir, rel))
+      git(ctx.dir, ["add", "-A"])
+      git(ctx.dir, ["commit", "-q", "--amend", "-m", "fixture"])
+      {head, 0} = git(ctx.dir, ["rev-parse", "HEAD"])
+      {tree, 0} = git(ctx.dir, ["rev-parse", "HEAD^{tree}"])
+      assert TwinProducers.clean_tree(ctx.dir) == :ok
+      %{ctx.runtime | candidate_head: head, candidate_tree: tree}
+    end
+
+    test "a source gate on a committed tree that never had the host lockfile blocks with identity_unknown",
+         ctx do
+      target = commit_without(ctx, "examples/phoenix_host/mix.lock")
+
+      assert TwinProducers.source_gate(target, ctx.identity.(%{})) ==
+               {:blocked, :identity_unknown}
+    end
+
+    test "a source gate on a committed tree that never had the root lockfile blocks with identity_unknown",
+         ctx do
+      target = commit_without(ctx, "mix.lock")
+
+      assert TwinProducers.source_gate(target, ctx.identity.(%{})) ==
+               {:blocked, :identity_unknown}
+    end
+
+    # A real chmod 000 lockfile makes git report the tree dirty first (source_dirty), so
+    # the lock check is never reached; the digest seam is how an unreadable lockfile is
+    # exercised on a tree that is clean.
+    test "an unreadable lockfile blocks the source gate with identity_unknown", ctx do
+      host_lock = Path.join(ctx.dir, "examples/phoenix_host/mix.lock")
+      assert TwinProducers.clean_tree(ctx.dir) == :ok
+
+      digest = fn
+        ^host_lock -> {:error, :eacces}
+        path -> TwinProducers.file_digest(path)
+      end
+
+      assert TwinProducers.source_gate(ctx.runtime, ctx.identity.(%{}), file_digest: digest) ==
+               {:blocked, :identity_unknown}
+    end
+
+    test "both lockfiles present passes the source gate", ctx do
+      assert {:ok, %{locks: [_, _]}} = TwinProducers.source_gate(ctx.runtime, ctx.identity.(%{}))
+    end
+
+    test "observation drops dependency_lock and backend_build unless both lockfiles digest",
+         ctx do
+      {:ok, frozen} =
+        TwinProducers.freeze(ctx.runtime, ctx.identity.(%{}),
+          backend_digest: fn -> {:ok, String.duplicate("9", 64)} end
+        )
+
+      baseline = TwinProducers.observe_identities(frozen, live(frozen))
+      assert Map.has_key?(baseline, :dependency_lock)
+      assert Map.has_key?(baseline, :backend_build)
+
+      File.rm!(Path.join(ctx.dir, "examples/phoenix_host/mix.lock"))
+      observed = TwinProducers.observe_identities(frozen, live(frozen))
+
+      refute Map.has_key?(observed, :dependency_lock)
+      refute Map.has_key?(observed, :backend_build)
+    end
+  end
+
   describe "source cleanliness" do
     setup :repo_fixture
 

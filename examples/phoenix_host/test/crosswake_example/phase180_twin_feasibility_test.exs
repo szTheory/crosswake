@@ -44,6 +44,8 @@ defmodule CrosswakeExample.Phase180TwinFeasibilityTest do
   test "G6 gate: no compiled route declares a host capability" do
     manifest = manifest_map()
 
+    assert map_size(manifest["routes"]) > 0
+
     for {_id, route} <- manifest["routes"] do
       refute Enum.any?(route["capabilities"] || [], &String.starts_with?(&1, "host."))
     end

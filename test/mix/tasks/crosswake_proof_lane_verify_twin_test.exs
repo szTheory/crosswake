@@ -23,6 +23,8 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
     candidate = Path.join(base, "candidate")
     File.mkdir_p!(candidate)
     File.write!(Path.join(candidate, "mix.lock"), "%{}\n")
+    File.mkdir_p!(Path.join(candidate, "examples/phoenix_host"))
+    File.write!(Path.join(candidate, "examples/phoenix_host/mix.lock"), "%{}\n")
     run_root = Path.join(base, "run")
     File.mkdir!(run_root)
     File.chmod!(run_root, 0o700)
@@ -317,6 +319,25 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
     assert File.read!(report) == bytes
   end
 
+  test "a registry gone before the command's stop_all leaves a passing verdict unchanged", ctx do
+    gone = fn runtime, expectations ->
+      :ok = Agent.stop(runtime.registry)
+      full_producers().(runtime, expectations)
+    end
+
+    assert {0, lines} = VerifyTwin.execute(args(ctx, record(ctx)), producers: gone)
+
+    assert [
+             "result: passed (exit 0)",
+             "first cause: none",
+             "report: " <> report,
+             "next action: " <> _
+           ] = lines
+
+    assert report == Path.join(ctx.run_root, "receipt.json")
+    assert File.exists?(report)
+  end
+
   test "the real journey path requires --identity", ctx do
     assert_raise Mix.Error, "verify_twin.identity_required", fn ->
       VerifyTwin.execute(args(ctx, record(ctx)), [])
@@ -520,6 +541,47 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
              )
   end
 
+  describe "the freeze needs both lockfiles" do
+    test "a candidate missing examples/phoenix_host/mix.lock blocks the freeze with identity_unknown",
+         ctx do
+      File.rm!(Path.join(ctx.candidate, "examples/phoenix_host/mix.lock"))
+
+      assert {2, [_, "first cause: identity_unknown", report, _]} =
+               VerifyTwin.execute(args(ctx, record(ctx)), producers: full_producers())
+
+      assert report == "report: " <> Path.join(ctx.run_root, "receipt.json")
+      assert File.regular?(Path.join(ctx.run_root, "receipt.json"))
+    end
+
+    test "a candidate missing the root mix.lock blocks the freeze with identity_unknown", ctx do
+      File.rm!(Path.join(ctx.candidate, "mix.lock"))
+
+      assert {2, [_, "first cause: identity_unknown", report, _]} =
+               VerifyTwin.execute(args(ctx, record(ctx)), producers: full_producers())
+
+      assert report == "report: " <> Path.join(ctx.run_root, "receipt.json")
+      assert File.regular?(Path.join(ctx.run_root, "receipt.json"))
+    end
+
+    test "an unreadable lockfile blocks the freeze with identity_unknown", ctx do
+      lock = Path.join(ctx.candidate, "examples/phoenix_host/mix.lock")
+
+      # Root can read any file, so a mode 000 file would not be unreadable.
+      if System.cmd("id", ["-u"]) |> elem(0) |> String.trim() == "0" do
+        :ok
+      else
+        File.chmod!(lock, 0o000)
+        on_exit(fn -> File.chmod(lock, 0o600) end)
+
+        assert {2, [_, "first cause: identity_unknown", report, _]} =
+                 VerifyTwin.execute(args(ctx, record(ctx)), producers: full_producers())
+
+        assert report == "report: " <> Path.join(ctx.run_root, "receipt.json")
+        assert File.regular?(Path.join(ctx.run_root, "receipt.json"))
+      end
+    end
+  end
+
   defp git_in(dir, args) do
     home = dir <> "-home"
     File.mkdir_p!(home)
@@ -561,7 +623,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
 
   test "a dirty git candidate reports the typed count in plain language and leaks no path", ctx do
     git_in(ctx.candidate, ["init", "-q"])
-    git_in(ctx.candidate, ["add", "mix.lock"])
+    git_in(ctx.candidate, ["add", "mix.lock", "examples/phoenix_host/mix.lock"])
     git_in(ctx.candidate, ["commit", "-q", "-m", "fixture"])
     marker = "zz-leak-marker-" <> Base.encode16(:crypto.strong_rand_bytes(4), case: :lower)
     File.write!(Path.join(ctx.candidate, marker), "x")
@@ -578,6 +640,11 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
            ]
 
     assert blocked_pairs(ctx) |> Enum.uniq() == [{1, :source_dirty}]
+
+    # Floor on lines, not on the iterated list: the loop below iterates lines plus two
+    # File.read! texts, so it is never empty. What can shrink silently is lines; fewer
+    # printed lines would make the refutes check fewer of the places a leak can appear.
+    assert length(lines) == 4
 
     for text <-
           lines ++
@@ -603,7 +670,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
 
   test "a flag-hidden edit reports separate counts and measure two", ctx do
     git_in(ctx.candidate, ["init", "-q"])
-    git_in(ctx.candidate, ["add", "mix.lock"])
+    git_in(ctx.candidate, ["add", "mix.lock", "examples/phoenix_host/mix.lock"])
     git_in(ctx.candidate, ["commit", "-q", "-m", "fixture"])
     git_in(ctx.candidate, ["update-index", "--assume-unchanged", "mix.lock"])
     File.write!(Path.join(ctx.candidate, "mix.lock"), "%{changed: true}\n")
@@ -623,7 +690,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
 
   test "no source_dirty output carries the candidate path or home directory", ctx do
     git_in(ctx.candidate, ["init", "-q"])
-    git_in(ctx.candidate, ["add", "mix.lock"])
+    git_in(ctx.candidate, ["add", "mix.lock", "examples/phoenix_host/mix.lock"])
     git_in(ctx.candidate, ["commit", "-q", "-m", "fixture"])
     marker = "zz-leak-marker-" <> Base.encode16(:crypto.strong_rand_bytes(4), case: :lower)
     File.write!(Path.join(ctx.candidate, marker), "x")
@@ -636,6 +703,10 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
           File.read!(Path.join(ctx.run_root, "receipt.json")),
           File.read!(Path.join(ctx.run_root, "twin-result.json"))
         ]
+
+    # Same reasoning as the floor in the typed-count test: the loop iterates lines plus
+    # two file reads (never empty), so the floor pins lines to the four the command prints.
+    assert length(lines) == 4
 
     for text <- texts, secret <- [ctx.candidate, System.user_home!(), marker] do
       refute text =~ secret

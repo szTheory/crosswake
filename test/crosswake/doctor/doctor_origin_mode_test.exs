@@ -357,9 +357,13 @@ defmodule Crosswake.Doctor.OriginModeTest do
           refute rendered =~ value
         end
 
-        for finding <-
-              origin_findings(report) ++
-                Enum.filter(report.findings, &String.starts_with?(&1.code, "ios_host.")) do
+        findings =
+          origin_findings(report) ++
+            Enum.filter(report.findings, &String.starts_with?(&1.code, "ios_host."))
+
+        assert [_ | _] = findings
+
+        for finding <- findings do
           text = finding.message <> finding.hint <> inspect(finding.details)
           for value <- forbidden, do: refute(text =~ value)
         end
