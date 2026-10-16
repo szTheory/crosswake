@@ -663,6 +663,104 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
     assert TwinProducers.clean_tree(ctx.dir) == :ok
   end
 
+  defp committed_deps_rule!(ctx) do
+    File.write!(Path.join(ctx.dir, ".gitignore"), "/deps/\n")
+    TwinGitFixtures.git!(ctx.dir, ["add", ".gitignore"])
+    TwinGitFixtures.git!(ctx.dir, ["commit", "-q", "-m", "ignore deps"])
+  end
+
+  defp hidden_folder!(ctx, name) do
+    dir = Path.join(ctx.dir, name)
+    File.mkdir_p!(dir)
+    File.write!(Path.join(dir, ".gitignore"), "*\n")
+    File.write!(Path.join(dir, "evil.ex"), "defmodule Evil do\nend\n")
+  end
+
+  test "a top-level folder named :deps cannot borrow a committed /deps/ rule", ctx do
+    committed_deps_rule!(ctx)
+    hidden_folder!(ctx, ":deps")
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 2, flagged: 0, excludes: 0}}
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+  end
+
+  test "a top-level folder named :(top)deps cannot borrow a committed /deps/ rule", ctx do
+    committed_deps_rule!(ctx)
+    hidden_folder!(ctx, ":(top)deps")
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 2, flagged: 0, excludes: 0}}
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+  end
+
+  test "a folder named : holding deps cannot borrow a committed /deps/ rule", ctx do
+    committed_deps_rule!(ctx)
+    hidden_folder!(ctx, ":/deps")
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 2, flagged: 0, excludes: 0}}
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+  end
+
+  test "a top-level folder named :!deps is judged as written", ctx do
+    committed_deps_rule!(ctx)
+    hidden_folder!(ctx, ":!deps")
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 2, flagged: 0, excludes: 0}}
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+  end
+
+  test "folders whose names hold glob characters are judged as written", ctx do
+    committed_deps_rule!(ctx)
+    for name <- ["[d]eps", "d*ps", "de?s"], do: hidden_folder!(ctx, name)
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 6, flagged: 0, excludes: 0}}
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+  end
+
+  defp write_exclude!(ctx, text) do
+    exclude = Path.join(ctx.dir, ".git/info/exclude")
+    File.mkdir_p!(Path.dirname(exclude))
+    File.write!(exclude, text)
+  end
+
+  test "an info/exclude line that starts with spaces before # is a live rule", ctx do
+    write_exclude!(ctx, "  #*\n")
+    File.write!(Path.join(ctx.dir, "  #evil.ex"), "defmodule Evil do\nend\n")
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 1, flagged: 0, excludes: 1}}
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+  end
+
+  test "an info/exclude line holding only a tab is a live rule", ctx do
+    write_exclude!(ctx, "\t\n")
+    File.mkdir_p!(Path.join(ctx.dir, "\t"))
+    File.write!(Path.join(ctx.dir, "\t/evil.ex"), "defmodule Evil do\nend\n")
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 1, flagged: 0, excludes: 1}}
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+  end
+
+  test "a file hidden by an info/exclude rule counts as a change as well as the rule", ctx do
+    write_exclude!(ctx, "# comment\nsecret.txt\n")
+    File.write!(Path.join(ctx.dir, "secret.txt"), "synthetic")
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 1, flagged: 0, excludes: 1}}
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+  end
+
+  test "only an empty, first-byte # or space-only info/exclude line is inactive", ctx do
+    write_exclude!(ctx, "# comment\n\n   \n\\#lit\n")
+
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 0, flagged: 0, excludes: 1}}
+  end
+
   # Runs real git, then lets `rewrite` change the check-ignore output (a list of NUL fields).
   defp rewriting(rewrite) do
     {:ok, ran} = Agent.start_link(fn -> 0 end)
@@ -745,6 +843,56 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
 
     assert length(listings) == 1
     assert Enum.filter(hd(listings), &(&1 == "--directory")) == []
+  end
+
+  test "a check-ignore record that does not echo the exact sent text makes the probe unavailable",
+       ctx do
+    committed_log_rule!(ctx)
+    File.write!(Path.join(ctx.dir, "x.log"), "noise")
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+
+    {ran, stripped} =
+      rewriting(fn fields ->
+        fields
+        |> Enum.chunk_every(4)
+        |> Enum.flat_map(fn [a, b, c, path] ->
+          [a, b, c, String.replace_prefix(path, "./", "")]
+        end)
+      end)
+
+    assert TwinProducers.probe_source(ctx.dir, git_cmd: stripped) == :unavailable
+    assert Agent.get(ran, & &1) == 1
+  end
+
+  test "check-ignore is sent each listed path as ./ and the entry, in a file only its owner can read",
+       ctx do
+    committed_log_rule!(ctx)
+    File.write!(Path.join(ctx.dir, "a.log"), "noise")
+    File.write!(Path.join(ctx.dir, "b.log"), "noise")
+    {:ok, seen} = Agent.start_link(fn -> nil end)
+
+    git_cmd = fn cmd, args, opts ->
+      if "check-ignore" in args do
+        stdin_path = Enum.at(args, 3)
+        {:ok, %{mode: mode}} = File.stat(stdin_path)
+
+        Agent.update(seen, fn _ ->
+          {stdin_path, File.read!(stdin_path), Bitwise.band(mode, 0o777)}
+        end)
+      end
+
+      System.cmd(cmd, args, opts)
+    end
+
+    assert TwinProducers.probe_source(ctx.dir, git_cmd: git_cmd) ==
+             {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+
+    {stdin_path, bytes, mode} = Agent.get(seen, & &1)
+    records = bytes |> String.split(<<0>>) |> Enum.drop(-1) |> Enum.sort()
+    assert String.ends_with?(bytes, <<0>>)
+    assert records == ["./a.log", "./b.log"]
+    assert mode == 0o600
+    refute File.exists?(stdin_path)
   end
 
   test "check-ignore reads its paths from a private file outside the candidate through the shared builder",

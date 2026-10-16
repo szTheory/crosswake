@@ -674,7 +674,10 @@ defmodule Crosswake.ProofLane.TwinProducers do
   (a one-arity digest function, a test seam).
 
   It writes nothing in the candidate or the run root. The probe creates a private temporary
-  index in the system temporary directory, outside both, and removes it before returning. A
+  index in the system temporary directory, outside both, and removes it before returning.
+  Beside the index, a file holds the ignored path names the probe asks git about (names
+  only, never contents); it is readable only by its owner and is removed with the index
+  directory, and like the index it can be left behind only if the VM is killed. A
   lock or script file that cannot be read or digested blocks as `:identity_unknown`; it
   never raises.
   """
@@ -792,8 +795,9 @@ defmodule Crosswake.ProofLane.TwinProducers do
 
   # stderr is discarded by the shell at the file-descriptor level; the candidate path
   # is only ever an argv element, never part of the script text. `mode` is `:pinned`
-  # (the pins plus `-C path`) or `:bare` (the version call only, no pins, no `-C`);
-  # `extra_env` may only add GIT_INDEX_FILE.
+  # (the pins plus `-C path`), `:pinned_stdin` (the same argv, with stdin read from a file
+  # given as the first positional argument; only for `check-ignore --stdin -z`) or `:bare`
+  # (the version call only, no pins, no `-C`); `extra_env` may only add GIT_INDEX_FILE.
   defp git_invocation(path, args, {:pinned_stdin, extra_env, stdin_path}),
     do: git_invocation(path, args, :pinned_stdin, extra_env, stdin_path)
 
@@ -906,8 +910,10 @@ defmodule Crosswake.ProofLane.TwinProducers do
   answers `{:ok, counts}` and the sum is within the receipt measure bound, else `nil`
   (refused, unavailable or out of bounds; `nil` means unknown, never clean). Counts are
   findings, not distinct files: a path can count once as modified and once as flagged, and
-  a staged rename is two findings. An uncommitted `.gitignore` that hides untracked
-  files adds one finding per hidden path; committed ignore rules add none (deferred limit).
+  a staged rename is two findings. Every ignored untracked path whose deciding rule is not
+  a `.gitignore` committed in `HEAD` adds one finding, including paths hidden by
+  `.git/info/exclude` (whose rules are also counted) and paths with no deciding rule;
+  committed `.gitignore` rules add none (deferred limit).
   """
   @spec dirty_counts(Path.t(), keyword()) ::
           %{modified: non_neg_integer(), flagged: non_neg_integer(), excludes: non_neg_integer()}
@@ -1005,12 +1011,12 @@ defmodule Crosswake.ProofLane.TwinProducers do
   contained temporary directory (so index flags and stat caches cannot hide a change);
   `modified` counts the status records of that comparison plus every ignored untracked
   path that an ignore rule hides when that rule is not in a `.gitignore` committed in `HEAD`
-  and not in `.git/info/exclude` (each hidden file counts, whatever the rule file's folder is
-  called; paths ignored by a committed `.gitignore` are not counted, which is the deferred,
-  disclosed limit), `flagged` counts the unique
+  (only such a `.gitignore` is trusted; any other rule, including `.git/info/exclude`, counts
+  each file it hides, whatever the folder or file is called; paths ignored by a committed
+  `.gitignore` are not counted, which is the deferred, disclosed limit), `flagged` counts the unique
   paths whose entry in the real index carries a tag other than `H` (assume-unchanged,
-  skip-worktree, unmerged and the rest), and `excludes` counts active rules in
-  `.git/info/exclude`.
+  skip-worktree, unmerged and the rest), and `excludes` counts the `.git/info/exclude`
+  lines that git applies.
 
   Returns `{:ok, %{modified:, flagged:, excludes:}}`, `{:refused, :hiding_config |
   :not_toplevel}` for a configuration that can redirect or blind git, or `:unavailable`
@@ -1094,7 +1100,7 @@ defmodule Crosswake.ProofLane.TwinProducers do
     with {out, 0} <- run_git(path, ["rev-parse", "--git-path", "info/attributes"], opts),
          file = Path.expand(String.trim(out), path),
          {:ok, lines} <- read_exclude(file) do
-      if Enum.any?(lines, &active_rule?/1), do: {:refused, :hiding_config}, else: :ok
+      if Enum.any?(lines, &attributes_line_active?/1), do: {:refused, :hiding_config}, else: :ok
     else
       _ -> :unavailable
     end
@@ -1197,9 +1203,9 @@ defmodule Crosswake.ProofLane.TwinProducers do
   # WR-01 / D-35: an untracked path that a rule not committed in HEAD ignores is invisible
   # to status, so it is counted here as one modified finding. The ignored listing is never
   # collapsed into directories, so every entry is judged on its own. Rules from a
-  # `.gitignore` tracked in HEAD are the deferred, disclosed limit and stay uncounted; rules
-  # from `.git/info/exclude` are covered by the excludes count (D-03). Anything else,
-  # including a path with no deciding rule, counts.
+  # `.gitignore` tracked in HEAD are the deferred, disclosed limit and stay uncounted. Anything
+  # else counts: rules from `.git/info/exclude` count every file they hide and are also counted
+  # as rules (D-03, D-38), and so does a path with no deciding rule.
   defp hidden_by_uncommitted_rules(path, env, committed, opts) do
     with {out, 0} <-
            run_git(
@@ -1209,15 +1215,14 @@ defmodule Crosswake.ProofLane.TwinProducers do
              {:pinned, env}
            ),
          {:ok, listed} <- parse_ignored_listing(out),
-         {:ok, sources} <- ignore_sources(path, env, listed, opts),
-         {:ok, exclude} <- exclude_source(path, env, listed, opts) do
+         {:ok, sources} <- ignore_sources(path, env, listed, opts) do
       tracked = MapSet.new(committed, fn {_tag, entry} -> entry end)
 
       count =
         listed
         |> Enum.zip(sources)
         |> Enum.count(fn {_entry, source} ->
-          not trusted_source?(source, exclude, tracked, path)
+          not trusted_source?(source, tracked)
         end)
 
       {:ok, count}
@@ -1244,9 +1249,10 @@ defmodule Crosswake.ProofLane.TwinProducers do
   # git requires --stdin for -z.
   defp ignore_sources(path, env, listed, opts) do
     stdin_path = Path.join(Path.dirname(Map.fetch!(env, "GIT_INDEX_FILE")), "check-ignore.in")
-    payload = Enum.map(listed, &(&1 <> <<0>>))
+    payload = Enum.map(listed, &("./" <> &1 <> <<0>>))
 
     with :ok <- File.write(stdin_path, payload, [:write, :exclusive]),
+         :ok <- File.chmod(stdin_path, 0o600),
          {out, status} when status in [0, 1] <-
            run_git(
              path,
@@ -1261,9 +1267,10 @@ defmodule Crosswake.ProofLane.TwinProducers do
   end
 
   # `<source> NUL <line> NUL <pattern> NUL <path> NUL` per sent entry. Split only on NUL;
-  # no field is ever split on a colon or unquoted. Two separate checks: framing (exactly
-  # four fields per sent entry), then path binding (each record names the entry sent at
-  # that position).
+  # no field is ever split on a colon or unquoted. Paths are sent as `./` plus the entry
+  # (D-37) so git never reads a leading colon as pathspec magic, and each record must echo
+  # that exact sent text. Two separate checks: framing (exactly four fields per sent
+  # entry), then path binding (each record names the text sent at that position).
   defp parse_ignore_sources(out, listed) do
     fields = out |> String.split(<<0>>) |> Enum.drop(-1)
 
@@ -1281,29 +1288,19 @@ defmodule Crosswake.ProofLane.TwinProducers do
 
   defp bound?(pairs) do
     Enum.reduce(pairs, true, fn {entry, [source, line, _pattern, recorded]}, ok ->
-      ok and recorded == entry and line_matches_source?(source, line)
+      ok and recorded == "./" <> entry and line_matches_source?(source, line)
     end)
   end
 
   defp line_matches_source?("", line), do: line == ""
   defp line_matches_source?(_source, line), do: line =~ ~r/\A[0-9]+\z/
 
-  # The only rule file trusted besides a tracked `.gitignore`: this repository's
-  # info/exclude, found by asking git, compared after expansion against the candidate.
-  defp exclude_source(_path, _env, [], _opts), do: {:ok, nil}
+  # The only trusted deciding source is a `.gitignore` that is an exact entry of the fresh
+  # index built from HEAD (D-38); an empty source and every other source count.
+  defp trusted_source?("", _tracked), do: false
 
-  defp exclude_source(path, env, _listed, opts) do
-    case run_git(path, ["rev-parse", "--git-path", "info/exclude"], opts, {:pinned, env}) do
-      {out, 0} when out != "" -> {:ok, Path.expand(String.trim(out), path)}
-      _ -> :error
-    end
-  end
-
-  defp trusted_source?("", _exclude, _tracked, _path), do: false
-
-  defp trusted_source?(source, exclude, tracked, path) do
-    Path.expand(source, path) == exclude or
-      (Path.basename(source) == ".gitignore" and MapSet.member?(tracked, source))
+  defp trusted_source?(source, tracked) do
+    Path.basename(source) == ".gitignore" and MapSet.member?(tracked, source)
   end
 
   # Fresh-index status has no staged side, so a record is `<X> <Y> <space> <path>` with
@@ -1404,12 +1401,12 @@ defmodule Crosswake.ProofLane.TwinProducers do
   end
 
   # D-03: active rules in `.git/info/exclude` hide untracked paths from every status, so
-  # their count is its own signal.
+  # their count is its own signal. Lines are read as git reads them (D-38).
   defp exclude_rules(path, opts) do
     with {out, 0} <- run_git(path, ["rev-parse", "--git-path", "info/exclude"], opts),
          file = Path.expand(String.trim(out), path),
          {:ok, lines} <- read_exclude(file) do
-      {:ok, Enum.count(lines, &active_rule?/1)}
+      {:ok, Enum.count(lines, &exclude_line_active?/1)}
     else
       _ -> :error
     end
@@ -1423,9 +1420,19 @@ defmodule Crosswake.ProofLane.TwinProducers do
     end
   end
 
-  defp active_rule?(line) do
+  # info/attributes: git's attribute reader skips leading blanks, so trimming is right here.
+  defp attributes_line_active?(line) do
     trimmed = String.trim(line)
     trimmed != "" and not String.starts_with?(trimmed, "#")
+  end
+
+  # info/exclude (D-38): after one trailing CR is removed, a line is inactive only when it is
+  # empty, starts with `#`, or holds only spaces. Leading spaces, tabs and other whitespace
+  # are significant to git, so they are never trimmed.
+  defp exclude_line_active?(line) do
+    line = String.replace_suffix(line, "\r", "")
+
+    not (line == "" or String.starts_with?(line, "#") or String.trim_trailing(line, " ") == "")
   end
 
   defp lock_digests(path, digest) do

@@ -204,6 +204,53 @@ defmodule Mix.Tasks.Crosswake.ProofLane.TwinPreflightTest do
     unchanged!(ctx, before_snapshot)
   end
 
+  test "a top-level folder named :deps blocks the preflight and nothing changes", ctx do
+    File.write!(Path.join(ctx.dir, ".gitignore"), "/deps/\n")
+    TwinGitFixtures.git!(ctx.dir, ["add", ".gitignore"])
+    TwinGitFixtures.git!(ctx.dir, ["commit", "-q", "-m", "ignore deps"])
+
+    rec =
+      record(ctx, %{
+        expected_head: TwinGitFixtures.git!(ctx.dir, ["rev-parse", "HEAD"]),
+        expected_tree: TwinGitFixtures.git!(ctx.dir, ["rev-parse", "HEAD^{tree}"])
+      })
+
+    dir = Path.join(ctx.dir, ":deps")
+    File.mkdir_p!(dir)
+    File.write!(Path.join(dir, ".gitignore"), "*\n")
+    File.write!(Path.join(dir, "evil.ex"), "defmodule Evil do\nend\n")
+    before_snapshot = snapshot(ctx)
+
+    assert {2,
+            [
+              "result: blocked",
+              "first cause: source_dirty",
+              @report,
+              "next action: The candidate has 2 changed or untracked files. Commit or remove the changes, then write a new prepared record and run into a new run root."
+            ]} == Task.execute(args(ctx, rec), [])
+
+    unchanged!(ctx, before_snapshot)
+  end
+
+  test "an info/exclude line that starts with spaces blocks the preflight and nothing changes",
+       ctx do
+    exclude = Path.join(ctx.dir, ".git/info/exclude")
+    File.mkdir_p!(Path.dirname(exclude))
+    File.write!(exclude, "  #*\n")
+    File.write!(Path.join(ctx.dir, "  #evil.ex"), "defmodule Evil do\nend\n")
+    before_snapshot = snapshot(ctx)
+
+    assert {2,
+            [
+              "result: blocked",
+              "first cause: source_dirty",
+              @report,
+              "next action: The candidate has 1 changed or untracked file; and 1 local ignore rule in .git/info/exclude. Commit or remove the changes; remove the ignore rules from .git/info/exclude, then write a new prepared record and run into a new run root."
+            ]} == Task.execute(args(ctx), [])
+
+    unchanged!(ctx, before_snapshot)
+  end
+
   test "a reused run root is blocked and nothing changes", ctx do
     receipt = Path.join(ctx.root, "receipt.json")
     File.write!(receipt, "{\"kept\":true}")
