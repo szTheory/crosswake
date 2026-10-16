@@ -186,6 +186,24 @@ defmodule Mix.Tasks.Crosswake.ProofLane.TwinPreflightTest do
     unchanged!(ctx, before_snapshot)
   end
 
+  test "a directory named like info/exclude:1:z blocks the preflight and nothing changes", ctx do
+    dir = Path.join(ctx.dir, "info/exclude:1:z")
+    File.mkdir_p!(dir)
+    File.write!(Path.join(dir, ".gitignore"), "*\n")
+    File.write!(Path.join(dir, "evil.ex"), "defmodule Evil do\nend\n")
+    before_snapshot = snapshot(ctx)
+
+    assert {2,
+            [
+              "result: blocked",
+              "first cause: source_dirty",
+              @report,
+              "next action: The candidate has 2 changed or untracked files. Commit or remove the changes, then write a new prepared record and run into a new run root."
+            ]} == Task.execute(args(ctx), [])
+
+    unchanged!(ctx, before_snapshot)
+  end
+
   test "a reused run root is blocked and nothing changes", ctx do
     receipt = Path.join(ctx.root, "receipt.json")
     File.write!(receipt, "{\"kept\":true}")

@@ -8,6 +8,7 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
   alias Crosswake.ProofLane.{TwinGitFixtures, TwinProducers}
 
   @empty_tree "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+  @stdin_script "in=$1; shift; exec \"$@\" <\"$in\" 2>/dev/null"
 
   setup do
     {:ok, TwinGitFixtures.repo!()}
@@ -614,7 +615,158 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
     assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
 
     assert TwinProducers.probe_source(ctx.dir) ==
-             {:ok, %{modified: 3, flagged: 0, excludes: 0}}
+             {:ok, %{modified: 2, flagged: 0, excludes: 0}}
+  end
+
+  test "a directory named like info/exclude:1:z cannot hide untracked source", ctx do
+    dir = Path.join(ctx.dir, "info/exclude:1:z")
+    File.mkdir_p!(dir)
+    File.write!(Path.join(dir, ".gitignore"), "*\n")
+    File.write!(Path.join(dir, "evil.ex"), "defmodule Evil do\nend\n")
+
+    assert blind?(ctx.dir) == {"", 0}
+
+    assert TwinProducers.probe_source(ctx.dir) ==
+             {:ok, %{modified: 2, flagged: 0, excludes: 0}}
+
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+  end
+
+  test "a directory named like .gitignore:1:x beside a committed .gitignore cannot hide untracked source",
+       ctx do
+    File.write!(Path.join(ctx.dir, ".gitignore"), "*.log\n")
+    TwinGitFixtures.git!(ctx.dir, ["add", ".gitignore"])
+    TwinGitFixtures.git!(ctx.dir, ["commit", "-q", "-m", "ignore logs"])
+    dir = Path.join(ctx.dir, ".gitignore:1:x")
+    File.mkdir_p!(dir)
+    File.write!(Path.join(dir, ".gitignore"), "*\n")
+    File.write!(Path.join(dir, "evil.ex"), "defmodule Evil do\nend\n")
+
+    assert blind?(ctx.dir) == {"", 0}
+
+    assert TwinProducers.probe_source(ctx.dir) ==
+             {:ok, %{modified: 2, flagged: 0, excludes: 0}}
+
+    assert TwinProducers.clean_tree(ctx.dir) == {:blocked, :source_dirty}
+  end
+
+  test "a committed .gitignore in a directory with a quoted name is not counted", ctx do
+    dir = Path.join(ctx.dir, ~s(we"ird))
+    File.mkdir_p!(dir)
+    File.write!(Path.join(dir, ".gitignore"), "*.tmp\n")
+    TwinGitFixtures.git!(ctx.dir, ["add", "."])
+    TwinGitFixtures.git!(ctx.dir, ["commit", "-q", "-m", "quoted dir"])
+    File.write!(Path.join(dir, "y.tmp"), "noise")
+
+    assert blind?(ctx.dir) == {"", 0}
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+    assert TwinProducers.clean_tree(ctx.dir) == :ok
+  end
+
+  # Runs real git, then lets `rewrite` change the check-ignore output (a list of NUL fields).
+  defp rewriting(rewrite) do
+    {:ok, ran} = Agent.start_link(fn -> 0 end)
+
+    git_cmd = fn cmd, args, opts ->
+      result = System.cmd(cmd, args, opts)
+
+      if "check-ignore" in args do
+        Agent.update(ran, &(&1 + 1))
+        {out, status} = result
+        fields = out |> String.split(<<0>>) |> Enum.drop(-1)
+        {rewrite.(fields) |> Enum.map_join(&(&1 <> <<0>>)), status}
+      else
+        result
+      end
+    end
+
+    {ran, git_cmd}
+  end
+
+  defp committed_log_rule!(ctx) do
+    File.write!(Path.join(ctx.dir, ".gitignore"), "*.log\n")
+    TwinGitFixtures.git!(ctx.dir, ["add", ".gitignore"])
+    TwinGitFixtures.git!(ctx.dir, ["commit", "-q", "-m", "ignore logs"])
+  end
+
+  test "a listed path with no deciding rule is counted", ctx do
+    committed_log_rule!(ctx)
+    File.write!(Path.join(ctx.dir, "x.log"), "noise")
+    assert TwinProducers.probe_source(ctx.dir) == {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+
+    {ran, git_cmd} =
+      rewriting(fn fields ->
+        fields |> Enum.chunk_every(4) |> Enum.flat_map(fn [_, _, _, p] -> ["", "", "", p] end)
+      end)
+
+    assert TwinProducers.probe_source(ctx.dir, git_cmd: git_cmd) ==
+             {:ok, %{modified: 1, flagged: 0, excludes: 0}}
+
+    assert Agent.get(ran, & &1) == 1
+  end
+
+  test "a check-ignore output with an extra record makes the probe unavailable", ctx do
+    committed_log_rule!(ctx)
+    File.write!(Path.join(ctx.dir, "x.log"), "noise")
+
+    {ran, extra} = rewriting(fn fields -> fields ++ ["", "", "", "other.log"] end)
+    assert TwinProducers.probe_source(ctx.dir, git_cmd: extra) == :unavailable
+    assert Agent.get(ran, & &1) == 1
+
+    {ran, short} = rewriting(fn fields -> Enum.drop(fields, -1) end)
+    assert TwinProducers.probe_source(ctx.dir, git_cmd: short) == :unavailable
+    assert Agent.get(ran, & &1) == 1
+  end
+
+  test "a misaligned check-ignore record makes the probe unavailable", ctx do
+    committed_log_rule!(ctx)
+    File.write!(Path.join(ctx.dir, "a.log"), "noise")
+    File.write!(Path.join(ctx.dir, "b.log"), "noise")
+
+    {ran, git_cmd} =
+      rewriting(fn [s1, l1, p1, a, s2, l2, p2, b] -> [s1, l1, p1, b, s2, l2, p2, a] end)
+
+    assert TwinProducers.probe_source(ctx.dir, git_cmd: git_cmd) == :unavailable
+    assert Agent.get(ran, & &1) == 1
+  end
+
+  test "the ignored listing names files, never collapsed directories", ctx do
+    committed_log_rule!(ctx)
+    File.write!(Path.join(ctx.dir, "x.log"), "noise")
+    {agent, git_cmd} = recorder()
+
+    assert TwinProducers.probe_source(ctx.dir, git_cmd: git_cmd) ==
+             {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+
+    listings =
+      for {_, ["-c", _, "sh", "git" | argv], _} <- recorded(agent),
+          "ls-files" in argv and "--others" in argv and "--ignored" in argv,
+          do: argv
+
+    assert length(listings) == 1
+    assert Enum.filter(hd(listings), &(&1 == "--directory")) == []
+  end
+
+  test "check-ignore reads its paths from a private file outside the candidate through the shared builder",
+       ctx do
+    committed_log_rule!(ctx)
+    File.write!(Path.join(ctx.dir, "x.log"), "noise")
+    {agent, git_cmd} = recorder()
+
+    assert TwinProducers.probe_source(ctx.dir, git_cmd: git_cmd) ==
+             {:ok, %{modified: 0, flagged: 0, excludes: 0}}
+
+    calls = recorded(agent)
+    assert nonconforming(calls) == []
+
+    checks = Enum.filter(calls, fn {_, args, _} -> "check-ignore" in args end)
+    assert length(checks) == 1
+    [{"sh", ["-c", script, "sh", stdin_path, "git" | argv], _env}] = checks
+    assert script == @stdin_script
+    assert Path.type(stdin_path) == :absolute
+    refute String.starts_with?(stdin_path, ctx.dir <> "/")
+    assert "--stdin" in argv and "-z" in argv
+    refute File.exists?(stdin_path)
   end
 
   test "files ignored by a committed .gitignore are not counted", ctx do
@@ -751,6 +903,18 @@ defmodule Crosswake.ProofLane.TwinSourceProbeTest do
       end)
 
     shaped and extras_ok and Enum.all?(fixed, &(&1 in env))
+  end
+
+  # The one extra shape: check-ignore reading NUL-separated paths from an absolute file.
+  defp conforming?({"sh", ["-c", script, "sh", stdin_path, "git" | argv], env}) do
+    shaped =
+      script == @stdin_script and Path.type(stdin_path) == :absolute and
+        Enum.take(argv, length(@expected_pins)) == @expected_pins and
+        Enum.at(argv, length(@expected_pins)) == "-C" and
+        "check-ignore" in argv and "--stdin" in argv and "-z" in argv
+
+    shaped and
+      conforming?({"sh", ["-c", "exec \"$@\" 2>/dev/null", "sh", "git", "--version"], env})
   end
 
   defp conforming?(_), do: false

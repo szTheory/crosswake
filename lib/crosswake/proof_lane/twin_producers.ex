@@ -788,15 +788,23 @@ defmodule Crosswake.ProofLane.TwinProducers do
   @min_git_version {2, 41}
   @flag_tags ~c"HhSsMmRrCcKk?"
   @git_timeout_ms 60_000
+  @stdin_script "in=$1; shift; exec \"$@\" <\"$in\" 2>/dev/null"
 
   # stderr is discarded by the shell at the file-descriptor level; the candidate path
   # is only ever an argv element, never part of the script text. `mode` is `:pinned`
   # (the pins plus `-C path`) or `:bare` (the version call only, no pins, no `-C`);
   # `extra_env` may only add GIT_INDEX_FILE.
-  defp git_invocation(path, args, {mode, extra_env}) do
+  defp git_invocation(path, args, {:pinned_stdin, extra_env, stdin_path}),
+    do: git_invocation(path, args, :pinned_stdin, extra_env, stdin_path)
+
+  defp git_invocation(path, args, {mode, extra_env}),
+    do: git_invocation(path, args, mode, extra_env, nil)
+
+  defp git_invocation(path, args, mode, extra_env, stdin_path) do
     argv =
       case mode do
         :pinned -> @git_pins ++ ["-C", path | args]
+        :pinned_stdin -> @git_pins ++ ["-C", path | args]
         :bare -> args
       end
 
@@ -811,15 +819,30 @@ defmodule Crosswake.ProofLane.TwinProducers do
       |> Map.merge(Map.take(extra_env, ["GIT_INDEX_FILE"]))
       |> Enum.sort()
 
-    {"sh", ["-c", "exec \"$@\" 2>/dev/null", "sh", "git" | argv],
-     [env: env, stderr_to_stdout: false]}
+    case mode do
+      # The stdin form: the file path is the first positional argument, never script text.
+      # Only `check-ignore --stdin -z` uses it.
+      :pinned_stdin ->
+        {"sh", ["-c", @stdin_script, "sh", stdin_path, "git" | argv],
+         [env: env, stderr_to_stdout: false]}
+
+      _ ->
+        {"sh", ["-c", "exec \"$@\" 2>/dev/null", "sh", "git" | argv],
+         [env: env, stderr_to_stdout: false]}
+    end
   end
 
   # The only place git is spawned. A NUL-bearing path or argument is refused before any
   # spawn; a spawn failure is `:unavailable` and its message is never read (it can carry
   # a path); a hung git is shut down at the timeout.
   defp run_git(path, args, opts, mode_env \\ {:pinned, %{}}) do
-    if Enum.any?([path | args], &nul?/1) do
+    stdin_paths =
+      case mode_env do
+        {:pinned_stdin, _env, stdin_path} -> [stdin_path]
+        _ -> []
+      end
+
+    if Enum.any?([path | args] ++ stdin_paths, &nul?/1) do
       :unavailable
     else
       {cmd, argv, cmd_opts} = git_invocation(path, args, mode_env)
@@ -981,9 +1004,10 @@ defmodule Crosswake.ProofLane.TwinProducers do
   The working tree is compared with a fresh index built from `HEAD` in a private,
   contained temporary directory (so index flags and stat caches cannot hide a change);
   `modified` counts the status records of that comparison plus every ignored untracked
-  path that an uncommitted ignore rule hides (an untracked `.gitignore` that ignores itself
-  and other files is counted; paths ignored by a `.gitignore` committed in `HEAD` are not,
-  which is the deferred, disclosed limit), `flagged` counts the unique
+  path that an ignore rule hides when that rule is not in a `.gitignore` committed in `HEAD`
+  and not in `.git/info/exclude` (each hidden file counts, whatever the rule file's folder is
+  called; paths ignored by a committed `.gitignore` are not counted, which is the deferred,
+  disclosed limit), `flagged` counts the unique
   paths whose entry in the real index carries a tag other than `H` (assume-unchanged,
   skip-worktree, unmerged and the rest), and `excludes` counts active rules in
   `.git/info/exclude`.
@@ -1170,28 +1194,31 @@ defmodule Crosswake.ProofLane.TwinProducers do
     end
   end
 
-  # WR-01: an untracked path that a rule not committed in HEAD ignores is invisible to
-  # status, so it is counted here as one modified finding. Rules from a `.gitignore`
-  # tracked in HEAD are the deferred, disclosed limit and stay uncounted; rules from
-  # `.git/info/exclude` are covered by the excludes count (D-03). An ignored directory
-  # entry with no deciding rule of its own (`::`) is listed only because everything in it
-  # is ignored; its members are listed and judged on their own.
+  # WR-01 / D-35: an untracked path that a rule not committed in HEAD ignores is invisible
+  # to status, so it is counted here as one modified finding. The ignored listing is never
+  # collapsed into directories, so every entry is judged on its own. Rules from a
+  # `.gitignore` tracked in HEAD are the deferred, disclosed limit and stay uncounted; rules
+  # from `.git/info/exclude` are covered by the excludes count (D-03). Anything else,
+  # including a path with no deciding rule, counts.
   defp hidden_by_uncommitted_rules(path, env, committed, opts) do
     with {out, 0} <-
            run_git(
              path,
-             ["ls-files", "--others", "--ignored", "--exclude-standard", "--directory", "-z"],
+             ["ls-files", "--others", "--ignored", "--exclude-standard", "-z"],
              opts,
              {:pinned, env}
            ),
          {:ok, listed} <- parse_ignored_listing(out),
-         {:ok, sources} <- ignore_sources(path, env, listed, opts) do
+         {:ok, sources} <- ignore_sources(path, env, listed, opts),
+         {:ok, exclude} <- exclude_source(path, env, listed, opts) do
       tracked = MapSet.new(committed, fn {_tag, entry} -> entry end)
 
       count =
         listed
         |> Enum.zip(sources)
-        |> Enum.count(fn {entry, source} -> uncommitted_rule?(entry, source, tracked) end)
+        |> Enum.count(fn {_entry, source} ->
+          not trusted_source?(source, exclude, tracked, path)
+        end)
 
       {:ok, count}
     else
@@ -1210,71 +1237,73 @@ defmodule Crosswake.ProofLane.TwinProducers do
        else: :error
   end
 
-  @ignore_batch 200
-
   defp ignore_sources(_path, _env, [], _opts), do: {:ok, []}
 
+  # One call: the NUL-separated entries are written to a file beside the private index
+  # (0700, outside the candidate, removed with its directory) and read as stdin, because
+  # git requires --stdin for -z.
   defp ignore_sources(path, env, listed, opts) do
-    listed
-    |> Enum.chunk_every(@ignore_batch)
-    |> Enum.reduce_while({:ok, []}, fn chunk, {:ok, acc} ->
-      case run_git(
-             path,
-             ["check-ignore", "--verbose", "--non-matching", "--" | chunk],
-             opts,
-             {:pinned, env}
-           ) do
-        {out, status} when status in [0, 1] ->
-          case parse_ignore_sources(out, length(chunk)) do
-            {:ok, sources} -> {:cont, {:ok, acc ++ sources}}
-            :error -> {:halt, :error}
-          end
+    stdin_path = Path.join(Path.dirname(Map.fetch!(env, "GIT_INDEX_FILE")), "check-ignore.in")
+    payload = Enum.map(listed, &(&1 <> <<0>>))
 
-        _ ->
-          {:halt, :error}
-      end
+    with :ok <- File.write(stdin_path, payload, [:write, :exclusive]),
+         {out, status} when status in [0, 1] <-
+           run_git(
+             path,
+             ["check-ignore", "--verbose", "--non-matching", "--stdin", "-z"],
+             opts,
+             {:pinned_stdin, env, stdin_path}
+           ) do
+      parse_ignore_sources(out, listed)
+    else
+      _ -> :error
+    end
+  end
+
+  # `<source> NUL <line> NUL <pattern> NUL <path> NUL` per sent entry. Split only on NUL;
+  # no field is ever split on a colon or unquoted. Two separate checks: framing (exactly
+  # four fields per sent entry), then path binding (each record names the entry sent at
+  # that position).
+  defp parse_ignore_sources(out, listed) do
+    fields = out |> String.split(<<0>>) |> Enum.drop(-1)
+
+    framed? = String.ends_with?(out, <<0>>) and length(fields) == 4 * length(listed)
+
+    if framed? do
+      records = Enum.chunk_every(fields, 4)
+      pairs = Enum.zip(listed, records)
+
+      if bound?(pairs), do: {:ok, Enum.map(records, fn [source | _] -> source end)}, else: :error
+    else
+      :error
+    end
+  end
+
+  defp bound?(pairs) do
+    Enum.reduce(pairs, true, fn {entry, [source, line, _pattern, recorded]}, ok ->
+      ok and recorded == entry and line_matches_source?(source, line)
     end)
   end
 
-  # `<source>:<line>:<pattern>\t<path>` per line; a path with no deciding rule prints `::`.
-  defp parse_ignore_sources(out, expected) do
-    lines = if out == "", do: [], else: out |> String.split("\n") |> Enum.drop(-1)
+  defp line_matches_source?("", line), do: line == ""
+  defp line_matches_source?(_source, line), do: line =~ ~r/\A[0-9]+\z/
 
-    sources =
-      Enum.map(lines, fn line ->
-        with [rule, _path] <- String.split(line, "\t", parts: 2),
-             true <- String.ends_with?(out, "\n") do
-          if rule == "::" do
-            ""
-          else
-            case Regex.run(~r/\A(.+?):(\d+):/s, rule) do
-              [_, source, _line] -> source
-              _ -> :error
-            end
-          end
-        else
-          _ -> :error
-        end
-      end)
+  # The only rule file trusted besides a tracked `.gitignore`: this repository's
+  # info/exclude, found by asking git, compared after expansion against the candidate.
+  defp exclude_source(_path, _env, [], _opts), do: {:ok, nil}
 
-    if length(sources) == expected and :error not in sources,
-      do: {:ok, sources},
-      else: :error
+  defp exclude_source(path, env, _listed, opts) do
+    case run_git(path, ["rev-parse", "--git-path", "info/exclude"], opts, {:pinned, env}) do
+      {out, 0} when out != "" -> {:ok, Path.expand(String.trim(out), path)}
+      _ -> :error
+    end
   end
 
-  defp uncommitted_rule?(entry, "", _tracked), do: not String.ends_with?(entry, "/")
+  defp trusted_source?("", _exclude, _tracked, _path), do: false
 
-  defp uncommitted_rule?(_entry, source, tracked) do
-    cond do
-      Path.basename(source) == ".gitignore" ->
-        not MapSet.member?(tracked, source)
-
-      Path.basename(source) == "exclude" and Path.basename(Path.dirname(source)) == "info" ->
-        false
-
-      true ->
-        true
-    end
+  defp trusted_source?(source, exclude, tracked, path) do
+    Path.expand(source, path) == exclude or
+      (Path.basename(source) == ".gitignore" and MapSet.member?(tracked, source))
   end
 
   # Fresh-index status has no staged side, so a record is `<X> <Y> <space> <path>` with
