@@ -133,6 +133,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
 
         render_opts = [
           generated_at: generated_at,
+          project_root: File.cwd!(),
           shell_package: shell_package_context(managed_root, local_ios_package())
         ]
 

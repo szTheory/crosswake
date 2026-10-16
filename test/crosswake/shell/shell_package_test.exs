@@ -41,7 +41,9 @@ defmodule Crosswake.Shell.ShellPackageTest do
     assert ShellPackage.seam_version_at(package_with("struct A {}\n")) == nil
 
     assert ShellPackage.seam_version_at(
-             package_with("public enum HostCommandSeam {\n    public static let version = \"one\"\n}\n")
+             package_with(
+               "public enum HostCommandSeam {\n    public static let version = \"one\"\n}\n"
+             )
            ) == nil
 
     assert ShellPackage.seam_version_at(tmp_dir()) == nil
@@ -82,7 +84,10 @@ defmodule Crosswake.Shell.ShellPackageTest do
 
   test "resolve project prefers the Package.resolved pin" do
     root = project("minimumVersion = 0.2.11;\n")
-    resolved = Path.join(root, "CrosswakeShell.xcodeproj/project.xcworkspace/xcshareddata/swiftpm")
+
+    resolved =
+      Path.join(root, "CrosswakeShell.xcodeproj/project.xcworkspace/xcshareddata/swiftpm")
+
     File.mkdir_p!(resolved)
 
     File.write!(
@@ -109,5 +114,65 @@ defmodule Crosswake.Shell.ShellPackageTest do
     assert ShellPackage.satisfies?(%{kind: :local, seam_version: "1.1.0"}, "1.0.0") == :ok
     assert {:error, _} = ShellPackage.satisfies?(%{kind: :local, seam_version: "0.9.0"}, "1.0.0")
     assert {:error, _} = ShellPackage.satisfies?(%{kind: :local, seam_version: nil}, "1.0.0")
+  end
+
+  describe "display_location/2" do
+    test "a location inside the project prints the project-relative path" do
+      root = tmp_dir()
+      assert ShellPackage.display_location(Path.join(root, "a/b"), root) == "a/b"
+    end
+
+    test "the project root itself prints a dot" do
+      root = tmp_dir()
+      assert ShellPackage.display_location(root, root) == "."
+    end
+
+    test "a location under the home directory and outside the project prints the home placeholder" do
+      root = tmp_dir()
+      location = Path.join(System.user_home!(), "crosswake-186-nowhere/shell-pkg")
+      shown = ShellPackage.display_location(location, root)
+      assert shown == "<home>/crosswake-186-nowhere/shell-pkg"
+      refute shown =~ System.user_home!()
+    end
+
+    test "a location outside the project and the home directory prints the outside placeholder" do
+      root = tmp_dir()
+
+      assert ShellPackage.display_location("/crosswake-186-nowhere/pkg", root) ==
+               "<outside project>"
+    end
+
+    test "a remote reference is returned unchanged" do
+      assert ShellPackage.display_location("remote crosswake-shell-core-ios", tmp_dir()) ==
+               "remote crosswake-shell-core-ios"
+    end
+
+    test "a non-absolute input is never echoed" do
+      root = tmp_dir()
+      assert ShellPackage.display_location("relative/pkg", root) == "<outside project>"
+      assert ShellPackage.display_location("", root) == "<outside project>"
+    end
+
+    test "a project reached through a symlink still prints the in-project location relative" do
+      base = tmp_dir()
+      real = Path.join(base, "real")
+      link = Path.join(base, "link")
+      File.mkdir_p!(Path.join(real, "pkg"))
+      File.ln_s!(real, link)
+
+      assert ShellPackage.display_location(Path.join(real, "pkg"), link) == "pkg"
+      assert ShellPackage.display_location(Path.join(link, "pkg"), real) == "pkg"
+    end
+
+    test "a sibling directory sharing the project name prefix is outside the project" do
+      base = tmp_dir()
+      proj = Path.join(base, "proj")
+      File.mkdir_p!(proj)
+      File.mkdir_p!(Path.join(base, "proj-evil/pkg"))
+
+      shown = ShellPackage.display_location(Path.join(base, "proj-evil/pkg"), proj)
+      refute shown in ["../proj-evil/pkg", "proj-evil/pkg"]
+      assert shown == "<outside project>" or String.starts_with?(shown, "<home>/")
+    end
   end
 end

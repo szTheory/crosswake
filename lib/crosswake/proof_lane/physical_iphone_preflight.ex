@@ -2,7 +2,8 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
   @moduledoc "Ordered, callback-driven, side-effect-free physical-iPhone readiness gate."
 
   alias Crosswake.Adoption.RouteInventory
-  alias Crosswake.ProofLane.{Config, PhysicalIphoneContract}
+  alias Crosswake.ProofLane.{Config, Generator, PhysicalIphoneContract}
+  alias Crosswake.Shell.IOSHostOriginMode
 
   @checks [
     {:generated_lane, "PI-PREFLIGHT-GENERATED-LANE"},
@@ -115,9 +116,43 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
 
   defp config(options) do
     case Config.normalize(Keyword.get(options, :config)) do
-      {:ok, config} -> {:ok, config}
-      {:error, _} -> {:config_error, :invalid}
+      {:ok, config} ->
+        if origin_refusal_for(config, options),
+          do: {:config_error, :local_loopback},
+          else: {:ok, config}
+
+      {:error, _} ->
+        {:config_error, :invalid}
     end
+  end
+
+  @doc false
+  # Returns the generator's local-mode refusal text when the host's declaration or its generated
+  # iOS files carry any local-loopback signal, otherwise nil. A device proof against a host whose
+  # origin is the device itself can never be genuine, so any signal (or a failed observation)
+  # refuses rather than passes.
+  @spec origin_refusal(keyword()) :: String.t() | nil
+  def origin_refusal(options) when is_list(options) do
+    case Config.normalize(Keyword.get(options, :config)) do
+      {:ok, config} -> origin_refusal_for(config, options)
+      {:error, _} -> nil
+    end
+  end
+
+  def origin_refusal(_), do: nil
+
+  defp origin_refusal_for(config, options) do
+    declaration =
+      Keyword.get_lazy(options, :ios_host, fn -> Application.get_env(:crosswake, :ios_host) end)
+
+    root = Path.join(config.ios_shell_root, "crosswake_shell")
+
+    case IOSHostOriginMode.observe(root, declaration) do
+      :none -> nil
+      _signal -> Generator.local_mode_refusal()
+    end
+  rescue
+    _ -> Generator.local_mode_refusal()
   end
 
   defp run_checks(_options, []), do: :ok

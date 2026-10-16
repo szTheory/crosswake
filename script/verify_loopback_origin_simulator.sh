@@ -53,6 +53,75 @@ APP_UNINSTALLED="true"
 DEVICE_LEFT_AS_FOUND="true"
 LISTENER_LOG=""
 DATA_DIR=""
+PROJ=""
+H0=""
+PROBE_HASH=""
+EVIDENCE_READY=0
+
+# add_rule RULE: append once; a rule id is never listed twice.
+add_rule() {
+  case " ${FAILED_RULES[*]:-} " in
+    *" $1 "*) ;;
+    *) FAILED_RULES+=("$1") ;;
+  esac
+}
+
+# tree_hashes: sorted sha256 list of every file under the generated project. Ordering comes
+# from find -print0 and LC_ALL=C sort -z, never from directory order.
+tree_hashes() {
+  (
+    cd "$PROJ" || exit 1
+    while IFS= read -r -d '' f; do
+      shasum -a 256 "$f"
+    done < <(find . -type f -print0 | LC_ALL=C sort -z)
+  )
+}
+
+# compare_tree_hashes BASE CURRENT PROBE_HASH: print offending project-relative paths and
+# fail when CURRENT differs from BASE by anything other than the probe swap. Files added by
+# the build are allowed only under the workspace and xcuserdata directories of the generated
+# xcodeproj. That allow-list is an assumption that Phase 188's real run must confirm.
+compare_tree_hashes() {
+  BASE_HASHES="$1" CUR_HASHES="$2" PROBE_HASH="$3" python3 -I -c '
+import os, sys
+
+def parse(text):
+    out = {}
+    for line in text.splitlines():
+        if line:
+            digest, _, path = line.partition("  ")
+            out[path] = digest
+    return out
+
+base = parse(os.environ["BASE_HASHES"])
+cur = parse(os.environ["CUR_HASHES"])
+probe = os.environ["PROBE_HASH"]
+swap = "./CrosswakeShell/CrosswakeShellApp.swift"
+allowed = (
+    "./CrosswakeShell.xcodeproj/project.xcworkspace/",
+    "./CrosswakeShell.xcodeproj/xcuserdata/",
+)
+bad = []
+if not base:
+    bad.append("(no generated files were found)")
+for path, digest in sorted(base.items()):
+    if path not in cur:
+        bad.append(path + " (removed)")
+    elif path == swap:
+        if cur[path] != probe:
+            bad.append(path + " (not the probe bytes)")
+        elif digest == probe:
+            bad.append(path + " (the swap changed nothing)")
+    elif cur[path] != digest:
+        bad.append(path + " (changed)")
+for path in sorted(cur):
+    if path not in base and not path.startswith(allowed):
+        bad.append(path + " (added)")
+if bad:
+    print("; ".join(bad))
+    sys.exit(1)
+'
+}
 
 log() { echo "[loopback-sim] $*" >&2; }
 
@@ -134,7 +203,6 @@ PY
 }
 
 cleanup_and_emit() {
-  local rc=$?
   set +e
   if [[ -z "$OUTCOME" ]]; then
     OUTCOME="blocked"
@@ -156,25 +224,83 @@ cleanup_and_emit() {
   fi
   if [[ -n "$UDID" && "$WE_BOOTED" == "1" ]]; then
     xcrun simctl shutdown "$UDID" >/dev/null 2>&1
-    if xcrun simctl list devices 2>/dev/null | grep -F "$UDID" | grep -q "(Shutdown)"; then
+    # Captured output and bash tests, not a piped quiet grep: under pipefail an early-exiting
+    # grep -q makes the upstream grep fail on a long list (182 IN-02).
+    local device_list device_lines device_line
+    device_list="$(xcrun simctl list devices 2>/dev/null)"
+    device_lines="$(grep -F -- "$UDID" <<<"$device_list" || true)"
+    device_line="${device_lines%%$'\n'*}"
+    if [[ "$device_line" == *"(Shutdown)"* ]]; then
       DEVICE_LEFT_AS_FOUND="true"
     else
       DEVICE_LEFT_AS_FOUND="false"
     fi
   fi
+  # D-11: the generated tree must still match what was generated, apart from the probe swap.
+  if [[ -n "$H0" && -n "$PROJ" && -d "$PROJ" ]]; then
+    local h2 bad2
+    h2="$(tree_hashes)"
+    if ! bad2="$(compare_tree_hashes "$H0" "$h2" "$PROBE_HASH")"; then
+      add_rule "LOOP-IOS-OWNED-HASH"
+      if [[ "$OUTCOME" == "passed" ]]; then
+        OUTCOME="blocked"
+        FINAL_RC=2
+        CAUSE="generated project bytes changed outside the probe swap: $bad2"
+      fi
+    fi
+  fi
+  # D-13: a run that passed its assertions but did not clean up after itself is not a pass.
+  # Set directly: block and unavailable call exit, which must never run inside this trap.
+  if [[ "$OUTCOME" == "passed" && ( "$APP_UNINSTALLED" != "true" || "$DEVICE_LEFT_AS_FOUND" != "true" ) ]]; then
+    OUTCOME="blocked"
+    FINAL_RC=2
+    FAILED_RULES+=("LOOP-IOS-CLEANUP")
+    CAUSE="cleanup did not complete: the app was not uninstalled or the device was not restored"
+  fi
   [[ -n "$RUN" ]] && rm -rf "$RUN"
   local json
   json="$(emit_json)"
-  printf '%s\n' "$json"
-  if [[ -n "$EVIDENCE" ]]; then
-    printf '%s\n' "$json" >"$EVIDENCE"
+  if [[ "$EVIDENCE_READY" == "1" ]]; then
+    local tmp="${EVIDENCE}.tmp.$$"
+    if ! { printf '%s\n' "$json" >"$tmp"; } 2>/dev/null || ! mv -f -- "$tmp" "$EVIDENCE" 2>/dev/null; then
+      rm -f "$tmp"
+      add_rule "LOOP-IOS-EVIDENCE"
+      # A run that already failed keeps its exit code; a passed run is not a pass without evidence.
+      if [[ "$OUTCOME" == "passed" ]]; then
+        OUTCOME="blocked"
+        FINAL_RC=2
+        CAUSE="the evidence file could not be written"
+      fi
+      json="$(emit_json)"
+    fi
   fi
+  printf '%s\n' "$json"
   if [[ "$OUTCOME" == "passed" ]]; then
     exit 0
   fi
   exit "$FINAL_RC"
 }
 trap cleanup_and_emit EXIT
+
+# ---------------------------------------------------------------- evidence precheck (D-12)
+if [[ -n "$EVIDENCE" ]]; then
+  case "$EVIDENCE" in
+    /*) ;;
+    *) EVIDENCE="${PWD}/${EVIDENCE}" ;;
+  esac
+  EVIDENCE_PARENT="$(dirname "$EVIDENCE")"
+  if [[ -d "$EVIDENCE" ]]; then
+    block "LOOP-IOS-EVIDENCE" "the evidence path is a directory"
+  elif [[ ! -d "$EVIDENCE_PARENT" ]]; then
+    block "LOOP-IOS-EVIDENCE" "the evidence directory does not exist"
+  else
+    EVIDENCE_PROBE="${EVIDENCE_PARENT}/.crosswake-loopback-evidence-probe.$$"
+    if ! { : >"$EVIDENCE_PROBE"; } 2>/dev/null || ! rm -f "$EVIDENCE_PROBE"; then
+      block "LOOP-IOS-EVIDENCE" "the evidence directory is not writable"
+    fi
+  fi
+  EVIDENCE_READY=1
+fi
 
 # ---------------------------------------------------------------- step 0: binding
 cd "$ROOT_DIR"
@@ -248,18 +374,10 @@ PROJ="$GEN/native/ios/crosswake_shell"
 [[ -d "$PROJ/CrosswakeShell.xcodeproj" ]] || block "LOOP-IOS-GENERATE" "generated project is missing"
 
 # ---------------------------------------------------------------- step 3: probe swap
-owned_hashes() {
-  (cd "$PROJ" && shasum -a 256 CrosswakeShell/Info.plist CrosswakeHostSettings.xcconfig \
-    CrosswakeShell.xcodeproj/project.pbxproj Fixtures/*.json)
-}
-HASH_BEFORE="$(owned_hashes)"
+PROBE_LINE="$(shasum -a 256 "$HELPERS/ProbeApp.swift")"
+PROBE_HASH="${PROBE_LINE%% *}"
+H0="$(tree_hashes)"
 cp "$HELPERS/ProbeApp.swift" "$PROJ/CrosswakeShell/CrosswakeShellApp.swift"
-HASH_AFTER="$(owned_hashes)"
-if [[ "$HASH_BEFORE" == "$HASH_AFTER" && -n "$HASH_BEFORE" ]]; then
-  assert_ok "crosswake_owned_hashes_unchanged"
-else
-  block "LOOP-IOS-OWNED-HASH" "Crosswake-owned generated bytes changed when the probe was swapped in"
-fi
 
 # ---------------------------------------------------------------- step 4: hermetic core
 CORE_CLONE="$RUN/core"
@@ -296,6 +414,14 @@ unset GIT_CONFIG_COUNT GIT_CONFIG_KEY_0 GIT_CONFIG_VALUE_0
 APP="$DD/Build/Products/Debug-iphonesimulator/${SCHEME}.app"
 [[ -d "$APP" ]] || block "LOOP-IOS-BUILD" "the built app bundle is missing"
 
+# D-11: full-tree comparison after the build; the exit trap repeats it after launch.
+H1="$(tree_hashes)"
+if BAD1="$(compare_tree_hashes "$H0" "$H1" "$PROBE_HASH")"; then
+  assert_ok "crosswake_owned_hashes_unchanged"
+else
+  block "LOOP-IOS-OWNED-HASH" "generated project bytes changed outside the probe swap: $BAD1"
+fi
+
 ATS_KEYS="$(plutil -extract NSAppTransportSecurity json -o - "$APP/Info.plist" 2>/dev/null |
   python3 -I -c 'import json,sys; d=json.load(sys.stdin); print(",".join(sorted(d)), d.get("NSAllowsLocalNetworking"))' 2>/dev/null || true)"
 MODE_VALUE="$(plutil -extract CrosswakeOriginMode raw -o - "$APP/Info.plist" 2>/dev/null || true)"
@@ -309,7 +435,7 @@ if [[ "$MODE_VALUE" == "local_loopback" ]]; then
 else
   block "LOOP-IOS-MARKER" "the built Info.plist origin mode marker is not local_loopback"
 fi
-BUNDLE_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Info.plist" 2>/dev/null || true)"
+BUNDLE_ID="$(plutil -extract CFBundleIdentifier raw -o - "$APP/Info.plist" 2>/dev/null || true)"
 [[ -n "$BUNDLE_ID" ]] || block "LOOP-IOS-BUILD" "the built app has no bundle identifier"
 
 # ---------------------------------------------------------------- step 6: boot, install, launch
@@ -350,8 +476,9 @@ if poll_until 90 listener_has "/study-session"; then assert_ok "listener_saw_ent
 if poll_until 60 listener_has "/__loaded"; then assert_ok "listener_saw_loaded_ping"; else assert_bad "listener_saw_loaded_ping"; fi
 if poll_until 60 result_is "didFinish"; then assert_ok "app_reported_did_finish"; else assert_bad "app_reported_did_finish"; fi
 OBSERVATIONS+=("first_launch_result=$(read_result | tr ' ' '_')")
+JOINED_ASSERTS=$'\n'"$(printf '%s\n' "${ASSERTS[@]}")"$'\n'
 for a in listener_saw_entry_get listener_saw_loaded_ping app_reported_did_finish; do
-  printf '%s\n' "${ASSERTS[@]}" | grep -qx "$a=passed" || block "LOOP-IOS-LOOPBACK-LOAD" "the loopback page was not observed loading: $a"
+  [[ "$JOINED_ASSERTS" == *$'\n'"$a=passed"$'\n'* ]] || block "LOOP-IOS-LOOPBACK-LOAD" "the loopback page was not observed loading: $a"
 done
 
 # ---------------------------------------------------------------- step 7: narrowness control

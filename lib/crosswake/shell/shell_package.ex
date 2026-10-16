@@ -66,6 +66,86 @@ defmodule Crosswake.Shell.ShellPackage do
     end
   end
 
+  @outside "<outside project>"
+  @max_symlink_hops 32
+
+  @doc false
+  # D-06: the only form in which a package location may be printed. Inside the project it is
+  # project-relative, under the home directory it is "<home>/...", anything else is
+  # "<outside project>". There is deliberately no clause that returns the raw input.
+  @spec display_location(term(), term()) :: String.t()
+  def display_location("remote " <> _ = location, _project_root), do: location
+
+  def display_location(location, project_root)
+      when is_binary(location) and is_binary(project_root) do
+    with :absolute <- Path.type(location),
+         :absolute <- Path.type(project_root),
+         {:ok, location_parts} <- canonical(location),
+         {:ok, root_parts} <- canonical(project_root) do
+      cond do
+        inside?(location_parts, root_parts) ->
+          # Only the inside branch of gen.shell relative_path/2 is copied: that function
+          # would leak a ".." chain for paths outside the project.
+          case Enum.drop(location_parts, length(root_parts)) do
+            [] -> "."
+            rest -> Path.join(rest)
+          end
+
+        home_rest = home_remainder(location_parts) ->
+          Path.join(["<home>" | home_rest])
+
+        true ->
+          @outside
+      end
+    else
+      _ -> @outside
+    end
+  end
+
+  def display_location(_location, _project_root), do: @outside
+
+  defp home_remainder(location_parts) do
+    with home when is_binary(home) <- home_dir(),
+         {:ok, home_parts} <- canonical(home),
+         true <- home_parts != ["/"] and inside?(location_parts, home_parts) do
+      Enum.drop(location_parts, length(home_parts))
+    else
+      _ -> nil
+    end
+  end
+
+  defp home_dir do
+    System.user_home!()
+  rescue
+    _ -> nil
+  end
+
+  # Component-wise containment: /p/proj-evil is not inside /p/proj.
+  defp inside?(parts, prefix), do: Enum.take(parts, length(prefix)) == prefix
+
+  # Expands the path and resolves symlinks component by component, at most 32 hops in total.
+  # A nonexistent tail is kept lexically. Returns {:ok, components} or :error on hop exhaustion.
+  defp canonical(path), do: walk(Path.split(Path.expand(path)), [], @max_symlink_hops)
+
+  defp walk([], resolved, _hops), do: {:ok, Enum.reverse(resolved)}
+
+  defp walk([part | rest], resolved, hops) do
+    current = Path.join(Enum.reverse([part | resolved]))
+
+    case File.read_link(current) do
+      {:ok, target} ->
+        if hops == 0 do
+          :error
+        else
+          parent = Path.join(Enum.reverse(resolved) ++ [""])
+          walk(Path.split(Path.expand(target, parent)) ++ rest, [], hops - 1)
+        end
+
+      {:error, _} ->
+        walk(rest, [part | resolved], hops)
+    end
+  end
+
   @doc """
   Reads `public static let version = "X.Y.Z"` from the `public enum HostCommandSeam`
   declaration in the package's ActivationCoordinator.swift; nil when absent or malformed.
@@ -115,7 +195,9 @@ defmodule Crosswake.Shell.ShellPackage do
 
   defp pinned_version(managed_root) do
     managed_root
-    |> Path.join("CrosswakeShell.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved")
+    |> Path.join(
+      "CrosswakeShell.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+    )
     |> File.read()
     |> case do
       {:ok, bytes} ->

@@ -21,6 +21,19 @@ defmodule Crosswake.Guides.LoopbackOriginGuideTest do
     assert text =~ ~r/README[^.]*stale|stale[^.]*README/s
   end
 
+  test "native shell guide documents the manual Simulator harness and its exit codes" do
+    flat = guide("native_shell.md") |> String.replace(~r/\s+/, " ")
+
+    assert [_, paragraph] =
+             String.split(flat, "script/verify_loopback_origin_simulator.sh", parts: 2)
+
+    paragraph = String.slice(paragraph, 0, 900)
+
+    for needle <- ["manually run phase evidence", "not a CI lane", "`0`", "`2`", "`3`"] do
+      assert paragraph =~ needle
+    end
+  end
+
   test "upgrade guide notes the exact-block Info.plist reconciliation" do
     assert guide("native_shell_upgrade.md") =~
              "reconciles only the exact Crosswake origin-mode block"

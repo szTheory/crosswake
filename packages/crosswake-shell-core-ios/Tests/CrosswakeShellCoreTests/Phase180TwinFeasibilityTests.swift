@@ -11,7 +11,12 @@ final class Phase180TwinFeasibilityTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func makeManifest(routeID: String, runtime: String) -> ShellManifest {
+    private func makeManifest(
+        routeID: String,
+        runtime: String,
+        allowlistedOrigin: String? = nil,
+        hostCommands: [String: String]? = nil
+    ) -> ShellManifest {
         ShellManifest(
             compatibility: ShellManifest.Compatibility(nativeRuntimeVersion: "1.0.0"),
             routes: [
@@ -20,10 +25,11 @@ final class Phase180TwinFeasibilityTests: XCTestCase {
                     path: "/\(routeID)",
                     runtime: runtime,
                     entry: "internal_only",
-                    capabilities: [],
+                    capabilities: hostCommands.map { Array($0.keys) } ?? [],
                     packs: [],
                     transfers: [],
-                    allowlistedOrigins: [origin]
+                    allowlistedOrigins: [allowlistedOrigin ?? origin],
+                    hostCommands: hostCommands
                 )
             ]
         )
@@ -161,7 +167,7 @@ final class Phase180TwinFeasibilityTests: XCTestCase {
         let request = try exportedActivation()
         let delegate = Phase180RecordingHostDelegate()
         let routeID = try XCTUnwrap(request.routeID)
-        let manifest = makeManifest(routeID: routeID, runtime: "live_view")
+        let manifest = makeManifest(routeID: routeID, runtime: "live_view", allowlistedOrigin: request.origin)
         let c = coordinator(manifest: manifest, request: request, delegate: delegate)
         c.bootstrapIfNeeded()
         guard let session = liveViewSession(c) else { return }
@@ -173,7 +179,8 @@ final class Phase180TwinFeasibilityTests: XCTestCase {
         let request = try exportedActivation(replacingCapabilities: [command: "1.0.0"])
         let delegate = Phase180RecordingHostDelegate()
         let routeID = try XCTUnwrap(request.routeID)
-        let manifest = makeManifest(routeID: routeID, runtime: "live_view")
+        // D-01: a route that does not declare the command grants nothing, so the control declares it.
+        let manifest = makeManifest(routeID: routeID, runtime: "live_view", allowlistedOrigin: request.origin, hostCommands: [command: "1.0.0"])
         let c = coordinator(manifest: manifest, request: request, delegate: delegate)
         c.bootstrapIfNeeded()
         guard let live = liveViewSession(c) else { return }

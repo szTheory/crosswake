@@ -92,30 +92,33 @@ final class HostCommandNavigationTests: XCTestCase {
 
     // MARK: D-28 legacy path (manifest without host_commands)
 
-    func test_legacy_entry_route_keeps_its_registered_command_and_other_routes_get_nothing() throws {
+    func test_legacy_entry_route_denies_its_registered_command_and_other_routes_deny_theirs() throws {
         let world = try SeamWorld.load(legacy: true)
         XCTAssertNil(world.route(seamLessonID).hostCommands)
         let delegate = SeamRecordingDelegate(registered: [seamLessonCommand, seamReviewCommand])
         let coordinator = world.coordinator(entry: seamLessonID, delegate: delegate)
         coordinator.bootstrapIfNeeded()
         let entry = try liveSession(coordinator.presentation)
-        XCTAssertEqual(entry.capabilities[seamLessonCommand], "1.0.0")
-        XCTAssertEqual(entry.hostCommandDenials, [:])
+        XCTAssertEqual(entry.capabilities.filter { $0.key.hasPrefix("host.") }, [:])
+        XCTAssertEqual(entry.hostCommandDenials, [seamLessonCommand: "not_registered"])
+        XCTAssertTrue(coordinator.hostCommandDiagnostics.contains(HostCommandDiagnostic(routeID: seamLessonID, command: seamLessonCommand, issue: "not_registered")))
 
         let nav = coordinator.makeNavigationCoordinator(topology: topology())
         XCTAssertEqual(nav.selectRoot(routeID: seamLessonID), .authorized)
         let tab = try XCTUnwrap(nav.selectedTabID)
-        XCTAssertEqual(try liveSession(nav.stacks[tab]?.last?.presentation).capabilities[seamLessonCommand], "1.0.0")
+        XCTAssertEqual(try liveSession(nav.stacks[tab]?.last?.presentation).capabilities.filter { $0.key.hasPrefix("host.") }, [:])
         let push = NavigationTransition(protocolName: "crosswake.navigation_transition", version: "1.0.0", transitionID: "nav-0123456789abcdef", kind: .pushNavigate, routeID: seamReviewID, restorationRef: nil)
         XCTAssertEqual(nav.apply(push), .applied)
-        XCTAssertEqual(try liveSession(nav.stacks[tab]?.last?.presentation).capabilities.filter { $0.key.hasPrefix("host.") }, [:])
+        let review = try liveSession(nav.stacks[tab]?.last?.presentation)
+        XCTAssertEqual(review.capabilities.filter { $0.key.hasPrefix("host.") }, [:])
+        XCTAssertEqual(review.hostCommandDenials, [seamReviewCommand: "not_registered"])
 
         // A deep link to review seeded from the lesson baseline grants nothing.
         coordinator.openURL(try XCTUnwrap(URL(string: "https://seam.crosswake.test/review")))
         XCTAssertEqual(try liveSession(coordinator.presentation).capabilities.filter { $0.key.hasPrefix("host.") }, [:])
     }
 
-    func test_legacy_activation_lacking_the_command_grants_nothing() throws {
+    private func legacyLessonWithoutRequestKey() throws -> SeamWorld {
         var world = try SeamWorld.load(legacy: true)
         let lesson = world.activations["lesson"]!
         world.activations["lesson"] = ActivationRequest(
@@ -123,10 +126,57 @@ final class HostCommandNavigationTests: XCTestCase {
             manifestSource: lesson.manifestSource, bridgeProtocolVersion: lesson.bridgeProtocolVersion,
             nativeRuntimeVersion: lesson.nativeRuntimeVersion, correlationID: lesson.correlationID
         )
+        return world
+    }
+
+    func test_legacy_activation_lacking_the_command_grants_nothing() throws {
+        let world = try legacyLessonWithoutRequestKey()
         let delegate = SeamRecordingDelegate(registered: [seamLessonCommand])
         let coordinator = world.coordinator(entry: seamLessonID, delegate: delegate)
         coordinator.bootstrapIfNeeded()
-        XCTAssertEqual(try liveSession(coordinator.presentation).capabilities.filter { $0.key.hasPrefix("host.") }, [:])
+        let session = try liveSession(coordinator.presentation)
+        XCTAssertEqual(session.capabilities.filter { $0.key.hasPrefix("host.") }, [:])
+        XCTAssertEqual(session.hostCommandDenials, [seamLessonCommand: "not_registered"])
+    }
+
+    func test_legacy_entry_request_at_an_unsupported_version_is_denied_version_unsupported() throws {
+        var world = try SeamWorld.load(legacy: true)
+        let lesson = world.activations["lesson"]!
+        world.activations["lesson"] = ActivationRequest(
+            routeID: lesson.routeID, url: lesson.url, source: lesson.source, origin: lesson.origin,
+            manifestSource: lesson.manifestSource, bridgeProtocolVersion: lesson.bridgeProtocolVersion,
+            nativeRuntimeVersion: lesson.nativeRuntimeVersion, correlationID: lesson.correlationID,
+            capabilities: [seamLessonCommand: "2.0.0"]
+        )
+        let delegate = SeamRecordingDelegate(registered: [seamLessonCommand])
+        let coordinator = world.coordinator(entry: seamLessonID, delegate: delegate)
+        coordinator.bootstrapIfNeeded()
+        let session = try liveSession(coordinator.presentation)
+        XCTAssertEqual(session.capabilities.filter { $0.key.hasPrefix("host.") }, [:])
+        XCTAssertEqual(session.hostCommandDenials, [seamLessonCommand: "version_unsupported"])
+    }
+
+    func test_legacy_declared_command_the_app_did_not_register_is_denied_with_a_diagnostic() throws {
+        let world = try SeamWorld.load(legacy: true)
+        let coordinator = world.coordinator(entry: seamLessonID, delegate: SeamRecordingDelegate(registered: []))
+        coordinator.bootstrapIfNeeded()
+        let session = try liveSession(coordinator.presentation)
+        XCTAssertEqual(session.capabilities.filter { $0.key.hasPrefix("host.") }, [:])
+        XCTAssertEqual(session.hostCommandDenials, [seamLessonCommand: "not_registered"])
+        XCTAssertEqual(
+            coordinator.hostCommandDiagnostics,
+            [HostCommandDiagnostic(routeID: seamLessonID, command: seamLessonCommand, issue: "not_registered")]
+        )
+    }
+
+    func test_legacy_plain_route_records_no_denial_and_no_diagnostic() throws {
+        let world = try SeamWorld.load(legacy: true)
+        let coordinator = world.coordinator(entry: seamPlainID, delegate: SeamRecordingDelegate(registered: [seamLessonCommand]))
+        coordinator.bootstrapIfNeeded()
+        let session = try liveSession(coordinator.presentation)
+        XCTAssertEqual(session.capabilities.filter { $0.key.hasPrefix("host.") }, [:])
+        XCTAssertEqual(session.hostCommandDenials, [:])
+        XCTAssertEqual(coordinator.hostCommandDiagnostics, [])
     }
 
     // MARK: D-09 fallbacks

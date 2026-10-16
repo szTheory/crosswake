@@ -92,6 +92,12 @@ crosswake.doctor` warns about it and `--check-publish` fails. The generated READ
 written only when the README is first created, so it may be stale after you toggle the mode;
 trust the `CrosswakeOriginMode` marker in `Info.plist` instead.
 
+To check the loopback mode end to end, run `bash script/verify_loopback_origin_simulator.sh
+--evidence PATH` from a clean checkout. It builds a local-loopback host, runs it in a Simulator it
+may boot and shut down again, and prints one JSON result. Exit `0` means passed, `2` means blocked
+(including generated-file hash, evidence-write and cleanup failures), and `3` means unavailable
+(missing tools or no Simulator). It is manually run phase evidence, not a CI lane.
+
 For an existing generated iOS host, inspect its recognized managed outputs and project
 settings first:
 

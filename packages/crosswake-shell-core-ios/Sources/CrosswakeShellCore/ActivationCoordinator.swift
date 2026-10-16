@@ -272,13 +272,19 @@ func grantHostCommands(
     seamDemand: String?
 ) -> (granted: [String: String], denials: [String: String]) {
     guard let declared = route.hostCommands else {
-        // D-28 legacy path: absent field keeps today's behavior, entry route only.
-        guard let entryRouteID, route.id == entryRouteID else { return ([:], [:]) }
-        var granted: [String: String] = [:]
-        for (key, version) in request.capabilities where key.hasPrefix("host.") && registered.contains(key) {
-            granted[key] = version
+        // A legacy (pre-1.2.0) manifest registered nothing for this route, so nothing is granted (D-01).
+        // Every host.* name the route declares is denied; on the entry route so is every host.* key
+        // of the request, and the request's version decides version_unsupported over not_registered.
+        var denials: [String: String] = [:]
+        for name in route.capabilities where name.hasPrefix("host.") {
+            denials[name] = "not_registered"
         }
-        return (granted, [:])
+        if let entryRouteID, route.id == entryRouteID {
+            for (key, version) in request.capabilities where key.hasPrefix("host.") {
+                denials[key] = HostCommandSeam.supportsCommandVersion(version) ? "not_registered" : "version_unsupported"
+            }
+        }
+        return ([:], denials)
     }
 
     var granted: [String: String] = [:]
@@ -631,7 +637,7 @@ public final class ActivationCoordinator: ObservableObject {
                 return .denied
             }
             // No route inherits another route's host.* grants. Only the entry route keeps its
-            // own baseline entries, which the D-28 legacy path (absent host_commands) consumes.
+            // own baseline entries, which the legacy path (absent host_commands) turns into denials, never grants.
             let inherited = routeID == baseline.routeID
             let capabilities = baseline.capabilities.filter { inherited || !$0.key.hasPrefix("host.") }
             let request = ActivationRequest(routeID: routeID, url: nil, source: .inAppNavigation, origin: baseline.origin, manifestSource: baseline.manifestSource, bridgeProtocolVersion: baseline.bridgeProtocolVersion, nativeRuntimeVersion: baseline.nativeRuntimeVersion, correlationID: baseline.correlationID, threadID: baseline.threadID, declaredPackRequirements: baseline.declaredPackRequirements, installedPacks: baseline.installedPacks, capabilities: capabilities)

@@ -352,7 +352,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     write_file!(
       Path.join(ios_root, "Fixtures/crosswake_manifest.json"),
-      ~s({"manifest_schema_version":"1.0.0"})
+      ~s({"manifest_schema_version":"1.0.0","routes":{}})
     )
 
     write_file!(

@@ -17,7 +17,12 @@ defmodule Crosswake.Shell.IOSHostGeneration do
     with :ok <- origin_transport(config),
          {:ok, %{manifest: manifest}} <- Manifest.compile(config.router, compile_opts),
          :ok <- entry_exists(manifest, config.entry_route_id),
-         :ok <- shell_gate(manifest, Keyword.fetch(opts, :shell_package)) do
+         :ok <-
+           shell_gate(
+             manifest,
+             Keyword.fetch(opts, :shell_package),
+             Keyword.get_lazy(opts, :project_root, &File.cwd!/0)
+           ) do
       entry = Map.fetch!(manifest.routes, config.entry_route_id)
 
       activation =
@@ -101,9 +106,9 @@ defmodule Crosswake.Shell.IOSHostGeneration do
   end
 
   # No :shell_package key keeps the pure byte projection (tests, pinned Phase 180 G2 call).
-  defp shell_gate(_manifest, :error), do: :ok
+  defp shell_gate(_manifest, :error, _project_root), do: :ok
 
-  defp shell_gate(manifest, {:ok, source}) do
+  defp shell_gate(manifest, {:ok, source}, project_root) do
     case first_declaring(manifest) do
       nil ->
         :ok
@@ -118,7 +123,8 @@ defmodule Crosswake.Shell.IOSHostGeneration do
                 :ok
 
               {:error, found} ->
-                {:error, shell_gate_message(route_id, command, package.location, found)}
+                location = ShellPackage.display_location(package.location, project_root)
+                {:error, shell_gate_message(route_id, command, location, found)}
             end
 
           {:error, reason} ->

@@ -64,7 +64,7 @@ defmodule Crosswake.Guides.HostCommandSeamGuideTest do
     end
   end
 
-  test "upgrade guide has the combination table and the entry-route deviation" do
+  test "upgrade guide has the combination table and the legacy-manifest denial" do
     text = guide("native_shell_upgrade.md")
 
     for needle <- [
@@ -72,13 +72,37 @@ defmodule Crosswake.Guides.HostCommandSeamGuideTest do
           "| New shell with an old manifest (before 1.2.0) |",
           "| New shell with a 1.2.0 manifest, declared command, no registered delegate |",
           "| Old shell with a new manifest |",
-          "keeps working for the entry route only",
           "Upgrade core and the iOS shell together",
           "host_commands_stale",
-          "host_command_shell_unsupported"
+          "host_command_shell_unsupported",
+          "host_commands_legacy_manifest",
+          "host_commands_stale_skipped",
+          "mix crosswake.gen.shell ios",
+          "not_registered",
+          "version_unsupported"
         ] do
       assert text =~ needle, "native_shell_upgrade.md is missing: #{needle}"
     end
+
+    refute text =~ "keeps working for the entry route only"
+  end
+
+  test "compatibility guide states the seam floor: the route activates and each declared command is denied with seam_unsupported" do
+    text = guide("compatibility.md")
+
+    assert text =~ "denied with `seam_unsupported`"
+    assert text =~ "The route still activates"
+    refute text =~ "refuses to activate a declaring route"
+  end
+
+  test "the legacy-manifest changelog entry names the behaviour change and the repair" do
+    changelog = File.read!("CHANGELOG.md")
+    [entry] = Regex.run(~r/\* \*\*Legacy-manifest denial[^\n]*/, changelog)
+    [seam] = Regex.run(~r/\* \*\*Host-command seam[^\n]*/, changelog)
+    refute entry == seam
+    assert entry =~ "mix crosswake.gen.shell ios"
+    assert entry =~ "host_commands_legacy_manifest"
+    assert entry =~ "not released"
   end
 
   test "upgrade guide explains the remote shell package gate and its fix" do

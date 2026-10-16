@@ -168,6 +168,7 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflightTest do
 
   defp ready_options do
     [
+      ios_host: nil,
       adopter_handoff: fn -> {:ok, %{source: :adopter, topology: %{status: :ready}}} end,
       inventory: [eligible_row()],
       config: proof_lane_config(),

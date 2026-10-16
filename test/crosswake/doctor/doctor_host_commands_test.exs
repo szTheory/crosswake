@@ -11,7 +11,10 @@ defmodule Crosswake.Doctor.HostCommandsTest do
     :platform,
     :package_location,
     :found_version,
-    :required_version
+    :required_version,
+    :route_ids,
+    :reason,
+    :error
   ]
   @swift_rel "Sources/CrosswakeShellCore/ActivationCoordinator.swift"
 
@@ -71,7 +74,9 @@ defmodule Crosswake.Doctor.HostCommandsTest do
 
     root =
       managed_root(dir, DeclaringRouter, pbx, fn manifest ->
-        update_in(manifest, ["routes", "lesson"], &Map.delete(&1, "host_commands"))
+        put_in(manifest, ["routes", "lesson", "host_commands"], %{
+          "host.lesson.audio.play" => "1.1.0"
+        })
       end)
 
     found = findings(dir, DeclaringRouter, root)
@@ -135,7 +140,9 @@ defmodule Crosswake.Doctor.HostCommandsTest do
         DeclaringRouter,
         "relativePath = \"../../../shell-pkg\";\n",
         fn manifest ->
-          update_in(manifest, ["routes", "lesson"], &Map.delete(&1, "host_commands"))
+          put_in(manifest, ["routes", "lesson", "host_commands"], %{
+            "host.lesson.audio.play" => "1.1.0"
+          })
         end
       )
 
@@ -146,5 +153,136 @@ defmodule Crosswake.Doctor.HostCommandsTest do
     for finding <- found do
       assert Map.keys(finding.details) -- @allowed_detail_keys == []
     end
+  end
+
+  defp fixture_path(root), do: Path.join(root, "Fixtures/crosswake_manifest.json")
+
+  test "a legacy fixture route the router declares on is one host_commands_legacy_manifest error and no stale finding",
+       %{dir: dir} do
+    local_package(dir, "1.0.0")
+
+    root =
+      managed_root(
+        dir,
+        DeclaringRouter,
+        "relativePath = \"../../../shell-pkg\";\n",
+        fn manifest ->
+          update_in(manifest, ["routes", "lesson"], &Map.delete(&1, "host_commands"))
+        end
+      )
+
+    found = findings(dir, DeclaringRouter, root)
+    assert codes(found) == ["host_commands_legacy_manifest"]
+    [finding] = found
+    assert finding.severity == :error
+    assert finding.details == %{route_ids: ["lesson"], platform: :ios}
+    assert finding.hint == "Run mix crosswake.gen.shell ios"
+  end
+
+  test "a legacy fixture route the router does not declare on is a host_commands_legacy_manifest warning",
+       %{dir: dir} do
+    root =
+      managed_root(dir, ManagedRouter, "minimumVersion = 0.2.11;\n", fn manifest ->
+        update_in(manifest, ["routes"], fn routes ->
+          Map.new(routes, fn {id, route} -> {id, Map.delete(route, "host_commands")} end)
+        end)
+      end)
+
+    found = findings(dir, ManagedRouter, root)
+    assert codes(found) == ["host_commands_legacy_manifest"]
+    [finding] = found
+    assert finding.severity == :warning
+    assert finding.details.platform == :ios
+    assert finding.details.route_ids != []
+    assert finding.details.route_ids == Enum.sort(finding.details.route_ids)
+    assert finding.hint == "Run mix crosswake.gen.shell ios"
+  end
+
+  test "an unreadable fixture is one host_commands_stale error with reason unreadable", %{
+    dir: dir
+  } do
+    local_package(dir, "1.0.0")
+    root = managed_root(dir, DeclaringRouter, "relativePath = \"../../../shell-pkg\";\n")
+    File.rm!(fixture_path(root))
+    File.mkdir_p!(fixture_path(root))
+
+    found = findings(dir, DeclaringRouter, root)
+    assert codes(found) == ["host_commands_stale"]
+    [finding] = found
+    assert finding.severity == :error
+    assert finding.details.reason == "unreadable"
+    assert finding.details.error == "eisdir"
+    assert finding.details.platform == :ios
+    refute inspect(finding, limit: :infinity) =~ dir
+  end
+
+  test "each malformed fixture shape is one host_commands_stale error with reason malformed", %{
+    dir: dir
+  } do
+    local_package(dir, "1.0.0")
+    root = managed_root(dir, DeclaringRouter, "relativePath = \"../../../shell-pkg\";\n")
+
+    shapes = [
+      "{not json",
+      "[]",
+      ~s({"routes": []}),
+      "{}",
+      ~s({"routes": {"lesson": "x"}}),
+      ~s({"routes": {"lesson": {"host_commands": []}}}),
+      ~s({"routes": {"lesson": {"host_commands": {"host.lesson.audio.play": 1}}}})
+    ]
+
+    assert length(shapes) == 7
+
+    for bytes <- shapes do
+      File.write!(fixture_path(root), bytes)
+      found = findings(dir, DeclaringRouter, root)
+      assert codes(found) == ["host_commands_stale"], "shape #{bytes}"
+      [finding] = found
+      assert finding.severity == :error
+      assert finding.details.reason == "malformed"
+    end
+  end
+
+  test "a declaring router route missing from the fixture is one host_commands_stale error with reason route_missing",
+       %{dir: dir} do
+    local_package(dir, "1.0.0")
+
+    root =
+      managed_root(
+        dir,
+        DeclaringRouter,
+        "relativePath = \"../../../shell-pkg\";\n",
+        fn manifest ->
+          update_in(manifest, ["routes"], &Map.delete(&1, "lesson"))
+        end
+      )
+
+    found = findings(dir, DeclaringRouter, root)
+    assert codes(found) == ["host_commands_stale"]
+    [finding] = found
+    assert finding.severity == :error
+    assert finding.details.reason == "route_missing"
+    assert finding.details.route_id == "lesson"
+    assert finding.details.commands == ["host.lesson.audio.play"]
+  end
+
+  test "an absent fixture with a declaring router is an advisory host_commands_stale_skipped that does not fail doctor",
+       %{dir: dir} do
+    local_package(dir, "1.0.0")
+    root = managed_root(dir, DeclaringRouter, "relativePath = \"../../../shell-pkg\";\n")
+    File.rm!(fixture_path(root))
+
+    found = findings(dir, DeclaringRouter, root)
+    assert codes(found) == ["host_commands_stale_skipped"]
+    [finding] = found
+    assert finding.severity == :advisory
+    assert Enum.filter(found, &(&1.severity == :error)) == []
+  end
+
+  test "an absent fixture with a non-declaring router gives no host-command finding", %{dir: dir} do
+    root = managed_root(dir, ManagedRouter, "minimumVersion = 0.2.11;\n")
+    File.rm!(fixture_path(root))
+    assert findings(dir, ManagedRouter, root) == []
   end
 end

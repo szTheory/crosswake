@@ -60,21 +60,25 @@ and iOS only. Nothing described here is a release. The Android shell is unchange
 Upgrade core and the iOS shell together. An older Swift package already built into an
 app, fed by newer fixtures generated outside the generation gate, would still reuse the
 entry baseline on navigation. `mix crosswake.doctor` reports `host_commands_stale` when
-the generated manifest no longer matches the router's per-route host commands, and
-`host_command_shell_unsupported` when it can determine that the shell package is older
-than the seam.
+the generated manifest no longer matches the router's per-route host commands,
+`host_commands_legacy_manifest` when a generated route has no `host_commands` field at all,
+and `host_command_shell_unsupported` when it can determine that the shell package is older
+than the seam. When the generated manifest is absent and the router declares commands,
+doctor reports the advisory `host_commands_stale_skipped` instead of passing silently.
 
 | Combination | Outcome |
 | --- | --- |
 | Host with no declaring routes | Output is unchanged apart from the schema string. Old shells keep working. |
-| New shell with an old manifest (before 1.2.0) | The field is absent, so each route keeps today's behavior. An activation that already carries a registered command keeps working for the entry route only. |
+| New shell with an old manifest (before 1.2.0) | The field is absent, so no route is granted any host command. Every `host.*` command on every route is denied (`not_registered`, or `version_unsupported` for an unsupported version). Doctor reports `host_commands_legacy_manifest`; the repair is `mix crosswake.gen.shell ios`. |
 | New shell with a 1.2.0 manifest, declared command, no registered delegate | Denied at dispatch with the route and command named. |
 | Old shell with a new manifest | The old shell ignores `host_commands`. It grants nothing it did not already grant. |
 
-The entry-route sentence matters. A pre-1.2.0 manifest, together with an activation that
-already carries a registered command, keeps working for the entry route only. Other
-routes get nothing until the manifest is regenerated. A present `host_commands` field,
-including an empty one, is the only authority.
+A pre-1.2.0 manifest grants nothing. There is no compatibility window: a route without
+`host_commands` is denied every host command it declares, and on the entry route every
+host command its activation carries, with the same reasons a declaring route uses
+(`not_registered`, or `version_unsupported` for an unsupported version). Run
+`mix crosswake.gen.shell ios` to regenerate the manifest. A present `host_commands`
+field, including an empty one, is the only authority.
 
 Generation blocks when any route declares host commands and Crosswake cannot establish
 that the host's `crosswake-shell-core-ios` carries the seam. A host using a remote
