@@ -246,6 +246,21 @@ defmodule Crosswake.ProofLane.LoopbackOriginHarnessTest do
     assert_verdict(ctx, result, "passed", nil)
   end
 
+  test "evidence: an empty evidence value blocks with LOOP-IOS-EVIDENCE before any build", ctx do
+    result = run_harness(ctx, "baseline", evidence_arg: "")
+    assert_verdict(ctx, result, "blocked", "LOOP-IOS-EVIDENCE")
+    assert result.exit == 2
+    refute_build_called(ctx)
+  end
+
+  test "evidence: a bare evidence flag blocks with LOOP-IOS-EVIDENCE and still prints one JSON object",
+       ctx do
+    result = run_harness(ctx, "baseline", argv: ["--evidence"])
+    assert_verdict(ctx, result, "blocked", "LOOP-IOS-EVIDENCE")
+    assert result.exit == 2
+    refute_build_called(ctx)
+  end
+
   test "evidence: a missing evidence directory blocks with LOOP-IOS-EVIDENCE before any build",
        ctx do
     result = run_harness(ctx, "baseline", evidence_arg: Path.join([ctx.ev, "nope", "out.json"]))
@@ -340,6 +355,7 @@ defmodule Crosswake.ProofLane.LoopbackOriginHarnessTest do
   defp run_harness(ctx, mode, opts \\ []) do
     evidence_arg = Keyword.get(opts, :evidence_arg, Path.join(ctx.ev, "evidence.json"))
     cwd = Keyword.get(opts, :cwd, ctx.clone)
+    argv = Keyword.get(opts, :argv, ["--evidence", evidence_arg])
     stderr_file = Path.join(ctx.base, "stderr-#{System.unique_integer([:positive])}.txt")
 
     env = [
@@ -355,10 +371,10 @@ defmodule Crosswake.ProofLane.LoopbackOriginHarnessTest do
         "bash",
         [
           "-c",
-          ~s(exec bash "$0" --evidence "$1" 2>"$2"),
+          ~s(stderr_file="$1"; shift; exec bash "$0" "$@" 2>"$stderr_file"),
           Path.join(ctx.clone, @script_rel),
-          evidence_arg,
           stderr_file
+          | argv
         ],
         cd: cwd,
         env: env

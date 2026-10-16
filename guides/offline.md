@@ -61,6 +61,10 @@ behavior, or silent last-write-wins semantics.
 - typed offline telemetry metadata
 - the explicit cached-route and study-session island posture
 
+The doctor field `offline.status` is `"supported"`, `"incomplete"` or
+`"not_claimed"`; `"not_claimed"` means no route declares offline behavior, and it is
+distinct from the native-shell support posture `not_claimed` in `guides/install.md`.
+
 Doctor support language is generated from the same contract truth as the
 manifest. It does not infer offline support from generic `sync` strings or route
 ordering.

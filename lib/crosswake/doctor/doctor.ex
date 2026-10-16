@@ -385,7 +385,12 @@ defmodule Crosswake.Doctor do
               "unmanaged_routes",
               "policy_compile",
               warning.message,
-              "decide whether unmanaged routes are intentionally outside Crosswake ownership"
+              "decide whether unmanaged routes are intentionally outside Crosswake ownership",
+              %{
+                unmanaged_paths: warning.unmanaged_paths |> Enum.uniq() |> Enum.sort(),
+                # inspect(nil) is the string "nil"; the guard keeps a route-list source null.
+                router: warning.module && inspect(warning.module)
+              }
             )
           end)
 
@@ -464,6 +469,21 @@ defmodule Crosswake.Doctor do
   defp phase_4_posture(nil), do: {%{}, []}
 
   defp phase_4_posture(manifest) do
+    # Computed over every manifest route BEFORE the contract filter below: that
+    # filter drops exactly the routes this check exists to catch (an offline
+    # island with no island_contract). The predicate is deliberately not widened
+    # (D-09; see 187-DEFERRALS.md).
+    incoherent_ids =
+      manifest.routes
+      |> Map.values()
+      |> Enum.filter(fn route ->
+        route.runtime == :offline_island and route.offline == :local_first and
+          is_nil(route.island_contract)
+      end)
+      |> Enum.map(& &1.id)
+      |> Enum.uniq()
+      |> Enum.sort()
+
     offline_routes =
       manifest.routes
       |> Map.values()
@@ -492,16 +512,31 @@ defmodule Crosswake.Doctor do
     terminal_outcomes = Enum.map(OfflineTelemetry.terminal_outcomes(), &Atom.to_string/1)
 
     coherent? =
-      Enum.all?(offline_routes, fn {_route_id, route} ->
-        case route.offline do
-          :cached_read_only -> route.cache_contract and not route.island_contract
-          :local_first -> route.island_contract
-          :unavailable -> true
-        end
-      end)
+      incoherent_ids == [] and
+        Enum.all?(offline_routes, fn {_route_id, route} ->
+          case route.offline do
+            :cached_read_only -> route.cache_contract and not route.island_contract
+            :local_first -> route.island_contract
+            :unavailable -> true
+          end
+        end)
+
+    claims_offline? =
+      manifest.routes
+      |> Map.values()
+      |> Enum.any?(fn route -> route.offline != :unavailable end)
+
+    # Precedence: incomplete > not_claimed > supported. An unbacked island is
+    # itself an offline claim, so not_claimed can never mask an error.
+    status =
+      cond do
+        not coherent? -> :incomplete
+        not claims_offline? -> :not_claimed
+        true -> :supported
+      end
 
     offline = %{
-      status: if(coherent?, do: :supported, else: :incomplete),
+      status: status,
       states: status_vocabulary,
       telemetry: %{
         metadata_keys: telemetry_keys,
@@ -510,25 +545,50 @@ defmodule Crosswake.Doctor do
       routes: stringify_offline_routes(offline_routes)
     }
 
+    details = %{
+      status: Atom.to_string(offline.status),
+      states: status_vocabulary,
+      telemetry_keys: telemetry_keys,
+      terminal_outcomes: terminal_outcomes,
+      routes: offline.routes
+    }
+
     findings = [
-      check(
-        if(coherent?, do: :advisory, else: :error),
-        if(coherent?, do: "offline_posture_ready", else: "offline_posture_incomplete"),
-        "offline_posture",
-        "offline posture exposes route-local cached, saved locally, queued for replay, replay failed, and conflict requires attention vocabulary",
-        if(coherent?,
-          do:
+      case status do
+        :incomplete ->
+          check(
+            :error,
+            "offline_posture_incomplete",
+            "offline_posture",
+            "offline posture exposes route-local cached, saved locally, queued for replay, replay failed, and conflict requires attention vocabulary",
+            "restore explicit cache and island contract truth for every offline route; " <>
+              "declare island_contract for any offline_island local_first route listed in incoherent_routes",
+            if(incoherent_ids == [],
+              do: details,
+              else: Map.put(details, :incoherent_routes, incoherent_ids)
+            )
+          )
+
+        :not_claimed ->
+          check(
+            :advisory,
+            "offline_posture_not_claimed",
+            "offline_posture",
+            "no routes declare offline behavior; offline posture is not claimed",
+            "a cached read-only route is not local mutation; offline posture is reported once a route declares cache_contract or island_contract",
+            details
+          )
+
+        :supported ->
+          check(
+            :advisory,
+            "offline_posture_ready",
+            "offline_posture",
+            "offline posture exposes route-local cached, saved locally, queued for replay, replay failed, and conflict requires attention vocabulary",
             "doctor and JSON output now describe explicit cached-route and study-session island posture from typed contract truth",
-          else: "restore explicit cache and island contract truth for every offline route"
-        ),
-        %{
-          status: Atom.to_string(offline.status),
-          states: status_vocabulary,
-          telemetry_keys: telemetry_keys,
-          terminal_outcomes: terminal_outcomes,
-          routes: offline.routes
-        }
-      )
+            details
+          )
+      end
     ]
 
     {offline, findings}

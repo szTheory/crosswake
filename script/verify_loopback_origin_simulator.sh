@@ -14,14 +14,20 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 HELPERS="${ROOT_DIR}/script/loopback_origin_simulator"
 XCODEBUILD="${CROSSWAKE_IOS_XCODEBUILD_BIN:-xcodebuild}"
 EVIDENCE=""
+EVIDENCE_REQUESTED=0
 SCHEME="CrosswakeShell"
 CORE_TAG=""
 
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
     --evidence)
-      EVIDENCE="${2:-}"
-      shift 2
+      EVIDENCE_REQUESTED=1
+      if [[ "$#" -ge 2 ]]; then
+        EVIDENCE="$2"
+        shift 2
+      else
+        shift
+      fi
       ;;
     *)
       echo "error: unsupported option $1" >&2
@@ -283,6 +289,11 @@ cleanup_and_emit() {
 trap cleanup_and_emit EXIT
 
 # ---------------------------------------------------------------- evidence precheck (D-12)
+# 186 WR-03: an empty or missing --evidence value is refused here, after the EXIT trap, so the
+# refusal carries the one JSON object the header promises instead of passing with no evidence file.
+if [[ "$EVIDENCE_REQUESTED" == "1" && -z "$EVIDENCE" ]]; then
+  block "LOOP-IOS-EVIDENCE" "--evidence needs a path"
+fi
 if [[ -n "$EVIDENCE" ]]; then
   case "$EVIDENCE" in
     /*) ;;
