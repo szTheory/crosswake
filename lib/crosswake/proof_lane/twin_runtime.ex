@@ -22,6 +22,7 @@ defmodule Crosswake.ProofLane.TwinRuntime do
   @receipt_name "receipt.json"
   @term_grace_ms 2_000
   @default_run_deadline_ms 3_600_000
+  @default_registry_timeout_ms 5_000
   @flag_name ~r/\ACROSSWAKE_TWIN_[A-Z0-9_]+\z/
 
   @enforce_keys [:run_id, :run_root, :database_path, :origin, :origin_port, :registry]
@@ -38,10 +39,12 @@ defmodule Crosswake.ProofLane.TwinRuntime do
     :resource_digests,
     :fixture_digests,
     :registry,
-    :run_deadline_at
+    :run_deadline_at,
+    :registry_timeout_ms
   ]
 
   @type t :: %__MODULE__{}
+  # registry_timeout_ms: nil means the 5_000 ms default (pos_integer() | nil).
   @type failure :: %{cause: atom(), action: String.t()}
 
   @type checked :: %{
@@ -224,9 +227,10 @@ defmodule Crosswake.ProofLane.TwinRuntime do
   Terminates and reaps every tracked child and verifies each is gone, keeping the run
   registry so the first failure stays readable until stop_all/1 releases it.
   """
-  @spec stop_children(t()) :: :ok | {:error, :child_still_alive | :registry_gone}
-  def stop_children(%__MODULE__{registry: registry} = runtime) do
-    case tracked_children(registry) do
+  @spec stop_children(t()) ::
+          :ok | {:error, :child_still_alive | :registry_gone | :registry_timeout}
+  def stop_children(%__MODULE__{} = runtime) do
+    case tracked_children(runtime) do
       {:ok, children} ->
         results = Enum.map(children, &terminate(runtime, &1))
         if Enum.all?(results, &(&1 == :ok)), do: :ok, else: {:error, :child_still_alive}
@@ -235,32 +239,49 @@ defmodule Crosswake.ProofLane.TwinRuntime do
       # gone registry can mean orphaned children; reporting :ok would be a false success.
       :gone ->
         {:error, :registry_gone}
+
+      # A registry that did not answer in time is still alive and still owns the only record
+      # of the children, so no child is terminated here and the registry must not be stopped.
+      :timeout ->
+        {:error, :registry_timeout}
     end
   end
 
   # Read inside try/catch rather than checking Process.alive? first, so a registry that
-  # dies between the check and the read cannot raise. A call timeout is also reported as
-  # gone, which is accepted.
-  defp tracked_children(registry) do
-    {:ok, Agent.get(registry, &Map.values(&1.children))}
+  # dies between the check and the read cannot raise. A call timeout is reported separately,
+  # because the registry is still alive and owns the only record of the children; every other
+  # exit (noproc, normal, shutdown, killed, crash) is reported as gone.
+  defp tracked_children(%__MODULE__{registry: registry} = runtime) do
+    {:ok, Agent.get(registry, &Map.values(&1.children), registry_timeout_ms(runtime))}
   catch
+    :exit, {:timeout, _} -> :timeout
     :exit, _ -> :gone
   end
 
+  defp registry_timeout_ms(%__MODULE__{registry_timeout_ms: ms}) when is_integer(ms) and ms > 0,
+    do: ms
+
+  defp registry_timeout_ms(_runtime), do: @default_registry_timeout_ms
+
   @doc """
   Terminates and reaps every tracked child, verifies each is gone, and closes the origin.
-  The origin and the registry are always released; a registry that was already gone is
-  reported as `{:error, :registry_gone}`.
+  The origin is always released. The registry is released only when it is gone or holds no
+  live child: after `{:error, :registry_timeout}` or `{:error, :child_still_alive}` it is kept
+  alive with its child list so a later `stop_all/1` can still reap the children. A registry
+  that was already gone is reported as `{:error, :registry_gone}`.
   """
-  @spec stop_all(t()) :: :ok | {:error, :child_still_alive | :registry_gone}
+  @spec stop_all(t()) ::
+          :ok | {:error, :child_still_alive | :registry_gone | :registry_timeout}
   def stop_all(%__MODULE__{registry: registry} = runtime) do
     result = stop_children(runtime)
     if runtime.origin_listener, do: :gen_tcp.close(runtime.origin_listener)
 
-    try do
-      Agent.stop(registry)
-    catch
-      :exit, _ -> :ok
+    if result in [:ok, {:error, :registry_gone}] do
+      try do
+        Agent.stop(registry)
+      catch
+        :exit, _ -> :ok
+      end
     end
 
     result
@@ -288,8 +309,14 @@ defmodule Crosswake.ProofLane.TwinRuntime do
     end
 
     if Port.info(port) != nil, do: Port.close(port)
-    mark_exited(runtime, child.name)
-    if alive?(os_pid), do: :still_alive, else: :ok
+
+    # A child that survived TERM and KILL stays listed, so the registry keeps the only record.
+    if alive?(os_pid) do
+      :still_alive
+    else
+      mark_exited(runtime, child.name)
+      :ok
+    end
   end
 
   defp drain(port, grace_ms) do

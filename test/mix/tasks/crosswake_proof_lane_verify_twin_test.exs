@@ -712,4 +712,47 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
       refute text =~ secret
     end
   end
+
+  describe "annotate_stop/2" do
+    @note "Also check for leftover child processes: the run registry did not answer before the stop timeout, so a child may still be running."
+    @passed {0,
+             [
+               "result: passed (exit 0)",
+               "first cause: none",
+               "report: R",
+               "next action: A"
+             ]}
+
+    test "a registry timeout names the cause and appends the note, keeping exit code and report" do
+      assert {0, [l1, l2, l3, l4]} =
+               VerifyTwin.annotate_stop(@passed, {:error, :registry_timeout})
+
+      assert l1 == "result: passed (exit 0)"
+      assert l2 == "first cause: registry_timeout"
+      assert l3 == "report: R"
+      assert l4 == "next action: A " <> @note
+    end
+
+    test "an existing cause is kept and the note is still appended" do
+      verdict =
+        {1,
+         [
+           "result: failed (exit 1)",
+           "first cause: source_dirty",
+           "report: R",
+           "next action: A"
+         ]}
+
+      assert {1, [_, "first cause: source_dirty", _, l4]} =
+               VerifyTwin.annotate_stop(verdict, {:error, :registry_timeout})
+
+      assert l4 == "next action: A " <> @note
+    end
+
+    test "every other stop result returns the verdict unchanged" do
+      for stop <- [:ok, {:error, :registry_gone}, {:error, :child_still_alive}] do
+        assert VerifyTwin.annotate_stop(@passed, stop) == @passed
+      end
+    end
+  end
 end

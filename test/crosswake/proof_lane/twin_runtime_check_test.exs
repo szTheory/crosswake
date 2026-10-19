@@ -315,4 +315,96 @@ defmodule Crosswake.ProofLane.TwinRuntimeCheckTest do
     assert :ok = TwinRuntime.record_failure(runtime, :host_denied)
     TwinRuntime.stop_all(runtime)
   end
+
+  defp kill_registry_and_group(registry, os_pids) do
+    on_exit(fn ->
+      if Process.alive?(registry) do
+        try do
+          :sys.resume(registry)
+        catch
+          _, _ -> :ok
+        end
+
+        Process.exit(registry, :kill)
+      end
+
+      for os_pid <- os_pids do
+        System.cmd("kill", ["-s", "KILL", "--", "-" <> Integer.to_string(os_pid)],
+          stderr_to_stdout: true
+        )
+
+        System.cmd("kill", ["-s", "KILL", Integer.to_string(os_pid)], stderr_to_stdout: true)
+      end
+    end)
+  end
+
+  test "stop_children reports registry_timeout for a registry that does not answer (suspended)",
+       ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    runtime = %{runtime | registry_timeout_ms: 50}
+    kill_registry_and_group(runtime.registry, [])
+    :ok = :sys.suspend(runtime.registry)
+
+    assert {:error, :registry_timeout} = TwinRuntime.stop_children(runtime)
+  end
+
+  test "a suspended registry with zero children is still a timeout, not :ok", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    runtime = %{runtime | registry_timeout_ms: 50}
+    kill_registry_and_group(runtime.registry, [])
+    :ok = :sys.suspend(runtime.registry)
+
+    assert {:error, :registry_timeout} = TwinRuntime.stop_all(runtime)
+    assert Process.alive?(runtime.registry)
+  end
+
+  test "an answering registry is never a timeout", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    runtime = %{runtime | registry_timeout_ms: 50}
+
+    assert :ok = TwinRuntime.stop_all(runtime)
+  end
+
+  test "stop_all on a timed-out registry keeps the registry and child alive and a later stop_all reaps the child (suspended)",
+       ctx do
+    port = free_port()
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx, port), run_root: ctx.run_root)
+    runtime = %{runtime | registry_timeout_ms: 50}
+    sleep = System.find_executable("sleep")
+    {:ok, child} = TwinRuntime.start_child(runtime, :slow, %{path: sleep, args: ["30"]})
+    kill_registry_and_group(runtime.registry, [child.os_pid])
+
+    :ok = :sys.suspend(runtime.registry)
+    assert {:error, :registry_timeout} = TwinRuntime.stop_all(runtime)
+    assert Process.alive?(runtime.registry)
+    assert TwinRuntime.alive?(child.os_pid)
+
+    assert {:ok, again} =
+             :gen_tcp.listen(port, ip: {127, 0, 0, 1}, reuseaddr: false, active: false)
+
+    :gen_tcp.close(again)
+
+    :ok = :sys.resume(runtime.registry)
+    assert Map.has_key?(Agent.get(runtime.registry, & &1.children), :slow)
+
+    assert :ok = TwinRuntime.stop_all(runtime)
+    refute TwinRuntime.alive?(child.os_pid)
+  end
+
+  test "a child that survives TERM and KILL leaves the registry alive and still listed (still_alive)",
+       ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    # A background sleep is not a process-group leader, so the group signals cannot reach it.
+    {out, 0} = System.cmd("sh", ["-c", "sleep 30 >/dev/null 2>&1 & echo $!"])
+    bg_pid = out |> String.trim() |> String.to_integer()
+    port = Port.open({:spawn_executable, System.find_executable("cat")}, [:binary, :exit_status])
+
+    child = %{name: :stubborn, port: port, os_pid: bg_pid, deadline_at: 0}
+    Agent.update(runtime.registry, &put_in(&1, [:children, :stubborn], child))
+    kill_registry_and_group(runtime.registry, [bg_pid])
+
+    assert {:error, :child_still_alive} = TwinRuntime.stop_all(runtime)
+    assert Process.alive?(runtime.registry)
+    assert Map.has_key?(Agent.get(runtime.registry, & &1.children), :stubborn)
+  end
 end

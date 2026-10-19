@@ -73,13 +73,31 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwin do
         summarize(:blocked, Atom.to_string(cause), nil, action)
 
       {:ok, runtime} ->
+        # The receipt is write-once, so a registry timeout at stop changes only the cause and
+        # next-action text of the verdict, never the exit code or the written receipt.
         try do
           conduct(runtime, plan)
-        after
-          TwinRuntime.stop_all(runtime)
+        catch
+          kind, reason ->
+            stacktrace = __STACKTRACE__
+            TwinRuntime.stop_all(runtime)
+            :erlang.raise(kind, reason, stacktrace)
+        else
+          result -> annotate_stop(result, TwinRuntime.stop_all(runtime))
         end
     end
   end
+
+  @registry_timeout_note "Also check for leftover child processes: the run registry did not answer before the stop timeout, so a child may still be running."
+
+  @doc false
+  @spec annotate_stop({0 | 1 | 2, [String.t()]}, term()) :: {0 | 1 | 2, [String.t()]}
+  def annotate_stop({code, [result, cause, report, next]}, {:error, :registry_timeout}) do
+    cause = if cause == "first cause: none", do: "first cause: registry_timeout", else: cause
+    {code, [result, cause, report, next <> " " <> @registry_timeout_note]}
+  end
+
+  def annotate_stop(verdict, _stop_result), do: verdict
 
   @doc "Maps a status or unknown rule id to the exit status (0, 1 or 2)."
   @spec exit_status_for(term()) :: 0 | 1 | 2
