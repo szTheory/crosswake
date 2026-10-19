@@ -242,6 +242,72 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
     end
   end
 
+  test "an Info.plist replaced by a directory blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG and a plain cause" do
+    parent = self()
+    project = generate_shell(production_declaration())
+    on_exit(fn -> File.rm_rf!(project) end)
+
+    plist = Path.join(project, "native/ios/crosswake_shell/CrosswakeShell/Info.plist")
+    File.rm!(plist)
+    File.mkdir_p!(plist)
+
+    results = run_all_modes(host_options(project, production_declaration()), parent)
+    assert_all_blocked_by_config(results)
+    assert_plain_cause(results, "CrosswakeShell/Info.plist", project)
+    refute_received :device_report_called
+  end
+
+  test "a missing Info.plist in an existing shell folder blocks preflight-only, readiness and run" do
+    parent = self()
+    project = generate_shell(production_declaration())
+    on_exit(fn -> File.rm_rf!(project) end)
+
+    File.rm!(Path.join(project, "native/ios/crosswake_shell/CrosswakeShell/Info.plist"))
+
+    results = run_all_modes(host_options(project, production_declaration()), parent)
+    assert_all_blocked_by_config(results)
+    assert_plain_cause(results, "CrosswakeShell/Info.plist", project)
+    refute_received :device_report_called
+  end
+
+  test "a malformed route_activation.json blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG and a plain cause" do
+    parent = self()
+    project = generate_shell(production_declaration())
+    on_exit(fn -> File.rm_rf!(project) end)
+
+    File.write!(
+      Path.join(project, "native/ios/crosswake_shell/Fixtures/route_activation.json"),
+      "{not json"
+    )
+
+    results = run_all_modes(host_options(project, production_declaration()), parent)
+    assert_all_blocked_by_config(results)
+    assert_plain_cause(results, "Fixtures/route_activation.json", project)
+    refute_received :device_report_called
+  end
+
+  test "a production shell with no route_activation.json still passes preflight-only, readiness and run" do
+    parent = self()
+    project = generate_shell(production_declaration())
+    on_exit(fn -> File.rm_rf!(project) end)
+
+    File.rm!(Path.join(project, "native/ios/crosswake_shell/Fixtures/route_activation.json"))
+
+    options = host_options(project, production_declaration())
+
+    assert {:ready, _} = PhysicalIphone.run_with(["--preflight-only", "--json"], options)
+
+    assert {:readiness, %{outcome: "ready"}} =
+             PhysicalIphone.run_with(["--readiness", "--json"], options)
+
+    refute_received :device_report_called
+
+    assert {:passed, _} =
+             PhysicalIphone.run_with(["--run", "--json"], with_reports(options, parent))
+
+    assert_received :device_report_called
+  end
+
   test "a production declaration over production gen.shell output still passes preflight-only, readiness and run" do
     parent = self()
     project = generate_shell(production_declaration())
@@ -332,6 +398,14 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
 
     for {mode, args} <- @local_mode_cases_modes do
       {mode, PhysicalIphone.run_with(args, options)}
+    end
+  end
+
+  defp assert_plain_cause(results, file_name, project) do
+    for {_mode, {_kind, map}} <- results do
+      assert is_binary(map.cause)
+      assert String.contains?(map.cause, file_name)
+      refute String.contains?(map.cause, project)
     end
   end
 
