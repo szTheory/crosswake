@@ -57,11 +57,12 @@ defmodule Crosswake.AbsenceIsNotSuccess do
   # The test-files min is a minimum measured at the phase's final commit: adding
   # files never goes red, removing files is the reviewed event (lower the entry in
   # the same change and say why). Adding 50 files and deleting 50 others stays
-  # green: a known limit. Raising the pin is a Phase 188 freeze-checklist item.
+  # green: a known limit. The pin is raised at each landing to a count measured by
+  # a separate command at that commit, never from this script's own glob.
   # --min-test-files N replaces only the test-files min (for fixtures); nothing
   # ratchets automatically and nothing rewrites a pin.
   @scopes [
-    {"test-files", "test/**/*.exs", 249},
+    {"test-files", "test/**/*.exs", 253},
     {"todos", ".planning/todos/*.md", 1},
     {"seeds", ".planning/seeds/*.md", 1},
     {"deferred-items", ".planning/**/deferred-items.md", 1}
