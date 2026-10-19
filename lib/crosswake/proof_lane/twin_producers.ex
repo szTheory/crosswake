@@ -33,7 +33,7 @@ defmodule Crosswake.ProofLane.TwinProducers do
   distinct:, multi_scope:}}` taken at the end of that epoch.
   """
 
-  alias Crosswake.ProofLane.{TwinFaultBoundary, TwinReceipt, TwinRuntime}
+  alias Crosswake.ProofLane.{GitPins, TwinFaultBoundary, TwinReceipt, TwinRuntime}
 
   @host_kinds ~w(TW-T01-01 TW-T01-02 TW-T01-03 TW-T01-04 TW-T04-02 TW-T04-03 TW-T04-04 TW-T04-05)
   @verdicts ~w(passed failed blocked)
@@ -749,53 +749,8 @@ defmodule Crosswake.ProofLane.TwinProducers do
   # rule hides only names it literally matches, and a case-only rename shows up. It is never
   # refused, because git sets it true on every case-insensitive filesystem, including the
   # real candidate (D-41). `core.precomposeUnicode` is left alone, for D-41 (d)'s reason.
-  @empty_tree "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
-
-  @git_scrub_names ~w(GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY
-                      GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_COMMON_DIR GIT_NAMESPACE
-                      GIT_CEILING_DIRECTORIES GIT_CONFIG GIT_CONFIG_COUNT GIT_CONFIG_PARAMETERS
-                      GIT_PREFIX GIT_ATTR_SOURCE GIT_EXTERNAL_DIFF GIT_EXEC_PATH)
-
-  @git_fixed_env %{
-    "GIT_CONFIG_GLOBAL" => "/dev/null",
-    "GIT_CONFIG_NOSYSTEM" => "1",
-    "GIT_NO_REPLACE_OBJECTS" => "1",
-    "GIT_ATTR_NOSYSTEM" => "1",
-    "GIT_OPTIONAL_LOCKS" => "0",
-    "GIT_TERMINAL_PROMPT" => "0",
-    "LC_ALL" => "C"
-  }
-
-  @git_env @git_scrub_names
-           |> Map.new(&{&1, nil})
-           |> Map.merge(@git_fixed_env)
-           |> Enum.sort()
-
-  @git_pins [
-    "--no-optional-locks",
-    "--no-replace-objects",
-    "--attr-source=" <> @empty_tree,
-    "-c",
-    "core.fsmonitor=false",
-    "-c",
-    "core.filemode=true",
-    "-c",
-    "core.excludesFile=/dev/null",
-    "-c",
-    "core.attributesFile=/dev/null",
-    "-c",
-    "core.quotePath=false",
-    "-c",
-    "core.ignoreStat=false",
-    "-c",
-    "status.showUntrackedFiles=all",
-    "-c",
-    "core.autocrlf=false",
-    "-c",
-    "core.hooksPath=/dev/null",
-    "-c",
-    "core.ignorecase=false"
-  ]
+  @git_env GitPins.env()
+  @git_pins GitPins.pins()
 
   @max_dirty_count 1_000_000
   @min_git_version {2, 41}

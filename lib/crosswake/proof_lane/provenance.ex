@@ -5,6 +5,8 @@ defmodule Crosswake.ProofLane.Provenance do
   # Every value that cannot be known becomes an exact sentinel ("unknown" or
   # "git-unknown"); the evidence validator accepts those for advisory evidence only.
 
+  alias Crosswake.ProofLane.GitPins
+
   @hex ~r/^[0-9a-f]{40}([0-9a-f]{24})?$/
 
   @spec read(Path.t()) :: %{
@@ -58,27 +60,19 @@ defmodule Crosswake.ProofLane.Provenance do
   def commit_ref(cwd) do
     # stderr is folded into the captured output only so it never reaches the console;
     # the output is used solely through a hex regex match (D-05).
+    # A folder that is not itself the work-tree root (a nested host) is never given the
+    # enclosing repository's commit.
     with git when is_binary(git) <- System.find_executable("git"),
-         {out, 0} <-
-           System.cmd(git, ["rev-parse", "HEAD"],
-             cd: cwd,
-             stderr_to_stdout: true,
-             env: git_env()
-           ),
+         {top, 0} <- git(git, cwd, ["rev-parse", "--show-toplevel"]),
+         true <- work_tree_root?(String.trim_trailing(top, "\n"), cwd),
+         {out, 0} <- git(git, cwd, ["rev-parse", "HEAD"]),
          hex = String.trim(out),
          true <- Regex.match?(@hex, hex),
          # Tracked files only, so untracked build output does not erase the commit.
-         # --no-optional-locks keeps the read from rewriting the index. A dirty tree
-         # yields the sentinel: a HEAD that does not describe the verified code looks
+         # --no-optional-locks (in the pins) keeps the read from rewriting the index. A dirty
+         # tree yields the sentinel: a HEAD that does not describe the verified code looks
          # real but is wrong.
-         {"", 0} <-
-           System.cmd(
-             git,
-             ["--no-optional-locks", "status", "--porcelain", "--untracked-files=no"],
-             cd: cwd,
-             stderr_to_stdout: true,
-             env: git_env()
-           ) do
+         {"", 0} <- git(git, cwd, ["status", "--porcelain", "--untracked-files=no"]) do
       "git-" <> hex
     else
       _ -> "git-unknown"
@@ -87,5 +81,22 @@ defmodule Crosswake.ProofLane.Provenance do
     _ in [ErlangError, File.Error] -> "git-unknown"
   end
 
-  defp git_env, do: [{"GIT_DIR", nil}, {"GIT_WORK_TREE", nil}, {"GIT_INDEX_FILE", nil}]
+  defp git(git, cwd, args) do
+    System.cmd(git, GitPins.pins() ++ args,
+      cd: cwd,
+      stderr_to_stdout: true,
+      env: GitPins.spawn_env()
+    )
+  end
+
+  # Same folder means the same {device, inode}, so a symlinked or /var vs /private/var
+  # spelling of the root still matches without a string compare.
+  defp work_tree_root?(top, cwd) do
+    with {:ok, a} <- File.stat(top),
+         {:ok, b} <- File.stat(cwd) do
+      {a.major_device, a.inode} == {b.major_device, b.inode}
+    else
+      _ -> false
+    end
+  end
 end

@@ -49,6 +49,16 @@ defmodule Crosswake.ProofLane.ProvenanceTest do
     assert Provenance.commit_ref(dir) == "git-" <> head
   end
 
+  test "a host folder nested in a repository with no .git of its own yields git-unknown", %{
+    dir: dir
+  } do
+    head = clean_repo!(dir)
+    host = Path.join(dir, "examples/phoenix_host")
+    File.mkdir_p!(host)
+    assert Provenance.commit_ref(host) == "git-unknown"
+    assert Provenance.commit_ref(dir) == "git-" <> head
+  end
+
   test "a directory with no .git yields git-unknown", %{dir: dir} do
     refute File.exists?(Path.join(dir, ".git"))
     assert Provenance.commit_ref(dir) == "git-unknown"
@@ -120,6 +130,36 @@ defmodule Crosswake.ProofLane.ProvenanceTest do
     restore_env("GIT_DIR")
     System.put_env("GIT_DIR", Path.join(second, ".git"))
     assert Provenance.commit_ref(first) == "git-" <> head
+  end
+
+  test "a hostile global git config cannot make a dirty tree read as clean", %{dir: dir} do
+    clean_repo!(dir)
+    git!(dir, ["config", "--local", "--unset", "core.filemode"])
+    File.chmod!(Path.join(dir, "a.txt"), 0o755)
+
+    conf_dir = Path.join(dir, "hostile-home")
+    File.mkdir_p!(conf_dir)
+    conf = Path.join(conf_dir, ".gitconfig")
+    File.write!(conf, "[core]\n\tfileMode = false\n")
+
+    restore_env("GIT_CONFIG_GLOBAL")
+    restore_env("HOME")
+
+    System.put_env("GIT_CONFIG_GLOBAL", conf)
+    assert Provenance.commit_ref(dir) == "git-unknown"
+
+    System.delete_env("GIT_CONFIG_GLOBAL")
+    System.put_env("HOME", conf_dir)
+    assert Provenance.commit_ref(dir) == "git-unknown"
+  end
+
+  test "an inherited GIT_TRACE file is never written", %{dir: dir} do
+    head = clean_repo!(dir)
+    trace = Path.join(dir, "trace.log")
+    restore_env("GIT_TRACE")
+    System.put_env("GIT_TRACE", trace)
+    assert Provenance.commit_ref(dir) == "git-" <> head
+    refute File.exists?(trace)
   end
 
   test "a valid host shell manifest template_version is used", %{dir: dir} do
