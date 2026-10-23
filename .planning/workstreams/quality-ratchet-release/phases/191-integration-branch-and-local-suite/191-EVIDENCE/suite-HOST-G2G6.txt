@@ -1,0 +1,7 @@
+head 55708e5b825ccfd1eadd026384aef2e75c22d70c
+mode host
+totals_lines 1
+line1 tests 167 failures 0 invalid 0 skipped 0 excluded 0
+floor 167
+exit 0
+result pass

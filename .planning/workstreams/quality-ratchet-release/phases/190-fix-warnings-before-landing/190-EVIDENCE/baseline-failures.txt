@@ -1,0 +1,6 @@
+test G1 gate: validator rejects the host audio command as an unknown capability (Crosswake.Proof.Phase180TwinFeasibilityTest)
+test Task 1: ledger completeness, both directions (D-06 / roster_exact one level down) the regenerated snapshot's row keys equal the committed snapshot's row keys exactly (Crosswake.Proof.Phase170VacuousAssertionLedgerTest)
+test VAC-01 adjacency edge: two identical adjacent assertions produce two distinct rows a duplicated assertion inside one test block yields two rows with different keys (Crosswake.Proof.Phase170VacuousAssertionLedgerTest)
+test VAC-01 encoding edge: row keys are content-hashed, not position-hashed re-wrapping a flagged assertion across lines changes no key (Crosswake.Proof.Phase170VacuousAssertionLedgerTest)
+test VAC-01 encoding edge: row keys are content-hashed, not position-hashed renaming an identifier inside the collection expression changes the key (Crosswake.Proof.Phase170VacuousAssertionLedgerTest)
+test VAC-01 ordering edge: rows are emitted in a total order regenerating the committed-scope ledger twice on an unchanged tree produces byte-identical output (Crosswake.Proof.Phase170VacuousAssertionLedgerTest)

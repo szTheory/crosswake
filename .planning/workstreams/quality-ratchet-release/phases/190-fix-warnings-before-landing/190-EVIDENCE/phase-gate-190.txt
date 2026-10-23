@@ -1,0 +1,14 @@
+check history: ok
+check files: ok
+check durable_clean: ok
+check pin_equals_count: ok
+check suite: ok
+check scripts: ok
+check originals: ok
+check recovery_unchanged: ok
+check no_twin_added: ok
+check baseline_dispositions: ok
+check scan: ok
+scan: files 39
+scan: hits 0
+note phase180_run_folder_absent_before_and_after

@@ -1,0 +1,7 @@
+head 64a60effe28c38d0a1ce9741107cc44f570296be
+mode subset
+totals_lines 1
+line1 tests 16 failures 0 invalid 0 skipped 0 excluded 0
+floor 1
+exit 0
+result pass

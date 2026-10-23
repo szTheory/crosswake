@@ -1,0 +1,48 @@
+folder R-TMP-EMPTY stub 0 present no files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now - kb_recorded 0 verdict missing_recorded_empty path <tmp>/crosswake-178-handoff.qoh0yI
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-all-workflow-context-check
+folder R-TMP-021 stub 1 present yes files 56 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup 0 kb_now 3352 kb_recorded 13052 verdict stub_empty_now path <tmp>/crosswake-phase175-chimeway011-shallow-proof
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-companion-next-evidence
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-companion115-evidence
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 6 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict links_only path <tmp>/crosswake-phase175-context-repair-check
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-core0211-early-evidence
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-decimal-resolution
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-exact-proof-mix
+folder R-TMP-051 stub 1 present yes files 90 links_build 6 links_other 0 gitdir_files 90 gitdir_files_in_backup 90 kb_now 64512 kb_recorded 64512 verdict backed_up path <tmp>/crosswake-phase175-exact-public-candidate-source
+folder R-TMP-EMPTY stub 1 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-exact-public-source
+folder R-TMP-EMPTY stub 1 present yes files 0 links_build 7 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict links_only path <tmp>/crosswake-phase175-matrix-installer-tracked-check
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-native-proof-mix
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-pr222-evidence
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-pr225-evidence
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-pr228-evidence
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-pr228-v2-early-evidence
+folder R-TMP-EMPTY stub 1 present yes files 0 links_build 7 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict links_only path <tmp>/crosswake-phase175-pr230-tracked-check
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-pr230-v4-evidence
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-pr233-repair-content
+folder R-TMP-EMPTY stub 1 present yes files 0 links_build 7 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict links_only path <tmp>/crosswake-phase175-pr233-tracked-check
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-public-android-shell
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-public-core-029.tar
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-public-hex
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-public-ios-derived
+folder R-TMP-EMPTY stub 1 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-public-ios-packages
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-public-ios-shell
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-release-evidence-20261011
+folder R-TMP-EMPTY stub 1 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-release-source-20261011
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-phase175-workflow-context-repair
+folder R-TMP-EMPTY stub 0 present yes files 0 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup - kb_now 0 kb_recorded 0 verdict empty_now path <tmp>/crosswake-plan136
+folder R-TMP-050 stub 1 present yes files 56 links_build 0 links_other 0 gitdir_files 0 gitdir_files_in_backup 0 kb_now 3352 kb_recorded 13144 verdict stub_empty_now path <tmp>/crosswake176-compare.EhRPvM
+note R-TMP-021 the stub git directory has 0 regular files now; whether it held files when the folder was classified on 2026-10-16 was not recorded separately, because the recorded size includes the files outside git
+note R-TMP-050 the stub git directory has 0 regular files now; whether it held files when the folder was classified on 2026-10-16 was not recorded separately, because the recorded size includes the files outside git
+file R-TMP-LOOSE-SUPERSEDED present no verdict superseded_by_content path <tmp>/crosswake-v23-governing-brief.txt
+empty_rows_checked: 29
+empty_rows_present: 28
+empty_rows_missing: 1
+empty_rows_with_regular_files: 0
+empty_rows_with_gitdir_files: 0
+empty_rows_with_recorded_kb_over_0: 0
+empty_rows_links_build_folders: 4
+empty_rows_links_other: 0
+stub_rows_checked: 9
+stub_rows_with_gitdir_files: 1
+stub_rows_unbacked: 0
+superseded_file_checked: 1
+verdict: none of the 29 empty-row folders holds a regular file, a git-directory file or an unexplained link; the only stub with a git object store is R-TMP-051, which is backed up.

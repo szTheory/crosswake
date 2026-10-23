@@ -1,0 +1,14 @@
+tmp_names_equal: no
+tmp_missing_all_covered: yes
+backup_root_only_added_inventory_189: yes
+existing_bundles_unchanged: yes
+recovery_stashes: 4
+recovery_branches: 56
+recovery_worktrees: 3
+recovery_head_unchanged: yes
+tmp_counts: before 159, now 99, missing 60, covered by backup 58, obsolete 2, uncovered 0, added 0
+detail: amended rule (2026-10-18, user approved). 60 of the 159 loose crosswake names recorded before the phase are gone from the temp folder. They were removed by the stock macOS temp cleaner (daily at midnight, removes temp files untouched for 3 days), not by Phase 189, which deletes nothing. 58 of the 60 are listed in tmp-loose-files.files, whose tar (tmp-loose-files.tar) restore-tested as pass in plan 08. The other 2 are classified obsolete with a stated reason in tmp-entries.tsv: crosswake-178-handoff.qoh0yI (empty folder) and crosswake-v23-governing-brief.txt (text identical to a file on main). No current crosswake name is missing from the before listing other than the phase run folder.
+detail: snapshot comparison. Every compared line of 189-SNAPSHOT-AFTER.txt equals 189-SNAPSHOT-BEFORE.txt except the two temp-listing lines: tmp_listing_digest 332b6533... (before) vs 0bbbe71b... (after), tmp_listing_count 159 (before) vs 99 (after). That is the 60-name difference above, allowed only because every missing name is covered.
+detail: repo folders that still exist but lost old files to the same cleaner: crosswake-phase179-impl (covered by tmp-crosswake-phase179-impl-gitdir.tar, restore pass) and crosswake-phase179-source (covered by tmp-crosswake-phase179-source-gitdir.tar, restore pass).
+detail: durable candidate. <durable-candidate> (a clone outside the temp folder, beside the backup root) was verified read-only: HEAD a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4, tree f7c4d7dc1a86f251c3ba845d3cde8d4c770ae729, clean status (0 changed paths). Phase 190 should work in <durable-candidate>, not in the temp-folder candidate, because the temp cleaner will remove that candidate's older files.
+detail: the temp cleaner keeps running; names still in the temp folder (the temp candidate and the phase run folder included) can disappear from about three days after they were last touched.

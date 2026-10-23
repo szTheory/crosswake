@@ -1,0 +1,7 @@
+head 8a529f52f1d08adaa63a17d2c4d3d1bb608e562b
+find_count 253
+guard_scanned 253
+pin_before 249
+pin_after 253
+control_at_pin exit 0
+control_above_pin exit 1 below_pinned_minimum

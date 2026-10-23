@@ -1,0 +1,2 @@
+fingerprint	class	reason
+2cf42a72e8081e135d40987f7c6816d3ac0de9dca04d2262743c88aea3c1a3ab	email	A-14: obviously fake attacker-style origin fixture (reserved-style test domain) in a preserved candidate commit; the value is no longer in the tree after the PRIVACY commit

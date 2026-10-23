@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 35
+open_count: 38
 waived_count: 0
-fixed_count: 0
-total_count: 35
-last_updated: 2026-09-18T17:14:45.028Z
+fixed_count: 1
+total_count: 39
+last_updated: 2026-10-06T22:31:27.544Z
 ---
 
 # Broken Windows Ledger
@@ -50,6 +50,10 @@ last_updated: 2026-09-18T17:14:45.028Z
 | 33 | 173 | deviation | .github/workflows/exact-public-proof.yml |  | Record-assertion step carries a step-level if: on the applicability marker; the job itself is if: always() and the marker step is unconditional | open |  | 2026-09-17T21:53:26.882Z |  |
 | 34 | 173 | deviation | .github/workflows/exact-public-proof.yml |  | record-ledger is gated on needs.exact-public-proof.outputs.applicable == 'true'; when the proof job fails INSIDE the applicability step (bad lane, or recovery lane with blank approved_head/merge_oid) no output is emitted, so a recovery publish that already succeeded records no ledger row for its failed verdict. Run is red, so not a false green, but the durable record XPUB-06 promises is absent for exactly the XPUB-05 failure mode. | open |  | 2026-09-18T00:45:00.000Z |  |
 | 35 | 174 | unmet-truth | scripts/ci_monitor.cjs | 270 | check-actions defaults to a hardcoded 3-path list (crosswake-ci.yml + 2 composite actions), so it reports mutable_refs=0 while 31 mutable action refs exist across 10 other workflow files. The phase165 tests only exercise the classifier against tmp-dir fixtures passed as explicit arguments, so nothing asserts the default scope covers the repo. Absence-scored-as-success, shape A: a predicate over a silently-truncated collection. Fix = discover .github/workflows/*.yml and .github/actions/**/action.yml by default, add a scope-cardinality gate, then SHA-pin the 31 refs. | open |  | 2026-09-18T17:14:45.028Z |  |
+| 36 | 175 | unrun-verify | script/check_release_workflow_integrity.exs | 2004 | Workflow integrity verification stops before REL-17 checks because script/release_candidate/assert_candidate_receipt_artifact.sh is absent; publisher workflow presence/order remains UNKNOWN. | fixed |  | 2026-10-04T18:30:57.609Z | 2026-10-05T14:27:10.544Z |
+| 37 | 175 | stub | lib/mix/tasks/crosswake.release.mirror_tag_026.ex | 49 | Plan83 apply remains a fail-closed guard; Task3 implementation was not executed because Task2 PREFLIGHT_READY is unmet. | open |  | 2026-10-06T01:17:05.490Z |  |
+| 38 | 175 | unrun-verify | .planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-83-PLAN.md |  | Plan83 Task3 one-use tag/conditional-CI behavior verification is unrun; Task2 precondition is unmet after terminal UNKNOWN preflight. | open |  | 2026-10-06T01:17:05.574Z |  |
+| 39 | 175 | deviation | lib/crosswake/release_candidate/ios_mirror_tag_repair.ex | 922 | Corrected the observed child-timeout envelope classification; request count stays unknown. | open |  | 2026-10-06T22:31:27.544Z |  |
 
 ````json
 [
@@ -472,6 +476,58 @@ last_updated: 2026-09-18T17:14:45.028Z
     "reason": "",
     "recorded_at": "2026-09-18T17:14:45.028Z",
     "resolved_at": null
+  },
+  {
+    "id": 36,
+    "kind": "unrun-verify",
+    "phase": "175",
+    "file": "script/check_release_workflow_integrity.exs",
+    "line": 2004,
+    "description": "Workflow integrity verification stops before REL-17 checks because script/release_candidate/assert_candidate_receipt_artifact.sh is absent; publisher workflow presence/order remains UNKNOWN.",
+    "status": "fixed",
+    "reason": "",
+    "recorded_at": "2026-10-04T18:30:57.609Z",
+    "resolved_at": "2026-10-05T14:27:10.544Z",
+    "milestone": null
+  },
+  {
+    "id": 37,
+    "kind": "stub",
+    "phase": "175",
+    "file": "lib/mix/tasks/crosswake.release.mirror_tag_026.ex",
+    "line": 49,
+    "description": "Plan83 apply remains a fail-closed guard; Task3 implementation was not executed because Task2 PREFLIGHT_READY is unmet.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-06T01:17:05.490Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 38,
+    "kind": "unrun-verify",
+    "phase": "175",
+    "file": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-83-PLAN.md",
+    "line": null,
+    "description": "Plan83 Task3 one-use tag/conditional-CI behavior verification is unrun; Task2 precondition is unmet after terminal UNKNOWN preflight.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-06T01:17:05.574Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 39,
+    "kind": "deviation",
+    "phase": "175",
+    "file": "lib/crosswake/release_candidate/ios_mirror_tag_repair.ex",
+    "line": 922,
+    "description": "Corrected the observed child-timeout envelope classification; request count stays unknown.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-06T22:31:27.544Z",
+    "resolved_at": null,
+    "milestone": null
   }
 ]
 ````

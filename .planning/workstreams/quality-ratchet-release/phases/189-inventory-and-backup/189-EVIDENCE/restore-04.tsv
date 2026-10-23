@@ -1,0 +1,6 @@
+uncommitted-recovery.tar	tarfiles	pass	738 files match tar-time sha256 and mode (restore uncommitted-recovery.tar: pass)
+uncommitted-recovery-diff-HEAD.patch	headpatch	pass	58 modified paths match on base d0f3e2f1 (restore uncommitted-recovery-diff-HEAD.patch: pass)
+worktree-agent-p78.tar	tarfiles	pass	10 files match tar-time sha256 and mode (restore worktree-agent-p78.tar: pass)
+worktree-agent-p78.patch	headpatch	pass	10 modified paths match on base 0c050084 (restore worktree-agent-p78.patch: pass)
+worktree-accrue-bridge.tar	tarfiles	pass	1 files match tar-time sha256 and mode (restore worktree-accrue-bridge.tar: pass)
+worktree-accrue-bridge.patch	headpatch	pass	1 modified paths match on base 789175f2 (restore worktree-accrue-bridge.patch: pass)

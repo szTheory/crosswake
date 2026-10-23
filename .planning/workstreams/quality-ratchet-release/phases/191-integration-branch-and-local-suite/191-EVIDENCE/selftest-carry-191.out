@@ -1,0 +1,26 @@
+S01 manifest apply commit verify end to end: as expected
+S02 staged path outside planning refused: as expected
+S03 dropped file fails verify: as expected
+S04 flipped byte fails verify: as expected
+S05 extra file fails verify: as expected
+S06 mode change fails verify: as expected
+S07 empty manifest fails verify: as expected
+S08 unmatched path fails manifest: as expected
+S09 symlink in source refused: as expected
+S10 special file in source refused: as expected
+S11 ignored path not excluded fails manifest: as expected
+S12 source edited after cut refused by apply: as expected
+S13 moved file without pattern lands byte-identical: as expected
+S14 dollar rule rewrites only the listed file: as expected
+S15 inventory row without coverage fails verify: as expected
+S16 excluded path in manifest fails verify: as expected
+S17 output never holds home segment or account name: as expected
+S18 extglob row matches its own folder and not a neighbour: as expected
+S19 brace alternative row refused: as expected
+S20 rule that matches nothing fails full manifest, tolerated with sync: as expected
+S21 moved file holding a home line is transformed: as expected
+S22 same-path raw-identical file not listed or transformed, mode-only counted: as expected
+S23 sync re-run is idempotent and sees a later raw edit: as expected
+S24 transform with missing landed hash fails manifest: as expected
+S25 excluded source path counted and not listed: as expected
+selftest-carry: controls 25 of 25 as expected

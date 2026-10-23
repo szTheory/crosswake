@@ -1,0 +1,9 @@
+red_exit 2
+failed stop_children reports registry_timeout for a registry that does not answer (suspended)
+failed a suspended registry with zero children is still a timeout, not :ok
+failed a child that survives TERM and KILL leaves the registry alive and still listed (still_alive)
+failed stop_all on a timed-out registry keeps the registry and child alive and a later stop_all reaps the child (suspended)
+red2_exit 2
+failed annotate_stop/2 an existing cause is kept and the note is still appended
+failed annotate_stop/2 every other stop result returns the verdict unchanged
+failed annotate_stop/2 a registry timeout names the cause and appends the note, keeping exit code and report

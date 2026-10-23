@@ -10,44 +10,73 @@ Get one real Phoenix application onto one physical iPhone with explicit per-rout
 honest offline mutation island, bounded native affordances, and enough self-service proof to keep a
 team of one out of framework-debugging purgatory.
 
-## Last Shipped Milestone: v22.0 Quality Ratchet & Release Readiness (shipped 2026-09-15)
+## Verification Posture
 
-5 phases (164-168), 48 plans, 100 tasks. Closed as `override_closeout`.
+Default GSD verification to zero-human, shift-left evidence. Automate unit, integration, end-to-end,
+smoke, seam, artifact, and device checks whenever the environment can run them; record executable
+results in phase UAT/verification artifacts instead of handing reproducible checks to the operator.
+When every deliverable has passing automated coverage, record the UAT result as passed without a
+confirmatory human checkpoint. Present only behavior that remains genuinely unautomatable.
+Promote a check into CI only when it protects a recurring contract and gives stable, actionable
+feedback. Reserve human verification for judgment automation cannot make, unavoidable credentials,
+external approvals, or physical setup; automate the assertions and evidence evaluation around those
+exceptions.
 
-Dependency-security and merge-gate authority were made fail-closed through one authoritative path;
-CI was consolidated from twenty-seven legacy contexts to a single required `Crosswake CI` umbrella
-over forty-four literal proof leaves; clean-checkout repository quality became deterministic behind
-a nine-stage runner; public and pull-request truth were reconciled; and `crosswake 0.2.1` went live
-on Hex, SwiftPM and Maven.
+Complete local automation, evidence checks, and setup preparation before handing work back. Make
+unavoidable human work a precise last-mile action with a prefilled form or command and a secure
+credential path; never ask for secrets in chat. Remove unnecessary credential dependencies when a
+scoped anonymous path is supported. At each GSD handoff, use the active workstream's STATE.md and
+ROADMAP.md for the exact next command. Do not repeat a completed discuss, plan, execute, or verify
+stage. A consumed one-time attempt ends there; any new attempt requires a fresh plan and
+authorization, recorded with its terminal outcome so the workflow does not loop.
 
-**What this milestone did not establish, and should not be read as establishing.** Phase 168 proved
-the *pre*-publication candidate path. It also surfaced that the **post-publication proof lane has
-never executed at any release** — the release graph is welded to `0.2.1` (`TODO-009`/`SEED-017`),
-the companion clean-room lane has been green at zero of three releases inspected (`TODO-011`), and
-the exact-public proof is structurally unsatisfiable under the independent-companion design
-(`TODO-012`). An interim CI tripwire is on `main`; the durable repair is v23.0 work. `SEED-017` is
-BLOCKING before any release past `0.2.1`.
+## Last Completed Milestone: v26.0 Harden Before Trust (planning closeout 2026-10-16)
 
-## Earlier Shipped Milestone: v19.0 Showcase Apps & Capability Map
+All 18 requirements (PROBE, GUARD, SEAM-07..09, LOOP-06..07, DOCTOR, TWIN-07..08) are satisfied across five verified phases (184–188) and 37 plans. v26 removed the v25 checks that could pass while checking nothing: the twin's clean-tree probe now goes through one pinned git funnel that index flags and config cannot fool, a read-only `twin_preflight` answers whether a run would be allowed without using up a run root, empty scopes fail, the legacy host-command path denies, doctor reports real details and redacted paths, and proof evidence carries real provenance. All changes were frozen at candidate `a53fbef`, and twin-05 ran exactly once and passed (10/10 groups, 7/7 identity joins).
 
-**Shipped:** 2026-07-12
+The audit is `tech_debt` with no blocker. Product code exists only in the candidate `/private/tmp/crosswake-phase180-impl`; delivery needs separate authorization. Simulator proof does not promote a physical-iPhone or adopter claim. Several review warnings in the run tooling and probes should be fixed before the next twin run; 186 WR-01 (the LOOP-07 loopback residual) needs an owner decision. See the [closeout](workstreams/quality-ratchet-release/milestones/v26.0-closeout/CLOSEOUT.md) and [debt disposition](workstreams/quality-ratchet-release/milestones/v26.0-closeout/debt-disposition.md). No commit, tag or release.
 
-**Goal:** Turn Crosswake's proof-backed substrate into a polished, click-around DX showcase across realistic app domains, then use those examples to define the next native-controls milestone.
+## Earlier Completed Milestone: v25.0 iOS Host Setup & Digital Twin Proof (planning closeout 2026-10-15)
 
-**Delivered:**
-- A Crosswake-branded first-screen showcase hub with deterministic seeded/fixture data for SaaS/admin, field-service, and subscription learning/training domains.
-- Three fictional demo-app micro-brands, AdminPilot, Fieldserv, and LearnLoop, that make the domains feel product-real without confusing them with the Crosswake parent brand.
-- Three domain lanes that demonstrate route ownership, LiveView-first surfaces, offline/degraded behavior, device-pressure flows, entitlement/paywall pressure, diagnostics, and support truth without overclaiming unsupported native breadth.
-- A capability map and v20 handoff that classify current, demoed, missing, and next-pack native controls using Crosswake's route-policy, typed-contract, proof-lane, and package-ownership posture.
-- Seed classification stays explicit: **SEED-002** informs capability breadth and v20 prioritization, while **SEED-003** (iOS mirror token/backfill) and **SEED-004** (clean-room proof harness) remain release-infrastructure carryovers rather than v19 app-showcase scope.
+All 20 requirements (IOS, SEAM, LOOP, TWIN) are satisfied across five verified phases (179–183) and 32 plans. A compile-only `:ios_host` declaration generates the iOS host without hand patches; routes declare versioned `host.*` commands that the manifest (schema 1.2.0) carries to the native session and the bounded-shell offline island; an explicit local mode allows an http loopback origin while production stays HTTPS-only; and `mix crosswake.proof_lane.verify_twin ios` runs the bounded T01–T10 reference twin into a privacy-safe receipt. Run twin-04 passed 49/49 against the committed fix `50fcd57`, and the twin now refuses an uncommitted candidate (`source_dirty`).
 
-**Outcome:** All 31 v19 requirements satisfied; milestone audit passed after the Phase 152.1 closeout repair. The accepted debt is artifact-shape only: Phase 148's original numbered plan summaries did not exist, so the milestone preserves `148-SUMMARY-EXCEPTION.md` and an explicitly retroactive `148-RETRO-SUMMARY.md`.
+The re-audit is `tech_debt` with no blocker. Product code exists only in the candidate `/private/tmp/crosswake-phase180-impl`; delivery needs separate authorization. Simulator proof does not promote a physical-iPhone or adopter claim. Two review warnings can let a future twin run pass on a hidden change (git index flags; unpinned `core.filemode`) and belong in the next twin-touching change. See the [closeout](workstreams/quality-ratchet-release/milestones/v25.0-closeout/CLOSEOUT.md) and [debt disposition](workstreams/quality-ratchet-release/milestones/v25.0-closeout/debt-disposition.md). No commit, tag or release.
+
+## Earlier Completed Milestone: v24.0 Repository Cleanup & Maintenance (planning closeout 2026-10-12)
+
+All eight maintenance requirements are validated across three verified phases (176–178), fifteen plans and twenty-eight CLI-counted tasks. Captured work is recoverable; supported maintenance paths and instructions are verified; the audit queue accounts for 20 issues and 4 PRs. Local nine-stage proof and 48 required hosted checks bind to governed merge `f2d8875ee52d9679157c73b4a701b510ee612cb8`. PR #238 remains open and unmerged.
+
+Planning archives are complete with [six retained debt records](workstreams/quality-ratchet-release/milestones/v24.0-closeout/debt-disposition.md). All 1,677 protected historical files remain at their original paths. Six v23 acknowledgements carry forward; no new acknowledgement or phase override. No v24 commit/tag or package release is selected. See [milestone record](workstreams/quality-ratchet-release/MILESTONES.md).
+
+## Earlier Shipped Milestone: v23.0 Release Pipeline Repair & Proof-Lane Truth (archived 2026-10-11)
+
+Archived as `override_closeout`: 42/43 requirements satisfied; Phase 175 retains 8/9 because the first publish omitted the incident-response runbook (REL-10 / SC-1). Later successful releases do not repair that historical timing.
+
+Crosswake 0.2.11 passed ordinary three-registry publication, generated iOS/Android consumer builds, exact-public proof and the six-child COMPLETE rollup. Chimeway 0.1.2 passed its separate guarded publication and public-host doctor. PR #237 passed all 49 CI jobs and ten real installer-before-doctor pairs. These close the forward release/proof defects recorded at v22 close; the old 0.2.1 proof gap remains historical.
+
+Seven phases (169–175), 163 active plans / 193 tasks in the CLI inventory; historical superseded and stopped plans are retained. Six open artifact records were acknowledged without changing their verdicts; originals are preserved. Six accepted historical high limitations and twelve open lower findings remain, with zero current blocking high findings. Nyquist coverage is partial.
+
+Archive: `.planning/workstreams/quality-ratchet-release/milestones/v23.0-ROADMAP.md`, `v23.0-REQUIREMENTS.md`, `v23.0-MILESTONE-AUDIT.md` and `v23.0-phases/`.
+
+## Current Milestone Goals
+
+v27.0 Land and Clean Up is active in the quality workstream (started 2026-10-16; roadmap approved). Goal: land the v25 and v26 candidate commits and the v24–v27 planning records on GitHub `main` through a reviewed PR with green CI, then clean up so no work exists only in one local place. Phases 189–193 cover 18 requirements (INV, FIX, LAND, CLEAN); the merge needs a fresh `allow`; no package release. See the [scope](workstreams/quality-ratchet-release/v27.0-SCOPE.md) and [roadmap](workstreams/quality-ratchet-release/ROADMAP.md).
 
 **Archive:** `.planning/milestones/v19.0-ROADMAP.md`, `.planning/milestones/v19.0-REQUIREMENTS.md`, and `.planning/milestones/v19.0-MILESTONE-AUDIT.md`.
 
 ## Active Workstreams
 
-### v23.0 Release Pipeline Repair & Proof-Lane Truth (active)
+### v27.0 Land and Clean Up (Phases 189–193) — in progress (active)
+
+Workstream: Quality Ratchet & Release.
+
+**Last goal (v26.0, closed 2026-10-16):** Remove every v25 check that could pass while checking nothing, then run the reference twin once more (twin-05) against the hardened commit.
+
+**Current stage:** Last completed phase 188. v27.0 Land and Clean Up started 2026-10-16; Phase 189 (Inventory and backup) is next for discussion. The candidate is backed up outside `/private/tmp`; the recovery checkout stays frozen through Phase 192. See [STATE](workstreams/quality-ratchet-release/STATE.md).
+
+**Planning:** `.planning/workstreams/quality-ratchet-release/` — [v26.0 archive](workstreams/quality-ratchet-release/milestones/v26.0-ROADMAP.md), [requirements archive](workstreams/quality-ratchet-release/milestones/v26.0-REQUIREMENTS.md), and [roadmap](workstreams/quality-ratchet-release/ROADMAP.md).
+
+### v23.0 Release Pipeline Repair & Proof-Lane Truth (archived with exceptions)
 
 **Goal:** Repair the release pipeline's three derived-fact regressions and make every proof lane
 report a fact about the thing it names — no check stays green while asserting nothing.
@@ -99,12 +128,10 @@ separately funded business-line mandate. Durable reasoning is in
 `.planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md`.
 
 ## Current State
-- **v23.0 Phase 175 Gate 1 — PUBLISHED WITH ANCESTRY BREACH 2026-09-19.**
-  `crosswake_rulestead 0.1.1` is live, but the required incident-response runbook commit
-  `d3401e51` existed only on divergent local `main`. PR #147's exact base, head, and merge
-  excluded both that commit and the runbook file. REL-10 is historically unsatisfied and cannot be
-  repaired retroactively. Remaining publish gates are blocked until the runbook and the new
-  explicit-OID guard land on remote `main` and pass against freshly fetched PR base/head identities.
+- **v26.0 — PLANNING CLOSEOUT COMPLETE WITH TECH DEBT 2026-10-16.** 18/18 requirements across Phases 184–188; twin-05 passed (10/10 groups, 7/7 joins) against frozen candidate `a53fbef`. Product code is candidate-only pending authorized delivery; recovery source/index unchanged; no release or physical/adopter promotion.
+- **v25.0 — PLANNING CLOSEOUT COMPLETE WITH TECH DEBT 2026-10-15.** 20/20 requirements across Phases 179–183; twin-04 passed 49/49 against committed fix `50fcd57`. Product code is candidate-only pending authorized delivery; recovery source/index unchanged; no release or physical/adopter promotion.
+- **v24.0 — PLANNING CLOSEOUT COMPLETE WITH RETAINED DEBT 2026-10-12.** All eight requirements and three phases verified; archives copied, historical paths preserved, six debt records retained. PR #238 remains open/unmerged. The v25 scoped roadmap owns current work; no package release or adopter promotion.
+- **v23.0 — ARCHIVED WITH EXCEPTIONS 2026-10-11.** Crosswake 0.2.11 and Chimeway 0.1.2 are published and verified; installer repair #237 is merged. Phase 175 retains its first-publish ancestry breach at 8/9, and REL-10 remains unchecked.
 - **v22.0 Quality Ratchet & Release Readiness — PHASE 167 COMPLETE 2026-09-12.** Dependency
   security, authoritative and efficient CI, deterministic clean-checkout repository proof,
   documentation truth, parked-lane isolation, and explicit pull-request dispositions are verified.
@@ -274,6 +301,31 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ### Validated
 
+- ✓ **PROBE-01..04** The twin blocks `source_dirty` for any tracked difference from HEAD however git hides it, every twin git call uses one pinned configuration, real-repo fixtures cover each hiding mechanism, and a read-only preflight never consumes a run root. — v26.0 Phase184.
+- ✓ **GUARD-01..03** The absence checker fails on a missing root, empty scope or below-pin scope; uncovered v25 loops assert non-empty; twin runtime helpers fail closed. — v26.0 Phase185.
+- ✓ **SEAM-07..09, LOOP-06..07** The legacy host-command path no longer grants every command, doctor's stale check errors on unreadable input, path messages are project-relative, the loopback harness reports its own failures, and physical-iPhone preparation cannot reach a loopback host (tested cases; 186 WR-01 residual). — v26.0 Phase186.
+- ✓ **DOCTOR-01..04** Doctor JSON carries unmanaged-route details, unbacked offline islands are flagged, proof provenance is real or an explicit sentinel, and the CW-REQ-A/D deferrals are recorded. — v26.0 Phase187.
+- ✓ **TWIN-07..08** One frozen candidate commit, a scripted go/no-go, and exactly one twin-05 run that passed and is byte-copied into planning. — v26.0 Phase188.
+- ✓ **SEAM-01..06** Routes declare versioned `host.*` commands once on the router; the manifest (schema 1.2.0, additive) is the sole per-route authority; the native session grants only declared, registered, compatible commands; the bounded iOS shell admits `offline_island` routes; seam handoff written. — v25.0 Phase181.
+- ✓ **LOOP-01..05** An explicit `origin_mode: :local_loopback` allows only `http://127.0.0.1`/`localhost` with ATS `NSAllowsLocalNetworking`; production output is byte-identical and HTTPS-only; doctor warns and the physical proof lane refuses local mode. — v25.0 Phase182.
+- ✓ **TWIN-01..06** One automated reference twin binds the actual generated candidate, visible island action, host-native media, durable offline work, authorized replay, independent Ecto effects and controlled fault cases into a closed, source-bound, privacy-safe receipt with ten group outcomes and fidelity limits. — v25.0 Phase180, re-attested by Phase183 (twin-04, committed source).
+- ✓ **IOS-01** One ordinary compile-only Phoenix/Mix host declaration supports generation, host-edit preservation and nonwriting conflict inspection. — v25.0 Phase179, independent candidate `96e5a63`.
+- ✓ **IOS-02** Shared app/proof identity and signing projections match independently derived effective Xcode settings across simulator/device classes; no signed-install claim. — v25.0 Phase179.
+- ✓ **IOS-03** Selected-router canonical manifest/static activation fails closed for invalid or interrupted inputs and grants no runtime auth/replay authority. — v25.0 Phase179.
+
+- ✓ **MAINT-01** Maintainer can inspect an inventory of every local change against merged code, with the compared source commits named. — v24.0 (Phase 176).
+- ✓ **MAINT-02** Maintainer can see a disposition for each inventoried change and recover unique work before any removal. — v24.0 (Phase 176).
+- ✓ **MAINT-03** Maintainer can use supported release entry points after obsolete release code is removed only where its replacement and callers have been verified. — v24.0 (Phase 177).
+- ✓ **MAINT-04** Maintainer can distinguish tracked contracts, ignored transient files and forbidden residue using the existing repository artifact policy. — v24.0 (Phase 176).
+- ✓ **MAINT-05** Maintainer can see a concrete next action for every open PR and issue in a dated inventory; maintenance triage does not authorize release publication. — v24.0 (Phase 177).
+- ✓ **MAINT-06** Maintainer can follow corrected maintenance instructions without stale paths or commands, while historical failure records retain their original verdicts. — v24.0 (Phase 177).
+- ✓ **MAINT-07** Maintainer can run the existing repository verification command from an exact clean checkout and inspect its results and before/after Git status. — v24.0 (Phase 178).
+- ✓ **MAINT-08** Maintainer can inspect green CI bound to the final source commit; results from an older or different commit do not satisfy this requirement. — v24.0 (Phase 178).
+
+MAINT-03 validates supported paths with uncertain sources retained; neither historical reader comparison is proven. MAINT-05 uses the dated 23-item Phase177 inventory and 24-item audit supplement. Final-source proof is warm-cache, bound to the exact governed merge object; the two earlier failures lack assertion output and remain undiagnosed. PR #238 is open/unmerged.
+
+- [x] **v23.0 release and proof repair** — 42/43 requirements satisfied: manifest-derived identity, independent package refs, honest diagnostic exits, nonempty assertion inventory, real generated-host installer proof, ordinary core/companion publication and exact-public rollup. Full IDs/outcomes are in the workstream requirements archive. REL-10 is excluded and remains historically breached.
+
 - [x] **PROOF-01** `mix crosswake.gen.proof_lane ios` creates missing-only host-owned ExUnit,
   Playwright, shell, and physical-device proof scaffolding. Validated in Phase 159: Host-Reusable
   Proof Lane.
@@ -383,9 +435,17 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ### Active
 
+None selected. The next milestone's scope is chosen by `$gsd-new-milestone --ws quality-ratchet-release`. Carried-forward v26 debt is in the [debt disposition](workstreams/quality-ratchet-release/milestones/v26.0-closeout/debt-disposition.md); parked adopter and historical release limits remain unchanged.
+
+<details>
+<summary>Earlier v20 candidate scope — frozen by the first-adopter ADR</summary>
+
+
 - [ ] **v20.0 Native Controls Pack 1** — ship the typed control-contract seam (`Bridge.push/3`, one typed denial, generated host-owned fallbacks, closed-vocabulary guard), prove it with menu/action-button as the first genuinely-new native control, migrate haptics onto the seam, promote share/notification_token proof, and land the SEED-003 iOS mirror fix that gates every future native release.
 - [ ] **Native-control support truth** — expose platform, route mode, shell-version, proof-posture, package-ownership, and rebuild-requirement truth for every v20 capability.
 - [ ] **Proof posture for v20 controls** — keep deterministic source/contract tests merge-blocking and reserve simulator/device evidence for advisory lanes unless it becomes repeatable in CI.
+
+</details>
 
 ### Out of Scope
 
@@ -413,26 +473,73 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ## Context
 
-Crosswake is a published Elixir/Phoenix OSS library (`crosswake 0.2.0` live on Hex; first published 0.1.0 on 2026-05-29) with iOS and Android as first-class targets and web remaining part of the architecture. As of v11.0 the native shell cores are also published — iOS via the SwiftPM mirror `szTheory/crosswake-shell-core-ios` and Android via Maven Central (`io.github.sztheory:crosswake-shell-core-android`) — all three registries lockstep-versioned, so a generated shell resolves and builds outside the monorepo. As of v17.0 the project is a **package family**: `rulestead`, `rindle`, `sigra`, `chimeway`, and `threadline` are extracted to standalone, independently-versioned `crosswake_*` Hex projects on explicit seams — `sigra`, `chimeway`, and `threadline` are live on Hex; `rulestead` and `rindle` remain **unpublished** (extracted and release-wired, Release PRs open) — (core never compile-depends on a companion; module names preserved so adoption is unchanged), with a drift-tested cross-package compatibility matrix and `Crosswake.Telemetry` published as a stable, semver-governed event contract. As of v18.0 the package-family release path is guarded and inspectable: core/native publish gates are path-specific, Hex publish/recovery is exact-ref and CI-owned, companion clean-room proof derives real floors from Hex, the iOS `v0.2.0` mirror gap has a verify-first guarded backfill path, and `mix crosswake.release.status` exposes local/JSON/live release truth without making live registry checks mandatory. The authoritative architecture stance is route policy plus a capability ladder: plain Phoenix/LiveView, LiveView inside a native shell, bounded bridge components, cached/degraded routes, offline islands, native screens, and specialized native SDK adapters. Supporting research emphasizes that the project should not market itself as React Native for Phoenix, Flutter for Phoenix, a generic WebView wrapper, or a "write once, run anywhere" platform.
+Crosswake is a published Elixir/Phoenix OSS library (`crosswake 0.2.11` verified on Hex, iOS and Maven at v23 close; first published as 0.1.0 on 2026-05-29) with iOS and Android as first-class targets and web remaining part of the architecture. As of v11.0 the native shell cores are also published — iOS via the SwiftPM mirror `szTheory/crosswake-shell-core-ios` and Android via Maven Central (`io.github.sztheory:crosswake-shell-core-android`) — all three registries lockstep-versioned, so a generated shell resolves and builds outside the monorepo. As of v17.0 the project is a **package family**: `rulestead`, `rindle`, `sigra`, `chimeway`, and `threadline` are extracted to standalone, independently-versioned `crosswake_*` Hex projects on explicit seams — `sigra`, `chimeway`, and `threadline` are live on Hex; at the v17 boundary `rulestead` and `rindle` were unpublished; v23 later verified `crosswake_rulestead 0.1.1` and `crosswake_chimeway 0.1.2` directly — (core never compile-depends on a companion; module names preserved so adoption is unchanged), with a drift-tested cross-package compatibility matrix and `Crosswake.Telemetry` published as a stable, semver-governed event contract. As of v18.0 the package-family release path is guarded and inspectable: core/native publish gates are path-specific, Hex publish/recovery is exact-ref and CI-owned, companion clean-room proof derives real floors from Hex, the iOS `v0.2.0` mirror gap has a verify-first guarded backfill path, and `mix crosswake.release.status` exposes local/JSON/live release truth without making live registry checks mandatory. The authoritative architecture stance is route policy plus a capability ladder: plain Phoenix/LiveView, LiveView inside a native shell, bounded bridge components, cached/degraded routes, offline islands, native screens, and specialized native SDK adapters. Supporting research emphasizes that the project should not market itself as React Native for Phoenix, Flutter for Phoenix, a generic WebView wrapper, or a "write once, run anywhere" platform.
 
 The maintainer's OSS house style materially constrains the project. Install truth matters as much as the happy path. Public support claims must be narrow and documented. Proof lanes, docs-contract checks, release automation, and recovery-conscious publishing are part of the product. Generated host code, optional dependencies, and operator-facing diagnostics should be intentional and honest.
 
 The strategic source of truth for the current sequence is `.planning/MILESTONE-ARC.md`. `v3.2` activated commerce, `v3.4` proved the mocked commerce archetype, `v3.5` locked the companion pattern, `v3.6` made the surface inspectable by operators, `v3.7` added StoreKit/Play Billing adapter seams, `v3.8` expanded Sigra into auth/session machinery, `v3.9` added the Chimeway notification seam, and `v5.0` shifted the architecture to standalone publishable shell packages to solve the "eject trap".
 
-After v19.0, Crosswake has a product-shaped proof surface: a Crosswake-owned showcase hub plus AdminPilot, Fieldserv, and LearnLoop lanes with realistic data, route-owner diagnostics, support truth, offline/degraded posture, entitlement pressure, and capability-map evidence. v20.0 should now ship the first native-controls pack guided by that capability map, with future milestones expanding into capture/device controls, commerce/paywall productionization, `crosswake_dashboard`, and offline-sync/native-storage productization.
+After v19.0, Crosswake has a product-shaped proof surface with three fictional showcase lanes. Its earlier native-controls/breadth sequence was stopped by the first-adopter ADR. The governing priority remains one real Phoenix application on one physical iPhone, with explicit route ownership and one honest offline mutation island. Adopter execution remains parked on its recorded external gate; Android breadth, new controls/companions, dashboard and generic sync/storage remain frozen.
+
+v26.0 hardened the v25 twin, guards, host seam and doctor as a planning closeout: the v26 commits sit on the same `/private/tmp` candidate (HEAD `a53fbef`, over `50fcd57`) and are not yet delivered. twin-05 passed once against the frozen commit; it is still simulator-only and grants no physical-iPhone or adopter claim. About 30 review warnings remain open across 184–188, two hand-offs to Phase 188 (guard pin raise, Swift G4 baseline failure) were not done, and all five Nyquist validation files are drafts.
+
+v25.0 closed the iOS host setup and bounded reference twin as a planning closeout: all product code sits in one `/private/tmp` candidate (eight commits over `da53c54`) and is not yet delivered. The twin is simulator-only with five disclosed fidelity limits; it grants no physical-iPhone or adopter claim. Review findings remain open in 181 (13), 182 (10) and 183 (8); Nyquist validation is partial.
+
+v24.0 closed bounded maintenance work with exact-source proof and retained history. It did not merge PR #238 or publish a package. Its audit preserves six debt records, missing historical-reader inputs, two unknown earlier assertion failures and warm-cache proof limits. Whole-project LOC, whole-milestone commit range and delivery actor attribution were not retained; do not infer them.
 
 ## Constraints
 
 - **Tech stack**: Phoenix-native Elixir library with mobile shell integration seams — the product must extend Phoenix instead of replacing it with a JS-framework-first abstraction.
-- **Platform**: iOS and Android are first-class targets.
+- **Platform**: iOS and Android remain library targets; Android stays frozen at its current generator, Maven, JVM and vector posture under the governing ADR.
 - **Architecture**: Per-route runtime ownership is authoritative — solution design cannot collapse into single-runtime ideology.
 - **Security**: Route allowlists, origin allowlists, capability allowlists, active-route checks, and cache sensitivity need explicit defaults.
 - **Proof posture**: Deterministic CI, example-host verification, docs integrity, and release discipline are required early.
 
 ## Key Decisions
 
+### v26 decisions
+
+- **✓ Good:** One pinned git funnel for every twin probe call, plus a read-only preflight that cannot consume a run root (Phase184).
+- **✓ Good:** Checks fail on an empty or below-pin scope instead of passing (Phase185).
+- **✓ Good:** Freeze at the existing HEAD with no squash; fix no twin-off-path warning before the freeze; one sentinel-guarded run with no retry to green (Phase188 D-01, D-04, D-12..D-20).
+- **⚠️ Revisit:** Run tooling: empty-scope privacy scan passes (188 WR-01), gate labels without negative self-tests (WR-08), the unpinned gate `g()` helper; 185 WR-02 timeout read as registry gone; 187 WR-02 provenance on nested hosts; stale guard pin 249 vs 253.
+- **— Pending:** 186 WR-01 (LOOP-07 residual) owner decision; CW-REQ-A/D reopen triggers; delivery of candidate commits; physical signed-iPhone run.
+
+### v25 decisions
+
+- **✓ Good:** One compile-only `:ios_host` declaration and managed-output ownership replace hand patches (Phase179).
+- **✓ Good:** A central versioned `host_commands:` registry with the per-route manifest as sole authority, additive schema 1.2.0, Android byte-unchanged (Phase181).
+- **✓ Good:** Loopback http only behind an explicit local mode with `NSAllowsLocalNetworking`, never `NSAllowsArbitraryLoads`; production stays HTTPS-only (Phase182).
+- **✓ Good:** The twin fails closed on a dirty or untracked candidate rather than binding a working-tree digest; one run per run root (Phase183).
+- **⚠️ Revisit:** The clean-tree probe ignores git index flags and does not pin `core.filemode` (183 WR-01/02); an edit reverted during a run is undetected (disclosed).
+- **— Pending:** Twin join against the Phase179 identity projection (deferred by user decision); delivery of candidate commits; physical signed-iPhone run.
+
+### v24 closeout decisions
+
+- **Validated:** Complete maintenance proof against the exact governed merge object with the existing verifier and actual hosted checkout/policy; keep head-only and source-less evidence distinct.
+- **Validated:** Apply one authorized planning closeout, retain original phase/requirements/audit paths, and skip prohibited recovery-checkout Git writes.
+- **Retained debt:** Use the independent cross-reference for empty SUMMARY requirement arrays; preserve missing historical-reader comparisons, epoch-specific fixtures and unknown failure causes until their actual inputs become available.
+- **Pending:** PR #238 remains open/unmerged; fresh milestone scope is unselected. No package release or adopter promotion follows from planning closeout.
+
+### Phase 177 maintenance decisions
+
+- Maintain the attested merged source in an independent qualified clone; preserve all 119 captured rows privately. Conflicting or textually safe historical overlays do not prove their consumer behavior should be restored.
+- Exercise the four current generic release paths and deny all 78 unavailable historical selectors before effects. Keep missing historical reader comparisons unproven; do not claim retirement or equivalence.
+- Compare the complete allowlisted queue metadata on a read-only refresh, including PR head/base and failed checks even when timestamps stay equal. Triage records a next action and transfers no release authority.
+
+### v23 closeout decisions
+
+- Derive versions and source refs from approved inputs; retain independent package identities. Validated by ordinary 0.2.11 exact-public proof.
+- Require the actual host installer before doctor. Validated by PR #237's ten hosted pairs.
+- Preserve irreversible failures and consumed attempts; use fresh candidates and bindings for forward delivery. Validated by separate core and companion releases; REL-10 remains breached.
+- Carry scoped authorization through related operations and use plain check/result/cause/next-action updates. Recorded in the retrospective and Phase 175 learnings.
+- Archive with six explicit record acknowledgements, stale historical fingerprints and partial Nyquist coverage disclosed. Accepted exception, not a fully passed milestone.
+
+
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
+| Use one ordinary compile-only Mix declaration for iOS build projections; preserve host-owned native edits through managed ownership and explicit repair | Runtime credentials and hand-edited generated settings must not become extra authorities; interrupted or conflicting writes fail closed | Validated in Phase179 candidate `96e5a63`: 3/3 IOS requirements; independent declaration Xcode matrix, three proof leaves and closed audits |
+| Keep maintenance acceptance bound to the exact hosted merge object and full current policy | Tree equality or a head-only check cannot prove the governed source; preserve raw index bytes and private capture integrity | Validated in Phase 178: local 9/9, required CI 48/48; one-use delivery remains consumed |
 | Center the product on route policy and runtime ownership | The strongest research convergence is that explicit boundaries are the core differentiator | Validated in Phase 1 |
 | Use a capability ladder instead of a single runtime model | Different route classes need different ownership and honesty about tradeoffs | Validated in Phase 2 via manifest/runtime/support contract layering |
 | Treat bridge contracts as bounded, semantic, and versioned | High-frequency or ad hoc cross-runtime messaging would make the system fragile and misleading | Validated in Phase 3 via typed bridge envelopes, manifest-backed allowlists, and fail-closed native channels |
@@ -506,4 +613,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-09-19 after the Phase 175 Gate 1 remote-ancestry audit.*
+*Last updated: 2026-10-16 after v26.0 planning closeout; next milestone unselected. v25/v24/v23 debt and parked adopter gates remain unchanged.*

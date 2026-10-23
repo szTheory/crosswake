@@ -1,0 +1,28 @@
+# Privacy scan repair before the plan 189-10 rerun (2026-10-18)
+
+What stopped plan 10 (run 1): the final privacy scan of the phase folder reported 2 hits of the
+at-sign class. Both were the bash array subscript form `[@]` (as in "${prune[@]}") inside the byte
+copies of classify-tmp-189.sh and backup-tmp-189.sh. They are shell syntax, not an address or handle.
+Run 1's stop record is kept as 189-10-BLOCKED.run1.md.
+
+Decision: the user chose the narrow scan fix (2026-10-18).
+
+Change to scan-privacy-189.sh (one line): the pre-scan neutralising step already replaced two known
+harmless at-sign forms; it now also replaces the exact three-character form `[@]` with
+"neutral-form-three". Nothing else in the scan changed: the classes, scopes, file-count check and
+exit codes are the same.
+
+Checks run after the change (all automated):
+- planted address "a<at>b.example": hit (exit 1)
+- planted bare at-sign: hit (exit 1)
+- planted at-sign directly before `[@]`: hit (exit 1)
+- planted at-sign directly before "[host]": hit (exit 1)
+- planted `"${prune[@]}"` only: clean (exit 0)
+- selftest-189.sh rerun: 45 of 46 controls as expected. The one difference is S12 (own scripts scan
+  clean). S12 scans every .sh in the run folder, which now also holds ad-hoc helper scripts added by
+  plans 02-10. With the old scanner the same S12 scan gives 3 hits (the two copied-script `[@]` lines
+  plus v3.sh); with the new scanner it gives 1 hit, v3.sh. v3.sh is plan 03's verify helper; its
+  at-sign is a grep pattern that counts at-signs in evidence. It is not one of the 22 phase scripts
+  and is not copied into planning. So S12's failure comes from the run folder gaining helper files
+  after plan 01, not from this change. Plan 01's original selftest record (selftest-189.out,
+  46 of 46) is unchanged.

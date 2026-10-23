@@ -1,0 +1,10 @@
+red_exit 2
+failed annotate_stop/2 a registry gone at stop names the cause and appends its own note
+failed a registry gone before the command's stop_all reaches the printed verdict, not the receipt
+failed annotate_stop/2 a child still alive at stop names the cause and appends its own note
+tests 33 failures 3
+wr06_wiring_test included; existing producers seam in execute/2 needed 0 added lib lines for WR-06
+ledger_regenerated yes
+sites_before 243
+sites_after 243
+note only display lines moved (one row drifted), no sites added

@@ -1,0 +1,20 @@
+# Plan 189-13 stop and decision before the rerun (2026-10-18)
+
+What stopped plan 13 (run 1): two read-only review checks did not give their planned result.
+- WR-13(b): the census of present temp folders found 3 bare repositories not in the inventory,
+  made by a test inside the scratch area of the phase 180, 181 and 182 candidate clones. Each holds
+  20 files, 0 commits and 0 references. As planned, they were put in review-repos-13.tar (60 files)
+  and its fresh restore passed (restore-13.tsv).
+- IN-05: 1 remote URL equals the recovery checkout path: the origin of the read-only mirror clone
+  (mirror.git) that git recorded when plan 02 made it. The frozen-state snapshot shows the checkout
+  unchanged.
+Run 1's stop record is kept as 189-13-BLOCKED.run1.md.
+
+Decision: the user chose "accept and rerun" (2026-10-18).
+
+Change to 189-13-PLAN.md (three scoped additions, nothing removed):
+- WR-13(b): an empty repository (0 commits, 0 references) already in review-repos-13.tar with a
+  restore pass is recorded as backed up instead of stopping. Any other missed repository still stops.
+- IN-05: the one expected match is the mirror.git origin; any other match fails.
+- Rerun rule: run 1's backups and restore lines are reused, not duplicated; SHA256SUMS.13 from run 1
+  is copied to SHA256SUMS.13.run1 before Task 3 regenerates it; no run 1 file is deleted.

@@ -1,0 +1,83 @@
+.DS_Store	file	16 KB	unclassified	ignored file; backed up in ignored-keep.tar
+.bg-shell/	folder	4 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+.build/	folder	2705160 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+.claude/	folder	127636 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+.expert/	folder	234888 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+.expert/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+.expert/.gitignore	file	4 KB	unclassified	ignored file; backed up in ignored-keep.tar
+.expert/build/	folder	9108 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+.expert/expert.log	file	352 KB	unclassified	ignored file; backed up in ignored-keep.tar
+.expert/indexes/	folder	225372 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+.expert/project.log	file	44 KB	unclassified	ignored file; backed up in ignored-keep.tar
+.github/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+.gsd/	folder	44 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+.planning/.DS_Store	file	12 KB	unclassified	ignored file; backed up in ignored-keep.tar
+.planning/research/.cache/	folder	112 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+_build/	regenerable	48272 KB	obsolete	regenerable: mix build output
+brandbook/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+brandbook/e2e/node_modules/	regenerable	17448 KB	obsolete	regenerable: npm packages listed in package files
+brandbook/e2e/test-results/	folder	4 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+brandbook/tools/fonts/	folder	136 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+brandbook/tools/node_modules/	regenerable	3580 KB	obsolete	regenerable: npm packages listed in package files
+crosswake-0.1.0/	folder	992 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+crosswake-0.2.0/	folder	1584 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+deps/	folder	16848 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+doc/	folder	4728 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+erl_crash.dump	file	2072 KB	unclassified	ignored file; backed up in ignored-keep.tar
+examples/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+examples/android_shell_host/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+examples/android_shell_host/.gradle/	regenerable	2308 KB	obsolete	regenerable: Gradle build output
+examples/android_shell_host/app/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+examples/android_shell_host/app/build/	regenerable	35088 KB	obsolete	regenerable: Gradle build output
+examples/ios_shell_host/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+examples/ios_shell_host/build/	folder	6468 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+examples/phoenix_host/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+examples/phoenix_host/_build/	regenerable	57100 KB	obsolete	regenerable: mix build output
+examples/phoenix_host/crosswake_example.db	file	488 KB	unclassified	ignored file; backed up in ignored-keep.tar
+examples/phoenix_host/crosswake_example.db-shm	file	32 KB	unclassified	ignored file; backed up in ignored-keep.tar
+examples/phoenix_host/crosswake_example.db-wal	file	20 KB	unclassified	ignored file; backed up in ignored-keep.tar
+examples/phoenix_host/deps/	regenerable	20704 KB	obsolete	regenerable: mix dependencies listed in mix.lock
+examples/phoenix_host/erl_crash.dump	file	5392 KB	unclassified	ignored file; backed up in ignored-keep.tar
+examples/phoenix_host/native/ios/CrosswakeProofLane.xcodeproj/project.xcworkspace/	folder	16 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+examples/phoenix_host/native/ios/CrosswakeProofLane.xcodeproj/project.xcworkspace/xcuserdata/	folder	16 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+examples/phoenix_host/native/ios/CrosswakeProofLane.xcodeproj/xcuserdata/	folder	4 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+examples/phoenix_host/node_modules/	regenerable	41000 KB	obsolete	regenerable: npm packages listed in package files
+examples/phoenix_host/playwright-artifacts/	folder	5796 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+examples/phoenix_host/playwright-report/	folder	520 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+examples/phoenix_host/test-results/	folder	4 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+lib/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+packages/.DS_Store	file	12 KB	unclassified	ignored file; backed up in ignored-keep.tar
+packages/crosswake-shell-core-android/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+packages/crosswake-shell-core-android/.gradle/	regenerable	1072 KB	obsolete	regenerable: Gradle build output
+packages/crosswake-shell-core-android/build/	regenerable	10492 KB	obsolete	regenerable: Gradle build output
+packages/crosswake-shell-core-ios/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+packages/crosswake-shell-core-ios/.build/	regenerable	268380 KB	obsolete	regenerable: SwiftPM build output
+packages/crosswake-shell-core-ios/.swiftpm/	folder	4 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+packages/crosswake-shell-core-ios/.swiftpm/xcode/	folder	4 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+packages/crosswake-shell-core-ios/.swiftpm/xcode/xcuserdata/	folder	4 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+packages/crosswake-shell-core-ios/build/	folder	59076 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+packages/crosswake_chimeway/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+packages/crosswake_chimeway/_build/	regenerable	21848 KB	obsolete	regenerable: mix build output
+packages/crosswake_chimeway/deps/	regenerable	8588 KB	obsolete	regenerable: mix dependencies listed in mix.lock
+packages/crosswake_rindle/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+packages/crosswake_rindle/_build/	regenerable	86460 KB	obsolete	regenerable: mix build output
+packages/crosswake_rindle/deps/	folder	20512 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+packages/crosswake_rulestead/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+packages/crosswake_rulestead/_build/	regenerable	22284 KB	obsolete	regenerable: mix build output
+packages/crosswake_rulestead/deps/	regenerable	13772 KB	obsolete	regenerable: mix dependencies listed in mix.lock
+packages/crosswake_rulestead/erl_crash.dump	file	4792 KB	unclassified	ignored file; backed up in ignored-keep.tar
+packages/crosswake_sigra/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+packages/crosswake_sigra/_build/	regenerable	28628 KB	obsolete	regenerable: mix build output
+packages/crosswake_sigra/deps/	folder	10852 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+packages/crosswake_sigra/erl_crash.dump	file	5784 KB	unclassified	ignored file; backed up in ignored-keep.tar
+packages/crosswake_threadline/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+packages/crosswake_threadline/_build/	regenerable	22248 KB	obsolete	regenerable: mix build output
+packages/crosswake_threadline/deps/	regenerable	8600 KB	obsolete	regenerable: mix dependencies listed in mix.lock
+priv/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+prompts/ARCHITECTURE-CODE-WALKTHROUGH-DNA.md	file	24 KB	unclassified	ignored file; backed up in ignored-keep.tar
+script/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+script/__pycache__/	regenerable	168 KB	obsolete	regenerable: Python bytecode cache
+test-results/	folder	4 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+test/.DS_Store	file	8 KB	unclassified	ignored file; backed up in ignored-keep.tar
+tmp/	folder	477816 KB	unclassified	ignored folder; backed up in ignored-keep.tar
+env-files	env	-	unclassified	3 covered by R-ENV

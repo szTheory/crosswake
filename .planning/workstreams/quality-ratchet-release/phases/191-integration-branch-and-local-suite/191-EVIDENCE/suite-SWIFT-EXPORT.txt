@@ -1,0 +1,7 @@
+head 6b9a6d9c52ae94fa8f1815256990d8feeda09b27
+mode swift
+totals_lines 1
+swift tests 89 skipped 0 failures 0
+floor 89
+exit 0
+result pass

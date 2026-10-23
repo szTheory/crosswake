@@ -1,0 +1,8 @@
+red_exit 2
+failed test D-12 locale independence the committed-scope snapshot is written as decodable UTF-8 under the C locale
+decode_result invalid_byte (JSON decode of the script output failed)
+cause C locale escapes non-ASCII in IO.write output; the Phase 190 order-dependent diagnosis was wrong
+ledger_regenerated no
+sites_before 243
+sites_after 243
+note IO.binwrite alone double-encodes under a UTF-8 locale; stdout device set to latin1 first so bytes pass through (Rule 1 deviation)

@@ -1,0 +1,17 @@
+adoption_scan_pre exit 1 unclassified 5
+adoption_scan_post exit 0
+floor_base 2637
+net_first_adopter_context_test.exs 12
+net_phase170_vacuous_assertion_ledger_test.exs 1
+net_phase180_twin_feasibility_test.exs 1
+net_crosswake.proof_lane.physical_iphone_test.exs 6
+net_crosswake_proof_lane_verify_twin_test.exs 2
+net_total 22
+codefix_floor 2659
+codefix_head b7ec0e0180e85def4d52eac0594fa9700d87de9d
+codefix_tests 2659
+codefix_excluded 78
+resolver_head 70fada0dab57b033c8bf5f3b135849ace3cc6595
+resolver_tests 2660
+resolver_excluded 78
+integrity_script exit 0

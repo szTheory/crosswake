@@ -22,7 +22,9 @@ related: [SEED-018, SEED-022]
 `scripts/ci_monitor.cjs` as a standalone, module-level function rather than inlining
 the guard into `checkActions()` — specifically so that a future check "inherits it by
 construction" rather than by copying. That intent is recorded, but as of Wave 0's close,
-`checkActions()` remains the only caller. No other check in `scripts/ci_monitor.cjs`,
+`checkActions()` remains the only caller in `scripts/ci_monitor.cjs`. Phase 185 added a second
+caller, by design: an Elixir copy of `assertFullScope` in `script/check_absence_is_not_success.exs`
+(no shared module, no Node, same reason strings). `scripts/ci_monitor.cjs` was not changed (D-01). No other check in `scripts/ci_monitor.cjs`,
 and no check outside that file (e.g. `script/check_release_workflow_integrity.exs`'s own
 `@roster_ids`, or any other file-discovery-driven audit in `script/`), has been reviewed
 for the same truncation risk `check-actions` had: a hardcoded default scope that silently
