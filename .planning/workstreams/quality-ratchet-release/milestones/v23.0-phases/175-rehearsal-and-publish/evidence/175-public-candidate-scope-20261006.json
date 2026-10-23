@@ -1,0 +1,77 @@
+{
+  "schema": "crosswake-public-candidate-scope-observation/v1",
+  "observed_at_utc": "2026-10-06T13:58:28Z",
+  "purpose": "Establish the current exact-candidate base/head/tree scope needed to resume Phase 175 planning after Plan83 UNKNOWN.",
+  "transport": {
+    "method": "GET",
+    "authentication": "none",
+    "curl_config_disabled": true,
+    "authorization_header_sent": false,
+    "raw_response_retained": false
+  },
+  "sources": [
+    "https://api.github.com/repos/szTheory/crosswake/pulls/219",
+    "https://api.github.com/repos/szTheory/crosswake/commits/696a27a3be1fcd56efe70923dc0ce286a1c41c6d"
+  ],
+  "pr": {
+    "number": 219,
+    "state": "open",
+    "updated_at": "2026-09-28T14:46:02Z",
+    "merged_at": null,
+    "draft": false,
+    "base": {
+      "ref": "main",
+      "sha": "e51698528dc667ef89beb951e4eb1ec91da74981",
+      "repo": "szTheory/crosswake"
+    },
+    "head": {
+      "ref": "release-please--branches--main",
+      "sha": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+      "repo": "szTheory/crosswake"
+    },
+    "mergeable": true,
+    "mergeable_state": "unstable"
+  },
+  "head_commit": {
+    "sha": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+    "tree_sha": "5279cae1daa1fbff3437b673df8ca231fb07c91f",
+    "parents": [
+      "e51698528dc667ef89beb951e4eb1ec91da74981"
+    ]
+  },
+  "expected_scope": {
+    "pr_number": 219,
+    "base_sha": "e51698528dc667ef89beb951e4eb1ec91da74981",
+    "head_sha": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+    "tree_sha": "5279cae1daa1fbff3437b673df8ca231fb07c91f"
+  },
+  "scope_matches_expected": true,
+  "effect": "planning_trigger_only",
+  "release_posture": {
+    "candidate_readiness": "BLOCKED",
+    "merge_policy": "UNKNOWN",
+    "release_hold": "ACTIVE",
+    "requirements": {
+      "REL-13": "OPEN",
+      "REL-14": "OPEN",
+      "REL-15": "OPEN",
+      "REL-17": "OPEN"
+    },
+    "plans_45_48": "HELD",
+    "phase_175": "INCOMPLETE"
+  },
+  "not_established": [
+    "full current CI run/check roster",
+    "phase168-candidate-ci artifact receipt",
+    "effective merge policy and permissions",
+    "current source/mirror tag targets and tag policy",
+    "exact source split object",
+    "one-ref dry-run acceptance",
+    "release readiness or authority for CI rerun, tag write, Gate 2, merge, recovery, registry action, or publication"
+  ],
+  "interpretation": {
+    "mergeable_metadata_is_not_merge_policy": true,
+    "pr_updated_at_is_older_than_this_observation": true,
+    "plan83_attempt_is_untouched_and_terminal": true
+  }
+}

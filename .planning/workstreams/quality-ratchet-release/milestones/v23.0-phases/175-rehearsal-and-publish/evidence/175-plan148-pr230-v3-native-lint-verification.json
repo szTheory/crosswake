@@ -1,0 +1,60 @@
+{
+  "run_id": 38149585632,
+  "head_oid": "bf00fdd70b12fc2ca298710f7139a67b7dd00d3a",
+  "actual_generated_shell_lint": "PASS",
+  "jobs": [
+    {
+      "job_id": 114500195382,
+      "name": "phase79-android-proof",
+      "conclusion": "success",
+      "bounded_build_lines": [
+        "2026-10-11T15:06:29.1852055Z > Task :app:lintAnalyzeDebugAndroidTest",
+        "2026-10-11T15:06:29.1882166Z > Task :app:lintAnalyzeDebugUnitTest",
+        "2026-10-11T15:06:31.9862182Z > Task :crosswake-shell-core-android:lintAnalyzeDebugAndroidTest",
+        "2026-10-11T15:06:36.5852098Z > Task :crosswake-shell-core-android:lintAnalyzeDebugUnitTest",
+        "2026-10-11T15:06:41.8864660Z > Task :crosswake-shell-core-android:lintAnalyzeDebug",
+        "2026-10-11T15:06:42.0871972Z > Task :crosswake-shell-core-android:lintReportDebug",
+        "2026-10-11T15:06:42.0921492Z > Task :crosswake-shell-core-android:lintDebug",
+        "2026-10-11T15:06:45.1846243Z > Task :app:lintAnalyzeDebug",
+        "2026-10-11T15:06:45.3901876Z > Task :app:lintReportDebug",
+        "2026-10-11T15:06:45.3961605Z > Task :app:lintDebug",
+        "2026-10-11T15:06:45.4841854Z BUILD SUCCESSFUL in 2m"
+      ]
+    },
+    {
+      "job_id": 114500195411,
+      "name": "phase18-elixir-android-proof",
+      "conclusion": "success",
+      "bounded_build_lines": [
+        "2026-10-11T15:06:03.4869884Z > Task :app:lintAnalyzeDebugAndroidTest",
+        "2026-10-11T15:06:03.4893311Z > Task :app:lintAnalyzeDebugUnitTest",
+        "2026-10-11T15:06:05.4871041Z > Task :crosswake-shell-core-android:lintAnalyzeDebugAndroidTest",
+        "2026-10-11T15:06:08.2855950Z > Task :crosswake-shell-core-android:lintAnalyzeDebugUnitTest",
+        "2026-10-11T15:06:12.5874317Z > Task :crosswake-shell-core-android:lintAnalyzeDebug",
+        "2026-10-11T15:06:12.7903746Z > Task :crosswake-shell-core-android:lintReportDebug",
+        "2026-10-11T15:06:12.8023417Z > Task :crosswake-shell-core-android:lintDebug",
+        "2026-10-11T15:06:15.2857493Z > Task :app:lintAnalyzeDebug",
+        "2026-10-11T15:06:15.4874598Z > Task :app:lintReportDebug",
+        "2026-10-11T15:06:15.4889805Z > Task :app:lintDebug",
+        "2026-10-11T15:06:15.4904905Z BUILD SUCCESSFUL in 1m 34s"
+      ]
+    },
+    {
+      "job_id": 114500195437,
+      "name": "android-generated-shell-unit",
+      "conclusion": "success",
+      "bounded_build_lines": [
+        "2026-10-11T15:06:05.7690021Z BUILD SUCCESSFUL in 1m 26s",
+        "2026-10-11T15:07:01.6771890Z > Task :app:lintAnalyzeDebugUnitTest",
+        "2026-10-11T15:07:01.6801748Z > Task :app:lintAnalyzeDebugAndroidTest",
+        "2026-10-11T15:07:07.6791723Z > Task :app:lintAnalyzeDebug",
+        "2026-10-11T15:07:07.8773214Z > Task :app:lintReportDebug",
+        "2026-10-11T15:07:07.8812433Z > Task :app:lintDebug",
+        "2026-10-11T15:07:07.8813381Z BUILD SUCCESSFUL in 34s",
+        "2026-10-11T15:07:08.7968630Z Ran 7 tests in 0.450s",
+        "2026-10-11T15:07:08.7968765Z OK"
+      ]
+    }
+  ],
+  "observed_at_utc": "2026-10-11T15:07:44.329755+00:00"
+}

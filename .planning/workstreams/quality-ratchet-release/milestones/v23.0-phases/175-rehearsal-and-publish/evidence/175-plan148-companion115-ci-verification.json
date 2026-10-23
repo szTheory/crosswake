@@ -1,0 +1,16 @@
+{
+  "run_id": 38157939812,
+  "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+  "all_jobs_passed": 49,
+  "package_count": 6,
+  "profiles_passed": 5,
+  "installs_each": 2,
+  "artifact_id": 11708773018,
+  "artifact_hashes_match": true,
+  "selected_package_source_match": true,
+  "target_absence": {
+    "http_status": 404,
+    "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+  },
+  "observed_at_utc": "2026-10-11T17:27:30.269774+00:00"
+}

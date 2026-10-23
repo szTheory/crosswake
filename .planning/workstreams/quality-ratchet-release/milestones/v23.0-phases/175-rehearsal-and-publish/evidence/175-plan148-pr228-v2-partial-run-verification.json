@@ -1,0 +1,23 @@
+{
+  "run_id": 38146628907,
+  "version": "0.2.10",
+  "merge_oid": "dba494dce54ff355cb75602999e33b8c7c6ddcb1",
+  "state": "PARTIAL",
+  "child_states": {
+    "hex": "success",
+    "android": "success",
+    "ios_mirror": "success",
+    "ios_public_proof": "success",
+    "android_public_proof": "failed",
+    "exact_public": "skipped"
+  },
+  "exact_public_artifact": "ABSENT because native consumer failed",
+  "rollup_artifact_id": 11706686731,
+  "rollup_sha256": "960005a4b67954e4784cb07fd25b8a2af49750f174a5819483b4c9ad1dfd44c9",
+  "schema_validation": "PASS with original schema",
+  "registry_checks": "All3exact actual published coordinates verified separately",
+  "diagnostic_coordinate_limit": "Historical rollup carries obsolete Maven label; PR230 corrects future reports; frozen artifact is unchanged",
+  "retry_or_recovery": false,
+  "companion_publication": false,
+  "observed_at_utc": "2026-10-11T15:17:07.446825+00:00"
+}

@@ -1,0 +1,369 @@
+{
+  "state": "READY FOR APPROVAL",
+  "bound_equals_observed": true,
+  "check_count": 13,
+  "expired": false,
+  "publication": "NONE",
+  "external_state_changed": false,
+  "sha256": "c51181d384661e77cf68935a6496b4c4bdf9e147854889027f64312dd5d6e9ba",
+  "raw_receipt_path": "175-next-successor-canonical-receipt.json",
+  "run_id": 36348696331,
+  "artifact": {
+    "id": 10941079991,
+    "name": "phase168-candidate-receipt-0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "expired": false,
+    "expires_at": "2026-10-11T20:38:10Z"
+  },
+  "receipt": {
+    "state": "READY FOR APPROVAL",
+    "credentials": {
+      "mirror_write_authority": "PROVEN",
+      "exercised": true
+    },
+    "identity": {
+      "bound": {
+        "version": "0.2.6",
+        "run": {
+          "id": 36346477576,
+          "status": "COMPLETED",
+          "head": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+          "conclusion": "SUCCESS"
+        },
+        "tree": "0199c0bee29dbcf76bc1a12d241c0ed140a244bd",
+        "head": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+        "base": "b5608a3dc0b013d83ac2b25768f1907873739b20",
+        "ref": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+        "proofs": [
+          {
+            "id": "candidate.ci",
+            "status": "PASS",
+            "sha256": "e8523fde68919b4d4c79bb7fdce999665e5c7855e420246660d218ea609d972a"
+          },
+          {
+            "id": "candidate.cleanroom",
+            "status": "PASS",
+            "sha256": "47dd92810cad9f91457562b6dabb24a767a2940057718a9e33f21503e0b2da96"
+          },
+          {
+            "id": "hex.rehearsal",
+            "status": "PASS",
+            "sha256": "aec1cbba94fe9cec9a2f84f3fe9c0c36288708b41241ac7eac0d4e3fbb8c6fca"
+          },
+          {
+            "id": "ios.rehearsal",
+            "status": "PASS",
+            "sha256": "34d6ecfd61df8dc7625816abc7b3cf1d13f84864fd7c3532de339fe0eec45aca"
+          },
+          {
+            "id": "maven.rehearsal",
+            "status": "PASS",
+            "sha256": "7b0863b2bf184f9cf3c5c4f8a03d4a81a3aaf49c93e3bf440acd4236ddd3dea1"
+          },
+          {
+            "id": "mirror.authority",
+            "status": "PASS",
+            "sha256": "a73c72969385add453b9df518f213362473416e3710d03ae35df08d8557fcfdb"
+          },
+          {
+            "id": "package.family",
+            "status": "PASS",
+            "sha256": "c5a22eb73072581d161df86ca39b86abf5d9301da94ed977ad1ba08abafc1b38"
+          }
+        ],
+        "mirror": {
+          "tag": "v0.2.6",
+          "split": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+          "main": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+          "plan_sha256": "a73c72969385add453b9df518f213362473416e3710d03ae35df08d8557fcfdb"
+        },
+        "package_digests": [
+          {
+            "id": "crosswake",
+            "outer_sha256": "fc206ac5b76fbdedf2bfa4b054e373617f24b102c8db894a2a01937cc7eb728a",
+            "payload_sha256": "ae53ccc9e1c15f5b7185c55ba87cb3b60934487eba5dea4261ddaea039d3a04b",
+            "metadata_sha256": "6aaeb0b0c6ccaab6a7342ed0249ef6fb6c533cf1e91486c966e3d54c51c6f60e"
+          },
+          {
+            "id": "crosswake_chimeway",
+            "outer_sha256": "e32f261225e9fbf9d299aba4858a07f7a35bfe7e877c9d71f4e4a41f06108cbf",
+            "payload_sha256": "30177d880285e18e9aa86b53e8d0744a68fab80cbb14dd6ed1f0eb5044935980",
+            "metadata_sha256": "9f7e44ec50c196a18a9ccaff9ceba03ec9e9bc02e393589ef93313351144d58b"
+          },
+          {
+            "id": "crosswake_rindle",
+            "outer_sha256": "48ae566f95076216e65664c7ba91d371e0faf58d09c3cb5f4b8542fdf28c716f",
+            "payload_sha256": "58cb5e83d4e363ca1c8c3dfc70e8ca92c007b922dabf7f2e4e5218b538560932",
+            "metadata_sha256": "7c0765a3a5408863a726e73a869a597accf7d83ab3bcb8f90ae508afa842b472"
+          },
+          {
+            "id": "crosswake_rulestead",
+            "outer_sha256": "709ecd7187d94cfe30cec359b839afe008deba8ae016c26730bf9d4657e160f2",
+            "payload_sha256": "de7e3a765013e974b16cd38446ebddb7a4f2d4ce3c9159901ef9be629142a38a",
+            "metadata_sha256": "5e444f8c518712ef42009fb4e0ad2b84dbd591178d0927939c628cc50c9ac3fe"
+          },
+          {
+            "id": "crosswake_sigra",
+            "outer_sha256": "10cdec035e7e6d0d6128b676cdb99c612f10941c4b692392b1f55ce506c4a8d2",
+            "payload_sha256": "40fd71d0b7a578591b27172ae9157e3428d8ab7450af2aefc67042c1f359fd10",
+            "metadata_sha256": "76d69c05106ca6550cfbbc0785603be7a64bcb223951a8a5b02eba288c78457a"
+          },
+          {
+            "id": "crosswake_threadline",
+            "outer_sha256": "235c0125b40f2a76a20f5d6c0afe5e7a3c97805d47c1c4bfc5d1ff3f82b221f4",
+            "payload_sha256": "fccc3e280bb9160a16b75b6bfdef2f79ece1eaa6c6452e4bf39dc5b8c3ad0b2b",
+            "metadata_sha256": "794181a869476b2baaeccd747dbddc97e327a5c2cfd5f2a5cef8ce748dfeaff2"
+          }
+        ],
+        "coordinates": [
+          {
+            "id": "android-core",
+            "coordinate": "crosswake@0.2.6"
+          },
+          {
+            "id": "hex-core",
+            "coordinate": "crosswake@0.2.6"
+          },
+          {
+            "id": "ios-core",
+            "coordinate": "crosswake@0.2.6"
+          }
+        ],
+        "config_digests": [
+          {
+            "id": "release-please-config",
+            "sha256": "62ed3e40b014424d912d8314ab95302c0b5fb80c9f5b9a309338a14efadd0c13"
+          },
+          {
+            "id": "release-please-manifest",
+            "sha256": "ed40b8196507935b8161d103a1b9cf79840ffcaa6a2588d7aaf9588ca9978957"
+          }
+        ],
+        "workflow_digests": [
+          {
+            "id": "crosswake-ci",
+            "sha256": "fc0c7daa96bcf30ea41763b924784c0e680bcedabade41f81a1a86ab874ebe26"
+          },
+          {
+            "id": "hex-publish",
+            "sha256": "5b8b5aff9e184fbb7bb10003569d82c4e999ea14ffa6bc9e6bdb9e828e8093ae"
+          },
+          {
+            "id": "ios-mirror-backfill",
+            "sha256": "2402932c9fc389cb7352b7dd4dff9f6e6d5c96c6a5252c1638f395d38237bfa1"
+          },
+          {
+            "id": "maven-publish-fire-drill",
+            "sha256": "f368f0b662365214c0cd5d948773f0e7842f78296c3b0ade50cc25f8c76d9fde"
+          },
+          {
+            "id": "release-please",
+            "sha256": "615cdf06dcc194a9b225a1a7fc14fd2f64771fee225240709115bc1b99dc1392"
+          }
+        ]
+      },
+      "observed": {
+        "version": "0.2.6",
+        "run": {
+          "id": 36346477576,
+          "status": "COMPLETED",
+          "head": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+          "conclusion": "SUCCESS"
+        },
+        "tree": "0199c0bee29dbcf76bc1a12d241c0ed140a244bd",
+        "head": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+        "base": "b5608a3dc0b013d83ac2b25768f1907873739b20",
+        "ref": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+        "proofs": [
+          {
+            "id": "candidate.ci",
+            "status": "PASS",
+            "sha256": "e8523fde68919b4d4c79bb7fdce999665e5c7855e420246660d218ea609d972a"
+          },
+          {
+            "id": "candidate.cleanroom",
+            "status": "PASS",
+            "sha256": "47dd92810cad9f91457562b6dabb24a767a2940057718a9e33f21503e0b2da96"
+          },
+          {
+            "id": "hex.rehearsal",
+            "status": "PASS",
+            "sha256": "aec1cbba94fe9cec9a2f84f3fe9c0c36288708b41241ac7eac0d4e3fbb8c6fca"
+          },
+          {
+            "id": "ios.rehearsal",
+            "status": "PASS",
+            "sha256": "34d6ecfd61df8dc7625816abc7b3cf1d13f84864fd7c3532de339fe0eec45aca"
+          },
+          {
+            "id": "maven.rehearsal",
+            "status": "PASS",
+            "sha256": "7b0863b2bf184f9cf3c5c4f8a03d4a81a3aaf49c93e3bf440acd4236ddd3dea1"
+          },
+          {
+            "id": "mirror.authority",
+            "status": "PASS",
+            "sha256": "a73c72969385add453b9df518f213362473416e3710d03ae35df08d8557fcfdb"
+          },
+          {
+            "id": "package.family",
+            "status": "PASS",
+            "sha256": "c5a22eb73072581d161df86ca39b86abf5d9301da94ed977ad1ba08abafc1b38"
+          }
+        ],
+        "mirror": {
+          "tag": "v0.2.6",
+          "split": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+          "main": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+          "plan_sha256": "a73c72969385add453b9df518f213362473416e3710d03ae35df08d8557fcfdb"
+        },
+        "package_digests": [
+          {
+            "id": "crosswake",
+            "outer_sha256": "fc206ac5b76fbdedf2bfa4b054e373617f24b102c8db894a2a01937cc7eb728a",
+            "payload_sha256": "ae53ccc9e1c15f5b7185c55ba87cb3b60934487eba5dea4261ddaea039d3a04b",
+            "metadata_sha256": "6aaeb0b0c6ccaab6a7342ed0249ef6fb6c533cf1e91486c966e3d54c51c6f60e"
+          },
+          {
+            "id": "crosswake_chimeway",
+            "outer_sha256": "e32f261225e9fbf9d299aba4858a07f7a35bfe7e877c9d71f4e4a41f06108cbf",
+            "payload_sha256": "30177d880285e18e9aa86b53e8d0744a68fab80cbb14dd6ed1f0eb5044935980",
+            "metadata_sha256": "9f7e44ec50c196a18a9ccaff9ceba03ec9e9bc02e393589ef93313351144d58b"
+          },
+          {
+            "id": "crosswake_rindle",
+            "outer_sha256": "48ae566f95076216e65664c7ba91d371e0faf58d09c3cb5f4b8542fdf28c716f",
+            "payload_sha256": "58cb5e83d4e363ca1c8c3dfc70e8ca92c007b922dabf7f2e4e5218b538560932",
+            "metadata_sha256": "7c0765a3a5408863a726e73a869a597accf7d83ab3bcb8f90ae508afa842b472"
+          },
+          {
+            "id": "crosswake_rulestead",
+            "outer_sha256": "709ecd7187d94cfe30cec359b839afe008deba8ae016c26730bf9d4657e160f2",
+            "payload_sha256": "de7e3a765013e974b16cd38446ebddb7a4f2d4ce3c9159901ef9be629142a38a",
+            "metadata_sha256": "5e444f8c518712ef42009fb4e0ad2b84dbd591178d0927939c628cc50c9ac3fe"
+          },
+          {
+            "id": "crosswake_sigra",
+            "outer_sha256": "10cdec035e7e6d0d6128b676cdb99c612f10941c4b692392b1f55ce506c4a8d2",
+            "payload_sha256": "40fd71d0b7a578591b27172ae9157e3428d8ab7450af2aefc67042c1f359fd10",
+            "metadata_sha256": "76d69c05106ca6550cfbbc0785603be7a64bcb223951a8a5b02eba288c78457a"
+          },
+          {
+            "id": "crosswake_threadline",
+            "outer_sha256": "235c0125b40f2a76a20f5d6c0afe5e7a3c97805d47c1c4bfc5d1ff3f82b221f4",
+            "payload_sha256": "fccc3e280bb9160a16b75b6bfdef2f79ece1eaa6c6452e4bf39dc5b8c3ad0b2b",
+            "metadata_sha256": "794181a869476b2baaeccd747dbddc97e327a5c2cfd5f2a5cef8ce748dfeaff2"
+          }
+        ],
+        "coordinates": [
+          {
+            "id": "android-core",
+            "coordinate": "crosswake@0.2.6"
+          },
+          {
+            "id": "hex-core",
+            "coordinate": "crosswake@0.2.6"
+          },
+          {
+            "id": "ios-core",
+            "coordinate": "crosswake@0.2.6"
+          }
+        ],
+        "config_digests": [
+          {
+            "id": "release-please-config",
+            "sha256": "62ed3e40b014424d912d8314ab95302c0b5fb80c9f5b9a309338a14efadd0c13"
+          },
+          {
+            "id": "release-please-manifest",
+            "sha256": "ed40b8196507935b8161d103a1b9cf79840ffcaa6a2588d7aaf9588ca9978957"
+          }
+        ],
+        "workflow_digests": [
+          {
+            "id": "crosswake-ci",
+            "sha256": "fc0c7daa96bcf30ea41763b924784c0e680bcedabade41f81a1a86ab874ebe26"
+          },
+          {
+            "id": "hex-publish",
+            "sha256": "5b8b5aff9e184fbb7bb10003569d82c4e999ea14ffa6bc9e6bdb9e828e8093ae"
+          },
+          {
+            "id": "ios-mirror-backfill",
+            "sha256": "2402932c9fc389cb7352b7dd4dff9f6e6d5c96c6a5252c1638f395d38237bfa1"
+          },
+          {
+            "id": "maven-publish-fire-drill",
+            "sha256": "f368f0b662365214c0cd5d948773f0e7842f78296c3b0ade50cc25f8c76d9fde"
+          },
+          {
+            "id": "release-please",
+            "sha256": "615cdf06dcc194a9b225a1a7fc14fd2f64771fee225240709115bc1b99dc1392"
+          }
+        ]
+      }
+    },
+    "checks": [
+      {
+        "id": "candidate.ci",
+        "status": "PASS"
+      },
+      {
+        "id": "candidate.cleanroom",
+        "status": "PASS"
+      },
+      {
+        "id": "candidate.config",
+        "status": "PASS"
+      },
+      {
+        "id": "candidate.coordinates",
+        "status": "PASS"
+      },
+      {
+        "id": "candidate.credentials",
+        "status": "PASS"
+      },
+      {
+        "id": "candidate.external-state",
+        "status": "PASS"
+      },
+      {
+        "id": "candidate.identity",
+        "status": "PASS"
+      },
+      {
+        "id": "candidate.workflows",
+        "status": "PASS"
+      },
+      {
+        "id": "hex.rehearsal",
+        "status": "PASS"
+      },
+      {
+        "id": "ios.rehearsal",
+        "status": "PASS"
+      },
+      {
+        "id": "maven.rehearsal",
+        "status": "PASS"
+      },
+      {
+        "id": "mirror.authority",
+        "status": "PASS"
+      },
+      {
+        "id": "package.family",
+        "status": "PASS"
+      }
+    ],
+    "schema_version": "1.0.0",
+    "external_state": {
+      "changed": false,
+      "publication": "NONE",
+      "successful_coordinates": [],
+      "failed_step": null,
+      "all_linked_proven": false
+    },
+    "next_action": "approve_exact_candidate"
+  }
+}

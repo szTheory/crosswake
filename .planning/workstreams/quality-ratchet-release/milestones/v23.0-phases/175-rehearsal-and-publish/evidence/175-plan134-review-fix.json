@@ -1,0 +1,16 @@
+{
+  "schema": "crosswake-plan134-review-fix/v1",
+  "finding_id": "CR-01",
+  "red_observed": true,
+  "green_observed": true,
+  "v3_major_two_accepted": true,
+  "invalid_canonical_cases": 7,
+  "legacy_controls": 2,
+  "no_network": true,
+  "live_version_observed": false,
+  "historical_artifacts_unchanged": true,
+  "historical_artifact_count": 421,
+  "node_tests": 122,
+  "exunit_tests": 39,
+  "release_posture_unchanged": true
+}

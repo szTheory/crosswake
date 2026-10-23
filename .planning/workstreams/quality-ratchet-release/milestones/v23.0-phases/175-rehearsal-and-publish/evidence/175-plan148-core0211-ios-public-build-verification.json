@@ -1,0 +1,14 @@
+{
+  "run_id": 38155320492,
+  "job_id": 114519182960,
+  "version": "0.2.11",
+  "generated_ios_app_builds": 1,
+  "xcode_build_successful": true,
+  "public_mirror_consumed": true,
+  "allowed_build_lines": [
+    "2026-10-11T16:50:52.3174640Z ** BUILD SUCCEEDED **"
+  ],
+  "raw_log_retained": false,
+  "physical_device_claim": false,
+  "observed_at_utc": "2026-10-11T16:52:23.206368+00:00"
+}

@@ -1,0 +1,26 @@
+{
+  "pr": 233,
+  "head_oid": "d18c93e435638fbe99d719e99b5066e04173ea7d",
+  "base_oid": "72197e6dd387ae584a04545055ce01659d02d7ba",
+  "merge_oid": "fd1fcf59c1cd473f7ef9a593be46566018e8aaff",
+  "tree_oid": "e350affcd42ce42f2315ea744af66c8b928b100c",
+  "parents": [
+    "72197e6dd387ae584a04545055ce01659d02d7ba"
+  ],
+  "normal_protected_squash": true,
+  "ci_run_id": 38163135946,
+  "all_jobs_passed": 49,
+  "files": [
+    "docs/release-ledger/RELEASE-LEDGER.jsonl",
+    "lib/crosswake/support_matrix/support_matrix.ex",
+    "guides/support_matrix.md",
+    "test/crosswake/support_matrix/support_matrix_test.exs",
+    ".github/workflows/release-please.yml",
+    "script/check_release_workflow_integrity.exs",
+    "test/crosswake/proof/phase175_rel17_wiring_test.exs",
+    "packages/crosswake_chimeway/README.md"
+  ],
+  "version_coordinate_changes": 0,
+  "ordinary_release_retries": 0,
+  "observed_at_utc": "2026-10-11T18:42:26.987836+00:00"
+}

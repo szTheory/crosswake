@@ -1,0 +1,90 @@
+{
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "scope": [
+    "script/verify_companion_cleanroom.sh",
+    "test/crosswake/proof/phase174_matrix_installer_contract_test.exs"
+  ],
+  "local_git_mutations": 0,
+  "force": false,
+  "attempts": [
+    {
+      "label": "blob-0",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/blobs",
+      "attempts": 1,
+      "payload_sha256": "7c5fddea60ed84341ecdc6aaf869328ff04f6c397befd94cd9b4ca5ae01ca471",
+      "delivery": "ACCEPTED",
+      "intent_at_utc": "2026-10-11T19:29:40.080689+00:00",
+      "exit_code": 0,
+      "response_sha256": "fc025b9d18444fb9b32239a7e9fb5eea60003a71c32518df7e2a29900ea45f2c",
+      "returned_sha": "bddb19752d929530145ac2e4980a55cc02d789d3"
+    },
+    {
+      "label": "blob-1",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/blobs",
+      "attempts": 1,
+      "payload_sha256": "a56ebae2113b8ea95f4b0d0ac922a6ae62588cef33ef4f2252fc7e2428273d79",
+      "delivery": "ACCEPTED",
+      "intent_at_utc": "2026-10-11T19:29:40.585758+00:00",
+      "exit_code": 0,
+      "response_sha256": "2150a372fd744a8a1f0e31b59cc35d258fb2fbe97904ffa81481763be265ddc5",
+      "returned_sha": "e4ec2957c63cd3c1ca43c1446428a56d60a8d10b"
+    },
+    {
+      "label": "tree",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/trees",
+      "attempts": 1,
+      "payload_sha256": "e804ba38888acf02562a378695878a48115c187c15418330da0559c273eb04d1",
+      "delivery": "ACCEPTED",
+      "intent_at_utc": "2026-10-11T19:29:41.012170+00:00",
+      "exit_code": 0,
+      "response_sha256": "f1f8db218f52ff351bb8d36315080c056d1a5cb30218b8298265e5052f016ab1",
+      "returned_sha": "12a0f1bf3c32ecdde0326f4a288b597b11e33b06"
+    },
+    {
+      "label": "commit",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/commits",
+      "attempts": 1,
+      "payload_sha256": "ffe4d0c0c408daac281f880860a6c67430a1f14b08771d02677c35fa24f64f94",
+      "delivery": "ACCEPTED",
+      "intent_at_utc": "2026-10-11T19:29:41.414359+00:00",
+      "exit_code": 0,
+      "response_sha256": "461fc50e8cb4c1e94bd8d493995a7d7a0577e9d5761c37c874290d7c7ec887f9",
+      "returned_sha": "9be3e2bb25d050abfd7b635f6e6b0a9795ab62b0"
+    },
+    {
+      "label": "ref",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/refs",
+      "attempts": 1,
+      "payload_sha256": "f4306658f5987007a46f37c5996ffcb19dab4fb84e1171dc7312c9577efeb65e",
+      "delivery": "ACCEPTED",
+      "intent_at_utc": "2026-10-11T19:29:42.619778+00:00",
+      "exit_code": 0,
+      "response_sha256": "887e7a104621114973cf351df66703750e62f3d3f750187b99f5ae4acdcf10ab"
+    },
+    {
+      "label": "pr",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/pulls",
+      "attempts": 1,
+      "payload_sha256": "34859ee88f65bd131134cc1f98a1862071fc25def2a0fc0981df9c9f0e8522d1",
+      "delivery": "ACCEPTED",
+      "intent_at_utc": "2026-10-11T19:29:43.419859+00:00",
+      "exit_code": 0,
+      "response_sha256": "cfc419ad87e71c43233caf0c02ca2a32305d5d4813f951dbecef98fe72538310",
+      "returned_pr": 237
+    }
+  ],
+  "delivery": "ACCEPTED",
+  "intent_at_utc": "2026-10-11T19:29:40.080170+00:00",
+  "pr": 237,
+  "head_oid": "9be3e2bb25d050abfd7b635f6e6b0a9795ab62b0",
+  "base_oid": "2dbde2d9be8adfa36009e20bf894b00a5bb63e87",
+  "tree_oid": "12a0f1bf3c32ecdde0326f4a288b597b11e33b06",
+  "branch": "chore/phase175-matrix-installer-order",
+  "completed_at_utc": "2026-10-11T19:29:44.499604+00:00"
+}

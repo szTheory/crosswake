@@ -1,0 +1,2 @@
+{"attempt_id":"dddf0ac6d25f3be5d628674c4c439778","event":"task-entry","exit_status":null,"operation":"IOS_SOURCE_EVIDENCE","sequence":1,"state":"READY"}
+{"attempt_id":"dddf0ac6d25f3be5d628674c4c439778","event":"reservation","exit_status":null,"operation":"IOS_SOURCE_EVIDENCE","sequence":2,"state":"RESERVED"}

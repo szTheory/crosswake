@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "candidate": {
+    "pr": 201,
+    "version": "0.2.4",
+    "base_oid": "e298793a40538500003602edb6b1d7ea2221ee84",
+    "approved_head_oid": "dfe7c0b4be909130f2474ed7d4e97e8e52d49498",
+    "tree_oid": "215493f06e4119faa25a692db7f2e8de47d39b3c"
+  },
+  "gate2": {
+    "state": "AUTHORIZED",
+    "authorization_response": "publish fresh core 36029609207",
+    "authorization_bound_to_ios_rehearsal_run_id": 36029609207,
+    "consumed": true
+  },
+  "merge": {
+    "method": "normal protected merge commit",
+    "merge_oid": "f3827d0bf4131badd96d04d924f9faca2789d284",
+    "first_parent": "e298793a40538500003602edb6b1d7ea2221ee84",
+    "second_parent": "dfe7c0b4be909130f2474ed7d4e97e8e52d49498",
+    "tree_oid": "215493f06e4119faa25a692db7f2e8de47d39b3c",
+    "second_parent_matches": true,
+    "tree_matches": true,
+    "runbook_ancestor": true
+  },
+  "workflow": "Release Please",
+  "run_id": 36035737504,
+  "head_sha": "f3827d0bf4131badd96d04d924f9faca2789d284",
+  "status": "completed",
+  "conclusion": "failure",
+  "jobs": {
+    "release: approved-candidate merge guard": {
+      "conclusion": "success",
+      "job_id": 107755258281
+    },
+    "Assert lockstep version coordinates match": {
+      "conclusion": "skipped",
+      "job_id": 107755259906
+    },
+    "Release Please": {
+      "conclusion": "success",
+      "job_id": 107755350300
+    },
+    "Publish to Hex.pm": {
+      "conclusion": "success",
+      "job_id": 107756547135
+    },
+    "Publish Android core to Maven Central": {
+      "conclusion": "failure",
+      "job_id": 107756547345
+    },
+    "Mirror iOS core to split repo": {
+      "conclusion": "failure",
+      "job_id": 107756547853
+    },
+    "Publish crosswake_sigra to Hex.pm": {
+      "conclusion": "skipped",
+      "job_id": 107756548863
+    },
+    "Publish crosswake_rindle to Hex.pm": {
+      "conclusion": "skipped",
+      "job_id": 107756549218
+    },
+    "Publish crosswake_rulestead to Hex.pm": {
+      "conclusion": "skipped",
+      "job_id": 107756549344
+    },
+    "Publish crosswake_chimeway to Hex.pm": {
+      "conclusion": "skipped",
+      "job_id": 107756549458
+    },
+    "Publish crosswake_threadline to Hex.pm": {
+      "conclusion": "skipped",
+      "job_id": 107756549599
+    },
+    "Clean-room proof \u2014 crosswake_chimeway resolvability + doctor": {
+      "conclusion": "skipped",
+      "job_id": 107756550304
+    },
+    "Clean-room proof \u2014 crosswake_sigra resolvability + doctor": {
+      "conclusion": "skipped",
+      "job_id": 107756550322
+    },
+    "Clean-room proof \u2014 crosswake_rindle resolvability + doctor": {
+      "conclusion": "skipped",
+      "job_id": 107756550568
+    },
+    "Clean-room proof \u2014 crosswake_threadline module-shipment + zero-sibling-dep": {
+      "conclusion": "skipped",
+      "job_id": 107756550909
+    },
+    "Clean-room proof \u2014 crosswake_rulestead resolvability + doctor": {
+      "conclusion": "skipped",
+      "job_id": 107756550981
+    },
+    "Strip stale release-as after companion release (PROOF-03b)": {
+      "conclusion": "skipped",
+      "job_id": 107756552332
+    },
+    "Native release status rollup": {
+      "conclusion": "failure",
+      "job_id": 107758161291
+    },
+    "release: linked release rollup": {
+      "conclusion": "failure",
+      "job_id": 107758161863
+    },
+    "Clean-room proof \u2014 Android gradle build": {
+      "conclusion": "skipped",
+      "job_id": 107758161991
+    },
+    "Clean-room proof \u2014 iOS swift build": {
+      "conclusion": "skipped",
+      "job_id": 107758162214
+    },
+    "release: exact-public artifact proof": {
+      "conclusion": "skipped",
+      "job_id": 107758163831
+    },
+    "Alert on companion or native publish/proof failure (PROOF-03c, D-15)": {
+      "conclusion": "success",
+      "job_id": 107758205310
+    }
+  },
+  "disposition": "PARTIAL",
+  "retry_or_recovery_performed": false,
+  "notes": [
+    "Hex core publish job succeeded.",
+    "iOS publish job failed before its push: ios_mirror.sh computed the deterministic split and then required the Mix evaluator, but the runner had no mix executable. The public mirror main was already at the expected split in the rehearsal baseline and remained there; v0.2.4 tag is absent.",
+    "Maven publish job failed at the script identity guard: android_publication.sh remains hard-pinned to the Phase 168 merge/head/tree/receipt, so the 0.2.4 merge failed the guard before Gradle ran. The exact POM is absent and no Central deployment was started by this script.",
+    "Exact-public and clean-room proof jobs were skipped; no COMPLETE claim is supported.",
+    "Native release status rollup and linked release rollup failed; the alert job succeeded.",
+    "No workflow or publish job was retried. This authorization covers the one ordinary graph only; no recovery was authorized or attempted."
+  ]
+}

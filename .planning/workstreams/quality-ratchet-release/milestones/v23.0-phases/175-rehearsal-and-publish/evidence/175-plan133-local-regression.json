@@ -1,0 +1,9 @@
+{
+  "schema": "crosswake-plan133-local-regression/v1",
+  "red_cases": 2,
+  "green_cases": 2,
+  "no_network": true,
+  "live_failure_cause_established": false,
+  "historical_artifacts_unchanged": true,
+  "historical_artifact_count": 418
+}

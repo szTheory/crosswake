@@ -1,0 +1,13 @@
+{
+  "state": "READY FOR APPROVAL",
+  "checks_pass": 13,
+  "proof_hashes_match": true,
+  "receipt_digest": "42a4f309f5fd7670f111bc59cf613272b21eaaaeb16f901af83a5e5e6d1267bb",
+  "receipt_run_id": 38155123327,
+  "receipt_artifact_id": 11708476594,
+  "artifact_live": true,
+  "expired": false,
+  "publication": "NONE",
+  "head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+  "observed_at_utc": "2026-10-11T16:23:17.462000+00:00"
+}

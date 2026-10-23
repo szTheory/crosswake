@@ -1,0 +1,73 @@
+{
+  "pr": 228,
+  "candidate_head_oid": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+  "candidate_base_oid": "b064c4e2ea770a7e1dfae46227ac7ecf3e43c3fb",
+  "candidate_tree_oid": "fdbcbe68442212c2b5c63c34cfd8eb6a683d7ff5",
+  "ci_run_id": 38143232212,
+  "ci_conclusion": "success",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "rehearsals": {
+    "hex": {
+      "workflow": "hex-publish.yml",
+      "inputs": {
+        "candidate_head": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+        "candidate_tree": "fdbcbe68442212c2b5c63c34cfd8eb6a683d7ff5",
+        "candidate_base": "b064c4e2ea770a7e1dfae46227ac7ecf3e43c3fb",
+        "operation": "candidate-rehearsal",
+        "release_version": "0.2.10",
+        "candidate_receipt": "b382740942c5023e13bfeebee8f612c0c07a416e94c09c5ccb1fcf6b48e5945c"
+      },
+      "dispatch_ref": "release-please--branches--main",
+      "prior_max_run_id": 38141374071,
+      "intent_at_utc": "2026-10-11T14:13:15.804216+00:00",
+      "head_before": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+      "dispatch_attempted": true,
+      "delivery": "ACCEPTED",
+      "dispatch_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dispatch_exit_code": 0,
+      "run_id": 38146295634,
+      "head_after": "4e785503f6de84731cbb4a3793e0f123d7b52c28"
+    },
+    "ios": {
+      "workflow": "ios-mirror-backfill.yml",
+      "inputs": {
+        "candidate_head": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+        "candidate_tree": "fdbcbe68442212c2b5c63c34cfd8eb6a683d7ff5",
+        "candidate_base": "b064c4e2ea770a7e1dfae46227ac7ecf3e43c3fb",
+        "operation": "candidate-rehearsal",
+        "version": "0.2.10",
+        "release_ref": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+        "candidate_receipt": "b382740942c5023e13bfeebee8f612c0c07a416e94c09c5ccb1fcf6b48e5945c"
+      },
+      "dispatch_ref": "release-please--branches--main",
+      "prior_max_run_id": 38139594759,
+      "intent_at_utc": "2026-10-11T14:13:21.285230+00:00",
+      "head_before": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+      "dispatch_attempted": true,
+      "delivery": "ACCEPTED",
+      "dispatch_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dispatch_exit_code": 0,
+      "run_id": 38146301515,
+      "head_after": "4e785503f6de84731cbb4a3793e0f123d7b52c28"
+    },
+    "maven": {
+      "workflow": "maven-publish-fire-drill.yml",
+      "inputs": {
+        "candidate_head": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+        "candidate_tree": "fdbcbe68442212c2b5c63c34cfd8eb6a683d7ff5",
+        "candidate_base": "b064c4e2ea770a7e1dfae46227ac7ecf3e43c3fb",
+        "fire_drill_version": "0.2.10"
+      },
+      "dispatch_ref": "release-please--branches--main",
+      "prior_max_run_id": 38125053853,
+      "intent_at_utc": "2026-10-11T14:13:26.024082+00:00",
+      "head_before": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+      "dispatch_attempted": true,
+      "delivery": "ACCEPTED",
+      "dispatch_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dispatch_exit_code": 0,
+      "run_id": 38146306882,
+      "head_after": "4e785503f6de84731cbb4a3793e0f123d7b52c28"
+    }
+  }
+}

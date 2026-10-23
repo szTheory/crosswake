@@ -1,0 +1,24 @@
+{
+  "pr": 229,
+  "head_oid": "106a4a4fb6877fedcdab4dfdde9f8eecd60ee156",
+  "base_oid": "b8e25b2ac987a991274336efbabe806ba9b6f170",
+  "tree_oid": "a4d716ddf8d9349f8eb424cbf97b9d30e02412ad",
+  "operation": "enable_protected_squash_automerge",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "consumed": true,
+  "attempts": 1,
+  "attempted": true,
+  "delivery": "ACCEPTED",
+  "admin_bypass": false,
+  "intent_at_utc": "2026-10-11T13:04:08.866841+00:00",
+  "required_check": {
+    "context": "Crosswake CI",
+    "app_id": 15368
+  },
+  "strict": true,
+  "enforce_admins": true,
+  "workflow_actionlint": "PASS",
+  "regression_checks": "Original2tests1failure; fixed2tests0failures",
+  "candidate_ci_run_id": 38141674524,
+  "exit_code": 0
+}

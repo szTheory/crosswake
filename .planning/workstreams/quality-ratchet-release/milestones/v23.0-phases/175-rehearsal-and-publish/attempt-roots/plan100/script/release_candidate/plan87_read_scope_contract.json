@@ -1,0 +1,63 @@
+{
+  "schema": "crosswake-plan87-read-contract/v2",
+  "purpose": "one fresh v0.2.6 mirror-parity preflight",
+  "api_origin": "https://api.github.com",
+  "source_repository": "szTheory/crosswake",
+  "mirror_repository": "szTheory/crosswake-shell-core-ios",
+  "source_tag": "ios-core-v0.2.6",
+  "target_ref": "refs/tags/v0.2.6",
+  "prior_ref": "refs/tags/v0.2.5",
+  "main_ref": "refs/heads/main",
+  "subtree_prefix": "packages/crosswake-shell-core-ios",
+  "routes": [
+    {"method":"GET","path":"/repos/szTheory/crosswake/git/ref/tags/ios-core-v0.2.6"},
+    {"method":"GET","path":"/repos/szTheory/crosswake/pulls/219"},
+    {"method":"GET","path":"/repos/szTheory/crosswake/git/commits/{oid40}"},
+    {"method":"GET","path":"/repos/szTheory/crosswake/git/tags/{oid40}"},
+    {"method":"GET","path":"/repos/szTheory/crosswake-shell-core-ios/git/ref/heads/main"},
+    {"method":"GET","path":"/repos/szTheory/crosswake-shell-core-ios/git/ref/tags/v0.2.5"},
+    {"method":"GET","path":"/repos/szTheory/crosswake-shell-core-ios/git/ref/tags/v0.2.6"},
+    {"method":"GET","path":"/repos/szTheory/crosswake-shell-core-ios/git/commits/{oid40}"},
+    {"method":"GET","path":"/repos/szTheory/crosswake-shell-core-ios/collaborators/{login39}/permission"},
+    {"method":"GET","path":"/user"},
+    {"method":"GET","path":"/repos/szTheory/crosswake-shell-core-ios/rulesets?page={1..4}&per_page=100"}
+  ],
+  "permission_route_template": "/repos/szTheory/crosswake-shell-core-ios/collaborators/{opaque_actor}/permission",
+  "ruleset_query": {"pages": [1,2,3,4], "per_page": 100, "additional_query": false},
+  "source_git_remote": "https://github.com/szTheory/crosswake.git",
+  "source_git_tag_ref": "refs/tags/ios-core-v0.2.6",
+  "git_bounds": {
+    "clone_timeout_ms": 180000,
+    "fetch_timeout_ms": 60000,
+    "split_timeout_ms": 120000,
+    "other_timeout_ms": 20000,
+    "max_buffer_bytes": 8192,
+    "max_stdout_bytes": 4096
+  },
+  "api_bounds": {
+    "max_requests": 32,
+    "http_timeout_ms": 10000,
+    "max_response_bytes": 32768,
+    "max_ruleset_pages": 4,
+    "ruleset_page_size": 100,
+    "port_timeout_ms": 240000,
+    "max_port_output_bytes": 32768
+  },
+  "operation_accounting": {
+    "schema": "crosswake-plan87-operation-accounting/v1",
+    "event_keys": ["attempt_id", "scope_sha256", "sequence", "operation_id", "operation", "state", "status"],
+    "parent_operations": ["port"],
+    "child_operations": ["api_fetch", "git_spawn"],
+    "delivery_states": ["UNKNOWN", "RESPONSE_OBSERVED"],
+    "max_events": 128,
+    "max_journal_bytes": 32768
+  },
+  "comparison_pin": {
+    "observed_at": "2026-10-06",
+    "purpose": "historical_planning_only",
+    "pull_request": 219,
+    "base_oid": "e51698528dc667ef89beb951e4eb1ec91da74981",
+    "head_oid": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+    "tree_oid": "5279cae1daa1fbff3437b673df8ca231fb07c91f"
+  }
+}

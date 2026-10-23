@@ -1,0 +1,23 @@
+{
+  "operation": "create_normal_repair_pr",
+  "base_oid": "2c87f898f3a765eac2300e4dbb0be167c2a1490f",
+  "root_git_changes": false,
+  "changed_files": [
+    ".github/workflows/release-please.yml",
+    "lib/crosswake/release_candidate/evidence_live.ex",
+    "lib/crosswake/release_candidate/policy_read.ex",
+    "test/crosswake/release_candidate/policy_read_test.exs"
+  ],
+  "policy_credential_steps": 18,
+  "focused_tests": {
+    "total": 14,
+    "failed": 0
+  },
+  "local_integrity_roster": {
+    "total": 98,
+    "failed": 0
+  },
+  "existing_read_credential_audit_run": 38034757106,
+  "ordinary_release_retry": false,
+  "created_at_utc": "2026-10-11T02:55:37.856907+00:00"
+}

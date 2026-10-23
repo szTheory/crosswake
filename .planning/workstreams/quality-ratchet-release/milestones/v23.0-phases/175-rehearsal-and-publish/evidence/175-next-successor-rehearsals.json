@@ -1,0 +1,74 @@
+{
+  "observed_at": "2026-09-27T20:35:55Z",
+  "candidate": {
+    "pr": 215,
+    "version": "0.2.6",
+    "base_oid": "b5608a3dc0b013d83ac2b25768f1907873739b20",
+    "head_oid": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "tree_oid": "0199c0bee29dbcf76bc1a12d241c0ed140a244bd"
+  },
+  "rehearsal_correlation_digest": "e8523fde68919b4d4c79bb7fdce999665e5c7855e420246660d218ea609d972a",
+  "hex": {
+    "run_id": 36348273088,
+    "run_head": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "state": "PASS",
+    "package_count": 6,
+    "external_state_changed": false,
+    "rehearsal_sha256": "aec1cbba94fe9cec9a2f84f3fe9c0c36288708b41241ac7eac0d4e3fbb8c6fca",
+    "package_manifest_sha256": "c5a22eb73072581d161df86ca39b86abf5d9301da94ed977ad1ba08abafc1b38",
+    "artifact": {
+      "id": 10940919612,
+      "name": "candidate-rehearsal-hex",
+      "expired": false,
+      "expires_at": "2026-10-11T20:31:18Z"
+    }
+  },
+  "ios": {
+    "run_id": 36348273033,
+    "run_head": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "state": "PASS",
+    "authorization_result": "PROVEN",
+    "atomic_supported": true,
+    "external_state_changed": false,
+    "split_sha": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+    "mirror_main_sha": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+    "candidate_tag_absent": true,
+    "rehearsal_sha256": "34d6ecfd61df8dc7625816abc7b3cf1d13f84864fd7c3532de339fe0eec45aca",
+    "mirror_observation_sha256": "a73c72969385add453b9df518f213362473416e3710d03ae35df08d8557fcfdb",
+    "artifact": {
+      "id": 10941566545,
+      "name": "candidate-rehearsal-ios",
+      "expired": false,
+      "expires_at": "2026-10-11T20:31:37Z"
+    }
+  },
+  "maven": {
+    "run_id": 36348273114,
+    "run_head": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "state": "VALIDATED",
+    "deployment_result": "DROP",
+    "dropped": true,
+    "external_state_changed": false,
+    "head_before": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "head_after": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "rehearsal_sha256": "7b0863b2bf184f9cf3c5c4f8a03d4a81a3aaf49c93e3bf440acd4236ddd3dea1",
+    "artifact": {
+      "id": 10940879675,
+      "name": "candidate-rehearsal-maven",
+      "expired": false,
+      "expires_at": "2026-10-11T20:32:40Z"
+    }
+  },
+  "release_please_mutation": false,
+  "release_please_runs_after_maven": [],
+  "candidate_pr_unchanged": true,
+  "targets_still_absent": true,
+  "targets_after_rehearsals": {
+    "hex_absent": true,
+    "hex_http_status": 404,
+    "ios_tag_absent": true,
+    "ios_tag_ref": "v0.2.6",
+    "maven_pom_absent": true,
+    "maven_http_status": 404
+  }
+}

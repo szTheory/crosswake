@@ -1,0 +1,13 @@
+{
+  "run_id": 38157939812,
+  "job_id": 114524699967,
+  "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+  "base_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+  "operation": "rerun exact E2E CI job and dependent aggregate once",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "intent_at_utc": "2026-10-11T17:25:20.548376+00:00",
+  "delivery": "ACCEPTED",
+  "publication_attempts": 0,
+  "exit_code": 0,
+  "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

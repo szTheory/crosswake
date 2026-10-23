@@ -1,0 +1,23 @@
+{
+  "run_id": 38155320492,
+  "merge_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+  "version": "0.2.11",
+  "targets": {
+    "hex": {
+      "http_status": 200,
+      "body_sha256": "814c65fd5938ad49e5f763c0631d82000fdd4247a0ff810446ebd42a0f00ac70",
+      "version": "0.2.11"
+    },
+    "ios": {
+      "http_status": 200,
+      "body_sha256": "0c7361f6054d0bf543efc2df432422fc8d3c93e031e9551f0fcf506a89eb0c9b",
+      "tag_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8"
+    },
+    "maven": {
+      "http_status": 200,
+      "body_sha256": "5fd8812a05178f61bf9684647d0b8851c11df841f9a733a27f2cf2d23f5729c6",
+      "coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.11"
+    }
+  },
+  "observed_at_utc": "2026-10-11T16:39:57.342153+00:00"
+}

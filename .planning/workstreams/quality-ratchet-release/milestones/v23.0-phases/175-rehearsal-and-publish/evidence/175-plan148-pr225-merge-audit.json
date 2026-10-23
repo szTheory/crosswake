@@ -1,0 +1,15 @@
+{
+  "pr": 225,
+  "merge_oid": "668e0fbe93c73afcdf79de90e64bbb5fd8090386",
+  "parents": [
+    "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+    "d88192a898961620235f7af1da78b978f83e05ab"
+  ],
+  "tree_oid": "6ebd397c3b45b12900ddafcd76115e15074f3420",
+  "trailer_exact_match": true,
+  "normal_protected_path": true,
+  "admin_bypass": false,
+  "merge_attempts": 1,
+  "retry_performed": false,
+  "observed_at_utc": "2026-10-11T09:52:29.269241+00:00"
+}

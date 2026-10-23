@@ -1,0 +1,63 @@
+{
+  "stage": "pre_merge",
+  "operation": "linked_release",
+  "identity": {
+    "leg_run_id": 38154895539,
+    "operation": "linked_release",
+    "receipt_digest": "42a4f309f5fd7670f111bc59cf613272b21eaaaeb16f901af83a5e5e6d1267bb"
+  },
+  "candidate": {
+    "base_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+    "head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+    "merge_oid": null,
+    "package": "crosswake",
+    "pr": 232,
+    "tree_oid": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+    "version": "0.2.11"
+  },
+  "pending_authorization": {
+    "candidate_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+    "candidate_package": "crosswake",
+    "leg_run_id": 38154895539,
+    "operation": "linked_release",
+    "receipt_digest": "42a4f309f5fd7670f111bc59cf613272b21eaaaeb16f901af83a5e5e6d1267bb",
+    "stage": "pre_merge",
+    "state": "PENDING",
+    "authorized": false
+  },
+  "hex_rehearsal_run_id": 38154895539,
+  "evidence": {
+    "path": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/evidence/175-plan148-core0211-final-result.json",
+    "verdict": "PASS",
+    "envelope_sha256": "0e7264f804185fa189b392a59a2a7870533c670fe634def2b441ce0a5e614756"
+  },
+  "state": "CONSUMED",
+  "authorized": true,
+  "consumed": true,
+  "authorization": "publish successor core 38154895539",
+  "choice_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "authorization_envelope": {
+    "schema_version": 1,
+    "state": "AUTHORIZED",
+    "consumed": false,
+    "authorization_run_id": null,
+    "authorization": "publish successor core 38154895539",
+    "leg_run_id": 38154895539,
+    "operation": "linked_release",
+    "receipt_digest": "42a4f309f5fd7670f111bc59cf613272b21eaaaeb16f901af83a5e5e6d1267bb",
+    "package": "crosswake",
+    "version": "0.2.11",
+    "pr": 232,
+    "repository": "szTheory/crosswake",
+    "base_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+    "head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+    "tree_oid": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+    "ci_run_id": 38152560619,
+    "receipt_run_id": 38155123327,
+    "receipt_artifact_id": 11708476594,
+    "policy_sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+    "runbook_commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
+  },
+  "merge_attempted": true,
+  "merge_intent_at_utc": "2026-10-11T16:24:16.409142+00:00"
+}

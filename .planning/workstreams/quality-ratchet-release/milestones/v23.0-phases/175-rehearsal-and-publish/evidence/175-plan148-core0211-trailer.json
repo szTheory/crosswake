@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "state": "AUTHORIZED",
+  "consumed": false,
+  "authorization_run_id": null,
+  "authorization": "publish successor core 38154895539",
+  "leg_run_id": 38154895539,
+  "operation": "linked_release",
+  "receipt_digest": "42a4f309f5fd7670f111bc59cf613272b21eaaaeb16f901af83a5e5e6d1267bb",
+  "package": "crosswake",
+  "version": "0.2.11",
+  "pr": 232,
+  "repository": "szTheory/crosswake",
+  "base_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+  "head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+  "tree_oid": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+  "ci_run_id": 38152560619,
+  "receipt_run_id": 38155123327,
+  "receipt_artifact_id": 11708476594,
+  "policy_sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+  "runbook_commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
+}

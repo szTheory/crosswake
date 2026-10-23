@@ -1,0 +1,26 @@
+{
+  "full_tracked_tests": 2065,
+  "full_failures": 0,
+  "excluded": 78,
+  "focused_tests": 100,
+  "focused_failures": 0,
+  "inventory_sites": 230,
+  "inventory_matches_exactly": true,
+  "original_regression_tests": 1,
+  "original_failures": 1,
+  "corrected_regression_tests": 1,
+  "corrected_failures": 0,
+  "source_base": "a3d02d037e7695449700dc90bda0b752536ab2b3",
+  "intended_revision_files": [
+    "test/crosswake/support_matrix/support_matrix_test.exs"
+  ],
+  "tracked_checkout": "/private/tmp/crosswake-phase175-pr233-tracked-check",
+  "log_hashes": {
+    "full-tests": "fb80566a4a9917f14e9ab8de19f0faa052d5d6687211d09057f2d9bb1b8056bc",
+    "focused-tests": "ad012f942ed03cc62d266822d702c87969374e1b7fffbdcd19633cce727b30b2",
+    "assertion-inventory": "45f9f8dfe2da1137d53df0042ce7c71f47515e1ca1006716789d1b5d0518f049",
+    "original-guide-negative": "8c916864eac8c1dbf3a0afc633d7daa95fd23d7dd6b7f6c368e64407b7b1e71a",
+    "guide-positive": "e432600488a5b55ca5b5749a268d6870c669f731da6f26b933c6ab66b7152de9"
+  },
+  "observed_at_utc": "2026-10-11T18:16:32.145299+00:00"
+}

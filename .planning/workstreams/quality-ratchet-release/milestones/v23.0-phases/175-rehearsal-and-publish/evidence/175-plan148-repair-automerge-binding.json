@@ -1,0 +1,17 @@
+{
+  "operation": "protected_squash_automerge_repair_pr",
+  "pr": 221,
+  "head_oid": "c57732f7ce4fbaf844c7a084c13efbb3e3c26ca3",
+  "base_oid": "2c87f898f3a765eac2300e4dbb0be167c2a1490f",
+  "required_check": "Crosswake CI",
+  "required_app_id": 15368,
+  "state": "CONSUMED",
+  "attempted": true,
+  "attempts": 1,
+  "admin_bypass": false,
+  "release_retry": false,
+  "authorization": "User: you can squash merge that PR if CI green; unblock it",
+  "intent_at_utc": "2026-10-11T03:02:55.675054+00:00",
+  "command_exit": 0,
+  "command_accepted": true
+}

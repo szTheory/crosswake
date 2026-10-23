@@ -1,0 +1,79 @@
+{
+  "source_base": "72197e6dd387ae584a04545055ce01659d02d7ba",
+  "files": {
+    "docs/release-ledger/RELEASE-LEDGER.jsonl": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/0",
+      "sha256": "dba46336bfc430bc663199122497b13b2bafb6e8ed772d29d5ce203f76303c2f"
+    },
+    "lib/crosswake/support_matrix/support_matrix.ex": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/1",
+      "sha256": "5eae756f2b52c3c0cea9255fe475993f536aa6af91715be60899c043646dab39"
+    },
+    "guides/support_matrix.md": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/2",
+      "sha256": "7ea879ed0e3ab777b365a2f04bce7cb6232961569d2acc291f97680e50e72095"
+    },
+    "test/crosswake/support_matrix/support_matrix_test.exs": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/3",
+      "sha256": "bf1425ebde894b943410673e714a5c9880daa05775b05b3c8809c9b8f31afa66"
+    },
+    ".github/workflows/release-please.yml": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/4",
+      "sha256": "a52a5f22fb160adc28f9925b4580f9e67d2e9ea290fc543da075dd0b7029bbba"
+    },
+    "script/check_release_workflow_integrity.exs": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/5",
+      "sha256": "56468f81339a9dd2857facf387db5400f98aea163fcf4c8e52628ce60ce3dd80"
+    },
+    "test/crosswake/proof/phase175_rel17_wiring_test.exs": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/6",
+      "sha256": "9dccf6509d96bf5527f03f656ab376e16d25cf6667ea43233449ddd0f3380520"
+    },
+    "packages/crosswake_chimeway/README.md": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/7",
+      "sha256": "0ecdd7627d60a16d960c26176fcb0ea8bbc573a1407c8e486d8bd7003ef92dfc"
+    }
+  },
+  "guard_tests": 9,
+  "guard_failures": 0,
+  "history_mutation_cases": 15,
+  "guide_tests": 75,
+  "guide_failures": 0,
+  "workflow_checks": 98,
+  "workflow_failures": 0,
+  "original_missing_history_named_failures": 5,
+  "all_workflow_actionlint": "PASS",
+  "format": "PASS",
+  "log_hashes": {
+    "guard_tests": {
+      "sha256": "5f8eeab085c4b61853819b18857680789b02181595157cab0a84f6ac1afe28d3",
+      "bytes": 1438
+    },
+    "guide_tests": {
+      "sha256": "3850e048ca43345582b505704b0141c8b606e832db3df4824ede257d4796858a",
+      "bytes": 311
+    },
+    "scanner": {
+      "sha256": "33543b208590452aa37d6f2586f1d0ddbc467a7f5b7e63c191a84c41e469735c",
+      "bytes": 23701
+    },
+    "original_scanner": {
+      "sha256": "b1c57f4b5793210b5489272cf5c973613bde5426534f7189587dd93e3eb65867",
+      "bytes": 23711
+    },
+    "actionlint": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "publication_retries": 0,
+  "observed_at_utc": "2026-10-11T17:47:02.492496+00:00"
+}

@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-09-24T01:54:23Z",
+  "candidate": {
+    "pr": 196,
+    "version": "0.2.3",
+    "base_oid": "7a615cb0ddf2a55ef6ffab1c0c841ec3d92dea60",
+    "head_oid": "a8d86b29ee5731332ceac9abc176ecdc8262e7e1",
+    "tree_oid": "873210c237fe0bdceca65b90f222dd93b0c8b595",
+    "merge_oid": "4df029d3799d2db18003471019c42126878572f8"
+  },
+  "ordinary_run": {
+    "run_id": 35898407350,
+    "event": "push",
+    "head_sha": "4df029d3799d2db18003471019c42126878572f8",
+    "status": "completed",
+    "conclusion": "failure",
+    "publish": {
+      "hex": "success",
+      "ios": "failure",
+      "maven": "failure"
+    },
+    "jobs": [
+      { "name": "release: approved-candidate merge guard", "conclusion": "success" },
+      { "name": "Release Please", "conclusion": "success" },
+      { "name": "Publish to Hex.pm", "conclusion": "success" },
+      { "name": "Mirror iOS core to split repo", "conclusion": "failure" },
+      { "name": "Publish Android core to Maven Central", "conclusion": "failure" },
+      { "name": "Clean-room proof — iOS swift build", "conclusion": "skipped" },
+      { "name": "Clean-room proof — Android gradle build", "conclusion": "skipped" },
+      { "name": "release: exact-public artifact proof", "conclusion": "skipped" },
+      { "name": "release: linked release rollup", "conclusion": "failure" }
+    ]
+  },
+  "ios_recovery": {
+    "pr": 200,
+    "run_id": 35926844126,
+    "head_sha": "3a74c59dde3c3e59dced18ed693c42d081687368",
+    "conclusion": "success",
+    "job": "Repair exact approved iOS mirror tag",
+    "job_conclusion": "success"
+  },
+  "registries": {
+    "hex": {
+      "package": "crosswake",
+      "version": "0.2.3",
+      "present": true,
+      "source": "https://hex.pm/api/packages/crosswake"
+    },
+    "ios": {
+      "repository": "szTheory/crosswake-shell-core-ios",
+      "ref": "refs/tags/v0.2.3",
+      "present": true,
+      "observed_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "expected_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "expected_oid_source": "Exact approved 0.2.3 iOS rehearsal evidence in 175-FRESH-CANDIDATE-EVIDENCE.md / 175-FRESH-GATE-2.md; subsequent exact-identity iOS recovery run 35926844126 succeeded."
+    },
+    "maven": {
+      "coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.3",
+      "pom_url": "https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/0.2.3/crosswake-shell-core-android-0.2.3.pom",
+      "present": false,
+      "http_status": 404,
+      "observed_at": "2026-09-24T01:50:15Z",
+      "internal_deployment_state": "UNKNOWN",
+      "internal_state_reason": "No local Central Portal credentials or deployment ID were available for an authorized read-only status query; public 404 does not establish Portal state."
+    }
+  },
+  "maven_0_2_3_recovery": {
+    "supported": false,
+    "accepted_package": "crosswake",
+    "accepted_version_policy": "non-empty approved_version equal to recovery release_version",
+    "accepted_merge_oid": "b780a19863936619394087f1ffd384f1dca17c93",
+    "accepted_head_oid": "1051ab90cf75e918c6f596f84578ac77eadf45af",
+    "accepted_tree_oid": "ecf63228243bfe7c2d6a377be996aa374b31d91f",
+    "accepted_candidate_receipt": "359ef8a5257b54e472a2328ce3ae722222506527312b3805467d643bb8666c78",
+    "trusted_helper_ref": "e089bfc0e8a4edf0b024a2a284c8a384216bd64d",
+    "observed_candidate_merge_oid": "4df029d3799d2db18003471019c42126878572f8",
+    "identity_matches": false,
+    "dispatch_performed": false
+  },
+  "rel_12": {
+    "run_id": 35461665164,
+    "run_conclusion": "success",
+    "publish": {
+      "name": "Publish crosswake_rulestead to Hex.pm",
+      "conclusion": "success"
+    },
+    "clean_room": {
+      "name": "Clean-room proof — crosswake_rulestead resolvability + doctor",
+      "conclusion": "success"
+    },
+    "hex": {
+      "package": "crosswake_rulestead",
+      "version": "0.1.1",
+      "present": true
+    }
+  },
+  "historic": {
+    "rel_10": "BREACHED",
+    "gate1_breach": "2026-09-19: required runbook was absent from the exact remote base, head, and publish merge graph",
+    "gate2_authorization_reusable": false,
+    "consumed_authorization": "publish fresh core 35809832762",
+    "authorized_transaction": "PR #196 / core 0.2.3 ordinary graph only"
+  },
+  "safety": {
+    "recovery_dispatched": false,
+    "failed_job_retried": false,
+    "historic_run_retried": false,
+    "tag_moved": false,
+    "merge_performed": false,
+    "publish_performed": false,
+    "fresh_gate2_prepared": false
+  },
+  "candidate_0_2_4": {
+    "observed_at": "2026-09-24T01:54:23Z",
+    "pr": 201,
+    "state": "OPEN",
+    "draft": false,
+    "version": "0.2.4",
+    "base_branch": "main",
+    "base_oid": "3a74c59dde3c3e59dced18ed693c42d081687368",
+    "release_branch": "release-please--branches--main",
+    "expected_release_branch": "release-please--branches--main",
+    "branch_expectation_source": "release-please.yml targets main; Release Please main branch naming convention",
+    "head_oid": "2fdf71b917e3538c6ecc74d1894602e82926281e",
+    "tree_oid": "57491062742dc18aa1daec33bb8068844a193851",
+    "remote_matches": true,
+    "mergeable": "MERGEABLE",
+    "merge_state": "CLEAN",
+    "behind_by": 0,
+    "ci": {
+      "workflow": "Crosswake CI",
+      "run_id": 35927192087,
+      "head_oid": "2fdf71b917e3538c6ecc74d1894602e82926281e",
+      "status": "completed",
+      "conclusion": "SUCCESS",
+      "checks_total": 49,
+      "checks_success": 49,
+      "checks_failure": 0,
+      "checks_pending": 0
+    },
+    "required_policy": {
+      "configured": true,
+      "strict": true,
+      "crosswake_ci_required": true,
+      "required_contexts": ["Crosswake CI"]
+    },
+    "runbook": {
+      "runbook_oid": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8",
+      "base": "PASS",
+      "head": "PASS"
+    },
+    "hex_absent": true,
+    "ios_absent": true,
+    "maven_absent": true,
+    "publish_authorized": false,
+    "disposition": "CANDIDATE_FOR_FULL_PREFLIGHT",
+    "stop_reasons": []
+  }
+}

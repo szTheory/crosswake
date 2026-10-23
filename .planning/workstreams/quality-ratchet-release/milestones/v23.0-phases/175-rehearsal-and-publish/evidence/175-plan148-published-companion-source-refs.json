@@ -1,0 +1,37 @@
+[
+  {
+    "package": "crosswake_rulestead",
+    "version": "0.1.1",
+    "tag": "crosswake_rulestead-v0.1.1",
+    "tag_object_oid": "096371e3008d19da775c0d561d092fb3d349b26e",
+    "type": "commit"
+  },
+  {
+    "package": "crosswake_rindle",
+    "version": "0.1.0",
+    "tag": "crosswake_rindle-v0.1.0",
+    "tag_object_oid": "04e240fcdb318e1693017873804db620612d8bed",
+    "type": "commit"
+  },
+  {
+    "package": "crosswake_sigra",
+    "version": "0.1.3",
+    "tag": "crosswake_sigra-v0.1.3",
+    "tag_object_oid": "70edb8077894fd09d4376591782b511c9d8be664",
+    "type": "commit"
+  },
+  {
+    "package": "crosswake_chimeway",
+    "version": "0.1.0",
+    "tag": "crosswake_chimeway-v0.1.0",
+    "tag_object_oid": "89bb650836a737eb47568b219ffdc2b1768421ec",
+    "type": "commit"
+  },
+  {
+    "package": "crosswake_threadline",
+    "version": "0.1.0",
+    "tag": "crosswake_threadline-v0.1.0",
+    "tag_object_oid": "7b9aac7402e865ce6d215e30891bf688dad63132",
+    "type": "commit"
+  }
+]

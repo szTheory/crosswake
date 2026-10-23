@@ -1,0 +1,22 @@
+{
+  "scope": [
+    "script/verify_companion_cleanroom.sh",
+    "test/crosswake/proof/phase174_matrix_installer_contract_test.exs"
+  ],
+  "approved_source": "e43aa13c2ecdba55dec923848898ca230662f47b",
+  "changes": "Promote existing Phase174 installer order into approved matrix, preserving newer fetch/source-ref fixes; add recurring source omission/router/failure regressions",
+  "original_tests": 1,
+  "original_failures": 1,
+  "original_excluded": 3,
+  "fixed_tests": 4,
+  "fixed_failures": 0,
+  "shell_syntax": "PASS",
+  "new_ci_lanes": 0,
+  "publication_attempts": 0,
+  "root_files_changed": 0,
+  "logs": {
+    "original-negative": "dac52fb75b03ee6ee7d69aedd563af32fa8fc9d3dd9c4de18d53191e5370c2df",
+    "fixed-positive": "7f17d8d337ca9b990fa505d50a34fb30fa44656a2d2edae0771b0590cdfb5901"
+  },
+  "observed_at_utc": "2026-10-11T19:21:53.320284+00:00"
+}

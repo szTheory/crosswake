@@ -1,0 +1,34 @@
+{
+  "operation": "extend_same_repair_pr_with_release_creation_guard",
+  "attempted_at": "2026-10-11T02:57:14.486770+00:00",
+  "events": [
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/trees",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/commits",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/refs/heads/fix/phase175-policy-read-credential",
+      "attempted": true,
+      "completed": true
+    }
+  ],
+  "head_oid": "226eabe20e65aeecd8dfcc28b973fc5a05102b77",
+  "tree_oid": "e356b7eb83015edb7b432a35314fff327ef492bb",
+  "status": "pr_updated_ci_pending"
+}

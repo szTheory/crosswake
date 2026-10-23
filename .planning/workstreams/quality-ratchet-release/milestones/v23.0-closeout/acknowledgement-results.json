@@ -1,0 +1,40 @@
+[
+  {
+    "acknowledged": true,
+    "category": "debug_sessions",
+    "status": "fixing"
+  },
+  {
+    "acknowledged": true,
+    "category": "debug_sessions",
+    "status": "diagnosed"
+  },
+  {
+    "acknowledged": true,
+    "category": "uat_gaps",
+    "phase": "168",
+    "file": "168-UAT.md",
+    "gap_snapshot": "blocked::scenarios=0"
+  },
+  {
+    "acknowledged": true,
+    "category": "verification_gaps",
+    "phase": "175",
+    "file": "175-VERIFICATION-ARCHIVE-PRE-PLAN148-CLOSEOUT.md",
+    "status": "gaps_found"
+  },
+  {
+    "acknowledged": true,
+    "category": "verification_gaps",
+    "phase": "175",
+    "file": "175-VERIFICATION.md",
+    "status": "gaps_found"
+  },
+  {
+    "acknowledged": true,
+    "category": "verification_gaps",
+    "phase": "168",
+    "file": "168-VERIFICATION.md",
+    "status": "gaps_found"
+  }
+]

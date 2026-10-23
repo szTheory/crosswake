@@ -1,0 +1,16 @@
+{
+  "ci_run_id": 38165160468,
+  "ci_passed": 47,
+  "ci_pending": [
+    "proof-requires-example-host",
+    "final CI summary after dependencies"
+  ],
+  "driver_session": 71573,
+  "finish_session": 44369,
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "human_action_pending": false,
+  "ordinary_run_dispatched_by_observer": false,
+  "prepared_reconciliation_script": "/private/tmp/crosswake-phase175-plan148-reconcile.py",
+  "reconciliation_executed": false,
+  "observed_at_utc": "2026-10-11T19:10:37.475504+00:00"
+}

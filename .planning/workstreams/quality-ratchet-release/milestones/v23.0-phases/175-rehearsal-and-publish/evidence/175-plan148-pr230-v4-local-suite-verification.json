@@ -1,0 +1,14 @@
+{
+  "head_oid": "fbde4abddab81e4d7604cf76ebfff5ef7b2ab1f7",
+  "source": "Exact remote repair source in separate temporary clone; no root checkout mutation",
+  "tests": 2063,
+  "failures": 0,
+  "excluded": 78,
+  "tracked_source_clean": true,
+  "only_untracked": "Dependency symlink used for temporary checks",
+  "log_sha256": "04ed2c965258c48b652de96d2ba96049dd5d5c616976fc943e0cfa6bad529915",
+  "focused_tests": 39,
+  "boundary_tests": 7,
+  "workflow_checks": 98,
+  "observed_at_utc": "2026-10-11T15:27:16.601192+00:00"
+}

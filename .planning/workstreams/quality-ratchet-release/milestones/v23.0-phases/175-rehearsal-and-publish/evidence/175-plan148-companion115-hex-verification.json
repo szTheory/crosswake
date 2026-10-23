@@ -1,0 +1,13 @@
+{
+  "run_id": 38159722705,
+  "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+  "package": "crosswake_chimeway",
+  "version": "0.1.1",
+  "independent_ci_hex_rows_match": true,
+  "external_state_changed": false,
+  "target_absence": {
+    "http_status": 404,
+    "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+  },
+  "observed_at_utc": "2026-10-11T17:29:08.658092+00:00"
+}

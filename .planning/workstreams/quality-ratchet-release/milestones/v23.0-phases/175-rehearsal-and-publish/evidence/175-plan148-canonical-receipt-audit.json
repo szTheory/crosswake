@@ -1,0 +1,18 @@
+{
+  "state": "READY FOR APPROVAL",
+  "checks_pass": 13,
+  "source_hashes_verified": [
+    "candidate.ci",
+    "candidate.cleanroom",
+    "package.family",
+    "hex.rehearsal",
+    "ios.rehearsal",
+    "maven.rehearsal",
+    "mirror.authority"
+  ],
+  "receipt_sha256": "5b8e2b316a8bb64761d0f8b1ebda3a4e012f96fe1a10f6b3426490c08bba0704",
+  "publication": "NONE",
+  "external_state_changed": false,
+  "receipt_run_id": 38105260436,
+  "receipt_artifact_id": 11689014896
+}

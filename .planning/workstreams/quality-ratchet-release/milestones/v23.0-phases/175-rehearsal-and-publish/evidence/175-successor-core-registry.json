@@ -1,0 +1,11 @@
+{
+  "observed_at": "2026-09-25T01:59:05Z",
+  "version": "0.2.5",
+  "run_id": 36083361945,
+  "hex": {"present": true, "http_status": 200, "inserted_at": "2026-09-25T01:53:13.437777Z", "has_docs": true},
+  "ios_tag": {"present": true, "ref": "refs/tags/v0.2.5", "oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8", "main_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8", "matches_rehearsal_split": true, "repository": "szTheory/crosswake-shell-core-ios"},
+  "maven_pom": {"present": false, "http_status": 404, "coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.5"},
+  "central_portal_state": "NOT OBSERVED",
+  "all_match_run_version": true,
+  "overall": "PARTIAL"
+}

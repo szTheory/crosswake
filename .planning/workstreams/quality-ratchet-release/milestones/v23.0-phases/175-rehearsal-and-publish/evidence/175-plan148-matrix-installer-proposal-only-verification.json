@@ -1,0 +1,11 @@
+{
+  "run_id": 38170038757,
+  "head_oid": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+  "status": "completed",
+  "conclusion": "success",
+  "publisher_count": 8,
+  "publishers_skipped": 8,
+  "publication_attempts": 0,
+  "ordinary_release_retries": 0,
+  "observed_at_utc": "2026-10-11T19:58:50.988578+00:00"
+}

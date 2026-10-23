@@ -1,0 +1,26 @@
+{
+  "pr": 222,
+  "head_oid": "24f1ace22f0e219b666c95e2b23667b195c46289",
+  "operation": "normal_protected_merge",
+  "method": "MERGE",
+  "admin_bypass": false,
+  "attempted": true,
+  "delivery": "ACCEPTED",
+  "intent_at_utc": "2026-10-11T06:49:01.195660+00:00",
+  "targets": {
+    "hex": {
+      "http_status": 404,
+      "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+    },
+    "ios": {
+      "http_status": 404,
+      "body_sha256": "af34d7e1c24c2c3bd1da5d50fee4e8711a488d218f814c6c4f644603390fdf52"
+    },
+    "maven": {
+      "http_status": 404,
+      "body_sha256": "e791ccfcfee9c0d299d07474d9bfcbfcbebf1181323be601220c8a823062ab99"
+    }
+  },
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "exit_code": 0
+}

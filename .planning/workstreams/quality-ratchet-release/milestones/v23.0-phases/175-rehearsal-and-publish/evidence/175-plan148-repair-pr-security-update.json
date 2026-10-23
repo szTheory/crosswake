@@ -1,0 +1,29 @@
+{
+  "operation": "patch_demonstrated_ci_security_blocker",
+  "events": [
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/trees",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/commits",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/refs/heads/fix/phase175-policy-read-credential",
+      "attempted": true,
+      "completed": true
+    }
+  ],
+  "started_at": "2026-10-11T03:00:21.809705+00:00",
+  "head_oid": "acb8dc21b217b8bd9d63d9b6c489351ff34a6d31",
+  "tree_oid": "3e766f6051a721dff4b76deefa4b38e409319661",
+  "status": "same_pr_updated_ci_pending"
+}

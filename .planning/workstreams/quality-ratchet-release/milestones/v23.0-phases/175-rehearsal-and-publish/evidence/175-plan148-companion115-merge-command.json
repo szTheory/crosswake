@@ -1,0 +1,21 @@
+{
+  "pr": 115,
+  "package": "crosswake_chimeway",
+  "version": "0.1.1",
+  "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+  "base_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+  "operation": "normal_protected_merge",
+  "method": "MERGE",
+  "admin_bypass": false,
+  "attempted": true,
+  "attempts": 1,
+  "delivery": "ACCEPTED",
+  "intent_at_utc": "2026-10-11T17:30:59.996231+00:00",
+  "targets": {
+    "http_status": 404,
+    "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+  },
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "exit_code": 0,
+  "response_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

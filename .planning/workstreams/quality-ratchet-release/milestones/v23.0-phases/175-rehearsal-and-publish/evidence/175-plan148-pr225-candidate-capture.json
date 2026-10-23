@@ -1,0 +1,47 @@
+{
+  "pr": 225,
+  "state": "OPEN",
+  "draft": false,
+  "head_oid": "d88192a898961620235f7af1da78b978f83e05ab",
+  "base_oid": "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+  "tree_oid": "6ebd397c3b45b12900ddafcd76115e15074f3420",
+  "version": "0.2.9",
+  "ios_version": "0.2.9",
+  "android_version": "0.2.9",
+  "changed_files": [
+    ".release-please-manifest.json",
+    "README.md",
+    "examples/android_shell_host/app/build.gradle",
+    "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json",
+    "examples/ios_shell_host/Fixtures/crosswake_manifest.json",
+    "examples/native_evidence/evidence-manifest.example.json",
+    "examples/phoenix_host/evidence/evidence-manifest.example.json",
+    "examples/phoenix_host/priv/crosswake/install_manifest.json",
+    "guides/android_uat.md",
+    "mix.exs",
+    "packages/crosswake-shell-core-android/build.gradle.kts"
+  ],
+  "observed_at_utc": "2026-10-11T08:10:47.372923+00:00",
+  "merge_authority": "NONE",
+  "ci_run_id": 38122826304,
+  "ci_status": "in_progress",
+  "workflow_sha256": {
+    "hex": "5b8b5aff9e184fbb7bb10003569d82c4e999ea14ffa6bc9e6bdb9e828e8093ae",
+    "ios": "2402932c9fc389cb7352b7dd4dff9f6e6d5c96c6a5252c1638f395d38237bfa1",
+    "maven": "f368f0b662365214c0cd5d948773f0e7842f78296c3b0ade50cc25f8c76d9fde"
+  },
+  "targets": {
+    "hex": {
+      "http_status": 404,
+      "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+    },
+    "ios": {
+      "http_status": 404,
+      "body_sha256": "af34d7e1c24c2c3bd1da5d50fee4e8711a488d218f814c6c4f644603390fdf52"
+    },
+    "maven": {
+      "http_status": 404,
+      "body_sha256": "e791ccfcfee9c0d299d07474d9bfcbfcbebf1181323be601220c8a823062ab99"
+    }
+  }
+}

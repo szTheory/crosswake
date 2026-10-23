@@ -1,0 +1,1897 @@
+# Release Please opens/updates a Release PR from conventional commits on main.
+# When that PR is merged, Release Please creates the GitHub Release + v* tag,
+# then publish-hex runs the same test bar as CI and publishes to Hex with
+# HEX_API_KEY.
+#
+# Requires repository secret: HEX_API_KEY (Actions secrets).
+# RELEASE_PLEASE_TOKEN: optional fine-grained PAT. Using it for Release Please
+# makes release-branch pushes and PRs run required CI (GITHUB_TOKEN does not
+# chain-trigger other workflows). Also use if branch rules block the default token.
+
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  checks: read
+  actions: read
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: release-please-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  approved-release-guard:
+    name: "release: approved-candidate merge guard"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      checks: read
+      actions: read
+      contents: read
+      pull-requests: read
+    outputs:
+      linked_release: ${{ steps.guard.outputs.linked_release }}
+      approved_head: ${{ steps.guard.outputs.approved_head }}
+      approved_tree: ${{ steps.guard.outputs.approved_tree }}
+      merge_oid: ${{ steps.guard.outputs.merge_oid }}
+      base_oid: ${{ steps.guard.outputs.base_oid }}
+      merge_parents: ${{ steps.guard.outputs.merge_parents }}
+      merge_tree: ${{ steps.guard.outputs.merge_tree }}
+      candidate_receipt: ${{ steps.guard.outputs.candidate_receipt }}
+      candidate_run_id: ${{ steps.guard.outputs.candidate_run_id }}
+      candidate_receipt_run_id: ${{ steps.guard.outputs.candidate_receipt_run_id }}
+      approved_version: ${{ steps.guard.outputs.approved_version }}
+      rel17_context: ${{ steps.guard.outputs.rel17_context }}
+      rel17_operation: ${{ steps.guard.outputs.rel17_operation }}
+      rel17_package: ${{ steps.guard.outputs.rel17_package }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+
+      - name: Require approved head parentage, identical tree, and exact receipt
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_HEAD: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          emit_output() { printf '%s\n' "$1" >> "$GITHUB_OUTPUT"; }
+          emit_output "linked_release=false"
+
+          # Proposal-refresh pushes remain reversible. The strict gate activates only
+          # for a merged candidate with source and manifest version changes.
+          parent_line=$(git rev-list --parents -n 1 "$RUN_HEAD")
+          parent_count=$(printf '%s\n' "$parent_line" | awk '{print NF}')
+          [ "$parent_count" -ge 2 ] || exit 0
+          first_parent=$(printf '%s\n' "$parent_line" | awk '{print $2}')
+          mix_version_at() {
+            matches=$(git show "$1:$2" | sed -nE 's/^[[:space:]]*@version[[:space:]]+"([^"]+)".*/\1/p')
+            [ -n "$matches" ] || return 1
+            [ "$(printf '%s\n' "$matches" | wc -l | tr -d ' ')" -eq 1 ] || return 1
+            printf '%s\n' "$matches"
+          }
+          gradle_version_at() {
+            matches=$(git show "$1:$2" | sed -nE 's/^[[:space:]]*version[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/p')
+            [ -n "$matches" ] || return 1
+            [ "$(printf '%s\n' "$matches" | wc -l | tr -d ' ')" -eq 1 ] || return 1
+            printf '%s\n' "$matches"
+          }
+          manifest_version_at() {
+            git show "$1:.release-please-manifest.json" | jq -er --arg key "$2" '.[$key]'
+          }
+
+          base_manifest=$(git show "$first_parent:.release-please-manifest.json")
+          head_manifest=$(git show "$RUN_HEAD:.release-please-manifest.json")
+          base_manifest_version=$(jq -er '."."' <<<"$base_manifest")
+          manifest_version=$(jq -er '."."' <<<"$head_manifest")
+          base_ios_version=$(jq -er '."packages/crosswake-shell-core-ios"' <<<"$base_manifest")
+          ios_version=$(jq -er '."packages/crosswake-shell-core-ios"' <<<"$head_manifest")
+          base_android_manifest_version=$(jq -er '."packages/crosswake-shell-core-android"' <<<"$base_manifest")
+          android_manifest_version=$(jq -er '."packages/crosswake-shell-core-android"' <<<"$head_manifest")
+          base_root_version=$(mix_version_at "$first_parent" mix.exs)
+          root_version=$(mix_version_at "$RUN_HEAD" mix.exs)
+          base_android_version=$(gradle_version_at "$first_parent" packages/crosswake-shell-core-android/build.gradle.kts)
+          android_version=$(gradle_version_at "$RUN_HEAD" packages/crosswake-shell-core-android/build.gradle.kts)
+          [ -n "$base_root_version" ] && [ -n "$root_version" ] &&
+            [ -n "$base_android_version" ] && [ -n "$android_version" ]
+
+          core_version_changed=false
+          if [ "$base_root_version" != "$root_version" ] ||
+            [ "$base_manifest_version" != "$manifest_version" ] ||
+            [ "$base_ios_version" != "$ios_version" ] ||
+            [ "$base_android_manifest_version" != "$android_manifest_version" ] ||
+            [ "$base_android_version" != "$android_version" ]; then
+            core_version_changed=true
+          fi
+
+          changed_manifest_keys=$(jq -n --argjson before "$base_manifest" --argjson after "$head_manifest" '
+            (($before | keys_unsorted) + ($after | keys_unsorted) | unique) as $keys |
+            [$keys[] | select($before[.] != $after[.])]
+          ')
+          manifest_unclassified_change=false
+          while IFS= read -r changed_key; do
+            case "$changed_key" in
+              .|packages/crosswake-shell-core-ios|packages/crosswake-shell-core-android|\
+              packages/crosswake_rulestead|packages/crosswake_rindle|packages/crosswake_sigra|\
+              packages/crosswake_chimeway|packages/crosswake_threadline) ;;
+              *) manifest_unclassified_change=true ;;
+            esac
+          done < <(jq -r '.[]' <<<"$changed_manifest_keys")
+          [ "$manifest_unclassified_change" = false ] || {
+            echo "REL-17 BLOCKED reason=unclassified_release_version_change" >&2
+            exit 1
+          }
+
+          linked_candidate=false
+          if [ "$core_version_changed" = true ] &&
+            [ "$base_root_version" != "$root_version" ] &&
+            [ "$base_manifest_version" != "$manifest_version" ] &&
+            [ "$base_ios_version" != "$ios_version" ] &&
+            [ "$base_android_manifest_version" != "$android_manifest_version" ] &&
+            [ "$base_android_version" != "$android_version" ] &&
+            [ "$root_version" = "$manifest_version" ] &&
+            [ "$ios_version" = "$manifest_version" ] &&
+            [ "$android_manifest_version" = "$manifest_version" ] &&
+            [ "$android_version" = "$manifest_version" ]; then
+            linked_candidate=true
+          fi
+          candidate_operation=""
+          candidate_package=""
+          candidate_version=""
+          if [ "$linked_candidate" = "true" ]; then
+            candidate_operation="linked_release"
+            candidate_package="crosswake"
+            candidate_version="$manifest_version"
+          fi
+
+          candidate_count=0
+          companion_version_changed=false
+          companion_unclassified_change=false
+          for package in crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline; do
+            package_path="packages/$package"
+            base_package_version=$(manifest_version_at "$first_parent" "$package_path")
+            package_version=$(manifest_version_at "$RUN_HEAD" "$package_path")
+            base_package_source_version=$(mix_version_at "$first_parent" "$package_path/mix.exs")
+            package_source_version=$(mix_version_at "$RUN_HEAD" "$package_path/mix.exs")
+            [ -n "$base_package_source_version" ] && [ -n "$package_source_version" ]
+            if [ "$base_package_version" != "$package_version" ] ||
+              [ "$base_package_source_version" != "$package_source_version" ]; then
+              companion_version_changed=true
+              if [ "$base_package_version" != "$package_version" ] &&
+                [ "$base_package_source_version" != "$package_source_version" ] &&
+                [ "$package_source_version" = "$package_version" ]; then
+                candidate_count=$((candidate_count + 1))
+                candidate_operation="companion_publish"
+                candidate_package="$package"
+                candidate_version="$package_version"
+              else
+                companion_unclassified_change=true
+              fi
+            fi
+          done
+
+          [ "$candidate_count" -le 1 ] || {
+            echo "REL-17 BLOCKED reason=ambiguous_companion_release" >&2
+            exit 1
+          }
+          if [ "$linked_candidate" = "true" ]; then
+            [ "$companion_unclassified_change" = false ] || {
+              echo "REL-17 BLOCKED reason=mixed_core_and_companion_release" >&2
+              exit 1
+            }
+            [ "$candidate_count" -eq 0 ] || {
+              echo "REL-17 BLOCKED reason=mixed_core_and_companion_release" >&2
+              exit 1
+            }
+            candidate_operation="linked_release"
+            candidate_package="crosswake"
+            candidate_version="$manifest_version"
+          elif [ "$candidate_count" -eq 1 ] && [ "$core_version_changed" = false ] &&
+            [ "$companion_unclassified_change" = false ]; then
+            :
+          elif [ "$core_version_changed" = true ] ||
+            [ "$companion_version_changed" = true ] ||
+            [ "$companion_unclassified_change" = true ]; then
+            echo "REL-17 BLOCKED reason=unclassified_release_version_change" >&2
+            exit 1
+          else
+            exit 0
+          fi
+
+          # A linked release must be a two-parent merge. The approved Release Please
+          # head is the second parent; its tree must be byte-identical to the merge.
+          [ "$parent_count" -eq 3 ]
+          merge_oid=$(printf '%s\n' "$parent_line" | awk '{print $1}')
+          second_parent=$(printf '%s\n' "$parent_line" | awk '{print $3}')
+          approved_head="$second_parent"
+          approved_tree=$(git rev-parse "${approved_head}^{tree}")
+          merge_tree=$(git rev-parse "${merge_oid}^{tree}")
+          [ "$approved_head" = "$second_parent" ]
+          [ "$merge_tree" = "$approved_tree" ]
+
+          # The incident runbook must exist in every exact object authorizing this
+          # publication. Check the remote base, approved PR head, and resulting merge
+          # commit; a local checkout or a later commit cannot repair missing ancestry.
+          RUNBOOK_SHA="d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
+          for target in "$first_parent" "$approved_head" "$merge_oid"; do
+            bash script/check_release_runbook_ancestry.sh "$RUNBOOK_SHA" "$target"
+          done
+
+          # Crosswake CI owns credential-free candidate proof; the trusted iOS
+          # workflow separately attests the canonical READY receipt against CI,
+          # Hex, iOS, and live zero-mutation evidence. Require one unexpired exact-head
+          # attestation artifact, then independently bind its referenced CI run.
+          artifact_name="phase168-candidate-receipt-${approved_head}"
+          artifact_index=$(gh api -X GET "repos/$REPOSITORY/actions/artifacts" \
+            -f name="$artifact_name" -f per_page=100)
+          [ "$(printf '%s' "$artifact_index" | jq '[.artifacts[] | select(.expired == false)] | length')" -eq 1 ]
+          candidate_receipt_run_id=$(printf '%s' "$artifact_index" | jq -er \
+            '[.artifacts[] | select(.expired == false)] | first | .workflow_run.id')
+          candidate_receipt_artifact_id=$(printf '%s' "$artifact_index" | jq -er \
+            '[.artifacts[] | select(.expired == false)] | first | .id')
+          receipt_run=$(gh run view "$candidate_receipt_run_id" --repo "$REPOSITORY" \
+            --json conclusion,event,workflowName)
+          printf '%s' "$receipt_run" | jq -e \
+            '.conclusion == "success" and .event == "workflow_dispatch" and .workflowName == "iOS mirror authority"' >/dev/null
+
+          receipt_dir="$RUNNER_TEMP/approved-candidate-receipt"
+          mkdir -p "$receipt_dir"
+          gh run download "$candidate_receipt_run_id" --repo "$REPOSITORY" \
+            --name "$artifact_name" --dir "$receipt_dir"
+          receipt="$receipt_dir/candidate-receipt.json"
+          test -f "$receipt"
+          if [ "$candidate_operation" = "linked_release" ]; then
+            test -f "$receipt_dir/artifacts.json"
+            jq -e --arg head "$approved_head" --arg tree "$approved_tree" --arg base "$first_parent" \
+              '.state == "READY FOR APPROVAL" and .identity.bound == .identity.observed and .identity.bound.head == $head and .identity.bound.tree == $tree and .identity.bound.base == $base and .external_state.changed == false and .external_state.publication == "NONE" and .credentials == {"exercised":true,"mirror_write_authority":"PROVEN"}' \
+              "$receipt" >/dev/null
+            candidate_receipt=$(sha256sum "$receipt" | awk '{print $1}')
+            candidate_run_id=$(jq -er '.identity.bound.run.id' "$receipt")
+          else
+            jq -e --arg package "$candidate_package" --arg version "$candidate_version" \
+              --arg head "$approved_head" --arg base "$first_parent" --arg tree "$approved_tree" \
+              '.schema_version == 1 and .receipt.package == $package and
+               .receipt.version == $version and .receipt.candidate.head_oid == $head and
+               .receipt.candidate.base_oid == $base and .receipt.candidate.tree_oid == $tree and
+               .receipt.external_state_changed == false and .receipt.target_absent == true' \
+              "$receipt" >/dev/null
+            candidate_receipt=$(jq -er '.receipt_digest' "$receipt")
+            candidate_run_id=$(jq -er '.receipt.ci.run_id' "$receipt")
+          fi
+
+          runs=$(gh run list --repo "$REPOSITORY" --workflow crosswake-ci.yml \
+            --commit "$approved_head" --status success --limit 20 \
+            --json databaseId,headSha,conclusion)
+          printf '%s' "$runs" | jq -e --arg head "$approved_head" --argjson run "$candidate_run_id" \
+            'any(.[]; .databaseId == $run and .headSha == $head and .conclusion == "success")' >/dev/null
+          ci_dir="$RUNNER_TEMP/approved-candidate-ci"
+          mkdir -p "$ci_dir"
+          gh run download "$candidate_run_id" --repo "$REPOSITORY" \
+            --name "phase168-candidate-ci-${approved_head}" --dir "$ci_dir"
+          ci_receipt="$ci_dir/release-candidate-ci-receipt.json"
+          test -f "$ci_receipt"
+          test -f "$ci_dir/artifacts/artifacts.json"
+          jq -e --arg head "$approved_head" --arg tree "$approved_tree" \
+            --arg base "$first_parent" --arg run "$candidate_run_id" \
+            '.state == "PASS" and .head == $head and .tree == $tree and .base == $base and (.run_id | tostring) == $run and .external_state_changed == false' \
+            "$ci_receipt" >/dev/null
+          ci_receipt_sha=$(sha256sum "$ci_receipt" | awk '{print $1}')
+          if [ "$candidate_operation" = "linked_release" ]; then
+            jq -e --arg digest "$ci_receipt_sha" \
+              'any(.identity.bound.proofs[]; .id == "candidate.ci" and .sha256 == $digest)' \
+              "$receipt" >/dev/null
+            cmp "$receipt_dir/artifacts.json" "$ci_dir/artifacts/artifacts.json"
+          else
+            jq -e --arg digest "$ci_receipt_sha" \
+              'any(.receipt.proofs[]; .id == "ci" and .sha256 == $digest)' "$receipt" >/dev/null
+          fi
+
+          # The exact pre-merge choice travels in the immutable merge message. A
+          # missing or malformed trailer blocks before Release Please can create tags.
+          trailer_lines=$(git show -s --format=%B "$merge_oid" | sed -n 's/^REL17-AUTHORIZATION: //p')
+          [ "$(printf '%s\n' "$trailer_lines" | sed '/^$/d' | wc -l | tr -d ' ')" -eq 1 ]
+          authorization_trailer=$(printf '%s\n' "$trailer_lines")
+          authorization_file="$RUNNER_TEMP/rel17-authorization.json"
+          printf '%s' "$authorization_trailer" | jq -e \
+            --arg operation "$candidate_operation" --arg package "$candidate_package" \
+            --arg version "$candidate_version" \
+            --arg digest "$candidate_receipt" --argjson ci_run "$candidate_run_id" \
+            --argjson receipt_run "$candidate_receipt_run_id" \
+            --argjson artifact_id "$candidate_receipt_artifact_id" \
+            --arg base "$first_parent" --arg head "$approved_head" --arg tree "$approved_tree" \
+            --arg repository "$REPOSITORY" --arg runbook "$RUNBOOK_SHA" \
+            '((keys | sort) == ["authorization","authorization_run_id","base_oid","ci_run_id","consumed","head_oid","leg_run_id","operation","package","policy_sha256","pr","receipt_artifact_id","receipt_digest","receipt_run_id","repository","runbook_commit","schema_version","state","tree_oid","version"]) and
+             (.schema_version == 1) and (.state == "AUTHORIZED") and (.consumed == false) and
+             (.operation == $operation) and (.package == $package) and (.version == $version) and
+             (.receipt_digest == $digest) and (.ci_run_id == $ci_run) and
+             (.receipt_run_id == $receipt_run) and (.receipt_artifact_id == $artifact_id) and
+             (.base_oid == $base) and (.head_oid == $head) and (.tree_oid == $tree) and
+             (.repository == $repository) and (.runbook_commit == $runbook) and
+             (.policy_sha256 | type == "string" and test("^[0-9a-f]{64}$")) and
+             (.leg_run_id | type == "number" and . > 0) and
+             (.pr | type == "number" and . > 0) and
+             (if $operation == "linked_release" then
+                .authorization_run_id == null and
+                .authorization == ("publish successor core " + (.leg_run_id|tostring))
+              elif .package == "crosswake_chimeway" and .pr == 115 then
+                (.authorization_run_id | type == "number" and . > 0) and
+                .authorization == ("publish leg 3 " + (.authorization_run_id|tostring))
+              else
+                .authorization_run_id == null and
+                .authorization == ("publish companion " + $package + " " + (.leg_run_id|tostring))
+              end)' >/dev/null
+          printf '%s' "$authorization_trailer" | jq -c \
+            '{stage:"pre_merge",state:"CONSUMED",receipt_digest:.receipt_digest,
+              operation:.operation,leg_run_id:.leg_run_id,candidate_package:.package,
+              candidate_head:.head_oid}' > "$authorization_file"
+          chmod 600 "$authorization_file"
+          rel17_policy_sha256=$(printf '%s' "$authorization_trailer" | jq -er '.policy_sha256')
+          rel17_pr=$(printf '%s' "$authorization_trailer" | jq -er '.pr')
+          rel17_leg_run_id=$(printf '%s' "$authorization_trailer" | jq -er '.leg_run_id')
+
+          REL17_OPERATION="$candidate_operation" \
+          REL17_STAGE="post_merge" \
+          REL17_PACKAGE="$candidate_package" \
+          REL17_VERSION="$candidate_version" \
+          REL17_PR="$rel17_pr" \
+          REL17_RECEIPT_DIGEST="$candidate_receipt" \
+          REL17_LEG_RUN_ID="$rel17_leg_run_id" \
+          REL17_CI_RUN_ID="$candidate_run_id" \
+          REL17_RECEIPT_RUN_ID="$candidate_receipt_run_id" \
+          REL17_RECEIPT_ARTIFACT_ID="$candidate_receipt_artifact_id" \
+          REL17_REPOSITORY="$REPOSITORY" \
+          REL17_RUNBOOK_COMMIT="$RUNBOOK_SHA" \
+          REL17_EXPECTED_POLICY_SHA256="$rel17_policy_sha256" \
+          REL17_EXPECTED_BASE_OID="$first_parent" \
+          REL17_EXPECTED_HEAD_OID="$approved_head" \
+          REL17_EXPECTED_TREE_OID="$approved_tree" \
+          REL17_MERGE_OID="$merge_oid" \
+          REL17_AUTHORIZATION_FILE="$authorization_file" \
+          bash script/release_candidate/require_release_evidence.sh
+
+          rel17_context=$(printf '%s' "$authorization_trailer" | jq -c \
+            --arg repository "$REPOSITORY" --arg runbook "$RUNBOOK_SHA" \
+            --arg merge "$merge_oid" --arg auth_json "$(cat "$authorization_file")" \
+            '. + {schema_version:1,stage:"post_merge",repository:$repository,
+                  runbook_commit:$runbook,merge_oid:$merge,authorization_json:$auth_json,
+                  expected_policy_sha256:.policy_sha256,expected_base_oid:.base_oid,
+                  expected_head_oid:.head_oid,expected_tree_oid:.tree_oid}')
+
+          [ "$candidate_operation" != "linked_release" ] || emit_output "linked_release=true"
+          emit_output "approved_head=$approved_head"
+          emit_output "approved_tree=$approved_tree"
+          emit_output "merge_oid=$merge_oid"
+          emit_output "base_oid=$first_parent"
+          emit_output "merge_parents=$first_parent,$second_parent"
+          emit_output "merge_tree=$merge_tree"
+          emit_output "candidate_receipt=$candidate_receipt"
+          emit_output "candidate_run_id=$candidate_run_id"
+          emit_output "candidate_receipt_run_id=$candidate_receipt_run_id"
+          emit_output "approved_version=$candidate_version"
+          emit_output "rel17_operation=$candidate_operation"
+          emit_output "rel17_package=$candidate_package"
+          emit_output "rel17_context=$rel17_context"
+
+  release-please:
+    name: Release Please
+    needs: approved-release-guard
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      # Manifest mode (config-file + manifest-file) emits the PLURAL aggregate
+      # `releases_created` — true if ANY package released. Keep it available for
+      # summaries, alerts, and logging only; behavioral jobs below gate on exact
+      # path/component identity instead of the aggregate.
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      # JSON array of component paths released by this run. Root/native publish jobs
+      # gate on this instead of the aggregate releases_created so a companion-only
+      # release cannot publish the core Hex package or native artifacts.
+      paths_released: ${{ steps.release.outputs.paths_released || '[]' }}
+      # For the root package (path "."), release-please-action v4 writes per-path
+      # outputs UNPREFIXED — so `tag_name`/`version` here are the Hex (root) values.
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+      # Companion: crosswake_rulestead
+      # release-please-action v4 path outputs use <path>--<name> (double-dash) format.
+      # GitHub Actions if: cannot index slash-containing keys directly; alias here
+      # so downstream jobs use dot-notation: needs.release-please.outputs.rulestead_* (D-08).
+      rulestead_release_created: ${{ steps.release.outputs['packages/crosswake_rulestead--release_created'] }}
+      rulestead_tag_name: ${{ steps.release.outputs['packages/crosswake_rulestead--tag_name'] }}
+      rulestead_version: ${{ steps.release.outputs['packages/crosswake_rulestead--version'] }}
+      # Companion: crosswake_rindle (Phase 132 — independently versioned, NOT in lockstep)
+      # Same double-dash path-output -> dot-notation alias contract as rulestead (D-08):
+      # GitHub Actions if: cannot index slash-containing keys, so alias here for downstream.
+      rindle_release_created: ${{ steps.release.outputs['packages/crosswake_rindle--release_created'] }}
+      rindle_tag_name: ${{ steps.release.outputs['packages/crosswake_rindle--tag_name'] }}
+      rindle_version: ${{ steps.release.outputs['packages/crosswake_rindle--version'] }}
+      # Companion: crosswake_sigra (Phase 137 — independently versioned, NOT in lockstep)
+      # Same double-dash path-output -> dot-notation alias contract (D-08 / D-8):
+      # GitHub Actions if: cannot index slash-containing keys, so alias here for downstream.
+      sigra_release_created: ${{ steps.release.outputs['packages/crosswake_sigra--release_created'] }}
+      sigra_tag_name: ${{ steps.release.outputs['packages/crosswake_sigra--tag_name'] }}
+      sigra_version: ${{ steps.release.outputs['packages/crosswake_sigra--version'] }}
+      # Companion: crosswake_chimeway (Phase 138 — independently versioned, NOT in lockstep)
+      # Same double-dash path-output -> dot-notation alias contract (D-08 / D-8):
+      # GitHub Actions if: cannot index slash-containing keys, so alias here for downstream.
+      chimeway_release_created: ${{ steps.release.outputs['packages/crosswake_chimeway--release_created'] }}
+      chimeway_tag_name: ${{ steps.release.outputs['packages/crosswake_chimeway--tag_name'] }}
+      chimeway_version: ${{ steps.release.outputs['packages/crosswake_chimeway--version'] }}
+      # Observer: crosswake_threadline (Phase 139 — independently versioned, NOT in lockstep)
+      # Same double-dash path-output -> dot-notation alias contract (D-08 / D-8):
+      # GitHub Actions if: cannot index slash-containing keys, so alias here for downstream.
+      # NOTE: threadline is NOT a Crosswake.Companion implementor — it is a pure-OTP
+      # audit/correlation observer. Gate on threadline_release_created (never aggregate releases_created)
+      # so a core-only release never publishes threadline (D-8 per-component gate — THREAD-03).
+      threadline_release_created: ${{ steps.release.outputs['packages/crosswake_threadline--release_created'] }}
+      threadline_tag_name: ${{ steps.release.outputs['packages/crosswake_threadline--tag_name'] }}
+      threadline_version: ${{ steps.release.outputs['packages/crosswake_threadline--version'] }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+
+      - name: Load the consumed REL-17 decision
+        if: ${{ needs.approved-release-guard.outputs.rel17_context != '' }}
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: ${{ needs.approved-release-guard.outputs.rel17_operation }}
+          REL17_EXPECTED_PACKAGE: ${{ needs.approved-release-guard.outputs.rel17_package }}
+          REL17_EXPECTED_VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
+      - name: Re-fetch REL-17 evidence before Release Please
+        if: ${{ needs.approved-release-guard.outputs.rel17_context != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - name: Run Release Please
+        id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v4.1.3
+        with:
+          # Optional: set secret RELEASE_PLEASE_TOKEN (fine-grained PAT) if the
+          # default token cannot open Release PRs; otherwise github.token suffices.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          # Repair/proposal pushes may update PRs but cannot release an older failed merge.
+          skip-github-release: ${{ needs.approved-release-guard.outputs.rel17_context == '' }}
+
+  publish-hex:
+    name: Publish to Hex.pm
+    needs: [approved-release-guard, release-please]
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      checks: read
+      actions: read
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Load the consumed REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: linked_release
+          REL17_EXPECTED_PACKAGE: crosswake
+          REL17_EXPECTED_VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Cache library deps
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-library-${{ hashFiles('mix.lock') }}
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get --check-locked
+
+      - name: Re-fetch REL-17 evidence before Hex credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - name: Guarded Hex publish
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: >
+          bash script/guarded_hex_publish.sh
+          crosswake
+          "${{ needs.release-please.outputs.version }}"
+          "${{ needs.release-please.outputs.tag_name }}"
+          --approved-head "${{ needs.approved-release-guard.outputs.approved_head }}"
+          --approved-tree "${{ needs.approved-release-guard.outputs.approved_tree }}"
+          --merge-oid "${{ needs.approved-release-guard.outputs.merge_oid }}"
+          --candidate-receipt "${{ needs.approved-release-guard.outputs.candidate_receipt }}"
+          --expected-version "${{ needs.approved-release-guard.outputs.approved_version }}"
+
+      # The post-publish record is a WORKFLOW STEP, never a write inside
+      # guarded_hex_publish.sh: that helper treats an already-live release as
+      # success and returns through more than one path, so a write placed inside
+      # it would be reached inconsistently. Here it runs exactly when the publish
+      # step returned success.
+      #
+      # Identical invocation to the recovery lane in hex-publish.yml -- same
+      # script, same flags, same order -- differing only in the lane name and in
+      # where the values come from. One emitter is what makes "both lanes are
+      # satisfied identically" a checkable claim rather than a resemblance.
+      - name: Write the publication record
+        run: >
+          bash script/write_publication_record.sh
+          --package "crosswake"
+          --version "${{ needs.release-please.outputs.version }}"
+          --approved-head "${{ needs.approved-release-guard.outputs.approved_head }}"
+          --ref "${{ needs.release-please.outputs.tag_name }}"
+          --lane "ordinary"
+          --run-id "${{ github.run_id }}"
+          --output "${{ runner.temp }}/publication-record.json"
+
+      - name: Upload the publication record
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: publication-record-crosswake-${{ needs.approved-release-guard.outputs.approved_head }}
+          path: ${{ runner.temp }}/publication-record.json
+          if-no-files-found: error
+          retention-days: 14
+
+  publish-hex-rulestead:
+    name: Publish crosswake_rulestead to Hex.pm
+    needs: [approved-release-guard, release-please]
+    # D-07: Gate on the PER-COMPONENT output, never the aggregate `releases_created`.
+    # `releases_created` is true if ANY package released — gating on it would publish the
+    # companion on every core-only release. `rulestead_release_created` is set only when
+    # release-please cuts a crosswake_rulestead release PR.
+    if: ${{ needs.release-please.outputs.rulestead_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_rulestead' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      checks: read
+      actions: read
+      contents: read
+      pull-requests: read
+    # D-13: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver in
+    # packages/crosswake_rulestead/mix.exs so every mix step emits the Hex dep (not path:).
+    # Without this, mix hex.build (called by hex.publish) errors: "path: deps excluded".
+    env:
+      CROSSWAKE_RELEASE: "1"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # D-09: Checkout the companion tag (not the core tag) so the tarball is built
+          # from the exact commit release-please tagged for crosswake_rulestead.
+          ref: ${{ needs.release-please.outputs.rulestead_tag_name }}
+
+      - name: Load the package-scoped REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: companion_publish
+          REL17_EXPECTED_PACKAGE: crosswake_rulestead
+          REL17_EXPECTED_VERSION: ${{ needs.release-please.outputs.rulestead_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Cache companion deps
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            packages/crosswake_rulestead/deps
+            packages/crosswake_rulestead/_build
+          key: ${{ runner.os }}-rulestead-${{ hashFiles('packages/crosswake_rulestead/mix.lock') }}
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get --check-locked
+
+      - name: Re-fetch REL-17 evidence before companion credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - name: Guarded Hex publish
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: >
+          bash script/guarded_hex_publish.sh
+          crosswake_rulestead
+          "${{ needs.release-please.outputs.rulestead_version }}"
+          "${{ needs.release-please.outputs.rulestead_tag_name }}"
+
+  publish-hex-rindle:
+    name: Publish crosswake_rindle to Hex.pm
+    needs: [approved-release-guard, release-please]
+    # D-07: Gate on the PER-COMPONENT output, never the aggregate `releases_created`.
+    # `releases_created` is true if ANY package released — gating on it would publish the
+    # companion on every core-only release. `rindle_release_created` is set only when
+    # release-please cuts a crosswake_rindle release PR.
+    if: ${{ needs.release-please.outputs.rindle_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_rindle' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      checks: read
+      actions: read
+      contents: read
+      pull-requests: read
+    # D-13: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver in
+    # packages/crosswake_rindle/mix.exs so every mix step emits the Hex dep (not path:).
+    # Without this, mix hex.build (called by hex.publish) errors: "path: deps excluded".
+    env:
+      CROSSWAKE_RELEASE: "1"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # D-09: Checkout the companion tag (not the core tag) so the tarball is built
+          # from the exact commit release-please tagged for crosswake_rindle.
+          ref: ${{ needs.release-please.outputs.rindle_tag_name }}
+
+      - name: Load the package-scoped REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: companion_publish
+          REL17_EXPECTED_PACKAGE: crosswake_rindle
+          REL17_EXPECTED_VERSION: ${{ needs.release-please.outputs.rindle_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Cache companion deps
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            packages/crosswake_rindle/deps
+            packages/crosswake_rindle/_build
+          key: ${{ runner.os }}-rindle-${{ hashFiles('packages/crosswake_rindle/mix.lock') }}
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get --check-locked
+
+      - name: Re-fetch REL-17 evidence before companion credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - name: Guarded Hex publish
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: >
+          bash script/guarded_hex_publish.sh
+          crosswake_rindle
+          "${{ needs.release-please.outputs.rindle_version }}"
+          "${{ needs.release-please.outputs.rindle_tag_name }}"
+
+  publish-hex-sigra:
+    name: Publish crosswake_sigra to Hex.pm
+    needs: [approved-release-guard, release-please]
+    # D-8 / D-07: Gate on the PER-COMPONENT output, never the aggregate `releases_created`.
+    # `releases_created` is true if ANY package released — gating on it would publish the
+    # companion on every core-only release. `sigra_release_created` is set only when
+    # release-please cuts a crosswake_sigra release PR.
+    if: ${{ needs.release-please.outputs.sigra_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_sigra' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      checks: read
+      actions: read
+      contents: read
+      pull-requests: read
+    # D-13 / T-137-15: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver
+    # in packages/crosswake_sigra/mix.exs so every mix step emits the Hex dep (not path:).
+    # Without this, mix hex.build (called by hex.publish) errors: "path: deps excluded".
+    env:
+      CROSSWAKE_RELEASE: "1"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # D-09: Checkout the companion tag (not the core tag) so the tarball is built
+          # from the exact commit release-please tagged for crosswake_sigra.
+          ref: ${{ needs.release-please.outputs.sigra_tag_name }}
+
+      - name: Load the package-scoped REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: companion_publish
+          REL17_EXPECTED_PACKAGE: crosswake_sigra
+          REL17_EXPECTED_VERSION: ${{ needs.release-please.outputs.sigra_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Cache companion deps
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            packages/crosswake_sigra/deps
+            packages/crosswake_sigra/_build
+          key: ${{ runner.os }}-sigra-${{ hashFiles('packages/crosswake_sigra/mix.lock') }}
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get --check-locked
+
+      - name: Re-fetch REL-17 evidence before companion credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - name: Guarded Hex publish
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: >
+          bash script/guarded_hex_publish.sh
+          crosswake_sigra
+          "${{ needs.release-please.outputs.sigra_version }}"
+          "${{ needs.release-please.outputs.sigra_tag_name }}"
+
+  publish-hex-chimeway:
+    name: Publish crosswake_chimeway to Hex.pm
+    needs: [approved-release-guard, release-please]
+    # D-8 / D-07: Gate on the PER-COMPONENT output, never the aggregate `releases_created`.
+    # `releases_created` is true if ANY package released — gating on it would publish the
+    # companion on every core-only release. `chimeway_release_created` is set only when
+    # release-please cuts a crosswake_chimeway release PR.
+    if: ${{ needs.release-please.outputs.chimeway_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_chimeway' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      checks: read
+      actions: read
+      contents: read
+      pull-requests: read
+    # D-13 / T-138-12: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver
+    # in packages/crosswake_chimeway/mix.exs so every mix step emits the Hex dep (not path:).
+    # Without this, mix hex.build (called by hex.publish) errors: "path: deps excluded".
+    env:
+      CROSSWAKE_RELEASE: "1"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # D-09: Checkout the companion tag (not the core tag) so the tarball is built
+          # from the exact commit release-please tagged for crosswake_chimeway.
+          ref: ${{ needs.release-please.outputs.chimeway_tag_name }}
+
+      - name: Load the package-scoped REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: companion_publish
+          REL17_EXPECTED_PACKAGE: crosswake_chimeway
+          REL17_EXPECTED_VERSION: ${{ needs.release-please.outputs.chimeway_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Cache companion deps
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            packages/crosswake_chimeway/deps
+            packages/crosswake_chimeway/_build
+          key: ${{ runner.os }}-chimeway-${{ hashFiles('packages/crosswake_chimeway/mix.lock') }}
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get --check-locked
+
+      - name: Re-fetch REL-17 evidence before companion credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - name: Guarded Hex publish
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: >
+          bash script/guarded_hex_publish.sh
+          crosswake_chimeway
+          "${{ needs.release-please.outputs.chimeway_version }}"
+          "${{ needs.release-please.outputs.chimeway_tag_name }}"
+
+  publish-hex-threadline:
+    name: Publish crosswake_threadline to Hex.pm
+    needs: [approved-release-guard, release-please]
+    # D-8 / D-07: Gate on the PER-COMPONENT output, never the aggregate `releases_created`.
+    # `releases_created` is true if ANY package released — gating on it would publish the
+    # observer on every core-only release. `threadline_release_created` is set only when
+    # release-please cuts a crosswake_threadline release PR (THREAD-03).
+    if: ${{ needs.release-please.outputs.threadline_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_threadline' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      checks: read
+      actions: read
+      contents: read
+      pull-requests: read
+    # D-13 / T-139-12: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver
+    # in packages/crosswake_threadline/mix.exs so every mix step emits the Hex dep (not path:).
+    # Without this, mix hex.build (called by hex.publish) errors: "path: deps excluded".
+    # Also required so the optional :plug and :phoenix_live_view deps resolve correctly.
+    env:
+      CROSSWAKE_RELEASE: "1"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # D-09: Checkout the observer tag (not the core tag) so the tarball is built
+          # from the exact commit release-please tagged for crosswake_threadline.
+          ref: ${{ needs.release-please.outputs.threadline_tag_name }}
+
+      - name: Load the package-scoped REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: companion_publish
+          REL17_EXPECTED_PACKAGE: crosswake_threadline
+          REL17_EXPECTED_VERSION: ${{ needs.release-please.outputs.threadline_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Cache observer deps
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            packages/crosswake_threadline/deps
+            packages/crosswake_threadline/_build
+          key: ${{ runner.os }}-threadline-${{ hashFiles('packages/crosswake_threadline/mix.lock') }}
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get --check-locked
+
+      - name: Re-fetch REL-17 evidence before companion credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - name: Guarded Hex publish
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: >
+          bash script/guarded_hex_publish.sh
+          crosswake_threadline
+          "${{ needs.release-please.outputs.threadline_version }}"
+          "${{ needs.release-please.outputs.threadline_tag_name }}"
+
+  publish-ios-core:
+    name: Mirror iOS core to split repo
+    needs: [approved-release-guard, release-please]
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      checks: read
+      actions: read
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Load the consumed REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: linked_release
+          REL17_EXPECTED_PACKAGE: crosswake
+          REL17_EXPECTED_VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Resolve locked Mix dependencies
+        run: mix deps.get --check-locked
+
+      - name: Re-fetch REL-17 evidence before mirror credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - name: Preflight — assert MIRROR_DEPLOY_KEY is configured
+        env:
+          MIRROR_DEPLOY_KEY: ${{ secrets.MIRROR_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MIRROR_DEPLOY_KEY:-}" ]; then
+            echo "[crosswake] FAIL: MIRROR_DEPLOY_KEY is not configured."
+            echo "[crosswake] What to do next: mint an SSH deploy key with write access on szTheory/crosswake-shell-core-ios and store the private half as the MIRROR_DEPLOY_KEY secret (see script/verify_ios_mirror_backfill.sh's D-05 ritual)."
+            exit 1
+          fi
+
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.MIRROR_DEPLOY_KEY }}
+
+      - name: Add GitHub to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+
+      - name: Publish immutable fast-forward iOS mirror refs
+        env:
+          CROSSWAKE_IOS_MIRROR_EXECUTE: "true"
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: >
+          bash script/release_candidate/ios_mirror.sh publish
+          --version "${{ needs.approved-release-guard.outputs.approved_version }}"
+          --ref "${{ needs.approved-release-guard.outputs.merge_oid }}"
+          --approval-receipt "${{ needs.approved-release-guard.outputs.candidate_receipt }}"
+          --expected-old-ref "$(git ls-remote git@github.com:szTheory/crosswake-shell-core-ios.git refs/heads/main | awk '{print $1}')"
+          --expected-new-ref "$(git subtree split --prefix=packages/crosswake-shell-core-ios '${{ needs.approved-release-guard.outputs.merge_oid }}' | tail -1)"
+
+  publish-android-core:
+    name: Publish Android core to Maven Central
+    needs: [approved-release-guard, release-please]
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-android') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Load the consumed REL-17 decision
+        env:
+          REL17_CONTEXT_JSON: ${{ needs.approved-release-guard.outputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: linked_release
+          REL17_EXPECTED_PACKAGE: crosswake
+          REL17_EXPECTED_VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
+      - name: Download and validate the approved candidate receipt
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APPROVED_HEAD: ${{ needs.approved-release-guard.outputs.approved_head }}
+          APPROVED_TREE: ${{ needs.approved-release-guard.outputs.approved_tree }}
+          APPROVED_BASE: ${{ needs.approved-release-guard.outputs.base_oid }}
+          APPROVED_VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
+          APPROVED_RECEIPT: ${{ needs.approved-release-guard.outputs.candidate_receipt }}
+          RECEIPT_RUN_ID: ${{ needs.approved-release-guard.outputs.candidate_receipt_run_id }}
+        run: |
+          set -euo pipefail
+          artifact_name="phase168-candidate-receipt-${APPROVED_HEAD}"
+          receipt_dir="$RUNNER_TEMP/approved-candidate-receipt"
+          mkdir -p "$receipt_dir"
+          artifact_index=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RECEIPT_RUN_ID/artifacts?per_page=100")
+          [ "$(printf '%s' "$artifact_index" | jq --arg name "$artifact_name" '[.artifacts[] | select(.name == $name and .expired == false)] | length')" -eq 1 ]
+          gh run download "$RECEIPT_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+            --name "$artifact_name" --dir "$receipt_dir"
+          bash script/release_candidate/assert_candidate_receipt_artifact.sh "$receipt_dir"
+          receipt="$receipt_dir/candidate-receipt.json"
+          receipt_digest=$(sha256sum "$receipt" | awk '{print $1}')
+          [ "$receipt_digest" = "$APPROVED_RECEIPT" ]
+          jq -e --arg head "$APPROVED_HEAD" --arg tree "$APPROVED_TREE" \
+            --arg base "$APPROVED_BASE" --arg version "$APPROVED_VERSION" \
+            '.state == "READY FOR APPROVAL" and
+             .identity.bound == .identity.observed and
+             .identity.bound.ref == $head and .identity.bound.head == $head and
+             .identity.bound.tree == $tree and .identity.bound.base == $base and
+             .identity.bound.version == $version and
+             .external_state.publication == "NONE" and .external_state.changed == false' \
+            "$receipt" >/dev/null
+
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+
+      - name: Re-fetch REL-17 evidence before Maven credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Publish to Maven Central
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyId }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
+          GH_TOKEN: ${{ github.token }}
+          REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+        run: >
+          bash script/release_candidate/android_publication.sh
+          --version "${{ needs.approved-release-guard.outputs.approved_version }}"
+          --ref "${{ needs.approved-release-guard.outputs.merge_oid }}"
+          --approved-head "${{ needs.approved-release-guard.outputs.approved_head }}"
+          --approved-tree "${{ needs.approved-release-guard.outputs.approved_tree }}"
+          --candidate-receipt "${{ needs.approved-release-guard.outputs.candidate_receipt }}"
+          --receipt-file "$RUNNER_TEMP/approved-candidate-receipt/candidate-receipt.json"
+          --execute
+
+  clean-room-proof-ios:
+    name: Clean-room proof — iOS swift build
+    needs: [release-please, publish-hex, publish-ios-core]
+    if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') }}
+    runs-on: macos-15
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+
+      - name: Generate iOS shell from an external consumer host
+        env:
+          VERSION: ${{ needs.release-please.outputs.version }}
+        run: |
+          set -euo pipefail
+          bash script/verify_ios_release_host.sh \
+            --version "$VERSION" \
+            --host-root "$RUNNER_TEMP/clean-room-proof-ios-host" \
+            --target "$RUNNER_TEMP/clean-room-proof-ios"
+
+      - name: swift build with mirror tag retry
+        run: |
+          set -euo pipefail
+          PROJECT_ROOT="$RUNNER_TEMP/clean-room-proof-ios/native/ios/crosswake_shell"
+          cd "$PROJECT_ROOT"
+
+          for i in 1 2 3; do
+            if swift build; then
+              echo "swift build succeeded on attempt $i"
+              exit 0
+            fi
+
+            echo "swift build attempt $i/3 failed; retrying in 30s for mirror tag availability..."
+            sleep 30
+          done
+
+          echo "swift build failed after 3 attempts."
+          exit 1
+
+  clean-room-proof-android:
+    name: Clean-room proof — Android gradle build
+    needs: [release-please, publish-hex, publish-android-core]
+    if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-android') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+
+      - name: Install crosswake archive at just-cut version
+        env:
+          VERSION: ${{ needs.release-please.outputs.version }}
+        run: mix archive.install hex crosswake "$VERSION" --force
+
+      - name: Generate Android shell outside monorepo
+        run: |
+          set -euo pipefail
+          TARGET="$RUNNER_TEMP/clean-room-proof-android"
+          rm -rf "$TARGET"
+          mkdir -p "$TARGET"
+          mix crosswake.gen.shell android --target "$TARGET"
+
+      - name: gradle build with Maven Central propagation polling
+        run: |
+          set -euo pipefail
+          PROJECT_ROOT="$RUNNER_TEMP/clean-room-proof-android/native/android/crosswake_shell"
+          cd "$PROJECT_ROOT"
+          chmod +x gradlew
+
+          MAX_ATTEMPTS=40
+          DELAY=45
+          for i in $(seq 1 "$MAX_ATTEMPTS"); do
+            if ./gradlew build --no-daemon; then
+              echo "gradle build succeeded on attempt $i"
+              exit 0
+            fi
+
+            echo "Attempt $i/$MAX_ATTEMPTS: gradle build failed; Maven Central may not have propagated. Retrying in ${DELAY}s..."
+            sleep "$DELAY"
+          done
+
+          echo "gradle build failed after $MAX_ATTEMPTS attempts (~30 min). Maven Central propagation timeout."
+          exit 1
+
+  exact-public-proof:
+    name: "release: exact-public artifact proof"
+    needs:
+      - approved-release-guard
+      - release-please
+      - publish-hex
+      - publish-ios-core
+      - publish-android-core
+      - clean-room-proof-ios
+      - clean-room-proof-android
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version }}
+    # LOAD-BEARING, NOT COSMETIC. This workflow declares a top-level
+    # `permissions:` key, so every scope it does not list -- `actions` among them
+    # -- is `none` at workflow level; `actions: read` exists only as a job-level
+    # grant here and on approved-release-guard. A called workflow's own
+    # `permissions:` can only NARROW the token this job hands it, never widen it,
+    # so declaring `actions: read` inside exact-public-proof.yml does not grant
+    # it. Drop this block and both the candidate-receipt download and the
+    # publication-record download fail with a forbidden response -- at release
+    # time, on a real release. actionlint cannot catch that (T-173-15).
+    #
+    # `contents: write` / `pull-requests: write` are here for the called
+    # workflow's `record-ledger` job ONLY (XPUB-06): it commits the proof verdict
+    # to docs/release-ledger/RELEASE-LEDGER.jsonl on a run-scoped branch and opens
+    # a pull request, because main is protected. The grant cannot reach the proof
+    # body: that job declares its own `actions: read` / `contents: read` block,
+    # which narrows this token back down. Drop these two scopes and the ledger job
+    # fails its push at release time -- visibly, in the job summary, but the verdict
+    # never lands in git.
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+    uses: ./.github/workflows/exact-public-proof.yml
+    with:
+      package: crosswake
+      version: ${{ needs.release-please.outputs.version }}
+      approved_head: ${{ needs.approved-release-guard.outputs.approved_head }}
+      merge_oid: ${{ needs.approved-release-guard.outputs.merge_oid }}
+      candidate_receipt_run_id: ${{ needs.approved-release-guard.outputs.candidate_receipt_run_id }}
+      lane: ordinary
+
+  linked-release-rollup:
+    name: "release: linked release rollup"
+    needs:
+      - approved-release-guard
+      - release-please
+      - publish-hex
+      - publish-ios-core
+      - publish-android-core
+      - clean-room-proof-ios
+      - clean-room-proof-android
+      - exact-public-proof
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Initialize linked release rollup
+        id: linked-release
+        env:
+          LINKED_RELEASE: ${{ needs.approved-release-guard.outputs.linked_release }}
+        run: |
+          set -euo pipefail
+          if [ "$LINKED_RELEASE" = "true" ]; then
+            echo "applicable=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "applicable=false" >> "$GITHUB_OUTPUT"
+            echo '{"state":"NOT_APPLICABLE","child_states":{},"successful_coordinates":[],"failed_step":null,"failed_ref":null,"next_action":"no_action_required"}' > linked-release-status.json
+          fi
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        if: ${{ steps.linked-release.outputs.applicable == 'true' }}
+        with:
+          ref: ${{ needs.approved-release-guard.outputs.merge_oid }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        if: ${{ steps.linked-release.outputs.applicable == 'true' }}
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Resolve locked Mix dependencies
+        if: ${{ steps.linked-release.outputs.applicable == 'true' }}
+        run: mix deps.get --check-locked
+      - name: Preserve exact linked child states
+        # The executable policy emits COMPLETE only for all six successes and
+        # PARTIAL whenever an immutable public coordinate survives a failure.
+        if: ${{ steps.linked-release.outputs.applicable == 'true' }}
+        env:
+          APPROVED_HEAD: ${{ needs.approved-release-guard.outputs.approved_head }}
+          APPROVED_TREE: ${{ needs.approved-release-guard.outputs.approved_tree }}
+          APPROVED_REF: ${{ needs.approved-release-guard.outputs.merge_oid }}
+          APPROVED_VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
+          CANDIDATE_RECEIPT: ${{ needs.approved-release-guard.outputs.candidate_receipt }}
+          HEX_STATE: ${{ needs.publish-hex.result }}
+          IOS_STATE: ${{ needs.publish-ios-core.result }}
+          ANDROID_STATE: ${{ needs.publish-android-core.result }}
+          IOS_PROOF_STATE: ${{ needs.clean-room-proof-ios.result }}
+          ANDROID_PROOF_STATE: ${{ needs.clean-room-proof-android.result }}
+          EXACT_PUBLIC_STATE: ${{ needs.exact-public-proof.result }}
+          LINKED_RELEASE_STATUS: linked-release-status.json
+        run: |
+          set -euo pipefail
+          mix run --no-start -e 'Crosswake.ReleaseCandidate.Workflow.evaluate_cli!()'
+      - name: Upload linked release status
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: linked-release-status
+          path: linked-release-status.json
+          if-no-files-found: error
+          retention-days: 30
+
+  native-release-rollup:
+    name: Native release status rollup
+    needs:
+      - approved-release-guard
+      - release-please
+      - publish-ios-core
+      - clean-room-proof-ios
+      - publish-android-core
+      - clean-room-proof-android
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Build native release status
+        env:
+          VERSION: ${{ needs.release-please.outputs.version }}
+          PATHS_RELEASED: ${{ needs.release-please.outputs.paths_released || '[]' }}
+          LINKED_RELEASE: ${{ needs.approved-release-guard.outputs.linked_release }}
+          IOS_PUBLISH_RESULT: ${{ needs.publish-ios-core.result }}
+          IOS_PROOF_RESULT: ${{ needs.clean-room-proof-ios.result }}
+          ANDROID_PUBLISH_RESULT: ${{ needs.publish-android-core.result }}
+          ANDROID_PROOF_RESULT: ${{ needs.clean-room-proof-android.result }}
+        run: |
+          set -euo pipefail
+
+          released_path() {
+            if [ "$LINKED_RELEASE" != "true" ]; then
+              printf "false"
+              return
+            fi
+
+            case "$PATHS_RELEASED" in
+              *"$1"*) printf "true" ;;
+              *) printf "false" ;;
+            esac
+          }
+
+          platform_state() {
+            released="$1"
+            publish_result="$2"
+            proof_result="$3"
+
+            if [ "$released" != "true" ]; then
+              printf "skipped"
+            elif [ "$publish_result" != "success" ]; then
+              printf "failed"
+            elif [ "$proof_result" = "success" ]; then
+              printf "proven"
+            elif [ "$proof_result" = "skipped" ]; then
+              printf "published"
+            else
+              printf "failed"
+            fi
+          }
+
+          ios_released="$(released_path "packages/crosswake-shell-core-ios")"
+          android_released="$(released_path "packages/crosswake-shell-core-android")"
+          ios_state="$(platform_state "$ios_released" "$IOS_PUBLISH_RESULT" "$IOS_PROOF_RESULT")"
+          android_state="$(platform_state "$android_released" "$ANDROID_PUBLISH_RESULT" "$ANDROID_PROOF_RESULT")"
+
+          if [ "$ios_released" != "true" ] && [ "$android_released" != "true" ]; then
+            native_core="none"
+          elif [ "$ios_state" = "proven" ] && [ "$android_state" = "proven" ]; then
+            native_core="complete"
+          else
+            native_core="partial"
+          fi
+
+          if [ "$native_core" = "complete" ]; then
+            next_action="No native recovery action needed."
+          elif [ "$ios_released" = "true" ] && [ "$ios_state" != "proven" ]; then
+            next_action="Fix MIRROR_DEPLOY_KEY or run the iOS mirror backfill workflow."
+          elif [ "$android_released" = "true" ] && [ "$android_state" != "proven" ]; then
+            next_action="Inspect Android Maven publish/proof before declaring native complete."
+          else
+            next_action="Review native release paths before declaring native complete."
+          fi
+
+          cat > native-release-status.json <<JSON
+          {
+            "version": "${VERSION}",
+            "native_core": "${native_core}",
+            "ios": {
+              "released": ${ios_released},
+              "publish": "${IOS_PUBLISH_RESULT}",
+              "proof": "${IOS_PROOF_RESULT}",
+              "state": "${ios_state}"
+            },
+            "android": {
+              "released": ${android_released},
+              "publish": "${ANDROID_PUBLISH_RESULT}",
+              "proof": "${ANDROID_PROOF_RESULT}",
+              "state": "${android_state}"
+            },
+            "next_action": "${next_action}"
+          }
+          JSON
+
+          {
+            echo "## Native release status"
+            echo ""
+            echo "- Version: ${VERSION:-unknown}"
+            echo "- native_core=${native_core}"
+            echo "- iOS: released=${ios_released}, publish=${IOS_PUBLISH_RESULT}, proof=${IOS_PROOF_RESULT}, state=${ios_state}"
+            echo "- Android: released=${android_released}, publish=${ANDROID_PUBLISH_RESULT}, proof=${ANDROID_PROOF_RESULT}, state=${android_state}"
+            echo "- Next action: ${next_action}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # D-17: a partial native release must not claim success. native_core=none (no
+          # native package released this run — the normal companion-only path) stays
+          # exit 0; native_core=partial with at least one native platform released must
+          # fail closed, now that the artifact and step summary above already captured
+          # the diagnostic this exit is about to fail on.
+          if [ "$native_core" != "complete" ] && { [ "$ios_released" = "true" ] || [ "$android_released" = "true" ]; }; then
+            echo "[crosswake] FAIL: native release is partial (native_core=${native_core}) — ${next_action}"
+            exit 1
+          fi
+
+      - name: Upload native release status
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: native-release-status
+          path: native-release-status.json
+          if-no-files-found: error
+          retention-days: 14
+
+  # On-demand lockstep consistency assertion: confirms the three configured version coordinates
+  # (mix.exs @version, build.gradle.kts version, .release-please-manifest.json) are internally
+  # consistent. This is the D-05 110-equivalent of SC#4 — proves the lockstep CONFIG is correct
+  # without requiring a live 0.1.2 artifact (that happens at Phase 111's real cut).
+  lockstep-truth:
+    name: Assert lockstep version coordinates match
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Assert lockstep version coordinates match
+        run: |
+          set -euo pipefail
+
+          # The marker deliberately precedes @version on the next line. Extract that
+          # following declaration and reject absence before comparing coordinates.
+          MIX_VERSION=$(sed -n '/# x-release-please-version/{n;s/^[[:space:]]*@version "\([^\"]*\)".*/\1/p;}' mix.exs)
+
+          # Extract build.gradle.kts version (x-release-please-version annotation)
+          GRADLE_VERSION=$(grep '// x-release-please-version' packages/crosswake-shell-core-android/build.gradle.kts \
+            | sed 's/.*version = "\(.*\)" \/\/.*/\1/')
+
+          # Extract manifest baselines (. and packages/crosswake-shell-core-android)
+          MANIFEST_ROOT=$(python3 -c "import json; d=json.load(open('.release-please-manifest.json')); print(d['.'])")
+          MANIFEST_ANDROID=$(python3 -c "import json; d=json.load(open('.release-please-manifest.json')); print(d['packages/crosswake-shell-core-android'])")
+
+          if [ -z "$MIX_VERSION" ] || [ -z "$GRADLE_VERSION" ] || \
+             [ -z "$MANIFEST_ROOT" ] || [ -z "$MANIFEST_ANDROID" ]; then
+            echo "LOCKSTEP EXTRACTION FAILED: one or more configured version coordinates are empty."
+            exit 1
+          fi
+
+          echo "mix.exs @version:               $MIX_VERSION"
+          echo "build.gradle.kts version:       $GRADLE_VERSION"
+          echo "manifest . baseline:            $MANIFEST_ROOT"
+          echo "manifest android baseline:      $MANIFEST_ANDROID"
+
+          # All four must be equal for internal lockstep consistency
+          if [ "$MIX_VERSION" != "$GRADLE_VERSION" ] || \
+             [ "$MIX_VERSION" != "$MANIFEST_ROOT" ] || \
+             [ "$MIX_VERSION" != "$MANIFEST_ANDROID" ]; then
+            echo "LOCKSTEP MISMATCH:"
+            echo "  mix.exs @version:             $MIX_VERSION"
+            echo "  build.gradle.kts version:     $GRADLE_VERSION"
+            echo "  manifest . baseline:          $MANIFEST_ROOT"
+            echo "  manifest android baseline:    $MANIFEST_ANDROID"
+            exit 1
+          fi
+
+  clean-room-proof-rulestead:
+    name: Clean-room proof — crosswake_rulestead resolvability + doctor
+    # D-15 / PROOF-02: clean-room runs ONLY after the publish job, enforcing the SC#4 ordering.
+    # `needs: publish-hex-rulestead` is the structural guarantee — this job cannot be dispatched
+    # before the dry-run-gated companion publish completes.
+    needs: [release-please, publish-hex-rulestead]
+    # D-07: gate on the per-component output, not the aggregate `releases_created`.
+    if: ${{ needs.release-please.outputs.rulestead_release_created == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+
+      - name: Run clean-room proof (D-16 — logic lives in script; YAML stays thin)
+        # Invokes script/verify_companion_cleanroom.sh which owns: Hex propagation poll,
+        # throwaway Phoenix host build (in $RUNNER_TEMP), dep install, compile, public-seam
+        # smoke test, and mix crosswake.doctor --router assertion (PROOF-01/PROOF-02).
+        run: >
+          bash script/verify_companion_cleanroom.sh
+          crosswake_rulestead
+          "${{ needs.release-please.outputs.rulestead_version }}"
+
+  clean-room-proof-rindle:
+    name: Clean-room proof — crosswake_rindle resolvability + doctor
+    # D-15 / PROOF-02: clean-room runs ONLY after the publish job, enforcing the SC#4 ordering.
+    # `needs: publish-hex-rindle` is the structural guarantee — this job cannot run before the
+    # dry-run-gated companion publish completes.
+    needs: [release-please, publish-hex-rindle]
+    # D-07: gate on the per-component output, not the aggregate `releases_created`.
+    if: ${{ needs.release-please.outputs.rindle_release_created == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+
+      - name: Run clean-room proof (D-16 — logic lives in script; YAML stays thin)
+        # Invokes script/verify_companion_cleanroom.sh which owns: Hex propagation poll,
+        # throwaway Phoenix host build (in $RUNNER_TEMP), dep install, compile, public-seam
+        # smoke test (+ the rindle Contracts canary, D-18), and mix crosswake.doctor --router.
+        # The script is engine-parameterized — rindle ~> 0.1 resolves 0.1.10 (D-15); the
+        # latest 0.3.0 is outside the cap so the clean-room proves the happy path only (the
+        # fail-closed :error path stays proven in core).
+        run: >
+          bash script/verify_companion_cleanroom.sh
+          crosswake_rindle
+          "${{ needs.release-please.outputs.rindle_version }}"
+          rindle
+          Rindle
+
+  clean-room-proof-sigra:
+    name: Clean-room proof — crosswake_sigra resolvability + doctor
+    # D-15 / PROOF-02: clean-room runs ONLY after the publish job, enforcing the SC#4 ordering.
+    # `needs: publish-hex-sigra` is the structural guarantee — this job cannot run before the
+    # dry-run-gated companion publish completes.
+    needs: [release-please, publish-hex-sigra]
+    # D-8 / D-07: gate on the per-component output, not the aggregate `releases_created`.
+    if: ${{ needs.release-please.outputs.sigra_release_created == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+
+      - name: Run clean-room proof (D-16 / T-137-16 — logic lives in script; YAML stays thin)
+        # Invokes script/verify_companion_cleanroom.sh in no-engine mode (sigra has no engine dep
+        # — pure-Elixir auth machinery; validate_dependency/0 returns :ok unconditionally).
+        # Owns: Hex propagation poll, throwaway Phoenix host build (in $RUNNER_TEMP), dep install,
+        # compile, public-seam smoke test, and mix crosswake.doctor --router assertion (PROOF-01/02).
+        run: >
+          bash script/verify_companion_cleanroom.sh
+          crosswake_sigra
+          "${{ needs.release-please.outputs.sigra_version }}"
+
+  clean-room-proof-chimeway:
+    name: Clean-room proof — crosswake_chimeway resolvability + doctor
+    # D-15 / PROOF-02: clean-room runs ONLY after the publish job, enforcing the SC#4 ordering.
+    # `needs: publish-hex-chimeway` is the structural guarantee — this job cannot run before the
+    # dry-run-gated companion publish completes.
+    needs: [release-please, publish-hex-chimeway]
+    # D-8 / D-07: gate on the per-component output, not the aggregate `releases_created`.
+    if: ${{ needs.release-please.outputs.chimeway_release_created == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+
+      - name: Run clean-room proof (D-16 / T-138-10 — logic lives in script; YAML stays thin)
+        # Invokes script/verify_companion_cleanroom.sh in no-engine mode (chimeway has no engine dep
+        # — pure-Elixir notification companion; validate_dependency/0 returns :ok unconditionally).
+        # No ENGINE_PACKAGE arg → no-engine mode: installs crosswake + crosswake_chimeway only,
+        # NOT crosswake_sigra (CHIME-02 no-sigra-dep invariant enforced at the CI level).
+        # The chimeway-specific smoke test emits assert enabled?(%{}) (defaults true) and
+        # the Chimeway.Telemetry.event_names/0 == 10 canary (vacuity-safe — T-138-11).
+        # Owns: Hex propagation poll, throwaway Phoenix host build (in $RUNNER_TEMP), dep install,
+        # compile, public-seam smoke test (chimeway-correct), and mix crosswake.doctor --router.
+        run: >
+          bash script/verify_companion_cleanroom.sh
+          crosswake_chimeway
+          "${{ needs.release-please.outputs.chimeway_version }}"
+
+  clean-room-proof-threadline:
+    name: Clean-room proof — crosswake_threadline module-shipment + zero-sibling-dep
+    # D-15 / PROOF-02: clean-room runs ONLY after the publish job, enforcing the SC#4 ordering.
+    # `needs: publish-hex-threadline` is the structural guarantee — this job cannot run before the
+    # dry-run-gated observer publish completes.
+    needs: [release-please, publish-hex-threadline]
+    # D-8 / D-07: gate on the per-component output, not the aggregate `releases_created`.
+    if: ${{ needs.release-please.outputs.threadline_release_created == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+
+      - name: Run clean-room proof (D-16 / T-139-11 — logic lives in script; YAML stays thin)
+        # Invokes script/verify_companion_cleanroom.sh in no-engine non-companion mode.
+        # crosswake_threadline is NOT a Crosswake.Companion implementor — companion-behaviour
+        # assertions (enabled?/1, companion_id/0, validate_dependency/0) are SUPPRESSED by
+        # the threadline canary branch in the script (T-139-11).
+        # No ENGINE_PACKAGE arg → no-engine mode: installs crosswake + crosswake_threadline ONLY.
+        # Neither crosswake_sigra nor crosswake_chimeway is installed (T-139-18 zero-sibling-dep).
+        # Three module-shipment canaries prove real threadline machinery shipped:
+        # Telemetry.event_names/0 == 3, Plug.Threadline.init/1 header_name, Ledger.actor_ref/2 hex.
+        # Owns: Hex propagation poll, throwaway Phoenix host build (in $RUNNER_TEMP), dep install,
+        # compile, module-shipment smoke test (vacuity-safe, threadline-correct), and doctor check.
+        run: >
+          bash script/verify_companion_cleanroom.sh
+          crosswake_threadline
+          "${{ needs.release-please.outputs.threadline_version }}"
+
+  release-as-cleanup:
+    name: Strip stale release-as after companion release (PROOF-03b)
+    # Runs when ANY companion cut a release this run. The one-shot `release-as` bootstrap pin is
+    # stale the moment its release tag exists — left in place it re-targets the same version forever
+    # (recipe Step 12f / Pitfall 6). This job strips it and opens a cleanup PR automatically, so the
+    # only human action is merging a one-line, guard-verified PR (main is protected). The
+    # release-as-staleness gate stays RED until that PR merges, so it cannot be silently skipped.
+    needs:
+      - release-please
+      - publish-hex-rulestead
+      - publish-hex-rindle
+      - publish-hex-sigra
+      - publish-hex-chimeway
+      - publish-hex-threadline
+      - clean-room-proof-rulestead
+      - clean-room-proof-rindle
+      - clean-room-proof-sigra
+      - clean-room-proof-chimeway
+      - clean-room-proof-threadline
+    if: >-
+      ${{
+        always() &&
+        (
+          needs.release-please.outputs.rulestead_release_created == 'true' ||
+          needs.release-please.outputs.rindle_release_created == 'true' ||
+          needs.release-please.outputs.sigra_release_created == 'true' ||
+          needs.release-please.outputs.chimeway_release_created == 'true' ||
+          needs.release-please.outputs.threadline_release_created == 'true'
+        ) &&
+        (
+          needs.release-please.outputs.rulestead_release_created != 'true' ||
+          (
+            needs.publish-hex-rulestead.result == 'success' &&
+            needs.clean-room-proof-rulestead.result == 'success'
+          )
+        ) &&
+        (
+          needs.release-please.outputs.rindle_release_created != 'true' ||
+          (
+            needs.publish-hex-rindle.result == 'success' &&
+            needs.clean-room-proof-rindle.result == 'success'
+          )
+        ) &&
+        (
+          needs.release-please.outputs.sigra_release_created != 'true' ||
+          (
+            needs.publish-hex-sigra.result == 'success' &&
+            needs.clean-room-proof-sigra.result == 'success'
+          )
+        ) &&
+        (
+          needs.release-please.outputs.chimeway_release_created != 'true' ||
+          (
+            needs.publish-hex-chimeway.result == 'success' &&
+            needs.clean-room-proof-chimeway.result == 'success'
+          )
+        ) &&
+        (
+          needs.release-please.outputs.threadline_release_created != 'true' ||
+          (
+            needs.publish-hex-threadline.result == 'success' &&
+            needs.clean-room-proof-threadline.result == 'success'
+          )
+        )
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+      - name: Strip release-as for released companion(s) and open cleanup PR
+        # RELEASE_PLEASE_TOKEN (a PAT) is preferred so required CI — incl. the staleness gate —
+        # runs on the cleanup PR; github.token does not chain-trigger other workflows (file header).
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          if [ "${{ needs.release-please.outputs.rulestead_release_created }}" = "true" ]; then
+            python3 script/strip_release_as.py crosswake_rulestead
+          fi
+          if [ "${{ needs.release-please.outputs.rindle_release_created }}" = "true" ]; then
+            python3 script/strip_release_as.py crosswake_rindle
+          fi
+          if [ "${{ needs.release-please.outputs.sigra_release_created }}" = "true" ]; then
+            python3 script/strip_release_as.py crosswake_sigra
+          fi
+          if [ "${{ needs.release-please.outputs.chimeway_release_created }}" = "true" ]; then
+            python3 script/strip_release_as.py crosswake_chimeway
+          fi
+          if [ "${{ needs.release-please.outputs.threadline_release_created }}" = "true" ]; then
+            python3 script/strip_release_as.py crosswake_threadline
+          fi
+          if [ -z "$(git status --porcelain release-please-config.json)" ]; then
+            echo "[crosswake] No stale release-as pin to strip — nothing to do."
+            exit 0
+          fi
+          # Idempotency guard. The working-tree check above compares against a freshly
+          # checked-out main, which still carries the pin until an EARLIER cleanup PR is
+          # merged — so it cannot detect one that is already open. Combined with a branch
+          # name that embeds github.run_id (never collides), every release run minted
+          # another duplicate; that is how #65/#68/#72 accumulated. One open cleanup PR
+          # is enough. Uses the REST list endpoint, not `--search`, so a lagging search
+          # index cannot let a duplicate through.
+          existing="$(gh pr list --state open --base main --limit 100 \
+            --json number,headRefName \
+            --jq '[.[] | select(.headRefName | startswith("chore/release-as-cleanup-"))] | .[0].number // empty')"
+          if [ -n "$existing" ]; then
+            echo "[crosswake] Cleanup PR #${existing} is already open — not opening a duplicate."
+            echo "[crosswake] Merge #${existing} to clear the release-as-staleness gate."
+            exit 0
+          fi
+          branch="chore/release-as-cleanup-${{ github.run_id }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add release-please-config.json
+          git commit -m "chore(release): drop one-shot release-as pin after companion release (PROOF-03b)"
+          git push origin "$branch"
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "chore(release): drop stale release-as pin(s) after companion release" \
+            --body "Auto-generated (PROOF-03b). A companion's first release tag now exists, so its one-shot \`release-as\` bootstrap pin is stale — left in place it re-targets the same version forever (Pitfall 6). This PR strips \`release-as\` (and any adjacent \`_TODO_release_as\`) from the released component block(s). The release-as-staleness gate stays RED until this merges; safe to merge once CI is green."
+
+  release-failure-alert:
+    name: Alert on companion or native publish/proof failure (PROOF-03c, D-15)
+    # Fires ONLY when a downstream companion or native publish job, post-publish clean-room proof
+    # job, or the native release rollup actually FAILED. Skipped jobs (no companion/native package
+    # released this run) are not failures, so this stays dormant on the happy/no-release path — the
+    # post-publish proof needs zero human eyeballing when green. A human is paged (via an
+    # auto-opened issue) only when something is genuinely broken. D-15 extends this to the native
+    # (iOS/Android) lanes: this is the only surface with persistence, and a mirror-push failure
+    # previously opened NOTHING here — the exact gap that let a red release go unnoticed for ~3
+    # months.
+    needs:
+      - publish-hex-rulestead
+      - publish-hex-rindle
+      - publish-hex-sigra
+      - publish-hex-chimeway
+      - clean-room-proof-rulestead
+      - clean-room-proof-rindle
+      - clean-room-proof-sigra
+      - clean-room-proof-chimeway
+      - publish-hex-threadline
+      - clean-room-proof-threadline
+      - publish-ios-core
+      - clean-room-proof-ios
+      - publish-android-core
+      - clean-room-proof-android
+      - native-release-rollup
+    if: ${{ failure() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Open tracking issue
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          {
+            echo "A companion or native publish job, post-publish clean-room proof job, or the native release rollup failed on the Release Please workflow. This is not necessarily a companion failure — check the job results below."
+            echo
+            echo "- Run: ${run_url}"
+            echo "- Commit: ${{ github.sha }}"
+            echo
+            echo "Job results:"
+            echo "- publish-hex-rulestead: ${{ needs.publish-hex-rulestead.result }}"
+            echo "- publish-hex-rindle: ${{ needs.publish-hex-rindle.result }}"
+            echo "- publish-hex-sigra: ${{ needs.publish-hex-sigra.result }}"
+            echo "- publish-hex-chimeway: ${{ needs.publish-hex-chimeway.result }}"
+            echo "- clean-room-proof-rulestead: ${{ needs.clean-room-proof-rulestead.result }}"
+            echo "- clean-room-proof-rindle: ${{ needs.clean-room-proof-rindle.result }}"
+            echo "- clean-room-proof-sigra: ${{ needs.clean-room-proof-sigra.result }}"
+            echo "- clean-room-proof-chimeway: ${{ needs.clean-room-proof-chimeway.result }}"
+            echo "- publish-hex-threadline: ${{ needs.publish-hex-threadline.result }}"
+            echo "- clean-room-proof-threadline: ${{ needs.clean-room-proof-threadline.result }}"
+            echo "- publish-ios-core: ${{ needs.publish-ios-core.result }}"
+            echo "- clean-room-proof-ios: ${{ needs.clean-room-proof-ios.result }}"
+            echo "- publish-android-core: ${{ needs.publish-android-core.result }}"
+            echo "- clean-room-proof-android: ${{ needs.clean-room-proof-android.result }}"
+            echo "- native-release-rollup: ${{ needs.native-release-rollup.result }}"
+            echo
+            echo "Opened automatically (PROOF-03c/D-15) so the post-publish proof needs no human eyeballing on the success path. Investigate the failed job above, then close."
+          } > /tmp/release_alert_body.md
+          gh issue create --repo "$REPO" \
+            --title "[release] companion or native publish/clean-room proof failed — run ${{ github.run_id }}" \
+            --body-file /tmp/release_alert_body.md

@@ -1,0 +1,19 @@
+{
+  "pr": 224,
+  "merge_oid": "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+  "parents": [
+    "9093a034580085af2defb1464a4a67235b59a4bf"
+  ],
+  "tree_oid": "14f9c4ed424a156004769fd5031433b86790c1bf",
+  "ci_run_id": 38121330964,
+  "ci_conclusion": "success",
+  "ci_passed_jobs": 48,
+  "expected_skipped_jobs": [
+    "release-candidate-full-proof"
+  ],
+  "method": "SQUASH",
+  "normal_protected_path": true,
+  "admin_bypass": false,
+  "merge_requests": 1,
+  "observed_at_utc": "2026-10-11T07:52:29.035593+00:00"
+}

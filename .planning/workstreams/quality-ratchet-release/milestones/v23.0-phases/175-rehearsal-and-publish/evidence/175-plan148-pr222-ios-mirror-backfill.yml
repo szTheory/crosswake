@@ -1,0 +1,648 @@
+# Inspect, rehearse, attest, publish, or recover through explicitly separated
+# modes. Baseline inspection is credential-free. The scoped MIRROR_DEPLOY_KEY
+# is loaded only for trusted rehearsal and mutation.
+
+name: iOS mirror authority
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'Baseline, trusted rehearsal, receipt attestation, publication, approved recovery, or exact tag repair.'
+        required: true
+        type: choice
+        default: baseline
+        options:
+          - baseline
+          - candidate-rehearsal
+          - candidate-receipt-attestation
+          - publish
+          - recovery
+          - tag-repair
+      version:
+        description: 'Exact Crosswake lockstep version.'
+        required: true
+        type: string
+        default: '0.2.0'
+      release_ref:
+        description: 'Exact source ref: the 0.2.0 iOS tag for baseline or a full 40-character candidate commit SHA.'
+        required: true
+        type: string
+        default: 'refs/tags/ios-core-v0.2.0'
+      candidate_head:
+        description: 'Exact refreshed Release Please candidate head.'
+        required: false
+        default: ''
+        type: string
+      candidate_tree:
+        description: 'Exact candidate Git tree.'
+        required: false
+        default: ''
+        type: string
+      candidate_base:
+        description: 'Exact protected-default base.'
+        required: false
+        default: ''
+        type: string
+      candidate_receipt:
+        description: 'Capture digest for a candidate rehearsal or approval digest for publication/recovery.'
+        required: false
+        default: ''
+        type: string
+      candidate_ci_run_id:
+        description: 'Exact successful Crosswake CI run ID for receipt attestation.'
+        required: false
+        default: ''
+        type: string
+      hex_run_id:
+        description: 'Exact successful Hex rehearsal run ID for receipt attestation.'
+        required: false
+        default: ''
+        type: string
+      ios_run_id:
+        description: 'Exact successful iOS rehearsal run ID for receipt attestation.'
+        required: false
+        default: ''
+        type: string
+      maven_run_id:
+        description: 'Exact successful Maven rehearsal run ID for receipt attestation.'
+        required: false
+        default: ''
+        type: string
+      approval_receipt:
+        description: 'Approved receipt digest required only for publication or recovery.'
+        required: false
+        default: ''
+        type: string
+      expected_old_ref:
+        description: 'Fresh exact mirror main before publication or recovery.'
+        required: false
+        default: ''
+        type: string
+      expected_new_ref:
+        description: 'Exact split/new main for publication or recovery.'
+        required: false
+        default: ''
+        type: string
+      rel17_context:
+        description: 'Fresh post-merge REL-17 selector and consumed authorization envelope for this exact publication or recovery.'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-ios-mirror-baseline:
+    name: Inspect credential-free iOS mirror baseline
+    if: ${{ github.event.inputs.operation == 'baseline' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Inspect immutable 0.2.0 baseline
+        run: >
+          bash script/release_candidate/ios_mirror.sh baseline
+          --version "${{ inputs.version }}"
+          --ref "${{ inputs.release_ref }}"
+
+  rehearse-ios-mirror-candidate:
+    name: Rehearse exact candidate mirror authority
+    if: ${{ github.event.inputs.operation == 'candidate-rehearsal' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      CANDIDATE_HEAD: "${{ inputs.candidate_head }}"
+      CANDIDATE_TREE: "${{ inputs.candidate_tree }}"
+      CANDIDATE_BASE: "${{ inputs.candidate_base }}"
+      CANDIDATE_RECEIPT: "${{ inputs.candidate_receipt }}"
+      CANDIDATE_VERSION: "${{ inputs.version }}"
+      CANDIDATE_RUN_ID: ${{ github.run_id }}
+    steps:
+      - name: Validate exact candidate authority
+        run: |
+          set -euo pipefail
+          printf '%s' "$CANDIDATE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
+          [ "${{ inputs.release_ref }}" = "$CANDIDATE_HEAD" ]
+          printf '%s' "$CANDIDATE_HEAD" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$CANDIDATE_TREE" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$CANDIDATE_BASE" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$CANDIDATE_RECEIPT" | grep -Eq '^[0-9a-f]{64}$'
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.candidate_head }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.MIRROR_DEPLOY_KEY }}
+
+      - name: Add GitHub to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+
+      - name: Exercise exact atomic mirror refspec without mutation
+        env:
+          OUTPUT_DIR: ${{ runner.temp }}/candidate-rehearsal-ios
+        run: |
+          set -euo pipefail
+          observed_head=$(git rev-parse HEAD)
+          observed_tree=$(git rev-parse "${observed_head}^{tree}")
+          git cat-file -e "${CANDIDATE_BASE}^{commit}"
+          git merge-base --is-ancestor "$CANDIDATE_BASE" "$observed_head"
+          [ "$observed_head" = "$CANDIDATE_HEAD" ]
+          [ "$observed_tree" = "$CANDIDATE_TREE" ]
+
+          mkdir -p "$OUTPUT_DIR"
+          bash script/release_candidate/ios_mirror.sh candidate \
+            --version "$CANDIDATE_VERSION" --ref "$CANDIDATE_HEAD" | tee "$OUTPUT_DIR/mirror.json"
+          python3 -c 'import json,sys; value=json.load(open(sys.argv[1])); assert value["state"]=="PASS" and value["authorization_result"]=="PROVEN" and value["external_state_changed"] is False' "$OUTPUT_DIR/mirror.json"
+
+          workflow_sha256=$(sha256sum .github/workflows/ios-mirror-backfill.yml | awk '{print $1}')
+          mirror_digest=$(sha256sum "$OUTPUT_DIR/mirror.json" | awk '{print $1}')
+          WORKFLOW_SHA256="$workflow_sha256" MIRROR_DIGEST="$mirror_digest" python3 -c 'import json,os,pathlib; pathlib.Path(os.environ["OUTPUT_DIR"], "rehearsal.json").write_text(json.dumps({"schema_version":"1.0.0","requested_head":os.environ["CANDIDATE_HEAD"],"observed_head":os.environ["CANDIDATE_HEAD"],"observed_tree":os.environ["CANDIDATE_TREE"],"observed_base":os.environ["CANDIDATE_BASE"],"candidate_receipt":os.environ["CANDIDATE_RECEIPT"],"run_id":os.environ["CANDIDATE_RUN_ID"],"run_head":os.environ["CANDIDATE_HEAD"],"run_conclusion":"success","workflow_sha256":os.environ["WORKFLOW_SHA256"],"mirror_observation_sha256":os.environ["MIRROR_DIGEST"],"external_state_changed":False},sort_keys=True,separators=(",",":"))+"\n")'
+          echo "external_state_changed=false"
+
+      - name: Upload exact mirror rehearsal receipt
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: candidate-rehearsal-ios
+          path: |
+            ${{ runner.temp }}/candidate-rehearsal-ios/mirror.json
+            ${{ runner.temp }}/candidate-rehearsal-ios/rehearsal.json
+          if-no-files-found: error
+          retention-days: 14
+
+  attest-candidate-receipt:
+    name: Attest canonical exact-head candidate receipt
+    if: ${{ github.event.inputs.operation == 'candidate-receipt-attestation' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+    env:
+      CANDIDATE_HEAD: "${{ inputs.candidate_head }}"
+      CANDIDATE_TREE: "${{ inputs.candidate_tree }}"
+      CANDIDATE_BASE: "${{ inputs.candidate_base }}"
+      CANDIDATE_VERSION: "${{ inputs.version }}"
+      CANDIDATE_CI_RUN_ID: "${{ inputs.candidate_ci_run_id }}"
+      HEX_RUN_ID: "${{ inputs.hex_run_id }}"
+      IOS_RUN_ID: "${{ inputs.ios_run_id }}"
+      MAVEN_RUN_ID: "${{ inputs.maven_run_id }}"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Validate exact run selectors
+        id: envelope
+        run: |
+          set -euo pipefail
+          printf '%s' "$CANDIDATE_HEAD$CANDIDATE_TREE$CANDIDATE_BASE" | grep -Eq '^[0-9a-f]{120}$'
+          printf '%s' "$CANDIDATE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
+          for value in "$CANDIDATE_CI_RUN_ID" "$HEX_RUN_ID" "$IOS_RUN_ID" "$MAVEN_RUN_ID"; do
+            printf '%s' "$value" | grep -Eq '^[1-9][0-9]*$'
+          done
+          {
+            printf 'candidate_ci_run_id=%s\n' "$CANDIDATE_CI_RUN_ID"
+            printf 'hex_run_id=%s\n' "$HEX_RUN_ID"
+            printf 'ios_run_id=%s\n' "$IOS_RUN_ID"
+            printf 'maven_run_id=%s\n' "$MAVEN_RUN_ID"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.candidate_head }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+
+      - name: Download exact CI and all three trusted rehearsal artifacts
+        env:
+          OUTPUT_DIR: ${{ runner.temp }}/candidate-receipt-attestation
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUTPUT_DIR/ci" "$OUTPUT_DIR/hex" "$OUTPUT_DIR/ios" "$OUTPUT_DIR/maven"
+          gh run download "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
+            --name "phase168-candidate-ci-${CANDIDATE_HEAD}" --dir "$OUTPUT_DIR/ci"
+          gh run download "${{ steps.envelope.outputs.hex_run_id }}" \
+            --name candidate-rehearsal-hex --dir "$OUTPUT_DIR/hex"
+          gh run download "${{ steps.envelope.outputs.ios_run_id }}" \
+            --name candidate-rehearsal-ios --dir "$OUTPUT_DIR/ios"
+          gh run download "${{ steps.envelope.outputs.maven_run_id }}" \
+            --name candidate-rehearsal-maven --dir "$OUTPUT_DIR/maven"
+          test -f "$OUTPUT_DIR/ci/release-candidate-ci-receipt.json"
+          test -f "$OUTPUT_DIR/ci/artifacts/artifacts.json"
+          test -f "$OUTPUT_DIR/ci/cleanroom.json"
+          test -f "$OUTPUT_DIR/hex/rehearsal.json"
+          test -f "$OUTPUT_DIR/hex/packages/artifacts.json"
+          test -f "$OUTPUT_DIR/ios/rehearsal.json"
+          test -f "$OUTPUT_DIR/ios/mirror.json"
+          test -f "$OUTPUT_DIR/maven/rehearsal.json"
+
+      - name: Validate canonical receipt against immutable evidence
+        env:
+          OUTPUT_DIR: ${{ runner.temp }}/candidate-receipt-attestation
+        run: |
+          set -euo pipefail
+          [ "$(git rev-parse HEAD)" = "$CANDIDATE_HEAD" ]
+          [ "$(git rev-parse "${CANDIDATE_HEAD}^{tree}")" = "$CANDIDATE_TREE" ]
+          [ "$(git ls-remote origin refs/heads/main | awk '{print $1}')" = "$CANDIDATE_BASE" ]
+
+          candidate_run=$(gh run view "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
+            --json conclusion,headSha,workflowName)
+          printf '%s' "$candidate_run" | jq -e --arg head "$CANDIDATE_HEAD" \
+            '.conclusion == "success" and .headSha == $head and .workflowName == "Crosswake CI"' >/dev/null
+          hex_run=$(gh run view "${{ steps.envelope.outputs.hex_run_id }}" \
+            --json conclusion,headSha,workflowName)
+          printf '%s' "$hex_run" | jq -e --arg head "$CANDIDATE_HEAD" \
+            '.conclusion == "success" and .headSha == $head and .workflowName == "Hex candidate rehearsal and recovery"' >/dev/null
+          ios_run=$(gh run view "${{ steps.envelope.outputs.ios_run_id }}" \
+            --json conclusion,headSha,workflowName)
+          printf '%s' "$ios_run" | jq -e --arg head "$CANDIDATE_HEAD" \
+            '.conclusion == "success" and .headSha == $head and .workflowName == "iOS mirror authority"' >/dev/null
+          maven_run=$(gh run view "${{ steps.envelope.outputs.maven_run_id }}" \
+            --json conclusion,headSha,workflowName)
+          printf '%s' "$maven_run" | jq -e --arg head "$CANDIDATE_HEAD" \
+            '.conclusion == "success" and .headSha == $head and .workflowName == "Maven publish fire-drill"' >/dev/null
+
+          ci_receipt_sha=$(sha256sum "$OUTPUT_DIR/ci/release-candidate-ci-receipt.json" | awk '{print $1}')
+          cleanroom_sha=$(sha256sum "$OUTPUT_DIR/ci/cleanroom.json" | awk '{print $1}')
+          package_sha=$(sha256sum "$OUTPUT_DIR/hex/packages/artifacts.json" | awk '{print $1}')
+          hex_sha=$(sha256sum "$OUTPUT_DIR/hex/rehearsal.json" | awk '{print $1}')
+          ios_sha=$(sha256sum "$OUTPUT_DIR/ios/rehearsal.json" | awk '{print $1}')
+          mirror_sha=$(sha256sum "$OUTPUT_DIR/ios/mirror.json" | awk '{print $1}')
+          maven_sha=$(sha256sum "$OUTPUT_DIR/maven/rehearsal.json" | awk '{print $1}')
+
+          jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
+            --arg base "$CANDIDATE_BASE" --arg run "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
+            '.state == "PASS" and .head == $head and .tree == $tree and .base == $base and (.run_id | tostring) == $run and .package_count == 6 and .profile_count == 5 and .install_count == 2 and .external_state_changed == false' \
+            "$OUTPUT_DIR/ci/release-candidate-ci-receipt.json" >/dev/null
+          jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
+            --arg base "$CANDIDATE_BASE" --arg run "${{ steps.envelope.outputs.hex_run_id }}" \
+            '.requested_head == $head and .observed_head == $head and .observed_tree == $tree and .observed_base == $base and (.run_id | tostring) == $run and .run_conclusion == "success" and .package_count == 6 and .external_state_changed == false' \
+            "$OUTPUT_DIR/hex/rehearsal.json" >/dev/null
+          jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
+            --arg base "$CANDIDATE_BASE" --arg run "${{ steps.envelope.outputs.ios_run_id }}" \
+            '.requested_head == $head and .observed_head == $head and .observed_tree == $tree and .observed_base == $base and (.run_id | tostring) == $run and .run_conclusion == "success" and .external_state_changed == false' \
+            "$OUTPUT_DIR/ios/rehearsal.json" >/dev/null
+
+          jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
+            --arg base "$CANDIDATE_BASE" --arg version "$CANDIDATE_VERSION" \
+            --arg run "${{ steps.envelope.outputs.maven_run_id }}" \
+            '.candidate_version == $version and .requested_head == $head and .observed_head == $head and .observed_tree == $tree and .observed_base == $base and (.run_id | tostring) == $run and .run_conclusion == "success" and .state == "VALIDATED" and .deployment_result == "DROP" and .dropped == true and .external_state_changed == false' \
+            "$OUTPUT_DIR/maven/rehearsal.json" >/dev/null
+
+          mix deps.get --check-locked
+          mix crosswake.release.candidate \
+            --version "$CANDIDATE_VERSION" \
+            --ref "$CANDIDATE_HEAD" \
+            --evidence-dir "$OUTPUT_DIR" \
+            --output-dir "$OUTPUT_DIR" \
+            --ci-run-id "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
+            --hex-run-id "${{ steps.envelope.outputs.hex_run_id }}" \
+            --ios-run-id "${{ steps.envelope.outputs.ios_run_id }}" \
+            --maven-run-id "${{ steps.envelope.outputs.maven_run_id }}"
+          CANDIDATE_RECEIPT_PATH="$OUTPUT_DIR/candidate-receipt.json" MIX_ENV=test \
+            mix run --no-start -e 'receipt = System.fetch_env!("CANDIDATE_RECEIPT_PATH") |> File.read!() |> Jason.decode!(keys: :atoms) |> Crosswake.ReleaseCandidate.Receipt.validate!(); IO.write(Crosswake.ReleaseCandidate.Projection.markdown(receipt))' >/dev/null
+
+          jq -e --arg head "$CANDIDATE_HEAD" --arg tree "$CANDIDATE_TREE" \
+            --arg base "$CANDIDATE_BASE" --argjson run "${{ steps.envelope.outputs.candidate_ci_run_id }}" \
+            --arg ci "$ci_receipt_sha" --arg cleanroom "$cleanroom_sha" \
+            --arg package "$package_sha" --arg hex "$hex_sha" \
+            --arg ios "$ios_sha" --arg maven "$maven_sha" --arg mirror "$mirror_sha" \
+            '.state == "READY FOR APPROVAL" and .identity.bound == .identity.observed and .identity.bound.head == $head and .identity.bound.tree == $tree and .identity.bound.base == $base and .identity.bound.run.id == $run and .credentials == {"exercised":true,"mirror_write_authority":"PROVEN"} and .external_state.changed == false and .external_state.publication == "NONE" and ([.checks[].id] == (["candidate.ci","candidate.identity","candidate.workflows","candidate.config","candidate.coordinates","candidate.cleanroom","candidate.external-state","candidate.credentials","package.family","hex.rehearsal","ios.rehearsal","maven.rehearsal","mirror.authority"] | sort)) and all(.checks[]; .status == "PASS") and any(.identity.bound.proofs[]; .id == "candidate.ci" and .sha256 == $ci) and any(.identity.bound.proofs[]; .id == "candidate.cleanroom" and .sha256 == $cleanroom) and any(.identity.bound.proofs[]; .id == "package.family" and .sha256 == $package) and any(.identity.bound.proofs[]; .id == "hex.rehearsal" and .sha256 == $hex) and any(.identity.bound.proofs[]; .id == "ios.rehearsal" and .sha256 == $ios) and any(.identity.bound.proofs[]; .id == "maven.rehearsal" and .sha256 == $maven) and any(.identity.bound.proofs[]; .id == "mirror.authority" and .sha256 == $mirror)' \
+            "$OUTPUT_DIR/candidate-receipt.json" >/dev/null
+
+          receipt_digest() {
+            jq -er --arg id "$1" '.identity.bound.workflow_digests[] | select(.id == $id) | .sha256' \
+              "$OUTPUT_DIR/candidate-receipt.json"
+          }
+          config_digest() {
+            jq -er --arg id "$1" '.identity.bound.config_digests[] | select(.id == $id) | .sha256' \
+              "$OUTPUT_DIR/candidate-receipt.json"
+          }
+          test "$(sha256sum .github/workflows/crosswake-ci.yml | awk '{print $1}')" = "$(receipt_digest crosswake-ci)"
+          test "$(sha256sum .github/workflows/hex-publish.yml | awk '{print $1}')" = "$(receipt_digest hex-publish)"
+          test "$(sha256sum .github/workflows/ios-mirror-backfill.yml | awk '{print $1}')" = "$(receipt_digest ios-mirror-backfill)"
+          test "$(sha256sum .github/workflows/maven-publish-fire-drill.yml | awk '{print $1}')" = "$(receipt_digest maven-publish-fire-drill)"
+          test "$(sha256sum .github/workflows/release-please.yml | awk '{print $1}')" = "$(receipt_digest release-please)"
+          test "$(sha256sum release-please-config.json | awk '{print $1}')" = "$(config_digest release-please-config)"
+          test "$(sha256sum .release-please-manifest.json | awk '{print $1}')" = "$(config_digest release-please-manifest)"
+
+          test -z "$(git ls-remote --tags origin "refs/tags/*${CANDIDATE_VERSION}*")"
+          test "$(curl -sS -o /dev/null -w '%{http_code}' "https://hex.pm/api/packages/crosswake/releases/${CANDIDATE_VERSION}")" = 404
+          test "$(curl -sS -o /dev/null -w '%{http_code}' "https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/${CANDIDATE_VERSION}/crosswake-shell-core-android-${CANDIDATE_VERSION}.pom")" = 404
+          expected_mirror_main=$(jq -er '.identity.bound.mirror.main' "$OUTPUT_DIR/candidate-receipt.json")
+          test "$(git ls-remote https://github.com/szTheory/crosswake-shell-core-ios.git refs/heads/main | awk '{print $1}')" = "$expected_mirror_main"
+          test -z "$(git ls-remote https://github.com/szTheory/crosswake-shell-core-ios.git "refs/tags/v${CANDIDATE_VERSION}")"
+
+          cp "$OUTPUT_DIR/ci/artifacts/artifacts.json" "$OUTPUT_DIR/artifacts.json"
+          echo 'canonical candidate receipt attestation PASS; external_state_changed=false'
+
+      - name: Upload canonical candidate receipt authority
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase168-candidate-receipt-${{ inputs.candidate_head }}
+          path: |
+            ${{ runner.temp }}/candidate-receipt-attestation/candidate-receipt.json
+            ${{ runner.temp }}/candidate-receipt-attestation/candidate-receipt.md
+            ${{ runner.temp }}/candidate-receipt-attestation/artifacts.json
+          if-no-files-found: error
+          retention-days: 14
+
+  publish-ios-mirror:
+    name: Publish approved iOS mirror tag and main atomically
+    if: ${{ github.event.inputs.operation == 'publish' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Validate exact Phase 168 iOS publication authority
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_REF: ${{ inputs.release_ref }}
+          APPROVED_HEAD: ${{ inputs.candidate_head }}
+          APPROVED_TREE: ${{ inputs.candidate_tree }}
+          APPROVED_BASE: ${{ inputs.candidate_base }}
+          APPROVAL_RECEIPT: ${{ inputs.approval_receipt }}
+          EXPECTED_OLD_REF: ${{ inputs.expected_old_ref }}
+          EXPECTED_NEW_REF: ${{ inputs.expected_new_ref }}
+          PHASE168_MERGE_OID: b780a19863936619394087f1ffd384f1dca17c93
+          PHASE168_APPROVED_HEAD: 1051ab90cf75e918c6f596f84578ac77eadf45af
+          PHASE168_APPROVED_TREE: ecf63228243bfe7c2d6a377be996aa374b31d91f
+          PHASE168_APPROVED_BASE: 9533049d1ee5239b122b43749ff90f8ace7c7f6b
+          PHASE168_CANDIDATE_RECEIPT: 359ef8a5257b54e472a2328ce3ae722222506527312b3805467d643bb8666c78
+          PHASE168_MIRROR_MAIN: 658d60253c58b7e0aedb576f16f40766fa677f23
+          PHASE168_MIRROR_SPLIT: 424ab96ede1b92f2b751b54bce04c6e607f0f3c8
+        run: |
+          set -euo pipefail
+          printf '%s' "$RELEASE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
+          [ "$RELEASE_REF" = "$PHASE168_MERGE_OID" ]
+          [ "$APPROVED_HEAD" = "$PHASE168_APPROVED_HEAD" ]
+          [ "$APPROVED_TREE" = "$PHASE168_APPROVED_TREE" ]
+          [ "$APPROVED_BASE" = "$PHASE168_APPROVED_BASE" ]
+          [ "$APPROVAL_RECEIPT" = "$PHASE168_CANDIDATE_RECEIPT" ]
+          [ "$EXPECTED_OLD_REF" = "$PHASE168_MIRROR_MAIN" ]
+          [ "$EXPECTED_NEW_REF" = "$PHASE168_MIRROR_SPLIT" ]
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Load the exact REL-17 publication context
+        env:
+          REL17_CONTEXT_JSON: ${{ inputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: linked_release
+          REL17_EXPECTED_PACKAGE: crosswake
+          REL17_EXPECTED_VERSION: ${{ inputs.version }}
+          REL17_EXPECTED_MERGE_OID: ${{ inputs.release_ref }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+
+      - name: Re-fetch REL-17 evidence before mirror credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - name: Check out the exact immutable mirror payload
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.release_ref }}
+          path: release-source
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Prove merge, tree, and split identity
+        working-directory: release-source
+        env:
+          RELEASE_REF: ${{ inputs.release_ref }}
+          APPROVED_HEAD: ${{ inputs.candidate_head }}
+          APPROVED_TREE: ${{ inputs.candidate_tree }}
+          APPROVED_BASE: ${{ inputs.candidate_base }}
+          EXPECTED_NEW_REF: ${{ inputs.expected_new_ref }}
+        run: |
+          set -euo pipefail
+          parent_line=$(git rev-list --parents -n 1 "$RELEASE_REF")
+          [ "$(printf '%s\n' "$parent_line" | awk '{print NF}')" -eq 3 ]
+          [ "$(printf '%s\n' "$parent_line" | awk '{print $2}')" = "$APPROVED_BASE" ]
+          [ "$(printf '%s\n' "$parent_line" | awk '{print $3}')" = "$APPROVED_HEAD" ]
+          [ "$(git rev-parse "${RELEASE_REF}^{tree}")" = "$APPROVED_TREE" ]
+          [ "$(git rev-parse "${APPROVED_HEAD}^{tree}")" = "$APPROVED_TREE" ]
+          split=$(git subtree split --prefix=packages/crosswake-shell-core-ios "$RELEASE_REF" | tail -1)
+          [ "$split" = "$EXPECTED_NEW_REF" ]
+
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.MIRROR_DEPLOY_KEY }}
+
+      - name: Add GitHub to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+
+      - name: Publish the exact missing mirror refs
+        env:
+          CROSSWAKE_IOS_MIRROR_EXECUTE: "true"
+          CROSSWAKE_IOS_MIRROR_RELEASE_REPO: ${{ github.workspace }}/release-source
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          bash script/release_candidate/ios_mirror.sh publish
+          --version "${{ inputs.version }}"
+          --ref "${{ inputs.release_ref }}"
+          --approval-receipt "${{ inputs.approval_receipt }}"
+          --expected-old-ref "${{ inputs.expected_old_ref }}"
+          --expected-new-ref "${{ inputs.expected_new_ref }}"
+
+  repair-missing-ios-mirror-tag:
+    name: Repair exact missing iOS mirror tag
+    if: ${{ github.event.inputs.operation == 'tag-repair' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Validate exact Phase 168 tag-repair authority
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_REF: ${{ inputs.release_ref }}
+          APPROVED_HEAD: ${{ inputs.candidate_head }}
+          APPROVED_TREE: ${{ inputs.candidate_tree }}
+          APPROVED_BASE: ${{ inputs.candidate_base }}
+          APPROVAL_RECEIPT: ${{ inputs.approval_receipt }}
+          EXPECTED_MAIN: ${{ inputs.expected_new_ref }}
+          PHASE168_MERGE_OID: b780a19863936619394087f1ffd384f1dca17c93
+          PHASE168_APPROVED_HEAD: 1051ab90cf75e918c6f596f84578ac77eadf45af
+          PHASE168_APPROVED_TREE: ecf63228243bfe7c2d6a377be996aa374b31d91f
+          PHASE168_APPROVED_BASE: 9533049d1ee5239b122b43749ff90f8ace7c7f6b
+          PHASE168_CANDIDATE_RECEIPT: 359ef8a5257b54e472a2328ce3ae722222506527312b3805467d643bb8666c78
+          PHASE168_MIRROR_SPLIT: 424ab96ede1b92f2b751b54bce04c6e607f0f3c8
+        run: |
+          set -euo pipefail
+          [ "$RELEASE_VERSION" = "0.2.2" ]
+          [ "$RELEASE_REF" = "$PHASE168_MERGE_OID" ]
+          [ "$APPROVED_HEAD" = "$PHASE168_APPROVED_HEAD" ]
+          [ "$APPROVED_TREE" = "$PHASE168_APPROVED_TREE" ]
+          [ "$APPROVED_BASE" = "$PHASE168_APPROVED_BASE" ]
+          [ "$APPROVAL_RECEIPT" = "$PHASE168_CANDIDATE_RECEIPT" ]
+          [ "$EXPECTED_MAIN" = "$PHASE168_MIRROR_SPLIT" ]
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.release_ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.MIRROR_DEPLOY_KEY }}
+
+      - name: Add GitHub to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+
+      - name: Create only the missing exact public tag
+        env:
+          RELEASE_REF: ${{ inputs.release_ref }}
+          EXPECTED_MAIN: ${{ inputs.expected_new_ref }}
+        run: |
+          set -euo pipefail
+          remote=git@github.com:szTheory/crosswake-shell-core-ios.git
+          split=$(git subtree split --prefix=packages/crosswake-shell-core-ios "$RELEASE_REF" 2>/dev/null | tail -1)
+          [ "$split" = "$EXPECTED_MAIN" ]
+          refs=$(git ls-remote "$remote" refs/heads/main refs/tags/v0.2.2)
+          main=$(printf '%s\n' "$refs" | awk '$2 == "refs/heads/main" {print $1}')
+          tag=$(printf '%s\n' "$refs" | awk '$2 == "refs/tags/v0.2.2" {print $1}')
+          [ "$main" = "$EXPECTED_MAIN" ]
+          [ -z "$tag" ]
+          git push --porcelain "$remote" "$split:refs/tags/v0.2.2"
+          final=$(git ls-remote "$remote" refs/heads/main refs/tags/v0.2.2)
+          [ "$(printf '%s\n' "$final" | awk '$2 == "refs/heads/main" {print $1}')" = "$EXPECTED_MAIN" ]
+          [ "$(printf '%s\n' "$final" | awk '$2 == "refs/tags/v0.2.2" {print $1}')" = "$EXPECTED_MAIN" ]
+
+  recover-ios-mirror:
+    name: Recover approved iOS mirror main
+    if: ${{ github.event.inputs.operation == 'recovery' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    steps:
+      # This job is the only mode able to replace the public mirror's `main` with a
+      # leased force push, so it must prove the exact approved Phase 168 transaction
+      # BEFORE the checkout of the supplied ref and BEFORE MIRROR_DEPLOY_KEY is loaded.
+      # An unauthorized dispatch therefore reaches neither credentials nor
+      # attacker-chosen code.
+      #
+      # Every approved value is pinned except the lease. Ordinary publication can pin
+      # the expected old ref because it knows the pre-publication mirror state;
+      # recovery exists precisely because mirror `main` has diverged to a commit not
+      # knowable in advance. So `expected_old_ref` is shape-checked — a 40-character
+      # lowercase object id, distinct from the new ref — rather than pinned. It is the
+      # one input recovery cannot know, and it is never left unconstrained.
+      - name: Validate exact Phase 168 iOS recovery authority
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_REF: ${{ inputs.release_ref }}
+          APPROVED_HEAD: ${{ inputs.candidate_head }}
+          APPROVED_TREE: ${{ inputs.candidate_tree }}
+          APPROVED_BASE: ${{ inputs.candidate_base }}
+          APPROVAL_RECEIPT: ${{ inputs.approval_receipt }}
+          EXPECTED_OLD_REF: ${{ inputs.expected_old_ref }}
+          EXPECTED_NEW_REF: ${{ inputs.expected_new_ref }}
+          PHASE168_MERGE_OID: b780a19863936619394087f1ffd384f1dca17c93
+          PHASE168_APPROVED_HEAD: 1051ab90cf75e918c6f596f84578ac77eadf45af
+          PHASE168_APPROVED_TREE: ecf63228243bfe7c2d6a377be996aa374b31d91f
+          PHASE168_APPROVED_BASE: 9533049d1ee5239b122b43749ff90f8ace7c7f6b
+          PHASE168_CANDIDATE_RECEIPT: 359ef8a5257b54e472a2328ce3ae722222506527312b3805467d643bb8666c78
+          PHASE168_MIRROR_SPLIT: 424ab96ede1b92f2b751b54bce04c6e607f0f3c8
+        run: |
+          set -euo pipefail
+          printf '%s' "$RELEASE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
+          [ "$RELEASE_REF" = "$PHASE168_MERGE_OID" ]
+          [ "$APPROVED_HEAD" = "$PHASE168_APPROVED_HEAD" ]
+          [ "$APPROVED_TREE" = "$PHASE168_APPROVED_TREE" ]
+          [ "$APPROVED_BASE" = "$PHASE168_APPROVED_BASE" ]
+          [ "$APPROVAL_RECEIPT" = "$PHASE168_CANDIDATE_RECEIPT" ]
+          [ "$EXPECTED_NEW_REF" = "$PHASE168_MIRROR_SPLIT" ]
+          printf '%s' "$EXPECTED_OLD_REF" | grep -Eq '^[0-9a-f]{40}$'
+          [ "$EXPECTED_OLD_REF" != "$EXPECTED_NEW_REF" ]
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Load the exact iOS recovery authorization context
+        env:
+          REL17_CONTEXT_JSON: ${{ inputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: recovery
+          REL17_EXPECTED_PACKAGE: crosswake
+          REL17_EXPECTED_VERSION: ${{ inputs.version }}
+          REL17_EXPECTED_MERGE_OID: ${{ inputs.release_ref }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+
+      - name: Re-fetch REL-17 evidence before iOS recovery credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.release_ref }}
+          path: release-source
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.MIRROR_DEPLOY_KEY }}
+      - name: Add GitHub to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+      - name: Run separately approved exact-ref recovery
+        env:
+          CROSSWAKE_IOS_MIRROR_EXECUTE: "true"
+          CROSSWAKE_IOS_MIRROR_RELEASE_REPO: ${{ github.workspace }}/release-source
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          bash script/release_candidate/ios_mirror.sh recovery
+          --version "${{ inputs.version }}"
+          --ref "${{ inputs.release_ref }}"
+          --approval-receipt "${{ inputs.approval_receipt }}"
+          --expected-old-ref "${{ inputs.expected_old_ref }}"
+          --expected-new-ref "${{ inputs.expected_new_ref }}"

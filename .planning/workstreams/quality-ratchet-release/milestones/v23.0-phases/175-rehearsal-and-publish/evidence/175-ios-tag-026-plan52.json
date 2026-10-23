@@ -1,0 +1,89 @@
+{
+  "audit": null,
+  "candidate": {
+    "base_branch": "main",
+    "base_oid": "e51698528dc667ef89beb951e4eb1ec91da74981",
+    "ci_revalidated": false,
+    "draft": false,
+    "gate2_authorized": false,
+    "head_oid": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+    "merge_state": "BLOCKED",
+    "mergeable": "MERGEABLE",
+    "merged": false,
+    "pr": 219,
+    "required_check_count": 1,
+    "required_check_state": "FAILURE",
+    "state": "OPEN"
+  },
+  "credential": {
+    "helper": "gh auth git-credential",
+    "helper_identity_valid": true,
+    "push_permission": true
+  },
+  "decision": null,
+  "dry_run": {
+    "exit_code": 0,
+    "invocation_count": 1,
+    "reserved": true,
+    "reserved_at": "2026-09-29T01:42:02Z",
+    "status": {
+      "flag": "*",
+      "from_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "summary": "[new tag]",
+      "to_ref": "refs/tags/v0.2.6"
+    },
+    "status_line_count": 1
+  },
+  "mirror": {
+    "main_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+    "previous_tag_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+    "ref_count": 7,
+    "roster_complete": true,
+    "roster_sha256": "ea0e4f2ea2323b57e966cd0c7542e1ea3acf3e00d8e23c145959d7d774a6c3ba",
+    "target_absent": true
+  },
+  "observations_unchanged": null,
+  "observed_at": "2026-09-29T01:38:35Z",
+  "plan": 52,
+  "policy": {
+    "allow_deletions": false,
+    "allow_force_pushes": false,
+    "branch_protected": true,
+    "complete": true,
+    "enforce_admins": true,
+    "required_app_id": 15368,
+    "required_context": "Crosswake CI",
+    "rulesets_complete": true,
+    "rulesets_count": 0,
+    "rulesets_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "strict": true
+  },
+  "preflight": {
+    "blocked_reason_code": "DRY_RUN_FAILED_OR_AMBIGUOUS",
+    "canonicalization": "SHA-256 of UTF-8 jq -cS del(.preflight.sha256) projection including final newline",
+    "initial_readback_ok": true,
+    "last_verified_boundary": "DRY_RUN",
+    "observation_window": {
+      "ended_at": "2026-09-29T01:42:03Z",
+      "started_at": "2026-09-29T01:38:35Z"
+    },
+    "observed_at": "2026-09-29T01:38:35Z",
+    "reservation_at": "2026-09-29T01:42:02Z",
+    "sha256": "efc39a23690e9d8ceb60ebdb8040bfa8068c34a3e20b28ec3c2b4703f93fed4d"
+  },
+  "schema": "crosswake-ios-tag-preflight/v1",
+  "source": {
+    "oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+    "ref": "refs/tags/ios-core-v0.2.6",
+    "ref_count": 276,
+    "roster_complete": true,
+    "roster_sha256": "7f567032ff233869f8d2573efedf2656f8847e80d5dcf2ff6736ce9d8c9d19ac"
+  },
+  "split_commit_object_present": true,
+  "split_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+  "stage": "BLOCKED_PREFLIGHT",
+  "write": {
+    "attempts": 0,
+    "result": "NOT_ATTEMPTED"
+  }
+}

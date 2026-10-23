@@ -1,0 +1,77 @@
+{
+  "candidate": {
+    "pr": 196,
+    "version": "0.2.3",
+    "base_oid": "7a615cb0ddf2a55ef6ffab1c0c841ec3d92dea60",
+    "head_oid": "a8d86b29ee5731332ceac9abc176ecdc8262e7e1",
+    "tree_oid": "873210c237fe0bdceca65b90f222dd93b0c8b595",
+    "remote_matches": true,
+    "state": "OPEN",
+    "mergeable": "MERGEABLE",
+    "merge_state": "CLEAN"
+  },
+  "rehearsals": {
+    "hex": {
+      "run_id": 35809831057,
+      "workflow": "Hex candidate rehearsal and recovery",
+      "package_count": 6,
+      "external_state_changed": false,
+      "identity_matches_candidate": true
+    },
+    "ios": {
+      "run_id": 35809832762,
+      "workflow": "iOS mirror authority",
+      "state": "PASS",
+      "authorization_result": "PROVEN",
+      "external_state_changed": false,
+      "split_sha": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "identity_matches_candidate": true
+    },
+    "maven": {
+      "run_id": 35860341954,
+      "workflow": "Maven publish fire-drill",
+      "state": "VALIDATED",
+      "deployment_id": "46132a1c-6492-43e0-9973-898c693c78bf",
+      "dropped": true,
+      "head_before": "a8d86b29ee5731332ceac9abc176ecdc8262e7e1",
+      "head_after": "a8d86b29ee5731332ceac9abc176ecdc8262e7e1"
+    }
+  },
+  "receipt": {
+    "run_id": 35810821392,
+    "workflow": "iOS mirror authority",
+    "artifact_id": 10729014450,
+    "artifact_name": "phase168-candidate-receipt-a8d86b29ee5731332ceac9abc176ecdc8262e7e1",
+    "digest": "ef151fcf8a2a8b1b189328cea23d11548e71c82732f671acf1396c93ecb502e4",
+    "state": "READY FOR APPROVAL",
+    "matches_candidate": true,
+    "missing_seed_failed": true,
+    "matching_live_passed": true,
+    "external_state_changed": false,
+    "publication": "NONE"
+  },
+  "runbook": {
+    "commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8",
+    "base": "PASS",
+    "head": "PASS"
+  },
+  "registries": {
+    "hex_coordinate": "crosswake@0.2.3",
+    "hex_http_status": 404,
+    "hex_absent": true,
+    "ios_ref": "refs/tags/v0.2.3",
+    "ios_absent": true,
+    "maven_coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.3",
+    "maven_http_status": 404,
+    "maven_absent": true
+  },
+  "historic": {
+    "rel_10_gate_1": "BREACHED",
+    "failed_run_id": 35555386857,
+    "failed_run_retried": false,
+    "individual_registry_job_dispatched": false,
+    "receipt_reconstructed": false,
+    "bypass_used": false
+  },
+  "refreshed_at": "2026-09-23T16:37:51Z"
+}

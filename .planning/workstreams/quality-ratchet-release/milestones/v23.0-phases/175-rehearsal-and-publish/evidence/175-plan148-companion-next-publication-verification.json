@@ -1,0 +1,23 @@
+{
+  "candidate_pr": 235,
+  "package": "crosswake_chimeway",
+  "version": "0.1.2",
+  "run_id": 38167555514,
+  "merge_oid": "2dbde2d9be8adfa36009e20bf894b00a5bb63e87",
+  "guard": "success",
+  "hex": "success",
+  "cleanroom": "success",
+  "jobs": {
+    "release: approved-candidate merge guard": 114553170222,
+    "Release Please": 114553417373,
+    "Publish crosswake_chimeway to Hex.pm": 114554073553,
+    "Clean-room proof \u2014 crosswake_chimeway resolvability + doctor": 114554541676
+  },
+  "same_ordinary_companion_run": true,
+  "core_complete_run_id": 38155320492,
+  "core_rollup_modified": false,
+  "gate3_consumed": true,
+  "retry_or_recovery_performed": false,
+  "direct_hex_present": true,
+  "observed_at_utc": "2026-10-11T19:27:48.091810+00:00"
+}

@@ -1,0 +1,49 @@
+{
+  "operation": "update_required_template_stamp_and_exact_coordinate",
+  "pr": 230,
+  "previous_head": "bf00fdd70b12fc2ca298710f7139a67b7dd00d3a",
+  "base_oid": "dba494dce54ff355cb75602999e33b8c7c6ddcb1",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "events": [
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/trees",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/commits",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/refs/heads/fix/phase175-android-compatibility",
+      "attempted": true,
+      "completed": true
+    }
+  ],
+  "force": false,
+  "created_at_utc": "2026-10-11T15:15:13.834259+00:00",
+  "head_oid": "fbde4abddab81e4d7604cf76ebfff5ef7b2ab1f7",
+  "tree_oid": "ae243b04522e6ca733fd391b4295629ab095ec64",
+  "status": "UPDATED_ONCE"
+}

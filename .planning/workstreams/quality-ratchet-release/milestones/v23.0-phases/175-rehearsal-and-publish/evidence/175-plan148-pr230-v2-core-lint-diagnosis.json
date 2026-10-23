@@ -1,0 +1,15 @@
+{
+  "run_id": 38149114588,
+  "failed_jobs": [
+    114498767052,
+    114498767120
+  ],
+  "source_head": "6f3b1600d66324a59faf1c650730bbb839454e6c",
+  "file": "packages/crosswake-shell-core-android/src/main/java/dev/crosswake/shell/core/DiagnosticExportManager.kt",
+  "line": 46,
+  "error": "ApplicationExitInfo#getReason requires API30; min26",
+  "existing_caller_guard": "start returns before API30; private helper missing local guard",
+  "repair": "Same API30 runtime guard at private field access boundary; no lint suppression, feature addition, minimum SDK or toolchain change",
+  "observed_at_utc": "2026-10-11T15:01:45.255422+00:00",
+  "source_sha256": "ad57f47a3062869277c2f247602763bd8904fe2fd87925b25bd41012982deae9"
+}

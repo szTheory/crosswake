@@ -1,0 +1,11 @@
+{
+  "operation": "disable_queued_merge_before_revising_failed_ci_source",
+  "pr": 227,
+  "head_oid": "72bf3a3e9907578b6aca9c1e4f45648d4f97b3ea",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "attempted": true,
+  "attempts": 1,
+  "delivery": "ACCEPTED",
+  "intent_at_utc": "2026-10-11T12:05:07.509279+00:00",
+  "exit_code": 0
+}

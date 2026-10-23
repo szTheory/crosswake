@@ -1,0 +1,15 @@
+{
+  "candidate_pr": 235,
+  "head_oid": "e43aa13c2ecdba55dec923848898ca230662f47b",
+  "approved_script_sha256": "7d02e031a5acc40321a55b387c5085ef8cb5d03b17b5de30f9f98dcebeae05f3",
+  "local_script_sha256": "6ea25872494667fb0a5f98ed56a68f83bdef97be147132cb99240fff2b8f9c8e",
+  "approved_matrix_runs_crosswake_installer": false,
+  "approved_legacy_runs_crosswake_installer": true,
+  "local_matrix_runs_crosswake_installer": true,
+  "approved_matrix_order_test_file_present": false,
+  "affected_requirement": "ROOM-02",
+  "publication_checks_invalidated": false,
+  "same_run_dependency_install_count_does_not_prove_crosswake_installer": true,
+  "scope": "milestone integration gap; not a publication failure or approval issue",
+  "observed_at_utc": "2026-10-11T19:17:22.397980+00:00"
+}

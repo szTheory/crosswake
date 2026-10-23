@@ -1,0 +1,12 @@
+{
+  "candidate_pr": 235,
+  "package": "crosswake_chimeway",
+  "version": "0.1.2",
+  "run_id": 38167555514,
+  "merge_oid": "2dbde2d9be8adfa36009e20bf894b00a5bb63e87",
+  "http_status": 200,
+  "present": true,
+  "raw_sha256": "84497fef9212ebf94f862834a06a6417a3d282d9c45e76d8e9e940733cb3da31",
+  "parsed_version": "0.1.2",
+  "observed_at_utc": "2026-10-11T19:27:48.091183+00:00"
+}

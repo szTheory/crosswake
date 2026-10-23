@@ -1,0 +1,148 @@
+{
+  "run_id": 38159980683,
+  "head_sha": "72197e6dd387ae584a04545055ce01659d02d7ba",
+  "status": "completed",
+  "conclusion": "failure",
+  "jobs": [
+    {
+      "databaseId": 114530663366,
+      "name": "release: approved-candidate merge guard",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114530664165,
+      "name": "Assert lockstep version coordinates match",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114530891151,
+      "name": "Release Please",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114531565352,
+      "name": "Publish crosswake_chimeway to Hex.pm",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "databaseId": 114531566206,
+      "name": "Publish crosswake_threadline to Hex.pm",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531566285,
+      "name": "Native release status rollup",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114531566393,
+      "name": "Publish crosswake_rindle to Hex.pm",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531566521,
+      "name": "Clean-room proof \u2014 crosswake_threadline module-shipment + zero-sibling-dep",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531566526,
+      "name": "Publish to Hex.pm",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531566564,
+      "name": "Publish Android core to Maven Central",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531566575,
+      "name": "Publish crosswake_rulestead to Hex.pm",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531566698,
+      "name": "Clean-room proof \u2014 crosswake_rindle resolvability + doctor",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531566710,
+      "name": "release: linked release rollup",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114531566749,
+      "name": "Publish crosswake_sigra to Hex.pm",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531566819,
+      "name": "Mirror iOS core to split repo",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531566958,
+      "name": "Clean-room proof \u2014 Android gradle build",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531567039,
+      "name": "Clean-room proof \u2014 crosswake_sigra resolvability + doctor",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531567127,
+      "name": "Clean-room proof \u2014 crosswake_rulestead resolvability + doctor",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531567129,
+      "name": "Clean-room proof \u2014 iOS swift build",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531567182,
+      "name": "release: exact-public artifact proof",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531780247,
+      "name": "Alert on companion or native publish/proof failure (PROOF-03c, D-15)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114531781208,
+      "name": "Clean-room proof \u2014 crosswake_chimeway resolvability + doctor",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114531781355,
+      "name": "Strip stale release-as after companion release (PROOF-03b)",
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  ],
+  "retry_or_recovery_performed": false,
+  "observed_at_utc": "2026-10-11T17:37:07.248487+00:00"
+}

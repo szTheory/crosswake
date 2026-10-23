@@ -1,0 +1,20 @@
+{
+  "tests": 94,
+  "failures": 0,
+  "workflow_checks": 98,
+  "workflow_failures": 0,
+  "source_match_file": "175-plan148-final-forward-controls-source-match.json",
+  "archive_check": {
+    "tests": 94,
+    "failures": 1,
+    "cause": "iOS fixture requires Git HEAD; archive has no Git metadata",
+    "authoritative_result": "tracked checkout, 94 passed"
+  },
+  "log_sha256": {
+    "tracked_tests": "7f6cc31169fd4d4aaef11a61ad61a9758e474cea5a7a7279c1af53e480720aff",
+    "workflow_integrity": "1a5de3c3ef0a84a05787e5ce47e1d615998ef0c1cf353031b14e89283b7827bf",
+    "archive_tests": "e307fa6b40c34de6bf941ca93814d5b7822470d198e054bfd47d8ad92487f6cd"
+  },
+  "historical_findings_modified": false,
+  "observed_at_utc": "2026-10-11T17:20:22.216196+00:00"
+}

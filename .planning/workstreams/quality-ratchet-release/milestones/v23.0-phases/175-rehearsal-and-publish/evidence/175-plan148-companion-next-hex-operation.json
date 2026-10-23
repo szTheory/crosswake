@@ -1,0 +1,20 @@
+{
+  "workflow": "hex-publish.yml",
+  "dispatch_ref": "release-please--branches--main--components--crosswake_chimeway",
+  "inputs": {
+    "candidate_head": "e43aa13c2ecdba55dec923848898ca230662f47b",
+    "candidate_tree": "81ff2f15a8fea0bd4d54478444a1750038dda49f",
+    "candidate_base": "fd1fcf59c1cd473f7ef9a593be46566018e8aaff",
+    "operation": "candidate-rehearsal",
+    "release_version": "0.2.11",
+    "candidate_receipt": "344d8e7558c9dbc5c36f1c4540a592c700c4620d06902da100a30ceaf83759b9"
+  },
+  "prior_max_run_id": 38159722705,
+  "intent_at_utc": "2026-10-11T19:16:40.281082+00:00",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "dispatch_attempted": true,
+  "delivery": "ACCEPTED",
+  "dispatch_exit_code": 0,
+  "response_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "run_id": 38167329101
+}

@@ -1,0 +1,10 @@
+{
+  "pr": 230,
+  "head_oid": "fbde4abddab81e4d7604cf76ebfff5ef7b2ab1f7",
+  "operation": "update_same_repair_description",
+  "body_sha256": "af70fb7e54b72bcc6e20a26c52190203ad36bfe5622a31eb39bc0df1ebbc922f",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "attempts": 1,
+  "delivery": "ACCEPTED",
+  "at_utc": "2026-10-11T15:23:07.655645+00:00"
+}

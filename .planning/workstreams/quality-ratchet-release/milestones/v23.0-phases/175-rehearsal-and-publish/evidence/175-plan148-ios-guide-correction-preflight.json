@@ -1,0 +1,23 @@
+{
+  "source_base": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+  "files": {
+    "lib/crosswake/support_matrix/support_matrix.ex": "5eae756f2b52c3c0cea9255fe475993f536aa6af91715be60899c043646dab39",
+    "guides/support_matrix.md": "7ea879ed0e3ab777b365a2f04bce7cb6232961569d2acc291f97680e50e72095",
+    "test/crosswake/support_matrix/support_matrix_test.exs": "bf1425ebde894b943410673e714a5c9880daa05775b05b3c8809c9b8f31afa66"
+  },
+  "focused_tests": 75,
+  "focused_failures": 0,
+  "original_regression": {
+    "tests": 1,
+    "failures": 1
+  },
+  "corrected_regression": {
+    "tests": 1,
+    "failures": 0
+  },
+  "guide_matches_canonical_renderer": true,
+  "physical_support_promoted": false,
+  "remote_changes": 0,
+  "status": "prepared_for_final_reconciliation",
+  "observed_at_utc": "2026-10-11T16:16:29.283767+00:00"
+}

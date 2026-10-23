@@ -1,0 +1,17 @@
+{
+  "operation": "protected_squash_merge_green_repair",
+  "pr": 230,
+  "head_oid": "fbde4abddab81e4d7604cf76ebfff5ef7b2ab1f7",
+  "base_oid": "dba494dce54ff355cb75602999e33b8c7c6ddcb1",
+  "tree_oid": "ae243b04522e6ca733fd391b4295629ab095ec64",
+  "ci_run_id": 38150513840,
+  "ci_jobs_passed": 49,
+  "actual_generated_android_lint": "PASS in existing three generated-shell proof jobs",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "consumed": true,
+  "attempts": 1,
+  "delivery": "ACCEPTED",
+  "admin_bypass": false,
+  "at_utc": "2026-10-11T15:41:27.541908+00:00",
+  "exit_code": 0
+}

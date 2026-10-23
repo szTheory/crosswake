@@ -1,0 +1,17 @@
+{
+  "pr": 237,
+  "head_oid": "9be3e2bb25d050abfd7b635f6e6b0a9795ab62b0",
+  "base_oid": "2dbde2d9be8adfa36009e20bf894b00a5bb63e87",
+  "tree_oid": "12a0f1bf3c32ecdde0326f4a288b597b11e33b06",
+  "ci_run_id": 38168254714,
+  "jobs_passed": 49,
+  "actual_hosted_installer_pairs": 10,
+  "method": "normal_protected_squash",
+  "admin_bypass": false,
+  "attempts": 1,
+  "delivery": "ACCEPTED",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "intent_at_utc": "2026-10-11T19:55:16.479646+00:00",
+  "exit_code": 0,
+  "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

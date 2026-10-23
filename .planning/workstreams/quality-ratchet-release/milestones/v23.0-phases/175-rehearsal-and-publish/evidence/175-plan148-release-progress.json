@@ -1,0 +1,1915 @@
+{
+  "plan": "175-148",
+  "task": 5,
+  "status": "core0211_complete_companion115_ci_running",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "attempt_id": "cf4f20fcebedf89077082770118b9a67",
+  "collector_sha256": "8fc7bd97b3794929698f8ce481fcd72f2e34a30132b5f85751b75df83e7baf47",
+  "scope_sha256": "b44f66ebf90ce9283f3fa35f708cfe0f9af9ca5777590888675d650b74b6734d",
+  "card_sha256": "e9ee86cc5788ae5e35b734f02b2e9ae826071c125ef71c429a35c0b31195fd98",
+  "authorization_sha256": "f43fba9291c820803a66fbe915dcf842efc7cd04158de9c5cce67b7ed2dd4020",
+  "tests": {
+    "node": 13,
+    "elixir": 14
+  },
+  "repair": "fetch and verify already-audited mirror object; no duplicated source split",
+  "retry_of_uncertain_write": false,
+  "tag_outcome_sha256": "675c1862e0457e172e398910a4c36cf7592740a40ba4f3ac3b8669704b3984dc",
+  "tag_counts": {
+    "ci_requests": 0,
+    "credential_helper_checks": 1,
+    "dry_run_attempts": 2,
+    "git_operations": 42,
+    "permission_checks": 6,
+    "public_requests": 32,
+    "readback_checks": 1,
+    "request_count_unknown": false,
+    "tag_attempts": 1
+  },
+  "next": "Core 0.2.11 is COMPLETE in ordinary run 38155320492: all six release checks, five public host profiles, both native consumer builds and all three direct registry checks passed. Held Chimeway PR #115 was updated once through the normal route and is running fresh CI 38157939812 for version 0.1.1. Require its own CI, safe Hex rehearsal, hosted receipt and fresh companion gate, then one protected merge and public Hex/host proof. Finally reconcile phase status and release bookkeeping. No user action is pending.",
+  "ci_rerun_intent": {
+    "run_id": 36438452825,
+    "head_oid": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+    "operation": "rerun_failed_jobs",
+    "reason": "mirror parity and its aggregate were the only failed jobs",
+    "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+    "attempted": true
+  },
+  "ci_run": {
+    "id": 36438452825,
+    "run_attempt": 3,
+    "status": "completed",
+    "conclusion": "success",
+    "head_oid": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d"
+  },
+  "candidate_artifact_refresh_intent": {
+    "job_id": 114367255556,
+    "operation": "rerun_exact_candidate_full_proof_job_and_dependents",
+    "reason": "phase168-candidate-ci artifact retention was seven days; absent from live list",
+    "authorized_by": "PHASE175-STANDING-AUTHORIZATION.md",
+    "attempted": true
+  },
+  "rehearsals": {
+    "hex": {
+      "workflow": "hex-publish.yml",
+      "inputs": {
+        "candidate_head": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+        "candidate_tree": "5279cae1daa1fbff3437b673df8ca231fb07c91f",
+        "candidate_base": "e51698528dc667ef89beb951e4eb1ec91da74981",
+        "operation": "candidate-rehearsal",
+        "release_version": "0.2.7",
+        "candidate_receipt": "0103ffaf60337c4c4912d1f47079c94fa83ca1ec62d238bde5971a83f4e8a1c5"
+      },
+      "dispatch_ref": "release-please--branches--main",
+      "head_oid": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+      "prior_max_run_id": 36348273088,
+      "intent_at_utc": "2026-10-11T02:22:09.101137+00:00",
+      "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+      "dispatch_attempted": true,
+      "run_id": 38104926893,
+      "dispatch_exit_code": 0,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "ios": {
+      "workflow": "ios-mirror-backfill.yml",
+      "inputs": {
+        "candidate_head": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+        "candidate_tree": "5279cae1daa1fbff3437b673df8ca231fb07c91f",
+        "candidate_base": "e51698528dc667ef89beb951e4eb1ec91da74981",
+        "operation": "candidate-rehearsal",
+        "version": "0.2.7",
+        "release_ref": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+        "candidate_receipt": "0103ffaf60337c4c4912d1f47079c94fa83ca1ec62d238bde5971a83f4e8a1c5"
+      },
+      "dispatch_ref": "release-please--branches--main",
+      "head_oid": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+      "prior_max_run_id": 36348696331,
+      "intent_at_utc": "2026-10-11T02:22:12.883396+00:00",
+      "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+      "dispatch_attempted": true,
+      "run_id": 38104930353,
+      "dispatch_exit_code": 0,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "maven": {
+      "workflow": "maven-publish-fire-drill.yml",
+      "inputs": {
+        "candidate_head": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+        "candidate_tree": "5279cae1daa1fbff3437b673df8ca231fb07c91f",
+        "candidate_base": "e51698528dc667ef89beb951e4eb1ec91da74981",
+        "fire_drill_version": "0.2.7"
+      },
+      "dispatch_ref": "release-please--branches--main",
+      "head_oid": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+      "prior_max_run_id": 36348273114,
+      "intent_at_utc": "2026-10-11T02:22:15.919607+00:00",
+      "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+      "dispatch_attempted": true,
+      "run_id": 38104932554,
+      "dispatch_exit_code": 0,
+      "status": "completed",
+      "conclusion": "success"
+    }
+  },
+  "receipt_attestation": {
+    "workflow": "ios-mirror-backfill.yml",
+    "dispatch_ref": "release-please--branches--main",
+    "inputs": {
+      "operation": "candidate-receipt-attestation",
+      "version": "0.2.7",
+      "release_ref": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+      "candidate_head": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+      "candidate_tree": "5279cae1daa1fbff3437b673df8ca231fb07c91f",
+      "candidate_base": "e51698528dc667ef89beb951e4eb1ec91da74981",
+      "candidate_ci_run_id": "36438452825",
+      "hex_run_id": "38104926893",
+      "ios_run_id": "38104930353",
+      "maven_run_id": "38104932554"
+    },
+    "intent_at_utc": "2026-10-11T02:28:22.256786+00:00",
+    "dispatch_attempted": true,
+    "run_id": 38105260436,
+    "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+    "dispatch_exit_code": 0,
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "ci_artifact_id": 11689770338,
+  "core_merge": {
+    "merge_oid": "2c87f898f3a765eac2300e4dbb0be167c2a1490f",
+    "parents": [
+      "e51698528dc667ef89beb951e4eb1ec91da74981",
+      "696a27a3be1fcd56efe70923dc0ce286a1c41c6d"
+    ],
+    "tree_oid": "5279cae1daa1fbff3437b673df8ca231fb07c91f",
+    "trailer_exact_match": true,
+    "normal_protected_path": true,
+    "admin_bypass": false,
+    "merge_attempts": 1,
+    "retry_performed": false,
+    "observed_at_utc": "2026-10-11T02:35:03.606893+00:00"
+  },
+  "ordinary_core_run": {
+    "run_id": 38105590960,
+    "merge_oid": "2c87f898f3a765eac2300e4dbb0be167c2a1490f",
+    "conclusion": "failure",
+    "guard_reason": "api_response_invalid",
+    "all_publishers_skipped": true,
+    "registry_observations": {
+      "hex": {
+        "http_status": "404",
+        "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f",
+        "exit": 0
+      },
+      "ios": {
+        "http_status": "404",
+        "body_sha256": "af34d7e1c24c2c3bd1da5d50fee4e8711a488d218f814c6c4f644603390fdf52",
+        "exit": 0
+      },
+      "maven": {
+        "http_status": "404",
+        "body_sha256": "e791ccfcfee9c0d299d07474d9bfcbfcbebf1181323be601220c8a823062ab99",
+        "exit": 0
+      }
+    },
+    "observed_at_utc": "2026-10-11T02:38:20.013324+00:00",
+    "retry_performed": false
+  },
+  "repair_pr": {
+    "number": 221,
+    "head_oid": "cee445e8cbc6d91828f9ae8b28aa4b2c08d2f405",
+    "ci_run_id": 38107576691,
+    "status": "merged",
+    "root_git_changes": false,
+    "release_creation_guard_added": true,
+    "focused_tests": 14,
+    "remote_source_integrity_checks": 98,
+    "observed_at_utc": "2026-10-11T03:23:38.447531+00:00",
+    "auto_merge": {
+      "accepted": true,
+      "method": "SQUASH",
+      "attempts": 1
+    },
+    "decimal_version": "3.1.2",
+    "root_dependency_audit": "PASS",
+    "example_dependency_audit": "PASS",
+    "integrity_negative_control": "missing proposal-only gate rejected",
+    "ci_completed_jobs": 49,
+    "ci_active_jobs": 0,
+    "ci_failures": [],
+    "ci_security": "success",
+    "snapshot_tests": {
+      "total": 7,
+      "failed": 0
+    },
+    "candidate_cleanroom": "success",
+    "ci_conclusion": "success"
+  },
+  "repair_merge": {
+    "pr": 221,
+    "state": "MERGED",
+    "merge_method": "SQUASH",
+    "merge_oid": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+    "tree_oid": "151c9e01262ce290ba13c20cc689ecc0998ea76f",
+    "parents": [
+      "2c87f898f3a765eac2300e4dbb0be167c2a1490f"
+    ],
+    "ci_run_id": 38107576691,
+    "ci_conclusion": "success",
+    "ci_jobs": 49,
+    "required_check_passed": true,
+    "normal_protected_path": true,
+    "admin_bypass": false,
+    "merge_requests": 1,
+    "observed_at_utc": "2026-10-11T03:35:30.743028+00:00"
+  },
+  "repair_followup_run": {
+    "id": 38108865053,
+    "head_oid": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "run_attempt": 2
+  },
+  "successor_candidate": {
+    "pr": 228,
+    "version": "0.2.10",
+    "head_oid": "664d9a80de4b8601174a3f750f0813ab2f492469",
+    "base_oid": "b8e25b2ac987a991274336efbabe806ba9b6f170",
+    "tree_oid": "0b3bf9bde500d475a12aa9af42a572f2fd222eed",
+    "ci_run_id": 38139597323
+  },
+  "observed_at_utc": "2026-10-11T17:03:04.589016+00:00",
+  "successor_rehearsals": {
+    "pr": 222,
+    "candidate_head_oid": "24f1ace22f0e219b666c95e2b23667b195c46289",
+    "candidate_base_oid": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+    "candidate_tree_oid": "76032cd234b2eb35fb73776fade55a67a3f9b8b6",
+    "ci_run_id": 38109308677,
+    "ci_conclusion": "success",
+    "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+    "rehearsals": {
+      "hex": {
+        "workflow": "hex-publish.yml",
+        "inputs": {
+          "candidate_head": "24f1ace22f0e219b666c95e2b23667b195c46289",
+          "candidate_tree": "76032cd234b2eb35fb73776fade55a67a3f9b8b6",
+          "candidate_base": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+          "operation": "candidate-rehearsal",
+          "release_version": "0.2.8",
+          "candidate_receipt": "34a56a941db7ce3b08fe5ec085fc1e5dc4323c7165c79ed1715f18b7b743403b"
+        },
+        "dispatch_ref": "release-please--branches--main",
+        "prior_max_run_id": 38104926893,
+        "intent_at_utc": "2026-10-11T04:38:10.212152+00:00",
+        "head_before": "24f1ace22f0e219b666c95e2b23667b195c46289",
+        "dispatch_attempted": true,
+        "delivery": "ACCEPTED",
+        "dispatch_exit_code": 0,
+        "run_id": 38112210493,
+        "head_after": "24f1ace22f0e219b666c95e2b23667b195c46289",
+        "status": "completed",
+        "conclusion": "success",
+        "artifact_sha256": "e4be3155dd95657c61a6dce1d5d1a6839ca6c6c4b0d5b20aa7988a3105dd6380"
+      },
+      "ios": {
+        "workflow": "ios-mirror-backfill.yml",
+        "inputs": {
+          "candidate_head": "24f1ace22f0e219b666c95e2b23667b195c46289",
+          "candidate_tree": "76032cd234b2eb35fb73776fade55a67a3f9b8b6",
+          "candidate_base": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+          "operation": "candidate-rehearsal",
+          "version": "0.2.8",
+          "release_ref": "24f1ace22f0e219b666c95e2b23667b195c46289",
+          "candidate_receipt": "34a56a941db7ce3b08fe5ec085fc1e5dc4323c7165c79ed1715f18b7b743403b"
+        },
+        "dispatch_ref": "release-please--branches--main",
+        "prior_max_run_id": 38105260436,
+        "intent_at_utc": "2026-10-11T04:38:15.443994+00:00",
+        "head_before": "24f1ace22f0e219b666c95e2b23667b195c46289",
+        "dispatch_attempted": true,
+        "delivery": "ACCEPTED",
+        "dispatch_exit_code": 0,
+        "run_id": 38112215121,
+        "head_after": "24f1ace22f0e219b666c95e2b23667b195c46289",
+        "status": "completed",
+        "conclusion": "success",
+        "artifact_sha256": "df93067b7cf3bc0b9110a48fb293327ee5a32f0c7547caab9aacd6a065320323"
+      },
+      "maven": {
+        "workflow": "maven-publish-fire-drill.yml",
+        "inputs": {
+          "candidate_head": "24f1ace22f0e219b666c95e2b23667b195c46289",
+          "candidate_tree": "76032cd234b2eb35fb73776fade55a67a3f9b8b6",
+          "candidate_base": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+          "fire_drill_version": "0.2.8"
+        },
+        "dispatch_ref": "release-please--branches--main",
+        "prior_max_run_id": 38104932554,
+        "intent_at_utc": "2026-10-11T04:38:19.839522+00:00",
+        "head_before": "24f1ace22f0e219b666c95e2b23667b195c46289",
+        "dispatch_attempted": true,
+        "delivery": "ACCEPTED",
+        "dispatch_exit_code": 0,
+        "run_id": 38112218569,
+        "head_after": "24f1ace22f0e219b666c95e2b23667b195c46289",
+        "status": "completed",
+        "conclusion": "success",
+        "artifact_sha256": "4a24a366dd3984f048772042982184ec4fce35f8f218963382875f95c9b6cad8"
+      }
+    }
+  },
+  "successor_receipt": {
+    "state": "READY FOR APPROVAL",
+    "checks_pass": 13,
+    "proof_hashes_match": true,
+    "receipt_digest": "f4d459da90dea56d62f425ef89d44b7089dab393640df96d33df9792e0d3a7b5",
+    "receipt_run_id": 38114956564,
+    "receipt_artifact_id": 11693127183,
+    "artifact_live": true,
+    "expired": false,
+    "publication": "NONE"
+  },
+  "successor_merge": {
+    "pr": 222,
+    "merge_oid": "9093a034580085af2defb1464a4a67235b59a4bf",
+    "parents": [
+      "7df0ad88077dfd853510aa729ade564acbbb9f53",
+      "24f1ace22f0e219b666c95e2b23667b195c46289"
+    ],
+    "tree_oid": "76032cd234b2eb35fb73776fade55a67a3f9b8b6",
+    "trailer_exact_match": true,
+    "normal_protected_path": true,
+    "admin_bypass": false,
+    "merge_attempts": 1,
+    "retry_performed": false,
+    "observed_at_utc": "2026-10-11T06:49:16.296185+00:00"
+  },
+  "successor_ordinary_run": {
+    "conclusion": "failure",
+    "createdAt": "2026-10-11T06:49:05Z",
+    "databaseId": 38119291401,
+    "event": "push",
+    "headSha": "9093a034580085af2defb1464a4a67235b59a4bf",
+    "status": "completed"
+  },
+  "successor_failure": {
+    "run_id": 38119291401,
+    "hex_job_id": 114411195765,
+    "conclusion": "failure",
+    "test_failures": [
+      "2026-10-11T06:54:46.5259534Z   1) test local bare mirror publication blocks without REL-17 authority and preserves refs (Crosswake.ReleaseCandidate.MirrorTest)\n2026-10-11T06:54:46.5302770Z ##[error]     test/crosswake/release_candidate/mirror_test.exs:260\n2026-10-11T06:54:46.5325048Z      Assertion with =~ failed\n2026-10-11T06:54:46.5344660Z      code:  assert output =~ \"REL-17 operation does not match the iOS publication mode\"\n2026-10-11T06:54:46.5349178Z      left:  \"[crosswake] FAIL: REL-17 candidate identity does not match the iOS publication.\\n\"\n2026-10-11T06:54:46.5351241Z      right: \"REL-17 operation does not match the iOS publication mode\"\n2026-10-11T06:54:46.5357622Z      stacktrace:",
+      "2026-10-11T06:58:43.7951343Z   2) test the Mix task validates a seeded envelope, while the shell seam rejects cached evidence (Crosswake.ReleaseCandidate.EvidenceGateTest)\n2026-10-11T06:58:43.7953692Z ##[error]     test/crosswake/release_candidate/evidence_gate_test.exs:27\n2026-10-11T06:58:43.7955014Z      Assertion with =~ failed\n2026-10-11T06:58:43.7955279Z      code:  assert output =~ \"reason=missing_evidence\"\n2026-10-11T06:58:43.7955918Z      left:  \"** (Mix) REL-17 BLOCKED stage=post_merge operation=linked_release reason=api_response_invalid next=gather_fresh_evidence_and_request_a_new_gate\\n\"\n2026-10-11T06:58:43.7956496Z      right: \"reason=missing_evidence\"\n2026-10-11T06:58:43.7957128Z      stacktrace:"
+    ],
+    "hex_publisher_attempted": false,
+    "native_publishers_success": [
+      "ios",
+      "maven"
+    ],
+    "exact_public_skipped": true,
+    "linked_rollup": "PARTIAL",
+    "retry_performed": false,
+    "observed_at_utc": "2026-10-11T07:05:55.450161+00:00"
+  },
+  "successor_publication": {
+    "observed_at_utc": "2026-10-11T07:05:45.723223+00:00",
+    "run_id": 38119291401,
+    "targets": {
+      "hex": {
+        "http_status": 404,
+        "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+      },
+      "ios": {
+        "http_status": 200,
+        "body_sha256": "9578c801e6eee34444a52be084994383328ebf80bb42603b8c82b11bf98d2f4b",
+        "tag_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8"
+      },
+      "maven": {
+        "http_status": 200,
+        "body_sha256": "ff4a23fbc1d0a6022d23501d82247af667588ae80fa73728fca67e67ca97b2ec"
+      }
+    }
+  },
+  "context_repair": {
+    "operation": "create_fixture_release_context_isolation_repair_pr",
+    "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+    "events": [
+      {
+        "path": "repos/szTheory/crosswake/git/blobs",
+        "attempted": true,
+        "completed": true,
+        "sha": "07cbce3bdce9d7d213dfab77fd8f7717faef4892"
+      },
+      {
+        "path": "repos/szTheory/crosswake/git/blobs",
+        "attempted": true,
+        "completed": true,
+        "sha": "c465c8639439188b542465900ba0ef566e375cc8"
+      },
+      {
+        "path": "repos/szTheory/crosswake/git/trees",
+        "attempted": true,
+        "completed": true,
+        "sha": "14f9c4ed424a156004769fd5031433b86790c1bf"
+      },
+      {
+        "path": "repos/szTheory/crosswake/git/commits",
+        "attempted": true,
+        "completed": true,
+        "sha": "590b2cca31e5787c4c33df627e6e912a1b8042a7"
+      },
+      {
+        "path": "repos/szTheory/crosswake/git/refs",
+        "attempted": true,
+        "completed": true
+      },
+      {
+        "path": "repos/szTheory/crosswake/pulls",
+        "attempted": true,
+        "completed": true,
+        "number": 224
+      }
+    ],
+    "started_at_utc": "2026-10-11T07:25:36.245174+00:00",
+    "base_oid": "9093a034580085af2defb1464a4a67235b59a4bf",
+    "head_oid": "590b2cca31e5787c4c33df627e6e912a1b8042a7",
+    "tree_oid": "14f9c4ed424a156004769fd5031433b86790c1bf",
+    "pr": 224,
+    "url": "https://github.com/szTheory/crosswake/pull/224",
+    "status": "created_ci_pending",
+    "ci_run_id": 38121330964,
+    "focused_checks": {
+      "negative_control": {
+        "exit_code": 2,
+        "tests": 20,
+        "failures": 2,
+        "ambient_release_context": true
+      },
+      "patched": {
+        "exit_code": 0,
+        "tests": 20,
+        "failures": 0,
+        "ambient_release_context": true
+      }
+    },
+    "automerge": {
+      "pr": 224,
+      "head_oid": "590b2cca31e5787c4c33df627e6e912a1b8042a7",
+      "base_oid": "9093a034580085af2defb1464a4a67235b59a4bf",
+      "tree_oid": "14f9c4ed424a156004769fd5031433b86790c1bf",
+      "operation": "enable_protected_squash_automerge",
+      "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+      "consumed": true,
+      "attempts": 1,
+      "attempted": true,
+      "delivery": "ACCEPTED",
+      "admin_bypass": false,
+      "intent_at_utc": "2026-10-11T07:25:53.579319+00:00",
+      "exit_code": 0
+    },
+    "ci_jobs_passed": 45,
+    "ci_failures": []
+  },
+  "context_repair_merge": {
+    "pr": 224,
+    "merge_oid": "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+    "parents": [
+      "9093a034580085af2defb1464a4a67235b59a4bf"
+    ],
+    "tree_oid": "14f9c4ed424a156004769fd5031433b86790c1bf",
+    "ci_run_id": 38121330964,
+    "ci_conclusion": "success",
+    "ci_passed_jobs": 48,
+    "expected_skipped_jobs": [
+      "release-candidate-full-proof"
+    ],
+    "method": "SQUASH",
+    "normal_protected_path": true,
+    "admin_bypass": false,
+    "merge_requests": 1,
+    "observed_at_utc": "2026-10-11T07:52:29.035593+00:00"
+  },
+  "context_repair_proposal": {
+    "id": 38122655822,
+    "head_oid": "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+    "status": "completed",
+    "conclusion": "success",
+    "all_publishers_skipped": true,
+    "publication": false,
+    "generated_pr": 225
+  },
+  "second_successor_candidate": {
+    "pr": 225,
+    "state": "OPEN",
+    "draft": false,
+    "head_oid": "d88192a898961620235f7af1da78b978f83e05ab",
+    "base_oid": "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+    "tree_oid": "6ebd397c3b45b12900ddafcd76115e15074f3420",
+    "version": "0.2.9",
+    "ios_version": "0.2.9",
+    "android_version": "0.2.9",
+    "changed_files": [
+      ".release-please-manifest.json",
+      "README.md",
+      "examples/android_shell_host/app/build.gradle",
+      "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json",
+      "examples/ios_shell_host/Fixtures/crosswake_manifest.json",
+      "examples/native_evidence/evidence-manifest.example.json",
+      "examples/phoenix_host/evidence/evidence-manifest.example.json",
+      "examples/phoenix_host/priv/crosswake/install_manifest.json",
+      "guides/android_uat.md",
+      "mix.exs",
+      "packages/crosswake-shell-core-android/build.gradle.kts"
+    ],
+    "observed_at_utc": "2026-10-11T08:10:47.372923+00:00",
+    "merge_authority": "NONE",
+    "ci_run_id": 38122826304,
+    "ci_status": "completed",
+    "workflow_sha256": {
+      "hex": "5b8b5aff9e184fbb7bb10003569d82c4e999ea14ffa6bc9e6bdb9e828e8093ae",
+      "ios": "2402932c9fc389cb7352b7dd4dff9f6e6d5c96c6a5252c1638f395d38237bfa1",
+      "maven": "f368f0b662365214c0cd5d948773f0e7842f78296c3b0ade50cc25f8c76d9fde"
+    },
+    "targets": {
+      "hex": {
+        "http_status": 404,
+        "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+      },
+      "ios": {
+        "http_status": 404,
+        "body_sha256": "af34d7e1c24c2c3bd1da5d50fee4e8711a488d218f814c6c4f644603390fdf52"
+      },
+      "maven": {
+        "http_status": 404,
+        "body_sha256": "e791ccfcfee9c0d299d07474d9bfcbfcbebf1181323be601220c8a823062ab99"
+      }
+    },
+    "ci_conclusion": "success",
+    "ci_jobs_passed": 49
+  },
+  "second_successor_rehearsals": {
+    "pr": 225,
+    "candidate_head_oid": "d88192a898961620235f7af1da78b978f83e05ab",
+    "candidate_base_oid": "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+    "candidate_tree_oid": "6ebd397c3b45b12900ddafcd76115e15074f3420",
+    "ci_run_id": 38122826304,
+    "ci_conclusion": "success",
+    "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+    "rehearsals": {
+      "hex": {
+        "workflow": "hex-publish.yml",
+        "inputs": {
+          "candidate_head": "d88192a898961620235f7af1da78b978f83e05ab",
+          "candidate_tree": "6ebd397c3b45b12900ddafcd76115e15074f3420",
+          "candidate_base": "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+          "operation": "candidate-rehearsal",
+          "release_version": "0.2.9",
+          "candidate_receipt": "f6524974db0c7215747e8a1421f16e058682141717aa47ab312217fc0ff4262f"
+        },
+        "dispatch_ref": "release-please--branches--main",
+        "prior_max_run_id": 38112210493,
+        "intent_at_utc": "2026-10-11T08:30:29.679888+00:00",
+        "head_before": "d88192a898961620235f7af1da78b978f83e05ab",
+        "dispatch_attempted": true,
+        "delivery": "ACCEPTED",
+        "dispatch_exit_code": 0,
+        "run_id": 38125042713,
+        "head_after": "d88192a898961620235f7af1da78b978f83e05ab",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "ios": {
+        "workflow": "ios-mirror-backfill.yml",
+        "inputs": {
+          "candidate_head": "d88192a898961620235f7af1da78b978f83e05ab",
+          "candidate_tree": "6ebd397c3b45b12900ddafcd76115e15074f3420",
+          "candidate_base": "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+          "operation": "candidate-rehearsal",
+          "version": "0.2.9",
+          "release_ref": "d88192a898961620235f7af1da78b978f83e05ab",
+          "candidate_receipt": "f6524974db0c7215747e8a1421f16e058682141717aa47ab312217fc0ff4262f"
+        },
+        "dispatch_ref": "release-please--branches--main",
+        "prior_max_run_id": 38114956564,
+        "intent_at_utc": "2026-10-11T08:30:34.797503+00:00",
+        "head_before": "d88192a898961620235f7af1da78b978f83e05ab",
+        "dispatch_attempted": true,
+        "delivery": "ACCEPTED",
+        "dispatch_exit_code": 0,
+        "run_id": 38125048595,
+        "head_after": "d88192a898961620235f7af1da78b978f83e05ab",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "maven": {
+        "workflow": "maven-publish-fire-drill.yml",
+        "inputs": {
+          "candidate_head": "d88192a898961620235f7af1da78b978f83e05ab",
+          "candidate_tree": "6ebd397c3b45b12900ddafcd76115e15074f3420",
+          "candidate_base": "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+          "fire_drill_version": "0.2.9"
+        },
+        "dispatch_ref": "release-please--branches--main",
+        "prior_max_run_id": 38112218569,
+        "intent_at_utc": "2026-10-11T08:30:39.034904+00:00",
+        "head_before": "d88192a898961620235f7af1da78b978f83e05ab",
+        "dispatch_attempted": true,
+        "delivery": "ACCEPTED",
+        "dispatch_exit_code": 0,
+        "run_id": 38125053853,
+        "head_after": "d88192a898961620235f7af1da78b978f83e05ab",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    }
+  },
+  "second_successor_receipt": {
+    "state": "READY FOR APPROVAL",
+    "checks_pass": 13,
+    "proof_hashes_match": true,
+    "receipt_digest": "3748b0284ed7dca64f76020d918f8ff351d2c29a037f0a8bf9d7b71081050279",
+    "receipt_run_id": 38126310263,
+    "receipt_artifact_id": 11697367178,
+    "artifact_live": true,
+    "expired": false,
+    "publication": "NONE"
+  },
+  "second_successor_merge": {
+    "pr": 225,
+    "merge_oid": "668e0fbe93c73afcdf79de90e64bbb5fd8090386",
+    "parents": [
+      "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+      "d88192a898961620235f7af1da78b978f83e05ab"
+    ],
+    "tree_oid": "6ebd397c3b45b12900ddafcd76115e15074f3420",
+    "trailer_exact_match": true,
+    "normal_protected_path": true,
+    "admin_bypass": false,
+    "merge_attempts": 1,
+    "retry_performed": false,
+    "observed_at_utc": "2026-10-11T09:52:29.269241+00:00"
+  },
+  "second_successor_ordinary_run": {
+    "conclusion": "failure",
+    "databaseId": 38129903390,
+    "event": "push",
+    "headSha": "668e0fbe93c73afcdf79de90e64bbb5fd8090386",
+    "status": "completed"
+  },
+  "second_successor_proof_failure": {
+    "run_id": 38129903390,
+    "merge_oid": "668e0fbe93c73afcdf79de90e64bbb5fd8090386",
+    "publishers": {
+      "hex": "success",
+      "ios": "success",
+      "maven": "success"
+    },
+    "native_clean_rooms": {
+      "ios": {
+        "job_id": 114443737090,
+        "failure": "swift build invoked in generated Xcode application directory; Package.swift absent"
+      },
+      "android": {
+        "job_id": 114443737059,
+        "failure": "archive-only shell generation outside dependency host; Jason.encode_to_iodata!/2 unavailable"
+      }
+    },
+    "exact_public_skipped": true,
+    "complete": false,
+    "retry_performed": false
+  },
+  "second_successor_registries": {
+    "run_id": 38129903390,
+    "version": "0.2.9",
+    "targets": {
+      "hex": {
+        "http_status": 200,
+        "body_sha256": "2effbca4aad6ad77d522b67fdcc5ffe5168d9b0d6f3d27d484d802fc8e6f012e"
+      },
+      "ios": {
+        "http_status": 200,
+        "body_sha256": "7de53a2f9e944b3dc3d7fdce96ad9e5f9c1f6ed0fc73815891f2c3fdc98a3c70",
+        "tag_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8"
+      },
+      "maven": {
+        "http_status": 200,
+        "body_sha256": "444a48612efd4ce1339d4661e8d47139f09f20e607ebd12c3e05246de65c635e"
+      }
+    },
+    "observed_at_utc": "2026-10-11T11:05:44.327625+00:00"
+  },
+  "second_successor_rollup": {
+    "version": "0.2.9",
+    "state": "PARTIAL",
+    "schema_version": "1.1.0",
+    "merge_oid": "668e0fbe93c73afcdf79de90e64bbb5fd8090386",
+    "successful_coordinates": [
+      "hex:crosswake@0.2.9",
+      "maven:io.crosswake:crosswake-shell-core@0.2.9",
+      "swift:crosswake-shell-core-ios@0.2.9"
+    ],
+    "failed_step": "ios_public_proof",
+    "next_action": "retry_failed_step_from_exact_ref_or_publish_forward_fix",
+    "approved_ref": "668e0fbe93c73afcdf79de90e64bbb5fd8090386",
+    "candidate_receipt": "3748b0284ed7dca64f76020d918f8ff351d2c29a037f0a8bf9d7b71081050279",
+    "child_states": {
+      "hex": "success",
+      "android": "success",
+      "ios_mirror": "success",
+      "ios_public_proof": "failed",
+      "android_public_proof": "failed",
+      "exact_public": "skipped"
+    },
+    "failed_ref": "668e0fbe93c73afcdf79de90e64bbb5fd8090386",
+    "receipt_external_state": {
+      "changed": true,
+      "publication": "PARTIAL",
+      "successful_coordinates": [
+        "hex:crosswake@0.2.9",
+        "maven:io.crosswake:crosswake-shell-core@0.2.9",
+        "swift:crosswake-shell-core-ios@0.2.9"
+      ],
+      "failed_step": "ios_public_proof",
+      "all_linked_proven": false
+    },
+    "approved_head": "d88192a898961620235f7af1da78b978f83e05ab",
+    "approved_tree": "6ebd397c3b45b12900ddafcd76115e15074f3420"
+  },
+  "proof_repair_pr": {
+    "pr": 227,
+    "head_oid": "fcbab2c44192e6b6ad24d1058127ad42a72efb67",
+    "tree_oid": "f5d8029047d15cf47970022c8d911be644720110"
+  },
+  "requirements": {
+    "REL-13": "Complete: ordinary0.2.9 all3publishers and direct public checks",
+    "REL-14": "Open: local repair check does not satisfy same-run public proof",
+    "REL-15": "Open: successor6childCOMPLETE and held companion pending",
+    "REL-17": "Open: final cross-path reconciliation pending",
+    "REL-10": "Historic breach retained"
+  },
+  "proof_repair_merge_audit": {
+    "pr": 227,
+    "head_oid": "fcbab2c44192e6b6ad24d1058127ad42a72efb67",
+    "base_oid": "668e0fbe93c73afcdf79de90e64bbb5fd8090386",
+    "tree_oid": "f5d8029047d15cf47970022c8d911be644720110",
+    "merge_oid": "b8e25b2ac987a991274336efbabe806ba9b6f170",
+    "parents": [
+      "668e0fbe93c73afcdf79de90e64bbb5fd8090386"
+    ],
+    "merge_type": "protected_squash",
+    "required_ci_run_id": 38138063830,
+    "ci_jobs": 49,
+    "ci_failed": 0,
+    "published_peer_comparison": "PASS; all5 refs/metadata/payload/permissions",
+    "local_public_consumer_proof": "COMPLETE; all6packages/all5profiles twice",
+    "observed_at_utc": "2026-10-11T12:28:35.580793+00:00",
+    "merge_requests_at_this_head": 1,
+    "admin_bypass": false,
+    "publication_claim": false
+  },
+  "updated_at_utc": "2026-10-11T18:49:38.607732+00:00",
+  "active_stage": "Core0.2.10 all3public; iOS consumer PASS; Android/public proof pending",
+  "next_action": "Core0.2.10 ordinary run38146628907 is finished: all3publishers and iOSconsumer passed, Androidconsumer failed lint, exactpublic was skipped, and the linked rollup is PARTIAL. Preserve that result and consumed binding. RepairPR230 has passed actual generated Android lint and now includes the required template stamp plus the correct Maven report coordinate. Fresh CI38150513840 runs on fbde4abddab81e4d7604cf76ebfff5ef7b2ab1f7. Require all49jobs and its actual six-package artifact proof to pass, then squash merge through protection and continue a fresh core candidate. Companion115 remains held until that ordinary core run passes all six children. No user action is pending.",
+  "workflow_context_repair": {
+    "pr": 229,
+    "head_oid": "106a4a4fb6877fedcdab4dfdde9f8eecd60ee156",
+    "ci_run_id": 38141674524,
+    "automerge": "ACCEPTED revision2",
+    "tree_oid": "a4d716ddf8d9349f8eb424cbf97b9d30e02412ad"
+  },
+  "pr228_pre_repair": {
+    "ci_run_id": 38139597323,
+    "ci": "49/49PASS",
+    "hex_safe_run_id": 38141374071,
+    "hex_safe_conclusion": "success",
+    "ios_dispatch": "REJECTED_INVALID_WORKFLOW",
+    "publication": "NONE"
+  },
+  "workflow_context_repair_merge_audit": {
+    "pr": 229,
+    "head_oid": "106a4a4fb6877fedcdab4dfdde9f8eecd60ee156",
+    "base_oid": "b8e25b2ac987a991274336efbabe806ba9b6f170",
+    "tree_oid": "a4d716ddf8d9349f8eb424cbf97b9d30e02412ad",
+    "merge_oid": "b064c4e2ea770a7e1dfae46227ac7ecf3e43c3fb",
+    "parents": [
+      "b8e25b2ac987a991274336efbabe806ba9b6f170"
+    ],
+    "merge_type": "protected_squash",
+    "required_ci_run_id": 38141674524,
+    "ci_jobs": 49,
+    "ci_passed": 48,
+    "ci_skipped": [
+      "release-candidate-full-proof (release inputs unchanged)"
+    ],
+    "ci_failed": 0,
+    "workflow_actionlint": "PASS",
+    "regression_checks": "Original fails; fixed passes; format passes",
+    "observed_at_utc": "2026-10-11T13:25:37.128470+00:00",
+    "merge_requests_at_this_head": 1,
+    "admin_bypass": false,
+    "publication_claim": false
+  },
+  "refreshed_core_candidate": {
+    "pr": 228,
+    "state": "OPEN",
+    "draft": false,
+    "head_oid": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+    "base_oid": "b064c4e2ea770a7e1dfae46227ac7ecf3e43c3fb",
+    "tree_oid": "fdbcbe68442212c2b5c63c34cfd8eb6a683d7ff5",
+    "version": "0.2.10",
+    "ios_version": "0.2.10",
+    "android_version": "0.2.10",
+    "changed_files": [
+      ".release-please-manifest.json",
+      "README.md",
+      "examples/android_shell_host/app/build.gradle",
+      "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json",
+      "examples/ios_shell_host/Fixtures/crosswake_manifest.json",
+      "examples/native_evidence/evidence-manifest.example.json",
+      "examples/phoenix_host/evidence/evidence-manifest.example.json",
+      "examples/phoenix_host/priv/crosswake/install_manifest.json",
+      "guides/android_uat.md",
+      "mix.exs",
+      "packages/crosswake-shell-core-android/build.gradle.kts"
+    ],
+    "observed_at_utc": "2026-10-11T13:28:14.764248+00:00",
+    "merge_authority": "NONE",
+    "ci_run_id": 38143232212,
+    "ci_status": "queued",
+    "workflow_sha256": {
+      "hex": "5b8b5aff9e184fbb7bb10003569d82c4e999ea14ffa6bc9e6bdb9e828e8093ae",
+      "ios": "f8de0560a432bce9667b632f6d0f8874c64a9173c06d3e044d7ca851b3a07565",
+      "maven": "f368f0b662365214c0cd5d948773f0e7842f78296c3b0ade50cc25f8c76d9fde"
+    },
+    "targets": {
+      "hex": {
+        "http_status": 404,
+        "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+      },
+      "ios": {
+        "http_status": 404,
+        "body_sha256": "e2e3c64edab172132f77ce89a0e8c190db1cd30936a096344f45893bd5b75f8a"
+      },
+      "maven": {
+        "http_status": 404,
+        "body_sha256": "e791ccfcfee9c0d299d07474d9bfcbfcbebf1181323be601220c8a823062ab99"
+      }
+    },
+    "runbook_ancestry": {
+      "base": "PASS",
+      "head": "PASS"
+    },
+    "workflow_context_repair_merge_oid": "b064c4e2ea770a7e1dfae46227ac7ecf3e43c3fb"
+  },
+  "active_read_and_safe_dispatch_driver": {
+    "session_id": 68569,
+    "script": "/private/tmp/crosswake-phase175-pr228-v2-watch-ordinary.py",
+    "merge_or_publication_authority": false
+  },
+  "current_core_merge": {
+    "pr": 228,
+    "head_oid": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+    "base_oid": "b064c4e2ea770a7e1dfae46227ac7ecf3e43c3fb",
+    "merge_oid": "dba494dce54ff355cb75602999e33b8c7c6ddcb1",
+    "parents": [
+      "b064c4e2ea770a7e1dfae46227ac7ecf3e43c3fb",
+      "4e785503f6de84731cbb4a3793e0f123d7b52c28"
+    ],
+    "tree_oid": "fdbcbe68442212c2b5c63c34cfd8eb6a683d7ff5",
+    "trailer_exact_match": true,
+    "normal_protected_path": true,
+    "admin_bypass": false,
+    "merge_attempts": 1,
+    "retry_performed": false,
+    "ci_run_id": 38143232212,
+    "ci_jobs_passed": 49,
+    "runbook_ancestry": {
+      "base": "PASS",
+      "head": "PASS",
+      "merge": "PASS"
+    },
+    "observed_at_utc": "2026-10-11T14:18:34.209313+00:00"
+  },
+  "current_core_ordinary_run": {
+    "conclusion": "",
+    "databaseId": 38146628907,
+    "event": "push",
+    "headSha": "dba494dce54ff355cb75602999e33b8c7c6ddcb1",
+    "status": "in_progress"
+  },
+  "current_core_public_coordinates": {
+    "run_id": 38146628907,
+    "merge_oid": "dba494dce54ff355cb75602999e33b8c7c6ddcb1",
+    "version": "0.2.10",
+    "targets": {
+      "hex": {
+        "http_status": 200,
+        "body_sha256": "7dbbb69d026a2c7053316adaf6814efcfb1e6261c1d549927a0eced466e48f01",
+        "version": "0.2.10"
+      },
+      "ios": {
+        "http_status": 200,
+        "body_sha256": "e070c972b5af69b222d42917e7458599c58b8199686f20b0ad60861653b50aa4",
+        "tag_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8"
+      },
+      "maven": {
+        "http_status": 200,
+        "body_sha256": "a2d72507e97f66552d0d3a42b3cd2921e8e1976a11f4b5208d84870058221120",
+        "coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.10"
+      }
+    },
+    "observed_at_utc": "2026-10-11T14:33:30.271887+00:00"
+  },
+  "android_theme_repair": {
+    "pr": 230,
+    "head": "fbde4abddab81e4d7604cf76ebfff5ef7b2ab1f7",
+    "ci_run_id": 38150513840,
+    "status": "FINAL_REVISED_CI_PENDING",
+    "ordinary_core_run": 38146628907,
+    "diagnosis_file": "175-plan148-pr228-v2-android-lint-diagnosis.json",
+    "previous_ci_run": 38148941412,
+    "previous_ci_disposition": "provider cancelled superseded head; no agent cancellation request delivered",
+    "tree": "ae243b04522e6ca733fd391b4295629ab095ec64",
+    "previous_source_ci_run": 38149114588,
+    "additional_defect": "Existing diagnostics helper API30 field guard",
+    "local_focused": "39tests0failures",
+    "native_prior_revision": "All5Androidjobs PASS; all3generated lintDebug PASS",
+    "required_template_epoch": 3,
+    "exact_rollup_maven_coordinate": "io.github.sztheory:crosswake-shell-core-android"
+  },
+  "core_0210_final": {
+    "ordinary_run": 38146628907,
+    "status": "PARTIAL",
+    "publishers": "3PASS",
+    "ios_consumer": "PASS",
+    "android_consumer": "FAIL",
+    "exact_public": "SKIPPED",
+    "retry_or_recovery": false
+  },
+  "core_0211_candidate": {
+    "pr": 232,
+    "state": "OPEN",
+    "draft": false,
+    "head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+    "base_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+    "tree_oid": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+    "version": "0.2.11",
+    "ios_version": "0.2.11",
+    "android_version": "0.2.11",
+    "changed_files": [
+      ".release-please-manifest.json",
+      "README.md",
+      "examples/android_shell_host/app/build.gradle",
+      "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json",
+      "examples/ios_shell_host/Fixtures/crosswake_manifest.json",
+      "examples/native_evidence/evidence-manifest.example.json",
+      "examples/phoenix_host/evidence/evidence-manifest.example.json",
+      "examples/phoenix_host/priv/crosswake/install_manifest.json",
+      "guides/android_uat.md",
+      "mix.exs",
+      "packages/crosswake-shell-core-android/build.gradle.kts"
+    ],
+    "observed_at_utc": "2026-10-11T15:51:28.350464+00:00",
+    "merge_authority": "NONE",
+    "ci_run_id": 38152560619,
+    "ci_status": "completed",
+    "workflow_sha256": {
+      "hex": "5b8b5aff9e184fbb7bb10003569d82c4e999ea14ffa6bc9e6bdb9e828e8093ae",
+      "ios": "f8de0560a432bce9667b632f6d0f8874c64a9173c06d3e044d7ca851b3a07565",
+      "maven": "f368f0b662365214c0cd5d948773f0e7842f78296c3b0ade50cc25f8c76d9fde"
+    },
+    "targets": {
+      "hex": {
+        "http_status": 404,
+        "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+      },
+      "ios": {
+        "http_status": 404,
+        "body_sha256": "e2e3c64edab172132f77ce89a0e8c190db1cd30936a096344f45893bd5b75f8a"
+      },
+      "maven": {
+        "http_status": 404,
+        "body_sha256": "e791ccfcfee9c0d299d07474d9bfcbfcbebf1181323be601220c8a823062ab99"
+      }
+    },
+    "runbook_ancestry": {
+      "base": "PASS",
+      "head": "PASS"
+    },
+    "android_compatibility_repair_merge_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+    "ci_passed_so_far": 49,
+    "ci_failed_so_far": 0,
+    "remaining_job": null,
+    "ci_conclusion": "success"
+  },
+  "android_theme_repair_final": {
+    "pr": 230,
+    "head_oid": "fbde4abddab81e4d7604cf76ebfff5ef7b2ab1f7",
+    "base_oid": "dba494dce54ff355cb75602999e33b8c7c6ddcb1",
+    "tree_oid": "ae243b04522e6ca733fd391b4295629ab095ec64",
+    "merge_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+    "parents": [
+      "dba494dce54ff355cb75602999e33b8c7c6ddcb1"
+    ],
+    "merge_type": "protected_squash",
+    "required_ci_run_id": 38150513840,
+    "ci_passed": 49,
+    "local_tests": 2063,
+    "local_failures": 0,
+    "public_peer_comparison": "PASS5actualpublishedrows",
+    "actual_android_lint": "PASS3generatedbuilds",
+    "admin_bypass": false,
+    "merge_attempts": 1,
+    "publication_claim": false,
+    "observed_at_utc": "2026-10-11T15:42:22.154679+00:00"
+  },
+  "core_0211_early_package_proof": {
+    "run_id": 38152560619,
+    "head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+    "tree_oid": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+    "base_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+    "artifact_id": 11707387510,
+    "candidate_local_state": "PASS",
+    "package_count": 6,
+    "profiles": 5,
+    "installs_each": 2,
+    "published_peer_rows": [
+      {
+        "package": "crosswake_rulestead",
+        "source_ref_match": true,
+        "metadata_match": true,
+        "payload_match": true
+      },
+      {
+        "package": "crosswake_rindle",
+        "source_ref_match": true,
+        "metadata_match": true,
+        "payload_match": true
+      },
+      {
+        "package": "crosswake_sigra",
+        "source_ref_match": true,
+        "metadata_match": true,
+        "payload_match": true
+      },
+      {
+        "package": "crosswake_chimeway",
+        "source_ref_match": true,
+        "metadata_match": true,
+        "payload_match": true
+      },
+      {
+        "package": "crosswake_threadline",
+        "source_ref_match": true,
+        "metadata_match": true,
+        "payload_match": true
+      }
+    ],
+    "all_peers_match": true,
+    "receipt_sha256": "2ab8fdb9fd741f6ce42a731699a329464fba5573d120019471f000c716b7dc45",
+    "observed_at_utc": "2026-10-11T16:03:14.727149+00:00"
+  },
+  "read_poll_disconnect": {
+    "stage": "CI observation before rehearsal operations",
+    "delivery": "no mutation attempted",
+    "reconciled": "same run completed successfully"
+  },
+  "core_0211_rehearsals": {
+    "pr": 232,
+    "candidate_head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+    "candidate_base_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+    "candidate_tree_oid": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+    "ci_run_id": 38152560619,
+    "ci_conclusion": "success",
+    "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+    "rehearsals": {
+      "hex": {
+        "workflow": "hex-publish.yml",
+        "inputs": {
+          "candidate_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+          "candidate_tree": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+          "candidate_base": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+          "operation": "candidate-rehearsal",
+          "release_version": "0.2.11",
+          "candidate_receipt": "6ec09b4fa52a77b6c789e6ae5f11ecbd276bfb2d25cf68e2a5bd9c919a5eee30"
+        },
+        "dispatch_ref": "release-please--branches--main",
+        "prior_max_run_id": 38146295634,
+        "intent_at_utc": "2026-10-11T16:18:17.425186+00:00",
+        "head_before": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+        "dispatch_attempted": true,
+        "delivery": "ACCEPTED",
+        "dispatch_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "dispatch_exit_code": 0,
+        "run_id": 38154895539,
+        "head_after": "7273e6cfccf6d62feed9b893eded0bd1028223d1"
+      },
+      "ios": {
+        "workflow": "ios-mirror-backfill.yml",
+        "inputs": {
+          "candidate_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+          "candidate_tree": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+          "candidate_base": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+          "operation": "candidate-rehearsal",
+          "version": "0.2.11",
+          "release_ref": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+          "candidate_receipt": "6ec09b4fa52a77b6c789e6ae5f11ecbd276bfb2d25cf68e2a5bd9c919a5eee30"
+        },
+        "dispatch_ref": "release-please--branches--main",
+        "prior_max_run_id": 38146461586,
+        "intent_at_utc": "2026-10-11T16:18:24.269115+00:00",
+        "head_before": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+        "dispatch_attempted": true,
+        "delivery": "ACCEPTED",
+        "dispatch_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "dispatch_exit_code": 0,
+        "run_id": 38154903768,
+        "head_after": "7273e6cfccf6d62feed9b893eded0bd1028223d1"
+      },
+      "maven": {
+        "workflow": "maven-publish-fire-drill.yml",
+        "inputs": {
+          "candidate_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+          "candidate_tree": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+          "candidate_base": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+          "fire_drill_version": "0.2.11"
+        },
+        "dispatch_ref": "release-please--branches--main",
+        "prior_max_run_id": 38146306882,
+        "intent_at_utc": "2026-10-11T16:18:30.422167+00:00",
+        "head_before": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+        "dispatch_attempted": true,
+        "delivery": "ACCEPTED",
+        "dispatch_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "dispatch_exit_code": 0,
+        "run_id": 38154909396,
+        "head_after": "7273e6cfccf6d62feed9b893eded0bd1028223d1"
+      }
+    }
+  },
+  "core_0211_ci": {
+    "run_id": 38152560619,
+    "head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+    "base_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": 49,
+    "all_passed": true,
+    "public_peer_comparison": "PASS",
+    "targets_before_rehearsal": {
+      "hex": {
+        "http_status": 404,
+        "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+      },
+      "ios": {
+        "http_status": 404,
+        "body_sha256": "e2e3c64edab172132f77ce89a0e8c190db1cd30936a096344f45893bd5b75f8a"
+      },
+      "maven": {
+        "http_status": 404,
+        "body_sha256": "e791ccfcfee9c0d299d07474d9bfcbfcbebf1181323be601220c8a823062ab99"
+      }
+    },
+    "observed_at_utc": "2026-10-11T16:18:12.089268+00:00"
+  },
+  "core_0211_rehearsals_verified": {
+    "hex": {
+      "candidate_receipt": "6ec09b4fa52a77b6c789e6ae5f11ecbd276bfb2d25cf68e2a5bd9c919a5eee30",
+      "external_state_changed": false,
+      "observed_base": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+      "observed_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+      "observed_tree": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+      "package_artifacts_sha256": "486edbaff37638901b3e2231fa190be184c162cef8c72944cd3a6bae00bea118",
+      "package_count": 6,
+      "requested_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+      "run_conclusion": "success",
+      "run_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+      "run_id": "38154895539",
+      "schema_version": "1.0.0",
+      "workflow_sha256": "5b8b5aff9e184fbb7bb10003569d82c4e999ea14ffa6bc9e6bdb9e828e8093ae"
+    },
+    "ios": {
+      "candidate_receipt": "6ec09b4fa52a77b6c789e6ae5f11ecbd276bfb2d25cf68e2a5bd9c919a5eee30",
+      "external_state_changed": false,
+      "mirror_observation_sha256": "53caff8768f193ef49a4f0ee810dd157b4e45aecf4d9f46c76e6df8962d44a0b",
+      "observed_base": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+      "observed_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+      "observed_tree": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+      "requested_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+      "run_conclusion": "success",
+      "run_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+      "run_id": "38154903768",
+      "schema_version": "1.0.0",
+      "workflow_sha256": "f8de0560a432bce9667b632f6d0f8874c64a9173c06d3e044d7ca851b3a07565"
+    },
+    "maven": {
+      "candidate_version": "0.2.11",
+      "coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.11-firedrill-38154909396",
+      "deployment_result": "DROP",
+      "dropped": true,
+      "external_state_changed": false,
+      "observed_base": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+      "observed_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+      "observed_tree": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+      "requested_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+      "run_conclusion": "success",
+      "run_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+      "run_id": "38154909396",
+      "schema_version": "1.0.0",
+      "state": "VALIDATED",
+      "workflow_sha256": "f368f0b662365214c0cd5d948773f0e7842f78296c3b0ade50cc25f8c76d9fde"
+    }
+  },
+  "core_0211_attestation": {
+    "workflow": "ios-mirror-backfill.yml",
+    "dispatch_ref": "release-please--branches--main",
+    "inputs": {
+      "package": "crosswake",
+      "operation": "candidate-receipt-attestation",
+      "version": "0.2.11",
+      "release_ref": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+      "candidate_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+      "candidate_tree": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+      "candidate_base": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+      "candidate_ci_run_id": "38152560619",
+      "hex_run_id": "38154895539",
+      "ios_run_id": "38154903768",
+      "maven_run_id": "38154909396"
+    },
+    "intent_at_utc": "2026-10-11T16:21:31.510897+00:00",
+    "prior_max_run_id": 38154903768,
+    "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+    "dispatch_attempted": true,
+    "delivery": "ACCEPTED",
+    "dispatch_exit_code": 0,
+    "run_id": 38155123327
+  },
+  "core_0211_receipt": {
+    "state": "READY FOR APPROVAL",
+    "checks_pass": 13,
+    "proof_hashes_match": true,
+    "receipt_digest": "42a4f309f5fd7670f111bc59cf613272b21eaaaeb16f901af83a5e5e6d1267bb",
+    "receipt_run_id": 38155123327,
+    "receipt_artifact_id": 11708476594,
+    "artifact_live": true,
+    "expired": false,
+    "publication": "NONE",
+    "head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+    "observed_at_utc": "2026-10-11T16:23:17.462000+00:00"
+  },
+  "core_0211_merge_command": {
+    "pr": 232,
+    "head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+    "base_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+    "operation": "normal_protected_merge",
+    "method": "MERGE",
+    "admin_bypass": false,
+    "attempted": true,
+    "attempts": 1,
+    "delivery": "ACCEPTED",
+    "intent_at_utc": "2026-10-11T16:24:16.409142+00:00",
+    "targets": {
+      "hex": {
+        "http_status": 404,
+        "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+      },
+      "ios": {
+        "http_status": 404,
+        "body_sha256": "e2e3c64edab172132f77ce89a0e8c190db1cd30936a096344f45893bd5b75f8a"
+      },
+      "maven": {
+        "http_status": 404,
+        "body_sha256": "e791ccfcfee9c0d299d07474d9bfcbfcbebf1181323be601220c8a823062ab99"
+      }
+    },
+    "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+    "exit_code": 0,
+    "response_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "core_0211_merge_audit": {
+    "pr": 232,
+    "head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+    "base_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+    "merge_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+    "parents": [
+      "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+      "7273e6cfccf6d62feed9b893eded0bd1028223d1"
+    ],
+    "tree_oid": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+    "trailer_exact_match": true,
+    "normal_protected_path": true,
+    "admin_bypass": false,
+    "merge_attempts": 1,
+    "retry_performed": false,
+    "ci_run_id": 38152560619,
+    "ci_jobs_passed": 49,
+    "runbook_ancestry": {
+      "base": "PASS",
+      "head": "PASS",
+      "merge": "PASS"
+    },
+    "observed_at_utc": "2026-10-11T16:24:36.371131+00:00"
+  },
+  "core_0211_ordinary_run": {
+    "conclusion": "",
+    "databaseId": 38155320492,
+    "event": "push",
+    "headSha": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+    "status": "in_progress",
+    "approved_merge_guard": "success",
+    "release_please": "success",
+    "publishers": "running",
+    "ios_publisher": "success",
+    "all_three_publishers": "success",
+    "android_public_consumer": "success",
+    "ios_public_consumer": "success",
+    "exact_public": "running",
+    "native_rollup": "success"
+  },
+  "core_0211_postmerge": {
+    "verdict": "PASS",
+    "stage": "post_merge",
+    "candidate": {
+      "base_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+      "head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+      "merge_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+      "package": "crosswake",
+      "pr": 232,
+      "tree_oid": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+      "version": "0.2.11"
+    },
+    "identity": {
+      "leg_run_id": 38154895539,
+      "operation": "linked_release",
+      "receipt_digest": "42a4f309f5fd7670f111bc59cf613272b21eaaaeb16f901af83a5e5e6d1267bb"
+    },
+    "authorization": {
+      "candidate_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+      "candidate_package": "crosswake",
+      "leg_run_id": 38154895539,
+      "operation": "linked_release",
+      "receipt_digest": "42a4f309f5fd7670f111bc59cf613272b21eaaaeb16f901af83a5e5e6d1267bb",
+      "stage": "pre_merge",
+      "state": "CONSUMED"
+    },
+    "envelope_sha256": "b0baf3aac5f0096fe7d61978c1ce7b056d41435957183f7dc818c73414ce6a2f",
+    "sources": {
+      "candidate_readiness": {
+        "base_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+        "ci_conclusion": "success",
+        "ci_run_id": 38152560619,
+        "head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+        "merge_state": "MERGEABLE",
+        "package": "crosswake",
+        "pagination_complete": true,
+        "policy_current": true,
+        "policy_sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+        "receipt_artifact_id": 11708476594,
+        "receipt_artifact_live": true,
+        "receipt_digest": "42a4f309f5fd7670f111bc59cf613272b21eaaaeb16f901af83a5e5e6d1267bb",
+        "required_check_ids": [
+          "Crosswake CI"
+        ],
+        "required_checks_complete": true,
+        "tree_oid": "e83165776220d727da07f4b02bd9d9de35e61bcc"
+      },
+      "leg_run": {
+        "conclusion": "success",
+        "head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+        "run_id": 38154895539
+      },
+      "protected_merge": {
+        "admin_bypass": false,
+        "merge_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+        "normal_protected_path": true,
+        "parents": [
+          "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+          "7273e6cfccf6d62feed9b893eded0bd1028223d1"
+        ]
+      },
+      "registry_response": {
+        "package": "crosswake",
+        "parsed": {
+          "configs": {
+            "erlang.mk": "dep_crosswake = hex 0.2.10",
+            "mix.exs": "{:crosswake, \"~> 0.2.10\"}",
+            "rebar.config": "{crosswake, \"0.2.10\"}"
+          },
+          "docs_html_url": "https://crosswake.hexdocs.pm/",
+          "downloads": {
+            "all": 659,
+            "day": 2,
+            "recent": 529,
+            "week": 8
+          },
+          "html_url": "https://hex.pm/packages/crosswake",
+          "inserted_at": "2026-05-29T10:56:25.548083Z",
+          "latest_stable_version": "0.2.10",
+          "latest_version": "0.2.10",
+          "meta": {
+            "description": "Route policy and runtime contracts for Phoenix apps that go mobile.",
+            "licenses": [
+              "Apache-2.0"
+            ],
+            "links": {
+              "Changelog": "https://github.com/szTheory/crosswake/blob/main/CHANGELOG.md",
+              "Documentation": "https://hexdocs.pm/crosswake",
+              "GitHub": "https://github.com/szTheory/crosswake"
+            },
+            "maintainers": []
+          },
+          "name": "crosswake",
+          "releases": [
+            {
+              "has_docs": true,
+              "inserted_at": "2026-10-11T14:28:04.094709Z",
+              "url": "https://hex.pm/api/packages/crosswake/releases/0.2.10",
+              "version": "0.2.10"
+            },
+            {
+              "has_docs": true,
+              "inserted_at": "2026-10-11T10:02:35.931269Z",
+              "url": "https://hex.pm/api/packages/crosswake/releases/0.2.9",
+              "version": "0.2.9"
+            },
+            {
+              "has_docs": true,
+              "inserted_at": "2026-09-25T01:53:13.437777Z",
+              "url": "https://hex.pm/api/packages/crosswake/releases/0.2.5",
+              "version": "0.2.5"
+            },
+            {
+              "has_docs": true,
+              "inserted_at": "2026-09-24T17:46:10.200680Z",
+              "url": "https://hex.pm/api/packages/crosswake/releases/0.2.4",
+              "version": "0.2.4"
+            },
+            {
+              "has_docs": true,
+              "inserted_at": "2026-09-23T17:59:06.177582Z",
+              "url": "https://hex.pm/api/packages/crosswake/releases/0.2.3",
+              "version": "0.2.3"
+            },
+            {
+              "has_docs": true,
+              "inserted_at": "2026-09-14T03:52:13.592731Z",
+              "url": "https://hex.pm/api/packages/crosswake/releases/0.2.1",
+              "version": "0.2.1"
+            },
+            {
+              "has_docs": true,
+              "inserted_at": "2026-07-03T17:46:30.828626Z",
+              "url": "https://hex.pm/api/packages/crosswake/releases/0.2.0",
+              "version": "0.2.0"
+            },
+            {
+              "has_docs": true,
+              "inserted_at": "2026-06-17T15:33:52.013416Z",
+              "url": "https://hex.pm/api/packages/crosswake/releases/0.1.2",
+              "version": "0.1.2"
+            },
+            {
+              "has_docs": true,
+              "inserted_at": "2026-05-29T10:56:25.556500Z",
+              "url": "https://hex.pm/api/packages/crosswake/releases/0.1.0",
+              "version": "0.1.0"
+            }
+          ],
+          "repository": "hexpm",
+          "retirements": {},
+          "security_advisories": [],
+          "updated_at": "2026-10-11T14:28:05.449230Z",
+          "url": "https://hex.pm/api/packages/crosswake"
+        },
+        "version": "0.2.11"
+      },
+      "response_row": {
+        "candidate_ref": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+        "package": "crosswake",
+        "run_id": 38154895539,
+        "version": "0.2.11"
+      },
+      "runbook_ancestry": {
+        "base_is_ancestor": true,
+        "head_is_ancestor": true,
+        "merge_is_ancestor": true,
+        "runbook_commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
+      }
+    },
+    "observed_at_utc": "2026-10-11T16:31:42.740927+00:00"
+  },
+  "core_0211_direct_registries": {
+    "run_id": 38155320492,
+    "merge_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+    "version": "0.2.11",
+    "targets": {
+      "hex": {
+        "http_status": 200,
+        "body_sha256": "814c65fd5938ad49e5f763c0631d82000fdd4247a0ff810446ebd42a0f00ac70",
+        "version": "0.2.11"
+      },
+      "ios": {
+        "http_status": 200,
+        "body_sha256": "0c7361f6054d0bf543efc2df432422fc8d3c93e031e9551f0fcf506a89eb0c9b",
+        "tag_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8"
+      },
+      "maven": {
+        "http_status": 200,
+        "body_sha256": "5fd8812a05178f61bf9684647d0b8851c11df841f9a733a27f2cf2d23f5729c6",
+        "coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.11"
+      }
+    },
+    "observed_at_utc": "2026-10-11T16:39:57.342153+00:00"
+  },
+  "core_0211_android_public_build": {
+    "run_id": 38155320492,
+    "job_id": 114519182944,
+    "version": "0.2.11",
+    "full_gradle_builds": 1,
+    "build_successful": true,
+    "lint_debug": "PASS",
+    "release_lint_claim": false,
+    "allowed_build_lines": [
+      "2026-10-11T16:41:25.3555778Z > Task :app:lintDebug",
+      "2026-10-11T16:41:25.3581583Z BUILD SUCCESSFUL in 1m 24s"
+    ],
+    "raw_log_retained": false,
+    "observed_at_utc": "2026-10-11T16:44:42.612337+00:00"
+  },
+  "core_0211_ios_public_build": {
+    "run_id": 38155320492,
+    "job_id": 114519182960,
+    "version": "0.2.11",
+    "generated_ios_app_builds": 1,
+    "xcode_build_successful": true,
+    "public_mirror_consumed": true,
+    "allowed_build_lines": [
+      "2026-10-11T16:50:52.3174640Z ** BUILD SUCCEEDED **"
+    ],
+    "raw_log_retained": false,
+    "physical_device_claim": false,
+    "observed_at_utc": "2026-10-11T16:52:23.206368+00:00"
+  },
+  "core_0211_public_proof": {
+    "run_id": 38155320492,
+    "merge_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+    "candidate_head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+    "version": "0.2.11",
+    "exact_public": {
+      "status": "completed",
+      "conclusion": "success",
+      "job_id": 114522406255,
+      "run_id": 38155320492
+    },
+    "linked_rollup": {
+      "state": "COMPLETE",
+      "sha256": "d2988517ec7f19bb2846d3fe1bc31ce5884d2af3b436e1d5dbb30758529da629",
+      "validated": true
+    },
+    "children": {
+      "hex": {
+        "status": "completed",
+        "conclusion": "success",
+        "job_id": 114517856138,
+        "run_id": 38155320492
+      },
+      "ios_mirror": {
+        "status": "completed",
+        "conclusion": "success",
+        "job_id": 114517856154,
+        "run_id": 38155320492
+      },
+      "android": {
+        "status": "completed",
+        "conclusion": "success",
+        "job_id": 114517856156,
+        "run_id": 38155320492
+      },
+      "ios_public_proof": {
+        "status": "completed",
+        "conclusion": "success",
+        "job_id": 114519182960,
+        "run_id": 38155320492
+      },
+      "android_public_proof": {
+        "status": "completed",
+        "conclusion": "success",
+        "job_id": 114519182944,
+        "run_id": 38155320492
+      },
+      "exact_public": {
+        "status": "completed",
+        "conclusion": "success",
+        "job_id": 114522406255,
+        "run_id": 38155320492
+      }
+    },
+    "artifact_ids": {
+      "exact-public-proof": 11709291645,
+      "linked-release-status": 11709855205
+    },
+    "public_proof_sha256": "ecff4d56d8e4b6b5e7d99b0949cb8eb120283430ca2c75d507e8c311a04fc788",
+    "public_packages_fully_proven": 6,
+    "profiles_passed": 5,
+    "installs_each": 2,
+    "same_ordinary_run": true,
+    "retry_or_recovery_performed": false,
+    "observed_at_utc": "2026-10-11T17:01:06.416044+00:00"
+  },
+  "core_0211_ordinary_final": {
+    "run_id": 38155320492,
+    "head_sha": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "databaseId": 114516990724,
+        "name": "release: approved-candidate merge guard",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "databaseId": 114516991572,
+        "name": "Assert lockstep version coordinates match",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "databaseId": 114517178706,
+        "name": "Release Please",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "databaseId": 114517856138,
+        "name": "Publish to Hex.pm",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "databaseId": 114517856154,
+        "name": "Mirror iOS core to split repo",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "databaseId": 114517856156,
+        "name": "Publish Android core to Maven Central",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "databaseId": 114517856962,
+        "name": "Publish crosswake_threadline to Hex.pm",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "databaseId": 114517857122,
+        "name": "Publish crosswake_rulestead to Hex.pm",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "databaseId": 114517857273,
+        "name": "Clean-room proof \u2014 crosswake_chimeway resolvability + doctor",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "databaseId": 114517857317,
+        "name": "Publish crosswake_sigra to Hex.pm",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "databaseId": 114517857323,
+        "name": "Publish crosswake_chimeway to Hex.pm",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "databaseId": 114517857382,
+        "name": "Clean-room proof \u2014 crosswake_rulestead resolvability + doctor",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "databaseId": 114517857424,
+        "name": "Clean-room proof \u2014 crosswake_rindle resolvability + doctor",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "databaseId": 114517857450,
+        "name": "Publish crosswake_rindle to Hex.pm",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "databaseId": 114517857666,
+        "name": "Clean-room proof \u2014 crosswake_threadline module-shipment + zero-sibling-dep",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "databaseId": 114517857800,
+        "name": "Clean-room proof \u2014 crosswake_sigra resolvability + doctor",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "databaseId": 114517858211,
+        "name": "Strip stale release-as after companion release (PROOF-03b)",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "databaseId": 114519182944,
+        "name": "Clean-room proof \u2014 Android gradle build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "databaseId": 114519182960,
+        "name": "Clean-room proof \u2014 iOS swift build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "databaseId": 114522406067,
+        "name": "Native release status rollup",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "databaseId": 114522406255,
+        "name": "release: exact-public artifact proof / shared: exact-public artifact proof body",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "databaseId": 114522430240,
+        "name": "Alert on companion or native publish/proof failure (PROOF-03c, D-15)",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "databaseId": 114524032620,
+        "name": "release: exact-public artifact proof / shared: record the proof verdict in the release ledger",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "databaseId": 114524072304,
+        "name": "release: linked release rollup",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "retry_or_recovery_performed": false,
+    "observed_at_utc": "2026-10-11T17:00:37.479479+00:00"
+  },
+  "companion115_candidate": {
+    "pr": 115,
+    "package": "crosswake_chimeway",
+    "version": "0.1.1",
+    "core_version": "0.2.11",
+    "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+    "base_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+    "tree_oid": "678782a853ceab7a618ace94589eee0df931f080",
+    "ci_run_id": 38157939812,
+    "core_complete_run_id": 38155320492,
+    "target_before_rehearsal": {
+      "http_status": 404,
+      "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+    },
+    "runbook_ancestry": {
+      "base": "PASS",
+      "head": "PASS"
+    },
+    "observed_at_utc": "2026-10-11T17:02:09.484165+00:00"
+  },
+  "companion115_update": {
+    "old_head_oid": "02f0fbc475180214931b5626f7971fab33d0871f",
+    "base_oid": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+    "operation": "normal_update_same_held_pr",
+    "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+    "intent_at_utc": "2026-10-11T17:01:54.672497+00:00",
+    "attempted": true,
+    "attempts": 1,
+    "delivery": "ACCEPTED",
+    "exit_code": 0
+  },
+  "companion115_ci": {
+    "run_id": 38157939812,
+    "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+    "passed": 49,
+    "status": "completed SUCCESS",
+    "next": "Require separate safe Hex rehearsal and hosted receipt",
+    "no_release_attempt": true,
+    "rerun_attempts": 1,
+    "attempt": 2
+  },
+  "companion115_hex_run_id": 38159722705,
+  "companion115_merge_audit": {
+    "pr": 115,
+    "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+    "base_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+    "merge_oid": "72197e6dd387ae584a04545055ce01659d02d7ba",
+    "parents": [
+      "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+      "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d"
+    ],
+    "tree_oid": "678782a853ceab7a618ace94589eee0df931f080",
+    "trailer_exact_match": true,
+    "normal_protected_path": true,
+    "admin_bypass": false,
+    "merge_attempts": 1,
+    "retry_performed": false,
+    "ci_run_id": 38157939812,
+    "ci_jobs_passed": 49,
+    "runbook_ancestry": {
+      "base": "PASS",
+      "head": "PASS",
+      "merge": "PASS"
+    },
+    "observed_at_utc": "2026-10-11T17:31:17.641556+00:00"
+  },
+  "companion115_ordinary_run_id": 38159980683,
+  "companion115_status": "ordinary run FAILURE before publish; Hex0.1.1 absent; consumed binding preserved",
+  "companion_history_repair": {
+    "pr": 233,
+    "head_oid": "d18c93e435638fbe99d719e99b5066e04173ea7d",
+    "base_oid": "72197e6dd387ae584a04545055ce01659d02d7ba",
+    "ci_run_id": 38163135946,
+    "status": "protected squash merged after all49CI",
+    "observer_session": 63387,
+    "local_guard_tests": 9,
+    "mutation_cases": 15,
+    "guide_tests": 75,
+    "workflow_checks": 98,
+    "release_retry": false,
+    "full_local_tests": 2065,
+    "full_local_failures": 0,
+    "local_focused_tests": 100,
+    "inventory_sites": 230,
+    "merge_oid": "fd1fcf59c1cd473f7ef9a593be46566018e8aaff",
+    "proposal_run_id": 38164938881,
+    "proposal_publishers_skipped": 8
+  },
+  "companion_next_candidate": {
+    "pr": 235,
+    "package": "crosswake_chimeway",
+    "version": "0.1.2",
+    "core_version": "0.2.11",
+    "head_oid": "e43aa13c2ecdba55dec923848898ca230662f47b",
+    "base_oid": "fd1fcf59c1cd473f7ef9a593be46566018e8aaff",
+    "tree_oid": "81ff2f15a8fea0bd4d54478444a1750038dda49f",
+    "ci_run_id": 38165160468,
+    "core_complete_run_id": 38155320492,
+    "target_before_rehearsal": {
+      "http_status": 404,
+      "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+    },
+    "runbook_ancestry": {
+      "base": "PASS",
+      "head": "PASS"
+    },
+    "observed_at_utc": "2026-10-11T18:46:37.953065+00:00"
+  },
+  "companion_next_status": "fresh CI running; driver session71573",
+  "current_delivery_status": {
+    "plan": 148,
+    "delivery": "COMPLETE",
+    "phase_status": "OPEN_HISTORICAL_BREACH",
+    "phase_score": "8/9",
+    "core": {
+      "version": "0.2.11",
+      "run_id": 38155320492,
+      "state": "COMPLETE"
+    },
+    "second_companion": {
+      "pr": 235,
+      "version": "0.1.2",
+      "run_id": 38167555514,
+      "state": "VERIFIED_PUBLISHED"
+    },
+    "requirements_completed": [
+      "REL-13",
+      "REL-14",
+      "REL-15",
+      "REL-17"
+    ],
+    "historical_breach": [
+      "SC-1",
+      "REL-10"
+    ],
+    "next_command": "$gsd-complete-milestone v23.0 --ws quality-ratchet-release",
+    "human_action_pending": false,
+    "observed_at_utc": "2026-10-11T19:59:58.606105+00:00",
+    "milestone_audit": "COMPLETE_GAPS_FOUND_42_OF_43"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "hex": {
+    "candidate_receipt": "f6524974db0c7215747e8a1421f16e058682141717aa47ab312217fc0ff4262f",
+    "external_state_changed": false,
+    "observed_base": "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+    "observed_head": "d88192a898961620235f7af1da78b978f83e05ab",
+    "observed_tree": "6ebd397c3b45b12900ddafcd76115e15074f3420",
+    "package_artifacts_sha256": "cdeac59d17ffa630410266bb656f7c38d1d698d1b400e85fd965eedfa4de488a",
+    "package_count": 6,
+    "requested_head": "d88192a898961620235f7af1da78b978f83e05ab",
+    "run_conclusion": "success",
+    "run_head": "d88192a898961620235f7af1da78b978f83e05ab",
+    "run_id": "38125042713",
+    "schema_version": "1.0.0",
+    "workflow_sha256": "5b8b5aff9e184fbb7bb10003569d82c4e999ea14ffa6bc9e6bdb9e828e8093ae"
+  },
+  "ios": {
+    "candidate_receipt": "f6524974db0c7215747e8a1421f16e058682141717aa47ab312217fc0ff4262f",
+    "external_state_changed": false,
+    "mirror_observation_sha256": "ca39421651c37223fe1c4f6430e8422a8c26a0dd50de92553d92883603be2c35",
+    "observed_base": "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+    "observed_head": "d88192a898961620235f7af1da78b978f83e05ab",
+    "observed_tree": "6ebd397c3b45b12900ddafcd76115e15074f3420",
+    "requested_head": "d88192a898961620235f7af1da78b978f83e05ab",
+    "run_conclusion": "success",
+    "run_head": "d88192a898961620235f7af1da78b978f83e05ab",
+    "run_id": "38125048595",
+    "schema_version": "1.0.0",
+    "workflow_sha256": "2402932c9fc389cb7352b7dd4dff9f6e6d5c96c6a5252c1638f395d38237bfa1"
+  },
+  "maven": {
+    "candidate_version": "0.2.9",
+    "coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.9-firedrill-38125053853",
+    "deployment_result": "DROP",
+    "dropped": true,
+    "external_state_changed": false,
+    "observed_base": "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+    "observed_head": "d88192a898961620235f7af1da78b978f83e05ab",
+    "observed_tree": "6ebd397c3b45b12900ddafcd76115e15074f3420",
+    "requested_head": "d88192a898961620235f7af1da78b978f83e05ab",
+    "run_conclusion": "success",
+    "run_head": "d88192a898961620235f7af1da78b978f83e05ab",
+    "run_id": "38125053853",
+    "schema_version": "1.0.0",
+    "state": "VALIDATED",
+    "workflow_sha256": "f368f0b662365214c0cd5d948773f0e7842f78296c3b0ade50cc25f8c76d9fde"
+  }
+}

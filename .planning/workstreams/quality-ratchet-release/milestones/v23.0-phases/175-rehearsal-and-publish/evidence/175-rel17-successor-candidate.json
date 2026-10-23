@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-09-28T15:12:40Z",
+  "repair": {
+    "state": "LANDED_VERIFIED",
+    "pr": 218,
+    "merge_oid": "e51698528dc667ef89beb951e4eb1ec91da74981",
+    "run_id": 36437860644,
+    "run_head_sha": "e51698528dc667ef89beb951e4eb1ec91da74981",
+    "linked_publication": false,
+    "publishers_skipped": true
+  },
+  "candidate": {
+    "pr": 219,
+    "url": "https://github.com/szTheory/crosswake/pull/219",
+    "package": "crosswake",
+    "version": "0.2.7",
+    "base_oid": "e51698528dc667ef89beb951e4eb1ec91da74981",
+    "head_oid": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+    "tree_oid": "5279cae1daa1fbff3437b673df8ca231fb07c91f",
+    "draft": false,
+    "mergeable": "MERGEABLE",
+    "merge_state": "BLOCKED",
+    "changed_files": 11,
+    "fresh_distinct": true,
+    "gate2_authorized": false,
+    "merge_oid": null
+  },
+  "ci": {
+    "run_id": 36438452825,
+    "workflow": "Crosswake CI",
+    "event": "pull_request",
+    "status": "COMPLETED",
+    "conclusion": "FAILURE",
+    "head_oid": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+    "url": "https://github.com/szTheory/crosswake/actions/runs/36438452825",
+    "jobs_total": 49,
+    "jobs_returned": 49,
+    "jobs_pagination_complete": true,
+    "required_check_context": "Crosswake CI",
+    "required_check_complete": true,
+    "failed_jobs": [
+      {
+        "job_id": 108982457326,
+        "name": "ios-mirror-parity-proof",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "job_id": 108992744444,
+        "name": "Crosswake CI",
+        "status": "completed",
+        "conclusion": "failure"
+      }
+    ],
+    "pending_jobs": [],
+    "run_started_at": "2026-09-28T14:46:05Z",
+    "run_completed_at": "2026-09-28T15:09:50Z",
+    "required_check_success": false,
+    "completed_aggregate": {
+      "id": 108992744444,
+      "name": "Crosswake CI",
+      "status": "completed",
+      "conclusion": "failure"
+    }
+  },
+  "policy": {
+    "complete": true,
+    "pagination_complete": true,
+    "base_oid": "e51698528dc667ef89beb951e4eb1ec91da74981",
+    "branch_protected": true,
+    "required_status_checks": [
+      {
+        "context": "Crosswake CI",
+        "app_id": 15368
+      }
+    ],
+    "strict": true,
+    "enforce_admins": true,
+    "allow_force_pushes": false,
+    "allow_deletions": false,
+    "rulesets": [],
+    "rulesets_returned": 0,
+    "rulesets_pages_observed": 1
+  },
+  "repairs_in_lineage": true,
+  "runbook": {
+    "base": "PASS",
+    "head": "PASS",
+    "runbook_commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
+  },
+  "targets": {
+    "observed_at": "2026-09-28T15:11:05Z",
+    "hex_absent": true,
+    "hex_status": 404,
+    "ios_tag_absent": true,
+    "ios_tag": "v0.2.7",
+    "maven_pom_absent": true,
+    "maven_status": 404,
+    "maven_coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.7"
+  },
+  "prior_ios_tag_gap": {
+    "source_repository_tag": "ios-core-v0.2.6",
+    "source_target_oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+    "mirror_repository": "szTheory/crosswake-shell-core-ios",
+    "mirror_tag": "v0.2.6",
+    "mirror_tag_present": false,
+    "mirror_latest_observed_tag": "v0.2.5",
+    "required_check_blocker": true
+  },
+  "gate2_authorized": false,
+  "blocked": true,
+  "blocked_reason": "Completed same-head Crosswake CI run 36438452825 failed: required proof leaf ios-mirror-parity-proof observed the source ios-core-v0.2.6 tag at 998742856a37a97ae7247f6c532f9c154ea20885 but the SwiftPM mirror lacks v0.2.6. The 0.2.7 candidate cannot proceed to rehearsals or Gate 2 until the user chooses the separately authorized disposition for this prior iOS gap."
+}

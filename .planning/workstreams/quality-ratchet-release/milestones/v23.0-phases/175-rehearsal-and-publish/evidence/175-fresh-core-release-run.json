@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "disposition": "PARTIAL",
+  "candidate": {
+    "pr": 196,
+    "version": "0.2.3",
+    "base_oid": "7a615cb0ddf2a55ef6ffab1c0c841ec3d92dea60",
+    "head_oid": "a8d86b29ee5731332ceac9abc176ecdc8262e7e1",
+    "tree_oid": "873210c237fe0bdceca65b90f222dd93b0c8b595"
+  },
+  "merge_oid": "4df029d3799d2db18003471019c42126878572f8",
+  "merge": {
+    "first_parent": "7a615cb0ddf2a55ef6ffab1c0c841ec3d92dea60",
+    "second_parent": "a8d86b29ee5731332ceac9abc176ecdc8262e7e1",
+    "tree": "873210c237fe0bdceca65b90f222dd93b0c8b595",
+    "second_parent_matches": true,
+    "tree_matches": true,
+    "runbook_ancestor": true,
+    "merged_at": "2026-09-23T17:50:45Z"
+  },
+  "workflow": "Release Please",
+  "run_id": 35898407350,
+  "run_url": "https://github.com/szTheory/crosswake/actions/runs/35898407350",
+  "event": "push",
+  "head_sha": "4df029d3799d2db18003471019c42126878572f8",
+  "status": "completed",
+  "conclusion": "failure",
+  "guard": { "conclusion": "success" },
+  "release_please": { "conclusion": "success" },
+  "publish": {
+    "hex": { "conclusion": "success" },
+    "ios": { "conclusion": "failure" },
+    "maven": { "conclusion": "failure" }
+  },
+  "clean_room": {
+    "ios": { "conclusion": "skipped" },
+    "android": { "conclusion": "skipped" }
+  },
+  "exact_public": { "conclusion": "skipped" },
+  "linked_rollup": { "conclusion": "failure" },
+  "safety": {
+    "historic_failed_run_id": 35555386857,
+    "historic_run_retried": false,
+    "individual_registry_job_dispatched": false,
+    "recovery_dispatched": false,
+    "bypass_used": false
+  },
+  "observed_at": "2026-09-23T18:07:44Z"
+}

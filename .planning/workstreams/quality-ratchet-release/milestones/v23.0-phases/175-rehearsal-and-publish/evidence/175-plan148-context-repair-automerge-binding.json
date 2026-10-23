@@ -1,0 +1,15 @@
+{
+  "pr": 224,
+  "head_oid": "590b2cca31e5787c4c33df627e6e912a1b8042a7",
+  "base_oid": "9093a034580085af2defb1464a4a67235b59a4bf",
+  "tree_oid": "14f9c4ed424a156004769fd5031433b86790c1bf",
+  "operation": "enable_protected_squash_automerge",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "consumed": true,
+  "attempts": 1,
+  "attempted": true,
+  "delivery": "ACCEPTED",
+  "admin_bypass": false,
+  "intent_at_utc": "2026-10-11T07:25:53.579319+00:00",
+  "exit_code": 0
+}

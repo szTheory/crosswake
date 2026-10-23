@@ -1,0 +1,43 @@
+{
+  "operation": "fast_forward_existing_repair_pr_after_formatter_failure",
+  "pr": 229,
+  "old_head_oid": "c391c15a5d1a48fcd6ccf1141c94c7cc112d0f4a",
+  "base_oid": "b8e25b2ac987a991274336efbabe806ba9b6f170",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "events": [
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "method": "POST",
+      "sha": "eb4e37ece806f7767f1b2751e184c26f6db384d0"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/trees",
+      "attempted": true,
+      "completed": true,
+      "method": "POST",
+      "sha": "a4d716ddf8d9349f8eb424cbf97b9d30e02412ad"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/commits",
+      "attempted": true,
+      "completed": true,
+      "method": "POST",
+      "sha": "106a4a4fb6877fedcdab4dfdde9f8eecd60ee156"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/refs/heads/fix/phase175-workflow-context",
+      "attempted": true,
+      "completed": true,
+      "method": "PATCH"
+    }
+  ],
+  "started_at_utc": "2026-10-11T13:03:31.528531+00:00",
+  "files": {
+    "test/crosswake/release_candidate/companion_attestation_test.exs": "2873abb4ff2e47fe80df718504051f2bb741d03e93bf711e7d499b9554b0baf1"
+  },
+  "head_oid": "106a4a4fb6877fedcdab4dfdde9f8eecd60ee156",
+  "tree_oid": "a4d716ddf8d9349f8eb424cbf97b9d30e02412ad",
+  "status": "updated_same_pr_new_source_ci_pending"
+}

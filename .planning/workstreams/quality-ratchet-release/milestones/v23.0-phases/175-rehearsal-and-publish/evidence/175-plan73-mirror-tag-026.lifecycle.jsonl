@@ -1,0 +1,4 @@
+{"artifact_sha256":null,"attempt_id":"344c2c83bdea27262fd2617dcc66c9d4","event":"task-entry","plan":73,"schema":"crosswake-plan73-ios-mirror-tag-lifecycle/v1","sequence":1,"state":"READY"}
+{"artifact_sha256":null,"attempt_id":"344c2c83bdea27262fd2617dcc66c9d4","event":"read-authorization","plan":73,"schema":"crosswake-plan73-ios-mirror-tag-lifecycle/v1","sequence":2,"state":"AUTHORIZED"}
+{"artifact_sha256":null,"attempt_id":"344c2c83bdea27262fd2617dcc66c9d4","event":"reservation","plan":73,"schema":"crosswake-plan73-ios-mirror-tag-lifecycle/v1","sequence":3,"state":"RESERVED"}
+{"artifact_sha256":null,"attempt_id":"344c2c83bdea27262fd2617dcc66c9d4","event":"preflight-failed","plan":73,"schema":"crosswake-plan73-ios-mirror-tag-lifecycle/v1","sequence":4,"state":"UNKNOWN"}

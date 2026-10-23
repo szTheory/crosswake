@@ -1,0 +1,9 @@
+{
+  "schema": "crosswake-plan144-offline-reproduction/v1",
+  "token_variable": "ABSENT",
+  "status": "UNKNOWN",
+  "side_effect_boundary_calls": 0,
+  "network_access": false,
+  "historical_attempt_replayed": false,
+  "cause": "Token-only startup gate rejects absent variable before production adapters are created."
+}

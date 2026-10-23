@@ -1,0 +1,18 @@
+{
+  "run_id": 38139370328,
+  "head_oid": "b8e25b2ac987a991274336efbabe806ba9b6f170",
+  "status": "completed",
+  "conclusion": "success",
+  "publishers": {
+    "Publish crosswake_sigra to Hex.pm": "skipped",
+    "Publish crosswake_rulestead to Hex.pm": "skipped",
+    "Publish crosswake_chimeway to Hex.pm": "skipped",
+    "Publish crosswake_rindle to Hex.pm": "skipped",
+    "Publish crosswake_threadline to Hex.pm": "skipped",
+    "Publish to Hex.pm": "skipped",
+    "Publish Android core to Maven Central": "skipped",
+    "Mirror iOS core to split repo": "skipped"
+  },
+  "actual_new_core_pr": 228,
+  "publication": false
+}

@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "archive_safety_commit": "962ee70543311b73dbbcbf7d0730d7cb408eff69",
+  "requirements_checkpoint": "0b56f717b145173b75b4c20b59f81bc08baac316",
+  "requirements_original_sha256": "76fc7be447a491733897ae858acd8d5c544551013eb09b97079e34e6d2be09a8",
+  "requirements_archive_retains_exact_original": true,
+  "original_requirements_removed_after_committed_checkpoint": true,
+  "next_command": "$gsd-new-milestone --ws quality-ratchet-release",
+  "tag_kind": "local annotated planning milestone; not package source tag",
+  "remote_push": false
+}
