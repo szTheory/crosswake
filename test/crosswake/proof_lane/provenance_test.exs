@@ -133,9 +133,9 @@ defmodule Crosswake.ProofLane.ProvenanceTest do
   end
 
   test "a hostile global git config cannot make a dirty tree read as clean", %{dir: dir} do
-    clean_repo!(dir)
+    head = clean_repo!(dir)
     git!(dir, ["config", "--local", "--unset", "core.filemode"])
-    File.chmod!(Path.join(dir, "a.txt"), 0o755)
+    file = Path.join(dir, "a.txt")
 
     conf_dir = Path.join(dir, "hostile-home")
     File.mkdir_p!(conf_dir)
@@ -145,11 +145,18 @@ defmodule Crosswake.ProofLane.ProvenanceTest do
     restore_env("GIT_CONFIG_GLOBAL")
     restore_env("HOME")
 
+    # Under each hostile setting the clean tree must first read as the real commit, so the
+    # dirty-tree assertion below cannot pass just because git cannot report a commit at all.
     System.put_env("GIT_CONFIG_GLOBAL", conf)
+    assert Provenance.commit_ref(dir) == "git-" <> head
+    File.chmod!(file, 0o755)
     assert Provenance.commit_ref(dir) == "git-unknown"
+    File.chmod!(file, 0o644)
 
     System.delete_env("GIT_CONFIG_GLOBAL")
     System.put_env("HOME", conf_dir)
+    assert Provenance.commit_ref(dir) == "git-" <> head
+    File.chmod!(file, 0o755)
     assert Provenance.commit_ref(dir) == "git-unknown"
   end
 
