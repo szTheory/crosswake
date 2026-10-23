@@ -212,16 +212,15 @@ final class Phase180TwinFeasibilityTests: XCTestCase {
 
     // MARK: - G4 gate and control
 
-    func test_G4_gate_bounded_shell_denies_offline_island_runtime() {
+    func test_G4_gate_bounded_shell_admits_offline_island_runtime() {
         let manifest = makeManifest(routeID: "study", runtime: "offline_island")
         let request = makeRequest(routeID: "study")
         let c = coordinator(manifest: manifest, request: request, delegate: nil)
         let result = c.resolve(request: request, manifest: manifest)
-        guard case let .denied(denial) = result else {
-            XCTFail("Expected denied, got \(result)")
+        guard case .offlineIsland = result else {
+            XCTFail("Expected offlineIsland, got \(result)")
             return
         }
-        XCTAssertTrue(denial.message.contains("bounded shell"))
     }
 
     func test_G4_control_live_view_runtime_resolves() {
