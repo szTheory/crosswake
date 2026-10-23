@@ -96,7 +96,7 @@ defmodule Crosswake.CollectionAssertionInventory do
   # IO.write escapes non-ASCII. Switching the device to latin1 passes the bytes through unchanged,
   # and IO.binwrite then writes them as-is in every locale.
   defp emit_bytes(data) do
-    :io.setopts(:standard_io, encoding: :latin1)
+    :ok = :io.setopts(:standard_io, encoding: :latin1)
     IO.binwrite(data)
   end
 

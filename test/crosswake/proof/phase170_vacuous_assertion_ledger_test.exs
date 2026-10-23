@@ -482,19 +482,24 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   end
 
   describe "D-12 locale independence" do
-    test "the committed-scope snapshot is written as decodable UTF-8 under the C locale" do
-      committed = @ledger |> File.read!() |> JSON.decode!()
+    # Under the C locale the stdout device is already latin1 when writing to a pipe, so a
+    # C-only check cannot see a missing latin1 switch. A UTF-8 locale is where the bug shows
+    # (mojibake), so the snapshot must equal the committed ledger bytes in both.
+    for locale <- ["C", "C.UTF-8"] do
+      test "the committed-scope snapshot equals the committed ledger bytes under #{locale}" do
+        committed = @ledger |> File.read!() |> JSON.decode!()
 
-      {output, exit_code} =
-        System.cmd(
-          "elixir",
-          [@script, "--root", @repo_root, "--scope", committed["scope"], "--emit-snapshot"],
-          env: [{"LC_ALL", "C"}, {"LANG", "C"}],
-          cd: @repo_root
-        )
+        {output, exit_code} =
+          System.cmd(
+            "elixir",
+            [@script, "--root", @repo_root, "--scope", committed["scope"], "--emit-snapshot"],
+            env: [{"LC_ALL", unquote(locale)}, {"LANG", unquote(locale)}],
+            cd: @repo_root
+          )
 
-      assert exit_code == 0
-      assert {:ok, %{"rows" => _}} = JSON.decode(output)
+        assert exit_code == 0
+        assert output == File.read!(@ledger)
+      end
     end
   end
 

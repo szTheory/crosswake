@@ -63,7 +63,6 @@ defmodule Crosswake.Proof.Phase170VacuityTaxonomyConventionTest do
   defp phase_dirs_with_verification do
     @v23_phases
     |> Enum.map(&Crosswake.Test.PhaseEvidencePath.resolve(@workstream, &1))
-    |> Enum.filter(&File.dir?/1)
     |> Enum.sort()
     |> Enum.filter(fn dir ->
       dir
@@ -73,6 +72,14 @@ defmodule Crosswake.Proof.Phase170VacuityTaxonomyConventionTest do
         [] -> false
         _ -> true
       end
+    end)
+  end
+
+  # Roster entries whose resolved folder does not exist. Reported rather than dropped, so a
+  # missing roster folder can never silently shrink the examined set.
+  defp missing_roster_dirs(roster) do
+    Enum.reject(roster, fn entry ->
+      @workstream |> Crosswake.Test.PhaseEvidencePath.resolve(entry) |> File.dir?()
     end)
   end
 
@@ -116,7 +123,11 @@ defmodule Crosswake.Proof.Phase170VacuityTaxonomyConventionTest do
   test "Task 2: findings floor — the examined phase-directory count is non-zero (D-14)" do
     examined = phase_dirs_with_verification()
 
-    assert length(@v23_phases) == 7
+    assert missing_roster_dirs(@v23_phases) == [],
+           "roster phase folders missing both live and archived: " <>
+             inspect(missing_roster_dirs(@v23_phases))
+
+    assert length(examined) == length(@v23_phases)
 
     assert length(examined) >= 1,
            "expected at least 1 phase directory with a *-VERIFICATION.md to examine, found 0 — " <>
@@ -145,6 +156,10 @@ defmodule Crosswake.Proof.Phase170VacuityTaxonomyConventionTest do
 
     assert resolved == Path.join([".planning/workstreams", @workstream, "phases", relative])
     refute File.exists?(resolved)
+  end
+
+  test "Task 2: missing-roster negative control — a roster entry with no folder is reported" do
+    assert missing_roster_dirs(["999-no-such-roster-phase"]) == ["999-no-such-roster-phase"]
   end
 
   @tag :tmp_dir
