@@ -41,15 +41,18 @@ defmodule CrosswakeExample.Phase180TwinFeasibilityTest do
   end
 
   @tag phase180_gate: "G6"
-  test "G6 gate: no compiled route declares a host capability" do
+  test "G6 gate: exactly one compiled route declares the host capability" do
     manifest = manifest_map()
 
     assert map_size(manifest["routes"]) > 0
 
-    for {_id, route} <- manifest["routes"] do
-      refute Enum.any?(route["capabilities"] || [], &String.starts_with?(&1, "host."))
-    end
+    declaring =
+      for {id, route} <- manifest["routes"],
+          host = Enum.filter(route["capabilities"] || [], &String.starts_with?(&1, "host.")),
+          host != [],
+          do: {id, host}
 
+    assert declaring == [{"offline-study", [@command]}]
     assert manifest["routes"]["offline-study"]["runtime"] == "offline_island"
   end
 
@@ -60,9 +63,9 @@ defmodule CrosswakeExample.Phase180TwinFeasibilityTest do
   end
 
   @tag phase180_gate: "G2"
-  test "G2 gate: generated activation for the probe carries no host command" do
+  test "G2 gate: generated activation for the probe carries the host command" do
     assert {:ok, out} = Crosswake.Shell.IOSHostGeneration.render(config(@probe))
-    refute Map.has_key?(activation_capabilities(out.activation), @command)
+    assert activation_capabilities(out.activation) == %{@command => "1.0.0"}
   end
 
   @tag phase180_control: "G2"
