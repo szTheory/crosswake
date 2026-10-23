@@ -1,0 +1,10 @@
+version_bearing_paths_changed 0
+guard_branch no_version_change_exit_0
+branch_protection_read_token bound_in_guard_env_not_referenced_before_no_version_exit
+token_bound_jobs_gated job_level_if_on_every_publish_job_step_level_rel17_context_on_release_please_step
+ios_tag_recovery_triggered no
+see_it_run_collateral advisory
+release_merge no
+gate_reads_credential local_cli_read_only
+note job_level_reasoning publish jobs run only when linked_release or a package release_created output is true and rel17_operation matches; on this merge linked_release stays false and no package release is created, so those jobs are skipped (the previous main push run shows every publish-class job skipped)
+note step_level_wording the publish jobs bind the token in steps that carry no step-level if; their gate is the job-level if, not rel17_context

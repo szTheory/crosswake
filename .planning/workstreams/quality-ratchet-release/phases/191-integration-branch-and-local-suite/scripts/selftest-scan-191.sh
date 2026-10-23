@@ -317,6 +317,18 @@ ctl_s32() { # a gitleaks triage row suppresses exactly its own finding and nothi
   expect 1 "scan: gitleaks_findings 0"
 }
 
+ctl_s33() { # a git note whose blob cannot be read is a scope error, never a skipped note
+  printf 'text\n' > "$R/a.txt"; gc "note target"
+  g "$R" -c "user.name=$ID_N" -c "user.email=$ID_E" notes add -m body HEAD > /dev/null 2>&1 || return 1
+  NB=$(g "$R" notes list HEAD | awk '{print $1}')
+  [ -n "$NB" ] || return 1
+  NF="$R/.git/objects/$(printf '%s' "$NB" | cut -c1-2)/$(printf '%s' "$NB" | cut -c3-)"
+  [ -f "$NF" ] || return 1
+  rm -f "$NF"
+  run_scan
+  expect 2 "scan: cat-file failed"
+}
+
 run_ctl S01 ctl_s01 "clean repo with non-zero counts"
 run_ctl S02 ctl_s02 "home path added then deleted"
 run_ctl S03 ctl_s03 "gitleaks token shape"
@@ -355,6 +367,7 @@ run_ctl S29 ctl_s29 "term-check mode matches every term"
 run_ctl S30 ctl_s30 "unresolvable base revision"
 run_ctl S31 ctl_s31 "personal value present in HEAD is final"
 run_ctl S32 ctl_s32 "gitleaks triage row suppresses only its own finding"
+run_ctl S33 ctl_s33 "unreadable git note is a scope error"
 echo "selftest-scan: controls $GOOD of $TOTAL as expected"
 [ "$GOOD" -eq "$TOTAL" ] && [ "$TOTAL" -ge 26 ] && exit 0
 exit 1

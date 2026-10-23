@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v27.0
 milestone_name: Land and Clean Up (Phases 189–193) — in progress
-current_phase: 191
-current_phase_name: Integration branch and local suite
+current_phase: 192
+current_phase_name: PR, CI and merge
 status: executing
-stopped_at: Phase 191 context gathered
-last_updated: "2026-10-20T03:07:47.629Z"
-last_activity: 2026-10-19
-last_activity_desc: Phase 191 execution started
+stopped_at: Phase 192 planned (10 plans, 9 waves), ready to execute
+last_updated: "2026-10-23T18:17:07.089Z"
+last_activity: 2026-10-23
+last_activity_desc: Phase 192 execution started
 state_head: d0f3e2f1ead2046c26da5cc4b5dd62d5bfea1377
 progress:
   total_phases: 5
-  completed_phases: 2
-  total_plans: 35
-  completed_plans: 23
-  percent: 40
+  completed_phases: 3
+  total_plans: 45
+  completed_plans: 35
+  percent: 60
 ---
 
 # Project State
@@ -26,28 +26,32 @@ See `.planning/PROJECT.md` for the core thesis and decisions (updated 2026-10-16
 
 ## Current Position
 
-Phase: 191 (Integration branch and local suite) — EXECUTING
-Plan: 1 of 12
-Status: Executing Phase 191
-Last activity: 2026-10-19 — Phase 191 execution started
+Phase: 192 (PR, CI and merge) — EXECUTING
+Plan: 1 of 10
+Status: Executing Phase 192
+Last activity: 2026-10-23 — Phase 192 execution started
 
-Progress: [████░░░░░░] 40%
+Progress: [██████░░░░] 60%
 
 ## Exact Next Action
 
-What was checked and what happened: the four code fixes (FIX-07, FIX-05, FIX-04, FIX-06) are commits in `<durable-candidate>`, in that order, each with its tests. They change exactly the 11 expected files, all as single-parent commits on top of `a53fbef`, and the status is clean. The final full suite ran 2637 tests with 6 failures, the same 6 as the measured baseline (2622 tests, 6 failures), so there is no new failure. The test-file pin now equals the measured count, 253 (it was 249), and the guard fails one above it. The three script successors pass in the Phase 190 folder: the privacy scan (15 of 15 controls), the gate self-test (44 of 44 controls, label coverage 30 of 30) and the git-helper comparison (11 of 11 controls). The Phase 188 originals still verify 10 of 10, unchanged. Two earlier checks were superseded by design rather than broken: plan 03's pins of 31 controls and a 3-of-3 tracer were deliberately extended by plan 04 to 44 controls and a 5-of-5 tracer, and plan 05's HEAD-relative check became false once the later fixes landed on top (FIX-07 was re-checked by its SHA). No twin run took place (the Phase 180 run folder does not exist), and the recovery checkout shows no git change against the snapshot taken before Phase 190. One honest note: at phase start the orchestrator ran a single read-only `git status` on STATE.md in the recovery checkout, before the "before" snapshot was taken, so the unchanged comparison stays valid. Every failure that already existed at `a53fbef` has a disposition in `190-EVIDENCE/baseline-dispositions.md` (9 listed, 0 fixed: the Phase 180 G1 gate test, five Phase 170 ledger tests that fail only in a full-suite run, and three suites not run in Phase 190), for Phase 191's LAND-02 check. Follow-ups, not fixed in 190: the gate's real-mode mix path check compares path text (/tmp versus /private/tmp) and needs a fix before the next twin run; a test file already unformatted at the base commit (`native_shell_upgrade_test.exs`) makes whole-project `mix format --check-formatted` fail. /private/tmp was wiped once by a reboot, so the work clone is rebuilt from `<durable-candidate>` whenever it is missing.
+What was checked and what happened: Phase 191 built the integration branch in a separate durable clone (<integration-clone>, branch `land/v25-v27`). It starts at current `main` (d0dbdf7b), holds the 94 candidate commits and the 4 FIX commits unchanged and linear (no merge commits, order checked against the heads record), then the Phase 191 fix commits (FORMAT, LOCALE, G1, PRIVACY, HOST-G2G6, SWIFT-G4, WR-05, WR-01-06, WR-03, ADOPTION-EXT), the planning resolver (RESOLVER), the five planning carry commits (v23.0 to v27.0), one code commit for the example-host router test fixture (FIXTURE), and one sync commit (SYNC) that landed the records written after the cut. The branch is 112 commits ahead of `main`. The full local suite passed at the FIXTURE head (all nine verify stages, seven lanes at their separately measured floors, the example host 167 of 167, the Swift export run 89 of 89, nine CI-parity commands), with every exclusion listed in `exclusions-191.md`; at the sync head the root suite (2660 tests), the planning subset (951 tests) and the four planning checks passed again, and only `.planning/` changed after FIXTURE. The privacy scan of the whole change (112 commits, `main` to the sync head) was clean: 0 blocking findings, 0 secret-scanner findings, 0 history-sensitive findings. The recovery checkout shows no git change and its working-tree compare passes, <durable-candidate> is unchanged at 2faf15a2, and nothing was pushed.
 
-Phase 191 planning (2026-10-19): research, pattern map and validation strategy written; 12 plans in 9 waves (191-01..12). The plan checker ran 3 rounds plus two user-approved fix passes. The last full check found 0 blockers. A bounded fix pass then cleared its 4 warnings, with no further checker round. Both requirements (LAND-01, LAND-02) and all 25 decisions are covered. Amendments A-1..A-13 are recorded in 191-01-PLAN.md. The user chose two of them: the carry takes only paths whose raw bytes differ from `main` (records already on `main` unchanged stay for the hygiene seed), and the denylist sha256 stays in the private run folder only (A-13, amends D-18). One planned human step: at 191-04 Task 3 the user creates the private adopter-term file (mode 0600, outside the repo, the clones and the temp folder) and gives its location in the conversation; it is never written into a phase file. Plain uncommitted files; no Git operation in the recovery checkout.
+Plain statements about the privacy check (A-14, user decision of 2026-10-22): the adopter-term list was dropped, so the adopter-term check was skipped by decision and the scan used the built-in classes only (emails, home and temp paths, the account name, secrets). A best-effort cleanup of low-hanging personal values was made in one commit labelled PRIVACY. Personal values that exist only inside the preserved candidate history (home path 1, username 1) are accepted and counted, because history is never rewritten; the same username already appears in 364 files on `main`, and 367 same-path `main` records outside the scanned range still hold a pattern and are deferred to the hygiene seed. A-15: one extra code commit (FIXTURE) sits after the carry commits, fixing the doctor router test fixture that the tightened doctor check rejected; the carry commits are unchanged. Leftover trial branches `carry-trial` and `carry-trial-2` (and `carry-trial-3`, equal to the branch head before FIXTURE) remain in <integration-clone> for Phase 193 cleanup.
 
-Next: `$gsd-execute-phase 191 --ws quality-ratchet-release`.
+Verification passed inside `$gsd-execute-phase 191` (191-VERIFICATION.md: 4 of 4 criteria, LAND-01 and LAND-02 met), so no separate verify-work run is needed. The code review (191-REVIEW.md) found 0 critical, 3 warning and 2 info items, all in tests or the phase scanner, not production code; all five are recorded `open` in 191-REVIEW-DISPOSITION.md for Phase 192 discussion to triage before the push (notably WR-03: the privacy scanner skips unreadable git notes instead of failing).
 
-Previous handoff: `$gsd-plan-phase 191 --ws quality-ratchet-release`. The user's Phase 189 decisions are answered (189-DECISIONS-ANSWERS.md: backups kept, source copies removed in Phase 193, no code lands). Phase 191 discussion is complete (191-CONTEXT.md, 23 decisions from four research tracks; recommendations adopted per the user's fan-out-and-auto-follow instruction). Key changes from the earlier plan: the full local suite must reach zero failures (the five Phase170 ledger failures come from LC_ALL=C, not test order; the Phase180 G1/G4/G3/G2/G6 probe tests are inverted in place; one format-only commit is required for CI); the planning carry also takes the v23 archive and committed v24 records, behind a resolver commit; the privacy scan is a new vendored scanner plus gitleaks over every new commit, blob, path and author field. Previous handoff: `$gsd-discuss-phase 191 --ws quality-ratchet-release`. Phase 190 verification passed inside `$gsd-execute-phase 190` (7 of 7 requirements, 5 of 5 roadmap criteria; 190-VERIFICATION.md), so no separate verify-work run is needed. The code review (190-REVIEW.md) found 0 critical, 11 warning and 4 info items; all 15 are recorded `open` in 190-REVIEW-DISPOSITION.md for Phase 191 discussion to triage (notably WR-02, later registry calls can still exit uncaught, and WR-05, a route_activation.json that parses but has no usable origin still passes the preflight).
+Next: `$gsd-execute-phase 192 --ws quality-ratchet-release`. Phase 192 is planned as 10 plans in 9 waves (192-01..10, with 192-RESEARCH.md, 192-PATTERNS.md and 192-VALIDATION.md). Order: recovery before-snapshot and push gate (01); WR-03 scanner fix and privacy check (02); CI poller (03); merge gate (04); post-merge verifier (05); the single planning sync SYNC-2 (06); the WR-01/02 code commit LAND-FIX and rescan (07); push, PR and Crosswake CI (08); the plain-language `allow`/`hold` ask and merge (09, the only human step); post-merge proof and recovery after-snapshot (10). Plan-phase decisions R-1..R-4 and the D-01/D-02 amendments are in the plans and 192-CONTEXT.md. Two plan-check warnings were accepted for execution: 192-05's `release_merge no` reasoning names the step-level `rel17_context` gate where the publish jobs are actually gated at job level on `linked_release`/`*_release_created` (the conclusion still holds), and 192-01 checks the new folders' owner and mode 700 in its action but not in its automated verify.
 
-Known item: Phase 189 research ran `git fsck --lost-found` in the recovery checkout, which created `.git/lost-found/` (248 loose files). Refs, HEAD, stashes, worktrees and the index were unchanged. It is left in place (removing it is another write), listed as an obsolete inventory row, and removed in Phase 193.
+What Phase 192 must do first: (1) run `finalize-191.sh` before anything else, so this plan's SUMMARY, the scan record, the handoff edits and VERIFICATION.md land as a sync commit and the whole change is rescanned (A-9); they cannot be inside the HEAD they describe. (2) Push only the HEAD for which `finalize-191.sh --check-binding` prints `binding pass`, with no new commit after it (D-22). (3) Merge only with a merge commit, never squash or rebase-merge (D-03, one-way). (4) Release-please may propose a version bump after the merge, because a lib file changed (assumption A4). The merge needs a fresh plain-language `allow` for the displayed PR and head commit.
 
-v27.0 Land and Clean Up has 18 requirements across phases 189–193 (see [ROADMAP](ROADMAP.md) and [REQUIREMENTS](REQUIREMENTS.md)). Ordering rules: nothing is deleted before Phase 189's backups pass their restore test; the recovery checkout stays frozen (no staging, commits, tags, branch, worktree or stash changes) through Phase 192, and the integration branch is built in a separate durable clone; Phase 190's fixes were made in `<durable-candidate>` (a durable clone of the candidate), with no twin run; pushing and opening the PR are in scope, but the merge needs a fresh plain-language `allow` for the displayed PR and head commit; no package release or Hex publish.
+Phase 193 inputs: CLEAN-04 takes the recovery AGENTS.md's durable working rules as input and drops the consumed Phase 175 standing authorization (D-05); no CI lane runs the full example-host suite (D-14); R-PL-14..16 are checked obsolete copies; the planning half of R-BR-047 has landed; keep <integration-clone> and its trial branches and the `candidate-src` branch until cleanup; the scan record for the final PR head lands in Phase 193's normal flow.
 
 ### Handoff history
+
+- Superseded (2026-10-23): `$gsd-plan-phase 192 --ws quality-ratchet-release`. Done: research, pattern map, validation strategy and plans 192-01..10 written (9 waves); plan checker 3 rounds plus one user-approved targeted fix, no blockers remaining; requirements LAND-03/LAND-04 and decisions 10/10 covered. Plain uncommitted files; no git write in the recovery checkout.
+- Superseded (2026-10-23): `$gsd-verify-work 191 --ws quality-ratchet-release`. Done inside `$gsd-execute-phase 191`: plans 191-01..12 executed (191-10 and 191-11 each re-run once; run-1 records kept as *-BLOCKED.run1.md); verification passed 4/4; code review 0 critical / 3 warning / 2 info, all open in 191-REVIEW-DISPOSITION.md; Phase 191 marked complete. No git write in the recovery checkout; nothing pushed.
+- Superseded (2026-10-22): `$gsd-execute-phase 191 --ws quality-ratchet-release`. Done: plans 191-01..12 executed in the integration clone (112 commits ahead of `main`, 94 candidate commits and 4 FIX commits preserved); full local suite green, privacy scan clean at the sync head, nothing pushed, recovery checkout unchanged. Plain uncommitted files in the recovery checkout.
 
 - Superseded (2026-10-19): `$gsd-verify-work 190 --ws quality-ratchet-release`. Done inside `$gsd-execute-phase 190`: plans 190-01..10 executed (4 FIX commits in `<durable-candidate>`: 9c7c732b, 01e07a51, 8a529f52, 2faf15a2); verification passed 7/7; code review 0 critical / 11 warning / 4 info, all open in 190-REVIEW-DISPOSITION.md; Phase 190 marked complete. Plain files only; no Git operation in the recovery checkout after the pre-snapshot `git status` noted above.
 - Superseded (2026-10-19): the Phase 190 execution handoff. Done: Phase 190 was planned as 10 plans in 7 waves (research, pattern map, validation strategy, plans 190-01..10; plan checker 3 rounds, no blockers; requirements 7/7 and decisions 10/10 covered), and the plans were then executed; no commits in the recovery checkout.
@@ -175,9 +179,9 @@ The six separate v24 debt items remain in the [debt disposition](milestones/v24.
 ## Session
 
 **Last session:** 2026-10-19T23:54:39.524Z
-**Stopped at:** Phase 191 context gathered
-**Resume file:** .planning/workstreams/quality-ratchet-release/phases/191-integration-branch-and-local-suite/191-CONTEXT.md
+**Stopped at:** Phase 192 planned, ready to execute
+**Resume file:** .planning/workstreams/quality-ratchet-release/phases/192-pr-ci-and-merge/192-01-PLAN.md
 
 ## Operator Next Steps
 
-- Discuss Phase 191 with `$gsd-discuss-phase 191 --ws quality-ratchet-release` (Phase 190 complete and verified; see Exact Next Action)
+- Execute Phase 192 with `$gsd-execute-phase 192 --ws quality-ratchet-release` (see Exact Next Action)

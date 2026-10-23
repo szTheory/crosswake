@@ -1,0 +1,6 @@
+sample_head 9be3e2bb25d050abfd7b635f6e6b0a9795ab62b0
+live_check completed success
+shim_check completed success
+required_set ok
+capture_files 16
+result pass

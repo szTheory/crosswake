@@ -45,13 +45,13 @@ See [v27.0-SCOPE.md](v27.0-SCOPE.md). The v26 requirements are archived in [mile
 
 ### LAND: get it onto main
 
-- [ ] **LAND-01:** An integration branch cut from current GitHub `main` carries:
+- [x] **LAND-01:** An integration branch cut from current GitHub `main` carries:
   - the candidate's commits, with history preserved;
   - the FIX commits;
   - the v24–v27 planning records.
 
   A privacy scan of the change finds no home paths, usernames, secrets or adopter identity.
-- [ ] **LAND-02:** The full local suite passes on the integration branch. Each known pre-existing failure is either fixed or listed with a reason; none is excluded silently. The known failures are Swift G4 and example-host G2/G6.
+- [x] **LAND-02:** The full local suite passes on the integration branch. Each known pre-existing failure is either fixed or listed with a reason; none is excluded silently. The known failures are Swift G4 and example-host G2/G6.
 - [ ] **LAND-03:** A PR to `main` is open and every required CI check passes.
 - [ ] **LAND-04:** The merge happens only after the user answers `allow` for the displayed PR and head commit. After the merge, CI on `main` is green for the merge commit.
 
@@ -95,8 +95,8 @@ See [v27.0-SCOPE.md](v27.0-SCOPE.md). The v26 requirements are archived in [mile
 | FIX-05 | Phase 190 | Complete |
 | FIX-06 | Phase 190 | Complete |
 | FIX-07 | Phase 190 | Complete |
-| LAND-01 | Phase 191 | Pending |
-| LAND-02 | Phase 191 | Pending |
+| LAND-01 | Phase 191 | Complete |
+| LAND-02 | Phase 191 | Complete |
 | LAND-03 | Phase 192 | Pending |
 | LAND-04 | Phase 192 | Pending |
 | CLEAN-01 | Phase 193 | Pending |

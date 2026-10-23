@@ -194,11 +194,11 @@ while read -r ty to tp; do
   g "$REPO" cat-file tag "$to" > "$SC/tagbody.txt" 2>/dev/null || fail "cat-file failed"
   append_units tg "$to" "$tp" < "$SC/tagbody.txt"
 done < "$SC/tags.ref"
-g "$REPO" notes list > "$SC/notes.ref" 2>/dev/null || : > "$SC/notes.ref"
+g "$REPO" notes list > "$SC/notes.ref" 2>/dev/null || fail "notes list failed"
 while read -r no nc; do
   [ -n "${nc:-}" ] || continue
   grep -q -x "$nc" "$SC/commits.txt" || continue
-  g "$REPO" cat-file blob "$no" > "$SC/notebody.txt" 2>/dev/null || continue
+  g "$REPO" cat-file blob "$no" > "$SC/notebody.txt" 2>/dev/null || fail "cat-file failed"
   append_units nt "$no" "$nc" < "$SC/notebody.txt"
 done < "$SC/notes.ref"
 
