@@ -74,7 +74,10 @@ defmodule Crosswake.Guides.NativeShellUpgradeTest do
     guide = File.read!(Path.join([File.cwd!(), "guides", "native_shell.md"]))
     upgrade = File.read!(@guide_path)
     task = File.read!(@gen_shell_path)
-    config = File.read!(Path.join([File.cwd!(), "lib", "crosswake", "shell", "ios_host_config.ex"]))
+
+    config =
+      File.read!(Path.join([File.cwd!(), "lib", "crosswake", "shell", "ios_host_config.ex"]))
+
     host_settings =
       File.read!(
         Path.join([
@@ -122,8 +125,8 @@ defmodule Crosswake.Guides.NativeShellUpgradeTest do
     assert proof_generator =~ "proof_app_bundle_id <> \".tests\""
     assert proof_generator =~ "proof_app_bundle_id <> \".uitests\""
 
-    refute (guide <> upgrade) =~ "signed-device installation"
-    refute (guide <> upgrade) =~ "physical iPhone support is proven"
-    refute (guide <> upgrade) =~ "replay authority is granted"
+    refute guide <> upgrade =~ "signed-device installation"
+    refute guide <> upgrade =~ "physical iPhone support is proven"
+    refute guide <> upgrade =~ "replay authority is granted"
   end
 end
