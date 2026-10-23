@@ -27,11 +27,15 @@ defmodule Crosswake.Proof.Phase180TwinFeasibilityTest do
   end
 
   @tag phase180_gate: "G1"
-  test "G1 gate: validator rejects the host audio command as an unknown capability" do
-    errors = validate_with(["host.study.audio.play"])
-    assert [error] = errors
+  test "G1 gate: the host audio command on an offline_island route validates without errors" do
+    assert validate_with(["host.study.audio.play"]) == []
+  end
+
+  @tag phase180_gate: "G1"
+  test "G1 gate: an unknown core capability yields exactly one capabilities error" do
+    assert [error] = validate_with(["not_a_core_capability"])
     assert error.key == :capabilities
-    assert error.message =~ "host.study.audio.play"
+    assert error.message =~ "unknown capability"
   end
 
   @tag phase180_control: "G1"
