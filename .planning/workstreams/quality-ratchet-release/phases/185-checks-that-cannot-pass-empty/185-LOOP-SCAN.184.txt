@@ -1,0 +1,45 @@
+# Loop-site scan (Phase 185, D-07). Read-only AST scan; no dependency; not wired into CI.
+# Command: elixir 185-loop-scan.exs <root> <filelist> --expect 6
+# Files read: 6 (expected 6); every file present.
+# Kinds: for, Enum.each, Enum.reduce, Enum.map, Enum.flat_map whose body holds assert/refute (core);
+#   Enum.all?/any?/filter/reject/with_index are reported with a trailing * (extra). Piped calls: left side is the source.
+# Blind spots:
+#   - assertions made in helpers called from a loop body are not seen;
+#   - with, Stream and Enum.all?/any? assertion shapes are not treated as loops with a floor;
+#   - filter-only bodies (no assert/refute inside) are not reported;
+#   - guards living in helpers or setup blocks are not seen (guard hint is textual, per test/def scope);
+#   - example-host files are parsed but not run by the main suite.
+test/crosswake/guides/see_it_run_test.exs	0
+test/crosswake/proof_lane/twin_producers_test.exs	4
+  L77	for	src=runtime	guard=none	groups
+  L316	for	src=literal	guard=none	~w(TW-T02-03 TW-T06-01 TW-T06-02 TW-T06-03 TW-T07-01 TW-T07-02)
+  L377	for	src=nonempty_list_expr	guard=none	[ Map.delete(data, "admitted"), Map.put(data, "unexpected", 0), Map.put(data, "admitted", 
+  L401	for	src=literal	guard=none	~w(TW-T10-03 TW-T10-04 TW-T10-05 TW-T10-06 TW-T10-07 TW-T10-08 TW-T10-01 TW-T10-02)
+test/crosswake/proof_lane/twin_runtime_check_test.exs	1
+  L240	for	src=runtime	guard=candidate:L238	rows
+test/crosswake/proof_lane/twin_source_probe_test.exs	7
+  L566	for	src=literal	guard=none	[128, 129]
+  L582	for	src=literal	guard=none	["git version 2.40.9\n", "git version 2.9.0\n", "not git\n"]
+  L595	for	src=literal	guard=none	["git version 2.41.0\n", "git version 2.50.1 (Apple Git-155)\n"]
+  L614	for	src=runtime	guard=none	raisers ; ["--version", "ls-files", "--list"]
+  L1113	for	src=nonempty_list_expr	guard=none	[raiser, thrower, exiter]
+  L1246	for	src=runtime	guard=none	entry_points
+  L1347	for	src=nonempty_list_expr	guard=none	[:unavailable, counts(1_000_001, 0, 0), counts(0, 0, 0), :garbage]
+test/mix/tasks/crosswake_proof_lane_twin_preflight_test.exs	11
+  L121	for	src=literal	guard=none	@artifacts
+  L337	for	src=runtime	guard=none	cases
+  L424	for	src=runtime	guard=none	runs
+  L429	for	src=runtime	guard=candidate:L427	lines
+  L448	for	src=runtime	guard=none	checks
+  L455	for	src=runtime	guard=candidate:L450	lines
+  L514	for	src=runtime	guard=none	sources
+  L518	for	src=runtime	guard=none	anchors
+  L522	for	src=runtime	guard=none	forbidden
+  L539	for	src=runtime	guard=none	caught
+  L543	for	src=literal	guard=none	["prepared record", "TwinRuntime.check("]
+test/mix/tasks/crosswake_proof_lane_verify_twin_test.exs	4
+  L93	for	src=literal	guard=none	[["ios", "--bogus"], ["ios", "extra"], ["android"], [], ["ios", "--candidate"]]
+  L296	for	src=literal	guard=none	["receipt.json", "twin-result.json"]
+  L601	for	src=nonempty_list_expr	guard=none	lines ++ [ File.read!(Path.join(ctx.run_root, "receipt.json")), File.read!(Path.join(ctx.r
+  L659	for	src=runtime	guard=none	texts ; [ctx.candidate, System.user_home!(), marker]
+TOTAL files=6 sites=27
