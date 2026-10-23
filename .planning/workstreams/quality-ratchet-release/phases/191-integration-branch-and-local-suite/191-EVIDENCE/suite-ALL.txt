@@ -1,0 +1,23 @@
+head 7075a441b4ed05a9497491cd01f686a2644a506a
+mode all
+stage repository-preflight status 0
+stage root-proof status 0
+stage example-host-proof status 0
+stage browser-proof status 0
+stage ios-package-proof status 0
+stage android-package-proof status 0
+stage format-proof status 0
+stage warnings-proof status 0
+stage repository-cleanliness status 0
+lane companion-1 tests 11 failures 0 invalid 0 skipped 0 excluded 1 floor 11
+lane companion-2 tests 55 failures 0 invalid 0 skipped 0 excluded 7 floor 55
+lane companion-3 tests 139 failures 0 invalid 0 skipped 0 excluded 0 floor 139
+lane companion-4 tests 53 failures 0 invalid 0 skipped 0 excluded 0 floor 53
+lane companion-5 tests 98 failures 0 invalid 0 skipped 0 excluded 0 floor 98
+lane phase41 tests 3 failures 0 invalid 0 skipped 0 excluded 2735 floor 3
+lane main tests 2657 failures 0 invalid 0 skipped 0 excluded 81 floor 2657
+swift tests 89 skipped 2
+swift_skipped test_G3_control_exported_request_carrying_command_reaches_delegate
+swift_skipped test_G3_gate_generated_activation_session_lacks_host_command
+orchestrator_exit 0
+result pass

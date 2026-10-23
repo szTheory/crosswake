@@ -1,0 +1,9 @@
+commit v23.0 files 1648 bytes 23450097 rename_pairs 115 expected_pure_moves 115 transformed_moves 4
+commit v24.0 files 189 bytes 3289478
+commit v25.0 files 258 bytes 3281787
+commit v26.0 files 177 bytes 3201121
+commit v27.0 files 276 bytes 2885394
+check phase167_js exit 0
+check adoption_scan exit 0
+check integrity_script exit 0
+check ledger_check exit 0

@@ -344,6 +344,16 @@ ctl_s25() {
   ! grep -q 'DS_Store' "$S/man.tsv"
 }
 
+ctl_s26() {
+  std_fix || return 1
+  man && [ "$RC" -eq 0 ] || return 1
+  cm apply "$S/base" "$S/man.tsv" ALL; [ "$RC" -eq 0 ] || return 1
+  printf 'carry\n\nPlanning-Carry: sync\n' > "$S/msg.txt"
+  cm commit-bucket "$S/base" "$S/man.tsv" ALL "$S/msg.txt"; [ "$RC" -eq 0 ] || return 1
+  [ "$(g "$S/base" rev-list --count "$BASE_REV..HEAD")" -eq 1 ] || return 1
+  verify_now
+  expect 0 "carry: verify pass rows 0"
+}
 run_ctl S01 ctl_s01 "manifest apply commit verify end to end"
 run_ctl S02 ctl_s02 "staged path outside planning refused"
 if [ "$MODE_ARG" = "--tracer" ]; then
@@ -375,6 +385,7 @@ run_ctl S22 ctl_s22 "same-path raw-identical file not listed or transformed, mod
 run_ctl S23 ctl_s23 "sync re-run is idempotent and sees a later raw edit"
 run_ctl S24 ctl_s24 "transform with missing landed hash fails manifest"
 run_ctl S25 ctl_s25 "excluded source path counted and not listed"
+run_ctl S26 ctl_s26 "bucket ALL stages and commits every row in one commit and verify passes"
 if [ "$GOOD" -eq "$TOTAL" ]; then
   echo "selftest-carry: controls $GOOD of $TOTAL as expected"; exit 0
 fi

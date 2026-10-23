@@ -1,0 +1,14 @@
+head 7075a441b4ed05a9497491cd01f686a2644a506a
+check adoption_scan exit 0
+check docs_sync exit 0
+check closeout_verify exit 0
+check e2e_honesty exit 0
+check js_tests exit 0
+check integrity_script exit 0
+check ledger_check exit 0
+check compile_force exit 0
+check adopter_terms_test exit 0
+adopter_terms_test ran 34 tests, 0 failures, without private terms as CI runs it; T-191-43 waived by the user's decision of 2026-10-22 (A-14)
+js_tests 135 tests, 135 pass, 0 fail, 0 skipped
+clone_clean_after yes
+result pass

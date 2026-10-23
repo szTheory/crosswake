@@ -23,4 +23,5 @@ S22 same-path raw-identical file not listed or transformed, mode-only counted: a
 S23 sync re-run is idempotent and sees a later raw edit: as expected
 S24 transform with missing landed hash fails manifest: as expected
 S25 excluded source path counted and not listed: as expected
-selftest-carry: controls 25 of 25 as expected
+S26 bucket ALL stages and commits every row in one commit and verify passes: as expected
+selftest-carry: controls 26 of 26 as expected

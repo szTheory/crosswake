@@ -4,3 +4,14 @@ conflicts 0
 code_commits_planning 0
 label_consistent yes
 cut_time 2026-10-23T02:46:32Z
+moved untransformed 120 transformed 4
+delta A 2527 M 13 D 141
+excluded 46
+bucket v23.0 1781
+bucket v24.0 189
+bucket v25.0 258
+bucket v26.0 177
+bucket v27.0 276
+transformed 245
+moved untransformed 120 transformed 4
+manifest_sha256 77ed51616750ff779a9ee3baeaf772c76b43238b01e576717480f90dcaab0a8d

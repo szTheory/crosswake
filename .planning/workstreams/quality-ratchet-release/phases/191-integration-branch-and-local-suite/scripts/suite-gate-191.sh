@@ -267,18 +267,39 @@ mode_all() {
   FLOORS=${1:-}
   EXCLF=${2:-}
   [ -f "$FLOORS" ] || die2 "floor required"
-  [ "$(awk 'END{print NR}' "$FLOORS")" -eq 7 ] || die2 "floor required"
-  grep -Ev '^lane [1-9][0-9]*$' "$FLOORS" > /dev/null
-  [ $? -eq 1 ] || die2 "floor required"
+  # Floors: either seven `lane N` lines (original format) or the named floors file of the plan
+  # (rulestead rindle sigra chimeway threadline phase41 main, plus host and swift lines that mode
+  # all ignores). The named lines map to the seven lanes in alias order. LANEF gets `lane N` lines.
+  LANEF="$R191/raw/$LABEL.lanefloors"
+  mkdir -p "$R191/raw" || die2 "run folder missing"
+  if grep -Eq '^lane ' "$FLOORS"; then
+    [ "$(awk 'END{print NR}' "$FLOORS")" -eq 7 ] || die2 "floor required"
+    grep -Ev '^lane [1-9][0-9]*$' "$FLOORS" > /dev/null
+    [ $? -eq 1 ] || die2 "floor required"
+    cp "$FLOORS" "$LANEF" || die2 "floor required"
+  else
+    : > "$LANEF"
+    for _k in rulestead rindle sigra chimeway threadline phase41 main; do
+      [ "$(grep -c "^$_k " "$FLOORS")" -eq 1 ] || die2 "floor required"
+      _v=$(sed -n -E "s/^$_k ([1-9][0-9]*)\$/\\1/p" "$FLOORS")
+      [ -n "$_v" ] || die2 "floor required"
+      printf 'lane %s\n' "$_v" >> "$LANEF"
+    done
+    grep -Ev '^(rulestead|rindle|sigra|chimeway|threadline|phase41|main|host|swift) [1-9][0-9]*$' "$FLOORS" > /dev/null
+    [ $? -eq 1 ] || die2 "floor required"
+  fi
+  FLOORS=$LANEF
   [ -f "$EXCLF" ] || die2 "excluded file malformed"
-  [ "$(awk 'END{print NR}' "$EXCLF")" -eq 1 ] || die2 "excluded file malformed"
-  grep -Ev '^main_excluded [0-9]+$' "$EXCLF" > /dev/null
+  # Excluded file: exactly one `main_excluded N` line; the named excl file may add the A11 line
+  # and the inputs line, nothing else.
+  [ "$(grep -c '^main_excluded ' "$EXCLF")" -eq 1 ] || die2 "excluded file malformed"
+  grep -Ev '^(main_excluded [0-9]+|assumption_A11 (held|disproved)|inputs [0-9]+ [0-9]+ [0-9]+ [0-9]+)$' "$EXCLF" > /dev/null
   [ $? -eq 1 ] || die2 "excluded file malformed"
   EXCLN=$(sed -n -E 's/^main_excluded ([0-9]+)$/\1/p' "$EXCLF")
   setup_dirs
   pre
   ev_begin all
-  RUNROOT=$(mktemp -d "$R191/run.XXXXXX") || die2 "run folder missing"
+  RUNROOT=$(mktemp -d "$R191/crosswake-repository-verify.XXXXXX") || die2 "run folder missing"
   CHILD_PATH=""
   [ -z "${NPM10_BIN:-}" ] || CHILD_PATH="$NPM10_BIN"
   if [ -n "${JDK17_BIN:-}" ]; then
@@ -288,14 +309,21 @@ mode_all() {
   ORC=$CHILD_RC
   post
   [ "$ORC" -eq 0 ] || fail "orchestrator exit $ORC"
+  # The orchestrator writes a log for each stage except repository-preflight; it reports preflight
+  # only as the first line of its own output (`PASS repository-preflight`).
   NLOGS=0
   if [ -d "$RUNROOT/logs" ]; then
     NLOGS=$(find "$RUNROOT/logs" -maxdepth 1 -type f -name '*.log' | awk 'END{print NR}')
   fi
-  [ "$NLOGS" -eq 9 ] || fail "stage count $NLOGS expected 9"
   STAGEBAD=0
-  [ "$NLOGS" -eq 9 ] || STAGEBAD=1
+  [ "$NLOGS" -eq 8 ] || { fail "stage count $NLOGS expected 8"; STAGEBAD=1; }
+  if [ "$(grep -c '^PASS repository-preflight$' "$RAWF")" -eq 1 ]; then
+    ev "stage repository-preflight status 0"
+  else
+    ev "stage repository-preflight status other"; fail "stage failed repository-preflight"; STAGEBAD=1
+  fi
   for st in $STAGES; do
+    [ "$st" != repository-preflight ] || continue
     lg="$RUNROOT/logs/$st.log"
     if [ ! -f "$lg" ]; then
       fail "stage missing $st"; ev "stage $st status missing"; STAGEBAD=1; continue

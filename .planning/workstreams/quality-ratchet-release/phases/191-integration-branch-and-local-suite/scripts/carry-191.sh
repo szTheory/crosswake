@@ -359,7 +359,7 @@ cmd_apply() {
   : > "$WORK/add.z"; : > "$WORK/rm.z"
   local NADD=0 NRM=0
   while IFS=$'\t' read -r st p md land sha ssha tn bk; do
-    [ "$bk" = "$BUCKET" ] || continue
+    [ "$BUCKET" = ALL ] || [ "$bk" = "$BUCKET" ] || continue
     if [ "$st" = D ]; then
       printf '%s\0' "$p" >> "$WORK/rm.z"; NRM=$((NRM + 1)); continue
     fi
@@ -393,7 +393,7 @@ cmd_commit_bucket() {
   [ -s "$WORK/staged.z" ] || die2 "nothing staged"
   tr '\0' '\n' < "$WORK/staged.z" | LC_ALL=C sort > "$WORK/staged.txt"
   if grep -qv '^\.planning/' "$WORK/staged.txt"; then die2 "staged path outside planning"; fi
-  awk -F'\t' -v B="$BUCKET" '$8==B{print $2}' "$MAN" | LC_ALL=C sort > "$WORK/bucket.txt"
+  awk -F'\t' -v B="$BUCKET" 'B=="ALL"||$8==B{print $2}' "$MAN" | LC_ALL=C sort > "$WORK/bucket.txt"
   if ! cmp -s "$WORK/staged.txt" "$WORK/bucket.txt"; then die2 "staged set differs from bucket"; fi
   g "$REPO" commit -q -F "$MSG" > "$WORK/commit.out" 2>&1 || die2 "commit failed"
   say "committed bucket"

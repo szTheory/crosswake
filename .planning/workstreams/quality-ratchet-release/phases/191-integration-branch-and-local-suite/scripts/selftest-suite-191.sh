@@ -55,8 +55,11 @@ EOF
 #!/bin/sh
 mkdir -p "$CROSSWAKE_REPOSITORY_RUN_ROOT/logs" || exit 1
 [ -n "${CROSSWAKE_REPOSITORY_CAPTURE_ROOT:-}" ] || exit 1
+if [ -f "$SCEN/preflight.fail" ]; then echo "FAIL repository-preflight; corrective-command=x"; else echo "PASS repository-preflight"; fi
 for f in "$SCEN"/stage/*.log; do
-  [ -f "$f" ] && cp "$f" "$CROSSWAKE_REPOSITORY_RUN_ROOT/logs/"
+  [ -f "$f" ] || continue
+  case "$f" in */repository-preflight.log) continue ;; esac
+  cp "$f" "$CROSSWAKE_REPOSITORY_RUN_ROOT/logs/"
 done
 exit "$(cat "$SCEN/orch.rc")"
 EOF
@@ -151,7 +154,7 @@ EOF
   expect 2 'suite-gate: head moved' && [ ! -e "$(EVF)" ]
 }
 c13() { mixout "$PASS_OUT" 0; gate root "$REPO" 0000000000000000000000000000000000000000 t 2; expect 2 'suite-gate: head mismatch'; }
-c14() { all_ok; rm -f "$SCEN/stage/format-proof.log"; all_gate; expect 1 'suite-gate: stage count 8 expected 9'; }
+c14() { all_ok; rm -f "$SCEN/stage/format-proof.log"; all_gate; expect 1 'suite-gate: stage count 7 expected 8'; }
 c15() { all_ok; printf 'status=1\nboom\n' > "$SCEN/stage/example-host-proof.log"; all_gate; expect 1 'suite-gate: stage failed example-host-proof' && evhas 'stage example-host-proof status 1'; }
 c16() {
   all_ok
@@ -235,6 +238,21 @@ c29() {
   gate subset "$REPO" "$HD" t "$S/red" test/a_test.exs
   expect 1 'suite-gate: expected red missing 1'
 }
+c31() {
+  # The real orchestrator writes no preflight log; a failing preflight shows only in its output and exit.
+  all_ok; : > "$SCEN/preflight.fail"; printf '1\n' > "$SCEN/orch.rc"
+  all_gate
+  expect 1 'suite-gate: stage failed repository-preflight' && evhas 'stage repository-preflight status other' && evhas 'result fail'
+}
+c32() {
+  # The named floors file and three-line excl file of the plan are accepted for mode all.
+  all_ok
+  printf 'rulestead 10\nrindle 11\nsigra 12\nchimeway 13\nthreadline 14\nphase41 1\nmain 100\nhost 5\nswift 80\n' > "$S/floors"
+  printf 'main_excluded 3\nassumption_A11 disproved\ninputs 1 2 3 4\n' > "$S/excl"
+  all_gate
+  expect 0 'suite-gate: pass' && evhas 'lane companion-1 tests 10 failures 0 invalid 0 skipped 0 excluded 0 floor 10' \
+    && evhas 'lane main tests 100 failures 0 invalid 0 skipped 0 excluded 3 floor 100' && evhas 'stage repository-preflight status 0'
+}
 c30() { mixout "$PASS_OUT" 0; gate baseline "$REPO" "$HD" t 2; expect 2 'suite-gate: unknown mode'; }
 
 run_ctl S01 c01 "root pass with floor"
@@ -258,7 +276,7 @@ run_ctl S10 c10 "floor zero"
 run_ctl S11 c11 "untracked file before run"
 run_ctl S12 c12 "head moved during run"
 run_ctl S13 c13 "head differs from argument"
-run_ctl S14 c14 "eight stage records"
+run_ctl S14 c14 "seven stage logs"
 run_ctl S15 c15 "one stage status 1"
 run_ctl S16 c16 "blocked stage is a failure"
 run_ctl S17 c17 "root-proof with six totals lines"
@@ -275,6 +293,9 @@ run_ctl S27 c27 "host mode pass"
 run_ctl S28 c28 "swift listed skip passes"
 run_ctl S29 c29 "subset expected red missing"
 run_ctl S30 c30 "old baseline mode name"
+
+run_ctl S31 c31 "preflight failure shown only in orchestrator output"
+run_ctl S32 c32 "named floors file and three-line excl file accepted"
 
 echo "selftest-suite: controls $GOOD of $TOTAL as expected"
 [ "$GOOD" -eq "$TOTAL" ] || exit 1

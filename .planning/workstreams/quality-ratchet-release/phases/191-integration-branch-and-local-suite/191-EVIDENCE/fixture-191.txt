@@ -1,0 +1,12 @@
+head_before 0dff1f22f35479e59f452511685d8b14f0c82cf8
+red_command MIX_ENV=test mix test --only requires_example_host test/mix/tasks/crosswake_doctor_router_test.exs
+red_result 4 tests, 2 failures (exit 2)
+  1) test discovers the installed router when --router is omitted (Mix.Tasks.Crosswake.DoctorRouterTest)
+  2) test accepts a freshly written Phoenix router without external preloading (Mix.Tasks.Crosswake.DoctorRouterTest)
+head_after 7075a441b4ed05a9497491cd01f686a2644a506a
+green_result 4 tests, 0 failures (exit 0)
+format_check exit 0
+compile_warnings_as_errors exit 0
+collection_assertion_ledger_check exit 0 (no regeneration needed)
+files_touched test/mix/tasks/crosswake_doctor_router_test.exs
+subset_gate FIXTURE pass (note: the router test file is excluded by default through requires_example_host, so the gate ran it with the doctor test file; the tagged run above is the real proof, and example-host-proof re-runs it)
