@@ -581,7 +581,7 @@ jobs:
           --output "${{ runner.temp }}/publication-record.json"
 
       - name: Upload the publication record
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: publication-record-crosswake-${{ needs.approved-release-guard.outputs.approved_head }}
           path: ${{ runner.temp }}/publication-record.json
@@ -1314,7 +1314,7 @@ jobs:
           mix run --no-start -e 'Crosswake.ReleaseCandidate.Workflow.evaluate_cli!()'
       - name: Upload linked release status
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: linked-release-status
           path: linked-release-status.json
@@ -1442,7 +1442,7 @@ jobs:
           fi
 
       - name: Upload native release status
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: ${{ always() }}
         with:
           name: native-release-status
