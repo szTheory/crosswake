@@ -5,6 +5,8 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell.HostTest do
   @candidate_root Path.expand("../../..", __DIR__)
   @task "crosswake.gen.shell"
 
+  # The test builds the generated shell with xcodebuild, so it only runs where Xcode exists.
+  @tag :requires_xcodebuild
   @tag timeout: 120_000
   test "generates the declared Phoenix host route and resolves its configured shell identity" do
     host =
@@ -73,7 +75,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell.HostTest do
 
     command_env = [
       {"MIX_ENV", "prod"},
-      {"HEX_HOME", "/private/tmp/crosswake-phase179-hex"},
+      {"HEX_HOME", Path.join(System.tmp_dir!(), "crosswake-phase179-hex")},
       {"DATABASE_URL", nil},
       {"SECRET_KEY_BASE", nil},
       {"PHX_SERVER", nil}

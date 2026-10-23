@@ -16,7 +16,7 @@ defmodule Crosswake.ReleaseCandidate.Artifact do
   )
   @artifact_keys ~w(package version candidate_ref tarball unpacked_root outer_checksum source)a
   @input_keys ~w(output_root artifacts)a
-  @metadata_keys ~w(app build_tools description elixir files licenses links name requirements version)
+  @metadata_keys ~w(app build_env build_tools description elixir files licenses links name requirements version)
   @required_metadata_keys ~w(build_tools files name requirements version)
   @sha_pattern ~r/\A[0-9a-f]{64}\z/
   @ref_pattern ~r/\A[0-9a-f]{40}\z/

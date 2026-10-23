@@ -196,7 +196,18 @@ defmodule Crosswake.Shell.IOSHostMigrationSecurityTest do
     path
   end
 
+  # Xcode's own build-settings read is the strongest check, but only a Mac has xcodebuild. Where it
+  # is absent (Linux CI) the project-file assertions in each test still run; this extra read is
+  # skipped rather than failing with a missing-command status.
   defp assert_xcode_bundle_ids(project, declaration) do
+    if System.find_executable("xcodebuild") do
+      assert_xcode_bundle_ids_with_xcodebuild(project, declaration)
+    else
+      :ok
+    end
+  end
+
+  defp assert_xcode_bundle_ids_with_xcodebuild(project, declaration) do
     for configuration <- ["Debug", "Release"] do
       assert xcode_target_settings(project, "CrosswakeShell", configuration)[
                "PRODUCT_BUNDLE_IDENTIFIER"

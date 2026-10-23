@@ -12,8 +12,14 @@ defmodule Crosswake.ProofLane.TwinJourneyTest do
     }
 
   setup do
+    # A run root is at least four path segments deep (cleanup/1 refuses shallower ones), and a
+    # Linux temp folder is only /tmp, so nest the root one level below a fixed folder.
     root =
-      Path.join(System.tmp_dir!(), "twin-journey-" <> Base.encode16(:crypto.strong_rand_bytes(4)))
+      Path.join([
+        System.tmp_dir!(),
+        "twin-journey-tests",
+        "run-" <> Base.encode16(:crypto.strong_rand_bytes(4))
+      ])
 
     File.mkdir_p!(root)
     on_exit(fn -> File.rm_rf(root) end)
