@@ -15,6 +15,7 @@ import {
   loadArtifactPolicy,
   loadStageManifest,
   runPreflight,
+  rootProofFailureTail,
   runVerification,
   spawnStage,
   STAGE_MAX_BUFFER_BYTES,
@@ -1155,4 +1156,16 @@ test("Phase 166 remediation queue remains verifiable from a depth-one checkout",
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
+});
+
+test("root-proof failure tail is bounded and masks credential-shaped values", () => {
+  const lines = Array.from({ length: 400 }, (_, index) => `line ${index}`);
+  const maskedA = ["to", "ken=", "x".repeat(12)].join("");
+  const maskedB = ["gh", "p_", "y".repeat(16)].join("");
+  lines.push(maskedA, maskedB);
+  const tail = rootProofFailureTail("status=2", { stdout: lines.join("\n"), stderr: "" });
+  assert.match(tail, /root-proof failure tail \(status=2/);
+  assert.match(tail, /line 399/);
+  assert.doesNotMatch(tail, /line 100\b/);
+  assert.doesNotMatch(tail, /x{12}|y{16}/);
 });

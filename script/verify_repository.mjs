@@ -45,6 +45,26 @@ export function spawnStage(command, args, options) {
   });
 }
 
+const ROOT_PROOF_TAIL_LINES = 150;
+const ROOT_PROOF_TAIL_BYTES = 24 * 1024;
+
+// Hosted-CI diagnosability: when the root proof fails, print a bounded tail of its
+// own test output (the run root, and with it the full log, is removed afterwards).
+// Credential-shaped values are masked; nothing is printed on success.
+export function rootProofFailureTail(outcome, result) {
+  const text = `${String(result?.stdout ?? "")}${String(result?.stderr ?? "")}`
+    .replace(/\u001b\[[0-9;]*m/g, "")
+    .replace(/(gh[pousr]_|github_pat_|hex_|sk-)[A-Za-z0-9_]{8,}/g, "$1***")
+    .replace(/(authorization|bearer|token|secret|password|api[_-]?key)(["':=\s]+)[^\s"']{6,}/gi, "$1$2***");
+  let tail = text.split("\n").slice(-ROOT_PROOF_TAIL_LINES).join("\n");
+  if (tail.length > ROOT_PROOF_TAIL_BYTES) tail = tail.slice(-ROOT_PROOF_TAIL_BYTES);
+  return `--- root-proof failure tail (${outcome}; last ${ROOT_PROOF_TAIL_LINES} lines max) ---\n${tail}\n--- end root-proof failure tail ---\n`;
+}
+
+function emitRootProofFailureTail(outcome, result) {
+  try { process.stderr.write(rootProofFailureTail(outcome, result)); } catch { /* diagnostics must never change the verdict */ }
+}
+
 function sameKeys(value, expected, label) {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(`${label} must be a record`);
   const actual = Object.keys(value).sort();
@@ -529,6 +549,7 @@ export function runVerification(options = {}) {
       const outcome = result?.error ? `error=${result.error.code ?? result.error.name ?? "unknown"}` : result?.signal ? `signal=${result.signal}` : `status=${String(result?.status)}`;
       writeFileSync(path.join(runRoot, "logs", `${stage.stage_id}.log`), `${outcome}\n${String(result?.stdout ?? "")}${String(result?.stderr ?? "")}`, { mode: 0o600 });
       const passed = result && !result.error && result.signal == null && Number.isInteger(result.status) && result.status === 0;
+      if (!passed && stage.stage_id === "root-proof" && process.env.GITHUB_ACTIONS === "true") emitRootProofFailureTail(outcome, result);
       const stageResult = passed ? "PASS" : "FAIL";
       const diagnostic = !passed && stage.stage_id === "browser-proof" && browserDiagnostic
         ? classifyBrowserFailure(result, browserDiagnostic)
