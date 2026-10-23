@@ -554,16 +554,19 @@ defmodule Crosswake.ProofLane.TwinProducers do
         "SELECT COUNT(*) FROM (SELECT client_mutation_id FROM review_events " <>
         "GROUP BY client_mutation_id HAVING COUNT(DISTINCT scope_ref) > 1);"
 
-    with sqlite when is_binary(sqlite) <- System.find_executable("sqlite3"),
-         {:ok, output, 0} <-
-           capture(runtime, unique_name(:sqlite), sqlite, [
-             "-readonly",
-             "-batch",
-             "-noheader",
-             database_path,
-             sql
-           ]),
-         [total, accepted, rejected, distinct, multi] <- parse_ints(output) do
+    with {:sqlite, sqlite} when is_binary(sqlite) <-
+           {:sqlite, System.find_executable("sqlite3")},
+         {:capture, {:ok, output, 0}} <-
+           {:capture,
+            capture(runtime, unique_name(:sqlite), sqlite, [
+              "-readonly",
+              "-batch",
+              "-noheader",
+              database_path,
+              sql
+            ])},
+         {:parse, [total, accepted, rejected, distinct, multi]} <-
+           {:parse, parse_ints(output)} do
       {:ok,
        %{
          total: total,
@@ -573,8 +576,28 @@ defmodule Crosswake.ProofLane.TwinProducers do
          multi_scope: multi
        }}
     else
-      _ -> {:error, :rows_unavailable}
+      {:sqlite, _} -> {:error, {:rows_unavailable, :sqlite3_missing}}
+      {:capture, result} -> {:error, {:rows_unavailable, capture_reason(result)}}
+      {:parse, _} -> {:error, {:rows_unavailable, :unparsable_output}}
     end
+  end
+
+  # The reason `read_rows/2` could not read the counts. The sqlite3 child only ever runs
+  # fixed COUNT queries, so its output holds counters or its own error text, never row
+  # contents; only the status and a bounded, printable head of that text are kept.
+  defp capture_reason({:ok, output, status}) do
+    {:exit_status, status, bounded_text(output)}
+  end
+
+  defp capture_reason({:error, %{} = failure}), do: {:start_failed, Map.get(failure, :cause)}
+  defp capture_reason({:error, reason}) when is_atom(reason), do: reason
+  defp capture_reason({:error, _}), do: :start_failed
+  defp capture_reason(_), do: :capture_unexpected
+
+  defp bounded_text(output) when is_binary(output) do
+    output
+    |> binary_part(0, min(byte_size(output), 200))
+    |> String.replace(~r/[^\x20-\x7E\n]/, "?")
   end
 
   defp parse_ints(output) do

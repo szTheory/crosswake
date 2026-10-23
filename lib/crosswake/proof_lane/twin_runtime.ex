@@ -165,7 +165,17 @@ defmodule Crosswake.ProofLane.TwinRuntime do
 
     try do
       port = Port.open({:spawn_executable, String.to_charlist(exe)}, port_opts)
-      {:os_pid, os_pid} = Port.info(port, :os_pid)
+
+      # A child that exits before this process asks (a short-lived `sqlite3` or `lsof` on a
+      # loaded runner) has already closed its port, so `Port.info/2` returns nil. That is not a
+      # missing executable: the port's data and exit status are still delivered to this
+      # process. No pid means nothing is left to signal, which `alive?/1` reports as gone.
+      os_pid =
+        case Port.info(port, :os_pid) do
+          {:os_pid, pid} -> pid
+          _ -> nil
+        end
+
       deadline = min(now_ms() + Map.get(spec, :deadline_ms, 60_000), runtime.run_deadline_at)
       child = %{name: name, port: port, os_pid: os_pid, deadline_at: deadline}
       Agent.update(runtime.registry, &put_in(&1, [:children, name], child))
@@ -288,7 +298,9 @@ defmodule Crosswake.ProofLane.TwinRuntime do
   end
 
   @doc "Whether the given OS pid (or its process group) is still present."
-  @spec alive?(pos_integer()) :: boolean()
+  @spec alive?(pos_integer() | nil) :: boolean()
+  def alive?(nil), do: false
+
   def alive?(os_pid) when is_integer(os_pid) do
     signal_zero(Integer.to_string(os_pid)) or signal_zero("-" <> Integer.to_string(os_pid))
   end

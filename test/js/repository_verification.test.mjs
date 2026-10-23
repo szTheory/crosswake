@@ -1169,3 +1169,15 @@ test("root-proof failure tail is bounded and masks credential-shaped values", ()
   assert.doesNotMatch(tail, /line 100\b/);
   assert.doesNotMatch(tail, /x{12}|y{16}/);
 });
+
+test("root-proof failure output keeps the ExUnit failure details ahead of a long log", () => {
+  const lines = ["....", "  1) test read_rows returns integers (Some.Test)", "     test/some_test.exs:12", "     match (=) failed", "     right: {:error, {:rows_unavailable, :why}}", ""];
+  lines.push(...Array.from({ length: 600 }, (_, index) => `log ${index}`));
+  lines.push("Finished in 1.0 seconds", "10 tests, 1 failure");
+  const out = rootProofFailureTail("status=2", { stdout: lines.join("\n"), stderr: "" });
+  assert.match(out, /root-proof failure details/);
+  assert.match(out, /1\) test read_rows returns integers/);
+  assert.match(out, /rows_unavailable, :why/);
+  assert.match(out, /10 tests, 1 failure/);
+  assert.ok(out.length < 60 * 1024);
+});

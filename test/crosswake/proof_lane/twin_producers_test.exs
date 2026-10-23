@@ -338,10 +338,48 @@ defmodule Crosswake.ProofLane.TwinProducersTest do
       assert {:ok, %{total: 3, accepted: 2, rejected: 1, distinct: 3, multi_scope: 0}} =
                TwinProducers.read_rows(runtime(dir), db)
 
-      assert {:error, :rows_unavailable} =
+      assert {:error, {:rows_unavailable, {:exit_status, status, _text}}} =
                TwinProducers.read_rows(runtime(dir), Path.join(dir, "absent.sqlite3"))
 
+      assert status != 0
+
       refute File.exists?(Path.join(dir, "absent.sqlite3"))
+    end
+  end
+
+  describe "capture/5 with children that exit at once" do
+    test "a child that is gone before its pid is read is still captured, not reported missing" do
+      assert TwinRuntime.alive?(nil) == false
+
+      dir =
+        Path.join(System.tmp_dir!(), "twin-fast-" <> Base.encode16(:crypto.strong_rand_bytes(4)))
+
+      File.mkdir_p!(dir)
+      on_exit(fn -> File.rm_rf(dir) end)
+      true_path = System.find_executable("true")
+
+      results =
+        1..8
+        |> Task.async_stream(
+          fn _ ->
+            for _ <- 1..150 do
+              TwinProducers.capture(
+                runtime(dir),
+                :"fast_#{System.unique_integer([:positive])}",
+                true_path,
+                []
+              )
+            end
+          end,
+          timeout: 120_000,
+          max_concurrency: 8
+        )
+        |> Enum.flat_map(fn {:ok, list} -> list end)
+
+      assert Enum.frequencies_by(results, fn
+               {:ok, _out, status} -> {:ok, status}
+               {:error, reason} -> {:error, reason}
+             end) == %{{:ok, 0} => 1200}
     end
   end
 
