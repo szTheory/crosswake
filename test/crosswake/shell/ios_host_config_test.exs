@@ -170,7 +170,7 @@ defmodule Crosswake.Shell.IOSHostConfigTest do
             "http://10.0.0.1",
             "http://study.local",
             "http://127.0.0.1.evil.com",
-            "http://localhost@evil.com",
+            "http://localhost@attacker.invalid",
             "http://user:pw@127.0.0.1",
             "http://localhost.",
             "http://127.0.0.1:0",

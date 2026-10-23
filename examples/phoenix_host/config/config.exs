@@ -56,7 +56,7 @@ config :crosswake, :proof_lane,
   sync_path: "/study/sync",
   evidence_path: "/proof/evidence",
   router: CrosswakeExample.Router,
-  ios_shell_root: "/Users/jon/projects/crosswake/examples/phoenix_host/native/ios"
+  ios_shell_root: Path.expand("../native/ios", __DIR__)
 
 # The adapter is deliberately host-owned. It derives device observations only
 # from the signed generated lane and backend observations only from Phoenix.
