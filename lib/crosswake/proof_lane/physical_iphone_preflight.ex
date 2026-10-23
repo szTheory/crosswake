@@ -132,8 +132,8 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
   @doc false
   # Returns the generator's local-mode refusal text for any local-loopback signal in the
   # declaration or the generated iOS files, otherwise nil. When the generated shell folder exists,
-  # an Info.plist that cannot be read, or a Fixtures/route_activation.json that exists but cannot
-  # be read or parsed, returns a reason naming that file. A missing shell folder, or a missing
+  # an Info.plist that cannot be read, or a Fixtures/route_activation.json that exists but is not
+  # readable JSON with a usable origin, returns a reason naming that file. A missing shell folder, or a missing
   # route_activation.json next to a readable Info.plist, is not a refusal by itself.
   @spec origin_refusal(keyword()) :: String.t() | nil
   def origin_refusal(options) when is_list(options) do
@@ -192,7 +192,7 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
 
       _ ->
         with {:ok, bytes} <- File.read(path),
-             {:ok, _} <- Jason.decode(bytes) do
+             true <- IOSHostOriginMode.usable_activation_origin?(bytes) do
           nil
         else
           _ -> @unreadable_activation_reason

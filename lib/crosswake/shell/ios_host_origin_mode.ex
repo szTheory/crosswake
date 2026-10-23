@@ -174,6 +174,21 @@ defmodule Crosswake.Shell.IOSHostOriginMode do
 
   defp observe_activation(_), do: :none
 
+  @doc false
+  # True only when the activation file decodes to an object whose `origin` is a string that
+  # canonicalizes. Used by the physical-iPhone preflight; observe/2 does not call it.
+  @spec usable_activation_origin?(term()) :: boolean()
+  def usable_activation_origin?(bytes) when is_binary(bytes) do
+    with {:ok, %{"origin" => origin}} when is_binary(origin) <- Jason.decode(bytes),
+         {_scheme, canonical} when not is_nil(canonical) <- canonical_origin(origin) do
+      true
+    else
+      _ -> false
+    end
+  end
+
+  def usable_activation_origin?(_), do: false
+
   defp observe_declaration(nil), do: :undeclared
 
   defp observe_declaration(raw) do

@@ -286,6 +286,33 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
     refute_received :device_report_called
   end
 
+  @unusable_activation_bodies [
+    {"null", "null"},
+    {"empty list", "[]"},
+    {"empty object", "{}"},
+    {"numeric origin", ~s({"origin": 5})},
+    {"list origin", ~s({"origin": ["http://127.0.0.1:4790"]})},
+    {"origin that is not a url", ~s({"origin": "not a url"})}
+  ]
+
+  for {label, body} <- @unusable_activation_bodies do
+    test "a route_activation.json with no usable origin (#{label}) blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG" do
+      parent = self()
+      project = generate_shell(production_declaration())
+      on_exit(fn -> File.rm_rf!(project) end)
+
+      File.write!(
+        Path.join(project, "native/ios/crosswake_shell/Fixtures/route_activation.json"),
+        unquote(body)
+      )
+
+      results = run_all_modes(host_options(project, production_declaration()), parent)
+      assert_all_blocked_by_config(results)
+      assert_plain_cause(results, "Fixtures/route_activation.json", project)
+      refute_received :device_report_called
+    end
+  end
+
   test "a production shell with no route_activation.json still passes preflight-only, readiness and run" do
     parent = self()
     project = generate_shell(production_declaration())
