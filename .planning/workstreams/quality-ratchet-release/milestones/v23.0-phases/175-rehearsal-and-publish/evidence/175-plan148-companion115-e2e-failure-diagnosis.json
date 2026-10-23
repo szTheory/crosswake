@@ -1,0 +1,18 @@
+{
+  "run_id": 38157939812,
+  "failed_job_id": 114524699967,
+  "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+  "artifact_id": 11709272282,
+  "failure": "Chromium screenshot capture protocol error",
+  "application_assertion_failure": false,
+  "browser_test_sources_unchanged_from_all49_green_core": {
+    "examples/phoenix_host/e2e/support/offline_route_proof.ts": "892b0c8edb9afd1f8e568adc0929cad0cfb8e9c68a1faea2893fd4bab9758d4a",
+    "examples/phoenix_host/e2e/learnloop_route_tour.spec.ts": "d15b9544ada43e38d7526094ab393fcf00191fa3a85add55a4f4b764d4341255"
+  },
+  "trace_sha256": "369e2d7e8af7dee3c2ba9f718dbeb0ef1c8150b43f1947aea810988fdcb6cb49",
+  "raw_trace_retained_only_in_temporary_directory": true,
+  "release_attempts": 0,
+  "rehearsal_attempts": 0,
+  "next": "Observe remaining CI to terminal; if only e2e and dependent aggregate fail, retry that exact CI job once under standing authorization without changing source.",
+  "observed_at_utc": "2026-10-11T17:08:45.496495+00:00"
+}

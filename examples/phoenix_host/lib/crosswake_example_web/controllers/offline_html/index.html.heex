@@ -13,11 +13,14 @@
         color: var(--cw-text-default);
         margin: 0;
         padding: 2rem;
+        padding-top: max(2rem, env(safe-area-inset-top, 0px));
+        padding-bottom: max(2rem, env(safe-area-inset-bottom, 0px));
         display: flex;
         flex-direction: column;
         align-items: center;
       }
       #flashcard-container {
+        box-sizing: border-box;
         background: var(--cw-surface-inset);
         border-radius: var(--cw-radius-md);
         /* theme-adaptive elevation: tints with --cw-text-default so it lightens on dark surfaces */
@@ -136,9 +139,70 @@
         color: var(--cw-text-muted);
         font: 600 14px/20px var(--cw-font-display);
       }
+      #study-durable-copy {
+        margin: 4px 0 0;
+        font: 600 16px/24px var(--cw-font-body);
+        color: var(--cw-text-default);
+      }
+      #study-answer {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 24rem;
+        margin: 1.5rem 0 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      #study-answer label {
+        font: 600 16px/24px var(--cw-font-body);
+        color: var(--cw-text-default);
+      }
+      #study-free-form {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 88px;
+        padding: 12px;
+        border: 2px solid var(--cw-border-strong);
+        border-radius: var(--cw-radius-sm);
+        background: var(--cw-surface-inset);
+        color: var(--cw-text-default);
+        font: 400 16px/24px var(--cw-font-body);
+        resize: vertical;
+      }
+      #study-answer-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      #study-answer-message,
+      #study-audio-state {
+        margin: 0;
+        min-height: 24px;
+        font: 400 16px/24px var(--cw-font-body);
+        color: var(--cw-text-default);
+      }
+      #study-answer button[aria-disabled="true"] {
+        border-style: dashed;
+        cursor: not-allowed;
+      }
+      #study-free-form:focus-visible,
+      #btn-save-answer:focus-visible,
+      #btn-play-audio:focus-visible,
+      #crosswake-review-saved-answers:focus-visible {
+        outline: 3px solid var(--cw-action-focus-ring);
+        outline-offset: 2px;
+      }
+      h1 { overflow-wrap: anywhere; }
+      @media (max-width: 480px) {
+        body { padding-left: 1rem; padding-right: 1rem; }
+      }
       @keyframes study-status-spin { to { transform: rotate(360deg); } }
       @media (prefers-reduced-motion: reduce) {
         #crosswake-study-status-indicator { animation: none; }
+        #study-free-form, #btn-save-answer, #btn-play-audio, #study-durable-copy {
+          transition: none;
+          animation: none;
+        }
       }
     </style>
   </head>
@@ -157,6 +221,7 @@
         <div class="study-status-copy">
           <span id="crosswake-study-status-label">Saved answers paused</span>
           <p id="crosswake-study-status-message">Your saved answers remain on this iPhone.</p>
+          <p id="study-durable-copy" hidden></p>
         </div>
         <span id="crosswake-study-status-indicator" hidden aria-label="Syncing saved answers"></span>
       </div>
@@ -174,6 +239,17 @@
       <button id="btn-flip" class="btn-primary">Flip Card</button>
       <button id="btn-good" class="btn-primary" style="display: none;">Good</button>
       <button id="btn-hard" class="btn-secondary" style="display: none;">Hard</button>
+    </div>
+
+    <div id="study-answer">
+      <label for="study-free-form">Your answer</label>
+      <textarea id="study-free-form" name="free_form_answer" rows="3" maxlength="4096" autocomplete="off" aria-describedby="study-answer-message"></textarea>
+      <p id="study-answer-message" aria-live="polite"></p>
+      <div id="study-answer-actions">
+        <button id="btn-save-answer" type="button" class="btn-primary">Save answer</button>
+        <button id="btn-play-audio" type="button" class="btn-secondary" aria-disabled="true" aria-describedby="study-audio-state">Play pronunciation</button>
+      </div>
+      <p id="study-audio-state" aria-live="polite">Audio unavailable</p>
     </div>
 
     <script type="module" src="/offline_study.js"></script>

@@ -1,0 +1,154 @@
+{
+  "schema": "crosswake.phase181.gate_preflight/1",
+  "candidate_head": "12f84cd950d4574921767df823faed6797c17c26",
+  "candidate_tree": "e51f069d52b1c1303d8d606d6000ff146654948e",
+  "test_files_sha256": {
+    "test/crosswake/proof/phase180_twin_feasibility_test.exs": "01df82646c3365b159006c26ec818a55feafd506f007d762d739f66177e756f5",
+    "examples/phoenix_host/test/crosswake_example/phase180_twin_feasibility_test.exs": "f7b968909db85040adfd42bc397fec8f70259fa2b7bd3176759b523a9b8aaa19",
+    "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Phase180TwinFeasibilityTests.swift": "a3bcef6ea7f64f90b2e85f6aecc04778334428f709f840c134b7c0ea25355672"
+  },
+  "env": {
+    "PHASE180_BASE_KIND": "authorized_seam_rerun",
+    "PHASE180_PROBE_ROUTE": "offline-study"
+  },
+  "facts": [
+    {
+      "id": "G1",
+      "gating": true,
+      "control_status": "passed",
+      "gate_status": "refuted",
+      "control_test": "phase180_control:G1",
+      "gate_test": "phase180_gate:G1"
+    },
+    {
+      "id": "G2",
+      "gating": true,
+      "control_status": "passed",
+      "gate_status": "refuted",
+      "control_test": "phase180_control:G2",
+      "gate_test": "phase180_gate:G2"
+    },
+    {
+      "id": "G3",
+      "gating": true,
+      "control_status": "passed",
+      "gate_status": "refuted",
+      "control_test": "Phase180TwinFeasibilityTests/test_G3_control_exported_request_carrying_command_reaches_delegate",
+      "gate_test": "Phase180TwinFeasibilityTests/test_G3_gate_generated_activation_session_lacks_host_command"
+    },
+    {
+      "id": "G4",
+      "gating": true,
+      "control_status": "passed",
+      "gate_status": "refuted",
+      "control_test": "Phase180TwinFeasibilityTests/test_G4_control_live_view_runtime_resolves",
+      "gate_test": "Phase180TwinFeasibilityTests/test_G4_gate_bounded_shell_denies_offline_island_runtime"
+    },
+    {
+      "id": "G6",
+      "gating": false,
+      "control_status": "passed",
+      "gate_status": "refuted",
+      "control_test": "phase180_control:G6",
+      "gate_test": "phase180_gate:G6"
+    }
+  ],
+  "invariants": [
+    {
+      "id": "G2_nondeclaring_clean",
+      "status": "held"
+    },
+    {
+      "id": "G2_probe_matches_declaration",
+      "status": "held"
+    },
+    {
+      "id": "G3_no_manufacture",
+      "status": "held"
+    },
+    {
+      "id": "G3_deny_absent",
+      "status": "held"
+    }
+  ],
+  "expected_verdict": "existing_path_supported",
+  "regression": {
+    "android_freeze": true,
+    "lockfiles": true,
+    "root_suite": true,
+    "example_suite": true,
+    "swift_suite": true,
+    "host_build": true,
+    "exunit_ownership": true,
+    "manifest_contract": true,
+    "root_test_count": 2218,
+    "root_failures": 0,
+    "example_tests": 150,
+    "swift_test_count": 80,
+    "swift_failures": 0,
+    "contract_drift_tests": 6
+  },
+  "note": "Read-only preflight on the final Phase 181 head; the authoritative gate rerun is 180-01 in authorized_seam_rerun mode.",
+  "regression_head": "12f84cd950d4574921767df823faed6797c17c26",
+  "rehearsal": {
+    "fetch_ok": true,
+    "base": "96e5a63efab657f89f3ac84d5b1d84ff5da5d822",
+    "changed_paths": [
+      "CHANGELOG.md",
+      "docs/_contract_snippet.md",
+      "examples/ios_shell_host/CrosswakeShell/CrosswakeShellApp.swift",
+      "examples/phoenix_host/lib/crosswake_example/router.ex",
+      "examples/phoenix_host/test/crosswake_example/host_command_seam_test.exs",
+      "guides/architecture.md",
+      "guides/bridge.md",
+      "guides/compatibility.md",
+      "guides/native_shell.md",
+      "guides/native_shell_upgrade.md",
+      "guides/offline.md",
+      "guides/route_policy.md",
+      "guides/support_matrix.md",
+      "lib/crosswake/doctor/doctor.ex",
+      "lib/crosswake/host_commands.ex",
+      "lib/crosswake/manifest/builder.ex",
+      "lib/crosswake/manifest/manifest.ex",
+      "lib/crosswake/manifest/types.ex",
+      "lib/crosswake/manifest/validator.ex",
+      "lib/crosswake/policy/compiler.ex",
+      "lib/crosswake/policy/validator.ex",
+      "lib/crosswake/router.ex",
+      "lib/crosswake/shell/ios_host_generation.ex",
+      "lib/crosswake/shell/shell_package.ex",
+      "lib/crosswake/support_matrix/renderer.ex",
+      "lib/mix/tasks/crosswake.contract.gen.ex",
+      "lib/mix/tasks/crosswake.gen.shell.ex",
+      "packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/ActivationCoordinator.swift",
+      "packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/BridgeChannel.swift",
+      "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/HostCommandNavigationTests.swift",
+      "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/HostCommandSeamTests.swift",
+      "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/HostCommandWireTests.swift",
+      "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/OfflineIslandAdmissionTests.swift",
+      "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/host_command_seam_fixture.json",
+      "test/crosswake/doctor/doctor_host_commands_test.exs",
+      "test/crosswake/doctor/doctor_test.exs",
+      "test/crosswake/guides/host_command_seam_guide_test.exs",
+      "test/crosswake/manifest/builder_test.exs",
+      "test/crosswake/manifest/host_command_seam_fixture_test.exs",
+      "test/crosswake/manifest/host_commands_test.exs",
+      "test/crosswake/manifest/manifest_test.exs",
+      "test/crosswake/operator_inspection/formatter_test.exs",
+      "test/crosswake/operator_inspection_host_commands_test.exs",
+      "test/crosswake/policy/host_commands_test.exs",
+      "test/crosswake/proof/phase64_runtime_line_policy_test.exs",
+      "test/crosswake/router_host_commands_test.exs",
+      "test/crosswake/shell/host_command_seam_swift_constant_test.exs",
+      "test/crosswake/shell/ios_host_generation_host_commands_test.exs",
+      "test/crosswake/shell/shell_package_test.exs",
+      "test/crosswake/support_matrix/renderer_test.exs",
+      "test/fixtures/proof/phase52_operator_inspection.json",
+      "test/mix/tasks/crosswake_doctor_test.exs",
+      "test/mix/tasks/crosswake_gen_shell_host_commands_test.exs",
+      "test/mix/tasks/crosswake_gen_shell_host_test.exs",
+      "test/support/host_command_fixtures.ex"
+    ]
+  }
+}

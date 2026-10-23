@@ -1,0 +1,144 @@
+{
+  "attested_at": "2026-09-24T16:51:39Z",
+  "candidate": {
+    "base_oid": "e298793a40538500003602edb6b1d7ea2221ee84",
+    "ci": {
+      "conclusion": "SUCCESS",
+      "receipt_sha256": "9ca6d128c84773a9938ecf209d92fd836e241d46aa2bcf7e72f0e989597970c3",
+      "run_id": 36026349375
+    },
+    "head_oid": "dfe7c0b4be909130f2474ed7d4e97e8e52d49498",
+    "pr": 201,
+    "rehearsals": {
+      "hex": {
+        "external_state_changed": false,
+        "package_count": 6,
+        "run_id": 36029591408,
+        "state": "SUCCESS"
+      },
+      "ios": {
+        "authorization_result": "PROVEN",
+        "external_state_changed": false,
+        "run_id": 36029609207,
+        "split_sha": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+        "state": "PASS"
+      },
+      "maven": {
+        "dropped": true,
+        "external_state_changed": false,
+        "head_after": "dfe7c0b4be909130f2474ed7d4e97e8e52d49498",
+        "head_before": "dfe7c0b4be909130f2474ed7d4e97e8e52d49498",
+        "run_id": 36029497304,
+        "state": "VALIDATED"
+      }
+    },
+    "tree_oid": "215493f06e4119faa25a692db7f2e8de47d39b3c",
+    "version": "0.2.4"
+  },
+  "gate2": {
+    "authorization": {
+      "response": "publish fresh core 36029609207",
+      "pr": 201,
+      "version": "0.2.4",
+      "base_oid": "e298793a40538500003602edb6b1d7ea2221ee84",
+      "head_oid": "dfe7c0b4be909130f2474ed7d4e97e8e52d49498",
+      "tree_oid": "215493f06e4119faa25a692db7f2e8de47d39b3c",
+      "receipt_digest": "aad9a9f23a291763353b4e087d7f9e332884bd68ee24cfabfe325c527a9947ee",
+      "receipt_artifact_id": 10821206063,
+      "receipt_artifact_name": "phase168-candidate-receipt-dfe7c0b4be909130f2474ed7d4e97e8e52d49498",
+      "attestation_run_id": 36030036687,
+      "ci_run_id": 36026349375,
+      "hex_rehearsal_run_id": 36029591408,
+      "ios_rehearsal_run_id": 36029609207,
+      "maven_rehearsal_run_id": 36029497304
+    },
+    "authorized": true,
+    "blocked_reason": null,
+    "decision_presented": true,
+    "expected_response": "publish fresh core 36029609207",
+    "state": "AUTHORIZED",
+    "consumed_by_merge_oid": "f3827d0bf4131badd96d04d924f9faca2789d284",
+    "consumed_by_run_id": 36035737504,
+    "outcome": "PARTIAL",
+    "consumed": true
+  },
+  "observed_at": "2026-09-24T16:53:14Z",
+  "receipt": {
+    "artifact_id": 10821206063,
+    "artifact_name": "phase168-candidate-receipt-dfe7c0b4be909130f2474ed7d4e97e8e52d49498",
+    "attestation_run_id": 36030036687,
+    "base_oid": "e298793a40538500003602edb6b1d7ea2221ee84",
+    "ci_run_id": 36026349375,
+    "digest": "aad9a9f23a291763353b4e087d7f9e332884bd68ee24cfabfe325c527a9947ee",
+    "expired": false,
+    "expires_at": "2026-10-08T16:51:30Z",
+    "external_state_changed": false,
+    "head_oid": "dfe7c0b4be909130f2474ed7d4e97e8e52d49498",
+    "hex_run_id": 36029591408,
+    "ios_run_id": 36029609207,
+    "matches_candidate": true,
+    "maven_run_id": 36029497304,
+    "publication": "NONE",
+    "state": "READY FOR APPROVAL",
+    "tree_oid": "215493f06e4119faa25a692db7f2e8de47d39b3c"
+  },
+  "refreshed_at": "2026-09-24T16:17:51Z",
+  "schema_version": "1.0.0",
+  "pre_gate2": {
+    "state": "PASS",
+    "checked_at": "2026-09-24T17:01:31Z",
+    "pr_state": "OPEN",
+    "pr_draft": false,
+    "pr_mergeable": "MERGEABLE",
+    "pr_merge_state": "CLEAN",
+    "pr_base_oid": "e298793a40538500003602edb6b1d7ea2221ee84",
+    "pr_head_oid": "dfe7c0b4be909130f2474ed7d4e97e8e52d49498",
+    "pr_tree_oid": "215493f06e4119faa25a692db7f2e8de47d39b3c",
+    "release_branch_oid": "dfe7c0b4be909130f2474ed7d4e97e8e52d49498",
+    "ci_run_id": 36026349375,
+    "ci_head_oid": "dfe7c0b4be909130f2474ed7d4e97e8e52d49498",
+    "ci_conclusion": "SUCCESS",
+    "ci_checks_passed": 49,
+    "attestation_run_id": 36030036687,
+    "attestation_head_oid": "dfe7c0b4be909130f2474ed7d4e97e8e52d49498",
+    "attestation_conclusion": "SUCCESS",
+    "receipt_artifact_count": 1,
+    "receipt_artifact_id": 10821206063,
+    "receipt_artifact_name": "phase168-candidate-receipt-dfe7c0b4be909130f2474ed7d4e97e8e52d49498",
+    "receipt_digest": "aad9a9f23a291763353b4e087d7f9e332884bd68ee24cfabfe325c527a9947ee",
+    "receipt_expires_at": "2026-10-08T16:51:30Z",
+    "runbook_base": "PASS",
+    "runbook_head": "PASS",
+    "registries": {
+      "hex_http_status": 404,
+      "hex_absent": true,
+      "ios_tag_absent": true,
+      "maven_http_status": 404,
+      "maven_absent": true
+    },
+    "candidate_parent_matches_base": true,
+    "candidate_tree_matches": true
+  },
+  "runbook": {
+    "base": "PASS",
+    "head": "PASS",
+    "runbook_oid": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
+  },
+  "registries": {
+    "hex": {
+      "absent": true,
+      "coordinate": "crosswake@0.2.4",
+      "http_status": 404
+    },
+    "ios": {
+      "absent": true,
+      "coordinate": "refs/tags/v0.2.4",
+      "matching_refs": 0
+    },
+    "maven": {
+      "absent": true,
+      "coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.4",
+      "http_status": 404
+    }
+  }
+}

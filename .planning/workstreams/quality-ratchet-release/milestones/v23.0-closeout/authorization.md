@@ -1,0 +1,3 @@
+# v23.0 archive authorization
+
+On 2026-10-11, after the displayed three-option archive proposal, the user replied: "what do u recommend? let's do that". The recommended action is option 1: acknowledge the six named open records without changing their verdicts, preserve their originals and REL-10 failure, archive v23.0, and allow only archive-related planning commits and a local annotated v23.0 milestone tag. No push, publication, source-code staging, branch switch, worktree, admin bypass or failed-operation replay is authorized. This scoped archive exception supersedes the earlier checkout staging/commit prohibition only for the displayed archive work.

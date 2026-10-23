@@ -161,6 +161,50 @@ defmodule Crosswake.Doctor.PublishReadiness do
   end
 
   defp build_checks(cwd, support_matrix, inspection, opts) do
+    base_checks(cwd, support_matrix, inspection, opts) ++
+      ios_host_origin_checks(Keyword.get(opts, :ios_host_origin_observation))
+  end
+
+  # 182 D-12: conditional; appended only when an iOS-host local or mismatch signal exists, so the
+  # pinned eleven-check report is unchanged otherwise.
+  defp ios_host_origin_checks({:local, origin}),
+    do: [
+      ios_host_origin_check(
+        "ios_host.local_loopback_origin",
+        Crosswake.Shell.IOSHostOriginMode.local_message(origin),
+        Crosswake.Shell.IOSHostOriginMode.local_hint(),
+        origin
+      )
+    ]
+
+  defp ios_host_origin_checks({:mismatch, origin}),
+    do: [
+      ios_host_origin_check(
+        "ios_host.origin_mode_mismatch",
+        Crosswake.Shell.IOSHostOriginMode.mismatch_message(),
+        Crosswake.Shell.IOSHostOriginMode.mismatch_hint(),
+        origin
+      )
+    ]
+
+  defp ios_host_origin_checks(_), do: []
+
+  defp ios_host_origin_check(code, message, hint, origin) do
+    result_check(
+      id: "ios_host.origin_mode",
+      code: code,
+      category: :ios_host_origin,
+      passed?: false,
+      message: message,
+      hint: hint,
+      docs_reference: "guides/install.md",
+      proof_class: :merge_blocking,
+      claim_scope: "iOS host origin mode is not production-ready",
+      details: %{origin: origin, mode: "local_loopback"}
+    )
+  end
+
+  defp base_checks(cwd, support_matrix, inspection, opts) do
     [
       publish_parity_check(cwd, opts),
       companion_dependency_health_check(inspection),

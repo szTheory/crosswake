@@ -1,0 +1,23 @@
+{
+  "artifact_id": 11690838358,
+  "artifact_live": true,
+  "expired": false,
+  "receipt": {
+    "artifact_manifest_sha256": "74d7842a561776d17b1d1c35cfbf75f447852d52ab72708a5aa671e253dfd2b9",
+    "base": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+    "cleanroom_result_sha256": "d1fa808a42c2f6b018b12c882c38f4f58366257104aad91d8e1faab9f9cbdea0",
+    "credentials_exercised": false,
+    "external_state_changed": false,
+    "head": "24f1ace22f0e219b666c95e2b23667b195c46289",
+    "install_count": 2,
+    "package_count": 6,
+    "profile_count": 5,
+    "run_attempt": "1",
+    "run_id": "38109308677",
+    "schema_version": 1,
+    "state": "PASS",
+    "tree": "76032cd234b2eb35fb73776fade55a67a3f9b8b6"
+  },
+  "proof_hashes_match": true,
+  "full_ci_status": "pending"
+}

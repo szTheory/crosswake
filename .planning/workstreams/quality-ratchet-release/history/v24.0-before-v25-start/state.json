@@ -1,0 +1,12 @@
+{
+  "contract": "1.0.0",
+  "flavor": "core",
+  "milestone": "v24.0",
+  "phases": [],
+  "next": {
+    "command": "$gsd-new-milestone --ws quality-ratchet-release",
+    "label": "Define the next quality-workstream milestone",
+    "reason": "v24.0 planning closeout complete: 8/8 requirements and 3/3 phases verified; six debt records retained. Fresh scope unselected; recovery-checkout Git and remote writes excluded."
+  },
+  "updated_at": "2026-10-13T03:20:21.558468+00:00"
+}

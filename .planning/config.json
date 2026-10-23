@@ -10,8 +10,26 @@
   "workflow": {
     "_auto_chain_active": false,
     "nyquist_validation": true,
-    "ai_integration_phase": true
+    "ai_integration_phase": true,
+    "use_worktrees": true
   },
   "runtime": "claude",
-  "model_profile": "balanced"
+  "model_profile": "adaptive",
+  "model_profile_overrides": {
+    "codex": {
+      "opus": "gpt-6.1-sol",
+      "sonnet": "gpt-6-luna",
+      "haiku": "gpt-6-luna"
+    },
+    "claude": {
+      "opus": "claude-opus-5-5",
+      "sonnet": "claude-sonnet-5-5",
+      "haiku": "claude-haiku-5-5"
+    }
+  },
+  "effort": {
+    "agent_overrides": {
+      "gsd-plan-checker": "high"
+    }
+  }
 }

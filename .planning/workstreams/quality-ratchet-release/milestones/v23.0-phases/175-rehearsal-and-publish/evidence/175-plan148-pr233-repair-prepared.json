@@ -1,0 +1,60 @@
+{
+  "pr": 233,
+  "branch": "chore/release-ledger-38155320492",
+  "parent_oid": "62c7333b5cfe6478003951e32d0cc54c77b64c7a",
+  "base_oid": "72197e6dd387ae584a04545055ce01659d02d7ba",
+  "opened_base_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+  "companion_run_id": 38159980683,
+  "core_run_id": 38155320492,
+  "ledger_source_pr": 233,
+  "files": {
+    "docs/release-ledger/RELEASE-LEDGER.jsonl": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/0",
+      "sha256": "dba46336bfc430bc663199122497b13b2bafb6e8ed772d29d5ce203f76303c2f"
+    },
+    "lib/crosswake/support_matrix/support_matrix.ex": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/1",
+      "sha256": "5eae756f2b52c3c0cea9255fe475993f536aa6af91715be60899c043646dab39"
+    },
+    "guides/support_matrix.md": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/2",
+      "sha256": "7ea879ed0e3ab777b365a2f04bce7cb6232961569d2acc291f97680e50e72095"
+    },
+    "test/crosswake/support_matrix/support_matrix_test.exs": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/3",
+      "sha256": "bf1425ebde894b943410673e714a5c9880daa05775b05b3c8809c9b8f31afa66"
+    },
+    ".github/workflows/release-please.yml": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/4",
+      "sha256": "a52a5f22fb160adc28f9925b4580f9e67d2e9ea290fc543da075dd0b7029bbba"
+    },
+    "script/check_release_workflow_integrity.exs": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/5",
+      "sha256": "56468f81339a9dd2857facf387db5400f98aea163fcf4c8e52628ce60ce3dd80"
+    },
+    "test/crosswake/proof/phase175_rel17_wiring_test.exs": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/6",
+      "sha256": "9dccf6509d96bf5527f03f656ab376e16d25cf6667ea43233449ddd0f3380520"
+    },
+    "packages/crosswake_chimeway/README.md": {
+      "mode": "100644",
+      "local_path": "/private/tmp/crosswake-phase175-pr233-repair-content/7",
+      "sha256": "0ecdd7627d60a16d960c26176fcb0ea8bbc573a1407c8e486d8bd7003ef92dfc"
+    }
+  },
+  "existing_change": "one core release ledger append, three iOS guide correction files, four companion history repair files",
+  "parent_oids": [
+    "62c7333b5cfe6478003951e32d0cc54c77b64c7a",
+    "72197e6dd387ae584a04545055ce01659d02d7ba"
+  ],
+  "base_tree_oid": "678782a853ceab7a618ace94589eee0df931f080",
+  "remote_changes": 0,
+  "prepared_at_utc": "2026-10-11T17:45:31.520187+00:00"
+}

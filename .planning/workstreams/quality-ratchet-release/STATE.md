@@ -1,388 +1,187 @@
 ---
-gsd_state_version: 1.0
-milestone: v23.0
-milestone_name: Release Pipeline Repair & Proof-Lane Truth
-current_phase: 175
-current_phase_name: rehearsal-and-publish
-status: active
-stopped_at: 175-08 preflight failed — the Maven fire-drill dispatch advanced PR #164 after all three fresh rehearsals, so no current-head Gate 2 evidence exists
-last_updated: "2026-09-21T01:09:21.000Z"
-last_activity: 2026-09-21
-last_activity_desc: "Fresh candidate rehearsals passed for PR #164 head fc6d28dc (Hex 35549524778; iOS 35549667199; Maven 35549803592, deployment d7a987ad-e0e4-4b1e-b195-8dabb48d09ed validated then dropped), but the Release Please job in the fire-drill run replaced the release PR head with 374ac0cf. Re-running the same fire drill would repeat the stale-evidence cycle; do not present Gate 2 or merge until the workflow is made non-mutating for rehearsals."
+gsd_state_version: "1.0"
+milestone: v27.0
+milestone_name: Land and Clean Up (Phases 189–193) — in progress
+current_phase: 192
+current_phase_name: PR, CI and merge
+status: executing
+stopped_at: Phase 192 planned (10 plans, 9 waves), ready to execute
+last_updated: "2026-10-23T18:17:07.089Z"
+last_activity: 2026-10-23
+last_activity_desc: Phase 192 execution started
+state_head: d0f3e2f1ead2046c26da5cc4b5dd62d5bfea1377
 progress:
-  total_phases: 7
-  completed_phases: 6
-  total_plans: 37
-  completed_plans: 33
-  percent: 89
-state_head: 392a6b21a2282fc9e4dd05c265588ac73767f547
+  total_phases: 5
+  completed_phases: 3
+  total_plans: 45
+  completed_plans: 35
+  percent: 60
 ---
 
 # Project State
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-09-15)
-
-**Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
-ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 175 — rehearsal-and-publish
-`TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
-
-**Release pull-request triage — refreshed 2026-09-19 after Gate 1. Core and second companion remain held.**
-
-| PR | Proposes | Disposition |
-|---|---|---|
-| #164 | `0.2.2` (linked core) | **Weld-unblocked as of Phase 171** (merged `501e4410`): the graph is version-parametric and both the `0.2.1` weld and its interim tripwire are gone, so merging this would now tag AND publish. Still hold pending the proof lane — `exact-public-proof` has never executed at any release (`TODO-011`/`TODO-012`, Phases 173-175). Publishing before the proof lane works is the thing this milestone exists to prevent. |
-| #147 | `crosswake_rulestead 0.1.1` | **MERGED/PUBLISHED with Gate 1 ancestry breach.** Merged as `096371e3`; the required runbook commit `d3401e51` was not an ancestor of its base, head, or merge and the runbook file was absent. The local-`HEAD` gate was a false pass. Do not describe REL-10 or Gate 1 as compliant. |
-| #115 | `crosswake_chimeway 0.1.1` | **Hold**, same reasoning. Stale (opened 2026-08-09). |
-
-The companion holds are a judgement call, not a hard gate: these publishes would most
-likely succeed the way `crosswake_rindle 0.1.0` did this session. The argument for waiting
-is that "it published and nothing verified it" is exactly the state this milestone exists to end
-(`SEED-017` itself is harvested — Phase 171 closed it).
-Revisit once the post-publication proof lane can actually run.
+See `.planning/PROJECT.md` for the core thesis and decisions (updated 2026-10-16 after v26.0). Core value remains one real Phoenix application on one physical iPhone with explicit route ownership and one honest offline mutation island. Current focus: v27.0 Land and Clean Up — land the v25 and v26 work on GitHub `main` with CI green, then clean up the local repository so no copy of the work can be lost.
 
 ## Current Position
 
-Phase: 175 (rehearsal-and-publish) — GATE 2 BLOCKED BY SELF-INVALIDATING REHEARSAL
-Plan: 7 of 10 reconciled (Gate 1's historic publish is closed as REL-12 evidence, with a non-repairable REL-10 breach)
-Status: `crosswake_rulestead 0.1.1` is live. The historical exact audit remains base `4627170f` = no, head `491c7a74` = no, merge `096371e3` = no; REL-10 remains breached. The repaired `script/check_release_runbook_ancestry.sh` passes against the remote graph, but Gate 2 may not be presented: run `35549803592`'s required Maven fire drill also ran Release Please and advanced PR #164 from rehearsed head `fc6d28dc` to `374ac0cf`. The new head has no three-leg rehearsal evidence. Do not re-dispatch the current fire-drill shape, merge, or publish; first separate the fire drill from mutating Release Please housekeeping (or otherwise produce all three rehearsals without advancing the release PR), then re-run the exact-head preflight and Gate 2.
-2026-09-18 by the post-merge clean-room dispatch (run 35366337182) against the live
-published `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install`
-before `step=doctor`, log captured at `evidence/174-rindle-ci-run.log`.
-Finding A is CLOSED (2026-09-18). It had been deferred because the legacy path's CI log did
-not exist yet; the post-merge dispatch produced it, so the SC#4 comparison became measurable
-and was wired into `phase174_cleanroom_lane_parity_test.exs` (6 tests -> 10), with a
-non-emptiness gate on both logs before any comparison and three demonstrated red mutations.
-No phase-174 findings remain open.
+Phase: 192 (PR, CI and merge) — EXECUTING
+Plan: 1 of 10
+Status: Executing Phase 192
+Last activity: 2026-10-23 — Phase 192 execution started
 
-Next: Present Phase 175 Gate 2 with its distinct iOS-rehearsal resume signal; do not merge or dispatch until that one-way authorization is explicit.
+Progress: [██████░░░░] 60%
 
-**Planning guidance for Phase 175 (recorded 2026-09-18).** Open the phase with a broken-windows
-triage wave that gates every publish task, rather than inserting a separate triage phase between
-174 and 175. Phase 175's number is load-bearing — REQUIREMENTS.md maps REL-10 through REL-16,
-DOC-04 and DOC-06 to it, and SEED-014 defers a breaking contract bump to "after Phase 175
-publishes" — so renumbering the publish phase to make room would mean rewriting the requirement
-coverage map, which is precisely the drift class this milestone exists to remove. The triage
-belongs inside 175 on its merits anyway: ROADMAP.md:107-108 already records that unaudited
-vacuous checks must be resolved before the publish phase opens, because publish is where one
-would silently pass.
+## Exact Next Action
 
-WINDOWS entry 35 is the concrete driver. `scripts/ci_monitor.cjs check-actions` reports
-`actions=114 mutable_refs=0` while defaulting to a hardcoded three-path list, so 31 mutable
-action refs across ten unopened workflow files are scored as absent. The publishing workflows
-themselves (`release-please.yml`, `hex-publish.yml`, `ios-mirror-backfill.yml`,
-`exact-public-proof.yml`) are fully SHA-pinned, so this does not block publishing on safety
-grounds; it blocks the claim that the pin audit means anything. Fix = discover
-`.github/workflows/*.yml` and `.github/actions/**/action.yml` by default, gate on scope
-cardinality so a truncated scope cannot read as green, then SHA-pin the 31 refs.
+What was checked and what happened: Phase 191 built the integration branch in a separate durable clone (<integration-clone>, branch `land/v25-v27`). It starts at current `main` (d0dbdf7b), holds the 94 candidate commits and the 4 FIX commits unchanged and linear (no merge commits, order checked against the heads record), then the Phase 191 fix commits (FORMAT, LOCALE, G1, PRIVACY, HOST-G2G6, SWIFT-G4, WR-05, WR-01-06, WR-03, ADOPTION-EXT), the planning resolver (RESOLVER), the five planning carry commits (v23.0 to v27.0), one code commit for the example-host router test fixture (FIXTURE), and one sync commit (SYNC) that landed the records written after the cut. The branch is 112 commits ahead of `main`. The full local suite passed at the FIXTURE head (all nine verify stages, seven lanes at their separately measured floors, the example host 167 of 167, the Swift export run 89 of 89, nine CI-parity commands), with every exclusion listed in `exclusions-191.md`; at the sync head the root suite (2660 tests), the planning subset (951 tests) and the four planning checks passed again, and only `.planning/` changed after FIXTURE. The privacy scan of the whole change (112 commits, `main` to the sync head) was clean: 0 blocking findings, 0 secret-scanner findings, 0 history-sensitive findings. The recovery checkout shows no git change and its working-tree compare passes, <durable-candidate> is unchanged at 2faf15a2, and nothing was pushed.
 
-Last activity: 2026-09-18 — Phase 175 execution started
+Plain statements about the privacy check (A-14, user decision of 2026-10-22): the adopter-term list was dropped, so the adopter-term check was skipped by decision and the scan used the built-in classes only (emails, home and temp paths, the account name, secrets). A best-effort cleanup of low-hanging personal values was made in one commit labelled PRIVACY. Personal values that exist only inside the preserved candidate history (home path 1, username 1) are accepted and counted, because history is never rewritten; the same username already appears in 364 files on `main`, and 367 same-path `main` records outside the scanned range still hold a pattern and are deferred to the hygiene seed. A-15: one extra code commit (FIXTURE) sits after the carry commits, fixing the doctor router test fixture that the tightened doctor check rejected; the carry commits are unchanged. Leftover trial branches `carry-trial` and `carry-trial-2` (and `carry-trial-3`, equal to the branch head before FIXTURE) remain in <integration-clone> for Phase 193 cleanup.
 
-## Performance Metrics
+Verification passed inside `$gsd-execute-phase 191` (191-VERIFICATION.md: 4 of 4 criteria, LAND-01 and LAND-02 met), so no separate verify-work run is needed. The code review (191-REVIEW.md) found 0 critical, 3 warning and 2 info items, all in tests or the phase scanner, not production code; all five are recorded `open` in 191-REVIEW-DISPOSITION.md for Phase 192 discussion to triage before the push (notably WR-03: the privacy scanner skips unreadable git notes instead of failing).
 
-**Velocity:**
+Next: `$gsd-execute-phase 192 --ws quality-ratchet-release`. Phase 192 is planned as 10 plans in 9 waves (192-01..10, with 192-RESEARCH.md, 192-PATTERNS.md and 192-VALIDATION.md). Order: recovery before-snapshot and push gate (01); WR-03 scanner fix and privacy check (02); CI poller (03); merge gate (04); post-merge verifier (05); the single planning sync SYNC-2 (06); the WR-01/02 code commit LAND-FIX and rescan (07); push, PR and Crosswake CI (08); the plain-language `allow`/`hold` ask and merge (09, the only human step); post-merge proof and recovery after-snapshot (10). Plan-phase decisions R-1..R-4 and the D-01/D-02 amendments are in the plans and 192-CONTEXT.md. Two plan-check warnings were accepted for execution: 192-05's `release_merge no` reasoning names the step-level `rel17_context` gate where the publish jobs are actually gated at job level on `linked_release`/`*_release_created` (the conclusion still holds), and 192-01 checks the new folders' owner and mode 700 in its action but not in its automated verify.
 
-- Total plans completed: 40
-- Average duration: N/A
-- Total execution time: 0 hours
+What Phase 192 must do first: (1) run `finalize-191.sh` before anything else, so this plan's SUMMARY, the scan record, the handoff edits and VERIFICATION.md land as a sync commit and the whole change is rescanned (A-9); they cannot be inside the HEAD they describe. (2) Push only the HEAD for which `finalize-191.sh --check-binding` prints `binding pass`, with no new commit after it (D-22). (3) Merge only with a merge commit, never squash or rebase-merge (D-03, one-way). (4) Release-please may propose a version bump after the merge, because a lib file changed (assumption A4). The merge needs a fresh plain-language `allow` for the displayed PR and head commit.
 
-**By Phase:**
+Phase 193 inputs: CLEAN-04 takes the recovery AGENTS.md's durable working rules as input and drops the consumed Phase 175 standing authorization (D-05); no CI lane runs the full example-host suite (D-14); R-PL-14..16 are checked obsolete copies; the planning half of R-BR-047 has landed; keep <integration-clone> and its trial branches and the `candidate-src` branch until cleanup; the scan record for the final PR head lands in Phase 193's normal flow.
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 164-168 | 0 | 0 min | N/A |
-| 164 | 5 | - | - |
-| 165 | 13 | - | - |
-| 166 | 8 | - | - |
-| 167 | 9 | - | - |
-| 169 | 4 | - | - |
-**Per-Plan Metrics:**
+### Handoff history
 
-| Plan | Duration | Tasks | Files |
-|------|----------|-------|-------|
-| Phase 164 P01 | 7 min | 2 tasks | 6 files |
-| Phase 164 P05 | 15 min | 2 tasks | 5 files |
-| Phase 165 P01 | 15 min | 2 tasks | 10 files |
-| Phase 165 P02 | 18 min | 3 tasks | 11 files |
-| Phase 165 P03 | 9 min | 2 tasks | 5 files |
-| Phase 165 P04 | 16 min | 3 tasks | 8 files |
-| Phase 165 P05 | 15h 9m | 3 tasks | 13 files |
-| Phase 165 P06 | 14 min | 2 tasks | 11 files |
-| Phase 165 P07 | 14 min | 2 tasks | 10 files |
-| Phase 165 P08 | 24 min | 3 tasks | 15 files |
-| Phase 165 P09 | 34 min | 3 tasks | 12 files |
-| Phase 165 P10 | 3h 30m | 3 tasks | 11 files |
-| Phase 165 P11 | 6 min | 1 tasks | 3 files |
-| Phase 165 P12 | 18 min | 2 tasks | 8 files |
-| Phase 165 P13 | 9 min | 2 tasks | 5 files |
-| Phase 166 P01 | 7 min | 2 tasks | 6 files |
-| Phase 166 P02 | 11 min | 2 tasks | 4 files |
-| Phase 166 P03 | 15min | 2 tasks | 6 files |
-| Phase 166 P04 | 10min | 2 tasks | 5 files |
-| Phase 166 P05 | 21min | 3 tasks | 10 files |
-| Phase 166 P06 | 3min | 2 tasks | 3 files |
-| Phase 166 P07 | 25min | 2 tasks | 24 files |
-| Phase 166 P08 | 7h 10m | 2 tasks | 24 files |
-| Phase 167 P01 | 10min | 3 tasks | 13 files |
-| Phase 167 P02 | 7min | 2 tasks | 6 files |
-| Phase 167 P03 | 7min | 2 tasks | 7 files |
-| Phase 167 P04 | 7min | 3 tasks | 12 files |
-| Phase 167 P05 | 20min | 3 tasks | 7 files |
-| Phase 167 P06 | 1h 2m | 2 tasks | 22 files |
-| Phase 167 P07 | 27m | 2 tasks | 2 files |
-| Phase 167 P08 | 1h 28m | 3 tasks | 10 files |
-| Phase 167 P09 | 9min | 2 tasks | 2 files |
-| Phase 168 P01 | 38m | 3 tasks | 7 files |
-| Phase 168 P02 | 16m | 2 tasks | 9 files |
-| Phase 168 P03 | 38m | 2 tasks | 8 files |
-| Phase 168 P04 | 34m | 2 tasks | 5 files |
-| Phase 168 P05 | 26m | 2 tasks | 6 files |
-| Phase 168 P06 | 60m | 3 tasks | 12 files |
-| Phase 168 P07 | 22m | 2 tasks | 14 files |
-| Phase 169 P01 | 39min | 3 tasks | 4 files |
-| Phase 169 P03 | 12 min | 3 tasks | 6 files |
-| Phase 169 P02 | 95min | 3 tasks | 5 files |
-| Phase 169 P04 | 24 min | 2 tasks | 2 files |
-| Phase 170 P01 | 55min | 3 tasks | 4 files |
-| Phase 170 P02 | 55min | 3 tasks | 22 files |
-| Phase 170 P04 | 25min | 3 tasks | 4 files |
-| Phase 170 P03 | 65min | 3 tasks | 7 files |
-| Phase 170 P05 | 30min | 2 tasks | 2 files |
-| Phase 172 P01 | 55min | 3 tasks | 7 files |
-| Phase 172 P02 | 70min | 3 tasks | 4 files |
-| Phase 172 P03 | 50min | 3 tasks | 6 files |
-| Phase 174 P01 | 12min | 2 tasks | 3 files |
-| Phase 174 P02 | 45min | 2 tasks | 3 files |
-| Phase 174 P03 | 35min | 3 tasks | 5 files |
-| Phase 174 P04 | 24min | 3 tasks | 4 files |
-| Phase 174 P05 | 30min | 3 tasks | 7 files |
-| Phase 174 P06 | 40min | 2 tasks | 2 files |
-| Phase 175 P01 | 4min | 2 tasks | 2 files |
-| Phase 175 P02 | 6min | 2 tasks | 11 files |
-| Phase 175 P03 | 25min | 2 tasks | 1 file |
+- Superseded (2026-10-23): `$gsd-plan-phase 192 --ws quality-ratchet-release`. Done: research, pattern map, validation strategy and plans 192-01..10 written (9 waves); plan checker 3 rounds plus one user-approved targeted fix, no blockers remaining; requirements LAND-03/LAND-04 and decisions 10/10 covered. Plain uncommitted files; no git write in the recovery checkout.
+- Superseded (2026-10-23): `$gsd-verify-work 191 --ws quality-ratchet-release`. Done inside `$gsd-execute-phase 191`: plans 191-01..12 executed (191-10 and 191-11 each re-run once; run-1 records kept as *-BLOCKED.run1.md); verification passed 4/4; code review 0 critical / 3 warning / 2 info, all open in 191-REVIEW-DISPOSITION.md; Phase 191 marked complete. No git write in the recovery checkout; nothing pushed.
+- Superseded (2026-10-22): `$gsd-execute-phase 191 --ws quality-ratchet-release`. Done: plans 191-01..12 executed in the integration clone (112 commits ahead of `main`, 94 candidate commits and 4 FIX commits preserved); full local suite green, privacy scan clean at the sync head, nothing pushed, recovery checkout unchanged. Plain uncommitted files in the recovery checkout.
+
+- Superseded (2026-10-19): `$gsd-verify-work 190 --ws quality-ratchet-release`. Done inside `$gsd-execute-phase 190`: plans 190-01..10 executed (4 FIX commits in `<durable-candidate>`: 9c7c732b, 01e07a51, 8a529f52, 2faf15a2); verification passed 7/7; code review 0 critical / 11 warning / 4 info, all open in 190-REVIEW-DISPOSITION.md; Phase 190 marked complete. Plain files only; no Git operation in the recovery checkout after the pre-snapshot `git status` noted above.
+- Superseded (2026-10-19): the Phase 190 execution handoff. Done: Phase 190 was planned as 10 plans in 7 waves (research, pattern map, validation strategy, plans 190-01..10; plan checker 3 rounds, no blockers; requirements 7/7 and decisions 10/10 covered), and the plans were then executed; no commits in the recovery checkout.
+- Superseded (2026-10-19): `$gsd-plan-phase 190 --ws quality-ratchet-release`. Done: 190-RESEARCH.md, 190-PATTERNS.md, 190-VALIDATION.md and plans 190-01..10 written; plan checker 3 rounds, no blockers remaining; requirements 7/7 and decisions 10/10 covered. Plain uncommitted files; no Git operation in the recovery checkout.
+- Superseded (2026-10-19): `$gsd-discuss-phase 190 --ws quality-ratchet-release`. Done: 190-CONTEXT.md and 190-DISCUSSION-LOG.md written (D-01..D-10); ROADMAP criterion 5 reworded per D-02. Plain uncommitted files; no Git operation in the recovery checkout.
+- Superseded (2026-10-18): the gap-closure handoff. Done: gap closure was planned and executed as plans 11 to 13; plan 13 stopped once at a review check (record in 189-13-BLOCKED.run1.md), the user chose to accept and rerun it, and the rerun passed. No commits per the checkout rule.
+- Superseded (2026-10-18): `$gsd-execute-phase 189 --ws quality-ratchet-release` (third run). Done: plan 10 run 3 passed after the amended no-deletion check; scripts re-verified (22 of 22), after-snapshot equal apart from the two allowed temp-listing lines, pre-execution documents scanned, final scan 0 hits, phase folder backed up and restored, `<durable-candidate>` verified. 10 plans executed; no commits per the checkout rule.
+- Superseded (2026-10-18): `$gsd-execute-phase 189 --ws quality-ratchet-release` (second run). Done: plan 10 run 2 stopped because the macOS temp cleaner removed 60 loose temp-folder files; the user approved amending the no-deletion check (record in 189-10-BLOCKED.run2.md).
+- Superseded (2026-10-18): plan 10 run 1 stopped on two false at-sign hits in copied scripts; repaired by a user-approved one-line scan fix (record in 189-10-BLOCKED.run1.md).
+- Superseded (2026-10-16): `$gsd-execute-phase 189 --ws quality-ratchet-release` (first run, history). Done: plans 189-01..09 executed; plan 10 stopped at its final privacy scan (scan_hit on two copied scripts), after the frozen-state and no-deletion checks passed. No commits per the checkout rule.
+- Superseded (2026-10-16): `$gsd-plan-phase 189 --ws quality-ratchet-release`. Done: 189-RESEARCH.md, 189-VALIDATION.md and plans 189-01..10 written (6 waves); plan check passed after three revisions plus one targeted fix (one remaining warning accepted with a mode-0600 check); requirements INV-01..03 and decisions 15/15 covered; INV-01, INV-03 and Phase 189 criteria 1 and 3 reworded to include *unclassified* and *hold*; nothing staged or committed.
+- Superseded (2026-10-16): `$gsd-discuss-phase 189 --ws quality-ratchet-release`. Done: 189-CONTEXT.md written (15 decisions). User chose to keep backups local in 189, with the first off-machine copy at the Phase 191/192 push after the privacy scan. No commit (checkout rule).
+- Superseded (2026-10-16): `$gsd-new-milestone --ws quality-ratchet-release`. Done: v27.0 Land and Clean Up started; 18 requirements defined (INV, FIX, LAND, CLEAN); roadmap created with phases 189–193 and 18/18 requirements mapped. The v26 handoff it replaced read: "Fresh scope is unselected"; carried forward the v26 debt (188 WR-01, 188 WR-08, the unpinned `g()` gate helper, 185 WR-02, 187 WR-02, the stale guard pin 249 vs 253, and the 186 WR-01 owner decision), the undelivered v26 commits in the candidate (HEAD `a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4`), and the residual external gates (physical signed-iPhone run; first adopter sanitized route handoff). Those items are now v27 requirements FIX-01..07 and LAND-01..04, except the external gates, which remain parked. Closeout changed planning files only; the recovery checkout stayed at `d0f3e2f1`; the pre-closeout STATE is in `history/v26.0-closeout-handoff/STATE.md`.
+- Superseded (2026-10-16): `$gsd-complete-milestone v26.0 --ws quality-ratchet-release`. Done: planning closeout; archive copies, debt disposition and closeout record in `milestones/`. No commit or tag (checkout rule).
+- Superseded (2026-10-16): `$gsd-audit-milestone --ws quality-ratchet-release`. Done: v26.0-MILESTONE-AUDIT.md written, status tech_debt (requirements 18/18, integration 18/18, flows 3/3, no blocker).
+- Superseded (2026-10-16): `$gsd-execute-phase 188 --ws quality-ratchet-release`. Done: 188-01..05 executed; twin-05 ran once and passed (exit 0); TWIN-07 and TWIN-08 complete. Commits in the recovery checkout skipped per checkout rule.
+- Superseded (2026-10-16): `$gsd-plan-phase 188 --ws quality-ratchet-release`. Done: 5 plans in 3 waves (188-01..05). Commits skipped per checkout rule.
+- Superseded (2026-10-16): `$gsd-discuss-phase 188 --ws quality-ratchet-release`. Done: 188-CONTEXT.md (D-01..D-21) and 188-DISCUSSION-LOG.md written as plain files after four parallel advisor research passes. Commits in the recovery checkout skipped per checkout rule.
+
+- Superseded (2026-10-16): `$gsd-execute-phase 187 --ws quality-ratchet-release`. Done: 187-01..07 executed; commit `fix(187)` `a53fbef7`; review 0 critical / 4 warnings / 3 info; verification passed 4/4; Phase 187 complete. Commits in the recovery checkout skipped per checkout rule.
+- Superseded (2026-10-16): `$gsd-plan-phase 187 --ws quality-ratchet-release`. Done: research, pattern map, validation strategy, 7 plans (187-01..07); plan checker 3 rounds, final two warnings fixed inline. Commits in the recovery checkout skipped per checkout rule.
+- Superseded (2026-10-16): `$gsd-discuss-phase 187 --ws quality-ratchet-release`. Done: 187-CONTEXT.md (D-01..D-19) and 187-DISCUSSION-LOG.md written as plain files after three parallel advisor research passes. Commits in the recovery checkout skipped per checkout rule.
+- Superseded (2026-10-16): `$gsd-execute-phase 186 --ws quality-ratchet-release`. Done: 186-01..05 executed (186-05 re-run once after a stale-fixture stop); commit `fix(186)` `bd294007`; review 0 critical / 3 warnings / 4 info; verification passed 5/5; Phase 186 complete. Commits in the recovery checkout skipped per checkout rule.
+- Superseded (2026-10-16): `$gsd-execute-phase 185 --ws quality-ratchet-release`. Done: 185-01..05 executed; commit `fix(185)` `25614cf6`; review 0 critical / 5 warnings / 2 info; verification passed 4/4; Phase 185 complete. Commits in the recovery checkout skipped per checkout rule.
+- Superseded (2026-10-16): the Phase 184 gap-round-4 detail (184-13/184-15/184-14, `fix(184-14)` `b898e110`, review 184-REVIEW-GAPS-4 0 critical / 2 warnings / 3 info, verification 4/4). Open items kept: WR-05 preflight-only (D-31, Phase 188 TWIN-07), D-36 deferrals, GAP4-WR-01 (bounded read of git local files) for the next twin-touching change.
+- Superseded (2026-10-16): `$gsd-execute-phase 184 --gaps-only --ws quality-ratchet-release` (gap round 4). Done: 184-13 (run 1 blocked, plan amended with Step B2, re-run complete), 184-15 and 184-14 executed; commit `fix(184-14)` `b898e110`; review 184-REVIEW-GAPS-4 found 0 critical / 2 warnings / 3 info; re-verification passed 4/4; Phase 184 complete. Commits in the recovery checkout skipped per checkout rule.
+- Superseded (2026-10-16): `$gsd-plan-phase 184 --gaps --ws quality-ratchet-release` (gap round 4). Done: plans 184-13, 184-15 and 184-14 written (decisions D-39..D-42 proposed; recorded by 184-15); plan checker passed after 2 revisions. Commits skipped per checkout rule.
+- Superseded (2026-10-16): `$gsd-execute-phase 184 --gaps-only --ws quality-ratchet-release` (gap round 3). Done: 184-11 and 184-12 executed; commit `fix(184-12)` `e4344ca5`; review 184-REVIEW-GAPS-3 found GAP3-CR-01, GAP3-CR-02, GAP3-WR-01; re-verification gaps_found 3/4. Commits in the recovery checkout skipped per checkout rule.
+- Superseded (2026-10-15): `$gsd-plan-phase 184 --gaps --ws quality-ratchet-release` (gap round 3). Done: plans 184-11 and 184-12 written; checker found no blockers (one trailer warning set aside, three info notes). Commits skipped per checkout rule.
+- Superseded (2026-10-15): `$gsd-execute-phase 184 --gaps-only --ws quality-ratchet-release` (gap round 2). Done: 184-09 and 184-10 executed; fix(184-10) `b5399e51`; review found GAP2-CR-01 and GAP2-CR-02 (both reproduced); re-verification gaps_found 3/4. Commits skipped per checkout rule.
+- Superseded (2026-10-15): the gap-round-1 handoff (decide on GAP-CR-01). Done: the user ran `$gsd-plan-phase 184 --gaps --ws quality-ratchet-release`; plans 184-09 and 184-10 written; checker passed after one revision. Commits skipped per checkout rule.
+- Superseded (2026-10-15): `$gsd-plan-phase 184 --gaps --ws quality-ratchet-release`. Done: gap-closure plans 184-07 (fixes, 4 tasks) and 184-08 (gates, 13 mutation controls, single commit); plan checker 3 rounds, no blockers, warnings resolved. Commits skipped per checkout rule.
+- Superseded (2026-10-15): `$gsd-execute-phase 184 --ws quality-ratchet-release`. Done: 184-01..06 executed, one candidate commit `1f5d18ee`, verification passed 4/4, code review 1 critical / 5 warnings; the user chose gap closure.
+- Superseded (2026-10-15): `$gsd-plan-phase 184 --ws quality-ratchet-release`. Done: research (L1–L19, adopted as D-23..D-33), pattern map, validation strategy, 6 plans; plan checker ran 3 iterations plus 2 focused orchestrator-guided passes (all blockers and warnings resolved; probes clean; 4/4 requirements and 33/33 decisions covered). Commits skipped per checkout rule.
+- Superseded (2026-10-15): `$gsd-discuss-phase 184 --ws quality-ratchet-release`. Done: four advisor researchers plus an adversarial pass (scratch-repo git experiments); 22 decisions in 184-CONTEXT.md, auto-followed at the user's request.
+- Superseded (2026-10-15): `$gsd-new-milestone --ws quality-ratchet-release`. Done: v26.0 Harden Before Trust started; research written under `research/v26/`; 18 requirements defined; roadmap created with phases 184–188 and 18/18 requirements mapped.
+- Superseded (2026-10-15): `$gsd-complete-milestone v25.0 --ws quality-ratchet-release`. Done: planning closeout; archive copies in `milestones/`; prior handoff kept in `history/v25.0-closeout-handoff/`.
+- Superseded (2026-10-16): `$gsd-plan-phase 188 --ws quality-ratchet-release`. Done: 188-RESEARCH.md, 188-PATTERNS.md, 188-VALIDATION.md and plans 188-01..05 written; decision coverage 21/21, requirements TWIN-07 and TWIN-08 covered; nothing staged or committed.
+- Superseded (2026-10-15): `$gsd-audit-milestone --ws quality-ratchet-release` (re-audit). Done: status tech_debt, requirements 20/20, integration 14/16, blocker closed.
+- Superseded (2026-10-15): `$gsd-execute-phase 183 --ws quality-ratchet-release`. Done: 183-01..05 executed; verification passed 6/6; code review 0 critical / 4 warnings (open); seven Phase 180 commits plus `fix(183-03)` in the candidate; eight mutation controls bit; twin-04 passed (exit 0, 49/49).
+- Superseded (2026-10-15): `$gsd-plan-phase 183 --ws quality-ratchet-release`. Done: 183-RESEARCH.md, 183-PATTERNS.md, 183-VALIDATION.md and plans 183-01..05 written; plan checker passed after one revision (stderr privacy test made fd-level); requirement and decision coverage 3/3 and 20/20; nothing staged or committed.
+- Superseded (2026-10-15): `$gsd-discuss-phase 183 --ws quality-ratchet-release`. Done: 183-CONTEXT.md and 183-DISCUSSION-LOG.md written; nothing staged or committed.
+- Superseded (2026-10-15): `$gsd-phase --ws quality-ratchet-release "Close gap: twin source binding fails closed on uncommitted code"`. Done: Phase 183 added with its directory, roadmap detail, phase list and progress row.
+- Superseded (2026-10-15): `$gsd-execute-phase 180 --ws quality-ratchet-release --wave 6` (twin-03). Done: twin-03 passed (exit 0, 49/49); TWIN-01..06 complete; verification passed 5/5; Phase 180 complete.
+- Superseded (2026-10-15): the twin-02 handoff (repair the harness, diagnose case 3, amend 180-07). Done: three runner faults repaired and tested (registry crash, lost stage cause, unreadable backend counters); case 3 passed in two throwaway diagnostic runs, and the second passed all 49 observations; 180-07 amended; the twin-02 summary and result were preserved under `.twin-02` names.
+- Superseded (2026-10-15): `$gsd-audit-milestone --ws quality-ratchet-release`. Done: v25.0-MILESTONE-AUDIT.md written, status gaps_found (requirements 20/20, integration 11/15, one source-binding blocker); see Exact Next Action.
+- Superseded (2026-10-15): the twin-01 handoff (prepare the candidate record and run twin-02). Done: record prepared and prechecked; twin-02 ran once and produced an all-blocked receipt (case 3 attachment check unavailable) plus a command crash after the receipt was written; see Exact Next Action.
+- Superseded (2026-10-15): `$gsd-execute-phase 180 --ws quality-ratchet-release` (gate rerun on `da53c54`, then 180-05..180-07). Done: gate rerun reported existing_path_supported; 180-05, 180-06 and 180-07 executed in the candidate; the single twin run (twin-01) was blocked with `prerequisite_missing` because no candidate record file was passed.
+- Superseded (2026-10-14): `$gsd-execute-phase 182 --ws quality-ratchet-release`. Done: six plans complete in `/private/tmp/crosswake-phase182-impl` (final head `da53c54db06e54be5a80fb4be144a70d3fed36a5`); verification passed 5/5; LOOP-01..05 complete; Phase 180 candidate moved onto the final head. Before it: 180-01..180-04 complete on `12f84cd`, 180-05 blocked at Task 1 on the HTTPS-only origin, and the user chose "Allow loopback".
+- Superseded (2026-10-14): `$gsd-plan-phase 182 --ws quality-ratchet-release`. Done: 182-RESEARCH.md, 182-PATTERNS.md, 182-VALIDATION.md and six plans. Research corrected the discussion: Info.plist is created once and host-owned, not a managed output, so CONTEXT gained D-23 (bounded reconcile of the Crosswake block, with a production-host exception). The UI gate's frontend flag was a false positive (the word "page") and was skipped. Requirement coverage 5/5, decision coverage 23/23; checker iterations 3 with no blockers left, final warnings fixed and grep-verified. Plain uncommitted files; no Git operation in the recovery checkout.
+- Superseded (2026-10-14): `$gsd-discuss-phase 182 --ws quality-ratchet-release`. Done: the user selected all four areas and delegated a researched, adversarially checked recommendation set; four research subagents plus an orchestrator adversarial pass produced 182-CONTEXT.md (D-01..D-22) and 182-DISCUSSION-LOG.md; LOOP-01..05 added to REQUIREMENTS.md. Plain uncommitted files; no Git operation in the recovery checkout.
+- Superseded (2026-10-14): `$gsd-phase --ws quality-ratchet-release` to add the loopback-origin core phase. Done: Phase 182 was added with its directory and roadmap entry.
+
+- Superseded (2026-10-14): `$gsd-execute-phase 180 --ws quality-ratchet-release`, continuing at wave 3. Done: 180-03 and 180-04 complete; 180-05 blocked at Task 1 on the HTTPS-only `:ios_host` origin; the user allowed a separate loopback-origin core phase.
+
+- Superseded (2026-10-14): `$gsd-execute-phase 180 --ws quality-ratchet-release` for the 180-01 rerun. Done: gate reran on head `12f84cd950d4574921767df823faed6797c17c26` with verdict `existing_path_supported` (G1-G4 refuted, five controls passed, four invariants held); 180-02 recorded `not_required`, preserved the earlier allow as `180-DECISION.baseline.json`, and set 180-03/180-04 eligible. The earlier stopped-at-gate T01-T10 `not_observed` handoff no longer applies because the gate cleared.
+- Superseded (2026-10-14): `$gsd-execute-phase 181 --ws quality-ratchet-release`. Done: ten plans in the candidate `/private/tmp/crosswake-phase181-impl`; final head `12f84cd950d4574921767df823faed6797c17c26`; final preflight `existing_path_supported`; full regression passed; `180-SEAM-HANDOFF.json` written and validated; 180-01/180-02 summaries renamed to baselines; SEAM-01..06 complete.
+- Superseded (2026-10-14): `$gsd-plan-phase 181 --ws quality-ratchet-release`. Done: 181-RESEARCH.md, 181-PATTERNS.md, 181-VALIDATION.md and 10 plans; requirement coverage 6/6 and decision coverage 29/29. The final checker pass found no blockers, and its two remaining warnings were fixed in a targeted pass. Planning files are untracked plain files (no git operation in the recovery checkout, per D-24).
+- Superseded (2026-10-14): `$gsd-discuss-phase 181 --ws quality-ratchet-release`. Done: five research lenses plus an adversarial pass produced 181-CONTEXT.md (central versioned `host_commands:` registry; per-route manifest `host_commands` as sole authority; explicit `.offlineIsland` presentation; additive manifest schema 1.2.0 with a compiled-in shell constant and a fail-closed generation gate; Android byte-unchanged; new candidate `/private/tmp/crosswake-phase181-impl`). SEAM-01..06 added.
+- Superseded (2026-10-14): `$gsd-phase --ws quality-ratchet-release` to add the authorized core-seam phase. Done: it was added as Phase 181: Core Host-Command Seam, depending on Phase 179, with the seam handoff contract as its completion criterion.
+- Superseded (2026-10-14, before the gate ran): the Phase 180 planning handoff directed `$gsd-execute-phase 180 --ws quality-ratchet-release` to start at 180-01, derive candidate `/private/tmp/crosswake-phase180-impl` from the Phase179 candidate (HEAD `96e5a63efab657f89f3ac84d5b1d84ff5da5d822`, tree `0514b6244ec814c1d0701d580b04651f70f57019`, bound by the Phase 179 verification) and run the feasibility gate. 180-01 is now complete with verdict stop_missing_seam, and 180-02 recorded the user's allow decision.
 
 ## Accumulated Context
 
-### Decisions
+### Roadmap Evolution
 
-- Phase numbering continues at 164, but parked Phase 163.1 is not a dependency of this workstream.
-- Dependency security and merge-gate authority must be trustworthy before CI optimization begins.
-- CI optimization must preserve named proof evidence and fail-closed required aggregators.
-- Android remains at its existing generator, Maven, JVM, and vector posture; no feature or parity
-  expansion is authorized.
+- v27.0 roadmap created (2026-10-16): phases 189–193 follow the suggested five-phase structure (inventory and backup, fixes in the candidate, integration branch in a separate durable clone, PR/CI/merge, cleanup); 18/18 requirements mapped, no orphans.
 
-- Package and tag publication remains an irreversible maintainer approval; v22 automates reversible
-  preparation and proves the exact 0.2.1 candidate.
+- v26.0 roadmap created (2026-10-15): phases 184–188 follow the five-phase structure in the v26 research synthesis unchanged; 18/18 requirements mapped, no orphans.
 
-- [Phase 164]: Plan 164-01 retained public compatibility declarations and constrained lock changes to the prescribed patched targets plus Plug Crypto 2.2.0.
-- [Phase 164]: Dependency security has one literal producer; required-check registration remains green-first post-main work through the existing registrar.
-- [Phase 164]: Derive owned SQLite cleanup from the unique primary path plus exact -wal and -shm companions; never glob shared temp state.
-- [Phase 164]: Keep default/hermetic and requires-example-host lane manifests conditional and independent so neither execution class can mask the other.
-- [Phase 165]: Exact per-job queue time remains not_exposed and unavailable matched PR cohorts remain not_measured; timing is descriptive only.
-- [Phase 165]: The Crosswake CI tracer remains additive and non-authoritative while the exact 27 legacy contexts stay unchanged.
-- [Phase 165]: Represent documentation eligibility as explicit planning and public_docs families, both owned by documentation-contracts, with release inputs excluded.
-- [Phase 165]: Freeze maximum authority at 44 literal proof leaves plus classify-change; controls are success-only and never irrelevant.
-- [Phase 165]: Treat every malformed current run, candidate, identity, or incomplete page set as a closed invalid disposition with no selected IDs.
-- [Phase 165]: Keep cancellation authority in a requested workflow_run controller with only actions: write; acquire selector bytes from the controller's immutable default-branch SHA and never check out PR code.
-- [Phase 165]: Keep the controller non-authoritative until Plan 165-10 proves requested-event timing and live inversion behavior.
-- [Phase 165]: Keep Android JVM proof portable by exiting before optional connected provisioning and consuming explicit runner-provided toolchains.
-- [Phase 165]: Keep compiled cache restoration exact across complete BEAM, Gradle, and Swift compatibility identity; expose only closed cache outcomes.
-- [Phase 165]: Bind migration-only legacy contexts to the checkout-free Crosswake CI umbrella so documentation-only irrelevance remains compatible and unexplained non-success stays closed. — Preserves frozen required contexts without admitting a skipped executable leaf directly.
-- [Phase 165]: Keep scheduled/manual engine and commerce advisories source-qualified, non-cancelling, and outside PR concurrency. — Their trust and scheduling boundary is distinct from recurring PR product proof.
-- [Phase 165]: Keep all eight migrated domain proofs explicitly irrelevant only for the manifest-authorized documentation-only classification; unknown classification runs full proof.
-- [Phase 165]: Bind frozen legacy domain contexts to the checkout-free Crosswake CI umbrella while compatibility jobs stay outside umbrella authority.
-- [Phase 165]: Retain Phase 71, 73, and 74 scheduled/manual work only as explicitly non-promoting advisory authority; delete Phase 75 after centralizing its proof.
-- [Phase 165]: Accept executable-leaf irrelevance only for the exact all_changed_paths_allowlisted classifier reason while documentation-contracts remains the planning privacy owner.
-- [Phase 165]: Keep Phase 68 emulator execution manual and advisory-only; it is outside manifest, compatibility, and umbrella authority.
-- [Phase 165]: Determine runner class from exact command invocation: iOS mirror parity stays on Linux while Apple tooling stays on macOS.
-- [Phase 165]: Schedule focused Threadline proof only when the validated documentation family includes public_docs.
-- [Phase 165]: Keep brand-visual visibly red but outside proof leaves, required controls, umbrella needs, and compatibility authority.
-- [Phase 165]: Keep live timing and branch-protection mutation outside the recurring Phase 165 structural gate.
-- [Phase 165]: Bind every live probe to the exact orchestrator-landed remote-default SHA and exact local/remote workflow digests before creating a branch.
-- [Phase 165]: Scope cancellation candidates to the current PR before strict fail-closed validation because GitHub removes PR associations from historical runs after cleanup.
-- [Phase 165]: Keep strict dual required-check authority live and leave the exact legacy retirement proposal unapplied for Plan 165-11.
-- [Phase 165]: Approve only source_protection_digest 55bf0c829e1933ac596585979145073beacc9f03a2c0f5bf6e03b3dfb75b3e51, its exact twenty-seven legacy-context removal set, retained Crosswake CI context, and strict true before and after.
-- [Phase 165]: Plan 165-11 records approval only; Plan 165-12 owns the separately verified branch-protection write.
-- [Phase 165]: Apply only the approved source-protection digest and immediately require strict target authority containing exactly Crosswake CI.
-- [Phase 165]: Keep all forty-four meaningful proof leaves and classify-change while removing every migration-only compatibility conclusion.
-- [Phase 165]: Reject final evidence unless the exact supplied SHA remains the remote default tip and both authoritative blobs match locally.
-- [Phase 165]: Report the pre/post main-bound cohort as not_measured because its explicit criteria differ, despite retaining each sanitized observation descriptively.
-- [Phase 166]: Keep mix verify narrow and invoke it only as the root-proof stage command.
-- [Phase 166]: Attribute tool failures to dependent stages so unsupported Apple tooling blocks iOS without hiding independent proof.
-- [Phase 166]: Propagate every non-pass result through dependency edges while preserving manifest-order execution for independent stages.
-- [Phase 166]: Treat only exact declared outputs absent at invocation start as cleanup-owned, and refuse symlink or repository-prefix escapes.
-- [Phase 166]: Keep Git porcelain bytes in private NUL-delimited snapshot files and expose only bounded purpose-level results and remediations.
-- [Phase 166]: Generated contracts remain a registry within intentionally tracked artifact intent. — This preserves the closed three-class policy while making regeneration ownership executable.
-- [Phase 166]: Generated drift restores only registered output snapshots and uses read-only Git inspection. — Focused verification must preserve user bytes and index state on success and failure.
-- [Phase 166]: Suspicious artifact paths are escaped data and never remediation command text. — Hostile filenames must not shape terminal output or become executable correction input.
-- [Phase 166]: Freeze each ownership audit at its declared immutable tree while preserving the exact v22 base and NUL-safe candidate rule.
-- [Phase 166]: Use CROSSWAKE_REPOSITORY_VERIFY rather than generic CI truthiness for zero retries, fresh-server ownership, and explicit output roots.
-- [Phase 166]: Extend the existing CI authority validator with stage parity instead of introducing a second CI engine.
-- [Phase 166]: Use invocation-owned browser output paths locally while preserving checked-out example-host artifact paths in GitHub Actions.
-- [Phase 166]: Keep the recurring quality gate contract-only; Plan 08 retains isolated exact-commit canonical proof.
-- [Phase 166]: Treat every changed or removed-with-proof ledger disposition as an exact remediation-queue obligation; an empty set emits an explicit passing count of zero. — Prevents evidence-proven findings from disappearing by omission while keeping zero-finding runs explicit.
-- [Phase 166]: Preserve the sole browser correction and its Plan 04 RED/GREEN history rather than manufacture a no-op Plan 06 source diff. — The bounded queue authorizes verification of the existing correction, not unrelated or cosmetic source churn.
-- [Phase 166]: Resolve evidence input only from an explicit tracked commit and never copy source worktree or index state.
-- [Phase 166]: Materialize the declared Darwin/arm64 toolchain beneath one invocation-owned root with literal upstream authorities and SHA-256 pins.
-- [Phase 166]: Commit the authorized install/doctor correction set separately before binding exact-commit verification to the new supported HEAD.
-- [Phase 166]: Supported-code identity is d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b; later evidence-only and planning records do not redefine it.
-- [Phase 166]: Keep isolated proof dependencies, private logs, temporary roots, and cleanup invocation-owned.
-- [Phase 167]: Keep the three current claim layers in Crosswake.CapabilityMap and require both generated projections to consume the validated set.
-- [Phase 167]: Bind retained reference evidence to 2026-08-27 and iOS 26.6 without transferring it to first adopter activation.
-- [Phase 167]: Keep public recovery copy generic while durable state retains the exact codename, TODO-002, and Phase 163.1 resume point.
-- [Phase 167]: Keep docs synchronization fixed to exactly default write mode and one --check form; invalid or combined argv fails closed without echoing input.
-- [Phase 167]: Validate all generated-artifact records through the existing registry while preserving the legacy contract-generator record byte-for-byte.
-- [Phase 167]: Require generated canonical sources to be tracked at execution and reject duplicate or nested output authority across records.
-- [Phase 167]: Run no-write documentation synchronization and focused semantic owner tests inside the existing documentation-contracts leaf.
-- [Phase 167]: Route generated guide projections through public_docs while executable owners, release inputs, workflow changes, and unknown paths retain full proof.
-- [Phase 167]: Keep authored guidance answer-first and link volatile detail to Crosswake.SupportMatrix, Crosswake.CapabilityMap, and their generated projections.
-- [Phase 167]: Treat Phase 167 release review as reversible preparation only; Phase 168 retains exact 0.2.1 proof and immutable publication approval.
-- [Phase 167]: Pin all setup-java uses to the execution-time official immutable v6 commit. — One full SHA and exact count assertion remove mutable-tag and partial-update ambiguity.
-- [Phase 167]: Retain PR #121 as the candidate because it accepted the complete five-path transaction. — The authorized supersession fallback was unnecessary after the exact guarded branch update succeeded.
-- [Phase 167]: Gate PR mutations on exact head, base, named check, scope, and fresh-default authority. — This closes the mutable GitHub TOCTOU boundary before push and merge.
-- [Phase 167]: Run repeated root Mix test partitions in isolated cmd mix processes so single-run task state cannot skip the broad lane.
-- [Phase 167]: Keep the destroyed-log e5 root observation nondeterministic and unreproduced; do not infer a leaf, category, or retry policy.
-- [Phase 167]: Require a manifest-only candidate, two complete local proofs, and the first 47-of-47 exact-head hosted run before merge and supersession.
-- [Phase 167]: Preserve PR 105's exact six waiter-name edits while replacing stale three-commit history with one tested intent commit.
-- [Phase 167]: Keep exact-head CI authority through bounded failed-job retries; merge only after the unchanged head reaches 47-of-47 success.
-- [Phase 167]: Commit the PR 105 receipt before integrating fresh protected default so parent order and Plan 08 tree authority remain explicit.
-- [Phase 167]: Keep the ordinary PR set exactly 57, 105, 110, 115, 121, 146, and 147; record 145, 148, 110, and 149 separately as recovery provenance.
-- [Phase 167]: Treat the landed disposition receipt as a dated pre-closeout baseline and use a separate closed observation for allowed post-closeout release-only refreshes.
-- [Phase 167]: Keep release-only PRs 57, 115, 146, and 147 open, unmerged, singly marked, and owned by the Phase 168 exact-candidate gate.
-- [Phase 167]: Bind closeout authority to PR 150 head 7211b78f8004511bd4380cac92cac1abcd8854ed, run 34666842094 at 47/47, and tree-identical merge 30ca31ed3f4be23ae6e4d115d8d0f6273aae220a.
-- [Phase 167]: Hand Phase 168 only the five final path names and owner phase_168_first_reversible_landing; do not claim their blobs are on protected default.
-- [Phase 167]: Admit adoption authority only by exact membership in the three canonical seven-field tuples.
-- [Phase 167]: Return one stable complete_authority_tuple rule without echoing sensitive statement or boundary values.
-- [Phase 168]: Bind the first Phase 168 landing to exactly five retained path/mode/blob records, exact-head Crosswake CI, and a tree-identical two-parent merge.
-- [Phase 168]: Use a tracked historical lock fixture for positive reconciliation while current, missing, changed, and additional runtime state remains non-passing.
-- [Phase 168]: Treat release-only PR head/base/check refreshes as mutable observations while preserving strict open, unmerged, cursor-complete marker authority.
-- [Phase 168]: Represent receipt identity as separately validated bound and observed tuples so drift remains reproducible and a STALE receipt can validate itself.
-- [Phase 168]: Keep the Mix task evaluation-only; fixed flags delegate to the pure evaluator while later plans supply normalized external observations through the narrow adapter seam.
-- [Phase 168]: Write one canonical JSON receipt and derive every human projection from the same validated receipt map without color or raw adapter diagnostics.
-- [Phase 168]: Use official Hex unpack plus normalized metadata and payload digests as package evidence; repository trees and ephemeral roots are not durable authority.
-- [Phase 168]: Seed companion audits from the candidate core tarball inside exact-ref snapshots so public requirements remain testable without registry fallback.
-- [Phase 168]: Link only Hex, iOS core, and Android core at 0.2.1; companions and proposals remain independent approval outsiders.
-- [Phase 168]: Generate map-shaped companion settings and one explicit managed route so the real Doctor path evaluates the intended host contract.
-- [Phase 168]: Treat every install, compile, smoke, registration, and Doctor command as a fail-closed proof child before recording profile success.
-- [Phase 168]: Keep exact-public verification fixture-backed and dormant until 0.2.1 publication and an approved receipt make its live precondition true.
-- [Phase 168]: Phase 168 Plan 05 models baseline inspection, candidate rehearsal, ordinary publication, and recovery as four closed mirror modes.
-- [Phase 168]: Ordinary iOS mirror publication is atomic and fast-forward/equal only; exact-ref force-with-lease exists only in separately approved recovery.
-- [Phase 168]: Phase 168-06: Existing trusted Hex and iOS workflows own no-mutation rehearsal; no new workflow family or second approval was added.
-- [Phase 168]: Phase 168-06: Release Please and all one-way children require the approved head as merge parent with an identical approved tree.
-- [Phase 168]: Phase 168-06: Linked publications are independent siblings, while proofs retain narrow dependencies and rollup preserves exact PARTIAL truth.
-- [Phase 168]: Keep stable candidate fixtures always-on and route release-sensitive, Release Please, or ambiguous changes to exact-head full proof.
-- [Phase 168]: Keep real mirror authorization in the trusted workflow; ordinary PR CI remains credential-free.
-- [Phase 168]: Use read-only linked-coordinate status for BLOCKED/PARTIAL/COMPLETE and reserve READY FOR APPROVAL/STALE for the exact receipt authority.
-- [Phase 169]: Corrected scanner_ids_result/2's :failed clause to scope failing to required_ids (D-07) and compose failing+missing segments (D-09), fixing the live PR #164 defect where five identical bare-ID errors masked the actual root cause. — Verified ground truth in 169-CONTEXT.md established the scanner evaluates eagerly and every check emits, making scoped greens real greens.
-- [Phase 169]: [Phase 169-03]: Widened list_merge_blocking_checks.py's duplicate scan from a merge-blocking substring filter to a global check over every job producer, added a version-literal reject, and retired all six version-welded release-please.yml/phase70-proof.yml display names/artifact names in one atomic commit (D-21).
-- [Phase 169]: [Phase 169-02] Both crash evidence statuses (:unavailable and :unverifiable) route the release.workflow_integrity owner check and the five scoped checks to the same check-level :unverifiable, never :error — an :error owner check would outrank :unverifiable in aggregate_status/1's precedence and silently force exit 1 on a crash instead of exit 3.
-- [Phase 169]: [Phase 169-04]: Added a 6th exit-contract-guard entry point for Crosswake.ReleaseStatus.exit_code/1's own source clauses (extracting literal do: <n> from each def exit_code(...) head, skipping the delegating clause), alongside the 5 file-based checks the plan named, and read exit_code/1's @doc content via Code.fetch_docs/1 as a separate assertion.
-- [Phase 170]: [Phase 170-01]: Built script/inventory_collection_assertions.exs (content-hash-keyed, root-identifier backward-scan classifier) and committed the full 220-row ledger; guard/pin detection is unbounded within the enclosing test body rather than a fixed 6-line window, with one explicit manual override for a cross-field pin the heuristic cannot see.
-- [Phase 170]: Task 3's structural predicate replaces the naive display_line-1 offset check with a bounded backward-scan + join_forward technique mirrored from the classifier, to handle mix format's multi-line guard wrapping and blank-line-before-fn insertion.
-- [Phase 170]: VAC-03 convention: a check that doesn't map to any of the six vacuity shapes records the explicit 'matches none of A-F, because ___' escape form rather than a forced nearest-fit letter. — Applied retroactively to release.scanner.roster_exact and release.workflow_integrity in the Phase 169 addendum; both are structurally a roster-diff check and a message-passthrough check, neither a possibly-empty-collection predicate.
-- [Phase 170]: 170-03: coordinate_test.exs and crosswake_release_status_test.exs's flagged sites recorded as structural-test-only (compile-time-fixed companion list; check-only-emitted-when-nonempty computations), not silently dropped
-- [Phase 170]: 170-03: release_boundaries_test.exs's empty-companions regression reuses ReleaseStatus.build/1's existing :cwd override via a symlink-and-mutate-manifest helper, avoiding any lib/ change
-- [Phase 170]: Phase 170's meta-checks (ledger completeness, guard-expression-match) recorded via the vacuity_taxonomy convention's explicit escape form, mirroring Phase 169's roster_exact/workflow_integrity precedent; the convention check itself and the empty-input regression set classify as Shape A.
-- [Phase 172]: 172-01: candidate_ref moved to per-artifact schema; observed ref (MATRIX_PUBLIC_REF) resolved independently from git rev-parse HEAD, never the approved manifest, closing the T-172-01 vacuity path for 172-02's drift comparison.
-- [Phase 172]: 172-02: branch order in public_artifact_reason/3 (compatible -> digest_mismatch -> unproven -> nil) is load-bearing, chosen so each prescribed mutation falsifies exactly its paired test
-- [Phase 172]: 172-02: ref!/1 resolved inside each drift branch's own cond guard, not via a shared pre-cond binding, to keep the registry-missing branch reachable for a nil observed ref
-- [Phase 172]: 172-02: public_artifact_claim/1 written as an explicit case over every known reason string with a catch-all, so a future reason added without a matching clause resolves to unproven rather than crashing
-- [Phase 172]: 172-03: proof module derives roster from Artifact.packages/0 and group-width from a named @artifact_field_count attribute, never a bare literal
-- [Phase 172]: 172-03: byte-exact regression anchor mutates one real file byte, recomputes the digest through Artifact.inspect_family!/1, and carries it into Cleanroom.evaluate_public!/1 for a verdict, pinning the proof floor below the digest-string layer
-- [Phase 172]: 172-03: 172-NON-VACUITY.md records only checks with an actually-executed mutation as full rows; every other landed check is named with a decidable reason, never silently omitted
-- [Phase ?]: 174-01: controller split into its own file — mix crosswake.install's infer_router_module!/1 requires exactly one top-level defmodule per --router file
-- [Phase ?]: 174-01: reordered the Done section's closing log lines so state=passed is genuinely the committed log's final line
-- [Phase ?]: 174-01: legacy path installer lands as new Step 6.5 (not a renumbered Step 7); Step 7's doctor invocation stays byte-unchanged
-- [Phase ?]: [Phase 174]: 174-02: manifest_compile_check/1 and its call site pinned to a committed, git-history baseline (8bc77c35), extraction-non-empty asserted before comparison to close the rename/delete vacuity path
-- [Phase ?]: CW-REQ-A deferred (defer-with-reason) — breaking contract bump moved past Phase 175 publish; CW-REQ-B closed via exit_status_for/1 classifier and a join_reports/3 completeness-check bug fix
-- [Phase ?]: [Phase 174-04]: ROOM-03 recorded PENDING POST-MERGE (real gh dispatch refused — workflow_dispatch requires the file on the default branch); no run id was fabricated.
-- [Phase ?]: Threadline's clean-room failure diagnosed as the same shared manifest_contract defect rindle hit, via unconditional Step 4/Step 7 code paths, confirmed fixed by plan 174-01's harness fix and a real run this phase.
-- [Phase ?]: Sigra's clean-room failure diagnosed as a package-unaware smoke-test template branch (refute instead of assert on enabled?/1's default), fixed in commit d16e475a; confirmed still fixed by a real run this phase.
-- [Phase ?]: 174-06: ROOM-05 ticked complete; ROOM-03 recorded genuinely NOT SATISFIED with the exact post-merge dispatch command that closes it
-- [Phase ?]: 175-01: check-actions default scope now derived from .github/workflows/*.yml + .github/actions/**/action.yml at run time, gated by a reusable assertFullScope guard proven red/green via test-check-actions-scope
-- [Phase ?]: 175-02: erlef/setup-beam@v1's fresh resolution matched the existing 54075bcc... in-repo pin, not fc68ffb9...; used consistently across all five newly-pinned files without reconciling the pre-existing dual-SHA state elsewhere (out of scope).
+- Phase 183 added (2026-10-15): Close gap: twin source binding fails closed on uncommitted code. Gap closure for the v25.0 milestone audit blocker (twin `source`/`installed_build` joins bind only committed HEAD/tree; twin-03 ran with Phase 180 code uncommitted). Covers TWIN-01, TWIN-05, TWIN-06 attestation.
 
-### v23.0 Roadmap Decisions
+- Phase 182 added (2026-10-14): Loopback Origin for Local iOS Host. It allows an http loopback origin only in an explicit local/dev `:ios_host` mode, with ATS `NSAllowsLocalNetworking` and never `NSAllowsArbitraryLoads`; production stays HTTPS-only. Authorized by the user's "Allow loopback" choice when 180-05 was blocked.
 
-- [Roadmap]: Phase numbering continues from v22.0 (which ended at 168) — v23.0 starts at Phase 169,
-  not reset to 1.
+- Phase 181 discussed (2026-10-14): requirements SEAM-01..06 added and mapped to its six success criteria.
+- Phase 181 added (2026-10-14): Core Host-Command Seam. Covers route declaration of host commands, declaration-driven activation capability projection, native session delivery, bounded-shell offline-island admission and a versioned wire contract. Authorized by the user's allow in 180-02.
 
-- [Roadmap]: Phase 171 (Version/Authority Split) merges SUMMARY.md's Phase A `no_bare_version_literal`
-  check (MSG-04/MSG-05) with Phase B's D1 fix (WELD-01..08) into one phase, landed as one PR/commit.
-  Landing the check and the fix separately would either turn `main` permanently red (check merges
-  first) or leave the check meaninglessly advisory for a window (fix merges first). The purely
-  diagnostic D6 work (MSG-01/02/03/06, plus FID-02) stays in its own earlier Phase 169 since it has
-  no such atomicity constraint.
+### Current decisions and limits
 
-- [Roadmap][Revision]: VAC-01/02/03 (the SEED-018 vacuous-assertion audit — classify 173 sites, then
-  rewrite every confirmed-vacuous one) was originally bundled into Phase 169, but was pulled out into
-  its own **Phase 170 (Vacuous Assertion Remediation)** on user-directed revision. Rationale: Phase
-  169's whole purpose is being cheap, fast, and first so every later phase reads its own CI failures
-  through the new diagnostic seam; bundling a 173-site remediation project into it made 169 the long
-  pole and gated the version/authority work behind an unrelated audit. Phase 170 is independent of
-  every other phase and startable in parallel from the beginning (like Phase 174's clean-room work),
-  but must complete before Phase 175 (Rehearsal and Publish) opens. Phase 170 explicitly keeps
-  VACG-01 (the merge-blocking `absence.collection_assertion_non_empty` guard) OUT of this milestone —
-  it stays a Future Requirement — because landing the guard before the audit produces a wall of red
-  that gets waived, teaching the team red is negotiable. All phases after 169-170 renumbered by +1
-  (170→171, 171→172, 172→173, 173→174, 174→175) so reading order matches execution order.
+- v25.0 closed 2026-10-15 with all 20 requirements (IOS, TWIN, SEAM, LOOP) satisfied; TWIN-01/05/06 were re-attested by twin-04 against the committed fix. The bullets below are the v25 decisions as recorded during the milestone.
+- Phase 179 uses ordinary compile-only Phoenix/Mix build configuration, the canonical selected router/entry/primary origin, managed-output ownership and interrupted-update recovery, and explicit unsigned-simulator/device-capable Xcode settings. Generation must not require `app.config`, `app.start` or unrelated runtime-server credentials.
+- Phase 180 joins one actual generated candidate, its visible study WebView and bridge, normal island persistence/replay, host-owned playback initiated through the existing declared `host.*` delegate, and an independently observed Phoenix/Ecto effect. The fixed T01–T10 groups and a derived privacy-safe twin receipt are the finite virtual boundary; a simulator receipt cannot promote physical/adopter support.
+- The twin runner owns a fresh database/server/port/app context and verifies target-scoped network denial. Stable generation/receipt contracts may enter existing CI leaves; no new platform, generic core/storage API or recurring simulator lane is selected. Required virtual observations must pass; a genuine blocker remains incomplete.
 
-- [Roadmap]: FID-01 (SEED-014 adopter gaps CW-REQ-A/B) was folded into Phase 174 (Clean-Room Host
-  Realism), since both are about adopter-facing proof fidelity.
+### Phase180 discussion findings
 
-- [Roadmap]: DOC-05 (manifest word-collision) was folded into Phase 171, since the collision is
-  release-manifest-adjacent to the version/authority work already touching that vocabulary. DOC-04
-  (delete the "only publishes 0.2.1" doc section) and DOC-06 (splitsh-lite references) were folded
-  into Phase 175, since DOC-04 only becomes true once 0.2.2 actually publishes and DOC-06 documents
-  the mirror mechanism the retire/backfill runbook (REL-10) also covers.
+- The confirmed declaration/activation gap blocks the proposed visible host-audio join. It is not a physical/adopter residual or authorization for a new core seam. The [research](phases/180-bounded-digital-twin-demonstration/180-DISCUSSION-RESEARCH.md) records exact source findings and corrected alternatives.
+- The reference island also lacks visible free-form entry and a positive recovery destination; narrow host work fits T03/T07 only if the earlier scope gate permits further implementation.
+- The runner must bind the prepared candidate’s exact loopback origin exclusively and preserve it through persistence testing. Private diagnostic storage never exempts sensitive data. A twin-only receipt requires mandatory owner sub-observations for each exact T01–T10 group.
+- Delegated recommendations completed discussion without a preference interview. No automatic chain, new core support, source mutation, Git operation, release or remote delivery was selected.
 
-- [Roadmap]: Phase 175 (Rehearsal and Publish) is strictly last and its own phase — never combined
-  with Phases 169-174 in the same plan — because it contains the milestone's only irreversible
-  operations (Hex publish, iOS mirror tag push, Maven upload; project decision D-19). REL-10's
-  retire/backfill runbook must be committed before any publish step in that phase executes.
+### Phase179 evidence limits
 
-- [Roadmap]: Phases 172 (per-package proof scope) and 173 (recovery-path convergence) both depend
-  only on Phase 171 and touch disjoint file sets — they may be planned/executed in parallel. Phase
-  174 (clean-room realism) and Phase 170 (vacuous assertion remediation) are each independent of
-  171-173 and may start as early as Phase 169 — Phase 174's threadline/sigra diagnosis is
-  calendar-bound to a live Hex release, and Phase 170's audit has no dependency on the identity-model
-  work at all.
+- Missing pre-fix RED evidence for Plan03 Tasks1/2 and the Resources-membership repair remains advisory process debt under `tdd_mode=false`. Earlier subprocess failures with no retained assertion/child output retain unknown causes; later failures are not substituted as their causes.
+- The scoped completion scanner returned four summary-path warnings because new source stays outside recovery and two command strings were parsed as paths. Actual candidate files and all 45 source exports were independently verified. Warnings and their dispositions remain in [completion](phases/179-ios-host-setup-without-hand-patches/179-COMPLETION.json); original summaries remain unchanged.
 
-### Pending Todos
+### Historical proof and retained limits
 
-- Phase 168 must bind and land the exact five Phase 167 closeout artifact blobs before candidate approval. (v22.0, closed)
-- Phase 168 owns all further evaluation of release-only PRs 57, 115, 146, and 147. (v22.0, closed)
-- Phase 169 is next: `/gsd-plan-phase 169` (Diagnostic Legibility).
-- PR #164 (0.2.2), PR #147, and PR #115 all remain held/blocked until Phase 175 repairs and executes
-  the graph — do not merge any of them earlier.
+- v24.0 closed 8/8 requirements across Phases 176–178 and 15 plans; its [audit](milestones/v24.0-MILESTONE-AUDIT.md) retained six debt records. The accepted `script/verify_repository.sh --all` run passed all nine stages in an independent private clone; 48 required hosted checks joined the exact governed merge object `f2d8875ee52d9679157c73b4a701b510ee612cb8` (tree `27f4073039b4dd976492127549603a76ce22499b`). The run was warm-cache, with clean HEAD/tree, index bytes and NUL status verified. No cold-cache claim is made.
+- Phase 177's approved head `3e8a4b2601b542323edfd6053f25e56c67873b47` and the final merge share that tree; the eight-file delta preserves 230 assertion keys and 52 frozen guard rows. All 119 captured local paths/private archives and 1,677 protected historical files remain preserved. Plan93 and mirror historical reader/receipt comparisons remain unproven.
+- Two earlier seeded full-run failures have unknown causes because their assertion output was not retained. Chromium MachPort and SwiftPM sandbox denials were separately observed; a later approved less-restricted complete run passed. No cause is inferred for the two missing-output failures.
+- v23.0 remains archived with exceptions: Phase 175 is 8/9 and REL-10 breached because the first publication omitted the incident-response runbook. Six accepted historical high limitations and twelve lower findings remain; Nyquist coverage is partial. None is silently promoted by v25.
+- PR #238 remains open/unmerged. Its exact ordinary push/PR proposal was delivered and read-reconciled, the one-use binding is consumed, and actor attribution was not retained. No merge, release, publication, protected-history operation or recovery-checkout Git mutation is authorized by v25 planning.
+- The First B2C Adopter lane remains parked at Phase 163.1-08 Task 2 until a validated sanitized route handoff exists. Resume only with `--ws first-b2c-adopter-readiness` after that input gate is met; a fresh source-bound signed-device run is then required for promotion. Existing reference/simulator proof is non-transferable.
 
-### Blockers/Concerns
+### Working posture
 
-- The First B2C Adopter work remains parked separately at Phase 163.1 pending external route/device
-  authority; do not copy or infer adopter facts into v22 artifacts.
-
-- Phase 167 code review retained five non-blocking advisories; Phase 168 should resolve the
-  release-relevant full-comment marker count before relying on it for exact candidate authority.
-
-- REL-10 remains historically breached for Gate 1. No later artifact, code change, or remote run may describe it as compliant.
+Use the [v25 research synthesis](../../research/v25/SUMMARY.md) and [approved roadmap](ROADMAP.md) for the exact finite scenario roster and source/observation boundaries. Preserve explicit route ownership, backend auth authority, fail-closed denials, opaque scoped replay and payload redaction. Keep the recovery checkout and historical paths intact. Name the check, result, concrete cause if retained, remaining unknown and next action in plain language.
 
 ## Deferred Items
 
+The six v23 archive acknowledgements retain their original statuses and byte-identical originals in `milestones/v23.0-closeout/original-artifacts`. No new acknowledgement or phase override was added at the v24, v25 or v26 closeouts.
+
 | Category | Item | Status | Deferred At | Milestone |
-|----------|------|--------|-------------|-----------|
-| Adopter activation | Plans 163.1-08 through 163.1-10 | Parked in separate workstream | v22 start | v21.0 |
-| Future seed | Sigra hosted-session interoperability release (SEED-009) | Future | v22 scope | Future |
-| Future seed | Reference-host presentation polish (SEED-010) | Dormant | v22 scope | Future |
+|---|---|---|---|---|
+| debug_sessions | release-automation-failures | fixing | 2026-10-11 | v23.0 |
+| debug_sessions | release-please-guard-36352732061 | diagnosed | 2026-10-11 | v23.0 |
+| uat_gaps | v22.0 / 168 / 168-UAT.md | blocked | 2026-10-11 | v23.0 |
+| verification_gaps | 175 / 175-VERIFICATION-ARCHIVE-PRE-PLAN148-CLOSEOUT.md | gaps_found | 2026-10-11 | v23.0 |
+| verification_gaps | 175 / 175-VERIFICATION.md | gaps_found | 2026-10-11 | v23.0 |
+| verification_gaps | v22.0 / 168 / 168-VERIFICATION.md | gaps_found | 2026-10-11 | v23.0 |
 
-## Session Continuity
+The six separate v24 debt items remain in the [debt disposition](milestones/v24.0-closeout/debt-disposition.md): original SUMMARY arrays; Plan93 reader/receipt comparison; mirror reader/receipt comparison; historical guidance fixture epoch; and the two earlier full-run failures whose assertion text was not retained. None becomes v25 implementation scope.
 
-Last session: 2026-09-20T13:30:00Z
-Stopped at: 175-07 manually reconciled. The historical Gate 1 publish remains noncompliant under REL-10, but PR #164 is now current, mergeable, and clean with fresh passing Crosswake CI `35512555806`; the repaired exact-OID guard passed its live remote base/head.
-Recovery instructions: present Gate 2's distinct iOS rehearsal resume signal and evidence. Do not merge or dispatch the core release until the operator authorizes that specific one-way gate.
+## Session
+
+**Last session:** 2026-10-19T23:54:39.524Z
+**Stopped at:** Phase 192 planned, ready to execute
+**Resume file:** .planning/workstreams/quality-ratchet-release/phases/192-pr-ci-and-merge/192-01-PLAN.md
 
 ## Operator Next Steps
 
-- Review the v23.0 roadmap (`ROADMAP.md`) and requirements traceability (`REQUIREMENTS.md`).
-- Once approved, run `/gsd-plan-phase 169` to begin Diagnostic Legibility.
+- Execute Phase 192 with `$gsd-execute-phase 192 --ws quality-ratchet-release` (see Exact Next Action)

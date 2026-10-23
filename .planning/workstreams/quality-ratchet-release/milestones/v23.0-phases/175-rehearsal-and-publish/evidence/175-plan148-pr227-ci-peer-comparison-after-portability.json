@@ -1,0 +1,73 @@
+{
+  "run_id": 38138063830,
+  "head_oid": "fcbab2c44192e6b6ad24d1058127ad42a72efb67",
+  "artifact_id": 11701888038,
+  "candidate_local_state": "PASS",
+  "package_count": 6,
+  "profiles": 5,
+  "installs_each": 2,
+  "published_peer_rows": [
+    {
+      "package": "crosswake_rulestead",
+      "source_ref_match": true,
+      "metadata_match": true,
+      "payload_match": true,
+      "candidate_file_modes": [
+        420
+      ],
+      "public_file_modes": [
+        420
+      ]
+    },
+    {
+      "package": "crosswake_rindle",
+      "source_ref_match": true,
+      "metadata_match": true,
+      "payload_match": true,
+      "candidate_file_modes": [
+        420
+      ],
+      "public_file_modes": [
+        420
+      ]
+    },
+    {
+      "package": "crosswake_sigra",
+      "source_ref_match": true,
+      "metadata_match": true,
+      "payload_match": true,
+      "candidate_file_modes": [
+        420
+      ],
+      "public_file_modes": [
+        420
+      ]
+    },
+    {
+      "package": "crosswake_chimeway",
+      "source_ref_match": true,
+      "metadata_match": true,
+      "payload_match": true,
+      "candidate_file_modes": [
+        420
+      ],
+      "public_file_modes": [
+        420
+      ]
+    },
+    {
+      "package": "crosswake_threadline",
+      "source_ref_match": true,
+      "metadata_match": true,
+      "payload_match": true,
+      "candidate_file_modes": [
+        420
+      ],
+      "public_file_modes": [
+        420
+      ]
+    }
+  ],
+  "all_peers_match": true,
+  "observed_at_utc": "2026-10-11T12:15:04.792945+00:00"
+}

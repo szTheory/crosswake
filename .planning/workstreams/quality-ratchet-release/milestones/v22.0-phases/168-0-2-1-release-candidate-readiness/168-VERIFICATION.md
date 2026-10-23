@@ -1,7 +1,9 @@
 ---
 phase: 168-0-2-1-release-candidate-readiness
 verified: 2026-09-15T22:10:00Z
-status: human_needed
+status: gaps_found
+amended: 2026-10-03
+historical_status: human_needed
 score: 5/6 must-haves verified (1 present, behavior-unverified)
 covered_files: [".github/workflows/crosswake-ci.yml", ".github/workflows/hex-publish.yml", ".github/workflows/ios-mirror-backfill.yml", ".github/workflows/release-please.yml", ".planning/workstreams/quality-ratchet-release/REQUIREMENTS.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-01-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-01-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-02-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-02-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-03-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-03-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-04-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-04-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-05-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-05-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-06-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-06-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-07-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-07-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-08-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-08-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-09-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-09-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-10-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-10-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-11-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-11-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-12-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-12-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-13-PLAN.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-13-SUMMARY.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/168-REVIEW.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/evidence/phase168-candidate-receipt.json", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/evidence/phase168-candidate-receipt.md", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/evidence/phase168-candidate-refresh.json", ".planning/workstreams/quality-ratchet-release/phases/168-0-2-1-release-candidate-readiness/evidence/phase168-entry-landing.json", ".release-please-manifest.json", "CHANGELOG.md", "docs/COMPANION-PUBLISH-RUNBOOK.md", "guides/install.md", "lib/crosswake/release_candidate.ex", "lib/crosswake/release_candidate/artifact.ex", "lib/crosswake/release_candidate/cleanroom.ex", "lib/crosswake/release_candidate/coordinate.ex", "lib/crosswake/release_candidate/identity.ex", "lib/crosswake/release_candidate/mirror.ex", "lib/crosswake/release_candidate/projection.ex", "lib/crosswake/release_candidate/receipt.ex", "lib/crosswake/release_candidate/workflow.ex", "lib/crosswake/release_status.ex", "lib/mix/tasks/crosswake.release.candidate.ex", "lib/mix/tasks/crosswake.release.status.ex", "mix.exs", "script/check_release_version_truth.exs", "script/check_release_workflow_integrity.exs", "script/release_candidate/android_publication.sh", "script/release_candidate/hex_artifacts.sh", "script/release_candidate/ios_mirror.sh", "script/verify_companion_cleanroom.sh", "script/verify_hex_publish_dry_run.sh", "script/verify_ios_mirror_backfill.sh", "test/crosswake/proof/phase168_version_truth_test.exs"]
 covered_digest: "v1:sha256:ca7380cc03ba5042125e2a5e1ab76ba1fe1b8fbf7270ccfad11790eaeb2158c4"
@@ -18,7 +20,10 @@ re_verification:
     - "Gap 3 (REL-03 / REL-04) — repository version truth restored to 0.2.1 across all 11 reverted files, CHANGELOG reconciled, PR #158 closed unmerged, regression guard added and wired into CI"
   gaps_remaining: []
   regressions: []
-gaps: []
+gaps:
+  - truth: "Historical exact-public proof for the 0.2.1 package family remains unverified"
+    status: unknown
+    reason: "The approved artifacts.json input was not retained. Do not fabricate a retrospective manifest or route this archived observation as user UAT; future releases are gated by automated exact-public proof in CI."
 deferred:
   - item: "Exact-public clean-room proof against the live-published 0.2.1 family (the single behavior_unverified item below)"
     to: "v23.0 — release pipeline repair"
@@ -58,11 +63,26 @@ resolved_escalations:
   - question: "Why is there no phase168-candidate-receipt.json on main?"
     answer: "The receipt mechanism was CHANGED mid-phase and the replacement was never invoked. Commit ad8fbada added an 'Attest canonical exact-head candidate receipt' job to ios-mirror-backfill.yml that UPLOADS READY authority as a trusted-workflow artifact rather than committing a file. That job is gated on operation == 'candidate-receipt-attestation' and has only ever appeared as SKIPPED."
     consequence: "Resolved by plan 168-13 via the alternative route (recover and land the stranded commits) rather than the attestation dispatch. The receipt on main is byte-for-byte identical to the one produced at 3c825ea2 — verified by SHA-256 below. The attest-candidate-receipt job remains available at ios-mirror-backfill.yml:165 but was not needed."
-human_verification:
+historical_human_verification:
   - test: "Run the exact-public clean-room proof against the live-published 0.2.1 companion family"
     expected: "See behavior_unverified_items above."
     why_human: "Requires real network access to Hex/SwiftPM/Maven and generates real Phoenix hosts; out of scope for a fast, non-mutating verification pass."
+audit_acknowledged:
+  milestone: v23.0
+  at: 2026-10-11
+  status: gaps_found
 ---
+
+## Subsequent Disposition — 2026-10-03
+
+The original report below accurately records that no live exact-public run for the 0.2.1 package
+family was captured. The approved `artifacts.json` needed to reproduce that historical run was not
+retained, so the result remains **unknown**, not passed. This is no longer a human UAT handoff:
+do not infer an input or ask for retrospective verification. Exact-public proof is a release-time
+automated gate for future releases. The original report and its status are retained below as
+historical evidence.
+
+## Original Report (2026-09-15; Preserved)
 
 > **Correction 2026-09-15T23:05Z.** This report filed the `crosswake_rindle` absence as an
 > advisory that was "out of scope per D-15/D-16". That framing was too weak. D-15/D-16 govern
@@ -76,7 +96,7 @@ human_verification:
 
 **Phase Goal:** Maintainers can approve an exact Crosswake 0.2.1 candidate knowing every reversible package-family and release check has passed.
 **Verified:** 2026-09-15T22:10:00Z
-**Status:** human_needed
+**Status at original verification:** human_needed (superseded by the 2026-10-03 disposition above)
 **Re-verification:** Yes — after gap closure (plans 168-09 … 168-13, merged via PR #163)
 
 ## Prior Gap Disposition
@@ -218,7 +238,7 @@ No orphaned requirements: REQUIREMENTS.md maps exactly REL-01 through REL-05 to 
 
 None. Scanned the files changed between `3804ffd7` and `02c6c838` (`crosswake-ci.yml`, `ios-mirror-backfill.yml`, `check_release_version_truth.exs`, `check_release_workflow_integrity.exs`, `phase168_version_truth_test.exs`, `CHANGELOG.md`, `COMPANION-PUBLISH-RUNBOOK.md`, `guides/install.md`, the receipt artifacts, and the 168-08 … 168-13 summaries) for `TBD|FIXME|XXX`. Zero debt markers; the only prior-noted `XXXXXX` matches are `mktemp` template strings, which are not debt markers.
 
-### Human Verification Required
+### Original Human Verification Queue (Historical; Superseded 2026-10-03)
 
 1. **Run the exact-public clean-room proof against the now-published companion family.** `script/verify_companion_cleanroom.sh`'s post-publication mode has only fixture-backed unit coverage in the repo; it has not been run against the real, now-live registries and no such run is captured as evidence. Trigger: the seven-step sequence in `docs/COMPANION-PUBLISH-RUNBOOK.md`. Expected: all five companion profiles install twice from exact registry sources with zero path locks, pass non-vacuous registration/Doctor checks, match the approved normalized digests, and end in a live-status `COMPLETE`. Why human: real-network, stateful, long-running; generates Phoenix hosts and resolves real registries — presence checks cannot see it.
 

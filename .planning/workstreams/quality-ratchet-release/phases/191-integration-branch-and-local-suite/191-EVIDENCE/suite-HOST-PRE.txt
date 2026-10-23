@@ -1,0 +1,9 @@
+head 64a60effe28c38d0a1ce9741107cc44f570296be
+mode host
+totals_lines 1
+line1 tests 167 failures 2 invalid 0 skipped 0 excluded 0
+floor 167
+exit 2
+failed test G2 gate: generated activation for the probe carries no host command (CrosswakeExample.Phase180TwinFeasibilityTest)
+failed test G6 gate: no compiled route declares a host capability (CrosswakeExample.Phase180TwinFeasibilityTest)
+result fail

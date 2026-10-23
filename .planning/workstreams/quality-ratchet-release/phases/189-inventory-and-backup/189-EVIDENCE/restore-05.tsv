@@ -1,0 +1,2 @@
+env-local.tar	tarfiles	pass	3 files match tar-time sha256 and mode (restore env-local.tar: pass)
+ignored-keep.tar	tarfiles	pass	46066 files match tar-time sha256 and mode (restore ignored-keep.tar: pass)

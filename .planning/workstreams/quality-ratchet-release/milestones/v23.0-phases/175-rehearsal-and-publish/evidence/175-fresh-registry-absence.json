@@ -1,0 +1,28 @@
+{
+  "observed_at": "2026-09-23T14:36:23Z",
+  "candidate": {
+    "pr": 196,
+    "version": "0.2.3",
+    "base_oid": "7a615cb0ddf2a55ef6ffab1c0c841ec3d92dea60",
+    "head_oid": "a8d86b29ee5731332ceac9abc176ecdc8262e7e1",
+    "tree_oid": "873210c237fe0bdceca65b90f222dd93b0c8b595"
+  },
+  "hex": {
+    "coordinate": "crosswake@0.2.3",
+    "url": "https://hex.pm/api/packages/crosswake/releases/0.2.3",
+    "http_status": 404,
+    "absent": true
+  },
+  "ios": {
+    "repository": "szTheory/crosswake-shell-core-ios",
+    "ref": "refs/tags/v0.2.3",
+    "ls_remote_result": "no matching ref",
+    "absent": true
+  },
+  "maven": {
+    "coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.3",
+    "url": "https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/0.2.3/crosswake-shell-core-android-0.2.3.pom",
+    "http_status": 404,
+    "absent": true
+  }
+}

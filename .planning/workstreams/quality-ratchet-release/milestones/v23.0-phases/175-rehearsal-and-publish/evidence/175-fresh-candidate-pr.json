@@ -1,0 +1,40 @@
+{
+  "observed_at": "2026-09-23T00:32:41Z",
+  "repository": "szTheory/crosswake",
+  "number": 196,
+  "url": "https://github.com/szTheory/crosswake/pull/196",
+  "title": "chore: release main",
+  "state": "OPEN",
+  "isDraft": false,
+  "baseRefName": "main",
+  "baseRefOid": "7a615cb0ddf2a55ef6ffab1c0c841ec3d92dea60",
+  "headRefName": "release-please--branches--main",
+  "headRefOid": "a8d86b29ee5731332ceac9abc176ecdc8262e7e1",
+  "headTreeOid": "873210c237fe0bdceca65b90f222dd93b0c8b595",
+  "proposedVersion": "0.2.3",
+  "mergeable": "MERGEABLE",
+  "mergeStateStatus": "CLEAN",
+  "requiredChecks": {
+    "name": "Crosswake CI",
+    "conclusion": "SUCCESS",
+    "workflowRunId": 35801086301,
+    "workflowRunUrl": "https://github.com/szTheory/crosswake/actions/runs/35801086301"
+  },
+  "historicMergedIntent": {
+    "version": "0.2.2",
+    "headRefOid": "a71578fc4dcbd7944a34a2410c3845c8224d19f9",
+    "releasePleaseRunId": 35555386857,
+    "comparison": "different"
+  },
+  "exactFetch": {
+    "baseRefOid": "7a615cb0ddf2a55ef6ffab1c0c841ec3d92dea60",
+    "headRefOid": "a8d86b29ee5731332ceac9abc176ecdc8262e7e1",
+    "headTreeOid": "873210c237fe0bdceca65b90f222dd93b0c8b595",
+    "verdict": "PASS"
+  },
+  "runbookAncestry": {
+    "runbookCommit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8",
+    "base": "PASS",
+    "head": "PASS"
+  }
+}

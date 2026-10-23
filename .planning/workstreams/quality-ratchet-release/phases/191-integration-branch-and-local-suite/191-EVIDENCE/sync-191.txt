@@ -1,0 +1,11 @@
+sync committed
+sync_paths 37
+verify pass
+non_planning_paths 0
+root_suite pass
+subset pass
+check phase167_js exit 0
+check adoption_scan exit 0
+check integrity_script exit 0
+check ledger_check exit 0
+result pass

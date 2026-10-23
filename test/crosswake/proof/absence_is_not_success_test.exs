@@ -15,6 +15,7 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
 
   @repo_root Path.expand("../../..", __DIR__)
   @script Path.join(@repo_root, "script/check_absence_is_not_success.exs")
+  @one ["--min-test-files", "1"]
 
   describe "the repository itself" do
     @tag :tmp_dir
@@ -39,7 +40,8 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
       end
       """)
 
-      {output, code} = run(tmp)
+      baseline!(tmp)
+      {output, code} = run(tmp, @one)
 
       assert code == 1
       assert output =~ "absence.mutation_control_asserts_change"
@@ -58,7 +60,8 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
       end
       """)
 
-      {output, code} = run(tmp)
+      baseline!(tmp)
+      {output, code} = run(tmp, @one)
 
       assert code == 0, output
     end
@@ -78,7 +81,8 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
       end
       """)
 
-      {output, code} = run(tmp)
+      baseline!(tmp)
+      {output, code} = run(tmp, @one)
 
       assert code == 0, output
     end
@@ -90,7 +94,8 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
       write_cited_test!(tmp)
       write_todo!(tmp, "Broken here: `test/cited_test.exs:99`.")
 
-      {output, code} = run(tmp)
+      baseline!(tmp)
+      {output, code} = run(tmp, @one)
 
       assert code == 1
       assert output =~ "absence.open_finding_citation_resolves"
@@ -102,7 +107,8 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
       write_cited_test!(tmp)
       write_todo!(tmp, "Asserted by `test/cited_test.exs:2`.")
 
-      {output, code} = run(tmp)
+      baseline!(tmp)
+      {output, code} = run(tmp, @one)
 
       assert code == 0, output
     end
@@ -119,7 +125,8 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
       ```
       """)
 
-      {output, code} = run(tmp)
+      baseline!(tmp)
+      {output, code} = run(tmp, @one)
 
       assert code == 0, output
     end
@@ -133,7 +140,8 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
         status: resolved
       """)
 
-      {output, code} = run(tmp)
+      baseline!(tmp)
+      {output, code} = run(tmp, @one)
 
       assert code == 0, output
     end
@@ -149,7 +157,8 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
       1. `test/cited_test.exs:99` — long since repaired.
       """)
 
-      {output, code} = run(tmp)
+      baseline!(tmp)
+      {output, code} = run(tmp, @one)
 
       assert code == 0, output
     end
@@ -161,17 +170,179 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
       # inside a generated host or another repository.
       write_todo!(tmp, "Failed at `test/not_in_this_repo_test.exs:21`.")
 
-      {output, code} = run(tmp)
+      baseline!(tmp)
+      {output, code} = run(tmp, @one)
 
       assert code == 0, output
     end
   end
 
-  defp run(root) do
-    System.cmd("elixir", [@script, "--root", Path.expand(root)],
-      stderr_to_stdout: true,
-      cd: @repo_root
-    )
+  describe "invocation" do
+    @tag :tmp_dir
+    test "root floor: a nonexistent --root exits 2 before scanning", %{tmp_dir: tmp} do
+      missing = Path.join(tmp, "never-created")
+      {output, code} = run_argv(["--root", missing])
+
+      assert code == 2, output
+      assert output =~ "[crosswake] FAIL: root does not exist: #{Path.expand(missing)}"
+      refute output =~ "OK:"
+    end
+
+    @tag :tmp_dir
+    test "root floor: a --root that is a file exits 2", %{tmp_dir: tmp} do
+      file = Path.join(tmp, "plain-file")
+      File.write!(file, "x")
+      {output, code} = run_argv(["--root", file])
+
+      assert code == 2, output
+      assert output =~ "[crosswake] FAIL: root is not a directory: #{Path.expand(file)}"
+      refute output =~ "OK:"
+    end
+
+    test "root floor: a bare --root with no value exits 2" do
+      {output, code} = run_argv(["--root"])
+
+      assert code == 2, output
+      refute output =~ "OK:"
+    end
+
+    test "root floor: an unknown argument exits 2" do
+      {output, code} = run_argv(["--rot", "x"])
+
+      assert code == 2, output
+      assert output =~ "--rot"
+      refute output =~ "OK:"
+    end
+  end
+
+  describe "scope floors" do
+    @tag :tmp_dir
+    test "test-files scope floor: an empty test tree fails with expected scope is empty", %{
+      tmp_dir: tmp
+    } do
+      baseline!(tmp)
+      File.rm!(Path.join(tmp, "test/baseline_test.exs"))
+      {output, code} = run(tmp, @one)
+
+      assert code == 1, output
+      assert output =~ "scope test-files: expected scope is empty"
+      assert output =~ "content checks were skipped"
+      refute output =~ "OK:"
+    end
+
+    @tag :tmp_dir
+    test "todos scope floor: an empty .planning/todos fails", %{tmp_dir: tmp} do
+      baseline!(tmp)
+      File.rm!(Path.join(tmp, ".planning/todos/TODO-000-baseline.md"))
+      {output, code} = run(tmp, @one)
+
+      assert code == 1, output
+      assert output =~ "scope todos:"
+      refute output =~ "OK:"
+    end
+
+    @tag :tmp_dir
+    test "seeds scope floor: an empty .planning/seeds fails", %{tmp_dir: tmp} do
+      baseline!(tmp)
+      File.rm!(Path.join(tmp, ".planning/seeds/SEED-000-baseline.md"))
+      {output, code} = run(tmp, @one)
+
+      assert code == 1, output
+      assert output =~ "scope seeds:"
+      refute output =~ "OK:"
+    end
+
+    @tag :tmp_dir
+    test "deferred-items scope floor: no deferred-items.md fails", %{tmp_dir: tmp} do
+      baseline!(tmp)
+      File.rm!(Path.join(tmp, ".planning/phases/00-baseline/deferred-items.md"))
+      {output, code} = run(tmp, @one)
+
+      assert code == 1, output
+      assert output =~ "scope deferred-items:"
+      refute output =~ "OK:"
+    end
+
+    @tag :tmp_dir
+    test "test-files pin floor: a count below --min-test-files fails", %{tmp_dir: tmp} do
+      baseline!(tmp)
+      {output, code} = run(tmp, ["--min-test-files", "2"])
+
+      assert code == 1, output
+      assert output =~ "scope test-files:"
+      assert output =~ "scanned=1"
+      assert output =~ "pin=2"
+      refute output =~ "OK:"
+    end
+
+    @tag :tmp_dir
+    test "test-files full-scope floor: a test file in a dot-directory makes the scope a proper subset",
+         %{tmp_dir: tmp} do
+      baseline!(tmp)
+      hidden = Path.join(tmp, "test/.hid/h_test.exs")
+      File.mkdir_p!(Path.dirname(hidden))
+      File.write!(hidden, "defmodule HTest do\nend\n")
+      {output, code} = run(tmp, @one)
+
+      assert code == 1, output
+      assert output =~ "actual scope is a proper subset of expected scope"
+      refute output =~ "OK:"
+    end
+
+    @tag :tmp_dir
+    test "test-files regular-file floor: a directory named x.exs is not counted", %{tmp_dir: tmp} do
+      baseline!(tmp)
+      File.mkdir_p!(Path.join(tmp, "test/x.exs"))
+
+      {output, code} = run(tmp, ["--min-test-files", "2"])
+      assert code == 1, output
+      assert output =~ "scanned=1"
+
+      {output, code} = run(tmp, @one)
+      assert code == 0, output
+    end
+
+    @tag :tmp_dir
+    test "test-files pin floor: a count equal to the pin passes and prints the counts", %{
+      tmp_dir: tmp
+    } do
+      baseline!(tmp)
+      {output, code} = run(tmp, @one)
+
+      assert code == 0, output
+      assert output =~ "scanned 1 test files, pin 1"
+    end
+
+    test "all scopes pin floor: the repository itself meets every pinned minimum" do
+      {output, code} = run(@repo_root)
+
+      assert code == 0, output
+      assert [_, scanned, pin] = Regex.run(~r/scanned (\d+) test files, pin (\d+)/, output)
+      assert String.to_integer(scanned) >= String.to_integer(pin)
+      assert output =~ ~r/todos [1-9]\d*, seeds [1-9]\d*, deferred-items [1-9]\d*/
+    end
+  end
+
+  defp run(root), do: run(root, [])
+
+  defp run(root, extra_argv), do: run_argv(["--root", Path.expand(root) | extra_argv])
+
+  defp run_argv(argv) do
+    System.cmd("elixir", [@script | argv], stderr_to_stdout: true, cd: @repo_root)
+  end
+
+  # Exactly one of each scope: the smallest tree on which every scope is non-empty.
+  defp baseline!(tmp) do
+    for {rel, body} <- [
+          {"test/baseline_test.exs", "defmodule BaselineTest do\nend\n"},
+          {".planning/todos/TODO-000-baseline.md", "---\nid: TODO-000\n---\n"},
+          {".planning/seeds/SEED-000-baseline.md", "---\nid: SEED-000\n---\n"},
+          {".planning/phases/00-baseline/deferred-items.md", "# Deferred\n"}
+        ] do
+      path = Path.join(tmp, rel)
+      File.mkdir_p!(Path.dirname(path))
+      File.write!(path, body)
+    end
   end
 
   defp write_test!(tmp, source) do

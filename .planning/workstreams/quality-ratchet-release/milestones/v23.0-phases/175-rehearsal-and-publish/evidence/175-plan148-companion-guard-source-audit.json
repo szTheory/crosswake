@@ -1,0 +1,10 @@
+{
+  "approved_source": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+  "actual_workflow_sha256": "43989b1c9716a5cb51ab1ff2ef9a2dcea8cdb69734f320f0679a387fee0f385d",
+  "normalized_ci_digest": "cea0d394cae0222a7820f6117d400a81d26a84f9d8141e12ab9162160fe9b4c3",
+  "guard_matches_producer": true,
+  "repair_needed": false,
+  "root_local_workflow_stale": true,
+  "remote_changes": 0,
+  "observed_at_utc": "2026-10-11T16:00:38.626737+00:00"
+}

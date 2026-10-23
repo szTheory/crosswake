@@ -1,0 +1,14 @@
+V01 clean text file: as expected
+V02 home path: as expected
+V03 per-user temp path: as expected
+V04 token shape: as expected
+V05 private key line: as expected
+V06 upper-case credential assignment: as expected
+V07 foreign email address: as expected
+V08 noreply email stays clean: as expected
+V09 account name as a word: as expected
+V10 fixed private string: as expected
+V11 no argument is no input: as expected
+V12 missing file is unreadable: as expected
+V13 no planted value in any output: as expected
+selftest-privacy: controls 13 of 13 as expected

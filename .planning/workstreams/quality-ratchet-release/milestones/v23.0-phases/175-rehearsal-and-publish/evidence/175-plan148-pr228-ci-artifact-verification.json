@@ -1,0 +1,46 @@
+{
+  "run_id": 38139597323,
+  "head_oid": "664d9a80de4b8601174a3f750f0813ab2f492469",
+  "tree_oid": "0b3bf9bde500d475a12aa9af42a572f2fd222eed",
+  "base_oid": "b8e25b2ac987a991274336efbabe806ba9b6f170",
+  "artifact_id": 11701394745,
+  "candidate_local_state": "PASS",
+  "package_count": 6,
+  "profiles": 5,
+  "installs_each": 2,
+  "published_peer_rows": [
+    {
+      "package": "crosswake_rulestead",
+      "source_ref_match": true,
+      "metadata_match": true,
+      "payload_match": true
+    },
+    {
+      "package": "crosswake_rindle",
+      "source_ref_match": true,
+      "metadata_match": true,
+      "payload_match": true
+    },
+    {
+      "package": "crosswake_sigra",
+      "source_ref_match": true,
+      "metadata_match": true,
+      "payload_match": true
+    },
+    {
+      "package": "crosswake_chimeway",
+      "source_ref_match": true,
+      "metadata_match": true,
+      "payload_match": true
+    },
+    {
+      "package": "crosswake_threadline",
+      "source_ref_match": true,
+      "metadata_match": true,
+      "payload_match": true
+    }
+  ],
+  "all_peers_match": true,
+  "receipt_sha256": "96369ef8ad5f33895b2cd9b99af519b37357787defc9c24eaa38344f8e921392",
+  "observed_at_utc": "2026-10-11T12:42:56.445268+00:00"
+}

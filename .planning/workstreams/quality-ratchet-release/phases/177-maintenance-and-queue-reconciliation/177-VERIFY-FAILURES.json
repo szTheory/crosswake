@@ -1,0 +1,139 @@
+{
+  "status": "ok",
+  "commands": [
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_maintenance_review.test.mjs && node .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_maintenance_review.mjs --tracer .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/maintenance-review.json",
+      "statement": "No actual row is exercised, source/tree identity is absent, partitions collapse, a supported path has no real caller or guard, or adverse fixture is accepted.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-01-PLAN.md",
+      "task": "Task 1: Trace one supported status path and one carried ownership row through the evidence checker"
+    },
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_maintenance_review.test.mjs && node .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_maintenance_review.mjs --complete .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/maintenance-review.json",
+      "statement": "Any captured row or behavior is unclassified, a differing partition is discarded, a reader lacks an archived-verdict plan, an unknown is silently marked retired, or the checker passes a reduced fixture population.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-01-PLAN.md",
+      "task": "Task 2: Classify every retained row and release behavior against complete caller and replacement evidence"
+    },
+    {
+      "command": "cd /private/tmp/crosswake-177-source/crosswake && mix test test/crosswake/release_candidate/plan93_candidate_read_test.exs test/crosswake/release_candidate/companion_receipt_test.exs test/crosswake/release_candidate/evidence_gate_test.exs test/mix/tasks/crosswake_release_candidate_test.exs test/mix/tasks/crosswake_release_status_test.exs",
+      "statement": "Isolation/overlay identity cannot be proved, focused test count is zero, generic positive or denial behavior fails, archived verdict changes, or unapproved source/artifact side effects occur.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-02-PLAN.md",
+      "task": "Task 1: Prove a generic supported candidate/status path and Plan93 archived inspection end to end"
+    },
+    {
+      "command": "cd /private/tmp/crosswake-177-source/crosswake && mix test test/crosswake/release_candidate/plan93_candidate_read_test.exs test/crosswake/release_candidate/companion_receipt_test.exs test/crosswake/release_candidate/evidence_gate_test.exs test/mix/tasks/crosswake_release_candidate_test.exs test/mix/tasks/crosswake_release_status_test.exs && elixir script/check_release_workflow_integrity.exs",
+      "statement": "A retired selector reaches any side effect, a stale caller is only guessed, a historical reader or guard disappears, an unknown mode is marked retired, or changed bytes lack bound delivery evidence.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-02-PLAN.md",
+      "task": "Task 2: Resolve each Plan93 launch and decision mode using caller and replacement proof"
+    },
+    {
+      "command": "cd /private/tmp/crosswake-177-source/crosswake && mix test test/mix/tasks/crosswake_release_mirror_tag_026_test.exs test/crosswake/release_candidate/plan146_tag_apply_test.exs",
+      "statement": "Archive verdict differs, the entry point reaches any effect on denial, a fixture invents an adapter shape, source binding is missing, or zero relevant tests run.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-03-PLAN.md",
+      "task": "Task 1: Prove one archived mirror inspection and one fail-closed selector at the real entry point"
+    },
+    {
+      "command": "cd /private/tmp/crosswake-177-source/crosswake && mix test test/mix/tasks/crosswake_release_mirror_tag_026_test.exs test/crosswake/release_candidate && elixir script/check_release_workflow_integrity.exs",
+      "statement": "A branch is retired by age alone, any dynamic caller is ignored, a reader or enduring guard disappears, a denied mode reaches effects, or source bytes lack a bound handoff.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-03-PLAN.md",
+      "task": "Task 2: Resolve all mirror-tag prepare, decision, apply and inspect branches"
+    },
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_queue_inventory.test.mjs",
+      "statement": "Fixture does not execute the production subprocess path, zero positive/adverse cases run, access failure becomes an empty complete queue, equal cross-kind numbers collide, or a repeated cursor passes.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-04-PLAN.md",
+      "task": "Task 1: Exercise actual gh subprocess pagination into a checked two-kind queue slice"
+    },
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_queue_inventory.test.mjs && node .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_queue_inventory.mjs .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/queue-inventory.json",
+      "statement": "Either connection is unexhausted, total/unique counts disagree, roster drift is unrefreshed, any object lacks an actionable row, raw sensitive content enters evidence, or a remote write is attempted.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-04-PLAN.md",
+      "task": "Task 2: Collect, refresh and disposition the complete current queue"
+    },
+    {
+      "command": "cd /private/tmp/crosswake-177-source/crosswake && mix test test/crosswake/guides/release_boundaries_test.exs && mix crosswake.docs.sync --check",
+      "statement": "The README link or named command does not resolve, the doc asserts a spent launch as current, generated guides drift, or relevant test count is zero.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-05-PLAN.md",
+      "task": "Task 1: Make one README-to-pre-release command path accurate and executable"
+    },
+    {
+      "command": "cd /private/tmp/crosswake-177-source/crosswake && mix test test/crosswake/guides/release_boundaries_test.exs test/crosswake/proof/phase175_runbook_ancestry_test.exs && mix crosswake.docs.sync --check && elixir script/check_release_workflow_integrity.exs && script/check_release_runbook_ancestry.sh \"$(git log -1 --format=%H -- docs/RELEASE-INCIDENT-RESPONSE.md)\" \"$(git rev-parse HEAD)\" docs/RELEASE-INCIDENT-RESPONSE.md",
+      "statement": "An active command is unsupported, runbook ancestry argv is missing or fictional, rendered guides drift, the historical verdict is softened, or an isolated patch is claimed to satisfy Phase178's committed ancestry/CI gate.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-05-PLAN.md",
+      "task": "Task 2: Repair affected incident guidance and preserve release-history meaning"
+    },
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_active_guidance.test.mjs && node .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_active_guidance.mjs --active",
+      "statement": "PROJECT or continue-here points to a completed step, two active next actions survive, a historical failure becomes a success claim, or adverse fixture passes.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-06-PLAN.md",
+      "task": "Task 1: Resolve the stale PROJECT and continue-here path to the active workstream handoff"
+    },
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_active_guidance.test.mjs && node .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_active_guidance.mjs --active",
+      "statement": "Any active pointer leads to discussion/Phase176, the parent handoff is contradictory, or a historical/parked result changes meaning.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-06-PLAN.md",
+      "task": "Task 2: Verify active pointers and preserved historical/parked verdicts"
+    },
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_phase_acceptance.test.mjs && node .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_phase_acceptance.mjs --tracer .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/phase-acceptance.json",
+      "statement": "Any source/queue/docs input is fabricated, zero cases are exercised, incomplete evidence is called passed, or Phase178 final-source/CI is claimed.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-07-PLAN.md",
+      "task": "Task 1: Join one supported path, one complete queue row and one active command into checked acceptance"
+    },
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_phase_acceptance.test.mjs && node .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/check_phase_acceptance.mjs --complete .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/phase-acceptance.json && node <home>/.codex/gsd-core/bin/gsd-tools.cjs state validate --strict --ws=quality-ratchet-release",
+      "statement": "Any requirement outcome lacks evidence, current handoffs conflict, a writer changes archive meaning/unrelated phase state, incomplete queue/source delivery passes, or old CI is used for the final source claim.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-07-PLAN.md",
+      "task": "Task 2: Validate all outcomes and publish the registered workstream next action"
+    },
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/qualify_source.test.mjs && node .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/qualify_source.mjs probe --repo <home>/projects/crosswake --public .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/source-binding.json && node .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/qualify_source.mjs qualify --scope tracer --repo <home>/projects/crosswake --clone /private/tmp/crosswake-177-source/crosswake --base-commit \"$CROSSWAKE_177_BASE_COMMIT\" --base-tree \"$CROSSWAKE_177_BASE_TREE\" --inventory .planning/workstreams/quality-ratchet-release/phases/176-local-work-and-artifact-disposition/176-INVENTORY.json --maintenance .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/maintenance-review.json --archive-root \"$CROSSWAKE_RECOVERY_ROOT\" --handoff-root \"$CROSSWAKE_177_PRIVATE_HANDOFF\" --public .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/source-binding.json",
+      "statement": "Installed GSD response or real clone process shape is assumed, clone lacks its own Git directory, source origin/base/tree is wrong, archive integrity or partition identity fails, a selected hunk conflicts, private bytes/path escape into public proof, or any recovery checkout Git/source state changes.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-08-PLAN.md",
+      "task": "Task 1: Create the source binder and prove one actual clone-to-overlay-to-handoff path"
+    },
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/qualify_source.test.mjs && node .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/qualify_source.mjs qualify --repo <home>/projects/crosswake --clone /private/tmp/crosswake-177-source/crosswake --base-commit \"$CROSSWAKE_177_BASE_COMMIT\" --base-tree \"$CROSSWAKE_177_BASE_TREE\" --inventory .planning/workstreams/quality-ratchet-release/phases/176-local-work-and-artifact-disposition/176-INVENTORY.json --maintenance .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/maintenance-review.json --archive-root \"$CROSSWAKE_RECOVERY_ROOT\" --handoff-root \"$CROSSWAKE_177_PRIVATE_HANDOFF\" --public .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/source-binding.json",
+      "statement": "Any applicable row lacks exact decision/proof, merged base or private archive changes, selected byte/kind/mode is lost, public proof leaks a private path/value, or downstream patch cannot bind cumulatively to this clone.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "177-08-PLAN.md",
+      "task": "Task 2: Qualify all applicable retained source rows and bind cumulative downstream patches"
+    }
+  ],
+  "counts": {
+    "blocker": 0,
+    "warning": 0,
+    "total": 16
+  },
+  "readError": null
+}

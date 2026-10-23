@@ -2,6 +2,8 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
   use ExUnit.Case, async: false
 
   alias Crosswake.ProofLane.{Config, Generator, GeneratorFS}
+  alias Crosswake.Shell.{IOSHostConfig, IOSHostProjectMigration}
+  alias Crosswake.TestSupport.RouterFixtures.ManagedRouter
 
   defp config(root) do
     %Config{
@@ -56,6 +58,108 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
       assert %{path: "test/crosswake_proof_lane/crosswake_proof_lane_test.exs", status: :created} in results
 
       assert File.read!(host_file) == host_bytes
+    end)
+  end
+
+  test "proof Xcode settings are projected through a shared xcconfig outside app resources" do
+    with_root(fn root, config ->
+      declaration = %{
+        router: ManagedRouter,
+        origin: "https://phoenix-host.test",
+        entry_route_id: "route-0123456789abcdef",
+        app_bundle_id: "org.crosswake.host",
+        proof_app_bundle_id: "org.crosswake.host.proof",
+        device_signing: [mode: :manual, team_id: "ABCDE12345"]
+      }
+
+      assert {:ok, host} = IOSHostConfig.normalize(declaration)
+      assert {:ok, _} = Generator.generate(config, host)
+
+      project =
+        File.read!(Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj"))
+
+      settings = File.read!(Path.join(root, "native/ios/CrosswakeProofSettings.xcconfig"))
+
+      assert settings =~ "CROSSWAKE_PROOF_APP_BUNDLE_ID = org.crosswake.host.proof"
+      assert settings =~ "CROSSWAKE_PROOF_TEST_BUNDLE_ID = org.crosswake.host.proof.tests"
+      assert settings =~ "CROSSWAKE_PROOF_UI_BUNDLE_ID = org.crosswake.host.proof.uitests"
+      assert settings =~ "CODE_SIGN_STYLE[sdk=iphoneos*] = Manual"
+      assert settings =~ "DEVELOPMENT_TEAM[sdk=iphoneos*] = ABCDE12345"
+      assert project =~ "baseConfigurationReference = A10000000000000000000019"
+      assert project =~ "PRODUCT_BUNDLE_IDENTIFIER = \"$(CROSSWAKE_PROOF_UI_BUNDLE_ID)\""
+      refute project =~ "CrosswakeProofSettings.xcconfig in Resources"
+    end)
+  end
+
+  test "proof project settings migration removes recognized target masks and preserves unrelated edits" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project_path = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project_path)
+
+      changed =
+        String.replace(
+          original,
+          "PRODUCT_BUNDLE_IDENTIFIER = \"$(CROSSWAKE_PROOF_APP_BUNDLE_ID)\";",
+          "PRODUCT_BUNDLE_IDENTIFIER = org.host.masked;"
+        )
+
+      changed =
+        String.replace(
+          changed,
+          "PRODUCT_NAME = CrosswakeProofLane;",
+          "PRODUCT_NAME = CrosswakeProofLane; /* host note */"
+        )
+
+      assert {:ok, %{status: :migration_required, contents: migrated}} =
+               IOSHostProjectMigration.preview_proof_contents(changed)
+
+      assert migrated =~ "/* host note */"
+      refute migrated =~ "org.host.masked"
+      assert migrated =~ "baseConfigurationReference = A10000000000000000000019"
+      File.write!(project_path, changed)
+      assert {:ok, %{status: :migration_required}} = Generator.migrate_project_settings(config)
+
+      assert {:ok, %{status: :migration_required}} =
+               Generator.migrate_project_settings(config, apply: true)
+
+      assert File.read!(project_path) == migrated
+    end)
+  end
+
+  test "proof settings refresh only under recognized ownership and recover an interrupted replacement" do
+    with_root(fn root, config ->
+      declaration = %{
+        router: ManagedRouter,
+        origin: "https://phoenix-host.test",
+        entry_route_id: "study-session",
+        app_bundle_id: "org.crosswake.host",
+        proof_app_bundle_id: "org.crosswake.host.proof",
+        device_signing: [mode: :automatic, team_id: "ABCDE12345"]
+      }
+
+      assert {:ok, host} = IOSHostConfig.normalize(declaration)
+      assert {:ok, _} = Generator.generate(config, host)
+      settings_path = Path.join(root, "native/ios/CrosswakeProofSettings.xcconfig")
+      prior = File.read!(settings_path)
+      next_declaration = %{declaration | proof_app_bundle_id: "org.crosswake.host.proofv2"}
+      assert {:ok, next_host} = IOSHostConfig.normalize(next_declaration)
+
+      Process.put(:crosswake_proof_settings_interrupt_after_publish, true)
+
+      assert {:error, {"PL-GENERATE-INTERRUPTED", "settings"}} =
+               Generator.generate(config, next_host)
+
+      Process.delete(:crosswake_proof_settings_interrupt_after_publish)
+      refute File.read!(settings_path) == prior
+      assert File.regular?(Path.join(root, "native/ios/.crosswake/ios_proof_settings.pending"))
+      assert {:error, findings} = Generator.check(config, next_host)
+      assert Enum.any?(findings, &(&1.rule_id == "PL-GENERATE-INTERRUPTED"))
+
+      assert {:ok, :recovered} = Generator.recover(config)
+      assert File.read!(settings_path) == prior
+      refute File.exists?(Path.join(root, "native/ios/.crosswake/ios_proof_settings.pending"))
+      assert :ok = Generator.check(config, host)
     end)
   end
 
@@ -375,6 +479,86 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     end)
   end
 
+  test "unsafe later proof destinations are rejected before settings or scaffold publication" do
+    with_root(fn root, config ->
+      outside = temporary_root()
+      File.mkdir_p!(root)
+      File.mkdir_p!(outside)
+      File.ln_s!(outside, Path.join(root, "test"))
+
+      assert {:error, {"PL-GENERATE-DESTINATION", _}} = Generator.generate(config)
+      refute File.exists?(Path.join(root, "native/ios/CrosswakeProofSettings.xcconfig"))
+      assert File.ls!(outside) == []
+    end)
+  end
+
+  test "proof migration rejects extra and remapped configuration graph nodes" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project_path = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project_path)
+
+      extra =
+        "\n\t\tA10000000000000000000099 = {isa = XCBuildConfiguration; buildSettings = {}; name = Preview; };\n"
+
+      with_extra =
+        String.replace(
+          original,
+          "/* End XCBuildConfiguration section */",
+          extra <> "/* End XCBuildConfiguration section */"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(with_extra)
+
+      remapped =
+        String.replace(
+          original,
+          "buildConfigurations = (A10000000000000000000070, A10000000000000000000071,);",
+          "buildConfigurations = (A10000000000000000000070, A10000000000000000000072,);"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(remapped)
+    end)
+  end
+
+  test "proof recovery preserves a third-party settings edit and retains recovery evidence" do
+    with_root(fn root, config ->
+      declaration = %{
+        router: ManagedRouter,
+        origin: "https://phoenix-host.test",
+        entry_route_id: "study-session",
+        app_bundle_id: "org.crosswake.host",
+        proof_app_bundle_id: "org.crosswake.host.proof",
+        device_signing: [mode: :automatic, team_id: "ABCDE12345"]
+      }
+
+      assert {:ok, host} = IOSHostConfig.normalize(declaration)
+      assert {:ok, _} = Generator.generate(config, host)
+      settings = Path.join(root, "native/ios/CrosswakeProofSettings.xcconfig")
+      Process.put(:crosswake_proof_settings_interrupt_after_publish, true)
+
+      assert {:error, {"PL-GENERATE-INTERRUPTED", "settings"}} =
+               Generator.generate(config, %{host | proof_app_bundle_id: "org.crosswake.host.next"})
+
+      Process.delete(:crosswake_proof_settings_interrupt_after_publish)
+      external = "// host edit after interrupted update\n"
+      File.write!(settings, external)
+
+      assert {:error, {"PL-GENERATE-RECOVERY-CONFLICT", "settings"}} = Generator.recover(config)
+      assert File.read!(settings) == external
+      assert File.regular?(Path.join(root, "native/ios/.crosswake/ios_proof_settings.pending"))
+      assert File.regular?(Path.join(root, "native/ios/.crosswake/ios_proof_settings.stage.json"))
+    end)
+  end
+
+  test "proof settings checker resolves from the packaged priv directory" do
+    checker = Path.join(:code.priv_dir(:crosswake), "crosswake/verify_ios_host_settings.mjs")
+    assert File.regular?(checker)
+    assert {_, 0} = System.cmd(System.find_executable("node"), ["--check", checker])
+  end
+
   defp staging_paths(root), do: Path.wildcard(Path.join(root, ".crosswake/*.staging-*"))
 
   defp former_helper_path do
@@ -387,6 +571,147 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     Path.wildcard(Path.join(System.tmp_dir!(), "crosswake-proof-lane-helper-*"))
   end
 
+  @d10 "physical proof lane refuses origin_mode :local_loopback; loopback reaches the device itself, so use the HTTPS production origin"
+
+  defp local_declaration do
+    [
+      router: ManagedRouter,
+      origin: "http://127.0.0.1:4790",
+      entry_route_id: "route-0123456789abcdef",
+      app_bundle_id: "org.crosswake.host",
+      proof_app_bundle_id: "org.crosswake.host.proof",
+      device_signing: [mode: :manual, team_id: "ABCDE12345"],
+      origin_mode: :local_loopback
+    ]
+  end
+
+  defp https_declaration,
+    do:
+      Keyword.delete(local_declaration(), :origin_mode)
+      |> Keyword.put(:origin, "https://phoenix-host.test")
+
+  defp with_ios_host(declaration, fun) do
+    previous = Application.get_env(:crosswake, :ios_host)
+    previous_lane = Application.get_env(:crosswake, :proof_lane)
+
+    if declaration,
+      do: Application.put_env(:crosswake, :ios_host, declaration),
+      else: Application.delete_env(:crosswake, :ios_host)
+
+    try do
+      fun.()
+    after
+      if previous,
+        do: Application.put_env(:crosswake, :ios_host, previous),
+        else: Application.delete_env(:crosswake, :ios_host)
+
+      if previous_lane,
+        do: Application.put_env(:crosswake, :proof_lane, previous_lane),
+        else: Application.delete_env(:crosswake, :proof_lane)
+    end
+  end
+
+  test "proof lane task refuses a local-mode :ios_host declaration" do
+    with_root(fn root, config ->
+      Application.put_env(:crosswake, :proof_lane, Map.from_struct(config))
+
+      with_ios_host(local_declaration(), fn ->
+        before = snapshot(root)
+
+        error =
+          assert_raise Mix.Error, fn -> Mix.Task.rerun("crosswake.gen.proof_lane", ["ios"]) end
+
+        assert error.message == "IOS-HOST-CONFIG: " <> @d10
+        refute error.message =~ "127.0.0.1"
+        assert before == snapshot(root)
+      end)
+    end)
+  end
+
+  test "proof lane --config branch refuses a local-mode :ios_host declaration" do
+    with_root(fn root, config ->
+      config_path = Path.join(root, "proof_lane_selected.exs")
+      File.write!(config_path, selected_config(Map.from_struct(config)))
+
+      with_ios_host(local_declaration(), fn ->
+        before = snapshot(root)
+
+        error =
+          assert_raise Mix.Error, fn ->
+            Mix.Task.rerun("crosswake.gen.proof_lane", ["ios", "--config", config_path])
+          end
+
+        assert error.message == "IOS-HOST-CONFIG: " <> @d10
+        assert before == snapshot(root)
+      end)
+
+      with_ios_host(Map.new(local_declaration()), fn ->
+        assert_raise Mix.Error, "IOS-HOST-CONFIG: " <> @d10, fn ->
+          Mix.Task.rerun("crosswake.gen.proof_lane", ["ios", "--config", config_path])
+        end
+      end)
+    end)
+  end
+
+  test "proof lane --config branch is unchanged with an HTTPS or absent :ios_host" do
+    for declaration <- [https_declaration(), nil] do
+      with_root(fn root, config ->
+        config_path = Path.join(root, "proof_lane_selected.exs")
+        File.write!(config_path, selected_config(Map.from_struct(config)))
+
+        with_ios_host(declaration, fn ->
+          Mix.Task.rerun("crosswake.gen.proof_lane", ["ios", "--config", config_path])
+
+          assert File.exists?(Path.join(root, "native/ios/CrosswakeProofSettings.xcconfig")) or
+                   File.dir?(Path.join(root, "native/ios"))
+        end)
+      end)
+    end
+  end
+
+  test "generate, check and diff refuse a normalized local-mode struct" do
+    with_root(fn root, config ->
+      assert {:ok, host} = IOSHostConfig.normalize(local_declaration())
+      assert host.origin_mode == :local_loopback
+      before = snapshot(root)
+
+      for action <- [&Generator.generate/2, &Generator.check/2, &Generator.diff/2] do
+        error = assert_raise ArgumentError, fn -> action.(config, host) end
+        assert error.message == @d10
+      end
+
+      assert before == snapshot(root)
+    end)
+  end
+
+  test "generate, check and diff refuse a raw local-mode declaration" do
+    with_root(fn root, config ->
+      before = snapshot(root)
+
+      for declaration <- [local_declaration(), Map.new(local_declaration())],
+          action <- [&Generator.generate/2, &Generator.check/2, &Generator.diff/2] do
+        error = assert_raise ArgumentError, fn -> action.(config, declaration) end
+        assert error.message == @d10
+      end
+
+      assert before == snapshot(root)
+    end)
+  end
+
+  test "generate, check and diff accept an HTTPS host declaration as before" do
+    with_root(fn _root, config ->
+      assert {:ok, host} = IOSHostConfig.normalize(https_declaration())
+      assert {:ok, _} = Generator.generate(config, host)
+      assert :ok = Generator.check(config, host)
+      assert [_ | _] = Generator.diff(config, host)
+    end)
+  end
+
+  test "the refusal message names no origin" do
+    refute Generator.local_mode_refusal() =~ "127.0.0.1"
+    refute Generator.local_mode_refusal() =~ "localhost"
+  end
+
   defp selected_config(config) do
     inspect(config,
       limit: :infinity,
@@ -395,5 +720,116 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
       structs: false
     )
     |> then(&"import Config\nconfig :crosswake, :proof_lane, #{&1}\n")
+  end
+
+  test "proof migration rejects a multiline unrecognized build configuration" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project)
+
+      extra = """
+      \t\tA10000000000000000000099 = {
+      \t\t\tisa = XCBuildConfiguration;
+      \t\t\tbuildSettings = {
+      \t\t\t\tSWIFT_VERSION = 5.0;
+      \t\t\t};
+      \t\t\tname = Preview;
+      \t\t};
+      """
+
+      changed =
+        String.replace(
+          original,
+          "/* End XCBuildConfiguration section */",
+          extra <> "/* End XCBuildConfiguration section */"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(changed)
+    end)
+  end
+
+  test "proof migration rejects duplicate configuration-list IDs" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project)
+
+      duplicate = """
+      \t\tA10000000000000000000040 = {
+      \t\t\tisa = XCConfigurationList;
+      \t\t\tbuildConfigurations = (A10000000000000000000070, A10000000000000000000071,);
+      \t\t\tdefaultConfigurationIsVisible = 0;
+      \t\t\tdefaultConfigurationName = Release;
+      \t\t};
+      """
+
+      changed =
+        String.replace(
+          original,
+          "/* End XCConfigurationList section */",
+          duplicate <> "/* End XCConfigurationList section */"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(changed)
+    end)
+  end
+
+  test "proof migration accepts legal whitespace and comment reformatting of recognized objects" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project)
+
+      reformatted =
+        String.replace(
+          original,
+          "A10000000000000000000070 = {isa = XCBuildConfiguration;",
+          "A10000000000000000000070 /* Debug config */\n\t\t\t=\n\t\t\t{\n\t\t\t\tisa\t=\tXCBuildConfiguration;"
+        )
+
+      assert {:ok, %{status: :migration_required}} =
+               IOSHostProjectMigration.preview_proof_contents(reformatted)
+    end)
+  end
+
+  test "proof migration rejects remapped target references and duplicate configuration IDs" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project)
+
+      remapped_target =
+        String.replace(
+          original,
+          "buildConfigurationList = A10000000000000000000040",
+          "buildConfigurationList = A10000000000000000000041",
+          global: false
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(remapped_target)
+
+      duplicate_config = """
+
+      A10000000000000000000070 = {
+      isa = XCBuildConfiguration;
+      buildSettings = {};
+      name = Debug;
+      };
+      """
+
+      duplicate =
+        String.replace(
+          original,
+          "/* End XCBuildConfiguration section */",
+          duplicate_config <> "/* End XCBuildConfiguration section */"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(duplicate)
+    end)
   end
 end

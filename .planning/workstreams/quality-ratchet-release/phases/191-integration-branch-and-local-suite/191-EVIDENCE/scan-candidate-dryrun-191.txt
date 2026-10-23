@@ -1,0 +1,26 @@
+scan: commits 94
+scan: added_lines 36204
+scan: added_bytes 1407565
+scan: text_blobs 392
+scan: binary_blobs 0
+scan: paths 1138
+scan: identities 188
+scan: terms 0
+scan: adopter_check skipped_by_user A-14
+scan: gitleaks_version 8.30.1
+scan: gitleaks_rules 222
+scan: gitleaks_findings 0
+scan: blocking_final 3
+scan: history_personal 0
+scan: history_personal_class home_path 0
+scan: history_personal_class user_temp 0
+scan: history_personal_class user_name 0
+scan: history_sensitive 0
+scan: triaged 0
+scan: triage_only uuid 7
+scan: triage_only bare_word 689
+scan: triage_only bare_hex40 72
+scan: result hits
+range d0dbdf7bf196cea167ced3c50cf620bf3cb2452b..2faf15a255f644c869d321508c4d3f3007572138
+exit 1 (hits, blocking_final 3, all personal values; no secrets)
+note: adopter class skipped per A-14; scan-191.sh gained env SCAN191_ADOPTER_SKIP=A-14 (self-test 31 of 31 unchanged)

@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "stage": "BLOCKED_PREFLIGHT",
+  "observed_at": "2026-09-28T17:19:56Z",
+  "source": {
+    "repository": "szTheory/crosswake",
+    "ref": "refs/tags/ios-core-v0.2.6",
+    "oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+    "refs_complete": true,
+    "ref_count": 276,
+    "matching_ref_count": 1,
+    "clone_full": true,
+    "clone_path": "/private/tmp/crosswake-175-49-source.Ix0yKx/source",
+    "clone_tag_oid": "998742856a37a97ae7247f6c532f9c154ea20885"
+  },
+  "split_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+  "mirror": {
+    "repository": "szTheory/crosswake-shell-core-ios",
+    "refs": {
+      "refs/heads/main": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "refs/tags/v0.1.2": "6417ae6543219f1c35be120766827503eaa8ceea",
+      "refs/tags/v0.2.0": "658d60253c58b7e0aedb576f16f40766fa677f23",
+      "refs/tags/v0.2.1": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "refs/tags/v0.2.2": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "refs/tags/v0.2.3": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "refs/tags/v0.2.5": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8"
+    },
+    "refs_complete": true,
+    "target_ref": "refs/tags/v0.2.6",
+    "target_absent": true,
+    "main_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+    "previous_tag_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+    "observed_refs": {
+      "refs/heads/main": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "refs/tags/v0.1.2": "6417ae6543219f1c35be120766827503eaa8ceea",
+      "refs/tags/v0.2.0": "658d60253c58b7e0aedb576f16f40766fa677f23",
+      "refs/tags/v0.2.1": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "refs/tags/v0.2.2": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "refs/tags/v0.2.3": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "refs/tags/v0.2.5": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8"
+    }
+  },
+  "credential": {
+    "https_helper": "gh auth git-credential",
+    "effective_https_helper": "!/opt/homebrew/bin/gh auth git-credential",
+    "push_permission": true,
+    "exact_dry_run": "PASS",
+    "dry_run_exit_code": 0,
+    "dry_run_command": "GIT_TERMINAL_PROMPT=0 git push --dry-run --porcelain --force-with-lease=refs/tags/v0.2.6: https://github.com/szTheory/crosswake-shell-core-ios.git 424ab96ede1b92f2b751b54bce04c6e607f0f3c8:refs/tags/v0.2.6",
+    "dry_run_result": "single new ref accepted"
+  },
+  "candidate": {
+    "pr": 219,
+    "state": "open",
+    "open": true,
+    "merged": false,
+    "base_ref": "main",
+    "base_oid": "e51698528dc667ef89beb951e4eb1ec91da74981",
+    "head_ref": "release-please--branches--main",
+    "head_oid": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+    "draft": false,
+    "merge_oid": "f69631b5eae973b1c7b1ddf10e0054f8bc3874a2"
+  },
+  "write": {
+    "attempts": 0
+  },
+  "preflight": {
+    "canonicalization": "SHA-256 of canonical compact sorted JSON for the complete credential-free receipt projection excluding preflight.sha256",
+    "sha256": "1463cf97cd6b533d0991e168e902ec32b5729c538fd14c4b6a9f502051109ef1"
+  },
+  "checkpoint_recheck": {
+    "observed_at": "2026-09-28T18:35:03Z",
+    "source_refs_complete": true,
+    "source_ref_oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+    "source_ref_count": 1,
+    "source_total_ref_count": 276,
+    "source_clone_full": true,
+    "source_clone_path": "/private/tmp/crosswake-175-49-checkpoint.5kSqHU/source",
+    "source_clone_tag_oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+    "split_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+    "split_commit_object_present": true,
+    "mirror_refs_complete": true,
+    "mirror_ref_count": 7,
+    "mirror_refs": {
+      "refs/heads/main": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "refs/tags/v0.1.2": "6417ae6543219f1c35be120766827503eaa8ceea",
+      "refs/tags/v0.2.0": "658d60253c58b7e0aedb576f16f40766fa677f23",
+      "refs/tags/v0.2.1": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "refs/tags/v0.2.2": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "refs/tags/v0.2.3": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+      "refs/tags/v0.2.5": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8"
+    },
+    "mirror_target_absent": true,
+    "effective_https_helper": "!/opt/homebrew/bin/gh auth git-credential",
+    "push_permission": true,
+    "exact_dry_run": "FAIL",
+    "dry_run_exit_code": 1,
+    "dry_run_failure_classification": "OTHER_GIT_PUSH_FAILURE",
+    "candidate": {
+      "pr": 219,
+      "state": "open",
+      "open": true,
+      "merged": false,
+      "draft": false,
+      "base_ref": "main",
+      "base_oid": "e51698528dc667ef89beb951e4eb1ec91da74981",
+      "head_ref": "release-please--branches--main",
+      "head_oid": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d"
+    }
+  },
+  "preflight_blocked_reason": "Fresh checkpoint direct-Git dry-run failed with exit 1 (sanitized category: OTHER_GIT_PUSH_FAILURE); no create decision offered."
+}

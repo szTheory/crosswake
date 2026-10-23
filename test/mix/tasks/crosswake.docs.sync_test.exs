@@ -45,6 +45,26 @@ defmodule Mix.Tasks.Crosswake.Docs.SyncTest do
     assert messages =~ "reused: guides/support_matrix.md"
   end
 
+  test "canonical iOS host setup guidance states the observed scope and limits" do
+    support = SupportRenderer.render(SupportMatrix.canonical())
+    capability = CapabilityRenderer.render(CapabilityMap.canonical())
+
+    assert support =~ "## iOS Host Generation and Xcode Settings"
+    assert capability =~ "## Declared iOS Host Setup"
+
+    for output <- [support, capability] do
+      normalized = String.downcase(output)
+      assert normalized =~ "compile-only"
+      assert normalized =~ "20"
+      assert normalized =~ "simulator"
+      assert normalized =~ "device settings"
+      assert normalized =~ "session"
+      assert normalized =~ "replay"
+      refute normalized =~ "signed installation is proven"
+      refute normalized =~ "physical-iphone support is proven"
+    end
+  end
+
   test "check mode is observational when both projections match", %{root: root} do
     write_canonical_guides(root)
     paths = guide_paths(root)

@@ -1,0 +1,2 @@
+gsd-tools: warning: unknown config key(s) in .planning/config.json: gsd_profile, auto_apply_prefs — these will be ignored
+gsd-tools: warning: <home>/.gsd/defaults.json sets model_profile, resolve_model_ids, runtime, model_profile_overrides but a project config takes precedence here — those global keys are ignored for model resolution. (#3532)

@@ -1,0 +1,107 @@
+{
+  "verdict": "PASS",
+  "candidate": {
+    "base_oid": "fd1fcf59c1cd473f7ef9a593be46566018e8aaff",
+    "head_oid": "e43aa13c2ecdba55dec923848898ca230662f47b",
+    "merge_oid": null,
+    "package": "crosswake_chimeway",
+    "pr": 235,
+    "tree_oid": "81ff2f15a8fea0bd4d54478444a1750038dda49f",
+    "version": "0.1.2"
+  },
+  "identity": {
+    "leg_run_id": 38167329101,
+    "operation": "companion_publish",
+    "receipt_digest": "3ca58a266e87a82fc52f4263b265e9eb73122e8d35378dfa761b681814139776"
+  },
+  "envelope_sha256": "2c93aed51b87a7295cf2548a8081c5b6a8faf7f2c6812d40c897fc4f0467e35f",
+  "sources": {
+    "candidate_readiness": {
+      "base_oid": "fd1fcf59c1cd473f7ef9a593be46566018e8aaff",
+      "ci_conclusion": "success",
+      "ci_run_id": 38165160468,
+      "head_oid": "e43aa13c2ecdba55dec923848898ca230662f47b",
+      "merge_state": "MERGEABLE",
+      "package": "crosswake_chimeway",
+      "pagination_complete": true,
+      "policy_current": true,
+      "policy_sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+      "receipt_artifact_id": 11712628165,
+      "receipt_artifact_live": true,
+      "receipt_digest": "3ca58a266e87a82fc52f4263b265e9eb73122e8d35378dfa761b681814139776",
+      "required_check_ids": [
+        "Crosswake CI"
+      ],
+      "required_checks_complete": true,
+      "tree_oid": "81ff2f15a8fea0bd4d54478444a1750038dda49f"
+    },
+    "leg_run": {
+      "conclusion": "success",
+      "head_oid": "e43aa13c2ecdba55dec923848898ca230662f47b",
+      "run_id": 38167329101
+    },
+    "protected_merge": {
+      "merge_ready": true
+    },
+    "registry_response": {
+      "package": "crosswake_chimeway",
+      "parsed": {
+        "configs": {
+          "erlang.mk": "dep_crosswake_chimeway = hex 0.1.0",
+          "mix.exs": "{:crosswake_chimeway, \"~> 0.1.0\"}",
+          "rebar.config": "{crosswake_chimeway, \"0.1.0\"}"
+        },
+        "docs_html_url": "https://crosswake-chimeway.hexdocs.pm/",
+        "downloads": {
+          "all": 129,
+          "day": 2,
+          "recent": 98,
+          "week": 5
+        },
+        "html_url": "https://hex.pm/packages/crosswake_chimeway",
+        "inserted_at": "2026-07-04T02:20:43.249178Z",
+        "latest_stable_version": "0.1.0",
+        "latest_version": "0.1.0",
+        "meta": {
+          "description": "Chimeway notification companion adapter for the Crosswake route-policy system.",
+          "licenses": [
+            "Apache-2.0"
+          ],
+          "links": {
+            "Changelog": "https://github.com/szTheory/crosswake/blob/main/CHANGELOG.md",
+            "Documentation": "https://hexdocs.pm/crosswake_chimeway",
+            "GitHub": "https://github.com/szTheory/crosswake"
+          },
+          "maintainers": []
+        },
+        "name": "crosswake_chimeway",
+        "releases": [
+          {
+            "has_docs": true,
+            "inserted_at": "2026-07-04T02:20:43.260657Z",
+            "url": "https://hex.pm/api/packages/crosswake_chimeway/releases/0.1.0",
+            "version": "0.1.0"
+          }
+        ],
+        "repository": "hexpm",
+        "retirements": {},
+        "security_advisories": [],
+        "updated_at": "2026-07-04T02:20:44.533313Z",
+        "url": "https://hex.pm/api/packages/crosswake_chimeway"
+      },
+      "version": "0.1.2"
+    },
+    "response_row": {
+      "candidate_ref": "e43aa13c2ecdba55dec923848898ca230662f47b",
+      "package": "crosswake_chimeway",
+      "run_id": 38167329101,
+      "version": "0.1.2"
+    },
+    "runbook_ancestry": {
+      "base_is_ancestor": true,
+      "head_is_ancestor": true,
+      "merge_is_ancestor": false,
+      "runbook_commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
+    }
+  }
+}

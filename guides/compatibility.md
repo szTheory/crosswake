@@ -42,6 +42,24 @@ route requires a newer shell runtime, a newer bridge major, a missing declared p
 or an unavailable capability version. Crosswake does not silently downgrade those
 cases into generic WebView behavior.
 
+## Manifest 1.2.0: the host-command seam (iOS only)
+
+`manifest_schema_version` moved `1.1.0` -> `1.2.0`. The change is additive and affects the iOS shell only.
+`bridge_protocol_version` stays `1.1.0`. The Android shell, its vectors and its assets are unchanged.
+
+| Manifest | Change | Rebuild class | What it means |
+|----------|--------|---------------|---------------|
+| `1.2.0` | Additive: each route entry carries `host_commands`; `compatibility` may carry `host_command_seam_version` | compatibility-bump only for hosts that declare no host commands | Routes that declare no host commands behave as before. |
+
+`host_command_seam_version` appears only when at least one route declares host commands. A new iOS shell compares
+it with the seam version it was compiled with. The route still activates; when the shell's compiled seam version is
+lower than the manifest's `host_command_seam_version`, each declared command on that route is denied with
+`seam_unsupported`. A shell at or above that version is unaffected. An older shell does not read the key and ignores it. Each declared command also carries its own version,
+and this shell supports host-command versions `1.x.y`.
+
+This is the contract for one host-supplied command seam. It is not generic sync, and it is not a claim of
+device or release evidence.
+
 ## Package Versions Versus Compatibility Axes
 
 Package versions alone do not answer support or rebuild questions.

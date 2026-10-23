@@ -39,6 +39,8 @@ Bridge is not high-frequency or mutation authority.
 
 `manifest_schema_version` moved `1.0.0` -> `1.1.0` (Phase 154, CTRL-05/D-55): additive, native-inert — the iOS and Android shells decode neither the new `interaction` field nor the widened `Capability` enforce-keys, so this is `compatibility-bump only`, not rebuild-required.
 
+`manifest_schema_version` then moved `1.1.0` -> `1.2.0` (Phase 181): additive and iOS-only. Routes may carry `host_commands`, and `compatibility` may carry `host_command_seam_version`. The Android shell does not read either field. This is `compatibility-bump only` for hosts that declare no host commands.
+
 Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` now also declares an explicit `Capability.interaction` value alongside `Capability.rebuild`, enforced at compile time by `@enforce_keys`. Use these labels literally.
 
 **Guarantee strength, stated honestly (D-45/D-52).** That `@enforce_keys` widening is the only part of the Phase 154 catalog line that is structurally impossible to violate: a capability declaring neither `interaction` nor `rebuild` does not compile, and no reviewer or CI job is involved. Every other part of the bounded-bridge contract is CI-caught rather than structural. `Crosswake.Bridge.CatalogGuard` is a merge-blocking structural test proving there is no dynamic-registration seam, no streaming seam, no external SDK inside the bridge tree, and native command enum parity in both directions — but a gate caught in CI is a gate a maintainer can still walk through deliberately, one honest control at a time. Read `guides/bridge.md#guarantee-strength-what-is-structural-and-what-is-ci-caught` before treating either as airtight.
@@ -72,6 +74,16 @@ Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` n
 | Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
 |--------|---------|----------|--------------|------------|------------|-------|
 | ios | 17.0 | supported | supported | script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion. |
+
+## iOS Host Generation and Xcode Settings
+
+The host's ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled Phoenix router, declared entry route, HTTPS primary origin, app/proof identities, and device-signing settings. An explicit `origin_mode: :local_loopback` allows only `http://127.0.0.1` or `http://localhost` (optional port) for Simulator demonstration and is reported as not production-ready. Compile-only generation compiles the router without starting the host application or loading its runtime-server configuration.
+
+`mix crosswake.gen.shell ios --diff` and `--check` inspect managed output without writing. Recognized manifest, static activation, and xcconfig projections have explicit ownership; interrupted publication blocks the Xcode build guard until `--recover`. Existing project settings use a separate opt-in migration limited to the recognized shell target blocks.
+
+The effective-settings check observes 20 Xcode cells across the shell, proof app, unit-test, and UI-test targets, Debug/Release, and simulator/device SDK classes. Simulator settings are unsigned. Device settings inspection reports configuration only; it does not claim signing or installation.
+
+Manifest and entry activation carry static route and origin configuration. They grant no session, account, scope, installed-media, or replay authority. These host-generation and settings checks do not establish physical-iPhone support or activate a first adopter's host.
 
 ## Android
 

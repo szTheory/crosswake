@@ -1,0 +1,75 @@
+{
+  "phase": 178,
+  "scope": "planning_only",
+  "plans": 5,
+  "waves": 4,
+  "tasks": 11,
+  "independent_checker": {
+    "status": "passed",
+    "blockers": 0,
+    "warnings": 0,
+    "advisories": 0,
+    "revisions": 2
+  },
+  "requirements_coverage": {
+    "covered": 2,
+    "total": 2
+  },
+  "decisions_coverage": {
+    "covered": 25,
+    "total": 25
+  },
+  "post_planning_coverage": {
+    "covered": 27,
+    "total": 27
+  },
+  "structures": [
+    {
+      "plan": "178-01",
+      "valid": true
+    },
+    {
+      "plan": "178-02",
+      "valid": true
+    },
+    {
+      "plan": "178-03",
+      "valid": true
+    },
+    {
+      "plan": "178-04",
+      "valid": true
+    },
+    {
+      "plan": "178-05",
+      "valid": true
+    }
+  ],
+  "state_validation": {
+    "valid": true,
+    "warnings": []
+  },
+  "protected_checkout": {
+    "source_files_checked": 1295,
+    "source_bytes_unchanged": true,
+    "head_unchanged": true,
+    "index_unchanged": true,
+    "branch_unchanged": true,
+    "worktrees_unchanged": true,
+    "config_unchanged": true,
+    "agents_unchanged": true
+  },
+  "verification_commands": {
+    "failing_directions": 17,
+    "path_probe": "not_applicable; no target existence claim"
+  },
+  "requirements_pending": [
+    "MAINT-07",
+    "MAINT-08"
+  ],
+  "next_command": "$gsd-execute-phase 178 --ws quality-ratchet-release",
+  "source_delivery_performed": false,
+  "runtime_verification_performed": false,
+  "remote_writes_performed": false,
+  "planning_commit_performed": false
+}

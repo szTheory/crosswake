@@ -2,7 +2,8 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
   @moduledoc "Ordered, callback-driven, side-effect-free physical-iPhone readiness gate."
 
   alias Crosswake.Adoption.RouteInventory
-  alias Crosswake.ProofLane.{Config, PhysicalIphoneContract}
+  alias Crosswake.ProofLane.{Config, Generator, PhysicalIphoneContract}
+  alias Crosswake.Shell.IOSHostOriginMode
 
   @checks [
     {:generated_lane, "PI-PREFLIGHT-GENERATED-LANE"},
@@ -21,6 +22,9 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
   @inventory_rule "PI-PREFLIGHT-INVENTORY"
   @adopter_handoff_rule "PI-PREFLIGHT-ADOPTER-HANDOFF"
   @config_rule "PI-PREFLIGHT-CONFIG"
+
+  @unreadable_plist_reason "The generated iOS host files could not be read: CrosswakeShell/Info.plist is missing or unreadable, so the origin cannot be checked. Regenerate the shell and run again."
+  @unreadable_activation_reason "The generated iOS host files could not be read: Fixtures/route_activation.json exists but cannot be read or parsed, so the origin cannot be checked. Regenerate the shell and run again."
 
   @doc "Returns a safe, complete readiness summary without invoking proof reports or promotion."
   @spec readiness(keyword()) :: %{outcome: :ready | :blocked, checks: [map()]}
@@ -115,8 +119,84 @@ defmodule Crosswake.ProofLane.PhysicalIphonePreflight do
 
   defp config(options) do
     case Config.normalize(Keyword.get(options, :config)) do
-      {:ok, config} -> {:ok, config}
-      {:error, _} -> {:config_error, :invalid}
+      {:ok, config} ->
+        if origin_refusal_for(config, options),
+          do: {:config_error, :local_loopback},
+          else: {:ok, config}
+
+      {:error, _} ->
+        {:config_error, :invalid}
+    end
+  end
+
+  @doc false
+  # Returns the generator's local-mode refusal text for any local-loopback signal in the
+  # declaration or the generated iOS files, otherwise nil. When the generated shell folder exists,
+  # an Info.plist that cannot be read, or a Fixtures/route_activation.json that exists but is not
+  # readable JSON with a usable origin, returns a reason naming that file. A missing shell folder, or a missing
+  # route_activation.json next to a readable Info.plist, is not a refusal by itself.
+  @spec origin_refusal(keyword()) :: String.t() | nil
+  def origin_refusal(options) when is_list(options) do
+    case Config.normalize(Keyword.get(options, :config)) do
+      {:ok, config} -> origin_refusal_for(config, options)
+      {:error, _} -> nil
+    end
+  end
+
+  def origin_refusal(_), do: nil
+
+  defp origin_refusal_for(config, options) do
+    declaration =
+      Keyword.get_lazy(options, :ios_host, fn -> Application.get_env(:crosswake, :ios_host) end)
+
+    root = Path.join(config.ios_shell_root, "crosswake_shell")
+
+    case shell_input_refusal(root) do
+      nil ->
+        case IOSHostOriginMode.observe(root, declaration) do
+          :none -> nil
+          _signal -> Generator.local_mode_refusal()
+        end
+
+      reason ->
+        reason
+    end
+  rescue
+    _ -> Generator.local_mode_refusal()
+  end
+
+  # When the generated shell folder exists, its origin inputs must be readable. A folder that
+  # does not exist keeps the earlier behaviour (nothing to read, nothing to refuse).
+  defp shell_input_refusal(root) do
+    case File.lstat(root) do
+      {:error, reason} when reason in [:enoent, :enotdir] ->
+        nil
+
+      {:error, _} ->
+        @unreadable_plist_reason
+
+      {:ok, _} ->
+        case Crosswake.Shell.ManagedOutputs.read_origin_plist(root) do
+          {:ok, _} -> activation_refusal(root)
+          _ -> @unreadable_plist_reason
+        end
+    end
+  end
+
+  defp activation_refusal(root) do
+    path = Path.join(root, "Fixtures/route_activation.json")
+
+    case File.lstat(path) do
+      {:error, :enoent} ->
+        nil
+
+      _ ->
+        with {:ok, bytes} <- File.read(path),
+             true <- IOSHostOriginMode.usable_activation_origin?(bytes) do
+          nil
+        else
+          _ -> @unreadable_activation_reason
+        end
     end
   end
 

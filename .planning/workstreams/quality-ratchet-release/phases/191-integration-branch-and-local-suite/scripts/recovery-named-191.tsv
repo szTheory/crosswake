@@ -1,0 +1,11 @@
+path	expect	plan	reason
+.planning/seeds/SEED-024-phase-190-review-residue.md	change	09	new seed (D-17c)
+.planning/workstreams/quality-ratchet-release/phases/190-fix-warnings-before-landing/190-REVIEW-DISPOSITION.md	change	09	the 15-row disposition (D-17c)
+.planning/workstreams/quality-ratchet-release/REQUIREMENTS.md	may	09	A-5 header line
+.planning/PROJECT.md	may	09	A-5 heading
+.planning/workstreams/quality-ratchet-release/STATE.md	change	12	the handoff (also GSD execute bookkeeping)
+.planning/workstreams/quality-ratchet-release/ROADMAP.md	may	12	the handoff and plan checkboxes
+.planning/workstreams/quality-ratchet-release/.continue-here.md	may	12	the handoff
+.planning/workstreams/quality-ratchet-release/state.json	may	gsd	GSD execute bookkeeping
+.planning/workstreams/quality-ratchet-release/config.json	may	gsd	GSD workstream config and runtime authority writes (an A-2 excluded runtime file)
+.planning/config.json	may	gsd	GSD project config writes (carried in v27.0; a write after the cut lands through the Plan 12 sync)

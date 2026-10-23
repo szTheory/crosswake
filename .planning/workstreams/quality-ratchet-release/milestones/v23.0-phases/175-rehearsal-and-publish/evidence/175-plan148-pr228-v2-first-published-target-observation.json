@@ -1,0 +1,20 @@
+{
+  "run_id": 38146628907,
+  "version": "0.2.10",
+  "targets": {
+    "hex": {
+      "http_status": 200,
+      "body_sha256": "7dbbb69d026a2c7053316adaf6814efcfb1e6261c1d549927a0eced466e48f01"
+    },
+    "ios": {
+      "http_status": 200,
+      "body_sha256": "e070c972b5af69b222d42917e7458599c58b8199686f20b0ad60861653b50aa4"
+    },
+    "maven": {
+      "http_status": 404,
+      "body_sha256": "e791ccfcfee9c0d299d07474d9bfcbfcbebf1181323be601220c8a823062ab99"
+    }
+  },
+  "observation": "First direct read after all3publishers passed; public propagation still evaluated",
+  "observed_at_utc": "2026-10-11T14:29:42.803526+00:00"
+}

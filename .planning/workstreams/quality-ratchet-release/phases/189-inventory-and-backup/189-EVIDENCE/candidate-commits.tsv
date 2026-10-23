@@ -1,0 +1,90 @@
+3efbd938171c5ef3453fa9beda12ea86a3c8b6a9	test(179-01): cover iOS host generation contracts
+ea003e773f573ac4aea07c161b3af016298141b9	feat(179-01): generate canonical iOS host resources
+abc51e723e64e8c2dc34ae98f77f3c0caf622d0a	feat(179-02): classify managed iOS host outputs
+0b025646fdef3ea6250d2414cef474b99856d9a9	feat(179-02): gate interrupted iOS output generations
+0933457de16b661c992700fa8e2837a03c5dc376	feat(179-03): project declared iOS host settings
+eac3bd8ff2fc184f80cadf6c3cf899c017b7af2f	test(179-03): verify host settings matrix controls
+6dbc37aea1eb106b64a64ebcafe22a92129a4e36	test(179-04): cover declared iOS host guide contracts
+de040f0be3fb692eb11a73ed0d063333906b90ca	docs(179-04): document declared iOS host setup
+faccee538f00afae08b00ddcefcaa18377b6ca9f	fix(179-04): reconcile maintained proof contracts
+b6594664270ebc7a4434612c0840f6d3b887f805	feat(179-04): render declared iOS host guidance
+26cc8606a996270fa3b7e33e839c8136179b41f4	fix(179): CR-01 validate canonical HTTPS ports
+765e723098cb4609b002d40422ea28b64a540f39	fix(179): CR-02 reject unsafe managed root ancestors
+70a2126c998000c4be1a70c2975e21121b351c28	fix(179): CR-03 preflight proof destinations
+7baf148080e4f588c56ac37b8b2cd8bc3d867574	fix(179): CR-04 validate proof configuration graph
+f27e17fcf3ef8c1c107e01a8412922a47f1de215	fix(179): CR-05 reject conflicting proof recovery edits
+0f6bd00aa71f788e2b470b9deaab57feba71d719	fix(179): CR-06 inspect settings resource object graph
+9623464293774857bb39879e9c9d6d2bc310156e	fix(179): CR-07 resolve checker from package priv
+bbb20490dd4ecbcf802d0e0f9704bec12f9ffe1b	fix(179): WR-01 decode checker entrypoint paths
+34b3468fe7d5230ccd5074fe633ef1bbf48dce63	test(179): preserve frozen assertion coordinates
+f92306ab7f0f18a12833e6a8534e9eb22df453a5	test(179): use valid PBX resource graph fixture
+0baf4c9ab277534ee9fe6999e808fcfa05d20433	fix(179): T-179-04 contain shell project migration I/O
+e25f17bdaf096409a5238066d1e727e769dc365f	fix(179): T-179-05 validate complete PBX configuration graphs
+89d3773e37b6d2212ddca2146ae3f41a8c62d3c8	test(179): expose semantic migration bypasses
+4456d823e9f65daabe44e81998a985c3cf95da94	fix(179): migrate complete semantic Xcode graphs
+09dcb7169749d21e7b5a62a1ae3b9f546a6df522	test(179): retain private Xcode output and complete ledger
+0bb97c2eb5103a4d40f15c5c9b594b5eea2a05af	test(179): expose managed identity variable masks
+492eb79535097d512c4ce8e19bcd6192f014032d	fix(179): remove higher-precedence managed identity masks
+04d1405b5002163803ad59f123e896b0d7b559b2	test(179): expose proof recovery and deadline edge states
+641a00840db8dad70a6fc9883b2f0b63ed62b8eb	test(179): qualify recovery fixture before behavioral assertions
+c76a13bcec4f711e868ec8c045d1f4819f1cb0f7	fix(179): reconcile proof journals and protect migration previews
+96e5a63efab657f89f3ac84d5b1d84ff5da5d822	fix(179): share a bounded settings checker deadline
+a229ea1e86c38822773ff5e417d30e6fabe98c85	feat(181-01): router-declared host commands accepted through Compiler.compile
+806b031e66911b8e905fde3c8ce7722c53c2f6d1	feat(181-01): fail-closed host-command validation with stable codes
+9051fee3b2c6c911233b092caa7b81e2583f103e	test(181-01): registry compile errors at the declaring line for both router styles
+428b79f636eef1170a5900bcc4937905e26d2c04	test(181-01): pin the no-registry denial instead of a collection assertion
+26b252c42f8bd6c0c6157cae03fa9523dcad0410	feat(181-02): offline-study host command flows to manifest host_commands and entry activation
+c5d19a689202886f23285142e8540e2df8c2e83d	test(181-02): declaration-driven host-command matrix with fixed-seed loop and mutation check
+f4e411926c3ff2d5b116416c2070005797bceb6c	test(181-02): generated offline-study entry activation resolves without a capability_version finding
+fa08105793fa7598c30789c0ce508458bc5aa9c2	feat(181-03): manifest schema 1.2.0, conditional host_command_seam_version, generated Swift seam fixture
+292ef402b0a0d24ce9c267772251de44c290bc3d	test(181-03): seam-key absence test uses a router with no host commands
+257a337ea041fe16b8e5f64793974b71ad79243b	test(181-03): re-baseline manifest schema 1.1.0 pins to 1.2.0; seam key as Root projection
+6f9871500662609741026beec945e0f199fe1dbf	feat(181-04): fail-closed shell-package gate for host-command generation
+d63de9565b5db81911faecab8663ada4fff742ad	feat(181-04): doctor findings for stale host_commands and unsupported shell package
+218dbfe8a6ba83c320686c8666663eca24bf3112	test(181-04): inspect shows declaring routes' runtime and host commands with owner host
+fead90724b6ee2cd7ca7a96725dcfc31e98a21ba	test(181-04): avoid ledgered Enum.all? shape in doctor host-command privacy test
+ab9d24551b5ff483e3d2b37cc7672a92fc003cd0	feat(181-05): per-route host command grant from manifest, registration and version range
+ff95d7480e07e948b5ef2001b92327570320ff45	test(181-05): navigation re-resolution, legacy path, wire decoding and diagnostics
+bcf0977e973ae5aadbd37c9b4a9925fb91e7d9b0	feat(181-05): route- and command-specific host command denial messages
+b9ad8854f2fb9eef4040a917151e2e205c38eac5	feat(181-06): admit offline_island routes as a separate shell presentation
+7aca4bf887cc3340ada12022d5f1f39eedd013ab	fix(181-07): limit local package reference to declaring routers
+b9bdcf92dc9e65f67424bfb4e1a5a3306538e1c2	docs(181-08): render manifest schema 1.2.0 into contract snippet and support matrix
+23c153ed9c6b6f6ff5a25fb16279953d06ee22a4	docs(181-08): state manifest 1.2.0 host-command seam truth in changelog and guides
+84c8f3560c830afae872fc1b586e9ff7f37f2239	docs(181-08): keep seam changelog entry inside existing Unreleased subsection
+68f87e1b8194a0a337f77998547d93a8a498e18e	docs(181-09): host-author path and version range in route policy guide, locked by guide test
+6b876a4bf4093ad5d4d4222fce6c0c8efad77f03	docs(181-09): bridge grant rule, upgrade matrix, offline non-promises and template note
+f338ea00f195f5b26860d5865b2c69e74ccb0d69	chore(181-09): bump shell template_version to 5 for the iOS template README note
+12f84cd950d4574921767df823faed6797c17c26	fix(181-09): keep shell template version 4; move offlineIsland note to guides only
+8786292fc7c676e7716816512378ce21b8c259f6	chore(182-01): capture production generation golden and manifest from base
+7d68cf620128cd1897207eb045f1230a09e62427	feat(182-01): accept origin_mode :local_loopback and emit the local Info.plist block
+bfd470d7535c6b77b85e636981d87a1936d5e775	test(182-01): complete fail-closed origin validator matrix and render defense in depth
+9a17c54dfa7a17800822155772509ea4af12c423	feat(182-02): reconcile the Crosswake Info.plist block with the declared origin mode
+ecc2450eebef0167c1867b07eaa47f315e3632b9	test(182-02): cover conflict refusal, mode drift, D-13 line, README banner and forbidden keys
+b698f1c1df48ce50aad79bf2b4dcdf4236815084	feat(182-03): doctor reports local loopback iOS host as a not-production-ready warning
+a76b03cda00b6d163641e2c6480e3cb1f70d4085	test(182-03): RED for mismatch matrix, publish refusal, formatter line and leak guard
+dbbfd1588be9c144d9963c428a61b9a8e9fbaa02	feat(182-03): refuse local loopback under --check-publish and print the origin mode line
+1d569e553577800961c8b0d4ee253afaabc64e4b	test(182-03): keep origin-mode doctor tests out of the vacuous-assertion ledger shapes
+bb43280e05710bfbbc3d81ae216102e772bca2ea	feat(182-04): physical proof lane refuses local loopback host config
+0e6e71135ca3cf694f52e94fe8a03ed6d9c073d5	test(182-04): RED for inspect host origin line
+bfc69f4a96419b39978fd81c21f83c408616f17b	feat(182-04): inspect names the host origin mode in human output
+9456e5cf799dea8fdf5ffd96655636c582c27351	docs(182-04): describe local loopback mode in support truth and guides
+10000a0b18eb81213cc34bf1957f8d3103023011	test(182): restamp shell template drift hash; keep template_version 4
+bd7eb8ba941b988da2bc69db96f09d78df1e0bab	test(182-05): Simulator harness for generated local-mode loopback load
+7caa7ea9aa9cacb6c7e73e1a4d24c69fd648ae93	test(182-05): keep the harness SwiftPM cache inside the run root
+da53c54db06e54be5a80fb4be144a70d3fed36a5	test(182-05): derive a content-stable hermetic core tag
+1fbf4d084725be5419eef0d55ac8a31ab2791309	feat(180-01): add the twin feasibility gate tests
+b93a21feafe2763f1353ea6c93fa8cbf8b35e851	feat(180-03): add the twin receipt, runtime and verify_twin command
+9d2d19bfd471e4fcd0d1e155a2d1aa6cca2c4ad8	feat(180-04): add the web island twin surfaces and fault controller
+efd60a9800dd0c995965a413e17866156539f73a	feat(180-05): add the generated iOS twin host
+451dfa973100237a91e813e4f6a6f27eecf638c0	feat(180-06): add the twin journey, producers and fault boundary
+736a7d76f5aca54d81e0b2f66f0b0d6073ecd888	chore(180): refresh collection-assertion ledger
+da214c59f018d0af9b1c122f6d5f4d97d259da97	feat(180-07): document running the reference twin
+50fcd5743243c0b20275a7e2bd9338bf25468687	fix(183-03): fail closed on an uncommitted twin candidate
+1f5d18ee1c637560f7a5b62472dd83db43da7e92	feat(184-06): harden the twin source probe and add a read-only preflight
+3786de95b2b2b8435c3378fd1d194e0fecd84df5	fix(184-08): close the Phase 184 review gaps (candidate hooks, untracked ignore files, raise paths)
+b5399e519ab44f7149480f68311189f1ec02a78d	fix(184-10): judge ignore-rule sources exactly (spoofed rule-file folders, quoted names, folder collapsing)
+e4344ca523a56e146d9e8647ec141b9714e8180f	fix(184-12): judge ignore rules exactly as git does (pathspec-magic folder names, info/exclude lines)
+b898e1104b0feafdb569d1ae42972cb4e1c46629	fix(184-14): fail closed when git cannot read the tree; read attributes, config and letter case as git does
+25614cf685e2ee299646e04b833293c677023c45	fix(185): fail when a check examines nothing
+bd29400722e14bed74c987bf5a9903f486dc6fc2	fix(186): make the host seam, doctor and loopback harness fail closed
+a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4	fix(187): give doctor findings real details and proof evidence real provenance

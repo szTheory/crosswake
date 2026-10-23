@@ -108,7 +108,7 @@ The manifest, rather than raw router declarations, crosses into the shell:
 
 ```elixir
 %{
-  "manifest_schema_version" => "1.0.0",
+  "manifest_schema_version" => "1.2.0",
   "routes" => %{
     "bridge-proof" => %{
       "runtime" => "live_view",
@@ -118,6 +118,9 @@ The manifest, rather than raw router declarations, crosses into the shell:
   }
 }
 ```
+
+A route may also declare `host_commands`, a map from each host command it uses to the version it expects. The
+shell checks those versions before it activates the route and denies activation when it cannot honor them.
 
 Malformed declarations leave a diagnostic with route identity, source context, a
 message, and usually a repair hint. Invalid manifest truth is never emitted as a runtime

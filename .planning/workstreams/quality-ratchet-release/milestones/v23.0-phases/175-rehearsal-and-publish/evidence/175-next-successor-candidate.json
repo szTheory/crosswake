@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-09-27T20:28:09Z",
+  "candidate": {
+    "pr": 215,
+    "version": "0.2.6",
+    "branch": "release-please--branches--main",
+    "base_oid": "b5608a3dc0b013d83ac2b25768f1907873739b20",
+    "head_oid": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "tree_oid": "0199c0bee29dbcf76bc1a12d241c0ed140a244bd",
+    "draft": false,
+    "mergeable": "MERGEABLE",
+    "merge_state": "CLEAN"
+  },
+  "ci": {
+    "run_id": 36346477576,
+    "head_oid": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "conclusion": "SUCCESS",
+    "required_context": "Crosswake CI",
+    "total_checks": 49,
+    "failing": 0,
+    "pending": 0,
+    "receipt_sha256": "e8523fde68919b4d4c79bb7fdce999665e5c7855e420246660d218ea609d972a",
+    "artifact_manifest_sha256": "1ee167096decb820d5f1dd56ab0be453286ee23c455dc911c46abbd06795afed",
+    "cleanroom_result_sha256": "47dd92810cad9f91457562b6dabb24a767a2940057718a9e33f21503e0b2da96",
+    "artifact_name": "phase168-candidate-ci-0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "artifact_id": 10940702866,
+    "artifact_expired": false
+  },
+  "repairs_in_lineage": true,
+  "repair_pr": 216,
+  "repair_merge_oid": "b5608a3dc0b013d83ac2b25768f1907873739b20",
+  "runbook": {
+    "commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8",
+    "base": "PASS",
+    "head": "PASS"
+  },
+  "policy": {
+    "snapshot_sha": "b5608a3dc0b013d83ac2b25768f1907873739b20",
+    "strict": true,
+    "required_contexts": ["Crosswake CI"],
+    "source_digest": "8bd9bcf118b2a32b08e0ede99c87454a68dd2fce8ad75938c1801b4daecfae5d"
+  },
+  "repair_run": {
+    "run_id": 36346252825,
+    "workflow": "Release Please",
+    "conclusion": "SUCCESS",
+    "linked_publication": false,
+    "skipped_jobs": [
+      "Publish to Hex.pm",
+      "Mirror iOS core to split repo",
+      "Publish Android core to Maven Central",
+      "release: exact-public artifact proof"
+    ]
+  },
+  "targets": {
+    "hex_absent": true,
+    "hex_http_status": 404,
+    "ios_tag_absent": true,
+    "ios_tag_ref": "v0.2.6",
+    "maven_pom_absent": true,
+    "maven_http_status": 404
+  }
+}

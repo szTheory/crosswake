@@ -1,0 +1,154 @@
+{
+  "run_id": 38155320492,
+  "head_sha": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "databaseId": 114516990724,
+      "name": "release: approved-candidate merge guard",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114516991572,
+      "name": "Assert lockstep version coordinates match",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114517178706,
+      "name": "Release Please",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114517856138,
+      "name": "Publish to Hex.pm",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114517856154,
+      "name": "Mirror iOS core to split repo",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114517856156,
+      "name": "Publish Android core to Maven Central",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114517856962,
+      "name": "Publish crosswake_threadline to Hex.pm",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114517857122,
+      "name": "Publish crosswake_rulestead to Hex.pm",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114517857273,
+      "name": "Clean-room proof \u2014 crosswake_chimeway resolvability + doctor",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114517857317,
+      "name": "Publish crosswake_sigra to Hex.pm",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114517857323,
+      "name": "Publish crosswake_chimeway to Hex.pm",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114517857382,
+      "name": "Clean-room proof \u2014 crosswake_rulestead resolvability + doctor",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114517857424,
+      "name": "Clean-room proof \u2014 crosswake_rindle resolvability + doctor",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114517857450,
+      "name": "Publish crosswake_rindle to Hex.pm",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114517857666,
+      "name": "Clean-room proof \u2014 crosswake_threadline module-shipment + zero-sibling-dep",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114517857800,
+      "name": "Clean-room proof \u2014 crosswake_sigra resolvability + doctor",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114517858211,
+      "name": "Strip stale release-as after companion release (PROOF-03b)",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114519182944,
+      "name": "Clean-room proof \u2014 Android gradle build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114519182960,
+      "name": "Clean-room proof \u2014 iOS swift build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114522406067,
+      "name": "Native release status rollup",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114522406255,
+      "name": "release: exact-public artifact proof / shared: exact-public artifact proof body",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114522430240,
+      "name": "Alert on companion or native publish/proof failure (PROOF-03c, D-15)",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "databaseId": 114524032620,
+      "name": "release: exact-public artifact proof / shared: record the proof verdict in the release ledger",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114524072304,
+      "name": "release: linked release rollup",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "retry_or_recovery_performed": false,
+  "observed_at_utc": "2026-10-11T17:00:37.479479+00:00"
+}

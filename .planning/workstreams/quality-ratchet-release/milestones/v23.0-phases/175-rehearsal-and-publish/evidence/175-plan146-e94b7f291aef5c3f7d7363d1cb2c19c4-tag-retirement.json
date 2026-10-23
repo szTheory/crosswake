@@ -1,0 +1,9 @@
+{
+  "attempt_id": "e94b7f291aef5c3f7d7363d1cb2c19c4",
+  "status": "SUPERSEDED_BEFORE_AUTHORIZATION",
+  "reason": "local parser review found original push parser requires ref:ref and omits Done; real object:ref output needs existing vetted parser",
+  "authorization_created": false,
+  "external_operations": 0,
+  "original_collector_snapshot": "175-plan146-unapproved-collector-snapshot.mjs",
+  "original_collector_sha256": "c74507b73cf96187419570bb79119b17b89a4dcaa2f4fa01e5bcb7b36410e4fe"
+}

@@ -1,0 +1,15 @@
+{
+  "range_scope": "approved-main history from PR #176 (Phase 170 boundary sync carrying Phase 169 work) through PR #237; excludes uncommitted local planning history",
+  "first_commit": "ae08fba33d218bcc7c2a98efd47e543a65a1076a",
+  "last_commit": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+  "files_changed": 371,
+  "lines_added": 67471,
+  "lines_removed": 1474,
+  "binary_files": 0,
+  "first_date": "2026-09-17T09:37:04-04:00",
+  "last_date": "2026-10-11T15:55:18-04:00",
+  "cli_plans": 163,
+  "cli_tasks": 193,
+  "historical_plan_files": 178,
+  "historical_summary_files": 161
+}

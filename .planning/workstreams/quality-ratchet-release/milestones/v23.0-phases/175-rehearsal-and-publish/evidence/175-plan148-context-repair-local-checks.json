@@ -1,0 +1,14 @@
+{
+  "negative_control": {
+    "exit_code": 2,
+    "tests": 20,
+    "failures": 2,
+    "ambient_release_context": true
+  },
+  "patched": {
+    "exit_code": 0,
+    "tests": 20,
+    "failures": 0,
+    "ambient_release_context": true
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "contract": "1.0.0",
+  "flavor": "core",
+  "milestone": "v24.0 \u2014 Repository Cleanup & Maintenance",
+  "phases": [
+    {
+      "number": "176",
+      "name": "Local Work and Artifact Disposition",
+      "status": "complete"
+    },
+    {
+      "number": "177",
+      "name": "Maintenance and Queue Reconciliation",
+      "status": "complete"
+    },
+    {
+      "number": "178",
+      "name": "Clean Checkout and Final CI",
+      "status": "complete"
+    }
+  ],
+  "next": {
+    "command": "$gsd-complete-milestone v24.0 --ws quality-ratchet-release",
+    "label": "Review debt and prepare scoped v24.0 milestone closeout",
+    "reason": "Audit complete:8/8 requirements,3/3 phases,6/6 connections,5/5 flows; six retained debt items and zero blockers. No recovery-checkout Git writes or remote merge/publication authorized."
+  },
+  "updated_at": "2026-10-13T02:50:23.864015+00:00"
+}

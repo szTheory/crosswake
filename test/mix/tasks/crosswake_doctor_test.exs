@@ -105,7 +105,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     assert output =~ "Crosswake doctor report"
     assert output =~ "support posture: verification_required"
-    assert output =~ "manifest_schema_version=1.1.0"
+    assert output =~ "manifest_schema_version=1.2.0"
     assert output =~ "bridge_protocol_version=#{Crosswake.Bridge.Contract.version()}"
     assert output =~ "native_runtime_version=1.0.0"
     assert output =~ "Package versions alone do not determine support truth"
@@ -140,7 +140,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     assert decoded["status"] == "ok"
     assert decoded["support"]["status"] == "supported"
-    assert decoded["support"]["release_policy"]["manifest_schema_version"] == "1.1.0"
+    assert decoded["support"]["release_policy"]["manifest_schema_version"] == "1.2.0"
 
     assert decoded["support"]["release_policy"]["bridge_protocol_version"] ==
              Crosswake.Bridge.Contract.version()
@@ -155,6 +155,96 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     assert File.read!(ios_proof) =~ "ios proof passed"
     assert File.read!(android_proof) =~ "android proof passed"
+  end
+
+  test "mix crosswake.doctor --format json carries unmanaged route paths and router in details",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    output =
+      capture_io(fn ->
+        try do
+          File.cd!(target, fn ->
+            Mix.Tasks.Crosswake.Doctor.run([
+              "--router",
+              "Elixir.Crosswake.TestSupport.RouterFixtures.DefaultsRouter",
+              "--install-manifest",
+              install_manifest_path,
+              "--format",
+              "json"
+            ])
+          end)
+        rescue
+          Mix.Error -> :ok
+        end
+      end)
+
+    decoded = Jason.decode!(output)
+    unmanaged = Enum.filter(decoded["findings"], &(&1["code"] == "unmanaged_routes"))
+
+    assert [finding] = unmanaged
+    assert finding["details"]["unmanaged_paths"] == ["/public"]
+
+    assert finding["details"]["router"] ==
+             "Crosswake.TestSupport.RouterFixtures.DefaultsRouter"
+  end
+
+  test "mix crosswake.doctor --format json prints the offline_posture_incomplete error and then raises for an unbacked island",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    output =
+      capture_io(fn ->
+        assert_raise Mix.Error, fn ->
+          File.cd!(target, fn ->
+            Mix.Tasks.Crosswake.Doctor.run([
+              "--router",
+              "Elixir.Crosswake.TestSupport.RouterFixtures.OfflineHoleRouter",
+              "--install-manifest",
+              install_manifest_path,
+              "--format",
+              "json"
+            ])
+          end)
+        end
+      end)
+
+    decoded = Jason.decode!(output)
+    incomplete = Enum.filter(decoded["findings"], &(&1["code"] == "offline_posture_incomplete"))
+
+    assert [finding] = incomplete
+    assert finding["severity"] == "error"
+    assert finding["details"]["incoherent_routes"] == ["study-session"]
+    assert decoded["offline"]["status"] == "incomplete"
+    assert decoded["status"] == "error"
+  end
+
+  test "mix crosswake.doctor --format json reports offline not_claimed and does not raise", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    write_proof_hook!(target, "ios", 0, "ios proof passed")
+    write_proof_hook!(target, "android", 0, "android proof passed")
+
+    output =
+      capture_io(fn ->
+        File.cd!(target, fn ->
+          Mix.Tasks.Crosswake.Doctor.run([
+            "--router",
+            "Elixir.Crosswake.TestSupport.RouterFixtures.NoOfflineRouter",
+            "--install-manifest",
+            install_manifest_path,
+            "--format",
+            "json",
+            "--native-checks"
+          ])
+        end)
+      end)
+
+    decoded = Jason.decode!(output)
+    offline_findings = Enum.filter(decoded["findings"], &(&1["check"] == "offline_posture"))
+
+    assert decoded["offline"]["status"] == "not_claimed"
+    assert [finding] = offline_findings
+    assert finding["code"] == "offline_posture_not_claimed"
+    assert finding["severity"] == "advisory"
+    assert decoded["status"] != "error"
   end
 
   test "mix crosswake.doctor --check-publish emits conditional json readiness and raises on blocking readiness",
@@ -352,7 +442,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     write_file!(
       Path.join(ios_root, "Fixtures/crosswake_manifest.json"),
-      ~s({"manifest_schema_version":"1.0.0"})
+      ~s({"manifest_schema_version":"1.0.0","routes":{}})
     )
 
     write_file!(

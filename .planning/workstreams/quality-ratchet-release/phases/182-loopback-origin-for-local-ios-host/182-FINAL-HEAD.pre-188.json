@@ -1,0 +1,105 @@
+{
+  "schema": "crosswake.phase182.final_head/1",
+  "candidate": "/private/tmp/crosswake-phase182-impl",
+  "branch": "phase182-impl",
+  "base_head": "12f84cd950d4574921767df823faed6797c17c26",
+  "head": "da53c54db06e54be5a80fb4be144a70d3fed36a5",
+  "tree": "d1cbbe30ffca9da79c5506004ad2bf8c8da38665",
+  "core_diff_paths": [
+    "guides/capability_map.md",
+    "guides/native_shell.md",
+    "guides/native_shell_upgrade.md",
+    "guides/support_matrix.md",
+    "lib/crosswake/capability_map/renderer.ex",
+    "lib/crosswake/doctor/doctor.ex",
+    "lib/crosswake/doctor/formatter.ex",
+    "lib/crosswake/doctor/publish_readiness.ex",
+    "lib/crosswake/proof_lane/generator.ex",
+    "lib/crosswake/shell/ios_host_config.ex",
+    "lib/crosswake/shell/ios_host_generation.ex",
+    "lib/crosswake/shell/ios_host_origin_mode.ex",
+    "lib/crosswake/shell/managed_outputs.ex",
+    "lib/crosswake/support_matrix/renderer.ex",
+    "lib/mix/tasks/crosswake.gen.proof_lane.ex",
+    "lib/mix/tasks/crosswake.gen.shell.ex",
+    "lib/mix/tasks/crosswake.inspect.ex",
+    "priv/templates/crosswake/shell/ios/Info.plist.eex",
+    "script/loopback_origin_simulator/ProbeApp.swift",
+    "script/loopback_origin_simulator/generate.exs",
+    "script/loopback_origin_simulator/listener.py",
+    "script/verify_loopback_origin_simulator.sh",
+    "test/crosswake/doctor/doctor_origin_mode_test.exs",
+    "test/crosswake/guides/loopback_origin_guide_test.exs",
+    "test/crosswake/proof/phase134_template_version_drift_test.exs",
+    "test/crosswake/shell/ios_host_config_test.exs",
+    "test/crosswake/shell/ios_host_generation_host_commands_test.exs",
+    "test/crosswake/shell/ios_host_origin_mode_test.exs",
+    "test/fixtures/shell/ios/Info.plist.production.golden",
+    "test/fixtures/shell/ios/production_generation.sha256.json",
+    "test/mix/tasks/crosswake_gen_proof_lane_test.exs",
+    "test/mix/tasks/crosswake_gen_shell_origin_mode_test.exs",
+    "test/mix/tasks/crosswake_inspect_test.exs"
+  ],
+  "checks": [
+    {
+      "name": "root_suite",
+      "command": "MIX_ENV=test mix test --exclude requires_example_host --exclude advisory_only --seed 0",
+      "exit": 0,
+      "tests": 2300,
+      "failures": 0
+    },
+    {
+      "name": "example_host_suite",
+      "command": "cd examples/phoenix_host && MIX_ENV=test mix test --seed 0",
+      "exit": 0,
+      "tests": 150,
+      "failures": 0
+    },
+    {
+      "name": "swift_test",
+      "command": "cd packages/crosswake-shell-core-ios && swift test",
+      "exit": 0,
+      "tests": 80,
+      "failures": 0
+    },
+    {
+      "name": "example_ios_host_build",
+      "command": "xcodebuild build examples/ios_shell_host scheme CrosswakeShell generic/platform=iOS Simulator CODE_SIGNING_ALLOWED=NO",
+      "exit": 0
+    },
+    {
+      "name": "docs_sync_check",
+      "command": "MIX_ENV=test mix crosswake.docs.sync --check",
+      "exit": 0
+    },
+    {
+      "name": "exunit_ownership",
+      "command": "MIX_ENV=test elixir script/check_exunit_ownership.exs",
+      "exit": 0
+    },
+    {
+      "name": "android_vector_lockfile_swift_sources_github_freeze",
+      "command": "git diff --exit-code base -- frozen paths",
+      "exit": 0
+    },
+    {
+      "name": "template_version_4",
+      "command": "grep '@template_version 4' lib/mix/tasks/crosswake.gen.shell.ex",
+      "exit": 0
+    },
+    {
+      "name": "phase180_overlap_and_forbidden_names",
+      "command": "comm -12 core_paths phase180_dirty_paths",
+      "exit": 0
+    },
+    {
+      "name": "simulator_evidence",
+      "command": "bash script/verify_loopback_origin_simulator.sh --evidence 182-SIMULATOR.json",
+      "exit": 0
+    }
+  ],
+  "simulator_evidence": "182-SIMULATOR.json",
+  "simulator_candidate_head": "da53c54db06e54be5a80fb4be144a70d3fed36a5",
+  "simulator_candidate_tree": "d1cbbe30ffca9da79c5506004ad2bf8c8da38665",
+  "recorded_at": "2026-10-15T00:27:05Z"
+}

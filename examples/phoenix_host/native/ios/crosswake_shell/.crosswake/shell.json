@@ -1,0 +1,12 @@
+{
+  "_comment": "do not hand-edit — regenerate to update",
+  "crosswake_version": "0.2.11",
+  "generated_at": "2026-10-15T00:57:46.916872Z",
+  "params": {
+    "local": true,
+    "router": null,
+    "target": "/private/tmp/crosswake-phase180-impl/examples/phoenix_host"
+  },
+  "platform": "ios",
+  "template_version": 4
+}

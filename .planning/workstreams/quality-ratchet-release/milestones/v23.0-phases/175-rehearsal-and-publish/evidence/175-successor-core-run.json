@@ -1,0 +1,27 @@
+{
+  "observed_at": "2026-09-25T01:59:05Z",
+  "repository": "szTheory/crosswake",
+  "version": "0.2.5",
+  "run_id": 36083361945,
+  "run_conclusion": "failure",
+  "run_url": "https://github.com/szTheory/crosswake/actions/runs/36083361945",
+  "merge_oid": "405acd0f2d5476dc81f1ad1252a1661fa235c735",
+  "gate2_authorization": "publish successor core 36082200744",
+  "gate2_consumed": true,
+  "retry_or_recovery_performed": false,
+  "other_release_please_runs_for_merge_oid": 0,
+  "jobs": {
+    "release_please": {"status": "completed", "conclusion": "success"},
+    "hex": {"job_id": 107910480396, "status": "completed", "conclusion": "success"},
+    "ios_mirror": {"job_id": 107910480345, "status": "completed", "conclusion": "success"},
+    "maven": {"job_id": 107910480391, "status": "completed", "conclusion": "failure", "failed_step": "Download and validate the approved candidate receipt", "publish_step": "skipped", "cause": "The receipt artifact contains candidate-receipt.md in addition to artifacts.json and candidate-receipt.json; the consumer's exact two-file roster assertion rejects it before Java setup or Maven publication."},
+    "ios_clean_room": {"job_id": 107911597761, "status": "completed", "conclusion": "failure", "failed_step": "Generate iOS shell outside monorepo", "cause": "Jason.encode_to_iodata!/2 is undefined because Jason is not available on the archive runtime path while rendering the manifest."},
+    "android_clean_room": {"job_id": 107911598505, "status": "completed", "conclusion": "skipped"},
+    "native_rollup": {"job_id": 107911885244, "status": "completed", "conclusion": "failure"},
+    "linked_rollup": {"job_id": 107911885579, "status": "completed", "conclusion": "failure"},
+    "exact_public_proof": {"job_id": 107911886370, "status": "completed", "conclusion": "skipped"}
+  },
+  "native_status_artifact": {"artifact_id": 10843461105, "state": "PARTIAL", "ios_publish": "success", "ios_proof": "failure", "android_publish": "failure", "android_proof": "skipped"},
+  "linked_status_artifact": {"artifact_id": 10842503091, "state": "PARTIAL", "successful_coordinates": ["hex:crosswake@0.2.5", "swift:crosswake-shell-core-ios@0.2.5"], "failed_step": "android", "child_states": {"hex": "success", "android": "failed", "ios_mirror": "success", "ios_public_proof": "failed", "android_public_proof": "skipped", "exact_public": "skipped"}},
+  "outcome": "PARTIAL"
+}

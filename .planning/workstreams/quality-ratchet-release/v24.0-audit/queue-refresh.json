@@ -1,0 +1,17 @@
+{
+  "status": "complete",
+  "observationStartedAt": "2026-10-13T02:44:32.183Z",
+  "observationCompletedAt": "2026-10-13T02:44:34.630Z",
+  "counts": {
+    "issues": 20,
+    "pullRequests": 4
+  },
+  "added": [
+    "pull_request:238"
+  ],
+  "removed": [],
+  "changed": [],
+  "dispositionValidation": "passed",
+  "originalSnapshotPreserved": true,
+  "remoteWrites": 0
+}

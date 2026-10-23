@@ -1,0 +1,33 @@
+{
+  "schema": "crosswake-plan121-local-subtree-stderr-reproduction/v1",
+  "attempt_id": "62d2ab7ce54ebe587ac21d4151b5ed0f",
+  "scope_sha256": "9ae0e20c158126d7218381b407f7ef297a9218a9ce190d52aa53a271617ed6ee",
+  "collector_sha256": "69712958adacc61117f5c43452b8eb582efd74dfe8cac2da05cc1da42be19865",
+  "reproduction": {
+    "network_access": false,
+    "remote_git_operations": 0,
+    "temporary_clone_removed": true,
+    "git_version": "2.41.0",
+    "source_commit": "998742856a37a97ae7247f6c532f9c154ea20885",
+    "prefix": "packages/crosswake-shell-core-ios",
+    "command": "git subtree split --prefix=packages/crosswake-shell-core-ios 998742856a37a97ae7247f6c532f9c154ea20885",
+    "exit_status": 0,
+    "stdout_split_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+    "expected_split_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+    "stderr_bytes": 92883,
+    "stderr_progress_records": 3804,
+    "all_stderr_records_match_sequential_git_subtree_progress_format": true,
+    "raw_stderr_retained": false
+  },
+  "collector_behavior": {
+    "process_result_problem": "A successful exit with any stderr bytes is classified PROCESS_STDERR_NONEMPTY.",
+    "git_ok": "Rejects any stderr bytes before validating split stdout.",
+    "source_locations": [
+      "script/release_candidate/plan105_mirror_tag_collector.mjs:249",
+      "script/release_candidate/plan105_mirror_tag_collector.mjs:880",
+      "script/release_candidate/plan105_mirror_tag_collector.mjs:973"
+    ]
+  },
+  "finding": "The exact local split command exits successfully and returns the pinned split object, while Git subtree emits its 3,804-record progress meter on stderr. The collector currently treats those progress bytes as a process failure. The Plan121 live receipt does not retain its stderr, so this reproduction explains the diagnostic mechanism but does not claim the live stderr contents were preserved.",
+  "next_repair_boundary": "Classify only the exact Git subtree progress format as harmless, retain fail-closed handling for other stderr, and preserve the existing exact stdout object/tree checks before permitting one separately authorized fresh read."
+}

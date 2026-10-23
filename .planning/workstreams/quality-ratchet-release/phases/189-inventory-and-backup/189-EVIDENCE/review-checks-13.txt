@@ -1,0 +1,108 @@
+# Phase 189 plan 13: read-only checks for the code-review findings
+# State: run 2 (rerun after the 2026-10-18 stop; run 1 record is 189-13-BLOCKED.run1.md; decision in decision-13.txt). Counts only; no paths, names or link targets.
+
+finding WR-01
+gr calls on symbolic-ref in the run folder scripts: 1; using the read form (-q HEAD): 1; other gr forms: 0
+direct read-only git symbolic-ref calls on the durable candidate: 1 (read form, no target argument)
+plan 12 full check printed 'verify-189 quick: ok' twice: 2
+result: pass
+
+finding WR-02
+run folder physically under the recovery checkout: no
+restore, scratch, mirror, compare folders or env file under the phase folder: 0
+result: pass
+
+finding WR-03
+test-only override variables set in this shell: 0 of 7
+variables passed on the command line in plans 12 and 13: VERIFY_SNAPSHOT and SNAP_CAND only (checked in plan 12 summary)
+result: pass
+
+finding WR-04
+stray file in the run folder: size 0; top-level file of that name in the recovery checkout: none; status entries ending in that name: 0
+result: pass
+
+finding WR-05
+sanitised evidence lines cannot be re-derived after the fact; counts were rebuilt from their sources by reconcile-189.sh
+reconcile line in plan 12 full check: 1 of 1
+result: pass
+
+finding WR-06
+reflog enumeration check line in plan 12 full check: 1 of 1 (ids equal the independent log -g count)
+result: pass
+
+finding WR-07
+plan numbers named with the per-plan quick form: 03 04 05 06 07
+of those, manifests missing, empty or not fully verifying: 0
+numbered manifests present: 9; not fully verifying: 0 (the form without a plan number verifies all of them)
+closing gates (plan 12 full rerun and the plan 13 final quick check) use the form without a plan number: plan 13 plan text has 0 per-plan quick commands
+result: pass
+
+finding WR-08
+distinct unique commit ids: 5; not resolvable in the restored bundle or any of the 5 shallow git directory tars: 0; inventory count cell: 5; inventory restore cell: pass; restore-08 pass lines for the bundle: 1
+result: pass
+
+finding WR-09
+on-main branch rows checked: 29 (ancestor of main: 23; merge result equals main tree: 6); mismatches: 0; rows using the third rule: 0; other reasons: 0
+result: pass
+
+finding WR-10
+files checked: 74; address-like bracket forms found: 0
+result: pass
+
+finding WR-11
+supplemental case-insensitive check over the 97 non-exempt phase files for the user name, git user name, owner and the extended credential-word list: 0 matches; entries under the phase folder that are neither regular files nor folders: 0; the 18 recorded-scan documents show home 0, user 0, gituser 0, owner 0 in predoc-scan-13.txt
+result: pass
+
+finding WR-12
+sources tested: the 3 excluded lists (2409, 1 and 27 entries) and 20 regenerable folders of the recovery checkout (23271 regular files listed, every find exit status 0)
+stricter rules: R1 loose file directly in deps, node_modules or build checkouts; R2 top-level entry not named in the sibling lock or package file; R3 text, source, data or config extension inside build output (or a non-bytecode file in a bytecode cache)
+control: a planted fixture was flagged 7 of 7 expected (R1 2, R2 2, R3 3)
+excluded lists: flagged 0 (R1 0, R2 0, R3 0); sibling lock files present for all three sources
+recovery folders: flagged 42 (R1 0, R2 0, R3 42), all inside Gradle build output; flagged files still present 42, missing 0
+backed up: review-content-13.tar (42 files, 1.4 MB, mode 0600) with review-content-13.files; fresh restore pass recorded in restore-13.tsv (run 1 backup reused; rerun census gave the same counts)
+result: content_backed_up
+
+finding WR-13
+(a) temp folders with a folder tar: 42 listed, 42 present; no find failures; symlinks by their own path: build 79, other 244
+(a) other links written to tmp-symlinks-13.tsv in the backup root (mode 0600, 244 lines) and recreated in a fresh scratch folder: 244 made, every readlink equal to the recorded target; pass recorded in restore-13.tsv
+(b) temp folders searched for a directory holding both HEAD and objects: 81 listed, 80 present, no find failures; 6 found; 3 already known (the .git of three shallow clones); 3 not in tmp-repos.tsv, tmp-gitdirs.tsv or the cr01 tar
+(b) the 3 missed directories are bare repositories created by a test inside the scratch of the phase 180, 181 and 182 candidate clones; each holds 20 files, zero commits and zero references
+(b) exception (user decision 2026-10-18): each of the 3 holds 0 commits and 0 references (2 loose objects: one tree and one blob, no ref file, no packed refs); all 60 files are listed in review-repos-13.files and still match their recorded sha256; review-repos-13.tar (60 files, mode 0600) has a pass restore in restore-13.tsv; recorded as backed up, no stop
+(b) any missed repository with a commit or a reference: 0
+(c) recovery checkout: 62 ignored keep entries present holding 27 symlinks (ignored-keep.tar holds 0 symlink entries, so those 27 are counted, not archived; mostly mix build links named priv and src); environment-style symlinks in the recovery checkout and its 2 extra worktrees: 0
+result: content_backed_up
+
+finding WR-14
+to-land and unclassified rows checked: 213; artifact names without a pass restore line: 0 (a stash untracked tar is restored by its stash line); restore cells not of the form pass or NAME: pass: 0; failed restore lines in restore-02..08, 11: 0
+result: pass
+
+finding WR-15
+environment-style files and links not tracked by git: recovery checkout 3 (recorded 3); extra worktrees 0 (recorded 0); the temp-folder count (recorded 0) cannot be retaken because the cleaner keeps removing names
+result: pass
+
+finding IN-01
+dead code lines sit in one-time scripts and have no effect on any recorded result
+result: pass
+
+finding IN-02
+the constants are the 2026-10-16 expectations; the scripts are not reused after Phase 189
+result: pass
+
+finding IN-03
+plan 12 compared the bundle sha256 values directly, so a changed bundle cannot pass through the incremental row
+result: pass
+
+finding IN-04
+the 12-hex prefixes belong to sanitised lines only; environment file contents never entered evidence; reviewed again at the Phase 191 carry scan
+result: pass
+
+finding IN-05
+git directories under the run folder checked: 15; configured remote urls equal to the recovery checkout path (exact string equality): 1; of those, the origin of the read-only mirror clone: 1; any other: 0
+user decision 2026-10-18 (decision-13.txt): the one expected match is the mirror clone origin that git recorded in plan 02; the plan 12 snapshot comparison shows the checkout unchanged
+result: pass
+
+note: the one remote url that equals the recovery checkout path is the origin of mirror.git, written by git when the read-only mirror clone was made in plan 02; no push or fetch into the checkout is recorded and the plan 12 snapshot comparison shows the checkout unchanged
+
+finding IN-06
+applies when the redo-after-landing pull requests are recreated; their dispositions already say to check before recreating
+result: pass

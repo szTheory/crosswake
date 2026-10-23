@@ -8,7 +8,13 @@ defmodule Crosswake.Router do
 
   @http_verbs [:get, :post, :put, :patch, :delete, :options, :head]
 
-  defmacro __using__(_opts) do
+  defmacro __using__(opts) do
+    declaration =
+      case Keyword.fetch(opts, :host_commands) do
+        {:ok, list_ast} -> __host_commands_declaration__(list_ast, __CALLER__)
+        :error -> nil
+      end
+
     quote do
       use Phoenix.Router
 
@@ -32,6 +38,42 @@ defmodule Crosswake.Router do
 
       import Phoenix.LiveView.Router, except: [live: 2, live: 3, live: 4]
       import Crosswake.Router
+      unquote(declaration)
+    end
+  end
+
+  @doc """
+  Declares the router's host-command set once, with versions.
+
+      crosswake_host_commands [{"host.study.audio.play", "1.0.0"}]
+
+  Routes reference a command by name in their `crosswake:` `capabilities:` list. The list
+  is evaluated at compile time, so a call such as `MyApp.HostCommands.all()` is accepted.
+  `use Crosswake.Router, host_commands: [...]` is sugar for the same call.
+  """
+  defmacro crosswake_host_commands(list_ast) do
+    __host_commands_declaration__(list_ast, __CALLER__)
+  end
+
+  @doc false
+  def __host_commands_declaration__(list_ast, caller) do
+    {value, _binding} = Code.eval_quoted(list_ast, [], caller)
+
+    if previous = Module.get_attribute(caller.module, :__crosswake_host_commands_line__, nil) do
+      raise CompileError,
+        file: caller.file,
+        line: caller.line,
+        description:
+          "[crosswake.router.duplicate_host_commands] this router already declared its host " <>
+            "commands at line #{previous}. Declare the host-command set once."
+    end
+
+    registry = Crosswake.HostCommands.normalize_registry!(value, caller)
+    Module.put_attribute(caller.module, :__crosswake_host_commands_line__, caller.line)
+
+    quote do
+      @doc false
+      def __crosswake_host_commands__, do: unquote(Macro.escape(registry))
     end
   end
 

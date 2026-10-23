@@ -347,6 +347,7 @@ defmodule Crosswake.Manifest.Validator do
     |> validate_route_field(route, :runtime, route.runtime)
     |> validate_route_entry(route)
     |> validate_route_capabilities(route, capability_registry)
+    |> validate_route_host_commands(route)
     |> validate_route_packs(route, pack_registry)
     |> validate_route_commerce(route, commerce_corridors)
     |> validate_route_transfers(route)
@@ -398,6 +399,30 @@ defmodule Crosswake.Manifest.Validator do
               "route #{route.id} declares capability #{inspect(capability)} outside the manifest registry",
             hint:
               "register #{inspect(capability)} in capability_registry before validation passes"
+          }
+          | acc
+        ]
+      end
+    end)
+  end
+
+  # D-06: host_commands may only name host commands the route itself references.
+  defp validate_route_host_commands(errors, route) do
+    commands = Map.get(route, :host_commands) || %{}
+
+    Enum.reduce(commands, errors, fn {name, _version}, acc ->
+      if name in route.capabilities do
+        acc
+      else
+        [
+          %{
+            key: :host_commands,
+            route_id: route.id,
+            path: route.path,
+            message:
+              "route #{route.id} lists host command #{inspect(name)} in host_commands without referencing it in capabilities",
+            hint:
+              "add #{inspect(name)} to the route's crosswake: capabilities or remove it from host_commands"
           }
           | acc
         ]
@@ -605,7 +630,7 @@ defmodule Crosswake.Manifest.Validator do
     |> validate_capability_vocab(
       :owner,
       capability.owner,
-      [:bounded_bridge, :native_screen, :backend_seam, :activation, :defer]
+      [:bounded_bridge, :native_screen, :backend_seam, :activation, :host, :defer]
     )
     |> validate_capability_vocab(
       :package_class,

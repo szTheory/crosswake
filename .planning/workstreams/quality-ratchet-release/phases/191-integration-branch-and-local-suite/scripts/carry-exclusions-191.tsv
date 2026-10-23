@@ -1,0 +1,14 @@
+**/.DS_Store	finder metadata
+.planning/research/.cache/	gitignored cache
+.planning/agent-history.json	R-PL-04 unclassified
+.planning/debug/plan143-token-gate.md	R-PL-06 untracked debug file, unclassified
+.planning/estimation-calibration.json	R-PL-07 unclassified
+.planning/forensics/	R-PL-08 unclassified
+.planning/quick/261010-crw-current-read-wrapper-diagnostic/	R-PL-09 untracked quick folder, unclassified
+.planning/tmp/	R-PL-13 scratch folder, unclassified
+.planning/v25.0-MILESTONE-AUDIT.initial.md	R-PL-14 obsolete, byte-identical to its milestones copy (cmp check recorded for Phase 193)
+.planning/v25.0-MILESTONE-AUDIT.md	R-PL-15 obsolete, byte-identical to its milestones copy (cmp check recorded for Phase 193)
+.planning/v26.0-MILESTONE-AUDIT.md	R-PL-16 obsolete, byte-identical to its milestones copy (cmp check recorded for Phase 193)
+.planning/workstreams/quality-ratchet-release/config.json	A-2 LAND-01 exemption: runtime authority files the Phase 167 validator requires to stay untracked
+.planning/workstreams/quality-ratchet-release/state.json	A-2 LAND-01 exemption: runtime authority files the Phase 167 validator requires to stay untracked
+.planning/workstreams/quality-ratchet-release/milestone.lock	A-2 LAND-01 exemption: runtime authority files the Phase 167 validator requires to stay untracked (if present)

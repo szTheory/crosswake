@@ -7,6 +7,9 @@ import {
   resetOfflineStudyDatabase,
 } from './support/offline_route_proof';
 
+// D-21: no screenshot, video or trace capture, ever, for this corpus.
+test.use({ screenshot: 'off', video: 'off', trace: 'off' });
+
 test.describe('Crosswake offline island: card rating queues in IndexedDB, reconnect flushes via app code, Ecto confirms exactly one review row', () => {
   const alphaScope = 'v1.scope_fixture_alpha_01';
 
@@ -851,5 +854,162 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     const effects = await page.evaluate(() => (window as any).__studyStatusEffects);
 
     expect(effects).toEqual([{ state: 'saved_locally', preserveFocus: true }]);
+  });
+
+  // ---- Phase 180 plan 04: free-form entry, audio action and durable-state copy (D-10, D-23) ----
+
+  async function readOnlyQueuedId(page): Promise<string> {
+    return page.evaluate(() => new Promise<string>((resolve, reject) => {
+      const open = indexedDB.open('crosswake_offline_study');
+      open.onsuccess = () => {
+        const database = open.result;
+        const request = database.transaction('scoped_mutations', 'readonly').objectStore('scoped_mutations').getAll();
+        request.onsuccess = () => { database.close(); resolve(request.result[0].client_mutation_id); };
+        request.onerror = () => reject(request.error);
+      };
+      open.onerror = () => reject(open.error);
+    }));
+  }
+
+  test('free-form answer commits to the same outbox and reports saved on this device', async ({ page, context }) => {
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+
+    await page.getByRole('textbox', { name: 'Your answer' }).fill('synthetic free-form answer');
+    await page.getByRole('button', { name: 'Save answer' }).click();
+
+    const status = page.locator('#crosswake-study-status');
+    await expect(status).toContainText('Saved on this device');
+    await expect(status).toHaveAttribute('data-island-state', 'saved_local');
+    await expect(page.getByRole('textbox', { name: 'Your answer' })).toHaveValue('');
+    expect(await page.evaluate(() => (window as any).crosswakeIsland.outboxCounts())).toEqual({
+      selected: 0,
+      free_form: 1,
+      active_scope_total: 1,
+      retained_total: 1,
+    });
+    const queued = await readQueuedOfflineMutations(page);
+    expect(queued).toHaveLength(1);
+    assertAppGeneratedMutation(queued[0]);
+  });
+
+  test('free-form answer copy follows durable state through waiting, sending and saved to account', async ({ page, context }) => {
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.getByRole('textbox', { name: 'Your answer' }).fill('synthetic replay answer');
+    await page.getByRole('button', { name: 'Save answer' }).click();
+    const status = page.locator('#crosswake-study-status');
+    await expect(status).toHaveAttribute('data-island-state', 'saved_local');
+
+    // Waiting to send: queued work with no connection, reported after the offline signal.
+    await page.evaluate(() => window.dispatchEvent(new Event('offline')));
+    await expect(status).toHaveAttribute('data-island-state', 'waiting');
+    await expect(status).toContainText('Waiting to send');
+
+    const capturedId = await readOnlyQueuedId(page);
+    await page.evaluate(() => {
+      (window as any).__islandStates = [];
+      new MutationObserver(() => {
+        (window as any).__islandStates.push(document.getElementById('crosswake-study-status')?.dataset.islandState);
+      }).observe(document.getElementById('crosswake-study-status')!, { attributes: true, attributeFilter: ['data-island-state'] });
+    });
+    await context.setOffline(false);
+    const syncResponse = page.waitForResponse(r => r.url().includes('/study/sync') && r.status() === 200);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await syncResponse;
+
+    await expectSyncedReview(page.request, capturedId);
+    await expect(status).toHaveAttribute('data-island-state', 'saved_account');
+    await expect(status).toContainText('Saved to your account');
+    const states = await page.evaluate(() => (window as any).__islandStates as string[]);
+    expect(states).toContain('sending');
+    expect(states.indexOf('sending')).toBeLessThan(states.lastIndexOf('saved_account'));
+    await expectOutboxEmpty(page);
+    expect(await page.evaluate(() => (window as any).crosswakeIsland.outboxCounts())).toMatchObject({ active_scope_total: 0 });
+  });
+
+  test('empty or oversized free-form answers are not queued and the island exposes only closed state values', async ({ page, context }) => {
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+
+    await page.getByRole('button', { name: 'Save answer' }).click();
+    await expect(page.locator('#study-answer-message')).toHaveText('Type your answer first.');
+    await page.getByRole('textbox', { name: 'Your answer' }).fill('é'.repeat(2100));
+    await page.getByRole('button', { name: 'Save answer' }).click();
+    await expect(page.locator('#study-answer-message')).toHaveText('That answer is too long to save.');
+    expect(await page.evaluate(() => (window as any).crosswakeIsland.outboxCounts())).toMatchObject({ active_scope_total: 0 });
+
+    const closed = ['saved_local', 'waiting', 'sending', 'saved_account', 'needs_review', 'unavailable', 'audio_unavailable', 'fenced', 'entry_disabled'];
+    expect(closed).toContain(await page.locator('#crosswake-study-status').getAttribute('data-island-state'));
+    const counts = await page.evaluate(() => (window as any).crosswakeIsland.outboxCounts());
+    expect(Object.values(counts).every(value => Number.isInteger(value))).toBe(true);
+    expect(Object.keys(counts).sort()).toEqual(['active_scope_total', 'free_form', 'retained_total', 'selected']);
+  });
+
+  test('play pronunciation is unavailable without a bridge and sends nothing', async ({ page }) => {
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    const button = page.getByRole('button', { name: 'Play pronunciation' });
+    await expect(button).toHaveAttribute('aria-disabled', 'true');
+    await expect(page.locator('#study-audio-state')).toHaveText('Audio unavailable');
+    // Playwright treats aria-disabled as not actionable; force the click to prove it is inert.
+    await button.click({ force: true });
+    await expect(page.locator('#study-audio-state')).toHaveText('Audio unavailable');
+  });
+
+  test('play pronunciation sends one typed request only when advertised and maps replies to learner copy', async ({ page }) => {
+    await page.addInitScript(() => {
+      const requests: unknown[] = [];
+      (window as any).__audioRequests = requests;
+      (window as any).crosswakeBridge = {
+        capabilities: { 'host.study.audio.play': '1.0.0' },
+        postMessage(raw: string) { requests.push(JSON.parse(raw)); },
+      };
+    });
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    const button = page.getByRole('button', { name: 'Play pronunciation' });
+    await expect(button).toHaveAttribute('aria-disabled', 'false');
+
+    await button.click();
+    const requests = await page.evaluate(() => (window as any).__audioRequests as any[]);
+    expect(requests).toHaveLength(1);
+    expect(requests[0].command).toBe('host.study.audio.play');
+    expect(requests[0].capability).toBe('host.study.audio.play');
+    expect(Object.keys(requests[0].payload).sort()).toEqual(['asset_key', 'correlation_id']);
+    expect(requests[0].payload.correlation_id).toBe(requests[0].correlation_id);
+    expect(JSON.stringify(requests[0].payload)).not.toMatch(/https?:|file:|\.aiff|\//);
+
+    // A reply for a different correlation id is ignored.
+    await page.evaluate(() => (window as any).crosswakeBridge.__reply({ correlation_id: 'other', status: 'ok' }));
+    await expect(page.locator('#study-audio-state')).toHaveText('Starting pronunciation');
+
+    await page.evaluate(id => (window as any).crosswakeBridge.__reply({ correlation_id: id, status: 'ok' }), requests[0].correlation_id);
+    await expect(page.locator('#study-audio-state')).toHaveText('Playing pronunciation');
+
+    await button.click();
+    const second = await page.evaluate(() => (window as any).__audioRequests as any[]);
+    expect(second).toHaveLength(2);
+    await page.evaluate(id => (window as any).crosswakeBridge.__reply({ correlation_id: id, status: 'deny' }), second[1].correlation_id);
+    await expect(page.locator('#study-audio-state')).toHaveText('Audio unavailable');
+    await expect(page.locator('#crosswake-study-status')).toHaveAttribute('data-island-state', 'audio_unavailable');
+  });
+
+  test('saving a free-form answer keeps focus on the control the learner used', async ({ page, context }) => {
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.getByRole('textbox', { name: 'Your answer' }).fill('synthetic focus answer');
+    await page.getByRole('button', { name: 'Save answer' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#crosswake-study-status')).toContainText('Saved on this device');
+    await expect(page.getByRole('button', { name: 'Save answer' })).toBeFocused();
   });
 });

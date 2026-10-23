@@ -1,0 +1,131 @@
+{
+  "ci_run_id": 38168254714,
+  "job_id": 114555277908,
+  "head_oid": "9be3e2bb25d050abfd7b635f6e6b0a9795ab62b0",
+  "ordered_pairs": 10,
+  "events": [
+    {
+      "line": 612,
+      "profile": "rulestead",
+      "pass": "1",
+      "step": "install"
+    },
+    {
+      "line": 613,
+      "profile": "rulestead",
+      "pass": "1",
+      "step": "doctor"
+    },
+    {
+      "line": 893,
+      "profile": "rulestead",
+      "pass": "2",
+      "step": "install"
+    },
+    {
+      "line": 894,
+      "profile": "rulestead",
+      "pass": "2",
+      "step": "doctor"
+    },
+    {
+      "line": 1200,
+      "profile": "rindle",
+      "pass": "1",
+      "step": "install"
+    },
+    {
+      "line": 1231,
+      "profile": "rindle",
+      "pass": "1",
+      "step": "doctor"
+    },
+    {
+      "line": 1593,
+      "profile": "rindle",
+      "pass": "2",
+      "step": "install"
+    },
+    {
+      "line": 1624,
+      "profile": "rindle",
+      "pass": "2",
+      "step": "doctor"
+    },
+    {
+      "line": 1953,
+      "profile": "sigra",
+      "pass": "1",
+      "step": "install"
+    },
+    {
+      "line": 1954,
+      "profile": "sigra",
+      "pass": "1",
+      "step": "doctor"
+    },
+    {
+      "line": 2178,
+      "profile": "sigra",
+      "pass": "2",
+      "step": "install"
+    },
+    {
+      "line": 2179,
+      "profile": "sigra",
+      "pass": "2",
+      "step": "doctor"
+    },
+    {
+      "line": 2403,
+      "profile": "chimeway",
+      "pass": "1",
+      "step": "install"
+    },
+    {
+      "line": 2404,
+      "profile": "chimeway",
+      "pass": "1",
+      "step": "doctor"
+    },
+    {
+      "line": 2628,
+      "profile": "chimeway",
+      "pass": "2",
+      "step": "install"
+    },
+    {
+      "line": 2629,
+      "profile": "chimeway",
+      "pass": "2",
+      "step": "doctor"
+    },
+    {
+      "line": 2853,
+      "profile": "threadline",
+      "pass": "1",
+      "step": "install"
+    },
+    {
+      "line": 2854,
+      "profile": "threadline",
+      "pass": "1",
+      "step": "doctor"
+    },
+    {
+      "line": 3078,
+      "profile": "threadline",
+      "pass": "2",
+      "step": "install"
+    },
+    {
+      "line": 3079,
+      "profile": "threadline",
+      "pass": "2",
+      "step": "doctor"
+    }
+  ],
+  "raw_log_sha256": "b7744ed2b50dbd12a1d456b11a24a64f14db2dbd0d247fd42312adda38deff59",
+  "raw_log_retained": false,
+  "observed_at_utc": "2026-10-11T19:40:11.117602+00:00"
+}

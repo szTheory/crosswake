@@ -1,0 +1,34 @@
+S01 clean repo with non-zero counts: as expected
+S02 home path added then deleted: as expected
+S03 gitleaks token shape: as expected
+S04 empty range is a scope error: as expected
+S05 adopter term in a binary blob: as expected
+S06 per-user temp path in a commit message: as expected
+S07 non-allowed author email: as expected
+S08 device id in a file name: as expected
+S09 upper-case credential assignment: as expected
+S10 mixed-case adopter term: as expected
+S11 private key line: as expected
+S12 author name absent from main: as expected
+S13 account name as a word: as expected
+S14 home path in a tag message: as expected
+S15 zero terms is a scope error: as expected
+S16 home path only in preserved history accepted: as expected
+S17 adopter term only in preserved history stops: as expected
+S18 triaged fingerprint subtracted: as expected
+S19 allow-listed emails stay clean: as expected
+S20 triage-only classes do not block: as expected
+S21 no planted value in any output: as expected
+S22 triage row without reason: as expected
+S23 unsafe denylist refused three ways: as expected
+S24 gitleaks version mismatch: as expected
+S25 account name only in preserved history on its own class line: as expected
+S26 fixed shared temp folders are not user_temp: as expected
+S27 valid denylist loads trimmed terms: as expected
+S28 comma, empty and missing denylist refused: as expected
+S29 term-check mode matches every term: as expected
+S30 unresolvable base revision: as expected
+S31 personal value present in HEAD is final: as expected
+S32 gitleaks triage row suppresses only its own finding: as expected
+S33 unreadable git note is a scope error: as expected
+selftest-scan: controls 33 of 33 as expected

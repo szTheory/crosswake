@@ -1,0 +1,22 @@
+{
+  "pr": 230,
+  "head_oid": "bf00fdd70b12fc2ca298710f7139a67b7dd00d3a",
+  "base_oid": "dba494dce54ff355cb75602999e33b8c7c6ddcb1",
+  "tree_oid": "fcfaa3b8f605ee9d9002843ec4f33330dc991991",
+  "files": [
+    "lib/mix/tasks/crosswake.gen.shell.ex",
+    "priv/templates/crosswake/shell/android/app/src/main/res/values/themes.xml.eex",
+    "test/mix/tasks/crosswake_gen_shell_stamp_test.exs",
+    "script/verify_generated_android_shell.sh",
+    "script/verify_android_public_build.sh",
+    "script/verify_android_public_build_test.py",
+    ".github/workflows/release-please.yml",
+    ".github/workflows/crosswake-ci.yml",
+    "packages/crosswake-shell-core-android/src/main/java/dev/crosswake/shell/core/DiagnosticExportManager.kt"
+  ],
+  "source_scope": "Only existing compatibility defects, existing consumer checks, same template reused for qualified resource",
+  "existing_script_executable_mode": "PRESERVED",
+  "new_helper_mode": "100755",
+  "no_new_android_template": true,
+  "observed_at_utc": "2026-10-11T15:05:42.392405+00:00"
+}

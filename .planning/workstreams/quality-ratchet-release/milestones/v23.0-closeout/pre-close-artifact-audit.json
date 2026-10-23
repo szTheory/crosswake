@@ -1,0 +1,77 @@
+{
+  "scanned_at": "2026-10-11T20:07:52.756Z",
+  "has_open_items": true,
+  "counts": {
+    "debug_sessions": 2,
+    "quick_tasks": 0,
+    "threads": 0,
+    "todos": 0,
+    "seeds": 0,
+    "uat_gaps": 1,
+    "verification_gaps": 3,
+    "context_questions": 0,
+    "deferred_items": 0,
+    "total": 6
+  },
+  "acknowledged": {
+    "debug_sessions": 0,
+    "quick_tasks": 0,
+    "threads": 0,
+    "todos": 0,
+    "seeds": 0,
+    "uat_gaps": 0,
+    "verification_gaps": 0,
+    "context_questions": 0,
+    "deferred_items": 0,
+    "total": 0
+  },
+  "items": {
+    "debug_sessions": [
+      {
+        "slug": "release-automation-failures",
+        "status": "fixing",
+        "updated": "2026-09-25T11:47:10-04:00",
+        "hypothesis": "- bug_class: bohrbug"
+      },
+      {
+        "slug": "release-please-guard-36352732061",
+        "status": "diagnosed",
+        "updated": "2026-09-27",
+        "hypothesis": "- bug_class: Bohrbug (deterministic guard rejection for this merge)"
+      }
+    ],
+    "quick_tasks": [],
+    "threads": [],
+    "todos": [],
+    "seeds": [],
+    "uat_gaps": [
+      {
+        "phase": "168",
+        "file": "168-UAT.md",
+        "status": "blocked",
+        "open_scenario_count": 0,
+        "archived_milestone": "v22.0"
+      }
+    ],
+    "verification_gaps": [
+      {
+        "phase": "175",
+        "file": "175-VERIFICATION-ARCHIVE-PRE-PLAN148-CLOSEOUT.md",
+        "status": "gaps_found"
+      },
+      {
+        "phase": "175",
+        "file": "175-VERIFICATION.md",
+        "status": "gaps_found"
+      },
+      {
+        "phase": "168",
+        "file": "168-VERIFICATION.md",
+        "status": "gaps_found",
+        "archived_milestone": "v22.0"
+      }
+    ],
+    "context_questions": [],
+    "deferred_items": []
+  }
+}

@@ -1,0 +1,4 @@
+installed no
+playwright_lock_version 1.60.0
+playwright_cli_version 1.60.0
+chromium_revision 1223

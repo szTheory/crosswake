@@ -1,0 +1,18 @@
+{
+  "attempt_id": "a1a99d16fcafae287fdd85d0a3804259",
+  "audit": "PASS",
+  "status": "BLOCKED",
+  "tag_attempts": 0,
+  "ci_requests": 0,
+  "durable_write_intent": false,
+  "frozen_collectors_unchanged": true,
+  "cause_proven_by_source": "raw preflight result has no status; original apply validator requires PREFLIGHT_READY",
+  "historical_live_raw_result_retained": false,
+  "node_tests": 12,
+  "elixir_tests": 14,
+  "replacement_sources": {
+    "script/release_candidate/plan146_tag_apply.mjs": "578f356134b9ed8c2e2d224188eb2c873b19b211972bf7fa97aa4bb600eff940",
+    "lib/crosswake/release_candidate/plan146_tag_apply.ex": "7df00b474141155c1691ba123d7b2f21c2b341f8cccbc547e38c689e5c9682d2"
+  },
+  "real_local_git_push_checked": true
+}

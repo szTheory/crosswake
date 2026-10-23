@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "phase": 178,
+  "plan": "04",
+  "status": "delivered-awaiting-hosted-ci",
+  "proposalId": "phase178-3e8a4b2601b5-eca1b15f-65cb-4b76-a7cc-a9bdb9afef1e",
+  "repository": "szTheory/crosswake",
+  "branch": "maintenance/phase178-3e8a4b2601b5",
+  "head": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+  "base": "main",
+  "baseCommit": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+  "pullRequest": {
+    "number": 238,
+    "url": "https://github.com/szTheory/crosswake/pull/238",
+    "state": "open"
+  },
+  "operationResults": {
+    "pushExitStatus": 0,
+    "pullRequestExitStatus": 0,
+    "pushObservedAt": "2026-10-12T23:34:14.432Z",
+    "pullRequestObservedAt": "2026-10-12T23:34:14.432Z"
+  },
+  "remoteWrites": {
+    "push": "confirmed",
+    "pullRequestCreate": "confirmed-by-readback"
+  },
+  "nextAction": "Plan05 must collect current hosted CI and join exact runner checkout evidence.",
+  "hostedChecks": {
+    "workflowRunId": "38322827152",
+    "url": "https://github.com/szTheory/crosswake/actions/runs/38322827152",
+    "status": "in_progress",
+    "totalChecks": 48,
+    "inProgressChecks": 24,
+    "completedChecks": 24,
+    "nonSuccessCompletedChecks": 0,
+    "observedAt": "2026-10-12T23:37:32Z",
+    "source": "read-only GitHub check-runs API GET for the exact head SHA"
+  }
+}

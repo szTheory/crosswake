@@ -1,0 +1,16 @@
+main_sha: d0dbdf7bf196cea167ced3c50cf620bf3cb2452b
+candidate_ahead_of_main: 90
+candidate_behind_main: 0
+full_bundle_head: a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4
+full_bundle_tree: f7c4d7dc1a86f251c3ba845d3cde8d4c770ae729
+full_bundle_count: 90
+incremental_prereq: d0dbdf7bf196cea167ced3c50cf620bf3cb2452b
+incremental_head: a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4
+connected_complete: yes
+connected_fsck: 0
+connected_head: a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4
+connected_tree: f7c4d7dc1a86f251c3ba845d3cde8d4c770ae729
+connected_count: 90
+candidate_head: a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4
+candidate_porcelain_count: 0
+existing_bundles_unchanged: yes

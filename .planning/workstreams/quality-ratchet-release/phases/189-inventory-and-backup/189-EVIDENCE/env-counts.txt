@@ -1,0 +1,6 @@
+recovery 3
+worktrees 0
+tmp 0
+tracked_skipped 23
+tracked_dirty 0
+total 3

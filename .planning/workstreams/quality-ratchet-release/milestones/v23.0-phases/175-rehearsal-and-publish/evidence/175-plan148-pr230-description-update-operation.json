@@ -1,0 +1,9 @@
+{
+  "operation": "update_same_repair_pr_description",
+  "pr": 230,
+  "head_oid": "bf00fdd70b12fc2ca298710f7139a67b7dd00d3a",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "attempts": 1,
+  "delivery": "ACCEPTED",
+  "at_utc": "2026-10-11T15:03:01.905979+00:00"
+}

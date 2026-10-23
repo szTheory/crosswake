@@ -1,0 +1,32 @@
+{
+  "assertions": {
+    "app_reported_did_finish": "passed",
+    "built_plist_ats_keys_exactly_allows_local_networking": "passed",
+    "built_plist_origin_mode_marker": "passed",
+    "control_did_not_reach_listener": "passed",
+    "control_example_com_refused_minus_1022": "passed",
+    "crosswake_owned_hashes_unchanged": "passed",
+    "listener_saw_entry_get": "passed",
+    "listener_saw_loaded_ping": "passed"
+  },
+  "candidate_clean": true,
+  "candidate_head": "da53c54db06e54be5a80fb4be144a70d3fed36a5",
+  "candidate_tree": "d1cbbe30ffca9da79c5506004ad2bf8c8da38665",
+  "cause": null,
+  "cleanup": {
+    "app_uninstalled": true,
+    "device_left_as_found": true
+  },
+  "device_type": "iPhone 17",
+  "observations": {
+    "ats_exception_scope": "NSAllowsLocalNetworking_only",
+    "first_launch_result": "didFinish"
+  },
+  "origin": "http://127.0.0.1:55337",
+  "outcome": "passed",
+  "rule_ids": [],
+  "runtime": "iOS 26.5",
+  "schema": "crosswake.phase182.simulator/1",
+  "scope": "generated local_loopback shell, iOS Simulator only (not a physical device)",
+  "xcode_version": "Xcode 26.6 Build version 17F113"
+}

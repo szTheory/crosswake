@@ -158,6 +158,41 @@ What it does not prove:
 
 "Proven" is reserved for the web path. Native is always labeled `emulator evidence`.
 
+## Run the Reference Twin (Simulator)
+
+The bounded reference twin drives one offline study island on an iOS Simulator against a local
+Phoenix backend and writes a twin-only receipt. The shipped command is:
+
+```bash
+MIX_ENV=test mix crosswake.proof_lane.verify_twin ios \
+  --candidate <prepared candidate record> --run-root <new private directory> \
+  --identity <identity file>
+```
+
+Prerequisites: a prepared candidate record (a private, mode 0600 JSON file naming the candidate
+path, expected head and tree, the declared loopback origin, and resource and fixture digests; this
+is a file, not the candidate directory), a free loopback origin port, an Xcode Simulator runtime,
+and an identity file. Every run needs a new run root; a run root that already holds a receipt is
+refused so a first result is never overwritten. The candidate tree must be clean at the recorded head; a dirty tree is refused. Changes hidden by index flags (assume-unchanged or skip-worktree) or by git settings still count, a candidate whose git configuration can hide changes (a worktree redirect, a filter, or .git/info/attributes) or that is not the repository's top-level directory is refused, and git 2.41 or newer is required. Untracked files ignored by a committed .gitignore are not counted; this is a known limit of the check, not something it detects, and those rules are matched with exact letter case, so a local case-insensitive git setting cannot stretch them to other names. An ignore rule from anywhere other than a .gitignore committed at the recorded head, including .git/info/exclude, counts every file it hides as a change, even when a folder or file name starts with a colon, a space or another unusual character; each .git/info/exclude line that git applies is also counted as a rule. If git cannot read part of the candidate (for example a folder it is not allowed to open) or prints any warning while reading it, the check is blocked as a missing prerequisite instead of skipping that part. The check never runs the candidate's git hooks.
+
+Before a run, check whether it would be allowed with the read-only preflight:
+
+```bash
+MIX_ENV=test mix crosswake.proof_lane.twin_preflight ios \
+  --candidate <prepared candidate record> --run-root <new private directory> \
+  --identity <identity file>
+```
+
+The preflight prints four lines (result allowed or blocked, first cause, `report: none written; no run root was created or consumed`, and one next action) and exits `0` when allowed and `2` when blocked. It writes no receipt and never creates or consumes a run root, so the same run root can be used for the real run. To read the candidate it creates a private temporary index outside the candidate and the run root and removes it again, and it binds the origin port only for an instant. It also compares the prepared record's digests with the identity file, a comparison the real run does not repeat. Allowed means the source, the identity digests and the run root pass and the origin port is free at that moment, while the backend build and the live journey are checked only by the real run, which repeats every check. Dirty counts are findings, not distinct files (a file can be both changed and flagged). Because the check ignores global git configuration, `safe.directory` entries do not apply, a filesystem without file modes reports changes, and repositories that rely on LFS or end-of-line filters are refused.
+
+Exit codes: `0` complete pass, `1` observed failure, `2` missing prerequisite or missing
+observation. The command prints four lines: result, first cause, local report path and one next
+action.
+
+What the receipt proves: a virtual twin on a simulator with synthetic test authority, run by a
+trusted local runner. What it does not prove: a physical iPhone, a signed device, a physical
+speaker, first adopter evidence, or cryptographic certification of the run.
+
 ## Go Deeper
 
 - Full proof command reference: [examples/QUICK_START.md](https://github.com/szTheory/crosswake/blob/main/examples/QUICK_START.md)

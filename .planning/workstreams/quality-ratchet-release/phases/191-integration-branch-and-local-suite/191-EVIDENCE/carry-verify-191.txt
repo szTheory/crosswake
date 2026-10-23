@@ -1,0 +1,8 @@
+carry: verify pass rows 37
+floor_a 2527
+floor_d 141
+floor_rows 36
+floor 2668
+manifest_a_equals_floor yes
+manifest_d_equals_floor yes
+result pass

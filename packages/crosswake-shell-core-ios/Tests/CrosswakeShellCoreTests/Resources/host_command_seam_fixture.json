@@ -1,0 +1,1875 @@
+{
+  "activations": {
+    "lesson": {
+      "bridge_protocol_version": "1.1.0",
+      "capabilities": {
+        "host.lesson.audio.play": "1.0.0"
+      },
+      "correlation_id": "ios-build-entry",
+      "declared_pack_requirements": {},
+      "installed_packs": {},
+      "manifest_source": "bundled",
+      "native_runtime_version": "1.0.0",
+      "origin": "https://seam.crosswake.test",
+      "route_id": "lesson",
+      "source": "cold_start",
+      "url": "https://seam.crosswake.test/lesson"
+    },
+    "plain": {
+      "bridge_protocol_version": "1.1.0",
+      "capabilities": {},
+      "correlation_id": "ios-build-entry",
+      "declared_pack_requirements": {},
+      "installed_packs": {},
+      "manifest_source": "bundled",
+      "native_runtime_version": "1.0.0",
+      "origin": "https://seam.crosswake.test",
+      "route_id": "plain",
+      "source": "cold_start",
+      "url": "https://seam.crosswake.test/plain"
+    },
+    "review": {
+      "bridge_protocol_version": "1.1.0",
+      "capabilities": {
+        "host.review.camera.scan": "1.1.0"
+      },
+      "correlation_id": "ios-build-entry",
+      "declared_pack_requirements": {},
+      "installed_packs": {},
+      "manifest_source": "bundled",
+      "native_runtime_version": "1.0.0",
+      "origin": "https://seam.crosswake.test",
+      "route_id": "review",
+      "source": "cold_start",
+      "url": "https://seam.crosswake.test/review"
+    }
+  },
+  "legacy_manifest": {
+    "capability_registry": {
+      "app_info": {
+        "denial": "undeclared_capability",
+        "fallback": "Phoenix route continues without native app metadata",
+        "family": "app_info",
+        "guide": "guides/bridge.md#bounded-bridge",
+        "id": "app_info",
+        "interaction": "device-answer",
+        "legacy_ids": [
+          "app.info.get"
+        ],
+        "owner": "bounded_bridge",
+        "package_class": "core",
+        "prerequisites": [
+          "declared route capability",
+          "bounded bridge support"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "none",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "deep_link": {
+        "denial": "route_unavailable",
+        "fallback": "show route unavailable surface that distinguishes inactive routes from routes that reject external entry",
+        "family": "deep_link",
+        "guide": "guides/native_shell.md#manifest-first-activation",
+        "id": "deep_link",
+        "interaction": "fire-and-forget",
+        "legacy_ids": [],
+        "owner": "activation",
+        "package_class": "core",
+        "prerequisites": [
+          "bundled or cached manifest",
+          "shell activation support",
+          "explicit route entry approval"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "none",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "document_scan": {
+        "denial": "unavailable_capability",
+        "fallback": "defer document scan support until native and proof posture are explicit",
+        "family": "document_scan",
+        "guide": "guides/capabilities.md#explicit-defers",
+        "id": "document_scan",
+        "interaction": "user-answer",
+        "legacy_ids": [],
+        "owner": "native_screen",
+        "package_class": "defer",
+        "prerequisites": [
+          "document-scan runtime",
+          "policy-heavy proof lane"
+        ],
+        "proof_class": "advisory",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "entitlement_snapshot": {
+        "denial": "unavailable_capability",
+        "fallback": "treat device-side state as evidence instead of final entitlement truth",
+        "family": "entitlement_snapshot",
+        "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+        "id": "entitlement_snapshot",
+        "interaction": "device-answer",
+        "legacy_ids": [],
+        "owner": "backend_seam",
+        "package_class": "core",
+        "prerequisites": [
+          "backend entitlement authority",
+          "reconciliation hook"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "file_picker": {
+        "denial": "undeclared_capability",
+        "fallback": "keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified",
+        "family": "file_picker",
+        "guide": "guides/capabilities.md#bounded-bridge",
+        "id": "file_picker",
+        "interaction": "user-answer",
+        "legacy_ids": [
+          "files.pick"
+        ],
+        "owner": "bounded_bridge",
+        "package_class": "core",
+        "prerequisites": [
+          "declared transfer_id",
+          "bounded bridge support",
+          "inbound native_picker transfer seam",
+          "copy-first staged handle plus transfer verification"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "native-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "haptics": {
+        "denial": "undeclared_capability",
+        "fallback": "Phoenix route continues without native confirmation feedback",
+        "family": "haptics",
+        "guide": "guides/bridge.md#bounded-bridge",
+        "id": "haptics",
+        "interaction": "fire-and-forget",
+        "legacy_ids": [
+          "haptics.impact"
+        ],
+        "owner": "bounded_bridge",
+        "package_class": "core",
+        "prerequisites": [
+          "declared route capability",
+          "bounded bridge support"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "none",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "host.lesson.audio.play": {
+        "denial": "unavailable_capability",
+        "fallback": "fail_closed",
+        "family": "host_command",
+        "guide": "guides/capabilities.md",
+        "id": "host.lesson.audio.play",
+        "interaction": "fire-and-forget",
+        "legacy_ids": [],
+        "owner": "host",
+        "package_class": "defer",
+        "prerequisites": [
+          "declared route support"
+        ],
+        "proof_class": "advisory",
+        "rebuild": "native-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "host.review.camera.scan": {
+        "denial": "unavailable_capability",
+        "fallback": "fail_closed",
+        "family": "host_command",
+        "guide": "guides/capabilities.md",
+        "id": "host.review.camera.scan",
+        "interaction": "fire-and-forget",
+        "legacy_ids": [],
+        "owner": "host",
+        "package_class": "defer",
+        "prerequisites": [
+          "declared route support"
+        ],
+        "proof_class": "advisory",
+        "rebuild": "native-required",
+        "status": "supported",
+        "version": "1.1.0"
+      },
+      "media_capture": {
+        "denial": "pack_incompatible",
+        "fallback": "fail closed instead of degrading into a bounded web upload flow",
+        "family": "media_capture",
+        "guide": "guides/native_shell.md#native-capture-escape-hatch",
+        "id": "media_capture",
+        "interaction": "user-answer",
+        "legacy_ids": [
+          "camera",
+          "camera.capture"
+        ],
+        "owner": "native_screen",
+        "package_class": "companion",
+        "prerequisites": [
+          "native screen route",
+          "capture pack availability"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "native-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "notification_token": {
+        "denial": "unavailable_capability",
+        "fallback": "treat notification token replies as provider-tagged evidence instead of backend registration truth",
+        "family": "notification_token",
+        "guide": "guides/capabilities.md#bounded-bridge",
+        "id": "notification_token",
+        "interaction": "device-answer",
+        "legacy_ids": [
+          "push.notifications"
+        ],
+        "owner": "bounded_bridge",
+        "package_class": "companion",
+        "prerequisites": [
+          "declared route capability",
+          "bounded bridge support",
+          "notification authorization already resolved",
+          "provider token snapshot available"
+        ],
+        "proof_class": "advisory",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "paywall_entry": {
+        "denial": "unavailable_capability",
+        "fallback": "fall back to Phoenix-owned paywall guidance without device authority",
+        "family": "paywall_entry",
+        "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+        "id": "paywall_entry",
+        "interaction": "fire-and-forget",
+        "legacy_ids": [],
+        "owner": "backend_seam",
+        "package_class": "core",
+        "prerequisites": [
+          "backend entitlement contract",
+          "storefront guidance"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "permissions.status": {
+        "denial": "undeclared_capability",
+        "fallback": "route continues without native notification permission snapshot authority",
+        "family": "permissions.status",
+        "guide": "guides/capabilities.md#bounded-bridge",
+        "id": "permissions.status",
+        "interaction": "device-answer",
+        "legacy_ids": [],
+        "owner": "bounded_bridge",
+        "package_class": "core",
+        "prerequisites": [
+          "declared route capability",
+          "bounded bridge support",
+          "notifications alias only"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "none",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "purchase_intent": {
+        "denial": "unavailable_capability",
+        "fallback": "treat purchase events as reconciliation inputs, not entitlement truth",
+        "family": "purchase_intent",
+        "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+        "id": "purchase_intent",
+        "interaction": "user-answer",
+        "legacy_ids": [],
+        "owner": "backend_seam",
+        "package_class": "core",
+        "prerequisites": [
+          "backend reconciliation",
+          "provider-specific adapter"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "reconciliation_evidence": {
+        "denial": "unavailable_capability",
+        "fallback": "treat evidence as asynchronous payload without blocking route entry",
+        "family": "reconciliation_evidence",
+        "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+        "id": "reconciliation_evidence",
+        "interaction": "device-answer",
+        "legacy_ids": [],
+        "owner": "backend_seam",
+        "package_class": "core",
+        "prerequisites": [
+          "backend reconciliation",
+          "device callback or webhook"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "restore_intent": {
+        "denial": "unavailable_capability",
+        "fallback": "keep restore flow backend-owned until adapter truth is explicit",
+        "family": "restore_intent",
+        "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+        "id": "restore_intent",
+        "interaction": "user-answer",
+        "legacy_ids": [],
+        "owner": "backend_seam",
+        "package_class": "core",
+        "prerequisites": [
+          "backend reconciliation",
+          "storefront-aware adapter"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "scanner": {
+        "denial": "unavailable_capability",
+        "fallback": "defer scanner support until native and proof posture are explicit",
+        "family": "scanner",
+        "guide": "guides/capabilities.md#explicit-defers",
+        "id": "scanner",
+        "interaction": "user-answer",
+        "legacy_ids": [],
+        "owner": "native_screen",
+        "package_class": "defer",
+        "prerequisites": [
+          "scanner-native runtime",
+          "policy-heavy proof lane"
+        ],
+        "proof_class": "advisory",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "share": {
+        "denial": "undeclared_capability",
+        "fallback": "keep content in the Phoenix-owned route until a share family is declared",
+        "family": "share",
+        "guide": "guides/capabilities.md#bounded-bridge",
+        "id": "share",
+        "interaction": "fire-and-forget",
+        "legacy_ids": [],
+        "owner": "bounded_bridge",
+        "package_class": "core",
+        "prerequisites": [
+          "truthful semantic share contract"
+        ],
+        "proof_class": "advisory",
+        "rebuild": "none",
+        "status": "supported",
+        "version": "1.0.0"
+      }
+    },
+    "commerce_corridors": {},
+    "compatibility": {
+      "bridge_protocol_version": "1.1.0",
+      "manifest_schema_version": "1.2.0",
+      "native_runtime_version": "1.0.0",
+      "remote_updates": [
+        "versioned_replacement",
+        "versioned_companion_data"
+      ],
+      "supported_manifest_sources": [
+        "bundled",
+        "cached",
+        "remote"
+      ]
+    },
+    "crosswake_version": "0.2.11",
+    "generated_at": "2026-10-14T00:00:00Z",
+    "host": {
+      "live_view_version": "~> 1.1",
+      "manifest_sources": [
+        "bundled",
+        "cached",
+        "remote"
+      ],
+      "origin": "https://seam.crosswake.test",
+      "phoenix_version": "~> 1.8"
+    },
+    "manifest_schema_version": "1.2.0",
+    "navigation_topology": {
+      "entries": [],
+      "manifest_schema_version": "1.2.0",
+      "status": "unknown_blocking",
+      "topology_schema_version": "1.0.0"
+    },
+    "pack_registry": {},
+    "routes": {
+      "lesson": {
+        "allowlisted_origins": [
+          "https://seam.crosswake.test"
+        ],
+        "auth_posture": "strict_recent",
+        "cache_contract": null,
+        "capabilities": [
+          "host.lesson.audio.play"
+        ],
+        "commerce": null,
+        "entry": "internal_only",
+        "id": "lesson",
+        "island_contract": {
+          "authoritative_source": "phoenix",
+          "checkpoint_requirement": "required",
+          "draft_surface": "study_session_draft",
+          "id": "lesson_v1",
+          "journal_mode": "append_only",
+          "reconciliation": "explicit",
+          "storage": "sqlite",
+          "sync_seam": "lesson_v1"
+        },
+        "offline": "local_first",
+        "packs": [],
+        "path": "/lesson",
+        "runtime": "offline_island",
+        "security": "sensitive",
+        "sync": [],
+        "transfers": []
+      },
+      "plain": {
+        "allowlisted_origins": [
+          "https://seam.crosswake.test"
+        ],
+        "cache_contract": null,
+        "capabilities": [],
+        "commerce": null,
+        "entry": "internal_only",
+        "id": "plain",
+        "island_contract": null,
+        "offline": "unavailable",
+        "packs": [],
+        "path": "/plain",
+        "runtime": "live_view",
+        "security": null,
+        "sync": [],
+        "transfers": []
+      },
+      "review": {
+        "allowlisted_origins": [
+          "https://seam.crosswake.test"
+        ],
+        "cache_contract": null,
+        "capabilities": [
+          "host.review.camera.scan"
+        ],
+        "commerce": null,
+        "entry": "internal_only",
+        "id": "review",
+        "island_contract": null,
+        "offline": "cached_read_only",
+        "packs": [],
+        "path": "/review",
+        "runtime": "live_view",
+        "security": "standard",
+        "sync": [],
+        "transfers": []
+      }
+    },
+    "support_matrix": {
+      "android": [
+        {
+          "baseline_status": "supported",
+          "boundary_link": "guides/native_shell.md#boundary-warnings--rough-edges",
+          "notes": "Android retains its frozen generator, Maven, JVM, and shared-vector posture. Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android is frozen during first adopter iOS readiness: no new feature, parity, device, template, or release claim.",
+          "proof": "script/verify_generated_android_shell.sh",
+          "proof_status": "supported",
+          "status": "supported",
+          "target": "android",
+          "version": "26"
+        }
+      ],
+      "capability_families": [
+        {
+          "baseline_status": "supported",
+          "denial": "undeclared_capability",
+          "fallback": "Phoenix route continues without native app metadata",
+          "family": "app_info",
+          "guide": "guides/bridge.md#bounded-bridge",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "posture": "bounded_bridge",
+          "prerequisites": [
+            "declared route capability",
+            "bounded bridge support"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "none",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "route_unavailable",
+          "fallback": "show route unavailable surface that distinguishes inactive routes from routes that reject external entry",
+          "family": "deep_link",
+          "guide": "guides/native_shell.md#manifest-first-activation",
+          "owner": "activation",
+          "package_class": "core",
+          "posture": "activation_first",
+          "prerequisites": [
+            "bundled or cached manifest",
+            "shell activation support",
+            "explicit route entry approval"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "supported",
+          "rebuild": "none",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "unsupported",
+          "denial": "unavailable_capability",
+          "fallback": "defer document scan support until native and proof posture are explicit",
+          "family": "document_scan",
+          "guide": "guides/capabilities.md#explicit-defers",
+          "owner": "native_screen",
+          "package_class": "defer",
+          "posture": "native_screen",
+          "prerequisites": [
+            "document-scan runtime",
+            "policy-heavy proof lane"
+          ],
+          "proof_class": "advisory",
+          "proof_status": "unsupported",
+          "rebuild": "companion-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "unavailable_capability",
+          "fallback": "Fail closed for access decisions when snapshot freshness is stale or unknown until refreshed backend authority is available; pending and awaiting_verification states never grant entitlement.",
+          "family": "entitlement_snapshot",
+          "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+          "owner": "backend_seam",
+          "package_class": "core",
+          "posture": "backend_seam",
+          "prerequisites": [
+            "backend entitlement authority",
+            "reconciliation hook",
+            "freshness posture (fresh/stale/unknown) surfaced before access checks"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "companion-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "undeclared_capability",
+          "fallback": "keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified",
+          "family": "file_picker",
+          "guide": "guides/capabilities.md#bounded-bridge",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "posture": "transfer_backed",
+          "prerequisites": [
+            "declared transfer_id",
+            "bounded bridge support",
+            "inbound native_picker transfer seam",
+            "copy-first staged handle plus transfer verification"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "native-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "undeclared_capability",
+          "fallback": "Phoenix route continues without native confirmation feedback",
+          "family": "haptics",
+          "guide": "guides/bridge.md#bounded-bridge",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "posture": "bounded_bridge",
+          "prerequisites": [
+            "declared route capability",
+            "bounded bridge support"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "none",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "pack_incompatible",
+          "fallback": "fail closed instead of degrading into a bounded web upload flow",
+          "family": "media_capture",
+          "guide": "guides/native_shell.md#native-capture-escape-hatch",
+          "owner": "native_screen",
+          "package_class": "companion",
+          "posture": "native_screen",
+          "prerequisites": [
+            "native screen route",
+            "capture pack availability"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "native-required",
+          "verification_method": "device_verified"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "unavailable_capability",
+          "fallback": "treat notification token replies as provider-tagged evidence instead of backend registration truth",
+          "family": "notification_token",
+          "guide": "guides/capabilities.md#bounded-bridge",
+          "owner": "bounded_bridge",
+          "package_class": "companion",
+          "posture": "provider_snapshot",
+          "prerequisites": [
+            "declared route capability",
+            "bounded bridge support",
+            "notification authorization already resolved",
+            "provider token snapshot available"
+          ],
+          "proof_class": "advisory",
+          "proof_status": "verification required",
+          "rebuild": "companion-required",
+          "verification_method": "jvm_hermetic"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "unavailable_capability",
+          "fallback": "fall back to Phoenix-owned paywall guidance without device authority",
+          "family": "paywall_entry",
+          "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+          "owner": "backend_seam",
+          "package_class": "core",
+          "posture": "backend_seam",
+          "prerequisites": [
+            "backend entitlement contract",
+            "storefront guidance"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "companion-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "undeclared_capability",
+          "fallback": "route continues without native notification permission snapshot authority",
+          "family": "permissions.status",
+          "guide": "guides/capabilities.md#bounded-bridge",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "posture": "alias_snapshot",
+          "prerequisites": [
+            "declared route capability",
+            "bounded bridge support",
+            "notifications alias only"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "none",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "unavailable_capability",
+          "fallback": "treat purchase events as reconciliation inputs, not entitlement truth",
+          "family": "purchase_intent",
+          "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+          "owner": "backend_seam",
+          "package_class": "core",
+          "posture": "backend_seam",
+          "prerequisites": [
+            "backend reconciliation",
+            "provider-specific adapter"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "companion-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "unavailable_capability",
+          "fallback": "Treat device/storefront/webhook/support evidence as non-authoritative reconciliation input; pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority.",
+          "family": "reconciliation_evidence",
+          "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+          "owner": "backend_seam",
+          "package_class": "core",
+          "posture": "backend_seam",
+          "prerequisites": [
+            "backend reconciliation",
+            "device callback or webhook",
+            "pending and awaiting_verification reconciliation states stay non-granting"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "companion-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "unavailable_capability",
+          "fallback": "keep restore flow backend-owned until adapter truth is explicit",
+          "family": "restore_intent",
+          "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+          "owner": "backend_seam",
+          "package_class": "core",
+          "posture": "backend_seam",
+          "prerequisites": [
+            "backend reconciliation",
+            "storefront-aware adapter"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "companion-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "unsupported",
+          "denial": "unavailable_capability",
+          "fallback": "defer scanner support until native and proof posture are explicit",
+          "family": "scanner",
+          "guide": "guides/capabilities.md#explicit-defers",
+          "owner": "native_screen",
+          "package_class": "defer",
+          "posture": "native_screen",
+          "prerequisites": [
+            "scanner-native runtime",
+            "policy-heavy proof lane"
+          ],
+          "proof_class": "advisory",
+          "proof_status": "unsupported",
+          "rebuild": "companion-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "undeclared_capability",
+          "fallback": "keep content in the Phoenix-owned route until a share family is declared",
+          "family": "share",
+          "guide": "guides/capabilities.md#bounded-bridge",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "posture": "bounded_bridge",
+          "prerequisites": [
+            "truthful semantic share contract"
+          ],
+          "proof_class": "advisory",
+          "proof_status": "supported",
+          "rebuild": "none",
+          "verification_method": "none"
+        }
+      ],
+      "change_classes": [
+        {
+          "adopter_action": "Read the updated guidance and rerun docs integrity only.",
+          "change_class": "docs-only",
+          "compatibility_signal": "No compatibility-axis or capability-version change.",
+          "required_proof": "docs integrity only",
+          "what_changed": "Guides, wording, examples, support notes, or advisory docs changed without changing manifest semantics, compatibility-axis values, capability versions, shell templates, companion code, or proof expectations."
+        },
+        {
+          "adopter_action": "Update the Hex package and rerun core contract + doctor/support proof without rebuilding native shells.",
+          "change_class": "core-only/no native rebuild",
+          "compatibility_signal": "Existing manifest_schema_version, bridge_protocol_version, native_runtime_version, and capability majors stay in line.",
+          "required_proof": "core contract + doctor/support proof",
+          "what_changed": "Core Elixir behavior, docs generation, doctor, support rendering, or validation changed inside the already-supported schema, bridge, runtime, and capability versions."
+        },
+        {
+          "adopter_action": "Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures.",
+          "change_class": "compatibility-bump only",
+          "compatibility_signal": "manifest_schema_version, bridge_protocol_version, native_runtime_version, or capability required-version declarations changed support windows.",
+          "required_proof": "fail-closed compatibility fixtures",
+          "what_changed": "Compatibility declarations or package windows narrowed so some older combinations now fail closed, but a fresh binary is not automatically required for already-compatible adopters."
+        },
+        {
+          "adopter_action": "Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes.",
+          "change_class": "native or companion rebuild required",
+          "compatibility_signal": "Every rebuild-required change carries explicit compatibility declarations, especially native_runtime_version, bridge_protocol_version, manifest_schema_version, and capability required-version shifts.",
+          "required_proof": "core proof plus generated-shell or companion verification lanes",
+          "what_changed": "Native code, generated shell projects, entitlements, permissions, platform config, native dependencies, or companion-native integration code changed."
+        }
+      ],
+      "ios": [
+        {
+          "baseline_status": "supported",
+          "boundary_link": "guides/native_shell.md#boundary-warnings--rough-edges",
+          "notes": "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion.",
+          "proof": "script/verify_generated_ios_shell.sh",
+          "proof_status": "supported",
+          "status": "supported",
+          "target": "ios",
+          "version": "17.0"
+        }
+      ],
+      "live_view": [
+        {
+          "baseline_status": "supported",
+          "boundary_link": "guides/offline.md#boundary-warnings--rough-edges",
+          "notes": "LiveView remains server-owned and route-first.",
+          "proof": "phase-2-proof-lane",
+          "proof_status": "supported",
+          "status": "supported",
+          "target": "phoenix_live_view",
+          "version": "~> 1.1"
+        }
+      ],
+      "package_surfaces": [
+        {
+          "guide": "guides/install.md#package-surface",
+          "package_class": "core",
+          "release_burden": "Hex package SemVer moves independently, while support truth still follows manifest_schema_version, bridge_protocol_version, and native_runtime_version.",
+          "surface": "`crosswake` primary package",
+          "why": "Route-policy DSL, manifest contract, compatibility axes, bounded-bridge vocabulary, shell generators, doctor, support matrix, release rules, and proof posture stay in one obvious Phoenix-first package."
+        },
+        {
+          "guide": "guides/capabilities.md#packaging-ledger",
+          "package_class": "core",
+          "release_burden": "Semantics may evolve in core, but provider adapters and native storefront logic remain outside the base package.",
+          "surface": "Phoenix-facing commerce seam vocabulary",
+          "why": "`paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` stay normalized and backend-truthful in core without embedding storefront providers."
+        },
+        {
+          "guide": "guides/compatibility.md#companion-compatibility-contract",
+          "package_class": "companion",
+          "release_burden": "First-party companions declare minimum compatible ranges against core, compatibility axes, and capability-family majors.",
+          "surface": "Provider adapters and native-heavy integrations",
+          "why": "Storefront adapters, media/upload/capture, rollout, auth/session, notifications, and audit/operator seams carry native binary churn or backend coupling beyond core."
+        },
+        {
+          "guide": "guides/capabilities.md#docs-only-boundary",
+          "package_class": "example/docs-only",
+          "release_burden": "Not first-class supported as package surfaces; promotion requires reclassification plus proof and support-matrix updates.",
+          "surface": "Checked-in example hosts and install walkthroughs",
+          "why": "Examples, walkthroughs, reviewer playbooks, and vendor recipes teach boundaries and proof posture without becoming separate runtime packages."
+        },
+        {
+          "guide": "guides/install.md#step-2-generate-host-owned-native-shells",
+          "package_class": "core",
+          "release_burden": "Native core versions move in lockstep with the Hex package through release-please linked versions; clean-room proof verifies the external install path at release time.",
+          "surface": "Standalone native shell core packages",
+          "why": "The generated shell stays host-owned, while reusable native core logic resolves from SwiftPM and Maven Central packages instead of monorepo-local paths."
+        }
+      ],
+      "phoenix": [
+        {
+          "baseline_status": "supported",
+          "notes": "Phoenix host install and manifest generation are the stable baseline.",
+          "proof": "phase-2-proof-lane",
+          "proof_status": "supported",
+          "status": "supported",
+          "target": "phoenix",
+          "version": "~> 1.8"
+        }
+      ],
+      "rebuild_matrix": [
+        {
+          "capability_surface": [
+            "haptics",
+            "share",
+            "app_info",
+            "deep_link",
+            "permissions.status",
+            "notification_token",
+            "file_picker",
+            "media_capture",
+            "scanner",
+            "document_scan"
+          ],
+          "change_class": "native or companion rebuild required",
+          "evidence_tier": "jvm_hermetic",
+          "ota_safe": false,
+          "rebuild_required": true,
+          "runtime_line": "1.x"
+        }
+      ],
+      "release_boundaries": [
+        {
+          "compatibility_contract": "package versions alone do not define support truth; manifest_schema_version, bridge_protocol_version, and native_runtime_version stay canonical.",
+          "release_rule": "Manifest-major, bridge-major, and runtime-line changes must update support docs and doctor before release.",
+          "target": "core",
+          "versioning": "Independent SemVer for the `crosswake` Hex package."
+        },
+        {
+          "compatibility_contract": "Each companion declares minimum compatible ranges for core, all three compatibility axes, and exposed capability-family majors.",
+          "release_rule": "Companion support cannot expand until the adapter publishes explicit compatibility ranges and fail-closed guidance.",
+          "target": "companion",
+          "versioning": "Independent SemVer per first-party companion."
+        },
+        {
+          "compatibility_contract": "Breaking bridge semantics require a bridge_protocol_version major bump plus a compatible shell artifact before support widens.",
+          "release_rule": "Changes touching native code, entitlements, permissions, registration, or packaged runtime behavior move the native_runtime_version line and mark rebuild required.",
+          "target": "ios_shell",
+          "versioning": "SwiftPM core package version is lockstep with the Hex package; host app build numbers remain adopter-owned."
+        },
+        {
+          "compatibility_contract": "Breaking bridge semantics require a bridge_protocol_version major bump plus a compatible shell artifact before support widens.",
+          "release_rule": "Changes touching native code, entitlements, permissions, registration, or packaged runtime behavior move the native_runtime_version line and mark rebuild required.",
+          "target": "android_shell",
+          "versioning": "Maven Central core artifact version is lockstep with the Hex package; host app build numbers remain adopter-owned."
+        }
+      ],
+      "shells": [
+        {
+          "baseline_status": "supported",
+          "boundary_link": "guides/native_shell.md#boundary-warnings--rough-edges",
+          "notes": "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority. Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; Release consumer proof resolves that public SwiftPM tag and builds a generated iOS app with `xcodebuild`. It must pass for the ordinary core release's six-child COMPLETE result. CI build proof does not establish physical-device or adopter-topology support.",
+          "proof": "clean-room-proof-ios; script/verify_generated_ios_shell.sh",
+          "proof_status": "verification required",
+          "status": "supported",
+          "target": "ios_shell",
+          "version": "Hex-matched"
+        },
+        {
+          "baseline_status": "supported",
+          "boundary_link": "guides/native_shell.md#boundary-warnings--rough-edges",
+          "notes": "Generated Android shell artifacts retain the frozen generator, Maven, JVM, and shared-vector posture based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. This existing posture is frozen during first adopter iOS readiness; no parity/device/template/release expansion is claimed.",
+          "proof": "native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh",
+          "proof_status": "supported",
+          "status": "supported",
+          "target": "android_shell",
+          "version": "Hex-matched"
+        }
+      ]
+    }
+  },
+  "manifest": {
+    "capability_registry": {
+      "app_info": {
+        "denial": "undeclared_capability",
+        "fallback": "Phoenix route continues without native app metadata",
+        "family": "app_info",
+        "guide": "guides/bridge.md#bounded-bridge",
+        "id": "app_info",
+        "interaction": "device-answer",
+        "legacy_ids": [
+          "app.info.get"
+        ],
+        "owner": "bounded_bridge",
+        "package_class": "core",
+        "prerequisites": [
+          "declared route capability",
+          "bounded bridge support"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "none",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "deep_link": {
+        "denial": "route_unavailable",
+        "fallback": "show route unavailable surface that distinguishes inactive routes from routes that reject external entry",
+        "family": "deep_link",
+        "guide": "guides/native_shell.md#manifest-first-activation",
+        "id": "deep_link",
+        "interaction": "fire-and-forget",
+        "legacy_ids": [],
+        "owner": "activation",
+        "package_class": "core",
+        "prerequisites": [
+          "bundled or cached manifest",
+          "shell activation support",
+          "explicit route entry approval"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "none",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "document_scan": {
+        "denial": "unavailable_capability",
+        "fallback": "defer document scan support until native and proof posture are explicit",
+        "family": "document_scan",
+        "guide": "guides/capabilities.md#explicit-defers",
+        "id": "document_scan",
+        "interaction": "user-answer",
+        "legacy_ids": [],
+        "owner": "native_screen",
+        "package_class": "defer",
+        "prerequisites": [
+          "document-scan runtime",
+          "policy-heavy proof lane"
+        ],
+        "proof_class": "advisory",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "entitlement_snapshot": {
+        "denial": "unavailable_capability",
+        "fallback": "treat device-side state as evidence instead of final entitlement truth",
+        "family": "entitlement_snapshot",
+        "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+        "id": "entitlement_snapshot",
+        "interaction": "device-answer",
+        "legacy_ids": [],
+        "owner": "backend_seam",
+        "package_class": "core",
+        "prerequisites": [
+          "backend entitlement authority",
+          "reconciliation hook"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "file_picker": {
+        "denial": "undeclared_capability",
+        "fallback": "keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified",
+        "family": "file_picker",
+        "guide": "guides/capabilities.md#bounded-bridge",
+        "id": "file_picker",
+        "interaction": "user-answer",
+        "legacy_ids": [
+          "files.pick"
+        ],
+        "owner": "bounded_bridge",
+        "package_class": "core",
+        "prerequisites": [
+          "declared transfer_id",
+          "bounded bridge support",
+          "inbound native_picker transfer seam",
+          "copy-first staged handle plus transfer verification"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "native-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "haptics": {
+        "denial": "undeclared_capability",
+        "fallback": "Phoenix route continues without native confirmation feedback",
+        "family": "haptics",
+        "guide": "guides/bridge.md#bounded-bridge",
+        "id": "haptics",
+        "interaction": "fire-and-forget",
+        "legacy_ids": [
+          "haptics.impact"
+        ],
+        "owner": "bounded_bridge",
+        "package_class": "core",
+        "prerequisites": [
+          "declared route capability",
+          "bounded bridge support"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "none",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "host.lesson.audio.play": {
+        "denial": "unavailable_capability",
+        "fallback": "fail_closed",
+        "family": "host_command",
+        "guide": "guides/capabilities.md",
+        "id": "host.lesson.audio.play",
+        "interaction": "fire-and-forget",
+        "legacy_ids": [],
+        "owner": "host",
+        "package_class": "defer",
+        "prerequisites": [
+          "declared route support"
+        ],
+        "proof_class": "advisory",
+        "rebuild": "native-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "host.review.camera.scan": {
+        "denial": "unavailable_capability",
+        "fallback": "fail_closed",
+        "family": "host_command",
+        "guide": "guides/capabilities.md",
+        "id": "host.review.camera.scan",
+        "interaction": "fire-and-forget",
+        "legacy_ids": [],
+        "owner": "host",
+        "package_class": "defer",
+        "prerequisites": [
+          "declared route support"
+        ],
+        "proof_class": "advisory",
+        "rebuild": "native-required",
+        "status": "supported",
+        "version": "1.1.0"
+      },
+      "media_capture": {
+        "denial": "pack_incompatible",
+        "fallback": "fail closed instead of degrading into a bounded web upload flow",
+        "family": "media_capture",
+        "guide": "guides/native_shell.md#native-capture-escape-hatch",
+        "id": "media_capture",
+        "interaction": "user-answer",
+        "legacy_ids": [
+          "camera",
+          "camera.capture"
+        ],
+        "owner": "native_screen",
+        "package_class": "companion",
+        "prerequisites": [
+          "native screen route",
+          "capture pack availability"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "native-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "notification_token": {
+        "denial": "unavailable_capability",
+        "fallback": "treat notification token replies as provider-tagged evidence instead of backend registration truth",
+        "family": "notification_token",
+        "guide": "guides/capabilities.md#bounded-bridge",
+        "id": "notification_token",
+        "interaction": "device-answer",
+        "legacy_ids": [
+          "push.notifications"
+        ],
+        "owner": "bounded_bridge",
+        "package_class": "companion",
+        "prerequisites": [
+          "declared route capability",
+          "bounded bridge support",
+          "notification authorization already resolved",
+          "provider token snapshot available"
+        ],
+        "proof_class": "advisory",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "paywall_entry": {
+        "denial": "unavailable_capability",
+        "fallback": "fall back to Phoenix-owned paywall guidance without device authority",
+        "family": "paywall_entry",
+        "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+        "id": "paywall_entry",
+        "interaction": "fire-and-forget",
+        "legacy_ids": [],
+        "owner": "backend_seam",
+        "package_class": "core",
+        "prerequisites": [
+          "backend entitlement contract",
+          "storefront guidance"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "permissions.status": {
+        "denial": "undeclared_capability",
+        "fallback": "route continues without native notification permission snapshot authority",
+        "family": "permissions.status",
+        "guide": "guides/capabilities.md#bounded-bridge",
+        "id": "permissions.status",
+        "interaction": "device-answer",
+        "legacy_ids": [],
+        "owner": "bounded_bridge",
+        "package_class": "core",
+        "prerequisites": [
+          "declared route capability",
+          "bounded bridge support",
+          "notifications alias only"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "none",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "purchase_intent": {
+        "denial": "unavailable_capability",
+        "fallback": "treat purchase events as reconciliation inputs, not entitlement truth",
+        "family": "purchase_intent",
+        "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+        "id": "purchase_intent",
+        "interaction": "user-answer",
+        "legacy_ids": [],
+        "owner": "backend_seam",
+        "package_class": "core",
+        "prerequisites": [
+          "backend reconciliation",
+          "provider-specific adapter"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "reconciliation_evidence": {
+        "denial": "unavailable_capability",
+        "fallback": "treat evidence as asynchronous payload without blocking route entry",
+        "family": "reconciliation_evidence",
+        "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+        "id": "reconciliation_evidence",
+        "interaction": "device-answer",
+        "legacy_ids": [],
+        "owner": "backend_seam",
+        "package_class": "core",
+        "prerequisites": [
+          "backend reconciliation",
+          "device callback or webhook"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "restore_intent": {
+        "denial": "unavailable_capability",
+        "fallback": "keep restore flow backend-owned until adapter truth is explicit",
+        "family": "restore_intent",
+        "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+        "id": "restore_intent",
+        "interaction": "user-answer",
+        "legacy_ids": [],
+        "owner": "backend_seam",
+        "package_class": "core",
+        "prerequisites": [
+          "backend reconciliation",
+          "storefront-aware adapter"
+        ],
+        "proof_class": "merge-blocking",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "scanner": {
+        "denial": "unavailable_capability",
+        "fallback": "defer scanner support until native and proof posture are explicit",
+        "family": "scanner",
+        "guide": "guides/capabilities.md#explicit-defers",
+        "id": "scanner",
+        "interaction": "user-answer",
+        "legacy_ids": [],
+        "owner": "native_screen",
+        "package_class": "defer",
+        "prerequisites": [
+          "scanner-native runtime",
+          "policy-heavy proof lane"
+        ],
+        "proof_class": "advisory",
+        "rebuild": "companion-required",
+        "status": "supported",
+        "version": "1.0.0"
+      },
+      "share": {
+        "denial": "undeclared_capability",
+        "fallback": "keep content in the Phoenix-owned route until a share family is declared",
+        "family": "share",
+        "guide": "guides/capabilities.md#bounded-bridge",
+        "id": "share",
+        "interaction": "fire-and-forget",
+        "legacy_ids": [],
+        "owner": "bounded_bridge",
+        "package_class": "core",
+        "prerequisites": [
+          "truthful semantic share contract"
+        ],
+        "proof_class": "advisory",
+        "rebuild": "none",
+        "status": "supported",
+        "version": "1.0.0"
+      }
+    },
+    "commerce_corridors": {},
+    "compatibility": {
+      "bridge_protocol_version": "1.1.0",
+      "host_command_seam_version": "1.0.0",
+      "manifest_schema_version": "1.2.0",
+      "native_runtime_version": "1.0.0",
+      "remote_updates": [
+        "versioned_replacement",
+        "versioned_companion_data"
+      ],
+      "supported_manifest_sources": [
+        "bundled",
+        "cached",
+        "remote"
+      ]
+    },
+    "crosswake_version": "0.2.11",
+    "generated_at": "2026-10-14T00:00:00Z",
+    "host": {
+      "live_view_version": "~> 1.1",
+      "manifest_sources": [
+        "bundled",
+        "cached",
+        "remote"
+      ],
+      "origin": "https://seam.crosswake.test",
+      "phoenix_version": "~> 1.8"
+    },
+    "manifest_schema_version": "1.2.0",
+    "navigation_topology": {
+      "entries": [],
+      "manifest_schema_version": "1.2.0",
+      "status": "unknown_blocking",
+      "topology_schema_version": "1.0.0"
+    },
+    "pack_registry": {},
+    "routes": {
+      "lesson": {
+        "allowlisted_origins": [
+          "https://seam.crosswake.test"
+        ],
+        "auth_posture": "strict_recent",
+        "cache_contract": null,
+        "capabilities": [
+          "host.lesson.audio.play"
+        ],
+        "commerce": null,
+        "entry": "internal_only",
+        "host_commands": {
+          "host.lesson.audio.play": "1.0.0"
+        },
+        "id": "lesson",
+        "island_contract": {
+          "authoritative_source": "phoenix",
+          "checkpoint_requirement": "required",
+          "draft_surface": "study_session_draft",
+          "id": "lesson_v1",
+          "journal_mode": "append_only",
+          "reconciliation": "explicit",
+          "storage": "sqlite",
+          "sync_seam": "lesson_v1"
+        },
+        "offline": "local_first",
+        "packs": [],
+        "path": "/lesson",
+        "runtime": "offline_island",
+        "security": "sensitive",
+        "sync": [],
+        "transfers": []
+      },
+      "plain": {
+        "allowlisted_origins": [
+          "https://seam.crosswake.test"
+        ],
+        "cache_contract": null,
+        "capabilities": [],
+        "commerce": null,
+        "entry": "internal_only",
+        "host_commands": {},
+        "id": "plain",
+        "island_contract": null,
+        "offline": "unavailable",
+        "packs": [],
+        "path": "/plain",
+        "runtime": "live_view",
+        "security": null,
+        "sync": [],
+        "transfers": []
+      },
+      "review": {
+        "allowlisted_origins": [
+          "https://seam.crosswake.test"
+        ],
+        "cache_contract": null,
+        "capabilities": [
+          "host.review.camera.scan"
+        ],
+        "commerce": null,
+        "entry": "internal_only",
+        "host_commands": {
+          "host.review.camera.scan": "1.1.0"
+        },
+        "id": "review",
+        "island_contract": null,
+        "offline": "cached_read_only",
+        "packs": [],
+        "path": "/review",
+        "runtime": "live_view",
+        "security": "standard",
+        "sync": [],
+        "transfers": []
+      }
+    },
+    "support_matrix": {
+      "android": [
+        {
+          "baseline_status": "supported",
+          "boundary_link": "guides/native_shell.md#boundary-warnings--rough-edges",
+          "notes": "Android retains its frozen generator, Maven, JVM, and shared-vector posture. Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android is frozen during first adopter iOS readiness: no new feature, parity, device, template, or release claim.",
+          "proof": "script/verify_generated_android_shell.sh",
+          "proof_status": "supported",
+          "status": "supported",
+          "target": "android",
+          "version": "26"
+        }
+      ],
+      "capability_families": [
+        {
+          "baseline_status": "supported",
+          "denial": "undeclared_capability",
+          "fallback": "Phoenix route continues without native app metadata",
+          "family": "app_info",
+          "guide": "guides/bridge.md#bounded-bridge",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "posture": "bounded_bridge",
+          "prerequisites": [
+            "declared route capability",
+            "bounded bridge support"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "none",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "route_unavailable",
+          "fallback": "show route unavailable surface that distinguishes inactive routes from routes that reject external entry",
+          "family": "deep_link",
+          "guide": "guides/native_shell.md#manifest-first-activation",
+          "owner": "activation",
+          "package_class": "core",
+          "posture": "activation_first",
+          "prerequisites": [
+            "bundled or cached manifest",
+            "shell activation support",
+            "explicit route entry approval"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "supported",
+          "rebuild": "none",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "unsupported",
+          "denial": "unavailable_capability",
+          "fallback": "defer document scan support until native and proof posture are explicit",
+          "family": "document_scan",
+          "guide": "guides/capabilities.md#explicit-defers",
+          "owner": "native_screen",
+          "package_class": "defer",
+          "posture": "native_screen",
+          "prerequisites": [
+            "document-scan runtime",
+            "policy-heavy proof lane"
+          ],
+          "proof_class": "advisory",
+          "proof_status": "unsupported",
+          "rebuild": "companion-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "unavailable_capability",
+          "fallback": "Fail closed for access decisions when snapshot freshness is stale or unknown until refreshed backend authority is available; pending and awaiting_verification states never grant entitlement.",
+          "family": "entitlement_snapshot",
+          "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+          "owner": "backend_seam",
+          "package_class": "core",
+          "posture": "backend_seam",
+          "prerequisites": [
+            "backend entitlement authority",
+            "reconciliation hook",
+            "freshness posture (fresh/stale/unknown) surfaced before access checks"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "companion-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "undeclared_capability",
+          "fallback": "keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified",
+          "family": "file_picker",
+          "guide": "guides/capabilities.md#bounded-bridge",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "posture": "transfer_backed",
+          "prerequisites": [
+            "declared transfer_id",
+            "bounded bridge support",
+            "inbound native_picker transfer seam",
+            "copy-first staged handle plus transfer verification"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "native-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "undeclared_capability",
+          "fallback": "Phoenix route continues without native confirmation feedback",
+          "family": "haptics",
+          "guide": "guides/bridge.md#bounded-bridge",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "posture": "bounded_bridge",
+          "prerequisites": [
+            "declared route capability",
+            "bounded bridge support"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "none",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "pack_incompatible",
+          "fallback": "fail closed instead of degrading into a bounded web upload flow",
+          "family": "media_capture",
+          "guide": "guides/native_shell.md#native-capture-escape-hatch",
+          "owner": "native_screen",
+          "package_class": "companion",
+          "posture": "native_screen",
+          "prerequisites": [
+            "native screen route",
+            "capture pack availability"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "native-required",
+          "verification_method": "device_verified"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "unavailable_capability",
+          "fallback": "treat notification token replies as provider-tagged evidence instead of backend registration truth",
+          "family": "notification_token",
+          "guide": "guides/capabilities.md#bounded-bridge",
+          "owner": "bounded_bridge",
+          "package_class": "companion",
+          "posture": "provider_snapshot",
+          "prerequisites": [
+            "declared route capability",
+            "bounded bridge support",
+            "notification authorization already resolved",
+            "provider token snapshot available"
+          ],
+          "proof_class": "advisory",
+          "proof_status": "verification required",
+          "rebuild": "companion-required",
+          "verification_method": "jvm_hermetic"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "unavailable_capability",
+          "fallback": "fall back to Phoenix-owned paywall guidance without device authority",
+          "family": "paywall_entry",
+          "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+          "owner": "backend_seam",
+          "package_class": "core",
+          "posture": "backend_seam",
+          "prerequisites": [
+            "backend entitlement contract",
+            "storefront guidance"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "companion-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "undeclared_capability",
+          "fallback": "route continues without native notification permission snapshot authority",
+          "family": "permissions.status",
+          "guide": "guides/capabilities.md#bounded-bridge",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "posture": "alias_snapshot",
+          "prerequisites": [
+            "declared route capability",
+            "bounded bridge support",
+            "notifications alias only"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "none",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "unavailable_capability",
+          "fallback": "treat purchase events as reconciliation inputs, not entitlement truth",
+          "family": "purchase_intent",
+          "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+          "owner": "backend_seam",
+          "package_class": "core",
+          "posture": "backend_seam",
+          "prerequisites": [
+            "backend reconciliation",
+            "provider-specific adapter"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "companion-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "unavailable_capability",
+          "fallback": "Treat device/storefront/webhook/support evidence as non-authoritative reconciliation input; pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority.",
+          "family": "reconciliation_evidence",
+          "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+          "owner": "backend_seam",
+          "package_class": "core",
+          "posture": "backend_seam",
+          "prerequisites": [
+            "backend reconciliation",
+            "device callback or webhook",
+            "pending and awaiting_verification reconciliation states stay non-granting"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "companion-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "unavailable_capability",
+          "fallback": "keep restore flow backend-owned until adapter truth is explicit",
+          "family": "restore_intent",
+          "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
+          "owner": "backend_seam",
+          "package_class": "core",
+          "posture": "backend_seam",
+          "prerequisites": [
+            "backend reconciliation",
+            "storefront-aware adapter"
+          ],
+          "proof_class": "merge-blocking",
+          "proof_status": "verification required",
+          "rebuild": "companion-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "unsupported",
+          "denial": "unavailable_capability",
+          "fallback": "defer scanner support until native and proof posture are explicit",
+          "family": "scanner",
+          "guide": "guides/capabilities.md#explicit-defers",
+          "owner": "native_screen",
+          "package_class": "defer",
+          "posture": "native_screen",
+          "prerequisites": [
+            "scanner-native runtime",
+            "policy-heavy proof lane"
+          ],
+          "proof_class": "advisory",
+          "proof_status": "unsupported",
+          "rebuild": "companion-required",
+          "verification_method": "none"
+        },
+        {
+          "baseline_status": "supported",
+          "denial": "undeclared_capability",
+          "fallback": "keep content in the Phoenix-owned route until a share family is declared",
+          "family": "share",
+          "guide": "guides/capabilities.md#bounded-bridge",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "posture": "bounded_bridge",
+          "prerequisites": [
+            "truthful semantic share contract"
+          ],
+          "proof_class": "advisory",
+          "proof_status": "supported",
+          "rebuild": "none",
+          "verification_method": "none"
+        }
+      ],
+      "change_classes": [
+        {
+          "adopter_action": "Read the updated guidance and rerun docs integrity only.",
+          "change_class": "docs-only",
+          "compatibility_signal": "No compatibility-axis or capability-version change.",
+          "required_proof": "docs integrity only",
+          "what_changed": "Guides, wording, examples, support notes, or advisory docs changed without changing manifest semantics, compatibility-axis values, capability versions, shell templates, companion code, or proof expectations."
+        },
+        {
+          "adopter_action": "Update the Hex package and rerun core contract + doctor/support proof without rebuilding native shells.",
+          "change_class": "core-only/no native rebuild",
+          "compatibility_signal": "Existing manifest_schema_version, bridge_protocol_version, native_runtime_version, and capability majors stay in line.",
+          "required_proof": "core contract + doctor/support proof",
+          "what_changed": "Core Elixir behavior, docs generation, doctor, support rendering, or validation changed inside the already-supported schema, bridge, runtime, and capability versions."
+        },
+        {
+          "adopter_action": "Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures.",
+          "change_class": "compatibility-bump only",
+          "compatibility_signal": "manifest_schema_version, bridge_protocol_version, native_runtime_version, or capability required-version declarations changed support windows.",
+          "required_proof": "fail-closed compatibility fixtures",
+          "what_changed": "Compatibility declarations or package windows narrowed so some older combinations now fail closed, but a fresh binary is not automatically required for already-compatible adopters."
+        },
+        {
+          "adopter_action": "Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes.",
+          "change_class": "native or companion rebuild required",
+          "compatibility_signal": "Every rebuild-required change carries explicit compatibility declarations, especially native_runtime_version, bridge_protocol_version, manifest_schema_version, and capability required-version shifts.",
+          "required_proof": "core proof plus generated-shell or companion verification lanes",
+          "what_changed": "Native code, generated shell projects, entitlements, permissions, platform config, native dependencies, or companion-native integration code changed."
+        }
+      ],
+      "ios": [
+        {
+          "baseline_status": "supported",
+          "boundary_link": "guides/native_shell.md#boundary-warnings--rough-edges",
+          "notes": "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion.",
+          "proof": "script/verify_generated_ios_shell.sh",
+          "proof_status": "supported",
+          "status": "supported",
+          "target": "ios",
+          "version": "17.0"
+        }
+      ],
+      "live_view": [
+        {
+          "baseline_status": "supported",
+          "boundary_link": "guides/offline.md#boundary-warnings--rough-edges",
+          "notes": "LiveView remains server-owned and route-first.",
+          "proof": "phase-2-proof-lane",
+          "proof_status": "supported",
+          "status": "supported",
+          "target": "phoenix_live_view",
+          "version": "~> 1.1"
+        }
+      ],
+      "package_surfaces": [
+        {
+          "guide": "guides/install.md#package-surface",
+          "package_class": "core",
+          "release_burden": "Hex package SemVer moves independently, while support truth still follows manifest_schema_version, bridge_protocol_version, and native_runtime_version.",
+          "surface": "`crosswake` primary package",
+          "why": "Route-policy DSL, manifest contract, compatibility axes, bounded-bridge vocabulary, shell generators, doctor, support matrix, release rules, and proof posture stay in one obvious Phoenix-first package."
+        },
+        {
+          "guide": "guides/capabilities.md#packaging-ledger",
+          "package_class": "core",
+          "release_burden": "Semantics may evolve in core, but provider adapters and native storefront logic remain outside the base package.",
+          "surface": "Phoenix-facing commerce seam vocabulary",
+          "why": "`paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` stay normalized and backend-truthful in core without embedding storefront providers."
+        },
+        {
+          "guide": "guides/compatibility.md#companion-compatibility-contract",
+          "package_class": "companion",
+          "release_burden": "First-party companions declare minimum compatible ranges against core, compatibility axes, and capability-family majors.",
+          "surface": "Provider adapters and native-heavy integrations",
+          "why": "Storefront adapters, media/upload/capture, rollout, auth/session, notifications, and audit/operator seams carry native binary churn or backend coupling beyond core."
+        },
+        {
+          "guide": "guides/capabilities.md#docs-only-boundary",
+          "package_class": "example/docs-only",
+          "release_burden": "Not first-class supported as package surfaces; promotion requires reclassification plus proof and support-matrix updates.",
+          "surface": "Checked-in example hosts and install walkthroughs",
+          "why": "Examples, walkthroughs, reviewer playbooks, and vendor recipes teach boundaries and proof posture without becoming separate runtime packages."
+        },
+        {
+          "guide": "guides/install.md#step-2-generate-host-owned-native-shells",
+          "package_class": "core",
+          "release_burden": "Native core versions move in lockstep with the Hex package through release-please linked versions; clean-room proof verifies the external install path at release time.",
+          "surface": "Standalone native shell core packages",
+          "why": "The generated shell stays host-owned, while reusable native core logic resolves from SwiftPM and Maven Central packages instead of monorepo-local paths."
+        }
+      ],
+      "phoenix": [
+        {
+          "baseline_status": "supported",
+          "notes": "Phoenix host install and manifest generation are the stable baseline.",
+          "proof": "phase-2-proof-lane",
+          "proof_status": "supported",
+          "status": "supported",
+          "target": "phoenix",
+          "version": "~> 1.8"
+        }
+      ],
+      "rebuild_matrix": [
+        {
+          "capability_surface": [
+            "haptics",
+            "share",
+            "app_info",
+            "deep_link",
+            "permissions.status",
+            "notification_token",
+            "file_picker",
+            "media_capture",
+            "scanner",
+            "document_scan"
+          ],
+          "change_class": "native or companion rebuild required",
+          "evidence_tier": "jvm_hermetic",
+          "ota_safe": false,
+          "rebuild_required": true,
+          "runtime_line": "1.x"
+        }
+      ],
+      "release_boundaries": [
+        {
+          "compatibility_contract": "package versions alone do not define support truth; manifest_schema_version, bridge_protocol_version, and native_runtime_version stay canonical.",
+          "release_rule": "Manifest-major, bridge-major, and runtime-line changes must update support docs and doctor before release.",
+          "target": "core",
+          "versioning": "Independent SemVer for the `crosswake` Hex package."
+        },
+        {
+          "compatibility_contract": "Each companion declares minimum compatible ranges for core, all three compatibility axes, and exposed capability-family majors.",
+          "release_rule": "Companion support cannot expand until the adapter publishes explicit compatibility ranges and fail-closed guidance.",
+          "target": "companion",
+          "versioning": "Independent SemVer per first-party companion."
+        },
+        {
+          "compatibility_contract": "Breaking bridge semantics require a bridge_protocol_version major bump plus a compatible shell artifact before support widens.",
+          "release_rule": "Changes touching native code, entitlements, permissions, registration, or packaged runtime behavior move the native_runtime_version line and mark rebuild required.",
+          "target": "ios_shell",
+          "versioning": "SwiftPM core package version is lockstep with the Hex package; host app build numbers remain adopter-owned."
+        },
+        {
+          "compatibility_contract": "Breaking bridge semantics require a bridge_protocol_version major bump plus a compatible shell artifact before support widens.",
+          "release_rule": "Changes touching native code, entitlements, permissions, registration, or packaged runtime behavior move the native_runtime_version line and mark rebuild required.",
+          "target": "android_shell",
+          "versioning": "Maven Central core artifact version is lockstep with the Hex package; host app build numbers remain adopter-owned."
+        }
+      ],
+      "shells": [
+        {
+          "baseline_status": "supported",
+          "boundary_link": "guides/native_shell.md#boundary-warnings--rough-edges",
+          "notes": "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority. Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; Release consumer proof resolves that public SwiftPM tag and builds a generated iOS app with `xcodebuild`. It must pass for the ordinary core release's six-child COMPLETE result. CI build proof does not establish physical-device or adopter-topology support.",
+          "proof": "clean-room-proof-ios; script/verify_generated_ios_shell.sh",
+          "proof_status": "verification required",
+          "status": "supported",
+          "target": "ios_shell",
+          "version": "Hex-matched"
+        },
+        {
+          "baseline_status": "supported",
+          "boundary_link": "guides/native_shell.md#boundary-warnings--rough-edges",
+          "notes": "Generated Android shell artifacts retain the frozen generator, Maven, JVM, and shared-vector posture based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. This existing posture is frozen during first adopter iOS readiness; no parity/device/template/release expansion is claimed.",
+          "proof": "native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh",
+          "proof_status": "supported",
+          "status": "supported",
+          "target": "android_shell",
+          "version": "Hex-matched"
+        }
+      ]
+    }
+  }
+}

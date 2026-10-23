@@ -1,0 +1,30 @@
+{
+  "ordinary_run_id": 38146628907,
+  "job_id": 114493232158,
+  "observed_at_utc": "2026-10-11T14:52:14.368209+00:00",
+  "source": "https://github.com/szTheory/crosswake/actions/runs/38146628907/job/114493232158",
+  "observed_failure": "Execution failed for task ':app:lintDebug'. Lint found 1 errors, 18 warnings. themes.xml:8: android:windowLayoutInDisplayCutoutMode requires API level 27 (current min is 26) [NewApi]. Attempt 18/40 incorrectly called Maven propagation.",
+  "direct_maven": "Exact0.2.10POM and AAR public; earlier exact registry verification passed",
+  "diagnosis": "Generated default theme contains newer platform attribute; ordinary job repeats all Gradle failures indiscriminately",
+  "repair": "Reuse existing theme template for base and API28 resource variant; preserve existing style/colors/cutout setting and min26. Add lint to existing JVM proof. Poll exact Maven POM/AAR before one Gradle build; failures stop immediately.",
+  "scope": "Existing defect and existing release-proof repair only; no new Android feature/template/toolchain/device/parity lane",
+  "local_checks": {
+    "generator_diff_workflow": "35tests0failures",
+    "poll_boundary": "7tests0failures",
+    "workflow_integrity": "98checks0failed",
+    "actionlint": "PASS",
+    "shellcheck": "PASS",
+    "formatter": "PASS"
+  },
+  "actual_native_lint_check": "PENDING protected CI; no local SDK claimed",
+  "files": {
+    "lib/mix/tasks/crosswake.gen.shell.ex": "bf079bef9555d41e42f6589f3380a55b2f7c5e55487999aeddc40eb6be5ae3c2",
+    "priv/templates/crosswake/shell/android/app/src/main/res/values/themes.xml.eex": "6a46331acbd3cb409b61a70c0c945e057769a672705e0454fc2e5c777d84b9bd",
+    "test/mix/tasks/crosswake_gen_shell_stamp_test.exs": "3a5f4470a09084627cd166a6b0622e1f7aa44aaaf844b8ae9b75ed17c04cc3ff",
+    "script/verify_generated_android_shell.sh": "3f52088952da5e7eefaee23d9b8c32051f1cde6ee60452d5d395cfb6a5893f44",
+    "script/verify_android_public_build.sh": "d69956e4da08be6839ac4798fbbf25f233470e366027c16dd7c6c7d4558c1a98",
+    "script/verify_android_public_build_test.py": "6653f503f68666546bbc95045afc58acd6aeca4381d6ccd6f1d2074f62e52730",
+    ".github/workflows/release-please.yml": "43989b1c9716a5cb51ab1ff2ef9a2dcea8cdb69734f320f0679a387fee0f385d",
+    ".github/workflows/crosswake-ci.yml": "784b7496149b2a8c32e155871b7b2f41a0af064faee022f8507139e04b169ac0"
+  }
+}

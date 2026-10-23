@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "phase": 178,
+  "plan": "01",
+  "status": "source-qualified",
+  "sourceBaseCommit": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+  "sourceBaseTree": "12a0f1bf3c32ecdde0326f4a288b597b11e33b06",
+  "candidateCommit": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+  "candidateTree": "27f4073039b4dd976492127549603a76ce22499b",
+  "selectedPaths": [
+    "README.md",
+    "docs/COMPANION-PUBLISH-RUNBOOK.md",
+    "docs/RELEASE-INCIDENT-RESPONSE.md",
+    "script/collection_assertion_ledger.json",
+    "script/collection_assertion_remediation.json",
+    "test/crosswake/guides/release_boundaries_test.exs",
+    "test/crosswake/release_candidate/companion_receipt_test.exs",
+    "test/crosswake/release_candidate/evidence_gate_test.exs"
+  ],
+  "selectedCount": 8,
+  "proofClone": "clean-detached-exact-commit",
+  "canonicalMainMatchesBase": true,
+  "retainedRows": 119,
+  "historicalReaderComparisons": "unproven-2",
+  "requirements": {
+    "MAINT-07": "pending-full-run",
+    "MAINT-08": "pending-hosted-ci"
+  }
+}

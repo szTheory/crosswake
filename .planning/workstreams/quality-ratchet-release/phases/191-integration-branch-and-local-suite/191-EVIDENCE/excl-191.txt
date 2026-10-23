@@ -1,0 +1,3 @@
+main_excluded 81
+assumption_A11 disproved
+inputs 2660 78 3 2735

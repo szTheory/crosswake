@@ -1,0 +1,47 @@
+# snapshot label: after
+# phase-189 exclusion prefix (fixed string, grep -v -F): ?? .planning/workstreams/quality-ratchet-release/phases/189-
+# excluded_phase189_lines: 91
+# excluded_milestone_lock_lines: 1 (GSD heartbeat file, left out of porcelain digests and the planning content digest)
+# volatile handoff files left out of the planning content digest: STATE.md ROADMAP.md REQUIREMENTS.md state.json .continue-here.md MILESTONES.md .verification-ledger.json (workstream quality-ratchet-release)
+# backup_root rule: compared key covers every top-level entry of <backup-root> except inventory-189
+# porcelain counts: collapsed = default mode; expanded = --untracked-files=all minus the excluded prefix
+head: d0f3e2f1ead2046c26da5cc4b5dd62d5bfea1377
+head_tree: 7b9cbda27f4f0f0d7ed9e0aab9b6c29f9d5d8c24
+branch: refs/heads/recovery/phase-175-orchestrator-2026-09-27
+refs_digest: e6b1e8921d8c8e2372b0a4153ddd77f44ef28a71815d152a9c3ba0b8cad66c06
+refs_count: 174
+stash_digest: da6bbd8131437e172822ebd4eeabc4a94ba20d5c0aeb5855e18005de4f3dd076
+stash_count: 4
+stash_0: 5c36ccd89f9e9be6654f31b74dd0674379e47cfb
+stash_1: 66d71ea49c52e6ea37e207c4b2128d7273ae8ec9
+stash_2: 5690640d3d332efbe5f4db932f5925784f9bc6c0
+stash_3: d77f0beae43cb45b28148b3192c5b5643720d387
+worktree_digest: f65da43a47efc14828ac70c81176f5190cd58e98fcba4e5947b790afbb263887
+worktree_count: 3
+porcelain_collapsed_digest: d4807b4bbae6fd1af1878aa51ef886764eb873435b832be57719982f22d81c8a
+porcelain_collapsed_count: 121
+porcelain_expanded_digest: c295bdf25e376d0bf808bcf3e76fc8a4702547831b3cf7052374366659d86981
+porcelain_expanded_count: 738
+nonplanning_count: 78
+nonplanning_content_digest: 6967ef2dcbca725b184216ad72536fb7296f7062766a09c39405323c8fafbe35
+planning_dirty_count: 653
+planning_content_digest: 8bdd310386db30aa059f2c62e4ca0bb9012e9226f89b09463b4ef89439f1a2f7
+index_size_mtime: 807861 1791754838.454409979
+gitdir_top_digest: e724d08820e42a6ac84d57beb18c66c5c9cf5ff05be190fa52b42d6a5c76ba04
+reflog_files_count: 114
+reflog_worktree_head_logs: 2
+reflog_files_digest: 392a2790d408b28c23f4cde0670cc5a50092c9c118147734f21be099b350d5cd
+reflog_new_ids_distinct: 2897
+log_g_all_distinct: 2897
+lost_found_count: 248
+wt_1_head: 789175f219de03047456e098fedf4a97891feff2
+wt_1_branch: refs/heads/chore/accrue-host-command-bridge
+wt_1_porcelain_digest: 0d4d9ee17355a59052ce01ec6bea2f08e199c6f67fcbf3af7a19458c2dbbecf1
+wt_2_head: 0c05008483a18bf5d3ec431087b6b5efb81df5ef
+wt_2_branch: refs/heads/worktree-agent-p78-20261004T153017
+wt_2_porcelain_digest: 90a73e580650d0f6487574ca5ec24a2bc6ad72dc641defcf5a2c480f6b86a369
+candidate_head: a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4
+candidate_porcelain_count: 0
+tmp_listing_digest: 0bbbe71b15eb5f4959a645f08e7a608cbbccf1db3ef045687d6bf0efefe68df2
+tmp_listing_count: 99
+backup_root_preexisting: ee4e5b3ad29a2c63cb32b69ee7efbeb099e81e69dd7ad7d7554b598eed6b0591

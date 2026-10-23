@@ -49,6 +49,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "",
       section("iOS", support_matrix.ios),
       "",
+      ios_host_generation_section(),
+      "",
       section("Android", support_matrix.android),
       "",
       section("Shell Artifacts", support_matrix.shells),
@@ -124,6 +126,21 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "| Family | Owner | Posture | Baseline | Proof Status | Package | Proof | Rebuild | Prerequisites | Denial | Fallback | Guide |",
       "|--------|-------|---------|----------|--------------|---------|-------|---------|---------------|--------|----------|-------|",
       Enum.map_join(entries, "\n", &capability_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp ios_host_generation_section do
+    [
+      "## iOS Host Generation and Xcode Settings",
+      "",
+      "The host's ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled Phoenix router, declared entry route, HTTPS primary origin, app/proof identities, and device-signing settings. An explicit `origin_mode: :local_loopback` allows only `http://127.0.0.1` or `http://localhost` (optional port) for Simulator demonstration and is reported as not production-ready. Compile-only generation compiles the router without starting the host application or loading its runtime-server configuration.",
+      "",
+      "`mix crosswake.gen.shell ios --diff` and `--check` inspect managed output without writing. Recognized manifest, static activation, and xcconfig projections have explicit ownership; interrupted publication blocks the Xcode build guard until `--recover`. Existing project settings use a separate opt-in migration limited to the recognized shell target blocks.",
+      "",
+      "The effective-settings check observes 20 Xcode cells across the shell, proof app, unit-test, and UI-test targets, Debug/Release, and simulator/device SDK classes. Simulator settings are unsigned. Device settings inspection reports configuration only; it does not claim signing or installation.",
+      "",
+      "Manifest and entry activation carry static route and origin configuration. They grant no session, account, scope, installed-media, or replay authority. These host-generation and settings checks do not establish physical-iPhone support or activate a first adopter's host."
     ]
     |> Enum.join("\n")
   end
@@ -248,6 +265,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "## Interaction-Class Legend",
       "",
       "`manifest_schema_version` moved `1.0.0` -> `1.1.0` (Phase 154, CTRL-05/D-55): additive, native-inert — the iOS and Android shells decode neither the new `interaction` field nor the widened `Capability` enforce-keys, so this is `compatibility-bump only`, not rebuild-required.",
+      "",
+      "`manifest_schema_version` then moved `1.1.0` -> `1.2.0` (Phase 181): additive and iOS-only. Routes may carry `host_commands`, and `compatibility` may carry `host_command_seam_version`. The Android shell does not read either field. This is `compatibility-bump only` for hosts that declare no host commands.",
       "",
       "Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` now also declares an explicit `Capability.interaction` value alongside `Capability.rebuild`, enforced at compile time by `@enforce_keys`. Use these labels literally.",
       "",

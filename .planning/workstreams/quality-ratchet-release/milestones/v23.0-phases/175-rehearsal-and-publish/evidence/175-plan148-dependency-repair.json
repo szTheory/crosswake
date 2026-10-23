@@ -1,0 +1,13 @@
+{
+  "ci_run_id": 38106816201,
+  "failed_job": "proof-dependency-security",
+  "package": "decimal",
+  "old_version": "3.1.0",
+  "new_version": "3.1.2",
+  "advisory": "GHSA-6c27-994x-c52f",
+  "published_date": "2026-10-10",
+  "source": "https://github.com/ericmj/decimal/security/advisories/GHSA-6c27-994x-c52f",
+  "resolution": "Exact patched version resolved and downloaded with Mix/Hex into temporary public cache",
+  "other_lock_entries_unchanged": true,
+  "observed_at": "2026-10-11T03:00:09.061612+00:00"
+}

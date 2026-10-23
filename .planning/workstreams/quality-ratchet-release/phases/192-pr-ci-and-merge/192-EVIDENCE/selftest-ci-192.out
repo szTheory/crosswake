@@ -1,0 +1,16 @@
+C01 one matching success: as expected
+C02 older failure, newer success is success: as expected
+C03 newer failure beats older success: as expected
+C04 other app check-run ignored: as expected
+C05 zero check-runs is not success: as expected
+C06 garbage JSON is unreadable: as expected
+C07 wait pending then success writes D-08 evidence: as expected
+C08 changed head refused: as expected
+C09 closed PR refused: as expected
+C10 no check-run within poll limit: as expected
+C11 synthetic merge parents unproven: as expected
+C12 completed failure recorded with job names: as expected
+C13 two required checks is a changed set: as expected
+C14 invented field refused by derive: as expected
+C15 unreadable inside wait stops at once: as expected
+selftest-ci: controls 15 of 15 as expected

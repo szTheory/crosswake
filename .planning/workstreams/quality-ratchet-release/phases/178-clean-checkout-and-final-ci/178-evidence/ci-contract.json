@@ -1,0 +1,895 @@
+{
+  "schemaVersion": 1,
+  "status": "policy-observed-source-contract-ready-for-run",
+  "repository": "szTheory/crosswake",
+  "workflow": {
+    "path": ".github/workflows/crosswake-ci.yml",
+    "id": 353403178,
+    "name": "Crosswake CI",
+    "pinnedCheckoutActions": [
+      "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0"
+    ],
+    "source": {
+      "version": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+      "blobOid": "3e7ec4f5d50646f4d282907562737723f429413d"
+    }
+  },
+  "candidate": {
+    "baseCommit": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+    "commit": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+    "tree": "27f4073039b4dd976492127549603a76ce22499b",
+    "selectedPathCount": 8
+  },
+  "graph": {
+    "proofLeafCount": 46,
+    "proofLeaves": [
+      {
+        "id": "android-generated-shell-unit",
+        "displayName": "android-generated-shell-unit"
+      },
+      {
+        "id": "android-package-unit",
+        "displayName": "android-package-unit"
+      },
+      {
+        "id": "brand-structural",
+        "displayName": "brand-structural"
+      },
+      {
+        "id": "collateral-binaries-guard",
+        "displayName": "collateral-binaries-guard"
+      },
+      {
+        "id": "documentation-contracts",
+        "displayName": "documentation-contracts"
+      },
+      {
+        "id": "e2e-proof",
+        "displayName": "e2e-proof"
+      },
+      {
+        "id": "guard-01-contract-drift-test",
+        "displayName": "guard-01-contract-drift-test"
+      },
+      {
+        "id": "guard-01-e2e-honesty",
+        "displayName": "guard-01-e2e-honesty"
+      },
+      {
+        "id": "guard-02-generate-and-diff",
+        "displayName": "guard-02-generate-and-diff"
+      },
+      {
+        "id": "guard-02-prod-route-absence",
+        "displayName": "guard-02-prod-route-absence"
+      },
+      {
+        "id": "hex-page-proof",
+        "displayName": "hex-page-proof"
+      },
+      {
+        "id": "ios-mirror-parity-proof",
+        "displayName": "ios-mirror-parity-proof"
+      },
+      {
+        "id": "ios-package-unit",
+        "displayName": "ios-package-unit"
+      },
+      {
+        "id": "phase10-proof",
+        "displayName": "phase10-proof"
+      },
+      {
+        "id": "phase130-companion-engine-absent-proof",
+        "displayName": "phase130-companion-engine-absent-proof"
+      },
+      {
+        "id": "phase130-core-hermetic-proof",
+        "displayName": "phase130-core-hermetic-proof"
+      },
+      {
+        "id": "phase132-companion-engine-absent-proof",
+        "displayName": "phase132-companion-engine-absent-proof"
+      },
+      {
+        "id": "phase132-core-hermetic-proof",
+        "displayName": "phase132-core-hermetic-proof"
+      },
+      {
+        "id": "phase18-elixir-android-proof",
+        "displayName": "phase18-elixir-android-proof"
+      },
+      {
+        "id": "phase18-ios-proof",
+        "displayName": "phase18-ios-proof"
+      },
+      {
+        "id": "phase23-commerce-proof",
+        "displayName": "phase23-commerce-proof"
+      },
+      {
+        "id": "phase34-commerce-proof",
+        "displayName": "phase34-commerce-proof"
+      },
+      {
+        "id": "phase41-gating-proof",
+        "displayName": "phase41-gating-proof"
+      },
+      {
+        "id": "phase43-rulestead-proof",
+        "displayName": "phase43-rulestead-proof"
+      },
+      {
+        "id": "phase45-rindle-proof",
+        "displayName": "phase45-rindle-proof"
+      },
+      {
+        "id": "phase48-provider-adapter-proof",
+        "displayName": "phase48-provider-adapter-proof"
+      },
+      {
+        "id": "phase5-proof",
+        "displayName": "phase5-proof"
+      },
+      {
+        "id": "phase52-operator-proof",
+        "displayName": "phase52-operator-proof"
+      },
+      {
+        "id": "phase58-auth-closeout-proof",
+        "displayName": "phase58-auth-closeout-proof"
+      },
+      {
+        "id": "phase67-android-jvm-proof",
+        "displayName": "phase67-android-jvm-proof"
+      },
+      {
+        "id": "phase69-closeout-proof",
+        "displayName": "phase69-closeout-proof"
+      },
+      {
+        "id": "phase70-subscription-saas-proof",
+        "displayName": "phase70-subscription-saas-proof"
+      },
+      {
+        "id": "phase71-notification-workflow-proof",
+        "displayName": "phase71-notification-workflow-proof"
+      },
+      {
+        "id": "phase73-auth-sensitive-admin-workflow-proof",
+        "displayName": "phase73-auth-sensitive-admin-workflow-proof"
+      },
+      {
+        "id": "phase74-offline-draft-recovery-proof",
+        "displayName": "phase74-offline-draft-recovery-proof"
+      },
+      {
+        "id": "phase75-closeout-gate",
+        "displayName": "phase75-closeout-gate"
+      },
+      {
+        "id": "phase79-android-proof",
+        "displayName": "phase79-android-proof"
+      },
+      {
+        "id": "phase79-ios-proof",
+        "displayName": "phase79-ios-proof"
+      },
+      {
+        "id": "phase96-threadline-docs-contract-proof",
+        "displayName": "phase96-threadline-docs-contract-proof"
+      },
+      {
+        "id": "proof-aggregator-negative-control",
+        "displayName": "proof-aggregator-negative-control"
+      },
+      {
+        "id": "proof-dependency-security",
+        "displayName": "proof-dependency-security"
+      },
+      {
+        "id": "proof-requires-example-host",
+        "displayName": "proof-requires-example-host"
+      },
+      {
+        "id": "release-as-staleness-proof",
+        "displayName": "release-as-staleness-proof"
+      },
+      {
+        "id": "release-candidate-fixtures",
+        "displayName": "release-candidate-fixtures"
+      },
+      {
+        "id": "release-candidate-full-proof",
+        "displayName": "release-candidate-full-proof"
+      },
+      {
+        "id": "route-tour-proof",
+        "displayName": "route-tour-proof"
+      }
+    ],
+    "controlNodes": [
+      {
+        "id": "classify-change",
+        "displayName": "classify-change",
+        "requiredResult": "success"
+      }
+    ],
+    "umbrella": {
+      "id": "merge-blocking-crosswake-ci",
+      "displayName": "Crosswake CI",
+      "needs": [
+        "android-generated-shell-unit",
+        "android-package-unit",
+        "brand-structural",
+        "classify-change",
+        "collateral-binaries-guard",
+        "documentation-contracts",
+        "e2e-proof",
+        "guard-01-contract-drift-test",
+        "guard-01-e2e-honesty",
+        "guard-02-generate-and-diff",
+        "guard-02-prod-route-absence",
+        "hex-page-proof",
+        "ios-mirror-parity-proof",
+        "ios-package-unit",
+        "phase10-proof",
+        "phase18-elixir-android-proof",
+        "phase18-ios-proof",
+        "phase130-companion-engine-absent-proof",
+        "phase130-core-hermetic-proof",
+        "phase132-companion-engine-absent-proof",
+        "phase132-core-hermetic-proof",
+        "phase23-commerce-proof",
+        "phase34-commerce-proof",
+        "phase5-proof",
+        "phase41-gating-proof",
+        "phase43-rulestead-proof",
+        "phase45-rindle-proof",
+        "phase48-provider-adapter-proof",
+        "phase52-operator-proof",
+        "phase58-auth-closeout-proof",
+        "phase67-android-jvm-proof",
+        "phase69-closeout-proof",
+        "phase70-subscription-saas-proof",
+        "phase71-notification-workflow-proof",
+        "phase73-auth-sensitive-admin-workflow-proof",
+        "phase74-offline-draft-recovery-proof",
+        "phase75-closeout-gate",
+        "phase79-android-proof",
+        "phase79-ios-proof",
+        "phase96-threadline-docs-contract-proof",
+        "proof-aggregator-negative-control",
+        "proof-dependency-security",
+        "proof-requires-example-host",
+        "release-as-staleness-proof",
+        "release-candidate-fixtures",
+        "release-candidate-full-proof",
+        "route-tour-proof"
+      ]
+    },
+    "advisoryJobs": [
+      "brand-visual"
+    ],
+    "checkoutPolicies": {
+      "android-generated-shell-unit": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "android-generated-shell-unit"
+      },
+      "android-package-unit": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "android-package-unit"
+      },
+      "brand-structural": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "brand-structural"
+      },
+      "collateral-binaries-guard": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "collateral-binaries-guard"
+      },
+      "documentation-contracts": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "documentation-contracts"
+      },
+      "e2e-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "e2e-proof"
+      },
+      "guard-01-contract-drift-test": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "guard-01-contract-drift-test"
+      },
+      "guard-01-e2e-honesty": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "guard-01-e2e-honesty"
+      },
+      "guard-02-generate-and-diff": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "guard-02-generate-and-diff"
+      },
+      "guard-02-prod-route-absence": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "guard-02-prod-route-absence"
+      },
+      "hex-page-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "hex-page-proof"
+      },
+      "ios-mirror-parity-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "ios-mirror-parity-proof"
+      },
+      "ios-package-unit": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "ios-package-unit"
+      },
+      "phase10-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase10-proof"
+      },
+      "phase130-companion-engine-absent-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase130-companion-engine-absent-proof"
+      },
+      "phase130-core-hermetic-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase130-core-hermetic-proof"
+      },
+      "phase132-companion-engine-absent-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase132-companion-engine-absent-proof"
+      },
+      "phase132-core-hermetic-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase132-core-hermetic-proof"
+      },
+      "phase18-elixir-android-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase18-elixir-android-proof"
+      },
+      "phase18-ios-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase18-ios-proof"
+      },
+      "phase23-commerce-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase23-commerce-proof"
+      },
+      "phase34-commerce-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase34-commerce-proof"
+      },
+      "phase41-gating-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase41-gating-proof"
+      },
+      "phase43-rulestead-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase43-rulestead-proof"
+      },
+      "phase45-rindle-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase45-rindle-proof"
+      },
+      "phase48-provider-adapter-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase48-provider-adapter-proof"
+      },
+      "phase5-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase5-proof"
+      },
+      "phase52-operator-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase52-operator-proof"
+      },
+      "phase58-auth-closeout-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase58-auth-closeout-proof"
+      },
+      "phase67-android-jvm-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase67-android-jvm-proof"
+      },
+      "phase69-closeout-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase69-closeout-proof"
+      },
+      "phase70-subscription-saas-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase70-subscription-saas-proof"
+      },
+      "phase71-notification-workflow-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase71-notification-workflow-proof"
+      },
+      "phase73-auth-sensitive-admin-workflow-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase73-auth-sensitive-admin-workflow-proof"
+      },
+      "phase74-offline-draft-recovery-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase74-offline-draft-recovery-proof"
+      },
+      "phase75-closeout-gate": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase75-closeout-gate"
+      },
+      "phase79-android-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase79-android-proof"
+      },
+      "phase79-ios-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase79-ios-proof"
+      },
+      "phase96-threadline-docs-contract-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase96-threadline-docs-contract-proof"
+      },
+      "proof-aggregator-negative-control": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "proof-aggregator-negative-control"
+      },
+      "proof-dependency-security": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "proof-dependency-security"
+      },
+      "proof-requires-example-host": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "proof-requires-example-host"
+      },
+      "release-as-staleness-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "release-as-staleness-proof"
+      },
+      "release-candidate-fixtures": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "release-candidate-fixtures"
+      },
+      "release-candidate-full-proof": {
+        "kind": "head",
+        "explicitRef": "pull_request_head_sha",
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "release-candidate-full-proof"
+      },
+      "route-tour-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "route-tour-proof"
+      }
+    },
+    "requiredCheckoutPolicies": {
+      "android-generated-shell-unit": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "android-generated-shell-unit"
+      },
+      "android-package-unit": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "android-package-unit"
+      },
+      "brand-structural": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "brand-structural"
+      },
+      "collateral-binaries-guard": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "collateral-binaries-guard"
+      },
+      "documentation-contracts": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "documentation-contracts"
+      },
+      "e2e-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "e2e-proof"
+      },
+      "guard-01-contract-drift-test": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "guard-01-contract-drift-test"
+      },
+      "guard-01-e2e-honesty": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "guard-01-e2e-honesty"
+      },
+      "guard-02-generate-and-diff": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "guard-02-generate-and-diff"
+      },
+      "guard-02-prod-route-absence": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "guard-02-prod-route-absence"
+      },
+      "hex-page-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "hex-page-proof"
+      },
+      "ios-mirror-parity-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "ios-mirror-parity-proof"
+      },
+      "ios-package-unit": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "ios-package-unit"
+      },
+      "phase10-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase10-proof"
+      },
+      "phase130-companion-engine-absent-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase130-companion-engine-absent-proof"
+      },
+      "phase130-core-hermetic-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase130-core-hermetic-proof"
+      },
+      "phase132-companion-engine-absent-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase132-companion-engine-absent-proof"
+      },
+      "phase132-core-hermetic-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase132-core-hermetic-proof"
+      },
+      "phase18-elixir-android-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase18-elixir-android-proof"
+      },
+      "phase18-ios-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase18-ios-proof"
+      },
+      "phase23-commerce-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase23-commerce-proof"
+      },
+      "phase34-commerce-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase34-commerce-proof"
+      },
+      "phase41-gating-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase41-gating-proof"
+      },
+      "phase43-rulestead-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase43-rulestead-proof"
+      },
+      "phase45-rindle-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase45-rindle-proof"
+      },
+      "phase48-provider-adapter-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase48-provider-adapter-proof"
+      },
+      "phase5-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase5-proof"
+      },
+      "phase52-operator-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase52-operator-proof"
+      },
+      "phase58-auth-closeout-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase58-auth-closeout-proof"
+      },
+      "phase67-android-jvm-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase67-android-jvm-proof"
+      },
+      "phase69-closeout-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase69-closeout-proof"
+      },
+      "phase70-subscription-saas-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase70-subscription-saas-proof"
+      },
+      "phase71-notification-workflow-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase71-notification-workflow-proof"
+      },
+      "phase73-auth-sensitive-admin-workflow-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase73-auth-sensitive-admin-workflow-proof"
+      },
+      "phase74-offline-draft-recovery-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase74-offline-draft-recovery-proof"
+      },
+      "phase75-closeout-gate": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase75-closeout-gate"
+      },
+      "phase79-android-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase79-android-proof"
+      },
+      "phase79-ios-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "phase79-ios-proof"
+      },
+      "phase96-threadline-docs-contract-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "phase96-threadline-docs-contract-proof"
+      },
+      "proof-aggregator-negative-control": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "proof-aggregator-negative-control"
+      },
+      "proof-dependency-security": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "proof-dependency-security"
+      },
+      "proof-requires-example-host": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "proof-requires-example-host"
+      },
+      "release-as-staleness-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "release-as-staleness-proof"
+      },
+      "release-candidate-fixtures": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "release-candidate-fixtures"
+      },
+      "release-candidate-full-proof": {
+        "kind": "head",
+        "explicitRef": "pull_request_head_sha",
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "release-candidate-full-proof"
+      },
+      "route-tour-proof": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "jobId": "route-tour-proof"
+      },
+      "classify-change": {
+        "kind": "merge",
+        "explicitRef": null,
+        "actionPin": "9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+        "jobId": "classify-change"
+      }
+    },
+    "sourceLessJobs": [
+      "Crosswake CI"
+    ],
+    "skipPolicy": {
+      "authorizedSkipIds": [],
+      "pendingLeafIds": [
+        "release-candidate-full-proof"
+      ],
+      "conditionBound": true
+    }
+  },
+  "classification": {
+    "schema_version": "1",
+    "classification": "full_proof",
+    "reason": "unallowlisted_or_mixed_path",
+    "scheduled_families": "[\"full_proof\"]",
+    "irrelevant_leaves": "[]"
+  },
+  "policy": {
+    "targetBase": "main",
+    "observedAt": "2026-10-12T21:17:52.416Z",
+    "branchProtection": {
+      "state": "read-success",
+      "strict": true,
+      "requiredContexts": [
+        {
+          "context": "Crosswake CI",
+          "appId": 15368
+        }
+      ],
+      "rawResponseCaptured": true
+    },
+    "effectiveRules": {
+      "state": "successful-empty",
+      "ruleCount": 0,
+      "requiredContexts": [],
+      "rawResponseCaptured": true
+    },
+    "combinedRequiredChecks": [
+      {
+        "context": "Crosswake CI",
+        "appId": 15368,
+        "sources": [
+          "branch_protection"
+        ]
+      }
+    ]
+  },
+  "hostedWorkflowCredentialAccess": {
+    "state": "unproven-until-hosted-run",
+    "localPolicyReadIsNotProof": true
+  },
+  "nextGate": "observe one current PR run, complete attempt jobs/check pages, and actual per-job checkout OIDs",
+  "selectedSourceChecks": {
+    "manifestSelfTest": "pass",
+    "classifier": "pass",
+    "exactCandidateBaseStillCurrent": true
+  }
+}

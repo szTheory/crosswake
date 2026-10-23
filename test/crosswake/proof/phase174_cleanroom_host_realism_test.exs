@@ -24,7 +24,10 @@ defmodule Crosswake.Proof.Phase174CleanRoomHostRealismTest do
 
   @script "script/verify_companion_cleanroom.sh"
 
-  @evidence_log ".planning/workstreams/quality-ratchet-release/phases/174-clean-room-host-realism-adopter-fidelity/evidence/174-legacy-rindle-local-run.log"
+  @evidence_log Crosswake.Test.PhaseEvidencePath.resolve(
+                  "quality-ratchet-release",
+                  "174-clean-room-host-realism-adopter-fidelity/evidence/174-legacy-rindle-local-run.log"
+                )
 
   # The nine-name marker roster, declared literally and independently of the script under
   # test. This list's length is itself asserted below so a future edit that empties it cannot

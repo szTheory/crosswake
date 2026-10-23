@@ -1,0 +1,549 @@
+# Trusted candidate rehearsal and manual exact-ref recovery for Hex packages.
+# Candidate rehearsal builds and dry-runs the exact six-package family without
+# registry credentials or publication. Recovery publishes one already-approved
+# exact coordinate when automatic Release Please publishing needs a retry. The
+# default publication path remains Release Please
+# (`.github/workflows/release-please.yml`) on merge of the Release PR; this
+# workflow is recovery/fire-drill only.
+#
+# Requires repository secret: HEX_API_KEY (Actions secrets).
+
+name: Hex candidate rehearsal and recovery
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'Rehearse the exact candidate, recover one immutable registry coordinate, or fire-drill the recovery proof with no record and no credential.'
+        required: true
+        type: choice
+        default: recovery
+        options:
+          - candidate-rehearsal
+          - recovery
+          - android-recovery
+          - recovery-fire-drill
+      package:
+        description: 'Hex package to recover.'
+        required: false
+        default: crosswake
+        type: choice
+        options:
+          - crosswake
+          - crosswake_rulestead
+          - crosswake_rindle
+          - crosswake_sigra
+          - crosswake_chimeway
+          - crosswake_threadline
+      ref:
+        description: 'Exact recovery ref: full 40-character lowercase SHA or package-scoped refs/tags/<component>-vX.Y.Z tag ref.'
+        required: false
+        default: ''
+        type: string
+      release_version:
+        description: 'Expected @version string in the selected package mix.exs at that ref.'
+        required: true
+        type: string
+      candidate_head:
+        description: 'Exact refreshed Release Please candidate head (40 lowercase hex).'
+        required: false
+        default: ''
+        type: string
+      candidate_tree:
+        description: 'Exact candidate Git tree (40 lowercase hex).'
+        required: false
+        default: ''
+        type: string
+      candidate_base:
+        description: 'Exact protected-default base (40 lowercase hex).'
+        required: false
+        default: ''
+        type: string
+      candidate_receipt:
+        description: 'SHA-256 digest of the canonical candidate receipt.'
+        required: false
+        default: ''
+        type: string
+      approved_head:
+        description: 'Approved refreshed candidate head required for root Hex recovery.'
+        required: false
+        default: ''
+        type: string
+      approved_tree:
+        description: 'Approved candidate tree required for root Hex recovery.'
+        required: false
+        default: ''
+        type: string
+      merge_oid:
+        description: 'Exact approved two-parent merge commit required for root Hex recovery.'
+        required: false
+        default: ''
+        type: string
+      approved_version:
+        description: 'Approved release version required for root Hex recovery.'
+        required: false
+        default: ''
+        type: string
+      candidate_receipt_run_id:
+        description: 'Run id of the trusted "iOS mirror authority" run that uploaded the approved candidate receipt. Required for the recovery exact-public proof.'
+        required: false
+        default: ''
+        type: string
+      rel17_context:
+        description: 'Fresh post-merge REL-17 selector and consumed authorization envelope for this exact recovery.'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  rehearse-hex-candidate:
+    name: Rehearse exact six-package Hex candidate
+    if: ${{ github.event.inputs.operation == 'candidate-rehearsal' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    env:
+      CANDIDATE_HEAD: "${{ inputs.candidate_head }}"
+      CANDIDATE_TREE: "${{ inputs.candidate_tree }}"
+      CANDIDATE_BASE: "${{ inputs.candidate_base }}"
+      CANDIDATE_RECEIPT: "${{ inputs.candidate_receipt }}"
+      CANDIDATE_RUN_ID: ${{ github.run_id }}
+    steps:
+      - name: Validate exact candidate authority
+        run: |
+          set -euo pipefail
+          printf '%s' "$CANDIDATE_HEAD" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$CANDIDATE_TREE" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$CANDIDATE_BASE" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$CANDIDATE_RECEIPT" | grep -Eq '^[0-9a-f]{64}$'
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.candidate_head }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Resolve exact candidate dependencies
+        run: mix deps.get --check-locked
+
+      - name: Build trusted rehearsal evidence
+        env:
+          OUTPUT_DIR: ${{ runner.temp }}/candidate-rehearsal-hex
+        run: |
+          set -euo pipefail
+          observed_head=$(git rev-parse HEAD)
+          observed_tree=$(git rev-parse "${observed_head}^{tree}")
+          git cat-file -e "${CANDIDATE_BASE}^{commit}"
+          git merge-base --is-ancestor "$CANDIDATE_BASE" "$observed_head"
+          [ "$observed_head" = "$CANDIDATE_HEAD" ]
+          [ "$observed_tree" = "$CANDIDATE_TREE" ]
+
+          bash script/release_candidate/hex_artifacts.sh \
+            --ref "$CANDIDATE_HEAD" \
+            --output-dir "$OUTPUT_DIR/packages"
+
+          workflow_sha256=$(sha256sum .github/workflows/hex-publish.yml | awk '{print $1}')
+          artifact_digest=$(sha256sum "$OUTPUT_DIR/packages/artifacts.json" | awk '{print $1}')
+          WORKFLOW_SHA256="$workflow_sha256" ARTIFACT_DIGEST="$artifact_digest" python3 -c 'import json,os,pathlib; pathlib.Path(os.environ["OUTPUT_DIR"], "rehearsal.json").write_text(json.dumps({"schema_version":"1.0.0","requested_head":os.environ["CANDIDATE_HEAD"],"observed_head":os.environ["CANDIDATE_HEAD"],"observed_tree":os.environ["CANDIDATE_TREE"],"observed_base":os.environ["CANDIDATE_BASE"],"candidate_receipt":os.environ["CANDIDATE_RECEIPT"],"run_id":os.environ["CANDIDATE_RUN_ID"],"run_head":os.environ["CANDIDATE_HEAD"],"run_conclusion":"success","workflow_sha256":os.environ["WORKFLOW_SHA256"],"package_artifacts_sha256":os.environ["ARTIFACT_DIGEST"],"package_count":6,"external_state_changed":False},sort_keys=True,separators=(",",":"))+"\n")'
+          echo "external_state_changed=false"
+
+      - name: Upload exact Hex rehearsal receipt
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: candidate-rehearsal-hex
+          path: |
+            ${{ runner.temp }}/candidate-rehearsal-hex/rehearsal.json
+            ${{ runner.temp }}/candidate-rehearsal-hex/packages/artifacts.json
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    name: Recover Hex package
+    if: ${{ github.event.inputs.operation == 'recovery' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Load the exact recovery authorization context
+        env:
+          REL17_CONTEXT_JSON: ${{ inputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: recovery
+          REL17_EXPECTED_PACKAGE: ${{ inputs.package }}
+          REL17_EXPECTED_VERSION: ${{ inputs.release_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ inputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+
+      - name: Re-fetch REL-17 evidence before recovery credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - name: Validate recovery ref
+        env:
+          RECOVERY_REF: ${{ inputs.ref }}
+          RECOVERY_PACKAGE: ${{ inputs.package }}
+          EXPECTED_VERSION: ${{ inputs.release_version }}
+          APPROVED_VERSION: ${{ inputs.approved_version }}
+          APPROVED_HEAD: ${{ inputs.approved_head }}
+          APPROVED_TREE: ${{ inputs.approved_tree }}
+          MERGE_OID: ${{ inputs.merge_oid }}
+          CANDIDATE_RECEIPT: ${{ inputs.candidate_receipt }}
+          PHASE168_MERGE_OID: b780a19863936619394087f1ffd384f1dca17c93
+          PHASE168_APPROVED_HEAD: 1051ab90cf75e918c6f596f84578ac77eadf45af
+          PHASE168_APPROVED_TREE: ecf63228243bfe7c2d6a377be996aa374b31d91f
+          PHASE168_CANDIDATE_RECEIPT: 359ef8a5257b54e472a2328ce3ae722222506527312b3805467d643bb8666c78
+        run: |
+          set -euo pipefail
+
+          FULL_SHA_PATTERN='^[0-9a-f]{40}$'
+          VERSION_PATTERN='^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
+
+          case "$RECOVERY_REF" in
+            release/v0.2.0|feature/v0.2.0|v0.2.0|refs/tags/v0.2.0|refs/heads/release/v0.2.0|refs/heads/*|heads/*|main|master)
+              echo "[crosswake] FAIL: recovery ref '${RECOVERY_REF}' is branch-shaped, bare-version-shaped, or mutable."
+              echo "[crosswake] What to do next: pass a full 40-character lowercase commit SHA or the package-scoped Release Please tag ref."
+              exit 1
+              ;;
+          esac
+
+          if ! printf '%s' "$EXPECTED_VERSION" | grep -Eq "$VERSION_PATTERN"; then
+            echo "[crosswake] FAIL: release_version '${EXPECTED_VERSION}' is not a semver version."
+            exit 1
+          fi
+
+          if [ "$RECOVERY_PACKAGE" = "crosswake" ]; then
+            if [ -z "$APPROVED_VERSION" ]; then
+              echo "[crosswake] FAIL: approved_version is required to recover crosswake, but none was supplied."
+              exit 1
+            fi
+            if [ "$EXPECTED_VERSION" != "$APPROVED_VERSION" ]; then
+              echo "[crosswake] FAIL: release_version '${EXPECTED_VERSION}' does not match approved_version '${APPROVED_VERSION}'."
+              exit 1
+            fi
+            printf '%s' "$APPROVED_HEAD$APPROVED_TREE$MERGE_OID" | grep -Eq '^[0-9a-f]{120}$'
+            printf '%s' "$CANDIDATE_RECEIPT" | grep -Eq '^[0-9a-f]{64}$'
+            [ "$RECOVERY_REF" = "$PHASE168_MERGE_OID" ]
+            [ "$MERGE_OID" = "$PHASE168_MERGE_OID" ]
+            [ "$APPROVED_HEAD" = "$PHASE168_APPROVED_HEAD" ]
+            [ "$APPROVED_TREE" = "$PHASE168_APPROVED_TREE" ]
+            [ "$CANDIDATE_RECEIPT" = "$PHASE168_CANDIDATE_RECEIPT" ]
+          fi
+
+          if printf '%s' "$RECOVERY_REF" | grep -Eq "$FULL_SHA_PATTERN"; then
+            echo "[crosswake] OK: recovery ref is a full commit SHA."
+            exit 0
+          fi
+
+          case "$RECOVERY_PACKAGE" in
+            crosswake) TAG_COMPONENT="hex" ;;
+            crosswake_rulestead|crosswake_rindle|crosswake_sigra|crosswake_chimeway|crosswake_threadline) TAG_COMPONENT="$RECOVERY_PACKAGE" ;;
+            *)
+              echo "[crosswake] FAIL: unsupported Hex recovery package '${RECOVERY_PACKAGE}'."
+              exit 1
+              ;;
+          esac
+
+          EXPECTED_TAG_REF="refs/tags/${TAG_COMPONENT}-v${EXPECTED_VERSION}"
+
+          if [ "$RECOVERY_REF" = "$EXPECTED_TAG_REF" ]; then
+            echo "[crosswake] OK: recovery ref is the package-scoped Release Please tag ref ${EXPECTED_TAG_REF}."
+            exit 0
+          fi
+
+          echo "[crosswake] FAIL: recovery ref '${RECOVERY_REF}' is not exact enough for Hex recovery."
+          echo "[crosswake] Rejected examples include release/v0.2.0, feature/v0.2.0, bare v0.2.0, refs/tags/v0.2.0, refs/heads/release/v0.2.0, refs/heads/*, heads/*, main, and master."
+          echo "[crosswake] What to do next: pass a ref matching ^[0-9a-f]{40}$ or ${EXPECTED_TAG_REF}."
+          exit 1
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.ref }}
+          path: release-source
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Print checked-out SHA
+        env:
+          RECOVERY_REF: ${{ inputs.ref }}
+        run: |
+          set -euo pipefail
+          SHA=$(git rev-parse HEAD)
+          echo "[crosswake] checked out ${RECOVERY_REF} at ${SHA}"
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Cache Hex package deps
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            deps
+            _build
+            packages/crosswake_rulestead/deps
+            packages/crosswake_rulestead/_build
+            packages/crosswake_rindle/deps
+            packages/crosswake_rindle/_build
+            packages/crosswake_sigra/deps
+            packages/crosswake_sigra/_build
+            packages/crosswake_chimeway/deps
+            packages/crosswake_chimeway/_build
+            packages/crosswake_threadline/deps
+            packages/crosswake_threadline/_build
+          key: ${{ runner.os }}-hex-recovery-${{ inputs.package }}-${{ hashFiles('mix.lock', 'packages/crosswake_*/mix.lock') }}
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+
+      - name: Guarded Hex recovery publish
+        # Hex-only recovery: SwiftPM mirror, Maven Central, and native backfill
+        # remain Phase 145 scope and do not belong in this workflow.
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          CROSSWAKE_RELEASE_ROOT: ${{ github.workspace }}/release-source
+        run: >
+          bash script/guarded_hex_publish.sh
+          "${{ inputs.package }}"
+          "${{ inputs.release_version }}"
+          "${{ inputs.ref }}"
+          --approved-head "${{ inputs.approved_head }}"
+          --approved-tree "${{ inputs.approved_tree }}"
+          --merge-oid "${{ inputs.merge_oid }}"
+          --candidate-receipt "${{ inputs.candidate_receipt }}"
+          --expected-version "${{ inputs.approved_version }}"
+
+      # The SAME script, the SAME flags, in the SAME order as the ordinary lane's
+      # emitter in release-please.yml's publish-hex job. Only the lane name and
+      # the source of the values differ -- here workflow_dispatch inputs rather
+      # than needs.*.outputs.*. Two invocations of one script with one argument
+      # list is what makes "both lanes are satisfied identically" checkable.
+      - name: Write the publication record
+        run: >
+          bash script/write_publication_record.sh
+          --package "${{ inputs.package }}"
+          --version "${{ inputs.release_version }}"
+          --approved-head "${{ inputs.approved_head }}"
+          --ref "${{ inputs.ref }}"
+          --lane "recovery"
+          --run-id "${{ github.run_id }}"
+          --output "${{ runner.temp }}/publication-record.json"
+
+      - name: Upload the publication record
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: publication-record-${{ inputs.package }}-${{ inputs.approved_head }}
+          path: ${{ runner.temp }}/publication-record.json
+          if-no-files-found: error
+          retention-days: 14
+
+  # A recovery publish now reaches the SAME proof body the ordinary publish
+  # reaches, through a character-identical `uses:` path. A second copy of the
+  # proof steps in this file is the drift failure the extraction exists to
+  # remove.
+  #
+  # `recover-android-core` below is DELIBERATELY untouched by this phase. Native
+  # recovery convergence is Phase 174's scope; silently widening the Hex claim to
+  # cover the native lane would make the two claims indistinguishable in the
+  # record, and this phase would be credited with a convergence it did not do.
+  #
+  # The job-level `permissions:` block is NOT optional. This workflow declares a
+  # top-level `permissions:` key listing only `contents: read`, so `actions` is
+  # `none` for every job that does not grant it. Without the grant below, the
+  # artifact downloads inside the reusable workflow fail with a forbidden
+  # response, and the reusable workflow's own declaration cannot rescue it -- a
+  # called workflow narrows the caller's token, it never widens it (T-173-15).
+  recovery-exact-public-proof:
+    name: "recovery: exact-public artifact proof"
+    needs: [publish]
+    if: ${{ needs.publish.result == 'success' }}
+    # `contents: write` / `pull-requests: write` are for the called workflow's
+    # `record-ledger` job ONLY (XPUB-06), which commits the proof verdict and opens
+    # a pull request against the protected default branch. The proof body itself
+    # declares `actions: read` / `contents: read`, narrowing this token back down,
+    # so the write scopes never reach it. The recovery lane needs the ledger row as
+    # much as the ordinary one does -- more so, since a recovery publish is exactly
+    # the case a reader will come back to months later.
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+    uses: ./.github/workflows/exact-public-proof.yml
+    with:
+      package: ${{ inputs.package }}
+      version: ${{ inputs.release_version }}
+      approved_head: ${{ inputs.approved_head }}
+      merge_oid: ${{ inputs.merge_oid }}
+      candidate_receipt_run_id: ${{ inputs.candidate_receipt_run_id }}
+      lane: recovery
+
+  # Permanent dispatch-only fire drill: proves the recovery lane's own proof
+  # body fails closed on a missing publication record, without ever touching
+  # a registry credential or the publish job. This is the ONE observation a
+  # static fixture cannot make -- whether GitHub reports the proof job's own
+  # `conclusion` as `failure` rather than `skipped` is the platform's runtime
+  # behavior, not something `check_release_workflow_integrity.exs` can decide
+  # by reading YAML as text (Phase 173-04, XPUB-05).
+  #
+  # EXPECTED OUTCOME: FAILURE. Dispatch this with an approved_head for which
+  # no publication-record artifact exists and this job's own conclusion must
+  # read `failure`. A green run here is not a fix landing -- it means the
+  # shared proof body stopped asserting the missing record, and that is a
+  # regression to investigate, not a result to celebrate.
+  #
+  # No `needs:` on the publish job (it is never run), no secret is read
+  # anywhere in this job, and script/guarded_hex_publish.sh is never invoked
+  # -- this drill can never reach a real Hex publish (T-173-19). The
+  # `permissions:` grant below exists for the identical reason
+  # recovery-exact-public-proof's does: this workflow declares a top-level
+  # `permissions:` key listing only `contents: read`, so `actions` is `none`
+  # for any job that does not grant it, and a called workflow's own
+  # `permissions:` can only narrow the caller's token, never widen it.
+  recovery-fire-drill:
+    name: "fire drill: recovery proof fails closed on a missing record"
+    if: ${{ github.event.inputs.operation == 'recovery-fire-drill' }}
+    # The write scopes here are a CEILING, not a use. GitHub validates a called
+    # workflow's nested-job `permissions:` requests against the calling job's
+    # grant when the file is PARSED -- before any `if:` is evaluated, and for
+    # every job in the file regardless of which operation was dispatched. The
+    # shared proof body's `record-ledger` job requests `contents: write` /
+    # `pull-requests: write`, so a caller granting less makes the WHOLE
+    # workflow file invalid and every dispatch of it -- candidate rehearsal and
+    # real recovery included -- ends in `startup_failure` with no job at all.
+    # Observed live: runs 35299245680 and 35299415965 on 91bcb093.
+    #
+    # Nothing in a drill run receives these scopes. The proof body declares its
+    # own read-only `permissions:` block, and `record_verdict: false` below
+    # keeps `record-ledger` -- the only job that would use them -- from running.
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+    uses: ./.github/workflows/exact-public-proof.yml
+    with:
+      package: ${{ inputs.package }}
+      version: ${{ inputs.release_version }}
+      approved_head: ${{ inputs.approved_head }}
+      merge_oid: ${{ inputs.merge_oid }}
+      candidate_receipt_run_id: ${{ inputs.candidate_receipt_run_id }}
+      lane: recovery
+      # A drill is not a release: no row in the copy of record.
+      record_verdict: false
+
+  recover-android-core:
+    name: Recover approved Android core from exact merge
+    if: ${{ github.event.inputs.operation == 'android-recovery' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Validate exact Phase 168 Android recovery authority
+        env:
+          RECOVERY_PACKAGE: ${{ inputs.package }}
+          RECOVERY_VERSION: ${{ inputs.release_version }}
+          APPROVED_VERSION: ${{ inputs.approved_version }}
+          RECOVERY_REF: ${{ inputs.ref }}
+          APPROVED_HEAD: ${{ inputs.approved_head }}
+          APPROVED_TREE: ${{ inputs.approved_tree }}
+          CANDIDATE_RECEIPT: ${{ inputs.candidate_receipt }}
+          PHASE168_MERGE_OID: b780a19863936619394087f1ffd384f1dca17c93
+          PHASE168_APPROVED_HEAD: 1051ab90cf75e918c6f596f84578ac77eadf45af
+          PHASE168_APPROVED_TREE: ecf63228243bfe7c2d6a377be996aa374b31d91f
+          PHASE168_CANDIDATE_RECEIPT: 359ef8a5257b54e472a2328ce3ae722222506527312b3805467d643bb8666c78
+        run: |
+          set -euo pipefail
+          [ "$RECOVERY_PACKAGE" = "crosswake" ]
+          [ -n "$APPROVED_VERSION" ]
+          [ "$RECOVERY_VERSION" = "$APPROVED_VERSION" ]
+          [ "$RECOVERY_REF" = "$PHASE168_MERGE_OID" ]
+          [ "${{ inputs.merge_oid }}" = "$PHASE168_MERGE_OID" ]
+          [ "$APPROVED_HEAD" = "$PHASE168_APPROVED_HEAD" ]
+          [ "$APPROVED_TREE" = "$PHASE168_APPROVED_TREE" ]
+          [ "$CANDIDATE_RECEIPT" = "$PHASE168_CANDIDATE_RECEIPT" ]
+
+      - name: Check out trusted recovery tooling
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.sha }}
+          path: recovery-tools
+          persist-credentials: false
+
+      - name: Load the exact Android recovery authorization context
+        working-directory: recovery-tools
+        env:
+          REL17_CONTEXT_JSON: ${{ inputs.rel17_context }}
+          REL17_EXPECTED_OPERATION: recovery
+          REL17_EXPECTED_PACKAGE: crosswake
+          REL17_EXPECTED_VERSION: ${{ inputs.release_version }}
+          REL17_EXPECTED_MERGE_OID: ${{ inputs.merge_oid }}
+        run: bash script/release_candidate/load_release_evidence_context.sh
+
+      - uses: ./recovery-tools/.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+          working-directory: recovery-tools
+
+      - name: Re-fetch REL-17 evidence before Maven recovery credentials
+        working-directory: recovery-tools
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/release_candidate/require_release_evidence.sh
+
+      - name: Check out the immutable release payload
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.ref }}
+          path: release-source
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Recover the exact Maven coordinate without replacement
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyId }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          bash "$GITHUB_WORKSPACE/recovery-tools/script/release_candidate/android_publication.sh"
+          --release-root "$GITHUB_WORKSPACE/release-source"
+          --version "${{ inputs.release_version }}"
+          --ref "${{ inputs.ref }}"
+          --approved-head "${{ inputs.approved_head }}"
+          --approved-tree "${{ inputs.approved_tree }}"
+          --candidate-receipt "${{ inputs.candidate_receipt }}"
+          --recover

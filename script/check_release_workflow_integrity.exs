@@ -1670,6 +1670,24 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     )
   end
 
+  # Inline copy of Crosswake.Test.PhaseEvidencePath.resolve/2 (test/support is not loaded by
+  # this script): live phase path if present, else the last sorted archived match, else the
+  # live path so a missing record fails loudly at the read.
+  defp resolve_phase_evidence(workstream, phase_relative) do
+    live = Path.join([".planning/workstreams", workstream, "phases", phase_relative])
+
+    if File.exists?(live) do
+      live
+    else
+      [".planning/workstreams", workstream, "milestones", "*-phases", phase_relative]
+      |> Path.join()
+      |> Path.wildcard()
+      |> Enum.sort()
+      |> List.last()
+      |> Kernel.||(live)
+    end
+  end
+
   defp approved_release_runbook_guard(jobs) do
     block = job_block(jobs, "approved-release-guard")
     runbook_sha = "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
@@ -1680,7 +1698,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
     record =
       File.read!(
-        ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-INCIDENT-DOC-COMMIT.md"
+        resolve_phase_evidence(
+          "quality-ratchet-release",
+          "175-rehearsal-and-publish/175-INCIDENT-DOC-COMMIT.md"
+        )
       )
 
     check(

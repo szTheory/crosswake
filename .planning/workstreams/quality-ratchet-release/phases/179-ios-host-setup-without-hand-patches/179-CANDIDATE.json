@@ -1,0 +1,17 @@
+{
+  "candidate": "/private/tmp/crosswake-phase179-impl",
+  "realpath": "/private/tmp/crosswake-phase179-impl",
+  "git_top_level": "/private/tmp/crosswake-phase179-impl",
+  "source": "/private/tmp/crosswake-phase179-source",
+  "initial_head": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+  "initial_tree": "12a0f1bf3c32ecdde0326f4a288b597b11e33b06",
+  "qualified_at": "2026-10-13T16:35:35.927453+00:00",
+  "isolation": "standalone local clone; no recovery source copied",
+  "remote_writes_authorized": false,
+  "implementation_head": "96e5a63efab657f89f3ac84d5b1d84ff5da5d822",
+  "implementation_tree": "0514b6244ec814c1d0701d580b04651f70f57019",
+  "source_snapshot_manifest": "179-SOURCE-SNAPSHOT.json",
+  "phase_verification_boundary": "Actual independent candidate plus immutable Git-source export; recovery product source remains unchanged.",
+  "status": "independent audits and final broad/Xcode proof passed; goal verdict is owned by 179-VERIFICATION.md",
+  "proof_results": "179-PROOF-RESULTS.json"
+}

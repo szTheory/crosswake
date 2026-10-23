@@ -1,0 +1,160 @@
+entry	type	nested_repos	broken_stubs	files_outside_git	env_files_set_aside	size_kb	class	reason	row_id	backup_plan
+<tmp>/crosswake phase179 packaged checker	dir	0	0	228	0	2524	unclassified	14 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-001	folder-tar
+<tmp>/crosswake-177-04-live-probe.json	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-177-discussion-baseline.json	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-177-execution-baseline.json	file	0	0	1	0	164	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-177-final-handoff.cjs	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-177-handoff.EmloDU	dir	0	0	11	0	9328	unclassified	11 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-002	folder-tar
+<tmp>/crosswake-177-handoff.cjs	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-177-hex-home	dir	0	0	2	0	2100	unclassified	2 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-003	folder-tar
+<tmp>/crosswake-177-owner-env	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-177-source	dir	1	0	1	0	239864	unclassified	6 dirty files differ from main, candidate and recovery content; marked for a dirty-file tar; and 1 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-004	dirty-tar+folder-tar
+<tmp>/crosswake-177-verification-handoff.cjs	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-diagnostic-clone	dir	1	0	0	0	192104	unclassified	2 commits and 0 stash entries not in main, candidate or recovery refs (1 on GitHub); 0 unreadable; backed up in tmp-commits.bundle	R-TMP-005	commits+dirty-tar
+<tmp>/crosswake-178-diagnostic-full-seed101.log	file	0	0	1	0	1136	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-diagnostic-host-closeout.log	file	0	0	1	0	988	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-diagnostic-host-group.log	file	0	0	1	0	988	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-diagnostic-phase35.log	file	0	0	1	0	20	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-diagnostic-phase8.log	file	0	0	1	0	20	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-diagnostic-release-host-group.log	file	0	0	1	0	988	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-diagnostic-release-host-state.log	file	0	0	1	0	1096	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-diagnostic-release-host-state2.log	file	0	0	1	0	1096	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-diagnostic-release-host-state3.log	file	0	0	1	0	1096	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-diagnostic-task-state.log	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-diagnostic-tmp	dir	0	0	2744	0	15584	unclassified	2655 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-006	folder-tar
+<tmp>/crosswake-178-discussion-handoff.cjs	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-discussion-protection.json	file	0	0	1	0	704	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-execution-protection.json	file	0	0	1	0	180	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-gates-1bv08549	dir	1	0	2	0	112452	unclassified	1 commits and 0 stash entries not in main, candidate or recovery refs (1 on GitHub); 0 unreadable; backed up in tmp-commits.bundle; and 1 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-007	commits+dirty-tar+folder-tar
+<tmp>/crosswake-178-gates-2g3dntty	dir	1	0	2	0	112472	unclassified	1 commits and 0 stash entries not in main, candidate or recovery refs (1 on GitHub); 0 unreadable; backed up in tmp-commits.bundle; and 1 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-008	commits+dirty-tar+folder-tar
+<tmp>/crosswake-178-gates-2ri1v9ly	dir	1	0	2	0	110404	unclassified	2 commits and 0 stash entries not in main, candidate or recovery refs (1 on GitHub); 0 unreadable; backed up in tmp-commits.bundle; and 1 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-009	commits+dirty-tar+folder-tar
+<tmp>/crosswake-178-gates-dqd__he2	dir	1	0	2	0	112624	unclassified	1 commits and 0 stash entries not in main, candidate or recovery refs (1 on GitHub); 0 unreadable; backed up in tmp-commits.bundle; and 1 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-010	commits+dirty-tar+folder-tar
+<tmp>/crosswake-178-gates-i7t3kjwr	dir	1	0	2	0	111340	unclassified	1 commits and 0 stash entries not in main, candidate or recovery refs (0 on GitHub); 0 unreadable; backed up in tmp-commits.bundle; and 1 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-011	commits+dirty-tar+folder-tar
+<tmp>/crosswake-178-gates-ky_7v1o0	dir	1	0	2	0	112472	unclassified	1 commits and 0 stash entries not in main, candidate or recovery refs (1 on GitHub); 0 unreadable; backed up in tmp-commits.bundle; and 1 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-012	commits+dirty-tar+folder-tar
+<tmp>/crosswake-178-handoff.WKuxnb	dir	1	0	274	0	116976	unclassified	1 commits and 0 stash entries not in main, candidate or recovery refs (0 on GitHub); 0 unreadable; backed up in tmp-commits.bundle; and 269 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-013	commits+dirty-tar+folder-tar
+<tmp>/crosswake-178-handoff.WKuxnb-delivery	dir	1	0	0	0	111184	unclassified	1 commits and 0 stash entries not in main, candidate or recovery refs (0 on GitHub); 0 unreadable; backed up in tmp-commits.bundle	R-TMP-014	commits
+<tmp>/crosswake-178-handoff.WKuxnb-proof	dir	1	0	0	0	344964	unclassified	1 commits and 0 stash entries not in main, candidate or recovery refs (0 on GitHub); 0 unreadable; backed up in tmp-commits.bundle	R-TMP-015	commits
+<tmp>/crosswake-178-handoff.qoh0yI	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-178-historical-protection.json	file	0	0	1	0	344	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-index-diagnosis	dir	3	0	65	0	493072	unclassified	3 nested repos; 1 commits and 0 stash entries not in main, candidate or recovery refs (1 on GitHub); 0 unreadable; backed up in tmp-commits.bundle; and 56 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-016	commits+folder-tar
+<tmp>/crosswake-178-local-debug-proof.json	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-local-proof-diagnostic.mjs	file	0	0	1	0	28	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-owner-env	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-plan05-red.tap	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-prior-fixtures-x55g58_9	dir	0	0	3613	0	57924	unclassified	208 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-017	folder-tar
+<tmp>/crosswake-178-probe-reqs.json	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-protect.py	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-red-proof.txt	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-refinement.py	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-regression-epoch-dpeq5cqv	dir	1	0	0	0	139908	unclassified	2 commits and 0 stash entries not in main, candidate or recovery refs (1 on GitHub); 0 unreadable; backed up in tmp-commits.bundle	R-TMP-018	commits+dirty-tar
+<tmp>/crosswake-178-regression-fixture.py	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-regressions.log	file	0	0	1	0	16	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-root-tests.log	file	0	0	1	0	12	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-start-handoff.py	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-178-toolchain	dir	0	0	19844	0	3656324	unclassified	17063 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-019	folder-tar
+<tmp>/crosswake-178-wave-gates.py	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-179-discuss-before.json	file	0	0	1	0	680	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-179-edge-probe.json	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-179-handoff.cjs	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-179-plan-before.json	file	0	0	1	0	680	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-179-plan-failures.json	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-179-plan-paths.json	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-179-plan-pre-hooks.json	file	0	0	1	0	40	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-179-planning-handoff.cjs	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-179-probe-reqs.json	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-179-validate-discussion.py	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-179-validate-planning.py	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase175-all-workflow-context-check	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-android-lint-original-regression.txt	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase175-android-lint-repair	dir	0	0	65	0	276	unclassified	65 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-020	folder-tar
+<tmp>/crosswake-phase175-chimeway011-shallow-proof	dir	0	1	1200	0	13052	unclassified	3 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-021	folder-tar
+<tmp>/crosswake-phase175-companion-ci-binding-source	dir	0	0	7	0	68	unclassified	7 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-022	folder-tar
+<tmp>/crosswake-phase175-companion-history-repair	dir	0	0	7	0	68	unclassified	7 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-023	folder-tar
+<tmp>/crosswake-phase175-companion-next-evidence	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-companion115-e2e-failure	dir	0	0	22	0	2140	unclassified	22 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-024	folder-tar
+<tmp>/crosswake-phase175-companion115-evidence	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-context-repair-check	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-core0211-early-evidence	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-core0211-evidence	dir	0	0	2	0	52	unclassified	2 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-025	folder-tar
+<tmp>/crosswake-phase175-decimal-resolution	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-exact-proof-hex	dir	0	0	1	0	2080	unclassified	1 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-026	folder-tar
+<tmp>/crosswake-phase175-exact-proof-mix	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-exact-public-candidate-source	dir	0	1	0	0	64512	unclassified	broken git directory (64512 KB, no HEAD) holding 3 commits not reachable from main, candidate or recovery refs; git directory archived in the cr01 tar; user decides before Phase 193	R-TMP-051	cr01-tar
+<tmp>/crosswake-phase175-exact-public-source	dir	0	1	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-matrix-installer-tracked-check	dir	0	1	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-milestone-audit-inputs.json	file	0	0	1	0	16	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase175-milestone-integration-source-hashes.json	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase175-milestone-phase-requirements-and-limits.json	file	0	0	1	0	24	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase175-native-proof-mix	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-native-proof-repair-check	dir	0	0	71	0	364	unclassified	70 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-027	folder-tar
+<tmp>/crosswake-phase175-policy-repair-check	dir	0	0	1	0	20	unclassified	1 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-028	folder-tar
+<tmp>/crosswake-phase175-pr222-evidence	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-pr225-evidence	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-pr227-ci-artifact	dir	0	0	2	0	8	unclassified	2 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-029	folder-tar
+<tmp>/crosswake-phase175-pr227-ci-artifact-v2	dir	0	0	1	0	4	unclassified	1 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-030	folder-tar
+<tmp>/crosswake-phase175-pr228-evidence	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-pr228-public-check	dir	0	0	15	0	2364	unclassified	15 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-031	folder-tar
+<tmp>/crosswake-phase175-pr228-public-object-view.git	dir	0	0	16	0	72	unclassified	16 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-032	folder-tar
+<tmp>/crosswake-phase175-pr228-v2-early-evidence	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-pr228-v2-evidence	dir	0	0	2	0	8	unclassified	2 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-033	folder-tar
+<tmp>/crosswake-phase175-pr230-tracked-check	dir	0	1	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-pr230-v4-evidence	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-pr233-repair-content	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-pr233-tracked-check	dir	0	1	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-public-android-host	dir	0	0	1	0	4	unclassified	1 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-034	folder-tar
+<tmp>/crosswake-phase175-public-android-shell	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-public-core-029-unpack-diagnostic-2	dir	0	0	1	0	16	unclassified	1 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-035	folder-tar
+<tmp>/crosswake-phase175-public-core-029.tar	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-public-hex	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-public-ios-derived	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-public-ios-host	dir	0	0	1	0	4	unclassified	1 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-036	folder-tar
+<tmp>/crosswake-phase175-public-ios-packages	dir	0	1	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-public-ios-shell	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-published-companion-baselines	dir	0	0	54	0	444	unclassified	6 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-037	folder-tar
+<tmp>/crosswake-phase175-release-evidence-20261011	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-release-source-20261011	dir	0	1	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase175-workflow-context-repair	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-phase176-planner-contributions.md	file	0	0	1	0	16	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-binding.json	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-check-source-snapshot.py	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-closeout.py	file	0	0	1	0	16	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-disposition.sh	file	0	0	1	0	16	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-final-example-run.json	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-final-ios-run.json	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-final-root-run.json	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-finalize-proof-artifacts.py	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-guard.py	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-hex	dir	0	0	29	0	7552	unclassified	29 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-038	folder-tar
+<tmp>/crosswake-phase179-impl	dir	1	0	0	0	320412	unclassified	1 commits and 0 stash entries not in main, candidate or recovery refs (0 on GitHub); 0 unreadable; backed up in its gitdir tar; shallow: commits below the boundary are absent from the source and were not compared; git directory archived	R-TMP-039	gitdir-tar+dirty-tar
+<tmp>/crosswake-phase179-ledger.json	file	0	0	1	0	108	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-local.tar	file	0	0	1	0	516	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-matrix-progress.py	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-recovery-baseline.json	file	0	0	1	0	160	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-safe-command.py	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase179-safe-results	dir	0	0	20	0	80	unclassified	20 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-040	folder-tar
+<tmp>/crosswake-phase179-source	dir	1	0	0	0	58932	on main	every ref, stash entry and reflog commit contained in main; shallow: commits below the boundary are absent from the source and were not compared; git directory archived	R-TMP-041	gitdir-tar
+<tmp>/crosswake-phase179-verifier-skills.md	file	0	0	1	0	52	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase180-discuss-closeout.py	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-phase180-impl	dir	1	0	0	0	475872	-	classified by the C-CAND row (plan 07)	C-CAND	gitdir-tar
+<tmp>/crosswake-phase180-run	dir	0	0	46713	0	1680556	unclassified	46601 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-042	folder-tar
+<tmp>/crosswake-phase181-impl	dir	1	0	0	0	616012	to land	every ref, stash entry and reflog commit contained in candidate; shallow: commits below the boundary are absent from the source and were not compared; git directory archived	R-TMP-043	gitdir-tar
+<tmp>/crosswake-phase182-impl	dir	1	0	0	0	612780	to land	every ref, stash entry and reflog commit contained in candidate; shallow: commits below the boundary are absent from the source and were not compared; git directory archived	R-TMP-044	gitdir-tar
+<tmp>/crosswake-phase182-move-backup-20261015T003402Z	dir	0	0	8	0	488	unclassified	8 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-045	folder-tar
+<tmp>/crosswake-plan136	dir	0	0	0	0	0	obsolete	empty/no repo, nothing to keep	R-TMP-EMPTY	none
+<tmp>/crosswake-v23-archive-review.md	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-v23-final-closeout-verification.json	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-v23-governing-brief.txt	file	0	0	1	0	20	obsolete	superseded: same file content in main	R-TMP-LOOSE-SUPERSEDED	none
+<tmp>/crosswake-v24-apply-closeout.py	file	0	0	1	0	32	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-v24-closeout-preview-i97sabw3	dir	0	0	3641	0	59004	unclassified	235 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-046	folder-tar
+<tmp>/crosswake-v24-closeout-preview-pointer	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-v24-verify-closeout.py	file	0	0	1	0	8	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-v25-config-research-b288pm1d	dir	0	0	40	0	280	unclassified	11 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-047	folder-tar
+<tmp>/crosswake-v25-init-preview-aiacv2pl	dir	0	0	9	0	152	unclassified	8 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-048	folder-tar
+<tmp>/crosswake-v25-proof-research-plan.json	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-v25-scope-proposal.md	file	0	0	1	0	12	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake-v25-start-l5co_6wk	dir	0	0	2	0	680	unclassified	2 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-049	folder-tar
+<tmp>/crosswake-v25-validate-start.py	file	0	0	1	0	12	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake176-capture-output.json	file	0	0	1	0	40	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake176-compare.EhRPvM	dir	0	1	1220	0	13144	unclassified	17 files outside git are not in main, candidate or recovery HEAD; backed up in a folder tar	R-TMP-050	folder-tar
+<tmp>/crosswake176-lineage.json	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar
+<tmp>/crosswake178-edges.json	file	0	0	1	0	4	unclassified	file content is not in main, candidate or recovery HEAD; backed up in a loose-file tar	R-TMP-LOOSE-KEEP	loose-tar

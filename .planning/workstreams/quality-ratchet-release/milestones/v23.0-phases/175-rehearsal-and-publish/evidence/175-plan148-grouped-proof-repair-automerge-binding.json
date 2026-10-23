@@ -1,0 +1,22 @@
+{
+  "pr": 227,
+  "head_oid": "72bf3a3e9907578b6aca9c1e4f45648d4f97b3ea",
+  "base_oid": "668e0fbe93c73afcdf79de90e64bbb5fd8090386",
+  "tree_oid": "2b1ca9583300b547367ac7a9083be1ab9194717b",
+  "operation": "enable_protected_squash_automerge",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "consumed": true,
+  "attempts": 1,
+  "attempted": true,
+  "delivery": "ACCEPTED",
+  "admin_bypass": false,
+  "intent_at_utc": "2026-10-11T12:00:15.273790+00:00",
+  "local_consumer_proof": "COMPLETE; all6packages/all5profiles twice",
+  "required_check": {
+    "context": "Crosswake CI",
+    "app_id": 15368
+  },
+  "strict": true,
+  "enforce_admins": true,
+  "exit_code": 0
+}

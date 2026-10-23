@@ -56,7 +56,7 @@ config :crosswake, :proof_lane,
   sync_path: "/study/sync",
   evidence_path: "/proof/evidence",
   router: CrosswakeExample.Router,
-  ios_shell_root: "/Users/jon/projects/crosswake/examples/phoenix_host/native/ios"
+  ios_shell_root: Path.expand("../native/ios", __DIR__)
 
 # The adapter is deliberately host-owned. It derives device observations only
 # from the signed generated lane and backend observations only from Phoenix.
@@ -76,5 +76,19 @@ config :crosswake, :physical_iphone_proof_host, CrosswakeExample.PhysicalIphoneP
 #   Flags.reset()                                   # clear all flags
 # Then visit /gating/beta-feature to observe the gate response across states.
 config :crosswake, :rulestead_flag_source, CrosswakeExample.RulesteadFlagSource
+
+# Phase 180 twin: the generated iOS host is bound to the run-owned loopback origin.
+# origin_mode :local_loopback is refused under MIX_ENV=prod, so this declaration is
+# present only for dev and test generation and never reaches production config.
+if config_env() in [:dev, :test] do
+  config :crosswake, :ios_host,
+    router: CrosswakeExample.Router,
+    origin: "http://127.0.0.1:4790",
+    origin_mode: :local_loopback,
+    entry_route_id: "offline-study",
+    app_bundle_id: "org.crosswake.twin",
+    proof_app_bundle_id: "org.crosswake.twin.proof",
+    device_signing: [mode: :automatic, team_id: "ABCDE12345"]
+end
 
 import_config "#{config_env()}.exs"

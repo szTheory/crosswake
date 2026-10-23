@@ -1,0 +1,51 @@
+{
+  "observed_at": "2026-09-25T01:38:56Z",
+  "candidate": {
+    "version": "0.2.5",
+    "base_oid": "d9ac0e39d7bee33d659f4823b7747d3e1f14a6b7",
+    "head_oid": "11c2b03295ddf1c470340bb3ebaf71fd030e41ae",
+    "tree_oid": "c5aa596736dec12078804c8d7d8e5a9c72747757"
+  },
+  "hex": {
+    "run_id": 36082200994,
+    "run_head": "11c2b03295ddf1c470340bb3ebaf71fd030e41ae",
+    "state": "PASS",
+    "package_count": 6,
+    "external_state_changed": false,
+    "rehearsal_sha256": "51de3aad88e4f763be0d42735788aace6bffd0abafa9aa095543552325de7be3",
+    "package_manifest_sha256": "b690dc0a63c1eb01f29c436a858a70cf37776ac1937ad1fb240b29ab8c4c9453"
+  },
+  "ios": {
+    "run_id": 36082200744,
+    "run_head": "11c2b03295ddf1c470340bb3ebaf71fd030e41ae",
+    "state": "PASS",
+    "authorization_result": "PROVEN",
+    "atomic_supported": true,
+    "external_state_changed": false,
+    "split_sha": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+    "remote_main_matches_split": true,
+    "candidate_tag_absent": true,
+    "rehearsal_sha256": "5a9f7f638f22241583bc45af21daa2cec2fa1e8136d8a9a77c4c78ffe56097ba",
+    "mirror_observation_sha256": "c7194d329640ede62734bf57967e4bfbafee1f57d5aa52976a503b889a31a219"
+  },
+  "maven": {
+    "run_id": 36082200777,
+    "run_head": "11c2b03295ddf1c470340bb3ebaf71fd030e41ae",
+    "state": "VALIDATED",
+    "dropped": true,
+    "external_state_changed": false,
+    "pr_head_before": "11c2b03295ddf1c470340bb3ebaf71fd030e41ae",
+    "pr_head_after": "11c2b03295ddf1c470340bb3ebaf71fd030e41ae",
+    "rehearsal_sha256": "eca19eb52c9c84500b8c6109393f66cfae53ae47f8afa54fc4fbe81c5df796b2"
+  },
+  "release_please_mutation": false,
+  "release_please_runs_after_maven": [],
+  "targets_still_absent": true,
+  "superseded_attempts": {
+    "hex_run_id": 36081742094,
+    "ios_run_id": 36081741953,
+    "maven_run_id": 36081741839,
+    "attestation_run_id": 36081961461,
+    "reason": "Rehearsal workflows were dispatched from main, so GitHub run metadata was bound to the base commit. Outputs showed no mutation; these run IDs were excluded and replaced with exact candidate-branch runs."
+  }
+}

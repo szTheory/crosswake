@@ -1,0 +1,40 @@
+{
+  "observed_at": "2026-09-25T01:38:56Z",
+  "state": "READY FOR APPROVAL",
+  "version": "0.2.5",
+  "base_oid": "d9ac0e39d7bee33d659f4823b7747d3e1f14a6b7",
+  "head_oid": "11c2b03295ddf1c470340bb3ebaf71fd030e41ae",
+  "tree_oid": "c5aa596736dec12078804c8d7d8e5a9c72747757",
+  "bound_equals_observed": true,
+  "ci_run_id": 36080344519,
+  "hex_run_id": 36082200994,
+  "ios_run_id": 36082200744,
+  "maven_run_id": 36082200777,
+  "attestation_run_id": 36082522240,
+  "artifact": {
+    "id": 10842771650,
+    "name": "phase168-candidate-receipt-11c2b03295ddf1c470340bb3ebaf71fd030e41ae",
+    "sha256": "c0798491c272a58b5fdbf10a993e003fca4b649b59b4b5ad8aa6fd07086de19e",
+    "expires_at": "2026-10-09T01:34:46Z",
+    "expired": false
+  },
+  "check_count": 13,
+  "checks": [
+    "candidate.ci",
+    "candidate.cleanroom",
+    "candidate.config",
+    "candidate.coordinates",
+    "candidate.credentials",
+    "candidate.external-state",
+    "candidate.identity",
+    "candidate.workflows",
+    "hex.rehearsal",
+    "ios.rehearsal",
+    "maven.rehearsal",
+    "mirror.authority",
+    "package.family"
+  ],
+  "publication": "NONE",
+  "external_state_changed": false,
+  "expired": false
+}

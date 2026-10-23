@@ -1,0 +1,8 @@
+number	state	head	base	mergeable	files	contained_files	merge_tree_exit	result_equals_candidate	new_pin_uses	old_pin_uses	disposition
+238	OPEN	3e8a4b2601b542323edfd6053f25e56c67873b47	main	MERGEABLE	8	0	0	no	-	-	redo after landing
+236	OPEN	03ff058adbc3f3e083a348112f016811159d7298	main	MERGEABLE	11	0	0	no	-	-	hold
+210	OPEN	e094d4f9c23dca5b2368bf7b8a31d50b6ea70ab9	main	MERGEABLE	16	0	0	no	45	63	redo after landing
+211	OPEN	9a1126e560884021fba18089136235150286b985	main	MERGEABLE	9	0	0	no	10	31	redo after landing
+239	OPEN	8deefad4bbd1b39ca179d0f44c198772c4ab88c9	main	MERGEABLE	3	0	0	no	0	16	redo after landing
+240	OPEN	525137ba48f13cbc134f2123637284beafa3e9e9	main	MERGEABLE	8	0	0	no	0	17	redo after landing
+241	OPEN	80f57f6fe43b9d263d8af8b233693d51478788fe	main	MERGEABLE	1	0	0	no	0	2	redo after landing

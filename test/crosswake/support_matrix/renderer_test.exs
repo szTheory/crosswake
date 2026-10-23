@@ -92,6 +92,15 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     refute guide =~ "First B2C Adopter"
   end
 
+  test "generated guide states the Phase 181 manifest 1.2.0 move as additive and iOS-only" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    assert guide =~ "`1.1.0` -> `1.2.0` (Phase 181)"
+    assert guide =~ "host_commands"
+    assert guide =~ "host_command_seam_version"
+    assert guide =~ "The Android shell does not read either field."
+  end
+
   test "generated guide renders support-truth labels with proof and non-proof meanings" do
     guide = Renderer.render(SupportMatrix.canonical())
 

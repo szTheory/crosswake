@@ -28,6 +28,8 @@ defmodule Crosswake.ProofLane.Evidence do
   @retention_labels [:brief, :ephemeral]
   @device_classes [:ios, :simulator, :unknown, :physical_iphone]
   @artifact_name "proof-lane-evidence.json"
+  @unknown_commit "git-unknown"
+  @unknown_version "unknown"
   @complete_name ".complete"
   @approved_kinds [:evidence_json, :navigation_shell_advisory, :physical_iphone_run_contract]
   @phase_160_assertion_ids ~w(scope_partition lifecycle_fence per_event_reauthorization atomic_idempotency safe_observation disablement)
@@ -65,6 +67,21 @@ defmodule Crosswake.ProofLane.Evidence do
   end
 
   def build(_), do: error("PL-EVIDENCE-INPUT", "input", "supply the closed evidence map")
+
+  @doc """
+  Returns true only when commit_ref, crosswake_version and template_version are known.
+  Sentinel provenance is advisory and never counts as physical proof.
+  """
+  @spec provenance_known?(t() | map()) :: boolean()
+  def provenance_known?(%{} = evidence) do
+    known?(Map.get(evidence, :commit_ref), @unknown_commit) and
+      known?(Map.get(evidence, :crosswake_version), @unknown_version) and
+      known?(Map.get(evidence, :template_version), @unknown_version)
+  end
+
+  def provenance_known?(_), do: false
+
+  defp known?(value, sentinel), do: is_binary(value) and value != sentinel
 
   @spec to_map(t()) :: map()
   def to_map(%__MODULE__{} = evidence) do
@@ -247,6 +264,8 @@ defmodule Crosswake.ProofLane.Evidence do
     end
   end
 
+  defp decimal_version(@unknown_version, "template_version"), do: :ok
+
   defp decimal_version(value, path) when is_binary(value) and byte_size(value) in 1..8 do
     if String.match?(value, ~r/^[0-9]+$/),
       do: :ok,
@@ -255,6 +274,8 @@ defmodule Crosswake.ProofLane.Evidence do
 
   defp decimal_version(_, path),
     do: error("PL-EVIDENCE-VERSION", path, "use a bounded decimal version")
+
+  defp semver(@unknown_version), do: :ok
 
   defp semver(value) when is_binary(value) and byte_size(value) <= 32 do
     if String.match?(
@@ -268,14 +289,26 @@ defmodule Crosswake.ProofLane.Evidence do
   defp semver(_),
     do: error("PL-EVIDENCE-VERSION", "crosswake_version", "use a bounded semantic version")
 
+  defp git_ref(@unknown_commit), do: :ok
+
+  # decode_evidence re-runs validate_fields, so check/1 and scan_stage/1 refuse a
+  # stored all-zero commit through this same clause.
   defp git_ref(value) when is_binary(value) do
-    if String.match?(value, ~r/^git-(?:[0-9a-f]{40}|[0-9a-f]{64})$/),
-      do: :ok,
-      else: error("PL-EVIDENCE-COMMIT", "commit_ref", "use a full opaque Git reference")
+    if String.match?(value, ~r/^git-(?:0{40}|0{64})$/) do
+      error("PL-EVIDENCE-COMMIT", "commit_ref", "use a real Git reference, not an all-zero hash")
+    else
+      git_ref_hex(value)
+    end
   end
 
   defp git_ref(_),
     do: error("PL-EVIDENCE-COMMIT", "commit_ref", "use a full opaque Git reference")
+
+  defp git_ref_hex(value) do
+    if String.match?(value, ~r/^git-(?:[0-9a-f]{40}|[0-9a-f]{64})$/),
+      do: :ok,
+      else: error("PL-EVIDENCE-COMMIT", "commit_ref", "use a full opaque Git reference")
+  end
 
   defp valid_route(value) do
     if is_binary(value) and String.match?(value, ~r/^route-[0-9a-f]{16}$/),
@@ -301,7 +334,8 @@ defmodule Crosswake.ProofLane.Evidence do
         with :ok <- runtime_line(input[:ios_runtime_line]),
              true <- input[:assertion_ids] == physical_ids,
              true <- input[:status] == :passed and input[:outcome] == :passed,
-             true <- physical_hashes?(input[:approved_hashes]) do
+             true <- physical_hashes?(input[:approved_hashes]),
+             true <- provenance_known?(input) do
           :ok
         else
           false ->
@@ -651,12 +685,19 @@ defmodule Crosswake.ProofLane.Evidence do
         else: error("PL-EVIDENCE-PATH", "artifact", "use an absolute safe destination")
       )
 
-  defp promotion_class(%__MODULE__{device_class: :physical_iphone}, _destination), do: :ok
-
-  defp promotion_class(_evidence, destination) do
-    if Path.basename(destination) == "physical_iphone",
-      do: error("PL-EVIDENCE-PHYSICAL", "artifact", "promote only a complete physical record"),
-      else: :ok
+  defp promotion_class(evidence, destination) do
+    if Path.basename(destination) == "physical_iphone" do
+      if evidence.device_class == :physical_iphone and provenance_known?(evidence),
+        do: :ok,
+        else:
+          error(
+            "PL-EVIDENCE-PHYSICAL",
+            "artifact",
+            "promote only a complete physical record with known provenance"
+          )
+    else
+      :ok
+    end
   end
 
   if Mix.env() == :test do

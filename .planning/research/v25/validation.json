@@ -1,0 +1,48 @@
+{
+  "result": "passed",
+  "research_reports": 4,
+  "focused_challenges": 3,
+  "targeted_resolutions": 2,
+  "decision_inventory": 30,
+  "proposed_requirements": 9,
+  "mapped_requirements": 9,
+  "proposed_phases": [
+    179,
+    180
+  ],
+  "scenario_groups": 10,
+  "relative_links_checked": 21,
+  "protected_history_files": 1677,
+  "protected_history_changed": 0,
+  "mix_config_experiments": "passed; deliberate runtime-config negative exited 1; compile-only exited 0 and app did not start",
+  "current_milestone": "v24.0",
+  "last_completed_phase": 178,
+  "active_implementation_phase": null,
+  "next_command": "$gsd-new-milestone --ws quality-ratchet-release",
+  "scope": "Research coverage, links, preservation and minimal Mix lifecycle checks. Full host/Xcode/simulator/physical behavior remains unexecuted.",
+  "recovery_protection": {
+    "unchanged": true,
+    "changedDimensions": []
+  },
+  "file_digests": {
+    "ARCHITECTURE.md": "61bc9aaae6a98d28af6f61452692522c831f0cb55bd7c1832c11f9c6272afa14",
+    "BRIEF.md": "69a0f207a675dda4e52e36bcb1a2c6ba91de95d6568bef13c17ae92905e3eb43",
+    "CONFIG-LOADING-RESOLUTION.md": "2cd3c982ee4d7efd17d3ca1fba5cb5827c0297c0d9d2ff2007abe40d1d25421c",
+    "DX.md": "7eba98c9a8667f71891f16ff7656afe481f0489c02fa371e2f33ad9660d0713f",
+    "FEATURES.md": "ba035398706fa09bf8f03ee1a73a9551834d5e36a6cbd6ffb3294619bf2ac6c9",
+    "GENERATION-CHALLENGE.md": "8481e55dd7128c3d280c6baf934564598c105d78880c01fd153448af60e8205d",
+    "GENERATION.md": "0406f7bd997a8c6e6ac19bb5c6552037fa402341e6a93f3cc45346db0089261e",
+    "MEDIA-OWNERSHIP-RESOLUTION.md": "d236d4d64bc13e13f8625d082c99b42eeaeb2bc6ccea8ce6c04932927ec837be",
+    "PITFALLS.md": "92a343f91639342f42191bc0252b14ceb595b877ae94e7ddb63de845b572ec1d",
+    "PROMPT-COVERAGE.md": "73d7cfa6f1740795db3db3780eb055a96944b55bb22c12c337975b2c997d7a35",
+    "PROOF-CHALLENGE.md": "1272f6d1ae50255b21459654a9c5cc8c48464b6aea617d7602623698a6a21650",
+    "PROOF-OPERATIONS.md": "02adadaa1998662aaef11350f3f7e6c4fb44b7531ef145ccf60ca8f4f0aac988",
+    "ROADMAP-PROPOSAL.md": "28abc2db428aaa63d2878eeab03bca6a241ee759077e79e6f89888122faffdf8",
+    "STACK.md": "034bced4a7b584d7da171610acd3792a4ea9974db5b1ed98f0e387f0db73a7a6",
+    "SUMMARY.md": "eb2d63c36f556a0f89a4509bbd62518a877d1ebfa8aea8f82c42cc967a8690f4",
+    "TWIN-ARCHITECTURE.md": "ff00c9ba251147b738a27ddc950feeeaeb689a6e4a829538a91a2887e4253e7e",
+    "TWIN-CHALLENGE.md": "e1434f6b5c18647aad9753626033bbebba9b4ee0ddb744891c6dcebd123421f6",
+    "build-config-experiment.json": "00435887f7b4c32319ef682f9372f238628671e136aece34279f85cc90d7abc0",
+    "config-loading-experiment.json": "18639fecee900f6ffd615120f0eb66681669207c5dd71abe4786030c90b868aa"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "crosswake.phase180.identity/1",
+  "candidate_head": "12f84cd950d4574921767df823faed6797c17c26",
+  "media": {
+    "path": "examples/phoenix_host/native/ios/CrosswakeProofLane/Resources/ReferenceLearningBundle/pronunciation.aiff",
+    "size": 33706,
+    "sha256": "5d8b3f72beb26205032d764bc7979f5658c7c9f262427bce2d814f2bf0fabf5b"
+  },
+  "generated": {
+    "manifest_sha256": "917ef9d00ee0165853f07d182d980bf6687f596fe9888633cddef14745ac9493",
+    "activation_sha256": "085eb4b2af9bb1687b8e44c423f083b7e6fdd42f11f900f1b349c527f3ca48e6"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "tracked_head_before_revision": "a3d02d037e7695449700dc90bda0b752536ab2b3",
+  "remote_revision_head": "d18c93e435638fbe99d719e99b5066e04173ea7d",
+  "only_revision_file": "test/crosswake/support_matrix/support_matrix_test.exs",
+  "working_file_matches_remote_blob": true,
+  "full_local_tests": 2065,
+  "full_local_failures": 0
+}

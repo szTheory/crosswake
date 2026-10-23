@@ -1,0 +1,99 @@
+{
+  "operation": "create_existing_android_compatibility_repair_pr",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "base_oid": "dba494dce54ff355cb75602999e33b8c7c6ddcb1",
+  "events": [
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "738edb6a088cab7bce3ef30cf058a6e41d3d098d"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "9e467f09d44473dcf138b38d1a38a9612f654105"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "2c3457b781ce2d2c45301a72ea163a043a087070"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "25ba6b0c3f8c3b2377658d0e11e1c730c8c16f30"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "a5f89b1f91882ca531d51641c393e81b3fa5cfdf"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "feb0ec0c91b7b3ff8559bab881647d443e1eecd2"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "16d4af6bac0bf67932e662fad3a808d2a99ca4db"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "3e7ec4f5d50646f4d282907562737723f429413d"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/trees",
+      "attempted": true,
+      "completed": true,
+      "sha": "44e0f82e6a4f5803842cde4f95616587c59a83b3"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/commits",
+      "attempted": true,
+      "completed": true,
+      "sha": "d4d08ffd94f4ae720f1ed4335a76b65f89fe1c04"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/refs",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/pulls",
+      "attempted": true,
+      "completed": true,
+      "number": 230
+    }
+  ],
+  "started_at_utc": "2026-10-11T14:52:14.403293+00:00",
+  "files": {
+    "lib/mix/tasks/crosswake.gen.shell.ex": "bf079bef9555d41e42f6589f3380a55b2f7c5e55487999aeddc40eb6be5ae3c2",
+    "priv/templates/crosswake/shell/android/app/src/main/res/values/themes.xml.eex": "6a46331acbd3cb409b61a70c0c945e057769a672705e0454fc2e5c777d84b9bd",
+    "test/mix/tasks/crosswake_gen_shell_stamp_test.exs": "3a5f4470a09084627cd166a6b0622e1f7aa44aaaf844b8ae9b75ed17c04cc3ff",
+    "script/verify_generated_android_shell.sh": "3f52088952da5e7eefaee23d9b8c32051f1cde6ee60452d5d395cfb6a5893f44",
+    "script/verify_android_public_build.sh": "d69956e4da08be6839ac4798fbbf25f233470e366027c16dd7c6c7d4558c1a98",
+    "script/verify_android_public_build_test.py": "6653f503f68666546bbc95045afc58acd6aeca4381d6ccd6f1d2074f62e52730",
+    ".github/workflows/release-please.yml": "43989b1c9716a5cb51ab1ff2ef9a2dcea8cdb69734f320f0679a387fee0f385d",
+    ".github/workflows/crosswake-ci.yml": "784b7496149b2a8c32e155871b7b2f41a0af064faee022f8507139e04b169ac0"
+  },
+  "merge_conditions": [
+    "all protected CI passed",
+    "complete local public consumer proof passed",
+    "no publication or failed-run retry"
+  ],
+  "head_oid": "d4d08ffd94f4ae720f1ed4335a76b65f89fe1c04",
+  "tree_oid": "44e0f82e6a4f5803842cde4f95616587c59a83b3",
+  "pr": 230,
+  "url": "https://github.com/szTheory/crosswake/pull/230",
+  "status": "created_ci_pending"
+}

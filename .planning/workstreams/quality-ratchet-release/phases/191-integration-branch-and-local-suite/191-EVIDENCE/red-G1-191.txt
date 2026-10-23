@@ -1,0 +1,8 @@
+red_exit 2
+failed test G1 gate: validator rejects the host audio command as an unknown capability
+note pre-existing failure listed in Phase 190 baseline-dispositions
+ledger_regenerated yes
+sites_before 243
+sites_after 243
+collection_forms_before 1
+collection_forms_after 1

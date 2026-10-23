@@ -1,0 +1,28 @@
+{
+  "operation": "linked_release",
+  "stage": "pre_merge",
+  "package": "crosswake",
+  "version": "0.2.11",
+  "pr": 232,
+  "receipt_digest": "42a4f309f5fd7670f111bc59cf613272b21eaaaeb16f901af83a5e5e6d1267bb",
+  "leg_run_id": 38154895539,
+  "ci_run_id": 38152560619,
+  "receipt_run_id": 38155123327,
+  "receipt_artifact_id": 11708476594,
+  "repository": "szTheory/crosswake",
+  "runbook_commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8",
+  "expected_policy_sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+  "expected_base_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+  "expected_head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+  "expected_tree_oid": "e83165776220d727da07f4b02bd9d9de35e61bcc",
+  "source_dir": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/evidence/175-plan148-core0211-premerge-sources",
+  "authorization": {
+    "stage": "pre_merge",
+    "state": "PENDING",
+    "receipt_digest": "42a4f309f5fd7670f111bc59cf613272b21eaaaeb16f901af83a5e5e6d1267bb",
+    "operation": "linked_release",
+    "leg_run_id": 38154895539,
+    "candidate_package": "crosswake",
+    "candidate_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1"
+  }
+}

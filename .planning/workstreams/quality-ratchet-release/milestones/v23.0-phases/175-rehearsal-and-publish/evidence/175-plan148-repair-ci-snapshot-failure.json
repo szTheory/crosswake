@@ -1,0 +1,14 @@
+{
+  "run_id": 38107103495,
+  "cause": "Canonical example dependency snapshot expected Decimal3.1.0 after lock was patched to3.1.2",
+  "test": "phase164_dependency_security_and_gate_authority_test.exs:87",
+  "fix": "Update that exact snapshot to patched3.1.2; preserve complete lock assertion",
+  "local_snapshot_tests": {
+    "total": 7,
+    "failed": 0
+  },
+  "new_head": "cee445e8cbc6d91828f9ae8b28aa4b2c08d2f405",
+  "new_ci_run_id": 38107576691,
+  "auto_merge_still_enabled": true,
+  "another_merge_command": false
+}

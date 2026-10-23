@@ -1,0 +1,410 @@
+defmodule Crosswake.ProofLane.TwinRuntimeCheckTest do
+  use ExUnit.Case, async: false
+
+  alias Crosswake.ProofLane.TwinRuntime
+
+  @head String.duplicate("a", 40)
+  @tree String.duplicate("b", 40)
+
+  setup do
+    base =
+      Path.join(
+        System.tmp_dir!(),
+        "twin-check-" <> Base.encode16(:crypto.strong_rand_bytes(6), case: :lower)
+      )
+
+    File.mkdir_p!(base)
+    File.chmod!(base, 0o700)
+    on_exit(fn -> File.rm_rf(base) end)
+
+    candidate = Path.join(base, "candidate")
+    File.mkdir_p!(candidate)
+    File.write!(Path.join(candidate, "mix.lock"), "%{}\n")
+    run_root = Path.join(base, "run")
+    File.mkdir!(run_root)
+    File.chmod!(run_root, 0o700)
+    {:ok, base: base, candidate: candidate, run_root: run_root}
+  end
+
+  defp free_port do
+    {:ok, l} = :gen_tcp.listen(0, ip: {127, 0, 0, 1}, reuseaddr: false)
+    {:ok, port} = :inet.port(l)
+    :gen_tcp.close(l)
+    port
+  end
+
+  defp record(ctx, port \\ nil, mode \\ 0o600, origin \\ nil) do
+    path = Path.join(ctx.base, "candidate-record-#{System.unique_integer([:positive])}.json")
+
+    File.write!(
+      path,
+      Jason.encode!(%{
+        candidate_path: ctx.candidate,
+        expected_head: @head,
+        expected_tree: @tree,
+        origin: origin || "http://127.0.0.1:#{port || free_port()}",
+        resource_digests: [String.duplicate("d", 64)],
+        fixture_digests: [String.duplicate("e", 64)]
+      })
+    )
+
+    File.chmod!(path, mode)
+    path
+  end
+
+  # Run fun with TMPDIR pointing at an empty absolute 0700 sandbox; restore after.
+  defp with_sandbox(ctx, fun) do
+    sandbox = Path.join(ctx.base, "sandbox-#{System.unique_integer([:positive])}")
+    File.mkdir!(sandbox)
+    File.chmod!(sandbox, 0o700)
+    old = System.get_env("TMPDIR")
+    System.put_env("TMPDIR", sandbox)
+
+    try do
+      fun.(sandbox)
+    after
+      if old, do: System.put_env("TMPDIR", old), else: System.delete_env("TMPDIR")
+    end
+  end
+
+  test "a refused prepare without a run root leaves nothing in the temp dir", ctx do
+    with_sandbox(ctx, fn sandbox ->
+      bad_record = Path.join(ctx.base, "missing-record.json")
+
+      assert {:error, %{cause: :prerequisite_missing}} =
+               TwinRuntime.prepare(candidate: bad_record)
+
+      assert File.ls!(sandbox) == []
+
+      malformed = record(ctx, nil, 0o600, "http://localhost:80")
+      assert {:error, %{cause: :prerequisite_missing}} = TwinRuntime.prepare(candidate: malformed)
+      assert File.ls!(sandbox) == []
+
+      {:ok, held} = :gen_tcp.listen(0, ip: {127, 0, 0, 1}, reuseaddr: false)
+      {:ok, port} = :inet.port(held)
+
+      try do
+        occupied = record(ctx, port)
+
+        assert {:error, %{cause: :origin_port_occupied}} =
+                 TwinRuntime.prepare(candidate: occupied)
+
+        assert File.ls!(sandbox) == []
+      after
+        :gen_tcp.close(held)
+      end
+    end)
+  end
+
+  test "check/1 creates nothing and holds no port", ctx do
+    port = free_port()
+    rec = record(ctx, port)
+
+    with_sandbox(ctx, fn sandbox ->
+      assert {:ok, checked} = TwinRuntime.check(candidate: rec)
+      assert checked.root.create? == true
+      assert File.ls!(sandbox) == []
+    end)
+
+    before_listing = File.ls!(ctx.run_root)
+    assert {:ok, _} = TwinRuntime.check(candidate: rec, run_root: ctx.run_root)
+    assert File.ls!(ctx.run_root) == before_listing
+    refute File.exists?(Path.join(ctx.run_root, "receipt.json"))
+
+    assert {:ok, l} = :gen_tcp.listen(port, ip: {127, 0, 0, 1}, reuseaddr: false)
+    :gen_tcp.close(l)
+  end
+
+  test "commit/1 creates the root and holds the origin until stop_all", ctx do
+    port = free_port()
+    rec = record(ctx, port)
+
+    with_sandbox(ctx, fn sandbox ->
+      assert {:ok, checked} = TwinRuntime.check(candidate: rec)
+      assert File.ls!(sandbox) == []
+      assert {:ok, runtime} = TwinRuntime.commit(checked)
+
+      [created] = File.ls!(sandbox)
+      assert String.starts_with?(created, "crosswake-twin-")
+      assert Bitwise.band(File.lstat!(Path.join(sandbox, created)).mode, 0o777) == 0o700
+
+      assert {:error, :eaddrinuse} = :gen_tcp.listen(port, ip: {127, 0, 0, 1}, reuseaddr: false)
+      assert :ok = TwinRuntime.stop_all(runtime)
+      assert {:ok, l} = :gen_tcp.listen(port, ip: {127, 0, 0, 1}, reuseaddr: false)
+      :gen_tcp.close(l)
+    end)
+  end
+
+  test "commit/1 never removes a run root path it did not create", ctx do
+    existing = Path.join(ctx.base, "planted-root")
+    File.mkdir!(existing)
+    sentinel = Path.join(existing, "sentinel.txt")
+    File.write!(sentinel, "keep")
+
+    checked = %{
+      root: %{path: existing, create?: true},
+      record: %{},
+      db: Path.join(existing, "twin.sqlite3"),
+      port: free_port(),
+      run_deadline_ms: nil
+    }
+
+    assert {:error, %{cause: :prerequisite_missing}} = TwinRuntime.commit(checked)
+    assert File.dir?(existing)
+    assert File.read!(sentinel) == "keep"
+  end
+
+  test "a run root owned by another user is refused", ctx do
+    rec = record(ctx)
+    uid = File.lstat!(ctx.run_root).uid
+
+    assert {:ok, _} = TwinRuntime.check(candidate: rec, run_root: ctx.run_root)
+    assert {:ok, runtime} = TwinRuntime.prepare(candidate: rec, run_root: ctx.run_root)
+    TwinRuntime.stop_all(runtime)
+
+    expected =
+      {:error,
+       %{
+         cause: :prerequisite_missing,
+         action: "Create a private run root directory (mode 0700) and run again with it"
+       }}
+
+    opts = [candidate: record(ctx), run_root: ctx.run_root, current_uid: uid + 1]
+    assert TwinRuntime.check(opts) == expected
+    assert TwinRuntime.prepare(opts) == expected
+  end
+
+  test "an unreadable current uid is refused", ctx do
+    opts = [candidate: record(ctx), run_root: ctx.run_root, current_uid: "501"]
+    assert {:error, %{cause: :prerequisite_missing}} = TwinRuntime.check(opts)
+    assert {:error, %{cause: :prerequisite_missing}} = TwinRuntime.prepare(opts)
+  end
+
+  test "check/1 and prepare/1 give the same first cause", ctx do
+    uid = File.lstat!(ctx.run_root).uid
+
+    loose = Path.join(ctx.base, "loose")
+    File.mkdir!(loose)
+    File.chmod!(loose, 0o755)
+
+    link = Path.join(ctx.base, "link")
+    File.ln_s!(ctx.run_root, link)
+
+    reused = Path.join(ctx.base, "reused")
+    File.mkdir!(reused)
+    File.chmod!(reused, 0o700)
+    File.write!(Path.join(reused, "receipt.json"), "{}")
+
+    inside = Path.join(ctx.candidate, "inner-run")
+    File.mkdir!(inside)
+    File.chmod!(inside, 0o700)
+
+    {:ok, held} = :gen_tcp.listen(0, ip: {127, 0, 0, 1}, reuseaddr: false)
+    {:ok, held_port} = :inet.port(held)
+    on_exit(fn -> :gen_tcp.close(held) end)
+
+    rows = [
+      {"root option not a path", fn -> [candidate: record(ctx), run_root: 42] end,
+       :prerequisite_missing},
+      {"0755 root", fn -> [candidate: record(ctx), run_root: loose] end, :prerequisite_missing},
+      {"symlink root", fn -> [candidate: record(ctx), run_root: link] end, :prerequisite_missing},
+      {"reused root", fn -> [candidate: record(ctx), run_root: reused] end, :run_root_reused},
+      {"foreign-owned root",
+       fn -> [candidate: record(ctx), run_root: ctx.run_root, current_uid: uid + 1] end,
+       :prerequisite_missing},
+      {"missing record",
+       fn -> [candidate: Path.join(ctx.base, "nope.json"), run_root: ctx.run_root] end,
+       :prerequisite_missing},
+      {"0644 record", fn -> [candidate: record(ctx, nil, 0o644), run_root: ctx.run_root] end,
+       :prerequisite_missing},
+      {"root inside candidate", fn -> [candidate: record(ctx), run_root: inside] end,
+       :prerequisite_missing},
+      {"database path outside root",
+       fn ->
+         [
+           candidate: record(ctx),
+           run_root: ctx.run_root,
+           database_path: Path.join(ctx.base, "outside.sqlite3")
+         ]
+       end, :database_path_rejected},
+      {"malformed origin",
+       fn ->
+         [candidate: record(ctx, nil, 0o600, "http://localhost:80"), run_root: ctx.run_root]
+       end, :prerequisite_missing},
+      {"occupied port", fn -> [candidate: record(ctx, held_port), run_root: ctx.run_root] end,
+       :origin_port_occupied}
+    ]
+
+    assert length(rows) == 11
+
+    for {label, opts_fun, expected} <- rows do
+      assert {:error, %{cause: ^expected}} = TwinRuntime.check(opts_fun.()), label
+      assert {:error, %{cause: ^expected}} = TwinRuntime.prepare(opts_fun.()), label
+    end
+  end
+
+  test "an occupied origin port is blocked by check/1", ctx do
+    {:ok, held} = :gen_tcp.listen(0, ip: {127, 0, 0, 1}, reuseaddr: false)
+    {:ok, port} = :inet.port(held)
+
+    try do
+      assert {:error, %{cause: :origin_port_occupied}} =
+               TwinRuntime.check(candidate: record(ctx, port), run_root: ctx.run_root)
+    after
+      :gen_tcp.close(held)
+    end
+  end
+
+  # The registry is the only tracker of the OS process groups a run started, so a
+  # registry that is already gone must be reported, never read as "nothing to stop".
+  test "stop_children reports registry_gone, not :ok, when the registry is already gone", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    :ok = Agent.stop(runtime.registry)
+
+    assert {:error, :registry_gone} = TwinRuntime.stop_children(runtime)
+    TwinRuntime.stop_all(runtime)
+  end
+
+  test "stop_all still closes the origin listener and returns registry_gone when the registry is already gone",
+       ctx do
+    port = free_port()
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx, port), run_root: ctx.run_root)
+    :ok = Agent.stop(runtime.registry)
+
+    assert {:error, :eaddrinuse} =
+             :gen_tcp.listen(port, ip: {127, 0, 0, 1}, reuseaddr: false, active: false)
+
+    assert {:error, :registry_gone} = TwinRuntime.stop_all(runtime)
+
+    assert {:ok, again} =
+             :gen_tcp.listen(port, ip: {127, 0, 0, 1}, reuseaddr: false, active: false)
+
+    :gen_tcp.close(again)
+  end
+
+  test "a live registry with zero children stops with :ok", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+
+    assert :ok = TwinRuntime.stop_children(runtime)
+    assert :ok = TwinRuntime.stop_all(runtime)
+  end
+
+  test "a tracked child whose registry is gone is reported by stop_all, not hidden", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    sleep = System.find_executable("sleep")
+    {:ok, child} = TwinRuntime.start_child(runtime, :orphan, %{path: sleep, args: ["30"]})
+
+    # The registry is gone, so the group is orphaned by design here; kill it ourselves.
+    on_exit(fn ->
+      System.cmd("kill", ["-s", "KILL", "--", "-" <> Integer.to_string(child.os_pid)],
+        stderr_to_stdout: true
+      )
+    end)
+
+    assert TwinRuntime.alive?(child.os_pid)
+    :ok = Agent.stop(runtime.registry)
+
+    assert {:error, :registry_gone} = TwinRuntime.stop_all(runtime)
+  end
+
+  test "first_failure and record_failure stay tolerant of a gone registry", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    :ok = Agent.stop(runtime.registry)
+
+    assert TwinRuntime.first_failure(runtime) == nil
+    assert :ok = TwinRuntime.record_failure(runtime, :host_denied)
+    TwinRuntime.stop_all(runtime)
+  end
+
+  defp kill_registry_and_group(registry, os_pids) do
+    on_exit(fn ->
+      if Process.alive?(registry) do
+        try do
+          :sys.resume(registry)
+        catch
+          _, _ -> :ok
+        end
+
+        Process.exit(registry, :kill)
+      end
+
+      for os_pid <- os_pids do
+        System.cmd("kill", ["-s", "KILL", "--", "-" <> Integer.to_string(os_pid)],
+          stderr_to_stdout: true
+        )
+
+        System.cmd("kill", ["-s", "KILL", Integer.to_string(os_pid)], stderr_to_stdout: true)
+      end
+    end)
+  end
+
+  test "stop_children reports registry_timeout for a registry that does not answer (suspended)",
+       ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    runtime = %{runtime | registry_timeout_ms: 50}
+    kill_registry_and_group(runtime.registry, [])
+    :ok = :sys.suspend(runtime.registry)
+
+    assert {:error, :registry_timeout} = TwinRuntime.stop_children(runtime)
+  end
+
+  test "a suspended registry with zero children is still a timeout, not :ok", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    runtime = %{runtime | registry_timeout_ms: 50}
+    kill_registry_and_group(runtime.registry, [])
+    :ok = :sys.suspend(runtime.registry)
+
+    assert {:error, :registry_timeout} = TwinRuntime.stop_all(runtime)
+    assert Process.alive?(runtime.registry)
+  end
+
+  test "an answering registry is never a timeout", ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    runtime = %{runtime | registry_timeout_ms: 50}
+
+    assert :ok = TwinRuntime.stop_all(runtime)
+  end
+
+  test "stop_all on a timed-out registry keeps the registry and child alive and a later stop_all reaps the child (suspended)",
+       ctx do
+    port = free_port()
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx, port), run_root: ctx.run_root)
+    runtime = %{runtime | registry_timeout_ms: 50}
+    sleep = System.find_executable("sleep")
+    {:ok, child} = TwinRuntime.start_child(runtime, :slow, %{path: sleep, args: ["30"]})
+    kill_registry_and_group(runtime.registry, [child.os_pid])
+
+    :ok = :sys.suspend(runtime.registry)
+    assert {:error, :registry_timeout} = TwinRuntime.stop_all(runtime)
+    assert Process.alive?(runtime.registry)
+    assert TwinRuntime.alive?(child.os_pid)
+
+    assert {:ok, again} =
+             :gen_tcp.listen(port, ip: {127, 0, 0, 1}, reuseaddr: false, active: false)
+
+    :gen_tcp.close(again)
+
+    :ok = :sys.resume(runtime.registry)
+    assert Map.has_key?(Agent.get(runtime.registry, & &1.children), :slow)
+
+    assert :ok = TwinRuntime.stop_all(runtime)
+    refute TwinRuntime.alive?(child.os_pid)
+  end
+
+  test "a child that survives TERM and KILL leaves the registry alive and still listed (still_alive)",
+       ctx do
+    {:ok, runtime} = TwinRuntime.prepare(candidate: record(ctx), run_root: ctx.run_root)
+    # A background sleep is not a process-group leader, so the group signals cannot reach it.
+    {out, 0} = System.cmd("sh", ["-c", "sleep 30 >/dev/null 2>&1 & echo $!"])
+    bg_pid = out |> String.trim() |> String.to_integer()
+    port = Port.open({:spawn_executable, System.find_executable("cat")}, [:binary, :exit_status])
+
+    child = %{name: :stubborn, port: port, os_pid: bg_pid, deadline_at: 0}
+    Agent.update(runtime.registry, &put_in(&1, [:children, :stubborn], child))
+    kill_registry_and_group(runtime.registry, [bg_pid])
+
+    assert {:error, :child_still_alive} = TwinRuntime.stop_all(runtime)
+    assert Process.alive?(runtime.registry)
+    assert Map.has_key?(Agent.get(runtime.registry, & &1.children), :stubborn)
+  end
+end

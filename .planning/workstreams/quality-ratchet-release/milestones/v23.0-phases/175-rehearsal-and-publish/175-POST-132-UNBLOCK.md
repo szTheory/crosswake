@@ -1,0 +1,11 @@
+# Post-Plan132 local repair planning input
+
+The user asked to unblock the local execution error and move forward. The same-attempt recovery completed exactly one approved read; its canonical terminal digest and strict independent audits passed. All previous read approvals are now consumed and grant no future acquisition or tag/release authority.
+
+Fresh planning inputs: 175-132-RECOVERY-SUMMARY.md, its exact result, and evidence/175-plan132-local-policy-probe.json. The source-bound injected probe reproduces two local failures: disabled nonempty tag restrictions and active restrictions explicitly excluding refs/tags/v0.2.6 are incorrectly UNKNOWN because currentPolicySnapshot tests rule effects before returning known inapplicability. This is a materially distinct local-only defect repair path. It does not identify the live policy's cause.
+
+Bounded next scope: fix only proven inapplicability ordering, retain unknown rule/condition/target/enforcement/bypass shapes fail closed, preserve active applicable restrictions and ADMIN non-authority, keep prior schema/authentication semantics and operation limits, and prove no-network production-seam regressions. No real scope/card/reservation, credential lookup, provider/remote Git, dry-run/tag/CI/merge/registry/publication operation in the repair plan. Candidate-version acquisition and broader applicable rule semantics are separately scoped follow-ups, not automatically folded into this repair. No permanent CI lane or human UAT.
+
+Existing phase decisions remain operative. All historical summaries and evidence, including the current consumed observation, are immutable. A later acquisition requires a fresh reviewed card/scope with a new choice and updated collector binding. Plan106 retains its own Plan119-pinned readiness plus separate tag authorization; its mechanical ready flag is insufficient. REL-13/14/15/17 remain OPEN and release holds remain ACTIVE.
+
+Normative reference: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets and https://docs.github.com/en/rest/repos/rules . Provider policy must be evaluated only for the exact destination and operation; no restriction is inferred absent for an unknown applicable shape.

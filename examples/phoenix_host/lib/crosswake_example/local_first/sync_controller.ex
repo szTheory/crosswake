@@ -1,6 +1,7 @@
 defmodule CrosswakeExample.LocalFirst.SyncController do
   use Phoenix.Controller, formats: [:json]
 
+  alias CrosswakeExample.E2E.TwinFaultController
   alias CrosswakeExample.LocalFirst.{PhysicalIphoneAuthority, ReplayAdmission, Study}
 
   def sync(conn, %{"scope_ref" => scope_ref, "events" => events}) when is_list(events) do
@@ -31,12 +32,14 @@ defmodule CrosswakeExample.LocalFirst.SyncController do
                case Study.apply_one(scope_ref, event, authority) do
                  {:ok, %{outcome: :accepted} = accepted} ->
                    PhysicalIphoneAuthority.observe_device_result(event, :accepted)
+                   TwinFaultController.observe_result(event, :accepted)
 
                    {:cont,
                     {:ok, %{result | accepted_records: result.accepted_records ++ [accepted]}}}
 
                  {:ok, %{outcome: :rejected} = rejected} ->
                    PhysicalIphoneAuthority.observe_device_result(event, :rejected)
+                   TwinFaultController.observe_result(event, :rejected)
 
                    {:halt,
                     {:ok, %{result | halted: :rejected, rejected: result.rejected ++ [rejected]}}}
@@ -44,16 +47,23 @@ defmodule CrosswakeExample.LocalFirst.SyncController do
                  {:error, reason} ->
                    PhysicalIphoneAuthority.observe_device_result(event, :transaction_failed)
 
+                   TwinFaultController.observe_result(
+                     event,
+                     if(reason == :scope_conflict, do: :scope_conflict, else: :transaction_failed)
+                   )
+
                    {:halt,
                     {:ok, %{result | halted: :transaction_failed, rejected: [%{class: reason}]}}}
                end
 
              {:deny, reason} when result.accepted_records == [] ->
                PhysicalIphoneAuthority.observe_device_result(event, reason)
+               TwinFaultController.observe_result(event, reason)
                {:halt, {:blocked, reason}}
 
              {:deny, reason} ->
                PhysicalIphoneAuthority.observe_device_result(event, reason)
+               TwinFaultController.observe_result(event, reason)
                {:halt, {:ok, %{result | halted: reason}}}
            end
          end) do

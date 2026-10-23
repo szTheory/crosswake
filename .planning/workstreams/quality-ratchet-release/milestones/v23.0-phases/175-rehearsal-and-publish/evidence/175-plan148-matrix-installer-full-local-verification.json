@@ -1,0 +1,27 @@
+{
+  "source_base": "2dbde2d9be8adfa36009e20bf894b00a5bb63e87",
+  "tracked_clone": "/private/tmp/crosswake-phase175-matrix-installer-tracked-check",
+  "full_tests": 2069,
+  "failures": 0,
+  "excluded": 78,
+  "focused_formatted_tests": 4,
+  "focused_failures": 0,
+  "actual_repository_formatter": "PASS",
+  "formatting_ast_equivalent": true,
+  "workflow_controls": 98,
+  "inventory_sites": 230,
+  "inventory_matches_exactly": true,
+  "intended_files": [
+    "script/verify_companion_cleanroom.sh",
+    "test/crosswake/proof/phase174_matrix_installer_contract_test.exs"
+  ],
+  "initial_dependency_setup": "failed before tests; original log preserved; fixed by verified exact-lock cache",
+  "logs": {
+    "full-tests": "5f0fda8b187ca455b2ff2ce6a4aa087c9deb611f86def4d1820681d0215efac7",
+    "formatted-focused": "c101b0bd9c0d6a1919ab69b3b7b2778e105e7c21b7954028d458e213315ffb02",
+    "scanner": "33543b208590452aa37d6f2586f1d0ddbc467a7f5b7e63c191a84c41e469735c",
+    "inventory": "45f9f8dfe2da1137d53df0042ce7c71f47515e1ca1006716789d1b5d0518f049",
+    "dependency-setup-error": "b17c1a69a2cfe7eb12258fda619b6d5d7fe7be3b23f9d403a0bee62677a275d8"
+  },
+  "observed_at_utc": "2026-10-11T19:29:18.921322+00:00"
+}

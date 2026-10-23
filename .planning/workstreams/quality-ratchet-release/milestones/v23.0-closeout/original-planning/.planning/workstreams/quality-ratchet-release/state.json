@@ -1,0 +1,73 @@
+{
+  "contract": "1.0.0",
+  "flavor": "core",
+  "milestone": "v23.0 — Release Pipeline Repair & Proof-Lane Truth",
+  "phases": [
+    {
+      "number": "164",
+      "name": "Dependency Security and Gate Authority",
+      "status": "pending"
+    },
+    {
+      "number": "165",
+      "name": "Efficient and Maintainable CI",
+      "status": "pending"
+    },
+    {
+      "number": "166",
+      "name": "Clean-Checkout Engineering Quality",
+      "status": "pending"
+    },
+    {
+      "number": "167",
+      "name": "Documentation and Pull-Request Reconciliation",
+      "status": "pending"
+    },
+    {
+      "number": "168",
+      "name": "0.2.1 Release Candidate Readiness",
+      "status": "pending"
+    },
+    {
+      "number": "169",
+      "name": "Diagnostic Legibility",
+      "status": "complete"
+    },
+    {
+      "number": "170",
+      "name": "Vacuous Assertion Remediation",
+      "status": "complete"
+    },
+    {
+      "number": "171",
+      "name": "Version/Authority Split",
+      "status": "complete"
+    },
+    {
+      "number": "172",
+      "name": "Per-Package Proof Scope",
+      "status": "complete"
+    },
+    {
+      "number": "173",
+      "name": "Recovery-Path Proof Convergence",
+      "status": "complete"
+    },
+    {
+      "number": "174",
+      "name": "Clean-Room Host Realism & Adopter Fidelity",
+      "status": "complete"
+    },
+    {
+      "number": "175",
+      "name": "Rehearsal and Publish",
+      "status": "in_progress"
+    }
+  ],
+  "next": {
+    "command": "/gsd:verify-work",
+    "label": "Re-verify work",
+    "reason": "Recent verification failed — re-verify or debug"
+  },
+  "updated_at": "2026-10-10T20:29:12.884Z"
+}

@@ -1,0 +1,9 @@
+durable_head: a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4
+durable_tree: f7c4d7dc1a86f251c3ba845d3cde8d4c770ae729
+durable_branch: refs/heads/candidate
+durable_porcelain_count: 0
+durable_commits_equal_candidate_commits: yes
+durable_commit_count: 90
+durable_candidate_ok: yes
+tmp_candidate_observed: unchanged
+detail: during the full rerun the two lines verify-candidate-189.sh reads from the temp-folder candidate (candidate_head, candidate_porcelain_count) came out equal to their pre-run values, so the temp candidate had not changed yet; the durable candidate check above is the record Phase 190 relies on.

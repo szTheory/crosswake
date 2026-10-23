@@ -1,0 +1,108 @@
+{
+  "schema": "crosswake-ios-tag-preflight/v2",
+  "plan": 53,
+  "stage": "BLOCKED_PREFLIGHT",
+  "preflight": {
+    "sha256": "05984d8f632cd2740aa91426f16459f69197b0bf20f197239cf5fd4961e8583a",
+    "blocked_receipt_sha256": null,
+    "blocked_reason_code": "FULL_CLONE_SPLIT_FAILED",
+    "boundary": "SOURCE",
+    "parser_schema": "git-push-porcelain-one-tag/v1",
+    "created_at": "2026-09-29T19:28:32Z",
+    "reserved_at": null,
+    "readback_ok": true,
+    "reservation_readback_ok": false
+  },
+  "candidate": {
+    "gate2_authorized": false,
+    "ci_revalidated": false
+  },
+  "source": {
+    "complete": false,
+    "refs_count": null,
+    "ref_map_sha256": null,
+    "tag_ref_oid": null,
+    "tag_commit_oid": null,
+    "split_oid": null
+  },
+  "mirror": {
+    "complete": false,
+    "refs_count": null,
+    "ref_map_sha256": null,
+    "main_oid": null,
+    "prior_tag_oid": null,
+    "target_absent": null
+  },
+  "pr": {
+    "complete": false,
+    "number": 219,
+    "state": null,
+    "draft": null,
+    "merged": null,
+    "head_oid": null,
+    "base_oid": null,
+    "base_ref": null,
+    "mergeable": null,
+    "merge_state": null,
+    "required_ci_conclusion": null,
+    "checks_sha256": null
+  },
+  "policy": {
+    "complete": false,
+    "required_ci": null,
+    "strict": null,
+    "admin_enforced": null,
+    "force_push_blocked": null,
+    "deletion_blocked": null,
+    "policy_sha256": null
+  },
+  "auth": {
+    "push_permission": null,
+    "helper_identity": "GH_AUTH_GIT_CREDENTIAL",
+    "source_read_target": "EXPECTED_SOURCE",
+    "mirror_read_target": "EXPECTED_MIRROR",
+    "mirror_push_target": "EXPECTED_MIRROR",
+    "canonical_source_id": "szTheory/crosswake",
+    "canonical_mirror_id": "szTheory/crosswake-shell-core-ios"
+  },
+  "dry_run": {
+    "reserved": false,
+    "invocations_reserved": 0,
+    "hook_bypass": "NOT_RUN",
+    "exit_code": null,
+    "git_version": null,
+    "parser_schema": "git-push-porcelain-one-tag/v1",
+    "stdout": {
+      "byte_count": 0,
+      "overflow": false,
+      "truncated": false,
+      "expected_banner_count": 0,
+      "expected_status_count": 0,
+      "unexpected_count": 0,
+      "malformed_count": 0
+    },
+    "stderr_class": null,
+    "accepted": null,
+    "conformance": {
+      "schema": "git-push-porcelain-conformance/v1",
+      "case_count": 0,
+      "pass_count": 0,
+      "fail_count": 0,
+      "hook_bypass_checked": false
+    }
+  },
+  "post": {
+    "complete": false,
+    "unchanged": false,
+    "source": null,
+    "mirror": null,
+    "pr": null,
+    "policy": null,
+    "auth": null
+  },
+  "write": {
+    "attempts": 0,
+    "result": "NOT_ATTEMPTED"
+  },
+  "decision": null
+}

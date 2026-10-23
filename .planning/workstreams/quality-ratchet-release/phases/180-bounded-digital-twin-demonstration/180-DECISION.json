@@ -1,0 +1,32 @@
+{
+  "schema": "crosswake.phase180.scope_decision/1",
+  "gate_verdict": "existing_path_supported",
+  "candidate_head": "da53c54db06e54be5a80fb4be144a70d3fed36a5",
+  "decision": "not_required",
+  "decided_by": "gate_verdict",
+  "refuting_tests": [
+    "phase180_gate:G1",
+    "phase180_gate:G2",
+    "test_G3_gate_generated_activation_session_lacks_host_command",
+    "test_G4_gate_bounded_shell_denies_offline_island_runtime"
+  ],
+  "control_tests": [
+    "phase180_control:G1",
+    "phase180_control:G2",
+    "test_G3_control_exported_request_carrying_command_reaches_delegate",
+    "test_G4_control_live_view_runtime_resolves",
+    "phase180_control:G6"
+  ],
+  "rebound_from": {
+    "decision": "not_required",
+    "candidate_head": "12f84cd950d4574921767df823faed6797c17c26"
+  },
+  "plans_status": {
+    "180-03": "complete",
+    "180-04": "complete",
+    "180-05": "eligible_rerun_from_task_1",
+    "180-06": "eligible_after_dependencies",
+    "180-07": "eligible_after_dependencies"
+  },
+  "next_action": "$gsd-execute-phase 180 --ws quality-ratchet-release (180-05 from Task 1)"
+}

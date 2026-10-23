@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "phase": "177",
+  "workstream": "quality-ratchet-release",
+  "status": "complete",
+  "lastCompletedPlan": "177-08",
+  "activePhaseStatus": "awaiting_discussion",
+  "currentRegisteredCommand": "$gsd-discuss-phase 178 --ws quality-ratchet-release",
+  "nextCommandCondition": "eligible now; Phase 178 context is missing",
+  "phase178Boundary": "Phase 178 owns exact final source binding and hosted CI on that same commit.",
+  "phaseComplete": true,
+  "requirementsMarkedComplete": true,
+  "lastCompletedPhase": "177",
+  "activePhase": "178",
+  "phase177Requirements": [
+    "MAINT-03",
+    "MAINT-05",
+    "MAINT-06"
+  ],
+  "verification": {
+    "status": "passed",
+    "score": "27/27",
+    "report": ".planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-VERIFICATION.md"
+  }
+}

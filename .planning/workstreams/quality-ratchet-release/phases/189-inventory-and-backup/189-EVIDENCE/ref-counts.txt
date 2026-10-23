@@ -1,0 +1,12 @@
+main d0dbdf7bf196cea167ced3c50cf620bf3cb2452b
+ns refs/heads 56
+ns refs/remotes 56
+ns refs/tags 59
+ns refs/gsd 1
+ns refs/tmp 1
+ns refs/stash 1
+class ancestor 23
+class merge-tree 6
+class patch-equivalent-paths-match 0
+class to-land 0
+class unclassified 27

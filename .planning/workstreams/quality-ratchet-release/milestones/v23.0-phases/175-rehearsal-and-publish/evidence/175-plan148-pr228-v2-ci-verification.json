@@ -1,0 +1,25 @@
+{
+  "run_id": 38143232212,
+  "head_oid": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+  "base_oid": "b064c4e2ea770a7e1dfae46227ac7ecf3e43c3fb",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": 49,
+  "all_passed": true,
+  "public_peer_comparison": "PASS",
+  "targets_before_rehearsal": {
+    "hex": {
+      "http_status": 404,
+      "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+    },
+    "ios": {
+      "http_status": 404,
+      "body_sha256": "e2e3c64edab172132f77ce89a0e8c190db1cd30936a096344f45893bd5b75f8a"
+    },
+    "maven": {
+      "http_status": 404,
+      "body_sha256": "e791ccfcfee9c0d299d07474d9bfcbfcbebf1181323be601220c8a823062ab99"
+    }
+  },
+  "observed_at_utc": "2026-10-11T14:13:11.353702+00:00"
+}

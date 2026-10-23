@@ -1,0 +1,12 @@
+npm 10.9.2
+npm_integrity match
+java 17
+node v22.14.0
+swift 6.3.3
+xcode 26.6
+gitleaks 8.30.1
+global_npm_unchanged yes
+run 2 (placeholders only; nothing global changed)
+path_order_for_children <run-folder>/npm10/node_modules/.bin then <asdf node 22.14.0 bin> then <homebrew openjdk@17>/bin then the normal PATH
+android_sdk ANDROID_HOME and ANDROID_SDK_ROOT set to <existing local android-sdk (platform 34 and 35, build-tools 34.0.0)> for the run only
+sleep_guard caffeinate -i -s wrapped the --all run so the machine could not sleep mid-run; no setting changed

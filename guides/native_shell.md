@@ -49,8 +49,123 @@ Crosswake writes real native projects under:
 - `native/ios/crosswake_shell`
 - `native/android/crosswake_shell`
 
-Those projects are scaffold-once outputs. Patch or document upgrades after that point;
-do not treat them as safely regeneratable overlays.
+Native Swift, entitlements, and project customizations remain host-owned. The Android
+generator remains scaffold-once. For iOS, the declared host path below can refresh only
+recognized Crosswake-managed manifest, activation, and build-setting outputs; it does
+not make the native project a general regeneratable overlay.
+
+## Declared iOS Host Setup
+
+For a production iOS host, declare the build inputs once in the host's ordinary
+Phoenix/Mix configuration. `MIX_ENV` selects the normal environment; generation
+requires the compiled router but does not start the Phoenix application, evaluate
+`runtime.exs`, or load unrelated runtime-server credentials.
+
+```elixir
+config :crosswake, :ios_host,
+  router: MyAppWeb.Router,
+  origin: "https://study.crosswake.test",
+  entry_route_id: "study-session",
+  app_bundle_id: "org.crosswake.host",
+  proof_app_bundle_id: "org.crosswake.host.proof",
+  device_signing: [mode: :automatic, team_id: "ABCDE12345"]
+```
+
+The declaration accepts exactly `router`, `origin`, `entry_route_id`,
+`app_bundle_id`, `proof_app_bundle_id`, and `device_signing`. The origin must be an
+absolute HTTPS origin without a path, query, fragment, credentials, or example host;
+the entry must be declared by the selected router. The app and proof app identities
+must be distinct. Crosswake derives the shell unit-test identity by adding `.tests`
+to `app_bundle_id`, and derives the proof unit/UI test identities by adding `.tests`
+and `.uitests` to `proof_app_bundle_id`.
+
+For a Simulator-only demonstration against a local Phoenix server, add
+`origin_mode: :local_loopback` and set `origin` to `http://127.0.0.1:PORT` or
+`http://localhost:PORT`. Put the key only in dev or runner-owned config, never in shared
+`config/config.exs` or prod; generation refuses it under `MIX_ENV=prod`, so generate under
+`MIX_ENV=dev` or `MIX_ENV=test`. To switch back, remove the key, set the HTTPS origin, and
+rerun `mix crosswake.gen.shell ios`. While the mode is on, the generated `Info.plist` gains
+only `NSAllowsLocalNetworking` and a `CrosswakeOriginMode` marker, and regeneration removes
+both. ATS is a backstop; the origin allowlist is what keeps the app on loopback. Loopback on a
+physical iPhone is the phone itself, so the physical proof lane refuses the mode. `mix
+crosswake.doctor` warns about it and `--check-publish` fails. The generated README banner is
+written only when the README is first created, so it may be stale after you toggle the mode;
+trust the `CrosswakeOriginMode` marker in `Info.plist` instead.
+
+To check the loopback mode end to end, run `bash script/verify_loopback_origin_simulator.sh
+--evidence PATH` from a clean checkout. It builds a local-loopback host, runs it in a Simulator it
+may boot and shut down again, and prints one JSON result. Exit `0` means passed, `2` means blocked
+(including generated-file hash, evidence-write and cleanup failures), and `3` means unavailable
+(missing tools or no Simulator). It is manually run phase evidence, not a CI lane.
+
+For an existing generated iOS host, inspect its recognized managed outputs and project
+settings first:
+
+```sh
+MIX_ENV=prod mix crosswake.gen.shell ios --diff
+```
+
+For a new host, generate from the declaration, then inspect the managed outputs:
+
+```sh
+MIX_ENV=prod mix crosswake.gen.shell ios
+MIX_ENV=prod mix crosswake.gen.shell ios --check
+```
+
+`--diff` and `--check` do not write files. They report safe path/status causes and a
+repair command without printing declared values. `--check` fails if managed outputs
+are missing, stale, conflicted, or part of an interrupted update. After a passing
+check, build the generated Xcode project with the host's normal build settings. For
+example, an unsigned simulator build can use:
+
+```sh
+xcodebuild -project native/ios/crosswake_shell/CrosswakeShell.xcodeproj \
+  -scheme CrosswakeShell -configuration Debug -sdk iphonesimulator \
+  CODE_SIGNING_ALLOWED=NO build
+```
+
+If an interrupted managed-output update is reported, review the staged generation,
+run the explicit recovery, and check again:
+
+```sh
+MIX_ENV=prod mix crosswake.gen.shell ios --recover
+MIX_ENV=prod mix crosswake.gen.shell ios --check
+```
+
+Recovery applies only the recognized prior managed state and refuses a conflicting
+host edit. If `--diff` reports that a recognized existing project needs the managed
+settings hook, the bounded opt-in migration is:
+
+```sh
+MIX_ENV=prod mix crosswake.gen.shell ios --migrate-project-settings
+MIX_ENV=prod mix crosswake.gen.shell ios --check
+```
+
+That migration updates only the known shell target configuration blocks. It removes
+identity/signing overrides in those blocks so the managed xcconfig owns those values;
+unrelated PBX customization remains host-owned. If the project structure or target
+settings have changed outside the recognized form, migration refuses with an
+`unrecognized_project` cause. Review and reconcile that project change manually
+before trying the bounded migration again; do not replace the whole PBX file.
+
+`CrosswakeHostSettings.xcconfig` owns the declared shell app identity and signing
+settings, and is kept out of bundled app resources. Swift sources, entitlements, and
+other host project edits stay host-owned. The shell build is unsigned for simulator
+SDKs. Device SDK settings reflect the declared automatic/manual style and team ID,
+but checking those settings does not sign, install, or prove support on a physical
+iPhone.
+
+The generated manifest and entry activation carry the selected route and primary
+origin as static configuration. They grant no session, account, scope, installed
+media, or replay authority. Existing `mix crosswake.gen.proof_lane --config PATH`
+continues to own unrelated proof-lane settings; it is not a second iOS host
+declaration.
+
+The legacy `--router` and `--local` invocation remains available for local/dev use
+when no `:crosswake, :ios_host` declaration is selected. With the declaration,
+production inputs cannot be silently replaced by those flags. Use only non-production
+example values in documentation and tests; a first adopter's real host values belong
+in that host's private configuration.
 
 When you generate shells with the default non-local path, the proof label is
 `generated public-coordinate proof`. When you generate with `--local`, the proof
@@ -144,6 +259,17 @@ The shell bridge stays bounded to:
 Everything else is denied.
 
 `permissions.status` is intentionally narrow in Phase 16: it is read-only, one-shot, and supports the `notifications` alias only. It does not request permissions, observe background changes, or expose a generic permission dashboard.
+
+## Offline island admission
+
+The bounded shell opens `live_view` and `offline_island` routes. An `offline_island`
+route resolves to `ShellPresentation.offlineIsland` and passes the same ordered checks as
+`live_view`. Any other runtime is denied. Admission is not an offline guarantee: see
+[What the shell does not promise](offline.md#what-the-shell-does-not-promise) for the
+plain list (no offline cold start, no outbox durability, replay or auth promise, no
+service workers, no storage-pressure survival, no generic sync, background sync or native
+storage). Host apps that switch exhaustively over `ShellPresentation` add
+`case .offlineIsland`; see [Native Shell Upgrade](native_shell_upgrade.md).
 
 ## Boundary Warnings & Rough Edges
 

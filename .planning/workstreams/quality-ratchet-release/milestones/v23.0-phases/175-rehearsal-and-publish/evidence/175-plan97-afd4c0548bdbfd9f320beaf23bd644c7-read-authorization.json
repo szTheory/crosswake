@@ -1,0 +1,15 @@
+{
+  "attempt_id": "afd4c0548bdbfd9f320beaf23bd644c7",
+  "candidate": {
+    "base_oid": "e51698528dc667ef89beb951e4eb1ec91da74981",
+    "head_oid": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+    "tree_oid": "5279cae1daa1fbff3437b673df8ca231fb07c91f",
+    "version": "0.2.7"
+  },
+  "contract_sha256": "ecc3ddfc8bb5da278c26bebf30c9abd2420921fb631fb3c1acde73530d7116e2",
+  "decision": "ALLOW",
+  "path_set_sha256": "568bdf208277f980c79078b7439f5be302e950e527214f8e16586a294d4c2f78",
+  "schema": "crosswake-plan97-read-authorization/v1",
+  "scope_sha256": "24fa017842dbf1ca5156c9c5284bf9d2b6d7400ae58ff319ff740a2a8d5c5c78",
+  "sha256": "80e5784837d72d9e877bad8df9daac30b2584dd88feaef630bacebcd5e38d4d9"
+}

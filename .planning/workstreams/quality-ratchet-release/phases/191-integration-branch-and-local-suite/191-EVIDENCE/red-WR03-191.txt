@@ -1,0 +1,4 @@
+red_exit 2
+method wrong_head_fallback
+note path_without_git attempt failed for an unrelated reason: Hex would not load under the reduced PATH
+failed a hostile global git config cannot make a dirty tree read as clean

@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-14T01:14:44.707982+00:00",
+  "candidate": "/private/tmp/crosswake-phase179-impl",
+  "head": "96e5a63efab657f89f3ac84d5b1d84ff5da5d822",
+  "tree": "0514b6244ec814c1d0701d580b04651f70f57019",
+  "toolchain": "repository-pinned Node 22.14.0, existing Elixir/asdf PATH retained",
+  "results": [
+    {
+      "label": "final-root-proof",
+      "exit_code": 0,
+      "duration_seconds": 320.21,
+      "summary": [
+        "PASS repository-preflight",
+        "PASS root-proof",
+        "PASS repository-cleanliness"
+      ],
+      "head": "96e5a63efab657f89f3ac84d5b1d84ff5da5d822"
+    },
+    {
+      "label": "final-example-host-proof",
+      "exit_code": 0,
+      "duration_seconds": 1211.56,
+      "summary": [
+        "PASS repository-preflight",
+        "PASS example-host-proof",
+        "PASS repository-cleanliness"
+      ],
+      "head": "96e5a63efab657f89f3ac84d5b1d84ff5da5d822"
+    },
+    {
+      "label": "final-ios-package-proof",
+      "exit_code": 0,
+      "duration_seconds": 23.9,
+      "summary": [
+        "PASS repository-preflight",
+        "PASS ios-package-proof",
+        "PASS repository-cleanliness"
+      ],
+      "head": "96e5a63efab657f89f3ac84d5b1d84ff5da5d822"
+    },
+    {
+      "label": "final-xcode-settings",
+      "exit_code": 0,
+      "duration_seconds": 120.76,
+      "summary": [
+        "# tests 6",
+        "# pass 6",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# duration_ms 120729.26925"
+      ],
+      "head": "96e5a63efab657f89f3ac84d5b1d84ff5da5d822"
+    }
+  ],
+  "example_host_isolation": {
+    "matrix_passes": [
+      {
+        "seed": "17",
+        "class": "tagged"
+      },
+      {
+        "seed": "17",
+        "class": "complete"
+      },
+      {
+        "seed": "101",
+        "class": "tagged"
+      },
+      {
+        "seed": "101",
+        "class": "complete"
+      },
+      {
+        "seed": "1009",
+        "class": "tagged"
+      },
+      {
+        "seed": "1009",
+        "class": "complete"
+      }
+    ],
+    "all_six_passed": true,
+    "raw_capture_removed": true
+  },
+  "ios_xctest_count": 39,
+  "ios_xctest_failures": 0,
+  "raw_output_policy": "Private captures were inspected for safe summaries and then removed. Earlier missing-output failures remain undiagnosed."
+}

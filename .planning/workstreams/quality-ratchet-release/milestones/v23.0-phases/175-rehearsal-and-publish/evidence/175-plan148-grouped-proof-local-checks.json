@@ -1,0 +1,56 @@
+{
+  "workflow_integrity": {
+    "total": 98,
+    "failed": 0
+  },
+  "focused_existing_and_mixed_ref_tests": {
+    "total": 92,
+    "failed": 0
+  },
+  "source_resolver_and_receipt_tests": {
+    "total": 14,
+    "failed": 0
+  },
+  "companion_hosted_receipt_tests": {
+    "total": 32,
+    "failed": 0
+  },
+  "complete_candidate_fixture_suite": {
+    "total": 187,
+    "passed": 186,
+    "archive_setup_failures": 1,
+    "failure": "Git history test requires .git; rerun separately against temporary clone passed1test/0failures"
+  },
+  "public_package_source_rebuild_comparison": "all6 metadata and payload match",
+  "public_consumer_proof": {
+    "state": "COMPLETE",
+    "packages": 6,
+    "profiles": 5,
+    "installs_each": 2,
+    "path_locks": 0,
+    "failed_packages": [],
+    "all_claims": "fully_proven",
+    "scope": "local repair check against actual public0.2.9; not same-run release acceptance"
+  },
+  "scope": "local repair validation only; does not satisfy same-run release proof",
+  "observed_at_utc": "2026-10-11T11:59:40.827300+00:00",
+  "portable_source_and_permission_tests": {
+    "total": 18,
+    "failed": 0,
+    "negative_control_mode": "0664",
+    "canonical_mode": "0644",
+    "source": "real Git archive fixture with alternate Git default and scratch umask077"
+  },
+  "workflow_integrity_after_portability": {
+    "total": 98,
+    "failed": 0
+  },
+  "revised_candidate_ci": {
+    "run_id": 38138063830,
+    "head_oid": "fcbab2c44192e6b6ad24d1058127ad42a72efb67",
+    "candidate_local_matrix": "PASS; all6packages and5profiles twice",
+    "hosted_public_peer_comparison": "PASS; all5 source refs/metadata/payload/file modes match public baselines",
+    "artifact_id": 11701888038,
+    "overall_ci": "remaining required checks running"
+  }
+}

@@ -1,0 +1,7 @@
+head b7ec0e0180e85def4d52eac0594fa9700d87de9d
+mode root
+totals_lines 1
+line1 tests 2659 failures 0 invalid 0 skipped 0 excluded 78
+floor 2659
+exit 0
+result pass

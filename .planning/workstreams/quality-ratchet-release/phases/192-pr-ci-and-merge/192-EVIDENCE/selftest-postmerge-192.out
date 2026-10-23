@@ -1,0 +1,20 @@
+Q01 happy path, See It Run cancelled recorded as advisory: as expected
+Q02 one parent refused: as expected
+Q03 first parent not main refused: as expected
+Q04 second parent not bound head refused: as expected
+Q05 merge tree differs from tested merge refused: as expected
+Q06 zero push runs is not success: as expected
+Q07 release-please failure refused: as expected
+Q08 older failure, newer success passes by highest id: as expected
+Q09 newer failure beats older success: as expected
+Q10 publish-class job that ran refused: as expected
+Q11 no publish-class jobs is not success: as expected
+Q12 See It Run failure or absence is advisory only: as expected
+Q13 other failed push workflow refused: as expected
+Q14 changed package version refused: as expected
+Q15 garbage JSON is unreadable: as expected
+Q16 failed pull request check fact refused: as expected
+Q17 unknown baseline label and missing input: as expected
+Q18 unreadable release read writes no baseline: as expected
+Q19 release-please still running at the limit: as expected
+selftest-postmerge: controls 19 of 19 as expected

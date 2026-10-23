@@ -1,0 +1,81 @@
+{
+  "alert_issue": 217,
+  "attempt_number": 1,
+  "conclusion": "failure",
+  "event": "push",
+  "guard_failure_diagnostic": "The required merge-guard step exited 1 after runbook ancestry passed for base, head, and merge; no publisher ran.",
+  "head_sha": "998742856a37a97ae7247f6c532f9c154ea20885",
+  "jobs": {
+    "approved_candidate_merge_guard": {
+      "conclusion": "failure",
+      "failed_step": "Require approved head parentage, identical tree, and exact receipt",
+      "id": 108714378535,
+      "name": "release: approved-candidate merge guard",
+      "status": "completed"
+    },
+    "exact_public": {
+      "conclusion": "skipped",
+      "id": 108714432034,
+      "name": "release: exact-public artifact proof",
+      "status": "completed"
+    },
+    "failure_alert": {
+      "conclusion": "success",
+      "id": 108714444618,
+      "issue": 217,
+      "name": "Alert on companion or native publish/proof failure (PROOF-03c, D-15)",
+      "status": "completed"
+    },
+    "hex": {
+      "conclusion": "skipped",
+      "id": 108714431434,
+      "name": "Publish to Hex.pm",
+      "status": "completed"
+    },
+    "ios_mirror": {
+      "conclusion": "skipped",
+      "id": 108714431462,
+      "name": "Mirror iOS core to split repo",
+      "status": "completed"
+    },
+    "linked_rollup": {
+      "artifact_path": "175-next-successor-postmerge-sources/artifacts/linked-release-status.json",
+      "artifact_state": "NOT_APPLICABLE",
+      "conclusion": "success",
+      "id": 108714431436,
+      "name": "release: linked release rollup",
+      "status": "completed"
+    },
+    "maven": {
+      "conclusion": "skipped",
+      "id": 108714431128,
+      "name": "Publish Android core to Maven Central",
+      "status": "completed"
+    },
+    "native_rollup": {
+      "conclusion": "success",
+      "id": 108714431123,
+      "name": "Native release status rollup",
+      "status": "completed"
+    },
+    "release_please": {
+      "conclusion": "skipped",
+      "id": 108714431017,
+      "name": "Release Please",
+      "status": "completed"
+    }
+  },
+  "linked_rollup_artifact": {
+    "path": "175-next-successor-postmerge-sources/artifacts/linked-release-status.json",
+    "sha256": "3b84113cb416718e381b62508eb4f5f8be9613d35d1049a55330175bbaee5aea",
+    "state": "NOT_APPLICABLE"
+  },
+  "merge_oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+  "outcome": "PARTIAL",
+  "release_please_version": "0.2.6",
+  "retry_or_recovery_performed": false,
+  "run_id": 36352732061,
+  "schema_version": 1,
+  "status": "completed",
+  "workflow": "Release Please"
+}

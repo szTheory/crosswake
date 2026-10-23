@@ -1,0 +1,9 @@
+head 6b9a6d9c52ae94fa8f1815256990d8feeda09b27
+mode swift
+totals_lines 1
+swift tests 89 skipped 2 failures 0
+floor 89
+exit 0
+swift_skipped test_G3_control_exported_request_carrying_command_reaches_delegate
+swift_skipped test_G3_gate_generated_activation_session_lacks_host_command
+result pass

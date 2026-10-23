@@ -1,0 +1,49 @@
+{
+  "observed_at": "2026-09-25T01:38:56Z",
+  "repository": "szTheory/crosswake",
+  "candidate": {
+    "pr": 207,
+    "url": "https://github.com/szTheory/crosswake/pull/207",
+    "title": "chore: release main",
+    "state": "OPEN",
+    "draft": false,
+    "version": "0.2.5",
+    "base_oid": "d9ac0e39d7bee33d659f4823b7747d3e1f14a6b7",
+    "head_oid": "11c2b03295ddf1c470340bb3ebaf71fd030e41ae",
+    "tree_oid": "c5aa596736dec12078804c8d7d8e5a9c72747757",
+    "mergeable": "MERGEABLE",
+    "merge_state": "CLEAN",
+    "repairs_in_lineage": true,
+    "repair_commits": [
+      "95d3121d862ff2b546e641fc6a335482ca445c24",
+      "8cce606aaba587f42f4e04861a637f42105990d8",
+      "eb41c494f3f99a5c230dec52d6d4575f16bb12a6"
+    ]
+  },
+  "ci": {
+    "workflow": "Crosswake CI",
+    "run_id": 36080344519,
+    "head_oid": "11c2b03295ddf1c470340bb3ebaf71fd030e41ae",
+    "conclusion": "SUCCESS",
+    "check_count": 49,
+    "receipt_sha256": "d1d5c4a4115b58ca87e778d970f56370fedba4db1175e5bc24c7f3e7d60a940f",
+    "external_state_changed": false
+  },
+  "required_check_policy": {
+    "strict": true,
+    "contexts": ["Crosswake CI"]
+  },
+  "runbook": {
+    "commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8",
+    "base": "PASS",
+    "head": "PASS"
+  },
+  "targets": {
+    "hex_absent": true,
+    "hex_http_status": 404,
+    "ios_tag_absent": true,
+    "maven_pom_absent": true,
+    "maven_pom_http_status": 404,
+    "central_portal_state": "NOT OBSERVED"
+  }
+}

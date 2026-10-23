@@ -1,0 +1,22 @@
+# CR-01 emergency backup (2026-10-18, orchestrator, after code review)
+
+Item: <tmp>/crosswake-phase175-exact-public-candidate-source. The inventory (plan 06) classed it
+obsolete "empty/no repo, nothing to keep" with no backup. Code review CR-01 found it is a broken stub
+(no HEAD; its old files were removed by the macOS tmp cleaner on 2026-10-16 00:00) that still holds a
+63 MB git object store.
+
+Backup made: <backup-root>/inventory-189/tmp-phase175-exact-public-candidate-source-cr01.tar with its
+.files list (96 entries, files and symlinks), both mode 0600, checksums in SHA256SUMS.cr01 (2 of 2 OK).
+Restore test: extracted into RUNS/restore, every entry compared byte for byte (symlinks by target):
+96 compared, 0 mismatches.
+Content check on the restored copy: 3910 commit objects readable; 3 of them are not reachable from any
+ref in RUNS/compare.git (fresh main, candidate, all recovery refs):
+- 3bbce495 2026-09-27 chore(deps): bump erlef/setup-beam from 1.24.0 to 1.24.1
+- e585e053 2026-09-27 chore(deps): bump actions/checkout from 7.0.0 to 7.0.1
+- deb52df4 2026-09-28 chore(main): release crosswake_chimeway 0.1.1
+They look like public companion-repo commits, but that was not checked, so the item is unclassified,
+not obsolete.
+
+Not yet done (gap closure): correct its inventory row (class unclassified, backup = the cr01 tar,
+restore pass), add it to 189-DECISIONS-NEEDED.md, fold SHA256SUMS.cr01 into SHA256SUMS, and re-check
+the other "empty/no repo" rows for a non-empty object store.

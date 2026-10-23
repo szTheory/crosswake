@@ -1,0 +1,3 @@
+<backup-root>/candidate-a53fbef-full.bundle 14320649 9f384a3839063b6335a68e5eed6fc63e6520216c70a824990194d3e12102d8fe
+<backup-root>/candidate-a53fbef.bundle 489481 72e24cdee40718c2fcf1c4ba8a9dc5c2a052348aff3d40b7bc5b5aff808f30ab
+inventory-189 absent

@@ -1,0 +1,12 @@
+G01 hostile temp-HOME config, shell helper and funnel agree (dirty): as expected
+G02 hostile temp-HOME config, Phase 188 helper reads clean and disagrees with the funnel: as expected
+G03 clean tree, shell helper and funnel both clean: as expected
+G04 hostile GIT_CONFIG_GLOBAL config, shell helper and funnel agree (dirty): as expected
+G05 hostile GIT_CONFIG_GLOBAL config, Phase 188 helper disagrees with the funnel: as expected
+G06 inherited GIT_DIR and GIT_TRACE ignored by the shell helper: as expected
+G07 helper lists equal GitPins env and pins: as expected
+G08 drift control: changed pin is reported as drift: as expected
+G09 drift control: removed scrub name is reported as drift: as expected
+G10 funnel binds GitPins env and pins: as expected
+G11 exactly one g() in the phase scripts and the run gate sources it: as expected
+gitpin-compare: controls 11 of 11 as expected

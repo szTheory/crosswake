@@ -1,0 +1,24 @@
+{
+  "base_oid": "2dbde2d9be8adfa36009e20bf894b00a5bb63e87",
+  "base_tree_oid": "81ff2f15a8fea0bd4d54478444a1750038dda49f",
+  "branch": "chore/phase175-matrix-installer-order",
+  "files": {
+    "script/verify_companion_cleanroom.sh": {
+      "local_path": "/private/tmp/crosswake-phase175-matrix-installer-repair.sh",
+      "mode": "100755",
+      "sha256": "8961ed8b66c621d287ab07e65f0b290b30dcb21bb7427709c70f56a0b9203056"
+    },
+    "test/crosswake/proof/phase174_matrix_installer_contract_test.exs": {
+      "local_path": "/private/tmp/crosswake-phase175-matrix-installer-contract-test.exs",
+      "mode": "100644",
+      "sha256": "4b55eab661d5df34cc13e6a468e72d5dcdfe92262ec2abe426b61304cebfed1e"
+    }
+  },
+  "full_tests": 2069,
+  "full_failures": 0,
+  "excluded": 78,
+  "workflow_controls": 98,
+  "inventory_sites": 230,
+  "new_publication_scope": false,
+  "observed_at_utc": "2026-10-11T19:29:40.079485+00:00"
+}

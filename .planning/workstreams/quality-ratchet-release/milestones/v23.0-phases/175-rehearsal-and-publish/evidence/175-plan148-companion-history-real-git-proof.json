@@ -1,0 +1,17 @@
+{
+  "tag": "crosswake_chimeway-v0.1.1",
+  "head_oid_before": "72197e6dd387ae584a04545055ce01659d02d7ba",
+  "head_oid_after": "72197e6dd387ae584a04545055ce01659d02d7ba",
+  "runbook_commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8",
+  "shallow_commit_count": 1,
+  "shallow_ancestry_exit": 2,
+  "full_commit_count": 3825,
+  "full_ancestry_exit": 0,
+  "head_unchanged": true,
+  "only_local_read_only_remote": "existing tracked clone",
+  "external_provider_operations": 0,
+  "release_guard_changed": false,
+  "before_output_sha256": "e8d2ae6f6f8035e008ec84fd3302b29c075caf0bdf09cdbb5d7703f7784b6aca",
+  "after_output_sha256": "08039f02fd96fcd465ca9017fd1a121163198a97f4681f9ee7b0e8f014d869b5",
+  "observed_at_utc": "2026-10-11T18:19:36.649086+00:00"
+}

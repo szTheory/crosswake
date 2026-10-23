@@ -1,0 +1,16 @@
+S01 one clean file: as expected
+S02 empty directory refused: as expected
+S10 two files counted as files: as expected
+S03 directory with only a symlink: as expected
+S04 list entry that is a symlink: as expected
+S05 regular file next to a symlink: as expected
+S06 missing entry: as expected
+S07 empty list file: as expected
+S08 blank-only list file: as expected
+S09 planted hit reported and redacted: as expected
+S11 nested empty folders only: as expected
+S12 terminated scan exits 2 and leaves no scratch: as expected
+S13 parallel scans identical: as expected
+S14 fifo refused: as expected
+S15 negative control 188 original passes empty directory: as expected
+selftest-scan: controls 15 of 15 as expected

@@ -1,0 +1,28 @@
+{
+  "operation": "align_security_snapshot_with_patched_lock",
+  "events": [
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/trees",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/commits",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/refs/heads/fix/phase175-policy-read-credential",
+      "attempted": true,
+      "completed": true
+    }
+  ],
+  "head_oid": "cee445e8cbc6d91828f9ae8b28aa4b2c08d2f405",
+  "tree_oid": "151c9e01262ce290ba13c20cc689ecc0998ea76f",
+  "status": "updated"
+}

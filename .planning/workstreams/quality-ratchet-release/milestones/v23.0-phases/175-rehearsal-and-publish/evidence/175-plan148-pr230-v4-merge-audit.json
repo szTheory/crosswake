@@ -1,0 +1,21 @@
+{
+  "pr": 230,
+  "head_oid": "fbde4abddab81e4d7604cf76ebfff5ef7b2ab1f7",
+  "base_oid": "dba494dce54ff355cb75602999e33b8c7c6ddcb1",
+  "tree_oid": "ae243b04522e6ca733fd391b4295629ab095ec64",
+  "merge_oid": "354a1c05d413e6718ea3fa3ae156ad85e8e08719",
+  "parents": [
+    "dba494dce54ff355cb75602999e33b8c7c6ddcb1"
+  ],
+  "merge_type": "protected_squash",
+  "required_ci_run_id": 38150513840,
+  "ci_passed": 49,
+  "local_tests": 2063,
+  "local_failures": 0,
+  "public_peer_comparison": "PASS5actualpublishedrows",
+  "actual_android_lint": "PASS3generatedbuilds",
+  "admin_bypass": false,
+  "merge_attempts": 1,
+  "publication_claim": false,
+  "observed_at_utc": "2026-10-11T15:42:22.154679+00:00"
+}

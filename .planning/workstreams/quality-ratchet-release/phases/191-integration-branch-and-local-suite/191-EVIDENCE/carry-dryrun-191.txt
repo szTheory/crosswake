@@ -1,0 +1,22 @@
+base_rev 2faf15a255f644c869d321508c4d3f3007572138
+delta_added 2474
+delta_modified 13
+delta_deleted 141
+excluded 46
+bucket v23.0 1781
+bucket v24.0 189
+bucket v25.0 258
+bucket v26.0 177
+bucket v27.0 223
+transformed 244
+moved_untransformed 120
+moved_transformed 4
+same_path_identical 1767
+same_path_identical_with_pattern 358
+mode_only 0
+already_landed 0
+rules_unused 0
+unmatched 0
+ignored_not_excluded 0
+symlinks 0
+result pass

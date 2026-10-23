@@ -1,0 +1,22 @@
+{
+  "run_id": 38129903390,
+  "merge_oid": "668e0fbe93c73afcdf79de90e64bbb5fd8090386",
+  "publishers": {
+    "hex": "success",
+    "ios": "success",
+    "maven": "success"
+  },
+  "native_clean_rooms": {
+    "ios": {
+      "job_id": 114443737090,
+      "failure": "swift build invoked in generated Xcode application directory; Package.swift absent"
+    },
+    "android": {
+      "job_id": 114443737059,
+      "failure": "archive-only shell generation outside dependency host; Jason.encode_to_iodata!/2 unavailable"
+    }
+  },
+  "exact_public_skipped": true,
+  "complete": false,
+  "retry_performed": false
+}

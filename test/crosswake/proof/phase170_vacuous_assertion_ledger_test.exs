@@ -25,8 +25,10 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   # under test — a contract cannot silently drift when the assertion re-reads the same file it
   # is checking. These are the numbers the script ACTUALLY produced against this tree on
   # 2026-09-16 (Task 2), never the numbers this plan predicted going in.
-  @audited_site_count 230
-  @shape_counts %{"assert_all" => 48, "assert_any" => 134, "refute_any" => 48, "refute_all" => 0}
+  # Phase 180 (2026-10-15) added 8 sites in the twin runner tests: 7 guarded or pinned in place
+  # and 1 manual override for the SHA-pinned G1 negative control (see @manual_overrides).
+  @audited_site_count 243
+  @shape_counts %{"assert_all" => 57, "assert_any" => 135, "refute_any" => 51, "refute_all" => 0}
   # Plan 170-02 Task 2 regenerated this after inserting guards at every needs-fix row: 8 of the
   # 60 rows were reclassified from needs-fix to safe-cardinality-pinned via manual override after
   # real test execution proved their collections are permanently empty by design (positive-path
@@ -36,10 +38,10 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   # `needs-fix` is intentionally absent: `Enum.frequencies_by/2` never emits a key for zero
   # occurrences, and the committed ledger now has zero `needs-fix` rows (VAC-02 complete).
   @bucket_counts %{
-    "safe-by-construction" => 134,
+    "safe-by-construction" => 135,
     "safe-compile-time-literal" => 4,
-    "safe-cardinality-pinned" => 32,
-    "safe-guarded" => 60
+    "safe-cardinality-pinned" => 41,
+    "safe-guarded" => 63
   }
 
   describe "Task 1: a clean run against the committed ledger" do
@@ -444,9 +446,8 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
       # Raw grep has no notion of a heredoc fixture string — it counts source TEXT, including the
       # flagged-shape occurrences quoted inside this very test file's own fixture
       # sources (the adjacency/encoding-edge tests above). The scanner's strip_heredocs/1
-      # correctly excludes them, which is exactly why the committed count (220) is 6 LOWER than
-      # a naive `grep -rnE 'assert Enum\\.(all\\?|any\\?)' test | wc -l` (179) plus
-      # `grep -rnE 'refute Enum\\.any\\?' test | wc -l` (47) = 226. Named here per Task 2's
+      # correctly excludes them, which is exactly why the committed count is 6 LOWER than
+      # a naive grep over both assertion shapes. Named here per Task 2's
       # instruction that any delta be reconciled by naming the specific excluded sites, not
       # absorbed silently.
       {assert_output, 0} =
@@ -477,6 +478,28 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
 
       assert length(fixture_only_lines) == 6,
              "expected exactly 6 raw grep matches inside this file's own fixture heredocs, got: #{inspect(fixture_only_lines)}"
+    end
+  end
+
+  describe "D-12 locale independence" do
+    # Under the C locale the stdout device is already latin1 when writing to a pipe, so a
+    # C-only check cannot see a missing latin1 switch. A UTF-8 locale is where the bug shows
+    # (mojibake), so the snapshot must equal the committed ledger bytes in both.
+    for locale <- ["C", "C.UTF-8"] do
+      test "the committed-scope snapshot equals the committed ledger bytes under #{locale}" do
+        committed = @ledger |> File.read!() |> JSON.decode!()
+
+        {output, exit_code} =
+          System.cmd(
+            "elixir",
+            [@script, "--root", @repo_root, "--scope", committed["scope"], "--emit-snapshot"],
+            env: [{"LC_ALL", unquote(locale)}, {"LANG", unquote(locale)}],
+            cd: @repo_root
+          )
+
+        assert exit_code == 0
+        assert output == File.read!(@ledger)
+      end
     end
   end
 

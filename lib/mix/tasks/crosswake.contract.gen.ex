@@ -491,7 +491,7 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
     |------|---------|
     | `bridge_protocol_version` | `#{bridge_vsn}` |
     | `native_runtime_version` (minimum floor) | `1.0.0` |
-    | `manifest_schema_version` | `1.1.0` |
+    | `manifest_schema_version` | `#{Crosswake.Manifest.Types.manifest_schema_version()}` |
 
     The authoritative source is `Crosswake.Bridge.Contract.version/0` (`lib/crosswake/bridge/contract.ex`).
     Do not hand-edit this snippet — run `mix crosswake.contract.gen` to regenerate.

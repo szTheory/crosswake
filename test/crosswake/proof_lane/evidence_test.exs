@@ -68,6 +68,133 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     end
   end
 
+  test "an all-zero commit reference of 40 or 64 zeros is rejected with PL-EVIDENCE-COMMIT" do
+    refs = ["git-" <> String.duplicate("0", 40), "git-" <> String.duplicate("0", 64)]
+    assert length(refs) == 2
+
+    for ref <- refs do
+      candidate = Map.put(@valid, :commit_ref, ref)
+      assert {:error, error} = Evidence.build(candidate)
+      assert error.rule_id == "PL-EVIDENCE-COMMIT"
+
+      with_destination(fn destination ->
+        assert {:error, promoted} = Evidence.promote(candidate, destination)
+        assert promoted.rule_id == "PL-EVIDENCE-COMMIT"
+        refute File.exists?(destination)
+      end)
+    end
+
+    near_zero = "git-" <> String.duplicate("0", 39) <> "1"
+    assert byte_size(near_zero) == 44
+    assert {:ok, _} = Evidence.build(Map.put(@valid, :commit_ref, near_zero))
+  end
+
+  test "near-miss provenance sentinels and an unknown schema_version are rejected" do
+    cases = [
+      {:commit_ref, "Unknown", "PL-EVIDENCE-COMMIT"},
+      {:commit_ref, "git-UNKNOWN", "PL-EVIDENCE-COMMIT"},
+      {:commit_ref, "git-unknown ", "PL-EVIDENCE-COMMIT"},
+      {:commit_ref, "git-", "PL-EVIDENCE-COMMIT"},
+      {:commit_ref, "", "PL-EVIDENCE-COMMIT"},
+      {:commit_ref, nil, "PL-EVIDENCE-COMMIT"},
+      {:crosswake_version, "Unknown", "PL-EVIDENCE-VERSION"},
+      {:crosswake_version, "unknown ", "PL-EVIDENCE-VERSION"},
+      {:template_version, "UNKNOWN", "PL-EVIDENCE-VERSION"},
+      {:schema_version, "unknown", "PL-EVIDENCE-VERSION"}
+    ]
+
+    assert length(cases) == 10
+
+    for {field, value, rule_id} <- cases do
+      assert {:error, error} = Evidence.build(Map.put(@valid, field, value))
+      assert error.rule_id == rule_id
+    end
+  end
+
+  test "the exact provenance sentinels are accepted for advisory evidence and survive promote and check" do
+    sentinels = %{
+      commit_ref: "git-unknown",
+      crosswake_version: "unknown",
+      template_version: "unknown"
+    }
+
+    assert map_size(sentinels) == 3
+    candidate = Map.merge(@valid, sentinels)
+    assert {:ok, _} = Evidence.build(candidate)
+
+    for {field, value} <- sentinels do
+      assert {:ok, _} = Evidence.build(Map.put(@valid, field, value))
+    end
+
+    with_destination(fn destination ->
+      assert :ok = Evidence.promote(candidate, destination)
+      assert :ok = Evidence.check(destination)
+      retained = File.read!(Path.join(destination, "proof-lane-evidence.json"))
+      assert retained =~ "git-unknown"
+      assert retained =~ ~s("crosswake_version":"unknown")
+      assert retained =~ ~s("template_version":"unknown")
+    end)
+  end
+
+  test "provenance_known? is false when any provenance field is a sentinel" do
+    assert Evidence.provenance_known?(@valid)
+
+    sentinels = [
+      commit_ref: "git-unknown",
+      crosswake_version: "unknown",
+      template_version: "unknown"
+    ]
+
+    assert length(sentinels) == 3
+
+    for {field, value} <- sentinels do
+      refute Evidence.provenance_known?(Map.put(@valid, field, value))
+    end
+
+    refute Evidence.provenance_known?(%{})
+  end
+
+  test "physical iPhone evidence carrying a provenance sentinel is rejected with PL-EVIDENCE-PHYSICAL" do
+    sentinels = [
+      commit_ref: "git-unknown",
+      crosswake_version: "unknown",
+      template_version: "unknown"
+    ]
+
+    assert length(sentinels) == 3
+
+    for {field, value} <- sentinels do
+      assert {:error, error} = Evidence.build(Map.put(physical_candidate(), field, value))
+      assert error.rule_id == "PL-EVIDENCE-PHYSICAL"
+    end
+  end
+
+  test "promotion to the physical destination refuses sentinel evidence before any hook runs" do
+    with_stage(fn root ->
+      destination = Path.join(root, "physical_iphone")
+      sentinel = Map.put(@valid, :commit_ref, "git-unknown")
+      assert {:error, error} = Evidence.promote(sentinel, destination)
+      assert error.rule_id == "PL-EVIDENCE-PHYSICAL"
+      refute File.exists?(destination)
+    end)
+
+    with_stage(fn root ->
+      destination = Path.join(root, "physical_iphone")
+      assert {:ok, evidence} = Evidence.build(physical_candidate())
+      skipped = %{evidence | commit_ref: "git-unknown", approved_hashes: []}
+
+      hook = fn ->
+        send(self(), :hook_ran)
+        :ok
+      end
+
+      assert {:error, error} = Evidence.promote(skipped, destination, before_promote: hook)
+      assert error.rule_id == "PL-EVIDENCE-PHYSICAL"
+      refute_received :hook_ran
+      refute File.exists?(destination)
+    end)
+  end
+
   test "accepts the six closed scoped-replay assertion identifiers without expanding the artifact schema" do
     assertions =
       ~w(scope_partition lifecycle_fence per_event_reauthorization atomic_idempotency safe_observation disablement)

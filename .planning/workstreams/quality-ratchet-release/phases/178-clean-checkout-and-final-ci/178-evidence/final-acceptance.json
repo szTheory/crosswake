@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "source": {
+    "commit": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+    "tree": "27f4073039b4dd976492127549603a76ce22499b"
+  },
+  "candidateState": "open-unmerged",
+  "hosted": {
+    "runId": 38322827152,
+    "attempt": 1,
+    "jobCount": 49,
+    "checkCount": 49,
+    "requiredJobCount": 48,
+    "advisoryJobCount": 1,
+    "governedCheckoutCount": 46,
+    "headProofCount": 1
+  },
+  "local": {
+    "command": "script/verify_repository.sh --all",
+    "stageCount": 9,
+    "executedLogCount": 8
+  },
+  "policy": {
+    "requiredContextCount": 1,
+    "effectiveRuleCount": 0,
+    "rulesetEvidence": "successful-empty"
+  },
+  "requirements": {
+    "MAINT_07": "passed",
+    "MAINT_08": "passed"
+  },
+  "cause": "none",
+  "nextAction": "Submit this evidence to the phase verifier; the candidate remains open and unmerged."
+}

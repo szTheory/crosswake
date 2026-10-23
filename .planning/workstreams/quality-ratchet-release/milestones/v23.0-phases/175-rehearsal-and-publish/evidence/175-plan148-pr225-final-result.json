@@ -1,0 +1,155 @@
+{
+  "stage": "pre_merge",
+  "verdict": "PASS",
+  "identity": {
+    "leg_run_id": 38125042713,
+    "operation": "linked_release",
+    "receipt_digest": "3748b0284ed7dca64f76020d918f8ff351d2c29a037f0a8bf9d7b71081050279"
+  },
+  "candidate": {
+    "base_oid": "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+    "head_oid": "d88192a898961620235f7af1da78b978f83e05ab",
+    "merge_oid": null,
+    "package": "crosswake",
+    "pr": 225,
+    "tree_oid": "6ebd397c3b45b12900ddafcd76115e15074f3420",
+    "version": "0.2.9"
+  },
+  "authorization": {
+    "candidate_head": "d88192a898961620235f7af1da78b978f83e05ab",
+    "candidate_package": "crosswake",
+    "leg_run_id": 38125042713,
+    "operation": "linked_release",
+    "receipt_digest": "3748b0284ed7dca64f76020d918f8ff351d2c29a037f0a8bf9d7b71081050279",
+    "stage": "pre_merge",
+    "state": "PENDING",
+    "authorized": false
+  },
+  "envelope_path": "175-plan148-pr225-final-sources/envelope.json",
+  "envelope_sha256": "045a50ad099c5bcad04f7d259a3519029d92737e88e28deffec5ab94fca24458",
+  "sources": {
+    "candidate_readiness": {
+      "base_oid": "4cd5b2d964ccc30545db821c6be8696f2f7906fc",
+      "ci_conclusion": "success",
+      "ci_run_id": 38122826304,
+      "head_oid": "d88192a898961620235f7af1da78b978f83e05ab",
+      "merge_state": "MERGEABLE",
+      "package": "crosswake",
+      "pagination_complete": true,
+      "policy_current": true,
+      "policy_sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+      "receipt_artifact_id": 11697367178,
+      "receipt_artifact_live": true,
+      "receipt_digest": "3748b0284ed7dca64f76020d918f8ff351d2c29a037f0a8bf9d7b71081050279",
+      "required_check_ids": [
+        "Crosswake CI"
+      ],
+      "required_checks_complete": true,
+      "tree_oid": "6ebd397c3b45b12900ddafcd76115e15074f3420"
+    },
+    "leg_run": {
+      "conclusion": "success",
+      "head_oid": "d88192a898961620235f7af1da78b978f83e05ab",
+      "run_id": 38125042713
+    },
+    "protected_merge": {
+      "merge_ready": true
+    },
+    "registry_response": {
+      "package": "crosswake",
+      "parsed": {
+        "configs": {
+          "erlang.mk": "dep_crosswake = hex 0.2.5",
+          "mix.exs": "{:crosswake, \"~> 0.2.5\"}",
+          "rebar.config": "{crosswake, \"0.2.5\"}"
+        },
+        "docs_html_url": "https://crosswake.hexdocs.pm/",
+        "downloads": {
+          "all": 659,
+          "day": 2,
+          "recent": 529,
+          "week": 8
+        },
+        "html_url": "https://hex.pm/packages/crosswake",
+        "inserted_at": "2026-05-29T10:56:25.548083Z",
+        "latest_stable_version": "0.2.5",
+        "latest_version": "0.2.5",
+        "meta": {
+          "description": "Route policy and runtime contracts for Phoenix apps that go mobile.",
+          "licenses": [
+            "Apache-2.0"
+          ],
+          "links": {
+            "Changelog": "https://github.com/szTheory/crosswake/blob/main/CHANGELOG.md",
+            "Documentation": "https://hexdocs.pm/crosswake",
+            "GitHub": "https://github.com/szTheory/crosswake"
+          },
+          "maintainers": []
+        },
+        "name": "crosswake",
+        "releases": [
+          {
+            "has_docs": true,
+            "inserted_at": "2026-09-25T01:53:13.437777Z",
+            "url": "https://hex.pm/api/packages/crosswake/releases/0.2.5",
+            "version": "0.2.5"
+          },
+          {
+            "has_docs": true,
+            "inserted_at": "2026-09-24T17:46:10.200680Z",
+            "url": "https://hex.pm/api/packages/crosswake/releases/0.2.4",
+            "version": "0.2.4"
+          },
+          {
+            "has_docs": true,
+            "inserted_at": "2026-09-23T17:59:06.177582Z",
+            "url": "https://hex.pm/api/packages/crosswake/releases/0.2.3",
+            "version": "0.2.3"
+          },
+          {
+            "has_docs": true,
+            "inserted_at": "2026-09-14T03:52:13.592731Z",
+            "url": "https://hex.pm/api/packages/crosswake/releases/0.2.1",
+            "version": "0.2.1"
+          },
+          {
+            "has_docs": true,
+            "inserted_at": "2026-07-03T17:46:30.828626Z",
+            "url": "https://hex.pm/api/packages/crosswake/releases/0.2.0",
+            "version": "0.2.0"
+          },
+          {
+            "has_docs": true,
+            "inserted_at": "2026-06-17T15:33:52.013416Z",
+            "url": "https://hex.pm/api/packages/crosswake/releases/0.1.2",
+            "version": "0.1.2"
+          },
+          {
+            "has_docs": true,
+            "inserted_at": "2026-05-29T10:56:25.556500Z",
+            "url": "https://hex.pm/api/packages/crosswake/releases/0.1.0",
+            "version": "0.1.0"
+          }
+        ],
+        "repository": "hexpm",
+        "retirements": {},
+        "security_advisories": [],
+        "updated_at": "2026-09-25T01:53:14.388587Z",
+        "url": "https://hex.pm/api/packages/crosswake"
+      },
+      "version": "0.2.9"
+    },
+    "response_row": {
+      "candidate_ref": "d88192a898961620235f7af1da78b978f83e05ab",
+      "package": "crosswake",
+      "run_id": 38125042713,
+      "version": "0.2.9"
+    },
+    "runbook_ancestry": {
+      "base_is_ancestor": true,
+      "head_is_ancestor": true,
+      "merge_is_ancestor": false,
+      "runbook_commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
+    }
+  }
+}

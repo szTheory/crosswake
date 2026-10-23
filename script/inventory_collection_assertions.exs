@@ -83,12 +83,21 @@ defmodule Crosswake.CollectionAssertionInventory do
 
       Keyword.get(opts, :emit_snapshot, false) ->
         scope = effective_scope(Keyword.get(opts, :scope), ledger_path)
-        root |> rows(scope) |> render_snapshot(scope) |> IO.write()
+        root |> rows(scope) |> render_snapshot(scope) |> emit_bytes()
         0
 
       true ->
         check(root, Keyword.get(opts, :scope), ledger_path)
     end
+  end
+
+  # D-12: write the JSON as raw bytes so the output does not depend on the locale. In a UTF-8
+  # locale the stdout device would re-encode the already-UTF-8 binary (mojibake); in the C locale
+  # IO.write escapes non-ASCII. Switching the device to latin1 passes the bytes through unchanged,
+  # and IO.binwrite then writes them as-is in every locale.
+  defp emit_bytes(data) do
+    :ok = :io.setopts(:standard_io, encoding: :latin1)
+    IO.binwrite(data)
   end
 
   # `--emit-remediation`: projects the CURRENT committed ledger's `needs-fix` rows into the
@@ -104,7 +113,7 @@ defmodule Crosswake.CollectionAssertionInventory do
     |> Enum.filter(&(&1["bucket"] == "needs-fix"))
     |> Enum.sort_by(&{&1["display"], &1["key"]})
     |> render_remediation(frozen_at(root))
-    |> IO.write()
+    |> emit_bytes()
 
     0
   end
@@ -444,6 +453,10 @@ defmodule Crosswake.CollectionAssertionInventory do
   # The `# file:line` comment above each entry is retained purely for human navigation — it plays
   # no role in the lookup.
   @manual_overrides %{
+    # test/crosswake/proof/phase180_twin_feasibility_test.exs:44
+    "sha256:af020bc44efa8111" =>
+      {"safe-cardinality-pinned",
+       "the enclosing test is the G1 negative control of the SHA-pinned Phase 180 feasibility gate (\"G1 control: validator accepts a known capability without a capabilities error\"): `Validator.validate/2` on a route declaring only the known capability \"share\" is asserted to return no capabilities error, by design. The paired G1 gate tests in the same file assert that the host audio command validates cleanly on an offline_island route and that an unknown capability yields exactly one capabilities error (`[error] = validate_with(...)`), so the validator is shown to report the error when it exists."},
     # test/mix/tasks/crosswake.proof_lane.physical_iphone_test.exs:92
     "sha256:cce3a74c3adbbdca" =>
       {"safe-cardinality-pinned",

@@ -1,0 +1,56 @@
+{
+  "schema": "crosswake-plan122-subtree-progress-shape/v1",
+  "source_commit": "998742856a37a97ae7247f6c532f9c154ea20885",
+  "prefix": "packages/crosswake-shell-core-ios",
+  "command": "git subtree split --prefix=packages/crosswake-shell-core-ios 998742856a37a97ae7247f6c532f9c154ea20885",
+  "environment": {
+    "git_version": "2.41.0",
+    "network_access": false,
+    "remote_git_operations": 0,
+    "temporary_clone_removed": true
+  },
+  "reproduction": {
+    "exit_status": 0,
+    "stdout_split_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+    "expected_split_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+    "stderr_bytes": 92883,
+    "progress_records": 3804,
+    "malformed_records": 0,
+    "trailing_partial_record": false,
+    "parser_bounds_exceeded": false,
+    "all_records_follow_source_counter_transitions": true,
+    "rev_list_total": 3804,
+    "first_record_counters": { "n": 1, "m": 3804, "c": 0, "e": 0 },
+    "last_record_counters": { "n": 3804, "m": 3804, "c": 3803, "e": 0 },
+    "top_level_transitions": 3803,
+    "recursive_transitions": 0,
+    "create_count_unchanged": 0,
+    "create_count_advanced": 3803,
+    "transition_errors": 0,
+    "raw_stderr_retained": false
+  },
+  "local_git_subtree_source": {
+    "path": "/Library/Developer/CommandLineTools/usr/libexec/git-core/git-subtree",
+    "progress_format": "revcount/revmax (createcount) [extracount] followed by carriage return",
+    "revmax_source": "Counts the full git rev-list output before the split loop skips commits marked by should_ignore_subtree_split_commit.",
+    "counter_source": "process_split_commit increments revcount for indent 0, increments extracount for recursive calls, and increments createcount only after the progress record when the commit is not already cached.",
+    "safe_classifier_invariants": [
+      "The total M stays fixed and positive; each record has 1 <= N <= M.",
+      "For each next record, either N advances by one and E stays fixed, or N stays fixed and E advances by one.",
+      "C stays fixed or advances by one for each next record.",
+      "A valid stream begins at N=1, C=0, E=0; each complete record ends with carriage return.",
+      "The successful process exit and complete captured stream establish termination; do not require final N=M because revmax includes rows the split loop may skip."
+    ]
+  },
+  "plan121_immutable_artifact_sha256": {
+    ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-121-PLAN.md": "be18daf5bbc2fe5e6091675ed288e4633b3f0887662af8ba185f7752f6324b68",
+    ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-121-PLAN-CHECK.md": "5a6a3294a4c2387112541bcebb53144c2f5864fdbdb3baf84bf9976f53484aa3",
+    ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-121-SUMMARY.md": "fa887d7b2c105b53ee434601276775156dd1ca503688ecbc6318773c229a0074",
+    ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-121-READ-CARD.md": "d87f0e0ede8e147e6d3197fb08b1c92323f340f346b28eeb20df624d3b5a47aa",
+    ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/evidence/175-plan105-62d2ab7ce54ebe587ac21d4151b5ed0f-read-scope.json": "d446c95f74a3949b6f2cffbaccda89d8b154ffb16bc5f66f2866115df13b79d8",
+    ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/evidence/175-plan105-62d2ab7ce54ebe587ac21d4151b5ed0f-read-authorization.json": "a659e516ce256203038b9dfa14fdb9fc1ba2eb3103b5ea8ca1fcf6b85325ff7d",
+    ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/evidence/175-plan105-62d2ab7ce54ebe587ac21d4151b5ed0f-preflight.json": "e82624c098ac7dbf30892fd740ceb951586da5f9a41cdf9cd65afd7680d1cfd1",
+    ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/evidence/175-plan105-62d2ab7ce54ebe587ac21d4151b5ed0f.lifecycle.jsonl": "178cb70e6fb221710b5fce53efc70642de0a3660501ada1b32132728bf1c08eb"
+  },
+  "finding": "The exact pinned local split succeeds and emits a well-formed progress stream. This run ended with N=M, but the local source counts all rev-list rows in M and can skip some rows before progress, so equality is not a valid general completion condition. Preserve only bounded counters and classification; do not retain raw process output. The baseline fingerprints above let Plan122 verify Plan121's terminal artifacts remain unchanged."
+}

@@ -1,0 +1,58 @@
+{
+  "stage": "pre_merge",
+  "operation": "companion_publish",
+  "candidate": {
+    "base_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+    "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+    "merge_oid": null,
+    "package": "crosswake_chimeway",
+    "pr": 115,
+    "tree_oid": "678782a853ceab7a618ace94589eee0df931f080",
+    "version": "0.1.1"
+  },
+  "identity": {
+    "leg_run_id": 38159722705,
+    "operation": "companion_publish",
+    "receipt_digest": "c137d52a21aba4ca64aa95900860ab3de2d956aeb4586d984e84ab40bf5c3f81"
+  },
+  "state": "CONSUMED",
+  "authorized": true,
+  "consumed": true,
+  "core_exact_public": {
+    "run_id": 38155320492,
+    "linked_rollup": "COMPLETE"
+  },
+  "hex_rehearsal_run_id": 38159722705,
+  "evidence": {
+    "path": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/evidence/175-plan148-companion115-premerge-result.json",
+    "verdict": "PASS",
+    "envelope_sha256": "e11042e5a9fcb575fc681b29ea3fd223ed29f4bbb7c4fe02f914e96214a9294a"
+  },
+  "authorization": "publish leg 3 38155320492",
+  "choice_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "authorization_envelope": {
+    "schema_version": 1,
+    "state": "AUTHORIZED",
+    "consumed": false,
+    "authorization_run_id": 38155320492,
+    "authorization": "publish leg 3 38155320492",
+    "leg_run_id": 38159722705,
+    "operation": "companion_publish",
+    "receipt_digest": "c137d52a21aba4ca64aa95900860ab3de2d956aeb4586d984e84ab40bf5c3f81",
+    "package": "crosswake_chimeway",
+    "version": "0.1.1",
+    "pr": 115,
+    "repository": "szTheory/crosswake",
+    "base_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+    "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+    "tree_oid": "678782a853ceab7a618ace94589eee0df931f080",
+    "ci_run_id": 38157939812,
+    "receipt_run_id": 38159836866,
+    "receipt_artifact_id": 11709916042,
+    "policy_sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+    "runbook_commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
+  },
+  "merge_attempted": true,
+  "merge_intent_at_utc": "2026-10-11T17:30:59.996012+00:00",
+  "final_envelope_sha256": "e11042e5a9fcb575fc681b29ea3fd223ed29f4bbb7c4fe02f914e96214a9294a"
+}

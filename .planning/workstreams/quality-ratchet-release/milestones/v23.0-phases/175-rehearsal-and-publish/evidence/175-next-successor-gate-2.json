@@ -1,0 +1,191 @@
+{
+  "authorization_envelope": {
+    "authorization": "publish successor core 36348273033",
+    "authorization_run_id": null,
+    "base_oid": "b5608a3dc0b013d83ac2b25768f1907873739b20",
+    "ci_run_id": 36346477576,
+    "consumed": false,
+    "head_oid": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "leg_run_id": 36348273088,
+    "operation": "linked_release",
+    "package": "crosswake",
+    "policy_sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+    "pr": 215,
+    "receipt_artifact_id": 10941079991,
+    "receipt_digest": "c51181d384661e77cf68935a6496b4c4bdf9e147854889027f64312dd5d6e9ba",
+    "receipt_run_id": 36348696331,
+    "repository": "szTheory/crosswake",
+    "runbook_commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8",
+    "schema_version": 1,
+    "state": "AUTHORIZED",
+    "tree_oid": "0199c0bee29dbcf76bc1a12d241c0ed140a244bd",
+    "version": "0.2.6"
+  },
+  "authorization_prompt": "publish successor core 36348273033",
+  "authorization_response": "publish successor core 36348273033",
+  "candidate": {
+    "base_oid": "b5608a3dc0b013d83ac2b25768f1907873739b20",
+    "head_oid": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "merge_oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+    "package": "crosswake",
+    "pr": 215,
+    "tree_oid": "0199c0bee29dbcf76bc1a12d241c0ed140a244bd",
+    "version": "0.2.6"
+  },
+  "captured_at": "2026-09-27T21:35:43Z",
+  "ci": {
+    "conclusion": "SUCCESS",
+    "head_oid": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "live_check_runs": {
+      "failure": 0,
+      "pending": 0,
+      "skipped": 14,
+      "success": 53,
+      "total": 67
+    },
+    "pagination_complete": true,
+    "policy_sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+    "required_checks_complete": true,
+    "required_context": "Crosswake CI",
+    "required_context_conclusion": "success",
+    "run_id": 36346477576,
+    "status": "completed"
+  },
+  "evidence": {
+    "envelope_sha256": "1ff37d2f7ce06ba017cde8b4c6a1052f043aa800308b54e026719c2d1c151150",
+    "path": "175-next-successor-premerge.json",
+    "verdict": "PASS"
+  },
+  "final_premerge_capture": {
+    "captured_at": "2026-09-27T21:35:43Z",
+    "envelope_sha256": "1ff37d2f7ce06ba017cde8b4c6a1052f043aa800308b54e026719c2d1c151150",
+    "premerge_evidence_sha256": "6d881909f951d560e58aa86dc8fb43244ae0ef158df4788b6870f49d8644f683",
+    "targets_checked_at": "2026-09-27T21:37:01Z",
+    "verdict": "PASS"
+  },
+  "gate": {
+    "attempt_status": "PARTIAL",
+    "authorization": "publish successor core 36348273033",
+    "authorization_run_id": null,
+    "authorized": true,
+    "authorized_at": "2026-09-27T21:22:43Z",
+    "completed_at": "2026-09-27T21:43:22Z",
+    "consumed": true,
+    "consumed_at": "2026-09-27T21:39:47Z",
+    "merge_oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+    "outcome": "PARTIAL",
+    "release_run_id": 36352732061,
+    "state": "CONSUMED"
+  },
+  "merge_attempt": {
+    "admin_bypass": false,
+    "attempt_status": "PARTIAL",
+    "completed_at": "2026-09-27T21:42:47Z",
+    "failed_job": "release: approved-candidate merge guard",
+    "match_head_commit": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "merge_oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+    "operation": "linked_release",
+    "publisher_jobs": {
+      "hex": "skipped",
+      "ios_mirror": "skipped",
+      "maven": "skipped"
+    },
+    "recovery_or_retry_performed": false,
+    "release_run_conclusion": "failure",
+    "release_run_id": 36352732061,
+    "retry_or_recovery_performed": false,
+    "started_at": "2026-09-27T21:39:47Z"
+  },
+  "merge_message_body": "REL17-AUTHORIZATION: {\"authorization\":\"publish successor core 36348273033\",\"authorization_run_id\":null,\"base_oid\":\"b5608a3dc0b013d83ac2b25768f1907873739b20\",\"ci_run_id\":36346477576,\"consumed\":false,\"head_oid\":\"0968fea84dc758c05b9b0161db2f221c9e778c3b\",\"leg_run_id\":36348273088,\"operation\":\"linked_release\",\"package\":\"crosswake\",\"policy_sha256\":\"0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4\",\"pr\":215,\"receipt_artifact_id\":10941079991,\"receipt_digest\":\"c51181d384661e77cf68935a6496b4c4bdf9e147854889027f64312dd5d6e9ba\",\"receipt_run_id\":36348696331,\"repository\":\"szTheory/crosswake\",\"runbook_commit\":\"d3401e516c5e158accf2b8c5629ce6bcf9bd80f8\",\"schema_version\":1,\"state\":\"AUTHORIZED\",\"tree_oid\":\"0199c0bee29dbcf76bc1a12d241c0ed140a244bd\",\"version\":\"0.2.6\"}",
+  "operation": "linked_release",
+  "outcome": "PARTIAL",
+  "policy": {
+    "bypass_actors": [],
+    "complete": true,
+    "required_contexts": [
+      "Crosswake CI"
+    ],
+    "sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+    "strict": true
+  },
+  "post_merge_capture": {
+    "captured_at": "2026-09-27T21:45:47Z",
+    "envelope_sha256": "90ba3aeba2f2698ae8865c1327886fa0a115ac26af8710a267c6062f3c0da0df",
+    "path": "175-next-successor-postmerge.json",
+    "verdict": "PASS"
+  },
+  "publisher_outcome": {
+    "all_three_coordinates_present": false,
+    "hex": "skipped",
+    "ios_mirror": "skipped",
+    "issue": 217,
+    "maven": "skipped"
+  },
+  "receipt": {
+    "artifact_id": 10941079991,
+    "artifact_name": "phase168-candidate-receipt-0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "checks_pass": 13,
+    "digest": "c51181d384661e77cf68935a6496b4c4bdf9e147854889027f64312dd5d6e9ba",
+    "expires_at": "2026-10-11T20:38:10Z",
+    "live": true,
+    "run_id": 36348696331,
+    "state": "READY FOR APPROVAL"
+  },
+  "rehearsals": {
+    "correlation_digest": "e8523fde68919b4d4c79bb7fdce999665e5c7855e420246660d218ea609d972a",
+    "hex": {
+      "artifact_id": 10940919612,
+      "artifact_live": true,
+      "conclusion": "success",
+      "expires_at": "2026-10-11T20:31:18Z",
+      "external_state_changed": false,
+      "head_oid": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+      "last_checked_at": "2026-09-27T21:37:01Z",
+      "run_id": 36348273088,
+      "state": "PASS"
+    },
+    "ios": {
+      "artifact_id": 10941566545,
+      "artifact_live": true,
+      "authorization_result": "PROVEN",
+      "candidate_tag_absent": true,
+      "conclusion": "success",
+      "expires_at": "2026-10-11T20:31:37Z",
+      "external_state_changed": false,
+      "head_oid": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+      "last_checked_at": "2026-09-27T21:37:01Z",
+      "run_id": 36348273033,
+      "state": "PASS"
+    },
+    "maven": {
+      "artifact_id": 10940879675,
+      "artifact_live": true,
+      "conclusion": "success",
+      "deployment_result": "DROP",
+      "expires_at": "2026-10-11T20:32:40Z",
+      "external_state_changed": false,
+      "head_oid": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+      "last_checked_at": "2026-09-27T21:37:01Z",
+      "run_id": 36348273114,
+      "state": "VALIDATED"
+    }
+  },
+  "runbook": {
+    "base": "PASS",
+    "commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8",
+    "head": "PASS"
+  },
+  "schema_version": 1,
+  "stage": "pre_merge",
+  "targets": {
+    "hex_absent": true,
+    "hex_http_status": 404,
+    "hex_response_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f",
+    "ios_response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ios_tag_absent": true,
+    "ios_tag_ref": "v0.2.6",
+    "maven_http_status": 404,
+    "maven_pom_absent": true,
+    "maven_response_sha256": "e791ccfcfee9c0d299d07474d9bfcbfcbebf1181323be601220c8a823062ab99"
+  }
+}

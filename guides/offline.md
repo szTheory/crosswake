@@ -61,6 +61,10 @@ behavior, or silent last-write-wins semantics.
 - typed offline telemetry metadata
 - the explicit cached-route and study-session island posture
 
+The doctor field `offline.status` is `"supported"`, `"incomplete"` or
+`"not_claimed"`; `"not_claimed"` means no route declares offline behavior, and it is
+distinct from the native-shell support posture `not_claimed` in `guides/install.md`.
+
 Doctor support language is generated from the same contract truth as the
 manifest. It does not infer offline support from generic `sync` strings or route
 ordering.
@@ -90,6 +94,21 @@ Generated iOS and Android shell runtime support still depends on:
 Until those native proof hooks pass on the real generated projects, shell support
 stays `verification required` even though the repo-local offline contract itself
 is hermetically proven.
+
+## What the shell does not promise
+
+The iOS shell admits an `offline_island` route as its own presentation, sharing the web
+container with `live_view`. Admission is not an offline guarantee. The shell does not
+promise:
+
+- offline cold start (the shell does not cache or serve island HTML or JavaScript);
+- outbox durability, replay or auth (the island and the backend own these);
+- service workers (host app-bound-domain configuration);
+- data-store survival under storage pressure;
+- generic sync, background sync or native storage.
+
+One offline island is not generic sync, and cached read-only is not local mutation.
+Phase 180 relaunch evidence is its own observation, not a shell guarantee.
 
 ## Boundary Warnings & Rough Edges
 

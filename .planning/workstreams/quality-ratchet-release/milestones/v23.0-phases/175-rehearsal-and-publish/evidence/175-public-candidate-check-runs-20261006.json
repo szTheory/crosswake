@@ -1,0 +1,334 @@
+{
+  "candidate": {
+    "base_sha": "e51698528dc667ef89beb951e4eb1ec91da74981",
+    "head_sha": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+    "pr_number": 219
+  },
+  "failed_check_names": [
+    "Crosswake CI",
+    "ios-mirror-parity-proof"
+  ],
+  "interpretation": {
+    "effect": "planning_evidence_only",
+    "latest_observed_run_is_stale": true,
+    "release_authority": "NONE",
+    "release_readiness": "BLOCKED"
+  },
+  "latest_completion_utc": "2026-09-28T15:09:49Z",
+  "observed_at_utc": "2026-10-06T23:15:43Z",
+  "response": {
+    "all_terminal": true,
+    "check_set_sha256": "a756eed32ed43877ee741724f691c633dc0e1e85c90da8fb14f62ddf11b23a00",
+    "checks": [
+      {
+        "completed_at": "2026-09-28T15:09:49Z",
+        "conclusion": "failure",
+        "name": "Crosswake CI",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:49:38Z",
+        "conclusion": "success",
+        "name": "android-generated-shell-unit",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:49:14Z",
+        "conclusion": "success",
+        "name": "android-package-unit",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:46:57Z",
+        "conclusion": "success",
+        "name": "brand-structural",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:47:13Z",
+        "conclusion": "success",
+        "name": "brand-visual",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:46:16Z",
+        "conclusion": "success",
+        "name": "classify-change",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:46:36Z",
+        "conclusion": "success",
+        "name": "collateral-binaries-guard",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:46:59Z",
+        "conclusion": "success",
+        "name": "documentation-contracts",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:49:16Z",
+        "conclusion": "success",
+        "name": "e2e-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:47:04Z",
+        "conclusion": "success",
+        "name": "guard-01-contract-drift-test",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:46:44Z",
+        "conclusion": "success",
+        "name": "guard-01-e2e-honesty",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:47:24Z",
+        "conclusion": "success",
+        "name": "guard-02-generate-and-diff",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:47:12Z",
+        "conclusion": "success",
+        "name": "guard-02-prod-route-absence",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:54:06Z",
+        "conclusion": "success",
+        "name": "hex-page-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:46:44Z",
+        "conclusion": "failure",
+        "name": "ios-mirror-parity-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:48:07Z",
+        "conclusion": "success",
+        "name": "ios-package-unit",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:48:04Z",
+        "conclusion": "success",
+        "name": "phase10-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:51:17Z",
+        "conclusion": "success",
+        "name": "phase130-companion-engine-absent-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:57:02Z",
+        "conclusion": "success",
+        "name": "phase130-core-hermetic-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:50:38Z",
+        "conclusion": "success",
+        "name": "phase132-companion-engine-absent-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:53:39Z",
+        "conclusion": "success",
+        "name": "phase132-core-hermetic-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:49:12Z",
+        "conclusion": "success",
+        "name": "phase18-elixir-android-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:46:45Z",
+        "conclusion": "success",
+        "name": "phase18-ios-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:47:26Z",
+        "conclusion": "success",
+        "name": "phase23-commerce-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:53:13Z",
+        "conclusion": "success",
+        "name": "phase34-commerce-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:53:54Z",
+        "conclusion": "success",
+        "name": "phase41-gating-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:51:56Z",
+        "conclusion": "success",
+        "name": "phase43-rulestead-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:51:42Z",
+        "conclusion": "success",
+        "name": "phase45-rindle-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:47:38Z",
+        "conclusion": "success",
+        "name": "phase48-provider-adapter-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:47:30Z",
+        "conclusion": "success",
+        "name": "phase5-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:47:38Z",
+        "conclusion": "success",
+        "name": "phase52-operator-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:49:25Z",
+        "conclusion": "success",
+        "name": "phase58-auth-closeout-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:48:53Z",
+        "conclusion": "success",
+        "name": "phase67-android-jvm-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:47:47Z",
+        "conclusion": "success",
+        "name": "phase69-closeout-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:47:37Z",
+        "conclusion": "success",
+        "name": "phase70-subscription-saas-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:47:56Z",
+        "conclusion": "success",
+        "name": "phase71-notification-workflow-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:48:26Z",
+        "conclusion": "success",
+        "name": "phase73-auth-sensitive-admin-workflow-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:47:44Z",
+        "conclusion": "success",
+        "name": "phase74-offline-draft-recovery-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:47:12Z",
+        "conclusion": "success",
+        "name": "phase75-closeout-gate",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:49:11Z",
+        "conclusion": "success",
+        "name": "phase79-android-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:48:10Z",
+        "conclusion": "success",
+        "name": "phase79-ios-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:47:27Z",
+        "conclusion": "success",
+        "name": "phase96-threadline-docs-contract-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:46:27Z",
+        "conclusion": "success",
+        "name": "proof-aggregator-negative-control",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:46:43Z",
+        "conclusion": "success",
+        "name": "proof-dependency-security",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T15:09:43Z",
+        "conclusion": "success",
+        "name": "proof-requires-example-host",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:46:38Z",
+        "conclusion": "success",
+        "name": "release-as-staleness-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:48:14Z",
+        "conclusion": "success",
+        "name": "release-candidate-fixtures",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:54:23Z",
+        "conclusion": "success",
+        "name": "release-candidate-full-proof",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-09-28T14:49:50Z",
+        "conclusion": "success",
+        "name": "route-tour-proof",
+        "status": "completed"
+      }
+    ],
+    "conclusion_counts": {
+      "failure": 2,
+      "success": 47
+    },
+    "returned_count": 49,
+    "total_count": 49
+  },
+  "schema": "crosswake-public-check-run-observation/v1",
+  "sha256": "eccde793e89e4755768a8049f6ad93cf55ff2cc4c61da80e6774f5c791d03579",
+  "source": "https://api.github.com/repos/szTheory/crosswake/commits/696a27a3be1fcd56efe70923dc0ce286a1c41c6d/check-runs?per_page=100",
+  "transport": {
+    "authentication": "none",
+    "authorization_header_sent": false,
+    "method": "GET",
+    "raw_response_retained": false
+  }
+}

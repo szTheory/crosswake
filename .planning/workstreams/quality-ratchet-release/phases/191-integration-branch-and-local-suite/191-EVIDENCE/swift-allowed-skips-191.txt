@@ -1,0 +1,2 @@
+test_G3_gate_generated_activation_session_lacks_host_command
+test_G3_control_exported_request_carrying_command_reaches_delegate

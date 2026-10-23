@@ -1,0 +1,104 @@
+{
+  "observed_at": "2026-09-25T01:59:05Z",
+  "candidate": {
+    "pr": 207,
+    "version": "0.2.5",
+    "state": "OPEN",
+    "draft": false,
+    "mergeable": "MERGEABLE",
+    "merge_state": "CLEAN",
+    "base_oid": "d9ac0e39d7bee33d659f4823b7747d3e1f14a6b7",
+    "head_oid": "11c2b03295ddf1c470340bb3ebaf71fd030e41ae",
+    "tree_oid": "c5aa596736dec12078804c8d7d8e5a9c72747757",
+    "matches_rehearsals": true,
+    "matches_receipt": true,
+    "repairs_in_lineage": true
+  },
+  "ci": {
+    "run_id": 36080344519,
+    "head_oid": "11c2b03295ddf1c470340bb3ebaf71fd030e41ae",
+    "conclusion": "SUCCESS",
+    "check_count": 49,
+    "same_head_success": true
+  },
+  "runbook": {
+    "commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8",
+    "base": "PASS",
+    "head": "PASS"
+  },
+  "receipt": {
+    "ready": true,
+    "state": "READY FOR APPROVAL",
+    "digest": "c0798491c272a58b5fdbf10a993e003fca4b649b59b4b5ad8aa6fd07086de19e",
+    "artifact_id": 10842771650,
+    "artifact_name": "phase168-candidate-receipt-11c2b03295ddf1c470340bb3ebaf71fd030e41ae",
+    "attestation_run_id": 36082522240,
+    "expires_at": "2026-10-09T01:34:46Z",
+    "expired": false,
+    "check_count": 13,
+    "publication": "NONE",
+    "external_state_changed": false
+  },
+  "rehearsal": {
+    "hex_run_id": 36082200994,
+    "hex_package_count": 6,
+    "hex_state": "PASS",
+    "ios_run_id": 36082200744,
+    "ios_state": "PASS",
+    "ios_authorization": "PROVEN",
+    "ios_split_sha": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+    "maven_run_id": 36082200777,
+    "maven_validated_dropped": true,
+    "maven_head_unchanged": true,
+    "external_state_changed": false
+  },
+  "registry": {
+    "hex_absent": false,
+    "hex_http_status": 200,
+    "ios_tag_absent": false,
+    "maven_pom_absent": true,
+    "maven_http_status": 404,
+    "central_portal_state": "NOT OBSERVED",
+    "ios_tag_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8",
+    "ios_main_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8"
+  },
+  "irreversibility_costs": {
+    "hex": "A published package version cannot be removed or replaced; retirement is a forward-only advisory and the version remains resolvable.",
+    "ios": "A later tag correction changes new SwiftPM resolutions only; consumers who already resolved the old commit keep it until they explicitly re-resolve.",
+    "maven": "A coordinate is permanent as soon as Central reports PUBLISHED; it cannot be deleted, retired, or overwritten."
+  },
+  "gate2": {
+    "state": "AUTHORIZED",
+    "authorized": true,
+    "authorization": {
+      "response": "publish successor core 36082200744",
+      "pr": 207,
+      "version": "0.2.5",
+      "base_oid": "d9ac0e39d7bee33d659f4823b7747d3e1f14a6b7",
+      "head_oid": "11c2b03295ddf1c470340bb3ebaf71fd030e41ae",
+      "tree_oid": "c5aa596736dec12078804c8d7d8e5a9c72747757",
+      "receipt_digest": "c0798491c272a58b5fdbf10a993e003fca4b649b59b4b5ad8aa6fd07086de19e",
+      "receipt_artifact_id": 10842771650,
+      "attestation_run_id": 36082522240,
+      "ci_run_id": 36080344519,
+      "hex_rehearsal_run_id": 36082200994,
+      "ios_rehearsal_run_id": 36082200744,
+      "maven_rehearsal_run_id": 36082200777
+    },
+    "decision_presented": true,
+    "consumed": true,
+    "consumed_by_merge_oid": "405acd0f2d5476dc81f1ad1252a1661fa235c735",
+    "expected_response": "publish successor core 36082200744",
+    "outcome": "PARTIAL",
+    "ordinary_run_id": 36083361945,
+    "retry_or_recovery_performed": false
+  },
+  "prior_0_2_4": {
+    "state": "PARTIAL",
+    "hex_present": true,
+    "ios_tag_absent": true,
+    "maven_pom_absent": true,
+    "authorization_consumed": true,
+    "reusable": false
+  }
+}

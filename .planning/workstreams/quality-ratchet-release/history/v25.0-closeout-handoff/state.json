@@ -1,0 +1,38 @@
+{
+  "contract": "1.0.0",
+  "flavor": "core",
+  "milestone": "v25.0 — iOS Host Setup & Digital Twin Proof",
+  "phases": [
+    {
+      "number": "179",
+      "name": "iOS Host Setup Without Hand Patches",
+      "status": "complete"
+    },
+    {
+      "number": "180",
+      "name": "Bounded Digital Twin Demonstration",
+      "status": "complete"
+    },
+    {
+      "number": "181",
+      "name": "Core Host-Command Seam",
+      "status": "complete"
+    },
+    {
+      "number": "182",
+      "name": "Loopback Origin for Local iOS Host",
+      "status": "complete"
+    },
+    {
+      "number": "183",
+      "name": "Close gap: twin source binding fails closed on uncommitted code",
+      "status": "complete"
+    }
+  ],
+  "next": {
+    "command": "/gsd-new-milestone",
+    "label": "Start a new milestone",
+    "reason": "All phases complete — start a new milestone"
+  },
+  "updated_at": "2026-10-15T13:59:30.342Z"
+}

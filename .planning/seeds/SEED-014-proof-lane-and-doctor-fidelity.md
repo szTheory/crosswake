@@ -86,6 +86,11 @@ for one device session.
 > pipeline is already known-good rather than in the one being proved. See
 > `174-FID-01-DISPOSITION.md` for the full record.
 
+> **Disposition — 2026-10-16, quality-ratchet-release Phase 187, `defer-with-reason`.** The
+> Phase 174 trigger has two readings (pipeline published, pipeline proven); Phase 187 defers under
+> both. The current vocabulary is `@schema_version 2` with 19 ids (the 20 above is stale).
+> See `187-DEFERRALS.md` for the evidence and reopen triggers.
+
 ## CW-REQ-B — the runner cannot say "ran, and found a real defect" (high)
 
 `lib/mix/tasks/crosswake.proof_lane.physical_iphone.ex` calls `System.halt(2)` on every failure path,
@@ -148,6 +153,9 @@ visual opinions.
 `RouteDenialPresentation` value, not using `RouteUnavailableView` at all — i.e. they declined the
 shipped UI entirely. Relates to SEED-005 (themable web control equivalents).
 
+> **Disposition — 2026-10-16, quality-ratchet-release Phase 187, `defer-with-reason`.** See
+> `187-DEFERRALS.md` for the reason and reopen triggers.
+
 ## CW-REQ-E — `unmanaged_routes` doctor finding drops its own path list (medium)
 
 `Crosswake.Policy.Compiler.build_warnings/3` builds `Warning.unmanaged_routes(paths, source_module)`
@@ -181,6 +189,9 @@ repo's fail-closed posture.
 
 *Docs item in the same area:* state explicitly that `--router` accepts any module exporting
 `__routes__/0`, not only a `Phoenix.Router`.
+
+*2026-10-16, Phase 187:* the claim above that `:cached_read_only` without a `cache_contract` is
+"already invalid" is incorrect in the current tree; see the known-gaps section of `187-DEFERRALS.md`.
 
 ---
 

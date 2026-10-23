@@ -1,0 +1,326 @@
+{
+  "candidate": "/private/tmp/crosswake-phase179-impl",
+  "head": "96e5a63efab657f89f3ac84d5b1d84ff5da5d822",
+  "tree": "0514b6244ec814c1d0701d580b04651f70f57019",
+  "base_head": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+  "changed_files": 34,
+  "exported_files": 45,
+  "boundary": "Immutable Git-source evidence; no product code executed or installed in protected recovery checkout. Verify live candidate and exported bytes separately.",
+  "files": [
+    {
+      "path": "guides/capability_map.md",
+      "snapshot": "candidate-source/guides/capability_map.md",
+      "git_blob": "b16c9bf85a9588e25216c6159d31b390c33c4656",
+      "sha256": "8247b8182e6f538248239a38ed985b166e0b4b7bccfd1f0bd339b66211cb52e2",
+      "bytes": 17455
+    },
+    {
+      "path": "guides/native_shell.md",
+      "snapshot": "candidate-source/guides/native_shell.md",
+      "git_blob": "7a7fc99612fbd81a6cc8ef81eb749dfbf86f8d78",
+      "sha256": "9fe1400fbb3556c27407d40c4b85f0bab2f230d470a7cd8b3d3a0ecfa5530043",
+      "bytes": 12873
+    },
+    {
+      "path": "guides/native_shell_upgrade.md",
+      "snapshot": "candidate-source/guides/native_shell_upgrade.md",
+      "git_blob": "73b5144ada4639a6eec520978ae59ff134ec2b1b",
+      "sha256": "728c125c02f583f0e0e78a4b38d81bbff5670be73a7cbc409afabffc4d7d4e08",
+      "bytes": 6148
+    },
+    {
+      "path": "guides/support_matrix.md",
+      "snapshot": "candidate-source/guides/support_matrix.md",
+      "git_blob": "bd0e2217f6a977a8fbf9845f8de9fe647d0e2b12",
+      "sha256": "76f6bd842f80c526165df4954f941a11d48563c1a13702d7c59a67a6c16aab6a",
+      "bytes": 46998
+    },
+    {
+      "path": "lib/crosswake/capability_map/renderer.ex",
+      "snapshot": "candidate-source/lib/crosswake/capability_map/renderer.ex",
+      "git_blob": "5f4795aa395d713675371d744e7ac5cbbf55680e",
+      "sha256": "5f346ecd26ce13efb0908da510140ac2fc752800ce824285858926ae30b64773",
+      "bytes": 10965
+    },
+    {
+      "path": "lib/crosswake/manifest/builder.ex",
+      "snapshot": "candidate-source/lib/crosswake/manifest/builder.ex",
+      "git_blob": "473f61baf75bf960a91db58000515919e44dd4af",
+      "sha256": "c3b15064757562e0d5fb3e16335b96fd08ff16a12a84f049457b0b29684aac24",
+      "bytes": 20292
+    },
+    {
+      "path": "lib/crosswake/manifest/manifest.ex",
+      "snapshot": "candidate-source/lib/crosswake/manifest/manifest.ex",
+      "git_blob": "f532c6c63f7aa22125439cff152762f4b02cf481",
+      "sha256": "5baa178c69c22fd792d673bb5c866cd91859b571e59f0d604c93edfa8833b80c",
+      "bytes": 1830
+    },
+    {
+      "path": "lib/crosswake/manifest/serializer.ex",
+      "snapshot": "candidate-source/lib/crosswake/manifest/serializer.ex",
+      "git_blob": "546744da41eac5bee690a90a587d20a193cb6b51",
+      "sha256": "5a154df3e1716d76e769252f73d70dffaf9f30051c9f2e849e689a439a7f10cf",
+      "bytes": 1384
+    },
+    {
+      "path": "lib/crosswake/manifest/validator.ex",
+      "snapshot": "candidate-source/lib/crosswake/manifest/validator.ex",
+      "git_blob": "7f1f84473e6327e8748189129be68e7c24bdaa2a",
+      "sha256": "1171c8a5e2326e9244ad2e8a13f95bbf14c286112d3af0e37fa36ff86ab907c9",
+      "bytes": 28704
+    },
+    {
+      "path": "lib/crosswake/proof_lane/config.ex",
+      "snapshot": "candidate-source/lib/crosswake/proof_lane/config.ex",
+      "git_blob": "a705e446fe5132ccc99ea067ee4d759d478998b7",
+      "sha256": "f1416d34384813627f466c38977cbb1cbbe35438c3b7e5f7e3793d9f1b23ca1b",
+      "bytes": 5124
+    },
+    {
+      "path": "lib/crosswake/proof_lane/generator.ex",
+      "snapshot": "candidate-source/lib/crosswake/proof_lane/generator.ex",
+      "git_blob": "bb10a52488d45ae38d22ddf8dd8c22bf2f7b4866",
+      "sha256": "59b48a123a6d8eec121da3d2e3f06e7f4fc538921b1413f3f2e6964ac20b658b",
+      "bytes": 24114
+    },
+    {
+      "path": "lib/crosswake/proof_lane/generator_fs.ex",
+      "snapshot": "candidate-source/lib/crosswake/proof_lane/generator_fs.ex",
+      "git_blob": "7acfc5de70fcb37c850247bda518ef4bd42abcac",
+      "sha256": "4b6ed2c951a77ff116fe347138710f8d59eb6cd1cb509249944c50e9fcfb89d0",
+      "bytes": 7968
+    },
+    {
+      "path": "lib/crosswake/shell/activation.ex",
+      "snapshot": "candidate-source/lib/crosswake/shell/activation.ex",
+      "git_blob": "2fe3979a4b13408002548a6e3498791144166687",
+      "sha256": "d43bc717a71ecc372fadfb7c9c3fb671fbc6ca8bdf9bdff35e00e30c73dcb0ca",
+      "bytes": 10340
+    },
+    {
+      "path": "lib/crosswake/shell/ios_host_config.ex",
+      "snapshot": "candidate-source/lib/crosswake/shell/ios_host_config.ex",
+      "git_blob": "5a6b1094641f44f1d1701f519e813aaf827a79f7",
+      "sha256": "6ec5a5b4876a86a3b10efd511518ebed4d7a4a160e04ae3672b72eac83337483",
+      "bytes": 5904
+    },
+    {
+      "path": "lib/crosswake/shell/ios_host_generation.ex",
+      "snapshot": "candidate-source/lib/crosswake/shell/ios_host_generation.ex",
+      "git_blob": "6458eecef439811ecf0d2b8284d42c786fe26a84",
+      "sha256": "60c0119966a8c218677475acbd315bc13553892cc51967241b4709f65de07c18",
+      "bytes": 2533
+    },
+    {
+      "path": "lib/crosswake/shell/ios_host_project_migration.ex",
+      "snapshot": "candidate-source/lib/crosswake/shell/ios_host_project_migration.ex",
+      "git_blob": "bf5331a5a7f08cdb1e6c5398326cf743c1480dd2",
+      "sha256": "05740f456a9c5430ca1d565b9ca002aa88aed64c263e1b99567004c6480cbcb5",
+      "bytes": 8424
+    },
+    {
+      "path": "lib/crosswake/shell/managed_outputs.ex",
+      "snapshot": "candidate-source/lib/crosswake/shell/managed_outputs.ex",
+      "git_blob": "5ba19a6e58d7218368389aeaec34fc7afcfb2249",
+      "sha256": "134ce06f14953f1451114c7d5361c9a3099b4b1231aba96e4c77a88a3af84711",
+      "bytes": 19286
+    },
+    {
+      "path": "lib/crosswake/shell/pbx_project.ex",
+      "snapshot": "candidate-source/lib/crosswake/shell/pbx_project.ex",
+      "git_blob": "34fda95c0e232ba740ffe270946501c33dc3ed63",
+      "sha256": "e6e9f13d0f3b3701a35a4d277834db73e4de10c3570e11824302d0ae1d12e748",
+      "bytes": 4862
+    },
+    {
+      "path": "lib/crosswake/support_matrix/renderer.ex",
+      "snapshot": "candidate-source/lib/crosswake/support_matrix/renderer.ex",
+      "git_blob": "e8e4a5013bdabfeb9c0029d68b60a0ac0a3c204f",
+      "sha256": "972a957f28be68c4da5e1d7338e240abd4cb9a4a44d2afd12b461f610cce71bc",
+      "bytes": 31092
+    },
+    {
+      "path": "lib/mix/tasks/crosswake.gen.proof_lane.ex",
+      "snapshot": "candidate-source/lib/mix/tasks/crosswake.gen.proof_lane.ex",
+      "git_blob": "5f0dfbb9a35c07e0dd6e648b4b4ba0ef4bf64b35",
+      "sha256": "ba067c7c9dcfb05d836354bad795f05c4d0da83d2615dc8b35ed9adc65ae0399",
+      "bytes": 6406
+    },
+    {
+      "path": "lib/mix/tasks/crosswake.gen.shell.ex",
+      "snapshot": "candidate-source/lib/mix/tasks/crosswake.gen.shell.ex",
+      "git_blob": "e3b1d7353a3bf68a07e9089fe1e3de2bfa8b23e3",
+      "sha256": "049cfe5892cbd28c985634a4e76358ba0422f350f43eb2943fb8e15b42a47e0a",
+      "bytes": 26331
+    },
+    {
+      "path": "mix.exs",
+      "snapshot": "candidate-source/mix.exs",
+      "git_blob": "a8b9d96b908b82521e8d968e58f2dbd60fb7f145",
+      "sha256": "aceb7f154bdd4268e48f2950bd0cc7ec42ca00c88ee760db5692388db90035ea",
+      "bytes": 14202
+    },
+    {
+      "path": "mix.lock",
+      "snapshot": "candidate-source/mix.lock",
+      "git_blob": "3a1051140e861b1fed414ad09989feccffd436dd",
+      "sha256": "5a288c47f32cb6e868e859e3e1fe2204fe6604bbe396f6d2dba537804fafed48",
+      "bytes": 8006
+    },
+    {
+      "path": "packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/PackStore.swift",
+      "snapshot": "candidate-source/packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/PackStore.swift",
+      "git_blob": "dd490e298fed5ce992e215d7ec771497b8d1ed4c",
+      "sha256": "6e6b1894c1bf4d02e8b9990a935f4c0822e2a33c957e256035a603b86b7b5573",
+      "bytes": 18354
+    },
+    {
+      "path": "priv/crosswake/verify_ios_host_settings.mjs",
+      "snapshot": "candidate-source/priv/crosswake/verify_ios_host_settings.mjs",
+      "git_blob": "3bbb5ec0432afac0de97d469bada89d41d37e83b",
+      "sha256": "deed3e81edec5435a487ce6617422199279885ed0240fc2c6f67143f3249c25c",
+      "bytes": 10975
+    },
+    {
+      "path": "priv/native/crosswake_proof_lane_fs.c",
+      "snapshot": "candidate-source/priv/native/crosswake_proof_lane_fs.c",
+      "git_blob": "70131f57fb5158ffcea8f1ab43e536b0e88db4b3",
+      "sha256": "9362153804562849a91c44e03a999e821dd0732f33c37ea7c528ee812ec380ba",
+      "bytes": 7926
+    },
+    {
+      "path": "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex",
+      "snapshot": "candidate-source/priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex",
+      "git_blob": "4478b2e0b70c356036b77a344d7519f87a62d30c",
+      "sha256": "e9c22d4b6c511d1a8ee852f03ed1def0033be7002105a49cd723f77e80184ecd",
+      "bytes": 14409
+    },
+    {
+      "path": "priv/templates/crosswake/proof_lane/ios/CrosswakeProofSettings.xcconfig.eex",
+      "snapshot": "candidate-source/priv/templates/crosswake/proof_lane/ios/CrosswakeProofSettings.xcconfig.eex",
+      "git_blob": "8275530b203f36711c386aaf0bd76717682dd12d",
+      "sha256": "c2a7ac37a0e4ff83d8533870ac97974b1ee944dc2726e5bac94e3c9ded11cfe9",
+      "bytes": 384
+    },
+    {
+      "path": "priv/templates/crosswake/shell/ios/CrosswakeHostSettings.xcconfig.eex",
+      "snapshot": "candidate-source/priv/templates/crosswake/shell/ios/CrosswakeHostSettings.xcconfig.eex",
+      "git_blob": "b5bc730d08c40c425e4a7247ddc5e21dc9434dcb",
+      "sha256": "ab9334a47362c9fa1e336e9fdd19eece1b7134fd0bc32cc0bc930832e9cc08a9",
+      "bytes": 288
+    },
+    {
+      "path": "priv/templates/crosswake/shell/ios/CrosswakeShell.xcodeproj/project.pbxproj.eex",
+      "snapshot": "candidate-source/priv/templates/crosswake/shell/ios/CrosswakeShell.xcodeproj/project.pbxproj.eex",
+      "git_blob": "2def630a08e01eeaa211ded4d9ff55fc07c61e27",
+      "sha256": "efcc7d92c162bff39d1c3d2301c21c79b1206688ac7209cf33455c11b916e7f9",
+      "bytes": 17707
+    },
+    {
+      "path": "script/collection_assertion_ledger.json",
+      "snapshot": "candidate-source/script/collection_assertion_ledger.json",
+      "git_blob": "f39ad383b6a6c915a1c3e6669f1cce6f22d95b16",
+      "sha256": "3017caddf7604e59f2a4da66d43182a86f4c85872ad69d831cc5b32c7baee3f9",
+      "bytes": 111190
+    },
+    {
+      "path": "script/verify_ios_host_settings.mjs",
+      "snapshot": "candidate-source/script/verify_ios_host_settings.mjs",
+      "git_blob": "53e83f6412a5a9cf3be74836c49d810f14cf2179",
+      "sha256": "9b59259f29e2b81c60e3410a4ded71303e6d9a01922ec0fe3d1ba0ef04b46771",
+      "bytes": 587
+    },
+    {
+      "path": "test/crosswake/guides/native_shell_upgrade_test.exs",
+      "snapshot": "candidate-source/test/crosswake/guides/native_shell_upgrade_test.exs",
+      "git_blob": "220030daa5e651046f6040db80475a626a91c219",
+      "sha256": "4562dcc39989503cca4fdd699e97236e24f3bd601527c54a39cc928f32c55cba",
+      "bytes": 5176
+    },
+    {
+      "path": "test/crosswake/proof/phase134_template_version_drift_test.exs",
+      "snapshot": "candidate-source/test/crosswake/proof/phase134_template_version_drift_test.exs",
+      "git_blob": "a46f365f7dd5db429e2fcc343d476239ed1374e8",
+      "sha256": "6e7ee69c084d2e308270b48d8755cb4e10edcb1e7422427101e0be3585b7640e",
+      "bytes": 4867
+    },
+    {
+      "path": "test/crosswake/proof/phase170_vacuous_assertion_ledger_test.exs",
+      "snapshot": "candidate-source/test/crosswake/proof/phase170_vacuous_assertion_ledger_test.exs",
+      "git_blob": "01e4ae391805c5473e916d430d028ae7c94e614b",
+      "sha256": "afc003d84d0aeaea34d711a499d009739899aa8ae7a99fe0273adec9578f3a06",
+      "bytes": 20802
+    },
+    {
+      "path": "test/crosswake/proof_lane/recovery_edges_test.exs",
+      "snapshot": "candidate-source/test/crosswake/proof_lane/recovery_edges_test.exs",
+      "git_blob": "295b897d4d4b47f5e2e39c76cf3c48c1ba4a40a2",
+      "sha256": "51303736b159f275af95425b335237064c94f76cc3f6a93ff05ae3d7fda05177",
+      "bytes": 7744
+    },
+    {
+      "path": "test/crosswake/proof_lane/template_contract_test.exs",
+      "snapshot": "candidate-source/test/crosswake/proof_lane/template_contract_test.exs",
+      "git_blob": "66ec20fea829f26ec7064b3f9539cee391d691e3",
+      "sha256": "df4d2be0c0fc7119ab2fc5257185201d40c31d804fbb897d93db6c65c63342be",
+      "bytes": 19671
+    },
+    {
+      "path": "test/crosswake/shell/ios_host_config_test.exs",
+      "snapshot": "candidate-source/test/crosswake/shell/ios_host_config_test.exs",
+      "git_blob": "d6ba99a55f648e90632f93fb717dc812de61377e",
+      "sha256": "d41df0968531c726c155fa7eceeda88cd2365c1191cb0f86c569c7643b9288ba",
+      "bytes": 5134
+    },
+    {
+      "path": "test/crosswake/shell/ios_host_effective_settings_test.mjs",
+      "snapshot": "candidate-source/test/crosswake/shell/ios_host_effective_settings_test.mjs",
+      "git_blob": "a4c758fa5a0c0d7df59ac487616c6ed5668aca23",
+      "sha256": "127842f310bd67f1e0424b9a632a4b31af178db73adec4b66221069622881dd5",
+      "bytes": 15077
+    },
+    {
+      "path": "test/crosswake/shell/ios_host_migration_graph_test.exs",
+      "snapshot": "candidate-source/test/crosswake/shell/ios_host_migration_graph_test.exs",
+      "git_blob": "a676888fcce1e376aa4ecf8d92f612bd4aa4301a",
+      "sha256": "dc142abd79da6007dc7b496060f0c2c3bb74a6a57d5c16f30b2baa55465c690f",
+      "bytes": 6708
+    },
+    {
+      "path": "test/crosswake/shell/ios_host_migration_security_test.exs",
+      "snapshot": "candidate-source/test/crosswake/shell/ios_host_migration_security_test.exs",
+      "git_blob": "72761cd311fcf7f35d20e8b6bbaee310ae0150dd",
+      "sha256": "b74cc192afc2080f3e0be203bf5c31c896969f3890e87b1a8db7b2c1b5750742",
+      "bytes": 7669
+    },
+    {
+      "path": "test/crosswake/shell/managed_outputs_test.exs",
+      "snapshot": "candidate-source/test/crosswake/shell/managed_outputs_test.exs",
+      "git_blob": "e805830c44c2b4575d5c1b6363efc3f3e6f5c1f9",
+      "sha256": "f75cbd147ed74f0ecb9256e4f798432abffae27ffb6e5cd972a7678d54251fe5",
+      "bytes": 5760
+    },
+    {
+      "path": "test/mix/tasks/crosswake.docs.sync_test.exs",
+      "snapshot": "candidate-source/test/mix/tasks/crosswake.docs.sync_test.exs",
+      "git_blob": "9b09289fb17cbb7d7c2e96b417ceea4c1f3755d1",
+      "sha256": "8616cb3ca6e52b729d32e49eb7570d310f177ea4676ed49246f5e5fd2521804d",
+      "bytes": 6527
+    },
+    {
+      "path": "test/mix/tasks/crosswake_gen_proof_lane_test.exs",
+      "snapshot": "candidate-source/test/mix/tasks/crosswake_gen_proof_lane_test.exs",
+      "git_blob": "8795033ecbfec0f94e60cabc5941c74a33d9eea0",
+      "sha256": "30bc313f50eba7ee1c759d8bce8fd82f6206c45f53062fe3710940611087d305",
+      "bytes": 25956
+    },
+    {
+      "path": "test/mix/tasks/crosswake_gen_shell_host_test.exs",
+      "snapshot": "candidate-source/test/mix/tasks/crosswake_gen_shell_host_test.exs",
+      "git_blob": "d5cb73ea196bf2fb8351c73688f683cec3a113fb",
+      "sha256": "2e9418852efd79366917066665f04ade8de86ef5c424fcd6d160bcf4e6da5cce",
+      "bytes": 14919
+    }
+  ]
+}

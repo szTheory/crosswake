@@ -201,4 +201,176 @@ defmodule Crosswake.TestSupport.RouterFixtures do
       get("/public", Crosswake.TestSupport.SettingsController, :index)
     end
   end
+
+  defmodule OfflineHoleRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
+        get("/dashboard", Crosswake.TestSupport.PageController, :index,
+          crosswake: [
+            id: "dashboard",
+            capabilities: [
+              "app_info",
+              "haptics",
+              "permissions.status",
+              "notification_token",
+              "share"
+            ]
+          ]
+        )
+
+        live("/library", Crosswake.TestSupport.LibraryLive,
+          crosswake: [
+            id: "library",
+            cache_contract: :lesson_library_v1,
+            capabilities: ["file_picker"],
+            packs: [[id: :lesson_library, version: "1.2.0", kind: :content]],
+            transfers: [
+              [
+                id: :lesson_import,
+                intent: :import,
+                source: :native_picker,
+                verification: :required,
+                media_types: ["application/pdf"]
+              ],
+              [
+                id: :lesson_upload_prepare,
+                intent: :upload,
+                source: :native_picker,
+                verification: :required,
+                media_types: ["application/pdf"]
+              ],
+              [
+                id: :lesson_export,
+                intent: :export,
+                destination: :user_visible_files,
+                verification: :required,
+                media_types: ["application/pdf"]
+              ],
+              [
+                id: :lesson_download,
+                intent: :download,
+                destination: :app_sandbox,
+                verification: :required,
+                media_types: ["application/pdf"]
+              ]
+            ]
+          ]
+        )
+
+        # island_contract intentionally omitted: an unbacked offline island (187-01).
+        live("/study-session", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "study-session",
+            runtime: :offline_island,
+            offline: :local_first,
+            packs: [[id: :study_session_media, version: "3.0.0", kind: :media]],
+            sync: [:study_reviews]
+          ]
+        )
+
+        live("/camera", Crosswake.TestSupport.CameraLive, :capture,
+          crosswake: [
+            id: "camera",
+            runtime: :native_screen,
+            capabilities: [:camera],
+            packs: [[id: :camera_capture_assets, version: "1.0.0", kind: :media]],
+            transfers: [
+              [
+                id: :capture_upload,
+                intent: :upload,
+                source: :native_capture,
+                verification: :required,
+                media_types: ["image/*"]
+              ]
+            ],
+            security: :sensitive
+          ]
+        )
+      end
+
+      get("/settings", Crosswake.TestSupport.SettingsController, :index)
+    end
+  end
+
+  defmodule NoOfflineRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, security: :standard do
+        get("/dashboard", Crosswake.TestSupport.PageController, :index,
+          crosswake: [
+            id: "dashboard",
+            capabilities: [
+              "app_info",
+              "haptics",
+              "permissions.status",
+              "notification_token",
+              "share"
+            ]
+          ]
+        )
+
+        live("/library", Crosswake.TestSupport.LibraryLive,
+          crosswake: [
+            id: "library",
+            capabilities: ["file_picker"],
+            packs: [[id: :lesson_library, version: "1.2.0", kind: :content]],
+            transfers: [
+              [
+                id: :lesson_import,
+                intent: :import,
+                source: :native_picker,
+                verification: :required,
+                media_types: ["application/pdf"]
+              ],
+              [
+                id: :lesson_upload_prepare,
+                intent: :upload,
+                source: :native_picker,
+                verification: :required,
+                media_types: ["application/pdf"]
+              ],
+              [
+                id: :lesson_export,
+                intent: :export,
+                destination: :user_visible_files,
+                verification: :required,
+                media_types: ["application/pdf"]
+              ],
+              [
+                id: :lesson_download,
+                intent: :download,
+                destination: :app_sandbox,
+                verification: :required,
+                media_types: ["application/pdf"]
+              ]
+            ]
+          ]
+        )
+
+        live("/camera", Crosswake.TestSupport.CameraLive, :capture,
+          crosswake: [
+            id: "camera",
+            runtime: :native_screen,
+            capabilities: [:camera],
+            packs: [[id: :camera_capture_assets, version: "1.0.0", kind: :media]],
+            transfers: [
+              [
+                id: :capture_upload,
+                intent: :upload,
+                source: :native_capture,
+                verification: :required,
+                media_types: ["image/*"]
+              ]
+            ],
+            security: :sensitive
+          ]
+        )
+      end
+
+      get("/settings", Crosswake.TestSupport.SettingsController, :index)
+    end
+  end
 end

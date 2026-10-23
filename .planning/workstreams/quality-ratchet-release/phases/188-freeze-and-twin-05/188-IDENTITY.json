@@ -1,0 +1,16 @@
+{
+  "schema": "crosswake.phase180.identity/1",
+  "supersedes": "183-IDENTITY.json",
+  "candidate_head": "a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4",
+  "candidate_tree": "f7c4d7dc1a86f251c3ba845d3cde8d4c770ae729",
+  "media": {
+    "path": "examples/phoenix_host/native/ios/CrosswakeProofLane/Resources/ReferenceLearningBundle/pronunciation.aiff",
+    "size": 33706,
+    "sha256": "5d8b3f72beb26205032d764bc7979f5658c7c9f262427bce2d814f2bf0fabf5b"
+  },
+  "generated": {
+    "manifest_sha256": "917ef9d00ee0165853f07d182d980bf6687f596fe9888633cddef14745ac9493",
+    "activation_sha256": "085eb4b2af9bb1687b8e44c423f083b7e6fdd42f11f900f1b349c527f3ca48e6"
+  },
+  "note": "Computed by make-identity-188.sh from git show HEAD output of the frozen Phase 188 candidate; read by the twin for media and generated digests only."
+}
