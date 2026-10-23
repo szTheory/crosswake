@@ -1,0 +1,74 @@
+{
+  "checked_at": "2026-10-13T14:21:28.778043+00:00",
+  "result": "passed",
+  "milestone": "v25.0",
+  "workstream": "quality-ratchet-release",
+  "requirements": {
+    "total": 9,
+    "mapped_once": 9,
+    "completed": 0,
+    "exact_approved_descriptions": true
+  },
+  "phases": {
+    "total": 2,
+    "completed": 0,
+    "current": 179,
+    "context_files": 0,
+    "plans": 0,
+    "last_completed": 178
+  },
+  "state_validation": {
+    "valid": true,
+    "warnings": [],
+    "scope": "complete"
+  },
+  "manager_recommended_action": {
+    "phase": "179",
+    "phase_name": "iOS Host Setup Without Hand Patches",
+    "action": "discuss",
+    "reason": "Unblocked, ready to gather context",
+    "command": "$gsd-discuss-phase 179"
+  },
+  "canonical_classifier": {
+    "situation": "planning",
+    "recommended": "progress-next",
+    "note": "Generic classifier forwards to progress-next; installed manager and project STATE/ROADMAP/state.json explicitly select scoped Phase179 discussion."
+  },
+  "project_next_command": "$gsd-discuss-phase 179 --ws quality-ratchet-release",
+  "discussion_preflight": "registered init.phase-op and find-phase passed",
+  "protected_history": {
+    "files": 1677,
+    "changed": 0,
+    "original_paths_preserved": true
+  },
+  "recovery_protection": {
+    "unchanged": true,
+    "changedDimensions": []
+  },
+  "original_tracking_copies_byte_identical": true,
+  "prior_acknowledgements": 6,
+  "new_acknowledgements": 0,
+  "changed_existing_files": [
+    ".planning/workstreams/quality-ratchet-release/REQUIREMENTS.md",
+    ".planning/workstreams/quality-ratchet-release/state.json",
+    ".planning/workstreams/quality-ratchet-release/.continue-here.md",
+    ".planning/workstreams/quality-ratchet-release/STATE.md",
+    ".planning/workstreams/quality-ratchet-release/ROADMAP.md"
+  ],
+  "new_files": [
+    ".planning/workstreams/quality-ratchet-release/v25.0-SCOPE.md",
+    ".planning/workstreams/quality-ratchet-release/v25.0-start/milestone-switch.stdout",
+    ".planning/workstreams/quality-ratchet-release/v25.0-start/milestone-switch.stderr",
+    ".planning/workstreams/quality-ratchet-release/v25.0-start/authorization.json",
+    ".planning/workstreams/quality-ratchet-release/history/v24.0-before-v25-start/REQUIREMENTS.md",
+    ".planning/workstreams/quality-ratchet-release/history/v24.0-before-v25-start/state.json",
+    ".planning/workstreams/quality-ratchet-release/history/v24.0-before-v25-start/.continue-here.md",
+    ".planning/workstreams/quality-ratchet-release/history/v24.0-before-v25-start/STATE.md",
+    ".planning/workstreams/quality-ratchet-release/history/v24.0-before-v25-start/ROADMAP.md"
+  ],
+  "relative_links_checked": 28,
+  "diff_check_exit": 0,
+  "source_or_git_mutations": false,
+  "execution_or_publication": false,
+  "scope": "Approved milestone planning initialization only; no host/Xcode/simulator/device execution claim"
+}

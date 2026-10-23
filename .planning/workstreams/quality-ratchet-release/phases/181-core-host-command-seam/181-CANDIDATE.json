@@ -1,0 +1,17 @@
+{
+  "candidate": "/private/tmp/crosswake-phase181-impl",
+  "realpath": "/private/tmp/crosswake-phase181-impl",
+  "git_top_level": "/private/tmp/crosswake-phase181-impl",
+  "branch": "phase181-impl",
+  "source": "/private/tmp/crosswake-phase180-impl",
+  "base_head": "96e5a63efab657f89f3ac84d5b1d84ff5da5d822",
+  "base_tree": "0514b6244ec814c1d0701d580b04651f70f57019",
+  "gate_test_sha256": {
+    "test/crosswake/proof/phase180_twin_feasibility_test.exs": "01df82646c3365b159006c26ec818a55feafd506f007d762d739f66177e756f5",
+    "examples/phoenix_host/test/crosswake_example/phase180_twin_feasibility_test.exs": "f7b968909db85040adfd42bc397fec8f70259fa2b7bd3176759b523a9b8aaa19",
+    "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Phase180TwinFeasibilityTests.swift": "a3bcef6ea7f64f90b2e85f6aecc04778334428f709f840c134b7c0ea25355672"
+  },
+  "qualified_at": "2026-10-14T16:34:58Z",
+  "isolation": "git clone --no-local of the pinned phase180 candidate; push url set to no-push-phase181; recovery checkout and phase180 candidate untouched",
+  "remote_writes_authorized": false
+}

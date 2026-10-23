@@ -1,0 +1,63 @@
+{
+  "completed_phase": "179",
+  "plans_executed": "4/4",
+  "phase_goal_verdict": "passed",
+  "next_phase": "180",
+  "next_phase_name": "Bounded Digital Twin Demonstration",
+  "is_last_phase": false,
+  "date": "2026-10-13",
+  "scoped_writer": "query phase.complete 179 --ws quality-ratchet-release",
+  "writer_exit_code": 0,
+  "roadmap_updated": true,
+  "state_updated": true,
+  "requirements_updated": true,
+  "verification_stale_check_indeterminate": false,
+  "has_warnings": true,
+  "summary_scan_warnings": [
+    {
+      "summary": "179-01-SUMMARY.md",
+      "owner_missing_paths": [
+        "lib/crosswake/shell/ios_host_config.ex",
+        "lib/crosswake/shell/ios_host_generation.ex",
+        "priv/templates/crosswake/shell/ios/CrosswakeHostSettings.xcconfig.eex",
+        "test/crosswake/shell/ios_host_config_test.exs",
+        "test/mix/tasks/crosswake_gen_shell_host_test.exs"
+      ],
+      "disposition": "Retained scanner warning: product files exist in the qualified candidate and immutable export; recovery source stays untouched. Command-shaped entries are parser artifacts."
+    },
+    {
+      "summary": "179-02-SUMMARY.md",
+      "owner_missing_paths": [
+        "lib/crosswake/shell/managed_outputs.ex",
+        "lib/crosswake/shell/ios_host_generation.ex",
+        "lib/crosswake/shell/ios_host_project_migration.ex",
+        "test/crosswake/shell/managed_outputs_test.exs",
+        "test/mix/tasks/crosswake_gen_shell_host_test.exs"
+      ],
+      "disposition": "Retained scanner warning: product files exist in the qualified candidate and immutable export; recovery source stays untouched. Command-shaped entries are parser artifacts."
+    },
+    {
+      "summary": "179-03-SUMMARY.md",
+      "owner_missing_paths": [
+        "--test test/crosswake/shell/ios_host_effective_settings_test.mjs",
+        "priv/templates/crosswake/shell/ios/CrosswakeHostSettings.xcconfig.eex"
+      ],
+      "disposition": "Retained scanner warning: product files exist in the qualified candidate and immutable export; recovery source stays untouched. Command-shaped entries are parser artifacts."
+    },
+    {
+      "summary": "179-04-SUMMARY.md",
+      "owner_missing_paths": [
+        "node --test test/crosswake/shell/ios_host_effective_settings_test.mjs"
+      ],
+      "disposition": "Retained scanner warning: product files exist in the qualified candidate and immutable export; recovery source stays untouched. Command-shaped entries are parser artifacts."
+    }
+  ],
+  "preservation_warning": {
+    "field": "current_plan",
+    "owner_reason": "preserved-over-disagreeing-derived",
+    "reconciliation": "Explicitly reset to null for unstarted Phase180; no historical summary or source changed."
+  },
+  "next_command": "$gsd-discuss-phase 180 --ws quality-ratchet-release",
+  "recorded_at": "2026-10-14T01:21:45.553466+00:00",
+  "scope": "No recovery Git writes, release, publication, adopter promotion or Phase180 execution."
+}

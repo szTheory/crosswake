@@ -1,0 +1,20 @@
+{
+  "schema": "crosswake.phase180.scope_decision/1",
+  "gate_verdict": "stop_missing_seam",
+  "candidate_head": "96e5a63efab657f89f3ac84d5b1d84ff5da5d822",
+  "decision": "allow",
+  "decided_by": "user_reply",
+  "user_reply": "allow",
+  "user_guidance": "Do the core-seam phase properly, not nerfed: declaration-driven projection for every declaring route, offline-island admission in the bounded shell, and a versioned wire contract so existing hosts are not silently broken.",
+  "refuting_tests": [],
+  "control_tests": [],
+  "rebound_from": null,
+  "plans_status": {
+    "180-03": "awaiting_gate_rerun",
+    "180-04": "awaiting_gate_rerun",
+    "180-05": "awaiting_gate_rerun",
+    "180-06": "awaiting_gate_rerun",
+    "180-07": "awaiting_gate_rerun"
+  },
+  "next_action": "$gsd-phase --ws quality-ratchet-release (insert authorized core-seam phase), then $gsd-execute-phase 180 --ws quality-ratchet-release to rerun 180-01 in authorized_seam_rerun mode"
+}

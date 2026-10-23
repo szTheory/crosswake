@@ -1,0 +1,16 @@
+{
+  "schema": "crosswake.phase180.identity/1",
+  "supersedes": "180-IDENTITY.json",
+  "candidate_head": "50fcd5743243c0b20275a7e2bd9338bf25468687",
+  "candidate_tree": "d71bc587ce73d8a253465ea8c31f9eed5e286e17",
+  "media": {
+    "path": "examples/phoenix_host/native/ios/CrosswakeProofLane/Resources/ReferenceLearningBundle/pronunciation.aiff",
+    "size": 33706,
+    "sha256": "5d8b3f72beb26205032d764bc7979f5658c7c9f262427bce2d814f2bf0fabf5b"
+  },
+  "generated": {
+    "manifest_sha256": "917ef9d00ee0165853f07d182d980bf6687f596fe9888633cddef14745ac9493",
+    "activation_sha256": "085eb4b2af9bb1687b8e44c423f083b7e6fdd42f11f900f1b349c527f3ca48e6"
+  },
+  "note": "Supersedes 180-IDENTITY.json, which named 12f84cd; values computed from committed bytes at the fix(183-03) head."
+}

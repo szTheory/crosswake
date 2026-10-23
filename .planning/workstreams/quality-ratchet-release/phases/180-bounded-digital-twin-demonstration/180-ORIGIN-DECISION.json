@@ -1,0 +1,21 @@
+{
+  "schema": "crosswake.phase180.origin_decision/1",
+  "decided_at": "2026-10-14",
+  "decided_by": "user_reply",
+  "blocked_plan": "180-05",
+  "blocked_prerequisite": "TW-T02-01",
+  "blocked_cause": "ios_host_origin_https_only",
+  "candidate_head": "12f84cd950d4574921767df823faed6797c17c26",
+  "observed": "Crosswake.Shell.IOSHostConfig valid_origin/1 accepts only absolute https:// origins; no local/dev mode exists for the D-14 loopback origin http://127.0.0.1:4790",
+  "decision": "allow_loopback_origin",
+  "scope": "A separate core phase allows http loopback origins (127.0.0.1 and localhost) only in an explicit local/dev :ios_host mode, with ATS NSAllowsLocalNetworking and never NSAllowsArbitraryLoads; production origin validation stays HTTPS-only and fail-closed.",
+  "not_authorized": [
+    "arbitrary http origins",
+    "NSAllowsArbitraryLoads",
+    "Android changes",
+    "push, merge, release or PR",
+    "recovery checkout git mutation"
+  ],
+  "resume_condition": "The inserted core phase completes in its own candidate and records how the Phase 180 candidate moves onto its head; then 180-05 reruns from Task 1 unchanged.",
+  "consumed_by": "180-05"
+}

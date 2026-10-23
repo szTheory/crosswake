@@ -1,0 +1,10 @@
+{
+  "schema": "crosswake.phase183.annotation/1",
+  "subject": {
+    "name": "180-TWIN-RESULT.json",
+    "sha256": "79f13923b32109e4bcbe10cb7acfef40d2786440afa323878d768ecd7896df4f"
+  },
+  "note": "passed against an incompletely identified source (uncommitted Phase 180 code over da53c54)",
+  "superseded_by": "183-TWIN-RESULT.json",
+  "recorded": "2026-10-15"
+}

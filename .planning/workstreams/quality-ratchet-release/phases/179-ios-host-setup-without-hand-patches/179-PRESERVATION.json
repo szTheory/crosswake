@@ -1,0 +1,9 @@
+{
+  "checked_at": "2026-10-14T01:14:59.214421+00:00",
+  "recovery_head": "d0f3e2f1ead2046c26da5cc4b5dd62d5bfea1377",
+  "recovery_head_unchanged": true,
+  "index_bytes_unchanged": true,
+  "nonplanning_tracked_files_unchanged": 1263,
+  "nonplanning_tracked_files_changed": 0,
+  "boundary": "Only authorized planning evidence is written in recovery; product source and Git index remain preserved."
+}

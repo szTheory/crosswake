@@ -1,0 +1,619 @@
+defmodule Crosswake.Manifest.Builder do
+  @moduledoc """
+  Builds the route-first manifest root from compiled Crosswake route policy.
+  """
+
+  alias Crosswake.Manifest.Types
+  alias Crosswake.Adoption.NavigationTopology
+  alias Crosswake.Offline.Contracts
+  alias Crosswake.Offline.ContentPack
+  alias Crosswake.Policy.CorridorProfiles
+  alias Crosswake.Policy.Route
+
+  @public_route_capability_ids ~w(
+    app_info
+    file_picker
+    haptics
+    notification_token
+    permissions.status
+    share
+    deep_link
+    media_capture
+    scanner
+    document_scan
+    paywall_entry
+    purchase_intent
+    restore_intent
+    entitlement_snapshot
+    reconciliation_evidence
+  )
+
+  @compatibility_route_capability_ids ~w(
+    app.info.get
+    camera
+    camera.capture
+    files.pick
+    haptics.impact
+    push.notifications
+  )
+
+  @spec build([Route.t()], [map()], keyword()) :: Types.Root.t()
+  def build(routes, managed_routes, opts \\ [])
+      when is_list(routes) and is_list(managed_routes) do
+    capability_registry = capability_registry(routes)
+
+    host =
+      Keyword.get_lazy(opts, :host, fn ->
+        case Keyword.fetch(opts, :origin) do
+          {:ok, origin} -> Types.new_host(origin: origin)
+          :error -> Types.new_host()
+        end
+      end)
+
+    compatibility = Keyword.get(opts, :compatibility, Types.new_compatibility())
+    commerce_corridors = commerce_corridor_registry(routes)
+
+    support_matrix =
+      Keyword.get(
+        opts,
+        :support_matrix,
+        Crosswake.SupportMatrix.canonical(capability_registry: capability_registry)
+      )
+
+    manifest_schema_version = Types.manifest_schema_version()
+    route_entries = route_entries(routes, managed_routes, host.origin)
+
+    Types.new_root(
+      manifest_schema_version: manifest_schema_version,
+      crosswake_version: Keyword.get(opts, :crosswake_version, crosswake_version()),
+      generated_at:
+        Keyword.get(
+          opts,
+          :generated_at,
+          DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_iso8601()
+        ),
+      host: host,
+      compatibility: compatibility,
+      support_matrix: support_matrix,
+      capability_registry: capability_registry,
+      pack_registry: pack_registry(routes),
+      commerce_corridors: commerce_corridors,
+      navigation_topology: navigation_topology(routes, managed_routes),
+      routes: route_entries
+    )
+  end
+
+  defp crosswake_version do
+    case Application.spec(:crosswake, :vsn) do
+      nil -> "dev"
+      version -> to_string(version)
+    end
+  end
+
+  @doc false
+  @spec navigation_topology([Route.t()], [map()]) :: Types.NavigationTopology.t()
+  def navigation_topology(routes, managed_routes) do
+    manifest_schema_version = Types.manifest_schema_version()
+    source = navigation_source(managed_routes)
+
+    case source do
+      [] ->
+        unknown_navigation_topology(manifest_schema_version)
+
+      _ ->
+        case NavigationTopology.compile(source, manifest_schema_version) do
+          {:ok, topology} -> topology_from_compiled(topology)
+          {:error, _error} -> unknown_navigation_topology(manifest_schema_version)
+        end
+    end
+    |> ensure_topology_routes_match(routes)
+  end
+
+  defp navigation_source(managed_routes) do
+    managed_routes
+    |> Enum.map(fn route ->
+      route |> Map.get(:metadata, %{}) |> Map.get(:crosswake_navigation)
+    end)
+    |> Enum.reject(&is_nil/1)
+    |> case do
+      [source] -> source
+      _ -> []
+    end
+  end
+
+  defp topology_from_compiled(topology) do
+    Types.new_navigation_topology(
+      topology_schema_version: topology.topology_schema_version,
+      manifest_schema_version: topology.manifest_schema_version,
+      status: topology.status,
+      entries:
+        Enum.map(topology.entries, fn entry ->
+          Types.new_navigation_topology_entry(Map.to_list(entry))
+        end)
+    )
+  end
+
+  defp unknown_navigation_topology(manifest_schema_version) do
+    Types.new_navigation_topology(
+      topology_schema_version: "1.0.0",
+      manifest_schema_version: manifest_schema_version,
+      status: :unknown_blocking,
+      entries: []
+    )
+  end
+
+  defp ensure_topology_routes_match(%Types.NavigationTopology{status: :ready} = topology, routes) do
+    route_ids = MapSet.new(routes, & &1.id)
+
+    if Enum.all?(topology.entries, &MapSet.member?(route_ids, &1.route_id)),
+      do: topology,
+      else: unknown_navigation_topology(topology.manifest_schema_version)
+  end
+
+  defp ensure_topology_routes_match(topology, _routes), do: topology
+
+  @spec capability_registry([Route.t()]) :: %{String.t() => Types.Capability.t()}
+  def capability_registry(routes) do
+    public_registry =
+      capability_catalog()
+      |> Enum.map(fn attrs ->
+        capability = Types.new_capability(attrs)
+        {capability.id, capability}
+      end)
+      |> Map.new()
+
+    compatibility_registry =
+      routes
+      |> Enum.flat_map(& &1.capabilities)
+      |> Enum.uniq()
+      |> Enum.reject(&Map.has_key?(public_registry, &1))
+      |> Enum.map(fn capability_id ->
+        family_capability = family_capability_for(capability_id)
+
+        capability =
+          family_capability
+          |> compatibility_capability_attrs(capability_id)
+          |> Types.new_capability()
+
+        {capability_id, capability}
+      end)
+      |> Map.new()
+
+    Map.merge(public_registry, compatibility_registry)
+  end
+
+  @spec public_route_capability_ids() :: [String.t()]
+  def public_route_capability_ids, do: @public_route_capability_ids
+
+  @spec compatibility_route_capability_ids() :: [String.t()]
+  def compatibility_route_capability_ids, do: @compatibility_route_capability_ids
+
+  defp route_entries(routes, managed_routes, origin) do
+    routes
+    |> Enum.zip(managed_routes)
+    |> Map.new(fn {%Route{} = route, managed_route} ->
+      path = Map.fetch!(managed_route, :path)
+
+      entry =
+        Types.new_route_entry(
+          id: route.id,
+          path: path,
+          runtime: route.runtime,
+          offline: route.offline,
+          entry: route.entry,
+          cache_contract: cache_contract(route),
+          island_contract: island_contract(route),
+          commerce: route_commerce(route),
+          capabilities: route.capabilities,
+          packs: route_pack_references(route.packs),
+          sync: route.sync,
+          transfers: transfer_seams(route.transfers),
+          security: route.security,
+          allowlisted_origins: [origin],
+          gated_by: route.gated_by,
+          on_unavailable: route.on_unavailable,
+          auth_min_level: route.auth_min_level,
+          requires_recent_auth: route.requires_recent_auth,
+          auth_posture: route.auth_posture,
+          auth_return: route_auth_return(route),
+          notification_open: route.notification_open
+        )
+
+      {route.id, entry}
+    end)
+  end
+
+  defp pack_registry(routes) do
+    routes
+    |> Enum.flat_map(& &1.packs)
+    |> Enum.sort_by(&pack_reference/1)
+    |> Map.new(fn %ContentPack{} = pack ->
+      {pack_reference(pack),
+       Types.new_pack_entry(
+         id: pack.id,
+         version: pack.version,
+         kind: pack.kind,
+         integrity: pack.integrity
+       )}
+    end)
+  end
+
+  defp commerce_corridor_registry(routes) do
+    canonical_profiles = CorridorProfiles.commerce_corridors()
+
+    routes
+    |> Enum.flat_map(fn
+      %Route{commerce: nil} -> []
+      %Route{commerce: %{corridor: corridor}} -> [corridor]
+      _route -> []
+    end)
+    |> Enum.uniq()
+    |> Enum.reduce(%{}, fn corridor_ref, acc ->
+      case Map.get(canonical_profiles, corridor_ref) do
+        nil ->
+          acc
+
+        profile ->
+          Map.put(
+            acc,
+            corridor_ref,
+            Types.new_commerce_corridor(
+              id: profile.id,
+              role_ownership: profile.role_ownership,
+              denial: profile.denial,
+              fallback: profile.fallback,
+              prerequisites: profile.prerequisites
+            )
+          )
+      end
+    end)
+  end
+
+  defp route_pack_references(packs), do: Enum.map(packs, &pack_reference/1)
+
+  defp transfer_seams(transfers) do
+    Enum.map(transfers, fn transfer ->
+      Types.new_transfer_seam(
+        id: transfer.id,
+        intent: transfer.intent,
+        direction: transfer.direction,
+        source: transfer.source,
+        destination: transfer.destination,
+        verification: transfer.verification,
+        media_types: transfer.media_types
+      )
+    end)
+  end
+
+  defp pack_reference(%ContentPack{id: id, version: version}), do: "#{id}@#{version}"
+
+  defp route_commerce(%Route{commerce: nil}), do: nil
+
+  defp route_commerce(%Route{commerce: %{corridor: corridor, role: role}})
+       when is_binary(corridor) and is_atom(role) do
+    Types.new_route_commerce(corridor_ref: corridor, role: role)
+  end
+
+  defp route_commerce(_route), do: nil
+
+  defp route_auth_return(%Route{auth_return: nil}), do: nil
+
+  defp route_auth_return(%Route{
+         auth_return: %{
+           kind: kind,
+           transport: transport,
+           return_route_id: return_route_id,
+           validates: validates
+         }
+       }) do
+    Types.new_route_auth_return(
+      kind: kind,
+      transport: transport,
+      return_route_id: return_route_id,
+      validates: validates
+    )
+  end
+
+  defp route_auth_return(_route), do: nil
+
+  defp capability_catalog do
+    [
+      [
+        id: "deep_link",
+        family: "deep_link",
+        owner: :activation,
+        package_class: :core,
+        proof_class: :merge_blocking,
+        rebuild: :none,
+        interaction: :fire_and_forget,
+        prerequisites: [
+          "bundled or cached manifest",
+          "shell activation support",
+          "explicit route entry approval"
+        ],
+        denial: "route_unavailable",
+        fallback:
+          "show route unavailable surface that distinguishes inactive routes from routes that reject external entry",
+        guide: "guides/native_shell.md#manifest-first-activation"
+      ],
+      [
+        id: "app_info",
+        family: "app_info",
+        owner: :bounded_bridge,
+        package_class: :core,
+        proof_class: :merge_blocking,
+        rebuild: :none,
+        interaction: :device_answer,
+        prerequisites: ["declared route capability", "bounded bridge support"],
+        denial: "undeclared_capability",
+        fallback: "Phoenix route continues without native app metadata",
+        guide: "guides/bridge.md#bounded-bridge",
+        legacy_ids: ["app.info.get"]
+      ],
+      [
+        id: "haptics",
+        family: "haptics",
+        owner: :bounded_bridge,
+        package_class: :core,
+        proof_class: :merge_blocking,
+        rebuild: :none,
+        interaction: :fire_and_forget,
+        prerequisites: ["declared route capability", "bounded bridge support"],
+        denial: "undeclared_capability",
+        fallback: "Phoenix route continues without native confirmation feedback",
+        guide: "guides/bridge.md#bounded-bridge",
+        legacy_ids: ["haptics.impact"]
+      ],
+      [
+        id: "share",
+        family: "share",
+        owner: :bounded_bridge,
+        package_class: :core,
+        proof_class: :advisory,
+        rebuild: :none,
+        # D-54's honesty-forcing case: share returns %{"outcome" => "requested"} —
+        # a request acknowledgement, not a completion — so it is
+        # :fire_and_forget even though it returns a payload.
+        interaction: :fire_and_forget,
+        prerequisites: ["truthful semantic share contract"],
+        denial: "undeclared_capability",
+        fallback: "keep content in the Phoenix-owned route until a share family is declared",
+        guide: "guides/capabilities.md#bounded-bridge"
+      ],
+      [
+        id: "permissions.status",
+        family: "permissions.status",
+        owner: :bounded_bridge,
+        package_class: :core,
+        proof_class: :merge_blocking,
+        rebuild: :none,
+        interaction: :device_answer,
+        prerequisites: [
+          "declared route capability",
+          "bounded bridge support",
+          "notifications alias only"
+        ],
+        denial: "undeclared_capability",
+        fallback: "route continues without native notification permission snapshot authority",
+        guide: "guides/capabilities.md#bounded-bridge"
+      ],
+      [
+        id: "notification_token",
+        family: "notification_token",
+        owner: :bounded_bridge,
+        package_class: :companion,
+        proof_class: :advisory,
+        rebuild: :companion_required,
+        interaction: :device_answer,
+        prerequisites: [
+          "declared route capability",
+          "bounded bridge support",
+          "notification authorization already resolved",
+          "provider token snapshot available"
+        ],
+        denial: "unavailable_capability",
+        fallback:
+          "treat notification token replies as provider-tagged evidence instead of backend registration truth",
+        guide: "guides/capabilities.md#bounded-bridge",
+        legacy_ids: ["push.notifications"]
+      ],
+      [
+        id: "file_picker",
+        family: "file_picker",
+        owner: :bounded_bridge,
+        package_class: :core,
+        proof_class: :merge_blocking,
+        rebuild: :native_required,
+        interaction: :user_answer,
+        prerequisites: [
+          "declared transfer_id",
+          "bounded bridge support",
+          "inbound native_picker transfer seam",
+          "copy-first staged handle plus transfer verification"
+        ],
+        denial: "undeclared_capability",
+        fallback:
+          "keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified",
+        guide: "guides/capabilities.md#bounded-bridge",
+        legacy_ids: ["files.pick"]
+      ],
+      [
+        id: "media_capture",
+        family: "media_capture",
+        owner: :native_screen,
+        package_class: :companion,
+        proof_class: :merge_blocking,
+        rebuild: :native_required,
+        interaction: :user_answer,
+        prerequisites: ["native screen route", "capture pack availability"],
+        denial: "pack_incompatible",
+        fallback: "fail closed instead of degrading into a bounded web upload flow",
+        guide: "guides/native_shell.md#native-capture-escape-hatch",
+        legacy_ids: ["camera", "camera.capture"]
+      ],
+      [
+        id: "scanner",
+        family: "scanner",
+        owner: :native_screen,
+        package_class: :defer,
+        proof_class: :advisory,
+        rebuild: :companion_required,
+        interaction: :user_answer,
+        prerequisites: ["scanner-native runtime", "policy-heavy proof lane"],
+        denial: "unavailable_capability",
+        fallback: "defer scanner support until native and proof posture are explicit",
+        guide: "guides/capabilities.md#explicit-defers"
+      ],
+      [
+        id: "document_scan",
+        family: "document_scan",
+        owner: :native_screen,
+        package_class: :defer,
+        proof_class: :advisory,
+        rebuild: :companion_required,
+        interaction: :user_answer,
+        prerequisites: ["document-scan runtime", "policy-heavy proof lane"],
+        denial: "unavailable_capability",
+        fallback: "defer document scan support until native and proof posture are explicit",
+        guide: "guides/capabilities.md#explicit-defers"
+      ],
+      [
+        id: "paywall_entry",
+        family: "paywall_entry",
+        owner: :backend_seam,
+        package_class: :core,
+        proof_class: :merge_blocking,
+        rebuild: :companion_required,
+        interaction: :fire_and_forget,
+        prerequisites: ["backend entitlement contract", "storefront guidance"],
+        denial: "unavailable_capability",
+        fallback: "fall back to Phoenix-owned paywall guidance without device authority",
+        guide: "guides/capabilities.md#backend-seams-and-deferred-surfaces"
+      ],
+      [
+        id: "purchase_intent",
+        family: "purchase_intent",
+        owner: :backend_seam,
+        package_class: :core,
+        proof_class: :merge_blocking,
+        rebuild: :companion_required,
+        interaction: :user_answer,
+        prerequisites: ["backend reconciliation", "provider-specific adapter"],
+        denial: "unavailable_capability",
+        fallback: "treat purchase events as reconciliation inputs, not entitlement truth",
+        guide: "guides/capabilities.md#backend-seams-and-deferred-surfaces"
+      ],
+      [
+        id: "restore_intent",
+        family: "restore_intent",
+        owner: :backend_seam,
+        package_class: :core,
+        proof_class: :merge_blocking,
+        rebuild: :companion_required,
+        interaction: :user_answer,
+        prerequisites: ["backend reconciliation", "storefront-aware adapter"],
+        denial: "unavailable_capability",
+        fallback: "keep restore flow backend-owned until adapter truth is explicit",
+        guide: "guides/capabilities.md#backend-seams-and-deferred-surfaces"
+      ],
+      [
+        id: "entitlement_snapshot",
+        family: "entitlement_snapshot",
+        owner: :backend_seam,
+        package_class: :core,
+        proof_class: :merge_blocking,
+        rebuild: :companion_required,
+        interaction: :device_answer,
+        prerequisites: ["backend entitlement authority", "reconciliation hook"],
+        denial: "unavailable_capability",
+        fallback: "treat device-side state as evidence instead of final entitlement truth",
+        guide: "guides/capabilities.md#backend-seams-and-deferred-surfaces"
+      ],
+      [
+        id: "reconciliation_evidence",
+        family: "reconciliation_evidence",
+        owner: :backend_seam,
+        package_class: :core,
+        proof_class: :merge_blocking,
+        rebuild: :companion_required,
+        interaction: :device_answer,
+        prerequisites: ["backend reconciliation", "device callback or webhook"],
+        denial: "unavailable_capability",
+        fallback: "treat evidence as asynchronous payload without blocking route entry",
+        guide: "guides/capabilities.md#backend-seams-and-deferred-surfaces"
+      ]
+    ]
+  end
+
+  defp family_capability_for(capability_id) do
+    Enum.find(capability_catalog(), fn attrs ->
+      capability_id in Keyword.get(attrs, :legacy_ids, [])
+    end)
+  end
+
+  defp compatibility_capability_attrs(nil, capability_id) do
+    [
+      id: capability_id,
+      version: capability_version(capability_id),
+      # Fail-closed / least-claiming defaults for a capability id with no
+      # family-catalog match at all (D-51 for :rebuild, D-54 for
+      # :interaction) — declared explicitly here, not left to
+      # Types.new_capability/1's own defaults, so the value is visible in
+      # this committed literal per D-52.
+      rebuild: :native_required,
+      interaction: :fire_and_forget
+    ]
+  end
+
+  defp compatibility_capability_attrs(attrs, capability_id) do
+    attrs
+    |> Keyword.put(:id, capability_id)
+    |> Keyword.put(:version, capability_version(capability_id))
+    |> Keyword.merge(
+      family: Keyword.fetch!(attrs, :family),
+      rebuild: Keyword.fetch!(attrs, :rebuild),
+      interaction: Keyword.fetch!(attrs, :interaction)
+    )
+    |> Keyword.delete(:legacy_ids)
+  end
+
+  defp capability_version(_capability), do: "1.0.0"
+
+  defp cache_contract(%Route{cache_contract: nil}), do: nil
+
+  defp cache_contract(%Route{id: route_id, cache_contract: contract_id}) do
+    contract_id
+    |> Contracts.new_cache_route(route_id: route_id)
+    |> Contracts.cache_contract()
+  end
+
+  defp island_contract(%Route{island_contract: nil}), do: nil
+
+  defp island_contract(%Route{
+         id: route_id,
+         island_contract: contract_id,
+         sync: [sync_seam | _rest]
+       }) do
+    contract_id
+    |> Contracts.new_study_session_island(
+      route_id: route_id,
+      sync_seam: sync_seam,
+      storage_budget: {:mb, 50},
+      reserve_for_journal: {:mb, 5},
+      eviction: :manual
+    )
+    |> Contracts.island_contract()
+  end
+
+  defp island_contract(%Route{id: route_id, island_contract: contract_id}) do
+    contract_id
+    |> Contracts.new_study_session_island(
+      route_id: route_id,
+      sync_seam: contract_id,
+      storage_budget: {:mb, 50},
+      reserve_for_journal: {:mb, 5},
+      eviction: :manual
+    )
+    |> Contracts.island_contract()
+  end
+end

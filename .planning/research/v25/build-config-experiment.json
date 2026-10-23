@@ -1,0 +1,26 @@
+{
+  "experiment": "Production generator config without unrelated server runtime credentials",
+  "fixture": "/private/tmp/crosswake-v25-config-research-b288pm1d",
+  "result": "passed",
+  "cases": [
+    {
+      "task": "toy.observe",
+      "exit_code": 1,
+      "build_config_loaded": false,
+      "runtime_credential_required": true,
+      "app_started": false,
+      "stdout": "Compiling 3 files (.ex)\nGenerated toy app\n",
+      "stderr": "** (System.EnvError) could not fetch environment variable \"CROSSWAKE_RESEARCH_RUNTIME_REQUIRED\" because it is not set\n    (elixir 1.19.5) lib/system.ex:731: System.fetch_env!/1\n    /private/tmp/crosswake-v25-config-research-b288pm1d/config/runtime.exs:2: (file)\n    (stdlib 6.2.1) erl_eval.erl:919: :erl_eval.do_apply/7\n    (stdlib 6.2.1) erl_eval.erl:271: :erl_eval.exprs/6\n    (elixir 1.19.5) lib/code.ex:629: Code.validated_eval_string/3\n"
+    },
+    {
+      "task": "toy.compile_config",
+      "exit_code": 0,
+      "build_config_loaded": true,
+      "runtime_credential_required": false,
+      "app_started": false,
+      "stdout": "BUILD_CONFIG_LOADED=true\nAPP_STARTED=false\n",
+      "stderr": ""
+    }
+  ],
+  "scope": "Minimal dependency-free Mix fixture; not a Crosswake host or Xcode composition test"
+}

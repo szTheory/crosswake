@@ -1,0 +1,100 @@
+{
+  "result": "passed",
+  "checked_at": "2026-10-13T16:22:17.766697+00:00",
+  "scope": "planning artifact coverage, routing and preservation; no implementation proof",
+  "plans": 4,
+  "tasks": 8,
+  "waves": 4,
+  "structures": [
+    {
+      "plan": "179-01-PLAN.md",
+      "valid": true,
+      "tasks": 2,
+      "wave": 1
+    },
+    {
+      "plan": "179-02-PLAN.md",
+      "valid": true,
+      "tasks": 2,
+      "wave": 2
+    },
+    {
+      "plan": "179-03-PLAN.md",
+      "valid": true,
+      "tasks": 2,
+      "wave": 3
+    },
+    {
+      "plan": "179-04-PLAN.md",
+      "valid": true,
+      "tasks": 2,
+      "wave": 4
+    }
+  ],
+  "requirements_covered": 3,
+  "decisions_covered": 22,
+  "gap_items_covered": 25,
+  "review": {
+    "blockers": 0,
+    "unresolved_warnings": 0,
+    "advisories": 3
+  },
+  "path_probe": {
+    "warnings": 8,
+    "reason": "outside_root",
+    "disposition": "accepted qualified independent candidate exception under D-02/D-21; probe not suppressed"
+  },
+  "failure_directions": {
+    "commands": 8,
+    "blockers": 0,
+    "warnings": 0
+  },
+  "requirements_pending": 9,
+  "plans_executed": 0,
+  "last_completed_phase": 178,
+  "active_phase": 179,
+  "next_command": "$gsd-execute-phase 179 --ws quality-ratchet-release",
+  "protected_history_files_unchanged": 1677,
+  "recovery_source_git_unchanged": true,
+  "preexisting_files_changed": [
+    ".planning/workstreams/quality-ratchet-release/.continue-here.md",
+    ".planning/workstreams/quality-ratchet-release/REQUIREMENTS.md",
+    ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
+    ".planning/workstreams/quality-ratchet-release/STATE.md",
+    ".planning/workstreams/quality-ratchet-release/state.json"
+  ],
+  "new_files_before_report": [
+    ".planning/research/.cache/1e29e2c73e79ca20917031d868b6561ba4d4fd3ab2c778d880af8118b17a8e45.json",
+    ".planning/research/.cache/b732783de2b282f37e09667ad2e89d9302b5de08ae414648b7ccd86de1850b45.json",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-01-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-02-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-03-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-04-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-PATTERNS.md",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-PLAN-CHECK.md",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-PLANNING-LOG.md",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-RESEARCH.md",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-VALIDATION.md",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/COVERAGE.md"
+  ],
+  "artifact_digests": {
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-01-PLAN.md": "f48aeb8a0d7590936a0f323c49b1ba3c3b828ddbe49d4ee8b84a404afafda49c",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-DISCUSSION-VALIDATION.json": "29d2bcadf53e35aa1ea5c05468f0e25331d1c2110898d47c8f42e53b1ee954b9",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-PLAN-CHECK.md": "63e44d3049a64bdf45a7f4e29973d36587d3c02b38f5b136261131c55112d06a",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-DISCUSSION-LOG.md": "1af7a5eb36aaba2f733300fc76bd3ea0334b7361448a979e66cd559e6140dc0f",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-02-PLAN.md": "6f646868da0ebcac34ac530dcd053441c65501512787fefefc764768f65908a2",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-VALIDATION.md": "36fbfa3df387b2112eaef624bc1ff4a14d6a711a1bce386c75906ba6dc381dff",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-03-PLAN.md": "daba87343a94d176452c7cb76118291b187edbb1cb7a677b5f98f51cf564f795",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-PATTERNS.md": "f5a76988fceade4d5069f4c0dca554f9c57a97e930e63de702c0ff340c56d511",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-RESEARCH.md": "69055ee5450d82b325d85f05ba05cc11aa7b475e8bf26ba011ece81252ea5cc6",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-PLANNING-LOG.md": "1b7219f5c963b4b469bc3fa42a3bedf12a6d639dd7dbe3daab9bd26a4777a51b",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-CONTEXT.md": "a6dd3cab81f648767c0661016ca4b409a9528e7dc338f375b22909a1266357f4",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/COVERAGE.md": "57bd0db5d4962dc3434ff15ef73f54686938a1d1ebe2acf68579af1d0a485ab5",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-04-PLAN.md": "988e00c786d1378c2de2a3f43f2106dc05cbde2c7a218adab26a212e3c18c9be"
+  },
+  "limitations": [
+    "Real Phoenix compile-only host, managed recovery and actual Xcode matrix are unexecuted.",
+    "Nyquist draft and unclassified edge/prohibition flags remain pending execution.",
+    "No new remote delivery, release or adopter/physical support authority."
+  ]
+}

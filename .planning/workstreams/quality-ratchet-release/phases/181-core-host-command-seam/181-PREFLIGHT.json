@@ -1,0 +1,91 @@
+{
+  "schema": "crosswake.phase181.gate_preflight/1",
+  "candidate_head": "7aca4bf887cc3340ada12022d5f1f39eedd013ab",
+  "candidate_tree": "e7459d98d72ac023cba527f6bd007382d6501540",
+  "test_files_sha256": {
+    "test/crosswake/proof/phase180_twin_feasibility_test.exs": "01df82646c3365b159006c26ec818a55feafd506f007d762d739f66177e756f5",
+    "examples/phoenix_host/test/crosswake_example/phase180_twin_feasibility_test.exs": "f7b968909db85040adfd42bc397fec8f70259fa2b7bd3176759b523a9b8aaa19",
+    "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Phase180TwinFeasibilityTests.swift": "a3bcef6ea7f64f90b2e85f6aecc04778334428f709f840c134b7c0ea25355672"
+  },
+  "env": {
+    "PHASE180_BASE_KIND": "authorized_seam_rerun",
+    "PHASE180_PROBE_ROUTE": "offline-study"
+  },
+  "facts": [
+    {
+      "id": "G1",
+      "gating": true,
+      "control_status": "passed",
+      "gate_status": "refuted",
+      "control_test": "phase180_control:G1",
+      "gate_test": "phase180_gate:G1"
+    },
+    {
+      "id": "G2",
+      "gating": true,
+      "control_status": "passed",
+      "gate_status": "refuted",
+      "control_test": "phase180_control:G2",
+      "gate_test": "phase180_gate:G2"
+    },
+    {
+      "id": "G3",
+      "gating": true,
+      "control_status": "passed",
+      "gate_status": "refuted",
+      "control_test": "Phase180TwinFeasibilityTests/test_G3_control_exported_request_carrying_command_reaches_delegate",
+      "gate_test": "Phase180TwinFeasibilityTests/test_G3_gate_generated_activation_session_lacks_host_command"
+    },
+    {
+      "id": "G4",
+      "gating": true,
+      "control_status": "passed",
+      "gate_status": "refuted",
+      "control_test": "Phase180TwinFeasibilityTests/test_G4_control_live_view_runtime_resolves",
+      "gate_test": "Phase180TwinFeasibilityTests/test_G4_gate_bounded_shell_denies_offline_island_runtime"
+    },
+    {
+      "id": "G6",
+      "gating": false,
+      "control_status": "passed",
+      "gate_status": "refuted",
+      "control_test": "phase180_control:G6",
+      "gate_test": "phase180_gate:G6"
+    }
+  ],
+  "invariants": [
+    {
+      "id": "G2_nondeclaring_clean",
+      "status": "held"
+    },
+    {
+      "id": "G2_probe_matches_declaration",
+      "status": "held"
+    },
+    {
+      "id": "G3_no_manufacture",
+      "status": "held"
+    },
+    {
+      "id": "G3_deny_absent",
+      "status": "held"
+    }
+  ],
+  "expected_verdict": "existing_path_supported",
+  "regression": {
+    "android_freeze": true,
+    "lockfiles": true,
+    "root_suite": true,
+    "example_suite": true,
+    "swift_suite": true,
+    "host_build": true,
+    "exunit_ownership": true,
+    "manifest_contract": true,
+    "root_tests": 2208,
+    "root_failures": 0,
+    "example_tests": 150,
+    "swift_tests": 80,
+    "swift_failures": 0
+  },
+  "note": "Read-only preflight in the Phase 181 candidate; the authoritative gate rerun is 180-01 in authorized_seam_rerun mode."
+}

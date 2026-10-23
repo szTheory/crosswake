@@ -1,0 +1,19 @@
+{
+  "candidate": "/private/tmp/crosswake-phase180-impl",
+  "realpath": "/private/tmp/crosswake-phase180-impl",
+  "git_top_level": "/private/tmp/crosswake-phase180-impl",
+  "source": "/private/tmp/crosswake-phase179-impl",
+  "source_head": "96e5a63efab657f89f3ac84d5b1d84ff5da5d822",
+  "source_tree": "0514b6244ec814c1d0701d580b04651f70f57019",
+  "initial_head": "96e5a63efab657f89f3ac84d5b1d84ff5da5d822",
+  "initial_tree": "0514b6244ec814c1d0701d580b04651f70f57019",
+  "gate_base_head": "12f84cd950d4574921767df823faed6797c17c26",
+  "gate_base_tree": "e51f069d52b1c1303d8d606d6000ff146654948e",
+  "base_kind": "authorized_seam_rerun",
+  "probe_route_id": "offline-study",
+  "seam_handoff": "180-SEAM-HANDOFF.json",
+  "authorized_diff_ok": true,
+  "qualified_at": "2026-10-14T12:33:20Z",
+  "isolation": "standalone local clone with no-push remote; no recovery source copied",
+  "remote_writes_authorized": false
+}

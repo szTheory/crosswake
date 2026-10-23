@@ -1,0 +1,9 @@
+{
+  "experiment": "Mix app.config loads runtime config without starting host supervision",
+  "fixture": "/private/tmp/crosswake-v25-config-research-b288pm1d",
+  "exit_code": 0,
+  "runtime_config_loaded": true,
+  "app_started": false,
+  "stdout": "Compiling 2 files (.ex)\nGenerated toy app\nRUNTIME_CONFIG_LOADED=true\nAPP_STARTED=false\n",
+  "stderr": ""
+}
