@@ -84,11 +84,17 @@ defmodule Crosswake.Proof.Phase175RunbookAncestryTest do
 
   test "remaining one-way gates bind the helper to live remote object identities" do
     for plan <- [
-          ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-07-PLAN.md",
-          ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-08-PLAN.md",
-          ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-10-PLAN.md"
+          "175-rehearsal-and-publish/175-07-PLAN.md",
+          "175-rehearsal-and-publish/175-08-PLAN.md",
+          "175-rehearsal-and-publish/175-10-PLAN.md"
         ] do
-      contents = File.read!(Path.join(@repo_root, plan))
+      contents =
+        File.read!(
+          Path.join(
+            @repo_root,
+            Crosswake.Test.PhaseEvidencePath.resolve("quality-ratchet-release", plan)
+          )
+        )
 
       assert contents =~ "script/check_release_runbook_ancestry.sh"
       assert contents =~ "baseRefOid"
@@ -103,7 +109,10 @@ defmodule Crosswake.Proof.Phase175RunbookAncestryTest do
       File.read!(
         Path.join(
           @repo_root,
-          ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-INCIDENT-DOC-COMMIT.md"
+          Crosswake.Test.PhaseEvidencePath.resolve(
+            "quality-ratchet-release",
+            "175-rehearsal-and-publish/175-INCIDENT-DOC-COMMIT.md"
+          )
         )
       )
 
