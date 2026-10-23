@@ -73,7 +73,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwin do
         summarize(:blocked, Atom.to_string(cause), nil, action)
 
       {:ok, runtime} ->
-        # The receipt is write-once, so a registry timeout at stop changes only the cause and
+        # The receipt is write-once, so a registry timeout, a gone registry or a surviving child at stop changes only the cause and
         # next-action text of the verdict, never the exit code or the written receipt.
         try do
           conduct(runtime, plan)
@@ -90,11 +90,24 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwin do
 
   @registry_timeout_note "Also check for leftover child processes: the run registry did not answer before the stop timeout, so a child may still be running."
 
+  @child_still_alive_note "Also check for leftover child processes: a child of this run was still alive when the run stopped, so stop it before the next run."
+  @registry_gone_note "Also check for leftover child processes: the run registry was already gone when the run stopped, so the children could not be listed and one may still be running."
+
   @doc false
   @spec annotate_stop({0 | 1 | 2, [String.t()]}, term()) :: {0 | 1 | 2, [String.t()]}
   def annotate_stop({code, [result, cause, report, next]}, {:error, :registry_timeout}) do
     cause = if cause == "first cause: none", do: "first cause: registry_timeout", else: cause
     {code, [result, cause, report, next <> " " <> @registry_timeout_note]}
+  end
+
+  def annotate_stop({code, [result, cause, report, next]}, {:error, :child_still_alive}) do
+    cause = if cause == "first cause: none", do: "first cause: child_still_alive", else: cause
+    {code, [result, cause, report, next <> " " <> @child_still_alive_note]}
+  end
+
+  def annotate_stop({code, [result, cause, report, next]}, {:error, :registry_gone}) do
+    cause = if cause == "first cause: none", do: "first cause: registry_gone", else: cause
+    {code, [result, cause, report, next <> " " <> @registry_gone_note]}
   end
 
   def annotate_stop(verdict, _stop_result), do: verdict

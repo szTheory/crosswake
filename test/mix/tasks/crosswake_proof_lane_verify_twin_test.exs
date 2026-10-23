@@ -319,7 +319,8 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
     assert File.read!(report) == bytes
   end
 
-  test "a registry gone before the command's stop_all leaves a passing verdict unchanged", ctx do
+  test "a registry gone before the command's stop_all reaches the printed verdict, not the receipt",
+       ctx do
     gone = fn runtime, expectations ->
       :ok = Agent.stop(runtime.registry)
       full_producers().(runtime, expectations)
@@ -329,13 +330,16 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
 
     assert [
              "result: passed (exit 0)",
-             "first cause: none",
+             "first cause: registry_gone",
              "report: " <> report,
-             "next action: " <> _
+             "next action: " <> next
            ] = lines
 
+    assert next =~ "registry"
     assert report == Path.join(ctx.run_root, "receipt.json")
-    assert File.exists?(report)
+    assert {:ok, _receipt} = report |> File.read!() |> TwinReceipt.decode()
+    refute File.read!(report) =~ "registry_gone"
+    refute File.read!(Path.join(ctx.run_root, "twin-result.json")) =~ "registry_gone"
   end
 
   test "the real journey path requires --identity", ctx do
@@ -461,7 +465,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
       full_producers().(runtime, expectations)
     end
 
-    assert {0, ["result: passed (exit 0)", "first cause: none" | _]} =
+    assert {0, ["result: passed (exit 0)", "first cause: registry_gone" | _]} =
              VerifyTwin.execute(["ios", "--candidate", record(ctx), "--run-root", other],
                producers: passing
              )
@@ -749,10 +753,29 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyTwinTest do
       assert l4 == "next action: A " <> @note
     end
 
-    test "every other stop result returns the verdict unchanged" do
-      for stop <- [:ok, {:error, :registry_gone}, {:error, :child_still_alive}] do
-        assert VerifyTwin.annotate_stop(@passed, stop) == @passed
-      end
+    test "a child still alive at stop names the cause and appends its own note" do
+      assert {0, [l1, l2, l3, l4]} =
+               VerifyTwin.annotate_stop(@passed, {:error, :child_still_alive})
+
+      assert l1 == "result: passed (exit 0)"
+      assert l2 == "first cause: child_still_alive"
+      assert l3 == "report: R"
+      assert l4 =~ ~r/^next action: A .*child.*still (alive|running)/
+      refute l4 =~ "did not answer before the stop timeout"
+    end
+
+    test "a registry gone at stop names the cause and appends its own note" do
+      assert {0, [l1, l2, l3, l4]} = VerifyTwin.annotate_stop(@passed, {:error, :registry_gone})
+
+      assert l1 == "result: passed (exit 0)"
+      assert l2 == "first cause: registry_gone"
+      assert l3 == "report: R"
+      assert l4 =~ ~r/^next action: A .*registry.*(gone|stopped)/
+      refute l4 =~ "did not answer before the stop timeout"
+    end
+
+    test "a clean stop returns the verdict unchanged" do
+      assert VerifyTwin.annotate_stop(@passed, :ok) == @passed
     end
   end
 end
