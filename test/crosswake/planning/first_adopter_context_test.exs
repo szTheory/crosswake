@@ -277,6 +277,18 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     end)
   end
 
+  for extension <-
+        ~w(.body .entitlements .out .patch .sha256 .source .stderr .stdout .tsv .xcconfig .xcprivacy .xctestplan) do
+    test "filesystem scanning classifies #{extension} raw evidence and shell files as scannable" do
+      path = "examples/phoenix_host/native/ios/crosswake_shell/sample#{unquote(extension)}"
+
+      with_temporary_repository([path], "harmless synthetic content", fn root ->
+        assert path in FirstAdopterContext.discover_paths(root)
+        assert FirstAdopterContext.scan_filesystem(root, []) == []
+      end)
+    end
+  end
+
   test "filesystem scanning classifies nested gitignore policy files as durable text" do
     private_term = Enum.join(["nested", "gitignore", "canary"], "-")
     path = ".planning/ui-reviews/.gitignore"
