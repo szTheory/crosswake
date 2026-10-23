@@ -1,0 +1,147 @@
+{
+  "status": "ok",
+  "commands": [
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/prepare_candidate.test.mjs",
+      "statement": "Nonzero exit, fixture cannot produce a real commit/clone, or any wrong-base/tampered/omitted-path control is accepted.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-01-PLAN.md",
+      "task": "Task 1: Trace one real private bundle replay through Git commit, clean clone and source verdict"
+    },
+    {
+      "command": "node .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/prepare_candidate.mjs --prepare",
+      "statement": "Nonzero exit, missing private handoff environment, source/base drift, non-six-file selection, or byte mismatch.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-01-PLAN.md",
+      "task": "Task 2: Assemble and bind the actual six-file local candidate"
+    },
+    {
+      "command": "node .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/prepare_candidate.mjs --check",
+      "statement": "Nonzero exit, proof clone HEAD/tree/index/status differs from the bound candidate, or private bundle cannot be revalidated.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-01-PLAN.md",
+      "task": "Task 2: Assemble and bind the actual six-file local candidate"
+    },
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/local_proof.test.mjs",
+      "statement": "Nonzero exit or a false-green fixture passes without real facade text, status snapshots or source identity.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-02-PLAN.md",
+      "task": "Task 1: Read real facade output and Git identities into a closed local evidence projection"
+    },
+    {
+      "command": "script/verify_repository.sh --all",
+      "statement": "Nonzero exit, missing prerequisite, FAIL/BLOCKED/omitted stage, generated drift, or repository mutation; invoke with the explicit private run/capture environment from the action and cwd equal to the exact proof clone.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-02-PLAN.md",
+      "task": "Task 2: Prepare exact tools and locks, run --all, and retain the complete preliminary proof"
+    },
+    {
+      "command": "node .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/local_proof.mjs --collect",
+      "statement": "Nonzero exit, absent retained log/snapshot, changed HEAD/tree/index/status, or invalid ignored artifact policy; invoke from the workstream checkout with the owner-private invocation record set.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-02-PLAN.md",
+      "task": "Task 2: Prepare exact tools and locks, run --all, and retain the complete preliminary proof"
+    },
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/ci_evidence.test.mjs",
+      "statement": "Nonzero exit or any wrong-attempt, incomplete-page, wrong-checkout, unauthorized-skip or inaccessible-policy negative case is accepted.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-03-PLAN.md",
+      "task": "Task 1: Prove read adapter and checkout parser against real GitHub subprocess shapes"
+    },
+    {
+      "command": "python3 script/check_ci_leaf_manifest.py --self-test",
+      "statement": "Nonzero exit or selected-source manifest/workflow structural contract fails; invoke from the independent candidate clone.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-03-PLAN.md",
+      "task": "Task 2: Check the selected candidate's CI contract and current required policy"
+    },
+    {
+      "command": "node .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/ci_evidence.mjs --contract",
+      "statement": "Nonzero exit, inaccessible required policy, missing workflow/manifest identity, or incomplete context/app information.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-03-PLAN.md",
+      "task": "Task 2: Check the selected candidate's CI contract and current required policy"
+    },
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/proposal_delivery.test.mjs",
+      "statement": "Nonzero exit or actual Git/gh fixture accepts wrong base, extra path, stale proof, unbound write or private-data leakage.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-04-PLAN.md",
+      "task": "Task 1: Prepare exact proposal and exercise its production delivery adapter locally"
+    },
+    {
+      "command": "node .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/proposal_delivery.mjs --prepare",
+      "statement": "Nonzero exit, incomplete proposal card, candidate/proof/policy drift or adapter fixture failure.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-04-PLAN.md",
+      "task": "Task 1: Prepare exact proposal and exercise its production delivery adapter locally"
+    },
+    {
+      "command": "node .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/proposal_delivery.mjs --deliver",
+      "statement": "Nonzero exit, missing scoped authority/credential, drift, ambiguous or duplicate delivery, or remote observation not matching the consumed exact operation; invoke only after the authority branch described above.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-04-PLAN.md",
+      "task": "Task 2: Deliver one scoped non-release proposal or stop at its exact authority gate"
+    },
+    {
+      "command": "node .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/ci_evidence.mjs --collect",
+      "statement": "Nonzero exit, missing page/job/check, absent observed checkout, wrong attempt, stale PR/source, inaccessible policy, failed/neutral/cancelled/unauthorized-skipped leaf, or control/umbrella not successful.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-05-PLAN.md",
+      "task": "Task 1: Observe complete hosted CI and bind every relevant checkout to one run attempt"
+    },
+    {
+      "command": "script/verify_repository.sh --all",
+      "statement": "Nonzero exit, missing required tool/dependency, blocked or missing stage, generated drift or source mutation; invoke in the fresh exact observed-commit clone with its private run-root/capture-root environment.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-05-PLAN.md",
+      "task": "Task 2: Verify the exact runner-tested merge object from a fresh clean clone"
+    },
+    {
+      "command": "node .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/local_proof.mjs --collect",
+      "statement": "Nonzero exit, missing retained output, wrong OID/tree/index, dirty NUL status, unexpected ignored residue, or fewer than nine ordered PASS stages; use CROSSWAKE_178_PROOF_KIND=final.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-05-PLAN.md",
+      "task": "Task 2: Verify the exact runner-tested merge object from a fresh clean clone"
+    },
+    {
+      "command": "node --test .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/join_proof.test.mjs",
+      "statement": "Nonzero exit or any wrong-commit, stale-attempt, missing-output or private-data negative case is accepted.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-05-PLAN.md",
+      "task": "Task 3: Join exact local/hosted proof and produce a plain maintainer handoff"
+    },
+    {
+      "command": "node .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/join_proof.mjs --check",
+      "statement": "Nonzero exit, local/hosted commit mismatch, incomplete proof or changed live binding.",
+      "status": "ok",
+      "severity": "none",
+      "plan": "178-05-PLAN.md",
+      "task": "Task 3: Join exact local/hosted proof and produce a plain maintainer handoff"
+    }
+  ],
+  "counts": {
+    "blocker": 0,
+    "warning": 0,
+    "total": 17
+  },
+  "readError": null
+}

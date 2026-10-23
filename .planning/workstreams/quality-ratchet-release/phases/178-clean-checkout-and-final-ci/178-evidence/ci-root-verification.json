@@ -1,0 +1,15 @@
+{
+  "phase": 178,
+  "plan": "03",
+  "observedAt": "2026-10-12T21:18:48.583389+00:00",
+  "collectorTests": {
+    "passed": 14,
+    "failed": 0
+  },
+  "selfTest": "pass",
+  "sourcePolicyContract": "pass",
+  "privateCaptureGroupsVerified": 5,
+  "selectedPaths": 8,
+  "hostedProof": "absent",
+  "MAINT-08": "pending"
+}

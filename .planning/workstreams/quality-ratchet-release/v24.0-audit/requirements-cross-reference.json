@@ -1,0 +1,239 @@
+{
+  "milestone": "v24.0",
+  "checkedAt": "2026-10-13T02:47:15.667891+00:00",
+  "requirements": [
+    {
+      "id": "MAINT-01",
+      "description": "Maintainer can inspect an inventory of every local change against merged code, with the compared source commits named.",
+      "phase": 176,
+      "traceability_status": "Complete",
+      "checked": true,
+      "verification_status": "passed",
+      "claimed_by_plans": [
+        "phases/176-local-work-and-artifact-disposition/176-01-PLAN.md",
+        "phases/176-local-work-and-artifact-disposition/176-02-PLAN.md"
+      ],
+      "completed_by_plans": [],
+      "summary_frontmatter_status": "missing_completion_ids",
+      "initial_matrix_status": "partial_requires_manual_verification",
+      "final_status": "satisfied",
+      "manual_verification": "Matched phase verification and post-verification parent closeout; summaries preserve their earlier execution epoch. No missing implementation or orphaned requirement."
+    },
+    {
+      "id": "MAINT-02",
+      "description": "Maintainer can see a disposition for each inventoried change and recover unique work before any removal.",
+      "phase": 176,
+      "traceability_status": "Complete",
+      "checked": true,
+      "verification_status": "passed",
+      "claimed_by_plans": [
+        "phases/176-local-work-and-artifact-disposition/176-01-PLAN.md",
+        "phases/176-local-work-and-artifact-disposition/176-02-PLAN.md"
+      ],
+      "completed_by_plans": [],
+      "summary_frontmatter_status": "missing_completion_ids",
+      "initial_matrix_status": "partial_requires_manual_verification",
+      "final_status": "satisfied",
+      "manual_verification": "Matched phase verification and post-verification parent closeout; summaries preserve their earlier execution epoch. No missing implementation or orphaned requirement."
+    },
+    {
+      "id": "MAINT-04",
+      "description": "Maintainer can distinguish tracked contracts, ignored transient files and forbidden residue using the existing repository artifact policy.",
+      "phase": 176,
+      "traceability_status": "Complete",
+      "checked": true,
+      "verification_status": "passed",
+      "claimed_by_plans": [
+        "phases/176-local-work-and-artifact-disposition/176-01-PLAN.md",
+        "phases/176-local-work-and-artifact-disposition/176-02-PLAN.md"
+      ],
+      "completed_by_plans": [],
+      "summary_frontmatter_status": "missing_completion_ids",
+      "initial_matrix_status": "partial_requires_manual_verification",
+      "final_status": "satisfied",
+      "manual_verification": "Matched phase verification and post-verification parent closeout; summaries preserve their earlier execution epoch. No missing implementation or orphaned requirement."
+    },
+    {
+      "id": "MAINT-03",
+      "description": "Maintainer can use supported release entry points after obsolete release code is removed only where its replacement and callers have been verified.",
+      "phase": 177,
+      "traceability_status": "Complete",
+      "checked": true,
+      "verification_status": "passed",
+      "claimed_by_plans": [
+        "phases/177-maintenance-and-queue-reconciliation/177-01-PLAN.md",
+        "phases/177-maintenance-and-queue-reconciliation/177-02-PLAN.md",
+        "phases/177-maintenance-and-queue-reconciliation/177-03-PLAN.md",
+        "phases/177-maintenance-and-queue-reconciliation/177-05-PLAN.md",
+        "phases/177-maintenance-and-queue-reconciliation/177-07-PLAN.md",
+        "phases/177-maintenance-and-queue-reconciliation/177-08-PLAN.md"
+      ],
+      "completed_by_plans": [],
+      "summary_frontmatter_status": "missing_completion_ids",
+      "initial_matrix_status": "partial_requires_manual_verification",
+      "final_status": "satisfied",
+      "manual_verification": "Matched phase verification and post-verification parent closeout; summaries preserve their earlier execution epoch. No missing implementation or orphaned requirement."
+    },
+    {
+      "id": "MAINT-05",
+      "description": "Maintainer can see a concrete next action for every open PR and issue in a dated inventory; maintenance triage does not authorize release publication.",
+      "phase": 177,
+      "traceability_status": "Complete",
+      "checked": true,
+      "verification_status": "passed",
+      "claimed_by_plans": [
+        "phases/177-maintenance-and-queue-reconciliation/177-04-PLAN.md",
+        "phases/177-maintenance-and-queue-reconciliation/177-07-PLAN.md"
+      ],
+      "completed_by_plans": [],
+      "summary_frontmatter_status": "missing_completion_ids",
+      "initial_matrix_status": "partial_requires_manual_verification",
+      "final_status": "satisfied",
+      "manual_verification": "Matched phase verification and post-verification parent closeout; summaries preserve their earlier execution epoch. No missing implementation or orphaned requirement."
+    },
+    {
+      "id": "MAINT-06",
+      "description": "Maintainer can follow corrected maintenance instructions without stale paths or commands, while historical failure records retain their original verdicts.",
+      "phase": 177,
+      "traceability_status": "Complete",
+      "checked": true,
+      "verification_status": "passed",
+      "claimed_by_plans": [
+        "phases/177-maintenance-and-queue-reconciliation/177-05-PLAN.md",
+        "phases/177-maintenance-and-queue-reconciliation/177-06-PLAN.md",
+        "phases/177-maintenance-and-queue-reconciliation/177-07-PLAN.md",
+        "phases/177-maintenance-and-queue-reconciliation/177-08-PLAN.md"
+      ],
+      "completed_by_plans": [],
+      "summary_frontmatter_status": "missing_completion_ids",
+      "initial_matrix_status": "partial_requires_manual_verification",
+      "final_status": "satisfied",
+      "manual_verification": "Matched phase verification and post-verification parent closeout; summaries preserve their earlier execution epoch. No missing implementation or orphaned requirement."
+    },
+    {
+      "id": "MAINT-07",
+      "description": "Maintainer can run the existing repository verification command from an exact clean checkout and inspect its results and before/after Git status.",
+      "phase": 178,
+      "traceability_status": "Complete",
+      "checked": true,
+      "verification_status": "passed",
+      "claimed_by_plans": [
+        "phases/178-clean-checkout-and-final-ci/178-01-PLAN.md",
+        "phases/178-clean-checkout-and-final-ci/178-02-PLAN.md",
+        "phases/178-clean-checkout-and-final-ci/178-05-PLAN.md"
+      ],
+      "completed_by_plans": [],
+      "summary_frontmatter_status": "missing_completion_ids",
+      "initial_matrix_status": "partial_requires_manual_verification",
+      "final_status": "satisfied",
+      "manual_verification": "Matched phase verification and post-verification parent closeout; summaries preserve their earlier execution epoch. No missing implementation or orphaned requirement."
+    },
+    {
+      "id": "MAINT-08",
+      "description": "Maintainer can inspect green CI bound to the final source commit; results from an older or different commit do not satisfy this requirement.",
+      "phase": 178,
+      "traceability_status": "Complete",
+      "checked": true,
+      "verification_status": "passed",
+      "claimed_by_plans": [
+        "phases/178-clean-checkout-and-final-ci/178-01-PLAN.md",
+        "phases/178-clean-checkout-and-final-ci/178-02-PLAN.md",
+        "phases/178-clean-checkout-and-final-ci/178-03-PLAN.md",
+        "phases/178-clean-checkout-and-final-ci/178-04-PLAN.md",
+        "phases/178-clean-checkout-and-final-ci/178-05-PLAN.md"
+      ],
+      "completed_by_plans": [],
+      "summary_frontmatter_status": "missing_completion_ids",
+      "initial_matrix_status": "partial_requires_manual_verification",
+      "final_status": "satisfied",
+      "manual_verification": "Matched phase verification and post-verification parent closeout; summaries preserve their earlier execution epoch. No missing implementation or orphaned requirement."
+    }
+  ],
+  "summaryFrontmatter": [
+    {
+      "file": "phases/176-local-work-and-artifact-disposition/176-01-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    },
+    {
+      "file": "phases/176-local-work-and-artifact-disposition/176-02-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    },
+    {
+      "file": "phases/177-maintenance-and-queue-reconciliation/177-01-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    },
+    {
+      "file": "phases/177-maintenance-and-queue-reconciliation/177-02-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    },
+    {
+      "file": "phases/177-maintenance-and-queue-reconciliation/177-03-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    },
+    {
+      "file": "phases/177-maintenance-and-queue-reconciliation/177-04-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    },
+    {
+      "file": "phases/177-maintenance-and-queue-reconciliation/177-05-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    },
+    {
+      "file": "phases/177-maintenance-and-queue-reconciliation/177-06-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    },
+    {
+      "file": "phases/177-maintenance-and-queue-reconciliation/177-07-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    },
+    {
+      "file": "phases/177-maintenance-and-queue-reconciliation/177-08-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    },
+    {
+      "file": "phases/178-clean-checkout-and-final-ci/178-01-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    },
+    {
+      "file": "phases/178-clean-checkout-and-final-ci/178-02-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    },
+    {
+      "file": "phases/178-clean-checkout-and-final-ci/178-03-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    },
+    {
+      "file": "phases/178-clean-checkout-and-final-ci/178-04-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    },
+    {
+      "file": "phases/178-clean-checkout-and-final-ci/178-05-SUMMARY.md",
+      "requirements_completed": [],
+      "completion_deferred_to_parent": true
+    }
+  ],
+  "requirementsSatisfied": 8,
+  "requirementsTotal": 8,
+  "orphaned": [],
+  "originalSummaryBytesPreserved": true,
+  "parserNote": "CLI --pick of empty arrays emitted no bytes; parsed the complete summary-extract JSON instead.",
+  "manualEvidence": {
+    "176": "phase176-audit-resolution.json; 176-VERIFICATION.md; 176-VALIDATION.md",
+    "177": "phases/177-maintenance-and-queue-reconciliation/177-evidence/phase-closeout.json; 177-VERIFICATION.md",
+    "178": "phases/178-clean-checkout-and-final-ci/178-evidence/phase-closeout.json; 178-VERIFICATION.md; final-acceptance.json"
+  }
+}

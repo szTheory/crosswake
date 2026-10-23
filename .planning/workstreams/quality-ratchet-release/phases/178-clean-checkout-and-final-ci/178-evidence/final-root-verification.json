@@ -1,0 +1,48 @@
+{
+  "phase": 178,
+  "checkedAt": "2026-10-13T02:13:32.885606+00:00",
+  "evidenceTests": {
+    "files": 5,
+    "passed": 82,
+    "failed": 0
+  },
+  "liveJoin": {
+    "passed": true,
+    "runId": 38322827152,
+    "attempt": 1,
+    "finalCommit": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+    "localStages": 9,
+    "requiredChecks": 48,
+    "totalChecks": 49
+  },
+  "historicalProtection": {
+    "unchanged": true,
+    "files": 1677
+  },
+  "recoveryProtection": {
+    "unchanged": true
+  },
+  "wave4": {
+    "schemaDrift": false,
+    "codebaseDrift": "skipped:no-structure-md",
+    "uiBlock": false
+  },
+  "spotChecks": {
+    "allFiveSummariesPresent": true,
+    "recoveryCommits": "prohibited by user; actual independent private source objects qualified"
+  },
+  "regressionGate": {
+    "files": 7,
+    "passed": 90,
+    "failed": 0,
+    "inputEpoch": "published Phase177 handoff fixtures; current-state verification separate"
+  },
+  "review": {
+    "depth": "standard",
+    "files": 18,
+    "critical": 0,
+    "warning": 0,
+    "info": 0,
+    "disposition": "no finding rows exist; disposition ledger not required by clean-review path"
+  }
+}

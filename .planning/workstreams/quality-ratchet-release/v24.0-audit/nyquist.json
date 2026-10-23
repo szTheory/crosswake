@@ -1,0 +1,13 @@
+{
+  "activeCapability": true,
+  "compliant_phases": [
+    176,
+    177,
+    178
+  ],
+  "partial_phases": [],
+  "not_validated_phases": [],
+  "missing_phases": [],
+  "overall": "compliant",
+  "note": "Three validated phase coverage records; historical Phase177 fixtures remain bound to their original handoff epoch."
+}

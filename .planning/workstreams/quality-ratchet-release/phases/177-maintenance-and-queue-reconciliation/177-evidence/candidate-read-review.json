@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "phase": "177",
+  "plan": "02",
+  "status": "bounded-current-path-proof-complete",
+  "source": {
+    "baseCommit": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+    "treeVerified": true,
+    "owner": "177-02",
+    "patchStatus": "recorded",
+    "changedFiles": [
+      "test/crosswake/release_candidate/companion_receipt_test.exs",
+      "test/crosswake/release_candidate/evidence_gate_test.exs"
+    ],
+    "patchBytes": 5252,
+    "replayVerified": true
+  },
+  "supportedGenericEntryProof": {
+    "status": {
+      "positive": "Mix.Tasks.Crosswake.Release.Status.run/1 returns the stable local status report.",
+      "denied": "The focused status suite exercises fail-closed reporting for a failed release check."
+    },
+    "candidate": {
+      "positive": "Mix.Tasks.Crosswake.Release.Candidate.run/2 writes an exact-source candidate receipt.",
+      "denied": "Malformed, duplicate, unknown, and stale selectors fail before evaluation or output."
+    },
+    "receipt": {
+      "positive": "Mix.Tasks.Crosswake.Release.Receipt.run/1 writes a deterministic local companion receipt.",
+      "denied": "A source-mismatched local fixture exits blocked and writes no output artifact."
+    },
+    "gate": {
+      "positive": "Mix.Tasks.Crosswake.Release.Gate.run/1 accepts a seeded exact post-merge envelope.",
+      "denied": "A mismatched exact receipt selector exits blocked and leaves seeded evidence unchanged."
+    },
+    "liveWriterCalls": 0
+  },
+  "plan93": {
+    "pinnedRouterPresent": false,
+    "preservedArtifactFound": false,
+    "readerComparison": "unproven",
+    "historicalVerdict": "unchanged; no new verdict established",
+    "modeDisposition": "retained-historically; no retirement claim",
+    "note": "The pinned merged source contains no Plan93 reader/router, and the owner-private recovery archive search found no Plan93 artifact to execute. No public reader was restored and no historical mode was marked retired.",
+    "actualEntryDenial": {
+      "result": "all-preserved-selectors-denied-at-resolution",
+      "selectors": 4,
+      "exception": "Mix.NoTaskError",
+      "taskAndAliasAbsenceCheckedBeforeRun": true,
+      "optionsParsed": false,
+      "authorityRead": false,
+      "writerInvoked": false,
+      "networkInvoked": false,
+      "evidenceWritten": false,
+      "checkoutUnchanged": true,
+      "readerComparison": "unproven"
+    }
+  },
+  "verification": {
+    "mix": {
+      "command": "mix test test/crosswake/release_candidate/companion_receipt_test.exs test/crosswake/release_candidate/evidence_gate_test.exs test/mix/tasks/crosswake_release_candidate_test.exs test/mix/tasks/crosswake_release_status_test.exs",
+      "result": "pass",
+      "tests": 43,
+      "failures": 0,
+      "dependencyCheck": "normal"
+    },
+    "workflowIntegrity": {
+      "command": "elixir script/check_release_workflow_integrity.exs",
+      "result": "pass",
+      "checks": 98,
+      "failures": 0
+    },
+    "format": "mix format --check-formatted on the two changed test files passed",
+    "diffCheck": "git diff --check passed"
+  },
+  "dependencyAudit": {
+    "package": "lazy_html",
+    "version": "0.1.13",
+    "source": "existing official Hex package cache",
+    "mixLockUnchanged": true,
+    "outerChecksumMatchesLock": true,
+    "innerChecksumMatchesLock": true,
+    "embeddedChecksumValid": true,
+    "sourceVersionMatchesLock": true,
+    "isolatedHexHome": true
+  },
+  "limitations": [
+    "The planned test/crosswake/release_candidate/plan93_candidate_read_test.exs file and lib/mix/tasks/crosswake.release.candidate_read.ex module are absent at the attested base; no stale API was added to satisfy their historical names.",
+    "The preserved Plan93 inspection verdict could not be re-executed or compared because its archived artifact was unavailable."
+  ],
+  "requirementCompletion": []
+}

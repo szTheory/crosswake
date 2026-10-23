@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "phase": 178,
+  "plan": "04",
+  "status": "ready-for-scoped-authorization",
+  "proposalId": "phase178-3e8a4b2601b5",
+  "target": {
+    "repository": "szTheory/crosswake",
+    "canonicalUrl": "https://github.com/szTheory/crosswake.git",
+    "branch": "maintenance/phase178-3e8a4b2601b5",
+    "base": "main",
+    "baseCommit": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+    "head": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+    "tree": "27f4073039b4dd976492127549603a76ce22499b"
+  },
+  "diff": {
+    "pathCount": 8,
+    "added": 166,
+    "removed": 31,
+    "paths": [
+      {
+        "file": "README.md",
+        "added": 1,
+        "removed": 1
+      },
+      {
+        "file": "docs/COMPANION-PUBLISH-RUNBOOK.md",
+        "added": 22,
+        "removed": 6
+      },
+      {
+        "file": "docs/RELEASE-INCIDENT-RESPONSE.md",
+        "added": 1,
+        "removed": 1
+      },
+      {
+        "file": "script/collection_assertion_ledger.json",
+        "added": 3,
+        "removed": 3
+      },
+      {
+        "file": "script/collection_assertion_remediation.json",
+        "added": 8,
+        "removed": 8
+      },
+      {
+        "file": "test/crosswake/guides/release_boundaries_test.exs",
+        "added": 24,
+        "removed": 1
+      },
+      {
+        "file": "test/crosswake/release_candidate/companion_receipt_test.exs",
+        "added": 44,
+        "removed": 9
+      },
+      {
+        "file": "test/crosswake/release_candidate/evidence_gate_test.exs",
+        "added": 63,
+        "removed": 2
+      }
+    ]
+  },
+  "validation": {
+    "preliminaryCommand": "script/verify_repository.sh --all",
+    "stagesPassed": 9,
+    "stagesTotal": 9,
+    "retainedLogs": 8,
+    "sourceCommit": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+    "sourceTree": "27f4073039b4dd976492127549603a76ce22499b",
+    "policy": {
+      "observedAt": "2026-10-12T22:39:38.182Z",
+      "branchProtection": {
+        "strict": true,
+        "requiredContexts": [
+          {
+            "context": "Crosswake CI",
+            "appId": 15368
+          }
+        ]
+      },
+      "effectiveRules": {
+        "state": "observed",
+        "count": 0
+      }
+    }
+  },
+  "action": {
+    "type": "ordinary-branch-and-pull-request",
+    "push": "git push https://github.com/szTheory/crosswake.git HEAD:refs/heads/maintenance/phase178-3e8a4b2601b5",
+    "pullRequest": {
+      "method": "gh pr create",
+      "base": "main",
+      "head": "maintenance/phase178-3e8a4b2601b5",
+      "title": "Maintain release guides and assertion references",
+      "draft": false
+    },
+    "prohibited": [
+      "force push",
+      "delete",
+      "admin bypass",
+      "merge",
+      "tag",
+      "publication"
+    ]
+  },
+  "decision": "One plain-language allow or hold applies to this displayed branch-and-PR attempt only."
+}

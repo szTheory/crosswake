@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "phase": 178,
+  "plan": "04",
+  "status": "ready-for-scoped-authorization",
+  "proposalId": "phase178-3e8a4b2601b5-8bbe1fc1-b29e-4f3f-9b64-a7022847e99b",
+  "target": {
+    "repository": "szTheory/crosswake",
+    "canonicalUrl": "https://github.com/szTheory/crosswake.git",
+    "branch": "maintenance/phase178-3e8a4b2601b5",
+    "base": "main",
+    "baseCommit": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+    "head": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+    "tree": "27f4073039b4dd976492127549603a76ce22499b"
+  },
+  "diff": {
+    "pathCount": 8,
+    "added": 166,
+    "removed": 31,
+    "paths": [
+      {
+        "file": "README.md",
+        "added": 1,
+        "removed": 1
+      },
+      {
+        "file": "docs/COMPANION-PUBLISH-RUNBOOK.md",
+        "added": 22,
+        "removed": 6
+      },
+      {
+        "file": "docs/RELEASE-INCIDENT-RESPONSE.md",
+        "added": 1,
+        "removed": 1
+      },
+      {
+        "file": "script/collection_assertion_ledger.json",
+        "added": 3,
+        "removed": 3
+      },
+      {
+        "file": "script/collection_assertion_remediation.json",
+        "added": 8,
+        "removed": 8
+      },
+      {
+        "file": "test/crosswake/guides/release_boundaries_test.exs",
+        "added": 24,
+        "removed": 1
+      },
+      {
+        "file": "test/crosswake/release_candidate/companion_receipt_test.exs",
+        "added": 44,
+        "removed": 9
+      },
+      {
+        "file": "test/crosswake/release_candidate/evidence_gate_test.exs",
+        "added": 63,
+        "removed": 2
+      }
+    ]
+  },
+  "validation": {
+    "preliminaryCommand": "script/verify_repository.sh --all",
+    "stagesPassed": 9,
+    "stagesTotal": 9,
+    "stages": [
+      {
+        "purpose": "repository-preflight",
+        "result": "PASS"
+      },
+      {
+        "purpose": "root-proof",
+        "result": "PASS"
+      },
+      {
+        "purpose": "example-host-proof",
+        "result": "PASS"
+      },
+      {
+        "purpose": "browser-proof",
+        "result": "PASS"
+      },
+      {
+        "purpose": "ios-package-proof",
+        "result": "PASS"
+      },
+      {
+        "purpose": "android-package-proof",
+        "result": "PASS"
+      },
+      {
+        "purpose": "format-proof",
+        "result": "PASS"
+      },
+      {
+        "purpose": "warnings-proof",
+        "result": "PASS"
+      },
+      {
+        "purpose": "repository-cleanliness",
+        "result": "PASS"
+      }
+    ],
+    "retainedLogs": 8,
+    "sourceCommit": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+    "sourceTree": "27f4073039b4dd976492127549603a76ce22499b",
+    "policy": {
+      "observedAt": "2026-10-12T23:02:54.404Z",
+      "branchProtection": {
+        "strict": true,
+        "requiredContexts": [
+          {
+            "context": "Crosswake CI",
+            "appId": 15368,
+            "sources": [
+              "branch_protection"
+            ]
+          }
+        ]
+      },
+      "effectiveRules": {
+        "state": "successful-empty",
+        "count": 0,
+        "fingerprint": "28b8cf84d5cee954d3c0bc4d470ebaa53c9915dd1c55a864d24f2970d8282a49"
+      }
+    }
+  },
+  "changeSummary": "Refresh the release-boundary guide and incident response guidance around supported read-only status and source-bound candidate evidence. The candidate receipt remains local and does not authorize publication. Historical candidate-read and mirror-tag modes remain historical. Tests invoke the receipt and evidence-gate Mix tasks directly and assert that source mismatch blocks without writing artifacts. Two assertion snapshots refresh line references by stable keys while preserving all 230 ledger keys, 52 frozen rows, and their expressions.",
+  "action": {
+    "type": "ordinary-branch-and-pull-request",
+    "pushArgv": [
+      "git",
+      "push",
+      "https://github.com/szTheory/crosswake.git",
+      "3e8a4b2601b542323edfd6053f25e56c67873b47:refs/heads/maintenance/phase178-3e8a4b2601b5"
+    ],
+    "pullRequest": {
+      "method": "gh pr create",
+      "repo": "github.com/szTheory/crosswake",
+      "argv": [
+        "gh",
+        "pr",
+        "create",
+        "--repo",
+        "github.com/szTheory/crosswake",
+        "--base",
+        "main",
+        "--head",
+        "szTheory:maintenance/phase178-3e8a4b2601b5",
+        "--title",
+        "Maintain release guides and assertion references"
+      ],
+      "base": "main",
+      "head": "szTheory:maintenance/phase178-3e8a4b2601b5",
+      "title": "Maintain release guides and assertion references",
+      "body": "## What changed\n\nRefresh the release-boundary guide and incident response guidance around supported read-only status and source-bound candidate evidence. The candidate receipt remains local and does not authorize publication. Historical candidate-read and mirror-tag modes remain historical.\n\nTests invoke the receipt and evidence-gate Mix tasks directly and assert that source mismatch blocks without writing artifacts. Two assertion snapshots refresh line references by stable keys while preserving all 230 ledger keys, 52 frozen rows, and their expressions.\n\n## Validation\n\n- `script/verify_repository.sh --all`: 9/9 stages passed; eight retained stage logs.\n- Exact candidate: 3e8a4b2601b542323edfd6053f25e56c67873b47 (27f4073039b4dd976492127549603a76ce22499b).\n- Base: `main` at d0dbdf7bf196cea167ced3c50cf620bf3cb2452b.\n- Hosted CI remains pending.",
+      "draft": false
+    },
+    "prohibited": [
+      "force push",
+      "delete",
+      "admin bypass",
+      "merge",
+      "tag",
+      "publication"
+    ]
+  },
+  "decision": "One plain-language allow or hold applies to this displayed branch-and-PR attempt only."
+}

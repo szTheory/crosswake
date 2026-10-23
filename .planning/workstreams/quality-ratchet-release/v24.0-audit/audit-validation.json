@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-10-13T02:51:47.008550+00:00",
+  "auditStatus": "tech_debt",
+  "requirementsSatisfied": 8,
+  "requirementsTotal": 8,
+  "criticalGaps": 0,
+  "retainedDebtItems": 6,
+  "phaseVerificationFingerprints": {
+    "176": "passed",
+    "177": "passed",
+    "178": "passed"
+  },
+  "strictStateValidation": {
+    "valid": true,
+    "warnings": [],
+    "scope": "complete"
+  },
+  "recoveryProtection": {
+    "unchanged": true,
+    "changedDimensions": []
+  },
+  "historicalFilesUnchanged": 1677,
+  "gitDiffCheckExitCode": 0,
+  "queueValidation": "passed;20issues4PRs",
+  "lastCompletedPhase": 178,
+  "activePhaseStatus": "complete",
+  "nextCommand": "$gsd-complete-milestone v24.0 --ws quality-ratchet-release",
+  "noArchiveOrRemoteWrites": true,
+  "noRecoveryCheckoutGitWrites": true
+}

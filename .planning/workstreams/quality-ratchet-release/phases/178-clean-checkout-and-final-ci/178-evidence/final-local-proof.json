@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "phase": 178,
+  "plan": "02",
+  "kind": "final",
+  "status": "pass",
+  "command": "script/verify_repository.sh --all",
+  "source": {
+    "commit": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+    "tree": "27f4073039b4dd976492127549603a76ce22499b"
+  },
+  "runId": "final-17805-all-20261013T012626120Z",
+  "stages": [
+    {
+      "purpose": "repository-preflight",
+      "result": "PASS"
+    },
+    {
+      "purpose": "root-proof",
+      "result": "PASS"
+    },
+    {
+      "purpose": "example-host-proof",
+      "result": "PASS"
+    },
+    {
+      "purpose": "browser-proof",
+      "result": "PASS"
+    },
+    {
+      "purpose": "ios-package-proof",
+      "result": "PASS"
+    },
+    {
+      "purpose": "android-package-proof",
+      "result": "PASS"
+    },
+    {
+      "purpose": "format-proof",
+      "result": "PASS"
+    },
+    {
+      "purpose": "warnings-proof",
+      "result": "PASS"
+    },
+    {
+      "purpose": "repository-cleanliness",
+      "result": "PASS"
+    }
+  ],
+  "stageCount": 9,
+  "executedLogCount": 8,
+  "ignoredArtifacts": {
+    "beforeCount": 15824,
+    "afterCount": 15824,
+    "newCount": 20
+  },
+  "privateEvidence": "owner-private-retained"
+}

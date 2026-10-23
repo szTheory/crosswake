@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "phase": 178,
+  "plan": "04",
+  "checkedAt": "2026-10-12T23:04:05.811Z",
+  "proposalId": "phase178-3e8a4b2601b5-eca1b15f-65cb-4b76-a7cc-a9bdb9afef1e",
+  "status": "reviewed-awaiting-scoped-authorization",
+  "adapterTests": 21,
+  "adapterTestsPassed": 21,
+  "source": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+  "tree": "27f4073039b4dd976492127549603a76ce22499b",
+  "pathCount": 8,
+  "preliminaryStagesPassed": 9,
+  "privateBindingMode": "600",
+  "bindingUnconsumed": true,
+  "bindingStable": true,
+  "proofIndexStable": true,
+  "proposalHashMatches": true,
+  "proposalPrivacyPass": true,
+  "observationJoined": true,
+  "remoteWrites": 0,
+  "reviewedPrivateBodyFileDelivery": true
+}

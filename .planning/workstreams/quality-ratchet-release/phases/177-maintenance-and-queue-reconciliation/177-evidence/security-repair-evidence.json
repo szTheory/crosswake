@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "phase": 177,
+  "status": "bounded-security-repairs-verified",
+  "legacyModeResolution": {
+    "result": "all-preserved-selectors-denied-at-resolution",
+    "sourceCommit": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+    "selectors": 78,
+    "candidateRead": 4,
+    "mirrorTag": 74,
+    "denialClass": "Mix.NoTaskError",
+    "taskAndAliasAbsenceCheckedBeforeRun": true,
+    "optionsParsed": false,
+    "authorityRead": false,
+    "writerInvoked": false,
+    "networkInvoked": false,
+    "evidenceWritten": false,
+    "sourceCheckoutUnchanged": true,
+    "historicalReaderComparisons": "unproven"
+  },
+  "sourcePrivacy": {
+    "publicProbeAbsoluteWorkspacePaths": false,
+    "rawSubprocessStderrExposed": false,
+    "rawExceptionMessagesExposed": false,
+    "untrustedArgumentValuesExposed": false,
+    "sentinelPathPayloadTests": "pass"
+  },
+  "canonicalFetch": {
+    "url": "https://github.com/szTheory/crosswake.git",
+    "commit": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+    "tree": "12a0f1bf3c32ecdde0326f4a288b597b11e33b06",
+    "liveFetch": "pass",
+    "fetchFixtureCases": ["success", "nonzero-exit", "spawn-error", "signal", "tree-mismatch"],
+    "headIndexWorktreeUnchanged": true
+  },
+  "focusedTests": {
+    "command": "node --test 177-evidence/qualify_source.test.mjs 177-evidence/source_reconciliation.test.mjs",
+    "passed": 13,
+    "failed": 0
+  },
+  "scope": {
+    "pinnedSourceFilesChanged": 0,
+    "sourcePatchBundlesRefreshed": false,
+    "branchOrCommitChanged": false
+  }
+}
