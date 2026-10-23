@@ -481,6 +481,23 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
     end
   end
 
+  describe "D-12 locale independence" do
+    test "the committed-scope snapshot is written as decodable UTF-8 under the C locale" do
+      committed = @ledger |> File.read!() |> JSON.decode!()
+
+      {output, exit_code} =
+        System.cmd(
+          "elixir",
+          [@script, "--root", @repo_root, "--scope", committed["scope"], "--emit-snapshot"],
+          env: [{"LC_ALL", "C"}, {"LANG", "C"}],
+          cd: @repo_root
+        )
+
+      assert exit_code == 0
+      assert {:ok, %{"rows" => _}} = JSON.decode(output)
+    end
+  end
+
   defp run_check(root) do
     System.cmd("elixir", [@script, "--root", Path.expand(root), "--check"],
       stderr_to_stdout: true,

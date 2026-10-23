@@ -83,12 +83,21 @@ defmodule Crosswake.CollectionAssertionInventory do
 
       Keyword.get(opts, :emit_snapshot, false) ->
         scope = effective_scope(Keyword.get(opts, :scope), ledger_path)
-        root |> rows(scope) |> render_snapshot(scope) |> IO.write()
+        root |> rows(scope) |> render_snapshot(scope) |> emit_bytes()
         0
 
       true ->
         check(root, Keyword.get(opts, :scope), ledger_path)
     end
+  end
+
+  # D-12: write the JSON as raw bytes so the output does not depend on the locale. In a UTF-8
+  # locale the stdout device would re-encode the already-UTF-8 binary (mojibake); in the C locale
+  # IO.write escapes non-ASCII. Switching the device to latin1 passes the bytes through unchanged,
+  # and IO.binwrite then writes them as-is in every locale.
+  defp emit_bytes(data) do
+    :io.setopts(:standard_io, encoding: :latin1)
+    IO.binwrite(data)
   end
 
   # `--emit-remediation`: projects the CURRENT committed ledger's `needs-fix` rows into the
@@ -104,7 +113,7 @@ defmodule Crosswake.CollectionAssertionInventory do
     |> Enum.filter(&(&1["bucket"] == "needs-fix"))
     |> Enum.sort_by(&{&1["display"], &1["key"]})
     |> render_remediation(frozen_at(root))
-    |> IO.write()
+    |> emit_bytes()
 
     0
   end
