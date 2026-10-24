@@ -82,16 +82,44 @@ Tracked in the rolling roadmap (NEXT/LATER), not in this milestone: v29 Android 
 
 ## Traceability
 
-Filled by the roadmapper.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
+| PLAN-01 | Phase 194 | Pending |
+| PLAN-02 | Phase 194 | Pending |
+| PLAN-03 | Phase 194 | Pending |
+| PLAN-04 | Phase 194 | Pending |
+| PLAN-05 | Phase 194 | Pending |
+| ADR-01 | Phase 194 | Pending |
+| ADR-02 | Phase 194 | Pending |
+| REL-01 | Phase 195 | Pending |
+| REL-02 | Phase 195 | Pending |
+| REL-03 | Phase 195 | Pending |
+| REL-04 | Phase 195 | Pending |
+| REL-05 | Phase 195 | Pending |
+| REL-06 | Phase 195 | Pending |
+| REL-07 | Phase 199 | Pending |
+| HYG-01 | Phase 195 | Pending |
+| HYG-02 | Phase 195 | Pending |
+| SPEC-01 | Phase 196 | Pending |
+| SPEC-02 | Phase 196 | Pending |
+| SPEC-03 | Phase 196 | Pending |
+| SPEC-04 | Phase 196 | Pending |
+| SPEC-05 | Phase 196 | Pending |
+| ARCH-01 | Phase 196 | Pending |
+| ARCH-02 | Phase 196 | Pending |
+| ARCH-03 | Phase 196 | Pending |
+| DOCS-01 | Phase 197 | Pending |
+| DOCS-02 | Phase 197 | Pending |
+| DOCS-03 | Phase 197 | Pending |
+| AND-01 | Phase 198 | Pending |
+| AND-02 | Phase 198 | Pending |
+| AND-03 | Phase 198 | Pending |
 
 **Coverage:**
 - v28.0 requirements: 30 total
-- Mapped to phases: 0
-- Unmapped: 30
+- Mapped to phases: 30 (194: 7, 195: 8, 196: 8, 197: 3, 198: 3, 199: 1)
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-10-24*
-*Last updated: 2026-10-24 after initial definition*
+*Last updated: 2026-10-24 after roadmap creation (phases 194–199)*
