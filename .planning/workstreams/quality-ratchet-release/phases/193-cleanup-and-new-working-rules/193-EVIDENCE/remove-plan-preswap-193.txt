@@ -1,0 +1,24 @@
+item R-TMP-038 tmp <tmp>/crosswake-phase179-hex gates pass
+item R-POST-TMP-01 tmp <tmp>/crosswake-phase190-run gates pass
+item R-POST-TMP-02 tmp <tmp>/crosswake-phase191-run gates pass
+item R-POST-TMP-03 tmp <tmp>/crosswake-plan02-190.F2x8Jn gates pass
+item R-POST-TMP-04 tmp <tmp>/crosswake-plan04-190.qYBtqe gates pass
+item R-POST-TMP-05 tmp <tmp>/crosswake-plan07-190.gwbmeI gates pass
+item R-POST-TMP-06 tmp <tmp>/crosswake-plan10-190.IXtlRg gates pass
+item R-POST-TMP-07 tmp <tmp>/crosswake-plan10-190.VI5iHm gates pass
+item R-POST-TMP-08 tmp <tmp>/crosswake-plan10-190.VhqWaX gates pass
+item R-POST-TMP-09 tmp <tmp>/crosswake-plan10-190.W4CBsM gates pass
+item R-POST-TMP-10 tmp <tmp>/crosswake-plan10-190.ib68MH gates pass
+item R-WT-2 wt <recovery-checkout>-accrue-bridge gates pass
+item R-POST-LOC-01 clone <recovery-checkout>-integration-191 gates kept:ref_tip_unprotected
+item R-POST-LOC-02 clone <recovery-checkout>-candidate-durable gates pass
+item R-POST-LOC-03 recovery <recovery-checkout> gates pass pending:d,f
+pending recovery dirty_uncovered 30
+backup_root verify pass
+copy_forward pending
+now branches 56 stashes 4 worktrees 3 tmp_entries 11
+189 branches 56 stashes 4 worktrees 3 tmp_entries 159
+bridge_commits patch_unique 14 in_refs_all_bundle 14
+handoff pending
+backup_root stays
+remove: plan items 15 pass 14 kept 1

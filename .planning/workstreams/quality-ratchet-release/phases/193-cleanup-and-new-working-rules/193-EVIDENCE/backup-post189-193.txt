@@ -1,0 +1,10 @@
+backup: ancestry ok
+backup: bundle refs 5
+backup: checkpoint new
+backup: tmp entries 10 files 798
+backup: dirty paths 87
+restore integration-191-trials.bundle: pass
+restore post189-tmp.tar: pass
+restore post189-dirty.tar: pass
+backup: sums ok 7
+backup: result pass

@@ -86,7 +86,7 @@ cause_word() {
 }
 
 if [ "$MODE" = dry-run ]; then
-  g "$IC" -c credential.helper= -c 'credential.helper=!gh auth git-credential' push --porcelain --no-follow-tags --dry-run origin "HEAD:$PUSH_REF" > "$R192/push.out" 2>&1
+  g "$IC" -c credential.helper= -c 'credential.helper=!gh auth git-credential' -c http.postBuffer=524288000 push --porcelain --no-follow-tags --dry-run origin "HEAD:$PUSH_REF" > "$R192/push.out" 2>&1
   prc=$?
   RA=$(live_ref "$PUSH_REF") || RA=unread
   if [ "$prc" -eq 0 ]; then
@@ -102,7 +102,7 @@ if [ "$MODE" = dry-run ]; then
 fi
 
 # push mode: one attempt, never repeated
-g "$IC" -c credential.helper= -c 'credential.helper=!gh auth git-credential' push --porcelain --no-follow-tags origin "HEAD:$PUSH_REF" > "$R192/push.out" 2>&1
+g "$IC" -c credential.helper= -c 'credential.helper=!gh auth git-credential' -c http.postBuffer=524288000 push --porcelain --no-follow-tags origin "HEAD:$PUSH_REF" > "$R192/push.out" 2>&1
 prc=$?
 RA=$(live_ref "$PUSH_REF") || RA=unread
 if [ "$RA" = "$H" ]; then

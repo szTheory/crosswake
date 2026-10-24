@@ -1,0 +1,3 @@
+The check for the first adopter's private terms was skipped by the user's earlier decision (A-14).
+2 personal values in older history were accepted and not rewritten; they are not shown here.
+The full local suite ran at the planning sync head. The review-fix commit ran only its affected tests and the scanner self-test. This PR's CI is the full judge.

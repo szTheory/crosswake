@@ -1,0 +1,20 @@
+K01 a fixture with every rule right passes with 16 d16 lines: as expected
+K02 missing AGENTS.md fails: as expected
+K03 missing How changes land heading fails: as expected
+K04 a missing D-16 phrase fails that phrase only: as expected
+K05 a D-16 phrase present only outside the section fails: as expected
+K06 Standing authorization present fails: as expected
+K07 Phase175 present fails: as expected
+K08 Repair-only pushes present fails: as expected
+K09 missing allow/hold gate words fail: as expected
+K10 STATE active section still describing the recovery checkout fails: as expected
+K11 history lines in STATE are never read: as expected
+K12 missing ROADMAP note fails: as expected
+K13 PROJECT Current stage line saying stays frozen fails: as expected
+K14 the unrelated Android stays frozen line does not fail: as expected
+K15 missing SEED-025 fails: as expected
+K16 SEED-025 with WR-01 not first fails: as expected
+K17 SEED-025 with fewer than six done-looks-like items fails: as expected
+K18 REQUIREMENTS without the SEED-025 line in Future Requirements fails: as expected
+K19 static scan: no git write, no pipe into tail or head, outside .github and test: as expected
+selftest rules-check-193: controls 19 of 19 as expected
