@@ -1,21 +1,16 @@
 ---
 gsd_state_version: "1.0"
-milestone: v27.0
-milestone_name: Land and Clean Up (Phases 189–193) — shipped 2026-10-24
-status: Awaiting next milestone
-stopped_at: "v27.0 archived; next milestone not started"
-last_updated: "2026-10-24T22:10:55.103Z"
+milestone: v28.0
+milestone_name: Truth and Release Train
+status: planning
+last_updated: "2026-10-24T22:47:53.242Z"
 last_activity: 2026-10-24
-last_activity_desc: Milestone v27.0 completed and archived
-state_head: f34baa7b4cef8685707b42bcb746cf71b8441209
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 55
-  completed_plans: 55
-  percent: 100
-current_phase: 193
-current_phase_name: Cleanup and new working rules
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -26,10 +21,10 @@ See `.planning/PROJECT.md` for the core thesis and decisions (updated 2026-10-24
 
 ## Current Position
 
-Phase: Milestone v27.0 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-10-24 — Milestone v27.0 completed and archived
+Status: Defining requirements
+Last activity: 2026-10-24 — Milestone v28.0 started
 
 ## Exact Next Action
 
