@@ -887,6 +887,42 @@ Preserve historical artifacts at original bytes and paths. Separate retained unc
 
 ---
 
+## Milestone: v27.0 — Land and Clean Up
+
+**Shipped:** 2026-10-24. **Phases:** 5 (189–193) | **Plans:** 55 | **Plan tasks:** 127 | **Requirements:** 18/18.
+
+### What Was Built
+
+- A content-based inventory of every copy of the work outside GitHub `main` (258 rows, 7 PR dispositions) and restore-tested backups outside the temp folder: 76/76 restores passed (189).
+- Fixes for the seven carried v26 warnings, made in a durable clone of the candidate, each with failing controls (190).
+- One integration branch from current `main` in a separate durable clone, carrying the candidate history, FIX commits and the v24–v27 planning records, with a HEAD-bound privacy scan and all nine suite stages passing (191).
+- PR #242 merged as `d12aed75` through a one-use `allow` gate, with CI green on the head and on the merge commit and every publish job skipped (192).
+- A clean `main` checkout in place of the recovery checkout, 300 of 306 listed copies removed after hash-matched backups, and AGENTS.md "How changes land" (193).
+
+### What Worked
+
+Backing up and restore-testing before any deletion meant the macOS temp cleaner, which removed 60 loose temp files mid-phase, cost one rerun and no data. One-use `allow`/`hold` gates bound to a displayed PR and head made each irreversible step explicit without standing approvals. Building in separate durable clones kept the frozen recovery checkout untouched until the swap.
+
+### What Was Inefficient
+
+Many plans needed reruns (189-10 three runs, 191-10/11, 192-08/10, 193-06), mostly on scanner false positives or a moving environment. Records written before a merge went stale the moment it happened: STATE, ROADMAP and continue-here all still said "awaiting merge" at audit. The installed CLI again undercounted tasks (1 vs 127), and `init.manager` could not parse this workstream's roadmap (0 phases).
+
+### Patterns Established
+
+Classify by content, not by name. Back up and restore-test, then remove item by item against a ledger. Make each irreversible step a one-use gate bound to what is displayed. Land planning records through the same PR flow as code.
+
+### Key Lessons
+
+1. Write post-merge records after the merge, or make the close PR carry them; a pre-merge "complete once X" line is stale on arrival.
+2. A ledger label is a claim too: "removed 300" included 55 already-absent rows. Count the action, not the row.
+3. A long freeze accumulates work that exists only locally; landing it took a whole milestone. Branch-and-PR from `main` keeps that number near zero.
+
+### Debt and Cost Observations
+
+See the [debt disposition](workstreams/quality-ratchet-release/milestones/v27.0-closeout/debt-disposition.md). Merges: #242, #243, #244; no tag or publication. 125 commits from `d0dbdf7b` to `f34baa7b`. Model mix and session counts were not measured.
+
+---
+
 ## Milestone: v26.0 — Harden Before Trust
 
 **Planning closeout:** 2026-10-16. **Phases:** 5 (184–188) | **Plans:** 37 | **Plan tasks:** 96 | **Requirements:** 18/18.
@@ -959,6 +995,11 @@ See the [debt disposition](workstreams/quality-ratchet-release/milestones/v25.0-
 ---
 
 ## Cross-Milestone Trends
+
+### v27 additions
+
+- Long freezes trade short-term safety for a landing milestone: v24–v26 kept product code candidate-only, and v27 needed five phases to land and clean up. The new branch-and-PR rule ends the freeze pattern.
+- Status records written ahead of an event (a merge, a removal) go stale on arrival. Write them after the event, or carry them in the next PR.
 
 ### v26 additions
 
