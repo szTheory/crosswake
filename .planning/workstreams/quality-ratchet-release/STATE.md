@@ -1,21 +1,21 @@
 ---
 gsd_state_version: "1.0"
 milestone: v27.0
-milestone_name: Land and Clean Up (Phases 189–193) — in progress
+milestone_name: Land and Clean Up (Phases 189–193) — phases complete, audit next
 current_phase: 193
 current_phase_name: Cleanup and new working rules
-status: executing
-stopped_at: Phase 193 plans 01-04 complete; plan 05 (PR 1) in progress
-last_updated: "2026-10-24T15:31:48.684Z"
+status: phase_complete_pending_merge
+stopped_at: Phase 193 plan 10 - PR 2 (#244) open, verified, awaiting the merge answer
+last_updated: "2026-10-24T17:30:00.000Z"
 last_activity: 2026-10-24
-last_activity_desc: Phase 193 execution started
+last_activity_desc: Phase 193 plan 10 - PR 2 opened and verified
 state_head: d0f3e2f1ead2046c26da5cc4b5dd62d5bfea1377
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 5
   total_plans: 55
-  completed_plans: 45
-  percent: 60
+  completed_plans: 55
+  percent: 100
 ---
 
 # Project State
@@ -26,24 +26,24 @@ See `.planning/PROJECT.md` for the core thesis and decisions (updated 2026-10-16
 
 ## Current Position
 
-Phase: 193 (Cleanup and new working rules) — EXECUTING
-Plan: 9 of 10 (plans 01-08 complete)
-Status: Executing Phase 193 (plan 09: working rules, PR dispositions and follow-up seed)
-Last activity: 2026-10-24 — Phase 193 plans 01-08 complete; working rules rewritten as plain files
+Phase: 193 (Cleanup and new working rules) — COMPLETE once PR 2 (#244) merges
+Plan: 10 of 10 (all plans written; PR 2 carries the Phase 193 records)
+Status: Phase 193 complete once PR 2 merges; v27.0's five phases (189 to 193) are then complete
+Last activity: 2026-10-24 — PR 2 opened, CI green, final check passed
 
-Progress: [██████░░░░] 60%
+Progress: [██████████] 100%
 
 ## Exact Next Action
 
-What was checked and what happened in Phase 193 so far: the backups were re-verified and the post-189 items backed up (plan 01); the push/merge gate, copy-forward, folder-swap, removal, final-check and working-rules tools were built, tested and frozen by hash (plans 02 to 04); the records and tools landed on `main` through PR 1 (plan 05); the old checkout was retired and replaced by a clean `main` checkout at the same path (plan 06); the late-record sweep found all four handoff files already equal to `main` (plan 07); after your `allow`, 300 of the 306 listed copies were removed and 6 were kept, with the ledger in `193-REMOVAL-LEDGER.md` (plan 08). One local copy remains by design: the integration clone, because 8 remote-tracking refs in it (5 Dependabot, a maintenance branch, a release-attestation branch and the release-please branch) have tips that exist in no backup.
+What was checked and what happened in Phase 193: the backups were re-verified (plan 01); the push/merge gate, copy-forward, folder-swap, removal, final-check and working-rules tools were built, tested and frozen by hash (plans 02 to 04); the records and tools landed on `main` through PR 1 (plan 05); the old checkout was retired and replaced by a clean `main` checkout at the same path (plan 06); the guard and late-record sweep passed (plan 07); after your `allow`, 300 of the 306 listed copies were removed and 6 were kept, with the ledger in `193-REMOVAL-LEDGER.md` (plan 08); AGENTS.md now says to branch from `main` and open a PR, and every open PR has a recorded disposition (plan 09); PR 2 (#244) carries all of these records, passed Crosswake CI and the full final check (plan 10). One local copy remains by design: the integration clone, because 8 remote-tracking refs in it have tips that exist in no backup.
 
-Plan 09 changed the working rules: AGENTS.md now says to branch from `main` and open a PR (section "How changes land"), the one-use `allow`/`hold` gate covers merges, publishes, tags and remote branch deletion, every open PR has a recorded disposition (recorded only, nothing was changed on GitHub), and the Phase 192 review residue is parked as SEED-025. Nothing is committed yet; these are plain files on local `main`.
+Phase 193 counts as complete once PR 2 is merged. The merge needs your one-word `allow` or `hold`, asked once. After the merge the final check runs again on `main`; that result is reported in the handoff and kept as a receipt in the backup folder (`receipts-193/`); `final-check-193.sh --post-merge` reproduces it.
 
-Next, plan 10 cuts a branch from `main`, opens PR 2 with these records, runs the final check, and asks you once before merging. The command is `$gsd-execute-phase 193 --ws quality-ratchet-release`.
-
-The only human touchpoint left is the PR 2 merge `allow`/`hold` (plan 10).
+Next command: `$gsd-audit-milestone --ws quality-ratchet-release`.
 
 ### Handoff history
+
+- Superseded (2026-10-24): the Phase 193 plan 10 start handoff. It read: "What was checked and what happened in Phase 193 so far: the backups were re-verified and the post-189 items backed up (plan 01); the push/merge gate, copy-forward, folder-swap, removal, final-check and working-rules tools were built, tested and frozen by hash (plans 02 to 04); the records and tools  ..."
 
 - Superseded (2026-10-24): frozen recovery checkout rules. Done: the recovery-checkout freeze and the /private/tmp candidate flow ended in Phase 193; work now lands through PRs from main (AGENTS.md "How changes land").
 - Superseded (2026-10-24): the Exact Next Action written during Phase 193 plan 05 (PR 1). It read: "What was checked and what happened so far in Phase 193: the 189 backups were re-verified and the post-189 items were backed up (plan 01); a fresh clean clone of `main` and a standalone push/merge gate were built and dry-run (plan 02); the copy-forward, folder-swap and session-guard tools were built and tested (plan 03); the removal gate, final check and working-rules check were built and tested, and all 12 scripts are frozen by hash (plan 04). Nothing was removed. PR 1 (the Phase 192 post-sync records plus the whole Phase 193 folder) is being opened from the clean clone now; the recovery checkout has no git change.  Next, plan 05 merges PR 1 into `main` after your `allow` (you have given a standing allow for exactly that one merge, at the head it proposes, if CI is green), and plan 06 copies settings forward and swaps the folders; the session then ends. After the swap, open a new Claude Code session in `<home>/projects/crosswake` (the old checkout becomes `crosswake-recovery-retired`) and run `$gsd-execute-phase 193 --ws quality-ratchet-release`. It will recognize plans 05 and 06 as already done in the retired folder and continue at plan 07, which first checks that it is in the right folder (the guard). This is the last STATE.md write a 193 plan makes in the recovery checkout.  The only human touchpoints left: the restart, the single removal `allow`/`hold` (plan 08), and the PR 2 merge `allow`/`hold` (plan 10). All planning files are plain files and land through PR 1 (D-03, D-25)."
