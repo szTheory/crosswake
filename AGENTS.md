@@ -54,6 +54,11 @@ inventory, then pause Crosswake until the public-v1 mobile path is active.
 - Do not build native menu/action-button breadth, new companions, capture/device packs, commerce
   productionization, a dashboard, brand/showcase polish, generic sync, background sync, or generic
   native storage unless the governing ADR's reversal condition is met.
+- For a just-displayed, one-use approval gate, accept a plain-language `allow` or `hold`, bound
+  internally to that attempt and its displayed scope. The gate is required for merges to `main`,
+  merging the release PR, any Hex, Maven or iOS publish, creating or pushing tags, and deleting a
+  remote branch. Local commits and pushes of feature branches need no gate. The user never copies
+  hashes. An approval is never standing and never transfers to another attempt.
 
 ## Sensitive Data Rules
 
@@ -92,3 +97,31 @@ inventory, then pause Crosswake until the public-v1 mobile path is active.
   when a decision changes.
 - Keep settled code-local truth in git. Keep fast-changing adopter execution in the codename-only
   Linear issue drafts.
+- GSD handoff rule: report the last completed phase, the active phase's status, and the exact next
+  command from the workstream STATE and ROADMAP. Do not repeat a completed step. When no command is
+  eligible, say so and name the condition that reopens work.
+- Keep one active handoff per workstream; move older handoffs to history.
+- Continue authorized local planning, diagnosis, implementation, and checks without per-step
+  prompts.
+- Ask for a fresh decision only for a genuinely new irreversible operation. Never transfer a
+  consumed approval to another operation, never retry an uncertain delivery, and never treat
+  frustration as permission.
+- Retire superseded routes explicitly as not executed.
+- Test adapters against the dependency's real output, not invented fixtures.
+- A successful local read with a more privileged CLI credential does not prove that a workflow
+  credential can read the same route.
+- Plain-language status: start with what was checked, what happened, what is unknown and why,
+  whether anything changed, and the next action. Explain internal codes after that.
+
+## How changes land
+
+- Work in the one main checkout and branch from current origin/main as `<type>/<topic>`, using the
+  conventional prefixes release-please reads.
+- Worktrees are allowed for parallel agent runs, never as a home for candidate state under /tmp.
+- Every change goes through a PR with Crosswake CI green on the head.
+- Merge commit only.
+- Say which commit CI actually ran on: for a pull request, GitHub also tests a
+  synthetic merge commit, which is not the head.
+- Run the privacy scan before every push, and rescan after any new commit.
+- When CI is red, fix forward tied to the observed cause.
+- Before retrying a write, read and reconcile what the first attempt actually did.

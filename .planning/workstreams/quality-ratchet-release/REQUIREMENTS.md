@@ -70,6 +70,7 @@ See [v27.0-SCOPE.md](v27.0-SCOPE.md). The v26 requirements are archived in [mile
 
 - Validate the Nyquist status of phases 184–188 (all VALIDATION.md files are still drafts).
 - Address the remaining open review findings in the v26 debt disposition that FIX does not cover.
+- Address the Phase 192 review residue parked in SEED-025 (the CI failure-tail credential masking gap first).
 
 ## Out of Scope
 

@@ -65,7 +65,9 @@ build_expected() {
       parse_files "$INV/$t.files" | awk "$ALLOW_AWK" | awk -v src="$t" '{ s=$0; sub(/^[^ ]+ [^ ]+ /,"",s); printf "settings\t%s\t%s\t%s\t%s\n",src,$1,$2,s }' >> "$out.raw"
     fi
   done
-  parse_files "$INV/env-local.files" | awk '{ s=$0; sub(/^[^ ]+ [^ ]+ /,"",s); printf "env\tenv\t%s\t600\t%s\n",$1,s }' >> "$out.raw"
+  # the 189 env tar may hold members under the original root (SRC without its leading slash):
+  # those get src "envp" and the repo-relative path; extract_expected maps them back
+  parse_files "$INV/env-local.files" | awk -v pre="${SRC#/}/" '{ s=$0; sub(/^[^ ]+ [^ ]+ /,"",s); src="env"; if (index(s,pre)==1) { s=substr(s,length(pre)+1); src="envp" } printf "env\t%s\t%s\t600\t%s\n",src,$1,s }' >> "$out.raw"
   if [ -f "$INV/post189-runtime.tar" ] && [ -f "$INV/post189-runtime.files" ]; then
     parse_files "$INV/post189-runtime.files" | awk '{ s=$0; sub(/^[^ ]+ [^ ]+ /,"",s); printf "runtime\trt\t%s\t%s\t%s\n",$1,$2,s }' >> "$out.raw"
   fi
@@ -89,20 +91,29 @@ count_cat() { awk -F'\t' -v c="$2" '$1==c{n++} END{print n+0}' "$1"; }
 
 # extract_expected EXP DIR : extract each file from its final source into DIR
 extract_expected() {
-  local exp=$1 d=$2 src tar lf envp
+  local exp=$1 d=$2 src tar lf envp pre ml
   mkdir -p -m 700 "$d" || exit 2
-  for src in ik post189-dirty post189-dirty-r1 env rt; do
+  for src in ik post189-dirty post189-dirty-r1 env envp rt; do
     lf="$W/list.$src"
     awk -F'\t' -v s="$src" '$2==s{print $5}' "$exp" > "$lf"
     [ -s "$lf" ] || continue
     case $src in
       ik) tar=$INV/ignored-keep.tar ;;
-      env) tar=$INV/env-local.tar ;;
+      env|envp) tar=$INV/env-local.tar ;;
       rt) tar=$INV/post189-runtime.tar ;;
       *) tar=$INV/$src.tar ;;
     esac
-    COPYFILE_DISABLE=1 tar -xpf "$tar" -C "$d" -T "$lf" >/dev/null 2>&1 || die1 "extract"
-    if [ "$src" = env ]; then
+    if [ "$src" = envp ]; then
+      # members are named under the original root; select them by full name, strip the root on extract
+      pre="${SRC#/}/"
+      ml="$W/members.envp"
+      awk -v pre="$pre" '{print pre $0}' "$lf" > "$ml"
+      COPYFILE_DISABLE=1 tar -xpf "$tar" -C "$d" -s "|^$(printf '%s' "$pre" | sed 's/[][\.*^$|]/\\&/g')||" -T "$ml" >/dev/null 2>&1 || die1 "extract"
+      [ ! -e "$d/${pre%/}" ] || die1 "extract"
+    else
+      COPYFILE_DISABLE=1 tar -xpf "$tar" -C "$d" -T "$lf" >/dev/null 2>&1 || die1 "extract"
+    fi
+    if [ "$src" = env ] || [ "$src" = envp ]; then
       # env files are always tightened to 0600, whatever mode the backup recorded
       while IFS= read -r envp; do chmod 600 "$d/$envp" || die1 "extract"; done < "$lf"
     fi
@@ -209,7 +220,10 @@ do_verify() { # DIR
   while IFS=$'\t' read -r cat src sha mode path; do
     f="$d/$path"
     if [ ! -f "$f" ]; then bad=1; continue; fi
-    [ "$(sha_of "$f")" = "$sha" ] || bad=2
+    # the dispatch-isolation sentinel is rewritten by every dispatch (10-minute TTL): presence and mode only
+    if [ "$path" != ".gsd/dispatch-isolation-sentinel.json" ]; then
+      [ "$(sha_of "$f")" = "$sha" ] || bad=2
+    fi
     am=$(stat -f %Lp "$f")
     if [ "$(oct "$am")" != "$(oct "$mode")" ]; then bad=3; fi
     if [ "$cat" = env ] && [ "$(oct "$am")" != "$(oct 600)" ]; then bad=3; fi
@@ -227,7 +241,23 @@ do_verify() { # DIR
   [ -f "$ex" ] && n_ex=$(awk 'NF && $0 !~ /^#/{c++} END{print c+0}' "$ex")
   say "copyforward: exclude_lines $n_ex"
   st=$(git -C "$d" status --porcelain=v1 --untracked-files=all 2>/dev/null) || { cleanw; die2 "status_failed"; }
-  [ -z "$st" ] || { cleanw; die1 "tree_dirty"; }
+  # same allowance as guard-swapped-193.sh full: the four workstream handoff files and plain files
+  # under the 193 phase folder may differ (counted); anything else is a dirty tree
+  local line mp n_allowed=0 n_bad=0
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    mp=${line#???}
+    case $mp in *" -> "*) mp=${mp##* -> } ;; esac
+    case $mp in
+      "$WS/STATE.md"|"$WS/ROADMAP.md"|"$WS/REQUIREMENTS.md"|"$WS/.continue-here.md") n_allowed=$((n_allowed + 1)) ;;
+      "$WS/phases/193-cleanup-and-new-working-rules/"*) n_allowed=$((n_allowed + 1)) ;;
+      *) n_bad=$((n_bad + 1)) ;;
+    esac
+  done <<EOF4
+$st
+EOF4
+  [ "$n_bad" -eq 0 ] || { cleanw; die1 "tree_dirty"; }
+  say "copyforward: allowed_changes $n_allowed"
   cleanw
   say "copyforward: result pass"
 }
@@ -388,6 +418,30 @@ do_selftest() {
   ctl env-mode-644-in-checkout fail $rc
   case $out in *mode_mismatch*) : ;; *) echo "selftest copyforward-193: wrong word" >&2; pass=$((pass - 1)) ;; esac
   case $out in *"$ENVFRAG"*) pass=$((pass - 1)) ;; esac
+  rmfx
+
+  # 3a env members recorded under the original root (as the real 189 env tar is) land repo-relative:
+  # apply then verify pass, no stray root folder in the target, env mode 600
+  mk
+  (cd / && COPYFILE_DISABLE=1 tar -cf "$base/crosswake-candidate-backup/inventory-189/env-local.tar" "${base#/}/root/envs/$ST_ENVNAME") || exit 2
+  printf '%s 600 %s\n' "$(sha_of "$base/root/envs/$ST_ENVNAME")" "${base#/}/root/envs/$ST_ENVNAME" > "$base/crosswake-candidate-backup/inventory-189/env-local.files"
+  out=$(st_run "$base" apply "$base/target"); rc=$?
+  ctl env-rooted-apply ok $rc
+  out2=$(st_run "$base" verify "$base/target"); rc=$?
+  if [ -n "$(git -C "$base/target" status --porcelain=v1 --untracked-files=all)" ] || [ "$(stat -f %Lp "$base/target/envs/$ST_ENVNAME" 2>/dev/null)" != 600 ]; then rc=1; fi
+  ctl env-rooted-verify ok $rc
+  case "$out$out2" in *"$ENVFRAG"*|*SECRETVALUE*) pass=$((pass - 1)) ;; esac
+  # a stray folder outside the allowance (as the rooted bug left) still fails verify
+  mkdir -p "$base/target/Us""ers/x" && printf 's\n' > "$base/target/Us""ers/x/s"
+  out=$(st_run "$base" verify "$base/target"); rc=$?
+  ctl stray-outside-allowance fail $rc
+  case $out in *tree_dirty*) : ;; *) echo "selftest copyforward-193: wrong word" >&2; pass=$((pass - 1)) ;; esac
+  rm -rf "$base/target/Users"
+  # a change under the 193 phase folder is allowed and counted
+  mkdir -p "$base/target/$WS/phases/193-cleanup-and-new-working-rules" && printf 'p\n' > "$base/target/$WS/phases/193-cleanup-and-new-working-rules/p.txt"
+  out=$(st_run "$base" verify "$base/target"); rc=$?
+  case $out in *"allowed_changes 1"*) : ;; *) rc=1 ;; esac
+  ctl phase-folder-allowed ok $rc
   rmfx
 
   # 3b settings member with a wrong recorded mode fails

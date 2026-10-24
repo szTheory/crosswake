@@ -1,0 +1,6 @@
+Proposal to merge https://github.com/szTheory/crosswake/pull/243
+Head commit 0fa9491: docs(planning): triage the privacy self-test fixture finding for the Phase 193 scan
+What was checked: the pull request is open against main, is not from a fork and is clean; the required check "Crosswake CI" passed on this exact head; the push scan ran clean on this head; main has not moved since this was prepared.
+The private-term check was skipped for this push under D-26 (A-14 extended to the Phase 193 pushes); every other privacy check ran.
+allow: merges this pull request once, as a merge commit, only while its head is still 0fa9491. It applies to nothing else.
+hold: stops here and merges nothing.

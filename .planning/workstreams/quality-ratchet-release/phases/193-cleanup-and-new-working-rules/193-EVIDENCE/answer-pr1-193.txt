@@ -1,0 +1,3 @@
+answer allow
+gate pr1
+source standing authorization 193-PR1-STANDING-AUTH.md (user words recorded 2026-10-24), bound to the displayed head

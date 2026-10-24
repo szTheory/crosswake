@@ -1,0 +1,5 @@
+pr 243
+bound_head 0fa94917ca1dd0a01bbe889487c27a3a0f0eb0ca
+merge_commit ed853e3893d3ef4c79a0ab4513f3f0f2cb7b5b40
+merge_call_rc 0
+result merged

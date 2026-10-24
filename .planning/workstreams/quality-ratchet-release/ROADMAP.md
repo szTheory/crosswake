@@ -21,6 +21,8 @@
 
 ### Ordering rules for v27.0
 
+v27.0 only; superseded by AGENTS.md 'How changes land' after Phase 193
+
 - **Nothing is deleted before Phase 189's backups pass their restore test.** Phases 189–192 remove nothing: no stash, branch, worktree, clone or file.
 - **The recovery checkout stays frozen through Phase 192.** In the recovery checkout there is no staging, commit, tag, branch, worktree or stash change until Phase 193. The integration branch is built in a separate durable clone, never in the recovery checkout.
 - **FIX work happens in the candidate.** Phase 190 works in `<durable-candidate>` (a durable clone of the candidate, outside the temp folder), not in the temp-folder candidate, which the macOS temp cleaner will erode. No twin run is part of this milestone.
@@ -252,7 +254,7 @@ Plans:
 | 190. Fix warnings before landing | 10/10 | Complete | 2026-10-19 |
 | 191. Integration branch and local suite | 12/12 | Executed, verification pending | - |
 | 192. PR, CI and merge | 10/10 | Executed, verification pending | - |
-| 193. Cleanup and new working rules | 0/10 | Planned | - |
+| 193. Cleanup and new working rules | 8/10 | In progress | - |
 
 <details>
 <summary>v26.0 Harden Before Trust (Phases 184–188) — planning closeout 2026-10-16</summary>

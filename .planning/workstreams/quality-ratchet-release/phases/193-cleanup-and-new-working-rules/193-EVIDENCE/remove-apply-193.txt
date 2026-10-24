@@ -1,0 +1,16 @@
+item R-TMP-038 removed
+item R-POST-TMP-01 removed
+item R-POST-TMP-02 removed
+item R-POST-TMP-03 removed
+item R-POST-TMP-04 removed
+item R-POST-TMP-05 removed
+item R-POST-TMP-06 removed
+item R-POST-TMP-07 removed
+item R-POST-TMP-08 removed
+item R-POST-TMP-09 removed
+item R-POST-TMP-10 removed
+item R-WT-2 removed
+item R-POST-LOC-01 kept: ref_tip_unprotected
+item R-POST-LOC-02 removed
+item R-POST-LOC-03 removed
+remove: apply removed 14 absent 0 kept 1
