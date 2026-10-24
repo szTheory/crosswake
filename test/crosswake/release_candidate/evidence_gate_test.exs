@@ -41,8 +41,6 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
 
     task_output =
       capture_io(fn ->
-        Mix.Task.clear()
-
         Mix.Tasks.Crosswake.Release.Gate.run([
           "--operation",
           "linked_release",
@@ -85,6 +83,69 @@ defmodule Crosswake.ReleaseCandidate.EvidenceGateTest do
     assert status != 0
     assert output =~ "REL-17 BLOCKED"
     assert output =~ "reason=missing_evidence"
+  end
+
+  test "the Mix task rejects an exact-selector mismatch without changing seeded evidence" do
+    {envelope, sources} = fixture("post_merge")
+
+    root =
+      Path.join(System.tmp_dir!(), "crosswake-rel17-denied-#{System.unique_integer([:positive])}")
+
+    source_dir = Path.join(root, "sources")
+    envelope_file = Path.join(root, "envelope.json")
+    File.mkdir_p!(source_dir)
+
+    Enum.each(sources, fn {relative_path, bytes} ->
+      destination = Path.join(source_dir, relative_path)
+      File.mkdir_p!(Path.dirname(destination))
+      File.write!(destination, bytes)
+    end)
+
+    File.write!(envelope_file, Jason.encode!(envelope))
+
+    before =
+      source_dir
+      |> Path.join("**/*")
+      |> Path.wildcard()
+      |> Enum.filter(&File.regular?/1)
+      |> Map.new(&{Path.relative_to(&1, source_dir), File.read!(&1)})
+
+    error =
+      assert_raise Mix.Error, fn ->
+        capture_io(fn ->
+          Mix.Tasks.Crosswake.Release.Gate.run([
+            "--operation",
+            "linked_release",
+            "--stage",
+            "post_merge",
+            "--package",
+            "crosswake",
+            "--receipt-digest",
+            String.duplicate("9", 64),
+            "--leg-run-id",
+            Integer.to_string(@leg_run_id),
+            "--merge-oid",
+            @merge,
+            "--envelope-file",
+            envelope_file,
+            "--source-dir",
+            source_dir
+          ])
+        end)
+      end
+
+    after_state =
+      source_dir
+      |> Path.join("**/*")
+      |> Path.wildcard()
+      |> Enum.filter(&File.regular?/1)
+      |> Map.new(&{Path.relative_to(&1, source_dir), File.read!(&1)})
+
+    File.rm_rf!(root)
+
+    assert Exception.message(error) =~ "REL-17 BLOCKED"
+    assert Exception.message(error) =~ "identity_mismatch"
+    assert before == after_state
   end
 
   test "a complete pre-merge envelope validates as evidence without granting publication authority" do

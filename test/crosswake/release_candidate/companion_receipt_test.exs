@@ -1,5 +1,7 @@
 defmodule Crosswake.ReleaseCandidate.CompanionReceiptTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
+
+  import ExUnit.CaptureIO
 
   alias Crosswake.ReleaseCandidate.CompanionReceipt
 
@@ -64,23 +66,56 @@ defmodule Crosswake.ReleaseCandidate.CompanionReceiptTest do
     File.mkdir_p!(root)
     File.write!(input_path, Jason.encode!(input))
 
-    {output, status} =
-      System.cmd(
-        "mix",
-        ["crosswake.release.receipt", "--input", input_path, "--output", output_path],
-        env: [{"MIX_ENV", "test"}],
-        stderr_to_stdout: true
-      )
+    output =
+      capture_io(fn ->
+        Mix.Tasks.Crosswake.Release.Receipt.run([
+          "--input",
+          input_path,
+          "--output",
+          output_path
+        ])
+      end)
 
     artifact = output_path |> File.read!() |> Jason.decode!()
     File.rm_rf!(root)
 
-    assert status == 0, output
     assert output =~ "REL-17 RECEIPT PASS package=crosswake_chimeway digest="
     assert artifact["schema_version"] == 1
     assert artifact["receipt"]["package"] == "crosswake_chimeway"
     assert artifact["receipt_digest"] =~ ~r/\A[0-9a-f]{64}\z/
     refute Map.has_key?(artifact["receipt"], "authorized")
+  end
+
+  test "the Mix task rejects a source-mismatched receipt without writing an artifact" do
+    input = put_in(fixture(), ["sources", "candidate", "bytes"], "{}")
+
+    root =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-receipt-denied-#{System.unique_integer([:positive])}"
+      )
+
+    input_path = Path.join(root, "input.json")
+    output_path = Path.join(root, "receipt.json")
+    File.mkdir_p!(root)
+    File.write!(input_path, Jason.encode!(input))
+
+    error =
+      assert_raise Mix.Error, fn ->
+        capture_io(fn ->
+          Mix.Tasks.Crosswake.Release.Receipt.run([
+            "--input",
+            input_path,
+            "--output",
+            output_path
+          ])
+        end)
+      end
+
+    refute File.exists?(output_path)
+    File.rm_rf!(root)
+
+    assert Exception.message(error) =~ "REL-17 RECEIPT BLOCKED"
   end
 
   defp fixture do

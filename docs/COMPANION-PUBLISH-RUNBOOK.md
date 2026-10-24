@@ -2,8 +2,9 @@
 
 This is the operator contract for the Crosswake release candidate carrying `approved-release-guard`'s
 approval. It keeps the three linked coordinates together, keeps all five companions independently
-versioned, and separates reversible evidence from publication. The status and candidate commands are
-read-only: neither command publishes, pushes a ref, merges a pull request, or changes a registry.
+versioned, and separates reversible evidence from publication. Status is read-only; candidate
+evaluation writes only its local receipt. Neither task publishes, pushes a ref, merges a pull
+request, or changes a registry.
 
 **This document makes no version-specific claims.**
 
@@ -27,6 +28,9 @@ requests are excluded from this runbook.
 The exact Release Please head, tree, merge base, workflow blobs, artifact digests, run identity,
 and credential checks form the candidate identity. A branch name, a moving pull-request head,
 or a successful test count without those bindings is not candidate evidence.
+The current source exposes generic status, candidate, companion-receipt, and evidence-gate tasks.
+Historical candidate-read and mirror-tag modes remain historical; this runbook does not restore
+those launchers or treat their archived outcomes as evidence for a new candidate.
 
 ## Exact seven-step operator sequence
 
@@ -42,7 +46,10 @@ Refresh the one Release Please candidate only after all reversible changes have 
 the full 40-character lowercase head SHA, tree SHA, merge base, and the exact release workflow
 blobs. A later push makes the prior capture `STALE` and requires a new capture.
 
-Read local and public truth without mutation:
+Read local truth without mutation. `--json` returns the structured report. `--live` adds
+best-effort public registry probes; a probe that cannot be verified is reported as unavailable,
+not as confirmed absence. If status is blocked, follow its named next action, correct that local
+prerequisite or probe availability, then rerun this status task before continuing.
 
 ```bash
 mix crosswake.release.status
@@ -93,12 +100,21 @@ why the rehearsal's SHA and the publish's SHA are comparable.
 
 ### 6. Review the exact receipt
 
-The candidate evaluator consumes normalized artifact, clean-room, coordinate, workflow, mirror,
-identity, and credential observations and writes one bounded receipt:
+The supported candidate task consumes source-bound evidence selected by run IDs and writes a
+bounded local receipt. Provide the captured evidence directory, the candidate version and full
+source SHA, a new output directory, and the run IDs for CI and the three release legs:
 
 ```bash
-mix crosswake.release.candidate --version 0.2.1 --ref <40sha> --output-dir <new-receipt-directory>
+mix crosswake.release.candidate \
+  --version <semver> --ref <40sha> \
+  --evidence-dir <evidence-directory> --output-dir <new-receipt-directory> \
+  --ci-run-id <id> --hex-run-id <id> --ios-run-id <id> --maven-run-id <id>
 ```
+
+The command evaluates those named observations; it does not capture live evidence, approve a
+merge, or publish. A malformed, stale, or mismatched selector blocks before writing a receipt.
+Correct the named evidence or selector at its owner, then rerun the candidate task with a fresh
+output directory.
 
 Review `candidate-receipt.json`, its Markdown and terminal projections, and the retained CI and
 trusted-workflow artifacts. The receipt must bind the captured head/tree/base and exact workflow
