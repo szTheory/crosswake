@@ -1,48 +1,49 @@
 ---
 gsd_state_version: "1.0"
 milestone: v27.0
-milestone_name: Land and Clean Up (Phases 189–193) — in progress
-current_phase: 193
-current_phase_name: Cleanup and new working rules
-status: phase_complete_pending_merge
-stopped_at: Phase 193 plan 10 - PR 2 (#244) open, verified, awaiting the merge answer
-last_updated: "2026-10-24T17:30:00.000Z"
+milestone_name: Land and Clean Up (Phases 189–193) — shipped 2026-10-24
+status: Awaiting next milestone
+stopped_at: "v27.0 archived; next milestone not started"
+last_updated: "2026-10-24T22:10:55.103Z"
 last_activity: 2026-10-24
-last_activity_desc: Phase 193 plan 10 - PR 2 opened and verified
-state_head: d0f3e2f1ead2046c26da5cc4b5dd62d5bfea1377
+last_activity_desc: Milestone v27.0 completed and archived
+state_head: f34baa7b4cef8685707b42bcb746cf71b8441209
 progress:
   total_phases: 5
   completed_phases: 5
   total_plans: 55
   completed_plans: 55
   percent: 100
+current_phase: 193
+current_phase_name: Cleanup and new working rules
 ---
 
 # Project State
 
 ## Project Reference
 
-See `.planning/PROJECT.md` for the core thesis and decisions (updated 2026-10-16 after v26.0). Core value remains one real Phoenix application on one physical iPhone with explicit route ownership and one honest offline mutation island. Current focus: v27.0 Land and Clean Up — land the v25 and v26 work on GitHub `main` with CI green, then clean up the local repository so no copy of the work can be lost.
+See `.planning/PROJECT.md` for the core thesis and decisions (updated 2026-10-24 after v27.0). Core value remains one real Phoenix application on one physical iPhone with explicit route ownership and one honest offline mutation island. Current focus: planning the next milestone. v27.0 Land and Clean Up shipped 2026-10-24: the v25 and v26 work is on GitHub `main` with CI green, and changes now land through PRs branched from `main`.
 
 ## Current Position
 
-Phase: 193 (Cleanup and new working rules) — COMPLETE once PR 2 (#244) merges
-Plan: 10 of 10 (all plans written; PR 2 carries the Phase 193 records)
-Status: Phase 193 complete once PR 2 merges; v27.0's five phases (189 to 193) are then complete
-Last activity: 2026-10-24 — PR 2 opened, CI green, final check passed
-
-Progress: [██████████] 100%
+Phase: Milestone v27.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-10-24 — Milestone v27.0 completed and archived
 
 ## Exact Next Action
 
-What was checked and what happened in Phase 193: the backups were re-verified (plan 01); the push/merge gate, copy-forward, folder-swap, removal, final-check and working-rules tools were built, tested and frozen by hash (plans 02 to 04); the records and tools landed on `main` through PR 1 (plan 05); the old checkout was retired and replaced by a clean `main` checkout at the same path (plan 06); the guard and late-record sweep passed (plan 07); after your `allow`, 300 of the 306 listed copies were removed and 6 were kept, with the ledger in `193-REMOVAL-LEDGER.md` (plan 08); AGENTS.md now says to branch from `main` and open a PR, and every open PR has a recorded disposition (plan 09); PR 2 (#244) carries all of these records, passed Crosswake CI and the full final check (plan 10). One local copy remains by design: the integration clone, because 8 remote-tracking refs in it have tips that exist in no backup.
+What was checked: the v27.0 audit (`tech_debt`, 18/18 requirements, no blocker), the workstream open-artifact audit (clear; 6 earlier acknowledgements still suppressed), and every phase in 189–193 (55 plans with summaries, five verifications `passed`). What happened: v27.0 was archived on branch `chore/v27-milestone-close`. The archive copies, closeout record and debt disposition are in `milestones/`; the ROADMAP is collapsed; REQUIREMENTS.md was removed; phase folders stay in place. Nothing was released and no tag was made. What is unknown: nothing that blocks the next step. Next action: start the next milestone.
 
-Phase 193 counts as complete once PR 2 is merged. The merge needs your one-word `allow` or `hold`, asked once. After the merge the final check runs again on `main`; that result is reported in the handoff and kept as a receipt in the backup folder (`receipts-193/`); `final-check-193.sh --post-merge` reproduces it.
+Last completed phase: 193. No phase is active.
 
-Next command: `$gsd-audit-milestone --ws quality-ratchet-release`.
+Next command: `$gsd-new-milestone --ws quality-ratchet-release`.
+
+Carried debt is in [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md). Look at two items first: the `crosswake-integration-191` clone, which holds remote-tracking tips that exist in no backup, and SEED-025. The adopter lane stays parked on its external gate.
 
 ### Handoff history
 
+- Superseded (2026-10-24): the Phase 193 plan 10 completion handoff (next command `$gsd-audit-milestone --ws quality-ratchet-release`). Done: PR 2 (#244) merged as `f34baa7b` after the user's `allow`; the audit returned `tech_debt` with no blocker; `$gsd-complete-milestone v27.0` archived the milestone.
 - Superseded (2026-10-24): the Phase 193 plan 10 start handoff. It read: "What was checked and what happened in Phase 193 so far: the backups were re-verified and the post-189 items backed up (plan 01); the push/merge gate, copy-forward, folder-swap, removal, final-check and working-rules tools were built, tested and frozen by hash (plans 02 to 04); the records and tools  ..."
 
 - Superseded (2026-10-24): frozen recovery checkout rules. Done: the recovery-checkout freeze and the /private/tmp candidate flow ended in Phase 193; work now lands through PRs from main (AGENTS.md "How changes land").
@@ -122,6 +123,8 @@ Next command: `$gsd-audit-milestone --ws quality-ratchet-release`.
 
 ### Roadmap Evolution
 
+- v27.0 shipped and archived (2026-10-24): phases 189–193, 18/18 requirements; workstream ROADMAP collapsed to milestone lines.
+
 - v27.0 roadmap created (2026-10-16): phases 189–193 follow the suggested five-phase structure (inventory and backup, fixes in the candidate, integration branch in a separate durable clone, PR/CI/merge, cleanup); 18/18 requirements mapped, no orphans.
 
 - v26.0 roadmap created (2026-10-15): phases 184–188 follow the five-phase structure in the v26 research synthesis unchanged; 18/18 requirements mapped, no orphans.
@@ -167,7 +170,7 @@ Use the [v25 research synthesis](../../research/v25/SUMMARY.md) and [approved ro
 
 ## Deferred Items
 
-The six v23 archive acknowledgements retain their original statuses and byte-identical originals in `milestones/v23.0-closeout/original-artifacts`. No new acknowledgement or phase override was added at the v24, v25 or v26 closeouts.
+The six v23 archive acknowledgements retain their original statuses and byte-identical originals in `milestones/v23.0-closeout/original-artifacts`. No new acknowledgement or phase override was added at the v24, v25, v26 or v27 closeouts.
 
 | Category | Item | Status | Deferred At | Milestone |
 |---|---|---|---|---|
@@ -182,10 +185,10 @@ The six separate v24 debt items remain in the [debt disposition](milestones/v24.
 
 ## Session
 
-**Last session:** 2026-10-19T23:54:39.524Z
-**Stopped at:** Phase 192 complete, ready to plan Phase 193
-**Resume file:** .planning/workstreams/quality-ratchet-release/phases/192-pr-ci-and-merge/192-10-SUMMARY.md
+**Last session:** 2026-10-24
+**Stopped at:** v27.0 archived; next milestone not started
+**Resume file:** .planning/workstreams/quality-ratchet-release/milestones/v27.0-closeout/CLOSEOUT.md
 
 ## Operator Next Steps
 
-- Run `$gsd-execute-phase 193 --ws quality-ratchet-release` to continue at plan 10 (PR 2, final check, merge `allow`/`hold`); see Exact Next Action
+- Run `$gsd-new-milestone --ws quality-ratchet-release` to choose the next scope

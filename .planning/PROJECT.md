@@ -30,7 +30,13 @@ ROADMAP.md for the exact next command. Do not repeat a completed discuss, plan, 
 stage. A consumed one-time attempt ends there; any new attempt requires a fresh plan and
 authorization, recorded with its terminal outcome so the workflow does not loop.
 
-## Last Completed Milestone: v26.0 Harden Before Trust (planning closeout 2026-10-16)
+## Last Completed Milestone: v27.0 Land and Clean Up (shipped 2026-10-24)
+
+All 18 requirements (INV, FIX, LAND, CLEAN) are satisfied across five verified phases (189–193) and 55 plans. Every copy of the work outside GitHub `main` was inventoried by content and backed up with passing restore tests. The seven carried v26 warnings were fixed. One integration branch from current `main` carried the v25/v26 candidate commits, the FIX commits and the v24–v27 planning records, and it merged through PR #242 (`d12aed75`) with CI green after the user's `allow`. Phase 193 retired the recovery checkout for a clean `main` checkout, removed 300 of 306 listed local copies after hash-matched backups (6 kept with reasons), and replaced the freeze rules with AGENTS.md "How changes land".
+
+The audit is `tech_debt` with no blocker. The v25/v26 product code is now on `main`. Simulator proof still does not promote a physical-iPhone or adopter claim. Release PR #236 is on hold and nothing was published. See the [closeout](workstreams/quality-ratchet-release/milestones/v27.0-closeout/CLOSEOUT.md) and [debt disposition](workstreams/quality-ratchet-release/milestones/v27.0-closeout/debt-disposition.md). No tag or release.
+
+## Earlier Completed Milestone: v26.0 Harden Before Trust (planning closeout 2026-10-16)
 
 All 18 requirements (PROBE, GUARD, SEAM-07..09, LOOP-06..07, DOCTOR, TWIN-07..08) are satisfied across five verified phases (184–188) and 37 plans. v26 removed the v25 checks that could pass while checking nothing: the twin's clean-tree probe now goes through one pinned git funnel that index flags and config cannot fool, a read-only `twin_preflight` answers whether a run would be allowed without using up a run root, empty scopes fail, the legacy host-command path denies, doctor reports real details and redacted paths, and proof evidence carries real provenance. All changes were frozen at candidate `a53fbef`, and twin-05 ran exactly once and passed (10/10 groups, 7/7 identity joins).
 
@@ -60,21 +66,21 @@ Archive: `.planning/workstreams/quality-ratchet-release/milestones/v23.0-ROADMAP
 
 ## Current Milestone Goals
 
-v27.0 Land and Clean Up is active in the quality workstream (started 2026-10-16; roadmap approved). Goal: land the v25 and v26 candidate commits and the v24–v27 planning records on GitHub `main` through a reviewed PR with green CI, then clean up so no work exists only in one local place. Phases 189–193 cover 18 requirements (INV, FIX, LAND, CLEAN); the merge needs a fresh `allow`; no package release. See the [scope](workstreams/quality-ratchet-release/v27.0-SCOPE.md) and [roadmap](workstreams/quality-ratchet-release/ROADMAP.md).
+None selected. v27.0 shipped 2026-10-24, and the next scope is chosen with `$gsd-new-milestone --ws quality-ratchet-release`. Priority order is unchanged: the governing ADR's first-adopter path, then only defects shown by evidence. Carried v27 debt is in the [debt disposition](workstreams/quality-ratchet-release/milestones/v27.0-closeout/debt-disposition.md).
 
 **Archive:** `.planning/milestones/v19.0-ROADMAP.md`, `.planning/milestones/v19.0-REQUIREMENTS.md`, and `.planning/milestones/v19.0-MILESTONE-AUDIT.md`.
 
 ## Active Workstreams
 
-### v27.0 Land and Clean Up (Phases 189–193) — in progress (active)
+### v27.0 Land and Clean Up (Phases 189–193) — shipped 2026-10-24
 
 Workstream: Quality Ratchet & Release.
 
-**Last goal (v26.0, closed 2026-10-16):** Remove every v25 check that could pass while checking nothing, then run the reference twin once more (twin-05) against the hardened commit.
+**Last goal (v27.0, closed 2026-10-24):** Land the v25 and v26 work on GitHub `main` with CI green, then clean up the local repository so no copy of the work can be lost.
 
-**Current stage:** Last completed phase 192. v27.0 Land and Clean Up: the work is on GitHub `main` with CI green; Phase 193 (Cleanup and new working rules) is closing, and changes now land through PRs branched from `main` (AGENTS.md "How changes land"). See [STATE](workstreams/quality-ratchet-release/STATE.md).
+**Current stage:** Last completed phase 193; v27.0 archived; no milestone active. Changes land through PRs branched from `main` (AGENTS.md "How changes land"). Next: `$gsd-new-milestone --ws quality-ratchet-release`. See [STATE](workstreams/quality-ratchet-release/STATE.md).
 
-**Planning:** `.planning/workstreams/quality-ratchet-release/` — [v26.0 archive](workstreams/quality-ratchet-release/milestones/v26.0-ROADMAP.md), [requirements archive](workstreams/quality-ratchet-release/milestones/v26.0-REQUIREMENTS.md), and [roadmap](workstreams/quality-ratchet-release/ROADMAP.md).
+**Planning:** `.planning/workstreams/quality-ratchet-release/` — [v27.0 archive](workstreams/quality-ratchet-release/milestones/v27.0-ROADMAP.md), [requirements archive](workstreams/quality-ratchet-release/milestones/v27.0-REQUIREMENTS.md), and [roadmap](workstreams/quality-ratchet-release/ROADMAP.md).
 
 ### v23.0 Release Pipeline Repair & Proof-Lane Truth (archived with exceptions)
 
@@ -128,6 +134,7 @@ separately funded business-line mandate. Durable reasoning is in
 `.planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md`.
 
 ## Current State
+- **v27.0 — SHIPPED WITH TECH DEBT 2026-10-24.** 18/18 requirements across Phases 189–193; the v25/v26 work merged to `main` via PR #242 (`d12aed75`) with CI green; recovery checkout retired, clean `main` checkout in place, branch-and-PR working rules in AGENTS.md. No release, tag or physical/adopter promotion.
 - **v26.0 — PLANNING CLOSEOUT COMPLETE WITH TECH DEBT 2026-10-16.** 18/18 requirements across Phases 184–188; twin-05 passed (10/10 groups, 7/7 joins) against frozen candidate `a53fbef`. Product code is candidate-only pending authorized delivery; recovery source/index unchanged; no release or physical/adopter promotion.
 - **v25.0 — PLANNING CLOSEOUT COMPLETE WITH TECH DEBT 2026-10-15.** 20/20 requirements across Phases 179–183; twin-04 passed 49/49 against committed fix `50fcd57`. Product code is candidate-only pending authorized delivery; recovery source/index unchanged; no release or physical/adopter promotion.
 - **v24.0 — PLANNING CLOSEOUT COMPLETE WITH RETAINED DEBT 2026-10-12.** All eight requirements and three phases verified; archives copied, historical paths preserved, six debt records retained. PR #238 remains open/unmerged. The v25 scoped roadmap owns current work; no package release or adopter promotion.
@@ -301,6 +308,10 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ### Validated
 
+- ✓ **INV-01..03** Every copy of the work outside GitHub `main` is inventoried by content, backed up outside the temp folder with passing restore tests, and every open PR has a recorded disposition. — v27.0 Phase189.
+- ✓ **FIX-01..07** The seven carried v26 warnings are fixed: empty privacy scopes fail, every gate label has a failing self-test, the gate git helper is pinned, registry timeouts are reported, nested-host provenance is honest, the guard pin equals the real count, and the physical-iPhone preflight refuses unreadable or malformed input. FIX-01..03 successors live in the Phase 190 folder. — v27.0 Phase190.
+- ✓ **LAND-01..04** One integration branch from current `main` with a clean privacy scan and passing local suite; PR #242 merged after a plain `allow`, with CI green on the head and on the merge commit. — v27.0 Phases191–192.
+- ✓ **CLEAN-01..04** Recovery checkout retired for a clean `main` checkout; landed or obsolete local copies removed with a ledger; branch-and-PR working rules in AGENTS.md. — v27.0 Phase193.
 - ✓ **PROBE-01..04** The twin blocks `source_dirty` for any tracked difference from HEAD however git hides it, every twin git call uses one pinned configuration, real-repo fixtures cover each hiding mechanism, and a read-only preflight never consumes a run root. — v26.0 Phase184.
 - ✓ **GUARD-01..03** The absence checker fails on a missing root, empty scope or below-pin scope; uncovered v25 loops assert non-empty; twin runtime helpers fail closed. — v26.0 Phase185.
 - ✓ **SEAM-07..09, LOOP-06..07** The legacy host-command path no longer grants every command, doctor's stale check errors on unreadable input, path messages are project-relative, the loopback harness reports its own failures, and physical-iPhone preparation cannot reach a loopback host (tested cases; 186 WR-01 residual). — v26.0 Phase186.
@@ -435,7 +446,7 @@ MAINT-03 validates supported paths with uncertain sources retained; neither hist
 
 ### Active
 
-None selected. The next milestone's scope is chosen by `$gsd-new-milestone --ws quality-ratchet-release`. Carried-forward v26 debt is in the [debt disposition](workstreams/quality-ratchet-release/milestones/v26.0-closeout/debt-disposition.md); parked adopter and historical release limits remain unchanged.
+None selected. The next milestone's scope is chosen by `$gsd-new-milestone --ws quality-ratchet-release`. Carried-forward v27 debt is in the [debt disposition](workstreams/quality-ratchet-release/milestones/v27.0-closeout/debt-disposition.md); the v26 debt was closed by FIX-01..07. Parked adopter and historical release limits remain unchanged.
 
 <details>
 <summary>Earlier v20 candidate scope — frozen by the first-adopter ADR</summary>
@@ -481,6 +492,8 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 
 After v19.0, Crosswake has a product-shaped proof surface with three fictional showcase lanes. Its earlier native-controls/breadth sequence was stopped by the first-adopter ADR. The governing priority remains one real Phoenix application on one physical iPhone, with explicit route ownership and one honest offline mutation island. Adopter execution remains parked on its recorded external gate; Android breadth, new controls/companions, dashboard and generic sync/storage remain frozen.
 
+v27.0 landed the v25 and v26 candidate work on GitHub `main` (PR #242, merge `d12aed75`) with CI green, so the "candidate-only, not yet delivered" notes below are historical. The recovery checkout and the `/private/tmp` candidate flow ended; work lands through PRs branched from `main`. One local copy remains by design: the `crosswake-integration-191` clone, whose remote-tracking tips are not yet backed up. The Phase 192 review residue is tracked in SEED-025. Simulator proof still grants no physical-iPhone or adopter claim.
+
 v26.0 hardened the v25 twin, guards, host seam and doctor as a planning closeout: the v26 commits sit on the same `/private/tmp` candidate (HEAD `a53fbef`, over `50fcd57`) and are not yet delivered. twin-05 passed once against the frozen commit; it is still simulator-only and grants no physical-iPhone or adopter claim. About 30 review warnings remain open across 184–188, two hand-offs to Phase 188 (guard pin raise, Swift G4 baseline failure) were not done, and all five Nyquist validation files are drafts.
 
 v25.0 closed the iOS host setup and bounded reference twin as a planning closeout: all product code sits in one `/private/tmp` candidate (eight commits over `da53c54`) and is not yet delivered. The twin is simulator-only with five disclosed fidelity limits; it grants no physical-iPhone or adopter claim. Review findings remain open in 181 (13), 182 (10) and 183 (8); Nyquist validation is partial.
@@ -496,6 +509,15 @@ v24.0 closed bounded maintenance work with exact-source proof and retained histo
 - **Proof posture**: Deterministic CI, example-host verification, docs integrity, and release discipline are required early.
 
 ## Key Decisions
+
+### v27 decisions
+
+- **✓ Good:** Back up and restore-test every copy before deleting anything; classify by content, not by name (Phase189).
+- **✓ Good:** Fix the carried warnings in a durable clone of the candidate before landing, and build the integration branch in a separate durable clone (Phases190–191).
+- **✓ Good:** One-use, plain-language `allow`/`hold` gates bound to the displayed PR and head; merge commits only; no admin merge or force push (Phases192–193).
+- **✓ Good:** End the recovery-checkout freeze and move to branch-from-`main`-and-PR (AGENTS.md "How changes land") (Phase193).
+- **⚠️ Revisit:** FIX-01..03 successors have no recurring gate on `main`; integration-191 clone ref tips are unbacked; the SEED-025 credential-masking gap in CI failure output.
+- **— Pending:** Release PR #236 decision; physical signed-iPhone run; first adopter's sanitized route handoff.
 
 ### v26 decisions
 
@@ -613,4 +635,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-16 after v26.0 planning closeout; next milestone unselected. v25/v24/v23 debt and parked adopter gates remain unchanged.*
+*Last updated: 2026-10-24 after v27.0 milestone; next milestone unselected. v26 debt closed by FIX-01..07; v24/v23 debt and parked adopter gates remain unchanged.*

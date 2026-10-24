@@ -1,5 +1,33 @@
 # Milestones
 
+## v27.0 Land and Clean Up (Shipped: 2026-10-24)
+
+**Status:** Shipped with tech debt; 2026-10-24. The v25 and v26 product code and the v24–v27 planning records are on GitHub `main` with CI green. No package was released.
+**Coverage:** 18/18 requirements (INV, FIX, LAND, CLEAN); 5/5 phases (189–193); 55 plans; 127 tasks counted from the plan files (the installed CLI reported 1, an undercount).
+**Closeout type:** `verified_closeout` — all five phases verified `passed`; the [audit](milestones/v27.0-MILESTONE-AUDIT.md) is `tech_debt` with no blocker.
+**Known verification overrides:** 0 newly acknowledged, 6 carried forward from v23.0 (see STATE.md Deferred Items). No phase verification override.
+**Git:** PR #242 (merge `d12aed75`, the landing), PR #243 (`ed853e38`, 193 PR 1), PR #244 (`f34baa7b`, 193 PR 2); 125 commits from `d0dbdf7b` to `f34baa7b`. Each merge followed a one-use `allow`. No tag.
+
+### Key accomplishments
+
+- Every copy of the work that was not on GitHub `main` was inventoried by content (258 rows plus 7 PR dispositions) and backed up outside the temp folder; all 76 restore tests passed before anything was removed (Phase 189).
+- The seven carried v26 warnings were fixed, so no landed check passes while checking nothing: empty privacy scopes fail, every gate label has a failing self-test, the gate git helper is pinned, registry timeouts are reported, nested-host provenance is honest, the guard pin equals the real count (253), and the physical-iPhone preflight refuses bad input (Phase 190).
+- One integration branch built from current `main` in a durable clone carried the 94 candidate commits, the 4 FIX commits and the planning records, with a clean HEAD-bound privacy scan and all nine local suite stages passing (Phase 191).
+- PR #242 passed every required Crosswake CI check on its exact head and merged as `d12aed75` after the user's `allow`. `main` CI was green on the merge commit and every publish job was skipped (Phase 192).
+- The recovery checkout was retired for a clean `main` checkout. 300 of 306 listed local copies were removed after hash-matched backups, 6 were kept with reasons, and AGENTS.md "How changes land" replaced the freeze rules with branch-from-`main`-and-PR (Phase 193).
+
+### Retained debt
+
+See the [debt disposition](milestones/v27.0-closeout/debt-disposition.md). Open first: the `crosswake-integration-191` clone holds remote-tracking tips that exist in no backup (back them up, then remove it), and SEED-025's credential-masking gap in CI failure output.
+
+Archive copies: [roadmap](milestones/v27.0-ROADMAP.md), [requirements](milestones/v27.0-REQUIREMENTS.md), [audit](milestones/v27.0-MILESTONE-AUDIT.md). Phase folders stay at their original paths; the workstream REQUIREMENTS.md was removed.
+
+**Closeout record:** [CLOSEOUT.md](milestones/v27.0-closeout/CLOSEOUT.md).
+
+**Next:** `$gsd-new-milestone --ws quality-ratchet-release`; fresh scope is unselected.
+
+---
+
 ## v26.0 Harden Before Trust (Planning closeout: 2026-10-16)
 
 **Status:** Planning closeout complete with tech debt; 2026-10-16. Product code is not delivered; it exists only in the `/private/tmp` candidate.
