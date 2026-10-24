@@ -153,4 +153,4 @@
 
 ## Exact Next Action
 
-Next: `$gsd-discuss-phase 194 --ws quality-ratchet-release`. v28.0 is planned (phases 194–199, 30/30 requirements mapped); no phase has started. The adopter lane stays parked on its external gate.
+Next: `$gsd-plan-phase 194 --ws quality-ratchet-release`. Phase 194 context is gathered; no phase has been planned or executed. The adopter lane stays parked on its external gate.
