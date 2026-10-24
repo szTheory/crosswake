@@ -1,0 +1,10 @@
+item R-WT-2 wt <recovery-checkout>-accrue-bridge already absent
+item R-POST-LOC-01 clone <recovery-checkout>-integration-191 gates kept:ref_tip_unprotected
+item R-POST-LOC-02 clone <recovery-checkout>-candidate-durable already absent
+item R-POST-LOC-03 recovery <recovery-checkout> already absent
+backup_root verify pass
+copy_forward result pass
+now branches 0 stashes 0 worktrees 0 tmp_entries 0
+189 branches 56 stashes 4 worktrees 3 tmp_entries 159
+backup_root stays
+remove: plan items 4 pass 3 kept 1

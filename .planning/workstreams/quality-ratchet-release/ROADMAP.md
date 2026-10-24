@@ -17,9 +17,11 @@
 - [x] **Phase 190: Fix warnings before landing** - Fix the seven carried warnings in the candidate (or a durable clone of it) so the landed code has no check that passes while checking nothing (no twin run) (completed 2026-10-19)
 - [x] **Phase 191: Integration branch and local suite** - Build one integration branch from current GitHub `main` in a separate durable clone, carrying the candidate history, the FIX commits and the v24–v27 planning records, with a clean privacy scan and a passing local suite (completed 2026-10-23)
 - [x] **Phase 192: PR, CI and merge** - Open the PR, get every required CI check green, merge only after the user's plain `allow` on the displayed PR and head, and confirm `main` CI is green on the merge commit (completed 2026-10-23)
-- [ ] **Phase 193: Cleanup and new working rules** - Retire the recovery checkout for a clean `main` checkout, remove landed or obsolete local copies, and switch the working rules to the normal branch-and-PR flow
+- [x] **Phase 193: Cleanup and new working rules** - Retire the recovery checkout for a clean `main` checkout, remove landed or obsolete local copies, and switch the working rules to the normal branch-and-PR flow
 
 ### Ordering rules for v27.0
+
+v27.0 only; superseded by AGENTS.md 'How changes land' after Phase 193
 
 - **Nothing is deleted before Phase 189's backups pass their restore test.** Phases 189–192 remove nothing: no stash, branch, worktree, clone or file.
 - **The recovery checkout stays frozen through Phase 192.** In the recovery checkout there is no staging, commit, tag, branch, worktree or stash change until Phase 193. The integration branch is built in a separate durable clone, never in the recovery checkout.
@@ -217,32 +219,32 @@ Plans:
 Plans:
 
 **Wave 1**
-- [ ] 193-01-PLAN.md — preflight re-verify of the 189 backups and the post-189 backup (bundle, temp tar, checkpoint file, SHA256SUMS.193, record)
+- [x] 193-01-PLAN.md — preflight re-verify of the 189 backups and the post-189 backup (bundle, temp tar, checkpoint file, SHA256SUMS.193, record)
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 193-02-PLAN.md — fresh main clone and the standalone push/merge gate (land-gate-193.sh), real dry-run push
-- [ ] 193-03-PLAN.md — copy-forward, folder swap and session guard tools, real read-only stage of the backups
+- [x] 193-02-PLAN.md — fresh main clone and the standalone push/merge gate (land-gate-193.sh), real dry-run push
+- [x] 193-03-PLAN.md — copy-forward, folder swap and session guard tools, real read-only stage of the backups
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 193-04-PLAN.md — removal gate, final check, rules check, aggregate self-test, script hash freeze
+- [x] 193-04-PLAN.md — removal gate, final check, rules check, aggregate self-test, script hash freeze
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] 193-05-PLAN.md — PR 1 (192 post-sync records + 193 plans and tools), Gate A allow/hold, merge
+- [x] 193-05-PLAN.md — PR 1 (192 post-sync records + 193 plans and tools), Gate A allow/hold, merge
 
 **Wave 5** *(blocked on Wave 4 completion)*
-- [ ] 193-06-PLAN.md — copy-forward from backups and build proof, folder swap, session restart (human action)
+- [x] 193-06-PLAN.md — copy-forward from backups and build proof, folder swap, session restart (human action)
 
 **Wave 6** *(new session; blocked on Wave 5 completion)*
-- [ ] 193-07-PLAN.md — guard, copy-forward re-proof, memory check, late-record sweep
+- [x] 193-07-PLAN.md — guard, copy-forward re-proof, memory check, late-record sweep
 
 **Wave 7** *(blocked on Wave 6 completion)*
-- [ ] 193-08-PLAN.md — Gate B allow/hold for the removal list, per-item removal, ledger
+- [x] 193-08-PLAN.md — Gate B allow/hold for the removal list, per-item removal, ledger
 
 **Wave 8** *(blocked on Wave 7 completion)*
-- [ ] 193-09-PLAN.md — AGENTS.md "How changes land", STATE/ROADMAP/PROJECT, SEED-025, PR dispositions
+- [x] 193-09-PLAN.md — AGENTS.md "How changes land", STATE/ROADMAP/PROJECT, SEED-025, PR dispositions
 
 **Wave 9** *(blocked on Wave 8 completion)*
-- [ ] 193-10-PLAN.md — PR 2, pre-merge final check, Gate C allow/hold, merge, post-merge final check and receipt
+- [x] 193-10-PLAN.md — PR 2, pre-merge final check, Gate C allow/hold, merge, post-merge final check and receipt
 
 ## Progress
 
@@ -252,7 +254,7 @@ Plans:
 | 190. Fix warnings before landing | 10/10 | Complete | 2026-10-19 |
 | 191. Integration branch and local suite | 12/12 | Executed, verification pending | - |
 | 192. PR, CI and merge | 10/10 | Executed, verification pending | - |
-| 193. Cleanup and new working rules | 0/10 | Planned | - |
+| 193. Cleanup and new working rules | 10/10 | Complete | 2026-10-24 |
 
 <details>
 <summary>v26.0 Harden Before Trust (Phases 184–188) — planning closeout 2026-10-16</summary>
@@ -278,4 +280,4 @@ Plans:
 
 ## Exact Next Action
 
-Next: `$gsd-discuss-phase 193 --ws quality-ratchet-release`. Phase 192 is complete (verification passed 4/4) after all 10 plans: PR #242 was merged into `main` with a merge commit (`d12aed75`) after the user's `allow`, at the displayed head (`9f33c071`). The required Crosswake CI check passed on that head and the merge preview; after the merge, Release Please succeeded on the merge commit with all publish jobs skipped; no release, tag, package version, force push or protection change happened; the recovery checkout shows no git change. See It Run Collateral (advisory) was still running at last check. Phase 193 inherits the Phase 192 plain files in the recovery checkout (R-2), the follow-ups IN-01 and IN-02, and the local branches and clone to clean up. Details are in STATE.md.
+Next: `$gsd-audit-milestone --ws quality-ratchet-release`. Phase 193 is complete once PR 2 (#244) is merged: the recovery checkout was retired for a clean `main` checkout, 300 of 306 listed local copies were removed and 6 kept with reasons (`193-REMOVAL-LEDGER.md`), the working rules now say to branch from `main` and open a PR (AGENTS.md "How changes land"), and the final check (`final-check-193.sh`) passed before the merge question. All five v27.0 phases (189 to 193) are then complete. Details are in STATE.md and `193-VERIFICATION.md`.

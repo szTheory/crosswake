@@ -72,7 +72,7 @@ Workstream: Quality Ratchet & Release.
 
 **Last goal (v26.0, closed 2026-10-16):** Remove every v25 check that could pass while checking nothing, then run the reference twin once more (twin-05) against the hardened commit.
 
-**Current stage:** Last completed phase 188. v27.0 Land and Clean Up started 2026-10-16; Phase 189 (Inventory and backup) is next for discussion. The candidate is backed up outside `/private/tmp`; the recovery checkout stays frozen through Phase 192. See [STATE](workstreams/quality-ratchet-release/STATE.md).
+**Current stage:** Last completed phase 192. v27.0 Land and Clean Up: the work is on GitHub `main` with CI green; Phase 193 (Cleanup and new working rules) is closing, and changes now land through PRs branched from `main` (AGENTS.md "How changes land"). See [STATE](workstreams/quality-ratchet-release/STATE.md).
 
 **Planning:** `.planning/workstreams/quality-ratchet-release/` — [v26.0 archive](workstreams/quality-ratchet-release/milestones/v26.0-ROADMAP.md), [requirements archive](workstreams/quality-ratchet-release/milestones/v26.0-REQUIREMENTS.md), and [roadmap](workstreams/quality-ratchet-release/ROADMAP.md).
 

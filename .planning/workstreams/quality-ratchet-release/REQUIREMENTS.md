@@ -57,19 +57,20 @@ See [v27.0-SCOPE.md](v27.0-SCOPE.md). The v26 requirements are archived in [mile
 
 ### CLEAN: leave a clean local setup
 
-- [ ] **CLEAN-01:** After landing, the recovery checkout is retired and replaced by a clean `main` checkout. This happens only after its *to land* work is on `main` and everything else is backed up.
-- [ ] **CLEAN-02:** Landed or obsolete stashes, extra worktrees and local branches are removed after backup. Anything that remains has a stated reason.
-- [ ] **CLEAN-03:** A final check shows all of the following:
+- [x] **CLEAN-01:** After landing, the recovery checkout is retired and replaced by a clean `main` checkout. This happens only after its *to land* work is on `main` and everything else is backed up.
+- [x] **CLEAN-02:** Landed or obsolete stashes, extra worktrees and local branches are removed after backup. Anything that remains has a stated reason.
+- [x] **CLEAN-03:** A final check shows all of the following:
   - the `main` checkout's `git status` is clean;
   - `main` CI is green;
   - every open PR has a disposition;
   - no `/private/tmp` folder is the only copy of anything.
-- [ ] **CLEAN-04:** AGENTS.md and the workstream STATE replace the "candidate in `/private/tmp`, frozen recovery checkout" rules with the normal flow: branch from `main`, then open a PR.
+- [x] **CLEAN-04:** AGENTS.md and the workstream STATE replace the "candidate in `/private/tmp`, frozen recovery checkout" rules with the normal flow: branch from `main`, then open a PR.
 
 ## Future Requirements
 
 - Validate the Nyquist status of phases 184–188 (all VALIDATION.md files are still drafts).
 - Address the remaining open review findings in the v26 debt disposition that FIX does not cover.
+- Address the Phase 192 review residue parked in SEED-025 (the CI failure-tail credential masking gap first).
 
 ## Out of Scope
 
@@ -99,10 +100,10 @@ See [v27.0-SCOPE.md](v27.0-SCOPE.md). The v26 requirements are archived in [mile
 | LAND-02 | Phase 191 | Complete |
 | LAND-03 | Phase 192 | Complete |
 | LAND-04 | Phase 192 | Complete |
-| CLEAN-01 | Phase 193 | Pending |
-| CLEAN-02 | Phase 193 | Pending |
-| CLEAN-03 | Phase 193 | Pending |
-| CLEAN-04 | Phase 193 | Pending |
+| CLEAN-01 | Phase 193 | Complete |
+| CLEAN-02 | Phase 193 | Complete |
+| CLEAN-03 | Phase 193 | Complete |
+| CLEAN-04 | Phase 193 | Complete |
 
 **Coverage:** 18/18 v1 requirements mapped to phases 189–193; no orphans, no duplicates.
 

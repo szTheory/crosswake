@@ -12,7 +12,9 @@ preflight: sums SHA256SUMS.13 ok 7
 preflight: sums SHA256SUMS.cr01 ok 2
 preflight: info skipped retained run1 sums
 preflight: sums SHA256SUMS.193 ok 7
+preflight: sums SHA256SUMS.193b ok 2
 preflight: sums SHA256SUMS.193r1 ok 2
+preflight: sums SHA256SUMS.193r2 ok 2
 preflight: modes ok
 restore refs-all.bundle: pass
 restore tmp-commits.bundle: pass
@@ -23,11 +25,5 @@ restore worktree-agent-p78.tar: pass
 restore worktree-accrue-bridge.patch: pass
 restore worktree-agent-p78.patch: pass
 restore tmp-crosswake-phase179-hex.tar: pass
-preflight: head ok
-preflight: stash ok 4
-preflight: worktrees ok 3
-preflight: refs extra 20 published 20 unexpected 0
-preflight: info refs missing 579
-preflight: dirty covered 1165 difference 1
-preflight: info live-after-snapshot 29
+preflight: info recovery absent
 preflight: result pass

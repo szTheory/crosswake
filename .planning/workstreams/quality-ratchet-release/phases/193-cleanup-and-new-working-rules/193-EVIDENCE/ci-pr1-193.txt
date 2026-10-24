@@ -1,0 +1,2 @@
+land: ci success
+land: ci ran on pr head SHA and its synthetic merge commit
