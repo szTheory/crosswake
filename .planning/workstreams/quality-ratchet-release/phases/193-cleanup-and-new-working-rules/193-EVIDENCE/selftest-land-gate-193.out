@@ -1,0 +1,52 @@
+L01 scan-bind refuses a label other than pr1 and pr2: as expected
+L02 scan-bind binds head, base, exit and the D-26 skip, leaves no crosswake entry: as expected
+L03 scan-bind records scanner hits: as expected
+L04 scan copy with three rewritten lines is refused and no scan runs: as expected
+L05 scan copy with one rewritten line is refused and no scan runs: as expected
+L06 scan copy with a differing hash is refused and no scan runs: as expected
+L07 real scanner copy runs under the 193 run folder with no crosswake entry: as expected
+L08 push delivers only the branch, once: as expected
+L09 second push says already delivered and writes nothing: as expected
+L10 push without a scan binding is refused: as expected
+L11 binding head different from HEAD is refused: as expected
+L12 binding base different from live main is refused: as expected
+L13 binding with scan_exit not 0 is refused: as expected
+L14 upper-case binding head is refused: as expected
+L15 shortened binding head is refused: as expected
+L16 main moved since scan-bind is refused: as expected
+L17 non-fast-forward is refused: as expected
+L18 unreadable remote is exit 2: as expected
+L19 remote without main is exit 2: as expected
+L20 main, refs, off-pattern and upper-case branches are refused: as expected
+L21 a force argument is refused: as expected
+L22 dry-run writes nothing to the remote or the writes log: as expected
+L23 open with a failing privacy check is refused before any gh write: as expected
+L24 open creates the pull request once and binds its number and head: as expected
+L25 open reuses an already-open pull request: as expected
+L26 open refuses a pull request whose head is not the pushed head: as expected
+L27 ci-wait is exit 3 while the check is pending: as expected
+L28 ci-wait is exit 3 while no check-run exists yet: as expected
+L29 ci-wait is exit 0 on success and names what CI ran on: as expected
+L30 ci-wait is exit 1 on failure and names the failing job: as expected
+L31 ci-wait is exit 2 on empty gh output: as expected
+L32 ci-wait is exit 2 on an empty check-run answer: as expected
+L33 ci-wait is exit 2 when the required set changed: as expected
+L34 a check from another app is not the required check: as expected
+L35 propose binds pr, head, main in owner-only files and states D-26: as expected
+L36 propose without a scan binding is refused: as expected
+L37 propose with a scan binding for another head is refused: as expected
+L38 answer without propose is refused: as expected
+L39 an answer other than allow or hold is invalid: as expected
+L40 hold never merges: as expected
+L41 answer after the head changed voids the binding: as expected
+L42 merge after the head changed voids the binding and does not call gh: as expected
+L43 merge after main moved voids the binding: as expected
+L44 merge with a failing check voids the binding: as expected
+L45 clean allow-to-merge merges exactly once and a consumed binding is refused: as expected
+L46 merge delivery failure is exit 3 with no second call: as expected
+L47 status reads the binding and the live pull request: as expected
+L48 a binding folder with another mode is exit 2: as expected
+L49 a self-test hook outside the self-test is refused: as expected
+L50 source names no run-folder tool, no 192 privacy check, no system temp root: as expected
+L51 forbidden merge options appear only in the refusal list: as expected
+selftest land-gate-193: controls 51 of 51 as expected

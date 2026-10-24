@@ -52,8 +52,8 @@ See [v27.0-SCOPE.md](v27.0-SCOPE.md). The v26 requirements are archived in [mile
 
   A privacy scan of the change finds no home paths, usernames, secrets or adopter identity.
 - [x] **LAND-02:** The full local suite passes on the integration branch. Each known pre-existing failure is either fixed or listed with a reason; none is excluded silently. The known failures are Swift G4 and example-host G2/G6.
-- [ ] **LAND-03:** A PR to `main` is open and every required CI check passes.
-- [ ] **LAND-04:** The merge happens only after the user answers `allow` for the displayed PR and head commit. After the merge, CI on `main` is green for the merge commit.
+- [x] **LAND-03:** A PR to `main` is open and every required CI check passes.
+- [x] **LAND-04:** The merge happens only after the user answers `allow` for the displayed PR and head commit. After the merge, CI on `main` is green for the merge commit.
 
 ### CLEAN: leave a clean local setup
 
@@ -97,8 +97,8 @@ See [v27.0-SCOPE.md](v27.0-SCOPE.md). The v26 requirements are archived in [mile
 | FIX-07 | Phase 190 | Complete |
 | LAND-01 | Phase 191 | Complete |
 | LAND-02 | Phase 191 | Complete |
-| LAND-03 | Phase 192 | Pending |
-| LAND-04 | Phase 192 | Pending |
+| LAND-03 | Phase 192 | Complete |
+| LAND-04 | Phase 192 | Complete |
 | CLEAN-01 | Phase 193 | Pending |
 | CLEAN-02 | Phase 193 | Pending |
 | CLEAN-03 | Phase 193 | Pending |

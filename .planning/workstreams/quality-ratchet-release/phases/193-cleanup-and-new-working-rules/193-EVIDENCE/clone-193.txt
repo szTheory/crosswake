@@ -1,0 +1,5 @@
+clone created
+head_equals_remote_main yes
+tree clean
+origin_url matches
+user_email noreply set

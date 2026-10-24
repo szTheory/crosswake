@@ -1,0 +1,9 @@
+pr 242
+url https://github.com/szTheory/crosswake/pull/242
+head 9f33c071aa9569879bd643a2fc1aa33ead2614de
+synthetic_merge cdf8af984139d89e09f72f71cf4b86f69ceac47d
+synthetic_tree 606811fffb3ca1c74cd0a31581f0d6db9a32c66a
+main d0dbdf7bf196cea167ced3c50cf620bf3cb2452b
+nonce d60e5655233240edf56eea8c417379ed
+proposed_at 2026-10-23T23:28:28Z
+state consumed

@@ -1,0 +1,8 @@
+land_fix 4a6c1af2f2304e7c3a72ca845a2409a7a9e0d682
+parent 2525bdce728b792a8fa52bc5d3b944ddd3652a4a
+paths 3
+affected_tests pass
+ledger_check ok
+red_before shown
+deviation A-07-1: the locale test runs --emit-snapshot under both LC_ALL=C and LC_ALL=C.UTF-8 (host has C.UTF-8) and asserts byte equality with the committed ledger in each. Reason: under C the mutant (no latin1 switch) emits bytes equal to the ledger, so a C-only test cannot fail on the bug; the UTF-8 locale is the discriminating one. Plan intent (the locale test fails when the locale bug is present) unchanged.
+result pass

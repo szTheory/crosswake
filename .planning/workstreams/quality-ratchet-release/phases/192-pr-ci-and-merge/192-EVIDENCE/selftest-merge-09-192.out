@@ -1,0 +1,18 @@
+M01 merge with no binding refused: as expected
+M02 merge without an answer refused: as expected
+M03 hold stops the merge: as expected
+M04 head change after allow voids the binding: as expected
+M05 not clean after allow voids the binding: as expected
+M06 failed check after allow voids the binding: as expected
+M07 main moved after allow voids the binding: as expected
+M08 happy path makes one bound merge call: as expected
+M09 changed synthetic tree voids the binding: as expected
+M10 consumed binding cannot merge twice: as expected
+M11 failed merge call is not retried: as expected
+M12 uncertain delivery reconciled by read-back: as expected
+M13 head that is not the scanned head refused: as expected
+M14 empty scan verdict refused: as expected
+M15 head change voids allow and a new proposal needs a new allow: as expected
+M17 unsafe binding folder refused: as expected
+M16 no forbidden merge option in any call: as expected
+selftest-merge: controls 17 of 17 as expected

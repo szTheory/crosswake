@@ -1,0 +1,17 @@
+sync_label SYNC-2
+sync_head 2525bdce728b792a8fa52bc5d3b944ddd3652a4a
+sync_paths 68
+verify pass
+root_suite pass
+subset pass
+check phase167_js exit 0
+check adoption_scan exit 0
+check integrity_script exit 0
+check ledger_check exit 0
+non_planning_paths 0
+scanner_carried yes
+syncs_this_phase 1
+result pass
+note run1 full finalize stopped at its final scan with 2 blocking hits (synthetic self-test fixtures: a split noreply-style email fixture in selftest-privacy-192.sh; a UDID-shaped fixture in the superseded SYNC-head copy of selftest-scan-191.sh)
+note hits triaged by user decision under D-20 rung 4; two fingerprint rows appended to scan-triage-191.tsv
+note scan re-run with finalize-191.sh --scan-only (head 2525bdce, clean); --check-binding passed; no second sync was made

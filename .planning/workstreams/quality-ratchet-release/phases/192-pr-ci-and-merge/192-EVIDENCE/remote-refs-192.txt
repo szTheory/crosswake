@@ -1,0 +1,4 @@
+carry_trial_refs 0
+candidate_src_refs 0
+land_branch absent
+tags_unchanged yes

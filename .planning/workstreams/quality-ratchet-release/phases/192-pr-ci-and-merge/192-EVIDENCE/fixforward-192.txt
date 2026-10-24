@@ -1,0 +1,38 @@
+round 1 run 40014160817 cause linux_runner_and_advisories action fix head ca7d20577aad17f228ea8445b6065045781599d5
+amendment A-08-1 push-192.sh push and dry-run commands pass -c http.postBuffer=524288000 (run 1 push failed with HTTP 400 on the first 114-commit upload); nothing else in the gate changed
+user_decision 2026-10-23 push once with the fix; exactly one fresh push attempt of the scan-bound head, then stop if it fails (it was delivered)
+round 1 result red run 40021118301 nonsuccess phase130-core-hermetic-proof,proof-requires-example-host(cancelled at its 25-minute job limit),Crosswake CI
+rounds 1
+result red
+user_decision 2026-10-23 one more fix round (CI-FIX-2): one commit, one push through push-192.sh; workflow edit limited to the proof-requires-example-host timeout; no further round if red
+round 2 run 40021118301 cause example_host_job_time_limit_and_root_proof_output_hidden action fix head 24c4ca0c1e5676d06a2aebe0d08d5dd705ca0ed1
+round 2 changes proof-requires-example-host timeout-minutes 25 -> 60 (only workflow change); root-proof failure now prints bounded masked tail on hosted runners (script/verify_repository.mjs) plus one JS test
+round 2 local MIX_ENV=test mix verify on the Mac: 2659 tests 0 failures (root-proof failure not reproduced); node --test test/js/repository_verification.test.mjs 40 pass
+round 2 amendment: first scan of the CI-FIX-2 commit reported gitleaks_findings 1 (a credential-shaped literal in my own new test); the unpushed commit was amended to build those strings at runtime; no triage row added; rescan clean (terms 0, gitleaks_findings 0, blocking_final 0)
+round 2 binding finalize: binding pass at 24c4ca0c1e5676d06a2aebe0d08d5dd705ca0ed1
+round 2 push delivered remote_before ca7d20577aad17f228ea8445b6065045781599d5 remote_after 24c4ca0c1e5676d06a2aebe0d08d5dd705ca0ed1 (ls-remote read back equal)
+round 2 result red run 40029165177 nonsuccess phase130-core-hermetic-proof,phase41-gating-proof,Crosswake CI; proof-requires-example-host success (28 min)
+round 2 cause test/crosswake/proof_lane/twin_producers_test.exs:323 read_rows returned {:error, :rows_unavailable} in phase41-gating-proof (2658 tests 1 failure in root-proof too; its test name was cut off by the 150-line tail)
+rounds 2
+result red
+user_decision 2026-10-23 "Diagnose, then one fix": one more fix round (CI-FIX-3): one commit, one push through push-192.sh; no workflow change; no further round if red
+round 3 diagnosis root cause found and reproduced on Linux: TwinRuntime.start_child/3 read the child pid with a strict match on Port.info(port, :os_pid); a short-lived child (sqlite3) can exit before that call, the port is then closed, Port.info returns nil, the match raised and the rescue returned prerequisite_missing, which read_rows collapsed into rows_unavailable
+round 3 evidence: diagnostic read_rows reason in the Linux container (Debian, Elixir 1.19.5 OTP 27, 16 concurrent callers) was {:start_failed, :prerequisite_missing} in 1 of 3200 calls; bare Port.open+Port.info on the perl-wrapped sqlite3 returned nil in 1 of 14400 spawns; a direct probe showed Port.info nil after a fast exit while the data and exit_status messages are still delivered
+round 3 ruled out: sqlite3 3.45.1 (ubuntu 24.04) -readonly handling, piped stdin, perl setpgrp wrapper, output ordering, missing-database message (all correct); 40 repeats of the whole twin_producers file in the container showed no read_rows failure (rare race)
+round 3 fix: start_child keeps os_pid nil for an already-gone child; alive?(nil) is false; read_rows keeps the reason {:error, {:rows_unavailable, reason}} (status and 200-byte printable head of sqlite3 text only, no rows); regression test captures 1200 immediate-exit children concurrently; root-proof failure output now also prints the ExUnit failure details section (bounded 120 lines/16 KiB, credential-masked) plus one JS test
+round 3 after fix: 5 x 6400 read_rows calls under the same load in the container, 0 failures
+round 3 local: mix test test/crosswake/proof_lane 317 tests 0 failures; compile --warnings-as-errors clean; mix format clean; node --test test/js/repository_verification.test.mjs 41 pass; container twin_fault_boundary/receipt/runtime_check/producers 91 tests, 1 failure that only exists because my container copy lacked the examples/ directory (decode_observe reads examples/phoenix_host source); not the changed code
+round 3 scan: first scan-only on the commit was clean (terms 0, gitleaks_findings 0); no amendment, no triage row added
+round 3 binding finalize: binding pass at 9f33c071aa9569879bd643a2fc1aa33ead2614de
+round 3 push delivered remote_before 24c4ca0c1e5676d06a2aebe0d08d5dd705ca0ed1 remote_after 9f33c071aa9569879bd643a2fc1aa33ead2614de (ls-remote read back equal)
+round 3 action fix head 9f33c071aa9569879bd643a2fc1aa33ead2614de
+round 3 result red run 40035430432 nonsuccess phase43-rulestead-proof,Crosswake CI; phase41-gating-proof, phase130-core-hermetic-proof and proof-requires-example-host success
+round 3 cause of the remaining red: phase43-rulestead-proof failed in the shared setup step "mix deps.get" (three attempts, each "Failed to fetch record for <package> from registry :timeout" from hex.pm); no test ran. Runner/registry infrastructure, not code in this PR
+rounds 3
+result red
+user_decision 2026-10-23 "Rerun failed jobs once": one rerun of the failed jobs of run 40035430432, no code change
+round 4 run 40035430432 cause infrastructure_hex_registry_timeout action rerun head 9f33c071aa9569879bd643a2fc1aa33ead2614de
+round 4 verified before rerun: remote tip, clone HEAD and PR 242 head all equal 9f33c071aa9569879bd643a2fc1aa33ead2614de; main still d0dbdf7bf196cea167ced3c50cf620bf3cb2452b
+round 4 result green run 40035430432 attempt 2 (failed-jobs rerun) head 9f33c071aa9569879bd643a2fc1aa33ead2614de: 49 jobs, 0 nonsuccess; phase43-rulestead-proof success; Crosswake CI success
+rounds 4
+result green

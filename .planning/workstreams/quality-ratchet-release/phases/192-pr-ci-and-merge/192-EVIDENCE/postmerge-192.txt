@@ -1,0 +1,16 @@
+merge_commit d12aed7567b6bddc6800806e4269e0e87bcd4aac
+parents 2
+first_parent d0dbdf7bf196cea167ced3c50cf620bf3cb2452b
+second_parent 9f33c071aa9569879bd643a2fc1aa33ead2614de
+tree_equals_tested_merge yes
+merge_on_main yes
+pr_check_success yes
+release_please_run 40040898352
+release_please success
+guard success
+publish_class_jobs 16 skipped 16
+other_push_runs 0 green 0
+advisory_see_it_run in_progress
+baselines_unchanged yes
+main_green yes
+result pass

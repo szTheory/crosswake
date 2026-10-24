@@ -1,0 +1,8 @@
+pr 242
+url https://github.com/szTheory/crosswake/pull/242
+base main
+head_ref land/v25-v27
+head 9f33c071aa9569879bd643a2fc1aa33ead2614de
+initial_head 4a6c1af2f2304e7c3a72ca845a2409a7a9e0d682
+created_by_this_plan yes
+result open
