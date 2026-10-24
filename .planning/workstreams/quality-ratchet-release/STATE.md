@@ -1,7 +1,7 @@
 ---
 gsd_state_version: "1.0"
 milestone: v27.0
-milestone_name: Land and Clean Up (Phases 189–193) — phases complete, audit next
+milestone_name: Land and Clean Up (Phases 189–193) — in progress
 current_phase: 193
 current_phase_name: Cleanup and new working rules
 status: phase_complete_pending_merge

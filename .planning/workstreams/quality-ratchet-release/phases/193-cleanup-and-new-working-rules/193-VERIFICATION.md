@@ -15,7 +15,7 @@ overrides_applied: 0
 
 ## How to read this record
 
-PR 2 (#244) has two commits. The first commit (C1, `1ea30482`) carries every Phase 193 record from plans 05 to 09 and the new working rules. The final check below ran on C1. The second commit (C2) adds only this verification record, the plan 10 summary and the completion bookkeeping (the CLEAN checkboxes in REQUIREMENTS.md, the ROADMAP row and the STATE and `.continue-here.md` handoff). The pre-merge final check was run again on C2 and its result is kept in the backup folder.
+PR 2 (#244) has three commits. The first commit (C1, `1ea30482`) carries every Phase 193 record from plans 05 to 09 and the new working rules. The final check below ran on C1. The second commit (C2) adds only this verification record, the plan 10 summary and the completion bookkeeping (the CLEAN checkboxes in REQUIREMENTS.md, the ROADMAP row and the STATE and `.continue-here.md` handoff). The third commit (C3) is a one-line fix-forward: CI on C2 failed the planning test that requires STATE's `milestone_name` to appear in ROADMAP.md (my C2 had reworded it), so C3 restores that one STATE line; it changes nothing else. The pre-merge final check was run again on the final head and its result is kept in the backup folder.
 
 ## Observable Truths
 
@@ -53,6 +53,7 @@ Receipts live outside git in the backup folder under `receipts-193/`: the scan a
 
 - Scan hit on C1, fixed before the first push: the scanner flagged a self-test fixture literal in `copyforward-193.sh` (a sample path that matched the home-path pattern, twice on one line). The literal was split so it no longer matches, `193-SCRIPTS.sha256` was updated to the new hash of that one script (12 of 12 hashes verify), and because the commit had not been pushed it was folded into C1 so no added line anywhere in the PR matches. Behaviour of the script is unchanged. Nothing sensitive was involved.
 - Private-term scan skipped under D-26 (the user's extension of A-14 to the Phase 193 pushes), recorded in the scan binding; home paths, tokens and credential shapes were still checked and are clean.
+- CI red on C2 (fixed forward in C3): 8 jobs failed on 2 tests, `MilestoneTransitionResetTest` (STATE `milestone_name` must be named in ROADMAP.md) and the proof test that wraps it. Cause: the C2 STATE rewording. Fix: STATE `milestone_name` restored; the planning tests (83) and rules-check pass locally. No code change was needed.
 - `crosswake-integration-191` was kept on purpose (ledger row, cause `ref_tip_unprotected`). It lives in the projects folder, not in `/private/tmp`, so CLEAN-03's "nothing only in `/private/tmp`" is unaffected.
 - Plan 08 noted that `--check N` needs `--post-merge` or `--pre-merge`; the full `--pre-merge` run was used here.
 

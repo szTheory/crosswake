@@ -4,13 +4,13 @@ plan: 10
 subsystem: planning-records
 status: complete
 requirements: [CLEAN-03, CLEAN-01, CLEAN-02, CLEAN-04]
-commits: 2
+commits: 3
 plan_head_before: ed853e3893d3ef4c79a0ab4513f3f0f2cb7b5b40
 plan_head_after: 1ea304823c52038dfd53d7eadfeb5b8356da93d4
 actuals:
   tokens: 60000
   tasks: 2
-  commits: 2
+  commits: 3
 ---
 
 # Phase 193 Plan 10: PR 2, final check and the merge question Summary
@@ -32,7 +32,9 @@ PR 2 (#244) is open, carries the new working rules and every Phase 193 record, p
 - **Fix:** split the string literal; updated that script's line in `193-SCRIPTS.sha256` (12 of 12 verify); squashed the unpushed fix into C1 so history has no matching added line.
 - **Files modified:** `scripts/copyforward-193.sh`, `193-SCRIPTS.sha256`
 
-**2. Commit count note.** `commits: 2` counts C1 and C2; `plan_head_after` is C1 because this file is part of C2 and cannot name its own commit.
+**2. [Rule 1 - Bug] CI red on C2.** The C2 STATE rewording of `milestone_name` broke the planning test that requires ROADMAP.md to name it. Fixed forward in C3 (one line restored); planning tests 83/83 and rules-check pass.
+
+**3. Commit count note.** `commits: 3` counts C1, C2 and C3; `plan_head_after` is C1 because this file is part of C2 and cannot name its own commit.
 
 ## Known Stubs
 
