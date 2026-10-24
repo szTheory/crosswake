@@ -2,9 +2,14 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-status: ready_to_discuss
-last_updated: "2026-10-24T23:30:00.000Z"
+current_phase: 194
+current_phase_name: Bearings reset and ADR amendments
+status: ready_to_plan
+stopped_at: Phase 194 context gathered
+last_updated: "2026-10-24T23:44:46.601Z"
 last_activity: 2026-10-24
+last_activity_desc: Phase 194 context gathered (18 decisions; PLAN-02/SC1 extended with AGENTS.md trim)
+state_head: 8f5ec72c9b9410f695b26f04ba287eab65a6ef27
 progress:
   total_phases: 6
   completed_phases: 0
@@ -21,10 +26,10 @@ See `.planning/PROJECT.md` for the core thesis and decisions. Core value remains
 
 ## Current Position
 
-Phase: 194 (Bearings reset and ADR amendments) — not started
+Phase: 194 (Bearings reset and ADR amendments) — context gathered
 Plan: —
-Status: Roadmap created; ready to discuss Phase 194
-Last activity: 2026-10-24 — v28.0 roadmap created (6 phases, 30/30 requirements mapped)
+Status: Context gathered; ready to plan Phase 194
+Last activity: 2026-10-24 — Phase 194 context gathered ([context](phases/194-bearings-reset-and-adr-amendments/194-CONTEXT.md))
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -32,15 +37,17 @@ Progress: [░░░░░░░░░░] 0%
 
 What was checked: the v28.0 requirements (30), the approved six-phase structure in the research synthesis, and coverage (30/30 mapped, no orphans). What happened: the v28.0 roadmap was written with phases 194–199. Nothing was committed, merged, released or tagged. What is unknown: nothing that blocks the next step. Phases 196 and 198 need `--research-phase` when planned.
 
-Last completed phase: 193 (v27.0). Active phase: none; Phase 194 not started.
+Last completed phase: 193 (v27.0). Active phase: 194, context gathered, not planned. Nothing was pushed, merged, released or tagged.
 
-Next command: `$gsd-discuss-phase 194 --ws quality-ratchet-release`.
+Next command: `$gsd-plan-phase 194 --ws quality-ratchet-release` (research skipped per ROADMAP).
 
 The earlier handoff history is in git (this file at commit `a9bee5c0`); Phase 194 (PLAN-03) does the full STATE trim. Carried debt is in [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md). The adopter lane stays parked on its external gate.
 
 ## Accumulated Context
 
 ### Roadmap Evolution
+
+- Phase 194 discussed (2026-10-24): PLAN-02 and SC1 extended with the AGENTS.md trim already approved in v28.0-SCOPE (decision 6); requirement count unchanged at 30.
 
 - v28.0 roadmap created (2026-10-24): phases 194–199 follow the user-approved six-phase structure in the v28 research synthesis unchanged; 30/30 requirements mapped, no orphans. Research flags on 196 and 198.
 
@@ -106,6 +113,6 @@ The six separate v24 debt items remain in the [debt disposition](milestones/v24.
 
 ## Session
 
-**Last session:** 2026-10-24
-**Stopped at:** v28.0 roadmap created; Phase 194 not started
-**Resume file:** None
+**Last session:** 2026-10-24T23:44:46.584Z
+**Stopped at:** Phase 194 context gathered
+**Resume file:** .planning/workstreams/quality-ratchet-release/phases/194-bearings-reset-and-adr-amendments/194-CONTEXT.md
