@@ -1,0 +1,9 @@
+# A-10-1 read-only evidence, live read 2026-10-23T23:54:28Z
+merge_commit d12aed7567b6bddc6800806e4269e0e87bcd4aac
+pr 210 head_before e094d4f9c23dca5b2368bf7b8a31d50b6ea70ab9 head_after b2668e5e82cf1363f652b02fb07c49526543d8b7 ref dependabot/github_actions/actions/checkout-7.0.1 state OPEN author dependabot[bot] committer web-flow verified true parent d12aed7567b6bddc6800806e4269e0e87bcd4aac writes_naming_pr 0 a10_1 not_changed_by_phase
+pr 211 head_before 9a1126e560884021fba18089136235150286b985 head_after 79c426f61166afa8cd7d141f6500dfe1088124a1 ref dependabot/github_actions/erlef/setup-beam-1.24.1 state OPEN author dependabot[bot] committer web-flow verified true parent d12aed7567b6bddc6800806e4269e0e87bcd4aac writes_naming_pr 0 a10_1 not_changed_by_phase
+pr 239 head_before 8deefad4bbd1b39ca179d0f44c198772c4ab88c9 head_after c064db7977191e5cdfd44cdbbaaa83d997f83b83 ref dependabot/github_actions/actions/setup-node-7.1.0 state OPEN author dependabot[bot] committer web-flow verified true parent d12aed7567b6bddc6800806e4269e0e87bcd4aac writes_naming_pr 0 a10_1 not_changed_by_phase
+pr 240 head_before 525137ba48f13cbc134f2123637284beafa3e9e9 head_after e26fe524aa04c110b601f8753a25459b63486aee ref dependabot/github_actions/actions/upload-artifact-7.0.2 state OPEN author dependabot[bot] committer web-flow verified true parent d12aed7567b6bddc6800806e4269e0e87bcd4aac writes_naming_pr 0 a10_1 not_changed_by_phase
+pr 241 head_before 80f57f6fe43b9d263d8af8b233693d51478788fe head_after 0e794279ff509f1b493aa027225df2657496c899 ref dependabot/github_actions/actions/download-artifact-8.0.2 state OPEN author dependabot[bot] committer web-flow verified true parent d12aed7567b6bddc6800806e4269e0e87bcd4aac writes_naming_pr 0 a10_1 not_changed_by_phase
+pr 238 unchanged
+release_please_pr 236 refreshed

@@ -1,0 +1,22 @@
+P01 clean file passes: as expected
+P02 home path hits: as expected
+P03 user temp path hits: as expected
+P04 token shape hits: as expected
+P05 key header hits: as expected
+P06 credential assignment hits: as expected
+P07 account name hits: as expected
+P08 private string hits: as expected
+P09 outside email hits: as expected
+P10 attribution address is allowed: as expected
+P11 noreply address is allowed: as expected
+P12 second file index is reported: as expected
+P13 missing file is exit 2: as expected
+P14 unreadable file is exit 2: as expected
+P15 no argument is exit 2: as expected
+P16 hook without self-test flag is exit 2: as expected
+P17 hook outside fixture prefix is exit 2: as expected
+P18 empty private list is exit 2: as expected
+P19 system temp root is refused: as expected
+P20 source names no run-folder tool or system temp root: as expected
+P21 real run adds no crosswake entry and leaves no scratch: as expected
+selftest privacy-193: controls 21 of 21 as expected

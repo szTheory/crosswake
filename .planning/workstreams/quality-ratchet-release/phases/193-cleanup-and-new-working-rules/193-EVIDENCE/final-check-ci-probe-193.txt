@@ -1,0 +1,17 @@
+final: ci ran on pr head SHA (pull_request runs also test a synthetic merge commit)
+final: info main-push Required Checks Audit success
+final: info main-push Cancel Obsolete Crosswake CI success
+final: info main-push Cancel Obsolete Crosswake CI success
+final: info main-push Cancel Obsolete Crosswake CI success
+final: info main-push Cancel Obsolete Crosswake CI success
+final: info main-push Cancel Obsolete Crosswake CI success
+final: info main-push Cancel Obsolete Crosswake CI success
+final: info main-push github_actions in / for actions/download-artifact - Update #1649086524 success
+final: info main-push github_actions in / for actions/setup-node - Update #1649086486 success
+final: info main-push github_actions in / for actions/upload-artifact - Update #1649086461 success
+final: info main-push github_actions in / for erlef/setup-beam - Update #1649086428 success
+final: info main-push github_actions in / for actions/checkout - Update #1649086405 success
+final: info main-push Release Please success
+final: info main-push See It Run Collateral cancelled
+final: check 2 pass
+final: result pass

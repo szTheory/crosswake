@@ -1,0 +1,17 @@
+pr 242
+url https://github.com/szTheory/crosswake/pull/242
+head 9f33c071aa9569879bd643a2fc1aa33ead2614de
+check_name Crosswake CI
+check_app 15368
+check_run_id 120707263106
+conclusion success
+run_id 40035430432
+run_event pull_request
+required_set ok
+synthetic_merge cdf8af984139d89e09f72f71cf4b86f69ceac47d
+synthetic_parents d0dbdf7bf196cea167ced3c50cf620bf3cb2452b 9f33c071aa9569879bd643a2fc1aa33ead2614de
+synthetic_tree 606811fffb3ca1c74cd0a31581f0d6db9a32c66a
+ran_on synthetic_merge
+head_sourced_jobs release-candidate-full-proof
+nonsuccess_jobs 0
+result success

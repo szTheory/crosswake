@@ -1,0 +1,6 @@
+pr 242
+bound_head 9f33c071aa9569879bd643a2fc1aa33ead2614de
+merge_commit d12aed7567b6bddc6800806e4269e0e87bcd4aac
+merge_call_rc 0
+merged_at 2026-10-23T23:39:29Z
+result merged

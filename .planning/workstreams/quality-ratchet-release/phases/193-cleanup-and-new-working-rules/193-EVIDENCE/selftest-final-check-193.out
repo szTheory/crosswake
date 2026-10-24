@@ -1,0 +1,31 @@
+F01 clean post-merge fixture passes all five checks: as expected
+F02 clean pre-merge fixture passes; head drift is reported, not failed: as expected
+F03 dirty tree fails check 1: as expected
+F04 post-merge HEAD different from live origin main fails check 1: as expected
+F05 pre-merge HEAD different from the live PR head fails check 1: as expected
+F06 red Crosswake CI on the producing PR head fails check 2: as expected
+F07 missing Crosswake CI check run fails check 2: as expected
+F08 no merged PR for the main tip fails check 2: as expected
+F09 several merged PRs for the main tip fail check 2: as expected
+F10 pre-merge open PR beyond the one under test fails check 3: as expected
+F11 duplicated disposition row fails check 3: as expected
+F12 empty gh output fails the gh-based checks: as expected
+F13 unparseable gh JSON fails check 3: as expected
+F14 gh non-zero exit fails and exits 2: as expected
+F15 missing ledger fails check 5: as expected
+F16 empty ledger fails check 5: as expected
+F17 expected count 0 fails check 5: as expected
+F18 expected different from removed + kept fails check 5: as expected
+F19 expected id missing from the ledger fails check 5: as expected
+F20 kept row without a reason fails check 5: as expected
+F21 leftover crosswake temp entry without a row fails check 4: as expected
+F22 leftover entry with a verified row passes, a tampered backup fails: as expected
+F23 post-merge with an extra open PR fails check 3: as expected
+F24 zero open PRs passes when gh and the JSON were good and the table has the merged PR: as expected
+F25 zero open PRs with an empty disposition table fails: as expected
+F26 row order and gh order do not change the result: as expected
+F27 --check 2 prints only that check: as expected
+F28 the recovery checkout is refused: as expected
+F29 FINAL193_TOP is refused for checks other than 2 and 3: as expected
+F30 static scan: no pipe into tail or head, no forbidden git write, one guarded delete: as expected
+selftest final-check-193: controls 30 of 30 as expected

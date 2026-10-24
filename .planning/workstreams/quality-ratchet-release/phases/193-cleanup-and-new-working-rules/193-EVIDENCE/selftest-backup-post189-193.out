@@ -1,0 +1,17 @@
+B01 plan mode writes nothing outside the run folder: as expected
+B02 empty ref set is a scope error: as expected
+B03 a requested ref that is missing fails: as expected
+B04 a bundle with a prerequisite fails verification: as expected
+B05 sums without a line or empty sums fail: as expected
+B06 an unmapped checkpoint bundle is detected: as expected
+B07 loose temp files are archived, tree files are not: as expected
+B08 tree files and symlinks are listed, mapped and foreign entries are left out: as expected
+B09 an existing target is never overwritten: as expected
+B10 a required ref that is not on main fails: as expected
+B11 clean run passes and its sums verify: as expected
+B12 a second run reports already complete: as expected
+B13 dirty paths are archived and restore: as expected
+B14 dirty-refresh with everything covered writes nothing: as expected
+B15 dirty-refresh archives uncovered paths and never reuses a number: as expected
+B16 this tool contains no forbidden token: as expected
+selftest backup-post189-193: controls 16 of 16 as expected

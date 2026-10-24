@@ -1,0 +1,8 @@
+head 4a6c1af2f2304e7c3a72ca845a2409a7a9e0d682 check_run 120626727135 conclusion failure run 40014160817 nonsuccess_jobs 11 phase41-gating-proof,phase130-core-hermetic-proof,phase45-rindle-proof,hex-page-proof,phase34-commerce-proof,proof-dependency-security,release-candidate-full-proof,phase43-rulestead-proof,phase132-core-hermetic-proof,proof-requires-example-host,Crosswake CI
+head ca7d20577aad17f228ea8445b6065045781599d5 check_run 120656519437 conclusion failure run 40021118301 nonsuccess_jobs 3 proof-requires-example-host,phase130-core-hermetic-proof,Crosswake CI
+head 24c4ca0c1e5676d06a2aebe0d08d5dd705ca0ed1 check_run 120684167429 conclusion failure run 40029165177 nonsuccess_jobs 3 phase130-core-hermetic-proof,phase41-gating-proof,Crosswake CI
+head 24c4ca0c1e5676d06a2aebe0d08d5dd705ca0ed1 check_run 120684167429 conclusion failure run 40029165177 nonsuccess_jobs 3 phase130-core-hermetic-proof,phase41-gating-proof,Crosswake CI
+head 9f33c071aa9569879bd643a2fc1aa33ead2614de check_run 120703255745 conclusion failure run 40035430432 nonsuccess_jobs 2 phase43-rulestead-proof,Crosswake CI
+note CI-FIX-3 run 40035430432 on head 9f33c071aa9569879bd643a2fc1aa33ead2614de: phase41-gating-proof, phase130-core-hermetic-proof and proof-requires-example-host passed; only phase43-rulestead-proof failed, in dependency fetch (hex.pm registry timeout x3); no rerun made (not authorized this round)
+head 9f33c071aa9569879bd643a2fc1aa33ead2614de check_run 120707263106 conclusion success run 40035430432 nonsuccess_jobs 0
+note run 40035430432 attempt 2 (user-authorized rerun of failed jobs after hex.pm registry timeout in phase43-rulestead-proof setup): head 9f33c071aa9569879bd643a2fc1aa33ead2614de check_run 120707263106 conclusion success nonsuccess_jobs 0

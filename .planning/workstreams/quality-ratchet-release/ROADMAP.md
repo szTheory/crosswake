@@ -16,7 +16,7 @@
 - [x] **Phase 189: Inventory and backup** - Account for every copy of the work not on GitHub `main`, back it up outside `/private/tmp`, and record a disposition for every open PR (read-only; nothing is deleted) (completed 2026-10-18)
 - [x] **Phase 190: Fix warnings before landing** - Fix the seven carried warnings in the candidate (or a durable clone of it) so the landed code has no check that passes while checking nothing (no twin run) (completed 2026-10-19)
 - [x] **Phase 191: Integration branch and local suite** - Build one integration branch from current GitHub `main` in a separate durable clone, carrying the candidate history, the FIX commits and the v24–v27 planning records, with a clean privacy scan and a passing local suite (completed 2026-10-23)
-- [ ] **Phase 192: PR, CI and merge** - Open the PR, get every required CI check green, merge only after the user's plain `allow` on the displayed PR and head, and confirm `main` CI is green on the merge commit
+- [x] **Phase 192: PR, CI and merge** - Open the PR, get every required CI check green, merge only after the user's plain `allow` on the displayed PR and head, and confirm `main` CI is green on the merge commit (completed 2026-10-23)
 - [ ] **Phase 193: Cleanup and new working rules** - Retire the recovery checkout for a clean `main` checkout, remove landed or obsolete local copies, and switch the working rules to the normal branch-and-PR flow
 
 ### Ordering rules for v27.0
@@ -174,32 +174,32 @@ Plans:
 Plans:
 
 **Wave 1**
-- [ ] 192-01-PLAN.md — recovery baseline; push gate (bound to the scan, fixed refspec, live main check) proven by a real dry run at the SYNC head; bare-remote self-test (wave 1)
+- [x] 192-01-PLAN.md — recovery baseline; push gate (bound to the scan, fixed refspec, live main check) proven by a real dry run at the SYNC head; bare-remote self-test (wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 192-02-PLAN.md — WR-03: scanner fails closed on unreadable notes (control S33, red then green); privacy check for PR text and evidence (wave 2)
-- [ ] 192-03-PLAN.md — gh/curl test double from live captured shapes; CI poller (required set, check selection rule, wait with synthetic-merge evidence) (wave 2)
+- [x] 192-02-PLAN.md — WR-03: scanner fails closed on unreadable notes (control S33, red then green); privacy check for PR text and evidence (wave 2)
+- [x] 192-03-PLAN.md — gh/curl test double from live captured shapes; CI poller (required set, check selection rule, wait with synthetic-merge evidence) (wave 2)
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 192-04-PLAN.md — one-use merge gate (propose, allow/hold, merge with --match-head-commit, void and re-ask, read-back reconcile) and its self-test (wave 3)
+- [x] 192-04-PLAN.md — one-use merge gate (propose, allow/hold, merge with --match-head-commit, void and re-ask, read-back reconcile) and its self-test (wave 3)
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] 192-05-PLAN.md — post-merge verifier (three facts for "main green", publish jobs skipped, release/tag/Hex baselines) and its self-test (wave 4)
+- [x] 192-05-PLAN.md — post-merge verifier (three facts for "main green", publish jobs skipped, release/tag/Hex baselines) and its self-test (wave 4)
 
 **Wave 5** *(blocked on Wave 4 completion)*
-- [ ] 192-06-PLAN.md — full finalize: the phase's one planning sync (SYNC-2), suites, checks, scan and a dry run at the sync head; no second sync (wave 5)
+- [x] 192-06-PLAN.md — full finalize: the phase's one planning sync (SYNC-2), suites, checks, scan and a dry run at the sync head; no second sync (wave 5)
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 192-07-PLAN.md — WR-01/WR-02 code commit (LAND-FIX), heads label, scan-only rescan, binding check and dry run at the push head; D-03 dispositions (wave 6)
+- [x] 192-07-PLAN.md — WR-01/WR-02 code commit (LAND-FIX), heads label, scan-only rescan, binding check and dry run at the push head; D-03 dispositions (wave 6)
 
 **Wave 7** *(blocked on Wave 6 completion)*
-- [ ] 192-08-PLAN.md — record other open PRs, push, open the PR, Crosswake CI green on the exact head (fix-forward and main-moved procedures) (wave 7)
+- [x] 192-08-PLAN.md — record other open PRs, push, open the PR, Crosswake CI green on the exact head (fix-forward and main-moved procedures) (wave 7)
 
 **Wave 8** *(blocked on Wave 7 completion)*
-- [ ] 192-09-PLAN.md — fresh real-shape self-tests, the plain-language allow/hold ask, the bound merge with a merge commit (wave 8, has the phase's one human decision)
+- [x] 192-09-PLAN.md — fresh real-shape self-tests, the plain-language allow/hold ask, the bound merge with a merge commit (wave 8, has the phase's one human decision)
 
 **Wave 9** *(blocked on Wave 8 completion)*
-- [ ] 192-10-PLAN.md — post-merge proof (main green, nothing released, other open PRs unchanged), phase gate, handoff, recovery after-snapshot (wave 9)
+- [x] 192-10-PLAN.md — post-merge proof (main green, nothing released, other open PRs unchanged), phase gate, handoff, recovery after-snapshot (wave 9)
 
 ### Phase 193: Cleanup and new working rules
 
@@ -212,7 +212,37 @@ Plans:
   3. A final check shows: `git status` on the `main` checkout is clean, `main` CI is green, every open PR has a disposition, and no `/private/tmp` folder is the only copy of anything.
   4. AGENTS.md and the workstream STATE no longer describe a `/private/tmp` candidate and a frozen recovery checkout; they describe branching from `main` and opening a PR.
 
-**Plans**: TBD
+**Plans**: 10 plans (session 1 in the recovery checkout: 01-06; the session ends after the folder swap; session 2 in the swapped checkout: 07-10)
+
+Plans:
+
+**Wave 1**
+- [ ] 193-01-PLAN.md — preflight re-verify of the 189 backups and the post-189 backup (bundle, temp tar, checkpoint file, SHA256SUMS.193, record)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 193-02-PLAN.md — fresh main clone and the standalone push/merge gate (land-gate-193.sh), real dry-run push
+- [ ] 193-03-PLAN.md — copy-forward, folder swap and session guard tools, real read-only stage of the backups
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 193-04-PLAN.md — removal gate, final check, rules check, aggregate self-test, script hash freeze
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 193-05-PLAN.md — PR 1 (192 post-sync records + 193 plans and tools), Gate A allow/hold, merge
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 193-06-PLAN.md — copy-forward from backups and build proof, folder swap, session restart (human action)
+
+**Wave 6** *(new session; blocked on Wave 5 completion)*
+- [ ] 193-07-PLAN.md — guard, copy-forward re-proof, memory check, late-record sweep
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 193-08-PLAN.md — Gate B allow/hold for the removal list, per-item removal, ledger
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [ ] 193-09-PLAN.md — AGENTS.md "How changes land", STATE/ROADMAP/PROJECT, SEED-025, PR dispositions
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [ ] 193-10-PLAN.md — PR 2, pre-merge final check, Gate C allow/hold, merge, post-merge final check and receipt
 
 ## Progress
 
@@ -221,8 +251,8 @@ Plans:
 | 189. Inventory and backup | 13/13 | Complete | 2026-10-18 |
 | 190. Fix warnings before landing | 10/10 | Complete | 2026-10-19 |
 | 191. Integration branch and local suite | 12/12 | Executed, verification pending | - |
-| 192. PR, CI and merge | 0/TBD | Not started | - |
-| 193. Cleanup and new working rules | 0/TBD | Not started | - |
+| 192. PR, CI and merge | 10/10 | Executed, verification pending | - |
+| 193. Cleanup and new working rules | 0/10 | Planned | - |
 
 <details>
 <summary>v26.0 Harden Before Trust (Phases 184–188) — planning closeout 2026-10-16</summary>
@@ -248,6 +278,4 @@ Plans:
 
 ## Exact Next Action
 
-Next: `$gsd-plan-phase 192 --ws quality-ratchet-release`. Phase 192 context gathered 2026-10-23: fix WR-01..03 in one commit before the push, defer IN-01/02. Phase 191 verification passed inside execute-phase (4 of 4 criteria); the code review's 3 warnings and 2 info items are open in 191-REVIEW-DISPOSITION.md for Phase 192 discussion. Phase 191 executed all 12 plans: the integration branch (`land/v25-v27` in a separate durable clone, 112 commits ahead of `main`) holds the 94 candidate commits, the 4 FIX commits, the Phase 191 fixes, the planning resolver, the five carry commits, one fixture commit and one sync commit. The full local suite passed, the privacy scan of the whole change was clean at the sync head (the adopter-term check was skipped by the user's decision, A-14), the recovery checkout shows no git change, and nothing was pushed. Phase 192 must run `finalize-191.sh` first (A-9), push only the HEAD for which `finalize-191.sh --check-binding` passes (D-22), and merge only with a merge commit (D-03). Details are in STATE.md.
-
-Last completed phase: 190 (Fix warnings before landing, verified 7 of 7 on 2026-10-19). Active phase: 191 (Integration branch and local suite); executed, verification pending.
+Next: `$gsd-discuss-phase 193 --ws quality-ratchet-release`. Phase 192 is complete (verification passed 4/4) after all 10 plans: PR #242 was merged into `main` with a merge commit (`d12aed75`) after the user's `allow`, at the displayed head (`9f33c071`). The required Crosswake CI check passed on that head and the merge preview; after the merge, Release Please succeeded on the merge commit with all publish jobs skipped; no release, tag, package version, force push or protection change happened; the recovery checkout shows no git change. See It Run Collateral (advisory) was still running at last check. Phase 193 inherits the Phase 192 plain files in the recovery checkout (R-2), the follow-ups IN-01 and IN-02, and the local branches and clone to clean up. Details are in STATE.md.

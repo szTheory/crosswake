@@ -1,15 +1,15 @@
-head 98e0d3902b305089b9fe032f3036b716c2100e3e
+head 9f33c071aa9569879bd643a2fc1aa33ead2614de
 main d0dbdf7bf196cea167ced3c50cf620bf3cb2452b
 preserved 2faf15a255f644c869d321508c4d3f3007572138
 scan_exit 0
 adopter_check skipped_by_user_decision A-14
-scan: commits 112
-scan: added_lines 346541
-scan: added_bytes 38664237
-scan: text_blobs 2443
+scan: commits 117
+scan: added_lines 353009
+scan: added_bytes 39185152
+scan: text_blobs 2525
 scan: binary_blobs 0
-scan: paths 3521
-scan: identities 224
+scan: paths 3647
+scan: identities 234
 scan: terms 0
 scan: adopter_check skipped_by_user A-14
 scan: gitleaks_version 8.30.1
@@ -23,8 +23,8 @@ scan: history_personal_class home_path 1
 scan: history_personal_class user_temp 0
 scan: history_personal_class user_name 1
 scan: history_sensitive 0
-scan: triaged 3400
-scan: triage_only uuid 4940
-scan: triage_only bare_word 6441
-scan: triage_only bare_hex40 71678
+scan: triaged 3402
+scan: triage_only uuid 4941
+scan: triage_only bare_word 6725
+scan: triage_only bare_hex40 75428
 scan: result clean
