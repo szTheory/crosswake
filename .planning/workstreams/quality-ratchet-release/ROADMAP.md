@@ -34,6 +34,7 @@
 ## Phase Details
 
 ### Phase 194: Bearings reset and ADR amendments
+
 **Goal**: A new session can orient from three short files and one command, and every governing rule text says the same thing about Android and synthetic profiles.
 **Depends on**: Nothing (first phase of v28.0)
 **Requirements**: PLAN-01, PLAN-02, PLAN-03, PLAN-04, PLAN-05, ADR-01, ADR-02
@@ -43,21 +44,41 @@
   3. `script/bearings-report` prints at most 40 plain-language lines covering CI for the main tip (Crosswake CI runs only on pull requests, so the line names the PR-head commit CI ran on and says its status belongs to that head; CONTEXT D-11 amendment) and whether CI has run on local HEAD, ahead/behind, open PR classes, worktrees, stashes and unlanded branches, line caps (including the 120/60/40 caps above) and fired seed/debt triggers; it exits non-zero and prints UNVERIFIED when any read fails; each check has a negative-control test that turns it red; it is not a required check.
   4. One PR carries the ADR amendments: Android unfrozen for proof and parity of existing contracts with the re-freeze trigger (Android work delays an iOS gate by more than one milestone), and the synthetic-profile reversal gate (profile, failing criterion, cited artifact, smallest slice, rollback; at most one reopened item per milestone) that permits profile scenario rows over one host; in that same PR a grep for Android "frozen" posture text in AGENTS.md, the ADR, PROJECT.md, the support matrix and the capability map finds only amendment history.
   5. A check confirms every requirement in the active milestone REQUIREMENTS file carries a persona/job tag or `M`.
+
 **Plans**: 9 plans (PR1: 01-03; PR2: 04-09; sequential waves 1-9 in one checkout)
 
 Plans:
+**Wave 1**
 - [ ] 194-01-PLAN.md — Android posture in support matrix, capability map, native shell guide and both golden fixtures (regenerated); pins rewritten; one `fix(support-matrix):` commit
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 194-02-PLAN.md — ADR amendments A1/A2, AGENTS.md Android bullet, PROJECT.md posture, SC4 grep with negative controls
+
+**Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 194-03-PLAN.md — Land PR1 (privacy, push, CI on head, one-use merge allow), reconcile #246, branch PR2 from fresh main
+
+**Wave 4** *(blocked on Wave 3 completion)*
 - [ ] 194-04-PLAN.md — ROADMAP-ROLLING, BEARINGS, PERSONAS; MILESTONE-ARC and JTBD banners; PROJECT.md pointer
+
+**Wave 5** *(blocked on Wave 4 completion)*
 - [ ] 194-05-PLAN.md — AGENTS.md trim with disposition table and gate contract test; STATE to 40 lines; byte-snapshot ritual settled
+
+**Wave 6** *(blocked on Wave 5 completion)*
 - [ ] 194-06-PLAN.md — bearings-report core: launcher, verdict/exit contract, CI for the main tip via its PR head, CI negative controls
+
+**Wave 7** *(blocked on Wave 6 completion)*
 - [ ] 194-07-PLAN.md — bearings-report ahead/behind, open PR classes, worktrees/stashes/unlanded branches, exact-output test
+
+**Wave 8** *(blocked on Wave 7 completion)*
 - [ ] 194-08-PLAN.md — bearings-report caps, seed/debt triggers, persona-tag check, 40-line cap, live and not-required evidence
+
+**Wave 9** *(blocked on Wave 8 completion)*
 - [ ] 194-09-PLAN.md — Land PR2 (pre-push checks, privacy, CI on head, its own merge allow), bearings-report on main, closeout PR opened
+
 **Research**: Skip (small, decided)
 
 ### Phase 195: Pipeline repair and hygiene
+
 **Goal**: `main`, the release PR and the PR queue are green and trustworthy, CI runs only recurring lanes and never echoes secrets, the repository holds no scratch state, and one fail-closed clean-room command is proven against real published artifacts.
 **Depends on**: Phase 194
 **Requirements**: REL-01, REL-02, REL-03, REL-04, REL-05, REL-06, HYG-01, HYG-02
@@ -67,10 +88,12 @@ Plans:
   3. A test seeds a fake secret and proves it never appears in captured CI step output or the root-proof failure tail (bearer, secret-access-key, cookie and short-value shapes masked), and fails when the mask is removed; the workflow tree contains no `phaseNN-proof` schedule, no Cancel Obsolete controller and no `script/select_obsolete_ci_runs.py`, has one weekly canary on `main`, and See It Run `web-and-gif` completes independently of the split-out `native` job.
   4. A root-allowlist test fails on any new tracked root file or `*.bundle`; the 13 root scratch files and `crosswake-checkpoint-24c8389.bundle` are gone (bundle confirmed not the only copy; the denylist string in `first_adopter_context.ex` stays); `SETUP.md` lives under `docs/` without the personal email; merged or superseded remote branches are deleted (unmerged work tagged `archive/<name>` first, each delete behind its own `allow`) and `git worktree list` shows only the main checkout.
   5. SEED-003 is closed with mirror-tag evidence, and one clean-room command has run once against the real 0.2.11 artifacts with its output retained, and fails closed on a negative control (missing or wrong artifact).
+
 **Plans**: TBD
 **Research**: Skip; one feasibility look at clean-room command scope during planning
 
 ### Phase 196: Spec and structure ratchet
+
 **Goal**: The offline, policy and bridge specs that Android and later parity work consume cannot pass by asserting nothing, and the module structure has ratchets that fail on regressions.
 **Depends on**: Phase 195 (green base)
 **Requirements**: SPEC-01, SPEC-02, SPEC-03, SPEC-04, SPEC-05, ARCH-01, ARCH-02, ARCH-03
@@ -79,10 +102,12 @@ Plans:
   2. Boundary specs pass for `Journal.scope_ref!/1` (15/16/128/129 chars, newline injection, input never echoed) and `SafeObservation.new/1` (measurement 0, 1_000_000, 1_000_001; adversarial strings in every field never survive); the finite route-policy option product is enumerated exhaustively against a hand-written verdict table, compiler error assertions pin `{key, route_id}` pairs, and `Compiler.validation_key/1` never returns `nil` for a compiler error.
   3. A Muex pilot record covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract` with a non-zero mutant count, a wrapper that fails on zero mutants, baseline scores, runtime, survivors keyed by file + mutator + normalized text, and a written adopt/drop decision; `mix.exs` and `mix.lock` contain no Muex dependency.
   4. A test fails on any compile-label xref cycle (the `bridge/contract`, `bridge/denial`, `manifest/types`, `shell/denial` cycle is broken) and on an all-cycles count above the committed baseline; an AST test fails on bare `rescue _ ->` in the `bridge`, `policy`, `router`, `offline`, `manifest` and `compatibility` modules (the three in `bridge.ex` now return explicit results); a test fails when a package's runtime direct deps differ from the committed list with one-line justifications; each ratchet has a negative control.
+
 **Plans**: TBD
 **Research**: Needs `--research-phase` (Muex runtime and noise on the four real modules; confirm whether `format --check` and xref already run in `crosswake-ci.yml`)
 
 ### Phase 197: Public docs truth
+
 **Goal**: A first adopter following the public docs from a normal host gets commands that exist, versions that are real and capability claims backed by evidence.
 **Depends on**: Phase 195 (clean-room command), Phase 194 (Android amendment)
 **Requirements**: DOCS-01, DOCS-02, DOCS-03
@@ -91,10 +116,12 @@ Plans:
   2. The companion matrix matches the versions actually published on Hex (checked against the registry, not a copied literal), the phase132 test no longer hardcodes stale values, CHANGELOG makes no false "current release" claim and points to GitHub Releases for 0.2.2–0.2.11, the telemetry guide lists `[:crosswake, :offline, :replay]`, and `see_it_run.md` states that the twin receipt attests `a53fbef`.
   3. `mix docs` warnings, a relative link/anchor check and a public internal-code leak scan (`Phase N`, `TODO-`, `D-NN`, `v2x`) run in report mode with their counts recorded, and none is a required check.
   4. `android_uat.md` has no automated "Last verified" stamp and no phantom capability families, and a grep for "Android frozen" posture text in README, the support matrix and the native shell guide returns zero hits.
+
 **Plans**: TBD
 **Research**: Skip
 
 ### Phase 198: Android foreign-host proof
+
 **Goal**: A cross-platform team can see which existing contracts Android honors, generated from the same vectors as iOS, and a generated Android shell built in a foreign Gradle project resolves the published Maven artifact and passes JVM tests.
 **Depends on**: Phase 194 (ADR-01 unfreeze), Phase 196 (Kotlin vector count pins), Phase 195 (clean-room command shape)
 **Requirements**: AND-01, AND-02, AND-03
@@ -103,10 +130,12 @@ Plans:
   2. The Kotlin core JVM test count is at least 25 (up from 12) and includes `BridgeChannel` boundary cases; `androidx.webkit` is absent from the build files if no source imports it; the Android JSON-stack choice is recorded in writing.
   3. A fresh foreign Gradle project built from `mix crosswake.gen.shell android` output resolves the published Maven coordinate and passes JVM tests on the Linux CI head commit as an advisory leg (required only after two clean runs), and a negative control with a wrong coordinate fails.
   4. No Android claim in the support matrix or capability map exceeds JVM-hermetic evidence (no device, emulator or feature-breadth claim).
+
 **Plans**: TBD
 **Research**: Needs `--research-phase` (Android build files, `androidx.webkit` and `org.json` usage, generator templates versus Gradle files were read at grep level only)
 
 ### Phase 199: Release 0.2.12
+
 **Goal**: Users can install the next release from Hex, Maven and the iOS mirror, published core-first, with every irreversible step individually approved and verified after the fact.
 **Depends on**: Phases 194–198
 **Requirements**: REL-07
@@ -115,6 +144,7 @@ Plans:
   2. Publishing runs core first, then companions, then Maven, then the iOS mirror; each publish and each tag follows a separate one-use `allow`; the published versions are visible on Hex and Maven.
   3. A post-publish check asserts the iOS mirror tag equals the release version and fails on a mismatch.
   4. `script/bearings-report` exits 0 with no UNVERIFIED line at milestone close.
+
 **Plans**: TBD
 **Research**: Skip
 
