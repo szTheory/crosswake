@@ -43,7 +43,17 @@
   3. `script/bearings-report` prints at most 40 plain-language lines covering main CI at HEAD (naming the commit CI ran on), ahead/behind, open PR classes, worktrees, stashes and unlanded branches, line caps (including the 120/60/40 caps above) and fired seed/debt triggers; it exits non-zero and prints UNVERIFIED when any read fails; each check has a negative-control test that turns it red; it is not a required check.
   4. One PR carries the ADR amendments: Android unfrozen for proof and parity of existing contracts with the re-freeze trigger (Android work delays an iOS gate by more than one milestone), and the synthetic-profile reversal gate (profile, failing criterion, cited artifact, smallest slice, rollback; at most one reopened item per milestone) that permits profile scenario rows over one host; in that same PR a grep for Android "frozen" posture text in AGENTS.md, the ADR, PROJECT.md, the support matrix and the capability map finds only amendment history.
   5. A check confirms every requirement in the active milestone REQUIREMENTS file carries a persona/job tag or `M`.
-**Plans**: TBD
+**Plans**: 8 plans (PR1: 01-03; PR2: 04-08; sequential waves 1-8 in one checkout)
+
+Plans:
+- [ ] 194-01-PLAN.md — Android posture in support matrix, capability map, native shell guide and both golden fixtures (regenerated); pins rewritten; one `fix(support-matrix):` commit
+- [ ] 194-02-PLAN.md — ADR amendments A1/A2, AGENTS.md Android bullet, PROJECT.md posture, SC4 grep with negative controls
+- [ ] 194-03-PLAN.md — Land PR1 (privacy, push, CI on head, one-use merge allow), reconcile #246, branch PR2 from fresh main
+- [ ] 194-04-PLAN.md — ROADMAP-ROLLING, BEARINGS, PERSONAS; MILESTONE-ARC and JTBD banners; PROJECT.md pointer
+- [ ] 194-05-PLAN.md — AGENTS.md trim with disposition table and gate contract test; STATE to 40 lines; byte-snapshot ritual settled
+- [ ] 194-06-PLAN.md — bearings-report core: launcher, verdict/exit contract, CI at main, sync, PR classes, local unlanded work
+- [ ] 194-07-PLAN.md — bearings-report caps, seed/debt triggers, persona-tag check, 40-line cap, live and not-required evidence
+- [ ] 194-08-PLAN.md — Land PR2 (pre-push checks, privacy, CI on head, its own merge allow), bearings-report on main
 **Research**: Skip (small, decided)
 
 ### Phase 195: Pipeline repair and hygiene
@@ -111,7 +121,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 194. Bearings reset and ADR amendments | 0/TBD | Not started | - |
+| 194. Bearings reset and ADR amendments | 0/8 | Planned | - |
 | 195. Pipeline repair and hygiene | 0/TBD | Not started | - |
 | 196. Spec and structure ratchet | 0/TBD | Not started | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
