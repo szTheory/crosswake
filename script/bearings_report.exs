@@ -65,9 +65,317 @@ defmodule Crosswake.BearingsReport do
 
   def run(opts, deps) do
     {fetch_ok, sync_lines} = check_sync(deps)
-    ctx = %{fetch_ok: fetch_ok, ws: Keyword.get(opts, :ws, @default_ws), root: opts[:root]}
+    ws = Keyword.get(opts, :ws, @default_ws)
+    {state, state_lines} = load_state(ws, deps)
+    ctx = %{fetch_ok: fetch_ok, ws: ws, root: opts[:root], state: state}
 
-    render([sync_lines, check_ci(ctx, deps), check_prs(ctx, deps), check_local(ctx, deps)])
+    render([
+      sync_lines,
+      check_ci(ctx, deps),
+      check_prs(ctx, deps),
+      check_local(ctx, deps),
+      check_caps(ctx, deps),
+      state_lines,
+      check_seeds(ctx, deps),
+      check_debt(ctx, deps),
+      check_personas(ctx, deps)
+    ])
+  end
+
+  # The workstream state.json is untracked and git-excluded, so a missing file is UNVERIFIED.
+  # Its milestone is "v28.0 — Title"; only the leading version token is used.
+  defp load_state(ws, deps) do
+    with {:ok, raw} <- deps.read.(ws_path(ws, "state.json")),
+         {:ok, %{"milestone" => m}} when is_binary(m) <- JSON.decode(raw),
+         [_, maj, min] <- Regex.run(~r/^v(\d+)\.(\d+)(?:\s|$)/, m) do
+      {{:ok,
+        %{milestone: "v#{maj}.#{min}", version: {String.to_integer(maj), String.to_integer(min)}}},
+       []}
+    else
+      {:error, _} -> {{:error, :state}, [unverified("state", "workstream state.json missing")]}
+      _ -> {{:error, :state}, [unverified("state", "workstream state.json unparseable")]}
+    end
+  end
+
+  defp ws_path(ws, file), do: ".planning/workstreams/#{ws}/#{file}"
+
+  @agents_cap 102
+  @project_advisory 250
+
+  @doc "Newline count plus one when the content is non-empty and lacks a trailing newline."
+  def line_count(""), do: 0
+
+  def line_count(content) do
+    n = content |> :binary.matches("\n") |> length()
+    if String.ends_with?(content, "\n"), do: n, else: n + 1
+  end
+
+  @doc "Reads each orientation file and compares its line count to its cap."
+  def check_caps(ctx, deps) do
+    caps = [
+      {".planning/ROADMAP-ROLLING.md", 120},
+      {".planning/BEARINGS.md", 60},
+      {ws_path(ctx.ws, "STATE.md"), 40},
+      {"AGENTS.md", @agents_cap}
+    ]
+
+    cap_lines =
+      for {path, cap} <- caps do
+        case read_nonempty(deps, path) do
+          {:ok, content} ->
+            n = line_count(content)
+
+            if n > cap,
+              do: {:attention, "cap: #{path} #{n}/#{cap} OVER"},
+              else: {:info, "cap: #{path} #{n}/#{cap} ok"}
+
+          :error ->
+            unverified("cap", "#{path} unreadable or empty")
+        end
+      end
+
+    cap_lines ++ [project_advisory(deps)]
+  end
+
+  defp project_advisory(deps) do
+    case read_nonempty(deps, ".planning/PROJECT.md") do
+      :error ->
+        unverified("cap", ".planning/PROJECT.md unreadable or empty")
+
+      {:ok, content} ->
+        n = line_count(content)
+
+        if n > @project_advisory,
+          do:
+            {:info,
+             "advisory: .planning/PROJECT.md #{n} lines > #{@project_advisory} (split is a ROADMAP-ROLLING LATER row)"},
+          else: {:info, "cap: .planning/PROJECT.md #{n}/#{@project_advisory} ok"}
+    end
+  end
+
+  defp read_nonempty(deps, path) do
+    case deps.read.(path) do
+      {:ok, content} when is_binary(content) and content != "" -> {:ok, content}
+      _ -> :error
+    end
+  end
+
+  @doc "Hand-rolled `key: value` frontmatter between a leading `---` line and the next `---`."
+  def parse_frontmatter(text) do
+    case String.split(text, "\n") do
+      ["---" | rest] ->
+        {fm, closed} = Enum.split_while(rest, &(String.trim_trailing(&1) != "---"))
+
+        if closed == [] do
+          :error
+        else
+          for line <- fm, [k, v] <- [String.split(line, ": ", parts: 2)], into: %{} do
+            {String.trim(k), v |> String.trim() |> strip_quotes()}
+          end
+        end
+
+      _ ->
+        :error
+    end
+  end
+
+  defp strip_quotes(<<q, rest::binary>> = v) when q in [?", ?'] do
+    if String.ends_with?(rest, <<q>>), do: String.slice(rest, 0, byte_size(rest) - 1), else: v
+  end
+
+  defp strip_quotes(v), do: v
+
+  @doc "`milestone>=vNN.N` or `phase>=NNN`; anything else is `:error`."
+  def parse_fires_when(value) do
+    v = String.trim(value)
+
+    cond do
+      m = Regex.run(~r/^milestone>=v(\d+)\.(\d+)$/, v) ->
+        [_, a, b] = m
+        {:ok, {:milestone, {String.to_integer(a), String.to_integer(b)}}}
+
+      m = Regex.run(~r/^phase>=(\d{3})$/, v) ->
+        {:ok, {:phase, String.to_integer(Enum.at(m, 1))}}
+
+      true ->
+        :error
+    end
+  end
+
+  @closed_statuses ["shipped", "harvested", "closed"]
+
+  @doc "Open seeds, their machine triggers (`fires_when`) and which have fired."
+  def check_seeds(ctx, deps) do
+    files = deps.list.(".planning/seeds/*.md") |> Enum.sort()
+
+    parsed =
+      for f <- files do
+        case deps.read.(f) do
+          {:ok, text} -> {f, parse_frontmatter(text)}
+          _ -> {f, :unreadable}
+        end
+      end
+
+    cond do
+      files == [] ->
+        [unverified("seeds", "no seed files found")]
+
+      Enum.any?(parsed, fn {_, fm} -> fm == :unreadable end) ->
+        [unverified("seeds", "a seed file could not be read")]
+
+      Enum.all?(parsed, fn {_, fm} -> fm == :error end) ->
+        [unverified("seeds", "no seed frontmatter parsed")]
+
+      true ->
+        seed_lines(ctx, deps, parsed)
+    end
+  end
+
+  # A seed with no frontmatter is open and prose-only: counted, never dropped.
+  defp seed_lines(ctx, deps, parsed) do
+    open =
+      parsed
+      |> Enum.map(fn {f, fm} -> {f, if(fm == :error, do: %{}, else: fm)} end)
+      |> Enum.reject(fn {_, fm} -> fm["status"] in @closed_statuses end)
+      |> Enum.map(fn {f, fm} ->
+        {Map.get(fm, "id", Path.basename(f, ".md")), fm["fires_when"]}
+      end)
+
+    evaluated =
+      for {id, fw} <- open do
+        cond do
+          is_nil(fw) -> {id, :prose}
+          true -> {id, fw, parse_fires_when(fw)}
+        end
+      end
+
+    bad = for {id, fw, :error} <- evaluated, do: {id, fw}
+
+    if bad != [] do
+      for {id, _} <- bad, do: unverified("seeds", "fires_when unparseable in #{id}")
+    else
+      machine = for {id, fw, {:ok, trig}} <- evaluated, do: {id, fw, trig}
+
+      phase =
+        if Enum.any?(machine, &match?({_, _, {:phase, _}}, &1)), do: current_phase(ctx, deps)
+
+      fired =
+        for {id, fw, trig} <- machine, fired?(trig, ctx.state, phase), do: {id, fw}
+
+      phase_gap =
+        if phase == :none and Enum.any?(machine, &match?({_, _, {:phase, _}}, &1)),
+          do: [unverified("state", "no open phase in ROADMAP")],
+          else: []
+
+      fired_lines = for {id, fw} <- fired, do: {:attention, "seed: #{id} fired (#{fw})"}
+
+      info =
+        {:info,
+         "seeds: open #{length(open)}, machine-triggered #{length(machine)}, " <>
+           "fired #{length(fired)}, prose-only #{length(open) - length(machine)} (info)"}
+
+      fired_lines ++ phase_gap ++ [info]
+    end
+  end
+
+  defp fired?({:milestone, v}, {:ok, %{version: cur}}, _phase), do: cur >= v
+  defp fired?({:phase, n}, _state, phase) when is_integer(phase), do: phase >= n
+  defp fired?(_, _, _), do: false
+
+  defp current_phase(ctx, deps) do
+    with {:ok, text} <- deps.read.(ws_path(ctx.ws, "ROADMAP.md")),
+         [_, n] <- Regex.run(~r/^- \[ \] \*\*Phase (\d+):/m, text) do
+      String.to_integer(n)
+    else
+      _ -> :none
+    end
+  end
+
+  @doc "Carried-debt row count from the newest closeout `debt-disposition.md`."
+  def check_debt(ctx, deps) do
+    versions =
+      for path <- deps.list.(ws_path(ctx.ws, "milestones/v*-closeout/debt-disposition.md")),
+          [_, a, b] <- [Regex.run(~r/\/v(\d+)\.(\d+)-closeout\//, path)] do
+        {{String.to_integer(a), String.to_integer(b)}, path}
+      end
+
+    with [_ | _] <- versions,
+         {{maj, min}, path} = Enum.max_by(versions, &elem(&1, 0)),
+         {:ok, text} <- deps.read.(path),
+         k when k > 0 <- carried_rows(text) do
+      [{:info, "debt: v#{maj}.#{min} carried #{k} (info; rows wait for the E6 template)"}]
+    else
+      _ -> [unverified("debt", "no closeout debt-disposition found")]
+    end
+  end
+
+  defp carried_rows(text) do
+    rows =
+      text
+      |> String.split("\n")
+      |> Enum.drop_while(&(String.trim_trailing(&1) != "## Carried"))
+      |> Enum.drop(1)
+      |> Enum.take_while(&(not String.starts_with?(&1, "## ")))
+      |> Enum.filter(&String.starts_with?(&1, "| "))
+
+    max(length(rows) - 1, 0)
+  end
+
+  @doc "Counts requirement lines and lists the ones without a persona/job tag, in file order."
+  def persona_tags(text) do
+    reqs =
+      for line <- String.split(text, "\n"),
+          [_, id, rest] <- [Regex.run(~r/^- \[[ x]\] \*\*([A-Z]+-\d+)\*\*(.*)$/, line)],
+          do: {id, Regex.match?(~r/^ \[(?:P[1-7]|J[1-5]|M)(?:\/(?:P[1-7]|J[1-5]|M))*\]:/, rest)}
+
+    if reqs == [],
+      do: {:error, :no_requirements},
+      else:
+        {:ok, %{count: length(reqs), untagged: for({id, false} <- reqs, do: id) |> Enum.uniq()}}
+  end
+
+  @doc "Persona/job tags on the workstream REQUIREMENTS file for the state.json milestone."
+  def check_personas(%{state: {:error, _}}, _deps), do: []
+
+  def check_personas(%{state: {:ok, %{milestone: ms}}} = ctx, deps) do
+    with {:ok, text} <- deps.read.(ws_path(ctx.ws, "REQUIREMENTS.md")),
+         true <-
+           text
+           |> String.split("\n")
+           |> Enum.find("", &String.starts_with?(&1, "# "))
+           |> String.contains?(ms),
+         {:ok, %{count: n, untagged: []}} <- persona_tags(text) do
+      [{:info, "personas: #{n}/#{n} requirements tagged"}]
+    else
+      {:ok, %{count: n, untagged: ids}} ->
+        [
+          {:attention,
+           "personas: #{length(ids)} of #{n} requirements untagged: #{Enum.join(ids, ", ")}"}
+        ]
+
+      {:error, :no_requirements} ->
+        [unverified("personas", "no requirements found")]
+
+      false ->
+        [unverified("personas", "REQUIREMENTS is not for #{ms}")]
+
+      _ ->
+        [unverified("personas", "REQUIREMENTS unreadable")]
+    end
+  end
+
+  @max_lines 40
+
+  @doc "Keeps the verdict and every UNVERIFIED line, fills details to 39 lines, counts the rest."
+  def truncate(lines) when length(lines) <= @max_lines, do: lines
+
+  def truncate([verdict | rest]) do
+    {bad, details} = Enum.split_with(rest, &String.starts_with?(&1, "UNVERIFIED "))
+    kept = [verdict | bad]
+    room = max(@max_lines - 1 - length(kept), 0)
+    shown = Enum.take(details, room)
+    hidden = length(details) - length(shown)
+    kept ++ shown ++ ["... #{hidden} more lines not shown"]
   end
 
   @stale_seconds 14 * 24 * 60 * 60
@@ -213,7 +521,7 @@ defmodule Crosswake.BearingsReport do
         true -> {0, "BEARINGS: OK"}
       end
 
-    {code, [verdict | bad ++ attention ++ info]}
+    {code, truncate([verdict | bad ++ attention ++ info])}
   end
 
   defp unverified(check, reason), do: {:unverified, "#{check}: #{reason}"}

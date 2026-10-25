@@ -104,11 +104,63 @@ defmodule Crosswake.BearingsReportTest do
     }
   end
 
-  defp deps(map) do
+  @ws "quality-ratchet-release"
+  @ws_dir ".planning/workstreams/#{@ws}"
+  # Built by concatenation so no test names the live requirements file (fixtures only).
+  @req_key "#{@ws_dir}/REQUIREMENTS" <> ".md"
+  @debt_key "#{@ws_dir}/milestones/v27.0-closeout/debt-disposition.md"
+
+  defp lines_of(n), do: String.duplicate("line\n", n)
+
+  defp seed(id, status, extra \\ "") do
+    "---\nid: #{id}\nstatus: #{status}\n#{extra}---\nbody\n"
+  end
+
+  defp debt_text(rows) do
+    body = for i <- 1..rows//1, do: "| item #{i} | origin | trigger |\n"
+
+    "# Debt\n\n## Carried\n\n| Item | Origin | Trigger to act |\n|---|---|---|\n" <>
+      Enum.join(body) <> "\n## Other\n\n| not | counted |\n"
+  end
+
+  # In-memory planning tree: every file healthy, so a test changes only the file it targets.
+  defp healthy_files do
+    %{
+      ".planning/ROADMAP-ROLLING.md" => lines_of(10),
+      ".planning/BEARINGS.md" => lines_of(10),
+      "#{@ws_dir}/STATE.md" => lines_of(10),
+      "AGENTS.md" => lines_of(10),
+      ".planning/PROJECT.md" => lines_of(10),
+      "#{@ws_dir}/state.json" => fixture!("state.json"),
+      @req_key => fixture!("requirements-tagged.md"),
+      "#{@ws_dir}/ROADMAP.md" =>
+        "- [ ] **Phase 194: Bearings** - x\n- [ ] **Phase 195: Next** - y\n",
+      ".planning/seeds/SEED-900.md" => seed("SEED-900", "planted"),
+      ".planning/seeds/SEED-901.md" => seed("SEED-901", "shipped"),
+      @debt_key => debt_text(3)
+    }
+  end
+
+  defp glob_to_regex(glob) do
+    glob
+    |> Regex.escape()
+    |> String.replace("\\*", "[^/]*")
+    |> then(&Regex.compile!("^" <> &1 <> "$"))
+  end
+
+  defp deps(map, files \\ healthy_files()) do
     %{
       run: fake_runner(map),
-      read: fn _ -> {:error, :enoent} end,
-      list: fn _ -> [] end,
+      read: fn path ->
+        case Map.fetch(files, path) do
+          {:ok, text} -> {:ok, text}
+          :error -> {:error, :enoent}
+        end
+      end,
+      list: fn glob ->
+        re = glob_to_regex(glob)
+        files |> Map.keys() |> Enum.filter(&Regex.match?(re, &1)) |> Enum.sort()
+      end,
       now: ~U[2026-10-25 12:00:00Z]
     }
   end
@@ -116,7 +168,26 @@ defmodule Crosswake.BearingsReportTest do
   # Late-bound: the module is loaded from the script in setup_all, so avoid a compile-time warning.
   defp report(map, opts \\ []), do: apply(module(), :run, [opts, deps(map)])
 
+  # Runs the whole report over a changed file tree (`nil` deletes the file).
+  defp report_files(changes, map \\ base_map()) do
+    files =
+      Enum.reduce(changes, healthy_files(), fn
+        {path, nil}, acc -> Map.delete(acc, path)
+        {path, text}, acc -> Map.put(acc, path, text)
+      end)
+
+    apply(module(), :run, [[], deps(map, files)])
+  end
+
   defp module, do: Crosswake.BearingsReport
+
+  # The refuting form asserts the report is non-empty first, so an empty report cannot pass.
+  defp assert_line(lines, text), do: assert(Enum.filter(lines, &(&1 =~ text)) != [])
+
+  defp refute_line(lines, text) do
+    assert lines != []
+    assert Enum.filter(lines, &(&1 =~ text)) == []
+  end
 
   defp short(sha), do: String.slice(sha, 0, 7)
 
@@ -163,7 +234,7 @@ defmodule Crosswake.BearingsReportTest do
       assert code == 2
       assert verdict == "BEARINGS: UNVERIFIED (1 reads failed)"
       assert "UNVERIFIED ci: could not read merged PR for main tip" in rest
-      refute Enum.any?(lines, &(&1 =~ "exit_status"))
+      refute_line(lines, "exit_status")
     end
 
     for {label, pulls} <- [
@@ -207,7 +278,7 @@ defmodule Crosswake.BearingsReportTest do
 
       assert code == 1
       assert verdict =~ ~r/^BEARINGS: ATTENTION/
-      assert Enum.any?(lines, &(&1 =~ "ci: PENDING on #{short(pr_head())}"))
+      assert_line(lines, "ci: PENDING on #{short(pr_head())}")
     end
 
     test "a failed conclusion is attention, not OK" do
@@ -215,7 +286,7 @@ defmodule Crosswake.BearingsReportTest do
       {code, lines} = report(put_runs(base_map(), pr_head(), runs))
 
       assert code == 1
-      assert Enum.any?(lines, &(&1 =~ "ci: failure on #{short(pr_head())}"))
+      assert_line(lines, "ci: failure on #{short(pr_head())}")
     end
 
     test "HEAD that is neither main nor the PR head with no run is caught" do
@@ -229,7 +300,7 @@ defmodule Crosswake.BearingsReportTest do
       map = Map.put(base_map(), {"git", ["rev-parse", "HEAD"]}, {:ok, main_sha() <> "\n"})
       {_code, lines} = report(map)
 
-      refute Enum.any?(lines, &(&1 =~ "HEAD"))
+      refute_line(lines, "HEAD")
     end
 
     test "a failed fetch is UNVERIFIED and reads nothing else" do
@@ -324,7 +395,7 @@ defmodule Crosswake.BearingsReportTest do
       edge = pr_json([{1, "feat/a", ago(1_209_600)}, {2, "feat/b", ago(1_209_601)}])
       {_code, lines} = report(Map.put(base_map(), @pr_key, {:ok, edge}))
       assert "prs: stale 1: #2" in lines
-      refute Enum.any?(lines, &(&1 =~ "#1"))
+      refute_line(lines, "#1")
     end
 
     test "a 15-day-old PR is stale" do
@@ -410,7 +481,15 @@ defmodule Crosswake.BearingsReportTest do
         "ci: success on #{short(pr_head())} (PR #247 head; main #{short(main_sha())} " <>
           "is its merge commit, tested only as a synthetic merge)",
         "ci: success on HEAD #{short(head_sha())}",
-        "prs: open 7 (release-please 1, dependabot 5, feature 1)"
+        "prs: open 7 (release-please 1, dependabot 5, feature 1)",
+        "cap: .planning/ROADMAP-ROLLING.md 10/120 ok",
+        "cap: .planning/BEARINGS.md 10/60 ok",
+        "cap: #{@ws_dir}/STATE.md 10/40 ok",
+        "cap: AGENTS.md 10/102 ok",
+        "cap: .planning/PROJECT.md 10/250 ok",
+        "seeds: open 1, machine-triggered 0, fired 0, prose-only 1 (info)",
+        "debt: v27.0 carried 3 (info; rows wait for the E6 template)",
+        "personas: 4/4 requirements tagged"
       ]
 
       assert code == 1
@@ -425,6 +504,344 @@ defmodule Crosswake.BearingsReportTest do
 
       assert fixture!("git-worktree-porcelain.txt") =~ "worktree /repo"
       assert fixture!("git-rev-list-count.txt") =~ ~r/^\d+\s+\d+$/
+    end
+  end
+
+  describe "line caps" do
+    @rolling ".planning/ROADMAP-ROLLING.md"
+
+    test "line_count follows awk NR" do
+      assert apply(module(), :line_count, ["a\nb"]) == 2
+      assert apply(module(), :line_count, ["a\nb\n"]) == 2
+      assert apply(module(), :line_count, [""]) == 0
+    end
+
+    test "120 lines is ok and 121 is OVER and attention" do
+      {code, lines} = report_files(%{@rolling => lines_of(120)})
+      assert code == 0
+      assert "cap: #{@rolling} 120/120 ok" in lines
+
+      {code, [verdict | _] = lines} = report_files(%{@rolling => lines_of(121)})
+      assert code == 1
+      assert verdict =~ ~r/^BEARINGS: ATTENTION/
+      assert "cap: #{@rolling} 121/120 OVER" in lines
+    end
+
+    test "the other caps hold at the boundary and fail one line over" do
+      for {path, cap} <- [
+            {".planning/BEARINGS.md", 60},
+            {"#{@ws_dir}/STATE.md", 40},
+            {"AGENTS.md", 102}
+          ] do
+        {0, lines} = report_files(%{path => lines_of(cap)})
+        assert "cap: #{path} #{cap}/#{cap} ok" in lines
+
+        {1, lines} = report_files(%{path => lines_of(cap + 1)})
+        assert "cap: #{path} #{cap + 1}/#{cap} OVER" in lines
+      end
+    end
+
+    test "a missing or empty cap file is UNVERIFIED" do
+      {code, lines} = report_files(%{".planning/BEARINGS.md" => nil})
+      assert code == 2
+      assert "UNVERIFIED cap: .planning/BEARINGS.md unreadable or empty" in lines
+
+      {code, lines} = report_files(%{"#{@ws_dir}/STATE.md" => ""})
+      assert code == 2
+      assert "UNVERIFIED cap: #{@ws_dir}/STATE.md unreadable or empty" in lines
+    end
+
+    test "PROJECT.md over 250 lines is an info advisory only" do
+      {code, lines} = report_files(%{".planning/PROJECT.md" => lines_of(251)})
+
+      assert code == 0
+
+      assert "advisory: .planning/PROJECT.md 251 lines > 250 (split is a ROADMAP-ROLLING LATER row)" in lines
+
+      {_, lines} = report_files(%{".planning/PROJECT.md" => lines_of(250)})
+      refute_line(lines, "advisory:")
+    end
+
+    test "a missing PROJECT.md is UNVERIFIED" do
+      {2, lines} = report_files(%{".planning/PROJECT.md" => nil})
+      assert "UNVERIFIED cap: .planning/PROJECT.md unreadable or empty" in lines
+    end
+  end
+
+  describe "frontmatter and fires_when parsing" do
+    test "parse_frontmatter reads keys and strips quotes" do
+      text = "---\nid: SEED-900\nstatus: planted\nfires_when: \"milestone>=v28.0\"\n---\nbody"
+
+      assert apply(module(), :parse_frontmatter, [text]) ==
+               %{"id" => "SEED-900", "status" => "planted", "fires_when" => "milestone>=v28.0"}
+
+      assert apply(module(), :parse_frontmatter, ["# title\nid: x\n"]) == :error
+      assert apply(module(), :parse_frontmatter, ["---\nid: x\nno close"]) == :error
+    end
+
+    test "parse_fires_when accepts only the two grammars" do
+      assert apply(module(), :parse_fires_when, ["milestone>=v28.0"]) ==
+               {:ok, {:milestone, {28, 0}}}
+
+      assert apply(module(), :parse_fires_when, ["phase>=195"]) == {:ok, {:phase, 195}}
+
+      for bad <- ["milestone>v28", "when ready", "", "phase>=19", "milestone>=v28"] do
+        assert apply(module(), :parse_fires_when, [bad]) == :error
+      end
+    end
+  end
+
+  describe "seed triggers" do
+    defp seeds(list) do
+      for {id, status, extra} <- list, into: %{} do
+        {".planning/seeds/#{id}.md", seed(id, status, extra)}
+      end
+    end
+
+    test "a satisfied milestone trigger fires and an earlier milestone does not" do
+      files = seeds([{"SEED-900", "planted", "fires_when: milestone>=v28.0\n"}])
+      {code, lines} = report_files(Map.merge(files, %{".planning/seeds/SEED-901.md" => nil}))
+      assert code == 1
+      assert "seed: SEED-900 fired (milestone>=v28.0)" in lines
+      assert "seeds: open 1, machine-triggered 1, fired 1, prose-only 0 (info)" in lines
+
+      files = seeds([{"SEED-900", "planted", "fires_when: milestone>=v29.0\n"}])
+      {_, lines} = report_files(Map.merge(files, %{".planning/seeds/SEED-901.md" => nil}))
+      refute_line(lines, "fired (")
+      assert "seeds: open 1, machine-triggered 1, fired 0, prose-only 0 (info)" in lines
+    end
+
+    test "a phase trigger is evaluated against the first open ROADMAP phase" do
+      files = seeds([{"SEED-900", "planted", "fires_when: phase>=194\n"}])
+      {1, lines} = report_files(Map.merge(files, %{".planning/seeds/SEED-901.md" => nil}))
+      assert "seed: SEED-900 fired (phase>=194)" in lines
+
+      files = seeds([{"SEED-900", "planted", "fires_when: phase>=195\n"}])
+      {_, lines} = report_files(Map.merge(files, %{".planning/seeds/SEED-901.md" => nil}))
+      refute_line(lines, "fired (")
+    end
+
+    test "a phase trigger with no open ROADMAP phase is UNVERIFIED" do
+      files = seeds([{"SEED-900", "planted", "fires_when: phase>=194\n"}])
+
+      {2, lines} =
+        report_files(
+          Map.merge(files, %{
+            ".planning/seeds/SEED-901.md" => nil,
+            "#{@ws_dir}/ROADMAP.md" => "- [x] **Phase 194: Done** - x\n"
+          })
+        )
+
+      assert "UNVERIFIED state: no open phase in ROADMAP" in lines
+    end
+
+    test "an unparseable fires_when is UNVERIFIED" do
+      files = seeds([{"SEED-901", "planted", "fires_when: soon\n"}])
+      {code, lines} = report_files(files)
+      assert code == 2
+      assert "UNVERIFIED seeds: fires_when unparseable in SEED-901" in lines
+    end
+
+    test "shipped, harvested and closed seeds are skipped even with a satisfied trigger" do
+      files =
+        seeds(
+          for {id, st} <- [
+                {"SEED-910", "shipped"},
+                {"SEED-911", "harvested"},
+                {"SEED-912", "closed"}
+              ],
+              do: {id, st, "fires_when: milestone>=v28.0\n"}
+        )
+
+      {code, lines} =
+        report_files(
+          Map.merge(files, %{
+            ".planning/seeds/SEED-900.md" => nil,
+            ".planning/seeds/SEED-901.md" => nil
+          })
+        )
+
+      assert code == 0
+      refute_line(lines, "fired (")
+      assert "seeds: open 0, machine-triggered 0, fired 0, prose-only 0 (info)" in lines
+    end
+
+    test "prose-only seeds are counted once as info, including a seed with no frontmatter" do
+      files =
+        seeds(for i <- 1..2, do: {"SEED-90#{i}", "dormant", ""})
+        |> Map.put(".planning/seeds/SEED-903.md", "# SEED-903\n\nno frontmatter\n")
+
+      {code, lines} =
+        report_files(Map.merge(files, %{".planning/seeds/SEED-900.md" => nil}))
+
+      assert code == 0
+      assert "seeds: open 3, machine-triggered 0, fired 0, prose-only 3 (info)" in lines
+    end
+
+    test "no seed files, or no parsed frontmatter, is UNVERIFIED" do
+      {2, lines} =
+        report_files(%{
+          ".planning/seeds/SEED-900.md" => nil,
+          ".planning/seeds/SEED-901.md" => nil
+        })
+
+      assert "UNVERIFIED seeds: no seed files found" in lines
+
+      {2, lines} =
+        report_files(%{
+          ".planning/seeds/SEED-900.md" => "# plain\n",
+          ".planning/seeds/SEED-901.md" => "# plain too\n"
+        })
+
+      assert "UNVERIFIED seeds: no seed frontmatter parsed" in lines
+    end
+
+    test "a missing state.json is UNVERIFIED" do
+      {code, lines} = report_files(%{"#{@ws_dir}/state.json" => nil})
+      assert code == 2
+      assert "UNVERIFIED state: workstream state.json missing" in lines
+    end
+
+    test "a state.json with no milestone version is UNVERIFIED" do
+      {2, lines} = report_files(%{"#{@ws_dir}/state.json" => ~s({"milestone": "soon"})})
+      assert "UNVERIFIED state: workstream state.json unparseable" in lines
+    end
+  end
+
+  describe "carried debt" do
+    test "counts the rows of the Carried table only" do
+      {0, lines} = report_files(%{})
+      assert "debt: v27.0 carried 3 (info; rows wait for the E6 template)" in lines
+    end
+
+    test "the highest version wins" do
+      other = "#{@ws_dir}/milestones/v9.0-closeout/debt-disposition.md"
+      newer = "#{@ws_dir}/milestones/v28.0-closeout/debt-disposition.md"
+      {0, lines} = report_files(%{other => debt_text(7), newer => debt_text(5)})
+      assert "debt: v28.0 carried 5 (info; rows wait for the E6 template)" in lines
+    end
+
+    test "no closeout file, or a table with no rows, is UNVERIFIED" do
+      {2, lines} = report_files(%{@debt_key => nil})
+      assert "UNVERIFIED debt: no closeout debt-disposition found" in lines
+
+      {2, lines} = report_files(%{@debt_key => debt_text(0)})
+      assert "UNVERIFIED debt: no closeout debt-disposition found" in lines
+    end
+  end
+
+  describe "persona tags" do
+    test "the tagged fixture has no untagged requirement" do
+      assert {:ok, %{count: 4, untagged: []}} =
+               apply(module(), :persona_tags, [fixture!("requirements-tagged.md")])
+    end
+
+    test "the untagged fixture names its untagged ID" do
+      assert {:ok, %{count: 5, untagged: ["DOCS-09"]}} =
+               apply(module(), :persona_tags, [fixture!("requirements-untagged.md")])
+
+      {1, lines} = report_files(%{@req_key => fixture!("requirements-untagged.md")})
+      assert "personas: 1 of 5 requirements untagged: DOCS-09" in lines
+    end
+
+    test "tagged report line is info" do
+      {0, lines} = report_files(%{})
+      assert "personas: 4/4 requirements tagged" in lines
+    end
+
+    test "grammar edges" do
+      tagged = [
+        "- [x] **A-1** [M]: ok",
+        "- [ ] **A-2** [P1/J2]: ok",
+        "- [ ] **A-3** [J5/M/P7]: ok"
+      ]
+
+      untagged = [
+        "- [ ] **B-1** [P8]: x",
+        "- [ ] **B-2** [J6]: x",
+        "- [ ] **B-3** []: x",
+        "- [ ] **B-4** [p1]: x",
+        "- [ ] **B-5** [M] no colon",
+        "- [ ] **B-6**[M]: no space",
+        "- [ ] **B-7**: none"
+      ]
+
+      text = Enum.join(tagged ++ untagged, "\n")
+
+      assert {:ok, %{count: 10, untagged: ["B-1", "B-2", "B-3", "B-4", "B-5", "B-6", "B-7"]}} =
+               apply(module(), :persona_tags, [text])
+    end
+
+    test "untagged IDs are de-duplicated in file order" do
+      text = "- [ ] **Z-2**: a\n- [ ] **A-1**: b\n- [ ] **Z-2**: c\n"
+      assert {:ok, %{untagged: ["Z-2", "A-1"]}} = apply(module(), :persona_tags, [text])
+    end
+
+    test "no requirement lines is an error, and UNVERIFIED in the report" do
+      assert {:error, :no_requirements} = apply(module(), :persona_tags, ["# Title\n\ntext\n"])
+      {2, lines} = report_files(%{@req_key => "# Requirements: v28.0\n\ntext\n"})
+      assert "UNVERIFIED personas: no requirements found" in lines
+    end
+
+    test "a REQUIREMENTS file for another milestone is UNVERIFIED" do
+      other = String.replace(fixture!("requirements-tagged.md"), "v28.0", "v27.0")
+      {2, lines} = report_files(%{@req_key => other})
+      assert "UNVERIFIED personas: REQUIREMENTS is not for v28.0" in lines
+    end
+
+    test "a missing REQUIREMENTS file is UNVERIFIED" do
+      {2, lines} = report_files(%{@req_key => nil})
+      assert "UNVERIFIED personas: REQUIREMENTS unreadable" in lines
+    end
+
+    test "the script never reads a flat STATE.md or milestone.lock" do
+      source = File.read!(Path.join(@repo_root, "script/bearings_report.exs"))
+      refute source =~ ~r/milestone\.lock|\.planning\/STATE\.md/
+    end
+  end
+
+  describe "40-line cap" do
+    test "an overflow keeps the verdict first and prints the exact hidden count" do
+      many = fn trigger ->
+        for i <- 100..144, into: %{} do
+          id = "SEED-#{i}"
+          {".planning/seeds/#{id}.md", seed(id, "planted", "fires_when: #{trigger}\n")}
+        end
+      end
+
+      {0, baseline} = report_files(many.("milestone>=v29.0"))
+      {code, lines} = report_files(many.("milestone>=v28.0"))
+
+      total = length(baseline) + 45
+      hidden = total - 39
+
+      assert code == 1
+      assert length(lines) == 40
+      assert hd(lines) == "BEARINGS: ATTENTION (45)"
+      assert List.last(lines) == "... #{hidden} more lines not shown"
+    end
+
+    test "UNVERIFIED lines survive truncation" do
+      {2, lines} =
+        report_files(
+          Map.put(
+            for i <- 100..144, into: %{} do
+              id = "SEED-#{i}"
+              {".planning/seeds/#{id}.md", seed(id, "planted", "fires_when: milestone>=v28.0\n")}
+            end,
+            ".planning/BEARINGS.md",
+            nil
+          )
+        )
+
+      assert length(lines) == 40
+      assert "UNVERIFIED cap: .planning/BEARINGS.md unreadable or empty" in lines
+      assert hd(lines) == "BEARINGS: UNVERIFIED (1 reads failed)"
+    end
+
+    test "40 lines or fewer are untouched" do
+      input = for i <- 1..40, do: "line #{i}"
+      assert apply(module(), :truncate, [input]) == input
     end
   end
 
