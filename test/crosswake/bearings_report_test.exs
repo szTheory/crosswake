@@ -54,7 +54,45 @@ defmodule Crosswake.BearingsReportTest do
     fn cmd, args -> Map.get(map, {cmd, args}, {:error, :unmapped}) end
   end
 
+  @rev_list_key {"git", ["rev-list", "--left-right", "--count", "HEAD...origin/main"]}
+  @pr_key {"gh",
+           [
+             "pr",
+             "list",
+             "--state",
+             "open",
+             "--limit",
+             "100",
+             "--json",
+             "number,headRefName,createdAt,isDraft"
+           ]}
+  @wt_key {"git", ["worktree", "list", "--porcelain"]}
+  @stash_key {"git", ["stash", "list"]}
+  @unlanded_key {"git", ["branch", "--no-merged", "origin/main", "--format=%(refname:short)"]}
+
+  # Real captured fixtures for every read (the checkout's real unlanded branches and old PRs
+  # make this map ATTENTION; exact-output tests use it as is).
+  defp fixture_map do
+    Map.merge(ci_map(), %{
+      @rev_list_key => {:ok, fixture!("git-rev-list-count.txt")},
+      @pr_key => {:ok, fixture!("gh-pr-list.json")},
+      @wt_key => {:ok, fixture!("git-worktree-porcelain.txt")},
+      @stash_key => {:ok, fixture!("git-stash-list.txt")},
+      @unlanded_key => {:ok, fixture!("git-branch-no-merged.txt")}
+    })
+  end
+
+  # Clean state for the sync, PR and local reads so CI tests keep a single cause.
   defp base_map do
+    Map.merge(fixture_map(), %{
+      @rev_list_key => {:ok, "0\t0\n"},
+      @pr_key => {:ok, "[]"},
+      @stash_key => {:ok, ""},
+      @unlanded_key => {:ok, ""}
+    })
+  end
+
+  defp ci_map do
     %{
       @fetch => {:ok, ""},
       {"git", ["rev-parse", "origin/main"]} => {:ok, fixture!("git-rev-parse-origin-main.txt")},
@@ -233,6 +271,163 @@ defmodule Crosswake.BearingsReportTest do
     end
   end
 
+  defp pr_json(entries) do
+    JSON.encode!(
+      for {n, branch, created} <- entries do
+        %{"number" => n, "headRefName" => branch, "createdAt" => created, "isDraft" => false}
+      end
+    )
+  end
+
+  defp ago(seconds), do: DateTime.to_iso8601(DateTime.add(~U[2026-10-25 12:00:00Z], -seconds))
+
+  describe "sync check" do
+    test "0 and 0 is info" do
+      {_code, lines} = report(base_map())
+      assert "sync: ahead 0 behind 0" in lines
+    end
+
+    test "ahead is attention" do
+      {code, lines} = report(Map.put(base_map(), @rev_list_key, {:ok, "2\t0\n"}))
+      assert code == 1
+      assert "sync: ahead 2 behind 0" in lines
+    end
+
+    test "behind is attention" do
+      {code, lines} = report(Map.put(base_map(), @rev_list_key, {:ok, "0\t3\n"}))
+      assert code == 1
+      assert "sync: ahead 0 behind 3" in lines
+    end
+
+    test "garbage rev-list output is UNVERIFIED" do
+      {code, lines} = report(Map.put(base_map(), @rev_list_key, {:ok, "garbage"}))
+      assert code == 2
+      assert "UNVERIFIED sync: unparseable rev-list count" in lines
+    end
+
+    test "a failed fetch is caught on both the sync and CI lines" do
+      {code, lines} = report(Map.put(base_map(), @fetch, {:error, :exit_status}))
+      assert code == 2
+      assert "UNVERIFIED sync: fetch origin main failed" in lines
+      assert "UNVERIFIED ci: origin/main not refreshed" in lines
+    end
+  end
+
+  describe "open PR classes" do
+    test "classifies the real fixture and lists stale PRs ascending" do
+      {_code, lines} = report(Map.put(base_map(), @pr_key, {:ok, fixture!("gh-pr-list.json")}))
+      assert "prs: open 7 (release-please 1, dependabot 5, feature 1)" in lines
+      assert "prs: stale 2: #210 #211" in lines
+    end
+
+    test "exactly 14 days is not stale and 14 days plus one second is" do
+      edge = pr_json([{1, "feat/a", ago(1_209_600)}, {2, "feat/b", ago(1_209_601)}])
+      {_code, lines} = report(Map.put(base_map(), @pr_key, {:ok, edge}))
+      assert "prs: stale 1: #2" in lines
+      refute Enum.any?(lines, &(&1 =~ "#1"))
+    end
+
+    test "a 15-day-old PR is stale" do
+      old = pr_json([{7, "feat/old", ago(15 * 86_400)}])
+      {code, lines} = report(Map.put(base_map(), @pr_key, {:ok, old}))
+      assert code == 1
+      assert "prs: stale 1: #7" in lines
+    end
+
+    test "100 PRs is UNVERIFIED and 99 is verified" do
+      many = fn n -> pr_json(for i <- 1..n, do: {i, "feat/#{i}", ago(60)}) end
+      {code, lines} = report(Map.put(base_map(), @pr_key, {:ok, many.(100)}))
+      assert code == 2
+      assert "UNVERIFIED prs: list truncated at 100" in lines
+
+      {code, lines} = report(Map.put(base_map(), @pr_key, {:ok, many.(99)}))
+      assert code == 0
+      assert "prs: open 99 (release-please 0, dependabot 0, feature 99)" in lines
+    end
+
+    test "an empty list is a verified zero" do
+      {code, lines} = report(base_map())
+      assert code == 0
+      assert "prs: open 0 (release-please 0, dependabot 0, feature 0)" in lines
+    end
+
+    test "a gh error is UNVERIFIED" do
+      {code, lines} = report(Map.put(base_map(), @pr_key, {:error, :exit_status}))
+      assert code == 2
+      assert "UNVERIFIED prs: could not read open PRs" in lines
+    end
+  end
+
+  describe "local work" do
+    test "one worktree, no stash, no unlanded branch is info" do
+      {code, lines} = report(base_map())
+      assert code == 0
+      assert "local: worktrees 1, stashes 0, unlanded branches 0" in lines
+    end
+
+    test "zero worktrees parsed is UNVERIFIED" do
+      {code, lines} = report(Map.put(base_map(), @wt_key, {:ok, ""}))
+      assert code == 2
+      assert "UNVERIFIED local: no worktree parsed" in lines
+    end
+
+    test "two worktrees is attention" do
+      wt = "worktree /repo\nHEAD aaa\n\nworktree /repo-other\nHEAD bbb\n"
+      {code, lines} = report(Map.put(base_map(), @wt_key, {:ok, wt}))
+      assert code == 1
+      assert "local: worktrees 2, stashes 0, unlanded branches 0" in lines
+    end
+
+    test "a stash is attention" do
+      map = Map.put(base_map(), @stash_key, {:ok, "stash@{0}: WIP on x: abc msg\n"})
+      {code, lines} = report(map)
+      assert code == 1
+      assert "local: worktrees 1, stashes 1, unlanded branches 0" in lines
+    end
+
+    test "an unlanded branch is attention" do
+      {code, lines} = report(Map.put(base_map(), @unlanded_key, {:ok, "feat/x\n"}))
+      assert code == 1
+      assert "local: worktrees 1, stashes 0, unlanded branches 1" in lines
+    end
+
+    test "a failed read is UNVERIFIED" do
+      {code, lines} = report(Map.put(base_map(), @stash_key, {:error, :exit_status}))
+      assert code == 2
+      assert "UNVERIFIED local: could not read stash list" in lines
+    end
+  end
+
+  describe "fixed fixture set" do
+    test "renders byte-identical lines in a fixed order" do
+      {code, lines} = report(fixture_map())
+
+      expected = [
+        "BEARINGS: ATTENTION (3)",
+        "sync: ahead 12 behind 0",
+        "prs: stale 2: #210 #211",
+        "local: worktrees 1, stashes 0, unlanded branches 2",
+        "ci: success on #{short(pr_head())} (PR #247 head; main #{short(main_sha())} " <>
+          "is its merge commit, tested only as a synthetic merge)",
+        "ci: success on HEAD #{short(head_sha())}",
+        "prs: open 7 (release-please 1, dependabot 5, feature 1)"
+      ]
+
+      assert code == 1
+      assert lines == expected
+      assert report(fixture_map()) == {code, lines}
+    end
+
+    test "new fixtures keep the shape the report reads" do
+      for pr <- JSON.decode!(fixture!("gh-pr-list.json")) do
+        assert %{"number" => _, "headRefName" => _, "createdAt" => _, "isDraft" => _} = pr
+      end
+
+      assert fixture!("git-worktree-porcelain.txt") =~ "worktree /repo"
+      assert fixture!("git-rev-list-count.txt") =~ ~r/^\d+\s+\d+$/
+    end
+  end
+
   describe "argument guard" do
     test "an invalid --ws exits 2 with the specific line and reads nothing" do
       {out, code} = System.cmd(@launcher, ["--ws", "../x"], stderr_to_stdout: true)
@@ -258,11 +453,13 @@ defmodule Crosswake.BearingsReportTest do
       lines = fixture!("MANIFEST.txt") |> String.split("\n", trim: true)
       assert length(lines) >= 5
 
-      for line <- lines do
+      for line <- lines, not String.starts_with?(line, "#") do
         [file, cmd] = String.split(line, " ", parts: 2)
         assert cmd =~ ~r/^(git|gh) /
         assert File.exists?(Path.join([@repo_root, "test/fixtures/bearings", file]))
       end
+
+      assert length(lines) >= 10
     end
 
     test "the report writes no file" do

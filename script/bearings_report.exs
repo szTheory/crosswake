@@ -64,11 +64,138 @@ defmodule Crosswake.BearingsReport do
   end
 
   def run(opts, deps) do
-    fetch_ok = match?({:ok, _}, deps.run.("git", ["fetch", "origin", "main"]))
+    {fetch_ok, sync_lines} = check_sync(deps)
     ctx = %{fetch_ok: fetch_ok, ws: Keyword.get(opts, :ws, @default_ws), root: opts[:root]}
 
-    render([check_ci(ctx, deps)])
+    render([sync_lines, check_ci(ctx, deps), check_prs(ctx, deps), check_local(ctx, deps)])
   end
+
+  @stale_seconds 14 * 24 * 60 * 60
+  @pr_limit 100
+
+  @doc "Fetches origin/main, then reports ahead/behind. Returns `{fetch_ok, lines}`."
+  def check_sync(deps) do
+    case deps.run.("git", ["fetch", "origin", "main"]) do
+      {:ok, _} ->
+        {true, [sync_counts(deps)]}
+
+      {:error, _} ->
+        {false, [unverified("sync", "fetch origin main failed")]}
+    end
+  end
+
+  defp sync_counts(deps) do
+    with {:ok, out} <-
+           deps.run.("git", ["rev-list", "--left-right", "--count", "HEAD...origin/main"]),
+         [a, b] <- String.split(out),
+         {ahead, ""} <- Integer.parse(a),
+         {behind, ""} <- Integer.parse(b) do
+      kind = if ahead > 0 or behind > 0, do: :attention, else: :info
+      {kind, "sync: ahead #{ahead} behind #{behind}"}
+    else
+      _ -> unverified("sync", "unparseable rev-list count")
+    end
+  end
+
+  @doc "Open PR classes and stale PRs from `gh pr list`."
+  def check_prs(_ctx, deps) do
+    args = [
+      "pr",
+      "list",
+      "--state",
+      "open",
+      "--limit",
+      Integer.to_string(@pr_limit),
+      "--json",
+      "number,headRefName,createdAt,isDraft"
+    ]
+
+    with {:ok, out} <- gh_read(deps, args, "could not read open PRs"),
+         {:ok, list} when is_list(list) <- decode(out),
+         true <- Enum.all?(list, &pr_shape?/1) do
+      if length(list) >= @pr_limit,
+        do: [unverified("prs", "list truncated at #{@pr_limit}")],
+        else: pr_lines(list, deps.now)
+    else
+      {:error, reason} -> [unverified("prs", reason)]
+      _ -> [unverified("prs", "unparseable gh output")]
+    end
+  end
+
+  defp pr_shape?(%{"number" => n, "headRefName" => h, "createdAt" => c})
+       when is_integer(n) and is_binary(h) and is_binary(c),
+       do: match?({:ok, _, _}, DateTime.from_iso8601(c))
+
+  defp pr_shape?(_), do: false
+
+  defp pr_lines(list, now) do
+    count = fn prefix ->
+      Enum.count(list, &String.starts_with?(&1["headRefName"], prefix))
+    end
+
+    rp = count.("release-please--")
+    dep = count.("dependabot/")
+    feature = length(list) - rp - dep
+
+    stale =
+      list
+      |> Enum.filter(fn pr ->
+        {:ok, created, _} = DateTime.from_iso8601(pr["createdAt"])
+        DateTime.diff(now, created, :second) > @stale_seconds
+      end)
+      |> Enum.map(& &1["number"])
+      |> Enum.sort()
+
+    head =
+      {:info,
+       "prs: open #{length(list)} (release-please #{rp}, dependabot #{dep}, feature #{feature})"}
+
+    if stale == [],
+      do: [head],
+      else: [
+        head,
+        {:attention, "prs: stale #{length(stale)}: " <> Enum.map_join(stale, " ", &"##{&1}")}
+      ]
+  end
+
+  @doc "Worktrees, stashes and branches not merged into origin/main, as one line."
+  def check_local(_ctx, deps) do
+    with {:ok, wt} <- local_read(deps, "git", ["worktree", "list", "--porcelain"]),
+         {:ok, stash} <- local_read(deps, "git", ["stash", "list"]),
+         {:ok, unlanded} <-
+           local_read(deps, "git", [
+             "branch",
+             "--no-merged",
+             "origin/main",
+             "--format=%(refname:short)"
+           ]) do
+      worktrees = wt |> String.split("\n") |> Enum.count(&String.starts_with?(&1, "worktree "))
+      stashes = count_lines(stash)
+      branches = count_lines(unlanded)
+
+      if worktrees == 0 do
+        [unverified("local", "no worktree parsed")]
+      else
+        kind = if worktrees > 1 or stashes > 0 or branches > 0, do: :attention, else: :info
+
+        [
+          {kind,
+           "local: worktrees #{worktrees}, stashes #{stashes}, unlanded branches #{branches}"}
+        ]
+      end
+    else
+      {:error, reason} -> [unverified("local", reason)]
+    end
+  end
+
+  defp local_read(deps, cmd, args) do
+    case deps.run.(cmd, args) do
+      {:ok, out} -> {:ok, out}
+      {:error, _} -> {:error, "could not read #{Enum.join(Enum.take(args, 2), " ")}"}
+    end
+  end
+
+  defp count_lines(out), do: out |> String.split("\n") |> Enum.count(&(String.trim(&1) != ""))
 
   @doc "Takes check results (each a list of `{kind, text}`) and returns `{exit_code, lines}`."
   def render(results) do

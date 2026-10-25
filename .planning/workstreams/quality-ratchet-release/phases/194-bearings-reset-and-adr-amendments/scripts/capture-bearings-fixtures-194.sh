@@ -38,7 +38,17 @@ PRHEAD=$(jq -r '.[] | select(.merged_at != null) | .head_sha' "$OUT/gh-commit-pu
 [ "$rc" -eq 0 ] && [ -n "$PRHEAD" ] || { echo "capture: failed pr head"; exit 1; }
 cap gh-run-list-pr-head.json gh run list --workflow "Crosswake CI" --commit "$PRHEAD" --limit 20 --json databaseId,headSha,status,conclusion,event
 
-# Plan 07 appends further `cap` lines above this point.
+cap git-rev-list-count.txt git rev-list --left-right --count HEAD...origin/main
+cap gh-pr-list.json gh pr list --state open --limit 100 --json number,headRefName,createdAt,isDraft
+cap git-worktree-porcelain.txt git worktree list --porcelain
+# The repo root is replaced with /repo so no home path is committed (noted in MANIFEST).
+sed "s#$ROOT#/repo#g" "$OUT/git-worktree-porcelain.txt" > "$OUT/.wt.tmp" && mv "$OUT/.wt.tmp" "$OUT/git-worktree-porcelain.txt" \
+  || { echo "capture: failed worktree scrub"; exit 1; }
+printf '%s\n' "# git-worktree-porcelain.txt: repo root replaced with /repo" >> "$OUT/MANIFEST.txt"
+cap git-stash-list.txt git stash list
+cap git-branch-no-merged.txt git branch --no-merged origin/main "--format=%(refname:short)"
+
+# Plan 07 appended the cap lines above this point.
 bash "$HERE/../../193-cleanup-and-new-working-rules/scripts/privacy-193.sh" "${FILES[@]}" "$OUT/MANIFEST.txt"; rc=$?
 [ "$rc" -eq 0 ] || { echo "capture: privacy hit"; exit 1; }
 echo "capture: privacy clean files $((${#FILES[@]} + 1))"

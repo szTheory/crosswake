@@ -3,3 +3,9 @@ git-rev-parse-head.txt git rev-parse HEAD
 gh-repo-view.json gh repo view --json nameWithOwner
 gh-commit-pulls.json gh api repos/szTheory/crosswake/commits/28b2e71a8ddd95f868b26740ce418341c6a97d5c/pulls --jq [.[] | {number: .number, merged_at: .merged_at, head_sha: .head.sha}]
 gh-run-list-pr-head.json gh run list --workflow Crosswake CI --commit 6fea7251f9d997e2db86608d37da933b1a805af7 --limit 20 --json databaseId,headSha,status,conclusion,event
+git-rev-list-count.txt git rev-list --left-right --count HEAD...origin/main
+gh-pr-list.json gh pr list --state open --limit 100 --json number,headRefName,createdAt,isDraft
+git-worktree-porcelain.txt git worktree list --porcelain
+# git-worktree-porcelain.txt: repo root replaced with /repo
+git-stash-list.txt git stash list
+git-branch-no-merged.txt git branch --no-merged origin/main --format=%(refname:short)
