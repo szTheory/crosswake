@@ -1,0 +1,13 @@
+Running ExUnit with seed: 383757, max_cases: 36
+Excluding tags: [requires_example_host: true, engine_present: true, collateral_binaries: true, advisory_only: true]
+
+.....................
+Finished in 0.7 seconds (0.7s async, 0.00s sync)
+21 tests, 0 failures
+tests06: mix test rc 0
+[crosswake] OK: execution classes active: default/hermetic and requires_example_host
+[crosswake] OK: all intended ExUnit files are owned by a merge-blocking class.
+tests06: ownership rc 0
+[crosswake] OK: no mutation control asserts a change it never verified (scanned 255 test files, pin 253).
+[crosswake] OK: every open finding's test citation resolves to a real test (todos 12, seeds 25, deferred-items 11).
+tests06: absence rc 0
