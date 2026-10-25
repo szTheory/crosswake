@@ -89,7 +89,39 @@ Plans:
   4. A root-allowlist test fails on any new tracked root file or `*.bundle`; the 13 root scratch files and `crosswake-checkpoint-24c8389.bundle` are gone (bundle confirmed not the only copy; the denylist string in `first_adopter_context.ex` stays); `SETUP.md` lives under `docs/` without the personal email; merged or superseded remote branches are deleted (unmerged work tagged `archive/<name>` first, each delete behind its own `allow`) and `git worktree list` shows only the main checkout.
   5. SEED-003 is closed with mirror-tag evidence, and one clean-room command has run once against the real 0.2.11 artifacts with its output retained, and fails closed on a negative control (missing or wrong artifact).
 
-**Plans**: TBD
+**Plans**: 10 plans (PR1: 01-02; PR queue: 03; PR2: 04-06; PR3: 07-09; branches and closeout: 10; sequential waves 1-10 in one checkout)
+
+Plans:
+
+**Wave 1**
+- [ ] 195-01-PLAN.md — Version-agnostic shell fixture comparisons and shape-based action pins, rehearsed against the real #236, #210 and #211 diffs
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 195-02-PLAN.md — Land PR1 (privacy, CI on head, its own merge allow); observe release-please rewrite #236 and its eight test jobs pass on the new head
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 195-03-PLAN.md — PR queue: #239/#240/#241 merged, #210/#211 and #238 merged or closed, one allow per PR, pin provenance checked
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 195-04-PLAN.md — Secret masking: maskSecretShapes on the root-proof tail, add-mask for derived workflow secrets, mask-removed negative control
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 195-05-PLAN.md — Recurring lanes only: 14 schedules and Cancel Obsolete removed, weekly canary on main, See It Run native split, Dependabot grouped monthly
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 195-06-PLAN.md — Land PR2 (own allow); See It Run web-and-gif and canary observed on main; Dependabot security updates enabled
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 195-07-PLAN.md — Root allowlist test, 13 scratch files and the checkpoint bundle removed (refs proven on origin), SETUP.md under docs/ without personal email
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [ ] 195-08-PLAN.md — Fail-closed clean-room command run against real 0.2.11 Hex/Maven/iOS with retained output and negative controls; SEED-003 closed
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [ ] 195-09-PLAN.md — Land PR3 (own allow); clean root confirmed on main
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [ ] 195-10-PLAN.md — Remote branch cleanup (archive tags first, one allow per tag and per delete), one worktree, PR age audit, closeout branch pushed
 **Research**: Skip; one feasibility look at clean-room command scope during planning
 
 ### Phase 196: Spec and structure ratchet
