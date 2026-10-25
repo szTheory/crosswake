@@ -36,7 +36,7 @@ defmodule Crosswake.ProofLane.Provenance do
   @doc false
   @spec template_version(Path.t()) :: String.t()
   def template_version(cwd) do
-    # iOS manifest only; the Android manifest is frozen and not read.
+    # iOS manifest only; the Android manifest is not read by this provenance check.
     path = Path.join([cwd, "native", "ios", "crosswake_shell", ".crosswake", "shell.json"])
 
     with {:ok, bytes} <- File.read(path),

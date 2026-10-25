@@ -22,7 +22,7 @@
     "native/ios/crosswake_shell/CrosswakeShell/CrosswakeShellApp.swift": "ad07cc2effe04448cb3dce76ac1a629f5055fd15a11730b47f5522e44549df38",
     "native/ios/crosswake_shell/CrosswakeShell/Info.plist": "11e97fa81642e477364e9f347c649cc936d8b79e1d1bf6d0c5526e5d8bc62886",
     "native/ios/crosswake_shell/CrosswakeShell/PrivacyInfo.xcprivacy": "c5945a8562185436ab28fbcb527787b51d29fd1f6ba6c000c9d606485427515a",
-    "native/ios/crosswake_shell/Fixtures/crosswake_manifest.json": "68d5622b3656247d219a0c7c43969df4fcb3a2ef20c7533309b407ce97a525c9",
+    "native/ios/crosswake_shell/Fixtures/crosswake_manifest.json": "e6bbb12f1ee01766ebdad1d1dba8e5b6774c8f6606e4adb550e6b655a41f90a2",
     "native/ios/crosswake_shell/Fixtures/declared_pack_requirements.json": "a6cae73ae313866d3d070590d077cf2da58bae36dfa43ae632d363e5e58e8ba5",
     "native/ios/crosswake_shell/Fixtures/installed_packs.json": "a6cae73ae313866d3d070590d077cf2da58bae36dfa43ae632d363e5e58e8ba5",
     "native/ios/crosswake_shell/Fixtures/pack_inventory.json": "5bc4537a6805e7359256c63e12b3a44bcba697fec6ea6783f9b329b61c8b2078",
