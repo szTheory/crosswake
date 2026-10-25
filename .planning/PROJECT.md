@@ -76,6 +76,8 @@ v28.0 Truth and Release Train (phases 194–199, started 2026-10-24): land the b
 
 Workstream: Quality Ratchet & Release. Phases 194–199; 30 requirements. [Roadmap](workstreams/quality-ratchet-release/ROADMAP.md), [requirements](workstreams/quality-ratchet-release/REQUIREMENTS.md), [scope](workstreams/quality-ratchet-release/v28.0-SCOPE.md).
 
+Phase 194 (Bearings reset and ADR amendments) completed 2026-10-25. It added BEARINGS, ROADMAP-ROLLING and PERSONAS, a short STATE, and `script/bearings-report`. ADR amendments A1 (Android unfrozen for proof and parity) and A2 (the synthetic-profile reversal gate) changed every rule text together. Phase 195 (Pipeline repair and hygiene) is next.
+
 ### v27.0 Land and Clean Up (Phases 189–193) — shipped 2026-10-24
 
 Workstream: Quality Ratchet & Release.
@@ -515,6 +517,12 @@ v24.0 closed bounded maintenance work with exact-source proof and retained histo
 
 ## Key Decisions
 
+### v28 decisions
+
+- **✓ Good:** Orient a new session from BEARINGS, ROADMAP-ROLLING and PERSONAS plus one `script/bearings-report` command; a failed read reports UNVERIFIED, never ok (Phase194).
+- **✓ Good:** Unfreeze Android for proof and parity of existing contracts only, with a re-freeze trigger, and gate synthetic-profile reversal on five fields; amend every rule text in one change (Phase194).
+- **⚠ Revisit:** The AGENTS.md cap is a measured 102 lines, not about 90, because a lower cap would delete a rule. The bearings-report review findings are still open (Phase194).
+
 ### v27 decisions
 
 - **✓ Good:** Back up and restore-test every copy before deleting anything; classify by content, not by name (Phase189).
@@ -640,4 +648,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-24 after v27.0 milestone; next milestone unselected. v26 debt closed by FIX-01..07; v24/v23 debt and parked adopter gates remain unchanged.*
+*Last updated: 2026-10-25 after Phase 194 (v28.0); v24/v23 debt and parked adopter gates remain unchanged.*
