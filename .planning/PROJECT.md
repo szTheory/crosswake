@@ -132,7 +132,7 @@ widening Crosswake into a generic sync, storage, native-control, or multi-platfo
 **Key context:** Crosswake is infrastructure for the **First B2C Adopter**, not a separate business
 line. A web-only customer Alpha has no Crosswake deliverable; mobile work serves public v1.
 Native-menu breadth, new companion packages, brand/showcase polish, and generic
-sync/storage productization are frozen; Android is unfrozen only for proof and parity of
+sync/storage productization are frozen. Android is unfrozen only for proof and parity of
 existing contracts (ADR amendment A1). Reversal requires two independent active adopters or a
 separately funded business-line mandate. Durable reasoning is in
 `.planning/ADR-FIRST-B2C-ADOPTER.md`; the complete retrieval-oriented game plan is in
