@@ -1,0 +1,6 @@
+pin: test/crosswake/proof/phase153_ios_mirror_unblock_test.exs:the parity workflow satisfies the merge-blocking naming and checkout contract live
+pin: test/crosswake/proof/phase175_release_recovery_test.exs:ordinary iOS job requires its own pinned Beam setup before mirror publish live
+pin: test/crosswake/proof/phase165_ci_policy_test.exs:(test-built workflow string at line 45) fixture
+rehearsal: checkout-7.0.1 rc 0
+rehearsal: setup-beam-1.24.1 rc 0
+rehearsal: head rc 0
