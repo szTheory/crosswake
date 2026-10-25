@@ -5,16 +5,16 @@ milestone_name: Truth and Release Train
 current_phase: 195
 current_phase_name: Pipeline repair and hygiene
 status: executing
-last_updated: "2026-10-25T18:47:12.276Z"
-state_head: bd81316d9d43ce254f3a2d0877c585ae7be149e7
+stopped_at: Completed 195-01-PLAN.md
+last_updated: "2026-10-25T20:39:10.991Z"
+state_head: 53cc15067b4796cbe2517e6a2f54ae5a332de99f
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 22
-  completed_plans: 9
-  percent: 41
+  completed_plans: 10
+  percent: 45
 last_activity: 2026-10-25
-stopped_at: Phase 195 planned (13 plans), ready to execute
 last_activity_desc: Phase 195 planned
 ---
 
@@ -24,8 +24,8 @@ See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.
 
 ## Current Position
 
-Phase: 195 (Pipeline repair and hygiene) — READY TO EXECUTE
-Plan: Not started
+Phase: 195 (Pipeline repair and hygiene) — EXECUTING
+Plan: 2 of 13
 Status: Ready to execute
 
 ## Exact Next Action
@@ -37,3 +37,19 @@ Next action: `/gsd-execute-phase 195 --ws quality-ratchet-release` from branch `
 ## Carried debt
 
 See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md); the v23 deferred table is in `milestones/v23.0-closeout`. The adopter lane stays parked; its resume is in ROLLING PARKED.
+
+## Performance Metrics
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 195 P01 | 100 min | 3 tasks | 11 files |
+
+## Decisions
+
+- [Phase 195]: Shell fixture comparisons normalize only version-derived values (stamp, crosswake_version, SwiftPM minimumVersion) on both sides; fixtures keep literal 0.2.11
+
+## Session
+
+**Last session:** 2026-10-25T20:39:10.960Z
+**Stopped at:** Completed 195-01-PLAN.md
+**Resume file:** None
