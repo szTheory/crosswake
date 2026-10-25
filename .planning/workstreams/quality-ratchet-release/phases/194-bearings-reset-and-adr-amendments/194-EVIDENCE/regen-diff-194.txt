@@ -1,0 +1,5 @@
+regen: files 3
+regen: changed_lines 14
+regen: unexpected 0
+regen: generation_json hash_only yes
+regen: override files 2->3 reason ios_host_generation records manifest digest; shell.json kept at tracked version
