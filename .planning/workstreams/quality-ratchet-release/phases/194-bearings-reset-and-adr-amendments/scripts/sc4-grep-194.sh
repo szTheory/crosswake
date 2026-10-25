@@ -178,13 +178,13 @@ self_test() {
   rr="$st/refrepo"; mkdir -p "$rr"; reset
   for f in $SCOPE; do mkdir -p "$rr/$(dirname "$f")"; cp "$fx/$f" "$rr/$f"; done
   n=0; while [ "$n" -lt 9 ]; do n=$((n + 1)); printf '%s\n' "- Android is frozen at its posture $n." >> "$rr/AGENTS.md"; done
-  git -C "$rr" init -q . && git -C "$rr" add -A . && git -C "$rr" -c user.email=st@example.invalid -c user.name=st commit -q -m old
+  git -C "$rr" init -q . && git -C "$rr" add -A . && git -C "$rr" -c user.email=st -c user.name=st commit -q -m old
   bash "$SELF" --ref HEAD --root "$rr" > "$o" 2>&1; expect ref-control-strong 1 '^sc4: control hits [0-9]+$' $? "$o"
 
   # weak control: a ref with no old text must be refused as too weak (exit 2)
   rw="$st/weakrepo"; mkdir -p "$rw"
   for f in $SCOPE; do mkdir -p "$rw/$(dirname "$f")"; cp "$fx/$f" "$rw/$f"; done
-  git -C "$rw" init -q . && git -C "$rw" add -A . && git -C "$rw" -c user.email=st@example.invalid -c user.name=st commit -q -m clean
+  git -C "$rw" init -q . && git -C "$rw" add -A . && git -C "$rw" -c user.email=st -c user.name=st commit -q -m clean
   bash "$SELF" --ref HEAD --root "$rw" > "$o" 2>&1; expect ref-control-weak 2 '^sc4: control too weak$' $? "$o"
 
   # static: script never pipes into a line limiter

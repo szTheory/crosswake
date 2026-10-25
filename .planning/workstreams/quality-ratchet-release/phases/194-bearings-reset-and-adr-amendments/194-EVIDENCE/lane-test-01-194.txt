@@ -1,18 +1,18 @@
 warning: the following files do not match any of the configured `:test_load_filters` / `:test_ignore_filters`:
 
-/Users/jon/projects/crosswake/test/support/bridge_live_view_case.ex
-/Users/jon/projects/crosswake/test/support/bridge_test_helpers.ex
-/Users/jon/projects/crosswake/test/support/compile_router_case.ex
-/Users/jon/projects/crosswake/test/support/example_host.ex
-/Users/jon/projects/crosswake/test/support/host_command_fixtures.ex
-/Users/jon/projects/crosswake/test/support/phase175_rel17_fixtures.ex
-/Users/jon/projects/crosswake/test/support/phase_evidence_path.ex
-/Users/jon/projects/crosswake/test/support/proof_assertions.ex
-/Users/jon/projects/crosswake/test/support/release_candidate_receipt_fixtures.ex
-/Users/jon/projects/crosswake/test/support/release_workflow_fixtures.ex
-/Users/jon/projects/crosswake/test/support/router_fixtures.ex
-/Users/jon/projects/crosswake/test/support/stub_companion.ex
-/Users/jon/projects/crosswake/test/support/twin_git_fixtures.ex
+<repo>/test/support/bridge_live_view_case.ex
+<repo>/test/support/bridge_test_helpers.ex
+<repo>/test/support/compile_router_case.ex
+<repo>/test/support/example_host.ex
+<repo>/test/support/host_command_fixtures.ex
+<repo>/test/support/phase175_rel17_fixtures.ex
+<repo>/test/support/phase_evidence_path.ex
+<repo>/test/support/proof_assertions.ex
+<repo>/test/support/release_candidate_receipt_fixtures.ex
+<repo>/test/support/release_workflow_fixtures.ex
+<repo>/test/support/router_fixtures.ex
+<repo>/test/support/stub_companion.ex
+<repo>/test/support/twin_git_fixtures.ex
 
 This might indicate a typo in a test file name (for example, using "foo_tests.exs" instead of "foo_test.exs").
 
@@ -337,7 +337,7 @@ Do NOT declare "Haptics" on this or any route's policy to "fix" this â€” Crosswa
     (crosswake 0.2.11) lib/crosswake/bridge.ex:655: Crosswake.Bridge.raise_unknown_capability_family!/2
     (crosswake 0.2.11) test/support/bridge_live_view_case.ex:107: Crosswake.TestSupport.Bridge.TracerLive.handle_event/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
-    (telemetry 1.4.2) /Users/jon/projects/crosswake/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
     (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
     (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
@@ -364,7 +364,7 @@ State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzQ5vodvFq49C", endpoint: 
 
 Currently declared on this route: []
 LiveView module: Crosswake.TestSupport.Bridge.TracerLive
-Router location: /Users/jon/projects/crosswake/test/support/bridge_live_view_case.ex:31
+Router location: <repo>/test/support/bridge_live_view_case.ex:31
 
 Add the family to this route's declaration:
 
@@ -375,7 +375,7 @@ This raised instead of returning a Crosswake.Shell.Denial because a route policy
     (crosswake 0.2.11) lib/crosswake/bridge.ex:623: Crosswake.Bridge.raise_undeclared_capability!/3
     (crosswake 0.2.11) test/support/bridge_live_view_case.ex:107: Crosswake.TestSupport.Bridge.TracerLive.handle_event/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
-    (telemetry 1.4.2) /Users/jon/projects/crosswake/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
     (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
     (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
@@ -418,7 +418,7 @@ State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzQ8JKZNpTY3B", endpoint: 
     (crosswake 0.2.11) lib/crosswake/bridge.ex:242: Crosswake.Bridge.push/3
     (crosswake 0.2.11) test/support/bridge_live_view_case.ex:107: Crosswake.TestSupport.Bridge.TracerLive.handle_event/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
-    (telemetry 1.4.2) /Users/jon/projects/crosswake/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
     (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
     (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
@@ -694,7 +694,7 @@ Call `Crosswake.Bridge.attach(socket)` in mount/3 (after assigning :crosswake_ma
     (crosswake 0.2.11) lib/crosswake/bridge.ex:227: Crosswake.Bridge.push/3
     (crosswake 0.2.11) test/support/bridge_live_view_case.ex:209: Crosswake.TestSupport.Bridge.NotMountedLive.handle_event/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
-    (telemetry 1.4.2) /Users/jon/projects/crosswake/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
     (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
     (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
@@ -728,7 +728,7 @@ Do NOT declare "not_a_real_family" on this or any route's policy to "fix" this â
     (crosswake 0.2.11) lib/crosswake/bridge.ex:655: Crosswake.Bridge.raise_unknown_capability_family!/2
     (crosswake 0.2.11) test/support/bridge_live_view_case.ex:107: Crosswake.TestSupport.Bridge.TracerLive.handle_event/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
-    (telemetry 1.4.2) /Users/jon/projects/crosswake/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
     (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
     (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
@@ -794,7 +794,7 @@ Call `Crosswake.Bridge.attach(socket)` in mount/3 (after assigning :crosswake_ma
     (crosswake 0.2.11) lib/crosswake/bridge.ex:227: Crosswake.Bridge.push/3
     (crosswake 0.2.11) test/support/bridge_live_view_case.ex:209: Crosswake.TestSupport.Bridge.NotMountedLive.handle_event/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
-    (telemetry 1.4.2) /Users/jon/projects/crosswake/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
     (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
     (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
@@ -1230,7 +1230,7 @@ Call `Crosswake.Bridge.attach(socket)` in mount/3 (after assigning :crosswake_ma
     (crosswake 0.2.11) lib/crosswake/bridge.ex:275: Crosswake.Bridge.dispatched/2
     (crosswake 0.2.11) test/support/bridge_live_view_case.ex:222: Crosswake.TestSupport.Bridge.NotMountedLive.handle_event/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
-    (telemetry 1.4.2) /Users/jon/projects/crosswake/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
     (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
     (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
@@ -1327,7 +1327,7 @@ State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzUWyp2e6jo_B", endpoint: 
 
 Currently declared on this route: ["haptics"]
 LiveView module: Crosswake.TestSupport.Bridge.TracerLive
-Router location: /Users/jon/projects/crosswake/test/support/bridge_live_view_case.ex:27
+Router location: <repo>/test/support/bridge_live_view_case.ex:27
 
 Add the family to this route's declaration:
 
@@ -1338,7 +1338,7 @@ This raised instead of returning a Crosswake.Shell.Denial because a route policy
     (crosswake 0.2.11) lib/crosswake/bridge.ex:623: Crosswake.Bridge.raise_undeclared_capability!/3
     (crosswake 0.2.11) test/support/bridge_live_view_case.ex:107: Crosswake.TestSupport.Bridge.TracerLive.handle_event/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
-    (telemetry 1.4.2) /Users/jon/projects/crosswake/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
     (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
     (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
@@ -1387,7 +1387,7 @@ Do NOT declare "not_a_real_family" on this or any route's policy to "fix" this â
     (crosswake 0.2.11) lib/crosswake/bridge.ex:655: Crosswake.Bridge.raise_unknown_capability_family!/2
     (crosswake 0.2.11) test/support/bridge_live_view_case.ex:107: Crosswake.TestSupport.Bridge.TracerLive.handle_event/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
-    (telemetry 1.4.2) /Users/jon/projects/crosswake/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
     (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
     (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
@@ -1429,7 +1429,7 @@ State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzUYZEmFHM5YC", endpoint: 
 
 Currently declared on this route: ["haptics"]
 LiveView module: Crosswake.TestSupport.Bridge.TracerLive
-Router location: /Users/jon/projects/crosswake/test/support/bridge_live_view_case.ex:27
+Router location: <repo>/test/support/bridge_live_view_case.ex:27
 
 Add the family to this route's declaration:
 
@@ -1440,7 +1440,7 @@ This raised instead of returning a Crosswake.Shell.Denial because a route policy
     (crosswake 0.2.11) lib/crosswake/bridge.ex:623: Crosswake.Bridge.raise_undeclared_capability!/3
     (crosswake 0.2.11) test/support/bridge_live_view_case.ex:107: Crosswake.TestSupport.Bridge.TracerLive.handle_event/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
-    (telemetry 1.4.2) /Users/jon/projects/crosswake/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
     (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
     (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
     (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
@@ -1547,7 +1547,7 @@ State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzUYyJfJVH5BB", endpoint: 
 .[crosswake] generated shells are up to date.
 .[crosswake] generic: 1 template version behind (stamped 3 â†’ current 4).
 [crosswake] run `mix crosswake.gen.shell` to regenerate.
-.[crosswake] shell.status error: malformed JSON in /private/var/folders/f3/f0clj9rd2zb85n2c849wcsrc0000gn/T/cw_status_test_170498/.crosswake/shell.json
+.[crosswake] shell.status error: malformed JSON in <tmp>/cw_status_test_170498/.crosswake/shell.json
 ..............................................................
 22:28:54.530 [info] The function passed as a handler with ID "phase40-gate-test-handler-175234" is a local function.
 This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
@@ -1581,7 +1581,7 @@ created e2e/crosswake_proof_lane/support/proof_lane.ts
 created e2e/crosswake_proof_lane/support/proof_lane_host_adapter.ts
 created physical_iphone/physical_iphone_proof_host.ex
 created test/crosswake_proof_lane/crosswake_proof_lane_test.exs
-......................................................................................................................................................................spawn: Could not cd to /var/folders/f3/f0clj9rd2zb85n2c849wcsrc0000gn/T/crosswake-provenance-286274/does-not-exist
+......................................................................................................................................................................spawn: Could not cd to <tmp>/crosswake-provenance-286274/does-not-exist
 ..................................................................................................  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_controller.ex
   created tmp_offline_ui_test/lib/test_app_web/components/layouts/offline_root.html.heex
   created tmp_offline_ui_test/lib/test_app_web/controllers/offline_html/offline_page.html.heex
@@ -1866,8 +1866,8 @@ Commerce:
   rebuild_requirements: none
 [error] proof_posture (proof_hook_missing)
 iOS generated-project proof hook is unsupported
-hint: restore /private/var/folders/f3/f0clj9rd2zb85n2c849wcsrc0000gn/T/script/verify_generated_ios_shell.sh before claiming iOS shell support
-details: exit_status=nil, output_excerpt=nil, platform=ios, script_path=/private/var/folders/f3/f0clj9rd2zb85n2c849wcsrc0000gn/T/script/verify_generated_ios_shell.sh, status=unsupported
+hint: restore <tmp>/script/verify_generated_ios_shell.sh before claiming iOS shell support
+details: exit_status=nil, output_excerpt=nil, platform=ios, script_path=<tmp>/script/verify_generated_ios_shell.sh, status=unsupported
 
 [error] support_posture (support_claim_verification_required)
 support claims remain verification required until the tracked generated-project proof hooks pass
@@ -1875,7 +1875,7 @@ hint: run mix crosswake.doctor --native-checks after the host-owned shell projec
 details: blocking_platforms=ios, proof_statuses={"ios":"unsupported"}, shells={"ios":{"bridge":false,"generated":false,"proof_status":"unsupported","route_unavailable":false,"manifest_first":false}}, status=verification_required
 
 [warning] installer_state (install_manifest_missing)
-install manifest not found at /private/var/folders/f3/f0clj9rd2zb85n2c849wcsrc0000gn/T/does-not-exist.json
+install manifest not found at <tmp>/does-not-exist.json
 hint: run mix crosswake.install before mix crosswake.doctor
 
 [warning] policy_compile (unmanaged_routes)
@@ -1886,7 +1886,7 @@ details: router=Crosswake.TestSupport.RouterFixtures.ManagedRouter, unmanaged_pa
 [warning] shell_generation (shell_generation_missing)
 generated real host-owned iOS shell artifacts
 hint: generate the host-owned iOS shell with mix crosswake.gen.shell ios
-details: missing=README.md missing|CrosswakeShell.xcodeproj/project.pbxproj missing|CrosswakeShell/CrosswakeShellApp.swift missing|Fixtures/crosswake_manifest.json missing, platform=ios, present=false, root=/private/var/folders/f3/f0clj9rd2zb85n2c849wcsrc0000gn/T/native/ios/crosswake_shell
+details: missing=README.md missing|CrosswakeShell.xcodeproj/project.pbxproj missing|CrosswakeShell/CrosswakeShellApp.swift missing|Fixtures/crosswake_manifest.json missing, platform=ios, present=false, root=<tmp>/native/ios/crosswake_shell
 
 [warning] shell_activation (shell_activation_incomplete)
 iOS shell is manifest-first and exposes route unavailable + pack_incompatible denial surfaces
@@ -1896,7 +1896,7 @@ details: manifest_first=false, missing=CrosswakeShell/CrosswakeShellApp.swift mi
 [warning] shell_bridge (shell_bridge_missing)
 iOS shell carries the bounded bridge channel for app.info.get, haptics.impact, permissions.status, and files.pick
 hint: restore the bounded bridge channel so route-scoped commands stay typed, versioned, and request/reply-only
-details: missing=CrosswakeShell/BridgeChannel.swift missing, platform=ios, present=false, root=/private/var/folders/f3/f0clj9rd2zb85n2c849wcsrc0000gn/T/native/ios/crosswake_shell
+details: missing=CrosswakeShell/BridgeChannel.swift missing, platform=ios, present=false, root=<tmp>/native/ios/crosswake_shell
 
 [warning] bridge_posture (bridge_posture_bounded)
 bounded bridge exposes app.info.get, files.pick, haptics.impact, notifications.token.get, permissions.status, share.invoke, transfer.download, transfer.export, transfer.import, transfer.upload.prepare and denies compatibility_mismatch, undeclared_capability, unavailable_capability, commerce_corridor, origin_denied, inactive_route, external_entry_denied, pack_incompatible, gate_denied, kill_switch_active, step_up_required, notification_open_denied, dependency_missing, shell_unreachable
