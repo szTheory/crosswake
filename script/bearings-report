@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Bearings report launcher: runs script/bearings_report.exs from the repo root.
+# exit contract: 0 OK / 1 ATTENTION / 2 UNVERIFIED (not a required check)
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+exec elixir "$ROOT_DIR/script/bearings_report.exs" "$@"

@@ -39,7 +39,7 @@
 **Depends on**: Nothing (first phase of v28.0)
 **Requirements**: PLAN-01, PLAN-02, PLAN-03, PLAN-04, PLAN-05, ADR-01, ADR-02
 **Success Criteria** (what must be TRUE):
-  1. `.planning/ROADMAP-ROLLING.md` (at most 120 lines, NOW/NEXT/LATER/PARKED/DROPPED, every row with outcome, horizon, effort, `adr:` and promotion trigger), `.planning/BEARINGS.md` (at most 60 lines, listed first in AGENTS.md Project Context) and `.planning/PERSONAS.md` (P1–P7, J1–J5, at most one page) exist; MILESTONE-ARC.md is marked historical with its durable lessons in BEARINGS; AGENTS.md is at most 90 lines (or the measured cap recorded at plan time) with the approval-gate paragraph byte-identical to `main` and a disposition for every removed rule; the superseded root JTBD ordering is recorded as not executed.
+  1. `.planning/ROADMAP-ROLLING.md` (at most 120 lines, NOW/NEXT/LATER/PARKED/DROPPED, every row with outcome, horizon, effort, `adr:` and promotion trigger), `.planning/BEARINGS.md` (at most 60 lines, listed first in AGENTS.md Project Context) and `.planning/PERSONAS.md` (P1–P7, J1–J5, at most one page) exist; MILESTONE-ARC.md is marked historical with its durable lessons in BEARINGS; AGENTS.md is at most 102 lines (measured cap, recorded 2026-10-25) with the approval-gate paragraph byte-identical to `main` and a disposition for every removed rule; the superseded root JTBD ordering is recorded as not executed.
   2. The workstream STATE.md is at most 40 lines with one handoff and no "Handoff history" section, and the milestone-start convention no longer contains the byte-snapshot ritual.
   3. `script/bearings-report` prints at most 40 plain-language lines covering CI for the main tip (Crosswake CI runs only on pull requests, so the line names the PR-head commit CI ran on and says its status belongs to that head; CONTEXT D-11 amendment) and whether CI has run on local HEAD, ahead/behind, open PR classes, worktrees, stashes and unlanded branches, line caps (including the 120/60/40 caps above) and fired seed/debt triggers; it exits non-zero and prints UNVERIFIED when any read fails; each check has a negative-control test that turns it red; it is not a required check.
   4. One PR carries the ADR amendments: Android unfrozen for proof and parity of existing contracts with the re-freeze trigger (Android work delays an iOS gate by more than one milestone), and the synthetic-profile reversal gate (profile, failing criterion, cited artifact, smallest slice, rollback; at most one reopened item per milestone) that permits profile scenario rows over one host; in that same PR a grep for Android "frozen" posture text in AGENTS.md, the ADR, PROJECT.md, the support matrix and the capability map finds only amendment history.
@@ -55,22 +55,22 @@ Plans:
 - [x] 194-02-PLAN.md — ADR amendments A1/A2, AGENTS.md Android bullet, PROJECT.md posture, SC4 grep with negative controls
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 194-03-PLAN.md — Land PR1 (privacy, push, CI on head, one-use merge allow), reconcile #246, branch PR2 from fresh main
+- [x] 194-03-PLAN.md — Land PR1 (privacy, push, CI on head, one-use merge allow), reconcile #246, branch PR2 from fresh main
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] 194-04-PLAN.md — ROADMAP-ROLLING, BEARINGS, PERSONAS; MILESTONE-ARC and JTBD banners; PROJECT.md pointer
+- [x] 194-04-PLAN.md — ROADMAP-ROLLING, BEARINGS, PERSONAS; MILESTONE-ARC and JTBD banners; PROJECT.md pointer
 
 **Wave 5** *(blocked on Wave 4 completion)*
-- [ ] 194-05-PLAN.md — AGENTS.md trim with disposition table and gate contract test; STATE to 40 lines; byte-snapshot ritual settled
+- [x] 194-05-PLAN.md — AGENTS.md trim with disposition table and gate contract test; STATE to 40 lines; byte-snapshot ritual settled
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 194-06-PLAN.md — bearings-report core: launcher, verdict/exit contract, CI for the main tip via its PR head, CI negative controls
+- [x] 194-06-PLAN.md — bearings-report core: launcher, verdict/exit contract, CI for the main tip via its PR head, CI negative controls
 
 **Wave 7** *(blocked on Wave 6 completion)*
-- [ ] 194-07-PLAN.md — bearings-report ahead/behind, open PR classes, worktrees/stashes/unlanded branches, exact-output test
+- [x] 194-07-PLAN.md — bearings-report ahead/behind, open PR classes, worktrees/stashes/unlanded branches, exact-output test
 
 **Wave 8** *(blocked on Wave 7 completion)*
-- [ ] 194-08-PLAN.md — bearings-report caps, seed/debt triggers, persona-tag check, 40-line cap, live and not-required evidence
+- [x] 194-08-PLAN.md — bearings-report caps, seed/debt triggers, persona-tag check, 40-line cap, live and not-required evidence
 
 **Wave 9** *(blocked on Wave 8 completion)*
 - [ ] 194-09-PLAN.md — Land PR2 (pre-push checks, privacy, CI on head, its own merge allow), bearings-report on main, closeout PR opened

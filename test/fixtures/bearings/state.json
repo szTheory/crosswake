@@ -1,0 +1,43 @@
+{
+  "contract": "1.0.0",
+  "flavor": "core",
+  "milestone": "v28.0 — Truth and Release Train",
+  "phases": [
+    {
+      "number": "194",
+      "name": "Bearings reset and ADR amendments",
+      "status": "in_progress"
+    },
+    {
+      "number": "195",
+      "name": "Pipeline repair and hygiene",
+      "status": "pending"
+    },
+    {
+      "number": "196",
+      "name": "Spec and structure ratchet",
+      "status": "pending"
+    },
+    {
+      "number": "197",
+      "name": "Public docs truth",
+      "status": "pending"
+    },
+    {
+      "number": "198",
+      "name": "Android foreign-host proof",
+      "status": "pending"
+    },
+    {
+      "number": "199",
+      "name": "Release 0.2.12",
+      "status": "pending"
+    }
+  ],
+  "next": {
+    "command": "/gsd-progress --next",
+    "label": "Advance to the next step",
+    "reason": "Phase 1 of 6 · 0% · executing"
+  },
+  "updated_at": "2026-10-25T00:00:00.000Z"
+}

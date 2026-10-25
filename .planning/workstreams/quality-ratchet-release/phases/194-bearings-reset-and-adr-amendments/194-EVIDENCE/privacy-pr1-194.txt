@@ -1,0 +1,11 @@
+privacy: run 1 head 9adda461 files 53
+privacy: hit home_path file 20
+privacy: hit user_temp file 20
+privacy: hit account file 20
+privacy: hit private_string file 20
+privacy: hit email file 30
+privacy: hits 5
+privacy: rc 1
+privacy: run 2 head 6fea7251 files 53
+privacy: clean files 53
+privacy: rc 0

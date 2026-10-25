@@ -1,5 +1,10 @@
 # Crosswake Milestone Arc
 
+> **HISTORICAL — superseded 2026-10-24** by .planning/ROADMAP-ROLLING.md and .planning/BEARINGS.md. Not in the agent read path.
+> Moved to BEARINGS: backend authority; hermetic and advisory proof lanes; docs-contract parity. Covered by existing BEARINGS lines: artifact parity.
+> Dropped: install truth (owned by Phase 197 docs truth and the clean-room command); showcase truth (showcase polish is on the ADR stop list); mock the provider boundary (commerce productionization is on the stop list; the lesson lives in the v3.4 archive).
+> The capability taxonomy below stays here until the PROJECT.md split (ROADMAP-ROLLING LATER).
+
 ## Arc Thesis
 
 Crosswake has moved from proving the Phoenix-first route-policy substrate to making that substrate credible for production mobile SaaS apps. The next arc should reduce bespoke native, commerce, auth, notification, and operator work without turning Crosswake into a universal UI framework, generic WebView wrapper, or plugin bus.

@@ -1,0 +1,16 @@
+BEARINGS: ATTENTION (4)
+sync: ahead 15 behind 0
+ci: CI has not run on HEAD 23cb8da
+prs: stale 2: #210 #211
+local: worktrees 1, stashes 0, unlanded branches 2
+ci: success on 6fea725 (PR #247 head; main 28b2e71 is its merge commit, tested only as a synthetic merge)
+prs: open 7 (release-please 1, dependabot 5, feature 1)
+cap: .planning/ROADMAP-ROLLING.md 67/120 ok
+cap: .planning/BEARINGS.md 35/60 ok
+cap: .planning/workstreams/quality-ratchet-release/STATE.md 39/40 ok
+cap: AGENTS.md 102/102 ok
+advisory: .planning/PROJECT.md 643 lines > 250 (split is a ROADMAP-ROLLING LATER row)
+seeds: open 22, machine-triggered 0, fired 0, prose-only 22 (info)
+debt: v27.0 carried 12 (info; rows wait for the E6 template)
+personas: 30/30 requirements tagged
+live: rc 1
