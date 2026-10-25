@@ -1,0 +1,8 @@
+pr2: state MERGED
+pr2: merge_commit ff70560c82aecddbe2411baa58adbab4cfe40268
+pr2: merged_at 2026-10-25T15:31:15Z
+pr2: on_origin_main yes
+pr2: approval allow bound head 106e5a5
+pr2: tags_remote_before 94
+pr2: tags_remote_after 94
+pr2: remote_branch_docs/v28-bearings-reset kept
