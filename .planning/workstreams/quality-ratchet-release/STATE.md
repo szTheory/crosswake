@@ -5,17 +5,17 @@ milestone_name: Truth and Release Train
 current_phase: 194
 current_phase_name: Bearings reset and ADR amendments
 status: executing
-stopped_at: Completed 194-04-PLAN.md
-last_updated: "2026-10-25T13:45:13.293Z"
-last_activity: 2026-10-24
-last_activity_desc: Phase 194 execution started
-state_head: 47b54195f57c882e60256a034829c8821f0228e3
+stopped_at: Completed 194-05-PLAN.md
+last_updated: "2026-10-25T13:50:58.164Z"
+state_head: 16b8a738236197d7d8d720f739ab143a7eab0098
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 9
-  completed_plans: 4
+  completed_plans: 5
   percent: 0
+last_activity: 2026-10-25
+last_activity_desc: Plan 194-05 AGENTS.md trim and STATE trim
 ---
 
 # Project State
@@ -37,4 +37,3 @@ Next command: `$gsd-execute-phase 194 --ws quality-ratchet-release` (plan 06).
 ## Carried debt
 
 See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md); the v23 deferred table is in `milestones/v23.0-closeout`. The adopter lane stays parked; its resume is in ROLLING PARKED.
-
