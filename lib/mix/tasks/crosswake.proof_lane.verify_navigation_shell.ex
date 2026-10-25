@@ -2,7 +2,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyNavigationShell do
   use Mix.Task
   import Bitwise
 
-  alias Crosswake.ProofLane.{Evidence, NavigationShellAdvisory}
+  alias Crosswake.ProofLane.{Evidence, NavigationShellAdvisory, Provenance}
 
   @shortdoc "Retains digest-bound advisory navigation-shell evidence"
   @switches [destination: :string, observation: :string, run_root: :string]
@@ -99,12 +99,10 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyNavigationShell do
   end
 
   defp evidence_input(advisory_bytes) do
+    # The host project is File.cwd!(), the same root the advisory subject digests use.
     {:ok,
-     %{
+     Map.merge(Provenance.read(File.cwd!()), %{
        schema_version: "2",
-       crosswake_version: "0.1.0",
-       template_version: "161",
-       commit_ref: "git-0000000000000000000000000000000000000000",
        route_id: "route-0000000000000000",
        assertion_ids: NavigationShellAdvisory.assertion_ids(),
        status: :passed,
@@ -113,7 +111,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyNavigationShell do
        retention_label: :brief,
        device_class: :unknown,
        approved_hashes: [%{kind: :navigation_shell_advisory, canonical_bytes: advisory_bytes}]
-     }}
+     })}
   end
 
   defp secure_equal?(left, right),

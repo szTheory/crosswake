@@ -1,0 +1,22 @@
+{
+  "run_id": 38119291401,
+  "hex_job_id": 114411195765,
+  "conclusion": "failure",
+  "test_failures": [
+    "2026-10-11T06:54:46.5259534Z   1) test local bare mirror publication blocks without REL-17 authority and preserves refs (Crosswake.ReleaseCandidate.MirrorTest)\n2026-10-11T06:54:46.5302770Z ##[error]     test/crosswake/release_candidate/mirror_test.exs:260\n2026-10-11T06:54:46.5325048Z      Assertion with =~ failed\n2026-10-11T06:54:46.5344660Z      code:  assert output =~ \"REL-17 operation does not match the iOS publication mode\"\n2026-10-11T06:54:46.5349178Z      left:  \"[crosswake] FAIL: REL-17 candidate identity does not match the iOS publication.\\n\"\n2026-10-11T06:54:46.5351241Z      right: \"REL-17 operation does not match the iOS publication mode\"\n2026-10-11T06:54:46.5357622Z      stacktrace:",
+    "2026-10-11T06:58:43.7951343Z   2) test the Mix task validates a seeded envelope, while the shell seam rejects cached evidence (Crosswake.ReleaseCandidate.EvidenceGateTest)\n2026-10-11T06:58:43.7953692Z ##[error]     test/crosswake/release_candidate/evidence_gate_test.exs:27\n2026-10-11T06:58:43.7955014Z      Assertion with =~ failed\n2026-10-11T06:58:43.7955279Z      code:  assert output =~ \"reason=missing_evidence\"\n2026-10-11T06:58:43.7955918Z      left:  \"** (Mix) REL-17 BLOCKED stage=post_merge operation=linked_release reason=api_response_invalid next=gather_fresh_evidence_and_request_a_new_gate\\n\"\n2026-10-11T06:58:43.7956496Z      right: \"reason=missing_evidence\"\n2026-10-11T06:58:43.7957128Z      stacktrace:"
+  ],
+  "hex_publisher_attempted": false,
+  "native_publishers_success": [
+    "ios",
+    "maven"
+  ],
+  "exact_public_skipped": true,
+  "linked_rollup": "PARTIAL",
+  "retry_performed": false,
+  "observed_at_utc": "2026-10-11T07:05:55.450161+00:00",
+  "failed_step": "full_test_suite_before_hex_publish",
+  "tests_total": 2053,
+  "test_failures_count": 2,
+  "native_direct_coordinates_verified": true
+}

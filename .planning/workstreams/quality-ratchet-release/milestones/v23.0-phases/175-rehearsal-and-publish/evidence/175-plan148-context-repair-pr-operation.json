@@ -1,0 +1,48 @@
+{
+  "operation": "create_fixture_release_context_isolation_repair_pr",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "events": [
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "07cbce3bdce9d7d213dfab77fd8f7717faef4892"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "c465c8639439188b542465900ba0ef566e375cc8"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/trees",
+      "attempted": true,
+      "completed": true,
+      "sha": "14f9c4ed424a156004769fd5031433b86790c1bf"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/commits",
+      "attempted": true,
+      "completed": true,
+      "sha": "590b2cca31e5787c4c33df627e6e912a1b8042a7"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/refs",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/pulls",
+      "attempted": true,
+      "completed": true,
+      "number": 224
+    }
+  ],
+  "started_at_utc": "2026-10-11T07:25:36.245174+00:00",
+  "base_oid": "9093a034580085af2defb1464a4a67235b59a4bf",
+  "head_oid": "590b2cca31e5787c4c33df627e6e912a1b8042a7",
+  "tree_oid": "14f9c4ed424a156004769fd5031433b86790c1bf",
+  "pr": 224,
+  "url": "https://github.com/szTheory/crosswake/pull/224",
+  "status": "created_ci_pending"
+}

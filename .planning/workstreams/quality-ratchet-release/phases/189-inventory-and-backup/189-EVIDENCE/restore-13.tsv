@@ -1,0 +1,4 @@
+review-content-13.tar	tarfiles	pass	42 files match tar-time sha256 and mode (restore review-content-13.tar: pass)
+tmp-symlinks-13.tsv	links	pass	244 links recreated in a fresh scratch folder; every readlink equals the recorded target (tmp-symlinks-13.tsv: pass)
+review-repos-13.tar	tarfiles	pass	60 files match tar-time sha256 and mode (restore review-repos-13.tar: pass)
+phase-189-folder-13.tar	tarfiles	pass	115 files match tar-time sha256 and mode (restore phase-189-folder-13.tar: pass)

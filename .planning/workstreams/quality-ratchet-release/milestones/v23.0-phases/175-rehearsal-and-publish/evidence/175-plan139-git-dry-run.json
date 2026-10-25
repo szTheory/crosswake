@@ -1,0 +1,36 @@
+{
+  "schema": "crosswake-plan139-local-dry-run-evidence/v1",
+  "plan": 139,
+  "wave": 42,
+  "local_git_reproduction": {
+    "repository_kind": "temporary_local_bare_repository",
+    "exit_status": 0,
+    "stdout_line_kinds": ["to_banner", "expected_new_tag_row", "final_done_trailer"],
+    "stderr_empty": true,
+    "network_requests": 0
+  },
+  "parser_cases": {
+    "standard_final_done_accepted": true,
+    "unexpected_line_rejected": true,
+    "line_after_done_rejected": true,
+    "duplicate_done_rejected": true,
+    "extra_blank_line_rejected": true
+  },
+  "focused_node_tests": {
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0
+  },
+  "static_checks": {
+    "collector_node_check": "passed",
+    "test_node_check": "passed",
+    "scoped_diff_check": "passed"
+  },
+  "release_effects": {
+    "remote_attempts": 0,
+    "tag_attempts": 0,
+    "ci_requests": 0
+  },
+  "plan137_raw_stdout_retained": false,
+  "plan137_exact_match_confirmed": false
+}

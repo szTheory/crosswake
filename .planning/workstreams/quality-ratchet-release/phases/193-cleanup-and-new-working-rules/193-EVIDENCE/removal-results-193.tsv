@@ -1,0 +1,15 @@
+R-TMP-038	tmp	<tmp>/crosswake-phase179-hex	removed		verified 1	n/a
+R-POST-TMP-01	tmp	<tmp>/crosswake-phase190-run	removed		verified 1	n/a
+R-POST-TMP-02	tmp	<tmp>/crosswake-phase191-run	removed		verified 1	n/a
+R-POST-TMP-03	tmp	<tmp>/crosswake-plan02-190.F2x8Jn	removed		verified 1	n/a
+R-POST-TMP-04	tmp	<tmp>/crosswake-plan04-190.qYBtqe	removed		verified 1	n/a
+R-POST-TMP-05	tmp	<tmp>/crosswake-plan07-190.gwbmeI	removed		verified 1	n/a
+R-POST-TMP-06	tmp	<tmp>/crosswake-plan10-190.IXtlRg	removed		verified 1	n/a
+R-POST-TMP-07	tmp	<tmp>/crosswake-plan10-190.VI5iHm	removed		verified 1	n/a
+R-POST-TMP-08	tmp	<tmp>/crosswake-plan10-190.VhqWaX	removed		verified 1	n/a
+R-POST-TMP-09	tmp	<tmp>/crosswake-plan10-190.W4CBsM	removed		verified 1	n/a
+R-POST-TMP-10	tmp	<tmp>/crosswake-plan10-190.ib68MH	removed		verified 1	n/a
+R-WT-2	wt	<recovery-checkout>-accrue-bridge	removed		verified 2	bridge_commits patch_unique 14 in_refs_all_bundle 14
+R-POST-LOC-01	clone	<recovery-checkout>-integration-191	kept	ref_tip_unprotected	verified 1	refs 31 bundled 20 remote 2 ancestor 3
+R-POST-LOC-02	clone	<recovery-checkout>-candidate-durable	removed		verified 2	refs 4 bundled 1 remote 0 ancestor 3
+R-POST-LOC-03	recovery	<recovery-checkout>	removed		verified 5	refs 196 bundled 179 remote 15 ancestor 2

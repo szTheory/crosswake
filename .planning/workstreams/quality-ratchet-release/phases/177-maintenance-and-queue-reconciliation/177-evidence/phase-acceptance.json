@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "phase": "177",
+  "plan": "07",
+  "status": "ready_for_independent_verification",
+  "mode": "complete",
+  "checkedAt": "2026-10-12T17:52:46.520Z",
+  "evidence": {
+    "streamSummaries": [
+      {
+        "file": "177-01-SUMMARY.md",
+        "status": "complete"
+      },
+      {
+        "file": "177-02-SUMMARY.md",
+        "status": "complete"
+      },
+      {
+        "file": "177-03-SUMMARY.md",
+        "status": "complete"
+      },
+      {
+        "file": "177-04-SUMMARY.md",
+        "status": "complete"
+      },
+      {
+        "file": "177-05-SUMMARY.md",
+        "status": "complete"
+      },
+      {
+        "file": "177-06-SUMMARY.md",
+        "status": "complete"
+      },
+      {
+        "file": "177-08-SUMMARY.md",
+        "status": "complete"
+      }
+    ],
+    "source": {
+      "bindingStatus": "complete-qualified",
+      "baseCommit": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+      "baseTree": "12a0f1bf3c32ecdde0326f4a288b597b11e33b06",
+      "bindingDigest": "ba5a4d985b6c87b75a7562acbf70fb812f1cce503bad0d273067997e7db709f0",
+      "selectedRows": 119,
+      "sourceRows": 70,
+      "outOfSourceRows": 49,
+      "preservedConflicts": 30,
+      "modeCount": 78,
+      "patchOwners": [
+        {
+          "owner": "177-02",
+          "status": "recorded",
+          "changedFiles": 2,
+          "untrackedFiles": 0,
+          "patchBytes": 5252
+        },
+        {
+          "owner": "177-03",
+          "status": "recorded",
+          "changedFiles": 2,
+          "untrackedFiles": 0,
+          "patchBytes": 5252
+        },
+        {
+          "owner": "177-05",
+          "status": "recorded",
+          "changedFiles": 6,
+          "untrackedFiles": 0,
+          "patchBytes": 16897
+        }
+      ],
+      "privateReplayChecks": [
+        {
+          "owner": "177-02",
+          "replayed": true,
+          "changedFiles": 2
+        },
+        {
+          "owner": "177-03",
+          "replayed": true,
+          "changedFiles": 2
+        },
+        {
+          "owner": "177-05",
+          "replayed": true,
+          "changedFiles": 6
+        }
+      ],
+      "overlayPaths": [
+        "README.md",
+        "docs/COMPANION-PUBLISH-RUNBOOK.md",
+        "docs/RELEASE-INCIDENT-RESPONSE.md",
+        "test/crosswake/guides/release_boundaries_test.exs",
+        "test/crosswake/release_candidate/companion_receipt_test.exs",
+        "test/crosswake/release_candidate/evidence_gate_test.exs"
+      ],
+      "productionSourceChanges": 0
+    },
+    "genericActualEntryProof": {
+      "paths": 4,
+      "mixTests": {
+        "tests": 43,
+        "failures": 0
+      },
+      "workflow": {
+        "checks": 98,
+        "failures": 0
+      }
+    },
+    "publicGuidanceTests": {
+      "tests": 21,
+      "failures": 0
+    },
+    "queue": {
+      "issues": 20,
+      "pullRequests": 3,
+      "totalObjects": 23,
+      "finalRefresh": {
+        "status": "matched",
+        "refreshedAt": "2026-10-12T17:10:17.134Z",
+        "counts": {
+          "issues": 20,
+          "pullRequests": 3
+        },
+        "changedObjectCount": 0
+      },
+      "perObjectNextActions": true,
+      "liveRefresh": {
+        "status": "matched",
+        "refreshedAt": "2026-10-12T17:52:07.035Z",
+        "changedObjectCount": 0
+      }
+    },
+    "activeCommand": "$gsd-execute-phase 177 --ws quality-ratchet-release",
+    "historicalRel10": "BREACHED",
+    "adopterGatePreserved": true,
+    "retainedReaderUncertainty": "unproven"
+  },
+  "reviewFindings": {
+    "CR-01": "resolved: fresh queue comparison binds complete normalized allowlisted decision metadata; same-updatedAt CI/head/base/relationship changes fail fixtures",
+    "CR-02": "resolved: acceptance calls validateQueueInventory and rejects missing disposition fields, invalid category, and invalid releaseProposal flag",
+    "WR-01": "resolved: canonical public binding digest is recomputed, semantic row dispositions are compared, and private partition plus three owner bundles are validated and replayed against the source overlay"
+  },
+  "checks": {
+    "errors": [],
+    "metrics": {
+      "inventoryRows": 119,
+      "sourceRows": 70,
+      "outOfSourceRows": 49,
+      "preservedConflicts": 30,
+      "historicalModes": 78,
+      "queueIssues": 20,
+      "queuePullRequests": 3,
+      "queueObjects": 23,
+      "liveQueueRefreshedAt": "2026-10-12T17:52:07.035Z",
+      "genericEntryPaths": 4,
+      "activeCommand": "$gsd-execute-phase 177 --ws quality-ratchet-release",
+      "nextCommand": "$gsd-discuss-phase 178 --ws quality-ratchet-release",
+      "sourceOverlayFiles": 6
+    }
+  },
+  "handoff": {
+    "status": "parent_publication_pending",
+    "afterIndependentVerification": "$gsd-discuss-phase 178 --ws quality-ratchet-release",
+    "condition": "after independent verification passes",
+    "phase178Owns": "Bind the exact final source and matching hosted CI; no Phase 177 artifact substitutes for that gate."
+  },
+  "claims": {
+    "phaseComplete": false,
+    "requirementsMarkedComplete": false,
+    "phase178ProofComplete": false
+  }
+}

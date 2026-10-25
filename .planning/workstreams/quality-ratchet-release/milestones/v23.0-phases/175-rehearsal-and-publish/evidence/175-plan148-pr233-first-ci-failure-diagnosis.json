@@ -1,0 +1,29 @@
+{
+  "ci_run_id": 38161052343,
+  "head_oid": "a3d02d037e7695449700dc90bda0b752536ab2b3",
+  "status": "completed",
+  "conclusion": "failure",
+  "passed": 40,
+  "failed_jobs": [
+    "hex-page-proof",
+    "phase130-core-hermetic-proof",
+    "phase45-rindle-proof",
+    "phase132-core-hermetic-proof",
+    "proof-requires-example-host",
+    "phase41-gating-proof",
+    "phase43-rulestead-proof",
+    "phase34-commerce-proof",
+    "Crosswake CI"
+  ],
+  "diagnosis": "Five inserted scalar assertions shifted frozen support-matrix inventory and remediation line references; move them into a separate final test without changing the committed inventory",
+  "revised_focused_tests": 100,
+  "revised_focused_failures": 0,
+  "inventory_sites": 230,
+  "inventory_matches_exactly": true,
+  "full_suite_status": "running in tracked clone before source revision",
+  "merge_attempts": 0,
+  "publication_attempts": 0,
+  "obsolete_ci_cancellation_attempts": 0,
+  "log_sha256": "5b5685a1c0ffaa5b9c34a8d4d2feaaa14f42ffd671e761750192a6dc012c8802",
+  "observed_at_utc": "2026-10-11T18:12:15.565140+00:00"
+}

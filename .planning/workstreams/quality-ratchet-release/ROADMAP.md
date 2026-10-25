@@ -1,547 +1,238 @@
-# Roadmap: Quality Ratchet & Release Readiness
+# Roadmap: Quality Ratchet & Release
 
 ## Milestones
 
-- ✅ **v22.0 Quality Ratchet & Release Readiness** — Phases 164-168 (shipped 2026-09-16)
-- 🚧 **v23.0 Release Pipeline Repair & Proof-Lane Truth** — Phases 169-175 (planning)
+- 🚧 **v28.0 Truth and Release Train** — phases 194–199; started 2026-10-24; 30 requirements (PLAN, ADR, REL, HYG, SPEC, ARCH, DOCS, AND). Land the bearings and ADR amendments, make `main` and the release pipeline trustworthy, harden the sensitive specs, correct the public docs, prove Android from a foreign host, and cut one real release behind per-publish `allow`. [Scope](v28.0-SCOPE.md), [requirements](REQUIREMENTS.md), [research synthesis](v28.0-research/SYNTHESIS.md).
+- ✅ **v27.0 Land and Clean Up** — phases 189–193; shipped 2026-10-24; 18/18 requirements, 55 plans, 127 tasks; audit `tech_debt` with no blocker. The v25 and v26 work is on GitHub `main` with CI green (PR #242, merge `d12aed75`), the recovery checkout was retired for a clean `main` checkout, and changes now land through PRs branched from `main`. [Archive](milestones/v27.0-ROADMAP.md).
+- **v26.0 Harden Before Trust** — phases 184–188; planning closeout complete 2026-10-16; 18/18 requirements, 37 plans, 96 tasks; audit `tech_debt` with no blocker; twin-05 passed against the frozen candidate `a53fbef`. The product code was delivered to `main` in v27.0. [Archive](milestones/v26.0-ROADMAP.md).
+- **v25.0 iOS Host Setup & Digital Twin Proof** — phases 179–183; planning closeout complete 2026-10-15; 20/20 requirements, 32 plans, 78 tasks; re-audit `tech_debt` with no blocker. The product code was delivered to `main` in v27.0. [Archive](milestones/v25.0-ROADMAP.md).
+- **v24.0 Repository Cleanup & Maintenance** — phases 176–178; planning closeout complete 2026-10-12; 8/8 requirements, 15 plans, 28 tasks; six retained debt records. [Archive](milestones/v24.0-ROADMAP.md).
+- **v23.0 Release Pipeline Repair & Proof-Lane Truth** — phases 169–175, archived with exceptions 2026-10-11; 42/43 requirements; REL-10 breached. [Archive](milestones/v23.0-ROADMAP.md).
+- **v22.0 Quality Ratchet & Release Readiness** — phases 164–168, archived with overrides 2026-09-15. [Archive](milestones/v22.0-ROADMAP.md).
 
 ## Phases
 
-<details>
-<summary>✅ v22.0 Quality Ratchet & Release Readiness (Phases 164-168) — SHIPPED 2026-09-16</summary>
+### 🚧 v28.0 Truth and Release Train (Phases 194–199) — IN PROGRESS
 
-- [x] Phase 164: Dependency Security and Gate Authority (5/5 plans) — completed 2026-08-28
-- [x] Phase 165: Efficient and Maintainable CI (13/13 plans) — completed 2026-09-09
-- [x] Phase 166: Clean-Checkout Engineering Quality (8/8 plans) — completed 2026-09-10
-- [x] Phase 167: Documentation and Pull-Request Reconciliation (9/9 plans) — completed 2026-09-12
-- [x] Phase 168: 0.2.1 Release Candidate Readiness (13/13 plans) — completed 2026-09-16, 1 item deferred
+- [x] **Phase 194: Bearings reset and ADR amendments** - Rolling roadmap, bearings, personas, a short STATE and a bearings report land, and the ADR amendments (Android unfrozen for parity; synthetic-profile reversal gate) change every rule text together (completed 2026-10-25)
+- [ ] **Phase 195: Pipeline repair and hygiene** - The release PR goes green with no hand edits, the PR queue and CI schedules are clean, secrets are masked, the repository root and branches are tidy, and one clean-room command runs against real published artifacts
+- [ ] **Phase 196: Spec and structure ratchet** - Sensitive offline, policy and bridge specs can no longer pass empty, boundary and exhaustive policy specs exist, a Muex pilot decides adopt or drop, and compile-cycle, bare-rescue and dependency ratchets hold
+- [ ] **Phase 197: Public docs truth** - The documented install path runs on a normal host, version and telemetry claims are true, "Android frozen" text is gone, and docs checks report counts
+- [ ] **Phase 198: Android foreign-host proof** - A generated parity ledger, a Kotlin test floor, and a fresh foreign Gradle project that resolves the published Maven coordinate and passes JVM tests on Linux CI
+- [ ] **Phase 199: Release 0.2.12** - One real release, core first, with a separate `allow` per merge, publish and tag, and a post-publish check that the iOS mirror tag equals the release version
 
-Full detail: [`milestones/v22.0-ROADMAP.md`](milestones/v22.0-ROADMAP.md)
+### Ordering rules for v28.0
 
-**Closeout type:** `override_closeout`. Phases 167 and 168 carried `stale` verification at close
-(covered files changed after their verification ran), and 9 seeds were deliberately left
-unacknowledged. See `MILESTONES.md` for the recorded overrides.
-
-</details>
-
-### v23.0 Release Pipeline Repair & Proof-Lane Truth (planning)
-
-- [x] **Phase 169: Diagnostic Legibility** - Every release/verification check surfaces its own failing message, and distinguishes "never ran" from "never defined" (completed 2026-09-16)
-- [x] **Phase 170: Vacuous Assertion Remediation** - All 173 SEED-018-flagged sites are classified and every confirmed-vacuous one is rewritten so an empty collection fails (completed 2026-09-16)
-- [x] **Phase 171: Version/Authority Split** - The release graph is version-parametric while the approval identity gate stays exact; the `0.2.1` weld and its interim tripwire are both retired atomically (completed 2026-09-17)
-- [x] **Phase 172: Per-Package Proof Scope** - Byte-exact publish verification is proven against each package's own approved ref, never one shared ref for all six (completed 2026-09-17)
-- [x] **Phase 173: Recovery-Path Proof Convergence** - `exact-public-proof` runs and must pass identically whether a publish happened via the ordinary or the recovery path *(all 4 plans executed and merged (#180); SC#2 satisfied 2026-09-18 by the post-merge fire-drill dispatch, run 35302554800 — the proof job is present and concludes `failure` at `PUBLICATION_RECORD_MISSING`. The first dispatch instead exposed a real defect that made the whole recovery workflow un-dispatchable; repaired in #181. Evidence in `173-NON-VACUITY.md`.)*
-- [x] **Phase 174: Clean-Room Host Realism & Adopter Fidelity** - The clean-room lane exercises install, not just compile, on both code paths, and the two named adopter gaps are closed or deferred with a reason *(7/7 requirements; ROOM-03 and SC#4 closed 2026-09-18 by the post-merge dispatch run 35366337182 against live `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install` before `step=doctor`. Evidence in `174-CLEANROOM-EVIDENCE.md`. Finding A remains OPEN in `deferred-items.md`.)*
-- [ ] **Phase 175: Rehearsal and Publish** - `crosswake 0.2.2` and the two held companion PRs are live through the repaired graph, and `exact-public-proof` has actually executed and passed for 0.2.2
-
-## Milestone Conventions
-
-Every phase in milestone v23.0 closes with a `vacuity_taxonomy` record: for each new check the
-phase landed, its shape against the six-shape vacuity taxonomy and a measured non-vacuity fact.
-The rules live in [`VERIFICATION-CONVENTIONS.md`](VERIFICATION-CONVENTIONS.md). Phase 169 closed
-before this convention existed and is covered retroactively by
-[`169-VACUITY-TAXONOMY.md`](phases/169-diagnostic-legibility/169-VACUITY-TAXONOMY.md) rather than
-by editing its sealed `169-VERIFICATION.md`. A phase that lands no new checks states that
-explicitly in its own record rather than omitting it.
+- **Land before leap.** Phase 194 lands first so every later rule text (AGENTS.md, ADR, PROJECT.md, support truth) agrees with this roadmap before any Android or release work starts.
+- **A red base hides regressions.** Phase 195 makes `main` and the release PR green before the ratchet (196), docs (197) and Android (198) phases add checks.
+- **Every irreversible step has its own `allow`.** Merges to `main`, the release-PR merge, each Hex/Maven/iOS publish, each tag and each remote branch delete need a fresh one-use `allow` bound to the displayed attempt. No `--admin`, no force-push or hand edit to the release-please branch, never close release PR #236, never retry an uncertain delivery.
+- **No new check is merge-blocking before its findings on `main` are measured.** Guards are delta-only; report-mode checks stay advisory for one cycle.
+- **Overrun cut order.** If Phase 196 overruns, move SPEC-04 (Muex pilot) and then ARCH-03 (dependency ratchet) to v29 through a recorded roadmap change; do not shrink their success criteria in place.
+- **No twin run in v28.** twin-05 still attests `a53fbef`; the twin-06 decision is asked at v30 entry.
+- Never name, infer or search for the real first adopter; synthetic profiles stay generic.
 
 ## Phase Details
 
-### Phase 169: Diagnostic Legibility
+### Phase 194: Bearings reset and ADR amendments
 
-**Goal**: A maintainer reading any release or verification check failure sees that check's own
-message, and the system never reports "missing" when the true state is "failing" or "never ran."
-
-**Depends on**: Nothing (first phase; pure diagnostics refactor, no release-graph behavior change)
-
-**Requirements**: MSG-01, MSG-02, MSG-03, MSG-06, FID-02
-
+**Goal**: A new session can orient from three short files and one command, and every governing rule text says the same thing about Android and synthetic profiles.
+**Depends on**: Nothing (first phase of v28.0)
+**Requirements**: PLAN-01, PLAN-02, PLAN-03, PLAN-04, PLAN-05, ADR-01, ADR-02
 **Success Criteria** (what must be TRUE):
+  1. `.planning/ROADMAP-ROLLING.md` (at most 120 lines, NOW/NEXT/LATER/PARKED/DROPPED, every row with outcome, horizon, effort, `adr:` and promotion trigger), `.planning/BEARINGS.md` (at most 60 lines, listed first in AGENTS.md Project Context) and `.planning/PERSONAS.md` (P1–P7, J1–J5, at most one page) exist; MILESTONE-ARC.md is marked historical with its durable lessons in BEARINGS; AGENTS.md is at most 102 lines (measured cap, recorded 2026-10-25) with the approval-gate paragraph byte-identical to `main` and a disposition for every removed rule; the superseded root JTBD ordering is recorded as not executed.
+  2. The workstream STATE.md is at most 40 lines with one handoff and no "Handoff history" section, and the milestone-start convention no longer contains the byte-snapshot ritual.
+  3. `script/bearings-report` prints at most 40 plain-language lines covering CI for the main tip (Crosswake CI runs only on pull requests, so the line names the PR-head commit CI ran on and says its status belongs to that head; CONTEXT D-11 amendment) and whether CI has run on local HEAD, ahead/behind, open PR classes, worktrees, stashes and unlanded branches, line caps (including the 120/60/40 caps above) and fired seed/debt triggers; it exits non-zero and prints UNVERIFIED when any read fails; each check has a negative-control test that turns it red; it is not a required check.
+  4. One PR carries the ADR amendments: Android unfrozen for proof and parity of existing contracts with the re-freeze trigger (Android work delays an iOS gate by more than one milestone), and the synthetic-profile reversal gate (profile, failing criterion, cited artifact, smallest slice, rollback; at most one reopened item per milestone) that permits profile scenario rows over one host; in that same PR a grep for Android "frozen" posture text in AGENTS.md, the ADR, PROJECT.md, the support matrix and the capability map finds only amendment history.
+  5. A check confirms every requirement in the active milestone REQUIREMENTS file carries a persona/job tag or `M`.
 
-1. A deliberately failing release check (e.g. a fixture reproducing the PR #164 defect) surfaces
-   its own verbatim `detail` message in `Crosswake.ReleaseStatus`'s output — not a generic "missing
-   check IDs" list — confirmed by a test asserting the exact string appears.
-
-2. A scanner run that terminates early is reported distinctly from a check ID that was never
-   defined, with a message naming how many checks after the last observed failure never ran —
-   confirmed by a test exercising both cases and asserting different, correctly-labeled output.
-
-3. The three release check display names carrying `0.2.1` are renamed to version-neutral names, and
-   a uniqueness assertion over required-check names fails when two names collide — confirmed by a
-   test that introduces a duplicate and watches the assertion fail.
-
-4. A verification command exercised twice — once finding a real defect, once unable to run at all —
-   exits with two different, documented statuses, confirmed by running both cases and diffing the
-   exit codes.
-
-**Plans**: 4/4 plans executed
+**Plans**: 9 plans (PR1: 01-03; PR2: 04-09; sequential waves 1-9 in one checkout)
 
 Plans:
 **Wave 1**
-
-- [x] 169-01-PLAN.md — Tracer: a failing scanner check's own sentence reaches the maintainer verbatim; `failing` no longer shadowed by `missing` (MSG-01, MSG-03)
-- [x] 169-03-PLAN.md — Version-neutral display names and a global duplicate-name scan, landed atomically (MSG-06)
+- [x] 194-01-PLAN.md — Android posture in support matrix, capability map, native shell guide and both golden fixtures (regenerated); pins rewritten; one `fix(support-matrix):` commit
 
 **Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 169-02-PLAN.md — `:unverifiable` / exit 3: could-not-verify is a distinct, documented outcome (FID-02, MSG-02)
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 169-04-PLAN.md — Exit-contract drift guard and canonical-doc link (FID-02)
-
-**Wave structure**: Wave 1 = 169-01 and 169-03 in parallel (no shared files) · Wave 2 = 169-02 ·
-Wave 3 = 169-04.
-
-**Research**: Standard pattern — pure Elixir refactor of an existing function plus a new pure-syntax
-scanner check; the coverage-test shape already exists in the repo to copy. Skip phase-level research.
-
----
-
-### Phase 170: Vacuous Assertion Remediation
-
-**Goal**: Every site SEED-018 flagged as a candidate "absence scored as success" defect is actually
-classified, and every one confirmed vacuous is rewritten to fail on an empty collection — without
-introducing a merge-blocking guard ahead of that audit.
-
-**Depends on**: Nothing. Independent of every other phase in this milestone — startable in parallel
-from the beginning, alongside Phase 174 (Clean-Room Host Realism). Must complete before Phase 175
-(Rehearsal and Publish) opens, since Phase 175 is where an unaudited vacuous check could silently
-pass a one-way-door step.
-
-**Requirements**: VAC-01, VAC-02, VAC-03
-
-**Success Criteria** (what must be TRUE):
-
-1. Each of the 173 SEED-018-flagged sites has a recorded classification (genuinely vacuous vs.
-   safe) committed in-repo (e.g. a table or ledger keyed by file:line), confirmed by counting rows
-   against the 173 total.
-
-2. Every site confirmed vacuous is rewritten so a test with an empty collection input now fails
-   where it previously passed — confirmed by a regression test per rewritten site (or a shared
-   fixture harness covering the set) demonstrating the "empty now fails" property.
-
-3. `absence.collection_assertion_non_empty` (VACG-01) is **not** added as a merge-blocking guard in
-   this milestone — confirmed by its absence from any required-check registration — because landing
-   the guard before the audit produces a wall of red that gets waived, teaching the team red is
-   negotiable. It remains tracked under Future Requirements for a later milestone.
-
-4. Every new check landed by *any* phase of this milestone (169, 171, 172, 173, 174, 175) has been
-   checked against the six-shape vacuity taxonomy (bare `Enum.all?`/`any?` on a possibly-empty
-   collection; a job `needs:` something that silently skipped; `continue-on-error` on a lane feeding
-   a one-way door; `if:` conditions that silently never match; a matrix expanding to zero entries;
-   missing `set -e`/misused `grep -q`/`jq -e`) before being made merge-blocking — confirmed as a
-   review checklist item applied at the close of each of those phases, not a code change owned by
-   this phase itself.
-
-**Plans**: 5/5 plans complete
-**Wave 1**
-
-- [x] 170-01-PLAN.md — Inventory script, committed classification ledger, and its non-vacuity proof (VAC-01)
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 170-02-PLAN.md — Frozen remediation manifest, guard insertions, and the itemized structural proof (VAC-02)
-- [x] 170-04-PLAN.md — `vacuity_taxonomy` phase-close convention and the Phase 169 retroactive addendum (VAC-03)
+- [x] 194-02-PLAN.md — ADR amendments A1/A2, AGENTS.md Android bullet, PROJECT.md posture, SC4 grep with negative controls
 
 **Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 170-03-PLAN.md — Empty-input regression proofs at the high-blast-radius sites (VAC-02)
+- [x] 194-03-PLAN.md — Land PR1 (privacy, push, CI on head, one-use merge allow), reconcile #246, branch PR2 from fresh main
 
 **Wave 4** *(blocked on Wave 3 completion)*
+- [x] 194-04-PLAN.md — ROADMAP-ROLLING, BEARINGS, PERSONAS; MILESTONE-ARC and JTBD banners; PROJECT.md pointer
 
-- [x] 170-05-PLAN.md — Phase 170's own taxonomy record and the decidable convention check (VAC-03)
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 194-05-PLAN.md — AGENTS.md trim with disposition table and gate contract test; STATE to 40 lines; byte-snapshot ritual settled
 
-**Research**: Standard pattern — an audit-and-classify pass plus mechanical test rewrites at
-already-identified sites. Skip phase-level research.
-
----
-
-### Phase 171: Version/Authority Split
-
-**Goal**: Any semver version can run the full publish → proof → rollup graph with no workflow edit,
-while an unapproved merge still cannot publish at any version — and the check that would have
-caught the original `0.2.1` weld lands in the same change that removes it.
-
-**Depends on**: Phase 169 (reads its own CI failures through the new diagnostic seam while under
-development, though not a hard technical dependency)
-
-**Requirements**: MSG-04, MSG-05, WELD-01, WELD-02, WELD-03, WELD-04, WELD-05, WELD-06, WELD-07,
-WELD-08, DOC-05
-
-**Note on atomicity**: `release.publish_gate.no_bare_version_literal` (MSG-04/MSG-05) and the D1
-version/authority fix (WELD-01..08) are **one phase, landed together in the same PR** — not two
-plans that could merge independently. If the check merged before the fix, it would correctly and
-permanently fail against `main` (the four bare-literal gates still exist) — blocking every other PR
-until this phase finishes. If the fix merged before the check, there would be no proof the
-generalization is safe. Both risks are the same failure mode SUMMARY.md warns against: "either
-`main` goes permanently red or the check is meaninglessly advisory for that window." This phase's
-plan sequencing must land the check and the fix in one commit/PR, with the check's own non-vacuity
-proof (run against a pre-fix fixture of the workflow file) as part of that same change.
-
-**Success Criteria** (what must be TRUE):
-
-1. `release.publish_gate.no_bare_version_literal` runs against a pre-repair fixture of the workflow
-   file and fails, proving it is non-vacuous — confirmed by a test that pins the fixture and asserts
-   the failure.
-
-2. `approved-release-guard`'s receipt output carries an `approved_version` field bound alongside the
-   existing head/tree/base — confirmed by inspecting a real or rehearsed guard run's output.
-
-3. Grepping `release-please.yml` for a bare `0.2.1` (or any other literal version) inside any
-   publish-gating `if:` clause across `publish-hex`, `publish-ios-core`, `publish-android-core`, and
-   `exact-public-proof` returns zero matches; each instead compares against `approved_version`.
-
-4. `Crosswake.ReleaseCandidate.Workflow`'s coordinate/dependency derivation is a function of an input
-   version, not a frozen module attribute — confirmed by a test calling it with two different
-   versions and observing two different results.
-
-5. `cleanroom.ex:236`'s `== "0.2.1"` comparison no longer exists in the source (confirmed by grep),
-   and the weld inventory table (all 18 originally-flagged files) is committed in-repo with every row
-   classified as live gate / fixture / docstring / display string, with zero remaining "live gate"
-   rows referencing a bare version literal.
-
-6. The `release.version_weld.gates_match_declared_version` tripwire file is deleted from the repo
-   (not disabled, not weakened) in the same commit that lands the successor check as merge-blocking.
-
-7. A rehearsed unapproved-merge attempt still cannot publish at any version — confirmed by a test
-   asserting the identity gate (head/tree/base match) remains exact after the version comparison
-   generalizes.
-
-**Plans**: 5 plans (one PR — see **Note on atomicity**; no plan is separately mergeable)
-
-- [x] 171-01-PLAN.md — approved_version spine: guard derivation, four publish gates, the new
-      `release.publish_gate.no_bare_version_literal` check with its pre-repair-fixture proof, and the
-      tripwire deletion (wave 1)
-
-- [x] 171-02-PLAN.md — version-parametric rollup coordinates and the clean-room validator's version
-      conjunct removal (wave 2)
-
-- [x] 171-03-PLAN.md — CLI entrypoint format checks plus identity/mirror/status/coordinate
-      generalization (wave 2)
-
-- [x] 171-04-PLAN.md — publish and mirror shell scripts, the dispatch workflows, and the scanner's
-      remaining self-assertions (wave 3)
-
-- [x] 171-05-PLAN.md — the committed weld inventory, the DOC-05 terminology pass, the measured sweep,
-      and the single-PR checkpoint (wave 4)
-
-**Research**: Standard pattern — the receipt-output idiom (`approved-release-guard.outputs.*`) is
-already established for head/tree/base; extending it one field is mechanical. Skip phase-level
-research.
-
----
-
-### Phase 172: Per-Package Proof Scope (completed 2026-09-17)
-
-**Goal**: Byte-exact publish verification is proven against each of the six packages' own approved
-ref, never collapsed onto a single shared ref, and a package whose source has drifted past every
-usable ref reports an honestly-labeled weaker claim instead of a false pass or silent failure.
-
-**Depends on**: Phase 171 (consumes `approved_version` and the removed `cleanroom.ex:236` weld —
-same module, same test fixtures)
-
-**Requirements**: XPUB-01, XPUB-02, XPUB-03
-
-**Success Criteria** (what must be TRUE):
-
-1. The approved-artifacts manifest schema accepts six independent `candidate_ref` values — confirmed
-   by a test asserting the schema no longer enforces `unique | length == 1` across packages.
-
-2. `validate_approved_artifacts!/1` (or its successor) resolves and validates each package against
-   its own ref, confirmed by a fixture where two packages carry different refs and both validate
-   independently in one run.
-
-3. Byte-exact digest equality is unchanged in strength for every package it can be established for —
-   confirmed by a regression test that a non-drifted package still requires byte-for-byte tarball
-   match.
-
-4. A package whose source has drifted past every candidate ref reports `reachable_and_compatible` (or
-   `unproven`) — never `byte_exact`, and never silently averaged into one green result — confirmed by
-   a fixture that forces drift and inspects the reported result type.
-
-**Plans**:
-
-- [x] 172-01-PLAN.md (Wave 1) — thread a per-package `candidate_ref` through the producer, the schema and both shell consumers
-- [x] 172-02-PLAN.md (Wave 2) — the four-branch classifier, the derived `claim` field and the distinct `attested` bucket
-- [x] 172-03-PLAN.md (Wave 3) — the non-vacuity proofs, including a single-byte real-tarball mutation, and `172-NON-VACUITY.md`
-
-**Research**: Standard pattern — schema loosening with an established per-entry field already
-present in the manifest shape. Skipped at phase level, as planned.
-
-**Note (corrected during planning, 2026-09-17)**: this section previously implied the
-`unique | length == 1` collapse lives in `cleanroom.ex`. It does not — it is a jq filter at
-`script/verify_companion_cleanroom.sh:207`, with a producer-side twin at
-`lib/crosswake/release_candidate/artifact.ex:18` (`@input_keys` carries ONE top-level
-`candidate_ref` that `inspect_family!/1` broadcasts to all six packages). `cleanroom.ex` has no
-`candidate_ref` field at all today, so the concept must be newly threaded in. Two further call
-sites the pattern map missed: `script/release_candidate/hex_artifacts.sh:244` and the
-observation-assembly comprehension at `verify_companion_cleanroom.sh:692-699`, which whitelists
-four keys and drops `candidate_ref` before it reaches the evaluator.
-
----
-
-### Phase 173: Recovery-Path Proof Convergence
-
-**Goal**: `exact-public-proof` runs, and must pass, for a publish that happened through the ordinary
-release-please path or through the recovery/dispatch path — identically, with no silent-skip case.
-
-**Depends on**: Phase 171 (`approved_version` gate). Touches a disjoint file set from Phase 172
-(`needs:` graph and publish scripts vs. `cleanroom.ex`/manifest schema) — the two may be planned and
-executed in parallel once Phase 171 is merged.
-
-**Requirements**: XPUB-04, XPUB-05, XPUB-06, XPUB-07
-
-**Success Criteria** (what must be TRUE):
-
-1. `exact-public-proof`'s `needs:` is satisfied by a publication-record signal for the exact
-   `{package, version, approved_head}` triple, demonstrated identically from a fixture representing
-   the ordinary graph and one representing `workflow_dispatch` recovery.
-
-2. A missing publication record causes `exact-public-proof` to fail with a named "record missing"
-   result — confirmed by a run where the record is absent and the job's result is `failed`, not
-   `skipped`.
-
-3. The rollup's fail-closed semantics are unchanged: an existing or new test asserting `skipped`
-   still counts as not-success passes against the modified graph.
-
-4. The proof's evidence outlives the default 14-day artifact retention — either `retention-days` is
-   raised in the workflow file, or a durable release-ledger entry recording pass/fail is committed to
-   the repo for at least one real run, confirmed by inspecting the committed record after the
-   retention window would otherwise have expired.
-
-**Plans**: 4 plans
-
-Plans:
-
-- [x] 173-01-PLAN.md — tracer: one shared publication-record emitter, one shared record assertion, one reusable proof workflow, both Hex lanes calling it
-- [x] 173-02-PLAN.md — fixture proof that the ordinary graph and the recovery graph satisfy the same contract, with a declared lane roster that cannot shrink
-- [x] 173-03-PLAN.md — the missing fail-closed rollup case, and a git-committed release ledger that outlives artifact retention
-- [x] 173-04-PLAN.md — credential-free fire drill, one real dispatch observation of failed-not-skipped, and the phase's measured non-vacuity record
-
-**Research**: Needs phase-level research (`/gsd-plan-phase --research-phase 173`) — confirm GitHub
-Actions' current `workflow_call`/`workflow_dispatch` composition rules before writing YAML for the
-recovery convergence, and confirm the current org-level `retention-days` cap (flagged UNVERIFIED —
-"up to 400 days, org policy permitting" — by research).
-
----
-
-### Phase 174: Clean-Room Host Realism & Adopter Fidelity
-
-**Goal**: The clean-room proof lane exercises what an adopter actually does — declare a route, run
-`mix crosswake.install`, then `doctor` — on both the legacy and matrix code paths, without weakening
-`doctor`'s own contract, and the two named high-severity adopter gaps are closed or explicitly
-deferred.
-
-**Depends on**: Independent of Phases 171-173 (touches only the legacy path's host-generation steps
-in `verify_companion_cleanroom.sh`). May be planned and executed starting as early as Phase 169,
-since diagnosing whether threadline/sigra's failures persist is calendar-bound — each only
-reproduces against a live Hex release.
-
-**Requirements**: ROOM-01, ROOM-02, ROOM-03, ROOM-04, ROOM-05, ROOM-06, FID-01
-
-**Success Criteria** (what must be TRUE):
-
-1. The legacy positional clean-room path's generated host declares a real Crosswake route with
-   capability metadata before `doctor` runs — confirmed by inspecting the host generated during an
-   actual run.
-
-2. The legacy path runs `mix crosswake.install` before `doctor` — confirmed by the run log showing
-   the install step executed, not merely present in the script.
-
-3. `clean-room-proof-rindle` executes against the live published `crosswake_rindle 0.1.0` and passes
-   — confirmed by a green CI run, not by code inspection.
-
-4. The legacy path's log output carries `step=`-style markers grep-able at the same granularity as
-   the matrix path — confirmed by grepping a captured run's log for both paths and finding parity.
-
-5. Threadline and sigra clean-room runs each have their own separately recorded root-cause finding
-   (not assumed fixed by the backport, not lumped together) — confirmed by two distinct written
-   findings, whether the runs are still red or have gone green.
-
-6. `doctor`'s `manifest_contract` check source is byte-identical before and after this phase
-   (confirmed by diffing against git history) — the harness was fixed, not the contract.
-
-7. SEED-014's CW-REQ-A and CW-REQ-B are each either closed, with a passing check demonstrating the
-   close, or carry an explicit recorded deferral reason in-repo.
-
-**Plans**: 6/6 plans executed
-
-Plans:
-**Wave 1**
-
-- [x] 174-01-PLAN.md — Tracer: the legacy path's host gets a real metadata-bearing route, runs
-      `mix crosswake.install`, and emits nine `step=` markers — proven by an actual run against live
-      `crosswake_rindle 0.1.0` (ROOM-01, ROOM-02, ROOM-04)
-
-- [x] 174-02-PLAN.md — The `manifest_contract` byte-identity guard, pinned to pre-phase commit
-      `8bc77c35`, red on drift, on rename, on a deleted call site, and on an empty extraction (ROOM-06)
-
-- [x] 174-03-PLAN.md — SEED-014's two high-severity adopter gaps: a blocking decision on CW-REQ-A's
-      breaking vocabulary bump, and CW-REQ-B's refuted-versus-could-not-run exit split (FID-01)
-
-**Wave 2** *(blocked on 174-01)*
-
-- [x] 174-04-PLAN.md — A dispatchable clean-room rehearsal lane, the real rindle CI run recorded by
-      run id and job conclusion, and the measured `step=` marker parity between both paths (ROOM-03,
-      ROOM-04)
-
-**Wave 3** *(blocked on 174-01 and 174-04)*
-
-- [x] 174-05-PLAN.md — Threadline and sigra diagnosed separately, one root-cause finding each, plus
-      the check that neither finding can silently go missing (ROOM-05)
-
-**Wave 4** *(blocked on 174-05)*
-
-- [x] 174-06-PLAN.md — The phase's `vacuity_taxonomy` non-vacuity record and the seven-row
-      per-requirement disposition table (ROOM-01..ROOM-06, FID-01)
-
-**Wave structure**: Wave 1 = 174-01, 174-02 and 174-03 in parallel (disjoint file sets) · Wave 2 =
-174-04 · Wave 3 = 174-05 · Wave 4 = 174-06.
-
-**Research**: Standard pattern — pure backport of an already-working, already-tested function
-(`matrix_write_host`) into a sibling code path in the same file. Skip phase-level research.
-Skipped at phase level, as planned — there is no `174-RESEARCH.md` and therefore no
-`174-VALIDATION.md` (Nyquist Dimension 8 not applicable), recorded rather than fabricated around.
-
-**Note (surfaced during planning, 2026-09-18)**: the backport is not a literal copy.
-`matrix_write_host` operates on a `phx.new`-generated host; the legacy path generates its host with
-`mix new --sup`, so its router lives at `lib/clean_room_host/router.ex` with the module
-`CleanRoomHost.Router` and there is no endpoint file. The route-metadata block transfers, the
-surrounding mechanics do not. Also: `ROOM-02`'s wording ("the clean-room host") is broader than
-Success Criterion 2's ("the legacy path"); only the legacy path is changed, and the matrix path's
-install step is a recorded, reasoned deferral rather than an omission — the matrix path's ten profile
-runs sit on the pull-request critical path.
-
----
-
-### Phase 175: Rehearsal and Publish
-
-**Goal**: `crosswake 0.2.2` and the two held companion PRs (#147, #115) are live on Hex, the iOS
-mirror, and Maven through the fully repaired, version-generalized graph, and the post-publication
-proof has actually executed and passed for 0.2.2 — confirmed by run evidence, not by inspection of
-the workflow.
-
-**Depends on**: Phases 169, 170, 171, 172, 173, and 174 all complete and green. This phase must
-never be combined with any of them in the same plan — "the graph is fixed" and "we shipped 0.2.2"
-are deliberately forced into separate checkpoints.
-
-**Requirements**: REL-10, REL-11, REL-12, REL-13, REL-14, REL-15, REL-16, DOC-04, DOC-06
-
-**One-way-door note**: This phase contains the milestone's only irreversible operations — Hex
-publish, iOS mirror tag push, and Maven upload (project decision D-19). Per the locked decision, the
-retire/backfill runbook (REL-10) covering all three registries **must be committed to the repo
-before any publish step in this phase executes.** Nothing in this phase should be merged or run
-without that runbook already committed. Publishes proceed in ascending blast-radius order: the
-lower-blast-radius held companion first, as the fire-drill for the repaired clean-room lane; core
-0.2.2 next; the second held companion last.
-
-**Success Criteria** (what must be TRUE):
-
-1. A retire/backfill runbook covering Hex (`mix hex.retire`), the iOS mirror (re-tag/note), and
-   Maven (retire-forward) is committed to the remote publish graph — with its commit SHA recorded and
-   verified against exact fetched PR base/head OIDs — before the first publish command in this phase
-   is executed. **Gate 1 breach (2026-09-19):** the original local-`HEAD` check passed, but PR #147's
-   base, head, and merge excluded the runbook. This criterion is historically unsatisfied and cannot
-   be repaired retroactively; remaining gates fail closed on exact remote OIDs.
-
-2. All three publish legs are rehearsed through their last safe, reversible step (`mix hex.build`,
-   not `hex.publish`; `git subtree split`, not a tag push) at least once, with the rehearsal output
-   recorded.
-
-3. A multi-registry partial-failure response table exists in-repo, authored before the first publish
-   in this phase — not derived live during an incident.
-
-4. The lower-blast-radius held companion PR (#147 or #115, whichever has fewer downstream consumers)
-   is merged and its package is live on Hex, confirmed by a Hex.pm registry check showing the new
-   version.
-
-5. `crosswake 0.2.2` is live on Hex, the iOS mirror, and Maven, confirmed by independent registry
-   checks against all three targets.
-
-6. `exact-public-proof` **executed** (status is not `skipped`) and **passed** for `0.2.2`, confirmed
-   by a linked CI run ID/URL for that exact version — not by re-reading the workflow definition.
-
-7. The second held companion PR is merged and published, and the linked-release rollup reports
-   `COMPLETE`.
-
-8. `docs/COMPANION-PUBLISH-RUNBOOK.md`'s "this pipeline only publishes 0.2.1" section is deleted in
-   the same change window that makes it false, and residual `splitsh-lite` references across the repo
-   are replaced with `git subtree split` documentation. *(Satisfied 2026-09-18 by 175-05: the section
-   deleted at `ed0006e4` (DOC-04), `git subtree split` named in all three mirror-split locations at
-   `21b093aa` (DOC-06); the one residual `splitsh` reference — a comment in
-   `script/check_ios_mirror_parity.sh:31` — is not a live invocation and was left as-is. A new
-   merge-blocking `script/check_release_doc_version_literals.exs` check, wired into
-   `crosswake-ci.yml` at `7219968a`, now fails the build if either release document regains a bare
-   version literal outside a code fence or loses its invariant sentence.)*
-
-**Plans**: 7/10 plans executed
-
-Plans:
-**Wave 1**
-
-- [x] 175-01-PLAN.md — Wave 0 triage: derive the `check-actions` scan scope from the tree and prove the scope gate fails on a narrowed scope
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 175-02-PLAN.md — Wave 0 triage: SHA-pin the 31 mutable action refs across the ten affected workflow files
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 175-03-PLAN.md — Wave 0 exit: the five-part exit record, the gate's vacuity row, and the blocking merge gate before Wave 1 — closed via PR #189, merged as `c0774e29`; Wave 1 released
-
-**Wave 4** *(blocked on Wave 3 completion — unblocked)*
-
-- [x] 175-04-PLAN.md — authored `docs/RELEASE-INCIDENT-RESPONSE.md` with its irreversibility summary, registry-grouped failure matrix, and recorded commit SHA at `d3401e51`. The later Gate 1 audit proved the plan's local-`HEAD` ancestry check was not remote release authority; REL-10 remains breached for the first publish.
-
-**Wave 5** *(blocked on Wave 4 completion — unblocked)*
-
-- [x] 175-05-PLAN.md — DOC-04 + DOC-06: delete the false runbook section, de-version its prose, document `git subtree split`, and add the version-literal CI check — deletion at `ed0006e4`, subtree docs at `21b093aa`, CI check driven red-then-green and wired at `7219968a`; Wave 6 unblocked
-
-**Wave 6** *(blocked on Wave 5 completion — unblocked)*
-
-- [x] 175-06-PLAN.md — REL-11: all three publish legs rehearsed against the real `0.2.2` candidate. Hex passed (35410810853); iOS mirror passed (35444279120); repaired Maven fire drill passed (35452376752), reached `VALIDATED` as deployment `8cacc3da-2613-407c-8df1-238b2ad0710c`, then dropped its disposable coordinate. Wave 7 is unblocked, but its publish gate remains explicitly one-way.
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 194-06-PLAN.md — bearings-report core: launcher, verdict/exit contract, CI for the main tip via its PR head, CI negative controls
 
 **Wave 7** *(blocked on Wave 6 completion)*
-
-- [x] 175-07-PLAN.md — REL-12: `crosswake_rulestead 0.1.1` is live on Hex and its clean-room proof passed; the manual closeout preserves the independent publish/registry evidence and the Gate 1 incident record.
-
-  **Incident:** PR #147 merged and `crosswake_rulestead 0.1.1` published, but the runbook commit was
-  absent from the exact remote merge. The publish is not retroactively compliant; this plan remains
-  closed only as a historical-incident reconciliation: REL-10 remains breached, while the repaired
-  exact-OID guard has passed for the remaining core candidate's live base/head.
+- [x] 194-07-PLAN.md — bearings-report ahead/behind, open PR classes, worktrees/stashes/unlanded branches, exact-output test
 
 **Wave 8** *(blocked on Wave 7 completion)*
-
-- [ ] 175-08-PLAN.md — REL-13: gate 2, publish `crosswake 0.2.2` to Hex, the iOS mirror and Maven, confirm all three independently
+- [x] 194-08-PLAN.md — bearings-report caps, seed/debt triggers, persona-tag check, 40-line cap, live and not-required evidence
 
 **Wave 9** *(blocked on Wave 8 completion)*
+- [x] 194-09-PLAN.md — Land PR2 (pre-push checks, privacy, CI on head, its own merge allow), bearings-report on main, closeout PR opened
 
-- [ ] 175-09-PLAN.md — REL-14: prove the post-publication proof lane executed and passed for `0.2.2`, with the rollup's six children enumerated
+**Research**: Skip (small, decided)
+
+### Phase 195: Pipeline repair and hygiene
+
+**Goal**: `main`, the release PR and the PR queue are green and trustworthy, CI runs only recurring lanes and never echoes secrets, the repository holds no scratch state, and one fail-closed clean-room command is proven against real published artifacts.
+**Depends on**: Phase 194
+**Requirements**: REL-01, REL-02, REL-03, REL-04, REL-05, REL-06, HYG-01, HYG-02
+**Success Criteria** (what must be TRUE):
+  1. The Info.plist golden and Swift seam fixture comparisons ignore the `Generated by crosswake X.Y.Z` line (a test that changes only that line passes), and the release-please PR for the next version passes the eight test jobs on its PR head commit with zero hand edits to the bot branch.
+  2. The parity-workflow test asserts a 40-hex SHA plus version comment rather than a literal SHA; Dependabot is configured as one grouped monthly actions PR plus security updates; #210/#211 are green after rebase or closed, #239/#240/#241 are merged, #238 is merged or closed as superseded, and `gh pr list` shows no open PR older than 14 days without a recorded reason.
+  3. A test seeds a fake secret and proves it never appears in captured CI step output or the root-proof failure tail (bearer, secret-access-key, cookie and short-value shapes masked), and fails when the mask is removed; the workflow tree contains no `phaseNN-proof` schedule, no Cancel Obsolete controller and no `script/select_obsolete_ci_runs.py`, has one weekly canary on `main`, and See It Run `web-and-gif` completes independently of the split-out `native` job.
+  4. A root-allowlist test fails on any new tracked root file or `*.bundle`; the 13 root scratch files and `crosswake-checkpoint-24c8389.bundle` are gone (bundle confirmed not the only copy; the denylist string in `first_adopter_context.ex` stays); `SETUP.md` lives under `docs/` without the personal email; merged or superseded remote branches are deleted (unmerged work tagged `archive/<name>` first, each delete behind its own `allow`) and `git worktree list` shows only the main checkout.
+  5. SEED-003 is closed with mirror-tag evidence, and one clean-room command has run once against the real 0.2.11 artifacts with its output retained, and fails closed on a negative control (missing or wrong artifact).
+
+**Plans**: 13 plans (PR1: 01-02; PR queue: 03; PR2: 04-09; PR3: 10-12; branches and closeout: 13; sequential waves 1-13 in one checkout)
+
+Plans:
+
+**Wave 1**
+- [ ] 195-01-PLAN.md — Version-agnostic shell fixture comparisons and shape-based action pins, rehearsed against the real #236, #210 and #211 diffs
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 195-02-PLAN.md — Land PR1 (privacy, CI on head, its own merge allow); observe release-please rewrite #236 and its eight test jobs pass on the new head
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 195-03-PLAN.md — PR queue: #239/#240/#241 merged, #210/#211 and #238 merged or closed by recorded rule, one allow per merge, pin provenance checked
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 195-04-PLAN.md — Secret masking: maskSecretShapes on the root-proof tail, add-mask for derived workflow secrets proven by a spawned-shell run, mask-removed negative controls
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 195-05-PLAN.md — Recurring-lanes contract test (measured on main) and the first seven phase-proof schedules removed
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 195-06-PLAN.md — Remaining seven phase-proof schedules removed; one advisory weekly canary on main
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 195-07-PLAN.md — Cancel Obsolete controller and selector removed; controller-bound monitor subcommands retired explicitly; absence pinned
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [ ] 195-08-PLAN.md — See It Run native split into a manual workflow; Dependabot grouped monthly with security updates separate
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [ ] 195-09-PLAN.md — Land PR2 (own allow); See It Run web-and-gif and canary observed on main; Dependabot security updates enabled
 
 **Wave 10** *(blocked on Wave 9 completion)*
+- [ ] 195-10-PLAN.md — Root allowlist test, 13 scratch files and the checkpoint bundle removed (refs proven on origin), SETUP.md under docs/ without personal email
 
-- [ ] 175-10-PLAN.md — REL-15: gate 3, publish the second companion, discharge SC7 as two facts, and disposition all nine requirements
+**Wave 11** *(blocked on Wave 10 completion)*
+- [ ] 195-11-PLAN.md — Fail-closed clean-room command run against real 0.2.11 Hex/Maven/iOS with retained output and negative controls; SEED-003 closed
 
-**Research**: Complete — `175-RESEARCH.md` (2026-09-18). The rehearsal-ceiling question is answered by
-this repo's own code: `hex-publish.yml` and `ios-mirror-backfill.yml` each already carry a
-`candidate-rehearsal` operation, and `release-please.yml`'s `android-publish-fire-drill` performs a real
-signed Central Portal upload through `VALIDATED` then `DROP`. No scratch Hex organization is needed and
-no new rehearsal tooling is to be built; this phase dispatches the existing mechanisms and records their
-evidence.
+**Wave 12** *(blocked on Wave 11 completion)*
+- [ ] 195-12-PLAN.md — Land PR3 (own allow, bundle heads re-checked right before the gate); clean root confirmed on main
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [ ] 195-13-PLAN.md — Remote branch cleanup (archive tags first, one allow per tag and per delete), stale PRs closed by recorded rule, one worktree, PR age audit, closeout branch pushed
+**Research**: Skip; one feasibility look at clean-room command scope during planning
+
+### Phase 196: Spec and structure ratchet
+
+**Goal**: The offline, policy and bridge specs that Android and later parity work consume cannot pass by asserting nothing, and the module structure has ratchets that fail on regressions.
+**Depends on**: Phase 195 (green base)
+**Requirements**: SPEC-01, SPEC-02, SPEC-03, SPEC-04, SPEC-05, ARCH-01, ARCH-02, ARCH-03
+**Success Criteria** (what must be TRUE):
+  1. `evidence_manifest_test.exs` and `phase139_threadline_cleanroom_test.exs` no longer pass vacuously, and the Elixir, Swift and Kotlin vector-consuming tests each assert vector count equals a pinned expectation and fail when a vector file is removed; the delta-only guard in `script/check_absence_is_not_success.exs` fails on new non-empty-less collection assertions, `for`-over-glob without cardinality and literal `assert true`, each with a negative control, with the known sites fixed in the same change.
+  2. Boundary specs pass for `Journal.scope_ref!/1` (15/16/128/129 chars, newline injection, input never echoed) and `SafeObservation.new/1` (measurement 0, 1_000_000, 1_000_001; adversarial strings in every field never survive); the finite route-policy option product is enumerated exhaustively against a hand-written verdict table, compiler error assertions pin `{key, route_id}` pairs, and `Compiler.validation_key/1` never returns `nil` for a compiler error.
+  3. A Muex pilot record covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract` with a non-zero mutant count, a wrapper that fails on zero mutants, baseline scores, runtime, survivors keyed by file + mutator + normalized text, and a written adopt/drop decision; `mix.exs` and `mix.lock` contain no Muex dependency.
+  4. A test fails on any compile-label xref cycle (the `bridge/contract`, `bridge/denial`, `manifest/types`, `shell/denial` cycle is broken) and on an all-cycles count above the committed baseline; an AST test fails on bare `rescue _ ->` in the `bridge`, `policy`, `router`, `offline`, `manifest` and `compatibility` modules (the three in `bridge.ex` now return explicit results); a test fails when a package's runtime direct deps differ from the committed list with one-line justifications; each ratchet has a negative control.
+
+**Plans**: TBD
+**Research**: Needs `--research-phase` (Muex runtime and noise on the four real modules; confirm whether `format --check` and xref already run in `crosswake-ci.yml`)
+
+### Phase 197: Public docs truth
+
+**Goal**: A first adopter following the public docs from a normal host gets commands that exist, versions that are real and capability claims backed by evidence.
+**Depends on**: Phase 195 (clean-room command), Phase 194 (Android amendment)
+**Requirements**: DOCS-01, DOCS-02, DOCS-03
+**Success Criteria** (what must be TRUE):
+  1. The REL-06 clean-room command executes the README "Integrating" and `install.md` steps on a host without a repository clone and passes; neither file contains a repo-only command, both state which steps need a clone, and both include the bridge hook, esbuild flags, `attach/1` and `:ios_host` wiring.
+  2. The companion matrix matches the versions actually published on Hex (checked against the registry, not a copied literal), the phase132 test no longer hardcodes stale values, CHANGELOG makes no false "current release" claim and points to GitHub Releases for 0.2.2–0.2.11, the telemetry guide lists `[:crosswake, :offline, :replay]`, and `see_it_run.md` states that the twin receipt attests `a53fbef`.
+  3. `mix docs` warnings, a relative link/anchor check and a public internal-code leak scan (`Phase N`, `TODO-`, `D-NN`, `v2x`) run in report mode with their counts recorded, and none is a required check.
+  4. `android_uat.md` has no automated "Last verified" stamp and no phantom capability families, and a grep for "Android frozen" posture text in README, the support matrix and the native shell guide returns zero hits.
+
+**Plans**: TBD
+**Research**: Skip
+
+### Phase 198: Android foreign-host proof
+
+**Goal**: A cross-platform team can see which existing contracts Android honors, generated from the same vectors as iOS, and a generated Android shell built in a foreign Gradle project resolves the published Maven artifact and passes JVM tests.
+**Depends on**: Phase 194 (ADR-01 unfreeze), Phase 196 (Kotlin vector count pins), Phase 195 (clean-room command shape)
+**Requirements**: AND-01, AND-02, AND-03
+**Success Criteria** (what must be TRUE):
+  1. A parity ledger with an Android column is generated from `priv/contract_vectors/*.json` (regenerating it produces no diff), and a test asserts Swift and Kotlin reference the same vector-set hash and fails on a mismatch.
+  2. The Kotlin core JVM test count is at least 25 (up from 12) and includes `BridgeChannel` boundary cases; `androidx.webkit` is absent from the build files if no source imports it; the Android JSON-stack choice is recorded in writing.
+  3. A fresh foreign Gradle project built from `mix crosswake.gen.shell android` output resolves the published Maven coordinate and passes JVM tests on the Linux CI head commit as an advisory leg (required only after two clean runs), and a negative control with a wrong coordinate fails.
+  4. No Android claim in the support matrix or capability map exceeds JVM-hermetic evidence (no device, emulator or feature-breadth claim).
+
+**Plans**: TBD
+**Research**: Needs `--research-phase` (Android build files, `androidx.webkit` and `org.json` usage, generator templates versus Gradle files were read at grep level only)
+
+### Phase 199: Release 0.2.12
+
+**Goal**: Users can install the next release from Hex, Maven and the iOS mirror, published core-first, with every irreversible step individually approved and verified after the fact.
+**Depends on**: Phases 194–198
+**Requirements**: REL-07
+**Success Criteria** (what must be TRUE):
+  1. The release-please PR is green on its head commit with zero hand edits and is merged only after its own `allow`.
+  2. Publishing runs core first, then companions, then Maven, then the iOS mirror; each publish and each tag follows a separate one-use `allow`; the published versions are visible on Hex and Maven.
+  3. A post-publish check asserts the iOS mirror tag equals the release version and fails on a mismatch.
+  4. `script/bearings-report` exits 0 with no UNVERIFIED line at milestone close.
+
+**Plans**: TBD
+**Research**: Skip
 
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
-|-------|-----------------|--------|-----------|
-| 164. Dependency Security and Gate Authority | 5/5 | Shipped | 2026-08-28 |
-| 165. Efficient and Maintainable CI | 13/13 | Shipped | 2026-09-09 |
-| 166. Clean-Checkout Engineering Quality | 8/8 | Shipped | 2026-09-10 |
-| 167. Documentation and Pull-Request Reconciliation | 9/9 | Shipped | 2026-09-12 |
-| 168. 0.2.1 Release Candidate Readiness | 13/13 | Shipped | 2026-09-16 |
-| 169. Diagnostic Legibility | 4/4 | Complete    | 2026-09-16 |
-| 170. Vacuous Assertion Remediation | 5/5 | Complete   | 2026-09-16 |
-| 171. Version/Authority Split | 5/5 | Complete | 2026-09-17 |
-| 172. Per-Package Proof Scope | 3/3 | Complete | 2026-09-17 |
-| 173. Recovery-Path Proof Convergence | 4/4 | Complete | 2026-09-18 |
-| 174. Clean-Room Host Realism & Adopter Fidelity | 6/6 | Complete | 2026-09-18 |
-| 175. Rehearsal and Publish | 7/10 | In Progress|  |
+|-------|----------------|--------|-----------|
+| 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
+| 195. Pipeline repair and hygiene | 0/TBD | Not started | - |
+| 196. Spec and structure ratchet | 0/TBD | Not started | - |
+| 197. Public docs truth | 0/TBD | Not started | - |
+| 198. Android foreign-host proof | 0/TBD | Not started | - |
+| 199. Release 0.2.12 | 0/TBD | Not started | - |
+
+<details>
+<summary>✅ v27.0 Land and Clean Up (Phases 189–193) — SHIPPED 2026-10-24</summary>
+
+- [x] Phase 189: Inventory and backup (13/13 plans) — completed 2026-10-18
+- [x] Phase 190: Fix warnings before landing (10/10 plans) — completed 2026-10-19
+- [x] Phase 191: Integration branch and local suite (12/12 plans) — completed 2026-10-23
+- [x] Phase 192: PR, CI and merge (10/10 plans) — completed 2026-10-23
+- [x] Phase 193: Cleanup and new working rules (10/10 plans) — completed 2026-10-24
+
+</details>
+
+<details>
+<summary>v26.0 Harden Before Trust (Phases 184–188) — planning closeout 2026-10-16</summary>
+
+- [x] Phase 184: Twin probe and safe preflight (15/15 plans) — completed 2026-10-16
+- [x] Phase 185: Checks that cannot pass empty (5/5 plans) — completed 2026-10-16
+- [x] Phase 186: Host seam and harness honesty (5/5 plans) — completed 2026-10-16
+- [x] Phase 187: Doctor and proof fidelity (7/7 plans) — completed 2026-10-16
+- [x] Phase 188: Freeze and twin-05 (5/5 plans) — completed 2026-10-16
+
+</details>
+
+<details>
+<summary>v25.0 iOS Host Setup & Digital Twin Proof (Phases 179–183) — planning closeout 2026-10-15</summary>
+
+- [x] Phase 179: iOS Host Setup Without Hand Patches (4/4 plans) — completed 2026-10-13
+- [x] Phase 180: Bounded Digital Twin Demonstration (7/7 plans) — completed 2026-10-15
+- [x] Phase 181: Core Host-Command Seam (10/10 plans) — completed 2026-10-14
+- [x] Phase 182: Loopback Origin for Local iOS Host (6/6 plans) — completed 2026-10-14
+- [x] Phase 183: Close gap: twin source binding fails closed on uncommitted code (5/5 plans) — completed 2026-10-15
+
+</details>
+
+## Exact Next Action
+
+Next: `$gsd-plan-phase 194 --ws quality-ratchet-release`. Phase 194 context is gathered; no phase has been planned or executed. The adopter lane stays parked on its external gate.

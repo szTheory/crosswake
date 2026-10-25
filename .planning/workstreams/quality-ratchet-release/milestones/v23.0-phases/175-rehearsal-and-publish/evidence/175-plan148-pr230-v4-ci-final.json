@@ -1,0 +1,303 @@
+{
+  "run_id": 38150513840,
+  "head_sha": "fbde4abddab81e4d7604cf76ebfff5ef7b2ab1f7",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "databaseId": 114502819016,
+      "name": "classify-change",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502846846,
+      "name": "collateral-binaries-guard",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502846853,
+      "name": "brand-visual",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502846859,
+      "name": "brand-structural",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502846871,
+      "name": "release-candidate-full-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502846893,
+      "name": "release-candidate-fixtures",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502846936,
+      "name": "documentation-contracts",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847039,
+      "name": "phase48-provider-adapter-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847065,
+      "name": "phase130-companion-engine-absent-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847105,
+      "name": "phase130-core-hermetic-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847155,
+      "name": "phase43-rulestead-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847160,
+      "name": "release-as-staleness-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847241,
+      "name": "phase34-commerce-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847265,
+      "name": "proof-aggregator-negative-control",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847297,
+      "name": "guard-01-contract-drift-test",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847323,
+      "name": "phase52-operator-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847325,
+      "name": "phase69-closeout-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847327,
+      "name": "guard-02-generate-and-diff",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847343,
+      "name": "phase132-companion-engine-absent-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847350,
+      "name": "proof-dependency-security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847351,
+      "name": "phase45-rindle-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847377,
+      "name": "phase71-notification-workflow-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847380,
+      "name": "phase58-auth-closeout-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847393,
+      "name": "phase41-gating-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847398,
+      "name": "phase23-commerce-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847399,
+      "name": "phase132-core-hermetic-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847406,
+      "name": "proof-requires-example-host",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847408,
+      "name": "phase18-ios-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847420,
+      "name": "ios-package-unit",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847422,
+      "name": "phase18-elixir-android-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847461,
+      "name": "phase73-auth-sensitive-admin-workflow-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847468,
+      "name": "phase79-android-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847482,
+      "name": "phase10-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847484,
+      "name": "phase75-closeout-gate",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847489,
+      "name": "phase5-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847491,
+      "name": "hex-page-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847493,
+      "name": "e2e-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847494,
+      "name": "guard-01-e2e-honesty",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847509,
+      "name": "route-tour-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847519,
+      "name": "phase96-threadline-docs-contract-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847532,
+      "name": "android-generated-shell-unit",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847540,
+      "name": "guard-02-prod-route-absence",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847552,
+      "name": "phase74-offline-draft-recovery-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847568,
+      "name": "phase70-subscription-saas-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847581,
+      "name": "phase67-android-jvm-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847595,
+      "name": "phase79-ios-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847618,
+      "name": "android-package-unit",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114502847631,
+      "name": "ios-mirror-parity-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114507934615,
+      "name": "Crosswake CI",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "observed_at_utc": "2026-10-11T15:40:32.001858+00:00"
+}

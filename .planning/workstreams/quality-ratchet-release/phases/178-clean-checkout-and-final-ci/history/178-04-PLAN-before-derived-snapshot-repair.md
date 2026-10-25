@@ -1,0 +1,100 @@
+---
+phase: 178-clean-checkout-and-final-ci
+plan: "04"
+type: execute
+wave: 3
+depends_on: ["178-02", "178-03"]
+files_modified:
+  - .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/proposal_delivery.mjs
+  - .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/proposal_delivery.test.mjs
+  - .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/maintenance-proposal.json
+  - .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/delivery-observation.json
+autonomous: false
+requirements: [MAINT-08]
+estimate: {tokens: 20000, raw_tokens: 20000, tasks: 2, confidence: low}
+must_haves:
+  truths:
+    - "D-22: a concrete bounded non-release proposal names canonical repository, branch/base/head, exact six-file diff and preliminary validation before any new remote authority is requested."
+    - "D-22/D-23: existing scoped session authority is checked; absent authority triggers one exact last-mile approval or hold, and uncertain delivery is read-reconciled without duplicate write."
+    - "D-03/D-25: no protected-checkout Git operation, merge, tag, publication, release lifecycle change or archive retirement occurs."
+  artifacts:
+    - .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/proposal_delivery.mjs
+    - .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/proposal_delivery.test.mjs
+    - .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/maintenance-proposal.json
+    - .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/delivery-observation.json
+  key_links:
+    - "Plan01 candidate + Plan02 complete preliminary proof + Plan03 current policy -> exact proposal card -> scoped remote branch/PR operation -> observed PR/run IDs."
+  prohibitions:
+    - statement: "MUST NOT transfer Phase175 release authority to a Phase178 maintenance delivery or silently turn proof into merge or publication."
+      status: unresolved
+---
+
+<objective>
+Prepare a reviewable non-release maintenance proposal, then deliver it only under scoped authority and observe the resulting PR/run identity. Purpose: make hosted proof possible without conflating local proof, remote write permission and release authority. Output: exact proposal card and read-reconciled delivery observation.
+</objective>
+
+<execution_context>
+@<home>/.codex/gsd-core/workflows/execute-plan.md
+@<home>/.codex/gsd-core/templates/summary.md
+</execution_context>
+
+<context>
+@.planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-CONTEXT.md
+@.planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-01-SUMMARY.md
+@.planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-02-SUMMARY.md
+@.planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-03-SUMMARY.md
+</context>
+
+## Artifacts this phase produces
+
+| Producer | Symbol, flag or file and private handoff | Consumer |
+|---|---|---|
+| 178-04 T1 | `proposal_delivery.mjs` `--self-test`/`--prepare`/`--deliver`, `proposal_delivery.test.mjs`, `maintenance-proposal.json`; owner-private `delivery-binding.json` with one-use operation binding | 178-04 T2; 178-05 T1 |
+| 178-04 T2 | `delivery-observation.json` with observed branch/PR/run identity or exact hold state | 178-05 T1/T3 |
+
+Task 1 reads immutable candidate-binding.json and the disjoint Wave-2 local-proof-binding.json and ci-policy-binding.json. It verifies all three candidate commit/tree identities agree, then writes its own private delivery-binding.json atomically at 0600. No earlier plan mutates that file.
+
+<tasks>
+<task type="auto" tdd="true">
+  <name>Task 1: Prepare exact proposal and exercise its production delivery adapter locally</name>
+  <reversibility rating="reversible">The proposal is a local record until one scoped remote delivery is authorized.</reversibility>
+  <files>.planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/proposal_delivery.mjs, .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/proposal_delivery.test.mjs, .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/maintenance-proposal.json</files>
+  <read_first>.planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/candidate-source.json; .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/preliminary-local-proof.json; .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/ci-contract.json; owner-private candidate-binding.json, local-proof-binding.json and ci-policy-binding.json under CROSSWAKE_178_PRIVATE_HANDOFF_ROOT; .planning/workstreams/quality-ratchet-release/phases/177-maintenance-and-queue-reconciliation/177-evidence/qualify_source.mjs</read_first>
+  <behavior>Temporary Git/gh executable fixtures use the real gh JSON and git subprocess exit/stdout/stderr shapes. Proposal binds exact repo/base/candidate branch/head, six-path diff, full local proof and policy. Wrong base, extra path, stale proof, branch collision, insufficient read permission and duplicate/uncertain delivery block; tests verify no private root/patch/log fields escape the card. Write adapter is invoked only against fixture, with no real remote mutation.</behavior>
+  <action>Per D-02/D-21/D-22/D-23, create a one-time phase-local adapter with --self-test, --prepare and --deliver modes. --prepare reads public candidate/proof/policy and owner-private candidate-binding.json, local-proof-binding.json and ci-policy-binding.json; require all three candidate commit/tree identities to equal their public projections before using private run/policy pointers. Check canonical base/head/branch naming and exact six-file diff in independent delivery clone, and prepare exact target repository, branch, base, head, title/body and action in maintenance-proposal.json. It must exercise the same production Git/gh argv construction against a temporary local fixture with actual subprocess output and actual `gh api` read response shape before showing the proposal. If base or source drifted, return to Plan01/02 rather than relying on textual merge safety. Keep remote write capability behind exact one-use delivery-binding.json written atomically at 0600, separate from read evidence. The card is plain language and excludes private bundle content and roots.</action>
+  <verify><automated>node --test .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/proposal_delivery.test.mjs</automated><fails_when>Nonzero exit or actual Git/gh fixture accepts wrong base, extra path, stale proof, unbound write or private-data leakage.</fails_when><automated>node .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/proposal_delivery.mjs --prepare</automated><fails_when>Nonzero exit, incomplete proposal card, candidate/proof/policy drift or adapter fixture failure.</fails_when></verify>
+  <acceptance_criteria>One concrete proposal card exists with exact source/diff/validation; production adapter has been exercised locally using dependency-shaped responses and real subprocess output; no remote write has occurred.</acceptance_criteria>
+  <done>The next remote step is a single reviewable operation, with authorized local work complete.</done>
+</task>
+
+<task type="auto">
+  <name>Task 2: Deliver one scoped non-release proposal or stop at its exact authority gate</name>
+  <reversibility rating="costly">A remote branch/PR can be superseded but creates durable externally visible history; this plan never merges or publishes.</reversibility>
+  <files>.planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/delivery-observation.json</files>
+  <read_first>.planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/maintenance-proposal.json; .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/proposal_delivery.mjs; owner-private delivery-binding.json under CROSSWAKE_178_PRIVATE_HANDOFF_ROOT; .planning/workstreams/quality-ratchet-release/STATE.md; AGENTS.md</read_first>
+  <action>Per D-22/D-23, check current session for explicit authority covering this exact non-release branch/PR delivery; Phase175 release authorization does not transfer. If absent, display the completed exact operation card and stop at one blocking last-mile authorization checkpoint, accepting plain-language allow or hold bound to that displayed attempt. Do not ask for routine read/precheck/parser/bookkeeping approval. If held, preserve preliminary proof and pending MAINT-08. With authority, recheck branch/base/head and policy immediately, then execute exactly one ordinary push/open operation from the independent delivery clone through --deliver. Never use force/delete/admin bypass or merge/tag/publication. Record operation binding as consumed before delivery; if response is uncertain, read back exact remote branch/PR to reconcile and halt on ambiguity, without an automatic retry. Use fixed GitHub read routes and observed output to record PR/head/base/run IDs safely; no successful CI is inferred here. A missing credential triggers an exact external auth gate only after all local preparation.</action>
+  <verify><automated>node .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/proposal_delivery.mjs --deliver</automated><fails_when>Nonzero exit, missing scoped authority/credential, drift, ambiguous or duplicate delivery, or remote observation not matching the consumed exact operation; invoke only after the authority branch described above.</fails_when></verify>
+  <acceptance_criteria>Under authority, exactly one bounded proposal exists with matching base/head and no release action; without authority, the concrete card is ready and the plan pauses without writing remotely.</acceptance_criteria>
+  <done>Delivery is either read-reconciled to the exact proposal or safely held at its one last-mile authority gate.</done>
+</task>
+</tasks>
+
+<threat_model>
+## Trust Boundaries
+| Boundary | Description |
+|---|---|
+| Local candidate to remote GitHub | Durable remote branch/PR write requires exact scoped authority. |
+| Remote response to local delivery state | Delivery may succeed while response is lost or ambiguous. |
+
+## STRIDE Threat Register
+| Threat ID | Category | Component | Severity | Disposition | Mitigation Plan |
+|---|---|---|---|---|---|
+| T-178-09 | Elevation of privilege | proposal delivery | high | mitigate | Require exact scoped authority, one-use private binding and no inherited Phase175 release authority. |
+| T-178-10 | Repudiation | uncertain remote delivery | high | mitigate | Mark binding consumed, read-reconcile exact branch/PR and stop without duplicate retry. |
+| T-178-11 | Tampering | proposal diff | high | mitigate | Recheck six paths, base/head and local proof immediately before one push/open operation. |
+| T-178-SC | Tampering | npm/pip/cargo installs | high | mitigate | No package install is introduced by this plan. |
+</threat_model>
+
+<verification>Exercise adapter in a temporary local fixture, validate concrete card, and only then perform one authorized remote operation with read reconciliation.</verification>
+<success_criteria>Hosted CI can run on a reviewable non-release candidate, with remote write authority distinct from local evidence.</success_criteria>
+<output>Create 178-04-SUMMARY.md stating delivered or held status and exact next action; no CI green is claimed by delivery alone.</output>

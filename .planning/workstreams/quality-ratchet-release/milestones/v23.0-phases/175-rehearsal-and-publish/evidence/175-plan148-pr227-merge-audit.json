@@ -1,0 +1,20 @@
+{
+  "pr": 227,
+  "head_oid": "fcbab2c44192e6b6ad24d1058127ad42a72efb67",
+  "base_oid": "668e0fbe93c73afcdf79de90e64bbb5fd8090386",
+  "tree_oid": "f5d8029047d15cf47970022c8d911be644720110",
+  "merge_oid": "b8e25b2ac987a991274336efbabe806ba9b6f170",
+  "parents": [
+    "668e0fbe93c73afcdf79de90e64bbb5fd8090386"
+  ],
+  "merge_type": "protected_squash",
+  "required_ci_run_id": 38138063830,
+  "ci_jobs": 49,
+  "ci_failed": 0,
+  "published_peer_comparison": "PASS; all5 refs/metadata/payload/permissions",
+  "local_public_consumer_proof": "COMPLETE; all6packages/all5profiles twice",
+  "observed_at_utc": "2026-10-11T12:28:35.580793+00:00",
+  "merge_requests_at_this_head": 1,
+  "admin_bypass": false,
+  "publication_claim": false
+}

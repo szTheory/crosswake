@@ -1,0 +1,24 @@
+{
+  "workflow": "ios-mirror-backfill.yml",
+  "dispatch_ref": "release-please--branches--main--components--crosswake_chimeway",
+  "inputs": {
+    "candidate_head": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+    "candidate_tree": "678782a853ceab7a618ace94589eee0df931f080",
+    "candidate_base": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+    "package": "crosswake_chimeway",
+    "operation": "candidate-receipt-attestation",
+    "version": "0.1.1",
+    "release_ref": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+    "candidate_pr": 115,
+    "candidate_ci_run_id": 38157939812,
+    "hex_run_id": 38159722705
+  },
+  "prior_max_run_id": 38155123327,
+  "intent_at_utc": "2026-10-11T17:29:10.317544+00:00",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "dispatch_attempted": true,
+  "delivery": "ACCEPTED",
+  "dispatch_exit_code": 0,
+  "response_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "run_id": 38159836866
+}

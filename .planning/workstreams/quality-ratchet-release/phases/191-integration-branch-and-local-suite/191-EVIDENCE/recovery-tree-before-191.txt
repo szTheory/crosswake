@@ -1,0 +1,12 @@
+tree_rest_files 81568
+tree_rest_sha256 5456516f00f3739548ab007ad64e32bdf1927331070501a194ea9adbe232a326
+named .planning/seeds/SEED-024-phase-190-review-residue.md absent
+named .planning/workstreams/quality-ratchet-release/phases/190-fix-warnings-before-landing/190-REVIEW-DISPOSITION.md sha256 28e63d8d17806123bbe4d0e8e2c1724c120a3c046fcec8546f963690e9921e90
+named .planning/workstreams/quality-ratchet-release/REQUIREMENTS.md sha256 e4ffc683dbf6f2ed50be9a67dc59cd017eaaa89403872dcb889becbdd8861550
+named .planning/PROJECT.md sha256 74449d9b9a3c336eb00de700cbeb59908f715003797dbc4567177c0e05bc4afd
+named .planning/workstreams/quality-ratchet-release/STATE.md sha256 f8d5ad993580af7f51a61b0f5794fdeda6b91629c4c6227257d49babb43764b0
+named .planning/workstreams/quality-ratchet-release/ROADMAP.md sha256 53ba0a41ed6f77c0707e0b39d8e9f608e358fc33325badbbbda463a290f32578
+named .planning/workstreams/quality-ratchet-release/.continue-here.md sha256 d61194162da6a15fe04dba874587859002496a1dc1adc646a42d591d5509da01
+named .planning/workstreams/quality-ratchet-release/state.json sha256 59bc92f71889643145db9e6b61ea47f7f1affcc6028a8a0b0be9ac3daae960aa
+named .planning/workstreams/quality-ratchet-release/config.json sha256 7698e7689a94a6117dbe7104500951c4f8471eec024dba24d11f20fd6d2f8f2a
+named .planning/config.json sha256 c47327ed7ac5385b3397d7bd4e83e8cedfafd18458e03a0f53a18899b3ec360f

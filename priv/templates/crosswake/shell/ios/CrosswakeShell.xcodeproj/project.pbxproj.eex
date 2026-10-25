@@ -6,6 +6,23 @@
 	objectVersion = 56;
 	objects = {
 
+/* Begin PBXShellScriptBuildPhase section */
+		A10000410000000000000001 /* Crosswake managed output guard */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Crosswake managed output guard";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ -e \"$PROJECT_DIR/.crosswake/ios_host_generation.pending\" ]; then echo CROSSWAKE_IOS_GENERATION_INTERRUPTED >&2; exit 1; fi";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXBuildFile section */
 		B10000050000000000000001 /* CrosswakeShellCore in Frameworks */ = {isa = PBXBuildFile; productRef = B10000020000000000000001 /* CrosswakeShellCore */; };
 		A100000C0000000000000001 /* CrosswakeCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001C000000000000000A /* CrosswakeCoordinator.swift */; };
@@ -37,6 +54,7 @@
 		A10000180000000000000001 /* declared_pack_requirements.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = declared_pack_requirements.json; sourceTree = "<group>"; };
 		A10000190000000000000001 /* installed_packs.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = installed_packs.json; sourceTree = "<group>"; };
 		A10000191000000000000001 /* pack_inventory.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = pack_inventory.json; sourceTree = "<group>"; };
+		A10000400000000000000001 /* CrosswakeHostSettings.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = CrosswakeHostSettings.xcconfig; sourceTree = "<group>"; };
 		A100001B0000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A100001C0000000000000001 /* CrosswakeShell.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrosswakeShell.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A100001D0000000000000001 /* CrosswakeShellTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrosswakeShellTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,6 +106,7 @@
 				A10000300000000000000001 /* Fixtures */,
 				A10000310000000000000001 /* CrosswakeShellTests */,
 				A10000320000000000000001 /* Products */,
+				A10000400000000000000001 /* CrosswakeHostSettings.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -148,6 +167,7 @@
 				A10000230000000000000002 /* Sources */,
 				A10000230000000000000001 /* Frameworks */,
 				A10000230000000000000003 /* Resources */,
+				A10000410000000000000001 /* Crosswake managed output guard */,
 			);
 			buildRules = (
 			);
@@ -271,8 +291,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_TESTABILITY = YES;
@@ -295,8 +313,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -310,12 +326,10 @@
 		};
 		A10000390000000000000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A10000400000000000000001 /* CrosswakeHostSettings.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CrosswakeShell/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -323,7 +337,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.crosswake.shell;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(CROSSWAKE_APP_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -334,12 +348,10 @@
 		};
 		A100003A0000000000000001 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A10000400000000000000001 /* CrosswakeHostSettings.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = CrosswakeShell/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -347,7 +359,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.crosswake.shell;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(CROSSWAKE_APP_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -358,10 +370,9 @@
 		};
 		A100003B0000000000000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A10000400000000000000001 /* CrosswakeHostSettings.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -369,7 +380,7 @@
 					"@loader_path/Frameworks",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = dev.crosswake.shell.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(CROSSWAKE_SHELL_TEST_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
@@ -380,10 +391,9 @@
 		};
 		A100003C0000000000000001 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A10000400000000000000001 /* CrosswakeHostSettings.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -391,7 +401,7 @@
 					"@loader_path/Frameworks",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = dev.crosswake.shell.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(CROSSWAKE_SHELL_TEST_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";

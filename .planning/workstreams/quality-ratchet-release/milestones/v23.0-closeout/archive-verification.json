@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "archived_phase_files": 1598,
+  "unchanged_phase_files": 1596,
+  "acknowledgement_only_changes": [
+    "phases/175-rehearsal-and-publish/175-VERIFICATION-ARCHIVE-PRE-PLAN148-CLOSEOUT.md",
+    "phases/175-rehearsal-and-publish/175-VERIFICATION.md"
+  ],
+  "original_artifacts_preserved": 6,
+  "requirement_score": "42/43",
+  "phase175_score": "8/9",
+  "historical_breach_preserved": true,
+  "next_command": "$gsd-new-milestone --ws quality-ratchet-release",
+  "requirements_original_retained_until_safety_commit": true
+}

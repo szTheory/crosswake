@@ -1,0 +1,39 @@
+{
+  "summary": "One frozen candidate commit means the cumulative tree at the single final HEAD a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4, which carries every v26 change since 50fcd57, not one commit since 50fcd57.",
+  "status": "all 7 freeze checks passed",
+  "schema": "crosswake.phase188.freeze/1",
+  "freeze_head": "a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4",
+  "freeze_tree": "f7c4d7dc1a86f251c3ba845d3cde8d4c770ae729",
+  "checks": [
+    {
+      "label": "head_equals_argument",
+      "status": "pass"
+    },
+    {
+      "label": "porcelain_empty",
+      "status": "pass"
+    },
+    {
+      "label": "info_exclude_empty",
+      "status": "pass"
+    },
+    {
+      "label": "elixir_probe_all_zero",
+      "status": "pass"
+    },
+    {
+      "label": "push_url_no_push",
+      "status": "pass"
+    },
+    {
+      "label": "no_gitlinks",
+      "status": "pass"
+    },
+    {
+      "label": "no_gitmodules",
+      "status": "pass"
+    }
+  ],
+  "accepted_exception": "Two git-ignored classes inside the candidate are the accepted exception to D-03; neither is twin-attested source and neither changes HEAD, the tree or the porcelain status: (1) _build output written by the example-host warm compile and by verify_twin; (2) the pre-existing example-host SQLite files examples/phoenix_host/crosswake_example.db, crosswake_example.db-shm and crosswake_example.db-wal, which the run is not expected to write because verify_twin gives its ecto.migrate and phx.server children a DATABASE_PATH inside the run root (twin_runtime.ex:140 and 551-552, twin_journey.ex:228-241), and whose size and sha256 are recorded before the launch and after the exit.",
+  "recorded_at": "2026-10-16T21:18:45Z"
+}

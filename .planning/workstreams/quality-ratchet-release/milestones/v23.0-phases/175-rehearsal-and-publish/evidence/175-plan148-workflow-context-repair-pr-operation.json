@@ -1,0 +1,57 @@
+{
+  "operation": "create_workflow_context_repair_pr",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "base_oid": "b8e25b2ac987a991274336efbabe806ba9b6f170",
+  "events": [
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "a91d32b2ee7c3a8d6317eb1698563e27304a466b"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "f603feb9a1230343a87d6b5cc41967aceb648927"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/trees",
+      "attempted": true,
+      "completed": true,
+      "sha": "0cdc13411ec023f0d2da752c67433fefd06012c8"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/commits",
+      "attempted": true,
+      "completed": true,
+      "sha": "c391c15a5d1a48fcd6ccf1141c94c7cc112d0f4a"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/refs",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/pulls",
+      "attempted": true,
+      "completed": true,
+      "number": 229
+    }
+  ],
+  "started_at_utc": "2026-10-11T13:01:28.101430+00:00",
+  "files": {
+    ".github/workflows/ios-mirror-backfill.yml": "f8de0560a432bce9667b632f6d0f8874c64a9173c06d3e044d7ca851b3a07565",
+    "test/crosswake/release_candidate/companion_attestation_test.exs": "697759ac85fd65f2edf0f6fd524da7d0143eb7fe1522cd1883b372a633719241"
+  },
+  "merge_conditions": [
+    "all protected CI passed",
+    "complete local public consumer proof passed",
+    "no publication or failed-run retry"
+  ],
+  "head_oid": "c391c15a5d1a48fcd6ccf1141c94c7cc112d0f4a",
+  "tree_oid": "0cdc13411ec023f0d2da752c67433fefd06012c8",
+  "pr": 229,
+  "url": "https://github.com/szTheory/crosswake/pull/229",
+  "status": "created_ci_pending"
+}

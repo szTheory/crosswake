@@ -1,0 +1,2 @@
+test milestone archive presence matches active/shipped state (Crosswake.Planning.MilestoneTransitionResetTest)
+test deferred core-hermetic failures are now green: milestone_transition_reset (Crosswake.Proof.Phase135CiOpsProofTest)

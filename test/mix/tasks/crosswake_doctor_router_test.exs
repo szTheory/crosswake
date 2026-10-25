@@ -252,7 +252,7 @@ defmodule Mix.Tasks.Crosswake.DoctorRouterTest do
     write_source!(
       target,
       "native/ios/crosswake_shell/Fixtures/crosswake_manifest.json",
-      ~s({"manifest_schema_version":"1.0.0"})
+      ~s({"manifest_schema_version":"1.0.0","routes":{}})
     )
 
     write_source!(

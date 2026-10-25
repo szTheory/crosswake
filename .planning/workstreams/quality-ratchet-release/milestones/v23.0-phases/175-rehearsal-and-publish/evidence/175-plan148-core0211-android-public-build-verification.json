@@ -1,0 +1,15 @@
+{
+  "run_id": 38155320492,
+  "job_id": 114519182944,
+  "version": "0.2.11",
+  "full_gradle_builds": 1,
+  "build_successful": true,
+  "lint_debug": "PASS",
+  "release_lint_claim": false,
+  "allowed_build_lines": [
+    "2026-10-11T16:41:25.3555778Z > Task :app:lintDebug",
+    "2026-10-11T16:41:25.3581583Z BUILD SUCCESSFUL in 1m 24s"
+  ],
+  "raw_log_retained": false,
+  "observed_at_utc": "2026-10-11T16:44:42.612337+00:00"
+}

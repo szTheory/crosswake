@@ -1,0 +1,20 @@
+{
+  "code": "pack_incompatible",
+  "details": {
+    "installed_packs": {
+      "shell.chrome": "1.0.0"
+    },
+    "required_pack": "shell.chrome@1.0.0"
+  },
+  "hint": "ship the required compatible shell pack before activating the route",
+  "message": "The shell is missing a compatible declared pack for this route.",
+  "reason": "pack_incompatible",
+  "recovery": {
+    "actions": [
+      "retry",
+      "update_app"
+    ],
+    "mode": "fail_closed"
+  },
+  "route_id": "dashboard"
+}

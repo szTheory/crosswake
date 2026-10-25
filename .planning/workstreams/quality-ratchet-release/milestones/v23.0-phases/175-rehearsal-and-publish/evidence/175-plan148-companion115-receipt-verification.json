@@ -1,0 +1,12 @@
+{
+  "receipt_digest": "c137d52a21aba4ca64aa95900860ab3de2d956aeb4586d984e84ab40bf5c3f81",
+  "receipt_run_id": 38159836866,
+  "receipt_artifact_id": 11709916042,
+  "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+  "version": "0.1.1",
+  "package": "crosswake_chimeway",
+  "four_source_hashes_match": true,
+  "rebuilt_by_actual_source": true,
+  "no_publication": true,
+  "observed_at_utc": "2026-10-11T17:30:09.606314+00:00"
+}

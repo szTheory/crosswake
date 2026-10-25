@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{@page_title}</title>
+    <link rel="stylesheet" href="/crosswake/tokens.css" />
+    <style>
+      body {
+        font-family: var(--cw-font-body);
+        background-color: var(--cw-surface-default);
+        color: var(--cw-text-default);
+        margin: 0;
+        padding: 2rem;
+        padding-top: max(2rem, env(safe-area-inset-top, 0px));
+        padding-bottom: max(2rem, env(safe-area-inset-bottom, 0px));
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      @media (max-width: 480px) {
+        body { padding-left: 1rem; padding-right: 1rem; }
+      }
+      h1, h2 { overflow-wrap: anywhere; }
+      main {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 24rem;
+      }
+      #review-heading:focus { outline: none; }
+      #crosswake-study-status {
+        box-sizing: border-box;
+        width: 100%;
+        margin: 1rem 0;
+        padding: 16px;
+        background: var(--cw-surface-raised);
+        border: 1px solid var(--cw-border-default);
+        border-radius: var(--cw-radius-md);
+        color: var(--cw-text-default);
+      }
+      .study-status-content { display: flex; gap: 4px; align-items: flex-start; }
+      .study-status-icon {
+        width: 20px;
+        height: 20px;
+        flex: 0 0 20px;
+        margin-top: 2px;
+        color: var(--cw-status-info);
+      }
+      #crosswake-study-status[data-state="needs_attention"] .study-status-icon,
+      #crosswake-study-status[data-state="sync_paused"] .study-status-icon { color: var(--cw-status-warning); }
+      .study-status-copy { min-width: 0; }
+      #crosswake-study-status-label { display: block; font: 600 18px/28px var(--cw-font-body); }
+      #crosswake-study-status-message { margin: 0; font: 400 16px/24px var(--cw-font-body); }
+      #study-durable-copy { margin: 4px 0 0; font: 600 16px/24px var(--cw-font-body); color: var(--cw-text-default); }
+      #crosswake-study-status-indicator {
+        width: 16px;
+        height: 16px;
+        margin-top: 4px;
+        flex: 0 0 16px;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        color: var(--cw-status-info);
+        animation: review-spin 0.9s linear infinite;
+      }
+      #review-message { margin: 0 0 1rem; min-height: 24px; font: 400 16px/24px var(--cw-font-body); }
+      #review-list { list-style: none; margin: 0 0 1rem; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+      .review-item {
+        box-sizing: border-box;
+        padding: 16px;
+        background: var(--cw-surface-inset);
+        border: 1px solid var(--cw-border-default);
+        border-radius: var(--cw-radius-md);
+      }
+      .review-item-label { display: block; font: 600 18px/28px var(--cw-font-body); overflow-wrap: anywhere; }
+      .review-item-state { display: block; margin: 0 0 12px; font: 400 16px/24px var(--cw-font-body); color: var(--cw-text-default); }
+      .review-item-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+      .review-confirm { margin: 0; }
+      .review-confirm p { margin: 0 0 12px; font: 600 16px/24px var(--cw-font-body); }
+      button, .review-link {
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 16px;
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: var(--cw-radius-sm);
+        border: 2px solid transparent;
+        font: 600 16px/24px var(--cw-font-body);
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .btn-primary { background: var(--cw-action-bg); color: var(--cw-action-fg); }
+      .btn-secondary, .review-link {
+        background: transparent;
+        color: var(--cw-text-default);
+        border-color: var(--cw-border-strong);
+      }
+      button:focus-visible, .review-link:focus-visible, #crosswake-review-saved-answers:focus-visible {
+        outline: 3px solid var(--cw-action-focus-ring);
+        outline-offset: 2px;
+      }
+      @keyframes review-spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) {
+        #crosswake-study-status-indicator { animation: none; }
+        button, .review-link { transition: none; animation: none; }
+      }
+    </style>
+  </head>
+  <body data-page="review">
+    <main>
+      <h1 id="review-heading" tabindex="-1">Review saved answers</h1>
+
+      <div id="crosswake-study-status" data-state="sync_paused" role="status" aria-live="polite" aria-atomic="true">
+        <div class="study-status-content">
+          <span id="crosswake-study-status-icon" class="study-status-icon" aria-hidden="true">●</span>
+          <div class="study-status-copy">
+            <span id="crosswake-study-status-label">Saved answers paused</span>
+            <p id="crosswake-study-status-message">Your saved answers remain on this iPhone.</p>
+            <p id="study-durable-copy" hidden></p>
+          </div>
+          <span id="crosswake-study-status-indicator" hidden aria-label="Syncing saved answers"></span>
+        </div>
+        <div id="crosswake-study-status-action"></div>
+      </div>
+
+      <p id="review-message" aria-live="polite"></p>
+      <ul id="review-list" aria-label="Saved answers"></ul>
+
+      <a id="review-return" class="review-link" href="/offline">Return to study</a>
+    </main>
+
+    <script type="module" src="/offline_study.js"></script>
+  </body>
+</html>

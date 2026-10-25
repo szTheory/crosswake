@@ -1,0 +1,48 @@
+{
+  "hex": {
+    "candidate_receipt": "b382740942c5023e13bfeebee8f612c0c07a416e94c09c5ccb1fcf6b48e5945c",
+    "external_state_changed": false,
+    "observed_base": "b064c4e2ea770a7e1dfae46227ac7ecf3e43c3fb",
+    "observed_head": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+    "observed_tree": "fdbcbe68442212c2b5c63c34cfd8eb6a683d7ff5",
+    "package_artifacts_sha256": "304e5e77df12ecc07cadaa40c2015f6ccf644966b91de7d66e8d256964a302ed",
+    "package_count": 6,
+    "requested_head": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+    "run_conclusion": "success",
+    "run_head": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+    "run_id": "38146295634",
+    "schema_version": "1.0.0",
+    "workflow_sha256": "5b8b5aff9e184fbb7bb10003569d82c4e999ea14ffa6bc9e6bdb9e828e8093ae"
+  },
+  "ios": {
+    "candidate_receipt": "b382740942c5023e13bfeebee8f612c0c07a416e94c09c5ccb1fcf6b48e5945c",
+    "external_state_changed": false,
+    "mirror_observation_sha256": "a1d626e0d2eb56da233b4fd91142fc7289cd0a7afefe3105eaaf06d8a3563311",
+    "observed_base": "b064c4e2ea770a7e1dfae46227ac7ecf3e43c3fb",
+    "observed_head": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+    "observed_tree": "fdbcbe68442212c2b5c63c34cfd8eb6a683d7ff5",
+    "requested_head": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+    "run_conclusion": "success",
+    "run_head": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+    "run_id": "38146301515",
+    "schema_version": "1.0.0",
+    "workflow_sha256": "f8de0560a432bce9667b632f6d0f8874c64a9173c06d3e044d7ca851b3a07565"
+  },
+  "maven": {
+    "candidate_version": "0.2.10",
+    "coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.10-firedrill-38146306882",
+    "deployment_result": "DROP",
+    "dropped": true,
+    "external_state_changed": false,
+    "observed_base": "b064c4e2ea770a7e1dfae46227ac7ecf3e43c3fb",
+    "observed_head": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+    "observed_tree": "fdbcbe68442212c2b5c63c34cfd8eb6a683d7ff5",
+    "requested_head": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+    "run_conclusion": "success",
+    "run_head": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+    "run_id": "38146306882",
+    "schema_version": "1.0.0",
+    "state": "VALIDATED",
+    "workflow_sha256": "f368f0b662365214c0cd5d948773f0e7842f78296c3b0ade50cc25f8c76d9fde"
+  }
+}

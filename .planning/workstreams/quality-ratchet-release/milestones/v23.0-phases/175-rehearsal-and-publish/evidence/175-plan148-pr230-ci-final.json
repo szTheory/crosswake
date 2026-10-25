@@ -1,0 +1,303 @@
+{
+  "run_id": 38148941412,
+  "head_sha": "d4d08ffd94f4ae720f1ed4335a76b65f89fe1c04",
+  "status": "completed",
+  "conclusion": "cancelled",
+  "jobs": [
+    {
+      "databaseId": 114498108282,
+      "name": "classify-change",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498134540,
+      "name": "collateral-binaries-guard",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498134556,
+      "name": "guard-02-generate-and-diff",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498134572,
+      "name": "brand-structural",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498134582,
+      "name": "hex-page-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498134594,
+      "name": "release-as-staleness-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498134603,
+      "name": "proof-aggregator-negative-control",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498134607,
+      "name": "release-candidate-fixtures",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498134616,
+      "name": "release-candidate-full-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498134649,
+      "name": "brand-visual",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498134657,
+      "name": "documentation-contracts",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498134955,
+      "name": "phase23-commerce-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498134993,
+      "name": "guard-01-contract-drift-test",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135028,
+      "name": "phase130-companion-engine-absent-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135038,
+      "name": "android-package-unit",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135042,
+      "name": "phase43-rulestead-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135076,
+      "name": "phase69-closeout-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135094,
+      "name": "phase75-closeout-gate",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135098,
+      "name": "phase58-auth-closeout-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135128,
+      "name": "proof-dependency-security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135134,
+      "name": "phase132-core-hermetic-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135146,
+      "name": "phase48-provider-adapter-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135151,
+      "name": "phase132-companion-engine-absent-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135161,
+      "name": "ios-package-unit",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135162,
+      "name": "android-generated-shell-unit",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "databaseId": 114498135166,
+      "name": "proof-requires-example-host",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135174,
+      "name": "phase52-operator-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135188,
+      "name": "phase73-auth-sensitive-admin-workflow-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135197,
+      "name": "phase71-notification-workflow-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135200,
+      "name": "phase45-rindle-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135205,
+      "name": "phase5-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135215,
+      "name": "phase41-gating-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135222,
+      "name": "phase96-threadline-docs-contract-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135226,
+      "name": "ios-mirror-parity-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135229,
+      "name": "route-tour-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135241,
+      "name": "phase130-core-hermetic-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135244,
+      "name": "phase18-ios-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135258,
+      "name": "phase74-offline-draft-recovery-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135261,
+      "name": "phase18-elixir-android-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135266,
+      "name": "phase34-commerce-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135272,
+      "name": "phase70-subscription-saas-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135274,
+      "name": "e2e-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135275,
+      "name": "phase10-proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135280,
+      "name": "guard-01-e2e-honesty",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "databaseId": 114498135299,
+      "name": "guard-02-prod-route-absence",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135305,
+      "name": "phase79-android-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135308,
+      "name": "phase67-android-jvm-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498135332,
+      "name": "phase79-ios-proof",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "databaseId": 114498719171,
+      "name": "Crosswake CI",
+      "status": "completed",
+      "conclusion": "failure"
+    }
+  ],
+  "observed_at_utc": "2026-10-11T14:55:43.211834+00:00"
+}

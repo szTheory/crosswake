@@ -1,0 +1,30 @@
+{
+  "operation": "retire_unpublished_pr219_pending_flag_and_regenerate_proposal",
+  "pr": 219,
+  "label": "autorelease: pending",
+  "proposal_run_id": 38108865053,
+  "proposal_head": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+  "reason": "Proposal job confirms untagged merged release PR blocks candidate generation; sole pending merged PR is219; failed core and repair proposal publishers all skipped",
+  "publication_allowed": false,
+  "qualifying_release_run": false,
+  "failed_publication_rerun": false,
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "events": [
+    {
+      "operation": "remove_only_obsolete_pending_label",
+      "attempted": true,
+      "completed": true,
+      "at": "2026-10-11T03:40:23.762110+00:00",
+      "exit": 0
+    },
+    {
+      "operation": "rerun_proposal_only_successful_workflow_after_metadata_change",
+      "attempted": true,
+      "completed": true,
+      "at": "2026-10-11T03:40:26.442349+00:00",
+      "exit": 0
+    }
+  ],
+  "label_readback_verified": true,
+  "status": "proposal_attempt2_queued"
+}

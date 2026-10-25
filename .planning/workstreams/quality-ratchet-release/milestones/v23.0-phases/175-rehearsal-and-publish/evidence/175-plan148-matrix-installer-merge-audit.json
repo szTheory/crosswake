@@ -1,0 +1,16 @@
+{
+  "pr": 237,
+  "head_oid": "9be3e2bb25d050abfd7b635f6e6b0a9795ab62b0",
+  "base_oid": "2dbde2d9be8adfa36009e20bf894b00a5bb63e87",
+  "tree_oid": "12a0f1bf3c32ecdde0326f4a288b597b11e33b06",
+  "merge_oid": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+  "parents": [
+    "2dbde2d9be8adfa36009e20bf894b00a5bb63e87"
+  ],
+  "normal_protected_squash": true,
+  "ci_run_id": 38168254714,
+  "ci_passed": 49,
+  "actual_hosted_installer_pairs": 10,
+  "version_changes": 0,
+  "observed_at_utc": "2026-10-11T19:55:20.035245+00:00"
+}

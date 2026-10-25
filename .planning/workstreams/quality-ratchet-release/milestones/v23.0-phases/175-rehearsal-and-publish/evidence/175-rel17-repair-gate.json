@@ -1,0 +1,388 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-09-28T14:59:10Z",
+  "repair": {
+    "state": "LANDED_VERIFIED",
+    "pr": 218,
+    "url": "https://github.com/szTheory/crosswake/pull/218",
+    "pr_state": "MERGED",
+    "draft": false,
+    "base_ref": "main",
+    "base_oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+    "head_ref": "fix/rel17-linked-auth-repair-2026-09-28",
+    "head_oid": "63b278ee27355ef7cf40cdf2a23e67de8879d02b",
+    "tree_oid": "f0ab7f05321680bd3a52f7ec8b343b903b45d25b",
+    "merge_oid": "e51698528dc667ef89beb951e4eb1ec91da74981",
+    "ci": {
+      "run_id": 36422502986,
+      "workflow": "Crosswake CI",
+      "event": "pull_request",
+      "status": "SUCCESS",
+      "conclusion": "SUCCESS",
+      "head_oid": "63b278ee27355ef7cf40cdf2a23e67de8879d02b",
+      "url": "https://github.com/szTheory/crosswake/actions/runs/36422502986",
+      "jobs_total": 49,
+      "jobs_returned": 49,
+      "jobs_success": 49,
+      "jobs_failed": 0,
+      "pagination_complete": true
+    },
+    "policy": {
+      "complete": true,
+      "pagination_complete": true,
+      "base_oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+      "branch_protected": true,
+      "required_status_checks": [
+        {
+          "context": "Crosswake CI",
+          "app_id": 15368
+        }
+      ],
+      "strict": true,
+      "enforce_admins": true,
+      "required_signatures": false,
+      "required_linear_history": false,
+      "allow_force_pushes": false,
+      "allow_deletions": false,
+      "block_creations": false,
+      "required_conversation_resolution": false,
+      "lock_branch": false,
+      "allow_fork_syncing": false,
+      "rulesets": [],
+      "rulesets_returned": 0,
+      "rulesets_pages_observed": 1,
+      "sources": [
+        "GET /repos/szTheory/crosswake/branches/main/protection",
+        "GET /repos/szTheory/crosswake/rulesets?per_page=100"
+      ],
+      "rechecked_at": "2026-09-28T14:59:10Z",
+      "rechecked_after_merge": true,
+      "current_required_status_checks": [
+        {
+          "context": "Crosswake CI",
+          "app_id": 15368
+        }
+      ],
+      "current_strict": true,
+      "current_enforce_admins": true,
+      "current_allow_force_pushes": false,
+      "current_allow_deletions": false,
+      "current_rulesets": []
+    },
+    "diff_only_repairs": true,
+    "diff": {
+      "changed_file_count": 7,
+      "pages_observed": 1,
+      "pagination_complete": true,
+      "workflow_files_changed": false,
+      "unexpected_files": [],
+      "changed_files": [
+        "docs/COMPANION-PUBLISH-RUNBOOK.md",
+        "lib/crosswake/release_candidate/evidence_live.ex",
+        "script/check_release_workflow_integrity.exs",
+        "script/release_candidate/linked_release_authorization.sh",
+        "test/crosswake/proof/phase175_linked_authorization_test.exs",
+        "test/crosswake/proof/phase175_release_recovery_test.exs",
+        "test/crosswake/release_candidate/evidence_live_test.exs"
+      ]
+    },
+    "verified_contracts": [
+      "The exact linked Hex leg selector is required before the REL-17 evidence gate and context handoff; the protected-main value-based version classifier remains intact.",
+      "The Release Please proposal job is push-only, its lockstep assertion remains dispatch-only, and the separate manual iOS mirror authority path remains available.",
+      "The Maven fire drill remains a separate manual-only VALIDATED-to-DROP workflow outside Release Please."
+    ],
+    "run": {
+      "workflow": "Release Please",
+      "run_id": 36437860644,
+      "head_sha": "e51698528dc667ef89beb951e4eb1ec91da74981",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/szTheory/crosswake/actions/runs/36437860644",
+      "created_at": "2026-09-28T14:41:23Z",
+      "completed_at": "2026-09-28T14:46:26Z",
+      "jobs_total": 23,
+      "jobs_returned": 23,
+      "pagination_complete": true,
+      "linked_publication": false,
+      "linked_publication_absence_basis": "successful approved-candidate guard and linked rollup, with every core and companion publisher completed/skipped",
+      "publishers_skipped": true,
+      "publisher_jobs": [
+        {
+          "name": "hex",
+          "job_id": 108982393286,
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "ios_mirror",
+          "job_id": 108982393704,
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "maven",
+          "job_id": 108982393630,
+          "status": "completed",
+          "conclusion": "skipped"
+        }
+      ],
+      "additional_publisher_jobs": [
+        {
+          "job_id": 108982392561,
+          "name": "Publish crosswake_threadline to Hex.pm",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "job_id": 108982392824,
+          "name": "Publish crosswake_sigra to Hex.pm",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "job_id": 108982393400,
+          "name": "Publish crosswake_chimeway to Hex.pm",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "job_id": 108982393754,
+          "name": "Publish crosswake_rindle to Hex.pm",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "job_id": 108982394066,
+          "name": "Publish crosswake_rulestead to Hex.pm",
+          "status": "completed",
+          "conclusion": "skipped"
+        }
+      ],
+      "guard_job": {
+        "job_id": 108980340095,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "lockstep_assertion_job": {
+        "job_id": 108980341948,
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      "release_please_job": {
+        "job_id": 108980480887,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "linked_rollup_job": {
+        "job_id": 108982395638,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "exact_public_proof_job": {
+        "job_id": 108982396812,
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      "all_jobs": [
+        {
+          "id": 108980340095,
+          "name": "release: approved-candidate merge guard",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-09-28T14:41:26Z",
+          "completed_at": "2026-09-28T14:41:44Z"
+        },
+        {
+          "id": 108980341948,
+          "name": "Assert lockstep version coordinates match",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:41:24Z",
+          "completed_at": "2026-09-28T14:41:24Z"
+        },
+        {
+          "id": 108980480887,
+          "name": "Release Please",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-09-28T14:41:47Z",
+          "completed_at": "2026-09-28T14:46:08Z"
+        },
+        {
+          "id": 108982392561,
+          "name": "Publish crosswake_threadline to Hex.pm",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:08Z"
+        },
+        {
+          "id": 108982392824,
+          "name": "Publish crosswake_sigra to Hex.pm",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:08Z"
+        },
+        {
+          "id": 108982393286,
+          "name": "Publish to Hex.pm",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:08Z"
+        },
+        {
+          "id": 108982393400,
+          "name": "Publish crosswake_chimeway to Hex.pm",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:08Z"
+        },
+        {
+          "id": 108982393630,
+          "name": "Publish Android core to Maven Central",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:08Z"
+        },
+        {
+          "id": 108982393704,
+          "name": "Mirror iOS core to split repo",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:08Z"
+        },
+        {
+          "id": 108982393754,
+          "name": "Publish crosswake_rindle to Hex.pm",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:08Z"
+        },
+        {
+          "id": 108982394066,
+          "name": "Publish crosswake_rulestead to Hex.pm",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:08Z"
+        },
+        {
+          "id": 108982394262,
+          "name": "Native release status rollup",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-09-28T14:46:22Z",
+          "completed_at": "2026-09-28T14:46:25Z"
+        },
+        {
+          "id": 108982394440,
+          "name": "Clean-room proof — crosswake_rulestead resolvability + doctor",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:09Z"
+        },
+        {
+          "id": 108982394542,
+          "name": "Clean-room proof — crosswake_rindle resolvability + doctor",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:09Z"
+        },
+        {
+          "id": 108982395151,
+          "name": "Clean-room proof — crosswake_sigra resolvability + doctor",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:09Z"
+        },
+        {
+          "id": 108982395460,
+          "name": "Clean-room proof — crosswake_chimeway resolvability + doctor",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:09Z"
+        },
+        {
+          "id": 108982395638,
+          "name": "release: linked release rollup",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-09-28T14:46:11Z",
+          "completed_at": "2026-09-28T14:46:16Z"
+        },
+        {
+          "id": 108982395873,
+          "name": "Clean-room proof — crosswake_threadline module-shipment + zero-sibling-dep",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:09Z"
+        },
+        {
+          "id": 108982395982,
+          "name": "Clean-room proof — iOS swift build",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:09Z"
+        },
+        {
+          "id": 108982396193,
+          "name": "Clean-room proof — Android gradle build",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:09Z"
+        },
+        {
+          "id": 108982396560,
+          "name": "Strip stale release-as after companion release (PROOF-03b)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:09Z"
+        },
+        {
+          "id": 108982396812,
+          "name": "release: exact-public artifact proof",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:09Z",
+          "completed_at": "2026-09-28T14:46:09Z"
+        },
+        {
+          "id": 108982522141,
+          "name": "Alert on companion or native publish/proof failure (PROOF-03c, D-15)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-09-28T14:46:26Z",
+          "completed_at": "2026-09-28T14:46:25Z"
+        }
+      ]
+    },
+    "merged_at": "2026-09-28T14:41:19Z",
+    "merge_method": "merge_commit",
+    "normal_protected_path": true,
+    "admin_bypass": false,
+    "approved_head_oid": "63b278ee27355ef7cf40cdf2a23e67de8879d02b",
+    "approved_tree_oid": "f0ab7f05321680bd3a52f7ec8b343b903b45d25b",
+    "merge_parents": [
+      "998742856a37a97ae7247f6c532f9c154ea20885",
+      "63b278ee27355ef7cf40cdf2a23e67de8879d02b"
+    ],
+    "merge_tree_oid": "f0ab7f05321680bd3a52f7ec8b343b903b45d25b",
+    "repairs_in_merge": true,
+    "runbook_ancestry": true
+  }
+}

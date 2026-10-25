@@ -15,16 +15,16 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
     "phoenix" => "1.8.13",
     "phoenix_live_view" => "1.1.33",
     "plug" => "1.19.5",
-    "plug_crypto" => "2.2.0"
+    "plug_crypto" => "2.2.1"
   }
 
   @example_targets %{
-    "bandit" => "1.12.5",
-    "hpax" => "1.0.4",
+    "bandit" => "1.13.1",
+    "hpax" => "1.1.0",
     "phoenix" => "1.8.13",
     "phoenix_live_view" => "1.1.33",
-    "plug" => "1.19.5",
-    "plug_crypto" => "2.2.0"
+    "plug" => "1.20.3",
+    "plug_crypto" => "2.2.1"
   }
 
   @root_lock_versions %{
@@ -47,14 +47,14 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
     "phoenix_pubsub" => "2.2.0",
     "phoenix_template" => "1.0.4",
     "plug" => "1.19.5",
-    "plug_crypto" => "2.2.0",
+    "plug_crypto" => "2.2.1",
     "telemetry" => "1.4.2",
     "websock" => "0.5.3",
     "websock_adapter" => "0.5.9"
   }
 
   @example_lock_versions %{
-    "bandit" => "1.12.5",
+    "bandit" => "1.13.1",
     "cc_precompiler" => "0.1.11",
     "db_connection" => "2.10.1",
     "decimal" => "3.1.2",
@@ -65,7 +65,7 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
     "exqlite" => "0.36.0",
     "file_system" => "1.1.1",
     "fine" => "0.1.6",
-    "hpax" => "1.0.4",
+    "hpax" => "1.1.0",
     "jason" => "1.4.5",
     "lazy_html" => "0.1.13",
     "mime" => "2.0.7",
@@ -76,10 +76,10 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
     "phoenix_live_view" => "1.1.33",
     "phoenix_pubsub" => "2.2.0",
     "phoenix_template" => "1.0.4",
-    "plug" => "1.19.5",
-    "plug_crypto" => "2.2.0",
+    "plug" => "1.20.3",
+    "plug_crypto" => "2.2.1",
     "telemetry" => "1.4.2",
-    "thousand_island" => "1.5.0",
+    "thousand_island" => "1.6.0",
     "websock" => "0.5.3",
     "websock_adapter" => "0.5.9"
   }

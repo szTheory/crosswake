@@ -1,0 +1,20 @@
+{
+  "tracked_check_head": "fbde4abddab81e4d7604cf76ebfff5ef7b2ab1f7",
+  "published_approved_head": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+  "all_tests_scripts_libraries_workflows_byte_identical": true,
+  "remaining_differences": [
+    ".release-please-manifest.json",
+    "README.md",
+    "examples/android_shell_host/app/build.gradle",
+    "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json",
+    "examples/ios_shell_host/Fixtures/crosswake_manifest.json",
+    "examples/native_evidence/evidence-manifest.example.json",
+    "examples/phoenix_host/evidence/evidence-manifest.example.json",
+    "examples/phoenix_host/priv/crosswake/install_manifest.json",
+    "guides/android_uat.md",
+    "mix.exs",
+    "packages/crosswake-shell-core-android/build.gradle.kts"
+  ],
+  "archive_check_git_metadata_limitation": "one iOS fixture derives HEAD and cannot run in an untracked archive",
+  "observed_at_utc": "2026-10-11T17:17:38.041858+00:00"
+}

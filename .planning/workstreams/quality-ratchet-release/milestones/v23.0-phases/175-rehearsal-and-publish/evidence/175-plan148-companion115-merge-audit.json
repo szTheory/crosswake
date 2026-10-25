@@ -1,0 +1,24 @@
+{
+  "pr": 115,
+  "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+  "base_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+  "merge_oid": "72197e6dd387ae584a04545055ce01659d02d7ba",
+  "parents": [
+    "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+    "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d"
+  ],
+  "tree_oid": "678782a853ceab7a618ace94589eee0df931f080",
+  "trailer_exact_match": true,
+  "normal_protected_path": true,
+  "admin_bypass": false,
+  "merge_attempts": 1,
+  "retry_performed": false,
+  "ci_run_id": 38157939812,
+  "ci_jobs_passed": 49,
+  "runbook_ancestry": {
+    "base": "PASS",
+    "head": "PASS",
+    "merge": "PASS"
+  },
+  "observed_at_utc": "2026-10-11T17:31:17.641556+00:00"
+}

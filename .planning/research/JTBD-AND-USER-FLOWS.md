@@ -4,6 +4,8 @@
 **Focus:** Adopter-facing jobs to be done, current flow coverage, future gaps, and diminishing returns
 **Updated:** 2026-05-23
 
+> Proposed Ordering superseded 2026-10-24 by PERSONAS.md and ROADMAP-ROLLING; not executed. Headings below are kept for history.
+
 ## Current JTBD Map
 
 Crosswake currently proves three core jobs. They are not random examples; they are the

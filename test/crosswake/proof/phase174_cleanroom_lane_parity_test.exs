@@ -33,8 +33,7 @@ defmodule Crosswake.Proof.Phase174CleanRoomLaneParityTest do
   @expected_lane_cardinality 5
   @harness_script "script/verify_companion_cleanroom.sh"
   @expected_legacy_marker_cardinality 9
-  @live_phase_dir ".planning/workstreams/quality-ratchet-release/phases/174-clean-room-host-realism-adopter-fidelity"
-  @archived_phase_dir ".planning/workstreams/quality-ratchet-release/milestones/v23.0/phases/174-clean-room-host-realism-adopter-fidelity"
+  @phase_folder "174-clean-room-host-realism-adopter-fidelity"
   @legacy_ci_log "evidence/174-rindle-ci-run.log"
   @matrix_ci_log "evidence/174-matrix-ci-run.log"
 
@@ -281,17 +280,16 @@ defmodule Crosswake.Proof.Phase174CleanRoomLaneParityTest do
   # archival moves it, under the archived one. Raises with both candidates named rather than
   # returning "" -- a missing evidence file must fail loudly, never read as an empty marker set.
   defp read_evidence!(relative) do
-    candidates = [
-      Path.join(@live_phase_dir, relative),
-      Path.join(@archived_phase_dir, relative)
-    ]
+    path =
+      Crosswake.Test.PhaseEvidencePath.resolve(
+        "quality-ratchet-release",
+        Path.join(@phase_folder, relative)
+      )
 
-    case Enum.find(candidates, &File.exists?/1) do
-      nil ->
-        raise "evidence file not found at any known location: #{inspect(candidates)}"
-
-      path ->
-        File.read!(path)
+    if File.exists?(path) do
+      File.read!(path)
+    else
+      raise "evidence file not found (live or archived): #{inspect(path)}"
     end
   end
 

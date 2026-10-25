@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "phase": 178,
+  "plan": "04",
+  "checkedAt": "2026-10-12T23:41:27.348216+00:00",
+  "authorizationPrecedesBothWrites": true,
+  "consumedOperations": 2,
+  "exactBodyFileVerified": true,
+  "livePrExactMatch": true,
+  "pullRequest": 238,
+  "url": "https://github.com/szTheory/crosswake/pull/238",
+  "unmerged": true,
+  "source": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+  "base": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+  "status": "delivery-confirmed-hosted-proof-pending"
+}

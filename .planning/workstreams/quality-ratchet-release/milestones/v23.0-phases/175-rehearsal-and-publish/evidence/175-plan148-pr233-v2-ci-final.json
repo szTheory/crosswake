@@ -1,0 +1,4458 @@
+{
+  "conclusion": "success",
+  "headSha": "d18c93e435638fbe99d719e99b5066e04173ea7d",
+  "jobs": [
+    {
+      "completedAt": "2026-10-11T18:16:55Z",
+      "conclusion": "success",
+      "databaseId": 114540060256,
+      "name": "classify-change",
+      "startedAt": "2026-10-11T18:16:46Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:48Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:16:52Z",
+          "conclusion": "success",
+          "name": "Check out the synthetic merge with full history",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:16:53Z",
+          "conclusion": "success",
+          "name": "Classify the validated base-to-merge diff",
+          "number": 3,
+          "startedAt": "2026-10-11T18:16:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:16:53Z",
+          "conclusion": "success",
+          "name": "Post Check out the synthetic merge with full history",
+          "number": 6,
+          "startedAt": "2026-10-11T18:16:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:16:53Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 7,
+          "startedAt": "2026-10-11T18:16:53Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540060256"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:40Z",
+      "conclusion": "success",
+      "databaseId": 114540097228,
+      "name": "brand-visual",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:03Z",
+          "conclusion": "success",
+          "name": "Install brand e2e dependencies",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:32Z",
+          "conclusion": "success",
+          "name": "Install Playwright Chromium",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:37Z",
+          "conclusion": "success",
+          "name": "Visual render + pixel-sample checks",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:37Z",
+          "conclusion": "success",
+          "name": "Advisory lane notice",
+          "number": 7,
+          "startedAt": "2026-10-11T18:17:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:37Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 13,
+          "startedAt": "2026-10-11T18:17:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:38Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 14,
+          "startedAt": "2026-10-11T18:17:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:38Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "startedAt": "2026-10-11T18:17:38Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097228"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:32Z",
+      "conclusion": "success",
+      "databaseId": 114540097237,
+      "name": "brand-structural",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Install brandbook tool dependencies",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Size budget (committed brandbook <= 1MB)",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "SVG structural validation - production marks",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:03Z",
+          "conclusion": "success",
+          "name": "SVG structural validation - candidate marks",
+          "number": 7,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:03Z",
+          "conclusion": "success",
+          "name": "Token JSON round-trip",
+          "number": 8,
+          "startedAt": "2026-10-11T18:17:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:03Z",
+          "conclusion": "success",
+          "name": "WCAG contrast matrix",
+          "number": 9,
+          "startedAt": "2026-10-11T18:17:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:03Z",
+          "conclusion": "success",
+          "name": "Consumer drift gate (no hex / no primitives / semantic coverage)",
+          "number": 10,
+          "startedAt": "2026-10-11T18:17:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:03Z",
+          "conclusion": "success",
+          "name": "Consumer drift gate contract tests",
+          "number": 11,
+          "startedAt": "2026-10-11T18:17:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:04Z",
+          "conclusion": "success",
+          "name": "Install brand e2e dependencies",
+          "number": 12,
+          "startedAt": "2026-10-11T18:17:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:24Z",
+          "conclusion": "success",
+          "name": "Install Playwright Chromium",
+          "number": 13,
+          "startedAt": "2026-10-11T18:17:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:29Z",
+          "conclusion": "success",
+          "name": "Structural brand checks (DOM, dimensions, source assertions)",
+          "number": 14,
+          "startedAt": "2026-10-11T18:17:24Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:29Z",
+          "conclusion": "success",
+          "name": "Summarize required brand structural proof",
+          "number": 15,
+          "startedAt": "2026-10-11T18:17:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:30Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 29,
+          "startedAt": "2026-10-11T18:17:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:30Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 30,
+          "startedAt": "2026-10-11T18:17:30Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:30Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 31,
+          "startedAt": "2026-10-11T18:17:30Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097237"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:29Z",
+      "conclusion": "success",
+      "databaseId": 114540097253,
+      "name": "documentation-contracts",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:14Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:25Z",
+          "conclusion": "success",
+          "name": "Run first-adopter privacy and documentation contracts",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:25Z",
+          "conclusion": "success",
+          "name": "Summarize the documentation contract leaf",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:26Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 9,
+          "startedAt": "2026-10-11T18:17:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:26Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 10,
+          "startedAt": "2026-10-11T18:17:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:26Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 11,
+          "startedAt": "2026-10-11T18:17:26Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097253"
+    },
+    {
+      "completedAt": "2026-10-11T18:18:42Z",
+      "conclusion": "success",
+      "databaseId": 114540097269,
+      "name": "release-candidate-fixtures",
+      "startedAt": "2026-10-11T18:16:58Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:16Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:34Z",
+          "conclusion": "success",
+          "name": "Run stable candidate contract fixtures",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:37Z",
+          "conclusion": "success",
+          "name": "Check candidate workflow structure",
+          "number": 5,
+          "startedAt": "2026-10-11T18:18:34Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:37Z",
+          "conclusion": "success",
+          "name": "Check release doc version literals",
+          "number": 6,
+          "startedAt": "2026-10-11T18:18:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:37Z",
+          "conclusion": "success",
+          "name": "Summarize fast candidate proof",
+          "number": 7,
+          "startedAt": "2026-10-11T18:18:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:38Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 13,
+          "startedAt": "2026-10-11T18:18:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:38Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 14,
+          "startedAt": "2026-10-11T18:18:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:38Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "startedAt": "2026-10-11T18:18:38Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097269"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:19Z",
+      "conclusion": "success",
+      "databaseId": 114540097271,
+      "name": "collateral-binaries-guard",
+      "startedAt": "2026-10-11T18:16:58Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:15Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:15Z",
+          "conclusion": "success",
+          "name": "Guard collateral binaries (existence + non-empty + size budget)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:15Z",
+          "conclusion": "success",
+          "name": "Summarize collateral proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:15Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 9,
+          "startedAt": "2026-10-11T18:17:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:16Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 10,
+          "startedAt": "2026-10-11T18:17:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:16Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 11,
+          "startedAt": "2026-10-11T18:17:16Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097271"
+    },
+    {
+      "completedAt": "2026-10-11T18:25:04Z",
+      "conclusion": "success",
+      "databaseId": 114540097368,
+      "name": "release-candidate-full-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:58Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Check out the exact pull-request head",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:11Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:11Z",
+          "conclusion": "success",
+          "name": "Prove declared version truth is not behind published tags",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:11Z",
+          "conclusion": "success",
+          "name": "Validate exact candidate identity",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:37Z",
+          "conclusion": "success",
+          "name": "Build and officially unpack all six candidate artifacts",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:56Z",
+          "conclusion": "success",
+          "name": "Run five clean-room profiles twice from candidate artifacts",
+          "number": 7,
+          "startedAt": "2026-10-11T18:17:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:58Z",
+          "conclusion": "success",
+          "name": "Run coordinate, mirror, workflow, and receipt proof",
+          "number": 8,
+          "startedAt": "2026-10-11T18:24:56Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:25:00Z",
+          "conclusion": "success",
+          "name": "Validate candidate workflow integrity",
+          "number": 9,
+          "startedAt": "2026-10-11T18:24:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:25:00Z",
+          "conclusion": "success",
+          "name": "Write the exact non-vacuous CI receipt",
+          "number": 10,
+          "startedAt": "2026-10-11T18:25:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:25:01Z",
+          "conclusion": "success",
+          "name": "Upload exact candidate proof",
+          "number": 11,
+          "startedAt": "2026-10-11T18:25:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:25:01Z",
+          "conclusion": "success",
+          "name": "Summarize exact candidate proof",
+          "number": 12,
+          "startedAt": "2026-10-11T18:25:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:25:02Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 23,
+          "startedAt": "2026-10-11T18:25:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:25:02Z",
+          "conclusion": "success",
+          "name": "Post Check out the exact pull-request head",
+          "number": 24,
+          "startedAt": "2026-10-11T18:25:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:25:02Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 25,
+          "startedAt": "2026-10-11T18:25:02Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097368"
+    },
+    {
+      "completedAt": "2026-10-11T18:18:02Z",
+      "conclusion": "success",
+      "databaseId": 114540097509,
+      "name": "phase23-commerce-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:14Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:53Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:59Z",
+          "conclusion": "success",
+          "name": "Run Phase 23 commerce, support, doctor, guide, and planning proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:59Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 23 commerce proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:00Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 11,
+          "startedAt": "2026-10-11T18:17:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:00Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 12,
+          "startedAt": "2026-10-11T18:18:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:00Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-11T18:18:00Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097509"
+    },
+    {
+      "completedAt": "2026-10-11T18:25:02Z",
+      "conclusion": "success",
+      "databaseId": 114540097552,
+      "name": "phase41-gating-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:12Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:17Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:37Z",
+          "conclusion": "success",
+          "name": "Compile with repository warning policy",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:57Z",
+          "conclusion": "success",
+          "name": "Run Phase 41 gating doctor and support matrix proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:57Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 41 gating proof",
+          "number": 7,
+          "startedAt": "2026-10-11T18:24:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:57Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 12,
+          "startedAt": "2026-10-11T18:24:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:25:00Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 13,
+          "startedAt": "2026-10-11T18:24:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:25:00Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 14,
+          "startedAt": "2026-10-11T18:25:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:25:00Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "startedAt": "2026-10-11T18:25:00Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097552"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:04Z",
+      "conclusion": "success",
+      "databaseId": 114540097632,
+      "name": "release-as-staleness-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Check for stale release-as pins",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Summarize release-as staleness proof",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 8,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 9,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097632"
+    },
+    {
+      "completedAt": "2026-10-11T18:23:38Z",
+      "conclusion": "success",
+      "databaseId": 114540097649,
+      "name": "phase132-core-hermetic-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:12Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:46Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:33Z",
+          "conclusion": "success",
+          "name": "Run Phase 132 compatibility and broad hermetic proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:33Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 132 core proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:23:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:35Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 11,
+          "startedAt": "2026-10-11T18:23:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:36Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 12,
+          "startedAt": "2026-10-11T18:23:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:36Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-11T18:23:36Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097649"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:21Z",
+      "conclusion": "success",
+      "databaseId": 114540097736,
+      "name": "guard-02-generate-and-diff",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:14Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:17Z",
+          "conclusion": "success",
+          "name": "Verify generated contracts without staging",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:17Z",
+          "conclusion": "success",
+          "name": "Summarize generated contract parity",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:18Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 9,
+          "startedAt": "2026-10-11T18:17:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:18Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 10,
+          "startedAt": "2026-10-11T18:17:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:18Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 11,
+          "startedAt": "2026-10-11T18:17:18Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097736"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:57Z",
+      "conclusion": "success",
+      "databaseId": 114540097738,
+      "name": "phase48-provider-adapter-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:58Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:00Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:11Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:52Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:54Z",
+          "conclusion": "success",
+          "name": "Run Phase 48 provider-adapter proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:54Z",
+          "conclusion": "success",
+          "name": "Summarize provider-adapter proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:55Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 11,
+          "startedAt": "2026-10-11T18:17:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:55Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 12,
+          "startedAt": "2026-10-11T18:17:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:55Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-11T18:17:55Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097738"
+    },
+    {
+      "completedAt": "2026-10-11T18:21:40Z",
+      "conclusion": "success",
+      "databaseId": 114540097768,
+      "name": "phase132-companion-engine-absent-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:15Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:27Z",
+          "conclusion": "success",
+          "name": "Compile Rindle companion (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:21:36Z",
+          "conclusion": "success",
+          "name": "Run companion and Rindle release-package proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:18:27Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:21:36Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 132 companion proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:21:36Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:21:37Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 11,
+          "startedAt": "2026-10-11T18:21:36Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:21:37Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 12,
+          "startedAt": "2026-10-11T18:21:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:21:37Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-11T18:21:37Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097768"
+    },
+    {
+      "completedAt": "2026-10-11T18:23:20Z",
+      "conclusion": "success",
+      "databaseId": 114540097784,
+      "name": "phase43-rulestead-proof",
+      "startedAt": "2026-10-11T18:16:58Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:12Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:46Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:14Z",
+          "conclusion": "success",
+          "name": "Run hermetic Rulestead proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:14Z",
+          "conclusion": "success",
+          "name": "Summarize Rulestead proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:23:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:17Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 11,
+          "startedAt": "2026-10-11T18:23:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:17Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 12,
+          "startedAt": "2026-10-11T18:23:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:17Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-11T18:23:17Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097784"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:22Z",
+      "conclusion": "success",
+      "databaseId": 114540097800,
+      "name": "proof-dependency-security",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:07Z",
+          "conclusion": "success",
+          "name": "Run erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:12Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:13Z",
+          "conclusion": "success",
+          "name": "Install Hex",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:14Z",
+          "conclusion": "success",
+          "name": "Install root audit dependencies",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:15Z",
+          "conclusion": "success",
+          "name": "Verify repository prerequisites",
+          "number": 7,
+          "startedAt": "2026-10-11T18:17:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:17Z",
+          "conclusion": "success",
+          "name": "Install example-host audit dependencies",
+          "number": 8,
+          "startedAt": "2026-10-11T18:17:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:19Z",
+          "conclusion": "success",
+          "name": "Audit both supported dependency locks",
+          "number": 9,
+          "startedAt": "2026-10-11T18:17:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:19Z",
+          "conclusion": "success",
+          "name": "Prove an advisory-bearing lock fails closed",
+          "number": 10,
+          "startedAt": "2026-10-11T18:17:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:19Z",
+          "conclusion": "success",
+          "name": "Summarize dependency security proof",
+          "number": 11,
+          "startedAt": "2026-10-11T18:17:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:19Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 21,
+          "startedAt": "2026-10-11T18:17:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:19Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 22,
+          "startedAt": "2026-10-11T18:17:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:20Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 23,
+          "startedAt": "2026-10-11T18:17:19Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097800"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:44Z",
+      "conclusion": "success",
+      "databaseId": 114540097819,
+      "name": "phase69-closeout-proof",
+      "startedAt": "2026-10-11T18:16:58Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:17Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:19Z",
+          "conclusion": "success",
+          "name": "Compile and check warnings",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:19Z",
+          "conclusion": "success",
+          "name": "Run v4.0 milestone closeout verification",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:40Z",
+          "conclusion": "success",
+          "name": "Run closeout parity tests",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:40Z",
+          "conclusion": "success",
+          "name": "Summarize v4.0 closeout proof",
+          "number": 7,
+          "startedAt": "2026-10-11T18:17:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:40Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 13,
+          "startedAt": "2026-10-11T18:17:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:41Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 14,
+          "startedAt": "2026-10-11T18:17:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:41Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "startedAt": "2026-10-11T18:17:41Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097819"
+    },
+    {
+      "completedAt": "2026-10-11T18:18:03Z",
+      "conclusion": "success",
+      "databaseId": 114540097830,
+      "name": "phase52-operator-proof",
+      "startedAt": "2026-10-11T18:16:58Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:16Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:57Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:59Z",
+          "conclusion": "success",
+          "name": "Run Phase 52 operator truth proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:59Z",
+          "conclusion": "success",
+          "name": "Summarize operator proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:00Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 11,
+          "startedAt": "2026-10-11T18:17:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:00Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 12,
+          "startedAt": "2026-10-11T18:18:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:00Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-11T18:18:00Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097830"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:05Z",
+      "conclusion": "success",
+      "databaseId": 114540097839,
+      "name": "proof-aggregator-negative-control",
+      "startedAt": "2026-10-11T18:16:58Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Exercise the complete closed result vocabulary",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Summarize aggregator negative-control proof",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 8,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 9,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097839"
+    },
+    {
+      "completedAt": "2026-10-11T18:28:13Z",
+      "conclusion": "success",
+      "databaseId": 114540097848,
+      "name": "phase130-core-hermetic-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:12Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:18Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:28:09Z",
+          "conclusion": "success",
+          "name": "Run root and companion proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:28:09Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 130 core proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:28:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:28:09Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 10,
+          "startedAt": "2026-10-11T18:28:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:28:10Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 11,
+          "startedAt": "2026-10-11T18:28:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:28:11Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 12,
+          "startedAt": "2026-10-11T18:28:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:28:11Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-11T18:28:11Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097848"
+    },
+    {
+      "completedAt": "2026-10-11T18:41:51Z",
+      "conclusion": "success",
+      "databaseId": 114540097851,
+      "name": "proof-requires-example-host",
+      "startedAt": "2026-10-11T18:17:02Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:04Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:06Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:13Z",
+          "conclusion": "success",
+          "name": "Run erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:17Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:54Z",
+          "conclusion": "success",
+          "name": "Compile the example Phoenix host (dev env)",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:56Z",
+          "conclusion": "success",
+          "name": "Install example Phoenix host test dependencies",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:57Z",
+          "conclusion": "success",
+          "name": "Install root Mix dependencies",
+          "number": 7,
+          "startedAt": "2026-10-11T18:17:56Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:16Z",
+          "conclusion": "success",
+          "name": "Compile root project",
+          "number": 8,
+          "startedAt": "2026-10-11T18:17:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:41:47Z",
+          "conclusion": "success",
+          "name": "Run the bounded example-host isolation matrix",
+          "number": 9,
+          "startedAt": "2026-10-11T18:18:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:41:47Z",
+          "conclusion": "success",
+          "name": "Summarize example-host isolation proof",
+          "number": 10,
+          "startedAt": "2026-10-11T18:41:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:41:47Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 19,
+          "startedAt": "2026-10-11T18:41:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:41:47Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 20,
+          "startedAt": "2026-10-11T18:41:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:41:47Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 21,
+          "startedAt": "2026-10-11T18:41:47Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097851"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:21Z",
+      "conclusion": "success",
+      "databaseId": 114540097865,
+      "name": "guard-01-contract-drift-test",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:58Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:11Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:15Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:16Z",
+          "conclusion": "success",
+          "name": "Verify repository formatting",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:17Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:18Z",
+          "conclusion": "success",
+          "name": "Run contract drift test (GUARD-01)",
+          "number": 7,
+          "startedAt": "2026-10-11T18:17:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:18Z",
+          "conclusion": "success",
+          "name": "Summarize contract drift test",
+          "number": 8,
+          "startedAt": "2026-10-11T18:17:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:18Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 14,
+          "startedAt": "2026-10-11T18:17:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:18Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 15,
+          "startedAt": "2026-10-11T18:17:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:19Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 16,
+          "startedAt": "2026-10-11T18:17:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:19Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "startedAt": "2026-10-11T18:17:19Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097865"
+    },
+    {
+      "completedAt": "2026-10-11T18:18:01Z",
+      "conclusion": "success",
+      "databaseId": 114540097872,
+      "name": "phase73-auth-sensitive-admin-workflow-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:12Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:14Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:15Z",
+          "conclusion": "success",
+          "name": "Install crosswake_sigra dependencies",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:58Z",
+          "conclusion": "success",
+          "name": "Run hermetic Phase 73 auth-sensitive admin workflow proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:58Z",
+          "conclusion": "success",
+          "name": "Summarize auth-sensitive admin workflow proof",
+          "number": 7,
+          "startedAt": "2026-10-11T18:17:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:59Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 13,
+          "startedAt": "2026-10-11T18:17:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:59Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 14,
+          "startedAt": "2026-10-11T18:17:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:59Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "startedAt": "2026-10-11T18:17:59Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097872"
+    },
+    {
+      "completedAt": "2026-10-11T18:20:00Z",
+      "conclusion": "success",
+      "databaseId": 114540097875,
+      "name": "phase130-companion-engine-absent-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:58Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:11Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:54Z",
+          "conclusion": "success",
+          "name": "Compile companion (warnings as errors, engine absent)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:57Z",
+          "conclusion": "success",
+          "name": "Run Rulestead companion and release-package proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:57Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 130 companion proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:19:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:57Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 11,
+          "startedAt": "2026-10-11T18:19:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:57Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 12,
+          "startedAt": "2026-10-11T18:19:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:57Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-11T18:19:57Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097875"
+    },
+    {
+      "completedAt": "2026-10-11T18:18:49Z",
+      "conclusion": "success",
+      "databaseId": 114540097887,
+      "name": "phase70-subscription-saas-proof",
+      "startedAt": "2026-10-11T18:17:46Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:47Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:50Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:02Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:43Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:18:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:45Z",
+          "conclusion": "success",
+          "name": "Run Phase 70 subscription SaaS proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:18:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:45Z",
+          "conclusion": "success",
+          "name": "Summarize subscription SaaS proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:18:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:46Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 11,
+          "startedAt": "2026-10-11T18:18:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:46Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 12,
+          "startedAt": "2026-10-11T18:18:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:46Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-11T18:18:46Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097887"
+    },
+    {
+      "completedAt": "2026-10-11T18:18:00Z",
+      "conclusion": "success",
+      "databaseId": 114540097892,
+      "name": "phase71-notification-workflow-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:58Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:00Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:11Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:13Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:14Z",
+          "conclusion": "success",
+          "name": "Install crosswake_chimeway dependencies",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:58Z",
+          "conclusion": "success",
+          "name": "Run hermetic Phase 71 notification workflow proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:58Z",
+          "conclusion": "success",
+          "name": "Summarize notification workflow proof",
+          "number": 7,
+          "startedAt": "2026-10-11T18:17:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:58Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 13,
+          "startedAt": "2026-10-11T18:17:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:59Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 14,
+          "startedAt": "2026-10-11T18:17:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:59Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "startedAt": "2026-10-11T18:17:59Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097892"
+    },
+    {
+      "completedAt": "2026-10-11T18:20:45Z",
+      "conclusion": "success",
+      "databaseId": 114540097898,
+      "name": "phase79-android-proof",
+      "startedAt": "2026-10-11T18:16:58Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:00Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:08Z",
+          "conclusion": "success",
+          "name": "Run erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:32Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-android-jvm",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:34Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:16Z",
+          "conclusion": "success",
+          "name": "Generate Android Shell",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:34Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:20:41Z",
+          "conclusion": "success",
+          "name": "Verify Android Shell",
+          "number": 7,
+          "startedAt": "2026-10-11T18:18:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:20:41Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 79 Android proof",
+          "number": 8,
+          "startedAt": "2026-10-11T18:20:41Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:20:42Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-android-jvm",
+          "number": 15,
+          "startedAt": "2026-10-11T18:20:41Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:20:42Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 16,
+          "startedAt": "2026-10-11T18:20:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:20:42Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "startedAt": "2026-10-11T18:20:42Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097898"
+    },
+    {
+      "completedAt": "2026-10-11T18:23:15Z",
+      "conclusion": "success",
+      "databaseId": 114540097901,
+      "name": "phase45-rindle-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:58Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:10Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:43Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:11Z",
+          "conclusion": "success",
+          "name": "Run hermetic Rindle proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:11Z",
+          "conclusion": "success",
+          "name": "Summarize Rindle proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:23:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:13Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 11,
+          "startedAt": "2026-10-11T18:23:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:13Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 12,
+          "startedAt": "2026-10-11T18:23:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:23:13Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-11T18:23:13Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097901"
+    },
+    {
+      "completedAt": "2026-10-11T18:18:48Z",
+      "conclusion": "success",
+      "databaseId": 114540097913,
+      "name": "phase58-auth-closeout-proof",
+      "startedAt": "2026-10-11T18:16:58Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:13Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:53Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:54Z",
+          "conclusion": "success",
+          "name": "Run closeout verification with Phase 58 security artifact",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:56Z",
+          "conclusion": "success",
+          "name": "Run layered Sigra auth proof (core-side)",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:59Z",
+          "conclusion": "success",
+          "name": "Run Sigra diagnostics parity tests (core-side)",
+          "number": 7,
+          "startedAt": "2026-10-11T18:17:56Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:00Z",
+          "conclusion": "success",
+          "name": "Install crosswake_sigra dependencies",
+          "number": 8,
+          "startedAt": "2026-10-11T18:17:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:42Z",
+          "conclusion": "success",
+          "name": "Run layered Sigra auth proof (crosswake_sigra)",
+          "number": 9,
+          "startedAt": "2026-10-11T18:18:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:44Z",
+          "conclusion": "success",
+          "name": "Run Sigra diagnostics parity tests (crosswake_sigra)",
+          "number": 10,
+          "startedAt": "2026-10-11T18:18:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:44Z",
+          "conclusion": "success",
+          "name": "Summarize auth closeout proof",
+          "number": 11,
+          "startedAt": "2026-10-11T18:18:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:45Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 21,
+          "startedAt": "2026-10-11T18:18:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:45Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 22,
+          "startedAt": "2026-10-11T18:18:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:45Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 23,
+          "startedAt": "2026-10-11T18:18:45Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097913"
+    },
+    {
+      "completedAt": "2026-10-11T18:24:12Z",
+      "conclusion": "success",
+      "databaseId": 114540097935,
+      "name": "phase34-commerce-proof",
+      "startedAt": "2026-10-11T18:17:43Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:44Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:46Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:57Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:31Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:06Z",
+          "conclusion": "success",
+          "name": "Run Phase 34 broad hermetic commerce proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:18:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:06Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 34 commerce proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:24:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:09Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 11,
+          "startedAt": "2026-10-11T18:24:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:09Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 12,
+          "startedAt": "2026-10-11T18:24:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:09Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-11T18:24:09Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097935"
+    },
+    {
+      "completedAt": "2026-10-11T18:19:50Z",
+      "conclusion": "success",
+      "databaseId": 114540097939,
+      "name": "phase18-elixir-android-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:00Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:06Z",
+          "conclusion": "success",
+          "name": "Run erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:16Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-android-jvm",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:19Z",
+          "conclusion": "success",
+          "name": "Install Elixir dependencies",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:34Z",
+          "conclusion": "success",
+          "name": "Verify Phase 18 Elixir contract and proof slices",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:47Z",
+          "conclusion": "success",
+          "name": "Verify generated local Android shell BridgeChannel proof",
+          "number": 7,
+          "startedAt": "2026-10-11T18:17:34Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:47Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 18 portable proof",
+          "number": 8,
+          "startedAt": "2026-10-11T18:19:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:48Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-android-jvm",
+          "number": 15,
+          "startedAt": "2026-10-11T18:19:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:48Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 16,
+          "startedAt": "2026-10-11T18:19:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:48Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "startedAt": "2026-10-11T18:19:48Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097939"
+    },
+    {
+      "completedAt": "2026-10-11T18:19:03Z",
+      "conclusion": "success",
+      "databaseId": 114540097945,
+      "name": "android-package-unit",
+      "startedAt": "2026-10-11T18:16:58Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:02Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:11Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-android-jvm",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:16Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:59Z",
+          "conclusion": "success",
+          "name": "Run Android JVM tests",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:59Z",
+          "conclusion": "success",
+          "name": "Summarize Android package proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:18:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:59Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 10,
+          "startedAt": "2026-10-11T18:18:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:59Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-android-jvm",
+          "number": 11,
+          "startedAt": "2026-10-11T18:18:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:00Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 12,
+          "startedAt": "2026-10-11T18:18:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:00Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-11T18:19:00Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097945"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:52Z",
+      "conclusion": "success",
+      "databaseId": 114540097950,
+      "name": "phase10-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:59Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:06Z",
+          "conclusion": "success",
+          "name": "Run erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:06Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:08Z",
+          "conclusion": "success",
+          "name": "Install Elixir dependencies",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:44Z",
+          "conclusion": "success",
+          "name": "Verify SaaS profile",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:46Z",
+          "conclusion": "success",
+          "name": "Verify selective-native profile",
+          "number": 7,
+          "startedAt": "2026-10-11T18:17:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:49Z",
+          "conclusion": "success",
+          "name": "Verify local-first profile",
+          "number": 8,
+          "startedAt": "2026-10-11T18:17:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:49Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 10 proof",
+          "number": 9,
+          "startedAt": "2026-10-11T18:17:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:49Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6",
+          "number": 17,
+          "startedAt": "2026-10-11T18:17:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:49Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-11T18:17:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:49Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-11T18:17:49Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097950"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:41Z",
+      "conclusion": "success",
+      "databaseId": 114540097959,
+      "name": "phase75-closeout-gate",
+      "startedAt": "2026-10-11T18:17:23Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:24Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:24Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:25Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:24Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:36Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:38Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:36Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:38Z",
+          "conclusion": "success",
+          "name": "Run closeout verification",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:38Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 75 closeout gate",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:39Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 11,
+          "startedAt": "2026-10-11T18:17:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:39Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 12,
+          "startedAt": "2026-10-11T18:17:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:39Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-11T18:17:39Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097959"
+    },
+    {
+      "completedAt": "2026-10-11T18:24:36Z",
+      "conclusion": "success",
+      "databaseId": 114540097965,
+      "name": "hex-page-proof",
+      "startedAt": "2026-10-11T18:17:23Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:25Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:24Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:28Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:40Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:28Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:13Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:14Z",
+          "conclusion": "success",
+          "name": "Enforce first-adopter privacy gate",
+          "number": 5,
+          "startedAt": "2026-10-11T18:18:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:06Z",
+          "conclusion": "success",
+          "name": "Run library test suite (hermetic)",
+          "number": 6,
+          "startedAt": "2026-10-11T18:18:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:08Z",
+          "conclusion": "success",
+          "name": "Build docs (smoke)",
+          "number": 7,
+          "startedAt": "2026-10-11T18:24:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:08Z",
+          "conclusion": "success",
+          "name": "Verify hex tarball contents",
+          "number": 8,
+          "startedAt": "2026-10-11T18:24:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:29Z",
+          "conclusion": "success",
+          "name": "Hex publish dry-run (credential-free)",
+          "number": 9,
+          "startedAt": "2026-10-11T18:24:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:29Z",
+          "conclusion": "success",
+          "name": "Summarize Hex page proof",
+          "number": 10,
+          "startedAt": "2026-10-11T18:24:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:32Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 19,
+          "startedAt": "2026-10-11T18:24:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:32Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 20,
+          "startedAt": "2026-10-11T18:24:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:24:33Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 21,
+          "startedAt": "2026-10-11T18:24:32Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097965"
+    },
+    {
+      "completedAt": "2026-10-11T18:19:38Z",
+      "conclusion": "success",
+      "databaseId": 114540097979,
+      "name": "route-tour-proof",
+      "startedAt": "2026-10-11T18:17:42Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:43Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:44Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:55Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:02Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:05Z",
+          "conclusion": "success",
+          "name": "Compile example host with warnings as errors",
+          "number": 5,
+          "startedAt": "2026-10-11T18:18:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:06Z",
+          "conclusion": "success",
+          "name": "Resolve Crosswake version",
+          "number": 6,
+          "startedAt": "2026-10-11T18:18:05Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:08Z",
+          "conclusion": "success",
+          "name": "Run Phoenix route assertions",
+          "number": 7,
+          "startedAt": "2026-10-11T18:18:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:08Z",
+          "conclusion": "success",
+          "name": "Install Node dependencies",
+          "number": 8,
+          "startedAt": "2026-10-11T18:18:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:38Z",
+          "conclusion": "success",
+          "name": "Install Chromium",
+          "number": 9,
+          "startedAt": "2026-10-11T18:18:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:06Z",
+          "conclusion": "success",
+          "name": "Run route-tour Playwright proof",
+          "number": 10,
+          "startedAt": "2026-10-11T18:18:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:06Z",
+          "conclusion": "success",
+          "name": "Assert route-tour required evidence files",
+          "number": 11,
+          "startedAt": "2026-10-11T18:19:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:20Z",
+          "conclusion": "success",
+          "name": "Validate route-tour evidence manifest",
+          "number": 12,
+          "startedAt": "2026-10-11T18:19:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:33Z",
+          "conclusion": "success",
+          "name": "Capture web collateral through the harness",
+          "number": 13,
+          "startedAt": "2026-10-11T18:19:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:35Z",
+          "conclusion": "success",
+          "name": "Upload route-tour evidence bundle",
+          "number": 14,
+          "startedAt": "2026-10-11T18:19:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:35Z",
+          "conclusion": "success",
+          "name": "Summarize route-tour proof",
+          "number": 15,
+          "startedAt": "2026-10-11T18:19:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:35Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 28,
+          "startedAt": "2026-10-11T18:19:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:35Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 29,
+          "startedAt": "2026-10-11T18:19:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:36Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 30,
+          "startedAt": "2026-10-11T18:19:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:36Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 31,
+          "startedAt": "2026-10-11T18:19:36Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097979"
+    },
+    {
+      "completedAt": "2026-10-11T18:19:51Z",
+      "conclusion": "success",
+      "databaseId": 114540097988,
+      "name": "e2e-proof",
+      "startedAt": "2026-10-11T18:17:55Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:56Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:57Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:56Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:06Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:11Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 4,
+          "startedAt": "2026-10-11T18:18:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:15Z",
+          "conclusion": "success",
+          "name": "Compile example host with warnings as errors",
+          "number": 5,
+          "startedAt": "2026-10-11T18:18:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:17Z",
+          "conclusion": "success",
+          "name": "Run Phoenix route and controller assertions",
+          "number": 6,
+          "startedAt": "2026-10-11T18:18:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:19Z",
+          "conclusion": "success",
+          "name": "Run scoped replay admission integration",
+          "number": 7,
+          "startedAt": "2026-10-11T18:18:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:19Z",
+          "conclusion": "success",
+          "name": "Install Node dependencies",
+          "number": 8,
+          "startedAt": "2026-10-11T18:18:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:15Z",
+          "conclusion": "success",
+          "name": "Install Playwright browsers",
+          "number": 9,
+          "startedAt": "2026-10-11T18:18:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:48Z",
+          "conclusion": "success",
+          "name": "Run Playwright tests",
+          "number": 10,
+          "startedAt": "2026-10-11T18:19:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:48Z",
+          "conclusion": "skipped",
+          "name": "Upload E2E failure evidence",
+          "number": 11,
+          "startedAt": "2026-10-11T18:19:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:48Z",
+          "conclusion": "success",
+          "name": "Summarize offline E2E proof",
+          "number": 12,
+          "startedAt": "2026-10-11T18:19:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:48Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 22,
+          "startedAt": "2026-10-11T18:19:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:49Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 23,
+          "startedAt": "2026-10-11T18:19:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:49Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 24,
+          "startedAt": "2026-10-11T18:19:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:49Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 25,
+          "startedAt": "2026-10-11T18:19:49Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097988"
+    },
+    {
+      "completedAt": "2026-10-11T18:18:53Z",
+      "conclusion": "success",
+      "databaseId": 114540097989,
+      "name": "phase67-android-jvm-proof",
+      "startedAt": "2026-10-11T18:17:20Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:21Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:23Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:33Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-android-jvm",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:50Z",
+          "conclusion": "success",
+          "name": "Run Android JVM tests",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:50Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 67 Android JVM proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:18:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:51Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-android-jvm",
+          "number": 9,
+          "startedAt": "2026-10-11T18:18:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:51Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 10,
+          "startedAt": "2026-10-11T18:18:51Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:51Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 11,
+          "startedAt": "2026-10-11T18:18:51Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540097989"
+    },
+    {
+      "completedAt": "2026-10-11T18:18:16Z",
+      "conclusion": "success",
+      "databaseId": 114540098002,
+      "name": "phase96-threadline-docs-contract-proof",
+      "startedAt": "2026-10-11T18:17:20Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:22Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:23Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:30Z",
+          "conclusion": "success",
+          "name": "Run erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:31Z",
+          "conclusion": "success",
+          "name": "Install Elixir dependencies",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:30Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:00Z",
+          "conclusion": "success",
+          "name": "Compile with warnings as errors",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:13Z",
+          "conclusion": "success",
+          "name": "Run hermetic Threadline docs contract proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:18:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:13Z",
+          "conclusion": "success",
+          "name": "Summarize Threadline docs-contract proof",
+          "number": 7,
+          "startedAt": "2026-10-11T18:18:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:14Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 14,
+          "startedAt": "2026-10-11T18:18:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:14Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "startedAt": "2026-10-11T18:18:14Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540098002"
+    },
+    {
+      "completedAt": "2026-10-11T18:18:21Z",
+      "conclusion": "success",
+      "databaseId": 114540098016,
+      "name": "guard-02-prod-route-absence",
+      "startedAt": "2026-10-11T18:17:31Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:32Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:33Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:41Z",
+          "conclusion": "success",
+          "name": "Run erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:19Z",
+          "conclusion": "success",
+          "name": "Assert no test-only E2E route in a prod compile",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:41Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:19Z",
+          "conclusion": "success",
+          "name": "Summarize production route-absence proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:18:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:19Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 10,
+          "startedAt": "2026-10-11T18:18:19Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:19Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 11,
+          "startedAt": "2026-10-11T18:18:19Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540098016"
+    },
+    {
+      "completedAt": "2026-10-11T18:18:21Z",
+      "conclusion": "success",
+      "databaseId": 114540098022,
+      "name": "phase5-proof",
+      "startedAt": "2026-10-11T18:17:07Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:09Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:12Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:18Z",
+          "conclusion": "success",
+          "name": "Run erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:18Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:20Z",
+          "conclusion": "success",
+          "name": "Install Elixir dependencies",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:17Z",
+          "conclusion": "success",
+          "name": "Verify checked-in example hosts",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:17Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 5 proof",
+          "number": 7,
+          "startedAt": "2026-10-11T18:18:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:17Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6",
+          "number": 13,
+          "startedAt": "2026-10-11T18:18:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:18Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 14,
+          "startedAt": "2026-10-11T18:18:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:18Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "startedAt": "2026-10-11T18:18:18Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540098022"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:55Z",
+      "conclusion": "success",
+      "databaseId": 114540098025,
+      "name": "phase74-offline-draft-recovery-proof",
+      "startedAt": "2026-10-11T18:16:57Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:16:58Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 2,
+          "startedAt": "2026-10-11T18:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:10Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-elixir-cache",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:51Z",
+          "conclusion": "success",
+          "name": "Compile (warnings as errors)",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:53Z",
+          "conclusion": "success",
+          "name": "Run hermetic Phase 74 offline draft recovery proof",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:51Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:53Z",
+          "conclusion": "success",
+          "name": "Summarize offline draft recovery proof",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:54Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-elixir-cache",
+          "number": 11,
+          "startedAt": "2026-10-11T18:17:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:54Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 12,
+          "startedAt": "2026-10-11T18:17:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:54Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "startedAt": "2026-10-11T18:17:54Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540098025"
+    },
+    {
+      "completedAt": "2026-10-11T18:18:03Z",
+      "conclusion": "success",
+      "databaseId": 114540098056,
+      "name": "ios-mirror-parity-proof",
+      "startedAt": "2026-10-11T18:17:56Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:57Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:00Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:00Z",
+          "conclusion": "success",
+          "name": "Check iOS SwiftPM mirror parity",
+          "number": 3,
+          "startedAt": "2026-10-11T18:18:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:00Z",
+          "conclusion": "success",
+          "name": "Summarize iOS mirror parity proof",
+          "number": 4,
+          "startedAt": "2026-10-11T18:18:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:01Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+          "number": 8,
+          "startedAt": "2026-10-11T18:18:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:01Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 9,
+          "startedAt": "2026-10-11T18:18:01Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540098056"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:45Z",
+      "conclusion": "success",
+      "databaseId": 114540098059,
+      "name": "guard-01-e2e-honesty",
+      "startedAt": "2026-10-11T18:17:22Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:23Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:26Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:31Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:32Z",
+          "conclusion": "success",
+          "name": "Install example-host Node dependencies",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:32Z",
+          "conclusion": "success",
+          "name": "Run E2E honesty check",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:42Z",
+          "conclusion": "success",
+          "name": "Run bridge hook unit tests",
+          "number": 6,
+          "startedAt": "2026-10-11T18:17:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:42Z",
+          "conclusion": "success",
+          "name": "Summarize E2E honesty proof",
+          "number": 7,
+          "startedAt": "2026-10-11T18:17:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:43Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 13,
+          "startedAt": "2026-10-11T18:17:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:43Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 14,
+          "startedAt": "2026-10-11T18:17:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:43Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "startedAt": "2026-10-11T18:17:43Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540098059"
+    },
+    {
+      "completedAt": "2026-10-11T18:17:19Z",
+      "conclusion": "success",
+      "databaseId": 114540098062,
+      "name": "phase18-ios-proof",
+      "startedAt": "2026-10-11T18:17:09Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:09Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:12Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:16Z",
+          "conclusion": "success",
+          "name": "Verify checked-in iOS shell bridge and activation proof",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:16Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 18 iOS proof",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:16Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 8,
+          "startedAt": "2026-10-11T18:17:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:17Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 9,
+          "startedAt": "2026-10-11T18:17:16Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540098062"
+    },
+    {
+      "completedAt": "2026-10-11T18:18:54Z",
+      "conclusion": "success",
+      "databaseId": 114540098063,
+      "name": "phase79-ios-proof",
+      "startedAt": "2026-10-11T18:17:39Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:41Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:44Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:41Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:51Z",
+          "conclusion": "success",
+          "name": "Run erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:53Z",
+          "conclusion": "success",
+          "name": "Install dependencies",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:51Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:32Z",
+          "conclusion": "success",
+          "name": "Generate iOS Shell",
+          "number": 5,
+          "startedAt": "2026-10-11T18:17:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:48Z",
+          "conclusion": "success",
+          "name": "Verify iOS Shell",
+          "number": 6,
+          "startedAt": "2026-10-11T18:18:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:49Z",
+          "conclusion": "success",
+          "name": "Summarize Phase 79 iOS proof",
+          "number": 7,
+          "startedAt": "2026-10-11T18:18:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:50Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 14,
+          "startedAt": "2026-10-11T18:18:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:50Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "startedAt": "2026-10-11T18:18:50Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540098063"
+    },
+    {
+      "completedAt": "2026-10-11T18:19:34Z",
+      "conclusion": "success",
+      "databaseId": 114540098078,
+      "name": "ios-package-unit",
+      "startedAt": "2026-10-11T18:18:01Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:18:04Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:18:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:08Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:18:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:18Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 3,
+          "startedAt": "2026-10-11T18:18:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:25Z",
+          "conclusion": "success",
+          "name": "Resolve Swift and Xcode cache identity",
+          "number": 4,
+          "startedAt": "2026-10-11T18:18:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:26Z",
+          "conclusion": "success",
+          "name": "Run actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
+          "number": 5,
+          "startedAt": "2026-10-11T18:18:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:28Z",
+          "conclusion": "success",
+          "name": "Run Swift tests",
+          "number": 6,
+          "startedAt": "2026-10-11T18:18:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:28Z",
+          "conclusion": "success",
+          "name": "Summarize Swift package proof",
+          "number": 7,
+          "startedAt": "2026-10-11T18:19:28Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:29Z",
+          "conclusion": "success",
+          "name": "Post Run actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
+          "number": 12,
+          "startedAt": "2026-10-11T18:19:28Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:29Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+          "number": 13,
+          "startedAt": "2026-10-11T18:19:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:30Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 14,
+          "startedAt": "2026-10-11T18:19:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:31Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "startedAt": "2026-10-11T18:19:30Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540098078"
+    },
+    {
+      "completedAt": "2026-10-11T18:20:54Z",
+      "conclusion": "success",
+      "databaseId": 114540098145,
+      "name": "android-generated-shell-unit",
+      "startedAt": "2026-10-11T18:17:46Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:17:48Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:17:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:50Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-11T18:17:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:17:55Z",
+          "conclusion": "success",
+          "name": "Run erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93",
+          "number": 3,
+          "startedAt": "2026-10-11T18:17:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:05Z",
+          "conclusion": "success",
+          "name": "Run ./.github/actions/setup-android-jvm",
+          "number": 4,
+          "startedAt": "2026-10-11T18:17:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:18:06Z",
+          "conclusion": "success",
+          "name": "Install Elixir dependencies",
+          "number": 5,
+          "startedAt": "2026-10-11T18:18:05Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:19:39Z",
+          "conclusion": "success",
+          "name": "Publish shell-core to local Maven for hermetic resolution",
+          "number": 6,
+          "startedAt": "2026-10-11T18:18:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:20:49Z",
+          "conclusion": "success",
+          "name": "Run hermetic Android generated-shell verification",
+          "number": 7,
+          "startedAt": "2026-10-11T18:19:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:20:50Z",
+          "conclusion": "success",
+          "name": "Check public Android propagation and build failure handling",
+          "number": 8,
+          "startedAt": "2026-10-11T18:20:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:20:50Z",
+          "conclusion": "success",
+          "name": "Summarize generated Android proof",
+          "number": 9,
+          "startedAt": "2026-10-11T18:20:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:20:50Z",
+          "conclusion": "success",
+          "name": "Post Run ./.github/actions/setup-android-jvm",
+          "number": 17,
+          "startedAt": "2026-10-11T18:20:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:20:50Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 18,
+          "startedAt": "2026-10-11T18:20:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:20:51Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 19,
+          "startedAt": "2026-10-11T18:20:50Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114540098145"
+    },
+    {
+      "completedAt": "2026-10-11T18:41:57Z",
+      "conclusion": "success",
+      "databaseId": 114545301027,
+      "name": "Crosswake CI",
+      "startedAt": "2026-10-11T18:41:54Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-11T18:41:55Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-11T18:41:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:41:55Z",
+          "conclusion": "success",
+          "name": "Conclude the governed proof graph",
+          "number": 2,
+          "startedAt": "2026-10-11T18:41:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-11T18:41:55Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 3,
+          "startedAt": "2026-10-11T18:41:55Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/szTheory/crosswake/actions/runs/38163135946/job/114545301027"
+    }
+  ],
+  "status": "completed"
+}

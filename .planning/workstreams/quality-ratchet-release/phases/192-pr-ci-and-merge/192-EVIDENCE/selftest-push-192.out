@@ -1,0 +1,16 @@
+P01 dry-run ok leaves the remote unchanged: as expected
+P02 push delivers only main and the land branch: as expected
+P03 binding fail verdict refused: as expected
+P04 silent exit 0 verdict refused: as expected
+P05 dirty tree refused: as expected
+P06 wrong branch refused: as expected
+P07 moved remote main refused: as expected
+P08 unreadable remote refused: as expected
+P09 eleven forbidden argument forms refused: as expected
+P10 diverged remote branch refused: as expected
+P11 fast-forward update delivered: as expected
+P12 already delivered pushes nothing: as expected
+P13 head without main refused: as expected
+P14 hook outside fixture refused: as expected
+P15 hook without self-test flag refused: as expected
+selftest-push: controls 15 of 15 as expected

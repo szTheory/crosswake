@@ -1,0 +1,66 @@
+{
+  "run_id": 38155320492,
+  "merge_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+  "candidate_head_oid": "7273e6cfccf6d62feed9b893eded0bd1028223d1",
+  "version": "0.2.11",
+  "exact_public": {
+    "status": "completed",
+    "conclusion": "success",
+    "job_id": 114522406255,
+    "run_id": 38155320492
+  },
+  "linked_rollup": {
+    "state": "COMPLETE",
+    "sha256": "d2988517ec7f19bb2846d3fe1bc31ce5884d2af3b436e1d5dbb30758529da629",
+    "validated": true
+  },
+  "children": {
+    "hex": {
+      "status": "completed",
+      "conclusion": "success",
+      "job_id": 114517856138,
+      "run_id": 38155320492
+    },
+    "ios_mirror": {
+      "status": "completed",
+      "conclusion": "success",
+      "job_id": 114517856154,
+      "run_id": 38155320492
+    },
+    "android": {
+      "status": "completed",
+      "conclusion": "success",
+      "job_id": 114517856156,
+      "run_id": 38155320492
+    },
+    "ios_public_proof": {
+      "status": "completed",
+      "conclusion": "success",
+      "job_id": 114519182960,
+      "run_id": 38155320492
+    },
+    "android_public_proof": {
+      "status": "completed",
+      "conclusion": "success",
+      "job_id": 114519182944,
+      "run_id": 38155320492
+    },
+    "exact_public": {
+      "status": "completed",
+      "conclusion": "success",
+      "job_id": 114522406255,
+      "run_id": 38155320492
+    }
+  },
+  "artifact_ids": {
+    "exact-public-proof": 11709291645,
+    "linked-release-status": 11709855205
+  },
+  "public_proof_sha256": "ecff4d56d8e4b6b5e7d99b0949cb8eb120283430ca2c75d507e8c311a04fc788",
+  "public_packages_fully_proven": 6,
+  "profiles_passed": 5,
+  "installs_each": 2,
+  "same_ordinary_run": true,
+  "retry_or_recovery_performed": false,
+  "observed_at_utc": "2026-10-11T17:01:06.416044+00:00"
+}

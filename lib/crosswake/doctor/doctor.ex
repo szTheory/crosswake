@@ -18,6 +18,7 @@ defmodule Crosswake.Doctor do
   alias Crosswake.Policy.Compiler
   alias Crosswake.Policy.Diagnostic
   alias Crosswake.Shell.Denial
+  alias Crosswake.Shell.IOSHostOriginMode
   alias Crosswake.SupportMatrix
 
   @doc false
@@ -161,6 +162,15 @@ defmodule Crosswake.Doctor do
     phase_95_findings = phase_95_threadline_findings(install_manifest, cwd)
     phase_65_findings = phase_65_diagnostic_export_findings()
     phase_66_findings = phase_66_generator_drift_findings(manifest, cwd, opts)
+    host_command_findings = host_command_seam_findings(manifest, cwd, opts)
+    ios_host_observation = ios_host_origin_observation(cwd, opts)
+
+    # Under --check-publish the readiness check carries the code at :error, so the
+    # doctor-level finding is suppressed to keep each code once in the report.
+    ios_host_origin_findings =
+      if Keyword.get(opts, :check_publish?) == true,
+        do: [],
+        else: ios_host_origin_findings(ios_host_observation)
 
     phase_154_findings =
       legacy_capability_id_findings(manifest) ++
@@ -168,7 +178,13 @@ defmodule Crosswake.Doctor do
         bridge_hook_wiring_findings(cwd, opts)
 
     phase_155_findings = native_controls_ui_findings(cwd)
-    publish_readiness = publish_readiness(manifest, opts, cwd)
+
+    publish_readiness =
+      publish_readiness(
+        manifest,
+        Keyword.put(opts, :ios_host_origin_observation, ios_host_observation),
+        cwd
+      )
 
     publish_findings =
       if publish_readiness, do: PublishReadiness.findings(publish_readiness), else: []
@@ -187,6 +203,8 @@ defmodule Crosswake.Doctor do
         phase_95_findings ++
         phase_65_findings ++
         phase_66_findings ++
+        host_command_findings ++
+        ios_host_origin_findings ++
         phase_154_findings ++
         phase_155_findings ++
         publish_findings
@@ -367,7 +385,12 @@ defmodule Crosswake.Doctor do
               "unmanaged_routes",
               "policy_compile",
               warning.message,
-              "decide whether unmanaged routes are intentionally outside Crosswake ownership"
+              "decide whether unmanaged routes are intentionally outside Crosswake ownership",
+              %{
+                unmanaged_paths: warning.unmanaged_paths |> Enum.uniq() |> Enum.sort(),
+                # inspect(nil) is the string "nil"; the guard keeps a route-list source null.
+                router: warning.module && inspect(warning.module)
+              }
             )
           end)
 
@@ -446,6 +469,21 @@ defmodule Crosswake.Doctor do
   defp phase_4_posture(nil), do: {%{}, []}
 
   defp phase_4_posture(manifest) do
+    # Computed over every manifest route BEFORE the contract filter below: that
+    # filter drops exactly the routes this check exists to catch (an offline
+    # island with no island_contract). The predicate is deliberately not widened
+    # (D-09; see 187-DEFERRALS.md).
+    incoherent_ids =
+      manifest.routes
+      |> Map.values()
+      |> Enum.filter(fn route ->
+        route.runtime == :offline_island and route.offline == :local_first and
+          is_nil(route.island_contract)
+      end)
+      |> Enum.map(& &1.id)
+      |> Enum.uniq()
+      |> Enum.sort()
+
     offline_routes =
       manifest.routes
       |> Map.values()
@@ -474,16 +512,31 @@ defmodule Crosswake.Doctor do
     terminal_outcomes = Enum.map(OfflineTelemetry.terminal_outcomes(), &Atom.to_string/1)
 
     coherent? =
-      Enum.all?(offline_routes, fn {_route_id, route} ->
-        case route.offline do
-          :cached_read_only -> route.cache_contract and not route.island_contract
-          :local_first -> route.island_contract
-          :unavailable -> true
-        end
-      end)
+      incoherent_ids == [] and
+        Enum.all?(offline_routes, fn {_route_id, route} ->
+          case route.offline do
+            :cached_read_only -> route.cache_contract and not route.island_contract
+            :local_first -> route.island_contract
+            :unavailable -> true
+          end
+        end)
+
+    claims_offline? =
+      manifest.routes
+      |> Map.values()
+      |> Enum.any?(fn route -> route.offline != :unavailable end)
+
+    # Precedence: incomplete > not_claimed > supported. An unbacked island is
+    # itself an offline claim, so not_claimed can never mask an error.
+    status =
+      cond do
+        not coherent? -> :incomplete
+        not claims_offline? -> :not_claimed
+        true -> :supported
+      end
 
     offline = %{
-      status: if(coherent?, do: :supported, else: :incomplete),
+      status: status,
       states: status_vocabulary,
       telemetry: %{
         metadata_keys: telemetry_keys,
@@ -492,25 +545,50 @@ defmodule Crosswake.Doctor do
       routes: stringify_offline_routes(offline_routes)
     }
 
+    details = %{
+      status: Atom.to_string(offline.status),
+      states: status_vocabulary,
+      telemetry_keys: telemetry_keys,
+      terminal_outcomes: terminal_outcomes,
+      routes: offline.routes
+    }
+
     findings = [
-      check(
-        if(coherent?, do: :advisory, else: :error),
-        if(coherent?, do: "offline_posture_ready", else: "offline_posture_incomplete"),
-        "offline_posture",
-        "offline posture exposes route-local cached, saved locally, queued for replay, replay failed, and conflict requires attention vocabulary",
-        if(coherent?,
-          do:
+      case status do
+        :incomplete ->
+          check(
+            :error,
+            "offline_posture_incomplete",
+            "offline_posture",
+            "offline posture exposes route-local cached, saved locally, queued for replay, replay failed, and conflict requires attention vocabulary",
+            "restore explicit cache and island contract truth for every offline route; " <>
+              "declare island_contract for any offline_island local_first route listed in incoherent_routes",
+            if(incoherent_ids == [],
+              do: details,
+              else: Map.put(details, :incoherent_routes, incoherent_ids)
+            )
+          )
+
+        :not_claimed ->
+          check(
+            :advisory,
+            "offline_posture_not_claimed",
+            "offline_posture",
+            "no routes declare offline behavior; offline posture is not claimed",
+            "a cached read-only route is not local mutation; offline posture is reported once a route declares cache_contract or island_contract",
+            details
+          )
+
+        :supported ->
+          check(
+            :advisory,
+            "offline_posture_ready",
+            "offline_posture",
+            "offline posture exposes route-local cached, saved locally, queued for replay, replay failed, and conflict requires attention vocabulary",
             "doctor and JSON output now describe explicit cached-route and study-session island posture from typed contract truth",
-          else: "restore explicit cache and island contract truth for every offline route"
-        ),
-        %{
-          status: Atom.to_string(offline.status),
-          states: status_vocabulary,
-          telemetry_keys: telemetry_keys,
-          terminal_outcomes: terminal_outcomes,
-          routes: offline.routes
-        }
-      )
+            details
+          )
+      end
     ]
 
     {offline, findings}
@@ -2365,6 +2443,278 @@ defmodule Crosswake.Doctor do
         else: []
 
     placeholder_findings ++ ios_drift ++ android_drift
+  end
+
+  # D-16(d), D-23: stale generated host_commands and the shell-package gate verdict. Details
+  # carry only route ids, command names, versions, package location and platform.
+  defp ios_host_origin_findings(observation) do
+    case observation do
+      :none ->
+        []
+
+      {:local, origin} ->
+        [
+          check(
+            :warning,
+            "ios_host.local_loopback_origin",
+            "ios_host_origin",
+            IOSHostOriginMode.local_message(origin),
+            IOSHostOriginMode.local_hint(),
+            %{origin: origin, mode: "local_loopback"}
+          )
+        ]
+
+      {:mismatch, origin} ->
+        [
+          check(
+            :error,
+            "ios_host.origin_mode_mismatch",
+            "ios_host_origin",
+            IOSHostOriginMode.mismatch_message(),
+            IOSHostOriginMode.mismatch_hint(),
+            %{origin: origin, mode: "local_loopback"}
+          )
+        ]
+    end
+  end
+
+  defp ios_host_origin_observation(cwd, opts) do
+    root = shell_root(:ios, cwd, opts)
+
+    declaration =
+      Keyword.get_lazy(opts, :ios_host, fn -> Application.get_env(:crosswake, :ios_host) end)
+
+    IOSHostOriginMode.observe(root, declaration)
+  end
+
+  defp host_command_seam_findings(nil, _cwd, _opts), do: []
+
+  defp host_command_seam_findings(manifest, cwd, opts) do
+    declaring =
+      manifest.routes
+      |> Enum.filter(fn {_id, entry} -> entry.host_commands != %{} end)
+      |> Enum.sort_by(&elem(&1, 0))
+
+    root = shell_root(:ios, cwd, opts)
+
+    if File.dir?(root) do
+      stale_host_command_findings(manifest, root, declaring) ++
+        host_command_shell_findings(declaring, root, cwd)
+    else
+      []
+    end
+  end
+
+  @generated_manifest_rel "Fixtures/crosswake_manifest.json"
+  @regenerate_hint "Run mix crosswake.gen.shell ios"
+
+  defp stale_host_command_findings(manifest, root, declaring) do
+    case File.read(Path.join(root, @generated_manifest_rel)) do
+      {:error, :enoent} ->
+        if declaring == [] do
+          []
+        else
+          [
+            check(
+              :advisory,
+              "host_commands_stale_skipped",
+              "host_commands",
+              "The generated iOS manifest #{@generated_manifest_rel} is absent, so the stale host-command check was skipped",
+              @regenerate_hint,
+              %{platform: :ios}
+            )
+          ]
+        end
+
+      {:error, posix} ->
+        [
+          check(
+            :error,
+            "host_commands_stale",
+            "host_commands",
+            "The generated iOS manifest #{@generated_manifest_rel} could not be read (#{posix}), so its host commands cannot be checked",
+            "Run mix crosswake.gen.shell ios to regenerate the manifest; do not edit generated fixtures",
+            %{reason: "unreadable", error: Atom.to_string(posix), platform: :ios}
+          )
+        ]
+
+      {:ok, bytes} ->
+        case generated_routes(bytes) do
+          {:ok, generated} ->
+            compare_generated_routes(manifest, generated, declaring)
+
+          :malformed ->
+            [
+              check(
+                :error,
+                "host_commands_stale",
+                "host_commands",
+                "The generated iOS manifest #{@generated_manifest_rel} is malformed, so its host commands cannot be checked",
+                "Run mix crosswake.gen.shell ios to regenerate the manifest; do not edit generated fixtures",
+                %{reason: "malformed", platform: :ios}
+              )
+            ]
+        end
+    end
+  end
+
+  # The Swift decoder reads "host_commands": null as empty; doctor treats a
+  # non-map value as malformed instead (D-04).
+  defp generated_routes(bytes) do
+    with {:ok, %{"routes" => routes}} when is_map(routes) <- Jason.decode(bytes),
+         true <- Enum.all?(routes, fn {_id, route} -> valid_generated_route?(route) end) do
+      {:ok, routes}
+    else
+      _ -> :malformed
+    end
+  end
+
+  defp valid_generated_route?(route) when is_map(route) do
+    case Map.fetch(route, "host_commands") do
+      :error ->
+        true
+
+      {:ok, commands} when is_map(commands) ->
+        Enum.all?(commands, fn {name, version} -> is_binary(name) and is_binary(version) end)
+
+      {:ok, _} ->
+        false
+    end
+  end
+
+  defp valid_generated_route?(_), do: false
+
+  defp compare_generated_routes(manifest, generated, declaring) do
+    declaring_ids = Enum.map(declaring, &elem(&1, 0))
+    sorted_routes = Enum.sort_by(manifest.routes, &elem(&1, 0))
+
+    legacy_ids =
+      generated
+      |> Enum.reject(fn {_id, route} -> Map.has_key?(route, "host_commands") end)
+      |> Enum.map(&elem(&1, 0))
+      |> Enum.sort()
+
+    per_route =
+      Enum.flat_map(sorted_routes, fn {route_id, entry} ->
+        commands = entry.host_commands |> Map.keys() |> Enum.sort()
+
+        case Map.fetch(generated, route_id) do
+          :error when commands != [] ->
+            [
+              check(
+                :error,
+                "host_commands_stale",
+                "host_commands",
+                "Route #{route_id} declares host commands but is absent from the generated iOS manifest",
+                "Run mix crosswake.gen.shell ios to regenerate the manifest; do not edit generated fixtures",
+                %{reason: "route_missing", route_id: route_id, commands: commands, platform: :ios}
+              )
+            ]
+
+          :error ->
+            []
+
+          {:ok, route} ->
+            case Map.fetch(route, "host_commands") do
+              {:ok, generated_commands} when generated_commands != entry.host_commands ->
+                [
+                  check(
+                    :error,
+                    "host_commands_stale",
+                    "host_commands",
+                    "Route #{route_id} host commands in the generated iOS manifest differ from the router declaration",
+                    "Run mix crosswake.gen.shell ios to regenerate the manifest; do not edit generated fixtures",
+                    %{route_id: route_id, commands: commands, platform: :ios}
+                  )
+                ]
+
+              _ ->
+                []
+            end
+        end
+      end)
+
+    {legacy_error, legacy_warning} = Enum.split_with(legacy_ids, &(&1 in declaring_ids))
+
+    per_route ++
+      legacy_finding(:error, legacy_error) ++ legacy_finding(:warning, legacy_warning)
+  end
+
+  defp legacy_finding(_severity, []), do: []
+
+  defp legacy_finding(severity, route_ids) do
+    [
+      check(
+        severity,
+        "host_commands_legacy_manifest",
+        "host_commands",
+        "Routes #{Enum.join(route_ids, ", ")} in the generated iOS manifest have no host_commands entry " <>
+          "(generated before manifest schema 1.2.0), so every host command on them is denied",
+        @regenerate_hint,
+        %{route_ids: route_ids, platform: :ios}
+      )
+    ]
+  end
+
+  defp host_command_shell_findings([], _root, _cwd), do: []
+
+  defp host_command_shell_findings([{route_id, entry} | _], root, cwd) do
+    required = Crosswake.HostCommands.seam_version()
+    commands = entry.host_commands |> Map.keys() |> Enum.sort()
+
+    case Crosswake.Shell.ShellPackage.resolve({:project, root}) do
+      {:error, :no_project} ->
+        []
+
+      {:ok, package} ->
+        case Crosswake.Shell.ShellPackage.satisfies?(package, required) do
+          :ok ->
+            []
+
+          {:error, found} ->
+            [shell_unsupported_finding(route_id, commands, package, found, required, cwd)]
+        end
+
+      {:error, reason} ->
+        package = %{location: "the managed project", seam_version: nil, version: nil}
+
+        [
+          shell_unsupported_finding(
+            route_id,
+            commands,
+            package,
+            "undeterminable (#{reason})",
+            required,
+            cwd
+          )
+        ]
+    end
+  end
+
+  defp shell_unsupported_finding(route_id, commands, package, found, required, cwd) do
+    # "the managed project" is a label, not a path; every real location is redacted (D-07).
+    location =
+      if package.location == "the managed project",
+        do: package.location,
+        else: Crosswake.Shell.ShellPackage.display_location(package.location, cwd)
+
+    check(
+      :error,
+      "host_command_shell_unsupported",
+      "host_commands",
+      "Route #{route_id} declares host command #{hd(commands)}, but the crosswake-shell-core-ios " <>
+        "at #{location} cannot honor it: #{found}",
+      "Point the host at a crosswake-shell-core-ios local path that contains HostCommandSeam " <>
+        "version #{required} or later, or remove the host_commands declaration until a shell release includes it",
+      %{
+        route_id: route_id,
+        commands: commands,
+        platform: :ios,
+        package_location: location,
+        found_version: package.seam_version || package.version,
+        required_version: required
+      }
+    )
   end
 
   defp check_shell_unreplaced_placeholders(path) do

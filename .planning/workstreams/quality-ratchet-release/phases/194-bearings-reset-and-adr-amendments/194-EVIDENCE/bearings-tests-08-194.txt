@@ -1,0 +1,17 @@
+== mix test
+72 tests, 0 failures
+tests08: mix test rc 0
+== ownership
+tests08: ownership rc 0
+== absence
+tests08: absence rc 0
+== planning
+95 tests, 0 failures
+tests08: planning rc 0
+== format
+tests08: format rc 0
+== compile
+tests08: compile rc 0
+== lane
+2747 tests, 0 failures (78 excluded)
+tests08: lane rc 0

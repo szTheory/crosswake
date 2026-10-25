@@ -29,7 +29,10 @@ defmodule Crosswake.Proof.Phase174CompanionFindingsTest do
   use ExUnit.Case, async: true
 
   @todo011 ".planning/todos/TODO-011-companion-cleanroom-lane-has-never-been-green.md"
-  @phase_dir ".planning/workstreams/quality-ratchet-release/phases/174-clean-room-host-realism-adopter-fidelity"
+  @phase_dir Crosswake.Test.PhaseEvidencePath.resolve(
+               "quality-ratchet-release",
+               "174-clean-room-host-realism-adopter-fidelity"
+             )
   @expected_table_cardinality 3
   @expected_finding_roster ["sigra", "threadline"]
 

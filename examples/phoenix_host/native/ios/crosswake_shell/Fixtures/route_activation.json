@@ -1,0 +1,15 @@
+{
+  "bridge_protocol_version": "1.1.0",
+  "capabilities": {
+    "host.study.audio.play": "1.0.0"
+  },
+  "correlation_id": "ios-build-entry",
+  "declared_pack_requirements": {},
+  "installed_packs": {},
+  "manifest_source": "bundled",
+  "native_runtime_version": "1.0.0",
+  "origin": "http://127.0.0.1:4790",
+  "route_id": "offline-study",
+  "source": "cold_start",
+  "url": "http://127.0.0.1:4790/offline"
+}

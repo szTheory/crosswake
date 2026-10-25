@@ -26,7 +26,18 @@ defmodule Crosswake.Proof.Phase170VacuityTaxonomyConventionTest do
                      @repo_root,
                      ".planning/workstreams/quality-ratchet-release/VERIFICATION-CONVENTIONS.md"
                    )
-  @phases_glob Path.join(@repo_root, ".planning/workstreams/quality-ratchet-release/phases/*")
+  @workstream "quality-ratchet-release"
+  # Closed roster of the seven v23 phases this convention covers. A glob over every live
+  # phase folder would also sweep later phases and would see nothing once these are archived.
+  @v23_phases [
+    "169-diagnostic-legibility",
+    "170-vacuous-assertion-remediation",
+    "171-version-authority-split",
+    "172-per-package-proof-scope",
+    "173-recovery-path-proof-convergence",
+    "174-clean-room-host-realism-adopter-fidelity",
+    "175-rehearsal-and-publish"
+  ]
   @vacuity_taxonomy_heading "## Vacuity Taxonomy"
   @addendum_suffix "-VACUITY-TAXONOMY.md"
 
@@ -50,9 +61,8 @@ defmodule Crosswake.Proof.Phase170VacuityTaxonomyConventionTest do
   # close, through the VERIFICATION.md artifact). A phase with no VERIFICATION.md at all has
   # not yet closed and is out of this convention's scope.
   defp phase_dirs_with_verification do
-    @phases_glob
-    |> Path.wildcard()
-    |> Enum.filter(&File.dir?/1)
+    @v23_phases
+    |> Enum.map(&Crosswake.Test.PhaseEvidencePath.resolve(@workstream, &1))
     |> Enum.sort()
     |> Enum.filter(fn dir ->
       dir
@@ -62,6 +72,14 @@ defmodule Crosswake.Proof.Phase170VacuityTaxonomyConventionTest do
         [] -> false
         _ -> true
       end
+    end)
+  end
+
+  # Roster entries whose resolved folder does not exist. Reported rather than dropped, so a
+  # missing roster folder can never silently shrink the examined set.
+  defp missing_roster_dirs(roster) do
+    Enum.reject(roster, fn entry ->
+      @workstream |> Crosswake.Test.PhaseEvidencePath.resolve(entry) |> File.dir?()
     end)
   end
 
@@ -105,6 +123,12 @@ defmodule Crosswake.Proof.Phase170VacuityTaxonomyConventionTest do
   test "Task 2: findings floor — the examined phase-directory count is non-zero (D-14)" do
     examined = phase_dirs_with_verification()
 
+    assert missing_roster_dirs(@v23_phases) == [],
+           "roster phase folders missing both live and archived: " <>
+             inspect(missing_roster_dirs(@v23_phases))
+
+    assert length(examined) == length(@v23_phases)
+
     assert length(examined) >= 1,
            "expected at least 1 phase directory with a *-VERIFICATION.md to examine, found 0 — " <>
              "the Path.wildcard glob may have silently stopped matching, which would turn this " <>
@@ -112,19 +136,30 @@ defmodule Crosswake.Proof.Phase170VacuityTaxonomyConventionTest do
   end
 
   test "Task 2: non-vacuity control — the predicate returns true for a real *-VERIFICATION.md carrying the section" do
-    source =
-      verification_source_for(
-        ".planning/workstreams/quality-ratchet-release/phases/169-diagnostic-legibility"
-      )
+    phase_169 =
+      Crosswake.Test.PhaseEvidencePath.resolve(@workstream, "169-diagnostic-legibility")
+
+    source = verification_source_for(phase_169)
 
     # 169-VERIFICATION.md is a sealed, digest-covered artifact and was closed before this
     # convention existed, so it is covered by the sibling 169-VACUITY-TAXONOMY.md addendum,
     # not by an in-place section edit. Confirm the ADDENDUM branch fires for the real phase
     # this convention already covers.
-    entries =
-      File.ls!(".planning/workstreams/quality-ratchet-release/phases/169-diagnostic-legibility")
+    entries = File.ls!(phase_169)
 
     assert taxonomy_recorded?(entries, source)
+  end
+
+  test "Task 2: resolver negative control — a phase path present neither live nor archived resolves to the missing live path" do
+    relative = "999-never-existed/999-VERIFICATION.md"
+    resolved = Crosswake.Test.PhaseEvidencePath.resolve(@workstream, relative)
+
+    assert resolved == Path.join([".planning/workstreams", @workstream, "phases", relative])
+    refute File.exists?(resolved)
+  end
+
+  test "Task 2: missing-roster negative control — a roster entry with no folder is reported" do
+    assert missing_roster_dirs(["999-no-such-roster-phase"]) == ["999-no-such-roster-phase"]
   end
 
   @tag :tmp_dir

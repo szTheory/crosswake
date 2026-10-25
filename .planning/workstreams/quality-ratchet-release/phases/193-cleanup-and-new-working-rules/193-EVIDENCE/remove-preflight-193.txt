@@ -1,0 +1,29 @@
+preflight: scripts189 ok 22
+preflight: sums SHA256SUMS ok 167
+preflight: sums SHA256SUMS.02 ok 2
+preflight: sums SHA256SUMS.03 ok 8
+preflight: sums SHA256SUMS.04 ok 13
+preflight: sums SHA256SUMS.05 ok 5
+preflight: sums SHA256SUMS.06 ok 1
+preflight: sums SHA256SUMS.07 ok 3
+preflight: sums SHA256SUMS.08 ok 123
+preflight: sums SHA256SUMS.11 ok 2
+preflight: sums SHA256SUMS.13 ok 7
+preflight: sums SHA256SUMS.cr01 ok 2
+preflight: info skipped retained run1 sums
+preflight: sums SHA256SUMS.193 ok 7
+preflight: sums SHA256SUMS.193b ok 2
+preflight: sums SHA256SUMS.193r1 ok 2
+preflight: sums SHA256SUMS.193r2 ok 2
+preflight: modes ok
+restore refs-all.bundle: pass
+restore tmp-commits.bundle: pass
+restore ignored-keep.tar: pass
+restore env-local.tar: pass
+restore worktree-accrue-bridge.tar: pass
+restore worktree-agent-p78.tar: pass
+restore worktree-accrue-bridge.patch: pass
+restore worktree-agent-p78.patch: pass
+restore tmp-crosswake-phase179-hex.tar: pass
+preflight: info recovery absent
+preflight: result pass

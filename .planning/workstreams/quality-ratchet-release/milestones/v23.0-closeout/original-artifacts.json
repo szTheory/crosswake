@@ -1,0 +1,38 @@
+[
+  {
+    "category": "debug_sessions",
+    "source": ".planning/debug/release-automation-failures.md",
+    "original": ".planning/workstreams/quality-ratchet-release/milestones/v23.0-closeout/original-artifacts/.planning/debug/release-automation-failures.md",
+    "sha256": "d63e89214935f31cd5901171c2efba17a7a9747f3dcbe7ef807780bb61abe50c"
+  },
+  {
+    "category": "debug_sessions",
+    "source": ".planning/debug/release-please-guard-36352732061.md",
+    "original": ".planning/workstreams/quality-ratchet-release/milestones/v23.0-closeout/original-artifacts/.planning/debug/release-please-guard-36352732061.md",
+    "sha256": "d91f8f39d9d9df803047a5730b07c1f12ed82510fb30c889ae30a6c7ff2e3f6d"
+  },
+  {
+    "category": "uat_gaps",
+    "source": ".planning/workstreams/quality-ratchet-release/milestones/v22.0-phases/168-0-2-1-release-candidate-readiness/168-UAT.md",
+    "original": ".planning/workstreams/quality-ratchet-release/milestones/v23.0-closeout/original-artifacts/.planning/workstreams/quality-ratchet-release/milestones/v22.0-phases/168-0-2-1-release-candidate-readiness/168-UAT.md",
+    "sha256": "b6a3c07cf20da72413e2aa417a1996c0ed2837f29ae1e0843bc44dac76e4105b"
+  },
+  {
+    "category": "verification_gaps",
+    "source": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-VERIFICATION-ARCHIVE-PRE-PLAN148-CLOSEOUT.md",
+    "original": ".planning/workstreams/quality-ratchet-release/milestones/v23.0-closeout/original-artifacts/.planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-VERIFICATION-ARCHIVE-PRE-PLAN148-CLOSEOUT.md",
+    "sha256": "2c26f189b88e9118e6a9087bcd60740216be9e55ef089162fedf75265ff23903"
+  },
+  {
+    "category": "verification_gaps",
+    "source": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-VERIFICATION.md",
+    "original": ".planning/workstreams/quality-ratchet-release/milestones/v23.0-closeout/original-artifacts/.planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-VERIFICATION.md",
+    "sha256": "4373a08352330e488f442acafb11c1c4f40ddf625cf15192443a310910637772"
+  },
+  {
+    "category": "verification_gaps",
+    "source": ".planning/workstreams/quality-ratchet-release/milestones/v22.0-phases/168-0-2-1-release-candidate-readiness/168-VERIFICATION.md",
+    "original": ".planning/workstreams/quality-ratchet-release/milestones/v23.0-closeout/original-artifacts/.planning/workstreams/quality-ratchet-release/milestones/v22.0-phases/168-0-2-1-release-candidate-readiness/168-VERIFICATION.md",
+    "sha256": "8978e6fc8b672a6a039e605fc2d2ef9136323957e41adaf7f549cceec7a0b785"
+  }
+]

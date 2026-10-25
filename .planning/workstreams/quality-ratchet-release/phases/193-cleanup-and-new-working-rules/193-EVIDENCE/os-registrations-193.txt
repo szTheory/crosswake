@@ -1,0 +1,3 @@
+launchctl crosswake_lines 0
+crontab crosswake_lines 0
+crontab none

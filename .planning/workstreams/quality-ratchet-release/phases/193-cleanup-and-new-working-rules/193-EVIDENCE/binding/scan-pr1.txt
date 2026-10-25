@@ -1,0 +1,27 @@
+head 0fa94917ca1dd0a01bbe889487c27a3a0f0eb0ca
+base d12aed7567b6bddc6800806e4269e0e87bcd4aac
+scan_exit 0
+adopter_check skipped_by_user A-14 scope D-26 label pr1
+scan: commits 2
+scan: added_lines 10961
+scan: added_bytes 861886
+scan: text_blobs 116
+scan: binary_blobs 0
+scan: paths 137
+scan: identities 4
+scan: terms 0
+scan: adopter_check skipped_by_user A-14
+scan: gitleaks_version 8.30.1
+scan: gitleaks_rules 222
+scan: gitleaks_findings 0
+scan: blocking_final 0
+scan: history_personal 0
+scan: history_personal_class home_path 0
+scan: history_personal_class user_temp 0
+scan: history_personal_class user_name 0
+scan: history_sensitive 0
+scan: triaged 0
+scan: triage_only uuid 0
+scan: triage_only bare_word 204
+scan: triage_only bare_hex40 7185
+scan: result clean

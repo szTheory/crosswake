@@ -1,0 +1,1 @@
+No external API integration: phase repairs CI workflows, test comparisons and repository hygiene, and adds a local clean-room script that reads public Hex, Maven Central and GitHub mirror endpoints unauthenticated as a consumer; no product capability integrates an external service.

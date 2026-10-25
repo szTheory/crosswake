@@ -1,0 +1,17 @@
+pr_create 1
+pr_merge 1
+run_rerun 1
+forbidden_options 0
+pushes_forced 0
+required_set ok
+carry_trial_refs 0
+candidate_src_refs 0
+tags_unchanged yes
+other_prs_unchanged yes
+release_please_pr refreshed
+amendment A-10-1 read-only gate interpretation: heads of #210 #211 #239 #240 #241 changed after the merge; each verified live as dependabot[bot] author, web-flow committer, signature verified, single parent equal to the merge commit d12aed7567b6bddc6800806e4269e0e87bcd4aac, same number and branch, still OPEN, and no write in gh-writes-192.txt names it; per-PR record in open-prs-a10-1-192.txt
+other_prs_238 unchanged
+baselines_unchanged yes
+main_green yes
+advisory_see_it_run in_progress
+result pass

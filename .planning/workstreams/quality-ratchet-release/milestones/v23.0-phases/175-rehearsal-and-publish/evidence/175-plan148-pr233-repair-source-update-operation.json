@@ -1,0 +1,156 @@
+{
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "pr": 233,
+  "branch": "chore/release-ledger-38155320492",
+  "base_oid": "72197e6dd387ae584a04545055ce01659d02d7ba",
+  "expected_old_head": "62c7333b5cfe6478003951e32d0cc54c77b64c7a",
+  "scope": [
+    "docs/release-ledger/RELEASE-LEDGER.jsonl",
+    "lib/crosswake/support_matrix/support_matrix.ex",
+    "guides/support_matrix.md",
+    "test/crosswake/support_matrix/support_matrix_test.exs",
+    ".github/workflows/release-please.yml",
+    "script/check_release_workflow_integrity.exs",
+    "test/crosswake/proof/phase175_rel17_wiring_test.exs",
+    "packages/crosswake_chimeway/README.md"
+  ],
+  "force": false,
+  "attempts": [
+    {
+      "operation": "blob-0",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/blobs",
+      "payload_sha256": "961853799eb400ff32135b23ea75d994f6e3d7e73e4dd143751672015e464995",
+      "attempted_at_utc": "2026-10-11T17:46:23.280491+00:00",
+      "delivery": "ACCEPTED",
+      "exit_code": 0,
+      "response_sha256": "3ca26a0e12acba55a01b336f7f6a4bba96cf2a0230c28bd3ceaad18a0115974b",
+      "returned_sha": "07bf967a23ebf27e422dc8a1a8d6ef8d9c426911"
+    },
+    {
+      "operation": "blob-1",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/blobs",
+      "payload_sha256": "083dccb14daf7c6fd87cb76ab55ae20ec8faf3ec177686391b25d59f7da96888",
+      "attempted_at_utc": "2026-10-11T17:46:23.698360+00:00",
+      "delivery": "ACCEPTED",
+      "exit_code": 0,
+      "response_sha256": "54e8c3e7dd9be710bcb5f71268d1438421f2b978e4ff8007dcdcf46c01a39c07",
+      "returned_sha": "f40c45fa54f86382be6e462a8563baaf0cc5fdf7"
+    },
+    {
+      "operation": "blob-2",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/blobs",
+      "payload_sha256": "1f55e402e6a5019ae14cb4e1e2a3ca1fa36d3d4719e94447e82a0cd3524d8fea",
+      "attempted_at_utc": "2026-10-11T17:46:24.700594+00:00",
+      "delivery": "ACCEPTED",
+      "exit_code": 0,
+      "response_sha256": "e5c94c0bd3718e9962fc839135fd8d3a7f0a10c72389fd2d694aecafc95a1070",
+      "returned_sha": "dcd93bd6ca04d3859569bca49a24bbdfdbc57384"
+    },
+    {
+      "operation": "blob-3",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/blobs",
+      "payload_sha256": "2531b3fc36af0e09355fd6d8e3a72df619a859ab160ecb253af35f6b7d741b51",
+      "attempted_at_utc": "2026-10-11T17:46:25.811324+00:00",
+      "delivery": "ACCEPTED",
+      "exit_code": 0,
+      "response_sha256": "eb62d36fb6416b53e18930f1db7550c7ef14975c5f3195b904c6463c7b2c29d5",
+      "returned_sha": "33ea8ac106fe0dc3f0fd84fab28dccfe00bcda98"
+    },
+    {
+      "operation": "blob-4",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/blobs",
+      "payload_sha256": "9eabd055139a37b7d5b9be7e22ff2b779b05209748f925fb01ee2748924ae8e2",
+      "attempted_at_utc": "2026-10-11T17:46:26.331638+00:00",
+      "delivery": "ACCEPTED",
+      "exit_code": 0,
+      "response_sha256": "56faeeaa46e77f4c470bde1f2ed1cb2e2bd3f30acae35176c7d8a52afdd1cfd4",
+      "returned_sha": "09713666d236c3199ef1b436cb391c8de8db1075"
+    },
+    {
+      "operation": "blob-5",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/blobs",
+      "payload_sha256": "5ed47088a62ba285e0ddbe877255cb1a5623daf7409713b96528b80f409ff54b",
+      "attempted_at_utc": "2026-10-11T17:46:26.903366+00:00",
+      "delivery": "ACCEPTED",
+      "exit_code": 0,
+      "response_sha256": "15a6b2b481e5fdcd796646293d9b2121280020ee68e40aac1ad138074aaf7dd9",
+      "returned_sha": "bc6301cf4dfb53a52ad33f6db9ad38eef4ac85d4"
+    },
+    {
+      "operation": "blob-6",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/blobs",
+      "payload_sha256": "0cddceeba1994540cff2f401ad0f33fa8ec67b769d316c3f7f909b28d7c61448",
+      "attempted_at_utc": "2026-10-11T17:46:27.460289+00:00",
+      "delivery": "ACCEPTED",
+      "exit_code": 0,
+      "response_sha256": "dd3621556259cffbaaa4ed306e9cf6f86314a9dacf1217df42de3d62c4f078df",
+      "returned_sha": "9208cc8b1cf252be62fc6f545200e76c516a9e71"
+    },
+    {
+      "operation": "blob-7",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/blobs",
+      "payload_sha256": "8fdfe6c19b08325602038892e6204504c69a65916b881de7851f2d3c012de8cb",
+      "attempted_at_utc": "2026-10-11T17:46:27.814320+00:00",
+      "delivery": "ACCEPTED",
+      "exit_code": 0,
+      "response_sha256": "c6aaa159cd235eabc728c227872131745db2b1249203b0536d37b6a20e8b7dd3",
+      "returned_sha": "0b1394d0e5af184ee3c38daf476b820a015adc0d"
+    },
+    {
+      "operation": "tree",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/trees",
+      "payload_sha256": "6e712615467cc5665ec8c9b69d75e2a8809bcd160488ac4b7a1c36891f3742ab",
+      "attempted_at_utc": "2026-10-11T17:46:28.235893+00:00",
+      "delivery": "ACCEPTED",
+      "exit_code": 0,
+      "response_sha256": "b32c717c3b57f5652513468d9cab325b57caf0cb70e7804d5a3ebfe17cde3251",
+      "returned_sha": "cb7c4f367e4e18d4ac4e2cb52018a3721639cdae"
+    },
+    {
+      "operation": "commit",
+      "method": "POST",
+      "endpoint": "repos/szTheory/crosswake/git/commits",
+      "payload_sha256": "77d0c784d378fd84fb62a27b049b599527625cbd5e1bf9e209f516467d9f70f8",
+      "attempted_at_utc": "2026-10-11T17:46:28.766258+00:00",
+      "delivery": "ACCEPTED",
+      "exit_code": 0,
+      "response_sha256": "e4adfee173e20e7a05c328996ba7de92f3b1a4270f26136cbd637ad04bbfa7e9",
+      "returned_sha": "a3d02d037e7695449700dc90bda0b752536ab2b3"
+    },
+    {
+      "operation": "ref",
+      "method": "PATCH",
+      "endpoint": "repos/szTheory/crosswake/git/refs/heads/chore/release-ledger-38155320492",
+      "payload_sha256": "474c7d138722649efc96e0c9f31666fd6cb8a6d414dbbacd79289b9a611e4898",
+      "attempted_at_utc": "2026-10-11T17:46:30.521206+00:00",
+      "delivery": "ACCEPTED",
+      "exit_code": 0,
+      "response_sha256": "0e0a836c63e66a54f65efa5c650fae96e4db67863181a9e6eaf6b6171b9f474b"
+    },
+    {
+      "operation": "pr-description",
+      "method": "PATCH",
+      "endpoint": "repos/szTheory/crosswake/pulls/233",
+      "payload_sha256": "94f93d4c32421b3d222fc9b0d54fa3cea20d65adf50061f1b9a30d8dd8a1cc14",
+      "attempted_at_utc": "2026-10-11T17:46:31.754607+00:00",
+      "delivery": "ACCEPTED",
+      "exit_code": 0,
+      "response_sha256": "9aac2b15377b45a6d194c5f0d6b6adae15300371071df7e996d0d9a43c1db07d"
+    }
+  ],
+  "intent_at_utc": "2026-10-11T17:46:22.436888+00:00",
+  "delivery": "ACCEPTED",
+  "new_head_oid": "a3d02d037e7695449700dc90bda0b752536ab2b3",
+  "tree_oid": "cb7c4f367e4e18d4ac4e2cb52018a3721639cdae",
+  "protected_merge_attempts": 0,
+  "completed_at_utc": "2026-10-11T17:46:32.596864+00:00"
+}

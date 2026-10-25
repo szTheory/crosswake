@@ -1,0 +1,26 @@
+{
+  "run_id": 38105590960,
+  "merge_oid": "2c87f898f3a765eac2300e4dbb0be167c2a1490f",
+  "conclusion": "failure",
+  "guard_reason": "api_response_invalid",
+  "all_publishers_skipped": true,
+  "registry_observations": {
+    "hex": {
+      "http_status": "404",
+      "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f",
+      "exit": 0
+    },
+    "ios": {
+      "http_status": "404",
+      "body_sha256": "af34d7e1c24c2c3bd1da5d50fee4e8711a488d218f814c6c4f644603390fdf52",
+      "exit": 0
+    },
+    "maven": {
+      "http_status": "404",
+      "body_sha256": "e791ccfcfee9c0d299d07474d9bfcbfcbebf1181323be601220c8a823062ab99",
+      "exit": 0
+    }
+  },
+  "observed_at_utc": "2026-10-11T02:38:20.013324+00:00",
+  "retry_performed": false
+}

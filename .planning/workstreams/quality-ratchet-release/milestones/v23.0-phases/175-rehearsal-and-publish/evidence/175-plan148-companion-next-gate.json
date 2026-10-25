@@ -1,0 +1,58 @@
+{
+  "stage": "pre_merge",
+  "operation": "companion_publish",
+  "candidate": {
+    "base_oid": "fd1fcf59c1cd473f7ef9a593be46566018e8aaff",
+    "head_oid": "e43aa13c2ecdba55dec923848898ca230662f47b",
+    "merge_oid": null,
+    "package": "crosswake_chimeway",
+    "pr": 235,
+    "tree_oid": "81ff2f15a8fea0bd4d54478444a1750038dda49f",
+    "version": "0.1.2"
+  },
+  "identity": {
+    "leg_run_id": 38167329101,
+    "operation": "companion_publish",
+    "receipt_digest": "3ca58a266e87a82fc52f4263b265e9eb73122e8d35378dfa761b681814139776"
+  },
+  "state": "CONSUMED",
+  "authorized": true,
+  "consumed": true,
+  "core_exact_public": {
+    "run_id": 38155320492,
+    "linked_rollup": "COMPLETE"
+  },
+  "hex_rehearsal_run_id": 38167329101,
+  "evidence": {
+    "path": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/evidence/175-plan148-companion-next-premerge-result.json",
+    "verdict": "PASS",
+    "envelope_sha256": "2c93aed51b87a7295cf2548a8081c5b6a8faf7f2c6812d40c897fc4f0467e35f"
+  },
+  "authorization": "publish companion crosswake_chimeway 38167329101",
+  "choice_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "authorization_envelope": {
+    "schema_version": 1,
+    "state": "AUTHORIZED",
+    "consumed": false,
+    "authorization_run_id": null,
+    "authorization": "publish companion crosswake_chimeway 38167329101",
+    "leg_run_id": 38167329101,
+    "operation": "companion_publish",
+    "receipt_digest": "3ca58a266e87a82fc52f4263b265e9eb73122e8d35378dfa761b681814139776",
+    "package": "crosswake_chimeway",
+    "version": "0.1.2",
+    "pr": 235,
+    "repository": "szTheory/crosswake",
+    "base_oid": "fd1fcf59c1cd473f7ef9a593be46566018e8aaff",
+    "head_oid": "e43aa13c2ecdba55dec923848898ca230662f47b",
+    "tree_oid": "81ff2f15a8fea0bd4d54478444a1750038dda49f",
+    "ci_run_id": 38165160468,
+    "receipt_run_id": 38167445950,
+    "receipt_artifact_id": 11712628165,
+    "policy_sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+    "runbook_commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
+  },
+  "merge_attempted": true,
+  "merge_intent_at_utc": "2026-10-11T19:19:50.555605+00:00",
+  "final_envelope_sha256": "2c93aed51b87a7295cf2548a8081c5b6a8faf7f2c6812d40c897fc4f0467e35f"
+}

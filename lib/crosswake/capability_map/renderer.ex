@@ -39,6 +39,8 @@ defmodule Crosswake.CapabilityMap.Renderer do
       "",
       "This guide is rendered from `Crosswake.CapabilityMap`. It classifies what Crosswake supports today, what existing proof demonstrates, what the first adopter pressures, and what remains a future gap.",
       "",
+      ios_host_setup_section(),
+      "",
       what_works_today_section(rows),
       "",
       what_evidence_exists_section(rows),
@@ -68,6 +70,21 @@ defmodule Crosswake.CapabilityMap.Renderer do
       "| Claim layer | Current truth | Boundary |",
       "|-------------|---------------|----------|",
       rows
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp ios_host_setup_section do
+    [
+      "## Declared iOS Host Setup",
+      "",
+      "One ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled router, entry route, HTTPS origin, app/proof identities, and device-signing settings. An explicit `origin_mode: :local_loopback` allows only `http://127.0.0.1` or `http://localhost` (optional port) for Simulator demonstration and is reported as not production-ready. Compile-only generation projects selected-router manifest and static activation data without starting the Phoenix application or reading runtime-server configuration.",
+      "",
+      "The checked outputs cover recognized manifest, activation, and xcconfig files. `--diff` and `--check` are read-only; interrupted output publication has an explicit recovery path, and existing PBX settings migration is opt-in and limited to recognized target blocks. Host Swift, entitlements, and unrelated project customization remain host-owned.",
+      "",
+      "Effective Xcode settings have been observed across 20 shell/proof target, configuration, and simulator/device SDK cells. Simulator settings are unsigned. Device settings inspection is not signing or installation evidence. Static activation grants no session, account, scope, installed-media, or replay authority.",
+      "",
+      "This verifies a reusable host-setup path. It does not verify or promote a physical iPhone, a first adopter's host, or runtime/replay authority."
     ]
     |> Enum.join("\n")
   end
@@ -143,7 +160,7 @@ defmodule Crosswake.CapabilityMap.Renderer do
     [
       "## What the first adopter changes",
       "",
-      "Crosswake is currently infrastructure for one first adopter. Work is ordered by host-reusable proof, privacy-safe replay, one foreground iOS pronunciation-pack adapter, and physical-iPhone evidence. Android parity and native-control breadth are frozen.",
+      "Crosswake is currently infrastructure for one first adopter. Work is ordered by host-reusable proof, privacy-safe replay, one foreground iOS pronunciation-pack adapter, and physical-iPhone evidence. Android is unfrozen only for proof and parity of existing contracts; native-control breadth stays frozen.",
       "",
       "### Frozen candidates",
       "",

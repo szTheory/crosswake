@@ -1,0 +1,97 @@
+---
+phase: 178-clean-checkout-and-final-ci
+plan: "02"
+type: execute
+wave: 2
+depends_on: ["178-01"]
+files_modified:
+  - .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/local_proof.mjs
+  - .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/local_proof.test.mjs
+  - .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/preliminary-local-proof.json
+autonomous: true
+requirements: [MAINT-07, MAINT-08]
+estimate: {tokens: 24000, raw_tokens: 24000, tasks: 2, confidence: low}
+must_haves:
+  truths:
+    - "D-08/D-09/D-10/D-14: the existing --all command is invoked once from a fresh clean exact candidate checkout with exact manifest tool versions and lock-bound dependencies, and all nine stages finish in order without an unapproved skip."
+    - "D-11/D-12/D-13: raw output, NUL status and per-stage logs survive privately; HEAD, tree and index are independently equal before/after; ignored outputs follow the selected artifact policy."
+    - "D-21/D-23: any source repair renews the candidate binding and full final proof; a preliminary pass cannot stand in for a later CI merge object."
+  artifacts:
+    - .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/local_proof.mjs
+    - .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/local_proof.test.mjs
+    - .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/preliminary-local-proof.json
+  key_links:
+    - "Plan01 private candidate binding -> exact clean proof clone -> existing --all stdout and retained run root -> strict nine-stage projection."
+  prohibitions:
+    - statement: "MUST NOT publish raw subprocess logs, NUL status paths, credentials, media or private recovery bytes in phase evidence."
+      status: unresolved
+---
+
+<objective>
+Run the complete existing repository verifier against the local candidate and retain independently checkable evidence. Purpose: earn preliminary MAINT-07 proof before any external write. Output: private full logs/snapshots and a small allowlisted local result.
+</objective>
+
+<execution_context>
+@<home>/.codex/gsd-core/workflows/execute-plan.md
+@<home>/.codex/gsd-core/templates/summary.md
+</execution_context>
+
+<context>
+@.planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-CONTEXT.md
+@.planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-RESEARCH.md
+@.planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-01-SUMMARY.md
+</context>
+
+## Artifacts this phase produces
+
+| Producer | Symbol, flag or file and private handoff | Consumer |
+|---|---|---|
+| 178-02 T1 | `local_proof.mjs` `--self-test`/`--collect`, `CROSSWAKE_178_PROOF_KIND=preliminary\|final`, `local_proof.test.mjs`; parser bound to actual nine-stage facade output | 178-02 T2; 178-05 T2 |
+| 178-02 T2 | `preliminary-local-proof.json`; atomic owner-private `local-proof-binding.json` with retained run pointer and source identity | 178-04 T1; 178-05 T2/T3 |
+
+The immutable Plan01 candidate binding is read-only in this wave. This plan alone writes `local-proof-binding.json`; Plan03 writes a different private file. Plan04 joins both after Wave 2, preventing concurrent mutation of a shared handoff record.
+
+<tasks>
+<task type="auto" tdd="true">
+  <name>Task 1: Read real facade output and Git identities into a closed local evidence projection</name>
+  <reversibility rating="reversible">The phase-local parser is replaceable and has no new public interface.</reversibility>
+  <files>.planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/local_proof.mjs, .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/local_proof.test.mjs</files>
+  <read_first>/private/tmp/crosswake-177-source/crosswake/script/verify_repository.sh; /private/tmp/crosswake-177-source/crosswake/script/verify_repository.mjs; /private/tmp/crosswake-177-source/crosswake/script/repository_verification_stages.json; /private/tmp/crosswake-177-source/crosswake/script/repository_artifact_policy.json; /private/tmp/crosswake-177-source/crosswake/test/js/repository_verification.test.mjs</read_first>
+  <behavior>Tests spawn a temporary Node harness that imports the selected source's exported runVerification({selection: "all"}) and prints result.output with process exitCode=result.status, capturing real child stdout/stderr/exit. Use supported manifest, workflowSource, probe, spawn, repoRoot, runRoot, captureRoot and enforceArtifactPolicy:false fixture injection in a temporary clean real Git repository. Capture its eight executed-stage 0600 logs and git-before.z/git-final.z files; preflight is a summary result with no stage log. Injected probes/stages are controlled, while output formatting, stage ordering, root validation, log writing and Git snapshots execute in the real facade. Assert --self-test yields only its self-test PASS line and is never used as nine-stage evidence. Parser accepts precisely nine ordered PASS lines from one full-run invocation plus eight executed-stage logs and NUL snapshots. It rejects invented JSON, duplicate/missing/out-of-order stage, nonzero exit, BLOCKED/FAIL, changed HEAD/tree/index, dirty NUL status, unapproved ignored output and raw-data leakage.</behavior>
+  <action>Per D-08/D-11/D-12/D-13/D-21, create a phase-local stdlib collector with --self-test and --collect modes. Define CROSSWAKE_178_PROOF_KIND=preliminary|final to select distinct output records. --collect reads a private invocation record and real facade text/logs; it never supplies pass booleans to the runner. Implement strict parsing of the facade's actual PASS/FAIL/BLOCKED line vocabulary and named git-before.z/git-final.z/logs paths. For the positive parser fixture, spawn a temporary Node harness that imports the actual selected-source runVerification and calls selection all in a temporary clean Git repo with validated external run/capture roots, the real nine-stage manifest/workflow text and controlled probe/spawn functions; set supported enforceArtifactPolicy:false only for this runner-format fixture because the temporary repo lacks selected-source generated files. Print actual result.output, set process exitCode=result.status, and assert captured subprocess output/status and retained files directly before mutating output for negative cases. The production --all in Task2 retains artifact policy enforcement. The --self-test text alone cannot satisfy the full-run fixture. Independently execute supplemental read-only Git commands for HEAD, HEAD^{tree}, index hash, status --porcelain=v1 -z --untracked-files=all and ignored-path inspection against the selected artifact policy, setting GIT_OPTIONAL_LOCKS=0 for every such subprocess before both snapshots. Store raw outputs only in private 0700/0600 capture; project safe command, source/run IDs, versions, outcomes, counts, safe causes and remediation into JSON. Require a nonzero process result or meaningful missing-output signal to block. Include real subprocess fixtures for malformed output, missing logs, dirty worktree, source drift and secret sentinels; do not synthesize success fields absent from the facade.</action>
+  <verify><automated>node --test .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/local_proof.test.mjs</automated><fails_when>Nonzero exit or a false-green fixture passes without real facade text, status snapshots or source identity.</fails_when></verify>
+  <acceptance_criteria>Collector accepts actual complete-run output and retained files from the source-supported nine-stage path, rejects each false-green case, proves GIT_OPTIONAL_LOCKS=0 on supplemental snapshots, and emits no raw path or child output publicly.</acceptance_criteria>
+  <done>The final local gate can be read from retained real process output rather than an invented summary.</done>
+</task>
+
+<task type="auto">
+  <name>Task 2: Prepare exact tools and locks, run --all, and retain the complete preliminary proof</name>
+  <reversibility rating="reversible">All setup and generated outputs live in the independent proof clone or owner-private capture root.</reversibility>
+  <files>.planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/preliminary-local-proof.json</files>
+  <read_first>.planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/candidate-source.json; .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/prepare_candidate.mjs; /private/tmp/crosswake-177-source/crosswake/.tool-versions; /private/tmp/crosswake-177-source/crosswake/script/repository_verification_stages.json; /private/tmp/crosswake-177-source/crosswake/script/capture_repository_verification_evidence.sh; /private/tmp/crosswake-177-source/crosswake/script/check_example_host_isolation.sh</read_first>
+  <action>Per D-08–D-14/D-21/D-23, operate only inside Plan01's fresh proof clone and private root. Assert immutable candidate-binding.json and clean HEAD/tree/index/status before setup. Probe every required_tools argv/version_regex in selected manifest, including exact Node 22.14.0, npm 10.9.2, Elixir 1.19.5 and OTP27; stop with safe cause if unavailable. Use existing asdf/Xcode/Java setup as needed without changing manifest rules. Resolve root and companion Mix dependencies with --check-locked where supported; use existing Phoenix host MIX_ENV=dev/test split, `npm ci` and `npx playwright install chromium`; verify lock/integrity before any private cache reuse. Do not copy Phase177 deps/build. Avoid parallel runs sharing Ecto SQLite, generated output or build paths. Create a 0700 capture parent outside source and `crosswake-repository-verify.*` run root; export CROSSWAKE_REPOSITORY_RUN_ROOT/CROSSWAKE_REPOSITORY_CAPTURE_ROOT. Capture separate HEAD/tree/index/NUL status before and after with GIT_OPTIONAL_LOCKS=0 on every supplemental Git subprocess, including index hash and ignored-path inspection. Invoke the selected source's `script/verify_repository.sh --all` as the one complete gate; generated-contract drift and all nine stages remain active, including Swift and hermetic Android. Retain full raw stdout/stderr/logs privately at 0600; run local_proof.mjs --collect to write preliminary-local-proof.json only if strict evidence passes. On a demonstrated defect, repair within six-file maintenance scope in an independent clone, add meaningful regression, renew candidate and rerun this whole task. Keep prior proof as historical preliminary evidence. Atomically write separate owner-private local-proof-binding.json at 0600 with run pointer and candidate identity; Plan04 joins it with Plan03's disjoint policy binding. The fallback MAINT-07 unclassified assumption remains flagged until the final exact runner-tested commit completes 178-05 T2.</action>
+  <verify><automated>script/verify_repository.sh --all</automated><fails_when>Nonzero exit, missing prerequisite, FAIL/BLOCKED/omitted stage, generated drift, or repository mutation; invoke with the explicit private run/capture environment from the action and cwd equal to the exact proof clone.</fails_when><automated>node .planning/workstreams/quality-ratchet-release/phases/178-clean-checkout-and-final-ci/178-evidence/local_proof.mjs --collect</automated><fails_when>Nonzero exit, absent retained log/snapshot, changed HEAD/tree/index/status, or invalid ignored artifact policy; invoke from the workstream checkout with the owner-private invocation record set.</fails_when></verify>
+  <acceptance_criteria>One --all process completes nine ordered PASS results; private root retains eight executed-stage logs, the preflight summary and both NUL snapshots; preliminary-local-proof.json names the exact candidate commit/tree and only allowlisted outcomes; supplemental snapshots cannot refresh the index. MAINT-07 unclassified remains pending final-commit proof at 178-05 T2.</acceptance_criteria>
+  <done>Preliminary full local proof is available before a remote proposal, with failures retaining a safe cause and next action.</done>
+</task>
+</tasks>
+
+<threat_model>
+## Trust Boundaries
+| Boundary | Description |
+|---|---|
+| Child verifier output to public evidence | Raw logs/status may include private paths or credentials. |
+| Tool caches to exact lockfiles | Stale or substituted package bytes may make proof invalid. |
+
+## STRIDE Threat Register
+| Threat ID | Category | Component | Severity | Disposition | Mitigation Plan |
+|---|---|---|---|---|---|
+| T-178-03 | Information disclosure | retained runner logs | high | mitigate | 0700 private root, 0600 files, allowlisted projection and secret-sentinel negative tests. |
+| T-178-04 | Tampering | dependency setup | high | mitigate | Exact manifest tool probes and lock-bound Mix/npm installation; reject stale cache integrity. |
+| T-178-05 | Repudiation | local source identity | high | mitigate | Separate HEAD/tree/index/NUL status snapshots before and after full run, plus ignored-artifact inspection. |
+| T-178-SC | Tampering | npm/pip/cargo installs | high | mitigate | npm ci installs only package-lock dependencies already in selected source; add no new package. |
+</threat_model>
+
+<verification>Run real-output collector negatives, existing facade regression suite, then one complete retained --all from the exact clean candidate.</verification>
+<success_criteria>MAINT-07 preliminary evidence is complete and source-bound, while final commit acceptance awaits observed CI source identity.</success_criteria>
+<output>Create 178-02-SUMMARY.md with safe IDs and blocker causes; private raw proof remains outside source.</output>

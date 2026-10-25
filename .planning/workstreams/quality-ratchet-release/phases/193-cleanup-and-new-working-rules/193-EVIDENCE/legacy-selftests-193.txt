@@ -1,0 +1,2 @@
+legacy selftest-scan-191 rc 0 selftest-scan: controls 33 of 33 as expected
+legacy selftest-carry-191 rc 0 selftest-carry: controls 26 of 26 as expected

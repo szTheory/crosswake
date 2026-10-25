@@ -65,8 +65,9 @@ defmodule Crosswake.Planning.FirstAdopterContext do
   ]
 
   @scannable_extensions ~w(
-    .bak .bat .c .cjs .css .eex .ex .exs .gradle .heex .html .java .js .json .jsonl .kt .kts .lock .log .md .mjs
-    .orig .pbxproj .plist .properties .py .sh .svg .swift .tape .toml .ts .tsx .txt .xcscheme .xml .yaml .yml
+    .bak .bat .body .c .cjs .css .eex .entitlements .ex .exs .gradle .heex .html .java .js .json .jsonl .kt .kts
+    .lock .log .md .mjs .orig .out .patch .pbxproj .plist .properties .py .sh .sha256 .source .stderr .stdout .svg
+    .swift .tape .toml .ts .tsv .tsx .txt .xcconfig .xcprivacy .xcscheme .xctestplan .xml .yaml .yml
   )
   @physical_evidence_completion_marker ".planning/workstreams/first-b2c-adopter-readiness/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete"
   @reference_host_pronunciation_aiff "examples/phoenix_host/native/ios/CrosswakeProofLane/Resources/ReferenceLearningBundle/pronunciation.aiff"
@@ -395,6 +396,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
         "Dockerfile",
         "gradlew",
         "LICENSE",
+        "bearings-report",
         "crosswake-ios-rehearsal",
         "crosswake-physical-iphone"
       ]

@@ -1,0 +1,6 @@
+pr2: number 248
+pr2: head 106e5a5407b2301664e00bf4fdb44ca02131d86a
+pr2: crosswake_ci success on head 106e5a5
+pr2: note pull_request runs also test a synthetic merge commit; the result above is for the head
+pr2: note first head 71b790e was red (documentation-contracts, hex-page-proof: routing.unclassified_path script/bearings-report); fixed forward in 106e5a5
+pr2: new_tests head 106e5a5 tests 84 failures 0 rc 0

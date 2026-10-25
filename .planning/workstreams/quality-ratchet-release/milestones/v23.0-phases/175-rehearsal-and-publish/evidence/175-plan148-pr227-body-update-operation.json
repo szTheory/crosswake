@@ -1,0 +1,11 @@
+{
+  "operation": "update_repair_pr_description_with_measured_results",
+  "pr": 227,
+  "head_oid": "fcbab2c44192e6b6ad24d1058127ad42a72efb67",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "attempts": 1,
+  "attempted": true,
+  "delivery": "ACCEPTED",
+  "intent_at_utc": "2026-10-11T12:10:30.897036+00:00",
+  "exit_code": 0
+}

@@ -1,0 +1,12 @@
+main_sha d0dbdf7bf196cea167ced3c50cf620bf3cb2452b
+clone_head 2faf15a255f644c869d321508c4d3f3007572138
+ahead 94
+merges 0
+first_parent 94
+branch land/v25-v27
+identity noreply yes
+clone_outside_tmp yes
+clone_outside_recovery yes
+durable_untouched yes
+quick_test pass
+ensure_clone reused

@@ -1,0 +1,15 @@
+{
+  "ci_run_id": 38149585632,
+  "head_oid": "bf00fdd70b12fc2ca298710f7139a67b7dd00d3a",
+  "single_root_library_failure": "Template drift hash mismatch; required epoch/hash bump omitted",
+  "reported_suite": "2062tests1failure in complete tracked CI repositories",
+  "repair": "Existing maintenance task increments template epoch2to3 and hash to f198560f1925e2da47f6db18b3a74680b22788aeb110bb8363f65eed68c6d035",
+  "additional_observed_diagnostic_defect": "Actual ordinary0.2.10 rollup uses obsolete Maven coordinate io.crosswake:crosswake-shell-core while public POM is io.github.sztheory:crosswake-shell-core-android",
+  "coordinate_repair": "Correct existing rollup label and verify obsolete coordinate rejected. Preserve historical artifacts unchanged.",
+  "local_focused": "39tests0failures",
+  "local_boundary": "7tests0failures",
+  "workflow_integrity": "98checks0failed",
+  "lint_format": "actionlint shellcheck formatter PASS",
+  "full_local_suite_limit": "Temporary archive lacks tracked Git repository metadata; Git-dependent checks fail locally. Tracked hosted full suite remains required; no local all-tests-pass claim.",
+  "observed_at_utc": "2026-10-11T15:15:13.800964+00:00"
+}

@@ -1,0 +1,17 @@
+P01 empty sums file fails: as expected
+P02 wrong expected line count fails: as expected
+P03 one changed byte in an archive fails: as expected
+P04 missing listing fails the restore check: as expected
+P05 189 script hash mismatch fails: as expected
+P06 env archive with mode 644 fails: as expected
+P07 extra ref not on the remote is reported unexpected: as expected
+P08 missing backup root fails: as expected
+P09 unset temp folder is a scope error: as expected
+P10 this tool contains no forbidden token: as expected
+P11 the forbidden-token scanner detects planted shapes: as expected
+P12 swapped layout compares the retired folder: as expected
+P13 absent retired folder is an info, not a failure: as expected
+P14 clean fixture passes: as expected
+P15 uncovered dirty file is counted as a difference: as expected
+P16 recovery head drift fails: as expected
+selftest preflight-193: controls 16 of 16 as expected

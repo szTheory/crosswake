@@ -1,0 +1,7 @@
+work_head a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4
+work_tree f7c4d7dc1a86f251c3ba845d3cde8d4c770ae729
+durable_head a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4
+durable_porcelain_count 0
+durable_has_deps no
+ensure_work recreated
+quick_test pass

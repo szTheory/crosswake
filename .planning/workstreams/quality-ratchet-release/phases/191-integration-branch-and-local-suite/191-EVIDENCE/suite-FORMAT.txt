@@ -1,0 +1,7 @@
+head 909ace5a27cc805bf55c12525d7e15c0bf3fcbb5
+mode subset
+totals_lines 1
+line1 tests 4 failures 0 invalid 0 skipped 0 excluded 0
+floor 1
+exit 0
+result pass

@@ -47,5 +47,13 @@ exclude =
       do: acc,
       else: [{:requires_example_host, true} | acc]
   end)
+  |> then(fn acc ->
+    # :requires_xcodebuild — tests that build or inspect a generated iOS shell with Xcode.
+    # Only a Mac has xcodebuild, so they are excluded where it is missing (Linux CI) and run
+    # wherever it exists, with no switch to forget.
+    if System.find_executable("xcodebuild"),
+      do: acc,
+      else: [{:requires_xcodebuild, true} | acc]
+  end)
 
 if exclude != [], do: ExUnit.configure(exclude: exclude)

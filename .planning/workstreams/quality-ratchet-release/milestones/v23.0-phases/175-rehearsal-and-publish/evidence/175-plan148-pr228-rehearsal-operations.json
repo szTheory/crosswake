@@ -1,0 +1,50 @@
+{
+  "pr": 228,
+  "candidate_head_oid": "664d9a80de4b8601174a3f750f0813ab2f492469",
+  "candidate_base_oid": "b8e25b2ac987a991274336efbabe806ba9b6f170",
+  "candidate_tree_oid": "0b3bf9bde500d475a12aa9af42a572f2fd222eed",
+  "ci_run_id": 38139597323,
+  "ci_conclusion": "success",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "rehearsals": {
+    "hex": {
+      "workflow": "hex-publish.yml",
+      "inputs": {
+        "candidate_head": "664d9a80de4b8601174a3f750f0813ab2f492469",
+        "candidate_tree": "0b3bf9bde500d475a12aa9af42a572f2fd222eed",
+        "candidate_base": "b8e25b2ac987a991274336efbabe806ba9b6f170",
+        "operation": "candidate-rehearsal",
+        "release_version": "0.2.10",
+        "candidate_receipt": "43d06b11d32d9cfc14801636afa6972a6097652e74b625ee0a8946344752171d"
+      },
+      "dispatch_ref": "release-please--branches--main",
+      "prior_max_run_id": 38125042713,
+      "intent_at_utc": "2026-10-11T12:59:17.187836+00:00",
+      "head_before": "664d9a80de4b8601174a3f750f0813ab2f492469",
+      "dispatch_attempted": true,
+      "delivery": "ACCEPTED",
+      "dispatch_exit_code": 0,
+      "run_id": 38141374071,
+      "head_after": "664d9a80de4b8601174a3f750f0813ab2f492469"
+    },
+    "ios": {
+      "workflow": "ios-mirror-backfill.yml",
+      "inputs": {
+        "candidate_head": "664d9a80de4b8601174a3f750f0813ab2f492469",
+        "candidate_tree": "0b3bf9bde500d475a12aa9af42a572f2fd222eed",
+        "candidate_base": "b8e25b2ac987a991274336efbabe806ba9b6f170",
+        "operation": "candidate-rehearsal",
+        "version": "0.2.10",
+        "release_ref": "664d9a80de4b8601174a3f750f0813ab2f492469",
+        "candidate_receipt": "43d06b11d32d9cfc14801636afa6972a6097652e74b625ee0a8946344752171d"
+      },
+      "dispatch_ref": "release-please--branches--main",
+      "prior_max_run_id": 38139594759,
+      "intent_at_utc": "2026-10-11T12:59:24.718585+00:00",
+      "head_before": "664d9a80de4b8601174a3f750f0813ab2f492469",
+      "dispatch_attempted": true,
+      "delivery": "UNKNOWN",
+      "dispatch_exit_code": 1
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "pr": 115,
+  "version": "0.1.1",
+  "run_id": 38159980683,
+  "merge_oid": "72197e6dd387ae584a04545055ce01659d02d7ba",
+  "job_id": 114531565352,
+  "failed_step": "Re-fetch REL-17 evidence before companion credentials",
+  "reason": "runbook_ancestry_invalid",
+  "actual_checkout_depth": 1,
+  "full_repository_ancestry_previously_verified": true,
+  "guarded_hex_publish_step": "SKIPPED",
+  "hex_release_http_status": 404,
+  "ordinary_reruns": 0,
+  "consumed_gate_preserved": true,
+  "next": "Repair full-history checkout and existing guard regression in PR233, then a fresh successor Chimeway proposal, receipt and operation binding",
+  "observed_at_utc": "2026-10-11T17:41:10.897701+00:00"
+}

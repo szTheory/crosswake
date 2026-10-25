@@ -1,0 +1,17 @@
+tmp_names_equal: no
+tmp_missing_all_covered: yes
+backup_root_only_added_inventory_189: yes
+existing_bundles_unchanged: yes
+recovery_stashes: 4
+recovery_branches: 56
+recovery_worktrees: 3
+recovery_head_unchanged: yes
+tmp_counts: before 159, now 99, missing 60, covered by backup 58, obsolete 2, uncovered 0, added 0
+scripts_identical: 22
+durable_candidate_ok: yes
+content_removed: <tmp>/crosswake-phase179-impl covered by tmp-crosswake-phase179-impl-gitdir.tar restore pass
+content_removed: <tmp>/crosswake-phase179-source covered by tmp-crosswake-phase179-source-gitdir.tar restore pass
+detail: plan 12 retake after plan 11. 60 of the 159 loose crosswake names recorded before the phase are gone from the temp folder, the same 60 as in plan 10 (no new name went missing since plan 10, none was added). They were removed by the stock macOS temp cleaner, not by Phase 189, which deletes nothing. 58 are listed in tmp-loose-files.files, whose tar restore-tested as pass in plan 08. The other 2 are classified obsolete with a stated reason in tmp-entries.tsv: crosswake-178-handoff.qoh0yI and crosswake-v23-governing-brief.txt.
+detail: snapshot comparison. The fresh snapshot equals 189-SNAPSHOT-BEFORE.txt on every compared line except the two temp-listing lines: tmp_listing_digest 332b6533... (before) vs 0bbbe71b... (now) and tmp_listing_count 159 (before) vs 99 (now). That is the 60-name difference above, allowed only because every missing name is covered. The snapshot's candidate lines were read from <durable-candidate> under amendment rule 5 (head a53fbef7..., 0 changed paths).
+detail: the two phase-179 repo folders lost old files to the same cleaner; their git directories are covered by the two named tars, each with a restore-08 pass line.
+detail: backup root top level is the two candidate bundles plus inventory-189; both bundle sha256 values equal the before values. The recovery checkout is unchanged (4 stashes, 56 branches, 3 worktrees, empty index, same HEAD).

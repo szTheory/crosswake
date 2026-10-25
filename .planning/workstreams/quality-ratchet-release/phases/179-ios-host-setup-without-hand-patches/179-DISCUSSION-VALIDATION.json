@@ -1,0 +1,54 @@
+{
+  "checked_at": "2026-10-13T14:53:51.450485+00:00",
+  "result": "passed",
+  "scope": "discussion artifacts and handoff only",
+  "state_validation": {
+    "valid": true,
+    "warnings": [],
+    "scope": "complete"
+  },
+  "decisions": 22,
+  "canonical_refs_resolve": 24,
+  "phase": {
+    "number": 179,
+    "discussion": "complete",
+    "plans": 0,
+    "implementation_complete": false,
+    "last_completed": 178,
+    "phase180_blocked_by": 179
+  },
+  "requirements": {
+    "pending": 9,
+    "completed": 0
+  },
+  "next_command": "$gsd-plan-phase 179 --ws quality-ratchet-release",
+  "manager_recommends": "plan 179",
+  "protected_history": {
+    "files": 1677,
+    "changed": 0,
+    "original_paths_preserved": true
+  },
+  "recovery_protection": {
+    "unchanged": true,
+    "changedDimensions": []
+  },
+  "changed_existing_planning_files": [
+    ".planning/workstreams/quality-ratchet-release/.continue-here.md",
+    ".planning/workstreams/quality-ratchet-release/REQUIREMENTS.md",
+    ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
+    ".planning/workstreams/quality-ratchet-release/STATE.md",
+    ".planning/workstreams/quality-ratchet-release/state.json"
+  ],
+  "new_artifacts": [
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-CONTEXT.md",
+    ".planning/workstreams/quality-ratchet-release/phases/179-ios-host-setup-without-hand-patches/179-DISCUSSION-LOG.md"
+  ],
+  "no_git_or_source_writes": true,
+  "full_host_xcode_runtime_verification": "not executed; belongs to implementation",
+  "workflow_notes": [
+    "Approved research decisions carried forward without a new questionnaire.",
+    "Registered state writers and installed locked state/planning seams used; no generic handoff prose handler exists.",
+    "Commit steps skipped under recovery protection; no checkpoint required because no new discussion area.",
+    "No active pre/post hooks; no automatic plan/execute chain."
+  ]
+}

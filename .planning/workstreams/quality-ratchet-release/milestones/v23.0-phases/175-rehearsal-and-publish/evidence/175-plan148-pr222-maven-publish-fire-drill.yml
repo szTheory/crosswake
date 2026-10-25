@@ -1,0 +1,219 @@
+name: Maven publish fire-drill
+
+# This isolated manual rehearsal has no Release Please or release-PR mutation
+# capability. It reaches Central Portal VALIDATED, then DROPs the disposable
+# deployment so no immutable public coordinate is consumed.
+on:
+  workflow_dispatch:
+    inputs:
+      fire_drill_version:
+        description: 'Exact candidate core version (for example, 0.2.4).'
+        required: true
+        type: string
+      candidate_head:
+        description: 'Exact candidate commit SHA.'
+        required: true
+        type: string
+      candidate_tree:
+        description: 'Exact candidate tree SHA.'
+        required: true
+        type: string
+      candidate_base:
+        description: 'Exact protected-default base SHA.'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  maven-publish-fire-drill:
+    name: Maven publish fire-drill (VALIDATED -> DROP)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.candidate_head }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate exact candidate before credential use
+        env:
+          CANDIDATE_VERSION: ${{ inputs.fire_drill_version }}
+          CANDIDATE_HEAD: ${{ inputs.candidate_head }}
+          CANDIDATE_TREE: ${{ inputs.candidate_tree }}
+          CANDIDATE_BASE: ${{ inputs.candidate_base }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$CANDIDATE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
+          printf '%s' "$CANDIDATE_HEAD$CANDIDATE_TREE$CANDIDATE_BASE" | grep -Eq '^[0-9a-f]{120}$'
+          test "$(git rev-parse HEAD)" = "$CANDIDATE_HEAD"
+          test "$(git rev-parse "${CANDIDATE_HEAD}^{tree}")" = "$CANDIDATE_TREE"
+          git cat-file -e "${CANDIDATE_BASE}^{commit}"
+          test "$(git merge-base "$CANDIDATE_BASE" "$CANDIDATE_HEAD")" = "$CANDIDATE_BASE"
+          root_version=$(sed -nE 's/^[[:space:]]*@version "([0-9]+\.[0-9]+\.[0-9]+)"[[:space:]]*$/\1/p' mix.exs | head -1)
+          test "$root_version" = "$CANDIDATE_VERSION"
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Preflight — assert required Maven and signing secrets are set
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyId }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
+        run: |
+          set -euo pipefail
+          for var in \
+            ORG_GRADLE_PROJECT_mavenCentralUsername \
+            ORG_GRADLE_PROJECT_mavenCentralPassword \
+            ORG_GRADLE_PROJECT_signingInMemoryKey \
+            ORG_GRADLE_PROJECT_signingInMemoryKeyId \
+            ORG_GRADLE_PROJECT_signingInMemoryKeyPassword; do
+            if [ -z "${!var:-}" ]; then
+              echo "MISSING SECRET: $var"
+              exit 1
+            fi
+          done
+
+      - name: Derive and preflight a disposable Maven coordinate
+        env:
+          FIRE_DRILL_BASE_VERSION: ${{ inputs.fire_drill_version }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$FIRE_DRILL_BASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z]+)*$ ]]; then
+            echo "FIRE_DRILL_VERSION_INVALID: supply the candidate base version, for example 0.2.2."
+            exit 1
+          fi
+
+          FIRE_DRILL_VERSION="${FIRE_DRILL_BASE_VERSION}-firedrill-${GITHUB_RUN_ID}"
+          POM_URL="https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/${FIRE_DRILL_VERSION}/crosswake-shell-core-android-${FIRE_DRILL_VERSION}.pom"
+          HTTP_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' "$POM_URL")
+          if [ "$HTTP_STATUS" != "404" ]; then
+            echo "FIRE_DRILL_COORDINATE_UNAVAILABLE: expected HTTP 404 for $FIRE_DRILL_VERSION, got $HTTP_STATUS."
+            exit 1
+          fi
+
+          echo "FIRE_DRILL_VERSION=$FIRE_DRILL_VERSION" >> "$GITHUB_ENV"
+          echo "Disposable Maven coordinate: $FIRE_DRILL_VERSION"
+
+      - name: Local publish to ~/.m2 and assert signed artifacts
+        working-directory: packages/crosswake-shell-core-android
+        env:
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyId }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
+        run: |
+          set -euo pipefail
+          : "${FIRE_DRILL_VERSION:?missing disposable fire-drill coordinate}"
+          ./gradlew -PcrosswakeVersion="$FIRE_DRILL_VERSION" publishToMavenLocal --no-daemon
+          VERSION="$FIRE_DRILL_VERSION"
+          ARTIFACT_DIR="$HOME/.m2/repository/io/github/sztheory/crosswake-shell-core-android/$VERSION"
+          for artifact in \
+            "crosswake-shell-core-android-${VERSION}.aar" \
+            "crosswake-shell-core-android-${VERSION}-sources.jar" \
+            "crosswake-shell-core-android-${VERSION}-javadoc.jar" \
+            "crosswake-shell-core-android-${VERSION}.pom"; do
+            ARTIFACT="$ARTIFACT_DIR/$artifact"
+            test -f "$ARTIFACT"
+            test -f "${ARTIFACT}.asc"
+          done
+          POM="$ARTIFACT_DIR/crosswake-shell-core-android-${VERSION}.pom"
+          for field in name description url license developers scm; do grep -qi "<${field}" "$POM"; done
+
+      - name: Central Portal validated-upload -> DROP
+        working-directory: packages/crosswake-shell-core-android
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyId }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
+          MAVEN_USERNAME: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
+          MAVEN_PASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
+        run: |
+          set -euo pipefail
+          : "${FIRE_DRILL_VERSION:?missing disposable fire-drill coordinate}"
+          VERSION="$FIRE_DRILL_VERSION"
+          ./gradlew -PcrosswakeVersion="$FIRE_DRILL_VERSION" publishToMavenLocal --no-daemon
+          REPO="$HOME/.m2/repository"
+          ART_PATH="io/github/sztheory/crosswake-shell-core-android/$VERSION"
+          ( cd "$REPO/$ART_PATH"
+            for f in *; do case "$f" in *.md5|*.sha1) continue;; esac; md5sum "$f" | cut -d' ' -f1 > "$f.md5"; sha1sum "$f" | cut -d' ' -f1 > "$f.sha1"; done )
+          BUNDLE="$RUNNER_TEMP/central-bundle.zip"
+          rm -f "$BUNDLE"
+          ( cd "$REPO" && zip -qr "$BUNDLE" "$ART_PATH" )
+          TOKEN=$(printf '%s:%s' "$MAVEN_USERNAME" "$MAVEN_PASSWORD" | base64 | tr -d '\n')
+          AUTH="Authorization: Bearer $TOKEN"
+          DEPLOYMENT_ID=$(curl -fsS -X POST -H "$AUTH" -F "bundle=@$BUNDLE" "https://central.sonatype.com/api/v1/publisher/upload?name=firedrill-${VERSION}&publishingType=USER_MANAGED")
+          test -n "$DEPLOYMENT_ID"
+          STATE=""
+          for _ in $(seq 1 30); do
+            STATUS_JSON=$(curl -fsS -X POST -H "$AUTH" "https://central.sonatype.com/api/v1/publisher/status?id=${DEPLOYMENT_ID}")
+            STATE=$(printf '%s' "$STATUS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('deploymentState',''))")
+            case "$STATE" in
+              VALIDATED) break;;
+              FAILED)
+                echo "Central Portal validation errors:"
+                printf '%s' "$STATUS_JSON" | python3 -c 'import json,sys; errors=json.load(sys.stdin).get("errors", []); json.dump(errors, sys.stdout, ensure_ascii=False); print()'
+                exit 1
+                ;;
+            esac
+            sleep 15
+          done
+          [ "$STATE" = "VALIDATED" ]
+          curl -fsS -X DELETE -H "$AUTH" "https://central.sonatype.com/api/v1/publisher/deployment/${DEPLOYMENT_ID}"
+          echo "SUCCESS: disposable Maven deployment reached VALIDATED and DROP completed."
+
+      - name: Write redacted exact-candidate rehearsal receipt
+        env:
+          CANDIDATE_VERSION: ${{ inputs.fire_drill_version }}
+          CANDIDATE_HEAD: ${{ inputs.candidate_head }}
+          CANDIDATE_TREE: ${{ inputs.candidate_tree }}
+          CANDIDATE_BASE: ${{ inputs.candidate_base }}
+          OUTPUT_DIR: ${{ runner.temp }}/candidate-rehearsal-maven
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUTPUT_DIR"
+          workflow_sha256=$(sha256sum .github/workflows/maven-publish-fire-drill.yml | awk '{print $1}')
+          WORKFLOW_SHA256="$workflow_sha256" python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          version = os.environ["CANDIDATE_VERSION"]
+          run_id = os.environ["GITHUB_RUN_ID"]
+          record = {
+              "schema_version": "1.0.0",
+              "candidate_version": version,
+              "requested_head": os.environ["CANDIDATE_HEAD"],
+              "observed_head": os.environ["CANDIDATE_HEAD"],
+              "observed_tree": os.environ["CANDIDATE_TREE"],
+              "observed_base": os.environ["CANDIDATE_BASE"],
+              "run_id": run_id,
+              "run_head": os.environ["CANDIDATE_HEAD"],
+              "run_conclusion": "success",
+              "workflow_sha256": os.environ["WORKFLOW_SHA256"],
+              "state": "VALIDATED",
+              "deployment_result": "DROP",
+              "dropped": True,
+              "external_state_changed": False,
+              "coordinate": f"io.github.sztheory:crosswake-shell-core-android:{version}-firedrill-{run_id}",
+          }
+          path = Path(os.environ["OUTPUT_DIR"]) / "rehearsal.json"
+          path.write_text(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
+          PY
+
+      - name: Upload redacted Maven rehearsal evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: candidate-rehearsal-maven
+          path: ${{ runner.temp }}/candidate-rehearsal-maven/rehearsal.json
+          if-no-files-found: error
+          retention-days: 14

@@ -227,7 +227,9 @@ mix crosswake.doctor
 ```
 
 Doctor discovers the router from `priv/crosswake/install_manifest.json`. `--router`
-remains an override for nonstandard or pre-installer hosts.
+remains an override for nonstandard or pre-installer hosts. `--router` accepts any
+module exporting `__routes__/0`. Doctor JSON contains the host's route patterns, so do
+not paste it into public issues.
 
 Before a native shell exists, doctor automatically reports native support as
 `not_claimed`; missing iOS/Android proof hooks do not fail the command. Use

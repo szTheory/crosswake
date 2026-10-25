@@ -1,0 +1,87 @@
+{
+  "authorization": {
+    "authorized": false,
+    "candidate_head": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "candidate_package": "crosswake",
+    "leg_run_id": 36348273088,
+    "operation": "linked_release",
+    "receipt_digest": "c51181d384661e77cf68935a6496b4c4bdf9e147854889027f64312dd5d6e9ba",
+    "stage": "pre_merge",
+    "state": "PENDING"
+  },
+  "candidate": {
+    "base_oid": "b5608a3dc0b013d83ac2b25768f1907873739b20",
+    "head_oid": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "merge_oid": null,
+    "package": "crosswake",
+    "pr": 215,
+    "tree_oid": "0199c0bee29dbcf76bc1a12d241c0ed140a244bd",
+    "version": "0.2.6"
+  },
+  "captured_at": "2026-09-27T21:35:43Z",
+  "envelope_path": "175-next-successor-premerge-sources/envelope.json",
+  "envelope_sha256": "1ff37d2f7ce06ba017cde8b4c6a1052f043aa800308b54e026719c2d1c151150",
+  "identity": {
+    "leg_run_id": 36348273088,
+    "operation": "linked_release",
+    "receipt_digest": "c51181d384661e77cf68935a6496b4c4bdf9e147854889027f64312dd5d6e9ba"
+  },
+  "leg_run": {
+    "conclusion": "success",
+    "head_oid": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "run_id": 36348273088
+  },
+  "sources": {
+    "candidate_readiness": {
+      "base_oid": "b5608a3dc0b013d83ac2b25768f1907873739b20",
+      "ci_conclusion": "success",
+      "ci_run_id": 36346477576,
+      "head_oid": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+      "merge_state": "MERGEABLE",
+      "package": "crosswake",
+      "pagination_complete": true,
+      "policy_current": true,
+      "policy_sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+      "receipt_artifact_id": 10941079991,
+      "receipt_artifact_live": true,
+      "receipt_digest": "c51181d384661e77cf68935a6496b4c4bdf9e147854889027f64312dd5d6e9ba",
+      "required_check_ids": [
+        "Crosswake CI"
+      ],
+      "required_checks_complete": true,
+      "tree_oid": "0199c0bee29dbcf76bc1a12d241c0ed140a244bd"
+    },
+    "hex_response": {
+      "latest_stable_version": "0.2.5",
+      "parsed": true,
+      "path": "175-next-successor-premerge-sources/raw/registry_response.source",
+      "sha256": "8c4bcd4a344389ff3c6a2548879053fa8aceb541ed2a1cea059986e33cb69c5b",
+      "target_http_status": 404,
+      "target_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+    },
+    "response_row": {
+      "candidate_ref": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+      "package": "crosswake",
+      "path": "175-next-successor-premerge-sources/facts/response_row.json",
+      "run_id": 36348273088,
+      "sha256": "a1b6f208568bb7382d61251e3245302590446e652601a2fa019d9dc30e6c7be6",
+      "version": "0.2.6"
+    },
+    "runbook_ancestry": {
+      "base_is_ancestor": true,
+      "head_is_ancestor": true,
+      "merge_is_ancestor": false,
+      "runbook_commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
+    }
+  },
+  "stage": "pre_merge",
+  "targets": {
+    "hex_absent": true,
+    "hex_http_status": 404,
+    "ios_tag_absent": true,
+    "ios_tag_ref": "v0.2.6",
+    "maven_http_status": 404,
+    "maven_pom_absent": true
+  },
+  "verdict": "PASS"
+}

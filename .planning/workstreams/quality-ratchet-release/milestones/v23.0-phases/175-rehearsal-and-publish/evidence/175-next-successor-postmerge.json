@@ -1,0 +1,85 @@
+{
+  "admin_bypass": false,
+  "authorization": {
+    "authorization": "publish successor core 36348273033",
+    "consumed_at": "2026-09-27T21:39:47Z",
+    "state": "CONSUMED",
+    "trailer_consumed_field": false
+  },
+  "candidate": {
+    "base_oid": "b5608a3dc0b013d83ac2b25768f1907873739b20",
+    "head_oid": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "merge_oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+    "package": "crosswake",
+    "pr": 215,
+    "tree_oid": "0199c0bee29dbcf76bc1a12d241c0ed140a244bd",
+    "version": "0.2.6"
+  },
+  "captured_at": "2026-09-27T21:45:47Z",
+  "ci": {
+    "conclusion": "SUCCESS",
+    "head_oid": "0968fea84dc758c05b9b0161db2f221c9e778c3b",
+    "policy_sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+    "run_id": 36346477576
+  },
+  "direct_registry_observed_at": "2026-09-27T21:45:42Z",
+  "gate2_consumed": true,
+  "merge": {
+    "admin_bypass": false,
+    "merge_oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+    "merged_at": "2026-09-27T21:42:47Z",
+    "normal_protected_path": true,
+    "parents": [
+      "b5608a3dc0b013d83ac2b25768f1907873739b20",
+      "0968fea84dc758c05b9b0161db2f221c9e778c3b"
+    ],
+    "pr_state": "MERGED",
+    "tree_oid": "0199c0bee29dbcf76bc1a12d241c0ed140a244bd"
+  },
+  "merge_oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+  "normal_protected_path": true,
+  "operation": "linked_release",
+  "outcome": "PARTIAL",
+  "post_merge": {
+    "authorization_state": "CONSUMED",
+    "envelope_path": "175-next-successor-postmerge-sources/envelope.json",
+    "envelope_sha256": "90ba3aeba2f2698ae8865c1327886fa0a115ac26af8710a267c6062f3c0da0df",
+    "protected_merge": {
+      "admin_bypass": false,
+      "merge_oid": "998742856a37a97ae7247f6c532f9c154ea20885",
+      "normal_protected_path": true,
+      "parents": [
+        "b5608a3dc0b013d83ac2b25768f1907873739b20",
+        "0968fea84dc758c05b9b0161db2f221c9e778c3b"
+      ]
+    },
+    "verdict": "PASS"
+  },
+  "release_run": {
+    "conclusion": "failure",
+    "guard_conclusion": "failure",
+    "publishers": {
+      "hex": "skipped",
+      "ios_mirror": "skipped",
+      "maven": "skipped"
+    },
+    "retry_or_recovery_performed": false,
+    "run_id": 36352732061,
+    "status": "completed"
+  },
+  "runbook": {
+    "base": "PASS",
+    "commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8",
+    "head": "PASS",
+    "merge": "PASS"
+  },
+  "schema_version": 1,
+  "sources": {
+    "envelope_sha256": "90ba3aeba2f2698ae8865c1327886fa0a115ac26af8710a267c6062f3c0da0df",
+    "guard_failure_sha256": "c454c0c7428606ee18301aefb7878b7062384981632c02036e6e866cd6bc7896",
+    "release_run_sha256": "25b218b6e32bf8d9c8b4e29a8a1c4406657c32024d07fbee10aad3407796aafa",
+    "root": "175-next-successor-postmerge-sources/",
+    "target_absence_sha256": "d14151eb1f04eeac7d638d460fe23893e54341cdb3247bac80923f121768e0c7"
+  },
+  "stage": "post_merge"
+}

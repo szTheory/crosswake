@@ -35,6 +35,7 @@ defmodule CrosswakeExample.PageTitleTest do
     "local-first-study-session" => PageTitle.learn("Study Session"),
     "media-proof-lane" => PageTitle.crosswake("Media Proof"),
     "offline-study" => PageTitle.learn("Offline Study"),
+    "offline-study-review" => PageTitle.learn("Review Saved Answers"),
     "saas-account" => PageTitle.admin("Account Health"),
     "saas-admin-member-access" => PageTitle.admin("Admin Member Access"),
     "saas-approval" => PageTitle.admin("Approval Detail"),
@@ -61,6 +62,7 @@ defmodule CrosswakeExample.PageTitleTest do
 
     assert_title("/", PageTitle.crosswake("Showcase"))
     assert_title("/offline", PageTitle.learn("Offline Study"))
+    assert_title("/offline/review", PageTitle.learn("Review Saved Answers"))
     assert_title("/bridge-proof", PageTitle.crosswake("Bridge Proof"))
     assert_title("/saas/dashboard", PageTitle.admin("Dashboard"))
     assert_title("/saas/accounts/acct-north", PageTitle.admin("Northwind Workspace"))

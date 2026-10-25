@@ -1,0 +1,118 @@
+{
+  "stage": "pre_merge",
+  "verdict": "PASS",
+  "identity": {
+    "leg_run_id": 38159722705,
+    "operation": "companion_publish",
+    "receipt_digest": "c137d52a21aba4ca64aa95900860ab3de2d956aeb4586d984e84ab40bf5c3f81"
+  },
+  "candidate": {
+    "base_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+    "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+    "merge_oid": null,
+    "package": "crosswake_chimeway",
+    "pr": 115,
+    "tree_oid": "678782a853ceab7a618ace94589eee0df931f080",
+    "version": "0.1.1"
+  },
+  "authorization": {
+    "candidate_head": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+    "candidate_package": "crosswake_chimeway",
+    "leg_run_id": 38159722705,
+    "operation": "companion_publish",
+    "receipt_digest": "c137d52a21aba4ca64aa95900860ab3de2d956aeb4586d984e84ab40bf5c3f81",
+    "stage": "pre_merge",
+    "state": "PENDING"
+  },
+  "envelope_sha256": "e11042e5a9fcb575fc681b29ea3fd223ed29f4bbb7c4fe02f914e96214a9294a",
+  "envelope_path": "175-plan148-companion115-premerge-sources/envelope.json",
+  "sources": {
+    "candidate_readiness": {
+      "base_oid": "6da6df6f9ddc0f48614fd99c50decc6dc23387c4",
+      "ci_conclusion": "success",
+      "ci_run_id": 38157939812,
+      "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+      "merge_state": "MERGEABLE",
+      "package": "crosswake_chimeway",
+      "pagination_complete": true,
+      "policy_current": true,
+      "policy_sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+      "receipt_artifact_id": 11709916042,
+      "receipt_artifact_live": true,
+      "receipt_digest": "c137d52a21aba4ca64aa95900860ab3de2d956aeb4586d984e84ab40bf5c3f81",
+      "required_check_ids": [
+        "Crosswake CI"
+      ],
+      "required_checks_complete": true,
+      "tree_oid": "678782a853ceab7a618ace94589eee0df931f080"
+    },
+    "leg_run": {
+      "conclusion": "success",
+      "head_oid": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+      "run_id": 38159722705
+    },
+    "protected_merge": {
+      "merge_ready": true
+    },
+    "registry_response": {
+      "package": "crosswake_chimeway",
+      "parsed": {
+        "configs": {
+          "erlang.mk": "dep_crosswake_chimeway = hex 0.1.0",
+          "mix.exs": "{:crosswake_chimeway, \"~> 0.1.0\"}",
+          "rebar.config": "{crosswake_chimeway, \"0.1.0\"}"
+        },
+        "docs_html_url": "https://crosswake-chimeway.hexdocs.pm/",
+        "downloads": {
+          "all": 129,
+          "day": 2,
+          "recent": 98,
+          "week": 5
+        },
+        "html_url": "https://hex.pm/packages/crosswake_chimeway",
+        "inserted_at": "2026-07-04T02:20:43.249178Z",
+        "latest_stable_version": "0.1.0",
+        "latest_version": "0.1.0",
+        "meta": {
+          "description": "Chimeway notification companion adapter for the Crosswake route-policy system.",
+          "licenses": [
+            "Apache-2.0"
+          ],
+          "links": {
+            "Changelog": "https://github.com/szTheory/crosswake/blob/main/CHANGELOG.md",
+            "Documentation": "https://hexdocs.pm/crosswake_chimeway",
+            "GitHub": "https://github.com/szTheory/crosswake"
+          },
+          "maintainers": []
+        },
+        "name": "crosswake_chimeway",
+        "releases": [
+          {
+            "has_docs": true,
+            "inserted_at": "2026-07-04T02:20:43.260657Z",
+            "url": "https://hex.pm/api/packages/crosswake_chimeway/releases/0.1.0",
+            "version": "0.1.0"
+          }
+        ],
+        "repository": "hexpm",
+        "retirements": {},
+        "security_advisories": [],
+        "updated_at": "2026-07-04T02:20:44.533313Z",
+        "url": "https://hex.pm/api/packages/crosswake_chimeway"
+      },
+      "version": "0.1.1"
+    },
+    "response_row": {
+      "candidate_ref": "0eff1ab6c8dbad961116c3a1a0dc91937722eb7d",
+      "package": "crosswake_chimeway",
+      "run_id": 38159722705,
+      "version": "0.1.1"
+    },
+    "runbook_ancestry": {
+      "base_is_ancestor": true,
+      "head_is_ancestor": true,
+      "merge_is_ancestor": false,
+      "runbook_commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8"
+    }
+  }
+}

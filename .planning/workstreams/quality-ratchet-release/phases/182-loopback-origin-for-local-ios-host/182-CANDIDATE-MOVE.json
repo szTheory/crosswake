@@ -1,0 +1,252 @@
+{
+  "schema": "crosswake.phase182.candidate_move/1",
+  "candidate": "/private/tmp/crosswake-phase180-impl",
+  "source_candidate": "/private/tmp/crosswake-phase182-impl",
+  "method": "fetch+checkout --detach",
+  "old_head": "12f84cd950d4574921767df823faed6797c17c26",
+  "old_tree": "e51f069d52b1c1303d8d606d6000ff146654948e",
+  "new_head": "da53c54db06e54be5a80fb4be144a70d3fed36a5",
+  "new_tree": "d1cbbe30ffca9da79c5506004ad2bf8c8da38665",
+  "core_diff_paths": [
+    "guides/capability_map.md",
+    "guides/native_shell.md",
+    "guides/native_shell_upgrade.md",
+    "guides/support_matrix.md",
+    "lib/crosswake/capability_map/renderer.ex",
+    "lib/crosswake/doctor/doctor.ex",
+    "lib/crosswake/doctor/formatter.ex",
+    "lib/crosswake/doctor/publish_readiness.ex",
+    "lib/crosswake/proof_lane/generator.ex",
+    "lib/crosswake/shell/ios_host_config.ex",
+    "lib/crosswake/shell/ios_host_generation.ex",
+    "lib/crosswake/shell/ios_host_origin_mode.ex",
+    "lib/crosswake/shell/managed_outputs.ex",
+    "lib/crosswake/support_matrix/renderer.ex",
+    "lib/mix/tasks/crosswake.gen.proof_lane.ex",
+    "lib/mix/tasks/crosswake.gen.shell.ex",
+    "lib/mix/tasks/crosswake.inspect.ex",
+    "priv/templates/crosswake/shell/ios/Info.plist.eex",
+    "script/loopback_origin_simulator/ProbeApp.swift",
+    "script/loopback_origin_simulator/generate.exs",
+    "script/loopback_origin_simulator/listener.py",
+    "script/verify_loopback_origin_simulator.sh",
+    "test/crosswake/doctor/doctor_origin_mode_test.exs",
+    "test/crosswake/guides/loopback_origin_guide_test.exs",
+    "test/crosswake/proof/phase134_template_version_drift_test.exs",
+    "test/crosswake/shell/ios_host_config_test.exs",
+    "test/crosswake/shell/ios_host_generation_host_commands_test.exs",
+    "test/crosswake/shell/ios_host_origin_mode_test.exs",
+    "test/fixtures/shell/ios/Info.plist.production.golden",
+    "test/fixtures/shell/ios/production_generation.sha256.json",
+    "test/mix/tasks/crosswake_gen_proof_lane_test.exs",
+    "test/mix/tasks/crosswake_gen_shell_origin_mode_test.exs",
+    "test/mix/tasks/crosswake_inspect_test.exs"
+  ],
+  "overlap": [],
+  "carried_paths": [
+    {
+      "path": "examples/phoenix_host/e2e/offline_accessibility.spec.ts",
+      "status": "??",
+      "sha256_before": "ec12bb3693f0696095d7fbd1e5ffdcc133d787053e5fc48af41c0582856f8a6f",
+      "sha256_after": "ec12bb3693f0696095d7fbd1e5ffdcc133d787053e5fc48af41c0582856f8a6f",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "examples/phoenix_host/e2e/offline_recovery.spec.ts",
+      "status": "??",
+      "sha256_before": "655f00a8b9c7ad0c290c938981ebb814f25cb8a1fef0135adf5f8c3b622586c5",
+      "sha256_after": "655f00a8b9c7ad0c290c938981ebb814f25cb8a1fef0135adf5f8c3b622586c5",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "examples/phoenix_host/e2e/offline_sync.spec.ts",
+      "status": " M",
+      "sha256_before": "3e29bddf68ed636a74d0375eed701671a6a1c74ec26f34dd73a4cb4675964872",
+      "sha256_after": "3e29bddf68ed636a74d0375eed701671a6a1c74ec26f34dd73a4cb4675964872",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "examples/phoenix_host/lib/crosswake_example/e2e/replay_authority.ex",
+      "status": " M",
+      "sha256_before": "dd8ebe7abb1d2ac9c617f3932a06084f30346ec127de1825000e512fb8780509",
+      "sha256_after": "dd8ebe7abb1d2ac9c617f3932a06084f30346ec127de1825000e512fb8780509",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "examples/phoenix_host/lib/crosswake_example/e2e/twin_fault_controller.ex",
+      "status": "??",
+      "sha256_before": "2444cc365a640289b4212f9772e875216ed63e911e0f3b4aadb14fba8b4c982b",
+      "sha256_after": "2444cc365a640289b4212f9772e875216ed63e911e0f3b4aadb14fba8b4c982b",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "examples/phoenix_host/lib/crosswake_example/local_first/sync_controller.ex",
+      "status": " M",
+      "sha256_before": "71d13d602b84732fbb1fac1dc7dd703b832d34f89ad0237aa375a91ecd7c8faf",
+      "sha256_after": "71d13d602b84732fbb1fac1dc7dd703b832d34f89ad0237aa375a91ecd7c8faf",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "examples/phoenix_host/lib/crosswake_example/router.ex",
+      "status": " M",
+      "sha256_before": "e3cfcd0eb3fa5a2ecb668374dd5222f0ec5bc91c6db0eb7e511d9abf63f22133",
+      "sha256_after": "e3cfcd0eb3fa5a2ecb668374dd5222f0ec5bc91c6db0eb7e511d9abf63f22133",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "examples/phoenix_host/lib/crosswake_example_web/controllers/offline_controller.ex",
+      "status": " M",
+      "sha256_before": "392936c1624e8f456d11dca72d2685cd5bef5a62801992248999a0604f250052",
+      "sha256_after": "392936c1624e8f456d11dca72d2685cd5bef5a62801992248999a0604f250052",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/index.html.heex",
+      "status": " M",
+      "sha256_before": "5fcab3d9cb1f540ce0c7fc02f57a7ffb3b2c68b02d07a20d17771c856c29d4cf",
+      "sha256_after": "5fcab3d9cb1f540ce0c7fc02f57a7ffb3b2c68b02d07a20d17771c856c29d4cf",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/review.html.heex",
+      "status": "??",
+      "sha256_before": "6487945692eb13719f74b23e9bc6ec5dfbca877922edb291993df487cf7a9f9b",
+      "sha256_after": "6487945692eb13719f74b23e9bc6ec5dfbca877922edb291993df487cf7a9f9b",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "examples/phoenix_host/priv/static/offline_study.js",
+      "status": " M",
+      "sha256_before": "d9d3ac41d2762c346caa614baa246f26c3a5d8af9c4dc9692f015eef8595f307",
+      "sha256_after": "d9d3ac41d2762c346caa614baa246f26c3a5d8af9c4dc9692f015eef8595f307",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "examples/phoenix_host/test/crosswake_example/e2e/twin_fault_controller_test.exs",
+      "status": "??",
+      "sha256_before": "94e2bcca02a2042774db3f1384aa338e4427df68ebcc63d1f19f38f0aecd86fd",
+      "sha256_after": "94e2bcca02a2042774db3f1384aa338e4427df68ebcc63d1f19f38f0aecd86fd",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "examples/phoenix_host/test/crosswake_example/page_title_test.exs",
+      "status": " M",
+      "sha256_before": "3430e8fcd9ac7566a1d080c6ebc1847afb8d7f7630f167a5de07fce8bce33116",
+      "sha256_after": "3430e8fcd9ac7566a1d080c6ebc1847afb8d7f7630f167a5de07fce8bce33116",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "examples/phoenix_host/test/crosswake_example/phase180_twin_feasibility_test.exs",
+      "status": "??",
+      "sha256_before": "f7b968909db85040adfd42bc397fec8f70259fa2b7bd3176759b523a9b8aaa19",
+      "sha256_after": "f7b968909db85040adfd42bc397fec8f70259fa2b7bd3176759b523a9b8aaa19",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "lib/crosswake/proof_lane/twin_receipt.ex",
+      "status": "??",
+      "sha256_before": "5d0f0708cbeb71e0a4108f25a3de06296e2cf2566390d03218cbb0a3f78d1c7c",
+      "sha256_after": "5d0f0708cbeb71e0a4108f25a3de06296e2cf2566390d03218cbb0a3f78d1c7c",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "lib/crosswake/proof_lane/twin_runtime.ex",
+      "status": "??",
+      "sha256_before": "bbf2b7a06da173f75dc16052400967078ec02b48ccf591fb5b146ca7e56553a5",
+      "sha256_after": "bbf2b7a06da173f75dc16052400967078ec02b48ccf591fb5b146ca7e56553a5",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "lib/mix/tasks/crosswake.proof_lane.verify_twin.ex",
+      "status": "??",
+      "sha256_before": "b7fb657fba4b4477424da9377d4b4b9eebd4ccad45efb658217f08c53457bcc9",
+      "sha256_after": "b7fb657fba4b4477424da9377d4b4b9eebd4ccad45efb658217f08c53457bcc9",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Phase180TwinFeasibilityTests.swift",
+      "status": "??",
+      "sha256_before": "a3bcef6ea7f64f90b2e85f6aecc04778334428f709f840c134b7c0ea25355672",
+      "sha256_after": "a3bcef6ea7f64f90b2e85f6aecc04778334428f709f840c134b7c0ea25355672",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "test/crosswake/proof/phase180_twin_feasibility_test.exs",
+      "status": "??",
+      "sha256_before": "01df82646c3365b159006c26ec818a55feafd506f007d762d739f66177e756f5",
+      "sha256_after": "01df82646c3365b159006c26ec818a55feafd506f007d762d739f66177e756f5",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "test/crosswake/proof_lane/twin_receipt_test.exs",
+      "status": "??",
+      "sha256_before": "aff623c8f1612c37f1457c8745029d71b9e7f319c75177fc274c86d6bd37afc5",
+      "sha256_after": "aff623c8f1612c37f1457c8745029d71b9e7f319c75177fc274c86d6bd37afc5",
+      "mode_before": "644",
+      "mode_after": "644"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_proof_lane_verify_twin_test.exs",
+      "status": "??",
+      "sha256_before": "3d2aa61660e8054133396c1d5cde509b2b785779343fa71189b844b26b48bb20",
+      "sha256_after": "3d2aa61660e8054133396c1d5cde509b2b785779343fa71189b844b26b48bb20",
+      "mode_before": "644",
+      "mode_after": "644"
+    }
+  ],
+  "pinned_tests": [
+    {
+      "path": "test/crosswake/proof/phase180_twin_feasibility_test.exs",
+      "sha256_before": "01df82646c3365b159006c26ec818a55feafd506f007d762d739f66177e756f5",
+      "sha256_after": "01df82646c3365b159006c26ec818a55feafd506f007d762d739f66177e756f5"
+    },
+    {
+      "path": "examples/phoenix_host/test/crosswake_example/phase180_twin_feasibility_test.exs",
+      "sha256_before": "f7b968909db85040adfd42bc397fec8f70259fa2b7bd3176759b523a9b8aaa19",
+      "sha256_after": "f7b968909db85040adfd42bc397fec8f70259fa2b7bd3176759b523a9b8aaa19"
+    },
+    {
+      "path": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Phase180TwinFeasibilityTests.swift",
+      "sha256_before": "a3bcef6ea7f64f90b2e85f6aecc04778334428f709f840c134b7c0ea25355672",
+      "sha256_after": "a3bcef6ea7f64f90b2e85f6aecc04778334428f709f840c134b7c0ea25355672"
+    }
+  ],
+  "binary_diff_sha256_before": "e208f105d32ea2b2845533c70c544644d217e43690267155e93ee44e7bf1ab01",
+  "binary_diff_sha256_after": "e208f105d32ea2b2845533c70c544644d217e43690267155e93ee44e7bf1ab01",
+  "verification_commands": [
+    "git -c gc.auto=0 -C /private/tmp/crosswake-phase180-impl fetch /private/tmp/crosswake-phase182-impl phase182-impl",
+    "git -c gc.auto=0 -C /private/tmp/crosswake-phase180-impl checkout --detach da53c54db06e54be5a80fb4be144a70d3fed36a5",
+    "git -C /private/tmp/crosswake-phase180-impl status --porcelain --untracked-files=all",
+    "git -C /private/tmp/crosswake-phase180-impl diff --binary HEAD",
+    "shasum -a 256 / stat -f %Lp per carried path"
+  ],
+  "result": "moved",
+  "moved_at": "2026-10-15T00:34:21Z",
+  "safety_backup_path": "/private/tmp/crosswake-phase182-move-backup-20261015T003402Z",
+  "gate_rerun_required": true,
+  "notes": [
+    "The 180-01 gate must rerun on new_head before 180-05 reruns from Task 1.",
+    "180-05 must generate under MIX_ENV dev or test because origin_mode is refused under prod (D-03).",
+    "The study-session vs offline-study route id note from 180-04 remains Phase 180s.",
+    "Commit 10000a0 in the 182 history was an orchestrator-made, user-approved restamp of the Phase 134 template drift hash (template_version stays 4)."
+  ]
+}

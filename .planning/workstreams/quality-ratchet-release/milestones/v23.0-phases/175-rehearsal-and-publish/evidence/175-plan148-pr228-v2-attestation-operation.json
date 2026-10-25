@@ -1,0 +1,24 @@
+{
+  "workflow": "ios-mirror-backfill.yml",
+  "dispatch_ref": "release-please--branches--main",
+  "inputs": {
+    "package": "crosswake",
+    "operation": "candidate-receipt-attestation",
+    "version": "0.2.10",
+    "release_ref": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+    "candidate_head": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+    "candidate_tree": "fdbcbe68442212c2b5c63c34cfd8eb6a683d7ff5",
+    "candidate_base": "b064c4e2ea770a7e1dfae46227ac7ecf3e43c3fb",
+    "candidate_ci_run_id": "38143232212",
+    "hex_run_id": "38146295634",
+    "ios_run_id": "38146301515",
+    "maven_run_id": "38146306882"
+  },
+  "intent_at_utc": "2026-10-11T14:15:42.359997+00:00",
+  "prior_max_run_id": 38146301515,
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "dispatch_attempted": true,
+  "delivery": "ACCEPTED",
+  "dispatch_exit_code": 0,
+  "run_id": 38146461586
+}

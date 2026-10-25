@@ -1,0 +1,4 @@
+copyforward: settings 6 env 3 runtime 3
+copyforward: exclude_lines 4
+copyforward: allowed_changes 2
+copyforward: result pass

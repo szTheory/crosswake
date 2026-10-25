@@ -1,0 +1,66 @@
+{
+  "status": "consumed_applied",
+  "user_message": "i approve the roadmap",
+  "bound_at": "2026-10-13T14:09:13.486600+00:00",
+  "milestone": "v25.0",
+  "name": "iOS Host Setup & Digital Twin Proof",
+  "workstream": "quality-ratchet-release",
+  "outgoing_milestone": "v24.0",
+  "approved_phases": [
+    179,
+    180
+  ],
+  "approved_requirements": [
+    "IOS-01",
+    "IOS-02",
+    "IOS-03",
+    "TWIN-01",
+    "TWIN-02",
+    "TWIN-03",
+    "TWIN-04",
+    "TWIN-05",
+    "TWIN-06"
+  ],
+  "scenario_groups": 10,
+  "approved_input_digests": {
+    ".planning/research/v25/FEATURES.md": "ba035398706fa09bf8f03ee1a73a9551834d5e36a6cbd6ffb3294619bf2ac6c9",
+    ".planning/research/v25/ROADMAP-PROPOSAL.md": "28abc2db428aaa63d2878eeab03bca6a241ee759077e79e6f89888122faffdf8",
+    ".planning/research/v25/SUMMARY.md": "eb2d63c36f556a0f89a4509bbd62518a877d1ebfa8aea8f82c42cc967a8690f4"
+  },
+  "scope": "New-milestone planning initialization only",
+  "excluded": [
+    "Recovery source/index/HEAD/staging/commit/tag/branch/worktree changes",
+    "Protected-history moves or mutations",
+    "Remote writes/PR merges/publication",
+    "Physical/adopter promotion",
+    "Implementation execution"
+  ],
+  "private_precheck": "/private/tmp/crosswake-v25-start-l5co_6wk",
+  "prior_handoff": ".planning/workstreams/quality-ratchet-release/history/v24.0-before-v25-start",
+  "writer_exit_code": 0,
+  "writer_args": [
+    "query",
+    "state.milestone-switch",
+    "--milestone",
+    "v25.0",
+    "--name",
+    "iOS Host Setup & Digital Twin Proof",
+    "--ws",
+    "quality-ratchet-release"
+  ],
+  "writer_finished_at": "2026-10-13T14:09:13.619373+00:00",
+  "applied_at": "2026-10-13T14:21:28.778043+00:00",
+  "next_command": "$gsd-discuss-phase 179 --ws quality-ratchet-release",
+  "validation": "validation.json",
+  "workflow_exceptions": [
+    "Protected phase paths retained; no phases.clear",
+    "No recovery-checkout staging, commit, tag, branch or worktree changes",
+    "Shared PROJECT milestone section excluded by explicit workstream manifest"
+  ],
+  "parser_reconciliation": [
+    "Created two empty new phase directories",
+    "Completed v24 prerequisite expressed without inactive cross-milestone dependency",
+    "SDK planning status retained; project handoff projects exact scoped discuss command"
+  ],
+  "corrected_probe": "Unsupported init.discuss-phase corrected to registered init.phase-op and find-phase; no discussion executed"
+}

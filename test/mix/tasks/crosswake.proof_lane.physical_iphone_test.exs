@@ -191,6 +191,270 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
              )
   end
 
+  @local_mode_cases_modes [
+    {:preflight_only, ["--preflight-only", "--json"]},
+    {:readiness, ["--readiness", "--json"]},
+    {:run, ["--run", "--json"]}
+  ]
+
+  test "a local-loopback ios_host declaration blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG and never calls device_report" do
+    parent = self()
+    options = Keyword.put(ready_options(), :ios_host, local_declaration())
+
+    results = run_all_modes(options, parent)
+    assert Enum.map(results, &elem(&1, 0)) == [:preflight_only, :readiness, :run]
+    assert_all_blocked_by_config(results)
+    refute_received :device_report_called
+  end
+
+  test "real local-mode gen.shell output under a production declaration blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG and never calls device_report" do
+    parent = self()
+    project = generate_shell(local_declaration())
+    on_exit(fn -> File.rm_rf!(project) end)
+
+    assert File.regular?(
+             Path.join(project, "native/ios/crosswake_shell/CrosswakeShell/Info.plist")
+           )
+
+    assert File.regular?(
+             Path.join(project, "native/ios/crosswake_shell/Fixtures/route_activation.json")
+           )
+
+    results = run_all_modes(host_options(project, production_declaration()), parent)
+    assert Enum.map(results, &elem(&1, 0)) == [:preflight_only, :readiness, :run]
+    assert_all_blocked_by_config(results)
+    refute_received :device_report_called
+  end
+
+  test "a local-loopback refusal carries the generator refusal text as its cause" do
+    parent = self()
+    refusal = Crosswake.ProofLane.Generator.local_mode_refusal()
+    project = generate_shell(local_declaration())
+    on_exit(fn -> File.rm_rf!(project) end)
+
+    for options <- [
+          Keyword.put(ready_options(), :ios_host, local_declaration()),
+          host_options(project, production_declaration())
+        ],
+        {_mode, result} <- run_all_modes(options, parent) do
+      {_kind, map} = result
+      assert %{cause: ^refusal} = map
+    end
+  end
+
+  test "an Info.plist replaced by a directory blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG and a plain cause" do
+    parent = self()
+    project = generate_shell(production_declaration())
+    on_exit(fn -> File.rm_rf!(project) end)
+
+    plist = Path.join(project, "native/ios/crosswake_shell/CrosswakeShell/Info.plist")
+    File.rm!(plist)
+    File.mkdir_p!(plist)
+
+    results = run_all_modes(host_options(project, production_declaration()), parent)
+    assert_all_blocked_by_config(results)
+    assert_plain_cause(results, "CrosswakeShell/Info.plist", project)
+    refute_received :device_report_called
+  end
+
+  test "a missing Info.plist in an existing shell folder blocks preflight-only, readiness and run" do
+    parent = self()
+    project = generate_shell(production_declaration())
+    on_exit(fn -> File.rm_rf!(project) end)
+
+    File.rm!(Path.join(project, "native/ios/crosswake_shell/CrosswakeShell/Info.plist"))
+
+    results = run_all_modes(host_options(project, production_declaration()), parent)
+    assert_all_blocked_by_config(results)
+    assert_plain_cause(results, "CrosswakeShell/Info.plist", project)
+    refute_received :device_report_called
+  end
+
+  test "a malformed route_activation.json blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG and a plain cause" do
+    parent = self()
+    project = generate_shell(production_declaration())
+    on_exit(fn -> File.rm_rf!(project) end)
+
+    File.write!(
+      Path.join(project, "native/ios/crosswake_shell/Fixtures/route_activation.json"),
+      "{not json"
+    )
+
+    results = run_all_modes(host_options(project, production_declaration()), parent)
+    assert_all_blocked_by_config(results)
+    assert_plain_cause(results, "Fixtures/route_activation.json", project)
+    refute_received :device_report_called
+  end
+
+  @unusable_activation_bodies [
+    {"null", "null"},
+    {"empty list", "[]"},
+    {"empty object", "{}"},
+    {"numeric origin", ~s({"origin": 5})},
+    {"list origin", ~s({"origin": ["http://127.0.0.1:4790"]})},
+    {"origin that is not a url", ~s({"origin": "not a url"})}
+  ]
+
+  for {label, body} <- @unusable_activation_bodies do
+    test "a route_activation.json with no usable origin (#{label}) blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG" do
+      parent = self()
+      project = generate_shell(production_declaration())
+      on_exit(fn -> File.rm_rf!(project) end)
+
+      File.write!(
+        Path.join(project, "native/ios/crosswake_shell/Fixtures/route_activation.json"),
+        unquote(body)
+      )
+
+      results = run_all_modes(host_options(project, production_declaration()), parent)
+      assert_all_blocked_by_config(results)
+      assert_plain_cause(results, "Fixtures/route_activation.json", project)
+      refute_received :device_report_called
+    end
+  end
+
+  test "a production shell with no route_activation.json still passes preflight-only, readiness and run" do
+    parent = self()
+    project = generate_shell(production_declaration())
+    on_exit(fn -> File.rm_rf!(project) end)
+
+    File.rm!(Path.join(project, "native/ios/crosswake_shell/Fixtures/route_activation.json"))
+
+    options = host_options(project, production_declaration())
+
+    assert {:ready, _} = PhysicalIphone.run_with(["--preflight-only", "--json"], options)
+
+    assert {:readiness, %{outcome: "ready"}} =
+             PhysicalIphone.run_with(["--readiness", "--json"], options)
+
+    refute_received :device_report_called
+
+    assert {:passed, _} =
+             PhysicalIphone.run_with(["--run", "--json"], with_reports(options, parent))
+
+    assert_received :device_report_called
+  end
+
+  test "a production declaration over production gen.shell output still passes preflight-only, readiness and run" do
+    parent = self()
+    project = generate_shell(production_declaration())
+    on_exit(fn -> File.rm_rf!(project) end)
+
+    assert File.regular?(
+             Path.join(project, "native/ios/crosswake_shell/Fixtures/route_activation.json")
+           )
+
+    options = host_options(project, production_declaration())
+
+    assert {:ready, _} = PhysicalIphone.run_with(["--preflight-only", "--json"], options)
+
+    assert {:readiness, %{outcome: "ready"}} =
+             PhysicalIphone.run_with(["--readiness", "--json"], options)
+
+    refute_received :device_report_called
+
+    assert {:passed, _} =
+             PhysicalIphone.run_with(["--run", "--json"], with_reports(options, parent))
+
+    assert_received :device_report_called
+  end
+
+  defp local_declaration do
+    [
+      router: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+      origin: "http://127.0.0.1:4790",
+      origin_mode: :local_loopback,
+      entry_route_id: "study-session",
+      app_bundle_id: "org.crosswake.host",
+      proof_app_bundle_id: "org.crosswake.host.proof",
+      device_signing: [mode: :automatic, team_id: "ABCDE12345"]
+    ]
+  end
+
+  defp production_declaration do
+    Keyword.merge(local_declaration(), origin: "https://study.crosswake.test")
+    |> Keyword.delete(:origin_mode)
+  end
+
+  defp generate_shell(declaration) do
+    project =
+      Path.join(System.tmp_dir!(), "crosswake-pi-#{System.unique_integer([:positive])}")
+
+    File.mkdir_p!(project)
+    previous = Application.fetch_env(:crosswake, :ios_host)
+    Application.put_env(:crosswake, :ios_host, declaration)
+    Mix.Task.reenable("crosswake.gen.shell")
+
+    try do
+      ExUnit.CaptureIO.capture_io(fn ->
+        Mix.Tasks.Crosswake.Gen.Shell.run(["ios", "--target", project])
+      end)
+    after
+      case previous do
+        {:ok, value} -> Application.put_env(:crosswake, :ios_host, value)
+        :error -> Application.delete_env(:crosswake, :ios_host)
+      end
+
+      Mix.Task.reenable("crosswake.gen.shell")
+    end
+
+    project
+  end
+
+  defp host_options(project, declaration) do
+    options = Keyword.put(ready_options(), :ios_host, declaration)
+
+    config =
+      Map.put(Keyword.fetch!(options, :config), :ios_shell_root, Path.join(project, "native/ios"))
+
+    Keyword.put(options, :config, config)
+  end
+
+  defp with_reports(options, parent) do
+    options
+    |> Keyword.put(:device_report, fn _contract ->
+      send(parent, :device_report_called)
+      device_report()
+    end)
+    |> Keyword.put(:backend_report, fn _ -> backend_report() end)
+    |> Keyword.put(:cleanup_run, fn -> :ok end)
+  end
+
+  defp run_all_modes(options, parent) do
+    options = with_reports(options, parent)
+
+    for {mode, args} <- @local_mode_cases_modes do
+      {mode, PhysicalIphone.run_with(args, options)}
+    end
+  end
+
+  defp assert_plain_cause(results, file_name, project) do
+    for {_mode, {_kind, map}} <- results do
+      assert is_binary(map.cause)
+      assert String.contains?(map.cause, file_name)
+      refute String.contains?(map.cause, project)
+    end
+  end
+
+  defp assert_all_blocked_by_config(results) do
+    for {mode, result} <- results do
+      case {mode, result} do
+        {:readiness, {:readiness, %{outcome: "blocked", checks: checks}}} ->
+          config = Enum.find(checks, &(&1.id == "PI-PREFLIGHT-CONFIG"))
+          assert config.state == "blocked"
+          others = List.delete(checks, config)
+          assert others != []
+          assert Enum.map(others, & &1.state) == List.duplicate("ready", length(others))
+
+        {_mode, {:blocked, %{outcome: "blocked", rule_id: "PI-PREFLIGHT-CONFIG"}}} ->
+          :ok
+
+        other ->
+          flunk("mode #{mode} was not blocked by PI-PREFLIGHT-CONFIG: #{inspect(other)}")
+      end
+    end
+  end
+
   describe "exit_status_for/1 and handle_result/1 (CW-REQ-B)" do
     test "a validated, complete, correctly-owned, correctly-ordered report with a non-passing outcome exits 1 and classifies as refuted" do
       parent = self()
@@ -322,6 +586,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphoneTest do
     confirmed = fn value -> %{status: :confirmed_sanitized, value: value} end
 
     [
+      ios_host: nil,
       adopter_handoff: fn -> {:ok, %{source: :adopter, topology: %{status: :ready}}} end,
       inventory: [
         [

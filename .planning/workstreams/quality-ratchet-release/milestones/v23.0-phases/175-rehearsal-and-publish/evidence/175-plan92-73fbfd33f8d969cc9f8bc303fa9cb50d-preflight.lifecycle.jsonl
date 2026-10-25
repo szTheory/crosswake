@@ -1,0 +1,2 @@
+{"artifact_sha256":"a1c2dcab8a43e0641e7529d753706dd636128dd6b51bc7050c9312fd1091c007","attempt_id":"73fbfd33f8d969cc9f8bc303fa9cb50d","event":"reservation","schema":"crosswake-plan87-mirror-tag-lifecycle/v1","sequence":1,"state":"RESERVED"}
+{"artifact_sha256":"5be7186b403111acf064df55029dcd671cd96d9e789c02e48ea53c71085fee4c","attempt_id":"73fbfd33f8d969cc9f8bc303fa9cb50d","event":"terminal-hold","schema":"crosswake-plan87-mirror-tag-lifecycle/v1","sequence":2,"state":"HOLD"}

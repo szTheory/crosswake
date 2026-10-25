@@ -1,0 +1,98 @@
+{
+  "schema": "crosswake.phase180.feasibility_gate/1",
+  "candidate_head": "12f84cd950d4574921767df823faed6797c17c26",
+  "candidate_tree": "e51f069d52b1c1303d8d606d6000ff146654948e",
+  "base_kind": "authorized_seam_rerun",
+  "probe_route_id": "offline-study",
+  "authorized_diff_ok": true,
+  "export_status": "passed",
+  "invariants": [
+    {
+      "id": "G2_nondeclaring_clean",
+      "test": "phase180_invariant:G2_nondeclaring_clean",
+      "status": "held"
+    },
+    {
+      "id": "G2_probe_matches_declaration",
+      "test": "phase180_invariant:G2_probe_matches_declaration",
+      "status": "held"
+    },
+    {
+      "id": "G3_no_manufacture",
+      "test": "test_G3_invariant_activation_does_not_manufacture_registered_host_command",
+      "status": "held"
+    },
+    {
+      "id": "G3_deny_absent",
+      "test": "test_G3_invariant_bridge_denies_registered_command_absent_from_session",
+      "status": "held"
+    }
+  ],
+  "test_files_sha256": {
+    "test/crosswake/proof/phase180_twin_feasibility_test.exs": "01df82646c3365b159006c26ec818a55feafd506f007d762d739f66177e756f5",
+    "examples/phoenix_host/test/crosswake_example/phase180_twin_feasibility_test.exs": "f7b968909db85040adfd42bc397fec8f70259fa2b7bd3176759b523a9b8aaa19",
+    "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Phase180TwinFeasibilityTests.swift": "a3bcef6ea7f64f90b2e85f6aecc04778334428f709f840c134b7c0ea25355672"
+  },
+  "forced_cause": null,
+  "facts": [
+    {
+      "id": "G1",
+      "layer": "policy_declaration",
+      "gating": true,
+      "status": "refuted",
+      "test": "phase180_gate:G1",
+      "cause": null,
+      "control_test": "phase180_control:G1",
+      "control_status": "passed"
+    },
+    {
+      "id": "G2",
+      "layer": "generated_static_activation",
+      "gating": true,
+      "status": "refuted",
+      "test": "phase180_gate:G2",
+      "cause": null,
+      "control_test": "phase180_control:G2",
+      "control_status": "passed"
+    },
+    {
+      "id": "G3",
+      "layer": "native_session_from_generated_activation",
+      "gating": true,
+      "status": "refuted",
+      "test": "test_G3_gate_generated_activation_session_lacks_host_command",
+      "cause": null,
+      "control_test": "test_G3_control_exported_request_carrying_command_reaches_delegate",
+      "control_status": "passed"
+    },
+    {
+      "id": "G4",
+      "layer": "native_runtime_admission",
+      "gating": true,
+      "status": "refuted",
+      "test": "test_G4_gate_bounded_shell_denies_offline_island_runtime",
+      "cause": null,
+      "control_test": "test_G4_control_live_view_runtime_resolves",
+      "control_status": "passed"
+    },
+    {
+      "id": "G6",
+      "layer": "existing_path_search",
+      "gating": false,
+      "status": "refuted",
+      "test": "phase180_gate:G6",
+      "cause": null,
+      "control_test": "phase180_control:G6",
+      "control_status": "passed"
+    }
+  ],
+  "informational": {
+    "id": "G5",
+    "status": "no_webview_container"
+  },
+  "product_diff_clean": true,
+  "verdict": "existing_path_supported",
+  "declaration_mechanism": "route_capabilities_list",
+  "affected_requirements": [],
+  "next_action": "180-02 records not_required and rebinds 180-DECISION.json to this gate"
+}

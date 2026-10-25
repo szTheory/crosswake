@@ -1,0 +1,43 @@
+{
+  "run_id": 38164938881,
+  "merge_oid": "fd1fcf59c1cd473f7ef9a593be46566018e8aaff",
+  "conclusion": "success",
+  "publishers": [
+    {
+      "name": "Publish crosswake_threadline to Hex.pm",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Publish crosswake_sigra to Hex.pm",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Mirror iOS core to split repo",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Publish to Hex.pm",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Publish crosswake_rulestead to Hex.pm",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Publish Android core to Maven Central",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Publish crosswake_rindle to Hex.pm",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Publish crosswake_chimeway to Hex.pm",
+      "conclusion": "skipped"
+    }
+  ],
+  "publication": "NONE",
+  "new_companion_pr": 235,
+  "new_companion_branch": "release-please--branches--main--components--crosswake_chimeway",
+  "observed_at_utc": "2026-10-11T18:46:21.167587+00:00"
+}

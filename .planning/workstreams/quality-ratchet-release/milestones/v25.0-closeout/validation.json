@@ -1,0 +1,51 @@
+{
+  "checked_at": "2026-10-15T15:06:52.090972+00:00",
+  "result": "passed",
+  "milestone": "v25.0",
+  "workstream": "quality-ratchet-release",
+  "scope": "Planning closeout only; no test, twin, simulator or Xcode rerun",
+  "closeout_type": "verified_closeout",
+  "stats": {
+    "phases": 5,
+    "plans": 32,
+    "tasks_from_plan_files": 78,
+    "tasks_cli_reported": 6,
+    "requirements_complete": 20
+  },
+  "open_artifact_audit": {
+    "open": 0,
+    "previously_acknowledged_suppressed": 6
+  },
+  "phase_verification_statuses": {
+    "179": "passed",
+    "180": "passed",
+    "181": "passed",
+    "182": "passed",
+    "183": "passed"
+  },
+  "audit_status": "tech_debt",
+  "state_validation": {
+    "valid": true,
+    "warnings": []
+  },
+  "manager_active_phases_after_close": 0,
+  "links": {
+    "checked": 44,
+    "broken": 0,
+    "note": "validation.json written after the link check"
+  },
+  "handoff_snapshot_sha256_check": "8/8 OK",
+  "archives": [
+    "milestones/v25.0-ROADMAP.md",
+    "milestones/v25.0-REQUIREMENTS.md",
+    "milestones/v25.0-MILESTONE-AUDIT.md",
+    "milestones/v25.0-MILESTONE-AUDIT.initial.md"
+  ],
+  "git": {
+    "recovery_head": "d0f3e2f1",
+    "staged_paths": 0,
+    "candidate_head": "50fcd57",
+    "candidate_porcelain_lines": 0,
+    "commits_tags_pushes": 0
+  }
+}

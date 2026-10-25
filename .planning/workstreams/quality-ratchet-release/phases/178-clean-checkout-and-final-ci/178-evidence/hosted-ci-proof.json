@@ -1,0 +1,723 @@
+{
+  "schemaVersion": 1,
+  "status": "candidate-run-observed",
+  "observedAt": "2026-10-13T01:48:13.900Z",
+  "repository": "szTheory/crosswake",
+  "workflow": {
+    "id": 353403178,
+    "path": ".github/workflows/crosswake-ci.yml",
+    "source": {
+      "version": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+      "blobOid": "3e7ec4f5d50646f4d282907562737723f429413d"
+    }
+  },
+  "candidate": {
+    "commit": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+    "tree": "27f4073039b4dd976492127549603a76ce22499b",
+    "baseCommit": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b"
+  },
+  "pullRequest": {
+    "number": 238,
+    "state": "open",
+    "headCommit": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+    "baseRef": "main",
+    "baseCommit": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b"
+  },
+  "run": {
+    "id": 38322827152,
+    "attempt": 1,
+    "event": "pull_request",
+    "url": "https://github.com/szTheory/crosswake/actions/runs/38322827152",
+    "headCommit": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+    "checkSuiteId": 103831660113,
+    "jobCount": 49,
+    "checkCount": 49
+  },
+  "governedMergeOid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+  "policy": {
+    "observedAt": "2026-10-13T01:48:13.900Z",
+    "strict": true,
+    "rulesetEvidence": "successful-empty",
+    "effectiveRuleCount": 0,
+    "requiredContexts": [
+      {
+        "context": "Crosswake CI",
+        "appId": 15368,
+        "sources": [
+          "branch_protection"
+        ]
+      }
+    ]
+  },
+  "classifier": {
+    "result": "full_proof",
+    "authorizedSkipCount": 0
+  },
+  "requiredJobs": [
+    {
+      "name": "android-generated-shell-unit",
+      "jobId": 115054647511,
+      "checkRunId": 115054647511,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647511,
+        "checkRunId": 115054647511,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "android-package-unit",
+      "jobId": 115054647593,
+      "checkRunId": 115054647593,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647593,
+        "checkRunId": 115054647593,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "brand-structural",
+      "jobId": 115054646782,
+      "checkRunId": 115054646782,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054646782,
+        "checkRunId": 115054646782,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "collateral-binaries-guard",
+      "jobId": 115054646805,
+      "checkRunId": 115054646805,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054646805,
+        "checkRunId": 115054646805,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "documentation-contracts",
+      "jobId": 115054646776,
+      "checkRunId": 115054646776,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054646776,
+        "checkRunId": 115054646776,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "e2e-proof",
+      "jobId": 115054647505,
+      "checkRunId": 115054647505,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647505,
+        "checkRunId": 115054647505,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "guard-01-contract-drift-test",
+      "jobId": 115054646797,
+      "checkRunId": 115054646797,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054646797,
+        "checkRunId": 115054646797,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "guard-01-e2e-honesty",
+      "jobId": 115054647517,
+      "checkRunId": 115054647517,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647517,
+        "checkRunId": 115054647517,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "guard-02-generate-and-diff",
+      "jobId": 115054647347,
+      "checkRunId": 115054647347,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647347,
+        "checkRunId": 115054647347,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "guard-02-prod-route-absence",
+      "jobId": 115054647436,
+      "checkRunId": 115054647436,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647436,
+        "checkRunId": 115054647436,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "hex-page-proof",
+      "jobId": 115054646751,
+      "checkRunId": 115054646751,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054646751,
+        "checkRunId": 115054646751,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "ios-mirror-parity-proof",
+      "jobId": 115054647523,
+      "checkRunId": 115054647523,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647523,
+        "checkRunId": 115054647523,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "ios-package-unit",
+      "jobId": 115054647254,
+      "checkRunId": 115054647254,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647254,
+        "checkRunId": 115054647254,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase10-proof",
+      "jobId": 115054647674,
+      "checkRunId": 115054647674,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647674,
+        "checkRunId": 115054647674,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase130-companion-engine-absent-proof",
+      "jobId": 115054647464,
+      "checkRunId": 115054647464,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647464,
+        "checkRunId": 115054647464,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase130-core-hermetic-proof",
+      "jobId": 115054647099,
+      "checkRunId": 115054647099,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647099,
+        "checkRunId": 115054647099,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase132-companion-engine-absent-proof",
+      "jobId": 115054647400,
+      "checkRunId": 115054647400,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647400,
+        "checkRunId": 115054647400,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase132-core-hermetic-proof",
+      "jobId": 115054647547,
+      "checkRunId": 115054647547,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647547,
+        "checkRunId": 115054647547,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase18-elixir-android-proof",
+      "jobId": 115054647294,
+      "checkRunId": 115054647294,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647294,
+        "checkRunId": 115054647294,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase18-ios-proof",
+      "jobId": 115054647452,
+      "checkRunId": 115054647452,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647452,
+        "checkRunId": 115054647452,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase23-commerce-proof",
+      "jobId": 115054647350,
+      "checkRunId": 115054647350,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647350,
+        "checkRunId": 115054647350,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase34-commerce-proof",
+      "jobId": 115054647213,
+      "checkRunId": 115054647213,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647213,
+        "checkRunId": 115054647213,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase41-gating-proof",
+      "jobId": 115054647309,
+      "checkRunId": 115054647309,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647309,
+        "checkRunId": 115054647309,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase43-rulestead-proof",
+      "jobId": 115054647084,
+      "checkRunId": 115054647084,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647084,
+        "checkRunId": 115054647084,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase45-rindle-proof",
+      "jobId": 115054647236,
+      "checkRunId": 115054647236,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647236,
+        "checkRunId": 115054647236,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase48-provider-adapter-proof",
+      "jobId": 115054647073,
+      "checkRunId": 115054647073,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647073,
+        "checkRunId": 115054647073,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase5-proof",
+      "jobId": 115054647432,
+      "checkRunId": 115054647432,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647432,
+        "checkRunId": 115054647432,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase52-operator-proof",
+      "jobId": 115054647230,
+      "checkRunId": 115054647230,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647230,
+        "checkRunId": 115054647230,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase58-auth-closeout-proof",
+      "jobId": 115054647364,
+      "checkRunId": 115054647364,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647364,
+        "checkRunId": 115054647364,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase67-android-jvm-proof",
+      "jobId": 115054647568,
+      "checkRunId": 115054647568,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647568,
+        "checkRunId": 115054647568,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase69-closeout-proof",
+      "jobId": 115054647287,
+      "checkRunId": 115054647287,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647287,
+        "checkRunId": 115054647287,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase70-subscription-saas-proof",
+      "jobId": 115054647556,
+      "checkRunId": 115054647556,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647556,
+        "checkRunId": 115054647556,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase71-notification-workflow-proof",
+      "jobId": 115054647442,
+      "checkRunId": 115054647442,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647442,
+        "checkRunId": 115054647442,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase73-auth-sensitive-admin-workflow-proof",
+      "jobId": 115054647411,
+      "checkRunId": 115054647411,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647411,
+        "checkRunId": 115054647411,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase74-offline-draft-recovery-proof",
+      "jobId": 115054647332,
+      "checkRunId": 115054647332,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647332,
+        "checkRunId": 115054647332,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase75-closeout-gate",
+      "jobId": 115054647328,
+      "checkRunId": 115054647328,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647328,
+        "checkRunId": 115054647328,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase79-android-proof",
+      "jobId": 115054647620,
+      "checkRunId": 115054647620,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647620,
+        "checkRunId": 115054647620,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase79-ios-proof",
+      "jobId": 115054647497,
+      "checkRunId": 115054647497,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647497,
+        "checkRunId": 115054647497,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "phase96-threadline-docs-contract-proof",
+      "jobId": 115054647691,
+      "checkRunId": 115054647691,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647691,
+        "checkRunId": 115054647691,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "proof-aggregator-negative-control",
+      "jobId": 115054646833,
+      "checkRunId": 115054646833,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054646833,
+        "checkRunId": 115054646833,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "proof-dependency-security",
+      "jobId": 115054647404,
+      "checkRunId": 115054647404,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647404,
+        "checkRunId": 115054647404,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "proof-requires-example-host",
+      "jobId": 115054647129,
+      "checkRunId": 115054647129,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647129,
+        "checkRunId": 115054647129,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "release-as-staleness-proof",
+      "jobId": 115054646743,
+      "checkRunId": 115054646743,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054646743,
+        "checkRunId": 115054646743,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "release-candidate-fixtures",
+      "jobId": 115054646870,
+      "checkRunId": 115054646870,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054646870,
+        "checkRunId": 115054646870,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "release-candidate-full-proof",
+      "jobId": 115054646789,
+      "checkRunId": 115054646789,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054646789,
+        "checkRunId": 115054646789,
+        "attempt": 1,
+        "kind": "head",
+        "oid": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+        "refKind": "pull_request_head_sha"
+      }
+    },
+    {
+      "name": "route-tour-proof",
+      "jobId": 115054647580,
+      "checkRunId": 115054647580,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054647580,
+        "checkRunId": 115054647580,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "classify-change",
+      "jobId": 115054612676,
+      "checkRunId": 115054612676,
+      "conclusion": "success",
+      "checkout": {
+        "jobId": 115054612676,
+        "checkRunId": 115054612676,
+        "attempt": 1,
+        "kind": "merge",
+        "oid": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+        "refKind": "pull_request_merge_ref"
+      }
+    },
+    {
+      "name": "Crosswake CI",
+      "jobId": 115060445903,
+      "checkRunId": 115060445903,
+      "conclusion": "success",
+      "checkout": null
+    }
+  ]
+}

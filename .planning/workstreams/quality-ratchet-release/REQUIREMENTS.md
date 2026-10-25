@@ -1,195 +1,125 @@
-# Requirements: Crosswake v23.0 Release Pipeline Repair & Proof-Lane Truth
+# Requirements: Crosswake v28.0 Truth and Release Train
 
-**Defined:** 2026-09-15
-**Workstream:** quality-ratchet-release
-**Core Value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and ready to release without weakening Phoenix-first runtime contracts or honest support claims.
+**Defined:** 2026-10-24
+**Core Value:** One real Phoenix application on one physical iPhone with explicit route ownership and one honest offline mutation island; synthetic adopter profiles are the proving ground while the adopter lane is parked.
+**Source:** [v28.0-SCOPE.md](v28.0-SCOPE.md) and [SYNTHESIS.md](v28.0-research/SYNTHESIS.md).
 
-**Milestone thesis:** The release pipeline already has the hard parts — an exact head/tree/base identity gate, a fail-closed rollup, a clean-room adopter harness, and a byte-exact post-publish digest proof. All three defects this milestone repairs share one root habit: *a fact that should have been derived got hardcoded, and nothing was built to catch it drifting.* Every requirement below generalizes an existing mechanism. None loosens what it proves.
+Each requirement carries a persona/job tag: P1 study founder, P5 skeptical mobile engineer, P6 privacy officer, P7 cross-platform team, M maintainer-infra.
 
-**Exit criterion:** `crosswake 0.2.2` is live, published through the version-generalized graph, and `exact-public-proof` **actually executed and passed** for it. "Wired but never run" is not done.
+## v28.0 Requirements
 
-Source: `.planning/research/v23/SUMMARY.md` (decision set, adjudicated divergences, build order).
+### Planning and bearings (PLAN)
 
-## v23.0 Requirements
+- [x] **PLAN-01** [M]: `.planning/ROADMAP-ROLLING.md` exists with NOW/NEXT/LATER/PARKED/DROPPED; every row carries outcome, horizon, effort, `adr:` field and promotion trigger; `wc -l` <= 120 is asserted by the bearings report.
+- [x] **PLAN-02** [M]: `.planning/BEARINGS.md` (<= 60 lines) is listed first in AGENTS.md Project Context; durable lessons from MILESTONE-ARC.md are migrated and MILESTONE-ARC.md is marked historical; AGENTS.md is trimmed to <= 102 lines (measured cap, recorded 2026-10-25) with the approval-gate paragraph byte-identical, no v21/v22 pointers, and every removed rule dispositioned.
+- [x] **PLAN-03** [M]: The workstream STATE.md is <= 40 lines with one handoff; "Handoff history" is removed and the byte-snapshot ritual is deleted from the milestone-start convention.
+- [x] **PLAN-04** [M]: `script/bearings-report` prints <= 40 plain-language lines (CI for the main tip, read from the PR head that produced it and naming the commit CI ran on, plus whether CI has run on local HEAD, ahead/behind, open PR classes, worktrees, stashes and unlanded branches, line caps, fired seed/debt triggers); it exits non-zero and says UNVERIFIED if any read fails; each check has a negative-control test; it is not merge-blocking.
+- [x] **PLAN-05** [M]: `.planning/PERSONAS.md` (<= 1 page, P1–P7, J1–J5) exists; every requirement in a milestone REQUIREMENTS file carries a persona/job tag or `M`; the superseded root JTBD ordering is recorded as not executed.
 
-### Diagnostic Legibility
+### ADR amendments (ADR)
 
-- [x] **MSG-01**: A maintainer reading a failed release check sees the failing check's own message verbatim, not a list of check IDs
-- [x] **MSG-02**: A failed scanner that terminated early is reported as "terminated early" and distinguished from a check ID that was never defined
-- [x] **MSG-03**: A check that fails while other required IDs are absent surfaces the failure, not the absence — `missing` never shadows `failing`
-- [x] **MSG-04**: `release.publish_gate.no_bare_version_literal` fails when any publish-gating `if:` clause contains a bare version literal
-- [x] **MSG-05**: `release.publish_gate.no_bare_version_literal` is proven non-vacuous against a pre-repair fixture of the workflow file — it demonstrably would have caught the original weld
-- [x] **MSG-06**: The three release check display names carrying `0.2.1` are renamed to version-neutral names, and duplicate required-check names fail a uniqueness assertion
+- [x] **ADR-01** [P7]: An ADR amendment unfreezes Android for proof and parity of existing contracts, with a re-freeze trigger (Android work delays an iOS gate by more than one milestone); AGENTS.md, ADR, PROJECT.md, support matrix and capability map "frozen" text change in the same PR.
+- [x] **ADR-02** [M]: An ADR amendment records the synthetic-profile reversal gate (profile, failing criterion, cited artifact, smallest slice, rollback; at most one reopened item per milestone) and permits profile scenario rows over one host as proof structure.
 
-### Version / Authority Split
+### Release train (REL)
 
-- [x] **WELD-01**: A completed weld inventory classifies every `0.2.1` occurrence across the 18 affected files as live gate, fixture, docstring, or display string, and is recorded in-repo
-- [x] **WELD-02**: `approved-release-guard` emits an `approved_version` output bound into the same receipt that already binds approved head, tree, and base
-- [x] **WELD-03**: `publish-hex`, `publish-ios-core`, `publish-android-core`, and `exact-public-proof` gate on the release version matching `approved_version`, not on a literal
-- [x] **WELD-04**: `Crosswake.ReleaseCandidate.Workflow` derives `@coordinates` and `@dependencies` from the release version rather than frozen module attributes
-- [x] **WELD-05**: The Elixir-side weld at `cleanroom.ex:236` is removed as the same defect class one layer down
-- [x] **WELD-06**: A release of any semver version runs the full publish → proof → rollup graph with no workflow edit
-- [x] **WELD-07**: The interim `release.version_weld.gates_match_declared_version` tripwire is deleted — not disabled, not weakened — in the same change that removes the literals it guarded
-- [x] **WELD-08**: An unapproved merge still cannot publish at any version — the identity gate remains exact after the version gate generalizes
+- [ ] **REL-01** [M]: The Info.plist golden and Swift seam fixture comparison ignore the `Generated by crosswake X.Y.Z` line; a release-please PR for the next version passes the eight test jobs with zero hand edits, verified on the PR head commit.
+- [ ] **REL-02** [M]: The parity-workflow test asserts a 40-hex SHA plus version comment instead of a literal SHA; Dependabot #210 and #211 turn green after rebase or are closed.
+- [ ] **REL-03** [P6]: CI masks secret-derived values before any echo, and the root-proof failure tail masks bearer, secret-access-key, cookie and short-value shapes; a test proves a seeded fake secret never appears in captured output and fails when the mask is removed.
+- [ ] **REL-04** [M]: The 14 weekly `phaseNN-proof` schedules, the Cancel Obsolete controller and `script/select_obsolete_ci_runs.py` are removed; one weekly canary on `main` is added; the See It Run `native` job is split out so `web-and-gif` completes.
+- [ ] **REL-05** [M]: Dependabot opens one grouped monthly actions PR plus security updates; #239/#240/#241 are merged, #238 is merged or closed as superseded; no open PR is older than 14 days without a recorded reason.
+- [ ] **REL-06** [M]: SEED-003 is closed with mirror-tag evidence; one clean-room command fails closed and is run once against the real 0.2.11 artifacts with output retained.
+- [ ] **REL-07** [M]: A release (core first, then companions, Maven, iOS mirror) completes with a separate `allow` per merge, publish and tag; a post-publish check asserts the mirror tag equals the release version.
 
-### Post-Publication Proof
+### Repository hygiene (HYG)
 
-- [x] **XPUB-01**: Each of the six packages in the approved manifest carries its own `candidate_ref`; the single-shared-ref requirement is gone
-- [x] **XPUB-02**: Byte-exact digest equality against the published tarball is unchanged in strength for every package it can be established for
-- [x] **XPUB-03**: A package whose source has drifted since its own publish tag reports a separately-named weaker claim, never a `byte_exact` result and never silently averaged into one green check
-- [x] **XPUB-04**: `exact-public-proof` runs on a publication-record signal satisfied identically by the ordinary and the recovery publish path
-- [x] **XPUB-05**: A missing publication record fails the proof hard; it is never expressed as a skipped job
-- [x] **XPUB-06**: The proof result outlives its 14-day artifact retention — durably recorded in-repo or with retention raised
-- [x] **XPUB-07**: The fail-closed rollup semantics are preserved verbatim — `skipped` still counts as not-success
+- [ ] **HYG-01** [P5]: The 13 tracked root scratch files and `crosswake-checkpoint-24c8389.bundle` are removed (after confirming the bundle is not the only copy; the denylist string in `first_adopter_context.ex` stays); `SETUP.md` moves under `docs/` without the personal email; a root-allowlist test fails on any new tracked root file or `*.bundle`.
+- [ ] **HYG-02** [M]: Merged or superseded remote branches are deleted (unmerged work tagged `archive/<name>` first, each remote delete behind its own `allow`); `git worktree list` shows only the main checkout.
 
-### Clean-Room Host Realism
+### Spec quality (SPEC)
 
-- [x] **ROOM-01**: The clean-room host declares a real Crosswake route with capability metadata before `doctor` runs
-- [x] **ROOM-02**: The clean-room host runs `mix crosswake.install` before `doctor`, exercising what an adopter actually performs
-- [x] **ROOM-03**: `clean-room-proof-rindle` passes against the live published `crosswake_rindle 0.1.0`
-- [x] **ROOM-04**: The legacy positional path's logging reaches grep-able parity with the matrix path's `step=` markers
-- [x] **ROOM-05**: The threadline and sigra clean-room failures are diagnosed as separate findings with their own recorded root causes
-- [x] **ROOM-06**: `doctor`'s `manifest_contract` check is unchanged in strength — the harness was fixed, not the contract
+- [ ] **SPEC-01** [P6]: `evidence_manifest_test.exs:98` and `phase139_threadline_cleanroom_test.exs:59` no longer pass by asserting nothing; Elixir, Swift and Kotlin vector-consuming tests assert vector count equals a pinned expectation and fail on a missing vector.
+- [ ] **SPEC-02** [M]: A delta-only guard in `script/check_absence_is_not_success.exs` fails on new collection assertions without a non-empty check, `for`-over-glob without cardinality, and literal `assert true`, each with a negative control; the known sites are fixed in the same change.
+- [ ] **SPEC-03** [P6]: Boundary specs exist for `Journal.scope_ref!/1` (15/16/128/129 chars, newline injection, input never echoed) and `SafeObservation.new/1` (measurement 0, 1_000_000, 1_000_001; adversarial strings in every field never survive).
+- [ ] **SPEC-04** [M]: A Muex pilot covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract`; the wrapper fails if zero mutants are generated; baseline scores, runtime and survivor classification (keyed by file + mutator + normalized text) are recorded with an adopt/drop decision; no Muex dep is committed.
+- [ ] **SPEC-05** [P5]: The finite route-policy option product is enumerated exhaustively against a hand-written verdict table; compiler error assertions pin `{key, route_id}` pairs; `Compiler.validation_key/1` never returns `nil` for a compiler error.
 
-### Adopter Proof Fidelity
+### Architecture (ARCH)
 
-- [x] **FID-01**: SEED-014's two high-severity adopter gaps (CW-REQ-A, CW-REQ-B) are closed or explicitly deferred with a recorded reason
-- [x] **FID-02**: A verification command that ran and found a defect exits differently from one that could not run at all
+- [ ] **ARCH-01** [M]: The `bridge/contract`, `bridge/denial`, `manifest/types`, `shell/denial` compile cycle is broken; a test fails on any compile-label xref cycle and on an all-cycles count above the committed baseline.
+- [ ] **ARCH-02** [P5]: The three bare `rescue _ ->` clauses in `bridge.ex` return explicit results; an AST test fails on bare rescue in the `bridge`, `policy`, `router`, `offline`, `manifest` and `compatibility` modules.
+- [ ] **ARCH-03** [M]: A test compares each package's runtime direct deps to a committed list; adding a dep requires editing the list with a one-line justification.
 
-### Vacuous Assertion Audit
+### Public docs (DOCS)
 
-- [x] **VAC-01**: All 173 sites flagged by SEED-018 are audited and classified as genuinely vacuous or safe
-- [x] **VAC-02**: Every assertion confirmed vacuous is rewritten so that an empty collection fails
-- [x] **VAC-03**: Every new check added by this milestone is checked against the six-shape vacuity taxonomy before it is made merge-blocking
+- [ ] **DOCS-01** [P1]: README "Integrating" and `install.md` contain no command that exists only in the repo, state which steps need a clone, and include the bridge hook, esbuild flags, `attach/1` and `:ios_host` wiring; the REL-06 clean-room command executes the documented steps.
+- [ ] **DOCS-02** [P1]: The companion matrix shows the real published versions; the phase132 test no longer hardcodes stale values; CHANGELOG makes no false "current release" claim and points to GitHub Releases for 0.2.2–0.2.11; the telemetry guide lists the `[:crosswake, :offline, :replay]` event; `see_it_run.md` states which commit the twin receipt attests.
+- [ ] **DOCS-03** [P5]: `mix docs` warnings, a relative link/anchor check and a public internal-code leak scan (`Phase N`, `TODO-`, `D-NN`, `v2x`) run in report mode for one cycle with counts recorded; `android_uat.md` loses the automated "Last verified" stamp and phantom capability families; "Android frozen" text is removed from README, support matrix and native shell guide.
 
-### Release Execution
+### Android proof (AND)
 
-- [ ] **REL-10**: A retire/backfill runbook covering Hex, the iOS mirror, and Maven is committed before the first publish of this milestone — **BREACHED at Gate 1 (2026-09-19):** commit `d3401e51` existed only on divergent local `main`; PR #147's base, head, and publish-triggering merge omitted both that commit and the runbook file. The first publish cannot be made retroactively compliant. Exact-remote ancestry is now mandatory before any remaining publish.
-- [x] **REL-11**: All three publish legs are rehearsed to the last safe step — through `mix hex.build` not `hex.publish`, through subtree extraction not tag push
-- [ ] **REL-12**: The lower-blast-radius held companion PR publishes live as the fire-drill for the repaired clean-room lane
-- [ ] **REL-13**: `crosswake 0.2.2` publishes through the version-generalized graph to Hex, the iOS mirror, and Maven
-- [ ] **REL-14**: `exact-public-proof` executed and passed for `0.2.2` — confirmed by run evidence, not by inspection of the workflow
-- [ ] **REL-15**: The second held companion PR publishes, and the linked release rollup reports `COMPLETE`
-- [x] **REL-16**: A multi-registry partial-failure response table exists before the first publish, not derived during an incident
-
-### Documentation Truth
-
-- [x] **DOC-04**: `docs/COMPANION-PUBLISH-RUNBOOK.md`'s "this pipeline only publishes 0.2.1" section is deleted the moment it becomes false — not softened
-- [x] **DOC-05**: One word is used for each domain concept across CLI, CI check names, docs, and code; the "manifest" collision is resolved
-- [x] **DOC-06**: Residual `splitsh-lite` references are removed; `git subtree split` is documented as the durable mirror-split mechanism
+- [ ] **AND-01** [P7]: A parity ledger is generated from `priv/contract_vectors/*.json` with an Android column, and a test asserts Swift and Kotlin reference the same vector-set hash.
+- [ ] **AND-02** [P7]: Kotlin core JVM tests rise from 12 to at least 25, including `BridgeChannel` boundary cases; `androidx.webkit` is removed if unused; the Android JSON-stack choice is decided in writing.
+- [ ] **AND-03** [P7]: A fresh foreign Gradle project built from `mix crosswake.gen.shell android` output resolves the published Maven coordinate and passes JVM tests on Linux CI (advisory leg, required only after two clean runs), with a negative control that a wrong coordinate fails.
 
 ## Future Requirements
 
-Deferred to a later milestone. Tracked, not in this roadmap.
-
-### Supply-Chain Surface
-
-- **PROV-01**: Adopter-facing provenance or attestation surface, once Hex or Maven can consume attestations
-- **PROV-02**: iOS mirror static deploy key replaced with a short-lived GitHub App token (SEED-003 hardening half)
-- **PROV-03**: `diffoscope` side-channel for digest-mismatch triage
-
-### Proof Quality
-
-- **VACG-01**: `absence.collection_assertion_non_empty` as a merge-blocking guard — **only after** VAC-01/VAC-02 land. Guard-before-audit produces a wall of red that gets waived, which teaches the team that red is negotiable.
-
-  **Sunset step (D-08), recorded here so the later deletion is a documented step and not a cold
-  judgment call):** when VACG-01 lands, lift `script/inventory_collection_assertions.exs`'s
-  detection core into the new guard rather than rewriting it from scratch, then **delete**:
-
-  - `script/inventory_collection_assertions.exs`
-  - `script/collection_assertion_ledger.json`
-  - `script/collection_assertion_remediation.json`
-  - `test/crosswake/proof/phase170_vacuous_assertion_ledger_test.exs`
-
-  Reason: two mechanisms that can silently disagree about what counts as safe are worse than one.
-  A regenerable inventory and a merge-blocking guard checking the same shapes by two independently
-  maintained implementations would eventually drift apart, and neither the ledger test nor the
-  guard would be able to tell you which one is right.
-
-- **VACG-02**: `verify_repository.sh` must surface the failing stage's own child output, not just
-  `FAIL <stage-id>; corrective-command=...`. Observed 2026-09-17 on PR #176: the
-  `example-host-proof` stage failed in CI and the entire job log contained exactly one line about
-  it — no test output, no assertion, no exit detail — so the only way to learn what broke was to
-  reproduce the stage locally. This is the same shape as the defects VAC-01..03 target, one layer
-  up: a red signal that carries no information about the thing it names. Fix belongs wherever the
-  stage runner captures child stdio (`script/verify_repository.mjs`), and must apply to every
-  stage, not just this one.
-
-### Consolidation
-
-- **CONS-01**: Delete the legacy positional clean-room path once the backport has proven stable across a release cycle
+Tracked in the rolling roadmap (NEXT/LATER), not in this milestone: v29 Android Proof (toolchain bump, emulator lane, offline-study journey on Android, host-command seam parity), v30 Twin and Host Trust (twin-06 on `main`, receipt head/tree binding, SEED-015/016, hostile-host and brownfield rows), v31 Newcomer Path (README rewrite, first-route guide, doctor-to-troubleshooting coverage, App Review guidance); property tests, weekly mutation runs, moving maintainer tooling out of the Hex package, scenario catalog, commerce extraction.
 
 ## Out of Scope
 
-Explicitly excluded, with reasoning, to prevent re-adding.
-
-| Feature | Reason |
-|---------|--------|
-| GitHub OIDC / trusted publishing | Neither Hex.pm nor Maven Central Portal exposes a trusted-publisher flow to federate to |
-| `actions/attest-build-provenance`, cosign, SLSA | Real future value, but no registry in play consumes attestations today; would refactor a working system off the critical path |
-| GitHub Environments as a replacement for `approved-release-guard` | Answers "did a human click" — not "is this the exact approved head/tree/receipt". A regression, not a generalization |
-| Hex package signing | Does not exist on Hex.pm |
-| npm-provenance-style adopter badges | No Hex.pm rendering surface — write-only |
-| Force-linking the six packages into one candidate ref | Re-creates the lockstep bottleneck that companion extraction (v16.0/v17.0) deliberately tore apart; contradicts D-15/D-16 |
-| Relaxing byte-exact digest equality to a reachability check | Byte-exactness is the entire value of exact-public; loosening it makes the proof decorative |
-| Narrowing `doctor`'s `manifest_contract` | Weakening a contract to make a harness pass — the named anti-pattern in TODO-009 and TODO-011 |
-| Marking the clean-room lane advisory or non-blocking | A proof that has never passed is a finding, not noise |
-| Wholesale rename of all ~22 required CI check names | Real branch-protection and queue-deadlock cost (SEED-007's PR #84 incident: 78 runs, 3 hours, for an unrelated docs PR) |
-| Merge queue adoption (SEED-007) | Severable; a distinct decision about proof culture, not a release-pipeline defect |
+| Item | Reason | Lands in |
+|---|---|---|
+| Twin-06 run on `main`, twin identity debt, receipt head binding | Would go stale after v28 churn; needs a fresh user decision | v30.0 |
+| Android toolchain bump, emulator lane, ktlint, host-command seam parity, Android twin | Needs the parity ledger first | v29.0 |
+| `stream_data` property tests, weekly Muex lane, PIT, Muter | The pilot decides first | LATER |
+| Mix task renames, Hex package split, doctor split, `phase_N` renames | Breaking or large | v31.0 / LATER |
+| README rewrite, first-route guide, doctor coverage bijection | v28 only removes false claims | v31.0 |
+| Scenario catalog, brownfield and hostile-host rows, SSO fixture, SEED-015/016 | Outward proof work | v30.0 |
+| Light-phase mode, PROJECT.md split, trimming the parked adopter STATE | Tooling unverified | LATER |
+| Merge queue; dialyzer, Credo, SwiftLint as merge gates | No measured need | DROPPED / LATER |
+| Any stop-list reopening (notifications, commerce, sync) | No measured profile evidence yet | Gated by ADR-02 |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MSG-01 | Phase 169 | Complete |
-| MSG-02 | Phase 169 | Complete |
-| MSG-03 | Phase 169 | Complete |
-| MSG-04 | Phase 171 | Complete |
-| MSG-05 | Phase 171 | Complete |
-| MSG-06 | Phase 169 | Complete |
-| WELD-01 | Phase 171 | Complete |
-| WELD-02 | Phase 171 | Complete |
-| WELD-03 | Phase 171 | Complete |
-| WELD-04 | Phase 171 | Complete |
-| WELD-05 | Phase 171 | Complete |
-| WELD-06 | Phase 171 | Complete |
-| WELD-07 | Phase 171 | Complete |
-| WELD-08 | Phase 171 | Complete |
-| XPUB-01 | Phase 172 | Complete |
-| XPUB-02 | Phase 172 | Complete |
-| XPUB-03 | Phase 172 | Complete |
-| XPUB-04 | Phase 173 | Complete |
-| XPUB-05 | Phase 173 | Met — fire-drill run 35302554800 (2026-09-18): the proof job is present and concludes `failure` at `PUBLICATION_RECORD_MISSING` (exit 4), while five sibling jobs in the same run read `skipped`, so the value is not a constant. Evidence in `173-NON-VACUITY.md`. |
-| XPUB-06 | Phase 173 | Complete |
-| XPUB-07 | Phase 173 | Complete |
-| ROOM-01 | Phase 174 | Complete |
-| ROOM-02 | Phase 174 | Complete |
-| ROOM-03 | Phase 174 | Complete — dispatched post-merge against `main` (PR #184 merged as `bb570820`); run `35366337182`, job `Clean-room proof rehearsal`, conclusion `success` against live published `crosswake_rindle 0.1.0`. Log: `evidence/174-rindle-ci-run.log`, final line `state=passed`. |
-| ROOM-04 | Phase 174 | Complete |
-| ROOM-05 | Phase 174 | Complete — `174-FINDING-THREADLINE.md` / `174-FINDING-SIGRA.md`, `Crosswake.Proof.Phase174CompanionFindingsTest` (7 tests, 0 failures). |
-| ROOM-06 | Phase 174 | Complete |
-| FID-01 | Phase 174 | Complete |
-| FID-02 | Phase 169 | Complete |
-| VAC-01 | Phase 170 | Complete |
-| VAC-02 | Phase 170 | Complete |
-| VAC-03 | Phase 170 | Complete |
-| REL-10 | Phase 175 | Breached at Gate 1; remote-ancestry repair required before Gate 2, historical first-publish condition remains unsatisfied |
-| REL-11 | Phase 175 | Complete — Hex run 35410810853, iOS mirror run 35444279120, and Maven fire-drill run 35452376752 (validated deployment dropped) |
-| REL-12 | Phase 175 | Complete — `crosswake_rulestead 0.1.1` is live on Hex, confirmed directly on 2026-09-20; Release Please run 35461665164 and its clean-room proof both passed. Gate 1's REL-10 breach remains recorded separately. |
-| REL-13 | Phase 175 | Pending |
-| REL-14 | Phase 175 | Pending |
-| REL-15 | Phase 175 | Pending |
-| REL-16 | Phase 175 | Complete |
-| DOC-04 | Phase 175 | Complete |
-| DOC-05 | Phase 171 | Complete |
-| DOC-06 | Phase 175 | Complete |
+| PLAN-01 | Phase 194 | Complete |
+| PLAN-02 | Phase 194 | Complete |
+| PLAN-03 | Phase 194 | Complete |
+| PLAN-04 | Phase 194 | Complete |
+| PLAN-05 | Phase 194 | Complete |
+| ADR-01 | Phase 194 | Complete |
+| ADR-02 | Phase 194 | Complete |
+| REL-01 | Phase 195 | Pending |
+| REL-02 | Phase 195 | Pending |
+| REL-03 | Phase 195 | Pending |
+| REL-04 | Phase 195 | Pending |
+| REL-05 | Phase 195 | Pending |
+| REL-06 | Phase 195 | Pending |
+| REL-07 | Phase 199 | Pending |
+| HYG-01 | Phase 195 | Pending |
+| HYG-02 | Phase 195 | Pending |
+| SPEC-01 | Phase 196 | Pending |
+| SPEC-02 | Phase 196 | Pending |
+| SPEC-03 | Phase 196 | Pending |
+| SPEC-04 | Phase 196 | Pending |
+| SPEC-05 | Phase 196 | Pending |
+| ARCH-01 | Phase 196 | Pending |
+| ARCH-02 | Phase 196 | Pending |
+| ARCH-03 | Phase 196 | Pending |
+| DOCS-01 | Phase 197 | Pending |
+| DOCS-02 | Phase 197 | Pending |
+| DOCS-03 | Phase 197 | Pending |
+| AND-01 | Phase 198 | Pending |
+| AND-02 | Phase 198 | Pending |
+| AND-03 | Phase 198 | Pending |
 
 **Coverage:**
-
-- v23.0 requirements: 42 total
-- Mapped to phases: 42
-- Unmapped: 0 ✓
+- v28.0 requirements: 30 total
+- Mapped to phases: 30 (194: 7, 195: 8, 196: 8, 197: 3, 198: 3, 199: 1)
+- Unmapped: 0
 
 ---
-*Requirements defined: 2026-09-15*
-*Last updated: 2026-09-15 after v23.0 roadmap revision (Phases 169-175, VAC-01/02/03 split into its own Phase 170, 100% coverage)*
+*Requirements defined: 2026-10-24*
+*Last updated: 2026-10-24 after Phase 194 discussion (PLAN-02 extended with the approved AGENTS.md trim)*

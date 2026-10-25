@@ -1,0 +1,22 @@
+S01 snapshot of a fresh repo has the 11 keys: as expected
+S02 missing git folder: as expected
+S03 missing HEAD: as expected
+S04 missing config: as expected
+S05 staged file moves index digest only: as expected
+S06 run folder mode 755: as expected
+S07 run folder owner mismatch: as expected
+S08 g ignores hostile GIT_DIR: as expected
+S09 g ignores hostile global config: as expected
+S10 g without repo: as expected
+S11 edit outside lists moves rest digest: as expected
+S12 edit of a named file moves only its line: as expected
+S13 new untracked file moves file count: as expected
+S14 volatile and phase folder edits are invisible: as expected
+S15 compare fails on rest change: as expected
+S16 compare passes on named-only change: as expected
+S17 compare fails on missing expected change: as expected
+S18 volatile entry under planning refused: as expected
+S19 denylist pointer: as expected
+S20 unsafe file type refused: as expected
+S21 tracked volatile entry refused: as expected
+selftest-base: controls 21 of 21 as expected

@@ -1,0 +1,14 @@
+{
+  "phase": 178,
+  "gate": "ui.safety-gate",
+  "evaluationCommit": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+  "exitCode": 0,
+  "result": {
+    "frontend": false,
+    "hasUiFiles": false,
+    "hasUiSpec": false,
+    "block": false
+  },
+  "source": "independent evaluation clone with phase metadata",
+  "recoveryGateCause": "candidate commit intentionally unreachable from protected recovery checkout"
+}

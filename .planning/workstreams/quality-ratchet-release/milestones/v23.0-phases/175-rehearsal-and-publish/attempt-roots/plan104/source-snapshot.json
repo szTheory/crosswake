@@ -1,0 +1,13 @@
+{
+  "schema": "crosswake-plan104-source-snapshot/v1",
+  "attempt_id": "a7da00381a01c8c2f425a0d023ae2f0a",
+  "collector_sha256": "4aca512493bc0e3f9b9865aa12f3fd73758fe9032f7b0a4509217424c029ad24",
+  "contract_sha256": "ecc3ddfc8bb5da278c26bebf30c9abd2420921fb631fb3c1acde73530d7116e2",
+  "collector_origin": {
+    "diagnostic_commit": "8fd4c392",
+    "source_checkout_fix": "pre-existing shared-checkout change; included in the isolated snapshot and not modified by Plan104"
+  },
+  "scope_status_at_snapshot": "PENDING",
+  "read_intent": false,
+  "request_count": 0
+}

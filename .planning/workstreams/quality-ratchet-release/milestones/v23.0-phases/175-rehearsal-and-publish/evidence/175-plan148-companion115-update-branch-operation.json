@@ -1,0 +1,11 @@
+{
+  "old_head_oid": "02f0fbc475180214931b5626f7971fab33d0871f",
+  "base_oid": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+  "operation": "normal_update_same_held_pr",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "intent_at_utc": "2026-10-11T17:01:54.672497+00:00",
+  "attempted": true,
+  "attempts": 1,
+  "delivery": "ACCEPTED",
+  "exit_code": 0
+}

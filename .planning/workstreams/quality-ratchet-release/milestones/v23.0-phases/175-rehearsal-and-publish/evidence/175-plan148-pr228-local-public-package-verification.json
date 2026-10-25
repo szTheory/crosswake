@@ -1,0 +1,14 @@
+{
+  "version": "0.2.10",
+  "approved_head": "4e785503f6de84731cbb4a3793e0f123d7b52c28",
+  "approved_manifest_source": "Hosted canonical38146461586 actual artifact11705471051",
+  "proof": "Local repair preflight only; not same ordinary run and not REL14",
+  "state": "PASS",
+  "package_count": 6,
+  "profile_count": 5,
+  "install_count": 2,
+  "path_lock_count": 0,
+  "result_sha256": "ecff4d56d8e4b6b5e7d99b0949cb8eb120283430ca2c75d507e8c311a04fc788",
+  "native_android_proof": "Separate repaired CI pending",
+  "observed_at_utc": "2026-10-11T15:04:27.012921+00:00"
+}

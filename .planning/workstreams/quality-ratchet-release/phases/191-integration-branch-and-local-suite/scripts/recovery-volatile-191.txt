@@ -1,0 +1,6 @@
+entry	reason
+.claude/	agent harness session files and its worktrees folder
+.gsd/	GSD dispatch sentinel and runtime cache
+.bg-shell/	background shell manifest
+scheduled_tasks.lock	scheduler lock
+.DS_Store	Finder metadata (any folder)

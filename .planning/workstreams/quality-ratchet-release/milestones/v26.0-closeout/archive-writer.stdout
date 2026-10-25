@@ -1,0 +1,33 @@
+{
+  "version": "v26.0",
+  "name": "Harden Before Trust",
+  "date": "2026-10-16",
+  "phases": 5,
+  "plans": 37,
+  "tasks": 21,
+  "accomplishments": [
+    "Doctor now keeps unmanaged route paths and router in its finding, errors on an unbacked offline island, and reports an honest not_claimed when no route claims offline.",
+    "The proof-lane evidence validator now rejects the fake all-zero commit and accepts unknown provenance only as three exact sentinels that can never become physical proof.",
+    "verify_navigation_shell now writes the real crosswake version, the host template version and the host commit, with exact sentinels (\"unknown\" / \"git-unknown\") where a value cannot be known; the \"0.1.0\", \"161\" and all-zero placeholders are gone.",
+    "The loopback harness now refuses `--evidence \"\"` and a bare trailing `--evidence` through `block()` after the EXIT trap, printing one JSON object (outcome blocked, rule LOOP-IOS-EVIDENCE) and exiting 2.",
+    "The uncommitted Phase 187 tree passes every gate against the Phase 186 baselines, and all 24 guard-reverting mutations make their named tests fail; nothing was committed and HEAD is still bd294007.",
+    "Phase 187 is now one local commit, a53fbef70d20e6ee49f1ebd2ee783c991f95a7b4 (tree f7c4d7dc1a86f251c3ba845d3cde8d4c770ae729), on top of bd294007 in the candidate checkout. Nothing was pushed, and the recovery checkout has nothing staged."
+  ],
+  "archived": {
+    "roadmap": true,
+    "requirements": true,
+    "audit": false,
+    "phases": false,
+    "phases_archive_skipped": false,
+    "phases_archive_skip_reason": null,
+    "quick": false
+  },
+  "milestones_updated": true,
+  "state_updated": true,
+  "preservation_warnings": [
+    {
+      "field": "current_phase",
+      "reason": "preserved-over-disagreeing-derived"
+    }
+  ]
+}

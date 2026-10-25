@@ -1,0 +1,16 @@
+{
+  "run_id": 38137301058,
+  "head_oid": "72bf3a3e9907578b6aca9c1e4f45648d4f97b3ea",
+  "job_id": 114463709455,
+  "job_name": "hex-page-proof",
+  "library_tests": {
+    "total": 2060,
+    "failed": 0
+  },
+  "failure": "shallow checkout lacks independently resolved published package tag objects",
+  "candidate_local_matrix": "passed but public peer comparison reveals archive default0664 versus public0644",
+  "old_auto_merge_disabled": true,
+  "publication_attempted": false,
+  "rerun_attempted": false,
+  "next": "revise same repair PR with full checkout and explicit canonical archive modes; new source CI"
+}

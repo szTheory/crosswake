@@ -1,0 +1,19 @@
+{
+  "checkedAt": "2026-10-13T02:47:15.667891+00:00",
+  "status": "resolved",
+  "privateFinalAudit": {
+    "result": "pass",
+    "auditedAt": "2026-10-12T03:24:38.324Z",
+    "activeCaptureMatches": true,
+    "sourceHeadMatches": true,
+    "afterAllPhase176FileMtimes": true,
+    "ownedWriterDeltas": 14,
+    "immutableManifestAndProofAttestations": "valid",
+    "manifestMode": "0400",
+    "proofMode": "0400",
+    "sidecarMode": "0600"
+  },
+  "interpretation": "Phase176 final gate ran after its last sign-off; later phase tracking changes are separate chronological handoffs. The old Phase176-only writer ledger does not admit every future writer. No rerun or sidecar overwrite performed.",
+  "protectedHistoricalFiles": 1677,
+  "historicalBytesUnchanged": true
+}

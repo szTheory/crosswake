@@ -250,28 +250,25 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
   test "ordinary iOS job requires its own pinned Beam setup before mirror publish" do
     release = File.read!(@release_workflow)
 
+    # The setup-beam pin is read from the live workflow, so a Dependabot bump of the SHA and
+    # version comment keeps this test valid. The shape must be `@<40 hex> # v<version>`.
+    setup_block =
+      ~r/      - uses: erlef\/setup-beam@([0-9a-f]{40}) # v[0-9.]+\n        with:\n          version-file: \.tool-versions\n          version-type: strict\n\n      - name: Resolve locked Mix dependencies\n        run: mix deps\.get --check-locked\n/
+
+    assert [[needle, setup_sha]] = Regex.scan(setup_block, publish_ios_core_job(release))
+    assert needle != ""
+
     assert_failure!(
       "release.ios.ordinary_mix_setup",
-      release_workflow:
-        Fixtures.replace_in_job(
-          release,
-          "publish-ios-core",
-          "      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0\n        with:\n          version-file: .tool-versions\n          version-type: strict\n\n      - name: Resolve locked Mix dependencies\n        run: mix deps.get --check-locked\n",
-          ""
-        )
+      release_workflow: Fixtures.replace_in_job(release, "publish-ios-core", needle, "")
     )
 
     late_setup =
-      Fixtures.replace_in_job(
-        release,
-        "publish-ios-core",
-        "      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0\n        with:\n          version-file: .tool-versions\n          version-type: strict\n\n      - name: Resolve locked Mix dependencies\n        run: mix deps.get --check-locked\n",
-        ""
-      )
+      Fixtures.replace_in_job(release, "publish-ios-core", needle, "")
       |> Fixtures.replace_in_job(
         "publish-ios-core",
         "--expected-new-ref \"$(git subtree split --prefix=packages/crosswake-shell-core-ios '${{ needs.approved-release-guard.outputs.merge_oid }}' | tail -1)\"",
-        "--expected-new-ref \"$(git subtree split --prefix=packages/crosswake-shell-core-ios '${{ needs.approved-release-guard.outputs.merge_oid }}' | tail -1)\"\n\n      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93\n        with:\n          version-file: .tool-versions\n          version-type: strict\n      - run: mix deps.get --check-locked"
+        "--expected-new-ref \"$(git subtree split --prefix=packages/crosswake-shell-core-ios '${{ needs.approved-release-guard.outputs.merge_oid }}' | tail -1)\"\n\n      - uses: erlef/setup-beam@#{setup_sha}\n        with:\n          version-file: .tool-versions\n          version-type: strict\n      - run: mix deps.get --check-locked"
       )
 
     assert_failure!("release.ios.ordinary_mix_setup", release_workflow: late_setup)
@@ -279,6 +276,13 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
     {output, status} = Fixtures.run_fixture_set(release_workflow: release)
     assert status == 0, output
     assert output =~ "[crosswake] OK: release.ios.ordinary_mix_setup"
+  end
+
+  defp publish_ios_core_job(workflow) do
+    case Regex.run(~r/(?ms)^  publish-ios-core:\n.*?(?=^  [A-Za-z0-9_-]+:\n|\z)/, workflow) do
+      [job] -> job
+      nil -> flunk("publish-ios-core job not found in the release workflow")
+    end
   end
 
   test "iOS candidate adapter refuses without deploy credentials or execute authority" do

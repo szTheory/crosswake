@@ -1,0 +1,25 @@
+scan: commits 98
+scan: added_lines 36252
+scan: added_bytes 1410971
+scan: text_blobs 400
+scan: binary_blobs 0
+scan: paths 1167
+scan: identities 196
+scan: terms 0
+scan: adopter_check skipped_by_user A-14
+scan: gitleaks_version 8.30.1
+scan: gitleaks_rules 222
+scan: gitleaks_findings 0
+scan: accepted home_path blob 9b893fdb85fb7c5442a11cc2c6d2ca6f89d807090afd00997304ecd21fd77fdb
+scan: accepted user_name blob 4d2886a39a5d4b8744d49fe467035181e9fce64c67fdf3d12e327da670ea9c59
+scan: blocking_final 0
+scan: history_personal 2
+scan: history_personal_class home_path 1
+scan: history_personal_class user_temp 0
+scan: history_personal_class user_name 1
+scan: history_sensitive 0
+scan: triaged 1
+scan: triage_only uuid 7
+scan: triage_only bare_word 692
+scan: triage_only bare_hex40 72
+scan: result clean

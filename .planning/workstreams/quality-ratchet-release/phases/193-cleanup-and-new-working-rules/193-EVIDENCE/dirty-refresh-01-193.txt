@@ -1,0 +1,3 @@
+restore post189-dirty-r1.tar: pass
+backup: dirty-refresh paths 1161 archived 6 artifact post189-dirty-r1.tar
+backup: result pass

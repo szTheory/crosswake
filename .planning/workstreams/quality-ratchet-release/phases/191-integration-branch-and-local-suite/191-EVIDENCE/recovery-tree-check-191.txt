@@ -1,0 +1,13 @@
+recovery-tree: rest unchanged
+recovery-tree: named .planning/seeds/SEED-024-phase-190-review-residue.md changed
+recovery-tree: named .planning/workstreams/quality-ratchet-release/phases/190-fix-warnings-before-landing/190-REVIEW-DISPOSITION.md changed
+recovery-tree: named .planning/workstreams/quality-ratchet-release/REQUIREMENTS.md changed
+recovery-tree: named .planning/PROJECT.md changed
+recovery-tree: named .planning/workstreams/quality-ratchet-release/STATE.md changed
+recovery-tree: named .planning/workstreams/quality-ratchet-release/ROADMAP.md changed
+recovery-tree: named .planning/workstreams/quality-ratchet-release/.continue-here.md changed
+recovery-tree: named .planning/workstreams/quality-ratchet-release/state.json unchanged
+recovery-tree: named .planning/workstreams/quality-ratchet-release/config.json unchanged
+recovery-tree: named .planning/config.json unchanged
+recovery-tree: compare pass
+result pass

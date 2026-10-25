@@ -1,0 +1,8 @@
+carry: manifest buckets v27.0 121 (only bucket)
+carry: A 109 M 12 D 0
+carry: folder 191 7 192 48 193 62 workstream_handoff 4
+carry: manifest_sha256 34883a3846e11eb7f5aa642d2d792aec29a7b073426150fbf6115db362b4344a
+carry: floor_a 109 floor_d 0 floor_rows 36 floor_n 109
+carry: verify pass (inventory coverage checked independently: 37 to-land rows, 2 absent = A-2 exclusions R-PL-24 and R-PL-40)
+carry: commits 2 (carry commit plus one scan-triage row for a fabricated test value in the privacy self-test)
+carry: both-hash manifest carry-pr1-manifest-193.tsv

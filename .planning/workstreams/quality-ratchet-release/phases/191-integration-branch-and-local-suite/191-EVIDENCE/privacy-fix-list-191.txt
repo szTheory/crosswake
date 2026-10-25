@@ -1,0 +1,5 @@
+# A-14 fix list for Plan 05 PRIVACY commit: CLASS repo/relative/path (values never recorded)
+home_path examples/phoenix_host/config/config.exs
+user_name examples/phoenix_host/config/config.exs
+email test/crosswake/shell/ios_host_config_test.exs
+# email: noreply no; looks like a test/fixture placeholder (attacker-style example host in a test), not a real person's address; replace with an example.com address

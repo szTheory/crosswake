@@ -1,0 +1,18 @@
+{
+  "focused_tests": {
+    "total": 14,
+    "failed": 0
+  },
+  "exact_remote_source_integrity": {
+    "total": 98,
+    "failed": 0
+  },
+  "negative_control": {
+    "removed_skip_github_release": true,
+    "exit": 1,
+    "failed_check": "release.rel17.release_creation_guard"
+  },
+  "root_audit": "No retired or security advisory packages found",
+  "example_audit": "No retired or security advisory packages found",
+  "observed_at_utc": "2026-10-11T03:03:26.590903+00:00"
+}

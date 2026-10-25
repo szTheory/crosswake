@@ -1,0 +1,25 @@
+{
+  "pr": 222,
+  "state": "OPEN",
+  "draft": false,
+  "head_oid": "24f1ace22f0e219b666c95e2b23667b195c46289",
+  "base_oid": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+  "tree_oid": "76032cd234b2eb35fb73776fade55a67a3f9b8b6",
+  "version": "0.2.8",
+  "ios_version": "0.2.8",
+  "android_version": "0.2.8",
+  "changed_files": [
+    ".release-please-manifest.json",
+    "README.md",
+    "examples/android_shell_host/app/build.gradle",
+    "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json",
+    "examples/ios_shell_host/Fixtures/crosswake_manifest.json",
+    "examples/native_evidence/evidence-manifest.example.json",
+    "examples/phoenix_host/evidence/evidence-manifest.example.json",
+    "examples/phoenix_host/priv/crosswake/install_manifest.json",
+    "guides/android_uat.md",
+    "mix.exs",
+    "packages/crosswake-shell-core-android/build.gradle.kts"
+  ],
+  "observed_at_utc": "2026-10-11T03:44:30.492616+00:00"
+}

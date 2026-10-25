@@ -1,0 +1,8 @@
+pr1: state MERGED
+pr1: merge_commit 28b2e71a8ddd95f868b26740ce418341c6a97d5c
+pr1: merged_at 2026-10-25T13:41:09Z
+pr1: on_origin_main yes
+pr1: approval allow bound head 6fea725
+pr246: merged_by_inclusion
+pr246: remote branch kept (delete needs its own allow; Phase 195 HYG-02)
+tags: before 94 after 94

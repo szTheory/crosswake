@@ -1,0 +1,3 @@
+push_branch push origin HEAD:refs/heads/docs/192-post-sync-records
+pr_create pr create -R szTheory/crosswake --base main --head docs/192-post-sync-records --body-file pr1-body.md
+pr_merge pr merge 243 -R szTheory/crosswake --merge --match-head-commit 0fa94917ca1dd0a01bbe889487c27a3a0f0eb0ca

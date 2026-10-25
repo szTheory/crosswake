@@ -1,0 +1,27 @@
+R01 pre-swap plan lists every item, recovery gates d and f pending, bridge commits found: as expected
+R02 swapped plan: all items pass, four handoff lines, bridge dirty read via explicit git-dir: as expected
+R03 swapped plan with the bridge worktree entry missing is kept bridge_gitdir_unresolved: as expected
+R04 temporary entry without a row is kept no_row: as expected
+R05 backup sha mismatch keeps the item: as expected
+R06 bundle that fails verification keeps every git item: as expected
+R07 ref tip neither bundled, remote nor ancestor keeps the clone: as expected
+R08 dirty path in no dirty listing is kept, passes once a dirty-r1 listing covers it: as expected
+R09 bridge commit absent from refs-all.bundle is kept: as expected
+R10 bridge commit count differing from the R-BR row is kept: as expected
+R11 preserved handoff copy edited after the sweep is kept handoff_mismatch: as expected
+R12 missing sweep record keeps the retired checkout and is never pending outside pre-swap: as expected
+R13 temporary file not in its listing is kept tmp_uncovered: as expected
+R14 failing preflight stops the whole run: as expected
+R15 re-run records already absent: as expected
+R16 a non-crosswake temporary entry is never listed: as expected
+R17 a symlinked item is refused and its target survives: as expected
+R18 apply without propose is refused: as expected
+R19 apply after the list changed is void: as expected
+R20 hold never deletes: as expected
+R21 clean apply removes only the allowlisted items and keeps backup root and new checkout: as expected
+R22 ledger arithmetic expected = removed + kept, expected > 0, placeholders only: as expected
+R23 ledger lists a kept retired checkout with its cause and counts it: as expected
+R24 duplicate row ids are refused: as expected
+R25 static scan finds no forbidden token and exactly two guarded deletes: as expected
+R26 pre-swap pending stays pending even with uncovered recovery files: as expected
+selftest remove-193: controls 26 of 26 as expected

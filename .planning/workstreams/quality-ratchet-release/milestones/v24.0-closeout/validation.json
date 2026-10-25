@@ -1,0 +1,103 @@
+{
+  "checked_at": "2026-10-13T03:20:24.716226+00:00",
+  "result": "passed",
+  "milestone": "v24.0",
+  "workstream": "quality-ratchet-release",
+  "scope": "Planning closeout only; no repository verifier rerun or live hosted join",
+  "stats": {
+    "phases": 3,
+    "plans": 15,
+    "tasks": 28,
+    "requirements_complete": 8
+  },
+  "state_validation": {
+    "valid": true,
+    "warnings": [],
+    "scope": "complete"
+  },
+  "phase_verification_statuses": {
+    "176": {
+      "status": "passed",
+      "next_action": "Verification passed \u2014 continue.",
+      "next_command": "",
+      "route": ""
+    },
+    "177": {
+      "status": "passed",
+      "next_action": "Verification passed \u2014 continue.",
+      "next_command": "",
+      "route": ""
+    },
+    "178": {
+      "status": "passed",
+      "next_action": "Verification passed \u2014 continue.",
+      "next_command": "",
+      "route": ""
+    }
+  },
+  "manager_active_phases": 0,
+  "canonical_routing": {
+    "situation": "complete",
+    "recommended": "new-milestone",
+    "command_scope_projection": "$gsd-new-milestone --ws quality-ratchet-release"
+  },
+  "artifact_audit": {
+    "open": 0,
+    "prior_acknowledgements": 6,
+    "new_acknowledgements": 0
+  },
+  "retained_debt_records": 6,
+  "protected_history": {
+    "files": 1677,
+    "changed": 0,
+    "original_paths_preserved": true
+  },
+  "recovery_protection": {
+    "unchanged": true,
+    "changedDimensions": []
+  },
+  "original_requirements_and_audit_byte_identical": true,
+  "prior_handoff_copies_byte_identical": true,
+  "prior_milestone_entries_preserved": true,
+  "archives": [
+    "v24.0-ROADMAP.md",
+    "v24.0-REQUIREMENTS.md",
+    "v24.0-MILESTONE-AUDIT.md"
+  ],
+  "links_checked": 60,
+  "missing_links": [],
+  "diff_check_exit": 0,
+  "changed_existing_planning_files": [
+    ".planning/PROJECT.md",
+    ".planning/RETROSPECTIVE.md",
+    ".planning/workstreams/quality-ratchet-release/state.json",
+    ".planning/workstreams/quality-ratchet-release/.continue-here.md",
+    ".planning/workstreams/quality-ratchet-release/STATE.md",
+    ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
+    ".planning/workstreams/quality-ratchet-release/MILESTONES.md"
+  ],
+  "new_closeout_files": [
+    ".planning/workstreams/quality-ratchet-release/milestones/v24.0-ROADMAP.md",
+    ".planning/workstreams/quality-ratchet-release/milestones/v24.0-MILESTONE-AUDIT.md",
+    ".planning/workstreams/quality-ratchet-release/milestones/v24.0-REQUIREMENTS.md",
+    ".planning/workstreams/quality-ratchet-release/milestones/v24.0-closeout/CLOSEOUT.md",
+    ".planning/workstreams/quality-ratchet-release/milestones/v24.0-closeout/approved-proposal.md",
+    ".planning/workstreams/quality-ratchet-release/milestones/v24.0-closeout/authorization.md",
+    ".planning/workstreams/quality-ratchet-release/milestones/v24.0-closeout/authorization.json",
+    ".planning/workstreams/quality-ratchet-release/milestones/v24.0-closeout/archive-writer.stderr",
+    ".planning/workstreams/quality-ratchet-release/milestones/v24.0-closeout/debt-disposition.md",
+    ".planning/workstreams/quality-ratchet-release/milestones/v24.0-closeout/archive-writer.stdout",
+    ".planning/workstreams/quality-ratchet-release/history/v24.0-closeout-handoff/state.json",
+    ".planning/workstreams/quality-ratchet-release/history/v24.0-closeout-handoff/.continue-here.md",
+    ".planning/workstreams/quality-ratchet-release/history/v24.0-closeout-handoff/STATE.md",
+    ".planning/workstreams/quality-ratchet-release/history/v24.0-closeout-handoff/ROADMAP.md"
+  ],
+  "workflow_exceptions": [
+    "No safety commit or tag",
+    "Original requirements retained",
+    "Phase paths retained; --no-archive-phases",
+    "Original audit restored byte-identically after registered move",
+    "No source, index, HEAD, branch, worktree or remote mutation"
+  ],
+  "next_command": "$gsd-new-milestone --ws quality-ratchet-release"
+}

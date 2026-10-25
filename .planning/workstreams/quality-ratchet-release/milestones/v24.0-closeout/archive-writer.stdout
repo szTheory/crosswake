@@ -1,0 +1,53 @@
+{
+  "version": "v24.0",
+  "name": "Repository Cleanup & Maintenance",
+  "date": "2026-10-12",
+  "phases": 3,
+  "plans": 15,
+  "tasks": 28,
+  "accomplishments": [
+    "Phase-local Git evidence CLI preserves staged/worktree units, restores them in scratch, and enforces scoped Phase 176 writer audits.",
+    "The repaired evidence helper captured 119 changed paths, restored 170 eligible units, verified source provenance, and produced a retained-by-default Phase 177 inventory.",
+    "A Phase176-keyed review retains all 119 captured rows and all 78 mixed-router modes while recording the supported status path and exact unresolved source comparisons.",
+    "The supported generic release task paths pass positive and denied local proofs, while historical Plan93 behavior remains retained with its archived reader comparison explicitly unproven.",
+    "The pinned source has no mirror-tag launcher or one-use helper, and all 74 mirror modes remain privately preserved without unsupported retirement or reader-equivalence claims.",
+    "Read-only GraphQL collector and validated current queue inventory: 20 open issues and 3 open pull requests, each with one bounded local disposition.",
+    "The README now separates pre-release and incident routes, and the runbook uses the current source-bound candidate interface while retaining historical outcomes as unknown.",
+    "PROJECT and continue-here now lead to the Phase 177 workstream authority while preserving the archived Phase 175 breach and parked adopter gate.",
+    "The acceptance checker joined the complete maintenance, source, queue, generic-entry, documentation, and guidance evidence; independent phase verification and the registered state transition remain with the parent.",
+    "All retained rows now bind to the exact source tree with every captured partition preserved, while unapproved overlays and absent legacy routers remain outside working source.",
+    "A digest-checked Phase 177 bundle now produces one six-file local candidate commit and a clean detached clone at the exact same commit and tree.",
+    "A renewed candidate now has a retained nine-stage local proof, and the collector binds source identity and raw index bytes before publishing its safe result.",
+    "An exact, one-use authorized maintenance delivery created PR #238 and recorded its hosted workflow run while leaving CI pending.",
+    "Hosted run 38322827152 attempt 1 and a complete local `--all` run both prove the same unmerged governed merge object, `f2d8875ee52d9679157c73b4a701b510ee612cb8`."
+  ],
+  "archived": {
+    "roadmap": true,
+    "requirements": true,
+    "audit": true,
+    "phases": false,
+    "phases_archive_skipped": false,
+    "phases_archive_skip_reason": null,
+    "quick": false
+  },
+  "milestones_updated": true,
+  "state_updated": true,
+  "preservation_warnings": [
+    {
+      "field": "stopped_at",
+      "reason": "preserved-over-disagreeing-derived"
+    },
+    {
+      "field": "current_plan",
+      "reason": "preserved-over-disagreeing-derived"
+    },
+    {
+      "field": "current_phase",
+      "reason": "preserved-over-disagreeing-derived"
+    },
+    {
+      "field": "current_phase_name",
+      "reason": "preserved-over-disagreeing-derived"
+    }
+  ]
+}

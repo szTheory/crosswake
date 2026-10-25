@@ -1,0 +1,6 @@
+{
+  "first_operation": "debug_sessions/release-automation-failures",
+  "result": "NOT_FOUND_NO_MUTATION",
+  "cause": "workstream-scoped acknowledgement writer looks for debug under the workstream, while audit scans root debug sessions",
+  "correction": "use root-scoped acknowledgement for the two root debug files; retain workstream scope for phase artifacts"
+}

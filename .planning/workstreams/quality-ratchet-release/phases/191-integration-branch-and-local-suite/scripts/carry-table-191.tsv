@@ -1,0 +1,39 @@
+bucket	v23.0	D	.planning/workstreams/quality-ratchet-release/phases/1@(69|70|71|72|73|74|75)-*
+bucket	v23.0	A,M	.planning/workstreams/quality-ratchet-release/milestones/v23.0-*
+bucket	v23.0	M	.planning/workstreams/quality-ratchet-release/milestones/v22.0-phases/168-*
+bucket	v23.0	A,M	.planning/debug/*
+bucket	v23.0		.planning/workstreams/quality-ratchet-release/history/workflow-reset-*
+bucket	v24.0		.planning/workstreams/quality-ratchet-release/phases/17[6-8]-*
+bucket	v24.0		.planning/workstreams/quality-ratchet-release/v24.0-*
+bucket	v24.0		.planning/workstreams/quality-ratchet-release/milestones/v24.0-*
+bucket	v24.0		.planning/workstreams/quality-ratchet-release/history/phase177-*
+bucket	v24.0		.planning/workstreams/quality-ratchet-release/history/phase178-*
+bucket	v24.0		.planning/workstreams/quality-ratchet-release/history/v24.0-*
+bucket	v25.0		.planning/workstreams/quality-ratchet-release/phases/1@(79|80|81|82|83)-*
+bucket	v25.0		.planning/research/v25/*
+bucket	v25.0		.planning/workstreams/quality-ratchet-release/v25.0-*
+bucket	v25.0		.planning/workstreams/quality-ratchet-release/milestones/v25.0-*
+bucket	v25.0		.planning/workstreams/quality-ratchet-release/history/v25.0-*
+bucket	v26.0		.planning/workstreams/quality-ratchet-release/phases/18[4-8]-*
+bucket	v26.0		.planning/research/v26/*
+bucket	v26.0		.planning/workstreams/quality-ratchet-release/v26.0-*
+bucket	v26.0		.planning/workstreams/quality-ratchet-release/milestones/v26.0-*
+bucket	v26.0		.planning/workstreams/quality-ratchet-release/history/v26.0-*
+bucket	v27.0		.planning/workstreams/quality-ratchet-release/phases/1@(89|90|91|92|93)-*
+bucket	v27.0		.planning/workstreams/quality-ratchet-release/v27.0-*
+bucket	v27.0		.planning/workstreams/quality-ratchet-release/PHASE175-STANDING-AUTHORIZATION.md
+bucket	v27.0		.planning/workstreams/quality-ratchet-release/.continue-here.md
+bucket	v27.0		.planning/workstreams/quality-ratchet-release/.verification-ledger.json
+bucket	v27.0		.planning/workstreams/quality-ratchet-release/STATE.md
+bucket	v27.0		.planning/workstreams/quality-ratchet-release/ROADMAP.md
+bucket	v27.0		.planning/workstreams/quality-ratchet-release/REQUIREMENTS.md
+bucket	v27.0		.planning/workstreams/quality-ratchet-release/MILESTONES.md
+bucket	v27.0		.planning/PROJECT.md
+bucket	v27.0		.planning/RETROSPECTIVE.md
+bucket	v27.0		.planning/WINDOWS.md
+bucket	v27.0		.planning/config.json
+bucket	v27.0	A,M	.planning/seeds/SEED-*.md
+dollar		A,M	.planning/workstreams/quality-ratchet-release/phases/189-inventory-and-backup/189-06-PLAN.md
+dollar		A,M	.planning/workstreams/quality-ratchet-release/phases/189-inventory-and-backup/189-08-PLAN.md
+dollar		A,M	.planning/workstreams/quality-ratchet-release/phases/189-inventory-and-backup/189-11-PLAN.md
+dollar		A,M	.planning/workstreams/quality-ratchet-release/phases/191-integration-branch-and-local-suite/*.md

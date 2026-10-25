@@ -1,0 +1,24 @@
+{
+  "hex": {
+    "run_id": 38104926893,
+    "state": "PASS",
+    "external_state_changed": false,
+    "artifact_sha256": "7e693631e2e48e23fe9835c3fcebbafed0fbebff6fb470700f09168c6f4e2649",
+    "package_count": 6
+  },
+  "ios": {
+    "run_id": 38104930353,
+    "state": "PASS",
+    "external_state_changed": false,
+    "artifact_sha256": "c4b56fb32608e142987b8cd872d87df64f27807e659e2171b0487f3aba836882",
+    "authorization_result": "PROVEN"
+  },
+  "maven": {
+    "run_id": 38104932554,
+    "state": "VALIDATED",
+    "deployment_result": "DROP",
+    "dropped": true,
+    "external_state_changed": false,
+    "artifact_sha256": "9c7783a47a08ffc71ae713790907b8c67dfd7543f30b6305eb4cd8ebd6a54d4d"
+  }
+}

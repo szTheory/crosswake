@@ -1,0 +1,29 @@
+{
+  "allowed_paths": [
+    ".planning/PROJECT.md",
+    ".planning/RETROSPECTIVE.md",
+    ".planning/debug/release-automation-failures.md",
+    ".planning/debug/release-please-guard-36352732061.md",
+    ".planning/workstreams/quality-ratchet-release/STATE.md",
+    ".planning/workstreams/quality-ratchet-release/state.json",
+    ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
+    ".planning/workstreams/quality-ratchet-release/MILESTONES.md",
+    ".planning/workstreams/quality-ratchet-release/milestones/v23.0-ROADMAP.md",
+    ".planning/workstreams/quality-ratchet-release/milestones/v23.0-REQUIREMENTS.md",
+    ".planning/workstreams/quality-ratchet-release/milestones/v23.0-MILESTONE-AUDIT.md",
+    ".planning/workstreams/quality-ratchet-release/milestones/v23.0-closeout",
+    ".planning/workstreams/quality-ratchet-release/milestones/v23.0-phases",
+    ".planning/workstreams/quality-ratchet-release/phases",
+    ".planning/workstreams/quality-ratchet-release/v23.0-MILESTONE-AUDIT.md",
+    ".planning/workstreams/quality-ratchet-release/milestones/v22.0-phases/168-0-2-1-release-candidate-readiness/168-UAT.md",
+    ".planning/workstreams/quality-ratchet-release/milestones/v22.0-phases/168-0-2-1-release-candidate-readiness/168-VERIFICATION.md"
+  ],
+  "excluded": [
+    "source code",
+    ".planning/config.json",
+    "AGENTS.md",
+    "unrelated planning workstreams",
+    "quick tasks"
+  ],
+  "operation": "stage only explicit archive paths; no branch switch or push"
+}

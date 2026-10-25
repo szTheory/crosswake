@@ -1,0 +1,153 @@
+# Loop-site scan (Phase 185, D-07). Read-only AST scan; no dependency; not wired into CI.
+# Command: elixir 185-loop-scan.exs <root> <filelist> --expect 45
+# Files read: 45 (expected 45); every file present.
+# Kinds: for, Enum.each, Enum.reduce, Enum.map, Enum.flat_map whose body holds assert/refute (core);
+#   Enum.all?/any?/filter/reject/with_index are reported with a trailing * (extra). Piped calls: left side is the source.
+# Blind spots:
+#   - assertions made in helpers called from a loop body are not seen;
+#   - with, Stream and Enum.all?/any? assertion shapes are not treated as loops with a floor;
+#   - filter-only bodies (no assert/refute inside) are not reported;
+#   - guards living in helpers or setup blocks are not seen (guard hint is textual, per test/def scope);
+#   - example-host files are parsed but not run by the main suite.
+examples/phoenix_host/test/crosswake_example/e2e/twin_fault_controller_test.exs	2
+  L254	for	src=literal	guard=none	[ post: "/_e2e/twin/fault", get: "/_e2e/twin/media/:asset", get: "/_e2e/twin/observe", get
+  L270	for	src=nonempty_list_expr	guard=none	[ ~s|post("/fault", TwinFaultController|, ~s|get("/media/:asset", TwinFaultController|, ~s
+examples/phoenix_host/test/crosswake_example/host_command_seam_test.exs	0
+examples/phoenix_host/test/crosswake_example/page_title_test.exs	0
+examples/phoenix_host/test/crosswake_example/phase180_twin_feasibility_test.exs	1
+  L49	for	src=runtime	guard=candidate:L47	manifest["routes"]
+test/crosswake/doctor/doctor_host_commands_test.exs	1
+  L146	for	src=runtime	guard=none	found
+test/crosswake/doctor/doctor_origin_mode_test.exs	5
+  L351	for	src=runtime	guard=none	reports
+  L356	for	src=runtime	guard=none	forbidden
+  L366	for	src=runtime	guard=candidate:L364	findings
+  L368	for	src=runtime	guard=none	forbidden
+  L374	for	src=nonempty_list_expr	guard=none	[{local_plist(), @local_origin}, {local_plist(), @https_origin}]
+test/crosswake/doctor/doctor_test.exs	3
+  L859	for	src=runtime	guard=none	advisory_commerce_findings
+  L907	for	src=runtime	guard=candidate:L904	advisory_findings
+  L1083	for	src=runtime	guard=none	sensitive_artifacts
+test/crosswake/guides/host_command_seam_guide_test.exs	5
+  L16	for	src=literal	guard=none	[ "crosswake_host_commands", "use Crosswake.Router,", "host_commands:", "[crosswake.route.
+  L50	for	src=literal	guard=none	[ "registeredCommands", "declares it", "1.x.y", "every navigation, deep link and back step
+  L70	for	src=literal	guard=none	[ "| Host with no declaring routes |", "| New shell with an old manifest (before 1.2.0) |"
+  L105	for	src=literal	guard=none	[ "offline cold start", "outbox durability, replay or auth", "service workers", "data-stor
+  L126	for	src=runtime	guard=none	files
+test/crosswake/guides/loopback_origin_guide_test.exs	1
+  L11	for	src=literal	guard=none	[ "origin_mode: :local_loopback", "NSAllowsLocalNetworking", "CrosswakeOriginMode", "phone
+test/crosswake/guides/native_shell_upgrade_test.exs	3
+  L94	for	src=literal	guard=none	~w(router origin entry_route_id app_bundle_id proof_app_bundle_id device_signing)
+  L99	for	src=literal	guard=none	["--diff", "--check", "--recover", "--migrate-project-settings"]
+  L104	for	src=literal	guard=none	[ "MIX_ENV=prod", ".tests", ".uitests", "--config", "CrosswakeHostSettings.xcconfig", "Swi
+test/crosswake/manifest/builder_test.exs	0
+test/crosswake/manifest/host_command_seam_fixture_test.exs	0
+test/crosswake/manifest/host_commands_test.exs	0
+test/crosswake/manifest/manifest_test.exs	0
+test/crosswake/operator_inspection/formatter_test.exs	0
+test/crosswake/operator_inspection_host_commands_test.exs	0
+test/crosswake/policy/host_commands_test.exs	5
+  L74	for	src=literal	guard=none	[:live_view, :offline_island]
+  L115	for	src=literal	guard=none	["host.lesson.audio.player", "host.lesson.audio"]
+  L125	for	src=literal	guard=none	["host.Lesson.play", "host.lesson", "host.a.b.c.d.e", "host.lesson.*", "host.lessón.play"]
+  L140	for	src=literal	guard=none	["host.crosswake.x.y", "host.bridge.x.y"]
+  L160	for	src=literal	guard=none	[[], [host_commands: []]]
+test/crosswake/proof/phase134_template_version_drift_test.exs	0
+test/crosswake/proof/phase170_vacuous_assertion_ledger_test.exs	2
+  L115	Enum.each	src=runtime	guard=candidate:L113	committed["rows"]
+  L400	for	src=literal	guard=none	@shape_counts
+test/crosswake/proof/phase180_twin_feasibility_test.exs	0
+test/crosswake/proof/phase64_runtime_line_policy_test.exs	8
+  L93	for	src=runtime	guard=none	capability_axis_classes
+  L113	for	src=runtime	guard=none	system_classes
+  L192	for	src=runtime	guard=candidate:L190	action_classes
+  L249	for	src=runtime	guard=candidate:L238	matrix
+  L382	for	src=runtime	guard=none	json_runtime_lines
+  L419	for	src=runtime	guard=candidate:L416	ios_entries
+  L466	for	src=runtime	guard=candidate:L463	android_entries
+  L763	for	src=runtime	guard=candidate:L760	android_entries
+test/crosswake/proof_lane/recovery_edges_test.exs	0
+test/crosswake/proof_lane/template_contract_test.exs	7
+  L129	for	src=literal	guard=none	[ "ProofLaneDriver.swift in Sources", "ProofLaneContractTests.swift in Sources", "ProofLan
+  L148	for	src=literal	guard=none	[ "A10000000000000000000070", "A10000000000000000000072", "A10000000000000000000074", "A10
+  L167	for	src=literal	guard=none	["CrosswakeProofLane", "CrosswakeProofLaneTests", "CrosswakeProofLaneUITests"]
+  L344	for	src=literal	guard=none	[ "WKBackForwardList", "window.history", "routePath", "routePayload", "ProofLaneReferenceN
+  L397	for	src=literal	guard=none	[ "testReferencePackLeavesNavigationUnavailable", "testReferencePackNavigationMarkersRemai
+  L409	for	src=literal	guard=none	["addAttachment", "screenshot", "debugDescription", "routePayload", "XCResult"]
+  L468	for	src=literal	guard=none	[ "e2e/crosswake_proof_lane/support/proof_lane.ts", "native/ios/CrosswakeProofLaneTests/Pr
+test/crosswake/proof_lane/twin_fault_boundary_test.exs	0
+test/crosswake/proof_lane/twin_journey_test.exs	1
+  L25	for	src=literal	guard=none	[:build, test: "CrosswakeShellUITests/TwinJourneyUITests/test_01_uninterrupted_journey"]
+test/crosswake/proof_lane/twin_producers_test.exs	4
+  L77	for	src=runtime	guard=none	groups
+  L316	for	src=literal	guard=none	~w(TW-T02-03 TW-T06-01 TW-T06-02 TW-T06-03 TW-T07-01 TW-T07-02)
+  L377	for	src=nonempty_list_expr	guard=none	[ Map.delete(data, "admitted"), Map.put(data, "unexpected", 0), Map.put(data, "admitted", 
+  L401	for	src=literal	guard=none	~w(TW-T10-03 TW-T10-04 TW-T10-05 TW-T10-06 TW-T10-07 TW-T10-08 TW-T10-01 TW-T10-02)
+test/crosswake/proof_lane/twin_receipt_test.exs	5
+  L113	for	src=runtime	guard=candidate:L111	joins
+  L167	for	src=literal	guard=none	[:answer, :transcript, :token, :credential, :account_id, :scope_ref, :device_id, :media_by
+  L217	for	src=literal	guard=none	["physical_iphone", "adopter"]
+  L293	for	src=runtime	guard=candidate:L286	decoded["groups"]
+  L298	for	src=runtime	guard=candidate:L295	g["sub_observations"]
+test/crosswake/router_host_commands_test.exs	5
+  L33	for	src=nonempty_list_expr	guard=none	[ ~s([{"host.a.b.c", "1.0.0"}, {"host.x.y.z", "1.0.0"}, {"host.a.b.c", "1.0.0"}]), ~s([{"h
+  L45	for	src=literal	guard=none	["1.0", "v1.0.0", "1.0.0.0", "latest"]
+  L52	for	src=literal	guard=none	["2.0.0", "9.0.0", "0.9.0"]
+  L57	for	src=literal	guard=none	["1.0.0", "1.4.2"]
+  L64	for	src=literal	guard=none	["host.lesson", "host.a.b.c.d", "host.Lesson.play.now", "host.lesson.*"]
+test/crosswake/shell/host_command_seam_swift_constant_test.exs	0
+test/crosswake/shell/ios_host_config_test.exs	7
+  L26	for	src=literal	guard=none	[ "https://study.crosswake.test:abc", "https://study.crosswake.test:", "https://study.cros
+  L70	Enum.each	src=runtime	guard=none	cases
+  L147	for	src=literal	guard=none	[ {"http://127.0.0.1", "http://127.0.0.1"}, {"http://127.0.0.1:4790", "http://127.0.0.1:47
+  L162	for	src=literal	guard=none	[ "http://[::1]", "http://[::1]:80", "http://0.0.0.0", "http://127.0.0.2", "http://127.1",
+  L193	for	src=literal	guard=none	["evil.com", "192.168.1.100", "study.local", "user:pw"]
+  L206	for	src=literal	guard=none	[:production, "local_loopback", :other]
+  L213	for	src=literal	guard=none	["http://127.0.0.1:4790", "https://study.crosswake.test", "http://evil.com"]
+test/crosswake/shell/ios_host_generation_host_commands_test.exs	3
+  L39	for	src=literal	guard=none	["lesson", "review", "plain"]
+  L49	for	src=literal	guard=none	["lesson", "practice"]
+  L152	for	src=nonempty_list_expr	guard=none	[ remote: nil, remote: "0.2.11", local: package_dir("struct Other {}\n"), project: "/nonex
+test/crosswake/shell/ios_host_migration_graph_test.exs	0
+test/crosswake/shell/ios_host_migration_security_test.exs	1
+  L200	for	src=literal	guard=none	["Debug", "Release"]
+test/crosswake/shell/ios_host_origin_mode_test.exs	3
+  L34	for	src=literal	guard=none	@forbidden
+  L67	for	src=literal	guard=none	@forbidden
+  L139	for	src=runtime	guard=none	cases
+test/crosswake/shell/managed_outputs_test.exs	0
+test/crosswake/shell/shell_package_test.exs	0
+test/crosswake/support_matrix/renderer_test.exs	6
+  L81	for	src=literal	guard=none	[ "It does not claim Android.", "It does not claim background replay or sync.", "It does n
+  L109	for	src=literal	guard=none	[ "merge-blocking proof", "advisory evidence", "checked-in public-coordinate proof", "loca
+  L207	for	src=literal	guard=none	["document_scan", "scanner"]
+  L255	for	src=literal	guard=none	[ "docs_only", "route_manifest", "compatibility", "native_shell", "companion_native", "pro
+  L266	for	src=literal	guard=none	[ "shell.ios.generated_project", "shell.android.generated_project", "notification_token.pr
+  L415	for	src=literal	guard=none	[ "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marke
+test/mix/tasks/crosswake.docs.sync_test.exs	2
+  L55	for	src=nonempty_list_expr	guard=none	[support, capability]
+  L126	for	src=literal	guard=none	[["--unknown-secret"], ["--check", "--check"], ["--check", "extra-secret"]]
+test/mix/tasks/crosswake_doctor_test.exs	0
+test/mix/tasks/crosswake_gen_proof_lane_test.exs	6
+  L299	for	src=nonempty_list_expr	guard=none	[ ios_shell_root: "/tmp/not-the-native-ios-root", sync_path: "/study/\"sync", sync_path: "
+  L309	for	src=nonempty_list_expr	guard=none	[&Generator.generate/1, &Generator.check/1, &Generator.diff/1]
+  L325	for	src=nonempty_list_expr	guard=none	[sync_path: "/study/" <> <<92>> <> "sync", evidence_path: "/_proof/" <> <<92>> <> "evidenc
+  L657	for	src=nonempty_list_expr	guard=none	[https_declaration(), nil]
+  L678	for	src=nonempty_list_expr	guard=none	[&Generator.generate/2, &Generator.check/2, &Generator.diff/2]
+  L691	for	src=nonempty_list_expr	guard=none	[local_declaration(), Map.new(local_declaration())] ; [&Generator.generate/2, &Generator.c
+test/mix/tasks/crosswake_gen_shell_host_commands_test.exs	0
+test/mix/tasks/crosswake_gen_shell_host_test.exs	3
+  L134	Enum.each	src=runtime	guard=none	native_paths
+  L143	for	src=literal	guard=none	["--check", "--diff"]
+  L411	Enum.each	src=runtime	guard=none	invalid_cases
+test/mix/tasks/crosswake_gen_shell_origin_mode_test.exs	3
+  L101	for	src=runtime	guard=candidate:L99	expected
+  L333	for	src=nonempty_list_expr	guard=none	[declaration(), declaration(@local_declaration)]
+  L341	for	src=runtime	guard=candidate:L339	keys
+test/mix/tasks/crosswake_inspect_test.exs	0
+test/mix/tasks/crosswake_proof_lane_verify_twin_test.exs	4
+  L95	for	src=literal	guard=none	[["ios", "--bogus"], ["ios", "extra"], ["android"], [], ["ios", "--candidate"]]
+  L298	for	src=literal	guard=none	["receipt.json", "twin-result.json"]
+  L649	for	src=nonempty_list_expr	guard=candidate:L647	lines ++ [ File.read!(Path.join(ctx.run_root, "receipt.json")), File.read!(Path.join(ctx.r
+  L711	for	src=runtime	guard=none	texts ; [ctx.candidate, System.user_home!(), marker]
+TOTAL files=45 sites=96

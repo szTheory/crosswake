@@ -1,0 +1,38 @@
+{
+  "version": "v25.0",
+  "name": "iOS Host Setup & Digital Twin Proof",
+  "date": "2026-10-15",
+  "phases": 5,
+  "plans": 32,
+  "tasks": 6,
+  "accomplishments": [
+    "A compile-only Phoenix declaration now produces selected-router iOS resources and an Xcode-resolved simulator app identity.",
+    "Managed iOS resources now regenerate safely, interrupted updates block Xcode builds until recovery, and recognized PBX wiring can be migrated by explicit opt-in.",
+    "Maintainers can follow the declared iOS host setup path, and both generated guides now describe only behavior verified on the candidate."
+  ],
+  "archived": {
+    "roadmap": true,
+    "requirements": true,
+    "audit": false,
+    "phases": false,
+    "phases_archive_skipped": false,
+    "phases_archive_skip_reason": null,
+    "quick": false
+  },
+  "milestones_updated": true,
+  "state_updated": true,
+  "preservation_warnings": [
+    {
+      "field": "stopped_at",
+      "reason": "preserved-over-disagreeing-derived"
+    },
+    {
+      "field": "current_plan",
+      "reason": "preserved-over-disagreeing-derived"
+    },
+    {
+      "field": "current_phase",
+      "reason": "preserved-over-disagreeing-derived"
+    }
+  ]
+}

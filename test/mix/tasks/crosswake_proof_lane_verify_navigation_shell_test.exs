@@ -47,6 +47,49 @@ defmodule Mix.Tasks.Crosswake.ProofLane.VerifyNavigationShellTest do
     end
   end
 
+  test "retained evidence carries real provenance and passes the evidence check" do
+    {root, destination, observation} = run_fixture()
+    on_exit(fn -> File.rm_rf(root) end)
+
+    Mix.Task.reenable(@task)
+
+    {:ok, advisory_struct} =
+      Crosswake.ProofLane.NavigationShellAdvisory.build(File.read!(observation))
+
+    advisory = Crosswake.ProofLane.NavigationShellAdvisory.encode!(advisory_struct)
+
+    Mix.Task.run(@task, [
+      "--destination",
+      destination,
+      "--run-root",
+      root,
+      "--observation",
+      observation
+    ])
+
+    assert {:ok, bytes} = File.read(Path.join(destination, "proof-lane-evidence.json"))
+    assert {:ok, evidence} = Jason.decode(bytes)
+    assert evidence["commit_ref"] =~ ~r/^git-([0-9a-f]{40}|[0-9a-f]{64}|unknown)$/
+    assert evidence["crosswake_version"] == to_string(Application.spec(:crosswake, :vsn))
+
+    assert evidence["template_version"] ==
+             Integer.to_string(Mix.Tasks.Crosswake.Gen.Shell.template_version())
+
+    assert evidence["device_class"] == "unknown"
+
+    assert :ok =
+             Crosswake.ProofLane.Evidence.check(destination, [
+               %{kind: :navigation_shell_advisory, canonical_bytes: advisory}
+             ])
+  end
+
+  test "the task source carries no placeholder provenance literal" do
+    source = File.read!("lib/mix/tasks/crosswake.proof_lane.verify_navigation_shell.ex")
+    refute source =~ "\"0.1.0\""
+    refute source =~ "\"161\""
+    refute source =~ String.duplicate("0", 40)
+  end
+
   defp run_fixture(mode \\ :valid) do
     root =
       Path.join(

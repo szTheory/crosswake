@@ -153,7 +153,7 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
                 invoke_runner(contract, Keyword.put(options, :promote, parsed[:promote] == true))
 
           {:blocked, rule_id} ->
-            {:blocked, %{outcome: "blocked", rule_id: rule_id}}
+            {:blocked, blocked_result(rule_id, options)}
         end
       end
     end
@@ -192,12 +192,32 @@ defmodule Mix.Tasks.Crosswake.ProofLane.PhysicalIphone do
   end
 
   defp readiness_result(options) do
-    PhysicalIphonePreflight.readiness(options)
-    |> Map.update!(:outcome, &Atom.to_string/1)
-    |> Map.update!(:checks, fn checks ->
-      Enum.map(checks, &Map.update!(&1, :state, fn state -> Atom.to_string(state) end))
-    end)
+    result =
+      PhysicalIphonePreflight.readiness(options)
+      |> Map.update!(:outcome, &Atom.to_string/1)
+      |> Map.update!(:checks, fn checks ->
+        Enum.map(checks, &Map.update!(&1, :state, fn state -> Atom.to_string(state) end))
+      end)
+
+    config_blocked? =
+      Enum.any?(result.checks, &(&1.id == "PI-PREFLIGHT-CONFIG" and &1.state == "blocked"))
+
+    case config_blocked? && PhysicalIphonePreflight.origin_refusal(options) do
+      cause when is_binary(cause) -> Map.put(result, :cause, cause)
+      _ -> result
+    end
   end
+
+  # A local-loopback host is reported through the existing configuration rule, with the
+  # generator's own refusal text as the cause; no separate rule id exists for it.
+  defp blocked_result("PI-PREFLIGHT-CONFIG" = rule_id, options) do
+    case PhysicalIphonePreflight.origin_refusal(options) do
+      cause when is_binary(cause) -> %{outcome: "blocked", rule_id: rule_id, cause: cause}
+      _ -> %{outcome: "blocked", rule_id: rule_id}
+    end
+  end
+
+  defp blocked_result(rule_id, _options), do: %{outcome: "blocked", rule_id: rule_id}
 
   defp invoke_runner(contract, options) do
     try do

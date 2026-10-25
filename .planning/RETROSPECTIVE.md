@@ -805,7 +805,223 @@ with no CLI path out. Worth reporting upstream.
 - Notable: the expensive part was not execution but re-establishing context after each discovery
   invalidated the prior plan
 
+## Milestone: v23.0 — Release Pipeline Repair & Proof-Lane Truth
+
+**Archived:** 2026-10-11, `override_closeout`. **Phases:** 7 | **CLI plans/tasks:** 163/193. **Requirements:** 42/43.
+
+### What Was Built
+
+- Diagnostic commands distinguish failed checks from checks that could not run and report the specific cause.
+- Release versions derive from the approved manifest; six packages retain independent source references and proof.
+- Collection assertions have nonempty guards and a checked 230-site inventory.
+- Crosswake 0.2.11 passed three publishers, both generated native consumer builds, exact-public proof and the six-child COMPLETE rollup.
+- Chimeway 0.1.2 passed its own fresh gate, ordinary Hex publisher, public-host doctor and direct registry check.
+- PR #237 proved ten real installer-before-doctor pairs and passed all 49 CI jobs without another publication.
+
+### What Worked
+
+- Exact approved-source checks separated dirty-checkout differences from real deployed defects.
+- Grouped repair PRs, safe rehearsals, fresh one-use bindings and normal protected merges delivered core 0.2.11 and companion 0.1.2.
+- Actual hosted installer ordering and direct registry checks exposed gaps that labels and tags could not prove.
+
+### What Was Inefficient
+
+- Repeated one-action approval plans fragmented the workflow and required the user to repeat authorization.
+- Cryptic phrases such as "current evidence" and "last recorded live check" hid the result and next action.
+- Dirty local source and shallow hosted history caused misleading diagnoses and stopped releases. CLI scope/path differences surfaced again at archive acknowledgement.
+- Stale fingerprints, superseded plans and missing summaries made lifecycle counts differ from delivered requirements.
+
+### Patterns Established
+
+- Carry user authorization within its exact stated scope; bind each operation internally and never reuse consumed approvals.
+- Before proposing a repair, inspect the approved commit and exercise the real adapter return shape and subprocess output.
+- Archive preserves failed verdicts and originals. Suppression metadata means accepted deferral, never a repaired historical failure.
+
+### Key Lessons
+
+1. State the PR or check, what passed or failed, the concrete cause and the exact next action. Avoid opaque evidence phrases.
+2. Group related repairs into one coherent delivery; do not create a plan for every permission reply.
+3. Complete automated assertions and artifact inspection before asking for unavoidable human input.
+4. Archive irreversible failures honestly; another publication cannot fix first-publish timing.
+5. Use workstream scope for phase files and root scope for root debug records. Verify every acknowledgement result.
+
+### Cost Observations
+
+Model mix and session counts were not measured. The visible cost was repeated approval and planning churn; scoped authorization and grouped repair work restored progress.
+
+---
+
+## Milestone: v24.0 — Repository Cleanup & Maintenance
+
+**Planning closeout:** 2026-10-12. **Phases:** 3 (176–178) | **Plans:** 15 | **CLI tasks:** 28 | **Requirements:** 8/8.
+
+### What Was Built
+
+- Recoverable private capture of 119 changed paths and restore proof for 170 eligible units, with explicit dispositions and artifact-policy ownership.
+- Supported maintenance commands, corrected guides and derived assertions preserving 230 keys and 52 frozen guards; all 78 uncertain historical modes remain retained.
+- Dated accountability for 20 open issues and 4 PRs; the eight-file proposal is PR #238, open and unmerged.
+- A complete nine-stage local proof and 48 required hosted successes bound to the same governed merge object. The accepted full run was warm-cache.
+
+### What Worked
+
+Private independent clones isolated source proof from the protected recovery checkout. Actual dependency return shapes, subprocess outputs, raw-index checks and hosted checkout identities made the final source claim reviewable. One bundled closeout decision carried the authorized planning work through archive and reconciliation.
+
+### What Was Inefficient
+
+Empty SUMMARY requirement arrays required an independent cross-reference. Four historical guidance-fixture assertions describe an earlier handoff epoch and fail against completed state. Two earlier full runs omitted assertion text, leaving their failure causes unknown. Generated milestone prose and handoffs required reconciliation after the registered writer.
+
+### Patterns Established
+
+Preserve historical artifacts at original bytes and paths. Separate retained uncertainty from supported behavior. Copy milestone archives when movement conflicts with protection, and disclose skipped commit/tag/deletion steps. Validate current handoffs separately from chronological fixture expectations.
+
+### Key Lessons
+
+1. Retain the assertion output of every failed verification stage; do not infer a cause from a later successful run.
+2. Before delivery, exercise real adapter return shapes and production subprocess output in a local fixture.
+3. Join local and hosted evidence to the exact governed checkout, while disclosing head-only and source-less roles.
+4. Complete the proposed closeout before requesting its single decision, then apply scoped authorization without new routine approval loops.
+
+### Debt and Cost Observations
+
+[Six debt records](workstreams/quality-ratchet-release/milestones/v24.0-closeout/debt-disposition.md) remain retained; six v23 acknowledgements carry forward unchanged. Missing reader comparisons do not authorize retirement. No milestone Git commit/tag, PR merge or package publication occurred. Model mix, session counts, whole-project LOC and a whole-milestone commit range were not measured.
+
+---
+
+## Milestone: v27.0 — Land and Clean Up
+
+**Shipped:** 2026-10-24. **Phases:** 5 (189–193) | **Plans:** 55 | **Plan tasks:** 127 | **Requirements:** 18/18.
+
+### What Was Built
+
+- A content-based inventory of every copy of the work outside GitHub `main` (258 rows, 7 PR dispositions) and restore-tested backups outside the temp folder: 76/76 restores passed (189).
+- Fixes for the seven carried v26 warnings, made in a durable clone of the candidate, each with failing controls (190).
+- One integration branch from current `main` in a separate durable clone, carrying the candidate history, FIX commits and the v24–v27 planning records, with a HEAD-bound privacy scan and all nine suite stages passing (191).
+- PR #242 merged as `d12aed75` through a one-use `allow` gate, with CI green on the head and on the merge commit and every publish job skipped (192).
+- A clean `main` checkout in place of the recovery checkout, 300 of 306 listed copies removed after hash-matched backups, and AGENTS.md "How changes land" (193).
+
+### What Worked
+
+Backing up and restore-testing before any deletion meant the macOS temp cleaner, which removed 60 loose temp files mid-phase, cost one rerun and no data. One-use `allow`/`hold` gates bound to a displayed PR and head made each irreversible step explicit without standing approvals. Building in separate durable clones kept the frozen recovery checkout untouched until the swap.
+
+### What Was Inefficient
+
+Many plans needed reruns (189-10 three runs, 191-10/11, 192-08/10, 193-06), mostly on scanner false positives or a moving environment. Records written before a merge went stale the moment it happened: STATE, ROADMAP and continue-here all still said "awaiting merge" at audit. The installed CLI again undercounted tasks (1 vs 127), and `init.manager` could not parse this workstream's roadmap (0 phases).
+
+### Patterns Established
+
+Classify by content, not by name. Back up and restore-test, then remove item by item against a ledger. Make each irreversible step a one-use gate bound to what is displayed. Land planning records through the same PR flow as code.
+
+### Key Lessons
+
+1. Write post-merge records after the merge, or make the close PR carry them; a pre-merge "complete once X" line is stale on arrival.
+2. A ledger label is a claim too: "removed 300" included 55 already-absent rows. Count the action, not the row.
+3. A long freeze accumulates work that exists only locally; landing it took a whole milestone. Branch-and-PR from `main` keeps that number near zero.
+
+### Debt and Cost Observations
+
+See the [debt disposition](workstreams/quality-ratchet-release/milestones/v27.0-closeout/debt-disposition.md). Merges: #242, #243, #244; no tag or publication. 125 commits from `d0dbdf7b` to `f34baa7b`. Model mix and session counts were not measured.
+
+---
+
+## Milestone: v26.0 — Harden Before Trust
+
+**Planning closeout:** 2026-10-16. **Phases:** 5 (184–188) | **Plans:** 37 | **Plan tasks:** 96 | **Requirements:** 18/18.
+
+### What Was Built
+
+- One pinned git funnel for every twin probe call, real-repo fixtures for each way git can hide a change, and a read-only `twin_preflight` that never consumes a run root (184).
+- Guards and twin helpers that fail when they examine nothing (185).
+- A legacy host-command path that denies, doctor checks that error on unreadable input with project-relative paths, a loopback harness that reports its own failures, and a physical-preflight loopback refusal (186).
+- Doctor findings with real details, an unbacked offline-island error, real proof provenance with explicit sentinels, and recorded CW-REQ-A/D deferrals (187).
+- A frozen candidate `a53fbef`, a 30-label scripted go/no-go behind a noclobber sentinel, and one twin-05 run that passed and was byte-copied into planning (188).
+
+### What Worked
+
+Turning v25's review warnings into a milestone with explicit requirements closed the silent-pass paths before the next run instead of after it. The sentinel made the single twin run a deliberate one-way door while a gate no-go stayed retryable. Mutation controls (24 guard-reverting mutations in 187) proved the new guards actually fail.
+
+### What Was Inefficient
+
+Phase 184 needed four verification gap rounds and 15 plans. Two items deferred "to the Phase 188 freeze" (the guard pin raise and the Swift G4 baseline failure) were never picked up, because Phase 188 was scoped to change no product code. Shared `MIX_BUILD_PATH` across `mix` subprocess tests corrupted builds and cost a misdiagnosis in 187-02. The installed CLI again undercounted tasks (21 vs 96).
+
+### Patterns Established
+
+Freeze at an existing HEAD and gate the run with a scripted, self-tested go/no-go. Byte-copy run results into planning with sha256. Do not defer work to a phase whose scope forbids it; give each deferral a phase that can actually do it.
+
+### Key Lessons
+
+1. A deferral needs a receiver that is allowed to act: "defer to the freeze phase" silently drops work when the freeze changes no code.
+2. Run tooling is product surface too: the gate's own privacy scan and selftests can pass on nothing (188 WR-01, WR-08), the same defect class v26 removed from product checks.
+3. Isolate build paths per test process when tests spawn `mix`; a shared build turns into misleading failures.
+
+### Debt and Cost Observations
+
+See the [debt disposition](workstreams/quality-ratchet-release/milestones/v26.0-closeout/debt-disposition.md). Delivery of the candidate commits needs separate authorization. No milestone Git commit/tag, PR or publication occurred. Model mix, session counts, whole-project LOC and a whole-milestone commit range were not measured.
+
+---
+
+## Milestone: v25.0 — iOS Host Setup & Digital Twin Proof
+
+**Planning closeout:** 2026-10-15. **Phases:** 5 (179–183) | **Plans:** 32 | **Plan tasks:** 78 | **Requirements:** 20/20.
+
+### What Was Built
+
+- Compile-only `:ios_host` declaration with managed generation, interrupted-update recovery and independently checked Xcode settings (179).
+- Versioned `host.*` command seam: router registry, per-route manifest authority (schema 1.2.0), native-session delivery and offline-island admission (181).
+- Explicit local loopback origin mode for the iOS host; production unchanged (182).
+- `mix crosswake.proof_lane.verify_twin ios`: a bounded T01–T10 reference twin with a closed, privacy-safe receipt (180), made to fail closed on uncommitted source and re-attested by twin-04 (183).
+
+### What Worked
+
+Feasibility gates stopped Phase 180 at a real missing seam instead of papering over it; the user's allow became bounded phases 181 and 182. One run per run root kept every twin receipt attributable. The milestone audit caught that twin-03 attested a commit lacking the code that ran, and a small gap-closure phase fixed it with mutation controls proving each guard is load-bearing.
+
+### What Was Inefficient
+
+Three twin runs before a passing one: the first had no candidate record, the second lost its stage cause and crashed after writing the receipt. Product code lived uncommitted in the candidate until the audit forced commits. Planning-tool counters (CLI task count, workstream-unaware gap gates) needed manual cross-checks.
+
+### Patterns Established
+
+Commit candidate code before any run that attests source. Treat a missing join as a block, never a pass. Keep superseded run results byte-identical and annotate them by sha256 rather than rewriting.
+
+### Key Lessons
+
+1. A source attestation must cover the working tree, not only HEAD; fail closed when they differ.
+2. Retain a privacy-safe cause for every blocked stage; twin-02's case-3 stall is still unexplained because it was not retained.
+3. Review warnings that open a silent-pass path (index flags, filemode) must be scheduled before the next run, not left as advisory.
+
+### Debt and Cost Observations
+
+See the [debt disposition](workstreams/quality-ratchet-release/milestones/v25.0-closeout/debt-disposition.md). Delivery of the candidate commits needs separate authorization. No milestone Git commit/tag, PR or publication occurred. Model mix, session counts, whole-project LOC and a whole-milestone commit range were not measured.
+
+---
+
 ## Cross-Milestone Trends
+
+### v27 additions
+
+- Long freezes trade short-term safety for a landing milestone: v24–v26 kept product code candidate-only, and v27 needed five phases to land and clean up. The new branch-and-PR rule ends the freeze pattern.
+- Status records written ahead of an event (a merge, a removal) go stale on arrival. Write them after the event, or carry them in the next PR.
+
+### v26 additions
+
+- The absence-as-success defect recurs in whatever is newest: v26 removed it from product checks, then the run tooling written for twin-05 reintroduced it (empty-scope scan, untested gate labels). Apply the same non-empty and negative-control rules to run scripts.
+- Deferrals must name a receiver that is allowed to act; two items deferred to a no-code freeze phase were silently dropped and surfaced only at audit.
+
+### v25 additions
+
+- Source attestation must bind what actually ran. A run against a committed HEAD with uncommitted product code passed every check; only the milestone audit's cross-phase read caught it. Fail closed on dirty trees, and treat a missing join as a block.
+- Feasibility gates that stop at a real missing seam pay off: the stop became two bounded phases (181, 182) instead of an implicit scope expansion.
+
+### v24 additions
+
+- Historical fixture epochs and current workstream handoffs need separate validation; preserve original fixtures rather than rewriting them into a new state.
+- Full source verification and planning archival have distinct authority. Prove the exact checkout and record archive exceptions without implying a PR merge or publication.
+- Missing assertion output creates durable diagnostic debt. Retain stage causes and logs at the point of failure.
+
+### v23 additions
+
+- Repeated approval prompts and opaque progress language increase operator work. Carry scoped authorization and give check/result/cause/next-action updates.
+- Verification snapshots and archive metadata serve different purposes. Preserve original bytes before adding acknowledgement markers; never turn a historical failure into a pass.
+
 
 | Trend | Evidence | Implication |
 |-------|----------|-------------|

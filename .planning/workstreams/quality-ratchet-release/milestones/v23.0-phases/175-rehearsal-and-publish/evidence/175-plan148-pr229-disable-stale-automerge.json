@@ -1,0 +1,9 @@
+{
+  "pr": 229,
+  "head_oid": "c391c15a5d1a48fcd6ccf1141c94c7cc112d0f4a",
+  "reason": "CI format-proof rejects unformatted added assertion; disable binding before revised source",
+  "attempted": true,
+  "delivery": "ACCEPTED",
+  "intent_at_utc": "2026-10-11T13:03:04.954098+00:00",
+  "exit_code": 0
+}

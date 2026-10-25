@@ -1,0 +1,60 @@
+{
+  "status": "PASS",
+  "phase_score": "8/9",
+  "requirements_score": "42/43",
+  "historical_unsatisfied_requirement": "REL-10",
+  "core_run_id": 38155320492,
+  "companion_run_id": 38167555514,
+  "repair_pr": 237,
+  "repair_merge_oid": "d0dbdf7bf196cea167ced3c50cf620bf3cb2452b",
+  "ci_passed": 49,
+  "actual_installer_doctor_pairs": 10,
+  "publishers_skipped": 8,
+  "archive_hashes_unchanged": true,
+  "check_ids_unique": 41,
+  "next_command": "$gsd-complete-milestone v23.0 --ws quality-ratchet-release",
+  "human_action_pending": false,
+  "files": [
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/STATE.md",
+      "sha256": "85e3194c7e044d32866d85d3b32bd07b8d36a3b9d10210f7f9c4eb0f617ccc6e"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
+      "sha256": "8073bf63c7833a5420a99b3efaef66b6993b2215464be1be61220364cbfbfb2c"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/REQUIREMENTS.md",
+      "sha256": "76fc7be447a491733897ae858acd8d5c544551013eb09b97079e34e6d2be09a8"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/v23.0-MILESTONE-AUDIT.md",
+      "sha256": "84cfd1b20a5c2e1d73709ad44b87052eb918f150debf33c8fa2c7bf9e935faf7"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-VERIFICATION.md",
+      "sha256": "4373a08352330e488f442acafb11c1c4f40ddf625cf15192443a310910637772"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-VALIDATION.md",
+      "sha256": "85c3926c2565a120a48e918a54c47efc2e247d4cdf7890e782df9584810a3edc"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-148-SUMMARY.md",
+      "sha256": "def10c960918dfa61588501e557d3dcbbb968e4e33f753da4311b6f9def29a4f"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-KNOWN-RELEASE-BLOCKER.md",
+      "sha256": "6e6fc334d9ed6d0fa109c09ba8265c0d7f6606ab97507737b2dfa0d97f879ff9"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-LEARNINGS.md",
+      "sha256": "25b610a8c823ee7fc5e9c0ba683a3fba933997d860d1fd84ebea6a3c7220a1ab"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/.continue-here.md",
+      "sha256": "3c7e764315dc548aac426a3b8de370f5f7d46e7120500d026d947c6b30e99aa5"
+    }
+  ],
+  "observed_at_utc": "2026-10-11T20:00:46.905658+00:00"
+}

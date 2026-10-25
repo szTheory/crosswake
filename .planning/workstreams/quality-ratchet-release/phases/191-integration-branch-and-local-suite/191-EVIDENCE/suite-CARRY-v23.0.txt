@@ -1,0 +1,9 @@
+head 400273abadf236ecdb88fbd907e6cdfaba72de8f
+mode subset
+totals_lines 1
+line1 tests 951 failures 2 invalid 0 skipped 0 excluded 67
+floor 5
+exit 2
+failed test deferred core-hermetic failures are now green: milestone_transition_reset (Crosswake.Proof.Phase135CiOpsProofTest)
+failed test milestone archive presence matches active/shipped state (Crosswake.Planning.MilestoneTransitionResetTest)
+result pass

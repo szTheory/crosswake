@@ -1,0 +1,68 @@
+{
+  "schema": "crosswake-d107-public-candidate-signal/v1",
+  "observed_date": "2026-10-07",
+  "collection": {
+    "method": "anonymous HTTPS GET to api.github.com",
+    "credential_used": false,
+    "raw_responses_retained": false
+  },
+  "candidate": {
+    "repository": "szTheory/crosswake",
+    "pull_request": 219,
+    "state": "open",
+    "draft": false,
+    "merged": false,
+    "updated_at": "2026-09-28T14:46:02Z",
+    "base_oid": "e51698528dc667ef89beb951e4eb1ec91da74981",
+    "head_oid": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d"
+  },
+  "refs": {
+    "source": {
+      "repository": "szTheory/crosswake",
+      "ref": "refs/tags/ios-core-v0.2.6",
+      "http_status": 200,
+      "oid": "998742856a37a97ae7247f6c532f9c154ea20885"
+    },
+    "mirror": {
+      "repository": "szTheory/crosswake-shell-core-ios",
+      "ref": "refs/tags/v0.2.6",
+      "http_status": 404,
+      "state": "absent"
+    }
+  },
+  "crosswake_ci": {
+    "workflow": "Crosswake CI",
+    "matching_runs_observed": 1,
+    "run_id": 36438452825,
+    "event": "pull_request",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "failure",
+    "created_at": "2026-09-28T14:46:05Z",
+    "updated_at": "2026-09-28T15:09:50Z",
+    "head_oid": "696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+    "check_roster_http_status": 500,
+    "check_roster_state": "unavailable"
+  },
+  "disposition": {
+    "qualifies_for": "D-107 planning trigger only: fresh exact-candidate public observation confirms the source/mirror ref discrepancy",
+    "does_not_authorize": [
+      "provider read",
+      "credential access",
+      "tag creation",
+      "CI rerun",
+      "merge",
+      "registry action",
+      "publication",
+      "release readiness"
+    ],
+    "next_step": "$gsd-plan-phase 175 --ws quality-ratchet-release --research"
+  },
+  "sources": [
+    "https://api.github.com/repos/szTheory/crosswake/pulls/219",
+    "https://api.github.com/repos/szTheory/crosswake/git/ref/tags/ios-core-v0.2.6",
+    "https://api.github.com/repos/szTheory/crosswake-shell-core-ios/git/ref/tags/v0.2.6",
+    "https://api.github.com/repos/szTheory/crosswake/actions/workflows/crosswake-ci.yml/runs?per_page=30&head_sha=696a27a3be1fcd56efe70923dc0ce286a1c41c6d",
+    "https://api.github.com/repos/szTheory/crosswake/commits/696a27a3be1fcd56efe70923dc0ce286a1c41c6d/check-runs?per_page=100"
+  ]
+}

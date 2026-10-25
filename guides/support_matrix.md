@@ -39,6 +39,8 @@ Bridge is not high-frequency or mutation authority.
 
 `manifest_schema_version` moved `1.0.0` -> `1.1.0` (Phase 154, CTRL-05/D-55): additive, native-inert — the iOS and Android shells decode neither the new `interaction` field nor the widened `Capability` enforce-keys, so this is `compatibility-bump only`, not rebuild-required.
 
+`manifest_schema_version` then moved `1.1.0` -> `1.2.0` (Phase 181): additive and iOS-only. Routes may carry `host_commands`, and `compatibility` may carry `host_command_seam_version`. The Android shell does not read either field. This is `compatibility-bump only` for hosts that declare no host commands.
+
 Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` now also declares an explicit `Capability.interaction` value alongside `Capability.rebuild`, enforced at compile time by `@enforce_keys`. Use these labels literally.
 
 **Guarantee strength, stated honestly (D-45/D-52).** That `@enforce_keys` widening is the only part of the Phase 154 catalog line that is structurally impossible to violate: a capability declaring neither `interaction` nor `rebuild` does not compile, and no reviewer or CI job is involved. Every other part of the bounded-bridge contract is CI-caught rather than structural. `Crosswake.Bridge.CatalogGuard` is a merge-blocking structural test proving there is no dynamic-registration seam, no streaming seam, no external SDK inside the bridge tree, and native command enum parity in both directions — but a gate caught in CI is a gate a maintainer can still walk through deliberately, one honest control at a time. Read `guides/bridge.md#guarantee-strength-what-is-structural-and-what-is-ci-caught` before treating either as airtight.
@@ -73,18 +75,28 @@ Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` n
 |--------|---------|----------|--------------|------------|------------|-------|
 | ios | 17.0 | supported | supported | script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion. |
 
+## iOS Host Generation and Xcode Settings
+
+The host's ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled Phoenix router, declared entry route, HTTPS primary origin, app/proof identities, and device-signing settings. An explicit `origin_mode: :local_loopback` allows only `http://127.0.0.1` or `http://localhost` (optional port) for Simulator demonstration and is reported as not production-ready. Compile-only generation compiles the router without starting the host application or loading its runtime-server configuration.
+
+`mix crosswake.gen.shell ios --diff` and `--check` inspect managed output without writing. Recognized manifest, static activation, and xcconfig projections have explicit ownership; interrupted publication blocks the Xcode build guard until `--recover`. Existing project settings use a separate opt-in migration limited to the recognized shell target blocks.
+
+The effective-settings check observes 20 Xcode cells across the shell, proof app, unit-test, and UI-test targets, Debug/Release, and simulator/device SDK classes. Simulator settings are unsigned. Device settings inspection reports configuration only; it does not claim signing or installation.
+
+Manifest and entry activation carry static route and origin configuration. They grant no session, account, scope, installed-media, or replay authority. These host-generation and settings checks do not establish physical-iPhone support or activate a first adopter's host.
+
 ## Android
 
 | Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
 |--------|---------|----------|--------------|------------|------------|-------|
-| android | 26 | supported | supported | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Android retains its frozen generator, Maven, JVM, and shared-vector posture. Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android is frozen during first adopter iOS readiness: no new feature, parity, device, template, or release claim. |
+| android | 26 | supported | supported | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim. Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android never gates the first adopter's physical-iPhone proof: no new feature, template, emulator/device or release claim. |
 
 ## Shell Artifacts
 
 | Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
 |--------|---------|----------|--------------|------------|------------|-------|
 | ios_shell | Hex-matched | supported | verification required | clean-room-proof-ios; script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority. Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; Release consumer proof resolves that public SwiftPM tag and builds a generated iOS app with `xcodebuild`. It must pass for the ordinary core release's six-child COMPLETE result. CI build proof does not establish physical-device or adopter-topology support. |
-| android_shell | Hex-matched | supported | supported | native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated Android shell artifacts retain the frozen generator, Maven, JVM, and shared-vector posture based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. This existing posture is frozen during first adopter iOS readiness; no parity/device/template/release expansion is claimed. |
+| android_shell | Hex-matched | supported | supported | native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim. |
 
 ## First Adopter Readiness
 
@@ -106,7 +118,7 @@ Example-host, simulator, package-version, and policy-contract evidence do not pr
 | privacy-safe scoped replay | verification required | Opaque scope references, scope-partitioned outbox, logout/account-switch stops, endpoint reauthorization, and redacted evidence all pass. | The existing host-owned `gated_by` seam remains the server-side disablement authority; raw mutation payloads, account identifiers, media, transcripts, tokens, and stable device identifiers are never diagnostics. |
 | foreground iOS pronunciation pack | verification required | A host provider downloads real bytes, verifies expected size and SHA-256, and atomically installs one immutable archive before reporting available. | Current timed native pack transitions are simulated lifecycle evidence, not productionized native content-pack storage. |
 | physical-iPhone offline study | device evidence | Retained source-bound reference evidence remains dated and non-transferable. | It does not claim Android. It does not claim background replay or sync. It does not claim generic storage or sync. It does not claim multiple offline islands. It does not claim simulator substitution. It does not claim every iPhone. v20 is stopped/partial; it has no shipped support claim. |
-| Android during first adopter readiness | advisory evidence frozen at current posture | Android is frozen at its existing generator, Maven, JVM, and shared-vector posture. | No new Android feature, parity, template, emulator/device, or release requirement is active. |
+| Android (existing contracts) | JVM hermetic proof and shared vectors | Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim. | No new Android feature, template, emulator/device, or release requirement is active. |
 
 Generic sync is not claimed.
 
@@ -270,4 +282,4 @@ Crosswake provides a hermetic Rindle proof for simulated media recovery.
 - Standalone native shell core packages are consumed by generated host-owned wrappers through SwiftPM and Maven Central; device/emulator proof and broader native runtime claims remain deferred until separately proven.
 - Native pack lifecycle transitions currently prove contract behavior, not production byte download, integrity verification, atomic installation, eviction, background transfer, or generic content storage.
 - First adopter work may add one host-supplied foreground iOS pronunciation-pack adapter. Generic app-wide sync, background sync, silent last-write-wins, multiple proven islands, broad reusable runtime sync helpers, and generic productionized native pack storage remain unclaimed.
-- Android remains available at its existing generated-shell/JVM proof posture but is frozen during first adopter iOS readiness; frozen does not mean device-verified.
+- Android remains available at its existing generated-shell/JVM proof posture for proof and parity of existing contracts; that posture is not device-verified, and no new Android feature, template, emulator/device or release requirement is active.

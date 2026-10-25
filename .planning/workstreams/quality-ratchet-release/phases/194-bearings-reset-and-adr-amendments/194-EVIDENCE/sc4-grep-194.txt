@@ -1,0 +1,6 @@
+sc4: scope files 14
+sc4: hits 7
+sc4: allowlisted 7
+sc4: posture ok 14
+sc4: result pass hits 7 allowlisted 7
+sc4: rc 0

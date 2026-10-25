@@ -1,0 +1,12 @@
+{
+  "pr": 235,
+  "package": "crosswake_chimeway",
+  "version": "0.1.2",
+  "branch": "release-please--branches--main--components--crosswake_chimeway",
+  "head_oid": "e43aa13c2ecdba55dec923848898ca230662f47b",
+  "repair_merge_oid": "fd1fcf59c1cd473f7ef9a593be46566018e8aaff",
+  "proposal_run_id": 38164938881,
+  "core_complete_run_id": 38155320492,
+  "prior_pr115_run_not_retried": true,
+  "observed_at_utc": "2026-10-11T18:46:21.167587+00:00"
+}

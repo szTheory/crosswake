@@ -1,0 +1,3 @@
+candidate-a53fbef-full.bundle	bundle	pass	verify ok, clone HEAD and tree equal, bounded rev-list 90 (restore candidate-a53fbef-full.bundle: pass)
+candidate-a53fbef.bundle	bundle	pass	verify ok in shared clone, requires fresh main, fetch gives candidate (restore candidate-a53fbef.bundle: pass)
+candidate-a53fbef-connected.bundle	bundle	pass	complete history, connectivity ok in restored scratch, candidate head and tree and main equal, count 90 (restore candidate-a53fbef-connected.bundle: pass)

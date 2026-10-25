@@ -1,0 +1,20 @@
+{
+  "run_id": 38129903390,
+  "version": "0.2.9",
+  "targets": {
+    "hex": {
+      "http_status": 200,
+      "body_sha256": "2effbca4aad6ad77d522b67fdcc5ffe5168d9b0d6f3d27d484d802fc8e6f012e"
+    },
+    "ios": {
+      "http_status": 200,
+      "body_sha256": "7de53a2f9e944b3dc3d7fdce96ad9e5f9c1f6ed0fc73815891f2c3fdc98a3c70",
+      "tag_oid": "424ab96ede1b92f2b751b54bce04c6e607f0f3c8"
+    },
+    "maven": {
+      "http_status": 200,
+      "body_sha256": "444a48612efd4ce1339d4661e8d47139f09f20e607ebd12c3e05246de65c635e"
+    }
+  },
+  "observed_at_utc": "2026-10-11T11:05:44.327625+00:00"
+}

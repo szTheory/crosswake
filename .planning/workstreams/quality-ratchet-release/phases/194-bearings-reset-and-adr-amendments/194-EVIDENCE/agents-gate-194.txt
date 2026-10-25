@@ -1,0 +1,5 @@
+gate: block a lines 5 contained yes
+gate: block b lines 13 contained yes
+gate: block c lines 12 contained yes
+gate: lines 102 cap 102
+gate: bullets_main 54 rows 54

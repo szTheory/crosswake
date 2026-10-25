@@ -1,0 +1,5 @@
+red_exit 2
+failed an Info.plist replaced by a directory blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG and a plain cause
+failed a missing Info.plist in an existing shell folder blocks preflight-only, readiness and run
+red2_exit 2
+failed a malformed route_activation.json blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG and a plain cause

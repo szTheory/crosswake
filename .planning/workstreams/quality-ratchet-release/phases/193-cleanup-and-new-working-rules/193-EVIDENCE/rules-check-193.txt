@@ -1,0 +1,29 @@
+rules: agents_file pass
+rules: heading pass
+rules: d16 one main checkout pass
+rules: d16 branch from current origin/main pass
+rules: d16 <type>/<topic> pass
+rules: d16 release-please pass
+rules: d16 worktrees pass
+rules: d16 parallel agent runs pass
+rules: d16 candidate state pass
+rules: d16 Crosswake CI pass
+rules: d16 green on the head pass
+rules: d16 merge commit only pass
+rules: d16 synthetic merge commit pass
+rules: d16 privacy scan before every push pass
+rules: d16 rescan after any new commit pass
+rules: d16 fix forward pass
+rules: d16 observed cause pass
+rules: d16 read and reconcile pass
+rules: dropped_phrases pass
+rules: gate_words pass
+rules: state_active pass
+rules: roadmap_note pass
+rules: project_stage pass
+rules: seed025_file pass
+rules: seed025_front pass
+rules: seed025_order pass
+rules: seed025_done pass
+rules: requirements_seed pass
+rules: result pass

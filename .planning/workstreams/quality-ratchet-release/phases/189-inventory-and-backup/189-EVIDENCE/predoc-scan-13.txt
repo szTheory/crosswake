@@ -1,0 +1,28 @@
+files 18
+exit 1
+class home 0
+class temp 0
+class uuid 0
+class credential 15
+class at 1
+class user 0
+class router 0
+class doctor 0
+class gituser 0
+class owner 0
+hit 189-CONTEXT.md credential
+hit 189-01-PLAN.md credential
+hit 189-02-PLAN.md credential
+hit 189-03-PLAN.md credential
+hit 189-04-PLAN.md credential
+hit 189-05-PLAN.md credential
+hit 189-06-PLAN.md credential
+hit 189-07-PLAN.md credential
+hit 189-08-PLAN.md credential
+hit 189-09-PLAN.md credential
+hit 189-10-PLAN.md credential
+hit 189-11-PLAN.md credential
+hit 189-12-PLAN.md credential
+hit 189-13-PLAN.md credential
+hit 189-REVIEW.md credential
+hit 189-REVIEW.md at

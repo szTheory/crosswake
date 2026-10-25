@@ -1,0 +1,576 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXShellScriptBuildPhase section */
+		A10000410000000000000001 /* Crosswake managed output guard */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Crosswake managed output guard";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ -e \"$PROJECT_DIR/.crosswake/ios_host_generation.pending\" ]; then echo CROSSWAKE_IOS_GENERATION_INTERRUPTED >&2; exit 1; fi";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXBuildFile section */
+		A1900000000000000000B001 /* TwinJourneyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1900000000000000000A001 /* TwinJourneyUITests.swift */; };
+		A1900000000000000000B002 /* TwinCaptureCanaryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1900000000000000000A002 /* TwinCaptureCanaryUITests.swift */; };
+		A1900000000000000000B003 /* TwinHostDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1900000000000000000A005 /* TwinHostDriver.swift */; };
+		B10000050000000000000001 /* CrosswakeShellCore in Frameworks */ = {isa = PBXBuildFile; productRef = B10000020000000000000001 /* CrosswakeShellCore */; };
+		A100000C0000000000000001 /* CrosswakeCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001C000000000000000A /* CrosswakeCoordinator.swift */; };
+		A10000010000000000000001 /* CrosswakeShellApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000001 /* CrosswakeShellApp.swift */; };
+		A10000050000000000000001 /* crosswake_manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000150000000000000001 /* crosswake_manifest.json */; };
+		A10000060000000000000001 /* route_activation.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000160000000000000001 /* route_activation.json */; };
+		A10000070000000000000001 /* route_denial.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000170000000000000001 /* route_denial.json */; };
+		A10000080000000000000001 /* declared_pack_requirements.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000180000000000000001 /* declared_pack_requirements.json */; };
+		A10000090000000000000001 /* installed_packs.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000190000000000000001 /* installed_packs.json */; };
+		A10000091000000000000001 /* pack_inventory.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000191000000000000001 /* pack_inventory.json */; };
+		A1800000000000000000B001 /* StudyWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1800000000000000000A001 /* StudyWebViewController.swift */; };
+		A1800000000000000000B002 /* TwinObservationLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1800000000000000000A002 /* TwinObservationLog.swift */; };
+		A1800000000000000000B003 /* StudyPackInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1800000000000000000A003 /* StudyPackInstaller.swift */; };
+		A1800000000000000000B004 /* StudyAudioCommandDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1800000000000000000A004 /* StudyAudioCommandDelegate.swift */; };
+		A1800000000000000000B005 /* StudyWebViewControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1800000000000000000A005 /* StudyWebViewControllerTests.swift */; };
+		A1800000000000000000B006 /* StudyAudioCommandDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1800000000000000000A006 /* StudyAudioCommandDelegateTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A1900000000000000000F001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A10000200000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A100002A0000000000000001;
+			remoteInfo = CrosswakeShell;
+		};
+		A10000350000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A10000200000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A100002A0000000000000001;
+			remoteInfo = CrosswakeShell;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A1900000000000000000A001 /* TwinJourneyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwinJourneyUITests.swift; sourceTree = "<group>"; };
+		A1900000000000000000A002 /* TwinCaptureCanaryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwinCaptureCanaryUITests.swift; sourceTree = "<group>"; };
+		A1900000000000000000A003 /* CrosswakeShellUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrosswakeShellUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1900000000000000000A004 /* TwinJourney.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TwinJourney.xctestplan; sourceTree = "<group>"; };
+		A1900000000000000000A005 /* TwinHostDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwinHostDriver.swift; sourceTree = "<group>"; };
+		A1900000000000000000A006 /* CrosswakeShellUnit.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = CrosswakeShellUnit.xctestplan; sourceTree = "<group>"; };
+		A100001C000000000000000A /* CrosswakeCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrosswakeCoordinator.swift; sourceTree = "<group>"; };
+		A10000110000000000000001 /* CrosswakeShellApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrosswakeShellApp.swift; sourceTree = "<group>"; };
+		A10000150000000000000001 /* crosswake_manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = crosswake_manifest.json; sourceTree = "<group>"; };
+		A10000160000000000000001 /* route_activation.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = route_activation.json; sourceTree = "<group>"; };
+		A10000170000000000000001 /* route_denial.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = route_denial.json; sourceTree = "<group>"; };
+		A10000180000000000000001 /* declared_pack_requirements.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = declared_pack_requirements.json; sourceTree = "<group>"; };
+		A10000190000000000000001 /* installed_packs.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = installed_packs.json; sourceTree = "<group>"; };
+		A10000191000000000000001 /* pack_inventory.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = pack_inventory.json; sourceTree = "<group>"; };
+		A10000400000000000000001 /* CrosswakeHostSettings.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = CrosswakeHostSettings.xcconfig; sourceTree = "<group>"; };
+		A100001B0000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A100001C0000000000000001 /* CrosswakeShell.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrosswakeShell.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A100001D0000000000000001 /* CrosswakeShellTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrosswakeShellTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1800000000000000000A001 /* StudyWebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyWebViewController.swift; sourceTree = "<group>"; };
+		A1800000000000000000A002 /* TwinObservationLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwinObservationLog.swift; sourceTree = "<group>"; };
+		A1800000000000000000A003 /* StudyPackInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyPackInstaller.swift; sourceTree = "<group>"; };
+		A1800000000000000000A004 /* StudyAudioCommandDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyAudioCommandDelegate.swift; sourceTree = "<group>"; };
+		A1800000000000000000A005 /* StudyWebViewControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyWebViewControllerTests.swift; sourceTree = "<group>"; };
+		A1800000000000000000A006 /* StudyAudioCommandDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyAudioCommandDelegateTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+
+/* Begin XCLocalSwiftPackageReference section */
+		B10000030000000000000001 /* XCLocalSwiftPackageReference "crosswake-shell-core-ios" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../../../packages/crosswake-shell-core-ios";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+
+/* Begin PBXFrameworksBuildPhase section */
+		A1900000000000000000D002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000230000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000050000000000000001 /* CrosswakeShellCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000240000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A1900000000000000000C001 /* CrosswakeShellUITests */ = {
+			isa = PBXGroup;
+			children = (
+				A1900000000000000000A001 /* TwinJourneyUITests.swift */,
+				A1900000000000000000A002 /* TwinCaptureCanaryUITests.swift */,
+			);
+			path = CrosswakeShellUITests;
+			sourceTree = "<group>";
+		};
+		A10000210000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A10000220000000000000001 /* CrosswakeShell */,
+				A10000300000000000000001 /* Fixtures */,
+				A10000310000000000000001 /* CrosswakeShellTests */,
+				A1900000000000000000C001 /* CrosswakeShellUITests */,
+				A10000320000000000000001 /* Products */,
+				A10000400000000000000001 /* CrosswakeHostSettings.xcconfig */,
+				A1900000000000000000A004 /* TwinJourney.xctestplan */,
+				A1900000000000000000A006 /* CrosswakeShellUnit.xctestplan */,
+			);
+			sourceTree = "<group>";
+		};
+		A10000220000000000000001 /* CrosswakeShell */ = {
+			isa = PBXGroup;
+			children = (
+				A10000110000000000000001 /* CrosswakeShellApp.swift */,
+				A100001C000000000000000A /* CrosswakeCoordinator.swift */,
+				A1800000000000000000A001 /* StudyWebViewController.swift */,
+				A1800000000000000000A002 /* TwinObservationLog.swift */,
+				A1800000000000000000A003 /* StudyPackInstaller.swift */,
+				A1800000000000000000A004 /* StudyAudioCommandDelegate.swift */,
+				A1900000000000000000A005 /* TwinHostDriver.swift */,
+				A100001B0000000000000001 /* Info.plist */,
+			);
+			path = CrosswakeShell;
+			sourceTree = "<group>";
+		};
+		A10000300000000000000001 /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				A10000150000000000000001 /* crosswake_manifest.json */,
+				A10000160000000000000001 /* route_activation.json */,
+				A10000170000000000000001 /* route_denial.json */,
+				A10000180000000000000001 /* declared_pack_requirements.json */,
+				A10000190000000000000001 /* installed_packs.json */,
+				A10000191000000000000001 /* pack_inventory.json */,
+			);
+			path = Fixtures;
+			sourceTree = "<group>";
+		};
+		A10000310000000000000001 /* CrosswakeShellTests */ = {
+			isa = PBXGroup;
+			children = (
+				A1800000000000000000A005 /* StudyWebViewControllerTests.swift */,
+				A1800000000000000000A006 /* StudyAudioCommandDelegateTests.swift */,
+			);
+			path = CrosswakeShellTests;
+			sourceTree = "<group>";
+		};
+		A10000320000000000000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A100001C0000000000000001 /* CrosswakeShell.app */,
+				A100001D0000000000000001 /* CrosswakeShellTests.xctest */,
+				A1900000000000000000A003 /* CrosswakeShellUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B10000020000000000000001 /* CrosswakeShellCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CrosswakeShellCore;
+			package = B10000030000000000000001;
+		};
+/* End XCSwiftPackageProductDependency section */
+
+/* Begin PBXNativeTarget section */
+		A1900000000000000000E001 /* CrosswakeShellUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1900000000000000000A201 /* Build configuration list for PBXNativeTarget "CrosswakeShellUITests" */;
+			buildPhases = (
+				A1900000000000000000D001 /* Sources */,
+				A1900000000000000000D002 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A1900000000000000000F002 /* PBXTargetDependency */,
+			);
+			name = CrosswakeShellUITests;
+			productName = CrosswakeShellUITests;
+			productReference = A1900000000000000000A003 /* CrosswakeShellUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		A100002A0000000000000001 /* CrosswakeShell */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000330000000000000001 /* Build configuration list for PBXNativeTarget "CrosswakeShell" */;
+			buildPhases = (
+				A10000230000000000000002 /* Sources */,
+				A10000230000000000000001 /* Frameworks */,
+				A10000230000000000000003 /* Resources */,
+				A10000410000000000000001 /* Crosswake managed output guard */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B10000040000000000000001 /* PBXTargetDependency */,
+			);
+			name = CrosswakeShell;
+			productName = CrosswakeShell;
+			productReference = A100001C0000000000000001 /* CrosswakeShell.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A100002B0000000000000001 /* CrosswakeShellTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000340000000000000001 /* Build configuration list for PBXNativeTarget "CrosswakeShellTests" */;
+			buildPhases = (
+				A10000240000000000000002 /* Sources */,
+				A10000240000000000000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A10000360000000000000001 /* PBXTargetDependency */,
+			);
+			name = CrosswakeShellTests;
+			productName = CrosswakeShellTests;
+			productReference = A100001D0000000000000001 /* CrosswakeShellTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A10000200000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					A100002A0000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					A100002B0000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = A100002A0000000000000001;
+					};
+					A1900000000000000000E001 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = A100002A0000000000000001;
+					};
+				};
+			};
+			buildConfigurationList = A100002F0000000000000001 /* Build configuration list for PBXProject "CrosswakeShell" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A10000210000000000000001;
+			productRefGroup = A10000320000000000000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			packageReferences = (
+				B10000030000000000000001,
+			);
+			targets = (
+				A100002A0000000000000001 /* CrosswakeShell */,
+				A100002B0000000000000001 /* CrosswakeShellTests */,
+				A1900000000000000000E001 /* CrosswakeShellUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A10000230000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000050000000000000001 /* crosswake_manifest.json in Resources */,
+				A10000060000000000000001 /* route_activation.json in Resources */,
+				A10000070000000000000001 /* route_denial.json in Resources */,
+				A10000080000000000000001 /* declared_pack_requirements.json in Resources */,
+				A10000090000000000000001 /* installed_packs.json in Resources */,
+				A10000091000000000000001 /* pack_inventory.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A1900000000000000000D001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1900000000000000000B001 /* TwinJourneyUITests.swift in Sources */,
+				A1900000000000000000B002 /* TwinCaptureCanaryUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000230000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000010000000000000001 /* CrosswakeShellApp.swift in Sources */,
+				A100000C0000000000000001 /* CrosswakeCoordinator.swift in Sources */,
+				A1800000000000000000B001 /* StudyWebViewController.swift in Sources */,
+				A1800000000000000000B002 /* TwinObservationLog.swift in Sources */,
+				A1800000000000000000B003 /* StudyPackInstaller.swift in Sources */,
+				A1800000000000000000B004 /* StudyAudioCommandDelegate.swift in Sources */,
+				A1900000000000000000B003 /* TwinHostDriver.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000240000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1800000000000000000B005 /* StudyWebViewControllerTests.swift in Sources */,
+				A1800000000000000000B006 /* StudyAudioCommandDelegateTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A1900000000000000000F002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A100002A0000000000000001 /* CrosswakeShell */;
+			targetProxy = A1900000000000000000F001 /* PBXContainerItemProxy */;
+		};
+		A10000360000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A100002A0000000000000001 /* CrosswakeShell */;
+			targetProxy = A10000350000000000000001 /* PBXContainerItemProxy */;
+		};
+		B10000040000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = B10000020000000000000001 /* CrosswakeShellCore */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		A1900000000000000000A101 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A10000400000000000000001 /* CrosswakeHostSettings.xcconfig */;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(CROSSWAKE_SHELL_TEST_BUNDLE_ID).ui";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = CrosswakeShell;
+			};
+			name = Debug;
+		};
+		A1900000000000000000A102 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A10000400000000000000001 /* CrosswakeHostSettings.xcconfig */;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(CROSSWAKE_SHELL_TEST_BUNDLE_ID).ui";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = CrosswakeShell;
+			};
+			name = Release;
+		};
+		A10000370000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A10000380000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A10000390000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A10000400000000000000001 /* CrosswakeHostSettings.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CrosswakeShell/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(CROSSWAKE_APP_BUNDLE_ID)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A100003A0000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A10000400000000000000001 /* CrosswakeHostSettings.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CrosswakeShell/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(CROSSWAKE_APP_BUNDLE_ID)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		A100003B0000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A10000400000000000000001 /* CrosswakeHostSettings.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/Frameworks",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(CROSSWAKE_SHELL_TEST_BUNDLE_ID)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CrosswakeShell.app/CrosswakeShell";
+			};
+			name = Debug;
+		};
+		A100003C0000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A10000400000000000000001 /* CrosswakeHostSettings.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/Frameworks",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(CROSSWAKE_SHELL_TEST_BUNDLE_ID)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CrosswakeShell.app/CrosswakeShell";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A1900000000000000000A201 /* Build configuration list for PBXNativeTarget "CrosswakeShellUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1900000000000000000A101 /* Debug */,
+				A1900000000000000000A102 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A100002F0000000000000001 /* Build configuration list for PBXProject "CrosswakeShell" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000370000000000000001 /* Debug */,
+				A10000380000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000330000000000000001 /* Build configuration list for PBXNativeTarget "CrosswakeShell" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000390000000000000001 /* Debug */,
+				A100003A0000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000340000000000000001 /* Build configuration list for PBXNativeTarget "CrosswakeShellTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A100003B0000000000000001 /* Debug */,
+				A100003C0000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A10000200000000000000001 /* Project object */;
+}

@@ -1,0 +1,3 @@
+state consumed
+list_sha256 4c675f85cb3113a260b92783b625d43c3aff874b76aa8de5358bf982a77db295
+items 15

@@ -1,0 +1,38 @@
+{
+  "contract": "1.0.0",
+  "flavor": "core",
+  "milestone": "v26.0 \u2014 Harden Before Trust (Phases 184\u2013188) \u2014 planning closeout complete",
+  "phases": [
+    {
+      "number": "184",
+      "name": "Twin probe and safe preflight",
+      "status": "complete"
+    },
+    {
+      "number": "185",
+      "name": "Checks that cannot pass empty",
+      "status": "complete"
+    },
+    {
+      "number": "186",
+      "name": "Host seam and harness honesty",
+      "status": "complete"
+    },
+    {
+      "number": "187",
+      "name": "Doctor and proof fidelity",
+      "status": "complete"
+    },
+    {
+      "number": "188",
+      "name": "Freeze and twin-05",
+      "status": "complete"
+    }
+  ],
+  "next": {
+    "command": "$gsd-new-milestone --ws quality-ratchet-release",
+    "label": "Start a new milestone",
+    "reason": "v26.0 planning closeout complete; fresh scope is unselected"
+  },
+  "updated_at": "2026-10-16T21:48:22.617Z"
+}

@@ -444,6 +444,15 @@ private struct RootSceneView: View {
                 ) { denial in
                     shell.coordinator.presentNavigationDenial(denial)
                 }
+            case let .offlineIsland(session):
+                LiveViewContainerView(
+                    session: session,
+                    shell: shell,
+                    notificationTokenProvider: notificationTokenProvider,
+                    uiActionDelegates: uiActionDelegates
+                ) { denial in
+                    shell.coordinator.presentNavigationDenial(denial)
+                }
             case let .denied(denial):
                 RouteUnavailableView(denial: denial) { action in
                     shell.coordinator.perform(action)

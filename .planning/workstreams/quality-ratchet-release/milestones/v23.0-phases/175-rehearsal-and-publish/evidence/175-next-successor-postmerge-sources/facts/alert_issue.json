@@ -1,0 +1,8 @@
+{
+  "created_by": "automatic Release Please failure alert",
+  "issue": 217,
+  "note": "Alert body records every companion/native publisher and proof skipped; native status rollup succeeded.",
+  "state": "OPEN",
+  "title": "[release] companion or native publish/clean-room proof failed \u2014 run 36352732061",
+  "url": "https://github.com/szTheory/crosswake/issues/217"
+}

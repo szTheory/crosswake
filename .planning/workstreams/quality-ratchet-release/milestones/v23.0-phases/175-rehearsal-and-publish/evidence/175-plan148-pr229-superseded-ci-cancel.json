@@ -1,0 +1,11 @@
+{
+  "run_id": 38141536041,
+  "head_oid": "c391c15a5d1a48fcd6ccf1141c94c7cc112d0f4a",
+  "reason": "Superseded source; failed format-proof repaired at106a4a4fb6877fedcdab4dfdde9f8eecd60ee156",
+  "observed_status": "in_progress",
+  "observed_conclusion": "",
+  "attempts": 1,
+  "delivery": "ACCEPTED",
+  "intent_at_utc": "2026-10-11T13:03:55.084484+00:00",
+  "exit_code": 0
+}

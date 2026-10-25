@@ -1,0 +1,34 @@
+{
+  "audit": null,
+  "candidate": {
+    "ci_revalidated": false,
+    "gate2_authorized": false
+  },
+  "credential": null,
+  "decision": null,
+  "dry_run": null,
+  "mirror": null,
+  "observations_unchanged": null,
+  "observed_at": "2026-09-29T00:14:54Z",
+  "plan": 51,
+  "preflight": {
+    "blocked_reason_code": "DRY_RUN_FAILED_OR_AMBIGUOUS",
+    "canonicalization": "SHA-256 of UTF-8 jq -cS del(.preflight.sha256, .audit) projection including final newline",
+    "last_verified_boundary": "NONE",
+    "observation_window": {
+      "ended_at": "2026-09-29T00:14:54Z",
+      "started_at": "2026-09-29T00:14:54Z"
+    },
+    "observed_at": "2026-09-29T00:14:54Z",
+    "sha256": "67fab9899261ed675a2cf3523e8dc19356ba639f8117273e24501b3875242aa4"
+  },
+  "schema": "crosswake-ios-tag-preflight/v1",
+  "source": null,
+  "split_commit_object_present": null,
+  "split_oid": null,
+  "stage": "BLOCKED_PREFLIGHT",
+  "write": {
+    "attempts": 0,
+    "result": "NOT_ATTEMPTED"
+  }
+}

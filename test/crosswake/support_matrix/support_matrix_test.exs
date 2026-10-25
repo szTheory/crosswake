@@ -80,11 +80,11 @@ defmodule Crosswake.SupportMatrixTest do
 
     [android] = matrix.android
 
-    for frozen_posture <- ["generator", "Maven", "JVM", "shared-vector"] do
-      assert android.notes =~ frozen_posture
-    end
+    assert android.notes =~ ~r/existing contracts.*JVM hermetic proof.*shared vectors/
+    assert android.notes =~ "JVM hermetic CI evidence remains separate"
 
-    assert android.notes =~ "no new feature, parity, device, template, or release claim"
+    assert android.notes =~ "no new feature, template, emulator/device or release claim"
+    refute android.notes =~ "frozen"
   end
 
   test "the first support matrix stays narrow and proof-oriented" do

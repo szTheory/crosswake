@@ -1,0 +1,9 @@
+{
+  "all_workflows_context_syntax": "actionlint -shellcheck=; PASS exit0",
+  "changed_workflow_full_lint": "actionlint with shellcheck; PASS exit0",
+  "regression_original": "2 tests, 1 failure",
+  "regression_fixed": "2 tests, 0 failures",
+  "format_check": "PASS",
+  "source_head_oid": "106a4a4fb6877fedcdab4dfdde9f8eecd60ee156",
+  "observed_at_utc": "2026-10-11T13:04:56.504003+00:00"
+}

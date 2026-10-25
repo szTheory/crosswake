@@ -1,0 +1,11 @@
+{
+  "schema": "crosswake-plan134-local-contract/v1",
+  "tracer_red": true,
+  "tracer_green": true,
+  "no_network": true,
+  "live_version_observed": false,
+  "historical_artifacts_unchanged": true,
+  "historical_artifact_count": 421,
+  "node_tests": 122,
+  "exunit_tests": 38
+}

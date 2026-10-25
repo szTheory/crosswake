@@ -1,0 +1,9 @@
+pr_url https://github.com/szTheory/crosswake/pull/242
+head 9f33c071aa9569879bd643a2fc1aa33ead2614de
+head_short 9f33c07
+head_subject fix(192): stop a fast-exiting child from being reported as a missing executable
+title Land v25-v27 work from the Phase 191 integration branch
+merge_method merge commit
+CI on main is green will mean three things. The required Crosswake CI check passed on this head and on the merge preview it ran on. The merge commit will contain exactly that tested content. Every push-triggered workflow run on the merge commit that is not advisory must succeed, with Release Please succeeding and every publish job skipped. See It Run Collateral is advisory, often cancelled, and is recorded, not counted.
+Allow applies only to this pull request and this head commit, once.
+Hold stops before the merge.

@@ -1,0 +1,62 @@
+[
+  {
+    "package": "crosswake_rulestead",
+    "source_ref_match": true,
+    "metadata_match": true,
+    "payload_match": false,
+    "candidate_file_modes": [
+      436
+    ],
+    "public_file_modes": [
+      420
+    ]
+  },
+  {
+    "package": "crosswake_rindle",
+    "source_ref_match": true,
+    "metadata_match": true,
+    "payload_match": false,
+    "candidate_file_modes": [
+      436
+    ],
+    "public_file_modes": [
+      420
+    ]
+  },
+  {
+    "package": "crosswake_sigra",
+    "source_ref_match": true,
+    "metadata_match": true,
+    "payload_match": false,
+    "candidate_file_modes": [
+      436
+    ],
+    "public_file_modes": [
+      420
+    ]
+  },
+  {
+    "package": "crosswake_chimeway",
+    "source_ref_match": true,
+    "metadata_match": true,
+    "payload_match": false,
+    "candidate_file_modes": [
+      436
+    ],
+    "public_file_modes": [
+      420
+    ]
+  },
+  {
+    "package": "crosswake_threadline",
+    "source_ref_match": true,
+    "metadata_match": true,
+    "payload_match": false,
+    "candidate_file_modes": [
+      436
+    ],
+    "public_file_modes": [
+      420
+    ]
+  }
+]

@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "phase": 178,
+  "plan": "02",
+  "kind": "preliminary",
+  "status": "blocked",
+  "command": "script/verify_repository.sh --all",
+  "source": {
+    "commit": "5923a679ffbe1b587d97165aab772986b65cbd18",
+    "tree": "cf6ad7a134e7f8d7d54c33d3a40d0178ef5bb113"
+  },
+  "runId": "17802-preliminary",
+  "blockedStages": [
+    {
+      "purpose": "root-proof",
+      "result": "FAIL",
+      "cause": "stale-derived-line-references"
+    },
+    {
+      "purpose": "example-host-proof",
+      "result": "FAIL",
+      "cause": "mix-test-suite-four-failures"
+    },
+    {
+      "purpose": "browser-proof",
+      "result": "FAIL",
+      "cause": "chromium-launch-sigtrap"
+    },
+    {
+      "purpose": "ios-package-proof",
+      "result": "FAIL",
+      "cause": "swift-package-sandbox-apply-denied"
+    },
+    {
+      "purpose": "android-package-proof",
+      "result": "FAIL",
+      "cause": "gradle-user-home-metrics-path-denied"
+    },
+    {
+      "purpose": "format-proof",
+      "result": "FAIL",
+      "cause": "approved-guide-test-needs-formatting"
+    }
+  ],
+  "cause": "stage-evidence-failed",
+  "privateEvidence": "owner-private-retained",
+  "observedSubcauses": {
+    "root-proof": [
+      {
+        "cause": "stale-derived-line-references",
+        "count": 3
+      },
+      {
+        "cause": "macos-sha256sum-unavailable",
+        "count": 1
+      }
+    ],
+    "example-host-proof": [
+      {
+        "cause": "mix-test-suite-four-failures",
+        "count": 4
+      }
+    ],
+    "browser-proof": [
+      {
+        "cause": "chromium-launch-sigtrap",
+        "count": 1
+      }
+    ],
+    "ios-package-proof": [
+      {
+        "cause": "swift-package-sandbox-apply-denied",
+        "count": 1
+      }
+    ],
+    "android-package-proof": [
+      {
+        "cause": "gradle-user-home-metrics-path-denied",
+        "count": 1
+      }
+    ],
+    "format-proof": [
+      {
+        "cause": "approved-guide-test-needs-formatting",
+        "count": 1
+      }
+    ]
+  },
+  "nextRemediation": [
+    "Regenerate the three moved derived line references by stable key; keep all 230 ledger and 52 frozen-remediation rows.",
+    "Provide sha256sum through a private shasum-compatible shim.",
+    "Run browser and Swift stages with the approved automatic sandbox review; do not skip either stage.",
+    "Set Gradle metrics/cache paths under the private toolchain home.",
+    "Format only the selected guide test and renew the candidate before a complete rerun."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "operation": "cancel_obsolete_failed_ci_after_source_revision",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "run_id": 38137301058,
+  "old_head_oid": "72bf3a3e9907578b6aca9c1e4f45648d4f97b3ea",
+  "current_head_oid": "fcbab2c44192e6b6ad24d1058127ad42a72efb67",
+  "publication_workflow": false,
+  "failed_job_preserved": "hex-page-proof",
+  "intent_at_utc": "2026-10-11T12:08:54.842052+00:00",
+  "attempts": 0,
+  "delivery": "NOT_NEEDED"
+}

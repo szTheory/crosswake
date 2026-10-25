@@ -1,0 +1,30 @@
+head 4a6c1af2f2304e7c3a72ca845a2409a7a9e0d682
+main d0dbdf7bf196cea167ced3c50cf620bf3cb2452b
+preserved 2faf15a255f644c869d321508c4d3f3007572138
+scan_exit 0
+adopter_check skipped_by_user_decision A-14
+scan: commits 114
+scan: added_lines 352811
+scan: added_bytes 39174423
+scan: text_blobs 2509
+scan: binary_blobs 0
+scan: paths 3603
+scan: identities 228
+scan: terms 0
+scan: adopter_check skipped_by_user A-14
+scan: gitleaks_version 8.30.1
+scan: gitleaks_rules 222
+scan: gitleaks_findings 0
+scan: accepted home_path blob 9b893fdb85fb7c5442a11cc2c6d2ca6f89d807090afd00997304ecd21fd77fdb
+scan: accepted user_name blob 4d2886a39a5d4b8744d49fe467035181e9fce64c67fdf3d12e327da670ea9c59
+scan: blocking_final 0
+scan: history_personal 2
+scan: history_personal_class home_path 1
+scan: history_personal_class user_temp 0
+scan: history_personal_class user_name 1
+scan: history_sensitive 0
+scan: triaged 3402
+scan: triage_only uuid 4941
+scan: triage_only bare_word 6674
+scan: triage_only bare_hex40 75234
+scan: result clean

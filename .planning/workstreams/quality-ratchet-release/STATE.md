@@ -1,388 +1,55 @@
 ---
-gsd_state_version: 1.0
-milestone: v23.0
-milestone_name: Release Pipeline Repair & Proof-Lane Truth
-current_phase: 175
-current_phase_name: rehearsal-and-publish
-status: active
-stopped_at: 175-08 preflight failed — the Maven fire-drill dispatch advanced PR #164 after all three fresh rehearsals, so no current-head Gate 2 evidence exists
-last_updated: "2026-09-21T01:09:21.000Z"
-last_activity: 2026-09-21
-last_activity_desc: "Fresh candidate rehearsals passed for PR #164 head fc6d28dc (Hex 35549524778; iOS 35549667199; Maven 35549803592, deployment d7a987ad-e0e4-4b1e-b195-8dabb48d09ed validated then dropped), but the Release Please job in the fire-drill run replaced the release PR head with 374ac0cf. Re-running the same fire drill would repeat the stale-evidence cycle; do not present Gate 2 or merge until the workflow is made non-mutating for rehearsals."
+gsd_state_version: "1.0"
+milestone: v28.0
+milestone_name: Truth and Release Train
+current_phase: 195
+current_phase_name: Pipeline repair and hygiene
+status: executing
+stopped_at: Completed 195-01-PLAN.md
+last_updated: "2026-10-25T20:39:10.991Z"
+state_head: 53cc15067b4796cbe2517e6a2f54ae5a332de99f
 progress:
-  total_phases: 7
-  completed_phases: 6
-  total_plans: 37
-  completed_plans: 33
-  percent: 89
-state_head: 392a6b21a2282fc9e4dd05c265588ac73767f547
+  total_phases: 2
+  completed_phases: 1
+  total_plans: 22
+  completed_plans: 10
+  percent: 45
+last_activity: 2026-10-25
+last_activity_desc: Phase 195 planned
 ---
 
 # Project State
 
-## Project Reference
-
-See: `.planning/PROJECT.md` (updated 2026-09-15)
-
-**Core value:** Crosswake stays safe to change, inexpensive to verify, pleasant to review, and
-ready to release without weakening Phoenix-first runtime contracts or honest support claims.
-**Current focus:** Phase 175 — rehearsal-and-publish
-`TODO-011`, `TODO-012`). The post-publication proof lane has never executed at any release.
-
-**Release pull-request triage — refreshed 2026-09-19 after Gate 1. Core and second companion remain held.**
-
-| PR | Proposes | Disposition |
-|---|---|---|
-| #164 | `0.2.2` (linked core) | **Weld-unblocked as of Phase 171** (merged `501e4410`): the graph is version-parametric and both the `0.2.1` weld and its interim tripwire are gone, so merging this would now tag AND publish. Still hold pending the proof lane — `exact-public-proof` has never executed at any release (`TODO-011`/`TODO-012`, Phases 173-175). Publishing before the proof lane works is the thing this milestone exists to prevent. |
-| #147 | `crosswake_rulestead 0.1.1` | **MERGED/PUBLISHED with Gate 1 ancestry breach.** Merged as `096371e3`; the required runbook commit `d3401e51` was not an ancestor of its base, head, or merge and the runbook file was absent. The local-`HEAD` gate was a false pass. Do not describe REL-10 or Gate 1 as compliant. |
-| #115 | `crosswake_chimeway 0.1.1` | **Hold**, same reasoning. Stale (opened 2026-08-09). |
-
-The companion holds are a judgement call, not a hard gate: these publishes would most
-likely succeed the way `crosswake_rindle 0.1.0` did this session. The argument for waiting
-is that "it published and nothing verified it" is exactly the state this milestone exists to end
-(`SEED-017` itself is harvested — Phase 171 closed it).
-Revisit once the post-publication proof lane can actually run.
+See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.md` (now, next, later, parked) and [ROADMAP.md](ROADMAP.md) for the v28.0 phases 194–199.
 
 ## Current Position
 
-Phase: 175 (rehearsal-and-publish) — GATE 2 BLOCKED BY SELF-INVALIDATING REHEARSAL
-Plan: 7 of 10 reconciled (Gate 1's historic publish is closed as REL-12 evidence, with a non-repairable REL-10 breach)
-Status: `crosswake_rulestead 0.1.1` is live. The historical exact audit remains base `4627170f` = no, head `491c7a74` = no, merge `096371e3` = no; REL-10 remains breached. The repaired `script/check_release_runbook_ancestry.sh` passes against the remote graph, but Gate 2 may not be presented: run `35549803592`'s required Maven fire drill also ran Release Please and advanced PR #164 from rehearsed head `fc6d28dc` to `374ac0cf`. The new head has no three-leg rehearsal evidence. Do not re-dispatch the current fire-drill shape, merge, or publish; first separate the fire drill from mutating Release Please housekeeping (or otherwise produce all three rehearsals without advancing the release PR), then re-run the exact-head preflight and Gate 2.
-2026-09-18 by the post-merge clean-room dispatch (run 35366337182) against the live
-published `crosswake_rindle 0.1.0` — all nine markers in declared order, `step=install`
-before `step=doctor`, log captured at `evidence/174-rindle-ci-run.log`.
-Finding A is CLOSED (2026-09-18). It had been deferred because the legacy path's CI log did
-not exist yet; the post-merge dispatch produced it, so the SC#4 comparison became measurable
-and was wired into `phase174_cleanroom_lane_parity_test.exs` (6 tests -> 10), with a
-non-emptiness gate on both logs before any comparison and three demonstrated red mutations.
-No phase-174 findings remain open.
+Phase: 195 (Pipeline repair and hygiene) — EXECUTING
+Plan: 2 of 13
+Status: Ready to execute
 
-Next: Present Phase 175 Gate 2 with its distinct iOS-rehearsal resume signal; do not merge or dispatch until that one-way authorization is explicit.
+## Exact Next Action
 
-**Planning guidance for Phase 175 (recorded 2026-09-18).** Open the phase with a broken-windows
-triage wave that gates every publish task, rather than inserting a separate triage phase between
-174 and 175. Phase 175's number is load-bearing — REQUIREMENTS.md maps REL-10 through REL-16,
-DOC-04 and DOC-06 to it, and SEED-014 defers a breaking contract bump to "after Phase 175
-publishes" — so renumbering the publish phase to make room would mean rewriting the requirement
-coverage map, which is precisely the drift class this milestone exists to remove. The triage
-belongs inside 175 on its merits anyway: ROADMAP.md:107-108 already records that unaudited
-vacuous checks must be resolved before the publish phase opens, because publish is where one
-would silently pass.
+What was checked: Phase 195 has 13 plans (195-01 to 195-13, waves 1 to 13 in order). They cover REL-01 to REL-06, HYG-01 and HYG-02. The plan checker ran three times, then a targeted fix closed the last 5 warnings. The probes found no verify-path or failing-direction problems in 53 commands. What happened: Phase 194's closeout PR #249 is merged. The plans are committed on local branch `fix/release-fixture-version-stamp` and are not pushed; plan 195-01 expects to start on that branch, and the plans reach `main` inside PR1. What is unknown: CI on PR1, because it is not opened yet. Nothing was released, tagged or pushed.
 
-WINDOWS entry 35 is the concrete driver. `scripts/ci_monitor.cjs check-actions` reports
-`actions=114 mutable_refs=0` while defaulting to a hardcoded three-path list, so 31 mutable
-action refs across ten unopened workflow files are scored as absent. The publishing workflows
-themselves (`release-please.yml`, `hex-publish.yml`, `ios-mirror-backfill.yml`,
-`exact-public-proof.yml`) are fully SHA-pinned, so this does not block publishing on safety
-grounds; it blocks the claim that the pin audit means anything. Fix = discover
-`.github/workflows/*.yml` and `.github/actions/**/action.yml` by default, gate on scope
-cardinality so a truncated scope cannot read as green, then SHA-pin the 31 refs.
+Next action: `/gsd-execute-phase 195 --ws quality-ratchet-release` from branch `fix/release-fixture-version-stamp`. Every merge, tag push and remote branch delete in the plans needs its own one-use `allow`.
 
-Last activity: 2026-09-18 — Phase 175 execution started
+## Carried debt
+
+See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md); the v23 deferred table is in `milestones/v23.0-closeout`. The adopter lane stays parked; its resume is in ROLLING PARKED.
 
 ## Performance Metrics
 
-**Velocity:**
-
-- Total plans completed: 40
-- Average duration: N/A
-- Total execution time: 0 hours
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 164-168 | 0 | 0 min | N/A |
-| 164 | 5 | - | - |
-| 165 | 13 | - | - |
-| 166 | 8 | - | - |
-| 167 | 9 | - | - |
-| 169 | 4 | - | - |
-**Per-Plan Metrics:**
-
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
-| Phase 164 P01 | 7 min | 2 tasks | 6 files |
-| Phase 164 P05 | 15 min | 2 tasks | 5 files |
-| Phase 165 P01 | 15 min | 2 tasks | 10 files |
-| Phase 165 P02 | 18 min | 3 tasks | 11 files |
-| Phase 165 P03 | 9 min | 2 tasks | 5 files |
-| Phase 165 P04 | 16 min | 3 tasks | 8 files |
-| Phase 165 P05 | 15h 9m | 3 tasks | 13 files |
-| Phase 165 P06 | 14 min | 2 tasks | 11 files |
-| Phase 165 P07 | 14 min | 2 tasks | 10 files |
-| Phase 165 P08 | 24 min | 3 tasks | 15 files |
-| Phase 165 P09 | 34 min | 3 tasks | 12 files |
-| Phase 165 P10 | 3h 30m | 3 tasks | 11 files |
-| Phase 165 P11 | 6 min | 1 tasks | 3 files |
-| Phase 165 P12 | 18 min | 2 tasks | 8 files |
-| Phase 165 P13 | 9 min | 2 tasks | 5 files |
-| Phase 166 P01 | 7 min | 2 tasks | 6 files |
-| Phase 166 P02 | 11 min | 2 tasks | 4 files |
-| Phase 166 P03 | 15min | 2 tasks | 6 files |
-| Phase 166 P04 | 10min | 2 tasks | 5 files |
-| Phase 166 P05 | 21min | 3 tasks | 10 files |
-| Phase 166 P06 | 3min | 2 tasks | 3 files |
-| Phase 166 P07 | 25min | 2 tasks | 24 files |
-| Phase 166 P08 | 7h 10m | 2 tasks | 24 files |
-| Phase 167 P01 | 10min | 3 tasks | 13 files |
-| Phase 167 P02 | 7min | 2 tasks | 6 files |
-| Phase 167 P03 | 7min | 2 tasks | 7 files |
-| Phase 167 P04 | 7min | 3 tasks | 12 files |
-| Phase 167 P05 | 20min | 3 tasks | 7 files |
-| Phase 167 P06 | 1h 2m | 2 tasks | 22 files |
-| Phase 167 P07 | 27m | 2 tasks | 2 files |
-| Phase 167 P08 | 1h 28m | 3 tasks | 10 files |
-| Phase 167 P09 | 9min | 2 tasks | 2 files |
-| Phase 168 P01 | 38m | 3 tasks | 7 files |
-| Phase 168 P02 | 16m | 2 tasks | 9 files |
-| Phase 168 P03 | 38m | 2 tasks | 8 files |
-| Phase 168 P04 | 34m | 2 tasks | 5 files |
-| Phase 168 P05 | 26m | 2 tasks | 6 files |
-| Phase 168 P06 | 60m | 3 tasks | 12 files |
-| Phase 168 P07 | 22m | 2 tasks | 14 files |
-| Phase 169 P01 | 39min | 3 tasks | 4 files |
-| Phase 169 P03 | 12 min | 3 tasks | 6 files |
-| Phase 169 P02 | 95min | 3 tasks | 5 files |
-| Phase 169 P04 | 24 min | 2 tasks | 2 files |
-| Phase 170 P01 | 55min | 3 tasks | 4 files |
-| Phase 170 P02 | 55min | 3 tasks | 22 files |
-| Phase 170 P04 | 25min | 3 tasks | 4 files |
-| Phase 170 P03 | 65min | 3 tasks | 7 files |
-| Phase 170 P05 | 30min | 2 tasks | 2 files |
-| Phase 172 P01 | 55min | 3 tasks | 7 files |
-| Phase 172 P02 | 70min | 3 tasks | 4 files |
-| Phase 172 P03 | 50min | 3 tasks | 6 files |
-| Phase 174 P01 | 12min | 2 tasks | 3 files |
-| Phase 174 P02 | 45min | 2 tasks | 3 files |
-| Phase 174 P03 | 35min | 3 tasks | 5 files |
-| Phase 174 P04 | 24min | 3 tasks | 4 files |
-| Phase 174 P05 | 30min | 3 tasks | 7 files |
-| Phase 174 P06 | 40min | 2 tasks | 2 files |
-| Phase 175 P01 | 4min | 2 tasks | 2 files |
-| Phase 175 P02 | 6min | 2 tasks | 11 files |
-| Phase 175 P03 | 25min | 2 tasks | 1 file |
+| Phase 195 P01 | 100 min | 3 tasks | 11 files |
 
-## Accumulated Context
+## Decisions
 
-### Decisions
+- [Phase 195]: Shell fixture comparisons normalize only version-derived values (stamp, crosswake_version, SwiftPM minimumVersion) on both sides; fixtures keep literal 0.2.11
 
-- Phase numbering continues at 164, but parked Phase 163.1 is not a dependency of this workstream.
-- Dependency security and merge-gate authority must be trustworthy before CI optimization begins.
-- CI optimization must preserve named proof evidence and fail-closed required aggregators.
-- Android remains at its existing generator, Maven, JVM, and vector posture; no feature or parity
-  expansion is authorized.
+## Session
 
-- Package and tag publication remains an irreversible maintainer approval; v22 automates reversible
-  preparation and proves the exact 0.2.1 candidate.
-
-- [Phase 164]: Plan 164-01 retained public compatibility declarations and constrained lock changes to the prescribed patched targets plus Plug Crypto 2.2.0.
-- [Phase 164]: Dependency security has one literal producer; required-check registration remains green-first post-main work through the existing registrar.
-- [Phase 164]: Derive owned SQLite cleanup from the unique primary path plus exact -wal and -shm companions; never glob shared temp state.
-- [Phase 164]: Keep default/hermetic and requires-example-host lane manifests conditional and independent so neither execution class can mask the other.
-- [Phase 165]: Exact per-job queue time remains not_exposed and unavailable matched PR cohorts remain not_measured; timing is descriptive only.
-- [Phase 165]: The Crosswake CI tracer remains additive and non-authoritative while the exact 27 legacy contexts stay unchanged.
-- [Phase 165]: Represent documentation eligibility as explicit planning and public_docs families, both owned by documentation-contracts, with release inputs excluded.
-- [Phase 165]: Freeze maximum authority at 44 literal proof leaves plus classify-change; controls are success-only and never irrelevant.
-- [Phase 165]: Treat every malformed current run, candidate, identity, or incomplete page set as a closed invalid disposition with no selected IDs.
-- [Phase 165]: Keep cancellation authority in a requested workflow_run controller with only actions: write; acquire selector bytes from the controller's immutable default-branch SHA and never check out PR code.
-- [Phase 165]: Keep the controller non-authoritative until Plan 165-10 proves requested-event timing and live inversion behavior.
-- [Phase 165]: Keep Android JVM proof portable by exiting before optional connected provisioning and consuming explicit runner-provided toolchains.
-- [Phase 165]: Keep compiled cache restoration exact across complete BEAM, Gradle, and Swift compatibility identity; expose only closed cache outcomes.
-- [Phase 165]: Bind migration-only legacy contexts to the checkout-free Crosswake CI umbrella so documentation-only irrelevance remains compatible and unexplained non-success stays closed. — Preserves frozen required contexts without admitting a skipped executable leaf directly.
-- [Phase 165]: Keep scheduled/manual engine and commerce advisories source-qualified, non-cancelling, and outside PR concurrency. — Their trust and scheduling boundary is distinct from recurring PR product proof.
-- [Phase 165]: Keep all eight migrated domain proofs explicitly irrelevant only for the manifest-authorized documentation-only classification; unknown classification runs full proof.
-- [Phase 165]: Bind frozen legacy domain contexts to the checkout-free Crosswake CI umbrella while compatibility jobs stay outside umbrella authority.
-- [Phase 165]: Retain Phase 71, 73, and 74 scheduled/manual work only as explicitly non-promoting advisory authority; delete Phase 75 after centralizing its proof.
-- [Phase 165]: Accept executable-leaf irrelevance only for the exact all_changed_paths_allowlisted classifier reason while documentation-contracts remains the planning privacy owner.
-- [Phase 165]: Keep Phase 68 emulator execution manual and advisory-only; it is outside manifest, compatibility, and umbrella authority.
-- [Phase 165]: Determine runner class from exact command invocation: iOS mirror parity stays on Linux while Apple tooling stays on macOS.
-- [Phase 165]: Schedule focused Threadline proof only when the validated documentation family includes public_docs.
-- [Phase 165]: Keep brand-visual visibly red but outside proof leaves, required controls, umbrella needs, and compatibility authority.
-- [Phase 165]: Keep live timing and branch-protection mutation outside the recurring Phase 165 structural gate.
-- [Phase 165]: Bind every live probe to the exact orchestrator-landed remote-default SHA and exact local/remote workflow digests before creating a branch.
-- [Phase 165]: Scope cancellation candidates to the current PR before strict fail-closed validation because GitHub removes PR associations from historical runs after cleanup.
-- [Phase 165]: Keep strict dual required-check authority live and leave the exact legacy retirement proposal unapplied for Plan 165-11.
-- [Phase 165]: Approve only source_protection_digest 55bf0c829e1933ac596585979145073beacc9f03a2c0f5bf6e03b3dfb75b3e51, its exact twenty-seven legacy-context removal set, retained Crosswake CI context, and strict true before and after.
-- [Phase 165]: Plan 165-11 records approval only; Plan 165-12 owns the separately verified branch-protection write.
-- [Phase 165]: Apply only the approved source-protection digest and immediately require strict target authority containing exactly Crosswake CI.
-- [Phase 165]: Keep all forty-four meaningful proof leaves and classify-change while removing every migration-only compatibility conclusion.
-- [Phase 165]: Reject final evidence unless the exact supplied SHA remains the remote default tip and both authoritative blobs match locally.
-- [Phase 165]: Report the pre/post main-bound cohort as not_measured because its explicit criteria differ, despite retaining each sanitized observation descriptively.
-- [Phase 166]: Keep mix verify narrow and invoke it only as the root-proof stage command.
-- [Phase 166]: Attribute tool failures to dependent stages so unsupported Apple tooling blocks iOS without hiding independent proof.
-- [Phase 166]: Propagate every non-pass result through dependency edges while preserving manifest-order execution for independent stages.
-- [Phase 166]: Treat only exact declared outputs absent at invocation start as cleanup-owned, and refuse symlink or repository-prefix escapes.
-- [Phase 166]: Keep Git porcelain bytes in private NUL-delimited snapshot files and expose only bounded purpose-level results and remediations.
-- [Phase 166]: Generated contracts remain a registry within intentionally tracked artifact intent. — This preserves the closed three-class policy while making regeneration ownership executable.
-- [Phase 166]: Generated drift restores only registered output snapshots and uses read-only Git inspection. — Focused verification must preserve user bytes and index state on success and failure.
-- [Phase 166]: Suspicious artifact paths are escaped data and never remediation command text. — Hostile filenames must not shape terminal output or become executable correction input.
-- [Phase 166]: Freeze each ownership audit at its declared immutable tree while preserving the exact v22 base and NUL-safe candidate rule.
-- [Phase 166]: Use CROSSWAKE_REPOSITORY_VERIFY rather than generic CI truthiness for zero retries, fresh-server ownership, and explicit output roots.
-- [Phase 166]: Extend the existing CI authority validator with stage parity instead of introducing a second CI engine.
-- [Phase 166]: Use invocation-owned browser output paths locally while preserving checked-out example-host artifact paths in GitHub Actions.
-- [Phase 166]: Keep the recurring quality gate contract-only; Plan 08 retains isolated exact-commit canonical proof.
-- [Phase 166]: Treat every changed or removed-with-proof ledger disposition as an exact remediation-queue obligation; an empty set emits an explicit passing count of zero. — Prevents evidence-proven findings from disappearing by omission while keeping zero-finding runs explicit.
-- [Phase 166]: Preserve the sole browser correction and its Plan 04 RED/GREEN history rather than manufacture a no-op Plan 06 source diff. — The bounded queue authorizes verification of the existing correction, not unrelated or cosmetic source churn.
-- [Phase 166]: Resolve evidence input only from an explicit tracked commit and never copy source worktree or index state.
-- [Phase 166]: Materialize the declared Darwin/arm64 toolchain beneath one invocation-owned root with literal upstream authorities and SHA-256 pins.
-- [Phase 166]: Commit the authorized install/doctor correction set separately before binding exact-commit verification to the new supported HEAD.
-- [Phase 166]: Supported-code identity is d8e7cf3f7f62a88e92bd5f25e7bfa7c77869442b; later evidence-only and planning records do not redefine it.
-- [Phase 166]: Keep isolated proof dependencies, private logs, temporary roots, and cleanup invocation-owned.
-- [Phase 167]: Keep the three current claim layers in Crosswake.CapabilityMap and require both generated projections to consume the validated set.
-- [Phase 167]: Bind retained reference evidence to 2026-08-27 and iOS 26.6 without transferring it to first adopter activation.
-- [Phase 167]: Keep public recovery copy generic while durable state retains the exact codename, TODO-002, and Phase 163.1 resume point.
-- [Phase 167]: Keep docs synchronization fixed to exactly default write mode and one --check form; invalid or combined argv fails closed without echoing input.
-- [Phase 167]: Validate all generated-artifact records through the existing registry while preserving the legacy contract-generator record byte-for-byte.
-- [Phase 167]: Require generated canonical sources to be tracked at execution and reject duplicate or nested output authority across records.
-- [Phase 167]: Run no-write documentation synchronization and focused semantic owner tests inside the existing documentation-contracts leaf.
-- [Phase 167]: Route generated guide projections through public_docs while executable owners, release inputs, workflow changes, and unknown paths retain full proof.
-- [Phase 167]: Keep authored guidance answer-first and link volatile detail to Crosswake.SupportMatrix, Crosswake.CapabilityMap, and their generated projections.
-- [Phase 167]: Treat Phase 167 release review as reversible preparation only; Phase 168 retains exact 0.2.1 proof and immutable publication approval.
-- [Phase 167]: Pin all setup-java uses to the execution-time official immutable v6 commit. — One full SHA and exact count assertion remove mutable-tag and partial-update ambiguity.
-- [Phase 167]: Retain PR #121 as the candidate because it accepted the complete five-path transaction. — The authorized supersession fallback was unnecessary after the exact guarded branch update succeeded.
-- [Phase 167]: Gate PR mutations on exact head, base, named check, scope, and fresh-default authority. — This closes the mutable GitHub TOCTOU boundary before push and merge.
-- [Phase 167]: Run repeated root Mix test partitions in isolated cmd mix processes so single-run task state cannot skip the broad lane.
-- [Phase 167]: Keep the destroyed-log e5 root observation nondeterministic and unreproduced; do not infer a leaf, category, or retry policy.
-- [Phase 167]: Require a manifest-only candidate, two complete local proofs, and the first 47-of-47 exact-head hosted run before merge and supersession.
-- [Phase 167]: Preserve PR 105's exact six waiter-name edits while replacing stale three-commit history with one tested intent commit.
-- [Phase 167]: Keep exact-head CI authority through bounded failed-job retries; merge only after the unchanged head reaches 47-of-47 success.
-- [Phase 167]: Commit the PR 105 receipt before integrating fresh protected default so parent order and Plan 08 tree authority remain explicit.
-- [Phase 167]: Keep the ordinary PR set exactly 57, 105, 110, 115, 121, 146, and 147; record 145, 148, 110, and 149 separately as recovery provenance.
-- [Phase 167]: Treat the landed disposition receipt as a dated pre-closeout baseline and use a separate closed observation for allowed post-closeout release-only refreshes.
-- [Phase 167]: Keep release-only PRs 57, 115, 146, and 147 open, unmerged, singly marked, and owned by the Phase 168 exact-candidate gate.
-- [Phase 167]: Bind closeout authority to PR 150 head 7211b78f8004511bd4380cac92cac1abcd8854ed, run 34666842094 at 47/47, and tree-identical merge 30ca31ed3f4be23ae6e4d115d8d0f6273aae220a.
-- [Phase 167]: Hand Phase 168 only the five final path names and owner phase_168_first_reversible_landing; do not claim their blobs are on protected default.
-- [Phase 167]: Admit adoption authority only by exact membership in the three canonical seven-field tuples.
-- [Phase 167]: Return one stable complete_authority_tuple rule without echoing sensitive statement or boundary values.
-- [Phase 168]: Bind the first Phase 168 landing to exactly five retained path/mode/blob records, exact-head Crosswake CI, and a tree-identical two-parent merge.
-- [Phase 168]: Use a tracked historical lock fixture for positive reconciliation while current, missing, changed, and additional runtime state remains non-passing.
-- [Phase 168]: Treat release-only PR head/base/check refreshes as mutable observations while preserving strict open, unmerged, cursor-complete marker authority.
-- [Phase 168]: Represent receipt identity as separately validated bound and observed tuples so drift remains reproducible and a STALE receipt can validate itself.
-- [Phase 168]: Keep the Mix task evaluation-only; fixed flags delegate to the pure evaluator while later plans supply normalized external observations through the narrow adapter seam.
-- [Phase 168]: Write one canonical JSON receipt and derive every human projection from the same validated receipt map without color or raw adapter diagnostics.
-- [Phase 168]: Use official Hex unpack plus normalized metadata and payload digests as package evidence; repository trees and ephemeral roots are not durable authority.
-- [Phase 168]: Seed companion audits from the candidate core tarball inside exact-ref snapshots so public requirements remain testable without registry fallback.
-- [Phase 168]: Link only Hex, iOS core, and Android core at 0.2.1; companions and proposals remain independent approval outsiders.
-- [Phase 168]: Generate map-shaped companion settings and one explicit managed route so the real Doctor path evaluates the intended host contract.
-- [Phase 168]: Treat every install, compile, smoke, registration, and Doctor command as a fail-closed proof child before recording profile success.
-- [Phase 168]: Keep exact-public verification fixture-backed and dormant until 0.2.1 publication and an approved receipt make its live precondition true.
-- [Phase 168]: Phase 168 Plan 05 models baseline inspection, candidate rehearsal, ordinary publication, and recovery as four closed mirror modes.
-- [Phase 168]: Ordinary iOS mirror publication is atomic and fast-forward/equal only; exact-ref force-with-lease exists only in separately approved recovery.
-- [Phase 168]: Phase 168-06: Existing trusted Hex and iOS workflows own no-mutation rehearsal; no new workflow family or second approval was added.
-- [Phase 168]: Phase 168-06: Release Please and all one-way children require the approved head as merge parent with an identical approved tree.
-- [Phase 168]: Phase 168-06: Linked publications are independent siblings, while proofs retain narrow dependencies and rollup preserves exact PARTIAL truth.
-- [Phase 168]: Keep stable candidate fixtures always-on and route release-sensitive, Release Please, or ambiguous changes to exact-head full proof.
-- [Phase 168]: Keep real mirror authorization in the trusted workflow; ordinary PR CI remains credential-free.
-- [Phase 168]: Use read-only linked-coordinate status for BLOCKED/PARTIAL/COMPLETE and reserve READY FOR APPROVAL/STALE for the exact receipt authority.
-- [Phase 169]: Corrected scanner_ids_result/2's :failed clause to scope failing to required_ids (D-07) and compose failing+missing segments (D-09), fixing the live PR #164 defect where five identical bare-ID errors masked the actual root cause. — Verified ground truth in 169-CONTEXT.md established the scanner evaluates eagerly and every check emits, making scoped greens real greens.
-- [Phase 169]: [Phase 169-03]: Widened list_merge_blocking_checks.py's duplicate scan from a merge-blocking substring filter to a global check over every job producer, added a version-literal reject, and retired all six version-welded release-please.yml/phase70-proof.yml display names/artifact names in one atomic commit (D-21).
-- [Phase 169]: [Phase 169-02] Both crash evidence statuses (:unavailable and :unverifiable) route the release.workflow_integrity owner check and the five scoped checks to the same check-level :unverifiable, never :error — an :error owner check would outrank :unverifiable in aggregate_status/1's precedence and silently force exit 1 on a crash instead of exit 3.
-- [Phase 169]: [Phase 169-04]: Added a 6th exit-contract-guard entry point for Crosswake.ReleaseStatus.exit_code/1's own source clauses (extracting literal do: <n> from each def exit_code(...) head, skipping the delegating clause), alongside the 5 file-based checks the plan named, and read exit_code/1's @doc content via Code.fetch_docs/1 as a separate assertion.
-- [Phase 170]: [Phase 170-01]: Built script/inventory_collection_assertions.exs (content-hash-keyed, root-identifier backward-scan classifier) and committed the full 220-row ledger; guard/pin detection is unbounded within the enclosing test body rather than a fixed 6-line window, with one explicit manual override for a cross-field pin the heuristic cannot see.
-- [Phase 170]: Task 3's structural predicate replaces the naive display_line-1 offset check with a bounded backward-scan + join_forward technique mirrored from the classifier, to handle mix format's multi-line guard wrapping and blank-line-before-fn insertion.
-- [Phase 170]: VAC-03 convention: a check that doesn't map to any of the six vacuity shapes records the explicit 'matches none of A-F, because ___' escape form rather than a forced nearest-fit letter. — Applied retroactively to release.scanner.roster_exact and release.workflow_integrity in the Phase 169 addendum; both are structurally a roster-diff check and a message-passthrough check, neither a possibly-empty-collection predicate.
-- [Phase 170]: 170-03: coordinate_test.exs and crosswake_release_status_test.exs's flagged sites recorded as structural-test-only (compile-time-fixed companion list; check-only-emitted-when-nonempty computations), not silently dropped
-- [Phase 170]: 170-03: release_boundaries_test.exs's empty-companions regression reuses ReleaseStatus.build/1's existing :cwd override via a symlink-and-mutate-manifest helper, avoiding any lib/ change
-- [Phase 170]: Phase 170's meta-checks (ledger completeness, guard-expression-match) recorded via the vacuity_taxonomy convention's explicit escape form, mirroring Phase 169's roster_exact/workflow_integrity precedent; the convention check itself and the empty-input regression set classify as Shape A.
-- [Phase 172]: 172-01: candidate_ref moved to per-artifact schema; observed ref (MATRIX_PUBLIC_REF) resolved independently from git rev-parse HEAD, never the approved manifest, closing the T-172-01 vacuity path for 172-02's drift comparison.
-- [Phase 172]: 172-02: branch order in public_artifact_reason/3 (compatible -> digest_mismatch -> unproven -> nil) is load-bearing, chosen so each prescribed mutation falsifies exactly its paired test
-- [Phase 172]: 172-02: ref!/1 resolved inside each drift branch's own cond guard, not via a shared pre-cond binding, to keep the registry-missing branch reachable for a nil observed ref
-- [Phase 172]: 172-02: public_artifact_claim/1 written as an explicit case over every known reason string with a catch-all, so a future reason added without a matching clause resolves to unproven rather than crashing
-- [Phase 172]: 172-03: proof module derives roster from Artifact.packages/0 and group-width from a named @artifact_field_count attribute, never a bare literal
-- [Phase 172]: 172-03: byte-exact regression anchor mutates one real file byte, recomputes the digest through Artifact.inspect_family!/1, and carries it into Cleanroom.evaluate_public!/1 for a verdict, pinning the proof floor below the digest-string layer
-- [Phase 172]: 172-03: 172-NON-VACUITY.md records only checks with an actually-executed mutation as full rows; every other landed check is named with a decidable reason, never silently omitted
-- [Phase ?]: 174-01: controller split into its own file — mix crosswake.install's infer_router_module!/1 requires exactly one top-level defmodule per --router file
-- [Phase ?]: 174-01: reordered the Done section's closing log lines so state=passed is genuinely the committed log's final line
-- [Phase ?]: 174-01: legacy path installer lands as new Step 6.5 (not a renumbered Step 7); Step 7's doctor invocation stays byte-unchanged
-- [Phase ?]: [Phase 174]: 174-02: manifest_compile_check/1 and its call site pinned to a committed, git-history baseline (8bc77c35), extraction-non-empty asserted before comparison to close the rename/delete vacuity path
-- [Phase ?]: CW-REQ-A deferred (defer-with-reason) — breaking contract bump moved past Phase 175 publish; CW-REQ-B closed via exit_status_for/1 classifier and a join_reports/3 completeness-check bug fix
-- [Phase ?]: [Phase 174-04]: ROOM-03 recorded PENDING POST-MERGE (real gh dispatch refused — workflow_dispatch requires the file on the default branch); no run id was fabricated.
-- [Phase ?]: Threadline's clean-room failure diagnosed as the same shared manifest_contract defect rindle hit, via unconditional Step 4/Step 7 code paths, confirmed fixed by plan 174-01's harness fix and a real run this phase.
-- [Phase ?]: Sigra's clean-room failure diagnosed as a package-unaware smoke-test template branch (refute instead of assert on enabled?/1's default), fixed in commit d16e475a; confirmed still fixed by a real run this phase.
-- [Phase ?]: 174-06: ROOM-05 ticked complete; ROOM-03 recorded genuinely NOT SATISFIED with the exact post-merge dispatch command that closes it
-- [Phase ?]: 175-01: check-actions default scope now derived from .github/workflows/*.yml + .github/actions/**/action.yml at run time, gated by a reusable assertFullScope guard proven red/green via test-check-actions-scope
-- [Phase ?]: 175-02: erlef/setup-beam@v1's fresh resolution matched the existing 54075bcc... in-repo pin, not fc68ffb9...; used consistently across all five newly-pinned files without reconciling the pre-existing dual-SHA state elsewhere (out of scope).
-
-### v23.0 Roadmap Decisions
-
-- [Roadmap]: Phase numbering continues from v22.0 (which ended at 168) — v23.0 starts at Phase 169,
-  not reset to 1.
-
-- [Roadmap]: Phase 171 (Version/Authority Split) merges SUMMARY.md's Phase A `no_bare_version_literal`
-  check (MSG-04/MSG-05) with Phase B's D1 fix (WELD-01..08) into one phase, landed as one PR/commit.
-  Landing the check and the fix separately would either turn `main` permanently red (check merges
-  first) or leave the check meaninglessly advisory for a window (fix merges first). The purely
-  diagnostic D6 work (MSG-01/02/03/06, plus FID-02) stays in its own earlier Phase 169 since it has
-  no such atomicity constraint.
-
-- [Roadmap][Revision]: VAC-01/02/03 (the SEED-018 vacuous-assertion audit — classify 173 sites, then
-  rewrite every confirmed-vacuous one) was originally bundled into Phase 169, but was pulled out into
-  its own **Phase 170 (Vacuous Assertion Remediation)** on user-directed revision. Rationale: Phase
-  169's whole purpose is being cheap, fast, and first so every later phase reads its own CI failures
-  through the new diagnostic seam; bundling a 173-site remediation project into it made 169 the long
-  pole and gated the version/authority work behind an unrelated audit. Phase 170 is independent of
-  every other phase and startable in parallel from the beginning (like Phase 174's clean-room work),
-  but must complete before Phase 175 (Rehearsal and Publish) opens. Phase 170 explicitly keeps
-  VACG-01 (the merge-blocking `absence.collection_assertion_non_empty` guard) OUT of this milestone —
-  it stays a Future Requirement — because landing the guard before the audit produces a wall of red
-  that gets waived, teaching the team red is negotiable. All phases after 169-170 renumbered by +1
-  (170→171, 171→172, 172→173, 173→174, 174→175) so reading order matches execution order.
-
-- [Roadmap]: FID-01 (SEED-014 adopter gaps CW-REQ-A/B) was folded into Phase 174 (Clean-Room Host
-  Realism), since both are about adopter-facing proof fidelity.
-
-- [Roadmap]: DOC-05 (manifest word-collision) was folded into Phase 171, since the collision is
-  release-manifest-adjacent to the version/authority work already touching that vocabulary. DOC-04
-  (delete the "only publishes 0.2.1" doc section) and DOC-06 (splitsh-lite references) were folded
-  into Phase 175, since DOC-04 only becomes true once 0.2.2 actually publishes and DOC-06 documents
-  the mirror mechanism the retire/backfill runbook (REL-10) also covers.
-
-- [Roadmap]: Phase 175 (Rehearsal and Publish) is strictly last and its own phase — never combined
-  with Phases 169-174 in the same plan — because it contains the milestone's only irreversible
-  operations (Hex publish, iOS mirror tag push, Maven upload; project decision D-19). REL-10's
-  retire/backfill runbook must be committed before any publish step in that phase executes.
-
-- [Roadmap]: Phases 172 (per-package proof scope) and 173 (recovery-path convergence) both depend
-  only on Phase 171 and touch disjoint file sets — they may be planned/executed in parallel. Phase
-  174 (clean-room realism) and Phase 170 (vacuous assertion remediation) are each independent of
-  171-173 and may start as early as Phase 169 — Phase 174's threadline/sigra diagnosis is
-  calendar-bound to a live Hex release, and Phase 170's audit has no dependency on the identity-model
-  work at all.
-
-### Pending Todos
-
-- Phase 168 must bind and land the exact five Phase 167 closeout artifact blobs before candidate approval. (v22.0, closed)
-- Phase 168 owns all further evaluation of release-only PRs 57, 115, 146, and 147. (v22.0, closed)
-- Phase 169 is next: `/gsd-plan-phase 169` (Diagnostic Legibility).
-- PR #164 (0.2.2), PR #147, and PR #115 all remain held/blocked until Phase 175 repairs and executes
-  the graph — do not merge any of them earlier.
-
-### Blockers/Concerns
-
-- The First B2C Adopter work remains parked separately at Phase 163.1 pending external route/device
-  authority; do not copy or infer adopter facts into v22 artifacts.
-
-- Phase 167 code review retained five non-blocking advisories; Phase 168 should resolve the
-  release-relevant full-comment marker count before relying on it for exact candidate authority.
-
-- REL-10 remains historically breached for Gate 1. No later artifact, code change, or remote run may describe it as compliant.
-
-## Deferred Items
-
-| Category | Item | Status | Deferred At | Milestone |
-|----------|------|--------|-------------|-----------|
-| Adopter activation | Plans 163.1-08 through 163.1-10 | Parked in separate workstream | v22 start | v21.0 |
-| Future seed | Sigra hosted-session interoperability release (SEED-009) | Future | v22 scope | Future |
-| Future seed | Reference-host presentation polish (SEED-010) | Dormant | v22 scope | Future |
-
-## Session Continuity
-
-Last session: 2026-09-20T13:30:00Z
-Stopped at: 175-07 manually reconciled. The historical Gate 1 publish remains noncompliant under REL-10, but PR #164 is now current, mergeable, and clean with fresh passing Crosswake CI `35512555806`; the repaired exact-OID guard passed its live remote base/head.
-Recovery instructions: present Gate 2's distinct iOS rehearsal resume signal and evidence. Do not merge or dispatch the core release until the operator authorizes that specific one-way gate.
-
-## Operator Next Steps
-
-- Review the v23.0 roadmap (`ROADMAP.md`) and requirements traceability (`REQUIREMENTS.md`).
-- Once approved, run `/gsd-plan-phase 169` to begin Diagnostic Legibility.
+**Last session:** 2026-10-25T20:39:10.960Z
+**Stopped at:** Completed 195-01-PLAN.md
+**Resume file:** None

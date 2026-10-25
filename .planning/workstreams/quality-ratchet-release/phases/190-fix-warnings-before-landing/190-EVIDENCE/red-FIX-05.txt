@@ -1,0 +1,5 @@
+red_exit 2
+failed test a host folder nested in a repository with no .git of its own yields git-unknown (Crosswake.ProofLane.ProvenanceTest)
+red2_exit 2
+failed test an inherited GIT_TRACE file is never written (Crosswake.ProofLane.ProvenanceTest)
+failed test a hostile global git config cannot make a dirty tree read as clean (Crosswake.ProofLane.ProvenanceTest)

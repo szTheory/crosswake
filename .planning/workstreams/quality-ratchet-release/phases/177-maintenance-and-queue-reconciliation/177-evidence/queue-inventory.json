@@ -1,0 +1,488 @@
+{
+  "schemaVersion": 1,
+  "status": "complete",
+  "repository": "szTheory/crosswake",
+  "source": "gh api graphql read-only subprocess",
+  "observationStartedAt": "2026-10-12T17:10:14.610Z",
+  "observationCompletedAt": "2026-10-12T17:10:17.134Z",
+  "counts": {
+    "issues": 20,
+    "pullRequests": 3
+  },
+  "objects": [
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABF0vX6Q",
+      "number": 24,
+      "updatedAt": "2026-06-17T18:00:25Z",
+      "url": "https://github.com/szTheory/crosswake/issues/24",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #24 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #24, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #24 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/24",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABMAF9fg",
+      "number": 108,
+      "updatedAt": "2026-08-09T01:35:50Z",
+      "url": "https://github.com/szTheory/crosswake/issues/108",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #108 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #108, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #108 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/108",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABMC_r4g",
+      "number": 116,
+      "updatedAt": "2026-08-09T15:54:48Z",
+      "url": "https://github.com/szTheory/crosswake/issues/116",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #116 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #116, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #116 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/116",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABMDUd7A",
+      "number": 119,
+      "updatedAt": "2026-08-09T17:15:55Z",
+      "url": "https://github.com/szTheory/crosswake/issues/119",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #119 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #119, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #119 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/119",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABOsJDbg",
+      "number": 126,
+      "updatedAt": "2026-08-28T17:42:12Z",
+      "url": "https://github.com/szTheory/crosswake/issues/126",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #126 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #126, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #126 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/126",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABRGQsiA",
+      "number": 156,
+      "updatedAt": "2026-09-13T19:50:21Z",
+      "url": "https://github.com/szTheory/crosswake/issues/156",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #156 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #156, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #156 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/156",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABRGan4A",
+      "number": 159,
+      "updatedAt": "2026-09-13T20:20:19Z",
+      "url": "https://github.com/szTheory/crosswake/issues/159",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #159 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #159, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #159 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/159",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABRb0fzw",
+      "number": 162,
+      "updatedAt": "2026-09-15T17:00:19Z",
+      "url": "https://github.com/szTheory/crosswake/issues/162",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #162 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #162, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #162 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/162",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABRcw-Kg",
+      "number": 166,
+      "updatedAt": "2026-09-15T18:35:57Z",
+      "url": "https://github.com/szTheory/crosswake/issues/166",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #166 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #166, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #166 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/166",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABSSWpWQ",
+      "number": 194,
+      "updatedAt": "2026-09-21T02:48:49Z",
+      "url": "https://github.com/szTheory/crosswake/issues/194",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #194 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #194, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #194 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/194",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABSz8u1g",
+      "number": 199,
+      "updatedAt": "2026-09-23T17:59:23Z",
+      "url": "https://github.com/szTheory/crosswake/issues/199",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #199 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #199, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #199 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/199",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABTCJr8g",
+      "number": 205,
+      "updatedAt": "2026-09-24T17:46:26Z",
+      "url": "https://github.com/szTheory/crosswake/issues/205",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #205 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #205, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #205 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/205",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABTGnmGw",
+      "number": 209,
+      "updatedAt": "2026-09-25T01:54:52Z",
+      "url": "https://github.com/szTheory/crosswake/issues/209",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #209 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #209, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #209 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/209",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABTfBvPw",
+      "number": 213,
+      "updatedAt": "2026-09-27T12:19:12Z",
+      "url": "https://github.com/szTheory/crosswake/issues/213",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #213 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #213, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #213 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/213",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABTiy0-w",
+      "number": 217,
+      "updatedAt": "2026-09-27T21:43:19Z",
+      "url": "https://github.com/szTheory/crosswake/issues/217",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #217 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #217, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #217 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/217",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABWYwT-A",
+      "number": 220,
+      "updatedAt": "2026-10-11T02:35:32Z",
+      "url": "https://github.com/szTheory/crosswake/issues/220",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #220 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #220, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #220 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/220",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABWaK3cQ",
+      "number": 223,
+      "updatedAt": "2026-10-11T06:59:10Z",
+      "url": "https://github.com/szTheory/crosswake/issues/223",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #223 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #223, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #223 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/223",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABWbXgbg",
+      "number": 226,
+      "updatedAt": "2026-10-11T10:05:27Z",
+      "url": "https://github.com/szTheory/crosswake/issues/226",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #226 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #226, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #226 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/226",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABWde-hw",
+      "number": 231,
+      "updatedAt": "2026-10-11T15:08:14Z",
+      "url": "https://github.com/szTheory/crosswake/issues/231",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #231 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #231, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #231 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/231",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "issue",
+      "id": "I_kwDOSfdRcc8AAAABWeo_JA",
+      "number": 234,
+      "updatedAt": "2026-10-11T17:36:33Z",
+      "url": "https://github.com/szTheory/crosswake/issues/234",
+      "relatedPullRequestNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "The metadata-only read confirms issue #234 remains open, but does not establish its scope or whether local evidence resolves it. Keep it visible pending a scoped fact check.",
+        "accountableRole": "project maintainer; confirm the local ownership edge before routing",
+        "nextAction": "For issue #234, match the local ownership edge, verify the exact claimed behavior against local evidence, and record one precise unresolved fact and its next local action.",
+        "trigger": "Recheck when issue #234 updatedAt changes or its relevant local evidence changes; change disposition only after the exact fact is verified and a fresh roster matches.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/issues/234",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "pull_request",
+      "id": "PR_kwDOSfdRcc8AAAABFFHAiQ",
+      "number": 210,
+      "updatedAt": "2026-10-11T18:44:40Z",
+      "url": "https://github.com/szTheory/crosswake/pull/210",
+      "headRefName": "dependabot/github_actions/actions/checkout-7.0.1",
+      "headOid": "e094d4f9c23dca5b2368bf7b8a31d50b6ea70ab9",
+      "baseRefName": "main",
+      "mergeable": "MERGEABLE",
+      "checkState": "FAILURE",
+      "failedChecks": [
+        "Crosswake CI",
+        "hex-page-proof",
+        "phase130-core-hermetic-proof",
+        "phase132-core-hermetic-proof",
+        "phase34-commerce-proof",
+        "phase41-gating-proof",
+        "phase43-rulestead-proof",
+        "phase45-rindle-proof",
+        "proof-requires-example-host"
+      ],
+      "relatedIssueNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "PR #210 is a dependency proposal at head e094d4f9c23dca5b2368bf7b8a31d50b6ea70ab9 against main; mergeability does not resolve its current FAILURE checks.",
+        "accountableRole": "CI/maintenance owner; confirm the local ownership edge before routing",
+        "nextAction": "Diagnose Crosswake CI for PR #210 at current head e094d4f9c23dca5b2368bf7b8a31d50b6ea70ab9 against base main; record the sanitized cause and verified local replacement before reconsidering the proposal.",
+        "trigger": "Recheck when PR #210 head, base, or check state changes; reconsider only after the named check has a verified result and the final roster is refreshed.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/pull/210",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "pull_request",
+      "id": "PR_kwDOSfdRcc8AAAABFFHFNw",
+      "number": 211,
+      "updatedAt": "2026-10-11T18:44:35Z",
+      "url": "https://github.com/szTheory/crosswake/pull/211",
+      "headRefName": "dependabot/github_actions/erlef/setup-beam-1.24.1",
+      "headOid": "9a1126e560884021fba18089136235150286b985",
+      "baseRefName": "main",
+      "mergeable": "MERGEABLE",
+      "checkState": "FAILURE",
+      "failedChecks": [
+        "Crosswake CI",
+        "hex-page-proof",
+        "phase130-core-hermetic-proof",
+        "phase132-core-hermetic-proof",
+        "phase34-commerce-proof",
+        "phase41-gating-proof",
+        "phase43-rulestead-proof",
+        "phase45-rindle-proof",
+        "proof-requires-example-host"
+      ],
+      "relatedIssueNumbers": [],
+      "disposition": {
+        "category": "retain_pending_diagnosis",
+        "rationale": "PR #211 is a dependency proposal at head 9a1126e560884021fba18089136235150286b985 against main; mergeability does not resolve its current FAILURE checks.",
+        "accountableRole": "CI/maintenance owner; confirm the local ownership edge before routing",
+        "nextAction": "Diagnose Crosswake CI for PR #211 at current head 9a1126e560884021fba18089136235150286b985 against base main; record the sanitized cause and verified local replacement before reconsidering the proposal.",
+        "trigger": "Recheck when PR #211 head, base, or check state changes; reconsider only after the named check has a verified result and the final roster is refreshed.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/pull/211",
+        "releaseProposal": false
+      }
+    },
+    {
+      "kind": "pull_request",
+      "id": "PR_kwDOSfdRcc8AAAABH2EzWw",
+      "number": 236,
+      "updatedAt": "2026-10-11T18:45:39Z",
+      "url": "https://github.com/szTheory/crosswake/pull/236",
+      "headRefName": "release-please--branches--main",
+      "headOid": "03ff058adbc3f3e083a348112f016811159d7298",
+      "baseRefName": "main",
+      "mergeable": "MERGEABLE",
+      "checkState": "FAILURE",
+      "failedChecks": [
+        "android-generated-shell-unit",
+        "android-package-unit",
+        "brand-structural",
+        "Crosswake CI",
+        "e2e-proof",
+        "guard-01-e2e-honesty",
+        "guard-02-generate-and-diff",
+        "guard-02-prod-route-absence",
+        "ios-mirror-parity-proof",
+        "phase10-proof",
+        "phase130-companion-engine-absent-proof",
+        "phase130-core-hermetic-proof",
+        "phase132-companion-engine-absent-proof",
+        "phase132-core-hermetic-proof",
+        "phase18-elixir-android-proof",
+        "phase23-commerce-proof",
+        "phase41-gating-proof",
+        "phase43-rulestead-proof",
+        "phase45-rindle-proof",
+        "phase52-operator-proof",
+        "phase58-auth-closeout-proof",
+        "phase67-android-jvm-proof",
+        "phase69-closeout-proof",
+        "phase70-subscription-saas-proof",
+        "phase71-notification-workflow-proof",
+        "phase73-auth-sensitive-admin-workflow-proof",
+        "phase74-offline-draft-recovery-proof",
+        "phase75-closeout-gate",
+        "phase79-android-proof",
+        "phase96-threadline-docs-contract-proof",
+        "proof-aggregator-negative-control",
+        "proof-requires-example-host",
+        "release-as-staleness-proof",
+        "release-candidate-full-proof",
+        "route-tour-proof"
+      ],
+      "relatedIssueNumbers": [],
+      "disposition": {
+        "category": "held_for_release",
+        "rationale": "PR #236 is a release proposal. Its mutable head 03ff058adbc3f3e083a348112f016811159d7298 against main currently reports failing checks; neither that state nor mergeability selects or authorizes a release.",
+        "accountableRole": "release maintainer",
+        "nextAction": "Keep PR #236 held. If a release is separately selected, inspect its current failing-check summary at head 03ff058adbc3f3e083a348112f016811159d7298 against main, then require fresh exact-candidate proof before any publication proposal.",
+        "trigger": "Reopen only after separate release selection and fresh exact-candidate evidence, or if PR #236 head/base/check metadata changes.",
+        "evidenceRef": "https://github.com/szTheory/crosswake/pull/236",
+        "releaseProposal": true
+      }
+    }
+  ],
+  "refresh": {
+    "status": "matched",
+    "refreshedAt": "2026-10-12T17:10:17.134Z",
+    "counts": {
+      "issues": 20,
+      "pullRequests": 3
+    },
+    "changedObjectCount": 0
+  }
+}

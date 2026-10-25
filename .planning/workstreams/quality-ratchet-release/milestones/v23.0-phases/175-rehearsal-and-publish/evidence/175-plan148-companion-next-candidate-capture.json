@@ -1,0 +1,20 @@
+{
+  "pr": 235,
+  "package": "crosswake_chimeway",
+  "version": "0.1.2",
+  "core_version": "0.2.11",
+  "head_oid": "e43aa13c2ecdba55dec923848898ca230662f47b",
+  "base_oid": "fd1fcf59c1cd473f7ef9a593be46566018e8aaff",
+  "tree_oid": "81ff2f15a8fea0bd4d54478444a1750038dda49f",
+  "ci_run_id": 38165160468,
+  "core_complete_run_id": 38155320492,
+  "target_before_rehearsal": {
+    "http_status": 404,
+    "body_sha256": "c63782a5823039903b5eae18d902681d8eb6effae655d03b90c85858f861092f"
+  },
+  "runbook_ancestry": {
+    "base": "PASS",
+    "head": "PASS"
+  },
+  "observed_at_utc": "2026-10-11T18:46:37.953065+00:00"
+}

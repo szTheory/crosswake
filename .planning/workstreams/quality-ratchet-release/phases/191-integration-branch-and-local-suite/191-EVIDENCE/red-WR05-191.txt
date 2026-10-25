@@ -1,0 +1,8 @@
+red_exit 2
+failed a route_activation.json with no usable origin (numeric origin) blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG
+failed a route_activation.json with no usable origin (empty object) blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG
+failed a route_activation.json with no usable origin (null) blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG
+failed a route_activation.json with no usable origin (list origin) blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG
+failed a route_activation.json with no usable origin (empty list) blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG
+failed a route_activation.json with no usable origin (origin that is not a url) blocks preflight-only, readiness and run with PI-PREFLIGHT-CONFIG
+tests 37 failures 6

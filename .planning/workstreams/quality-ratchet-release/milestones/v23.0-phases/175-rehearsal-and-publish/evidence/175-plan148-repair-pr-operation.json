@@ -1,0 +1,60 @@
+{
+  "operation": "create_policy_read_repair_pr",
+  "authorization": "standing Phase175 instruction and user request to unblock and squash merge if CI green",
+  "started_at_utc": "2026-10-11T02:56:04.047972+00:00",
+  "events": [
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "6cca16326fe16381f0f2b07c96c00142a3e814d2"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "fa48771fd94bf67bd4406466476c8aec5e6f62f1"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "363d02a314fbe40ca24de64255f44bbdef0c2b29"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "sha": "8aaeebe0ff123f0e3d85d2a5e3a5ebaf88721fb1"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/trees",
+      "attempted": true,
+      "completed": true,
+      "sha": "ace4d3ad2234463b204e73b1f3abf127d2e163eb"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/commits",
+      "attempted": true,
+      "completed": true,
+      "sha": "14311e7f6d70a1adbb3f3645aae2eeacf46519c5"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/refs",
+      "attempted": true,
+      "completed": true
+    },
+    {
+      "path": "repos/szTheory/crosswake/pulls",
+      "attempted": true,
+      "completed": true,
+      "number": 221
+    }
+  ],
+  "head_oid": "14311e7f6d70a1adbb3f3645aae2eeacf46519c5",
+  "tree_oid": "ace4d3ad2234463b204e73b1f3abf127d2e163eb",
+  "base_oid": "2c87f898f3a765eac2300e4dbb0be167c2a1490f",
+  "pr": 221,
+  "url": "https://github.com/szTheory/crosswake/pull/221",
+  "status": "pr_created_ci_pending"
+}

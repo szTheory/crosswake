@@ -1,0 +1,15 @@
+total 738
+env_excluded 0
+env_tracked_dirty 0
+class on main 4
+class unclassified 89
+class to land 645
+modified 58
+nonplanning_absent_both 45
+nonplanning_differ_both 29
+nonplanning_identical_both 4
+nonplanning_modified 45
+nonplanning_untracked 33
+planning_modified 13
+planning_untracked 647
+untracked 680

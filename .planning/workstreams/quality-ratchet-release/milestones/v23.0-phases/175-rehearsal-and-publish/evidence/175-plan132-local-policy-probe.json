@@ -1,0 +1,11 @@
+{
+  "cases": 2,
+  "exit_code": 1,
+  "failed_cases": 2,
+  "failure_class": "INAPPLICABLE_TAG_RULE_MARKED_UNKNOWN",
+  "injected_transport": true,
+  "live_failure_cause_established": false,
+  "network_calls": 0,
+  "schema": "crosswake-plan132-local-policy-probe/v1",
+  "source_collector_sha256": "03440406756419807a98c3adf6e44a370615c5e549693d9058546eefd73a1d2c"
+}

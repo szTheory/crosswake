@@ -1,0 +1,11 @@
+prepush: state_retrim no
+prepush: report BEARINGS: ATTENTION (4)
+prepush: report cap: .planning/ROADMAP-ROLLING.md 67/120 ok
+prepush: report cap: .planning/BEARINGS.md 35/60 ok
+prepush: report cap: .planning/workstreams/quality-ratchet-release/STATE.md 39/40 ok
+prepush: report cap: AGENTS.md 102/102 ok
+prepush: report personas: 30/30 requirements tagged
+prepush: report rc 1
+prepush: unverified_lines 0
+prepush: lane rc 0
+prepush: format rc 0

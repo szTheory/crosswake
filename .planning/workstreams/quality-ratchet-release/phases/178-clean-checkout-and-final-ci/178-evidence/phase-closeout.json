@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "phase": 178,
+  "status": "complete",
+  "checkedAt": "2026-10-13T02:33:00.004868+00:00",
+  "plansExecuted": "5/5",
+  "verification": "18/18",
+  "decisionsHonored": "25/25",
+  "requirementsCompleted": [
+    "MAINT-07",
+    "MAINT-08"
+  ],
+  "nextCommand": "$gsd-audit-milestone --ws quality-ratchet-release",
+  "sourceCommit": "f2d8875ee52d9679157c73b4a701b510ee612cb8",
+  "headCommit": "3e8a4b2601b542323edfd6053f25e56c67873b47",
+  "sourceTree": "27f4073039b4dd976492127549603a76ce22499b",
+  "localStages": 9,
+  "requiredCiChecks": 48,
+  "totalCiChecks": 49,
+  "runId": 38322827152,
+  "attempt": 1,
+  "pr": 238,
+  "prState": "open_unmerged",
+  "maintenanceRequirementsComplete": "8/8",
+  "phaseCompleteCalledOnce": true,
+  "planningCheckboxRepair": "bounded two-line correction: installed writer expects colon outside bold, actual project uses colon inside bold",
+  "summaryWarningsResolved": {
+    "actualFiles": 6,
+    "present": 6,
+    "cause": "inline shell commands and phase-relative paths interpreted as root file paths"
+  },
+  "globalLearnings": "disabled default; no global writes",
+  "graduation": "skipped: only2 completed prior phases and no learning files in active milestone",
+  "resolvedPhaseTodos": 0,
+  "otherWorkstream": "first-b2c-adopter-readiness remains parked_external_dependency; scoped audit neither resumes it nor archives milestones",
+  "protectedHistoricalFilesUnchanged": 1677,
+  "recoveryGitMutations": 0,
+  "mergeOrReleaseWrites": 0,
+  "limitations": [
+    "warm-cache same independent clone; no cold-cache claim",
+    "two earlier assertion failures remain unknown because assertion text was not retained",
+    "actor attribution not retained for maintenance delivery",
+    "two historical reader comparisons remain unproven; Phase175 archived8/9 and REL10 breach preserved"
+  ]
+}

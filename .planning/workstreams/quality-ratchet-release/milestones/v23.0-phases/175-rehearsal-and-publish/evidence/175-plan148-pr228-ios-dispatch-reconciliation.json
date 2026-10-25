@@ -1,0 +1,16 @@
+{
+  "head_oid": "664d9a80de4b8601174a3f750f0813ab2f492469",
+  "dispatch_exit_code": 1,
+  "delivery": "REJECTED_INVALID_WORKFLOW",
+  "existing_invalid_workflow_run_id": 38139594759,
+  "existing_invalid_workflow_jobs": 0,
+  "new_workflow_dispatch_runs": 0,
+  "provider_annotation": "(Line: 221, Col: 19): Unrecognized named-value: 'runner'. Located at position 1 within expression: runner.temp",
+  "publication": "NONE",
+  "repeated_dispatch": false,
+  "repair": "Move OUTPUT_DIR from job env to step env; refresh candidate only after protected repair merge.",
+  "local_actionlint": "PASS after fix; original expression failure",
+  "regression_original": "2 tests, 1 failure",
+  "regression_fixed": "2 tests, 0 failures",
+  "observed_at_utc": "2026-10-11T13:01:28.064638+00:00"
+}

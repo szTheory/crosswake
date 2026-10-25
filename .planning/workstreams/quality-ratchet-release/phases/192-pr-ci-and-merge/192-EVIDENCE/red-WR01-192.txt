@@ -1,0 +1,15 @@
+# WR-01 red-before evidence (amendment A-07-1)
+scope test/**/*.exs
+utf8_locale C.UTF-8 (available on host)
+mutant_script latin1 setopts line removed
+C_mutant_exit 0
+C_mutant_bytes equal
+C_fixed_exit 0
+C_fixed_bytes equal
+note under LC_ALL=C the mutant was equal to the committed ledger: standard_io is already latin1 when writing to a file or pipe under C, so a C-only check cannot see the bug (non-discriminating, run 1 red_not_shown)
+mutant_exit 0
+mutant_bytes differ
+fixed_exit 0
+fixed_bytes equal
+new_test_vs_mutant_script fails (ledger test file: 21 tests, 2 failures; the C.UTF-8 byte-equality test is one of them)
+new_test_vs_fixed_script passes (ledger and taxonomy test files: 30 tests, 0 failures)

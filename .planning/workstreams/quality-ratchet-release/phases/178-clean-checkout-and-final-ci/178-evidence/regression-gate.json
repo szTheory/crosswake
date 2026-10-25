@@ -1,0 +1,19 @@
+{
+  "phase": 178,
+  "checkedAt": "2026-10-13T02:22:08.037553+00:00",
+  "exitCode": 0,
+  "files": 7,
+  "tests": 90,
+  "passed": 90,
+  "failed": 0,
+  "productionHelpersAndTestsUnmodified": true,
+  "fixtureInput": "reconstructed published Phase177 completion/Phase178 discussion epoch in independent clone named crosswake; frozen phase-closeout.json supplies the phase/command. Neither current-state proof nor historical-byte claim.",
+  "firstRun": {
+    "passed": 87,
+    "failed": 3,
+    "cause": "mutable current STATE is beyond the Phase177 fixture epoch"
+  },
+  "intermediateFixtureFailures": "missing Git context, then noncanonical checkout basename; retained separately",
+  "sourceRegressionCoverage": "accepted complete9-stage exact-source run covers repository source; no source changed since",
+  "rawOutputRetainedOwnerPrivate": true
+}

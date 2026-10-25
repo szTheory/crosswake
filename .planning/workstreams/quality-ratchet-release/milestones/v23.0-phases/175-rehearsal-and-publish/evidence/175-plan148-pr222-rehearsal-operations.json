@@ -1,0 +1,79 @@
+{
+  "pr": 222,
+  "candidate_head_oid": "24f1ace22f0e219b666c95e2b23667b195c46289",
+  "candidate_base_oid": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+  "candidate_tree_oid": "76032cd234b2eb35fb73776fade55a67a3f9b8b6",
+  "ci_run_id": 38109308677,
+  "ci_conclusion": "success",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "rehearsals": {
+    "hex": {
+      "workflow": "hex-publish.yml",
+      "inputs": {
+        "candidate_head": "24f1ace22f0e219b666c95e2b23667b195c46289",
+        "candidate_tree": "76032cd234b2eb35fb73776fade55a67a3f9b8b6",
+        "candidate_base": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+        "operation": "candidate-rehearsal",
+        "release_version": "0.2.8",
+        "candidate_receipt": "34a56a941db7ce3b08fe5ec085fc1e5dc4323c7165c79ed1715f18b7b743403b"
+      },
+      "dispatch_ref": "release-please--branches--main",
+      "prior_max_run_id": 38104926893,
+      "intent_at_utc": "2026-10-11T04:38:10.212152+00:00",
+      "head_before": "24f1ace22f0e219b666c95e2b23667b195c46289",
+      "dispatch_attempted": true,
+      "delivery": "ACCEPTED",
+      "dispatch_exit_code": 0,
+      "run_id": 38112210493,
+      "head_after": "24f1ace22f0e219b666c95e2b23667b195c46289",
+      "status": "completed",
+      "conclusion": "success",
+      "artifact_sha256": "e4be3155dd95657c61a6dce1d5d1a6839ca6c6c4b0d5b20aa7988a3105dd6380"
+    },
+    "ios": {
+      "workflow": "ios-mirror-backfill.yml",
+      "inputs": {
+        "candidate_head": "24f1ace22f0e219b666c95e2b23667b195c46289",
+        "candidate_tree": "76032cd234b2eb35fb73776fade55a67a3f9b8b6",
+        "candidate_base": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+        "operation": "candidate-rehearsal",
+        "version": "0.2.8",
+        "release_ref": "24f1ace22f0e219b666c95e2b23667b195c46289",
+        "candidate_receipt": "34a56a941db7ce3b08fe5ec085fc1e5dc4323c7165c79ed1715f18b7b743403b"
+      },
+      "dispatch_ref": "release-please--branches--main",
+      "prior_max_run_id": 38105260436,
+      "intent_at_utc": "2026-10-11T04:38:15.443994+00:00",
+      "head_before": "24f1ace22f0e219b666c95e2b23667b195c46289",
+      "dispatch_attempted": true,
+      "delivery": "ACCEPTED",
+      "dispatch_exit_code": 0,
+      "run_id": 38112215121,
+      "head_after": "24f1ace22f0e219b666c95e2b23667b195c46289",
+      "status": "completed",
+      "conclusion": "success",
+      "artifact_sha256": "df93067b7cf3bc0b9110a48fb293327ee5a32f0c7547caab9aacd6a065320323"
+    },
+    "maven": {
+      "workflow": "maven-publish-fire-drill.yml",
+      "inputs": {
+        "candidate_head": "24f1ace22f0e219b666c95e2b23667b195c46289",
+        "candidate_tree": "76032cd234b2eb35fb73776fade55a67a3f9b8b6",
+        "candidate_base": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+        "fire_drill_version": "0.2.8"
+      },
+      "dispatch_ref": "release-please--branches--main",
+      "prior_max_run_id": 38104932554,
+      "intent_at_utc": "2026-10-11T04:38:19.839522+00:00",
+      "head_before": "24f1ace22f0e219b666c95e2b23667b195c46289",
+      "dispatch_attempted": true,
+      "delivery": "ACCEPTED",
+      "dispatch_exit_code": 0,
+      "run_id": 38112218569,
+      "head_after": "24f1ace22f0e219b666c95e2b23667b195c46289",
+      "status": "completed",
+      "conclusion": "success",
+      "artifact_sha256": "4a24a366dd3984f048772042982184ec4fce35f8f218963382875f95c9b6cad8"
+    }
+  }
+}

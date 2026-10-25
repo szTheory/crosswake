@@ -532,6 +532,27 @@ defmodule Crosswake.Guides.SeeItRunTest do
     end)
   end
 
+  test "the twin source check paragraph states the exact-case limit, unusual names and the unreadable-folder block" do
+    guide = source_read!(@target_path)
+
+    assert String.contains?(
+             guide,
+             "those rules are matched with exact letter case, so a local case-insensitive git setting cannot stretch them to other names."
+           )
+
+    assert String.contains?(
+             guide,
+             "even when a folder or file name starts with a colon, a space or another unusual character;"
+           )
+
+    assert String.contains?(
+             guide,
+             "If git cannot read part of the candidate (for example a folder it is not allowed to open) or prints any warning while reading it, the check is blocked as a missing prerequisite instead of skipping that part."
+           )
+
+    refute String.contains?(guide, "whatever the folder or file is called")
+  end
+
   defp source_path(path), do: Path.join(@repo_root, path)
   defp source_read!(path), do: path |> source_path() |> File.read!()
   defp source_exists?(path), do: path |> source_path() |> File.exists?()

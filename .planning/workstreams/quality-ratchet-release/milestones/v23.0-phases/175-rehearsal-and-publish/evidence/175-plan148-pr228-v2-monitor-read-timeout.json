@@ -1,0 +1,9 @@
+{
+  "ci_run_id": 38143232212,
+  "failure": "GitHub result read timed out after30seconds",
+  "dispatches_before_read_timeout": 0,
+  "publication": "NONE",
+  "resolution": "Re-read actual run; all49jobsSUCCESS. Resume known-zero-write monitor; safe dispatch intent files did not exist.",
+  "resumed_session": 72135,
+  "observed_at_utc": "2026-10-11T14:13:55.619079+00:00"
+}

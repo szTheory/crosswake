@@ -1,0 +1,20 @@
+{
+  "schema": "crosswake.phase182.candidate/1",
+  "candidate": "phase182-impl",
+  "realpath": "/private/tmp/crosswake-phase182-impl",
+  "git_top_level": "/private/tmp/crosswake-phase182-impl",
+  "branch": "phase182-impl",
+  "source": "/private/tmp/crosswake-phase181-impl",
+  "base_head": "12f84cd950d4574921767df823faed6797c17c26",
+  "base_tree": "e51f069d52b1c1303d8d606d6000ff146654948e",
+  "pinned_phase180_tests": {
+    "test/crosswake/proof/phase180_twin_feasibility_test.exs": "01df82646c3365b159006c26ec818a55feafd506f007d762d739f66177e756f5",
+    "examples/phoenix_host/test/crosswake_example/phase180_twin_feasibility_test.exs": "f7b968909db85040adfd42bc397fec8f70259fa2b7bd3176759b523a9b8aaa19",
+    "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Phase180TwinFeasibilityTests.swift": "a3bcef6ea7f64f90b2e85f6aecc04778334428f709f840c134b7c0ea25355672"
+  },
+  "production_info_plist_golden_sha256": "11e97fa81642e477364e9f347c649cc936d8b79e1d1bf6d0c5526e5d8bc62886",
+  "production_generation_manifest_sha256": "02784ccbf12aeb4314ae6f04a5829b379aa556c5d81d0106e49b787a658013d3",
+  "qualified_at": "2026-10-14T23:39:29Z",
+  "isolation": "clone --no-hardlinks from phase181 candidate; push url no-push-phase182; recovery checkout and phase180 clone read-only",
+  "remote_writes_authorized": false
+}

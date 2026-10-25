@@ -1,0 +1,23 @@
+{
+  "workflow": "ios-mirror-backfill.yml",
+  "dispatch_ref": "release-please--branches--main",
+  "inputs": {
+    "operation": "candidate-receipt-attestation",
+    "version": "0.2.8",
+    "release_ref": "24f1ace22f0e219b666c95e2b23667b195c46289",
+    "candidate_head": "24f1ace22f0e219b666c95e2b23667b195c46289",
+    "candidate_tree": "76032cd234b2eb35fb73776fade55a67a3f9b8b6",
+    "candidate_base": "7df0ad88077dfd853510aa729ade564acbbb9f53",
+    "candidate_ci_run_id": "38109308677",
+    "hex_run_id": "38112210493",
+    "ios_run_id": "38112215121",
+    "maven_run_id": "38112218569"
+  },
+  "intent_at_utc": "2026-10-11T05:29:42.954993+00:00",
+  "prior_max_run_id": 38112215121,
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "dispatch_attempted": true,
+  "delivery": "ACCEPTED",
+  "dispatch_exit_code": 0,
+  "run_id": 38114956564
+}

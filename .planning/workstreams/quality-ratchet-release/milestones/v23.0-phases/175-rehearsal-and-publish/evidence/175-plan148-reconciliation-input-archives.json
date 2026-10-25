@@ -1,0 +1,21 @@
+{
+  "archives": [
+    {
+      "source": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-VERIFICATION.md",
+      "archive": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-VERIFICATION-ARCHIVE-PRE-PLAN148-CLOSEOUT.md",
+      "sha256": "2c26f189b88e9118e6a9087bcd60740216be9e55ef089162fedf75265ff23903"
+    },
+    {
+      "source": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-VALIDATION.md",
+      "archive": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-VALIDATION-ARCHIVE-PRE-PLAN148-CLOSEOUT.md",
+      "sha256": "3779901650f5b353219d5aae21473de38c4525d16e30c99e1fe7aeaf9e92fda0"
+    },
+    {
+      "source": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-KNOWN-RELEASE-BLOCKER.md",
+      "archive": ".planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-KNOWN-RELEASE-BLOCKER-ARCHIVE-PRE-PLAN148-CLOSEOUT.md",
+      "sha256": "d0655ebe2f5370a0ea1b76aca4dfa21bb030865050f294db3b8777bd68573bdd"
+    }
+  ],
+  "publication_claims_changed": false,
+  "observed_at_utc": "2026-10-11T18:59:03.336316+00:00"
+}

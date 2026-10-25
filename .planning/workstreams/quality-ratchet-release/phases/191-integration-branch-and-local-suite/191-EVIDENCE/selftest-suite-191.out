@@ -1,0 +1,33 @@
+S01 root pass with floor: as expected
+S02 floor missing: as expected
+S03 caller C locale, child gets UTF-8: as expected
+S04 below floor: as expected
+S05 malformed totals line: as expected
+S06 two totals lines in root mode: as expected
+S07 failures above zero: as expected
+S08 invalid above zero: as expected
+S09 skipped above zero: as expected
+S10 floor zero: as expected
+S11 untracked file before run: as expected
+S12 head moved during run: as expected
+S13 head differs from argument: as expected
+S14 seven stage logs: as expected
+S15 one stage status 1: as expected
+S16 blocked stage is a failure: as expected
+S17 root-proof with six totals lines: as expected
+S18 excluded mismatch: as expected
+S19 raw output absent from evidence: as expected
+S20 failed validation leaves no evidence change: as expected
+S21 subset expected red exact match: as expected
+S22 subset extra red: as expected
+S23 swift unlisted skip: as expected
+S24 all mode full pass: as expected
+S25 fake mix rejects C locale: as expected
+S26 subset empty expected red, zero failures: as expected
+S27 host mode pass: as expected
+S28 swift listed skip passes: as expected
+S29 subset expected red missing: as expected
+S30 old baseline mode name: as expected
+S31 preflight failure shown only in orchestrator output: as expected
+S32 named floors file and three-line excl file accepted: as expected
+selftest-suite: controls 32 of 32 as expected

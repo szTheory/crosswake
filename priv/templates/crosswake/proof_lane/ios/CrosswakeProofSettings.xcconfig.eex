@@ -1,0 +1,7 @@
+CROSSWAKE_PROOF_APP_BUNDLE_ID = <%= @proof_app_bundle_id %>
+CROSSWAKE_PROOF_TEST_BUNDLE_ID = <%= @proof_test_bundle_id %>
+CROSSWAKE_PROOF_UI_BUNDLE_ID = <%= @proof_ui_bundle_id %>
+CODE_SIGNING_ALLOWED[sdk=iphonesimulator*] = NO
+CODE_SIGNING_REQUIRED[sdk=iphonesimulator*] = NO
+CODE_SIGN_STYLE[sdk=iphoneos*] = <%= @code_sign_style %>
+DEVELOPMENT_TEAM[sdk=iphoneos*] = <%= @team_id %>

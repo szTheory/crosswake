@@ -1,0 +1,59 @@
+{
+  "operation": "fast_forward_existing_repair_pr_after_portability_failures",
+  "pr": 227,
+  "old_head_oid": "72bf3a3e9907578b6aca9c1e4f45648d4f97b3ea",
+  "base_oid": "668e0fbe93c73afcdf79de90e64bbb5fd8090386",
+  "authorization_source": "PHASE175-STANDING-AUTHORIZATION.md",
+  "events": [
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "method": "POST",
+      "sha": "e4a892e335f05a8af3f542be9902726996c27b5e"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "method": "POST",
+      "sha": "4835814c8dda8deafd8ebe06e6c89941b99d397f"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/blobs",
+      "attempted": true,
+      "completed": true,
+      "method": "POST",
+      "sha": "ebd48437dcdba821ad6c4519c7f4c562e6068fd3"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/trees",
+      "attempted": true,
+      "completed": true,
+      "method": "POST",
+      "sha": "f5d8029047d15cf47970022c8d911be644720110"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/commits",
+      "attempted": true,
+      "completed": true,
+      "method": "POST",
+      "sha": "fcbab2c44192e6b6ad24d1058127ad42a72efb67"
+    },
+    {
+      "path": "repos/szTheory/crosswake/git/refs/heads/fix/phase175-public-consumer-proof",
+      "attempted": true,
+      "completed": true,
+      "method": "PATCH"
+    }
+  ],
+  "started_at_utc": "2026-10-11T12:07:03.058083+00:00",
+  "files": {
+    ".github/workflows/crosswake-ci.yml": "628d4d6389947d5bc320d9fbcbe6f669477350dc0129beac40101735a401df1f",
+    "script/release_candidate/hex_artifacts.sh": "225a9bc52800ba8c71e589f02b70db60e848a615cbc87117b2f61522ad2268d1",
+    "test/crosswake/release_candidate/package_source_ref_test.exs": "3223acffd7f5f855b78887ae19b6a5fb4c6d7d8723bbf0e2b711f4cf04b2a66a"
+  },
+  "head_oid": "fcbab2c44192e6b6ad24d1058127ad42a72efb67",
+  "tree_oid": "f5d8029047d15cf47970022c8d911be644720110",
+  "status": "updated_same_pr_new_source_ci_pending"
+}

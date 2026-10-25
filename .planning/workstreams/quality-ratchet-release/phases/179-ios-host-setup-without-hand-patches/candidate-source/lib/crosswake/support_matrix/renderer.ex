@@ -1,0 +1,512 @@
+defmodule Crosswake.SupportMatrix.Renderer do
+  @moduledoc """
+  Deterministic Markdown renderer for the canonical support matrix guide.
+  """
+
+  alias Crosswake.Manifest.Types.SupportEntry
+  alias Crosswake.Manifest.Types.SupportMatrix
+  alias Crosswake.Manifest.Types.ActionClassEntry
+  alias Crosswake.Manifest.Types.ChangeClassEntry
+  alias Crosswake.Manifest.Types.CapabilitySupportEntry
+  alias Crosswake.Manifest.Types.PackageSurfaceEntry
+  alias Crosswake.Manifest.Types.PromotionRuleEntry
+  alias Crosswake.Manifest.Types.RebuildDecisionEntry
+  alias Crosswake.Manifest.Types.ReleaseBoundaryEntry
+  alias Crosswake.CapabilityMap
+
+  @type action :: :created | :reused | :updated
+
+  @spec render(SupportMatrix.t()) :: String.t()
+  def render(%SupportMatrix{} = support_matrix) do
+    [
+      "# Crosswake Support Matrix",
+      "",
+      "Canonical owner: `Crosswake.CapabilityMap` for the first adopter claim layers.",
+      "Regenerate with `mix crosswake.docs.sync`.",
+      "",
+      "This guide stays narrow and proof-oriented. Generated-shell coordinate support is",
+      "backed by release-time clean-room proof plus generated-shell verification hooks.",
+      "The checked-in native hosts are `checked-in public-coordinate proof`; the explicit",
+      "maintainer path stays `local-dev proof` behind `--local`.",
+      "The default non-local generator path resolves native shell cores from `github.com/szTheory/crosswake-shell-core-ios`",
+      "and Maven Central `io.github.sztheory:crosswake-shell-core-android` at the Crosswake",
+      "Hex package version; the release-time clean-room proof promotes that path after the",
+      "coordinated cut.",
+      "",
+      support_truth_legend_section(),
+      "",
+      interaction_class_legend_section(),
+      "",
+      "## Status Legend",
+      "",
+      "- supported",
+      "- verification required",
+      "- unsupported",
+      "",
+      section("Phoenix", support_matrix.phoenix),
+      "",
+      section("LiveView", support_matrix.live_view),
+      "",
+      section("iOS", support_matrix.ios),
+      "",
+      ios_host_generation_section(),
+      "",
+      section("Android", support_matrix.android),
+      "",
+      section("Shell Artifacts", support_matrix.shells),
+      "",
+      first_adopter_readiness_section(),
+      "",
+      capability_family_section(support_matrix.capability_families),
+      "",
+      bridge_reply_delivery_section(),
+      "",
+      commerce_corridor_section(Crosswake.SupportMatrix.commerce_corridors()),
+      "",
+      package_surface_section(support_matrix.package_surfaces),
+      "",
+      release_boundary_section(support_matrix.release_boundaries),
+      "",
+      change_class_section(support_matrix.change_classes),
+      "",
+      rebuild_decision_table_section(Crosswake.SupportMatrix.rebuild_decision_table()),
+      "",
+      action_class_section(Crosswake.SupportMatrix.action_classes()),
+      "",
+      promotion_rule_section(Crosswake.SupportMatrix.promotion_rules()),
+      "",
+      notification_surface_section(),
+      "",
+      media_recovery_surface_section(),
+      "",
+      public_non_claims_section(),
+      ""
+    ]
+    |> Enum.join("\n")
+  end
+
+  @spec write(String.t(), SupportMatrix.t()) :: {:ok, action()}
+  def write(path, %SupportMatrix{} = support_matrix) do
+    File.mkdir_p!(Path.dirname(path))
+
+    contents = render(support_matrix)
+
+    case File.read(path) do
+      {:ok, ^contents} ->
+        {:ok, :reused}
+
+      {:ok, _previous} ->
+        File.write!(path, contents)
+        {:ok, :updated}
+
+      {:error, :enoent} ->
+        File.write!(path, contents)
+        {:ok, :created}
+
+      {:error, reason} ->
+        raise "could not persist Crosswake support matrix guide #{path}: #{:file.format_error(reason)}"
+    end
+  end
+
+  defp section(title, entries) do
+    [
+      "## #{title}",
+      "",
+      "| Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |",
+      "|--------|---------|----------|--------------|------------|------------|-------|",
+      Enum.map_join(entries, "\n", &row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp capability_family_section(entries) do
+    [
+      "## Capability Families",
+      "",
+      "| Family | Owner | Posture | Baseline | Proof Status | Package | Proof | Rebuild | Prerequisites | Denial | Fallback | Guide |",
+      "|--------|-------|---------|----------|--------------|---------|-------|---------|---------------|--------|----------|-------|",
+      Enum.map_join(entries, "\n", &capability_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp ios_host_generation_section do
+    [
+      "## iOS Host Generation and Xcode Settings",
+      "",
+      "The host's ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled Phoenix router, declared entry route, HTTPS primary origin, app/proof identities, and device-signing settings. Compile-only generation compiles the router without starting the host application or loading its runtime-server configuration.",
+      "",
+      "`mix crosswake.gen.shell ios --diff` and `--check` inspect managed output without writing. Recognized manifest, static activation, and xcconfig projections have explicit ownership; interrupted publication blocks the Xcode build guard until `--recover`. Existing project settings use a separate opt-in migration limited to the recognized shell target blocks.",
+      "",
+      "The effective-settings check observes 20 Xcode cells across the shell, proof app, unit-test, and UI-test targets, Debug/Release, and simulator/device SDK classes. Simulator settings are unsigned. Device settings inspection reports configuration only; it does not claim signing or installation.",
+      "",
+      "Manifest and entry activation carry static route and origin configuration. They grant no session, account, scope, installed-media, or replay authority. These host-generation and settings checks do not establish physical-iPhone support or activate a first adopter's host."
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp package_surface_section(entries) do
+    [
+      "## Packaging Ledger",
+      "",
+      "`crosswake` remains the one primary public package. Companions are first-party-scoped typed boundaries, not plugin-market surfaces.",
+      "",
+      "| Surface | Class | Why | Release Burden | Public Guide |",
+      "|---------|-------|-----|----------------|--------------|",
+      Enum.map_join(entries, "\n", &package_surface_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp commerce_corridor_section(entries) do
+    [
+      "## Commerce Corridors",
+      "",
+      "| corridor_role | owner_posture | prerequisite_classes | prerequisites | denial_codes | fallback_behavior | proof_class | rebuild_requirement |",
+      "|---------------|---------------|----------------------|---------------|--------------|-------------------|-------------|---------------------|",
+      Enum.map_join(entries, "\n", &commerce_corridor_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp release_boundary_section(entries) do
+    [
+      "## Release And Versioning Policy",
+      "",
+      "package versions alone do not define support truth.",
+      "",
+      "| Target | Versioning | Compatibility Contract | Release Rule |",
+      "|--------|------------|------------------------|--------------|",
+      Enum.map_join(entries, "\n", &release_boundary_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp change_class_section(entries) do
+    [
+      "## Change Classes",
+      "",
+      "| Change Class | What Changed | Adopter Action | Compatibility Signal | Required Proof |",
+      "|--------------|--------------|----------------|----------------------|----------------|",
+      Enum.map_join(entries, "\n", &change_class_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp rebuild_decision_table_section(entries) do
+    [
+      "## Rebuild Decision Table",
+      "",
+      "| Axis | Change Kind | Rebuild Class | Adopter Action | Denial Signal | Guide Anchor |",
+      "|------|-------------|---------------|----------------|---------------|--------------|",
+      Enum.map_join(entries, "\n", &rebuild_decision_table_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp rebuild_decision_table_row(%RebuildDecisionEntry{} = entry) do
+    "| #{escape_cell(entry.axis)} | #{escape_cell(Atom.to_string(entry.change_kind))} | #{escape_cell(entry.rebuild_class)} | #{escape_cell(entry.adopter_action)} | #{escape_cell(entry.denial_signal)} | #{escape_cell(entry.guide_anchor)} |"
+  end
+
+  defp action_class_section(entries) do
+    [
+      "## Action Classes",
+      "",
+      "| action_class | subject | required_action | rebuild_required | reason | guide_anchor |",
+      "|--------------|---------|-----------------|------------------|--------|--------------|",
+      Enum.map_join(entries, "\n", &action_class_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp promotion_rule_section(entries) do
+    [
+      "## Promotion Rules",
+      "",
+      "Promotion rules keep advisory proof visible until evidence, docs, platform, and demotion criteria are all satisfied.",
+      "",
+      "| claim_id | current_state | promotes_to | evidence_class | required_evidence | minimum_consecutive_passes | freshness_window | failure_budget | required_platforms | required_docs_anchors | change_class | action_class | check_ids | demotion_trigger |",
+      "|----------|---------------|-------------|----------------|-------------------|----------------------------|------------------|----------------|--------------------|-----------------------|--------------|--------------|-----------|------------------|",
+      Enum.map_join(entries, "\n", &promotion_rule_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp support_truth_legend_section do
+    [
+      "## Support-Truth Label Legend",
+      "",
+      "Use these labels literally. Each label says what the evidence proves and what it does not prove.",
+      "",
+      "| Label | What it proves | What it does not prove |",
+      "|-------|----------------|------------------------|",
+      "| merge-blocking proof | Required deterministic proof that must pass before the claim can merge. | It does not prove every platform/device path or any unsupported owner class. |",
+      "| advisory evidence | Useful evidence that informs confidence but does not block standard merge flow. | It does not widen support truth by itself. |",
+      "| checked-in public-coordinate proof | A checked-in host path resolves published SwiftPM/Maven coordinates by default. | It is not a device, simulator, or emulator support claim and it does not cover `--local`. |",
+      "| local-dev proof | A checked-in or local host path works for maintainers in this repository. | It is not generated public-coordinate proof. |",
+      "| generated public-coordinate proof | A generated adopter-facing path resolves published SwiftPM/Maven/Hex coordinates. | It does not prove checked-in local hosts use those coordinates. |",
+      "| JVM hermetic proof | Android logic passed deterministic JVM-level CI. | JVM hermetic proof is not emulator evidence or physical-device proof. |",
+      "| emulator evidence | A simulator or emulator run produced advisory platform evidence. | Emulator evidence is not physical-device proof. |",
+      "| device evidence | A physical-device run produced platform evidence. | Device evidence is not backend/session authority. |",
+      "| verification-required | A claim needs an explicit verification lane before it can be treated as supported. | It is not a failure-open support claim. |",
+      "| rebuild-required | A change touches native or companion surfaces that require rebuilding the host artifact. | It is not implied by docs-only or core-only/no native rebuild changes. |",
+      "",
+      "Support status is not device evidence: `supported` is not the same as device-verified.",
+      "Visual collateral is not correctness proof by itself.",
+      "Device/provider evidence is not backend/session authority.",
+      "Cached read-only is not offline mutation.",
+      "Bridge is not high-frequency or mutation authority."
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp interaction_class_legend_section do
+    [
+      "## Interaction-Class Legend",
+      "",
+      "`manifest_schema_version` moved `1.0.0` -> `1.1.0` (Phase 154, CTRL-05/D-55): additive, native-inert — the iOS and Android shells decode neither the new `interaction` field nor the widened `Capability` enforce-keys, so this is `compatibility-bump only`, not rebuild-required.",
+      "",
+      "Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` now also declares an explicit `Capability.interaction` value alongside `Capability.rebuild`, enforced at compile time by `@enforce_keys`. Use these labels literally.",
+      "",
+      "**Guarantee strength, stated honestly (D-45/D-52).** That `@enforce_keys` widening is the only part of the Phase 154 catalog line that is structurally impossible to violate: a capability declaring neither `interaction` nor `rebuild` does not compile, and no reviewer or CI job is involved. Every other part of the bounded-bridge contract is CI-caught rather than structural. `Crosswake.Bridge.CatalogGuard` is a merge-blocking structural test proving there is no dynamic-registration seam, no streaming seam, no external SDK inside the bridge tree, and native command enum parity in both directions — but a gate caught in CI is a gate a maintainer can still walk through deliberately, one honest control at a time. Read `guides/bridge.md#guarantee-strength-what-is-structural-and-what-is-ci-caught` before treating either as airtight.",
+      "",
+      "| Interaction Class | What it means |",
+      "|--------------------|----------------|",
+      "| fire-and-forget | The bridge dispatches the command and the route continues without waiting on a completion payload. A request-acknowledgement payload (for example `share`'s `%{\"outcome\" => \"requested\"}`) does not change this — fire-and-forget means no completion is claimed, not that no payload is returned. |",
+      "| device-answer | The device autonomously answers with data — a snapshot or metadata read that does not require the user to make a choice. |",
+      "| user-answer | Completing the command requires an explicit user choice or action (for example picking a file) before a result exists. |"
+    ]
+    |> Enum.join("\n")
+  end
+
+  # D-03: CTRL-01's reply half is NOT uniform across platforms in Phase 154, and the
+  # matrix says so per reply path rather than folding a pending leg into a supported
+  # capability cell. A capability row answers "is this family authorized and proven";
+  # it has no column that could carry "the reply comes back on this platform in a
+  # later release", and widening the capability cell to imply completeness is exactly
+  # the claim D-03 prohibits.
+  defp bridge_reply_delivery_section do
+    [
+      "## Bridge Reply Delivery",
+      "",
+      "Reply delivery is stated per path. A bounded-bridge family being `supported` means the route is authorized to dispatch it and the denial contract holds; it does not by itself mean a NATIVE reply travels back on every platform yet.",
+      "",
+      "| Reply path | Baseline | Proof Status | Notes |",
+      "|------------|----------|--------------|-------|",
+      "| server-synthesized denial | supported | merge-blocking | Every platform including a plain browser with no shell at all. No shell, an unwired hook, and a shell refusal each resolve to exactly one typed denial; there is no configuration in which a push resolves to silence (CTRL-02). |",
+      "| Android native reply | supported | JVM hermetic proof | The shipped Android shell core has been duplex since day one — the page receives a reply proxy and the reply travels back as a JSON string. |",
+      "| iOS native reply | verification required | merge-blocking | The return leg exists in-repo from Phase 154: the reply sink evaluates JavaScript against the hook's landing pad, with Swift unit tests and committed contract vectors. Phase 156 was stopped, so no native-menu release promotes this path. It must ship only as needed for the first adopter runtime line and remains narrower than physical-device proof. Until then an iOS route still receives the server-synthesized denial rather than a native reply. |",
+      "",
+      "Fire-and-forget families do not wait on the iOS leg: `haptics.impact` is already present in the shipped closed command enum of both native cores, so its proof needs no native release."
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp notification_surface_section do
+    [
+      "## Notification Surface (v3.9)",
+      "",
+      "Crosswake provides explicitly bounded support for notifications via the Chimeway companion.",
+      "",
+      "**Supported:**",
+      "- **Token binding:** The `notification_token` capability resolves local push tokens.",
+      "- **notification-open routing:** Notification open resolved through RouteGate for manifest-known routes and route-local action allowlists.",
+      "- **Route activation proof:** The notification-open workflow proof is hermetic route activation proof. RouteGate and Sigra decide activation; token/open evidence is not auth authority.",
+      "- **Resolution limits:** Bounded bridge operations ensure requests complete predictably.",
+      "- **Evidence redaction:** Diagnostic output actively redacts sensitive identifiers.",
+      "",
+      "**Deferred (Not Supported):**",
+      "- **APNs/FCM delivery execution:** APNs/FCM delivery is not part of this proof, and Crosswake does not act as a push delivery service.",
+      "- **Push metrics:** Delivery and read-receipt metrics are not tracked by the core framework.",
+      "- **Deep UI native presentation:** Custom native notification UI presentation is left to the host shell.",
+      "",
+      "**Strict Telemetry Contract:**",
+      "The telemetry event structure `[:crosswake, :notification, :*]` exposes low-cardinality delivery status and routing outcomes. **Raw payload data, device tokens, and PII are strictly forbidden and explicitly stripped from all diagnostic output.**"
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp media_recovery_surface_section do
+    [
+      "## Media Evidence Recovery Surface (v4.1)",
+      "",
+      "Crosswake provides a hermetic Rindle proof for simulated media recovery.",
+      "",
+      "**Supported:**",
+      "- **Recovery proof:** Rindle media/evidence recovery proof is hermetic and merge-blocking.",
+      "- **Simulated degradation:** Simulated network degradation is proof-only and deterministic.",
+      "- **Backend authority:** Local capture evidence is not availability authority; backend verification is required before media becomes available.",
+      "- **Proof copy:** `Capture recorded locally; media is not available yet`, `Device evidence recorded; backend verification still required`, `This proof does not use a real storage provider`, and `Local capture evidence does not grant media availability`.",
+      "",
+      "**Deferred (Not Supported):**",
+      "- **Real storage providers:** Host applications own storage target choice and persistence.",
+      "- **Native camera/media picker capture:** Capture UX remains host-owned.",
+      "- **Background transfer and device network toggling:** These remain advisory/deferred and never gate merge.",
+      "- **Generic sync:** Phase 72 does not ship a broad sync engine."
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp first_adopter_readiness_section do
+    claims =
+      CapabilityMap.first_adopter_claims()
+      |> Enum.map(fn claim ->
+        "| #{claim_label(claim.activation_state)} | #{claim.statement} | #{claim.boundary} |"
+      end)
+
+    [
+      "## First Adopter Readiness",
+      "",
+      "The policy contract is policy-contract complete, while concrete adopter-instance input remains `unknown_blocking`. Known surface ownership is discovery context, not host or device proof. `unknown_blocking` blocks host-proof and physical-device promotion.",
+      "",
+      "Example-host, simulator, package-version, and policy-contract evidence do not prove an external host or physical device. Route-local safety fields do not inherit from surface defaults. Cached read-only is not mutation, and one offline island does not claim generic sync.",
+      "",
+      "| Claim layer | Current truth | Boundary |",
+      "|-------------|---------------|----------|",
+      Enum.join(claims, "\n"),
+      "",
+      "### Supporting boundaries",
+      "",
+      "| Surface | Current truth | Promotion evidence | Boundary |",
+      "|---------|---------------|--------------------|----------|",
+      "| host-reusable offline/shell proof | verification required | A generated host-owned scaffold runs against an external Phoenix router, real route/storage identifiers, existing browser tests, and the iOS shell flow. | Policy completion and example-host proof do not automatically transfer to a host application. |",
+      "| privacy-safe scoped replay | verification required | Opaque scope references, scope-partitioned outbox, logout/account-switch stops, endpoint reauthorization, and redacted evidence all pass. | The existing host-owned `gated_by` seam remains the server-side disablement authority; raw mutation payloads, account identifiers, media, transcripts, tokens, and stable device identifiers are never diagnostics. |",
+      "| foreground iOS pronunciation pack | verification required | A host provider downloads real bytes, verifies expected size and SHA-256, and atomically installs one immutable archive before reporting available. | Current timed native pack transitions are simulated lifecycle evidence, not productionized native content-pack storage. |",
+      "| physical-iPhone offline study | device evidence | Retained source-bound reference evidence remains dated and non-transferable. | It does not claim Android. It does not claim background replay or sync. It does not claim generic storage or sync. It does not claim multiple offline islands. It does not claim simulator substitution. It does not claim every iPhone. v20 is stopped/partial; it has no shipped support claim. |",
+      "| Android during first adopter readiness | advisory evidence frozen at current posture | Android is frozen at its existing generator, Maven, JVM, and shared-vector posture. | No new Android feature, parity, template, emulator/device, or release requirement is active. |",
+      "",
+      "Generic sync is not claimed."
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp claim_label(:available), do: "Reusable contracts"
+  defp claim_label(:reference_evidence), do: "Retained reference evidence"
+  defp claim_label(:blocked), do: "First adopter activation"
+
+  defp public_non_claims_section do
+    [
+      "## Public Non-Claims And Rough Edges",
+      "",
+      "- StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass.",
+      "- Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, Phase 58 auth telemetry/security closeout, and Phase 73 auth-sensitive admin workflow proof are shipped for route predicates, `auth_posture`, route-local `auth_return`, `:step_up_required`, canonical `auth.handoff.*`, canonical `auth.step_up_intent.*`, canonical `auth.return.*` denial codes, stable `[:crosswake, :auth, ...]` telemetry events, low-cardinality diagnostic metadata, and proof that persistent shell session state does not grant admin access; refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, native auth UI, and generic audit machinery remain deferred. Promotion requires an executable host reference proof covering reconnect, backend reauthorization before replay, logout, expiry, revocation, and account switching; documentation alone cannot promote a deferred item.",
+      "- APNs/FCM push delivery execution, delivery metrics, and deep UI native notification presentation remain deferred; notification support focuses strictly on token binding, notification-open routing, RouteGate/Sigra route activation proof, and diagnostic telemetry.",
+      "- Standalone native shell core packages are consumed by generated host-owned wrappers through SwiftPM and Maven Central; device/emulator proof and broader native runtime claims remain deferred until separately proven.",
+      "- Native pack lifecycle transitions currently prove contract behavior, not production byte download, integrity verification, atomic installation, eviction, background transfer, or generic content storage.",
+      "- First adopter work may add one host-supplied foreground iOS pronunciation-pack adapter. Generic app-wide sync, background sync, silent last-write-wins, multiple proven islands, broad reusable runtime sync helpers, and generic productionized native pack storage remain unclaimed.",
+      "- Android remains available at its existing generated-shell/JVM proof posture but is frozen during first adopter iOS readiness; frozen does not mean device-verified."
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp row(%SupportEntry{} = entry) do
+    proof = entry.proof || "-"
+    notes = entry.notes || "-"
+
+    boundaries =
+      if entry.boundary_link do
+        # Strip guides/ prefix if present for relative linking within the guides/ directory
+        link = String.replace(entry.boundary_link, ~r/^guides\//, "")
+        "[View Boundaries](#{link})"
+      else
+        "-"
+      end
+
+    "| #{escape_cell(entry.target)} | #{escape_cell(entry.version)} | #{format_status(entry.baseline_status || entry.status)} | #{format_status(entry.proof_status || entry.status)} | #{escape_cell(proof)} | #{boundaries} | #{escape_cell(notes)} |"
+  end
+
+  defp capability_row(%CapabilitySupportEntry{} = entry) do
+    guide =
+      if entry.guide do
+        link = String.replace(entry.guide, ~r/^guides\//, "")
+        "[Guide](#{link})"
+      else
+        "-"
+      end
+
+    prerequisites =
+      case entry.prerequisites do
+        [] -> "-"
+        items -> Enum.map_join(items, "; ", &escape_cell/1)
+      end
+
+    "| #{escape_cell(entry.family)} | #{Atom.to_string(entry.owner)} | #{escape_cell(entry.posture || "-")} | #{format_status(entry.baseline_status || :supported)} | #{format_status(entry.proof_status || :supported)} | #{format_package_class(entry.package_class)} | #{format_proof_class(entry.proof_class)} | #{format_rebuild(entry.rebuild)} | #{prerequisites} | #{escape_cell(entry.denial || "-")} | #{escape_cell(entry.fallback || "-")} | #{guide} |"
+  end
+
+  defp package_surface_row(%PackageSurfaceEntry{} = entry) do
+    "| #{escape_cell(entry.surface)} | #{format_package_class(entry.package_class)} | #{escape_cell(entry.why)} | #{escape_cell(entry.release_burden)} | #{format_guide_link(entry.guide)} |"
+  end
+
+  defp commerce_corridor_row(entry) do
+    prerequisite_classes = format_atom_list(entry.prerequisite_classes)
+    prerequisites = format_list(entry.prerequisites)
+    denial_codes = format_list(entry.denial_codes)
+    proof_class = format_proof_class(entry.proof_class)
+    rebuild_requirement = format_rebuild_requirement(entry.rebuild_requirement)
+
+    "| #{escape_cell(entry.corridor_role)} | #{escape_cell(entry.owner_posture)} | #{prerequisite_classes} | #{prerequisites} | #{denial_codes} | #{escape_cell(entry.fallback_behavior)} | #{proof_class} | #{rebuild_requirement} |"
+  end
+
+  defp release_boundary_row(%ReleaseBoundaryEntry{} = entry) do
+    "| #{escape_cell(entry.target)} | #{escape_cell(entry.versioning)} | #{escape_cell(entry.compatibility_contract)} | #{escape_cell(entry.release_rule)} |"
+  end
+
+  defp change_class_row(%ChangeClassEntry{} = entry) do
+    "| #{escape_cell(entry.change_class)} | #{escape_cell(entry.what_changed)} | #{escape_cell(entry.adopter_action)} | #{escape_cell(entry.compatibility_signal)} | #{escape_cell(entry.required_proof)} |"
+  end
+
+  defp action_class_row(%ActionClassEntry{} = entry) do
+    "| #{escape_cell(entry.action_class)} | #{escape_cell(entry.subject)} | #{escape_cell(entry.required_action)} | #{format_boolean(entry.rebuild_required)} | #{escape_cell(entry.reason)} | #{escape_cell(entry.guide_anchor)} |"
+  end
+
+  defp promotion_rule_row(%PromotionRuleEntry{} = entry) do
+    "| #{escape_cell(entry.claim_id)} | #{format_proof_class(entry.current_proof_class)} | #{format_promotion_target(entry.promotes_to)} | #{escape_cell(entry.evidence_class)} | #{format_list(entry.required_evidence)} | #{entry.minimum_consecutive_passes} | #{escape_cell(entry.freshness_window)} | #{escape_cell(entry.failure_budget)} | #{format_list(entry.required_platforms)} | #{format_list(entry.required_docs_anchors)} | #{escape_cell(entry.change_class)} | #{escape_cell(entry.action_class)} | #{format_list(entry.check_ids)} | #{escape_cell(entry.demotion_trigger)} |"
+  end
+
+  defp format_guide_link(guide) do
+    link = String.replace(guide, ~r/^guides\//, "")
+    "[Guide](#{link})"
+  end
+
+  defp format_status(:verification_required), do: "verification required"
+  defp format_status(status), do: Atom.to_string(status)
+  defp format_package_class(:example_docs_only), do: "example/docs-only"
+  defp format_package_class(package_class), do: Atom.to_string(package_class)
+  defp format_proof_class(:merge_blocking), do: "merge-blocking"
+  defp format_proof_class(proof_class), do: Atom.to_string(proof_class)
+  defp format_promotion_target(:merge_blocking), do: "merge-blocking"
+  defp format_promotion_target(target), do: Atom.to_string(target)
+  defp format_boolean(true), do: "true"
+  defp format_boolean(false), do: "false"
+  defp format_rebuild(:native_required), do: "native-required"
+  defp format_rebuild(:companion_required), do: "companion-required"
+  defp format_rebuild(rebuild), do: Atom.to_string(rebuild)
+
+  defp format_list([]), do: "-"
+  defp format_list(items), do: Enum.map_join(items, "; ", &escape_cell/1)
+
+  defp format_atom_list([]), do: "-"
+  defp format_atom_list(items), do: Enum.map_join(items, "; ", &Atom.to_string/1)
+
+  defp format_rebuild_requirement(%{native_rebuild_required: required, rebuild_trigger: trigger}) do
+    "native_rebuild_required=#{required}: #{escape_cell(trigger)}"
+  end
+
+  # Escape a value for inclusion as a single Markdown table cell. Replaces the
+  # pipe character (which would otherwise break column layout) with the
+  # backslash-escaped form GitHub Flavored Markdown understands, and collapses
+  # embedded newlines into spaces so a multi-line value cannot rip the row in
+  # two. Backslashes are doubled first so the cell-escape pass is reversible.
+  # Returns "-" for nil so the renderer keeps emitting a placeholder rather
+  # than an empty cell.
+  defp escape_cell(nil), do: "-"
+
+  defp escape_cell(value) when is_binary(value) do
+    value
+    |> String.replace("\\", "\\\\")
+    |> String.replace("|", "\\|")
+    |> String.replace("\n", " ")
+  end
+
+  defp escape_cell(value), do: escape_cell(to_string(value))
+end

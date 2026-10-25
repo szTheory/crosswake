@@ -1,0 +1,694 @@
+defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
+  use ExUnit.Case, async: false
+
+  alias Crosswake.ProofLane.{Config, Generator, GeneratorFS}
+  alias Crosswake.Shell.{IOSHostConfig, IOSHostProjectMigration}
+  alias Crosswake.TestSupport.RouterFixtures.ManagedRouter
+
+  defp config(root) do
+    %Config{
+      route_id: "route-0123456789abcdef",
+      route_path: "/study/:id",
+      indexed_db_database: "proof_lane",
+      indexed_db_store: "mutations",
+      mutation_id_path: "client_mutation_id",
+      sync_path: "/study/sync",
+      evidence_path: "/_proof/evidence",
+      router: CrosswakeWeb.Router,
+      ios_shell_root: Path.join(root, "native/ios")
+    }
+  end
+
+  defp temporary_root do
+    Path.join(System.tmp_dir!(), "crosswake-proof-lane-#{System.unique_integer([:positive])}")
+  end
+
+  defp snapshot(root) do
+    root
+    |> Path.join("**")
+    |> Path.wildcard()
+    |> Enum.map(fn path ->
+      {Path.relative_to(path, root), if(File.dir?(path), do: :dir, else: File.read!(path))}
+    end)
+    |> Map.new()
+  end
+
+  defp with_root(fun) do
+    root = temporary_root()
+    File.mkdir_p!(root)
+
+    try do
+      fun.(root, config(root))
+    after
+      File.rm_rf!(root)
+    end
+  end
+
+  test "reruns create only missing scaffold and preserve host bytes" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      host_file = Path.join(root, "e2e/crosswake_proof_lane/proof_lane.spec.ts")
+      host_bytes = "// host-owned change\n"
+      File.write!(host_file, host_bytes)
+      missing_file = Path.join(root, "test/crosswake_proof_lane/crosswake_proof_lane_test.exs")
+      File.rm!(missing_file)
+
+      assert {:ok, results} = Generator.generate(config)
+
+      assert %{path: "test/crosswake_proof_lane/crosswake_proof_lane_test.exs", status: :created} in results
+
+      assert File.read!(host_file) == host_bytes
+    end)
+  end
+
+  test "proof Xcode settings are projected through a shared xcconfig outside app resources" do
+    with_root(fn root, config ->
+      declaration = %{
+        router: ManagedRouter,
+        origin: "https://phoenix-host.test",
+        entry_route_id: "route-0123456789abcdef",
+        app_bundle_id: "org.crosswake.host",
+        proof_app_bundle_id: "org.crosswake.host.proof",
+        device_signing: [mode: :manual, team_id: "ABCDE12345"]
+      }
+
+      assert {:ok, host} = IOSHostConfig.normalize(declaration)
+      assert {:ok, _} = Generator.generate(config, host)
+
+      project =
+        File.read!(Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj"))
+
+      settings = File.read!(Path.join(root, "native/ios/CrosswakeProofSettings.xcconfig"))
+
+      assert settings =~ "CROSSWAKE_PROOF_APP_BUNDLE_ID = org.crosswake.host.proof"
+      assert settings =~ "CROSSWAKE_PROOF_TEST_BUNDLE_ID = org.crosswake.host.proof.tests"
+      assert settings =~ "CROSSWAKE_PROOF_UI_BUNDLE_ID = org.crosswake.host.proof.uitests"
+      assert settings =~ "CODE_SIGN_STYLE[sdk=iphoneos*] = Manual"
+      assert settings =~ "DEVELOPMENT_TEAM[sdk=iphoneos*] = ABCDE12345"
+      assert project =~ "baseConfigurationReference = A10000000000000000000019"
+      assert project =~ "PRODUCT_BUNDLE_IDENTIFIER = \"$(CROSSWAKE_PROOF_UI_BUNDLE_ID)\""
+      refute project =~ "CrosswakeProofSettings.xcconfig in Resources"
+    end)
+  end
+
+  test "proof project settings migration removes recognized target masks and preserves unrelated edits" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project_path = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project_path)
+
+      changed =
+        String.replace(
+          original,
+          "PRODUCT_BUNDLE_IDENTIFIER = \"$(CROSSWAKE_PROOF_APP_BUNDLE_ID)\";",
+          "PRODUCT_BUNDLE_IDENTIFIER = org.host.masked;"
+        )
+
+      changed =
+        String.replace(
+          changed,
+          "PRODUCT_NAME = CrosswakeProofLane;",
+          "PRODUCT_NAME = CrosswakeProofLane; /* host note */"
+        )
+
+      assert {:ok, %{status: :migration_required, contents: migrated}} =
+               IOSHostProjectMigration.preview_proof_contents(changed)
+
+      assert migrated =~ "/* host note */"
+      refute migrated =~ "org.host.masked"
+      assert migrated =~ "baseConfigurationReference = A10000000000000000000019"
+      File.write!(project_path, changed)
+      assert {:ok, %{status: :migration_required}} = Generator.migrate_project_settings(config)
+
+      assert {:ok, %{status: :migration_required}} =
+               Generator.migrate_project_settings(config, apply: true)
+
+      assert File.read!(project_path) == migrated
+    end)
+  end
+
+  test "proof settings refresh only under recognized ownership and recover an interrupted replacement" do
+    with_root(fn root, config ->
+      declaration = %{
+        router: ManagedRouter,
+        origin: "https://phoenix-host.test",
+        entry_route_id: "study-session",
+        app_bundle_id: "org.crosswake.host",
+        proof_app_bundle_id: "org.crosswake.host.proof",
+        device_signing: [mode: :automatic, team_id: "ABCDE12345"]
+      }
+
+      assert {:ok, host} = IOSHostConfig.normalize(declaration)
+      assert {:ok, _} = Generator.generate(config, host)
+      settings_path = Path.join(root, "native/ios/CrosswakeProofSettings.xcconfig")
+      prior = File.read!(settings_path)
+      next_declaration = %{declaration | proof_app_bundle_id: "org.crosswake.host.proofv2"}
+      assert {:ok, next_host} = IOSHostConfig.normalize(next_declaration)
+
+      Process.put(:crosswake_proof_settings_interrupt_after_publish, true)
+
+      assert {:error, {"PL-GENERATE-INTERRUPTED", "settings"}} =
+               Generator.generate(config, next_host)
+
+      Process.delete(:crosswake_proof_settings_interrupt_after_publish)
+      refute File.read!(settings_path) == prior
+      assert File.regular?(Path.join(root, "native/ios/.crosswake/ios_proof_settings.pending"))
+      assert {:error, findings} = Generator.check(config, next_host)
+      assert Enum.any?(findings, &(&1.rule_id == "PL-GENERATE-INTERRUPTED"))
+
+      assert {:ok, :recovered} = Generator.recover(config)
+      assert File.read!(settings_path) == prior
+      refute File.exists?(Path.join(root, "native/ios/.crosswake/ios_proof_settings.pending"))
+      assert :ok = Generator.check(config, host)
+    end)
+  end
+
+  test "version-1 manifests remain host-owned but fail the version-2 provenance check" do
+    with_root(fn root, config ->
+      old_spec = "// host-owned inert spec\n"
+
+      old_manifest =
+        Jason.encode!(%{
+          "schema_version" => 1,
+          "template_version" => 1,
+          "paths" => ["e2e/crosswake_proof_lane/proof_lane.spec.ts"],
+          "provenance" => "crosswake:proof-lane"
+        })
+
+      spec_path = Path.join(root, "e2e/crosswake_proof_lane/proof_lane.spec.ts")
+      manifest_path = Path.join(root, ".crosswake/proof_lane.json")
+      File.mkdir_p!(Path.dirname(spec_path))
+      File.mkdir_p!(Path.dirname(manifest_path))
+      File.write!(spec_path, old_spec)
+      File.write!(manifest_path, old_manifest)
+
+      assert {:ok, results} = Generator.generate(config)
+
+      assert %{
+               path: "e2e/crosswake_proof_lane/support/proof_lane_host_adapter.ts",
+               status: :created
+             } in results
+
+      assert File.read!(spec_path) == old_spec
+      assert File.read!(manifest_path) == old_manifest
+      assert {:error, findings} = Generator.check(config)
+      assert Enum.any?(findings, &(&1.rule_id == "PL-GENERATE-PROVENANCE"))
+    end)
+  end
+
+  test "check is satisfied by edited host-owned files but fails missing or unsafe desired state" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      host_file = Path.join(root, "e2e/crosswake_proof_lane/proof_lane.spec.ts")
+      File.write!(host_file, "// host-owned edit\n")
+      assert :ok = Generator.check(config)
+
+      File.rm!(Path.join(root, "test/crosswake_proof_lane/crosswake_proof_lane_test.exs"))
+
+      assert {:error,
+              [
+                %{
+                  rule_id: "PL-GENERATE-MISSING",
+                  path: "test/crosswake_proof_lane/crosswake_proof_lane_test.exs"
+                }
+              ]} = Generator.check(config)
+    end)
+  end
+
+  test "check and diff are byte-for-byte read-only and diff reports only safe sorted statuses" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+
+      File.write!(
+        Path.join(root, "e2e/crosswake_proof_lane/proof_lane.spec.ts"),
+        "// host-owned edit\n"
+      )
+
+      before = snapshot(root)
+      assert :ok = Generator.check(config)
+      diff = Generator.diff(config)
+      assert before == snapshot(root)
+      assert diff == Enum.sort_by(diff, & &1.path)
+      assert %{path: "e2e/crosswake_proof_lane/proof_lane.spec.ts", status: :different} in diff
+      refute Enum.empty?(diff)
+      assert Enum.all?(diff, &(&1.status in [:missing, :different, :current]))
+      refute Enum.empty?(diff)
+      refute Enum.any?(diff, &(inspect(&1) =~ "study/sync"))
+    end)
+  end
+
+  test "interrupted generation never promotes an incomplete manifest" do
+    with_root(fn root, config ->
+      Process.put(:crosswake_proof_lane_interrupt_before_manifest, true)
+      assert {:error, {"PL-GENERATE-INTERRUPTED", "manifest"}} = Generator.generate(config)
+      refute File.exists?(Path.join(root, ".crosswake/proof_lane.json"))
+      assert [] == staging_paths(root)
+      Process.delete(:crosswake_proof_lane_interrupt_before_manifest)
+    end)
+  end
+
+  test "concurrent generators preserve host-owned destinations" do
+    with_root(fn root, config ->
+      outcomes =
+        1..2
+        |> Task.async_stream(fn _ -> Generator.generate(config) end,
+          max_concurrency: 2,
+          ordered: false,
+          timeout: 30_000
+        )
+        |> Enum.map(fn {:ok, result} -> result end)
+
+      refute Enum.empty?(outcomes)
+      assert Enum.all?(outcomes, &match?({:ok, _}, &1))
+      assert File.regular?(Path.join(root, ".crosswake/proof_lane.json"))
+      assert [] == staging_paths(root)
+      assert :ok = Generator.check(config)
+    end)
+  end
+
+  test "generator actions ignore a poisoned former shared helper cache" do
+    with_root(fn root, config ->
+      existing_helpers = helper_directories()
+      poison = former_helper_path()
+      canary = Path.join(root, "poisoned-helper-ran")
+      File.write!(poison, "#!/bin/sh\nprintf poisoned-helper > \"#{canary}\"\nexit 0\n")
+      File.chmod!(poison, 0o700)
+
+      try do
+        assert {:ok, :created} = GeneratorFS.write(root, "e2e/direct.txt", "safe\n")
+        assert {:ok, "safe\n"} = GeneratorFS.read(root, "e2e/direct.txt")
+        assert GeneratorFS.regular?(root, "e2e/direct.txt")
+        assert :regular == GeneratorFS.status(root, "e2e/direct.txt")
+
+        assert {:ok, _} = Generator.generate(config)
+        assert :ok = Generator.check(config)
+        refute Enum.empty?(Generator.diff(config))
+        assert Enum.all?(Generator.diff(config), &(&1.status in [:current, :different, :missing]))
+
+        refute File.exists?(canary)
+        assert File.regular?(poison)
+        assert existing_helpers == helper_directories()
+      after
+        File.rm(poison)
+      end
+    end)
+  end
+
+  test "direct unsafe configs fail closed before generator actions inspect destinations" do
+    with_root(fn root, config ->
+      for {key, unsafe_value} <- [
+            {:ios_shell_root, "/tmp/not-the-native-ios-root"},
+            {:sync_path, "/study/\"sync"},
+            {:sync_path, "/study/" <> <<92>> <> "sync"},
+            {:evidence_path, "/_proof/\"evidence"},
+            {:evidence_path, "/_proof/" <> <<92>> <> "evidence"}
+          ] do
+        unsafe_config = Map.put(config, key, unsafe_value)
+        before = snapshot(root)
+
+        for action <- [&Generator.generate/1, &Generator.check/1, &Generator.diff/1] do
+          assert_raise Config.Error,
+                       "PL-CONFIG-VALUE: #{key}; use the documented local proof-lane shape",
+                       fn -> action.(unsafe_config) end
+        end
+
+        assert before == snapshot(root)
+      end
+    end)
+  end
+
+  test "application and selected config reject unsafe endpoints before output-root creation" do
+    with_root(fn root, config ->
+      previous = Application.get_env(:crosswake, :proof_lane)
+
+      try do
+        for {key, unsafe_value} <- [
+              {:sync_path, "/study/" <> <<92>> <> "sync"},
+              {:evidence_path, "/_proof/" <> <<92>> <> "evidence"}
+            ] do
+          unsafe_config = config |> Map.from_struct() |> Map.put(key, unsafe_value)
+          before = snapshot(root)
+          Application.put_env(:crosswake, :proof_lane, unsafe_config)
+
+          assert_raise Mix.Error,
+                       "PL-CONFIG-VALUE: #{key}; use the documented local proof-lane shape",
+                       fn -> Mix.Task.rerun("crosswake.gen.proof_lane", ["ios"]) end
+
+          assert before == snapshot(root)
+
+          config_path = Path.join(root, "proof_lane_#{key}.exs")
+          File.write!(config_path, selected_config(unsafe_config))
+          before = snapshot(root)
+
+          assert_raise Mix.Error,
+                       "PL-CONFIG-VALUE: #{key}; use the documented local proof-lane shape",
+                       fn ->
+                         Mix.Task.rerun("crosswake.gen.proof_lane", [
+                           "ios",
+                           "--config",
+                           config_path
+                         ])
+                       end
+
+          assert before == snapshot(root)
+        end
+      after
+        if previous,
+          do: Application.put_env(:crosswake, :proof_lane, previous),
+          else: Application.delete_env(:crosswake, :proof_lane)
+      end
+    end)
+  end
+
+  test "descriptor-relative writes reject a symlinked generated ancestor" do
+    with_root(fn root, _config ->
+      outside = temporary_root()
+      File.mkdir_p!(outside)
+      on_exit(fn -> File.rm_rf!(outside) end)
+
+      File.mkdir_p!(Path.join(root, "e2e"))
+      File.rm_rf!(Path.join(root, "e2e"))
+      File.ln_s!(outside, Path.join(root, "e2e"))
+
+      assert {:error, {"PL-GENERATE-DESTINATION", "e2e/crosswake_proof_lane/proof_lane.spec.ts"}} =
+               GeneratorFS.write(root, "e2e/crosswake_proof_lane/proof_lane.spec.ts", "safe")
+
+      refute File.exists?(Path.join(outside, "crosswake_proof_lane/proof_lane.spec.ts"))
+    end)
+  end
+
+  test "descriptor publication uses only anonymous bytes and preserves collision winners" do
+    with_root(fn root, _config ->
+      relative = "e2e/descriptor.txt"
+      winner = "host-owned winner\n"
+
+      assert {:ok, :created} = GeneratorFS.write(root, relative, "exact rendered bytes\n")
+      assert File.read!(Path.join(root, relative)) == "exact rendered bytes\n"
+
+      assert {:ok, :reused} = GeneratorFS.write(root, relative, "replacement bytes\n")
+      assert File.read!(Path.join(root, relative)) == "exact rendered bytes\n"
+
+      collision = "e2e/collision.txt"
+      File.write!(Path.join(root, collision), winner)
+      assert {:ok, :reused} = GeneratorFS.write(root, collision, "replacement bytes\n")
+      assert File.read!(Path.join(root, collision)) == winner
+    end)
+  end
+
+  test "publication barriers are callback-only and post-publication failure preserves exact bytes" do
+    with_root(fn root, _config ->
+      parent = self()
+      relative = "e2e/barrier.txt"
+      expected = "exact rendered bytes\n"
+
+      task =
+        Task.async(fn ->
+          GeneratorFS.write(root, relative, expected,
+            before_publish: fn ->
+              send(parent, :before_publish)
+              :ok
+            end,
+            after_publish: fn ->
+              send(parent, :after_publish)
+              :error
+            end
+          )
+        end)
+
+      assert_receive :before_publish, 5_000
+      assert_receive :after_publish, 5_000
+      assert {:error, {"PL-GENERATE-WRITE", ^relative}} = Task.await(task)
+      assert File.read!(Path.join(root, relative)) == expected
+    end)
+  end
+
+  test "production publication source excludes named staging and privileged empty-path linking" do
+    generator = File.read!("lib/crosswake/proof_lane/generator.ex")
+    fs = File.read!("lib/crosswake/proof_lane/generator_fs.ex")
+    native = File.read!("priv/native/crosswake_proof_lane_fs.c")
+
+    refute generator =~ ".staging-"
+    refute generator =~ "promote_manifest"
+    refute fs =~ "input_file"
+    refute fs =~ "invoke_publish"
+    refute fs =~ "System.cmd(executable, args"
+    refute native =~ "AT_EMPTY_PATH"
+    refute native =~ "input_path"
+    assert native =~ "/proc/self/fd"
+    assert native =~ "AT_SYMLINK_FOLLOW"
+    assert native =~ "O_TMPFILE"
+  end
+
+  test "generator actions reject generated namespace and manifest symlinks without writes outside root" do
+    with_root(fn root, config ->
+      outside = temporary_root()
+      File.mkdir_p!(outside)
+      on_exit(fn -> File.rm_rf!(outside) end)
+
+      File.ln_s!(outside, Path.join(root, "e2e"))
+
+      assert {:error, {"PL-GENERATE-DESTINATION", "e2e/crosswake_proof_lane/proof_lane.spec.ts"}} =
+               Generator.generate(config)
+
+      refute File.exists?(Path.join(outside, "crosswake_proof_lane/proof_lane.spec.ts"))
+
+      before = snapshot(root)
+      diff = Generator.diff(config)
+
+      assert before == snapshot(root)
+      assert {:error, findings} = Generator.check(config)
+
+      assert Enum.any?(findings, fn finding ->
+               finding.rule_id == "PL-GENERATE-DESTINATION" &&
+                 finding.path == "e2e/crosswake_proof_lane/proof_lane.spec.ts"
+             end)
+
+      assert %{path: "e2e/crosswake_proof_lane/proof_lane.spec.ts", status: :missing} in diff
+    end)
+
+    with_root(fn root, config ->
+      outside = temporary_root()
+      File.mkdir_p!(outside)
+      File.ln_s!(outside, Path.join(root, ".crosswake"))
+      on_exit(fn -> File.rm_rf!(outside) end)
+
+      assert {:error, {"PL-GENERATE-DESTINATION", ".crosswake/proof_lane.json"}} =
+               Generator.generate(config)
+
+      refute File.exists?(Path.join(outside, "proof_lane.json"))
+    end)
+  end
+
+  test "unsafe later proof destinations are rejected before settings or scaffold publication" do
+    with_root(fn root, config ->
+      outside = temporary_root()
+      File.mkdir_p!(root)
+      File.mkdir_p!(outside)
+      File.ln_s!(outside, Path.join(root, "test"))
+
+      assert {:error, {"PL-GENERATE-DESTINATION", _}} = Generator.generate(config)
+      refute File.exists?(Path.join(root, "native/ios/CrosswakeProofSettings.xcconfig"))
+      assert File.ls!(outside) == []
+    end)
+  end
+
+  test "proof migration rejects extra and remapped configuration graph nodes" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project_path = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project_path)
+
+      extra =
+        "\n\t\tA10000000000000000000099 = {isa = XCBuildConfiguration; buildSettings = {}; name = Preview; };\n"
+
+      with_extra =
+        String.replace(
+          original,
+          "/* End XCBuildConfiguration section */",
+          extra <> "/* End XCBuildConfiguration section */"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(with_extra)
+
+      remapped =
+        String.replace(
+          original,
+          "buildConfigurations = (A10000000000000000000070, A10000000000000000000071,);",
+          "buildConfigurations = (A10000000000000000000070, A10000000000000000000072,);"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(remapped)
+    end)
+  end
+
+  test "proof recovery preserves a third-party settings edit and retains recovery evidence" do
+    with_root(fn root, config ->
+      declaration = %{
+        router: ManagedRouter,
+        origin: "https://phoenix-host.test",
+        entry_route_id: "study-session",
+        app_bundle_id: "org.crosswake.host",
+        proof_app_bundle_id: "org.crosswake.host.proof",
+        device_signing: [mode: :automatic, team_id: "ABCDE12345"]
+      }
+
+      assert {:ok, host} = IOSHostConfig.normalize(declaration)
+      assert {:ok, _} = Generator.generate(config, host)
+      settings = Path.join(root, "native/ios/CrosswakeProofSettings.xcconfig")
+      Process.put(:crosswake_proof_settings_interrupt_after_publish, true)
+
+      assert {:error, {"PL-GENERATE-INTERRUPTED", "settings"}} =
+               Generator.generate(config, %{host | proof_app_bundle_id: "org.crosswake.host.next"})
+
+      Process.delete(:crosswake_proof_settings_interrupt_after_publish)
+      external = "// host edit after interrupted update\n"
+      File.write!(settings, external)
+
+      assert {:error, {"PL-GENERATE-RECOVERY-CONFLICT", "settings"}} = Generator.recover(config)
+      assert File.read!(settings) == external
+      assert File.regular?(Path.join(root, "native/ios/.crosswake/ios_proof_settings.pending"))
+      assert File.regular?(Path.join(root, "native/ios/.crosswake/ios_proof_settings.stage.json"))
+    end)
+  end
+
+  test "proof settings checker resolves from the packaged priv directory" do
+    checker = Path.join(:code.priv_dir(:crosswake), "crosswake/verify_ios_host_settings.mjs")
+    assert File.regular?(checker)
+    assert {_, 0} = System.cmd(System.find_executable("node"), ["--check", checker])
+  end
+
+  defp staging_paths(root), do: Path.wildcard(Path.join(root, ".crosswake/*.staging-*"))
+
+  defp former_helper_path do
+    source = File.read!("priv/native/crosswake_proof_lane_fs.c")
+    digest = source |> then(&:crypto.hash(:sha256, &1)) |> Base.encode16(case: :lower)
+    Path.join(System.tmp_dir!(), "crosswake-proof-lane-fs-" <> digest)
+  end
+
+  defp helper_directories do
+    Path.wildcard(Path.join(System.tmp_dir!(), "crosswake-proof-lane-helper-*"))
+  end
+
+  defp selected_config(config) do
+    inspect(config,
+      limit: :infinity,
+      printable_limit: :infinity,
+      charlists: :as_lists,
+      structs: false
+    )
+    |> then(&"import Config\nconfig :crosswake, :proof_lane, #{&1}\n")
+  end
+
+  test "proof migration rejects a multiline unrecognized build configuration" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project)
+
+      extra = """
+      \t\tA10000000000000000000099 = {
+      \t\t\tisa = XCBuildConfiguration;
+      \t\t\tbuildSettings = {
+      \t\t\t\tSWIFT_VERSION = 5.0;
+      \t\t\t};
+      \t\t\tname = Preview;
+      \t\t};
+      """
+
+      changed =
+        String.replace(
+          original,
+          "/* End XCBuildConfiguration section */",
+          extra <> "/* End XCBuildConfiguration section */"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(changed)
+    end)
+  end
+
+  test "proof migration rejects duplicate configuration-list IDs" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project)
+
+      duplicate = """
+      \t\tA10000000000000000000040 = {
+      \t\t\tisa = XCConfigurationList;
+      \t\t\tbuildConfigurations = (A10000000000000000000070, A10000000000000000000071,);
+      \t\t\tdefaultConfigurationIsVisible = 0;
+      \t\t\tdefaultConfigurationName = Release;
+      \t\t};
+      """
+
+      changed =
+        String.replace(
+          original,
+          "/* End XCConfigurationList section */",
+          duplicate <> "/* End XCConfigurationList section */"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(changed)
+    end)
+  end
+
+  test "proof migration accepts legal whitespace and comment reformatting of recognized objects" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project)
+
+      reformatted =
+        String.replace(
+          original,
+          "A10000000000000000000070 = {isa = XCBuildConfiguration;",
+          "A10000000000000000000070 /* Debug config */\n\t\t\t=\n\t\t\t{\n\t\t\t\tisa\t=\tXCBuildConfiguration;"
+        )
+
+      assert {:ok, %{status: :migration_required}} =
+               IOSHostProjectMigration.preview_proof_contents(reformatted)
+    end)
+  end
+
+  test "proof migration rejects remapped target references and duplicate configuration IDs" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      project = Path.join(root, "native/ios/CrosswakeProofLane.xcodeproj/project.pbxproj")
+      original = File.read!(project)
+
+      remapped_target =
+        String.replace(
+          original,
+          "buildConfigurationList = A10000000000000000000040",
+          "buildConfigurationList = A10000000000000000000041",
+          global: false
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(remapped_target)
+
+      duplicate_config = """
+
+      A10000000000000000000070 = {
+      isa = XCBuildConfiguration;
+      buildSettings = {};
+      name = Debug;
+      };
+      """
+
+      duplicate =
+        String.replace(
+          original,
+          "/* End XCBuildConfiguration section */",
+          duplicate_config <> "/* End XCBuildConfiguration section */"
+        )
+
+      assert {:error, %{cause: :unrecognized_project}} =
+               IOSHostProjectMigration.preview_proof_contents(duplicate)
+    end)
+  end
+end
