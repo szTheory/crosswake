@@ -4,17 +4,17 @@ milestone: v28.0
 milestone_name: Truth and Release Train
 current_phase: 194
 current_phase_name: Bearings reset and ADR amendments
-status: ready_to_plan
-stopped_at: Phase 194 context gathered
-last_updated: "2026-10-25T01:47:26.036Z"
+status: executing
+stopped_at: Completed 194-01-PLAN.md
+last_updated: "2026-10-25T02:31:32.141Z"
 last_activity: 2026-10-24
-last_activity_desc: Phase 194 context gathered (18 decisions; PLAN-02/SC1 extended with AGENTS.md trim)
-state_head: d844654098f074228c44a5e9e252cddc3ab9b90a
+last_activity_desc: Phase 194 execution started
+state_head: 8a3f2f9d40d8ac50406792e5bf57084b6e2c4603
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 9
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -26,10 +26,10 @@ See `.planning/PROJECT.md` for the core thesis and decisions. Core value remains
 
 ## Current Position
 
-Phase: 194 (Bearings reset and ADR amendments) — READY TO EXECUTE
-Plan: —
-Status: Context gathered; ready to plan Phase 194
-Last activity: 2026-10-24 — Phase 194 context gathered ([context](phases/194-bearings-reset-and-adr-amendments/194-CONTEXT.md))
+Phase: 194 (Bearings reset and ADR amendments) — EXECUTING
+Plan: 2 of 9
+Status: Ready to execute
+Last activity: 2026-10-24 — Phase 194 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -113,6 +113,6 @@ The six separate v24 debt items remain in the [debt disposition](milestones/v24.
 
 ## Session
 
-**Last session:** 2026-10-24T23:44:46.584Z
-**Stopped at:** Phase 194 context gathered
-**Resume file:** .planning/workstreams/quality-ratchet-release/phases/194-bearings-reset-and-adr-amendments/194-CONTEXT.md
+**Last session:** 2026-10-25T02:31:32.124Z
+**Stopped at:** Completed 194-01-PLAN.md
+**Resume file:** None
