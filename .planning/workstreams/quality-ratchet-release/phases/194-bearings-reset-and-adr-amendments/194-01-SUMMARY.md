@@ -56,7 +56,7 @@ The word "frozen" no longer appears in the Android support-matrix notes; they no
 2. **Files 2 to 3 override.** `ios_host_generation.json` records the manifest digest, so it necessarily changes (hash-only). `shell.json` was kept at its tracked version. The plan's `regen: files 2` was replaced with the recorded override value `files 3`.
 3. **Line-neutral test rewrite.** `support_matrix_test.exs` was rewritten so its assertions do not depend on line positions that the wording change shifts.
 4. **Golden digest update.** `test/fixtures/shell/ios/production_generation.sha256.json` was updated to the new generation digest.
-5. **Orchestrator fix commit d1435bf3.** Four lane failures came from files outside this plan: PROJECT.md lacked the `### v28.0 Truth and Release Train (active)` heading, and 194-09-PLAN.md used awk `$10`, which matched privacy.commercial_detail. The orchestrator fixed both; the affected tests and test/crosswake/planning then passed (92 tests, 0 failures).
+5. **Orchestrator fix commit d1435bf3.** Four lane failures came from files outside this plan: PROJECT.md lacked the `### v28.0 Truth and Release Train (active)` heading, and 194-09-PLAN.md used awk `$(10)`, which matched privacy.commercial_detail. The orchestrator fixed both; the affected tests and test/crosswake/planning then passed (92 tests, 0 failures).
 6. The per-plan HEAD ledger file was absent, so `plan_head_before` is recorded as d1435bf3, the HEAD when the final product work began; the SUMMARY and tracking commits are not counted.
 
 ## Known Stubs

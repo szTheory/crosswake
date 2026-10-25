@@ -131,8 +131,9 @@ widening Crosswake into a generic sync, storage, native-control, or multi-platfo
 
 **Key context:** Crosswake is infrastructure for the **First B2C Adopter**, not a separate business
 line. A web-only customer Alpha has no Crosswake deliverable; mobile work serves public v1.
-Android, native-menu breadth, new companion packages, brand/showcase polish, and generic
-sync/storage productization are frozen. Reversal requires two independent active adopters or a
+Native-menu breadth, new companion packages, brand/showcase polish, and generic
+sync/storage productization are frozen; Android is unfrozen only for proof and parity of
+existing contracts (ADR amendment A1). Reversal requires two independent active adopters or a
 separately funded business-line mandate. Durable reasoning is in
 `.planning/ADR-FIRST-B2C-ADOPTER.md`; the complete retrieval-oriented game plan is in
 `.planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md`.
@@ -507,7 +508,7 @@ v24.0 closed bounded maintenance work with exact-source proof and retained histo
 ## Constraints
 
 - **Tech stack**: Phoenix-native Elixir library with mobile shell integration seams — the product must extend Phoenix instead of replacing it with a JS-framework-first abstraction.
-- **Platform**: iOS and Android remain library targets; Android stays frozen at its current generator, Maven, JVM and vector posture under the governing ADR.
+- **Platform**: iOS and Android remain library targets; Android is unfrozen only for proof and parity of existing contracts: generated-shell, Maven, JVM-hermetic and shared-vector evidence. Claims stop at JVM-hermetic proof; no emulator, device or feature-breadth claim is made until a later phase produces that evidence. Android never gates the first adopter's physical-iPhone proof. Re-freeze if Android work delays any iOS gate by more than one milestone.
 - **Architecture**: Per-route runtime ownership is authoritative — solution design cannot collapse into single-runtime ideology.
 - **Security**: Route allowlists, origin allowlists, capability allowlists, active-route checks, and cache sensitivity need explicit defaults.
 - **Proof posture**: Deterministic CI, example-host verification, docs integrity, and release discipline are required early.

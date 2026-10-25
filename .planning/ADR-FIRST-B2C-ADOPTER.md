@@ -43,6 +43,8 @@ High
 
 Accepted
 
+Amended 2026-10-24 by A1 (Android posture) and A2 (synthetic-profile reversal gate), appended at the end of this file; the reversal condition above still applies.
+
 ## Alpha does not depend on Crosswake
 
 **Decision**
@@ -419,3 +421,40 @@ risks:
 4. A rewrite discards valuable automated tests and fixtures.
 5. Offline support is claimed more broadly than the proven island.
 6. App Store latency leaves a broken binary path without server-side disablement.
+
+## A1 — Android unfrozen for proof and parity of existing contracts
+
+**Decision**
+
+Android is unfrozen only for proof and parity of existing contracts: generated-shell, Maven,
+JVM-hermetic and shared-vector evidence. Claims stop at JVM-hermetic proof; no emulator, device or
+feature-breadth claim is made until a later phase produces that evidence. Android never gates the
+first adopter's physical-iPhone proof. Re-freeze if Android work delays any iOS gate by more than
+one milestone.
+
+**Why**
+
+Cross-platform teams (persona P7) need evidence that existing contracts hold on Android. Contract
+parity is evidence work, not feature breadth, so it can proceed without competing with the first
+adopter's iPhone path.
+
+**Alternatives considered**
+
+- Keep the v21 freeze unchanged.
+- Unfreeze Android for new features, templates or device proof.
+
+**What would change my mind**
+
+Android work delays any iOS gate by more than one milestone; the freeze is then restored.
+
+**Date**
+
+2026-10-24
+
+**Confidence**
+
+Medium
+
+**Status**
+
+Accepted (amends GET-6)
