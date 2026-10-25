@@ -4,18 +4,18 @@ milestone: v28.0
 milestone_name: Truth and Release Train
 current_phase: 195
 current_phase_name: Pipeline repair and hygiene
-status: planning
-last_updated: "2026-10-25T15:55:08.215Z"
-state_head: a6460a923fe8053ff8a036cd2a028ea95d8c3903
+status: executing
+stopped_at: Completed 195-01-PLAN.md
+last_updated: "2026-10-25T20:39:10.991Z"
+state_head: 53cc15067b4796cbe2517e6a2f54ae5a332de99f
 progress:
-  total_phases: 1
+  total_phases: 2
   completed_phases: 1
-  total_plans: 9
-  completed_plans: 9
-  percent: 100
+  total_plans: 22
+  completed_plans: 10
+  percent: 45
 last_activity: 2026-10-25
-stopped_at: Phase 194 complete, ready to plan Phase 195
-last_activity_desc: Phase 194 verified and marked complete
+last_activity_desc: Phase 195 planned
 ---
 
 # Project State
@@ -24,16 +24,32 @@ See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.
 
 ## Current Position
 
-Phase: 195 — Pipeline repair and hygiene
-Plan: Not started
-Status: Ready to plan
+Phase: 195 (Pipeline repair and hygiene) — EXECUTING
+Plan: 2 of 13
+Status: Ready to execute
 
 ## Exact Next Action
 
-What was checked: Phase 194 is verified as passed (194-VERIFICATION.md, 5 of 5 must-haves met). The regression lane ran 2747 tests with 0 failures. The code review found 0 critical issues; its 10 advisory findings in bearings-report are open in 194-REVIEW-DISPOSITION.md. What happened: PR #247 and PR #248 are merged. The closeout PR `docs/194-closeout` carries the review, the verification and the completion records. What is unknown: CI on the closeout PR head. Nothing was released or tagged.
+What was checked: Phase 195 has 13 plans (195-01 to 195-13, waves 1 to 13 in order). They cover REL-01 to REL-06, HYG-01 and HYG-02. The plan checker ran three times, then a targeted fix closed the last 5 warnings. The probes found no verify-path or failing-direction problems in 53 commands. What happened: Phase 194's closeout PR #249 is merged. The plans are committed on local branch `fix/release-fixture-version-stamp` and are not pushed; plan 195-01 expects to start on that branch, and the plans reach `main` inside PR1. What is unknown: CI on PR1, because it is not opened yet. Nothing was released, tagged or pushed.
 
-Next action: merging the closeout PR needs its own one-use `allow` (not given). Then `/gsd-plan-phase 195 --ws quality-ratchet-release`.
+Next action: `/gsd-execute-phase 195 --ws quality-ratchet-release` from branch `fix/release-fixture-version-stamp`. Every merge, tag push and remote branch delete in the plans needs its own one-use `allow`.
 
 ## Carried debt
 
 See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md); the v23 deferred table is in `milestones/v23.0-closeout`. The adopter lane stays parked; its resume is in ROLLING PARKED.
+
+## Performance Metrics
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 195 P01 | 100 min | 3 tasks | 11 files |
+
+## Decisions
+
+- [Phase 195]: Shell fixture comparisons normalize only version-derived values (stamp, crosswake_version, SwiftPM minimumVersion) on both sides; fixtures keep literal 0.2.11
+
+## Session
+
+**Last session:** 2026-10-25T20:39:10.960Z
+**Stopped at:** Completed 195-01-PLAN.md
+**Resume file:** None

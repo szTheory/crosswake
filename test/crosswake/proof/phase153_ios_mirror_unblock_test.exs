@@ -300,6 +300,11 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
     assert File.stat!(@parity_script).mode |> Bitwise.band(0o111) != 0
   end
 
+  # `actions/checkout@<40 lowercase hex> # v<version>` — one predicate for the live check and
+  # its negative controls.
+  defp sha_pinned_checkout?(text),
+    do: Regex.match?(~r/actions\/checkout@[0-9a-f]{40} # v[0-9]+\.[0-9]+\.[0-9]+/, text)
+
   @tag :phase153_ios_mirror_unblock
   test "the parity workflow satisfies the merge-blocking naming and checkout contract" do
     workflow = File.read!(@parity_workflow)
@@ -313,7 +318,15 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
     assert parity =~ "fetch-depth: 0"
     assert parity =~ "fetch-tags: true"
     # This repo's dominant discipline is an immutable SHA pin plus its reviewed version comment.
-    assert parity =~ "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.2"
+    # The shape is asserted, not a literal SHA, so a Dependabot bump keeps passing while a
+    # tag-only or comment-less pin does not.
+    assert sha_pinned_checkout?(parity)
+    refute sha_pinned_checkout?("      - uses: actions/checkout@v6\n")
+
+    refute sha_pinned_checkout?(
+             "      - uses: actions/checkout@" <> String.duplicate("a", 40) <> "\n"
+           )
+
     assert parity =~ "./script/check_ios_mirror_parity.sh"
 
     umbrella = job_section!(workflow, "merge-blocking-crosswake-ci")
