@@ -1,0 +1,5 @@
+state: pre_trim_lines 124
+state: lines 40
+state: sections ## Current Position;## Exact Next Action;## Carried debt;
+state: load rc 0
+state: current_phase 194

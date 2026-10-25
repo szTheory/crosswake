@@ -1,0 +1,9 @@
+ritual: scope repo-live hits 0
+ritual: scope gsd-core hits 0
+ritual: scope gsd-local-patches hits 0
+ritual: scope claude-commands hits 0
+ritual: scope claude-agents hits 0
+ritual: scope project-memory hits 0
+ritual: control historical_hits 6
+ritual: live_definition none
+ritual: convention rolling_loop_rules yes
