@@ -15,6 +15,8 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
 
   async function waitForInactiveLifecycle(page) {
     await expect.poll(() => page.locator('#crosswake-study-status').textContent()).toContain('Your saved answers remain on this iPhone.');
+    // The server markup already carries the paused copy with a placeholder icon; wait for the script's render.
+    await expect(page.locator('#crosswake-study-status-icon')).toHaveText('Ⅱ');
   }
 
   test.beforeEach(async ({ page }, testInfo) => {
