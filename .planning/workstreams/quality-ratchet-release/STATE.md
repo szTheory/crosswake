@@ -5,17 +5,17 @@ milestone_name: Truth and Release Train
 current_phase: 194
 current_phase_name: Bearings reset and ADR amendments
 status: executing
-stopped_at: Completed 194-07-PLAN.md
+stopped_at: Completed 194-08-PLAN.md
 last_updated: "2026-10-25T13:50:58.164Z"
 state_head: 16b8a738236197d7d8d720f739ab143a7eab0098
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 9
-  completed_plans: 7
+  completed_plans: 8
   percent: 0
 last_activity: 2026-10-25
-last_activity_desc: Plan 194-07 bearings-report sync, PR classes and local work
+last_activity_desc: Plan 194-08 bearings-report caps, triggers, persona tags, 40-line cap
 ---
 
 # Project State
@@ -25,14 +25,14 @@ See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.
 ## Current Position
 
 Phase: 194 (Bearings reset and ADR amendments), executing
-Plan: 8 of 9 next
-Status: Plans 01–07 complete; plans 08–09 not started
+Plan: 9 of 9 next
+Status: Plans 01–08 complete; plan 09 not started
 
 ## Exact Next Action
 
-What was checked: the bearings-report sync, PR-class and local-work checks against real captured fixtures and a live run, with negative controls (40 tests, 0 failures). What happened: the report prints ahead/behind, PR classes with stale PRs and local-work counts, and a failed fetch or truncated list is UNVERIFIED. What is unknown: file checks and the 40-line truncation are not built yet (plan 08). Nothing was pushed, merged, released or tagged.
+What was checked: the bearings-report line caps, seed and debt triggers, persona tags and 40-line cap against fixtures with negative controls (72 tests, 0 failures), the merge-blocking lane (2747 tests, 0 failures) and a live run on this branch. What happened: the live run prints no UNVERIFIED line (4 caps ok, 22 prose-only seeds, 12 carried debt rows, 30 of 30 requirements tagged); no workflow or merge-blocking list names the report. What is unknown: nothing is pushed, so CI has not run on these commits. Nothing was pushed, merged, released or tagged.
 
-Next command: `$gsd-execute-phase 194 --ws quality-ratchet-release` (plan 08).
+Next command: `$gsd-execute-phase 194 --ws quality-ratchet-release` (plan 09).
 
 ## Carried debt
 

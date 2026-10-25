@@ -13,8 +13,8 @@ Each requirement carries a persona/job tag: P1 study founder, P5 skeptical mobil
 - [ ] **PLAN-01** [M]: `.planning/ROADMAP-ROLLING.md` exists with NOW/NEXT/LATER/PARKED/DROPPED; every row carries outcome, horizon, effort, `adr:` field and promotion trigger; `wc -l` <= 120 is asserted by the bearings report.
 - [ ] **PLAN-02** [M]: `.planning/BEARINGS.md` (<= 60 lines) is listed first in AGENTS.md Project Context; durable lessons from MILESTONE-ARC.md are migrated and MILESTONE-ARC.md is marked historical; AGENTS.md is trimmed to <= 102 lines (measured cap, recorded 2026-10-25) with the approval-gate paragraph byte-identical, no v21/v22 pointers, and every removed rule dispositioned.
 - [ ] **PLAN-03** [M]: The workstream STATE.md is <= 40 lines with one handoff; "Handoff history" is removed and the byte-snapshot ritual is deleted from the milestone-start convention.
-- [ ] **PLAN-04** [M]: `script/bearings-report` prints <= 40 plain-language lines (CI for the main tip, read from the PR head that produced it and naming the commit CI ran on, plus whether CI has run on local HEAD, ahead/behind, open PR classes, worktrees, stashes and unlanded branches, line caps, fired seed/debt triggers); it exits non-zero and says UNVERIFIED if any read fails; each check has a negative-control test; it is not merge-blocking.
-- [ ] **PLAN-05** [M]: `.planning/PERSONAS.md` (<= 1 page, P1–P7, J1–J5) exists; every requirement in a milestone REQUIREMENTS file carries a persona/job tag or `M`; the superseded root JTBD ordering is recorded as not executed.
+- [x] **PLAN-04** [M]: `script/bearings-report` prints <= 40 plain-language lines (CI for the main tip, read from the PR head that produced it and naming the commit CI ran on, plus whether CI has run on local HEAD, ahead/behind, open PR classes, worktrees, stashes and unlanded branches, line caps, fired seed/debt triggers); it exits non-zero and says UNVERIFIED if any read fails; each check has a negative-control test; it is not merge-blocking.
+- [x] **PLAN-05** [M]: `.planning/PERSONAS.md` (<= 1 page, P1–P7, J1–J5) exists; every requirement in a milestone REQUIREMENTS file carries a persona/job tag or `M`; the superseded root JTBD ordering is recorded as not executed.
 
 ### ADR amendments (ADR)
 
@@ -87,8 +87,8 @@ Tracked in the rolling roadmap (NEXT/LATER), not in this milestone: v29 Android 
 | PLAN-01 | Phase 194 | Pending |
 | PLAN-02 | Phase 194 | Pending |
 | PLAN-03 | Phase 194 | Pending |
-| PLAN-04 | Phase 194 | Pending |
-| PLAN-05 | Phase 194 | Pending |
+| PLAN-04 | Phase 194 | Complete |
+| PLAN-05 | Phase 194 | Complete |
 | ADR-01 | Phase 194 | Complete |
 | ADR-02 | Phase 194 | Complete |
 | REL-01 | Phase 195 | Pending |
