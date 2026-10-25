@@ -67,7 +67,7 @@ Plans:
 - [x] 194-06-PLAN.md — bearings-report core: launcher, verdict/exit contract, CI for the main tip via its PR head, CI negative controls
 
 **Wave 7** *(blocked on Wave 6 completion)*
-- [ ] 194-07-PLAN.md — bearings-report ahead/behind, open PR classes, worktrees/stashes/unlanded branches, exact-output test
+- [x] 194-07-PLAN.md — bearings-report ahead/behind, open PR classes, worktrees/stashes/unlanded branches, exact-output test
 
 **Wave 8** *(blocked on Wave 7 completion)*
 - [ ] 194-08-PLAN.md — bearings-report caps, seed/debt triggers, persona-tag check, 40-line cap, live and not-required evidence
