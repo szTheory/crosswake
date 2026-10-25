@@ -396,6 +396,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
         "Dockerfile",
         "gradlew",
         "LICENSE",
+        "bearings-report",
         "crosswake-ios-rehearsal",
         "crosswake-physical-iphone"
       ]
