@@ -73,7 +73,7 @@ Plans:
 - [x] 194-08-PLAN.md — bearings-report caps, seed/debt triggers, persona-tag check, 40-line cap, live and not-required evidence
 
 **Wave 9** *(blocked on Wave 8 completion)*
-- [ ] 194-09-PLAN.md — Land PR2 (pre-push checks, privacy, CI on head, its own merge allow), bearings-report on main, closeout PR opened
+- [x] 194-09-PLAN.md — Land PR2 (pre-push checks, privacy, CI on head, its own merge allow), bearings-report on main, closeout PR opened
 
 **Research**: Skip (small, decided)
 
@@ -152,7 +152,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 194. Bearings reset and ADR amendments | 0/8 | Planned | - |
+| 194. Bearings reset and ADR amendments | 9/9 | Executed; closeout PR open | - |
 | 195. Pipeline repair and hygiene | 0/TBD | Not started | - |
 | 196. Spec and structure ratchet | 0/TBD | Not started | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
