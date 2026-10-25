@@ -53,7 +53,7 @@ The ADR now carries A1 (Android unfrozen only for proof and parity of existing c
 
 ## Deviations from Plan
 
-1. **[Rule 1 - Bug] Plan 01 SUMMARY tripped the privacy scan.** It contained awk `$10` text, which matched `privacy.commercial_detail` and failed `first_adopter_context_test` (2 failures). Rewrote it as `$(10)` in `194-01-SUMMARY.md`; committed with the A1 commit.
+1. **[Rule 1 - Bug] Plan 01 SUMMARY tripped the privacy scan.** It contained a dollar-sign awk field reference with two digits, which matched `privacy.commercial_detail` and failed `first_adopter_context_test` (2 failures). Rewrote it with a parenthesized field number in `194-01-SUMMARY.md`; committed with the A1 commit.
 2. **[Rule 1 - Bug] Line numbers drifted.** PROJECT.md posture lines are at 132-136 and 510 (not 130-131 and 506); history lines are now 167, 171 and 498. The allowlist is keyed by text, so this had no effect on the check.
 3. **[Rule 1 - Bug] First PROJECT.md rewrite matched the SC4 pattern** (`frozen; Android is unfrozen`). Changed the semicolon to a period; included in the SC4 commit rather than the A1 commit.
 4. **A2 commit ordering.** A1 and A2 were written together, then A2 was held back so each commit holds only its own section.
