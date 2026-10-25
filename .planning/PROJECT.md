@@ -66,11 +66,15 @@ Archive: `.planning/workstreams/quality-ratchet-release/milestones/v23.0-ROADMAP
 
 ## Current Milestone Goals
 
-None selected. v27.0 shipped 2026-10-24, and the next scope is chosen with `$gsd-new-milestone --ws quality-ratchet-release`. Priority order is unchanged: the governing ADR's first-adopter path, then only defects shown by evidence. Carried v27 debt is in the [debt disposition](workstreams/quality-ratchet-release/milestones/v27.0-closeout/debt-disposition.md).
+v28.0 Truth and Release Train (phases 194–199, started 2026-10-24): land the bearings and ADR amendments, make `main` and the release pipeline trustworthy, harden the sensitive specs, correct the public docs, prove Android from a foreign host, and cut one real release behind per-publish `allow`. Carried v27 debt is in the [debt disposition](workstreams/quality-ratchet-release/milestones/v27.0-closeout/debt-disposition.md).
 
 **Archive:** `.planning/milestones/v19.0-ROADMAP.md`, `.planning/milestones/v19.0-REQUIREMENTS.md`, and `.planning/milestones/v19.0-MILESTONE-AUDIT.md`.
 
 ## Active Workstreams
+
+### v28.0 Truth and Release Train (active)
+
+Workstream: Quality Ratchet & Release. Phases 194–199; 30 requirements. [Roadmap](workstreams/quality-ratchet-release/ROADMAP.md), [requirements](workstreams/quality-ratchet-release/REQUIREMENTS.md), [scope](workstreams/quality-ratchet-release/v28.0-SCOPE.md).
 
 ### v27.0 Land and Clean Up (Phases 189–193) — shipped 2026-10-24
 
