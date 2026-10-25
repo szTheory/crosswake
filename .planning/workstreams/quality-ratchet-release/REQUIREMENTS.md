@@ -18,8 +18,8 @@ Each requirement carries a persona/job tag: P1 study founder, P5 skeptical mobil
 
 ### ADR amendments (ADR)
 
-- [ ] **ADR-01** [P7]: An ADR amendment unfreezes Android for proof and parity of existing contracts, with a re-freeze trigger (Android work delays an iOS gate by more than one milestone); AGENTS.md, ADR, PROJECT.md, support matrix and capability map "frozen" text change in the same PR.
-- [ ] **ADR-02** [M]: An ADR amendment records the synthetic-profile reversal gate (profile, failing criterion, cited artifact, smallest slice, rollback; at most one reopened item per milestone) and permits profile scenario rows over one host as proof structure.
+- [x] **ADR-01** [P7]: An ADR amendment unfreezes Android for proof and parity of existing contracts, with a re-freeze trigger (Android work delays an iOS gate by more than one milestone); AGENTS.md, ADR, PROJECT.md, support matrix and capability map "frozen" text change in the same PR.
+- [x] **ADR-02** [M]: An ADR amendment records the synthetic-profile reversal gate (profile, failing criterion, cited artifact, smallest slice, rollback; at most one reopened item per milestone) and permits profile scenario rows over one host as proof structure.
 
 ### Release train (REL)
 
@@ -89,8 +89,8 @@ Tracked in the rolling roadmap (NEXT/LATER), not in this milestone: v29 Android 
 | PLAN-03 | Phase 194 | Pending |
 | PLAN-04 | Phase 194 | Pending |
 | PLAN-05 | Phase 194 | Pending |
-| ADR-01 | Phase 194 | Pending |
-| ADR-02 | Phase 194 | Pending |
+| ADR-01 | Phase 194 | Complete |
+| ADR-02 | Phase 194 | Complete |
 | REL-01 | Phase 195 | Pending |
 | REL-02 | Phase 195 | Pending |
 | REL-03 | Phase 195 | Pending |
