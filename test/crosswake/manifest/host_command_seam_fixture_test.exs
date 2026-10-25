@@ -4,6 +4,7 @@ defmodule Crosswake.Manifest.HostCommandSeamFixtureTest do
   alias Crosswake.Shell.IOSHostConfig
   alias Crosswake.Shell.IOSHostGeneration
   alias Crosswake.TestSupport.HostCommandFixtures.DeclaringRouter
+  alias Crosswake.TestSupport.VersionStamp
 
   @origin "https://seam.crosswake.test"
   @generated_at "2026-10-14T00:00:00Z"
@@ -65,14 +66,21 @@ defmodule Crosswake.Manifest.HostCommandSeamFixtureTest do
     Jason.encode!(sorted(document), pretty: true) <> "\n"
   end
 
-  test "committed Swift seam fixture is byte-identical to a fresh Elixir render" do
+  test "committed Swift seam fixture matches a fresh Elixir render apart from crosswake_version" do
     bytes = expected_bytes()
 
     if System.get_env("CROSSWAKE_WRITE_SEAM_FIXTURE") == "1" do
       File.write!(@fixture, bytes)
     end
 
-    assert File.read!(@fixture) == bytes
+    committed = File.read!(@fixture)
+
+    # Only the crosswake_version values are release-derived; the fixture keeps
+    # exactly the two it carried (manifest and legacy manifest).
+    assert VersionStamp.crosswake_version_count(committed) == 2
+
+    assert VersionStamp.normalize_crosswake_version(committed) ==
+             VersionStamp.normalize_crosswake_version(bytes)
   end
 
   test "fixture shape: legacy manifest has no seam fields, activations match declarations" do
