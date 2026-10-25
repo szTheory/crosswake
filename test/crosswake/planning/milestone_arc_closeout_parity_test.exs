@@ -91,6 +91,11 @@ defmodule Crosswake.Planning.MilestoneArcCloseoutParityTest do
     assert project =~ "strategic source of truth" and
              project =~ ".planning/ROADMAP-ROLLING.md",
            "PROJECT.md must reference .planning/ROADMAP-ROLLING.md as the strategic source of truth"
+
+    arc = File.read!(@arc_path)
+
+    assert arc =~ "HISTORICAL — superseded 2026-10-24",
+           "MILESTONE-ARC.md must carry the historical banner"
   end
 
   test "v3.6 closeout ledger has required frontmatter keys and exception shape" do
