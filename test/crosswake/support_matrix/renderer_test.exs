@@ -49,11 +49,18 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "Generic sync is not claimed."
   end
 
-  test "first adopter readiness preserves Android freeze and makes no unsupported proof claim" do
+  test "first adopter readiness states Android existing-contract posture and makes no unsupported proof claim" do
     guide = Renderer.render(SupportMatrix.canonical())
 
     assert guide =~
+             "Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim."
+
+    assert guide =~ "| Android (existing contracts) |"
+
+    refute guide =~
              "Android is frozen at its existing generator, Maven, JVM, and shared-vector posture."
+
+    refute guide =~ "Android during first adopter readiness"
 
     assert guide =~
              "Example-host, simulator, package-version, and policy-contract evidence do not prove an external host or physical device."
@@ -409,16 +416,23 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert install =~ "Do I need to rebuild?"
   end
 
-  test "NAV-06 renders the bounded iOS posture and frozen Android boundary" do
+  test "NAV-06 renders the bounded iOS posture and the Android existing-contract boundary" do
     guide = Renderer.render(SupportMatrix.canonical())
 
     for claim <- [
           "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion.",
           "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority.",
-          "Android retains its frozen generator, Maven, JVM, and shared-vector posture.",
-          "Android is frozen during first adopter iOS readiness: no new feature, parity, device, template, or release claim."
+          "Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim.",
+          "Android never gates the first adopter's physical-iPhone proof"
         ] do
       assert guide =~ claim
+    end
+
+    for old <- [
+          "Android retains its frozen generator, Maven, JVM, and shared-vector posture.",
+          "Android is frozen during first adopter iOS readiness"
+        ] do
+      refute guide =~ old
     end
   end
 end

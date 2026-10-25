@@ -1,0 +1,11 @@
+control clean-pass: ok
+control new-hit: ok
+control vanished-allow: ok
+control missing-file: ok
+control posture-missing: ok
+control joined-wrap: ok
+control unfrozen-not-hit: ok
+control ref-control-strong: ok
+control ref-control-weak: ok
+control static-no-limiter: ok
+selftest sc4-grep-194: controls 10 of 10 as expected

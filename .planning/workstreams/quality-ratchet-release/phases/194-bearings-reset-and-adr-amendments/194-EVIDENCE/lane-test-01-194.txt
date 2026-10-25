@@ -1,0 +1,1967 @@
+warning: the following files do not match any of the configured `:test_load_filters` / `:test_ignore_filters`:
+
+<repo>/test/support/bridge_live_view_case.ex
+<repo>/test/support/bridge_test_helpers.ex
+<repo>/test/support/compile_router_case.ex
+<repo>/test/support/example_host.ex
+<repo>/test/support/host_command_fixtures.ex
+<repo>/test/support/phase175_rel17_fixtures.ex
+<repo>/test/support/phase_evidence_path.ex
+<repo>/test/support/proof_assertions.ex
+<repo>/test/support/release_candidate_receipt_fixtures.ex
+<repo>/test/support/release_workflow_fixtures.ex
+<repo>/test/support/router_fixtures.ex
+<repo>/test/support/stub_companion.ex
+<repo>/test/support/twin_git_fixtures.ex
+
+This might indicate a typo in a test file name (for example, using "foo_tests.exs" instead of "foo_test.exs").
+
+See the configuration for `:test_pattern` under `mix help test` for more information.
+
+Running ExUnit with seed: 999834, max_cases: 36
+Excluding tags: [:requires_example_host, :advisory_only, {:requires_example_host, true}, {:engine_present, true}, {:collateral_binaries, true}, {:advisory_only, true}]
+
+...................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................     warning: comparison between distinct types found:
+
+         left != right
+
+     given types:
+
+         dynamic(%Crosswake.Doctor.Report{
+           status: :error or :ok,
+           bridge:
+             %{
+               allowed_commands: term(),
+               command_posture: term(),
+               denial_reasons: term(),
+               protocol: term(),
+               unsupported_declared_capabilities: list(term()),
+               version: term()
+             } or empty_map(),
+           offline:
+             %{
+               routes: term(),
+               states: term(),
+               status: :incomplete or :not_claimed or :supported,
+               telemetry: %{metadata_keys: term(), terminal_outcomes: term()}
+             } or empty_map(),
+           support:
+             %{
+               blocking_platforms: term(),
+               proof_statuses: term(),
+               release_policy: %{
+                 bridge_protocol_version: term(),
+                 capability_families: term(),
+                 change_classes: term(),
+                 companion_requirement: binary(),
+                 crosswake_version: term(),
+                 evidence_posture: %{android: :jvm_hermetic, ios: :device_verified},
+                 manifest_schema_version: term(),
+                 native_runtime_version: term(),
+                 package_surfaces: term(),
+                 package_version_truth: binary(),
+                 rebuild_matrix: term(),
+                 release_boundaries: term()
+               },
+               status: :not_claimed or :supported or :verification_required
+             } or %{blocking_platforms: term(), status: :not_claimed or :verification_required},
+           commerce_summary: %{
+             corridors: term(),
+             prerequisites: term(),
+             proof_posture: %{advisory: term(), merge_blocking: term()},
+             rebuild_requirements: term(),
+             snapshot_freshness: term()
+           }
+         }) != nil
+
+     where "left" (context ExUnit.Assertions) was given the type:
+
+         # type: dynamic(%Crosswake.Doctor.Report{
+           status: :error or :ok,
+           bridge:
+             %{
+               allowed_commands: term(),
+               command_posture: term(),
+               denial_reasons: term(),
+               protocol: term(),
+               unsupported_declared_capabilities: list(term()),
+               version: term()
+             } or empty_map(),
+           offline:
+             %{
+               routes: term(),
+               states: term(),
+               status: :incomplete or :not_claimed or :supported,
+               telemetry: %{metadata_keys: term(), terminal_outcomes: term()}
+             } or empty_map(),
+           support:
+             %{
+               blocking_platforms: term(),
+               proof_statuses: term(),
+               release_policy: %{
+                 bridge_protocol_version: term(),
+                 capability_families: term(),
+                 change_classes: term(),
+                 companion_requirement: binary(),
+                 crosswake_version: term(),
+                 evidence_posture: %{android: :jvm_hermetic, ios: :device_verified},
+                 manifest_schema_version: term(),
+                 native_runtime_version: term(),
+                 package_surfaces: term(),
+                 package_version_truth: binary(),
+                 rebuild_matrix: term(),
+                 release_boundaries: term()
+               },
+               status: :not_claimed or :supported or :verification_required
+             } or %{blocking_platforms: term(), status: :not_claimed or :verification_required},
+           commerce_summary: %{
+             corridors: term(),
+             prerequisites: term(),
+             proof_posture: %{advisory: term(), merge_blocking: term()},
+             rebuild_requirements: term(),
+             snapshot_freshness: term()
+           }
+         })
+         # from: test/crosswake/doctor/doctor_threadline_test.exs:350
+         left = report
+
+     where "right" (context ExUnit.Assertions) was given the type:
+
+         # type: nil
+         # from: test/crosswake/doctor/doctor_threadline_test.exs:350
+         right = nil
+
+     While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+     typing violation found at:
+     │
+ 350 │       assert report != nil
+     │                     ~
+     │
+     └─ test/crosswake/doctor/doctor_threadline_test.exs:350:21: Crosswake.Doctor.ThreadlineTest."test phase_95_threadline_findings (OPER-03) does not crash on keyword audit_ledger config missing :schema key"/1
+
+     warning: comparison between distinct types found:
+
+         left != right
+
+     given types:
+
+         dynamic(%Crosswake.Doctor.Report{
+           status: :error or :ok,
+           bridge:
+             %{
+               allowed_commands: term(),
+               command_posture: term(),
+               denial_reasons: term(),
+               protocol: term(),
+               unsupported_declared_capabilities: list(term()),
+               version: term()
+             } or empty_map(),
+           offline:
+             %{
+               routes: term(),
+               states: term(),
+               status: :incomplete or :not_claimed or :supported,
+               telemetry: %{metadata_keys: term(), terminal_outcomes: term()}
+             } or empty_map(),
+           support:
+             %{
+               blocking_platforms: term(),
+               proof_statuses: term(),
+               release_policy: %{
+                 bridge_protocol_version: term(),
+                 capability_families: term(),
+                 change_classes: term(),
+                 companion_requirement: binary(),
+                 crosswake_version: term(),
+                 evidence_posture: %{android: :jvm_hermetic, ios: :device_verified},
+                 manifest_schema_version: term(),
+                 native_runtime_version: term(),
+                 package_surfaces: term(),
+                 package_version_truth: binary(),
+                 rebuild_matrix: term(),
+                 release_boundaries: term()
+               },
+               status: :not_claimed or :supported or :verification_required
+             } or %{blocking_platforms: term(), status: :not_claimed or :verification_required},
+           commerce_summary: %{
+             corridors: term(),
+             prerequisites: term(),
+             proof_posture: %{advisory: term(), merge_blocking: term()},
+             rebuild_requirements: term(),
+             snapshot_freshness: term()
+           }
+         }) != nil
+
+     where "left" (context ExUnit.Assertions) was given the type:
+
+         # type: dynamic(%Crosswake.Doctor.Report{
+           status: :error or :ok,
+           bridge:
+             %{
+               allowed_commands: term(),
+               command_posture: term(),
+               denial_reasons: term(),
+               protocol: term(),
+               unsupported_declared_capabilities: list(term()),
+               version: term()
+             } or empty_map(),
+           offline:
+             %{
+               routes: term(),
+               states: term(),
+               status: :incomplete or :not_claimed or :supported,
+               telemetry: %{metadata_keys: term(), terminal_outcomes: term()}
+             } or empty_map(),
+           support:
+             %{
+               blocking_platforms: term(),
+               proof_statuses: term(),
+               release_policy: %{
+                 bridge_protocol_version: term(),
+                 capability_families: term(),
+                 change_classes: term(),
+                 companion_requirement: binary(),
+                 crosswake_version: term(),
+                 evidence_posture: %{android: :jvm_hermetic, ios: :device_verified},
+                 manifest_schema_version: term(),
+                 native_runtime_version: term(),
+                 package_surfaces: term(),
+                 package_version_truth: binary(),
+                 rebuild_matrix: term(),
+                 release_boundaries: term()
+               },
+               status: :not_claimed or :supported or :verification_required
+             } or %{blocking_platforms: term(), status: :not_claimed or :verification_required},
+           commerce_summary: %{
+             corridors: term(),
+             prerequisites: term(),
+             proof_posture: %{advisory: term(), merge_blocking: term()},
+             rebuild_requirements: term(),
+             snapshot_freshness: term()
+           }
+         })
+         # from: test/crosswake/doctor/doctor_threadline_test.exs:369
+         left = report
+
+     where "right" (context ExUnit.Assertions) was given the type:
+
+         # type: nil
+         # from: test/crosswake/doctor/doctor_threadline_test.exs:369
+         right = nil
+
+     While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+     typing violation found at:
+     │
+ 369 │       assert report != nil
+     │                     ~
+     │
+     └─ test/crosswake/doctor/doctor_threadline_test.exs:369:21: Crosswake.Doctor.ThreadlineTest."test phase_95_threadline_findings (OPER-03) does not crash on string :schema value in map config"/1
+
+.    warning: Crosswake.Companions.Rulestead.validate_dependency/0 is undefined (module Crosswake.Companions.Rulestead is not available or is yet to be defined)
+    │
+ 45 │     assert Crosswake.Companions.Rulestead.validate_dependency() == :ok
+    │                                           ~
+    │
+    └─ test/crosswake/proof/phase43_rulestead_advisory_test.exs:45:43: Crosswake.Proof.Phase43RulesteadAdvisoryTest."test validate_dependency/0 returns :ok when rulestead library is present (advisory lane)"/1
+
+.....................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................  created tmp_sync_test/lib/test_app/sync/event_log.ex
+  created tmp_sync_test/lib/test_app_web/controllers/sync_controller.ex
+Sync components generated successfully!
+
+Next steps:
+1. Add the EventLog schema to your Ecto Repo's migrations:
+   mix ecto.gen.migration create_crosswake_sync_event_logs
+   
+   Use the generated fields and unique_index(:crosswake_sync_event_logs, [:idempotency_key])
+
+2. Mount the generated SyncController in your router:
+   post "/sync/replay", TestAppWeb.SyncController, :replay
+
+...........................
+22:27:39.114 [info] The function passed as a handler with ID "phase38-test-handler-162754" is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+.................................................................................................................................................
+22:28:47.206 [info] The function passed as a handler with ID "phase160-forged-observation" is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+........
+22:28:47.212 [warning] no configuration found for otp_app :crosswake and module Crosswake.TestSupport.Bridge.Endpoint
+
+22:28:47.219 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.281 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.281 [debug] Replied in 242µs
+
+22:28:47.284 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:47.284 [debug] Replied in 97µs
+
+22:28:47.287 [debug] HANDLE EVENT "read_dispatched" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "never_pushed"}
+
+22:28:47.287 [debug] Replied in 27µs
+.
+22:28:47.287 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.288 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.288 [debug] Replied in 142µs
+
+22:28:47.288 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"family" => "Haptics"}
+
+22:28:47.289 [error] GenServer #PID<0.14697.0> terminating
+** (Crosswake.Bridge.UnknownCapabilityFamilyError) [crosswake.bridge.unknown_capability_family] "Haptics" is not a member of Crosswake.Bridge's known capability vocabulary at all — a different problem from a known family this route's policy simply never declared.
+
+LiveView module: Crosswake.TestSupport.Bridge.TracerLive
+
+The known vocabulary is defined in two places: Crosswake.Bridge.Contract.commands/0 (the wire command list) and Crosswake.Manifest.Builder.capability_catalog/0 (the manifest-facing capability catalog). Currently-known families: ["app_info", "file_picker", "haptics", "notification_token", "permissions.status", "share"]
+
+Do NOT declare "Haptics" on this or any route's policy to "fix" this — Crosswake.Policy.Validator rejects any capability declaration outside the known vocabulary, so that would turn this click-time crash into a mount-time crash for every route in the app. If this is meant to be a real Crosswake capability, it must be added to the bridge's own command vocabulary first, not declared on a route.
+
+    (crosswake 0.2.11) lib/crosswake/bridge.ex:655: Crosswake.Bridge.raise_unknown_capability_family!/2
+    (crosswake 0.2.11) test/support/bridge_live_view_case.ex:107: Crosswake.TestSupport.Bridge.TracerLive.handle_event/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
+    (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
+    (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
+    (stdlib 6.2.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Process Label: {Phoenix.LiveView, Crosswake.TestSupport.Bridge.TracerLive, "lv:phx-GOGkzQ5vodvFq49C"}
+Last message: %Phoenix.Socket.Message{topic: "lv:phx-GOGkzQ5vodvFq49C", event: "event", payload: %{"event" => "dispatch", "type" => "click", "value" => %{"family" => "Haptics"}}, ref: "1", join_ref: 0}
+State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzQ5vodvFq49C", endpoint: Crosswake.TestSupport.Bridge.Endpoint, view: Crosswake.TestSupport.Bridge.TracerLive, parent_pid: nil, root_pid: #PID<0.14697.0>, router: Crosswake.TestSupport.Bridge.Router, assigns: %{reply: nil, flash: %{}, crosswake_manifest: %Crosswake.Manifest.Types.Root{manifest_schema_version: "1.2.0", crosswake_version: "0.2.11", generated_at: "2026-10-25T02:28:47Z", host: %Crosswake.Manifest.Types.Host{phoenix_version: "~> 1.8", live_view_version: "~> 1.1", origin: "https://example.crosswake.invalid", manifest_sources: [:bundled, :cached, :remote]}, compatibility: %Crosswake.Manifest.Types.Compatibility{manifest_schema_version: "1.2.0", bridge_protocol_version: "1.1.0", native_runtime_version: "1.0.0", remote_updates: [:versioned_replacement, :versioned_companion_data], supported_manifest_sources: [:bundled, :cached, :remote]}, support_matrix: %Crosswake.Manifest.Types.SupportMatrix{phoenix: [%Crosswake.Manifest.Types.SupportEntry{target: "phoenix", version: "~> 1.8", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "phase-2-proof-lane", notes: "Phoenix host install and manifest generation are the stable baseline.", boundary_link: nil}], live_view: [%Crosswake.Manifest.Types.SupportEntry{target: "phoenix_live_view", version: "~> 1.1", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "phase-2-proof-lane", notes: "LiveView remains server-owned and route-first.", boundary_link: "guides/offline.md#boundary-warnings--rough-edges"}], ios: [%Crosswake.Manifest.Types.SupportEntry{target: "ios", version: "17.0", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "script/verify_generated_ios_shell.sh", notes: "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], android: [%Crosswake.Manifest.Types.SupportEntry{target: "android", version: "26", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "script/verify_generated_android_shell.sh", notes: "Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim. Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android never gates the first adopter's physical-iPhone proof: no new feature, template, emulator/device or release claim.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], shells: [%Crosswake.Manifest.Types.SupportEntry{target: "ios_shell", version: "Hex-matched", status: :supported, baseline_status: :supported, proof_status: :verification_required, proof: "clean-room-proof-ios; script/verify_generated_ios_shell.sh", notes: "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority. Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; Release consumer proof resolves that public SwiftPM tag and builds a generated iOS app with `xcodebuild`. It must pass for the ordinary core release's six-child COMPLETE result. CI build proof does not establish physical-device or adopter-topology support.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}, %Crosswake.Manifest.Types.SupportEntry{target: "android_shell", version: "Hex-matched", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh", notes: "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], capability_families: [%Crosswake.Manifest.Types.CapabilitySupportEntry{family: "app_info", owner: :bounded_bridge, posture: "bounded_bridge", baseline_status: :supported, proof_status: :verification_required, ...}, ...], ...}, ...}, ...}, ...>, components: {%{}, %{}, 1}, topic: "lv:phx-GOGkzQ5vodvFq49C", serializer: Phoenix.LiveViewTest.ClientProxy, join_ref: 0, fingerprints: {330609306643866184462773022897336673493, %{}}, redirect_count: 0, upload_names: %{}, upload_pids: %{}}
+.
+22:28:47.297 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.300 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{"route_id" => "bridge-empty-caps"}
+
+22:28:47.300 [debug] Replied in 190µs
+
+22:28:47.300 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"family" => "haptics"}
+
+22:28:47.301 [error] GenServer #PID<0.14702.0> terminating
+** (Crosswake.Bridge.UndeclaredCapabilityError) [crosswake.bridge.undeclared_capability] route "bridge-empty-caps" never declared the "haptics" capability family.
+
+Currently declared on this route: []
+LiveView module: Crosswake.TestSupport.Bridge.TracerLive
+Router location: <repo>/test/support/bridge_live_view_case.ex:31
+
+Add the family to this route's declaration:
+
+    capabilities: ["haptics"]
+
+This raised instead of returning a Crosswake.Shell.Denial because a route policy that never declared this capability is a server-authoring bug, not a fact about the shell — no request reached the wire and no shell was ever asked, so there is nothing here for a denial to honestly report.
+
+    (crosswake 0.2.11) lib/crosswake/bridge.ex:623: Crosswake.Bridge.raise_undeclared_capability!/3
+    (crosswake 0.2.11) test/support/bridge_live_view_case.ex:107: Crosswake.TestSupport.Bridge.TracerLive.handle_event/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
+    (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
+    (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
+    (stdlib 6.2.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Process Label: {Phoenix.LiveView, Crosswake.TestSupport.Bridge.TracerLive, "lv:phx-GOGkzQ8JKZNpTY3B"}
+Last message: %Phoenix.Socket.Message{topic: "lv:phx-GOGkzQ8JKZNpTY3B", event: "event", payload: %{"event" => "dispatch", "type" => "click", "value" => %{"family" => "haptics"}}, ref: "1", join_ref: 0}
+State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzQ8JKZNpTY3B", endpoint: Crosswake.TestSupport.Bridge.Endpoint, view: Crosswake.TestSupport.Bridge.TracerLive, parent_pid: nil, root_pid: #PID<0.14702.0>, router: Crosswake.TestSupport.Bridge.Router, assigns: %{reply: nil, flash: %{}, crosswake_manifest: %Crosswake.Manifest.Types.Root{manifest_schema_version: "1.2.0", crosswake_version: "0.2.11", generated_at: "2026-10-25T02:28:47Z", host: %Crosswake.Manifest.Types.Host{phoenix_version: "~> 1.8", live_view_version: "~> 1.1", origin: "https://example.crosswake.invalid", manifest_sources: [:bundled, :cached, :remote]}, compatibility: %Crosswake.Manifest.Types.Compatibility{manifest_schema_version: "1.2.0", bridge_protocol_version: "1.1.0", native_runtime_version: "1.0.0", remote_updates: [:versioned_replacement, :versioned_companion_data], supported_manifest_sources: [:bundled, :cached, :remote]}, support_matrix: %Crosswake.Manifest.Types.SupportMatrix{phoenix: [%Crosswake.Manifest.Types.SupportEntry{target: "phoenix", version: "~> 1.8", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "phase-2-proof-lane", notes: "Phoenix host install and manifest generation are the stable baseline.", boundary_link: nil}], live_view: [%Crosswake.Manifest.Types.SupportEntry{target: "phoenix_live_view", version: "~> 1.1", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "phase-2-proof-lane", notes: "LiveView remains server-owned and route-first.", boundary_link: "guides/offline.md#boundary-warnings--rough-edges"}], ios: [%Crosswake.Manifest.Types.SupportEntry{target: "ios", version: "17.0", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "script/verify_generated_ios_shell.sh", notes: "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], android: [%Crosswake.Manifest.Types.SupportEntry{target: "android", version: "26", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "script/verify_generated_android_shell.sh", notes: "Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim. Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android never gates the first adopter's physical-iPhone proof: no new feature, template, emulator/device or release claim.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], shells: [%Crosswake.Manifest.Types.SupportEntry{target: "ios_shell", version: "Hex-matched", status: :supported, baseline_status: :supported, proof_status: :verification_required, proof: "clean-room-proof-ios; script/verify_generated_ios_shell.sh", notes: "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority. Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; Release consumer proof resolves that public SwiftPM tag and builds a generated iOS app with `xcodebuild`. It must pass for the ordinary core release's six-child COMPLETE result. CI build proof does not establish physical-device or adopter-topology support.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}, %Crosswake.Manifest.Types.SupportEntry{target: "android_shell", version: "Hex-matched", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh", notes: "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], capability_families: [%Crosswake.Manifest.Types.CapabilitySupportEntry{family: "app_info", owner: :bounded_bridge, posture: "bounded_bridge", baseline_status: :supported, proof_status: :verification_required, ...}, ...], ...}, ...}, ...}, ...>, components: {%{}, %{}, 1}, topic: "lv:phx-GOGkzQ8JKZNpTY3B", serializer: Phoenix.LiveViewTest.ClientProxy, join_ref: 0, fingerprints: {330609306643866184462773022897336673493, %{}}, redirect_count: 0, upload_names: %{}, upload_pids: %{}}
+.
+22:28:47.302 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.303 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.303 [debug] Replied in 137µs
+
+22:28:47.303 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:47.303 [debug] Replied in 38µs
+.
+22:28:47.404 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.405 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{"route_id" => "nonexistent-route"}
+
+22:28:47.405 [debug] Replied in 209µs
+
+22:28:47.405 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"family" => "haptics"}
+
+22:28:47.405 [error] GenServer #PID<0.14712.0> terminating
+** (ArgumentError) [crosswake.bridge.inactive_route] route "nonexistent-route" is not an active route in the compiled manifest. Confirm the route id assigned via :crosswake_route_id matches a route declared in the router, and that the manifest passed to Crosswake.Bridge.attach/1 was compiled from that same router.
+
+    (crosswake 0.2.11) lib/crosswake/bridge.ex:242: Crosswake.Bridge.push/3
+    (crosswake 0.2.11) test/support/bridge_live_view_case.ex:107: Crosswake.TestSupport.Bridge.TracerLive.handle_event/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
+    (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
+    (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
+    (stdlib 6.2.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Process Label: {Phoenix.LiveView, Crosswake.TestSupport.Bridge.TracerLive, "lv:phx-GOGkzRVp_FtOYI-C"}
+Last message: %Phoenix.Socket.Message{topic: "lv:phx-GOGkzRVp_FtOYI-C", event: "event", payload: %{"event" => "dispatch", "type" => "click", "value" => %{"family" => "haptics"}}, ref: "1", join_ref: 0}
+State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzRVp_FtOYI-C", endpoint: Crosswake.TestSupport.Bridge.Endpoint, view: Crosswake.TestSupport.Bridge.TracerLive, parent_pid: nil, root_pid: #PID<0.14712.0>, router: Crosswake.TestSupport.Bridge.Router, assigns: %{reply: nil, flash: %{}, crosswake_manifest: %Crosswake.Manifest.Types.Root{manifest_schema_version: "1.2.0", crosswake_version: "0.2.11", generated_at: "2026-10-25T02:28:47Z", host: %Crosswake.Manifest.Types.Host{phoenix_version: "~> 1.8", live_view_version: "~> 1.1", origin: "https://example.crosswake.invalid", manifest_sources: [:bundled, :cached, :remote]}, compatibility: %Crosswake.Manifest.Types.Compatibility{manifest_schema_version: "1.2.0", bridge_protocol_version: "1.1.0", native_runtime_version: "1.0.0", remote_updates: [:versioned_replacement, :versioned_companion_data], supported_manifest_sources: [:bundled, :cached, :remote]}, support_matrix: %Crosswake.Manifest.Types.SupportMatrix{phoenix: [%Crosswake.Manifest.Types.SupportEntry{target: "phoenix", version: "~> 1.8", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "phase-2-proof-lane", notes: "Phoenix host install and manifest generation are the stable baseline.", boundary_link: nil}], live_view: [%Crosswake.Manifest.Types.SupportEntry{target: "phoenix_live_view", version: "~> 1.1", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "phase-2-proof-lane", notes: "LiveView remains server-owned and route-first.", boundary_link: "guides/offline.md#boundary-warnings--rough-edges"}], ios: [%Crosswake.Manifest.Types.SupportEntry{target: "ios", version: "17.0", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "script/verify_generated_ios_shell.sh", notes: "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], android: [%Crosswake.Manifest.Types.SupportEntry{target: "android", version: "26", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "script/verify_generated_android_shell.sh", notes: "Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim. Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android never gates the first adopter's physical-iPhone proof: no new feature, template, emulator/device or release claim.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], shells: [%Crosswake.Manifest.Types.SupportEntry{target: "ios_shell", version: "Hex-matched", status: :supported, baseline_status: :supported, proof_status: :verification_required, proof: "clean-room-proof-ios; script/verify_generated_ios_shell.sh", notes: "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority. Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; Release consumer proof resolves that public SwiftPM tag and builds a generated iOS app with `xcodebuild`. It must pass for the ordinary core release's six-child COMPLETE result. CI build proof does not establish physical-device or adopter-topology support.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}, %Crosswake.Manifest.Types.SupportEntry{target: "android_shell", version: "Hex-matched", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh", notes: "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], capability_families: [%Crosswake.Manifest.Types.CapabilitySupportEntry{family: "app_info", owner: :bounded_bridge, posture: "bounded_bridge", baseline_status: :supported, proof_status: :verification_required, ...}, ...], ...}, ...}, ...}, ...>, components: {%{}, %{}, 1}, topic: "lv:phx-GOGkzRVp_FtOYI-C", serializer: Phoenix.LiveViewTest.ClientProxy, join_ref: 0, fingerprints: {330609306643866184462773022897336673493, %{}}, redirect_count: 0, upload_names: %{}, upload_pids: %{}}
+.
+22:28:47.406 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.407 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.407 [debug] Replied in 157µs
+
+22:28:47.407 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:47.407 [debug] Replied in 47µs
+
+22:28:47.407 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e95-Hb61OYmn496XxbH9", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.407 [debug] Replied in 39µs
+.
+22:28:47.407 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.408 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.408 [debug] Replied in 123µs
+
+22:28:47.408 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:47.408 [debug] Replied in 28µs
+
+22:28:47.408 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e97-2tduH-eRdP5_3eLe", "denial" => %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e97-2tduH-eRdP5_3eLe", "denial" => %{"message" => "Notification status is not available on this platform.", "reason" => "notification_status_unavailable"}, "route_id" => "bridge-tracer"}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "deny", "version" => "1.1.0"}
+
+22:28:47.408 [debug] Replied in 48µs
+.
+22:28:47.409 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.409 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.409 [debug] Replied in 143µs
+
+22:28:47.409 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "keep"}
+
+22:28:47.409 [debug] Replied in 23µs
+
+22:28:47.409 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "clear"}
+
+22:28:47.409 [debug] Replied in 15µs
+
+22:28:47.410 [debug] HANDLE EVENT "resolve" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "clear"}
+
+22:28:47.410 [debug] Replied in 16µs
+.
+22:28:47.410 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.410 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.410 [debug] Replied in 121µs
+
+22:28:47.411 [debug] HANDLE EVENT "dispatch_fire_and_forget" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+
+22:28:47.411 [debug] Replied in 26µs
+
+22:28:47.512 [debug] HANDLE EVENT "unrelated" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+
+22:28:47.512 [debug] Replied in 58µs
+.
+22:28:47.512 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.513 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.513 [debug] Replied in 146µs
+
+22:28:47.513 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:47.513 [debug] Replied in 43µs
+
+22:28:47.513 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e103-gEinUHt1HyK3hlZh", "denial" => %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e103-gEinUHt1HyK3hlZh", "denial" => %{"code" => "compatibility_mismatch", "message" => "The shell is too old for this capability.", "reason" => "compatibility_mismatch"}, "route_id" => "bridge-tracer"}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "deny", "version" => "1.1.0"}
+
+22:28:47.513 [debug] Replied in 36µs
+.
+22:28:47.514 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.514 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.514 [debug] Replied in 110µs
+
+22:28:47.515 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:47.515 [debug] Replied in 29µs
+
+22:28:47.518 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e105-N_6jSSRqy5cRZHPn", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.518 [debug] Replied in 51µs
+.
+22:28:47.518 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.519 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.519 [debug] Replied in 140µs
+
+22:28:47.519 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:47.519 [debug] Replied in 34µs
+
+22:28:47.519 [debug] HANDLE EVENT "crosswake:bridge_unreachable" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"correlation_id" => "cwbridge-e107-4O_jog8I5Cj7MkKD", "moment" => "transport_error"}
+
+22:28:47.519 [debug] Replied in 54µs
+.
+22:28:47.519 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.520 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.520 [debug] Replied in 144µs
+
+22:28:47.521 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:47.521 [debug] Replied in 38µs
+
+22:28:47.522 [debug] HANDLE EVENT "crosswake:bridge_ack" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"correlation_id" => "cwbridge-e109-Vbc_iUgNR0U7-LBm"}
+
+22:28:47.522 [debug] Replied in 12µs
+.
+22:28:47.522 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.522 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.522 [debug] Replied in 115µs
+
+22:28:47.522 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap", "timeout" => "infinity"}
+
+22:28:47.522 [debug] Replied in 26µs
+
+22:28:47.523 [debug] HANDLE EVENT "crosswake:bridge_ack" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"correlation_id" => "cwbridge-e111-t9I-LtPRTrlPqzpF"}
+
+22:28:47.523 [debug] Replied in 14µs
+.
+22:28:47.674 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.675 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.675 [debug] Replied in 197µs
+
+22:28:47.675 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:47.675 [debug] Replied in 52µs
+
+22:28:47.676 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-unknown-correlation", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.676 [debug] Replied in 23µs
+.
+22:28:47.676 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.677 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.677 [debug] Replied in 154µs
+
+22:28:47.677 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:47.677 [debug] Replied in 64µs
+
+22:28:47.677 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e115-czojo3B191KLfkm_", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.677 [debug] Replied in 52µs
+
+22:28:47.678 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e115-czojo3B191KLfkm_", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.678 [debug] Replied in 62µs
+
+22:28:47.678 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap2"}
+
+22:28:47.678 [debug] Replied in 34µs
+
+22:28:47.678 [debug] HANDLE EVENT "remount" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+
+22:28:47.678 [debug] Replied in 18µs
+.
+22:28:47.678 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e115-nTqDcVeIqdTPyGCx", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.678 [debug] Replied in 32µs
+
+22:28:47.678 [debug] Processing with Crosswake.TestSupport.Bridge.NotMountedLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.680 [debug] MOUNT Crosswake.TestSupport.Bridge.NotMountedLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.680 [debug] Replied in 27µs
+
+22:28:47.680 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.NotMountedLive
+  Parameters: %{}
+
+22:28:47.682 [error] GenServer #PID<0.14772.0> terminating
+** (Crosswake.Bridge.NotMountedError) [crosswake.bridge.not_mounted] Crosswake.TestSupport.Bridge.NotMountedLive called Crosswake.Bridge.push/3 without ever calling Crosswake.Bridge.attach/1.
+
+Call `Crosswake.Bridge.attach(socket)` in mount/3 (after assigning :crosswake_manifest and :crosswake_route_id), or add `on_mount: Crosswake.Bridge` to the LiveView's live_session, before calling push/3. Crosswake never guesses a route id.
+
+    (crosswake 0.2.11) lib/crosswake/bridge.ex:564: Crosswake.Bridge.fetch_state!/1
+    (crosswake 0.2.11) lib/crosswake/bridge.ex:227: Crosswake.Bridge.push/3
+    (crosswake 0.2.11) test/support/bridge_live_view_case.ex:209: Crosswake.TestSupport.Bridge.NotMountedLive.handle_event/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
+    (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
+    (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
+    (stdlib 6.2.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Process Label: {Phoenix.LiveView, Crosswake.TestSupport.Bridge.NotMountedLive, "lv:phx-GOGkzSXT4AhBSpIC"}
+Last message: %Phoenix.Socket.Message{topic: "lv:phx-GOGkzSXT4AhBSpIC", event: "event", payload: %{"event" => "dispatch", "type" => "click", "value" => %{}}, ref: "1", join_ref: 0}
+State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzSXT4AhBSpIC", endpoint: Crosswake.TestSupport.Bridge.Endpoint, view: Crosswake.TestSupport.Bridge.NotMountedLive, parent_pid: nil, root_pid: #PID<0.14772.0>, router: Crosswake.TestSupport.Bridge.Router, assigns: %{flash: %{}, __changed__: %{}, live_action: nil}, transport_pid: #PID<0.14771.0>, sticky?: nil, ...>, components: {%{}, %{}, 1}, topic: "lv:phx-GOGkzSXT4AhBSpIC", serializer: Phoenix.LiveViewTest.ClientProxy, join_ref: 0, fingerprints: {23262501612375736426763295809737986778, %{}}, redirect_count: 0, upload_names: %{}, upload_pids: %{}}
+.
+22:28:47.684 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.685 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.685 [debug] Replied in 136µs
+
+22:28:47.685 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"family" => "not_a_real_family"}
+
+22:28:47.685 [error] GenServer #PID<0.14777.0> terminating
+** (Crosswake.Bridge.UnknownCapabilityFamilyError) [crosswake.bridge.unknown_capability_family] "not_a_real_family" is not a member of Crosswake.Bridge's known capability vocabulary at all — a different problem from a known family this route's policy simply never declared.
+
+LiveView module: Crosswake.TestSupport.Bridge.TracerLive
+
+The known vocabulary is defined in two places: Crosswake.Bridge.Contract.commands/0 (the wire command list) and Crosswake.Manifest.Builder.capability_catalog/0 (the manifest-facing capability catalog). Currently-known families: ["app_info", "file_picker", "haptics", "notification_token", "permissions.status", "share"]
+
+Do NOT declare "not_a_real_family" on this or any route's policy to "fix" this — Crosswake.Policy.Validator rejects any capability declaration outside the known vocabulary, so that would turn this click-time crash into a mount-time crash for every route in the app. If this is meant to be a real Crosswake capability, it must be added to the bridge's own command vocabulary first, not declared on a route.
+
+    (crosswake 0.2.11) lib/crosswake/bridge.ex:655: Crosswake.Bridge.raise_unknown_capability_family!/2
+    (crosswake 0.2.11) test/support/bridge_live_view_case.ex:107: Crosswake.TestSupport.Bridge.TracerLive.handle_event/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
+    (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
+    (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
+    (stdlib 6.2.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Process Label: {Phoenix.LiveView, Crosswake.TestSupport.Bridge.TracerLive, "lv:phx-GOGkzSYcYiEoB47B"}
+Last message: %Phoenix.Socket.Message{topic: "lv:phx-GOGkzSYcYiEoB47B", event: "event", payload: %{"event" => "dispatch", "type" => "click", "value" => %{"family" => "not_a_real_family"}}, ref: "1", join_ref: 0}
+State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzSYcYiEoB47B", endpoint: Crosswake.TestSupport.Bridge.Endpoint, view: Crosswake.TestSupport.Bridge.TracerLive, parent_pid: nil, root_pid: #PID<0.14777.0>, router: Crosswake.TestSupport.Bridge.Router, assigns: %{reply: nil, flash: %{}, crosswake_manifest: %Crosswake.Manifest.Types.Root{manifest_schema_version: "1.2.0", crosswake_version: "0.2.11", generated_at: "2026-10-25T02:28:47Z", host: %Crosswake.Manifest.Types.Host{phoenix_version: "~> 1.8", live_view_version: "~> 1.1", origin: "https://example.crosswake.invalid", manifest_sources: [:bundled, :cached, :remote]}, compatibility: %Crosswake.Manifest.Types.Compatibility{manifest_schema_version: "1.2.0", bridge_protocol_version: "1.1.0", native_runtime_version: "1.0.0", remote_updates: [:versioned_replacement, :versioned_companion_data], supported_manifest_sources: [:bundled, :cached, :remote]}, support_matrix: %Crosswake.Manifest.Types.SupportMatrix{phoenix: [%Crosswake.Manifest.Types.SupportEntry{target: "phoenix", version: "~> 1.8", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "phase-2-proof-lane", notes: "Phoenix host install and manifest generation are the stable baseline.", boundary_link: nil}], live_view: [%Crosswake.Manifest.Types.SupportEntry{target: "phoenix_live_view", version: "~> 1.1", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "phase-2-proof-lane", notes: "LiveView remains server-owned and route-first.", boundary_link: "guides/offline.md#boundary-warnings--rough-edges"}], ios: [%Crosswake.Manifest.Types.SupportEntry{target: "ios", version: "17.0", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "script/verify_generated_ios_shell.sh", notes: "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], android: [%Crosswake.Manifest.Types.SupportEntry{target: "android", version: "26", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "script/verify_generated_android_shell.sh", notes: "Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim. Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android never gates the first adopter's physical-iPhone proof: no new feature, template, emulator/device or release claim.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], shells: [%Crosswake.Manifest.Types.SupportEntry{target: "ios_shell", version: "Hex-matched", status: :supported, baseline_status: :supported, proof_status: :verification_required, proof: "clean-room-proof-ios; script/verify_generated_ios_shell.sh", notes: "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority. Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; Release consumer proof resolves that public SwiftPM tag and builds a generated iOS app with `xcodebuild`. It must pass for the ordinary core release's six-child COMPLETE result. CI build proof does not establish physical-device or adopter-topology support.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}, %Crosswake.Manifest.Types.SupportEntry{target: "android_shell", version: "Hex-matched", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh", notes: "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], capability_families: [%Crosswake.Manifest.Types.CapabilitySupportEntry{family: "app_info", owner: :bounded_bridge, posture: "bounded_bridge", baseline_status: :supported, proof_status: :verification_required, ...}, ...], ...}, ...}, ...}, ...>, components: {%{}, %{}, 1}, topic: "lv:phx-GOGkzSYcYiEoB47B", serializer: Phoenix.LiveViewTest.ClientProxy, join_ref: 0, fingerprints: {330609306643866184462773022897336673493, %{}}, redirect_count: 0, upload_names: %{}, upload_pids: %{}}
+.
+22:28:47.686 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.686 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.686 [debug] Replied in 125µs
+.
+22:28:47.688 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.689 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.689 [debug] Replied in 136µs
+
+22:28:47.689 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:47.689 [debug] Replied in 36µs
+
+22:28:47.689 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e122-cYYMKF-z1ZA1dH8G", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.689 [debug] Replied in 25µs
+
+22:28:47.689 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e122-cYYMKF-z1ZA1dH8G", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.689 [debug] Replied in 36µs
+.
+22:28:47.690 [debug] Processing with Crosswake.TestSupport.Bridge.NotMountedLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.690 [debug] MOUNT Crosswake.TestSupport.Bridge.NotMountedLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.690 [debug] Replied in 16µs
+
+22:28:47.690 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.NotMountedLive
+  Parameters: %{}
+
+22:28:47.690 [error] GenServer #PID<0.14792.0> terminating
+** (Crosswake.Bridge.NotMountedError) [crosswake.bridge.not_mounted] Crosswake.TestSupport.Bridge.NotMountedLive called Crosswake.Bridge.push/3 without ever calling Crosswake.Bridge.attach/1.
+
+Call `Crosswake.Bridge.attach(socket)` in mount/3 (after assigning :crosswake_manifest and :crosswake_route_id), or add `on_mount: Crosswake.Bridge` to the LiveView's live_session, before calling push/3. Crosswake never guesses a route id.
+
+    (crosswake 0.2.11) lib/crosswake/bridge.ex:564: Crosswake.Bridge.fetch_state!/1
+    (crosswake 0.2.11) lib/crosswake/bridge.ex:227: Crosswake.Bridge.push/3
+    (crosswake 0.2.11) test/support/bridge_live_view_case.ex:209: Crosswake.TestSupport.Bridge.NotMountedLive.handle_event/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
+    (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
+    (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
+    (stdlib 6.2.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Process Label: {Phoenix.LiveView, Crosswake.TestSupport.Bridge.NotMountedLive, "lv:phx-GOGkzSZsNRxtTZLC"}
+Last message: %Phoenix.Socket.Message{topic: "lv:phx-GOGkzSZsNRxtTZLC", event: "event", payload: %{"event" => "dispatch", "type" => "click", "value" => %{}}, ref: "1", join_ref: 0}
+State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzSZsNRxtTZLC", endpoint: Crosswake.TestSupport.Bridge.Endpoint, view: Crosswake.TestSupport.Bridge.NotMountedLive, parent_pid: nil, root_pid: #PID<0.14792.0>, router: Crosswake.TestSupport.Bridge.Router, assigns: %{flash: %{}, __changed__: %{}, live_action: nil}, transport_pid: #PID<0.14791.0>, sticky?: nil, ...>, components: {%{}, %{}, 1}, topic: "lv:phx-GOGkzSZsNRxtTZLC", serializer: Phoenix.LiveViewTest.ClientProxy, join_ref: 0, fingerprints: {23262501612375736426763295809737986778, %{}}, redirect_count: 0, upload_names: %{}, upload_pids: %{}}
+.
+22:28:47.691 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.691 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.692 [debug] Replied in 165µs
+
+22:28:47.692 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-1"}
+
+22:28:47.692 [debug] Replied in 82µs
+
+22:28:47.692 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-2"}
+
+22:28:47.692 [debug] Replied in 39µs
+
+22:28:47.692 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-3"}
+
+22:28:47.692 [debug] Replied in 20µs
+
+22:28:47.693 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-4"}
+
+22:28:47.693 [debug] Replied in 12µs
+
+22:28:47.693 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-5"}
+
+22:28:47.693 [debug] Replied in 12µs
+
+22:28:47.693 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-6"}
+
+22:28:47.693 [debug] Replied in 13µs
+
+22:28:47.693 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-7"}
+
+22:28:47.693 [debug] Replied in 14µs
+
+22:28:47.693 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-8"}
+
+22:28:47.693 [debug] Replied in 10µs
+
+22:28:47.693 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-9"}
+
+22:28:47.693 [debug] Replied in 12µs
+
+22:28:47.694 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-10"}
+
+22:28:47.694 [debug] Replied in 8µs
+
+22:28:47.694 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-11"}
+
+22:28:47.694 [debug] Replied in 46µs
+
+22:28:47.694 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-12"}
+
+22:28:47.694 [debug] Replied in 24µs
+
+22:28:47.694 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-13"}
+
+22:28:47.694 [debug] Replied in 32µs
+
+22:28:47.694 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-14"}
+
+22:28:47.694 [debug] Replied in 13µs
+
+22:28:47.695 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-15"}
+
+22:28:47.695 [debug] Replied in 12µs
+
+22:28:47.695 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-16"}
+
+22:28:47.695 [debug] Replied in 9µs
+
+22:28:47.695 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-17"}
+
+22:28:47.695 [debug] Replied in 18µs
+
+22:28:47.695 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-18"}
+
+22:28:47.695 [debug] Replied in 9µs
+
+22:28:47.695 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-19"}
+
+22:28:47.695 [debug] Replied in 34µs
+
+22:28:47.695 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "ref-20"}
+
+22:28:47.695 [debug] Replied in 31µs
+
+22:28:47.696 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-uAbH0JyhA9Qov13A", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.696 [debug] Replied in 26µs
+
+22:28:47.696 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-bKy4qcejggIKnJiX", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.696 [debug] Replied in 35µs
+
+22:28:47.696 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-ptingdL_2FUc9B33", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.696 [debug] Replied in 16µs
+
+22:28:47.696 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-BeK6LnKTckSAf_Jw", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.696 [debug] Replied in 41µs
+
+22:28:47.696 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-gstTInNIdn5E6qai", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.696 [debug] Replied in 21µs
+
+22:28:47.696 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-C-jHCNAzRAZgj600", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.696 [debug] Replied in 25µs
+
+22:28:47.697 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-hKwa49ZLQmH51LtV", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.697 [debug] Replied in 18µs
+
+22:28:47.697 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-YRdXMMjvebAs59ac", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.697 [debug] Replied in 23µs
+
+22:28:47.697 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-CQxehZU1R0BeSyp9", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.697 [debug] Replied in 17µs
+
+22:28:47.697 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-w0IqwKkn5YvZbCd3", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.697 [debug] Replied in 30µs
+
+22:28:47.697 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-czt1umNm-POe3nRt", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.697 [debug] Replied in 13µs
+
+22:28:47.697 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-CUU3we-ltyYVA1jl", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.697 [debug] Replied in 17µs
+
+22:28:47.698 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-Ojn6optTHlVjmTNG", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.698 [debug] Replied in 14µs
+
+22:28:47.698 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-irDSknNKZb0-yMab", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.698 [debug] Replied in 11µs
+
+22:28:47.698 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-aA2WeddGVadvBBf_", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.698 [debug] Replied in 13µs
+
+22:28:47.698 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-odCJerm9IkYTeqlO", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.698 [debug] Replied in 17µs
+
+22:28:47.698 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-jU7lOM7r3SpJpmtD", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.698 [debug] Replied in 28µs
+
+22:28:47.699 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-Buj4t2lXQajDpD4K", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.699 [debug] Replied in 51µs
+
+22:28:47.699 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-vQq9Jgi-VDXx3KC2", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.699 [debug] Replied in 28µs
+
+22:28:47.699 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e124-VNzif0J0hMT6XV3H", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:47.699 [debug] Replied in 16µs
+.
+22:28:47.700 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.701 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.701 [debug] Replied in 133µs
+
+22:28:47.701 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:47.701 [debug] Replied in 26µs
+
+22:28:47.702 [debug] HANDLE EVENT "crosswake:bridge_unreachable" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"correlation_id" => "cwbridge-e126-JzeYtX-KhDTchXWq", "moment" => "no_transport"}
+
+22:28:47.702 [debug] Replied in 20µs
+.
+22:28:47.702 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:47.703 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:47.703 [debug] Replied in 160µs
+
+22:28:47.703 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap", "timeout" => 200}
+
+22:28:47.703 [debug] Replied in 26µs
+
+22:28:47.703 [debug] HANDLE EVENT "crosswake:bridge_ack" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"correlation_id" => "cwbridge-e128-7fLoG4mTz9j34NHI"}
+
+22:28:47.703 [debug] Replied in 15µs
+.
+22:28:48.004 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.005 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.005 [debug] Replied in 164µs
+
+22:28:48.005 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.005 [debug] Replied in 58µs
+
+22:28:48.005 [debug] HANDLE EVENT "resolve" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.005 [debug] Replied in 14µs
+
+22:28:48.005 [debug] HANDLE EVENT "resolve" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.005 [debug] Replied in 29µs
+.
+22:28:48.006 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.006 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.006 [debug] Replied in 118µs
+
+22:28:48.006 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.006 [debug] Replied in 27µs
+.
+22:28:48.107 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.107 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.107 [debug] Replied in 144µs
+
+22:28:48.108 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.108 [debug] Replied in 149µs
+..
+22:28:48.108 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.108 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.109 [debug] Replied in 93µs
+
+22:28:48.109 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.109 [debug] Replied in 38µs
+
+22:28:48.109 [debug] HANDLE EVENT "resolve" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.109 [debug] Replied in 16µs
+
+22:28:48.109 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e136-SQ_vI0zHXFceJ7Lg", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:48.109 [debug] Replied in 20µs
+.
+22:28:48.109 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.110 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.110 [debug] Replied in 115µs
+
+22:28:48.110 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "first"}
+
+22:28:48.110 [debug] Replied in 23µs
+
+22:28:48.110 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "second"}
+
+22:28:48.110 [debug] Replied in 31µs
+.
+22:28:48.110 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.111 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.111 [debug] Replied in 122µs
+
+22:28:48.111 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.111 [debug] Replied in 20µs
+.
+22:28:48.212 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.213 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.213 [debug] Replied in 106µs
+
+22:28:48.213 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.213 [debug] Replied in 46µs
+
+22:28:48.213 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e142-Ed7Ee-2ocnkLyCJ1", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:48.213 [debug] Replied in 37µs
+.
+22:28:48.213 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.214 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.214 [debug] Replied in 79µs
+
+22:28:48.214 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.214 [debug] Replied in 38µs
+
+22:28:48.214 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e144-NHK3tRC2EH5aGDe8", "denial" => %{"denial" => %{"code" => "origin_denied", "message" => "origin not allowlisted", "reason" => "origin_denied"}}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "deny", "version" => "1.1.0"}
+
+22:28:48.214 [debug] Replied in 29µs
+.
+22:28:48.214 [debug] Processing with Crosswake.TestSupport.Bridge.NotMountedLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.214 [debug] MOUNT Crosswake.TestSupport.Bridge.NotMountedLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.214 [debug] Replied in 9µs
+
+22:28:48.215 [debug] HANDLE EVENT "read_dispatched" in Crosswake.TestSupport.Bridge.NotMountedLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.215 [error] GenServer #PID<0.14854.0> terminating
+** (Crosswake.Bridge.NotMountedError) [crosswake.bridge.not_mounted] Crosswake.TestSupport.Bridge.NotMountedLive called Crosswake.Bridge.push/3 without ever calling Crosswake.Bridge.attach/1.
+
+Call `Crosswake.Bridge.attach(socket)` in mount/3 (after assigning :crosswake_manifest and :crosswake_route_id), or add `on_mount: Crosswake.Bridge` to the LiveView's live_session, before calling push/3. Crosswake never guesses a route id.
+
+    (crosswake 0.2.11) lib/crosswake/bridge.ex:564: Crosswake.Bridge.fetch_state!/1
+    (crosswake 0.2.11) lib/crosswake/bridge.ex:275: Crosswake.Bridge.dispatched/2
+    (crosswake 0.2.11) test/support/bridge_live_view_case.ex:222: Crosswake.TestSupport.Bridge.NotMountedLive.handle_event/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
+    (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
+    (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
+    (stdlib 6.2.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Process Label: {Phoenix.LiveView, Crosswake.TestSupport.Bridge.NotMountedLive, "lv:phx-GOGkzUWyp2e6jo_B"}
+Last message: %Phoenix.Socket.Message{topic: "lv:phx-GOGkzUWyp2e6jo_B", event: "event", payload: %{"event" => "read_dispatched", "type" => "click", "value" => %{"ref" => "tap"}}, ref: "1", join_ref: 0}
+State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzUWyp2e6jo_B", endpoint: Crosswake.TestSupport.Bridge.Endpoint, view: Crosswake.TestSupport.Bridge.NotMountedLive, parent_pid: nil, root_pid: #PID<0.14854.0>, router: Crosswake.TestSupport.Bridge.Router, assigns: %{flash: %{}, __changed__: %{}, live_action: nil}, transport_pid: #PID<0.14853.0>, sticky?: nil, ...>, components: {%{}, %{}, 1}, topic: "lv:phx-GOGkzUWyp2e6jo_B", serializer: Phoenix.LiveViewTest.ClientProxy, join_ref: 0, fingerprints: {23262501612375736426763295809737986778, %{}}, redirect_count: 0, upload_names: %{}, upload_pids: %{}}
+.
+22:28:48.215 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.216 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.216 [debug] Replied in 135µs
+
+22:28:48.216 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.216 [debug] Replied in 27µs
+
+22:28:48.216 [debug] HANDLE EVENT "resolve" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "never_dispatched"}
+
+22:28:48.216 [debug] Replied in 10µs
+.
+22:28:48.216 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.217 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.217 [debug] Replied in 133µs
+
+22:28:48.217 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "first"}
+
+22:28:48.217 [debug] Replied in 48µs
+
+22:28:48.217 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "second"}
+
+22:28:48.217 [debug] Replied in 19µs
+
+22:28:48.217 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e148-C0zN8N5bbrieU-25", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:48.217 [debug] Replied in 23µs
+.
+22:28:48.218 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.218 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.218 [debug] Replied in 86µs
+
+22:28:48.218 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.218 [debug] Replied in 37µs
+
+22:28:48.219 [debug] HANDLE EVENT "resolve" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.219 [debug] Replied in 8µs
+
+22:28:48.219 [debug] HANDLE EVENT "resolve" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.219 [debug] Replied in 9µs
+.
+22:28:48.219 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.219 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.219 [debug] Replied in 98µs
+
+22:28:48.219 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"family" => "share"}
+
+22:28:48.220 [error] GenServer #PID<0.14874.0> terminating
+** (Crosswake.Bridge.UndeclaredCapabilityError) [crosswake.bridge.undeclared_capability] route "bridge-tracer" never declared the "share" capability family.
+
+Currently declared on this route: ["haptics"]
+LiveView module: Crosswake.TestSupport.Bridge.TracerLive
+Router location: <repo>/test/support/bridge_live_view_case.ex:27
+
+Add the family to this route's declaration:
+
+    capabilities: ["haptics", "share"]
+
+This raised instead of returning a Crosswake.Shell.Denial because a route policy that never declared this capability is a server-authoring bug, not a fact about the shell — no request reached the wire and no shell was ever asked, so there is nothing here for a denial to honestly report.
+
+    (crosswake 0.2.11) lib/crosswake/bridge.ex:623: Crosswake.Bridge.raise_undeclared_capability!/3
+    (crosswake 0.2.11) test/support/bridge_live_view_case.ex:107: Crosswake.TestSupport.Bridge.TracerLive.handle_event/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
+    (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
+    (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
+    (stdlib 6.2.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Process Label: {Phoenix.LiveView, Crosswake.TestSupport.Bridge.TracerLive, "lv:phx-GOGkzUX4c1Z0hpAB"}
+Last message: %Phoenix.Socket.Message{topic: "lv:phx-GOGkzUX4c1Z0hpAB", event: "event", payload: %{"event" => "dispatch", "type" => "click", "value" => %{"family" => "share"}}, ref: "1", join_ref: 0}
+State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzUX4c1Z0hpAB", endpoint: Crosswake.TestSupport.Bridge.Endpoint, view: Crosswake.TestSupport.Bridge.TracerLive, parent_pid: nil, root_pid: #PID<0.14874.0>, router: Crosswake.TestSupport.Bridge.Router, assigns: %{reply: nil, flash: %{}, crosswake_manifest: %Crosswake.Manifest.Types.Root{manifest_schema_version: "1.2.0", crosswake_version: "0.2.11", generated_at: "2026-10-25T02:28:48Z", host: %Crosswake.Manifest.Types.Host{phoenix_version: "~> 1.8", live_view_version: "~> 1.1", origin: "https://example.crosswake.invalid", manifest_sources: [:bundled, :cached, :remote]}, compatibility: %Crosswake.Manifest.Types.Compatibility{manifest_schema_version: "1.2.0", bridge_protocol_version: "1.1.0", native_runtime_version: "1.0.0", remote_updates: [:versioned_replacement, :versioned_companion_data], supported_manifest_sources: [:bundled, :cached, :remote]}, support_matrix: %Crosswake.Manifest.Types.SupportMatrix{phoenix: [%Crosswake.Manifest.Types.SupportEntry{target: "phoenix", version: "~> 1.8", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "phase-2-proof-lane", notes: "Phoenix host install and manifest generation are the stable baseline.", boundary_link: nil}], live_view: [%Crosswake.Manifest.Types.SupportEntry{target: "phoenix_live_view", version: "~> 1.1", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "phase-2-proof-lane", notes: "LiveView remains server-owned and route-first.", boundary_link: "guides/offline.md#boundary-warnings--rough-edges"}], ios: [%Crosswake.Manifest.Types.SupportEntry{target: "ios", version: "17.0", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "script/verify_generated_ios_shell.sh", notes: "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], android: [%Crosswake.Manifest.Types.SupportEntry{target: "android", version: "26", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "script/verify_generated_android_shell.sh", notes: "Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim. Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android never gates the first adopter's physical-iPhone proof: no new feature, template, emulator/device or release claim.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], shells: [%Crosswake.Manifest.Types.SupportEntry{target: "ios_shell", version: "Hex-matched", status: :supported, baseline_status: :supported, proof_status: :verification_required, proof: "clean-room-proof-ios; script/verify_generated_ios_shell.sh", notes: "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority. Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; Release consumer proof resolves that public SwiftPM tag and builds a generated iOS app with `xcodebuild`. It must pass for the ordinary core release's six-child COMPLETE result. CI build proof does not establish physical-device or adopter-topology support.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}, %Crosswake.Manifest.Types.SupportEntry{target: "android_shell", version: "Hex-matched", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh", notes: "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], capability_families: [%Crosswake.Manifest.Types.CapabilitySupportEntry{family: "app_info", owner: :bounded_bridge, posture: "bounded_bridge", baseline_status: :supported, proof_status: :verification_required, ...}, ...], ...}, ...}, ...}, ...>, components: {%{}, %{}, 1}, topic: "lv:phx-GOGkzUX4c1Z0hpAB", serializer: Phoenix.LiveViewTest.ClientProxy, join_ref: 0, fingerprints: {330609306643866184462773022897336673493, %{}}, redirect_count: 0, upload_names: %{}, upload_pids: %{}}
+.
+22:28:48.220 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.221 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.221 [debug] Replied in 95µs
+
+22:28:48.221 [debug] HANDLE EVENT "unrelated" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+
+22:28:48.221 [debug] Replied in 9µs
+.
+22:28:48.221 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.221 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.221 [debug] Replied in 86µs
+
+22:28:48.221 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"family" => "not_a_real_family"}
+
+22:28:48.221 [error] GenServer #PID<0.14884.0> terminating
+** (Crosswake.Bridge.UnknownCapabilityFamilyError) [crosswake.bridge.unknown_capability_family] "not_a_real_family" is not a member of Crosswake.Bridge's known capability vocabulary at all — a different problem from a known family this route's policy simply never declared.
+
+LiveView module: Crosswake.TestSupport.Bridge.TracerLive
+
+The known vocabulary is defined in two places: Crosswake.Bridge.Contract.commands/0 (the wire command list) and Crosswake.Manifest.Builder.capability_catalog/0 (the manifest-facing capability catalog). Currently-known families: ["app_info", "file_picker", "haptics", "notification_token", "permissions.status", "share"]
+
+Do NOT declare "not_a_real_family" on this or any route's policy to "fix" this — Crosswake.Policy.Validator rejects any capability declaration outside the known vocabulary, so that would turn this click-time crash into a mount-time crash for every route in the app. If this is meant to be a real Crosswake capability, it must be added to the bridge's own command vocabulary first, not declared on a route.
+
+    (crosswake 0.2.11) lib/crosswake/bridge.ex:655: Crosswake.Bridge.raise_unknown_capability_family!/2
+    (crosswake 0.2.11) test/support/bridge_live_view_case.ex:107: Crosswake.TestSupport.Bridge.TracerLive.handle_event/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
+    (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
+    (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
+    (stdlib 6.2.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Process Label: {Phoenix.LiveView, Crosswake.TestSupport.Bridge.TracerLive, "lv:phx-GOGkzUYZEmFHM5YC"}
+Last message: %Phoenix.Socket.Message{topic: "lv:phx-GOGkzUYZEmFHM5YC", event: "event", payload: %{"event" => "dispatch", "type" => "click", "value" => %{"family" => "not_a_real_family"}}, ref: "1", join_ref: 0}
+State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzUYZEmFHM5YC", endpoint: Crosswake.TestSupport.Bridge.Endpoint, view: Crosswake.TestSupport.Bridge.TracerLive, parent_pid: nil, root_pid: #PID<0.14884.0>, router: Crosswake.TestSupport.Bridge.Router, assigns: %{reply: nil, flash: %{}, crosswake_manifest: %Crosswake.Manifest.Types.Root{manifest_schema_version: "1.2.0", crosswake_version: "0.2.11", generated_at: "2026-10-25T02:28:48Z", host: %Crosswake.Manifest.Types.Host{phoenix_version: "~> 1.8", live_view_version: "~> 1.1", origin: "https://example.crosswake.invalid", manifest_sources: [:bundled, :cached, :remote]}, compatibility: %Crosswake.Manifest.Types.Compatibility{manifest_schema_version: "1.2.0", bridge_protocol_version: "1.1.0", native_runtime_version: "1.0.0", remote_updates: [:versioned_replacement, :versioned_companion_data], supported_manifest_sources: [:bundled, :cached, :remote]}, support_matrix: %Crosswake.Manifest.Types.SupportMatrix{phoenix: [%Crosswake.Manifest.Types.SupportEntry{target: "phoenix", version: "~> 1.8", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "phase-2-proof-lane", notes: "Phoenix host install and manifest generation are the stable baseline.", boundary_link: nil}], live_view: [%Crosswake.Manifest.Types.SupportEntry{target: "phoenix_live_view", version: "~> 1.1", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "phase-2-proof-lane", notes: "LiveView remains server-owned and route-first.", boundary_link: "guides/offline.md#boundary-warnings--rough-edges"}], ios: [%Crosswake.Manifest.Types.SupportEntry{target: "ios", version: "17.0", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "script/verify_generated_ios_shell.sh", notes: "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], android: [%Crosswake.Manifest.Types.SupportEntry{target: "android", version: "26", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "script/verify_generated_android_shell.sh", notes: "Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim. Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android never gates the first adopter's physical-iPhone proof: no new feature, template, emulator/device or release claim.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], shells: [%Crosswake.Manifest.Types.SupportEntry{target: "ios_shell", version: "Hex-matched", status: :supported, baseline_status: :supported, proof_status: :verification_required, proof: "clean-room-proof-ios; script/verify_generated_ios_shell.sh", notes: "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority. Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; Release consumer proof resolves that public SwiftPM tag and builds a generated iOS app with `xcodebuild`. It must pass for the ordinary core release's six-child COMPLETE result. CI build proof does not establish physical-device or adopter-topology support.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}, %Crosswake.Manifest.Types.SupportEntry{target: "android_shell", version: "Hex-matched", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh", notes: "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], capability_families: [%Crosswake.Manifest.Types.CapabilitySupportEntry{family: "app_info", owner: :bounded_bridge, posture: "bounded_bridge", baseline_status: :supported, proof_status: :verification_required, ...}, ...], ...}, ...}, ...}, ...>, components: {%{}, %{}, 1}, topic: "lv:phx-GOGkzUYZEmFHM5YC", serializer: Phoenix.LiveViewTest.ClientProxy, join_ref: 0, fingerprints: {330609306643866184462773022897336673493, %{}}, redirect_count: 0, upload_names: %{}, upload_pids: %{}}
+.
+22:28:48.222 [debug] Processing with Crosswake.TestSupport.Bridge.NotMountedLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.222 [debug] MOUNT Crosswake.TestSupport.Bridge.NotMountedLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.222 [debug] Replied in 9µs
+
+22:28:48.222 [debug] HANDLE EVENT "resolve" in Crosswake.TestSupport.Bridge.NotMountedLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.222 [debug] Replied in 15µs
+.
+22:28:48.223 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.223 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.223 [debug] Replied in 127µs
+
+22:28:48.223 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"family" => "share"}
+
+22:28:48.223 [error] GenServer #PID<0.14894.0> terminating
+** (Crosswake.Bridge.UndeclaredCapabilityError) [crosswake.bridge.undeclared_capability] route "bridge-tracer" never declared the "share" capability family.
+
+Currently declared on this route: ["haptics"]
+LiveView module: Crosswake.TestSupport.Bridge.TracerLive
+Router location: <repo>/test/support/bridge_live_view_case.ex:27
+
+Add the family to this route's declaration:
+
+    capabilities: ["haptics", "share"]
+
+This raised instead of returning a Crosswake.Shell.Denial because a route policy that never declared this capability is a server-authoring bug, not a fact about the shell — no request reached the wire and no shell was ever asked, so there is nothing here for a denial to honestly report.
+
+    (crosswake 0.2.11) lib/crosswake/bridge.ex:623: Crosswake.Bridge.raise_undeclared_capability!/3
+    (crosswake 0.2.11) test/support/bridge_live_view_case.ex:107: Crosswake.TestSupport.Bridge.TracerLive.handle_event/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:532: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
+    (telemetry 1.4.2) <repo>/deps/telemetry/src/telemetry.erl:359: :telemetry.span/3
+    (phoenix_live_view 1.1.33) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
+    (stdlib 6.2.1) gen_server.erl:2345: :gen_server.try_handle_info/3
+    (stdlib 6.2.1) gen_server.erl:2433: :gen_server.handle_msg/6
+    (stdlib 6.2.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Process Label: {Phoenix.LiveView, Crosswake.TestSupport.Bridge.TracerLive, "lv:phx-GOGkzUYyJfJVH5BB"}
+Last message: %Phoenix.Socket.Message{topic: "lv:phx-GOGkzUYyJfJVH5BB", event: "event", payload: %{"event" => "dispatch", "type" => "click", "value" => %{"family" => "share"}}, ref: "1", join_ref: 0}
+State: %{socket: #Phoenix.LiveView.Socket<id: "phx-GOGkzUYyJfJVH5BB", endpoint: Crosswake.TestSupport.Bridge.Endpoint, view: Crosswake.TestSupport.Bridge.TracerLive, parent_pid: nil, root_pid: #PID<0.14894.0>, router: Crosswake.TestSupport.Bridge.Router, assigns: %{reply: nil, flash: %{}, crosswake_manifest: %Crosswake.Manifest.Types.Root{manifest_schema_version: "1.2.0", crosswake_version: "0.2.11", generated_at: "2026-10-25T02:28:48Z", host: %Crosswake.Manifest.Types.Host{phoenix_version: "~> 1.8", live_view_version: "~> 1.1", origin: "https://example.crosswake.invalid", manifest_sources: [:bundled, :cached, :remote]}, compatibility: %Crosswake.Manifest.Types.Compatibility{manifest_schema_version: "1.2.0", bridge_protocol_version: "1.1.0", native_runtime_version: "1.0.0", remote_updates: [:versioned_replacement, :versioned_companion_data], supported_manifest_sources: [:bundled, :cached, :remote]}, support_matrix: %Crosswake.Manifest.Types.SupportMatrix{phoenix: [%Crosswake.Manifest.Types.SupportEntry{target: "phoenix", version: "~> 1.8", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "phase-2-proof-lane", notes: "Phoenix host install and manifest generation are the stable baseline.", boundary_link: nil}], live_view: [%Crosswake.Manifest.Types.SupportEntry{target: "phoenix_live_view", version: "~> 1.1", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "phase-2-proof-lane", notes: "LiveView remains server-owned and route-first.", boundary_link: "guides/offline.md#boundary-warnings--rough-edges"}], ios: [%Crosswake.Manifest.Types.SupportEntry{target: "ios", version: "17.0", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "script/verify_generated_ios_shell.sh", notes: "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], android: [%Crosswake.Manifest.Types.SupportEntry{target: "android", version: "26", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "script/verify_generated_android_shell.sh", notes: "Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim. Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android never gates the first adopter's physical-iPhone proof: no new feature, template, emulator/device or release claim.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], shells: [%Crosswake.Manifest.Types.SupportEntry{target: "ios_shell", version: "Hex-matched", status: :supported, baseline_status: :supported, proof_status: :verification_required, proof: "clean-room-proof-ios; script/verify_generated_ios_shell.sh", notes: "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority. Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; Release consumer proof resolves that public SwiftPM tag and builds a generated iOS app with `xcodebuild`. It must pass for the ordinary core release's six-child COMPLETE result. CI build proof does not establish physical-device or adopter-topology support.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}, %Crosswake.Manifest.Types.SupportEntry{target: "android_shell", version: "Hex-matched", status: :supported, baseline_status: :supported, proof_status: :supported, proof: "native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh", notes: "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim.", boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"}], capability_families: [%Crosswake.Manifest.Types.CapabilitySupportEntry{family: "app_info", owner: :bounded_bridge, posture: "bounded_bridge", baseline_status: :supported, proof_status: :verification_required, ...}, ...], ...}, ...}, ...}, ...>, components: {%{}, %{}, 1}, topic: "lv:phx-GOGkzUYyJfJVH5BB", serializer: Phoenix.LiveViewTest.ClientProxy, join_ref: 0, fingerprints: {330609306643866184462773022897336673493, %{}}, redirect_count: 0, upload_names: %{}, upload_pids: %{}}
+.
+22:28:48.224 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.224 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.225 [debug] Replied in 104µs
+
+22:28:48.225 [debug] HANDLE EVENT "dispatch_fire_and_forget" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+
+22:28:48.225 [debug] Replied in 33µs
+
+22:28:48.326 [debug] HANDLE EVENT "unrelated" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+
+22:28:48.326 [debug] Replied in 60µs
+..
+22:28:48.326 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.327 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.327 [debug] Replied in 143µs
+
+22:28:48.327 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.327 [debug] Replied in 45µs
+..
+22:28:48.327 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.328 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.328 [debug] Replied in 128µs
+
+22:28:48.328 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.328 [debug] Replied in 28µs
+
+22:28:48.328 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e164-7F8Wx_js03OZzhMR", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:48.328 [debug] Replied in 26µs
+.
+22:28:48.429 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.429 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.430 [debug] Replied in 111µs
+
+22:28:48.430 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.430 [debug] Replied in 48µs
+
+22:28:48.430 [debug] HANDLE EVENT "remount" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+
+22:28:48.430 [debug] Replied in 9µs
+
+22:28:48.430 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e166-ZwoAnB5wgAyedAnD", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:28:48.430 [debug] Replied in 19µs
+.
+22:28:48.430 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:28:48.431 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:28:48.431 [debug] Replied in 138µs
+
+22:28:48.431 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:28:48.431 [debug] Replied in 73µs
+.......................................[crosswake] no .crosswake/shell.json found — nothing to check.
+.[crosswake] generated shells are up to date.
+.[crosswake] generic: 1 template version behind (stamped 3 → current 4).
+[crosswake] run `mix crosswake.gen.shell` to regenerate.
+.[crosswake] shell.status error: malformed JSON in <tmp>/cw_status_test_170498/.crosswake/shell.json
+..............................................................
+22:28:54.530 [info] The function passed as a handler with ID "phase40-gate-test-handler-175234" is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+..................................created .crosswake/proof_lane.json
+created CrosswakeProofLane.xcodeproj/project.pbxproj
+created CrosswakeProofLane.xcodeproj/xcshareddata/xcschemes/CrosswakeProofLane.xcscheme
+created CrosswakeProofLane/ProofLaneApp.swift
+created CrosswakeProofLane/ProofLaneDriver.swift
+created CrosswakeProofLane/Resources/pronunciation-pack-fixture.bin
+created CrosswakeProofLaneTests/ProofLaneContractTests.swift
+created CrosswakeProofLaneUITests/ProofLaneUITests.swift
+created CrosswakeProofSettings.xcconfig
+created e2e/crosswake_proof_lane/proof_lane.spec.ts
+created e2e/crosswake_proof_lane/support/proof_lane.ts
+created e2e/crosswake_proof_lane/support/proof_lane_host_adapter.ts
+created physical_iphone/physical_iphone_proof_host.ex
+created test/crosswake_proof_lane/crosswake_proof_lane_test.exs
+created .crosswake/proof_lane.json
+created CrosswakeProofLane.xcodeproj/project.pbxproj
+created CrosswakeProofLane.xcodeproj/xcshareddata/xcschemes/CrosswakeProofLane.xcscheme
+created CrosswakeProofLane/ProofLaneApp.swift
+created CrosswakeProofLane/ProofLaneDriver.swift
+created CrosswakeProofLane/Resources/pronunciation-pack-fixture.bin
+created CrosswakeProofLaneTests/ProofLaneContractTests.swift
+created CrosswakeProofLaneUITests/ProofLaneUITests.swift
+created CrosswakeProofSettings.xcconfig
+created e2e/crosswake_proof_lane/proof_lane.spec.ts
+created e2e/crosswake_proof_lane/support/proof_lane.ts
+created e2e/crosswake_proof_lane/support/proof_lane_host_adapter.ts
+created physical_iphone/physical_iphone_proof_host.ex
+created test/crosswake_proof_lane/crosswake_proof_lane_test.exs
+......................................................................................................................................................................spawn: Could not cd to <tmp>/crosswake-provenance-286274/does-not-exist
+..................................................................................................  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_controller.ex
+  created tmp_offline_ui_test/lib/test_app_web/components/layouts/offline_root.html.heex
+  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_html/offline_page.html.heex
+  created tmp_offline_ui_test/assets/js/offline.js
+  created tmp_offline_ui_test/priv/static/assets/offline.css
+Offline UI components generated successfully!
+
+Next steps:
+1. Mount the OfflineController in your router (typically in your main browser pipeline):
+   get "/offline", TestAppWeb.OfflineController, :index
+
+2. The generator has copied offline.css into priv/static/assets/. This file is
+   host-owned and editable. Re-running the generator will NOT update it
+   (no-clobber). To pick up upstream style changes, delete the file and
+   re-run: mix crosswake.gen.offline_ui
+
+   tokens.css is NOT copied — it is served directly by Crosswake at
+   /crosswake/tokens.css once `mix crosswake.install` has patched your
+   endpoint. The generated layout already links that URL.
+
+3. If your host bundles JavaScript, configure esbuild to include offline.js
+   as a separate entry point:
+   args: ~w(js/app.js js/offline.js --bundle --target=es2017 --outdir=../priv/static/assets ...)
+   (No CSS build step required — offline.css is served as a static file.)
+
+.  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_controller.ex
+  created tmp_offline_ui_test/lib/test_app_web/components/layouts/offline_root.html.heex
+  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_html/offline_page.html.heex
+  created tmp_offline_ui_test/assets/js/offline.js
+  created tmp_offline_ui_test/priv/static/assets/offline.css
+Offline UI components generated successfully!
+
+Next steps:
+1. Mount the OfflineController in your router (typically in your main browser pipeline):
+   get "/offline", TestAppWeb.OfflineController, :index
+
+2. The generator has copied offline.css into priv/static/assets/. This file is
+   host-owned and editable. Re-running the generator will NOT update it
+   (no-clobber). To pick up upstream style changes, delete the file and
+   re-run: mix crosswake.gen.offline_ui
+
+   tokens.css is NOT copied — it is served directly by Crosswake at
+   /crosswake/tokens.css once `mix crosswake.install` has patched your
+   endpoint. The generated layout already links that URL.
+
+3. If your host bundles JavaScript, configure esbuild to include offline.js
+   as a separate entry point:
+   args: ~w(js/app.js js/offline.js --bundle --target=es2017 --outdir=../priv/static/assets ...)
+   (No CSS build step required — offline.css is served as a static file.)
+
+.  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_controller.ex
+  created tmp_offline_ui_test/lib/test_app_web/components/layouts/offline_root.html.heex
+  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_html/offline_page.html.heex
+  created tmp_offline_ui_test/assets/js/offline.js
+  created tmp_offline_ui_test/priv/static/assets/offline.css
+Offline UI components generated successfully!
+
+Next steps:
+1. Mount the OfflineController in your router (typically in your main browser pipeline):
+   get "/offline", TestAppWeb.OfflineController, :index
+
+2. The generator has copied offline.css into priv/static/assets/. This file is
+   host-owned and editable. Re-running the generator will NOT update it
+   (no-clobber). To pick up upstream style changes, delete the file and
+   re-run: mix crosswake.gen.offline_ui
+
+   tokens.css is NOT copied — it is served directly by Crosswake at
+   /crosswake/tokens.css once `mix crosswake.install` has patched your
+   endpoint. The generated layout already links that URL.
+
+3. If your host bundles JavaScript, configure esbuild to include offline.js
+   as a separate entry point:
+   args: ~w(js/app.js js/offline.js --bundle --target=es2017 --outdir=../priv/static/assets ...)
+   (No CSS build step required — offline.css is served as a static file.)
+
+.  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_controller.ex
+  created tmp_offline_ui_test/lib/test_app_web/components/layouts/offline_root.html.heex
+  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_html/offline_page.html.heex
+  created tmp_offline_ui_test/assets/js/offline.js
+  created tmp_offline_ui_test/priv/static/assets/offline.css
+Offline UI components generated successfully!
+
+Next steps:
+1. Mount the OfflineController in your router (typically in your main browser pipeline):
+   get "/offline", TestAppWeb.OfflineController, :index
+
+2. The generator has copied offline.css into priv/static/assets/. This file is
+   host-owned and editable. Re-running the generator will NOT update it
+   (no-clobber). To pick up upstream style changes, delete the file and
+   re-run: mix crosswake.gen.offline_ui
+
+   tokens.css is NOT copied — it is served directly by Crosswake at
+   /crosswake/tokens.css once `mix crosswake.install` has patched your
+   endpoint. The generated layout already links that URL.
+
+3. If your host bundles JavaScript, configure esbuild to include offline.js
+   as a separate entry point:
+   args: ~w(js/app.js js/offline.js --bundle --target=es2017 --outdir=../priv/static/assets ...)
+   (No CSS build step required — offline.css is served as a static file.)
+
+.  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_controller.ex
+  created tmp_offline_ui_test/lib/test_app_web/components/layouts/offline_root.html.heex
+  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_html/offline_page.html.heex
+  created tmp_offline_ui_test/assets/js/offline.js
+  created tmp_offline_ui_test/priv/static/assets/offline.css
+Offline UI components generated successfully!
+
+Next steps:
+1. Mount the OfflineController in your router (typically in your main browser pipeline):
+   get "/offline", TestAppWeb.OfflineController, :index
+
+2. The generator has copied offline.css into priv/static/assets/. This file is
+   host-owned and editable. Re-running the generator will NOT update it
+   (no-clobber). To pick up upstream style changes, delete the file and
+   re-run: mix crosswake.gen.offline_ui
+
+   tokens.css is NOT copied — it is served directly by Crosswake at
+   /crosswake/tokens.css once `mix crosswake.install` has patched your
+   endpoint. The generated layout already links that URL.
+
+3. If your host bundles JavaScript, configure esbuild to include offline.js
+   as a separate entry point:
+   args: ~w(js/app.js js/offline.js --bundle --target=es2017 --outdir=../priv/static/assets ...)
+   (No CSS build step required — offline.css is served as a static file.)
+
+.  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_controller.ex
+  created tmp_offline_ui_test/lib/test_app_web/components/layouts/offline_root.html.heex
+  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_html/offline_page.html.heex
+  created tmp_offline_ui_test/assets/js/offline.js
+  created tmp_offline_ui_test/priv/static/assets/offline.css
+Offline UI components generated successfully!
+
+Next steps:
+1. Mount the OfflineController in your router (typically in your main browser pipeline):
+   get "/offline", TestAppWeb.OfflineController, :index
+
+2. The generator has copied offline.css into priv/static/assets/. This file is
+   host-owned and editable. Re-running the generator will NOT update it
+   (no-clobber). To pick up upstream style changes, delete the file and
+   re-run: mix crosswake.gen.offline_ui
+
+   tokens.css is NOT copied — it is served directly by Crosswake at
+   /crosswake/tokens.css once `mix crosswake.install` has patched your
+   endpoint. The generated layout already links that URL.
+
+3. If your host bundles JavaScript, configure esbuild to include offline.js
+   as a separate entry point:
+   args: ~w(js/app.js js/offline.js --bundle --target=es2017 --outdir=../priv/static/assets ...)
+   (No CSS build step required — offline.css is served as a static file.)
+
+..  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_controller.ex
+  created tmp_offline_ui_test/lib/test_app_web/components/layouts/offline_root.html.heex
+  created tmp_offline_ui_test/lib/test_app_web/controllers/offline_html/offline_page.html.heex
+  created tmp_offline_ui_test/assets/js/offline.js
+  created tmp_offline_ui_test/priv/static/assets/offline.css
+Offline UI components generated successfully!
+
+Next steps:
+1. Mount the OfflineController in your router (typically in your main browser pipeline):
+   get "/offline", TestAppWeb.OfflineController, :index
+
+2. The generator has copied offline.css into priv/static/assets/. This file is
+   host-owned and editable. Re-running the generator will NOT update it
+   (no-clobber). To pick up upstream style changes, delete the file and
+   re-run: mix crosswake.gen.offline_ui
+
+   tokens.css is NOT copied — it is served directly by Crosswake at
+   /crosswake/tokens.css once `mix crosswake.install` has patched your
+   endpoint. The generated layout already links that URL.
+
+3. If your host bundles JavaScript, configure esbuild to include offline.js
+   as a separate entry point:
+   args: ~w(js/app.js js/offline.js --bundle --target=es2017 --outdir=../priv/static/assets ...)
+   (No CSS build step required — offline.css is served as a static file.)
+
+.................................................
+22:30:45.883 [warning] no configuration found for otp_app :crosswake and module Crosswake.TestSupport.Bridge.Endpoint
+
+22:30:45.883 [debug] Processing with Crosswake.TestSupport.Bridge.TracerLive.__live__/0
+  Parameters: %{}
+  Pipelines: [:browser]
+
+22:30:45.884 [debug] MOUNT Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{}
+  Session: %{}
+
+22:30:45.884 [debug] Replied in 137µs
+
+22:30:45.884 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "tap"}
+
+22:30:45.884 [debug] Replied in 38µs
+
+22:30:45.884 [debug] HANDLE EVENT "crosswake:bridge_ack" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"correlation_id" => "cwbridge-e176-xlcv_c8Trv0rTvCe"}
+
+22:30:45.884 [debug] Replied in 18µs
+
+22:30:45.884 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e176-xlcv_c8Trv0rTvCe", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:30:45.884 [debug] Replied in 20µs
+
+22:30:45.885 [debug] HANDLE EVENT "crosswake:bridge_reply" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"command" => "haptics.impact", "correlation_id" => "cwbridge-e176-xlcv_c8Trv0rTvCe", "payload" => %{}, "protocol" => "crosswake.bridge", "route_id" => "bridge-tracer", "status" => "ok", "version" => "1.1.0"}
+
+22:30:45.885 [debug] Replied in 19µs
+
+22:30:45.885 [debug] HANDLE EVENT "dispatch" in Crosswake.TestSupport.Bridge.TracerLive
+  Parameters: %{"ref" => "no_ack"}
+
+22:30:45.885 [debug] Replied in 23µs
+.....
+22:30:45.986 [info] The function passed as a handler with ID "phase136-proof-forbidden-371074" is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+22:30:45.986 [debug] [crosswake] crosswake.companion.dependency_check.start
+...
+22:30:45.987 [info] The function passed as a handler with ID "phase136-proof-conflict-#Reference<0.3631209000.3760717825.62273>" is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+..................Crosswake doctor report
+status: error
+findings: 20
+support posture: verification_required (blocking: ios)
+release policy:
+  crosswake_version=0.2.11
+  manifest_schema_version=1.2.0
+  bridge_protocol_version=1.1.0
+  native_runtime_version=1.0.0
+  Package versions alone do not determine support truth.
+  Future companions must declare minimum compatible ranges for core, manifest_schema_version, bridge_protocol_version, native_runtime_version, and exposed capability-family majors.
+  evidence posture: ios=device-verified android=jvm-hermetic (CI only)
+  capability families:
+    app_info: prerequisites=declared route capability, bounded bridge support, denial=undeclared_capability, fallback=Phoenix route continues without native app metadata
+    deep_link: prerequisites=bundled or cached manifest, shell activation support, explicit route entry approval, denial=route_unavailable, fallback=show route unavailable surface that distinguishes inactive routes from routes that reject external entry
+    document_scan: prerequisites=document-scan runtime, policy-heavy proof lane, denial=unavailable_capability, fallback=defer document scan support until native and proof posture are explicit
+    entitlement_snapshot: prerequisites=backend entitlement authority, reconciliation hook, freshness posture (fresh/stale/unknown) surfaced before access checks, denial=unavailable_capability, fallback=Fail closed for access decisions when snapshot freshness is stale or unknown until refreshed backend authority is available; pending and awaiting_verification states never grant entitlement.
+    file_picker: prerequisites=declared transfer_id, bounded bridge support, inbound native_picker transfer seam, copy-first staged handle plus transfer verification, denial=undeclared_capability, fallback=keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified
+    haptics: prerequisites=declared route capability, bounded bridge support, denial=undeclared_capability, fallback=Phoenix route continues without native confirmation feedback
+    media_capture: prerequisites=native screen route, capture pack availability, denial=pack_incompatible, fallback=fail closed instead of degrading into a bounded web upload flow
+    notification_token: prerequisites=declared route capability, bounded bridge support, notification authorization already resolved, provider token snapshot available, denial=unavailable_capability, fallback=treat notification token replies as provider-tagged evidence instead of backend registration truth
+    paywall_entry: prerequisites=backend entitlement contract, storefront guidance, denial=unavailable_capability, fallback=fall back to Phoenix-owned paywall guidance without device authority
+    permissions.status: prerequisites=declared route capability, bounded bridge support, notifications alias only, denial=undeclared_capability, fallback=route continues without native notification permission snapshot authority
+    purchase_intent: prerequisites=backend reconciliation, provider-specific adapter, denial=unavailable_capability, fallback=treat purchase events as reconciliation inputs, not entitlement truth
+    reconciliation_evidence: prerequisites=backend reconciliation, device callback or webhook, pending and awaiting_verification reconciliation states stay non-granting, denial=unavailable_capability, fallback=Treat device/storefront/webhook/support evidence as non-authoritative reconciliation input; pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority.
+    restore_intent: prerequisites=backend reconciliation, storefront-aware adapter, denial=unavailable_capability, fallback=keep restore flow backend-owned until adapter truth is explicit
+    scanner: prerequisites=scanner-native runtime, policy-heavy proof lane, denial=unavailable_capability, fallback=defer scanner support until native and proof posture are explicit
+    share: prerequisites=truthful semantic share contract, denial=undeclared_capability, fallback=keep content in the Phoenix-owned route until a share family is declared
+  package surfaces:
+    `crosswake` primary package: class=core, why="Route-policy DSL, manifest contract, compatibility axes, bounded-bridge vocabulary, shell generators, doctor, support matrix, release rules, and proof posture stay in one obvious Phoenix-first package.", burden="Hex package SemVer moves independently, while support truth still follows manifest_schema_version, bridge_protocol_version, and native_runtime_version."
+    Phoenix-facing commerce seam vocabulary: class=core, why="`paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` stay normalized and backend-truthful in core without embedding storefront providers.", burden="Semantics may evolve in core, but provider adapters and native storefront logic remain outside the base package."
+    Provider adapters and native-heavy integrations: class=companion, why="Storefront adapters, media/upload/capture, rollout, auth/session, notifications, and audit/operator seams carry native binary churn or backend coupling beyond core.", burden="First-party companions declare minimum compatible ranges against core, compatibility axes, and capability-family majors."
+    Checked-in example hosts and install walkthroughs: class=example_docs_only, why="Examples, walkthroughs, reviewer playbooks, and vendor recipes teach boundaries and proof posture without becoming separate runtime packages.", burden="Not first-class supported as package surfaces; promotion requires reclassification plus proof and support-matrix updates."
+    Standalone native shell core packages: class=core, why="The generated shell stays host-owned, while reusable native core logic resolves from SwiftPM and Maven Central packages instead of monorepo-local paths.", burden="Native core versions move in lockstep with the Hex package through release-please linked versions; clean-room proof verifies the external install path at release time."
+  release boundaries:
+    core: versioning="Independent SemVer for the `crosswake` Hex package.", rule="Manifest-major, bridge-major, and runtime-line changes must update support docs and doctor before release."
+    companion: versioning="Independent SemVer per first-party companion.", rule="Companion support cannot expand until the adapter publishes explicit compatibility ranges and fail-closed guidance."
+    ios_shell: versioning="SwiftPM core package version is lockstep with the Hex package; host app build numbers remain adopter-owned.", rule="Changes touching native code, entitlements, permissions, registration, or packaged runtime behavior move the native_runtime_version line and mark rebuild required."
+    android_shell: versioning="Maven Central core artifact version is lockstep with the Hex package; host app build numbers remain adopter-owned.", rule="Changes touching native code, entitlements, permissions, registration, or packaged runtime behavior move the native_runtime_version line and mark rebuild required."
+  change classes:
+    docs-only: signal="No compatibility-axis or capability-version change.", proof="docs integrity only"
+    core-only/no native rebuild: signal="Existing manifest_schema_version, bridge_protocol_version, native_runtime_version, and capability majors stay in line.", proof="core contract + doctor/support proof"
+    compatibility-bump only: signal="manifest_schema_version, bridge_protocol_version, native_runtime_version, or capability required-version declarations changed support windows.", proof="fail-closed compatibility fixtures"
+    native or companion rebuild required: signal="Every rebuild-required change carries explicit compatibility declarations, especially native_runtime_version, bridge_protocol_version, manifest_schema_version, and capability required-version shifts.", proof="core proof plus generated-shell or companion verification lanes"
+  rebuild & compatibility matrix:
+    1.x: ota_safe=false, rebuild_required=true, evidence_tier=jvm-hermetic (CI only), capability_surface=[haptics, share, app_info, deep_link, permissions.status, notification_token, file_picker, media_capture, scanner, document_scan]
+shell posture:
+iOS: generated=no, manifest-first=no, route unavailable=no, bridge=no, proof=unsupported
+bridge posture: crosswake.bridge@1.1.0 commands=[app.info.get, files.pick, haptics.impact, notifications.token.get, permissions.status, share.invoke, transfer.download, transfer.export, transfer.import, transfer.upload.prepare] denials=[compatibility_mismatch, undeclared_capability, unavailable_capability, commerce_corridor, origin_denied, inactive_route, external_entry_denied, pack_incompatible, gate_denied, kill_switch_active, step_up_required, notification_open_denied, dependency_missing, shell_unreachable]
+offline posture: supported states=[cached_read_only, stale, saved_locally, queued_for_replay, replay_failed, conflict_requires_attention] routes=[library, study-session]
+  telemetry: metadata_keys=[route_id, runtime, offline_mode, sync_seam, journal_entry_id, manifest_version, native_runtime_version, correlation_id, terminal_outcome] terminal_outcomes=[accepted, rejected, conflict]
+Commerce:
+  snapshot_freshness: not_applicable
+  corridors: none
+  proof_posture:
+    [merge-blocking]: none
+    [advisory]: none
+  rebuild_requirements: none
+[error] proof_posture (proof_hook_missing)
+iOS generated-project proof hook is unsupported
+hint: restore <tmp>/script/verify_generated_ios_shell.sh before claiming iOS shell support
+details: exit_status=nil, output_excerpt=nil, platform=ios, script_path=<tmp>/script/verify_generated_ios_shell.sh, status=unsupported
+
+[error] support_posture (support_claim_verification_required)
+support claims remain verification required until the tracked generated-project proof hooks pass
+hint: run mix crosswake.doctor --native-checks after the host-owned shell projects and proof hooks are in place
+details: blocking_platforms=ios, proof_statuses={"ios":"unsupported"}, shells={"ios":{"bridge":false,"generated":false,"proof_status":"unsupported","route_unavailable":false,"manifest_first":false}}, status=verification_required
+
+[warning] installer_state (install_manifest_missing)
+install manifest not found at <tmp>/does-not-exist.json
+hint: run mix crosswake.install before mix crosswake.doctor
+
+[warning] policy_compile (unmanaged_routes)
+Crosswake incremental adoption warning: unmanaged routes remain in this router (/settings)
+hint: decide whether unmanaged routes are intentionally outside Crosswake ownership
+details: router=Crosswake.TestSupport.RouterFixtures.ManagedRouter, unmanaged_paths=/settings
+
+[warning] shell_generation (shell_generation_missing)
+generated real host-owned iOS shell artifacts
+hint: generate the host-owned iOS shell with mix crosswake.gen.shell ios
+details: missing=README.md missing|CrosswakeShell.xcodeproj/project.pbxproj missing|CrosswakeShell/CrosswakeShellApp.swift missing|Fixtures/crosswake_manifest.json missing, platform=ios, present=false, root=<tmp>/native/ios/crosswake_shell
+
+[warning] shell_activation (shell_activation_incomplete)
+iOS shell is manifest-first and exposes route unavailable + pack_incompatible denial surfaces
+hint: restore manifest-first activation and route unavailable artifacts: CrosswakeShell/CrosswakeShellApp.swift missing, CrosswakeShell/ActivationCoordinator.swift missing, CrosswakeShell/LiveViewContainerViewController.swift missing, CrosswakeShell/Info.plist missing, CrosswakeShell/RouteUnavailableView.swift missing, Fixtures/route_denial.json missing
+details: manifest_first=false, missing=CrosswakeShell/CrosswakeShellApp.swift missing|CrosswakeShell/ActivationCoordinator.swift missing|CrosswakeShell/LiveViewContainerViewController.swift missing|CrosswakeShell/Info.plist missing|CrosswakeShell/RouteUnavailableView.swift missing|Fixtures/route_denial.json missing, platform=ios, route_unavailable=false
+
+[warning] shell_bridge (shell_bridge_missing)
+iOS shell carries the bounded bridge channel for app.info.get, haptics.impact, permissions.status, and files.pick
+hint: restore the bounded bridge channel so route-scoped commands stay typed, versioned, and request/reply-only
+details: missing=CrosswakeShell/BridgeChannel.swift missing, platform=ios, present=false, root=<tmp>/native/ios/crosswake_shell
+
+[warning] bridge_posture (bridge_posture_bounded)
+bounded bridge exposes app.info.get, files.pick, haptics.impact, notifications.token.get, permissions.status, share.invoke, transfer.download, transfer.export, transfer.import, transfer.upload.prepare and denies compatibility_mismatch, undeclared_capability, unavailable_capability, commerce_corridor, origin_denied, inactive_route, external_entry_denied, pack_incompatible, gate_denied, kill_switch_active, step_up_required, notification_open_denied, dependency_missing, shell_unreachable
+hint: manifest-declared capabilities outside the bounded bridge stay unavailable to the bridge: camera
+details: allowed_commands=app.info.get|files.pick|haptics.impact|notifications.token.get|permissions.status|share.invoke|transfer.download|transfer.export|transfer.import|transfer.upload.prepare, commands={"command":"app.info.get","capability":"app_info","manifest_version":"1.0.0","declared_on_routes":["dashboard"],"executable?":true}|{"command":"files.pick","capability":"file_picker","manifest_version":"1.0.0","declared_on_routes":["library"],"executable?":true}|{"command":"haptics.impact","capability":"haptics","manifest_version":"1.0.0","declared_on_routes":["dashboard"],"executable?":true}|{"command":"notifications.token.get","capability":"notification_token","manifest_version":"1.0.0","declared_on_routes":["dashboard"],"executable?":true}|{"command":"permissions.status","capability":"permissions.status","manifest_version":"1.0.0","declared_on_routes":["dashboard"],"executable?":true}|{"command":"share.invoke","capability":"share","manifest_version":"1.0.0","declared_on_routes":["dashboard"],"executable?":true}|{"command":"transfer.download","capability":"transfer.download","manifest_version":null,"declared_on_routes":[],"executable?":false}|{"command":"transfer.export","capability":"transfer.export","manifest_version":null,"declared_on_routes":[],"executable?":false}|{"command":"transfer.import","capability":"transfer.import","manifest_version":null,"declared_on_routes":[],"executable?":false}|{"command":"transfer.upload.prepare","capability":"transfer.upload.prepare","manifest_version":null,"declared_on_routes":[],"executable?":false}, denial_reasons=compatibility_mismatch|undeclared_capability|unavailable_capability|commerce_corridor|origin_denied|inactive_route|external_entry_denied|pack_incompatible|gate_denied|kill_switch_active|step_up_required|notification_open_denied|dependency_missing|shell_unreachable, protocol=crosswake.bridge, unsupported_declared_capabilities=camera, version=1.1.0
+
+[warning] capability_posture (capability_proof_merge_blocking)
+merge-blocking capability proofs are required for: app_info, deep_link, entitlement_snapshot, file_picker, haptics, media_capture, paywall_entry, permissions.status, purchase_intent, reconciliation_evidence, restore_intent
+hint: merge-blocking capability proofs must pass to claim support truth
+details: capabilities=app_info|deep_link|entitlement_snapshot|file_picker|haptics|media_capture|paywall_entry|permissions.status|purchase_intent|reconciliation_evidence|restore_intent, proof_class=merge_blocking
+
+[warning] route:camera (capability.legacy_capability_id)
+route camera declares the legacy capability id "camera"; the family id "media_capture" is the vocabulary Crosswake teaches going forward
+hint: declare capabilities: ["media_capture"] in route policy instead of "camera" — the legacy id keeps authorizing indefinitely (no compile-time warning, no removal); this finding is advisory only and never fails doctor
+details: family_capability_id=media_capture, legacy_capability_id=camera, route_id=camera
+
+[warning] route:camera (bridge.capability.native_rebuild_required)
+route camera declares capability camera, which requires a native rebuild before this control ships
+hint: rebuild and resubmit the native shell binary before this control can ship — OTA/remote manifest updates cannot satisfy a native rebuild
+details: capability_id=camera, rebuild=native_required, route_id=camera
+
+[warning] route:library (bridge.capability.native_rebuild_required)
+route library declares capability file_picker, which requires a native rebuild before this control ships
+hint: rebuild and resubmit the native shell binary before this control can ship — OTA/remote manifest updates cannot satisfy a native rebuild
+details: capability_id=file_picker, rebuild=native_required, route_id=library
+
+[warning] route:dashboard (bridge.capability.native_rebuild_required)
+route dashboard declares capability notification_token, which requires a companion rebuild before this control ships
+hint: publish or upgrade the companion package that backs this capability — this does not require a native shell rebuild
+details: capability_id=notification_token, rebuild=companion_required, route_id=dashboard
+
+[advisory] capability_posture (capability_proof_advisory)
+advisory capability proofs are abstract for: document_scan, notification_token, scanner, share
+hint: advisory capabilities do not block standard CI but require environment-sensitive verification before widening claims
+details: capabilities=document_scan|notification_token|scanner|share, promotion_path=advisory-to-merge-blocking promotion requires an explicit requirement/roadmap scope change plus sustained stability evidence from the advisory lane; advisory results never assert core support truth, proof_class=advisory
+
+[advisory] offline_posture (offline_posture_ready)
+offline posture exposes route-local cached, saved locally, queued for replay, replay failed, and conflict requires attention vocabulary
+hint: doctor and JSON output now describe explicit cached-route and study-session island posture from typed contract truth
+details: routes={"library":{"cache_contract":true,"island_contract":false,"offline":"cached_read_only","runtime":"live_view","sync_seam":null},"study-session":{"cache_contract":false,"island_contract":true,"offline":"local_first","runtime":"offline_island","sync_seam":"study_reviews"}}, states=cached_read_only|stale|saved_locally|queued_for_replay|replay_failed|conflict_requires_attention, status=supported, telemetry_keys=route_id|runtime|offline_mode|sync_seam|journal_entry_id|manifest_version|native_runtime_version|correlation_id|terminal_outcome, terminal_outcomes=accepted|rejected|conflict
+
+[advisory] notification_posture (notification.telemetry_contract)
+Crosswake notifications expose strict telemetry for diagnostics. Raw APNs/FCM payloads, device tokens, and PII are forbidden.
+hint: Check chimeway telemetry events for delivery status. Do not attempt to log raw push tokens.
+details: authority_source=diagnostic_evidence_only, event_names=, forbidden_metadata_keys=, metadata_keys=, proof_class=merge_blocking
+
+[advisory] notification_posture (notification.delivery_deferred)
+notification-open workflow proof is hermetic route activation proof: token/open evidence is not auth authority, backend binding and one-time open intent records feed Chimeway, and RouteGate and Sigra decide activation. APNs/FCM delivery is not part of this proof and remains unsupported/advisory.
+hint: Use the local notification_token capability to read push tokens. Do not expect Crosswake to deliver remote push notifications to APNs or FCM; delivery execution remains deferred.
+details: deferred=chimeway_delivery|push_delivery_guarantees, delivery_supported=false
+
+[advisory] threadline_posture (threadline.ledger_not_configured)
+Crosswake audit ledger is not configured — threadline posture is ephemeral only
+hint: Configure `:audit_ledger` under `:crosswake` in your host config and run `mix crosswake.gen.audit` to scaffold the host-owned ledger schema and migration. See guides/threadline.md.
+
+[advisory] diagnostic_export_posture (diagnostic_export.contract_shipped)
+Diagnostics-export envelope and sanitize contract are shipped; the merge-blocking allowlist proof is enforced. Native MetricKit/ApplicationExitInfo transport is deferred to Phase 67.
+hint: The host owns the endpoint and the data. Configure your endpoint to receive POST payloads matching the DiagnosticExport.Envelope contract. No Elixir HTTP-sending code ships in the library.
+details: authority_source=host_configured_endpoint, deferred=native_diagnostic_export|metrickit_capture|application_exit_info_capture, delivery_supported=false, forbidden_metadata_keys=token|raw_token|device_token|registration_token|apns_token|fcm_token|provider_payload|raw_payload|notification_title|notification_body|route_params|actor_id|subject_ref|session_ref|device_id|ip|user_agent|email|provider_response_body, proof_class=merge_blocking
+
+[advisory] bridge_hook (bridge.hook.not_wired)
+no "CrosswakeBridge" hook reference was found in this host's assets tree or its HEEx templates
+hint: import the hook from /crosswake/crosswake.esm.js, register it in your socket's hooks map, and put one `phx-hook="CrosswakeBridge"` element on the page — run `mix crosswake.gen.bridge_hook` for the exact fragments. This check is a best-effort grep and is never authoritative; the runtime ack deadline is.
+details: authoritative=false, searched_assets=0, searched_templates=0
+......................
+Finished in 411.2 seconds (139.8s async, 271.4s sync)
+2663 tests, 0 failures (78 excluded)
+lane: rc 0

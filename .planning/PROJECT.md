@@ -66,11 +66,15 @@ Archive: `.planning/workstreams/quality-ratchet-release/milestones/v23.0-ROADMAP
 
 ## Current Milestone Goals
 
-None selected. v27.0 shipped 2026-10-24, and the next scope is chosen with `$gsd-new-milestone --ws quality-ratchet-release`. Priority order is unchanged: the governing ADR's first-adopter path, then only defects shown by evidence. Carried v27 debt is in the [debt disposition](workstreams/quality-ratchet-release/milestones/v27.0-closeout/debt-disposition.md).
+v28.0 Truth and Release Train (phases 194–199, started 2026-10-24): land the bearings and ADR amendments, make `main` and the release pipeline trustworthy, harden the sensitive specs, correct the public docs, prove Android from a foreign host, and cut one real release behind per-publish `allow`. Carried v27 debt is in the [debt disposition](workstreams/quality-ratchet-release/milestones/v27.0-closeout/debt-disposition.md).
 
 **Archive:** `.planning/milestones/v19.0-ROADMAP.md`, `.planning/milestones/v19.0-REQUIREMENTS.md`, and `.planning/milestones/v19.0-MILESTONE-AUDIT.md`.
 
 ## Active Workstreams
+
+### v28.0 Truth and Release Train (active)
+
+Workstream: Quality Ratchet & Release. Phases 194–199; 30 requirements. [Roadmap](workstreams/quality-ratchet-release/ROADMAP.md), [requirements](workstreams/quality-ratchet-release/REQUIREMENTS.md), [scope](workstreams/quality-ratchet-release/v28.0-SCOPE.md).
 
 ### v27.0 Land and Clean Up (Phases 189–193) — shipped 2026-10-24
 
@@ -127,8 +131,9 @@ widening Crosswake into a generic sync, storage, native-control, or multi-platfo
 
 **Key context:** Crosswake is infrastructure for the **First B2C Adopter**, not a separate business
 line. A web-only customer Alpha has no Crosswake deliverable; mobile work serves public v1.
-Android, native-menu breadth, new companion packages, brand/showcase polish, and generic
-sync/storage productization are frozen. Reversal requires two independent active adopters or a
+Native-menu breadth, new companion packages, brand/showcase polish, and generic
+sync/storage productization are frozen. Android is unfrozen only for proof and parity of
+existing contracts (ADR amendment A1). Reversal requires two independent active adopters or a
 separately funded business-line mandate. Durable reasoning is in
 `.planning/ADR-FIRST-B2C-ADOPTER.md`; the complete retrieval-oriented game plan is in
 `.planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md`.
@@ -503,7 +508,7 @@ v24.0 closed bounded maintenance work with exact-source proof and retained histo
 ## Constraints
 
 - **Tech stack**: Phoenix-native Elixir library with mobile shell integration seams — the product must extend Phoenix instead of replacing it with a JS-framework-first abstraction.
-- **Platform**: iOS and Android remain library targets; Android stays frozen at its current generator, Maven, JVM and vector posture under the governing ADR.
+- **Platform**: iOS and Android remain library targets; Android is unfrozen only for proof and parity of existing contracts: generated-shell, Maven, JVM-hermetic and shared-vector evidence. Claims stop at JVM-hermetic proof; no emulator, device or feature-breadth claim is made until a later phase produces that evidence. Android never gates the first adopter's physical-iPhone proof. Re-freeze if Android work delays any iOS gate by more than one milestone.
 - **Architecture**: Per-route runtime ownership is authoritative — solution design cannot collapse into single-runtime ideology.
 - **Security**: Route allowlists, origin allowlists, capability allowlists, active-route checks, and cache sensitivity need explicit defaults.
 - **Proof posture**: Deterministic CI, example-host verification, docs integrity, and release discipline are required early.

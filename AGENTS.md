@@ -49,8 +49,11 @@ inventory, then pause Crosswake until the public-v1 mobile path is active.
 - Preserve fail-closed explicit denials. Flag any path that can degrade silently.
 - Treat diagnostics and proof as product surface, but prefer one-command host proof over new label
   taxonomy.
-- Android is frozen at its current generator, Maven, JVM, and vector posture. Do not add Android
-  features, templates, device proof, parity work, or release requirements during v21.
+- Android is unfrozen only for proof and parity of existing contracts: generated-shell, Maven,
+  JVM-hermetic and shared-vector evidence. Claims stop at JVM-hermetic proof; no emulator, device or
+  feature-breadth claim is made until a later phase produces that evidence. Android never gates the
+  first adopter's physical-iPhone proof. Re-freeze if Android work delays any iOS gate by more than
+  one milestone.
 - Do not build native menu/action-button breadth, new companions, capture/device packs, commerce
   productionization, a dashboard, brand/showcase polish, generic sync, background sync, or generic
   native storage unless the governing ADR's reversal condition is met.

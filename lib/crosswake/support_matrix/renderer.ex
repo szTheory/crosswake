@@ -375,7 +375,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "| privacy-safe scoped replay | verification required | Opaque scope references, scope-partitioned outbox, logout/account-switch stops, endpoint reauthorization, and redacted evidence all pass. | The existing host-owned `gated_by` seam remains the server-side disablement authority; raw mutation payloads, account identifiers, media, transcripts, tokens, and stable device identifiers are never diagnostics. |",
       "| foreground iOS pronunciation pack | verification required | A host provider downloads real bytes, verifies expected size and SHA-256, and atomically installs one immutable archive before reporting available. | Current timed native pack transitions are simulated lifecycle evidence, not productionized native content-pack storage. |",
       "| physical-iPhone offline study | device evidence | Retained source-bound reference evidence remains dated and non-transferable. | It does not claim Android. It does not claim background replay or sync. It does not claim generic storage or sync. It does not claim multiple offline islands. It does not claim simulator substitution. It does not claim every iPhone. v20 is stopped/partial; it has no shipped support claim. |",
-      "| Android during first adopter readiness | advisory evidence frozen at current posture | Android is frozen at its existing generator, Maven, JVM, and shared-vector posture. | No new Android feature, parity, template, emulator/device, or release requirement is active. |",
+      "| Android (existing contracts) | JVM hermetic proof and shared vectors | Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim. | No new Android feature, template, emulator/device, or release requirement is active. |",
       "",
       "Generic sync is not claimed."
     ]
@@ -396,7 +396,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "- Standalone native shell core packages are consumed by generated host-owned wrappers through SwiftPM and Maven Central; device/emulator proof and broader native runtime claims remain deferred until separately proven.",
       "- Native pack lifecycle transitions currently prove contract behavior, not production byte download, integrity verification, atomic installation, eviction, background transfer, or generic content storage.",
       "- First adopter work may add one host-supplied foreground iOS pronunciation-pack adapter. Generic app-wide sync, background sync, silent last-write-wins, multiple proven islands, broad reusable runtime sync helpers, and generic productionized native pack storage remain unclaimed.",
-      "- Android remains available at its existing generated-shell/JVM proof posture but is frozen during first adopter iOS readiness; frozen does not mean device-verified."
+      "- Android remains available at its existing generated-shell/JVM proof posture for proof and parity of existing contracts; that posture is not device-verified, and no new Android feature, template, emulator/device or release requirement is active."
     ]
     |> Enum.join("\n")
   end

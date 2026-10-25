@@ -30,8 +30,9 @@ WebView navigation.
 
 Phoenix-owned confirmation is the current required fallback on every platform. Native alert/confirm is stopped and may be reconsidered only after passed physical-iPhone proof, a demonstrated active-adopter route blocker, and an explicit maintainer roadmap decision.
 
-Android retains its frozen generator, Maven, JVM, and shared-vector posture. No new
-Android feature, parity, template, emulator/device, or release requirement is active.
+Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof`
+and shared vectors; there is no emulator, device or new-feature claim. No new Android
+feature, template, emulator/device, or release requirement is active.
 No URL, route payload/history, account, device, token, stable ID, screenshot,
 transcript, or raw test output is retained as shell-proof evidence.
 
