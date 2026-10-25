@@ -458,3 +458,42 @@ Medium
 **Status**
 
 Accepted (amends GET-6)
+
+## A2 — Synthetic-profile reversal gate
+
+**Decision**
+
+In addition to the GET-6 reversal condition, which stays in force unchanged, a stop-list item may
+be reopened through a synthetic-profile proposal that names five things: the profile, the
+failing criterion, the cited artifact (a measured artifact path), the smallest slice and the
+rollback. A proposal that omits any of the five is not eligible. At most one item is reopened per
+milestone. A passing gate permits profile scenario rows over one host as proof structure only. It
+never permits generic sync, new companions, native menu or action breadth, or any claim about a
+real adopter. Profiles stay generic and are never modeled on a real customer.
+
+**Why**
+
+The adopter lane is parked, so synthetic profiles are the proving ground, and a measured-artifact
+gate stops anecdote-driven scope growth.
+
+**Alternatives considered**
+
+- Keep only the two-adopter condition.
+- Allow stop-list items to be reopened freely.
+
+**What would change my mind**
+
+Two consecutive reopened items fail to produce their cited improvement, or a real adopter lane
+resumes, in which case the original condition governs.
+
+**Date**
+
+2026-10-24
+
+**Confidence**
+
+Medium
+
+**Status**
+
+Accepted (alongside the GET-6 reversal condition)
