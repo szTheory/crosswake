@@ -158,7 +158,7 @@ function maskNextLineValues(text) {
 //      non-alphanumeric character, `sk-` (8+ of `A-Za-z0-9_-`, project and versioned forms), Slack `xox[abprs]-`
 //      (8+) and `npm_` plus exactly 36 letters or digits (`task-runner12345`, `npm_config_cache` stay readable)
 //   f. URL userinfo password (`scheme://user:<v>@host`; empty user and a `/` in the password allowed, parts bounded)
-//   g. JWTs (`eyJ` + two or three base64url segments)
+//   g. JWTs (`eyJ` + two or three base64url segments; no base64url character before it, so a hyphenated run stays linear)
 //   h. AWS access key IDs (`AKIA` / `ASIA` + 16 characters, any non-uppercase/digit character before)
 //   q. query credentials (`?key=`, `&sig=`, `&signature=`, `X-Amz-Signature|Credential|Security-Token`)
 //   i. Elixir tuples with an atom or closed-quote credential key and a comma (`{:token, "v"}`)
@@ -186,7 +186,7 @@ export function maskSecretShapes(text) {
     .replace(/(?<![A-Za-z0-9])(xox[abprs]-)[A-Za-z0-9-]{8,}/g, "$1***")
     .replace(/(?<![A-Za-z0-9])(npm_)[A-Za-z0-9]{36}(?![A-Za-z0-9])/g, "$1***")
     .replace(/(:\/\/[^/\s:@]{0,256}:)[^\s@]{1,256}@/g, "$1***@")
-    .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)?/g, "eyJ***")
+    .replace(/(?<![A-Za-z0-9_-])eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)?/g, "eyJ***")
     .replace(/(?<![A-Z0-9])(A[KS]IA)[A-Z0-9]{16}/g, "$1***")
     .replace(QUERY_CREDENTIAL_RULE, "$1***")
     .replace(TUPLE_RULE, maskValue)
