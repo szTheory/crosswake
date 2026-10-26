@@ -1,0 +1,4 @@
+pr1: number 250
+pr1: head 41b6b497fe602afe5a4c0f2c83b0aa72cd02f151
+pr1: crosswake_ci success on head 41b6b49
+pr1: note pull_request runs also test a synthetic merge commit; the result above is for the head

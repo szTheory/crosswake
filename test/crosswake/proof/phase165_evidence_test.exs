@@ -140,19 +140,22 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
     end
   end
 
-  test "live probe commands bind the immutable remote source and sanitize observations" do
+  test "archived probe evidence stays valid and the retired probe commands refuse to run" do
     monitor = File.read!(@monitor)
 
-    assert monitor =~ "verify-remote-default-source"
-    assert monitor =~ "probe-phase165"
-    assert monitor =~ "PHASE165_REMOTE_DEFAULT_SHA"
+    for command <- ["verify-remote-default-source", "probe-phase165"] do
+      {output, status} = System.cmd("node", [@monitor, command], stderr_to_stdout: true)
+      assert status == 2, output
+      assert output =~ "retired in Phase 195 (REL-04)"
+    end
+
+    # Retired in Phase 195 (REL-04): Cancel Obsolete controller removed; not executed.
     assert monitor =~ "remote-default-source.json"
     assert monitor =~ "lower_run_cancelled"
     assert monitor =~ "newer_run_authoritative"
     assert monitor =~ "controller_run_id"
     assert monitor =~ "controller_source_run_id"
     assert monitor =~ "selected_lower_run_ids"
-    assert monitor =~ "waitForControllerResult"
     assert monitor =~ "Crosswake CI"
     assert monitor =~ "planning_probe"
     assert monitor =~ "public_docs_probe"
@@ -166,8 +169,11 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
       assert source["workflow_digests"][".github/workflows/crosswake-ci.yml"] =~
                ~r/^[0-9a-f]{64}$/
 
-      assert source["workflow_digests"][".github/workflows/cancel-obsolete-crosswake-ci.yml"] =~
-               ~r/^[0-9a-f]{64}$/
+      assert map_size(source["workflow_digests"]) == 2
+
+      for {_file, digest} <- source["workflow_digests"] do
+        assert digest =~ ~r/^[0-9a-f]{64}$/
+      end
     end
 
     if File.exists?(@live_observation) do

@@ -50,15 +50,26 @@ const ROOT_PROOF_TAIL_BYTES = 24 * 1024;
 const ROOT_PROOF_DETAIL_LINES = 120;
 const ROOT_PROOF_DETAIL_BYTES = 16 * 1024;
 
+// Masks credential-shaped values, keeping key and header names so failures stay diagnosable.
+// Shapes: `Authorization: <scheme> <v>`, bare `Bearer <v>`, `(aws_)secret[_-]access[_-]key = <v>`,
+// `Cookie:` / `Set-Cookie:` values to end of line, `gh*_`/`github_pat_`/`hex_`/`sk-` prefixed tokens,
+// and generic credential keys (token, secret, password, api key) with a value of 3+ characters.
+export function maskSecretShapes(text) {
+  return String(text ?? "")
+    .replace(/(authorization["']?\s*[:=]\s*)(?:(?:bearer|basic|token)\s+)?[^\s"']{3,}/gi, "$1***")
+    .replace(/\b(bearer\s+)[^\s"']{3,}/gi, "$1***")
+    .replace(/((?:aws_)?secret[_-]access[_-]key["']?\s*[:=]\s*)[^\s"']{3,}/gi, "$1***")
+    .replace(/^(\s*(?:set-)?cookie\s*:\s*)\S.*$/gim, "$1***")
+    .replace(/(gh[pousr]_|github_pat_|hex_|sk-)[A-Za-z0-9_]{8,}/g, "$1***")
+    .replace(/(authorization|bearer|token|secret|password|api[_-]?key)(["':=\s]+)[^\s"']{3,}/gi, "$1$2***");
+}
+
 // Hosted-CI diagnosability: when the root proof fails, print the ExUnit failure details
 // (from the first numbered failure to the "Finished in" line) and a bounded tail of its own
 // test output (the run root, and with it the full log, is removed afterwards).
-// Credential-shaped values are masked; nothing is printed on success.
+// Credential-shaped values are masked once via maskSecretShapes; nothing is printed on success.
 export function rootProofFailureTail(outcome, result) {
-  const text = `${String(result?.stdout ?? "")}${String(result?.stderr ?? "")}`
-    .replace(/\u001b\[[0-9;]*m/g, "")
-    .replace(/(gh[pousr]_|github_pat_|hex_|sk-)[A-Za-z0-9_]{8,}/g, "$1***")
-    .replace(/(authorization|bearer|token|secret|password|api[_-]?key)(["':=\s]+)[^\s"']{6,}/gi, "$1$2***");
+  const text = maskSecretShapes(`${String(result?.stdout ?? "")}${String(result?.stderr ?? "")}`.replace(/\u001b\[[0-9;]*m/g, ""));
   const lines = text.split("\n");
   let details = "";
   const first = lines.findIndex((line) => /^\s*1\) (test|doctest|property) /.test(line));

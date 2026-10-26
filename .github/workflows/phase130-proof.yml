@@ -35,14 +35,10 @@ concurrency:
 
 on:
   workflow_dispatch:
-  schedule:
-    # Run the advisory engine-present lane weekly (Monday 08:00 UTC) so absence
-    # of advisory results is visible in the CI dashboard between PRs.
-    - cron: "0 8 * * 1"
 
 jobs:
   companion-engine-present-proof:
-    # Advisory lane. Runs on schedule (weekly) and on workflow_dispatch only.
+    # Advisory lane. Runs on workflow_dispatch only (the weekly schedule was retired in phase 195).
     # Does NOT run on pull_request or push to main — cannot gate merges even if
     # every step fails.
     #

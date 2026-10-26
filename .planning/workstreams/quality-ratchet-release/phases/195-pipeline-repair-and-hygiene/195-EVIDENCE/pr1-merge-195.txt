@@ -1,0 +1,6 @@
+pr1: state MERGED
+pr1: merge_commit 02585ab21d01ee242c120b8ad4c36ba33a1f1325
+pr1: merged_at 2026-10-25T21:13:14Z
+pr1: on_origin_main yes
+pr1: approval allow bound head 41b6b49
+pr1: remote branch kept (delete needs its own allow; plan 13)

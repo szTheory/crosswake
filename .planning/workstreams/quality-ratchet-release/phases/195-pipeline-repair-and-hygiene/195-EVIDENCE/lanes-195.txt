@@ -1,0 +1,38 @@
+lane: blocking_checks_before rc 0 sha256 f1dd556db36ba0e28c4ace016c957e7a457c5c5b14f1179e4d6612ca90b23e2a
+guard: ci_recurring_lanes red_on_origin_main_tree 14
+lane: phase23-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase34-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase43-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase45-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase48-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase52-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase58-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: blocking_checks after_plan_05 sha256 f1dd556db36ba0e28c4ace016c957e7a457c5c5b14f1179e4d6612ca90b23e2a unchanged yes
+lane: phase70-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase71-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase73-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase74-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase96-proof-advisory.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase130-proof.yml schedule removed (was 0 8 * * 1); workflow_dispatch kept
+lane: phase132-proof.yml schedule removed (was 0 8 * * 1); workflow_dispatch kept
+guard: ci_recurring_lanes class delta_only_blocking findings_on_origin_main 14 findings_on_branch 0
+lane: weekly-canary.yml added (advisory, non-required)
+guard: weekly_canary class report_mode_advisory not_required
+lane: blocking_checks after_plan_06 sha256 f1dd556db36ba0e28c4ace016c957e7a457c5c5b14f1179e4d6612ca90b23e2a unchanged yes
+lane: absence_grep_before rc 0 files 6
+lane: ref scripts/ci_monitor.cjs verify-remote-default-source and probe-phase165 retired (exit 2, not executed); controller poll removed
+lane: ref test/crosswake/proof/phase165_evidence_test.exs archived digest check re-keyed (count 2, no controller name)
+lane: cancel-obsolete-crosswake-ci.yml removed
+lane: select_obsolete_ci_runs.py removed
+lane: ref script/check_phase165_efficient_ci.sh cancellation-policy section retired
+lane: ref test/crosswake/proof/phase165_ci_integrity_test.exs controller tests retired
+lane: ref test/crosswake/proof/phase165_ci_policy_test.exs selector and inversion tests retired
+lane: ref script/collection_assertion_ledger.json 5 line-number drifts re-emitted (no reclassification)
+lane: absence_grep_after rc 1 files 0
+guard: absence class delta_only_blocking findings_on_origin_main 6 findings_on_branch 0
+lane: blocking_checks after_plan_07 sha256 f1dd556db36ba0e28c4ace016c957e7a457c5c5b14f1179e4d6612ca90b23e2a unchanged yes
+lane: ref test/crosswake/guides/see_it_run_collateral_test.exs collateral-mode expectation set to web assets
+lane: see-it-run native split to see-it-run-native.yml (dispatch only)
+lane: dependabot monthly grouped actions; security updates ungrouped
+lane: blocking_checks after_plan_08 sha256 f1dd556db36ba0e28c4ace016c957e7a457c5c5b14f1179e4d6612ca90b23e2a unchanged yes
+lane: blocking_checks unchanged yes

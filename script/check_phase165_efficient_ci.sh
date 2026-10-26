@@ -34,9 +34,6 @@ done
 section "classification-policy" "python3 script/classify_ci_change.py --self-test"
 python3 script/classify_ci_change.py --self-test
 
-section "cancellation-policy" "python3 script/select_obsolete_ci_runs.py --self-test"
-python3 script/select_obsolete_ci_runs.py --self-test
-
 section "aggregator-result-semantics" "python3 script/check_aggregator_result_semantics.py --self-test"
 python3 script/check_aggregator_result_semantics.py --self-test
 
