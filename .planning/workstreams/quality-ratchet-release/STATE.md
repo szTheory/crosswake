@@ -4,8 +4,8 @@ milestone: v28.0
 milestone_name: Truth and Release Train
 current_phase: 195
 current_phase_name: Pipeline repair and hygiene
-status: executing
-stopped_at: Completed 195-15-PLAN.md
+status: verifying
+stopped_at: Phase 195 verification gaps_found (GR-01, GR-02)
 last_updated: "2026-10-26T22:15:53.948Z"
 state_head: 995c7df467534b6737c00932ebf18543c521144f
 progress:
@@ -24,15 +24,15 @@ See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.
 
 ## Current Position
 
-Phase: 195 (Pipeline repair and hygiene) — EXECUTING
-Plan: 15 of 15
-Status: Ready to execute
+Phase: 195 (Pipeline repair and hygiene) — GAP CLOSURE ROUND 2
+Plan: 15 of 15 executed
+Status: Verification found gaps — gap closure needed (REL-03, round 2)
 
 ## Exact Next Action
 
-What was checked: all 13 Phase 195 plans executed. PRs #250, #241, #240, #239, #211, #210, #238, #251, #254 and #255 are merged, each behind its own `allow`. The Weekly Canary is green on main (run 40354096432). The full `mix test` run (2788 tests) and `node --test` (148) pass. The code review (195-REVIEW.md) and the verifier (195-VERIFICATION.md) both ran. What happened: verification returned `gaps_found` (7 of 8). REL-03's `maskSecretShapes` leaks quoted secret values (`KEY="v"`), mid-line `Cookie:` headers and multi-word quoted passwords (review CR-01 and CR-02, reproduced on main), so "CI never echoes secrets" does not hold. What is unknown: nothing blocks planning the fix. Nothing was released or published. 10 `archive/` tags were pushed and 15 remote branches deleted under HYG-02. Open PRs: #236 (release, green on b1e8d95), #252 (grouped Dependabot) and #253 (collateral auto-refresh, held). The phase evidence is on the pushed branch `docs/195-closeout`, and its closeout PR is not opened yet.
+What was checked: gap plans 195-14 and 195-15 executed. PR #256 (masker fix) merged to main as 5862a3d behind its own `allow`; GitHub deleted its branch as approved; Release Please is green on 5862a3d; `node --test` passes 186 of 186; the verifier's four original REL-03 cases are closed on main. Review dispositions: CR-01 to WR-03 fixed; WR-04, WR-05, WR-06 and IN-03 deferred to Phase 197 (carried line in ROADMAP); IN-01 and IN-02 wontfix (route `accept`). What happened: the verifier returned `passed`, but a focused review of the two changed files (195-REVIEW-GAP.md) reproduced further leaks, re-confirmed on main: credential keys in Elixir tuple, escaped-JSON and CLI-flag forms (GR-01), and a single-quoted `::add-mask::` that passes the guard (GR-02). Verification is recorded as `gaps_found` (7 of 8). What is unknown: nothing blocks planning. Nothing was released, published or tagged (114 tags). `docs/195-closeout` is pushed; its closeout PR is not opened yet.
 
-Next action: `/gsd-plan-phase 195 --gaps --ws quality-ratchet-release` (plan the masking fix: failing seeds first, then the regexes; include WR-01 to WR-03), then `/gsd-execute-phase 195 --gaps-only --ws quality-ratchet-release`.
+Next action: `/gsd-plan-phase 195 --gaps --ws quality-ratchet-release` (GR-01 and GR-02 seeds first, then the fix; triage GR-03 to GR-10), then `/gsd-execute-phase 195 --gaps-only --ws quality-ratchet-release`.
 
 ## Carried debt
 
