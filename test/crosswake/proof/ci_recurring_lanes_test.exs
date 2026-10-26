@@ -77,4 +77,43 @@ defmodule Crosswake.Proof.CiRecurringLanesTest do
     assert named == [".github/workflows/weekly-canary.yml"]
     refute File.read!("script/required_check_policy.json") =~ "Weekly Canary"
   end
+
+  # REL-04: the Cancel Obsolete controller and its selector are gone. Names are built from
+  # parts so this file does not itself match the absence grep.
+  defp retired_controller, do: "cancel-obsolete" <> "-crosswake-ci"
+  defp retired_selector, do: "select_obsolete" <> "_ci_runs"
+
+  defp absent_references?(matches), do: matches == []
+
+  test "the retired controller and selector files do not exist" do
+    refute File.exists?(".github/workflows/#{retired_controller()}.yml")
+    refute File.exists?("script/#{retired_selector()}.py")
+  end
+
+  test "no tracked file outside .planning and CHANGELOG.md names the controller or selector" do
+    {out, status} =
+      System.cmd(
+        "git",
+        [
+          "grep",
+          "-l",
+          "-e",
+          retired_controller(),
+          "-e",
+          retired_selector(),
+          "--",
+          ":!.planning",
+          ":!CHANGELOG.md"
+        ],
+        stderr_to_stdout: true
+      )
+
+    assert status == 1, out
+    assert out == ""
+  end
+
+  test "absence predicate rejects a non-empty match list (negative control)" do
+    refute absent_references?(["script/x.sh"])
+    assert absent_references?([])
+  end
 end

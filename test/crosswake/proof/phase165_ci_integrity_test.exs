@@ -4,7 +4,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   """
   use ExUnit.Case, async: true
 
-  @controller ".github/workflows/cancel-obsolete-crosswake-ci.yml"
   @crosswake_ci ".github/workflows/crosswake-ci.yml"
   @native_workflow @crosswake_ci
   @android_script "script/verify_generated_android_shell.sh"
@@ -249,6 +248,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
     advisory = File.read!(".github/workflows/phase96-proof-advisory.yml")
     assert advisory =~ ~r/^  workflow_dispatch:/m
+
     # Phase 195 (REL-04): schedule contract moved to ci_recurring_lanes_test.exs; retired, not executed.
     refute advisory =~ ~r/^  pull_request:/m
     refute advisory =~ ~r/^  push:/m
@@ -318,6 +318,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       refute advisory =~ ~r/^  pull_request:/m
       refute advisory =~ ~r/^  push:/m
       assert advisory =~ ~r/^  workflow_dispatch:/m
+
       # Phase 195 (REL-04): schedule contract moved to ci_recurring_lanes_test.exs; retired, not executed.
       assert advisory =~ "continue-on-error: true"
     end
@@ -477,6 +478,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       refute advisory =~ ~r/^  pull_request:/m
       refute advisory =~ ~r/^  push:/m
       assert advisory =~ ~r/^  workflow_dispatch:/m
+
       # Phase 195 (REL-04): schedule contract moved to ci_recurring_lanes_test.exs; retired, not executed.
       assert advisory =~ "continue-on-error: true"
     end
@@ -518,6 +520,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
         ] do
       advisory = File.read!(path)
       assert advisory =~ ~r/^  workflow_dispatch:/m
+
       # Phase 195 (REL-04): schedule contract moved to ci_recurring_lanes_test.exs; retired, not executed.
       assert advisory =~ "continue-on-error: true"
     end
@@ -552,6 +555,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       refute advisory =~ ~r/^  pull_request:/m
       refute advisory =~ ~r/^  push:/m
       assert advisory =~ ~r/^  workflow_dispatch:/m
+
       # Phase 195 (REL-04): schedule contract moved to ci_recurring_lanes_test.exs; retired, not executed.
       assert advisory =~ "continue-on-error: true"
       refute advisory =~ "Determine closeout relevance"
@@ -565,60 +569,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert workflow =~ "checkout_or_object_validation_failed"
   end
 
-  @tag :cancellation_controller
-  test "controller is requested-run-only and grants no permission beyond Actions mutation" do
-    workflow = File.read!(@controller)
-
-    assert workflow =~
-             ~r/^on:\n  workflow_run:\n    workflows: \[Crosswake CI\]\n    types: \[requested\]$/m
-
-    assert workflow =~ ~r/^permissions:\n  actions: write$/m
-    refute workflow =~ "pull_request_target"
-    refute workflow =~ ~r/^\s+(contents|issues|pull-requests|checks|packages): write$/m
-    refute workflow =~ "write-all"
-    refute workflow =~ "secrets."
-  end
-
-  @tag :cancellation_controller
-  test "controller consumes immutable default-branch policy and never checks out PR code" do
-    workflow = File.read!(@controller)
-
-    refute workflow =~ "actions/checkout"
-    refute workflow =~ "github.event.workflow_run.head_sha"
-    refute workflow =~ "github.event.workflow_run.head_repository"
-    assert workflow =~ "${GITHUB_REPOSITORY}/${GITHUB_SHA}/script/select_obsolete_ci_runs.py"
-    assert workflow =~ "--repository \"$GITHUB_REPOSITORY\""
-    assert workflow =~ "--workflow-name 'Crosswake CI'"
-    assert workflow =~ "pagination_complete"
-    assert workflow =~ ~s("$GITHUB_EVENT_PATH")
-    refute workflow =~ "EVENT_PATH: ${{ github.event_path }}"
-    assert workflow =~ "source_pr_numbers"
-    assert workflow =~ "candidate_pr_numbers == source_pr_numbers"
-  end
-
-  @tag :cancellation_controller
-  test "strict-lower selection is a hard gate before bounded cancel and force-cancel" do
-    workflow = File.read!(@controller)
-
-    select_at = byte_offset(workflow, "id: select")
-    gate_at = byte_offset(workflow, "steps.select.outputs.disposition == 'cancel_lower'")
-    cancel_at = byte_offset(workflow, ~s(actions/runs/$run_id/cancel"))
-    poll_at = byte_offset(workflow, "poll_attempt")
-    force_at = byte_offset(workflow, ~s(actions/runs/$run_id/force-cancel"))
-
-    assert select_at < gate_at
-    assert gate_at < cancel_at
-    assert cancel_at < poll_at
-    assert poll_at < force_at
-    assert workflow =~ "timeout-minutes: 10"
-    assert workflow =~ "steps.select.outputs.run_ids != '[]'"
-    assert workflow =~ "closed disposition"
-    assert workflow =~ "CROSSWAKE_CONTROLLER_RESULT="
-    assert workflow =~ "github.event.workflow_run.id"
-    assert workflow =~ ~s("source_run_id")
-    assert workflow =~ ~s("selected_run_ids")
-    refute workflow =~ ~r/\b(retry|rerun|re-run)\b.*\b(test|proof|assert)/i
-  end
+  # Retired in Phase 195 (REL-04): Cancel Obsolete controller removed; not executed.
 
   @tag :cancellation_controller
   test "ordinary PR concurrency remains repository-and-PR scoped and non-cancelling" do

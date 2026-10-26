@@ -171,7 +171,9 @@ defmodule Crosswake.Proof.Phase165EvidenceTest do
 
       assert map_size(source["workflow_digests"]) == 2
 
-      assert Enum.all?(Map.values(source["workflow_digests"]), &(&1 =~ ~r/^[0-9a-f]{64}$/))
+      for {_file, digest} <- source["workflow_digests"] do
+        assert digest =~ ~r/^[0-9a-f]{64}$/
+      end
     end
 
     if File.exists?(@live_observation) do
