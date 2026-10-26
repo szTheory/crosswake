@@ -50,21 +50,30 @@ const ROOT_PROOF_TAIL_BYTES = 24 * 1024;
 const ROOT_PROOF_DETAIL_LINES = 120;
 const ROOT_PROOF_DETAIL_BYTES = 16 * 1024;
 
-// A credential value: a double- or single-quoted span (backslash escapes honoured, masked to end of
-// line when the quote is never closed) or an unquoted run of 3+ non-space, non-quote characters.
-// Unrolled loops with disjoint alternatives keep matching linear (no nested quantifier overlap).
-const SECRET_VALUE_SOURCE = String.raw`(?:"([^"\\\n]*(?:\\[^\n]?[^"\\\n]*)*)("?)|'([^'\\\n]*(?:\\[^\n]?[^'\\\n]*)*)('?)|([^\s"']{3,}))`;
+// A credential value: a backslash-escaped double-quoted span (`\\"v\\"`, JSON inside a string), a double- or
+// single-quoted span (backslash escapes honoured, masked to end of line when the quote is never closed)
+// or an unquoted run of 3+ non-space, non-quote characters. Groups are named so adding one cannot shift
+// another. Unrolled loops with disjoint alternatives keep matching linear (no nested quantifier overlap).
+const SECRET_VALUE_SOURCE = String.raw`(?:(?<escOpen>\\+")(?<escBody>[^\\\n]*(?:\\(?!")[^\\\n]*)*)(?<escClose>(?:\\+")?)|"(?<dqBody>[^"\\\n]*(?:\\[^\n]?[^"\\\n]*)*)(?<dqClose>"?)|'(?<sqBody>[^'\\\n]*(?:\\[^\n]?[^'\\\n]*)*)(?<sqClose>'?)|(?<bare>[^\s"']{3,}))`;
 
 // Replacer for a (prefix, value) match built from SECRET_VALUE_SOURCE: quotes survive around `***`.
-function maskValue(match, prefix, dqBody, dqClose, sqBody, sqClose, bare) {
-  if (bare !== undefined) return `${prefix}***`;
-  if (dqBody !== undefined) return `${prefix}"***${dqClose}`;
-  return `${prefix}'***${sqClose}`;
+// The value groups are read by name from the trailing groups object; only the prefix is positional.
+function maskValue(match, prefix, ...rest) {
+  const g = rest[rest.length - 1];
+  if (g.bare !== undefined) return `${prefix}***`;
+  if (g.escOpen !== undefined) return `${prefix}${g.escOpen}***${g.escClose}`;
+  if (g.dqBody !== undefined) return `${prefix}"***${g.dqClose}`;
+  return `${prefix}'***${g.sqClose}`;
 }
 
-const SECRET_ACCESS_KEY_RULE = new RegExp(`((?:aws_)?secret[_-]access[_-]key["']?[ \\t]*[:=][ \\t]*)${SECRET_VALUE_SOURCE}`, "gi");
+// Optional quote after a key: a plain quote or a backslash-escaped one (key inside an escaped JSON string).
+const KEY_QUOTE = String.raw`(?:\\*["'])?`;
+
+const AUTHORIZATION_RULE = new RegExp(`(authorization${KEY_QUOTE}[ \\t]*[:=][ \\t]*)[^\\n]+`, "gi");
+const COOKIE_RULE = new RegExp(`(\\bcookie${KEY_QUOTE}[ \\t]*:[ \\t]*)[^\\n]+`, "gi");
+const SECRET_ACCESS_KEY_RULE = new RegExp(`((?:aws_)?secret[_-]access[_-]key${KEY_QUOTE}[ \\t]*[:=][ \\t]*)${SECRET_VALUE_SOURCE}`, "gi");
 const GENERIC_CREDENTIAL_RULE = new RegExp(
-  `((?:token|secret[_-]key[_-]base|secret[_-]key|secret|password|passwd|passphrase|api[_-]?key|private[_-]key|credentials?)["']?[ \\t]*(?:=>|[:=])[ \\t]*)${SECRET_VALUE_SOURCE}`,
+  `((?:token|secret[_-]key[_-]base|secret[_-]key|secret|password|passwd|passphrase|api[_-]?key|private[_-]key|credentials?)${KEY_QUOTE}[ \\t]*(?:=>|[:=])[ \\t]*)${SECRET_VALUE_SOURCE}`,
   "gi"
 );
 
@@ -80,11 +89,12 @@ const GENERIC_CREDENTIAL_RULE = new RegExp(
 //   h. AWS access key IDs (`AKIA` / `ASIA` + 16 characters)
 //   i. generic credential keys (token, secret, secret_key[_base], password, passwd, passphrase, api key,
 //      private key, credential[s]) followed by `=`, `:` or `=>` and a quoted (multi-word, escaped,
-//      unterminated) or 3+ character unquoted value
+//      unterminated, backslash-escaped JSON `\\"v\\"`) or 3+ character unquoted value; the key itself may
+//      be wrapped in plain or backslash-escaped quotes (rules a, b, d and i)
 export function maskSecretShapes(text) {
   return String(text ?? "")
-    .replace(/(authorization["']?[ \t]*[:=][ \t]*)[^\n]+/gi, "$1***")
-    .replace(/(\bcookie["']?[ \t]*:[ \t]*)[^\n]+/gi, "$1***")
+    .replace(AUTHORIZATION_RULE, "$1***")
+    .replace(COOKIE_RULE, "$1***")
     .replace(/\b(bearer[ \t]+)[^\s"']{3,}/gi, "$1***")
     .replace(SECRET_ACCESS_KEY_RULE, maskValue)
     .replace(/(gh[pousr]_|github_pat_|hex_|sk-)[A-Za-z0-9_]{8,}/g, "$1***")
