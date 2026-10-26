@@ -5,14 +5,14 @@ milestone_name: Truth and Release Train
 current_phase: 195
 current_phase_name: pipeline-repair-and-hygiene
 status: executing
-stopped_at: Phase 195 gap plans 16-18 planned and checked (REL-03 round 2)
-last_updated: "2026-10-26T23:02:03.058Z"
-state_head: c0f858bd3d5d2b6fc1dd32c73cfc9e590c95f44b
+stopped_at: Completed 195-16-PLAN.md
+last_updated: "2026-10-26T23:08:52.675Z"
+state_head: 18533051deaf1e530a1d00e84ff16b9039ebcd96
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 27
-  completed_plans: 24
+  completed_plans: 25
   percent: 50
 last_activity: 2026-10-25
 last_activity_desc: Phase 195 planned
@@ -25,8 +25,8 @@ See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.
 ## Current Position
 
 Phase: 195 (pipeline-repair-and-hygiene) — EXECUTING
-Plan: 16 of 18
-Status: Executing Phase 195
+Plan: 17 of 18
+Status: Ready to execute
 
 ## Exact Next Action
 
@@ -54,6 +54,7 @@ See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md);
 | Phase 195 P13 | continuation | 3 tasks | 3 files |
 | Phase 195 P14 | 40min | 3 tasks | 2 files |
 | Phase 195 P15 | 20min | 3 tasks | 8 files |
+| Phase 195 P16 | 45 min | 3 tasks | 2 files |
 
 ## Decisions
 
@@ -61,11 +62,12 @@ See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md);
 - [Phase 195]: Plan 13: one-time user-approved batch for 17 branch ops (not a standing rule); #253 merge held, refused by protection
 - [Phase 195]: 195-14: maskSecretShapes rules are same-line only with a required separator for generic keys; quoted values masked through closing quote (unterminated to EOL); seeds >=8 chars fake-prefixed; seed-bearing assertions are assert.ok with value-free messages
 - [Phase 195]: PR #256 merged (5862a3d) on one-use allow; review route accepted: WR-04/05/06 and IN-03 deferred to Phase 197, IN-01/02 wontfix
+- [Phase 195]: 195-16: value capture groups named; next-line pass runs first; accepted over-masks pinned in ACCEPTED_OVERMASK
 
 ## Session
 
-**Last session:** 2026-10-26T22:15:53.897Z
-**Stopped at:** Completed 195-15-PLAN.md
+**Last session:** 2026-10-26T23:08:52.639Z
+**Stopped at:** Completed 195-16-PLAN.md
 **Resume file:** None
 
 ### Blockers
