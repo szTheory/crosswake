@@ -137,7 +137,9 @@ function maskNextLineValues(text) {
 //   b. `Cookie:` / `Set-Cookie:` header at any position, value to end of line
 //   c. `Bearer <v>`: bare run, quoted span (quotes kept) or `realm="v"` style, on one line
 //   d. `(aws_)secret[_-]access[_-]key` = quoted or unquoted value
-//   e. `gh*_` / `github_pat_` / `hex_` / `sk-` prefixed tokens
+//   e. provider tokens, prefix kept: `gh[pousr]_` / `github_pat_` (6+ characters), `hex_` (8+), and, after a
+//      non-alphanumeric character, `sk-` (8+ of `A-Za-z0-9_-`, project and versioned forms), Slack `xox[abprs]-`
+//      (8+) and `npm_` plus exactly 36 letters or digits (`task-runner12345`, `npm_config_cache` stay readable)
 //   f. URL userinfo password (`scheme://user:<v>@host`)
 //   g. JWTs (`eyJ` + three base64url segments)
 //   h. AWS access key IDs (`AKIA` / `ASIA` + 16 characters)
@@ -156,7 +158,11 @@ export function maskSecretShapes(text) {
     .replace(COOKIE_RULE, "$1***")
     .replace(BEARER_RULE, maskBearer)
     .replace(SECRET_ACCESS_KEY_RULE, maskValue)
-    .replace(/(gh[pousr]_|github_pat_|hex_|sk-)[A-Za-z0-9_]{8,}/g, "$1***")
+    .replace(/(gh[pousr]_|github_pat_)[A-Za-z0-9_]{6,}/g, "$1***")
+    .replace(/(hex_)[A-Za-z0-9_]{8,}/g, "$1***")
+    .replace(/(?<![A-Za-z0-9])(sk-)[A-Za-z0-9_-]{8,}/g, "$1***")
+    .replace(/(?<![A-Za-z0-9])(xox[abprs]-)[A-Za-z0-9-]{8,}/g, "$1***")
+    .replace(/(?<![A-Za-z0-9])(npm_)[A-Za-z0-9]{36}(?![A-Za-z0-9])/g, "$1***")
     .replace(/(:\/\/[^/\s:@]+:)[^/\s@]+@/g, "$1***@")
     .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, "eyJ***")
     .replace(/\b(A[KS]IA)[A-Z0-9]{16}\b/g, "$1***")
