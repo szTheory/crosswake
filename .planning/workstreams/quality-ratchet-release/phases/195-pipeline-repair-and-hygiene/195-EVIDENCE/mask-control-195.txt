@@ -3,3 +3,6 @@ control: leaked message present yes
 control: restored clean yes
 guard: tail_masking class delta_only_blocking findings_on_branch 0 control_rc 1
 guard: derived_secret class delta_only_blocking findings_on_origin_main 2 findings_on_branch 0
+control: derived mask removed rc 1
+control: derived leaked message present yes
+control: derived restored clean yes
