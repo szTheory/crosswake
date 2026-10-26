@@ -584,6 +584,7 @@ const LINEAR_INPUTS = [
   { name: "unterminated_quote", input: () => `${PW} = "` + "a b ".repeat(100000) },
   { name: "userinfo_no_at", input: () => "https://" + "u:".repeat(100000) },
   { name: "jwt_segments", input: () => "eyJaaaaa.".repeat(100000) },
+  { name: "jwt_hyphen_run", input: () => "eyJ-".repeat(50000) },
   { name: "escaped_key_repeat", input: () => `${BS}"${PW}${BS}":`.repeat(30000) },
   { name: "escaped_value_backslashes", input: () => `{${BS}"${PW}${BS}":${BS}"` + BS.repeat(200000) },
   { name: "tuple_comma_repeat", input: () => `{:${TK}, `.repeat(30000) },
