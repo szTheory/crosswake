@@ -164,6 +164,7 @@ Plans:
 
 **Plans**: TBD
 **Research**: Skip
+**Carried from Phase 195 review**: WR-04 (clean-room curl timeout, retry and protocol pin), WR-05 (report resolve or parse failures separately from not_published), WR-06 (POM project-coordinate check) and IN-03 (need_tools completeness) in script/verify_published_cleanroom.sh; see 195-REVIEW-DISPOSITION.md.
 
 ### Phase 198: Android foreign-host proof
 
