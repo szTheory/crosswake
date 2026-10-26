@@ -476,10 +476,16 @@ const workflowDir = path.join(repoRoot, ".github/workflows");
 const indentOf = (line) => line.length - line.trimStart().length;
 const ASSIGN = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$/;
 const refsVar = (text, name) => new RegExp(`\\$\\{?${name}\\b`).test(text);
-// Matches only an uncommented line: optional `echo`, optional opening quote, `::add-mask::`, then the
-// variable (optionally braced) with no further identifier character, so `$TOKEN_ID` never masks `$TOKEN`.
-const isMaskLine = (line, name) =>
-  new RegExp(`^\\s*(?:echo\\s+)?["']?::add-mask::\\$(?:${name}(?![A-Za-z0-9_])|\\{${name}\\})`).test(line);
+// Matches only an uncommented line: optional `echo`, then `::add-mask::` plus the variable (optionally braced)
+// either unquoted or inside double quotes whose closing quote follows the name directly. A single-quoted
+// form (the shell would not expand the variable) and an unterminated double quote never match, and
+// `$TOKEN_ID` never masks `$TOKEN`.
+const isMaskLine = (line, name) => {
+  const ref = `(?:${name}|\\{${name}\\})`;
+  const bare = `::add-mask::\\$${ref}(?![A-Za-z0-9_])`;
+  const dq = `"::add-mask::\\$${ref}"`;
+  return new RegExp(`^\\s*(?:echo\\s+)?(?:${bare}|${dq})`).test(line);
+};
 
 export function secretBoundKeys(workflowText) {
   const keys = new Set();
