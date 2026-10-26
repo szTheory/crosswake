@@ -83,6 +83,32 @@ const AWS_KEY = frag("AWS_", "SECRET_", "ACCESS_", "KEY");
 const AWS_KEY_LOWER = frag("secret_", "access_", "key");
 const gapAwsDq = frag("fake", "Dq", "Quoted", "Val1");
 const gapAwsSq = frag("fake", "Sq", "Quoted", "Val2");
+const PW = frag("pass", "word");
+const TK = frag("tok", "en");
+const SKB = frag("SECRET_", "KEY_", "BASE");
+const BS = String.fromCharCode(92);
+const mwA = frag("fake", "Multi", "Alpha1");
+const mwB = frag("fake", "Multi", "Bravo2");
+const mwC = frag("fake", "Multi", "Charlie3");
+const jsA = frag("fake", "Json", "Alpha4");
+const jsB = frag("fake", "Json", "Bravo5");
+const exA = frag("fake", "Arrow", "Alpha6");
+const exB = frag("fake", "Arrow", "Bravo7");
+const kwA = frag("fake", "Kwlist", "Alpha8");
+const kwB = frag("fake", "Kwlist", "Bravo9");
+const skbV = frag("fake", "Skb", "Value10");
+const escA = frag("fake", "Esc", "First11");
+const escB = frag("fake", "Esc", "Second12");
+const unA = frag("fake", "Unterm", "First13");
+const unB = frag("fake", "Unterm", "Second14");
+const ckV = frag("fake", "Cookie", "Curl15");
+const scV = frag("fake", "Setck", "Curl16");
+const dgV = frag("fake", "Digest", "Resp17");
+const uiV = frag("fake", "Userinfo", "Pw18");
+const jwA = frag("fake", "Jwt", "Head19");
+const jwB = frag("fake", "Jwt", "Body20");
+const jwC = frag("fake", "Jwt", "Sig21");
+const kidV = frag("FAKE", "KEYID", "1234567");
 
 export const GAP_SHAPES = [
   {
@@ -96,6 +122,84 @@ export const GAP_SHAPES = [
     seeds: [gapAwsSq],
     line: `${AWS_KEY_LOWER} = '${gapAwsSq}'`,
     expected: `${AWS_KEY_LOWER} = '***'`
+  },
+  {
+    name: "password_multiword_quoted",
+    seeds: [mwA, mwB, mwC],
+    line: `${PW} = "${mwA} ${mwB} ${mwC}"`,
+    expected: `${PW} = "***"`
+  },
+  {
+    name: "json_password_multiword",
+    seeds: [jsA, jsB],
+    line: `{"${PW}":"${jsA} ${jsB}"}`,
+    expected: `{"${PW}":"***"}`
+  },
+  {
+    name: "elixir_map_arrow",
+    seeds: [exA, exB],
+    line: `%{"${PW}" => "${exA} ${exB}"}`,
+    expected: `%{"${PW}" => "***"}`
+  },
+  {
+    name: "elixir_keyword_multiword",
+    seeds: [kwA, kwB],
+    line: `[${PW}: "${kwA} ${kwB}"]`,
+    expected: `[${PW}: "***"]`
+  },
+  {
+    name: "secret_key_base",
+    seeds: [skbV],
+    line: `${SKB}=${skbV}`,
+    expected: `${SKB}=***`
+  },
+  {
+    name: "escaped_quote_value",
+    seeds: [escA, escB],
+    line: `${PW} = "${escA}${BS}"${escB}"`,
+    expected: `${PW} = "***"`
+  },
+  {
+    name: "unterminated_quote_value",
+    seeds: [unA, unB],
+    line: `${TK} = "${unA} ${unB}`,
+    expected: `${TK} = "***`
+  },
+  {
+    name: "cookie_midline_curl",
+    seeds: [ckV],
+    line: `curl -H "Cookie: sid=${ckV}" https://host.example/x`,
+    expected: `curl -H "Cookie: ***`
+  },
+  {
+    name: "set_cookie_curl_verbose",
+    seeds: [scV],
+    line: `< Set-Cookie: sid=${scV}; HttpOnly`,
+    expected: `< Set-Cookie: ***`
+  },
+  {
+    name: "digest_authorization",
+    seeds: [dgV],
+    line: `Authorization: Digest username="u", response="${dgV}"`,
+    expected: `Authorization: ***`
+  },
+  {
+    name: "url_userinfo",
+    seeds: [uiV],
+    line: `fetch https://user:${uiV}@host.example/repo.git`,
+    expected: `fetch https://user:***@host.example/repo.git`
+  },
+  {
+    name: "jwt",
+    seeds: [jwA, jwB, jwC],
+    line: `got eyJ${jwA}.${jwB}.${jwC} end`,
+    expected: `got eyJ*** end`
+  },
+  {
+    name: "aws_access_key_id",
+    seeds: [kidV],
+    line: `key id AKIA${kidV}`,
+    expected: `key id AKIA***`
   }
 ];
 
@@ -140,6 +244,65 @@ test("gap shapes from a spawned child never reach the root-proof tail", () => {
   const leakedNames = GAP_SHAPES.filter((row) => leakedSecrets(tail, row.seeds).length > 0).map((row) => row.name);
   const k = allSeeds.filter((seed) => tail.includes(seed)).length;
   assert.ok(k === 0, `leaked: ${k} of ${gapSeedCount()} gap seed(s) reached the tail: ${leakedNames.join(", ")}`);
+});
+
+const PROSE_LINES = [
+  { name: "token expired for user", text: "token expired for user" },
+  { name: "password mismatch for account", text: "password mismatch for account" },
+  { name: "secret not found in vault", text: "secret not found in vault" },
+  { name: "authorization failed for request", text: "authorization failed for request" },
+  { name: "cookie jar is empty", text: "cookie jar is empty" },
+  { name: "  1) test token refresh rejects expired password (Crosswake.AuthTest)", text: "  1) test token refresh rejects expired password (Crosswake.AuthTest)" },
+  { name: "token_count: 300", text: "token_count: 300" },
+  { name: 'code: assert token == "expected-value"', text: 'code: assert token == "expected-value"' },
+  { name: "the api key rotation runs nightly", text: "the api key rotation runs nightly" },
+  { name: "token: ok", text: "token: ok" },
+  { name: "bearer_line_end", text: "auth scheme is Bearer\nnextline stays visible" }
+];
+
+for (const row of PROSE_LINES) {
+  test(`prose round-trips unchanged: ${row.name}`, () => {
+    assert.ok(maskSecretShapes(row.text) === row.text, `prose row ${row.name} changed`);
+  });
+}
+
+const LINEAR_INPUTS = [
+  { name: "blank_lines", input: () => "\n".repeat(200000) },
+  { name: "whitespace_lines", input: () => " \t\n".repeat(100000) },
+  { name: "keyword_no_separator", input: () => "token ".repeat(100000) },
+  { name: "unterminated_quote", input: () => `${PW} = "` + "a b ".repeat(100000) },
+  { name: "userinfo_no_at", input: () => "https://" + "u:".repeat(100000) },
+  { name: "jwt_segments", input: () => "eyJaaaaa.".repeat(100000) }
+];
+
+for (const row of LINEAR_INPUTS) {
+  test(`linear time: ${row.name}`, (t) => {
+    const input = row.input();
+    assert.ok(input.length >= 200000, `linear input ${row.name} is too short`);
+    const started = performance.now();
+    maskSecretShapes(input);
+    const ms = Math.round(performance.now() - started);
+    t.diagnostic(`perf ${row.name} ms ${ms}`);
+    assert.ok(ms < 1500, `linear time ${row.name}: ${ms} ms, budget 1500 ms`);
+  });
+}
+
+test("a value cut by the tail byte window never appears", () => {
+  const V = frag("fake", "CutWindow", "Q".repeat(56), "fakeEnd1");
+  const vLine = `${PW}="${V}"`;
+  const remaining = 40;
+  const joinedTarget = 24 * 1024 - remaining - 1;
+  const fillers = Array.from({ length: 149 }, (_, i) => `filler ${String(i).padStart(3, "0")} `.padEnd(100, "-"));
+  const fixedLen = fillers.slice(0, 148).join("\n").length + 1;
+  fillers[148] = "z".repeat(joinedTarget - fixedLen);
+  const text = [vLine, ...fillers].join("\n");
+  const unmaskedTail = text.split("\n").slice(-150).join("\n");
+  const cutInside = unmaskedTail.length - 24 * 1024 === vLine.length - remaining;
+  assert.ok(cutInside, "byte window cut does not land inside the value line (test setup)");
+  const out = rootProofFailureTail("failed", { stdout: text, stderr: "" });
+  const hits = [V, V.slice(-8)].filter((frag8) => out.includes(frag8)).length;
+  assert.ok(hits === 0, `window case: ${hits} of 2 value fragments reached the tail`);
+  assert.ok(out.includes("***"), "window case: masked marker missing");
 });
 
 test("masking keeps failure diagnosis and key or header names", () => {
