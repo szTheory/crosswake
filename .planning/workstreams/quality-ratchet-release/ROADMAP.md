@@ -89,7 +89,7 @@ Plans:
   4. A root-allowlist test fails on any new tracked root file or `*.bundle`; the 13 root scratch files and `crosswake-checkpoint-24c8389.bundle` are gone (bundle confirmed not the only copy; the denylist string in `first_adopter_context.ex` stays); `SETUP.md` lives under `docs/` without the personal email; merged or superseded remote branches are deleted (unmerged work tagged `archive/<name>` first, each delete behind its own `allow`) and `git worktree list` shows only the main checkout.
   5. SEED-003 is closed with mirror-tag evidence, and one clean-room command has run once against the real 0.2.11 artifacts with its output retained, and fails closed on a negative control (missing or wrong artifact).
 
-**Plans**: 13 plans (PR1: 01-02; PR queue: 03; PR2: 04-09; PR3: 10-12; branches and closeout: 13; sequential waves 1-13 in one checkout)
+**Plans**: 15 plans (PR1: 01-02; PR queue: 03; PR2: 04-09; PR3: 10-12; branches and closeout: 13; REL-03 gap closure PR4: 14-15; sequential waves 1-13 in one checkout, gap waves 1-2)
 
 Plans:
 
@@ -131,6 +131,10 @@ Plans:
 
 **Wave 13** *(blocked on Wave 12 completion)*
 - [ ] 195-13-PLAN.md — Remote branch cleanup (archive tags first, one allow per tag and per delete), stale PRs closed by recorded rule, one worktree, PR age audit, closeout branch pushed
+
+**Gap closure (REL-03 masking, from 195-VERIFICATION.md)**
+- [ ] 195-14-PLAN.md — Seeds-first masker fix: quoted, multi-word, mid-line Cookie, Digest, userinfo and JWT shapes masked; prose no longer masked; linear-time; non-vacuous add-mask guard (CR-01, CR-02, WR-01 to WR-03)
+- [ ] 195-15-PLAN.md — Land PR4 (own allow); verifier leak cases closed on main; review dispositions recorded, WR-04 to WR-06 and IN-03 carried to Phase 197
 **Research**: Skip; one feasibility look at clean-room command scope during planning
 
 ### Phase 196: Spec and structure ratchet
