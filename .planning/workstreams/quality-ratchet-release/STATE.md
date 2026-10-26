@@ -5,14 +5,14 @@ milestone_name: Truth and Release Train
 current_phase: 195
 current_phase_name: Pipeline repair and hygiene
 status: executing
-stopped_at: Completed 195-08-PLAN.md
-last_updated: "2026-10-26T04:01:59.568Z"
-state_head: 84318cb0bc80e4ebeda8996f19a0487a4e901de0
+stopped_at: Completed 195-11-PLAN.md
+last_updated: "2026-10-26T16:38:15.510Z"
+state_head: cb1b3871caba3df9cd57332616d16054a8302e9a
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 22
-  completed_plans: 17
+  completed_plans: 20
   percent: 50
 last_activity: 2026-10-25
 last_activity_desc: Phase 195 planned
@@ -25,14 +25,14 @@ See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.
 ## Current Position
 
 Phase: 195 (Pipeline repair and hygiene) — EXECUTING
-Plan: 9 of 13
+Plan: 12 of 13
 Status: Ready to execute
 
 ## Exact Next Action
 
 What was checked: Phase 195 has 13 plans (195-01 to 195-13, waves 1 to 13 in order). They cover REL-01 to REL-06, HYG-01 and HYG-02. The plan checker ran three times, then a targeted fix closed the last 5 warnings. The probes found no verify-path or failing-direction problems in 53 commands. What happened: Phase 194's closeout PR #249 is merged. The plans are committed on local branch `fix/release-fixture-version-stamp` and are not pushed; plan 195-01 expects to start on that branch, and the plans reach `main` inside PR1. What is unknown: CI on PR1, because it is not opened yet. Nothing was released, tagged or pushed.
 
-Next action: `/gsd-execute-phase 195 --ws quality-ratchet-release` from branch `fix/release-fixture-version-stamp`. Every merge, tag push and remote branch delete in the plans needs its own one-use `allow`.
+Next action: `/gsd-execute-phase 195 --ws quality-ratchet-release` (plan 195-10, branch `chore/root-hygiene-and-cleanroom` from origin/main).
 
 ## Carried debt
 
@@ -47,6 +47,9 @@ See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md);
 | Phase 195 P06 | 25min | 2 tasks | 10 files |
 | Phase 195 P07 | 25min | 2 tasks | 9 files |
 | Phase 195 P08 | 30m | 2 tasks | 7 files |
+| Phase 195 P09 | 1 session | 3 tasks | 4 files |
+| Phase 195 P10 | 40m | 2 tasks | 22 files |
+| Phase 195 P11 | 30m | 3 tasks | 8 files |
 
 ## Decisions
 
@@ -54,6 +57,6 @@ See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md);
 
 ## Session
 
-**Last session:** 2026-10-26T04:01:59.539Z
-**Stopped at:** Completed 195-08-PLAN.md
+**Last session:** 2026-10-26T16:38:15.485Z
+**Stopped at:** Completed 195-11-PLAN.md
 **Resume file:** None

@@ -1,0 +1,42 @@
+see_it_run: run 40327633511 head 735c3bc
+see_it_run: job web-and-gif success
+see_it_run: job assemble-pr success
+see_it_run: native_job_present no
+see_it_run: auto_pr #253 state OPEN head c8d774f created 2026-10-26T13:11:43Z
+security: automated_fixes_before {"enabled":false,"paused":false}
+security: alerts_before 404
+security: automated_fixes_after {"enabled":true,"paused":false}
+security: alerts_after 204
+canary_red: run 40327687439 head 735c3bc conclusion failure
+canary_red: attempt 1
+canary_red: event workflow_dispatch
+canary_red: failed_step Run the hermetic root proof
+canary_red: failing_check repository-preflight (corrective-command=asdf install); root-proof BLOCKED (corrective-command=MIX_ENV=test mix verify); repository-cleanliness PASS
+canary_red: cause root-proof preflight fails on the GitHub runner (no asdf toolchain; runner uses setup-beam); no test executed, so no failing test name exists
+canary_red: not re-run
+main: release PR 236 still OPEN head 64bd89e (read-only; changed from 719c601 via release-please)
+main: remote_tags_after 94 (unchanged)
+main: protection_contexts_after ["Crosswake CI"] (unchanged)
+
+--- canary fix (appended) ---
+diagnosis: Weekly Canary run 40327687439 failed "FAIL repository-preflight; corrective-command=asdf install" then "BLOCKED root-proof". Log does not name the failing tool. Inferred cause: preflight node exact regex ^v22\.14\.0$; canary lacked actions/setup-node, required root-proof job (phase130-core-hermetic-proof) has it. Confirm by re-dispatching the canary after merge.
+fix PR: #254 https://github.com/szTheory/crosswake/pull/254 head 4c07549b0b24a4115de444f621d5a93821428b78
+ci: Crosswake CI run 40328871069 event pull_request, head 4c07549b (tests a synthetic merge commit), conclusion success, mergeStateStatus CLEAN
+tests: RED 3 failures on old workflow, GREEN 16 tests 0 failures; privacy rc 0
+
+--- canary fix landed and re-observed on main (appended) ---
+canary_fix: pr 254 state MERGED merge_commit 0b28e6d69767045bbd37c737068bd84c77ba86d4 merged_at 2026-10-26T15:55:26Z
+canary_fix: approval allow bound PR 254 head 4c07549 (fresh one-use allow; merged once with --match-head-commit)
+canary_fix: branch_confirmation run 40333952719 event workflow_dispatch ref ci/weekly-canary-node-pin head 4c07549 conclusion success (branch workflow over main code; PASS repository-preflight, root-proof, repository-cleanliness)
+note: the canary_red: lines above were recorded as canary: when written; renamed so the single canary: run line below is the main-green record
+canary: run 40354096432 head 0b28e6d conclusion success
+canary: attempt 1
+canary: event workflow_dispatch
+canary: checks PASS repository-preflight; PASS root-proof; PASS repository-cleanliness
+canary: advisory yes (no required check or protection change)
+main: canary head 0b28e6d contains PR2 merge 735c3bc yes
+main: protection_contexts_after_fix ["Crosswake CI"] (unchanged)
+main: remote_tags_after_fix 94 (unchanged)
+main: security automated_fixes live enabled true
+see_it_run: auto_pr recheck after fix: #253 state OPEN head c8d774f (no change)
+main: open PR 252 (grouped Dependabot, actions/setup-java in the actions group) recorded only; first evidence the monthly grouping config is live
