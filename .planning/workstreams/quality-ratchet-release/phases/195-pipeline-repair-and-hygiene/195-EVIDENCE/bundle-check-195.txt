@@ -1,0 +1,3 @@
+bundle: verify rc 0
+bundle: head 24c8389 HEAD on_origin_main yes
+bundle: heads 1 on_origin_main 1

@@ -1,0 +1,47 @@
+root: .dockerignore keep required root file
+root: .formatter.exs keep required root file
+root: .gitignore keep required root file
+root: .release-please-manifest.json keep required root file
+root: .tool-versions keep required root file
+root: AGENTS.md keep required root file
+root: CHANGELOG.md keep required root file
+root: CONTRIBUTING.md keep required root file
+root: LICENSE keep required root file
+root: README.md keep required root file
+root: mix.exs keep required root file
+root: mix.lock keep required root file
+root: package.json keep required root file
+root: release-please-config.json keep required root file
+root: gen_manifest.exs keep read by phase69 docs contract parity test
+root: .git-check.sh remove scratch file
+ref: .git-check.sh none
+root: .tmp-init.txt remove scratch file
+ref: .tmp-init.txt none
+root: fix_bridge_tests.swift remove scratch file
+ref: fix_bridge_tests.swift none
+root: fix_generator_test.py remove scratch file
+ref: fix_generator_test.py none
+root: fix_pbxproj.py remove scratch file
+ref: fix_pbxproj.py none
+root: fix_public.py remove scratch file
+ref: fix_public.py none
+root: fix_public2.py remove scratch file
+ref: fix_public2.py none
+root: fix_published.py remove scratch file
+ref: fix_published.py none
+root: patch_activation_coordinator_tests.py remove scratch file
+ref: patch_activation_coordinator_tests.py none
+root: test_subclass.swift remove scratch file
+ref: test_subclass.swift none
+root: update_main_activity.sh remove scratch file
+ref: update_main_activity.sh none
+root: update_pbxproj_for_spm.py remove scratch file
+ref: update_pbxproj_for_spm.py none
+root: update_swift_access.py remove scratch file
+ref: update_swift_access.py none
+root: crosswake-checkpoint-24c8389.bundle remove checkpoint bundle, heads on origin/main
+ref: crosswake-checkpoint-24c8389.bundle none (denylist string in first_adopter_context.ex kept)
+root: SETUP.md move docs/SETUP.md (task 2)
+allowlist: red rc 2 violations 14
+allowlist: green after removal rc 0
+guard: root_allowlist class delta_only_blocking findings_on_origin_main 14 findings_on_branch 0
