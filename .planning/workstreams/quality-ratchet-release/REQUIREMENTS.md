@@ -28,7 +28,7 @@ Each requirement carries a persona/job tag: P1 study founder, P5 skeptical mobil
 - [x] **REL-03** [P6]: CI masks secret-derived values before any echo, and the root-proof failure tail masks bearer, secret-access-key, cookie and short-value shapes; a test proves a seeded fake secret never appears in captured output and fails when the mask is removed.
 - [x] **REL-04** [M]: The 14 weekly `phaseNN-proof` schedules, the Cancel Obsolete controller and `script/select_obsolete_ci_runs.py` are removed; one weekly canary on `main` is added; the See It Run `native` job is split out so `web-and-gif` completes.
 - [x] **REL-05** [M]: Dependabot opens one grouped monthly actions PR plus security updates; #239/#240/#241 are merged, #238 is merged or closed as superseded; no open PR is older than 14 days without a recorded reason.
-- [ ] **REL-06** [M]: SEED-003 is closed with mirror-tag evidence; one clean-room command fails closed and is run once against the real 0.2.11 artifacts with output retained.
+- [x] **REL-06** [M]: SEED-003 is closed with mirror-tag evidence; one clean-room command fails closed and is run once against the real 0.2.11 artifacts with output retained.
 - [ ] **REL-07** [M]: A release (core first, then companions, Maven, iOS mirror) completes with a separate `allow` per merge, publish and tag; a post-publish check asserts the mirror tag equals the release version.
 
 ### Repository hygiene (HYG)
@@ -96,7 +96,7 @@ Tracked in the rolling roadmap (NEXT/LATER), not in this milestone: v29 Android 
 | REL-03 | Phase 195 | Complete |
 | REL-04 | Phase 195 | Complete |
 | REL-05 | Phase 195 | Complete |
-| REL-06 | Phase 195 | Pending |
+| REL-06 | Phase 195 | Complete |
 | REL-07 | Phase 199 | Pending |
 | HYG-01 | Phase 195 | Complete |
 | HYG-02 | Phase 195 | Pending |
