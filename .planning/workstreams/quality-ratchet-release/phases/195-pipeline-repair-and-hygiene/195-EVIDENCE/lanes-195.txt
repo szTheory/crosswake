@@ -33,3 +33,6 @@ guard: absence class delta_only_blocking findings_on_origin_main 6 findings_on_b
 lane: blocking_checks after_plan_07 sha256 f1dd556db36ba0e28c4ace016c957e7a457c5c5b14f1179e4d6612ca90b23e2a unchanged yes
 lane: ref test/crosswake/guides/see_it_run_collateral_test.exs collateral-mode expectation set to web assets
 lane: see-it-run native split to see-it-run-native.yml (dispatch only)
+lane: dependabot monthly grouped actions; security updates ungrouped
+lane: blocking_checks after_plan_08 sha256 f1dd556db36ba0e28c4ace016c957e7a457c5c5b14f1179e4d6612ca90b23e2a unchanged yes
+lane: blocking_checks unchanged yes
