@@ -4,15 +4,15 @@ milestone: v28.0
 milestone_name: Truth and Release Train
 current_phase: 195
 current_phase_name: Pipeline repair and hygiene
-status: executing
-stopped_at: Completed 195-11-PLAN.md
-last_updated: "2026-10-26T16:38:15.510Z"
-state_head: cb1b3871caba3df9cd57332616d16054a8302e9a
+status: verifying
+stopped_at: Completed 195-13-PLAN.md
+last_updated: "2026-10-26T20:25:08.194Z"
+state_head: f459008a18aaa5f4d236c805ec5b912e0947e42a
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 22
-  completed_plans: 20
+  completed_plans: 22
   percent: 50
 last_activity: 2026-10-25
 last_activity_desc: Phase 195 planned
@@ -25,8 +25,8 @@ See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.
 ## Current Position
 
 Phase: 195 (Pipeline repair and hygiene) — EXECUTING
-Plan: 12 of 13
-Status: Ready to execute
+Plan: 13 of 13
+Status: Phase complete — ready for verification
 
 ## Exact Next Action
 
@@ -50,13 +50,20 @@ See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md);
 | Phase 195 P09 | 1 session | 3 tasks | 4 files |
 | Phase 195 P10 | 40m | 2 tasks | 22 files |
 | Phase 195 P11 | 30m | 3 tasks | 8 files |
+| Phase 195 P12 | continuation | 3 tasks | 3 files |
+| Phase 195 P13 | continuation | 3 tasks | 3 files |
 
 ## Decisions
 
 - [Phase 195]: Shell fixture comparisons normalize only version-derived values (stamp, crosswake_version, SwiftPM minimumVersion) on both sides; fixtures keep literal 0.2.11
+- [Phase 195]: Plan 13: one-time user-approved batch for 17 branch ops (not a standing rule); #253 merge held, refused by protection
 
 ## Session
 
-**Last session:** 2026-10-26T16:38:15.485Z
-**Stopped at:** Completed 195-11-PLAN.md
+**Last session:** 2026-10-26T20:25:08.146Z
+**Stopped at:** Completed 195-13-PLAN.md
 **Resume file:** None
+
+### Blockers
+
+- Follow-up: test/mix/tasks/crosswake_inspect_test.exs:136 failed once in CI run 40361272003 (head 3b170221), did not recur; cause unknown

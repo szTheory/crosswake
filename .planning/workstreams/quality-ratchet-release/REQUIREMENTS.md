@@ -34,7 +34,7 @@ Each requirement carries a persona/job tag: P1 study founder, P5 skeptical mobil
 ### Repository hygiene (HYG)
 
 - [x] **HYG-01** [P5]: The 13 tracked root scratch files and `crosswake-checkpoint-24c8389.bundle` are removed (after confirming the bundle is not the only copy; the denylist string in `first_adopter_context.ex` stays); `SETUP.md` moves under `docs/` without the personal email; a root-allowlist test fails on any new tracked root file or `*.bundle`.
-- [ ] **HYG-02** [M]: Merged or superseded remote branches are deleted (unmerged work tagged `archive/<name>` first, each remote delete behind its own `allow`); `git worktree list` shows only the main checkout.
+- [x] **HYG-02** [M]: Merged or superseded remote branches are deleted (unmerged work tagged `archive/<name>` first, each remote delete behind its own `allow`); `git worktree list` shows only the main checkout.
 
 ### Spec quality (SPEC)
 
@@ -99,7 +99,7 @@ Tracked in the rolling roadmap (NEXT/LATER), not in this milestone: v29 Android 
 | REL-06 | Phase 195 | Complete |
 | REL-07 | Phase 199 | Pending |
 | HYG-01 | Phase 195 | Complete |
-| HYG-02 | Phase 195 | Pending |
+| HYG-02 | Phase 195 | Complete |
 | SPEC-01 | Phase 196 | Pending |
 | SPEC-02 | Phase 196 | Pending |
 | SPEC-03 | Phase 196 | Pending |
