@@ -136,6 +136,34 @@ const skpV = frag("fake", "Skp", "Proj41");
 const skvV = frag("fake", "Skv", "Ant42");
 const xbV = frag("fake", "Xox", "Bot43");
 const npmV = frag("fake", "Npm", "Tok44", "x".repeat(24));
+// PEM markers are assembled so no source line holds a contiguous five-dash marker or key-block literal.
+const DASH5 = "-".repeat(5);
+const PEM_B = frag(DASH5, "BEG", "IN ", "PRIV", "ATE", " KEY", DASH5);
+const PEM_E = frag(DASH5, "EN", "D ", "PRIV", "ATE", " KEY", DASH5);
+const PEM_BR = frag(DASH5, "BEG", "IN ", "RSA ", "PRIV", "ATE", " KEY", DASH5);
+const PEM_BE = frag(DASH5, "BEG", "IN ", "ENCRYPTED ", "PRIV", "ATE", " KEY", DASH5);
+const PEM_EE = frag(DASH5, "EN", "D ", "ENCRYPTED ", "PRIV", "ATE", " KEY", DASH5);
+const PEM_IV = frag("A1B2", "C3D4", "E5F6", "0718", "9A0B", "1C2D", "3E4F", "5061");
+const pemB1 = frag("fake", "Pem", "Body51");
+const pemB2 = frag("fake", "Pem", "Body52");
+const pemB3 = frag("fake", "Pem", "Body53");
+const pemB4 = frag("fake", "Pem", "Body54");
+const pemB5 = frag("fake", "Pem", "Body55");
+const ueV = frag("fake", "Userinfo", "Empty56");
+const usA = frag("fake", "Userinfo", "Slash57");
+const usB = frag("fake", "Userinfo", "Slash58");
+const kidPre = frag("FAKE", "PREFIX", "123456");
+const kidTrail = frag("FAKE", "TRAIL", "1234567");
+const j2A = frag("fake", "Jwt", "Two59");
+const j2B = frag("fake", "Jwt", "Two60");
+const qkV = frag("fake", "Query", "Key61");
+const qsV = frag("fake", "Query", "Sig62");
+const qaV = frag("fake", "Query", "Amz63");
+const ckaV = frag("fake", "Cookie", "Assign64");
+const ckhV = frag("fake", "Cookies", "Head65");
+const scrV = frag("fake", "Secrets", "Assign66");
+const pkV = frag("fake", "Privkey", "Assign67");
+const pwsV = frag("fake", "Passwords", "Assign68");
 
 export const GAP_SHAPES = [
   {
@@ -341,6 +369,108 @@ export const GAP_SHAPES = [
     seeds: [npmV],
     line: `npm ${NPM}${npmV} ok`,
     expected: `npm ${NPM}*** ok`
+  },
+  {
+    name: "pem_multiline",
+    seeds: [pemB1, pemB2],
+    line: `${PEM_B}\n${pemB1}\n${pemB2}\n${PEM_E}\nafter pem line`,
+    expected: `${PEM_B}***\nafter pem line`
+  },
+  {
+    name: "pem_no_end",
+    seeds: [pemB3],
+    line: `${PEM_BR}\n${pemB3}\nFinished in 0.1 seconds`,
+    expected: `${PEM_BR}***\nFinished in 0.1 seconds`
+  },
+  {
+    name: "pem_escaped_newlines",
+    seeds: [pemB4],
+    line: `"${PEM_B}${BS}n${pemB4}${BS}n${PEM_E}${BS}n"`,
+    expected: `"${PEM_B}***${BS}n"`
+  },
+  {
+    name: "pem_encrypted_headers",
+    seeds: [pemB5],
+    line: `${PEM_BE}\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-128-CBC,${PEM_IV}\n\n${pemB5}\n${PEM_EE}`,
+    expected: `${PEM_BE}***`
+  },
+  {
+    name: "url_empty_user",
+    seeds: [ueV],
+    line: `fetch https://:${ueV}@host.example/x`,
+    expected: `fetch https://:***@host.example/x`
+  },
+  {
+    name: "url_slash_password",
+    seeds: [usA, usB],
+    line: `fetch https://user:${usA}/${usB}@host.example/x`,
+    expected: `fetch https://user:***@host.example/x`
+  },
+  {
+    name: "aws_key_id_prefixed",
+    seeds: [kidPre],
+    line: `key_AKIA${kidPre}`,
+    expected: `key_AKIA***`
+  },
+  {
+    name: "aws_key_id_trailing",
+    seeds: [kidTrail],
+    line: `id AKIA${kidTrail}QQ`,
+    expected: `id AKIA***QQ`
+  },
+  {
+    name: "jwt_two_segment",
+    seeds: [j2A, j2B],
+    line: `got eyJ${j2A}.${j2B} end`,
+    expected: `got eyJ*** end`
+  },
+  {
+    name: "query_key",
+    seeds: [qkV],
+    line: `GET /x?key=${qkV}&page=2`,
+    expected: `GET /x?key=***&page=2`
+  },
+  {
+    name: "query_sig",
+    seeds: [qsV],
+    line: `GET /x?a=1&sig=${qsV}`,
+    expected: `GET /x?a=1&sig=***`
+  },
+  {
+    name: "amz_signature",
+    seeds: [qaV],
+    line: `GET /x?X-Amz-Signature=${qaV}`,
+    expected: `GET /x?X-Amz-Signature=***`
+  },
+  {
+    name: "cookie_assign",
+    seeds: [ckaV],
+    line: `cookie=${ckaV}`,
+    expected: `cookie=***`
+  },
+  {
+    name: "cookies_header",
+    seeds: [ckhV],
+    line: `cookies: ${ckhV}`,
+    expected: `cookies: ***`
+  },
+  {
+    name: "secrets_assign",
+    seeds: [scrV],
+    line: `secrets=${scrV}`,
+    expected: `secrets=***`
+  },
+  {
+    name: "privatekey_assign",
+    seeds: [pkV],
+    line: `privatekey=${pkV}`,
+    expected: `privatekey=***`
+  },
+  {
+    name: "passwords_assign",
+    seeds: [pwsV],
+    line: `passwords=${pwsV}`,
+    expected: `passwords=***`
   }
 ];
 
@@ -412,7 +542,9 @@ const PROSE_LINES = [
 const ACCEPTED_OVERMASK = [
   { name: "code_assert_token_equals", text: 'code: assert token == "expected-value"', expected: 'code: assert token == "***"' },
   { name: "key_then_plain_line", text: "enter password:\nnext line text", expected: "enter password:\n***" },
-  { name: "cli_negated_flag", text: "run --no-password prompt", expected: "run --no-password ***" }
+  { name: "cli_negated_flag", text: "run --no-password prompt", expected: "run --no-password ***" },
+  { name: "url_port_scoped_path", text: "https://registry.example:443/@scope/pkg", expected: "https://registry.example:***@scope/pkg" },
+  { name: "secrets_inherit", text: "secrets: inherit", expected: "secrets: ***" }
 ];
 
 for (const row of ACCEPTED_OVERMASK) {
@@ -443,7 +575,13 @@ const LINEAR_INPUTS = [
   { name: "bearer_quote_unterminated", input: () => 'Bearer "' + "a b ".repeat(100000) },
   { name: "double_equals_repeat", input: () => `${TK} ==`.repeat(40000) },
   { name: "sk_dash_run", input: () => `${SK}` + "-a".repeat(100000) },
-  { name: "xox_repeat", input: () => XOXB.repeat(40000) }
+  { name: "xox_repeat", input: () => XOXB.repeat(40000) },
+  { name: "pem_body_no_end", input: () => PEM_B + "\nAAAA".repeat(40000) },
+  { name: "pem_begin_repeat", input: () => PEM_B.repeat(8000) },
+  { name: "pem_escaped_run", input: () => PEM_B + `${BS}nA`.repeat(70000) },
+  { name: "userinfo_repeated_scheme", input: () => "://a:".repeat(50000) },
+  { name: "query_key_repeat", input: () => "?key=".repeat(50000) },
+  { name: "akia_run", input: () => "AKIA".repeat(50000) }
 ];
 
 for (const row of LINEAR_INPUTS) {
