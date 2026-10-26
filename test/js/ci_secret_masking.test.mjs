@@ -462,6 +462,25 @@ test("derivedSecretViolations accepts a masked derivation", () => {
   assert.deepEqual(derivedSecretViolations(text), []);
 });
 
+test("derivedSecretViolations rejects a prefix-collision mask", () => {
+  const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo "::add-mask::$TOKEN_ID"`, `echo "use $TOKEN"`);
+  const v = derivedSecretViolations(text);
+  assert.equal(v.length, 1);
+  assert.equal(v[0].name, "TOKEN");
+});
+
+test("derivedSecretViolations ignores a commented-out mask", () => {
+  const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `# echo "::add-mask::$TOKEN"`, `echo "use $TOKEN"`);
+  const v = derivedSecretViolations(text);
+  assert.equal(v.length, 1);
+  assert.equal(v[0].name, "TOKEN");
+});
+
+test("derivedSecretViolations accepts a braced mask", () => {
+  const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo "::add-mask::\${TOKEN}"`, `echo "use $TOKEN"`);
+  assert.deepEqual(derivedSecretViolations(text), []);
+});
+
 test("derivedSecretViolations flags a missing or late add-mask", () => {
   const missing = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo "use $TOKEN"`);
   const v1 = derivedSecretViolations(missing);
