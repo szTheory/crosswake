@@ -609,7 +609,9 @@ const LINEAR_INPUTS = [
 ];
 
 // The CI bound is relative: the fastest of three runs must stay within 10 times a same-process plain-prose
-// baseline (40 ms floor), so runner speed moves both numbers together. The 200 ms figure is a local evidence gate.
+// baseline, with a 250 ms floor. A shared runner measured 51, 55 and 95 ms on linear inputs against a 5 ms baseline,
+// so a 40 ms floor failed linear code; a quadratic regression at 200k characters takes seconds (7266 ms for the
+// old JWT rule), so 250 ms still separates the two by more than an order of magnitude.
 const fastestMs = (input) => {
   let best = Infinity;
   for (let i = 0; i < 3; i += 1) {
@@ -637,7 +639,7 @@ for (const row of LINEAR_INPUTS) {
     assert.ok(input.length >= 200000, `linear input ${row.name} is too short`);
     const ms = fastestMs(input);
     t.diagnostic(`perf ${row.name} ms ${Math.round(ms)}`);
-    assert.ok(ms <= Math.max(40, 10 * baselineMs()), `linear time ${row.name}: ${Math.round(ms)} ms, bound ${Math.round(Math.max(40, 10 * baselineMs()))} ms`);
+    assert.ok(ms <= Math.max(250, 10 * baselineMs()), `linear time ${row.name}: ${Math.round(ms)} ms, bound ${Math.round(Math.max(250, 10 * baselineMs()))} ms`);
   });
 }
 
