@@ -164,6 +164,7 @@ const ckhV = frag("fake", "Cookies", "Head65");
 const scrV = frag("fake", "Secrets", "Assign66");
 const pkV = frag("fake", "Privkey", "Assign67");
 const pwsV = frag("fake", "Passwords", "Assign68");
+const litV = frag("fake", "Literal", "Prefixed69");
 
 export const GAP_SHAPES = [
   {
@@ -471,6 +472,12 @@ export const GAP_SHAPES = [
     seeds: [pwsV],
     line: `passwords=${pwsV}`,
     expected: `passwords=***`
+  },
+  {
+    name: "literal_prefixed_value",
+    seeds: [litV],
+    line: `${TK}: nil${litV}`,
+    expected: `${TK}: ***`
   }
 ];
 
@@ -535,7 +542,15 @@ const PROSE_LINES = [
   { name: "key_before_finished_line", text: "token=\nFinished in 0.2 seconds" },
   { name: "task-runner12345 started", text: "task-runner12345 started" },
   { name: "kiosk-mode-settings applied", text: "kiosk-mode-settings applied" },
-  { name: "npm_config_cache is set", text: "npm_config_cache is set" }
+  { name: "npm_config_cache is set", text: "npm_config_cache is set" },
+  { name: "token: nil", text: "token: nil" },
+  { name: "password: nil", text: "password: nil" },
+  { name: "token: true", text: "token: true" },
+  { name: "password: false", text: "password: false" },
+  { name: '"token":null', text: '"token":null' },
+  { name: "token: undefined", text: "token: undefined" },
+  { name: "%{token: nil, password: nil}", text: "%{token: nil, password: nil}" },
+  { name: "preauthorization: pending review", text: "preauthorization: pending review" }
 ];
 
 // Over-masks accepted as the safe direction. Each is pinned exactly so it can never drift silently.
@@ -544,7 +559,10 @@ const ACCEPTED_OVERMASK = [
   { name: "key_then_plain_line", text: "enter password:\nnext line text", expected: "enter password:\n***" },
   { name: "cli_negated_flag", text: "run --no-password prompt", expected: "run --no-password ***" },
   { name: "url_port_scoped_path", text: "https://registry.example:443/@scope/pkg", expected: "https://registry.example:***@scope/pkg" },
-  { name: "secrets_inherit", text: "secrets: inherit", expected: "secrets: ***" }
+  { name: "secrets_inherit", text: "secrets: inherit", expected: "secrets: ***" },
+  { name: "numeric_value", text: "max_token: 1000", expected: "max_token: ***" },
+  { name: "authorization_header_prose", text: "Authorization: required for route", expected: "Authorization: ***" },
+  { name: "cookie_colon_prose", text: "stale cookie: expired at line", expected: "stale cookie: ***" }
 ];
 
 for (const row of ACCEPTED_OVERMASK) {
@@ -581,20 +599,58 @@ const LINEAR_INPUTS = [
   { name: "pem_escaped_run", input: () => PEM_B + `${BS}nA`.repeat(70000) },
   { name: "userinfo_repeated_scheme", input: () => "://a:".repeat(50000) },
   { name: "query_key_repeat", input: () => "?key=".repeat(50000) },
-  { name: "akia_run", input: () => "AKIA".repeat(50000) }
+  { name: "akia_run", input: () => "AKIA".repeat(50000) },
+  { name: "backslash_run", input: () => `${PW} = "` + BS.repeat(200000) },
+  { name: "doubled_quotes", input: () => `${PW} = ` + '""'.repeat(100000) },
+  { name: "escaped_quote_run", input: () => `${PW} = "` + `${BS}"`.repeat(100000) },
+  { name: "mixed_quotes", input: () => `${PW} = '` + `"'${BS}`.repeat(70000) },
+  { name: "literal_exemption_repeat", input: () => `${TK}: nil `.repeat(20000) }
 ];
+
+// The CI bound is relative: the fastest of three runs must stay within 10 times a same-process plain-prose
+// baseline (40 ms floor), so runner speed moves both numbers together. The 200 ms figure is a local evidence gate.
+const fastestMs = (input) => {
+  let best = Infinity;
+  for (let i = 0; i < 3; i += 1) {
+    const started = performance.now();
+    maskSecretShapes(input);
+    best = Math.min(best, performance.now() - started);
+  }
+  return best;
+};
+const BASELINE_INPUT = "the quick brown fox jumps over the lazy dog\n".repeat(5000);
+let baselineCache;
+const baselineMs = () => {
+  if (baselineCache === undefined) baselineCache = fastestMs(BASELINE_INPUT);
+  return baselineCache;
+};
+
+test("linear time baseline", (t) => {
+  assert.ok(BASELINE_INPUT.length >= 200000, "baseline input is too short");
+  t.diagnostic(`perf-baseline ms ${Math.round(baselineMs())}`);
+});
 
 for (const row of LINEAR_INPUTS) {
   test(`linear time: ${row.name}`, (t) => {
     const input = row.input();
     assert.ok(input.length >= 200000, `linear input ${row.name} is too short`);
-    const started = performance.now();
-    maskSecretShapes(input);
-    const ms = Math.round(performance.now() - started);
-    t.diagnostic(`perf ${row.name} ms ${ms}`);
-    assert.ok(ms < 1500, `linear time ${row.name}: ${ms} ms, budget 1500 ms`);
+    const base = baselineMs();
+    const ms = fastestMs(input);
+    t.diagnostic(`perf ${row.name} ms ${Math.round(ms)}`);
+    assert.ok(ms <= Math.max(40, 10 * base), `linear time ${row.name}: ${Math.round(ms)} ms, bound ${Math.round(Math.max(40, 10 * base))} ms`);
   });
 }
+
+test("ANSI-wrapped and CRLF secrets never reach the tail", () => {
+  const v1 = frag("fake", "Ansi", "Crlf70");
+  const v2 = frag("fake", "Ansi", "Crlf71");
+  const v3 = frag("fake", "Ansi", "Crlf72");
+  const stdout = `\u001b[31m${PW}=${v1}\u001b[0m\r\n\u001b[33m${TK}: "${v2} ${v3}"\u001b[0m\r\n`;
+  const tail = rootProofFailureTail("failed", { stdout, stderr: "" });
+  const hits = leakedSecrets(tail, [v1, v2, v3]).length;
+  assert.ok(hits === 0, `ANSI/CRLF case: ${hits} of 3 values reached the tail`);
+  assert.ok(tail.includes("***"), "ANSI/CRLF case: masked marker missing");
+});
 
 test("a value cut by the tail byte window never appears", () => {
   const V = frag("fake", "CutWindow", "Q".repeat(56), "fakeEnd1");
