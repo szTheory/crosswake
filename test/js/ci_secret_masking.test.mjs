@@ -342,7 +342,10 @@ const workflowDir = path.join(repoRoot, ".github/workflows");
 const indentOf = (line) => line.length - line.trimStart().length;
 const ASSIGN = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$/;
 const refsVar = (text, name) => new RegExp(`\\$\\{?${name}\\b`).test(text);
-const isMaskLine = (line, name) => new RegExp(`::add-mask::\\$\\{?${name}\\}?`).test(line);
+// Matches only an uncommented line: optional `echo`, optional opening quote, `::add-mask::`, then the
+// variable (optionally braced) with no further identifier character, so `$TOKEN_ID` never masks `$TOKEN`.
+const isMaskLine = (line, name) =>
+  new RegExp(`^\\s*(?:echo\\s+)?["']?::add-mask::\\$(?:${name}(?![A-Za-z0-9_])|\\{${name}\\})`).test(line);
 
 export function secretBoundKeys(workflowText) {
   const keys = new Set();
