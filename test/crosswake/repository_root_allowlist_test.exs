@@ -54,7 +54,9 @@ defmodule Crosswake.RepositoryRootAllowlistTest do
   end
 
   test "pure: a non-allowlisted root file is flagged, nested files are ignored" do
-    assert root_violations(["mix.exs", "scratch.py", "lib/x.py"], @root_allowlist) == ["scratch.py"]
+    assert root_violations(["mix.exs", "scratch.py", "lib/x.py"], @root_allowlist) == [
+             "scratch.py"
+           ]
   end
 
   test "pure: bundle paths are flagged anywhere" do
@@ -65,7 +67,9 @@ defmodule Crosswake.RepositoryRootAllowlistTest do
     paths = tracked_paths()
     root = Enum.reject(paths, &String.contains?(&1, "/"))
 
-    assert length(root) >= 10, "git ls-files returned #{length(root)} root entries; listing failed?"
+    assert length(root) >= 10,
+           "git ls-files returned #{length(root)} root entries; listing failed?"
+
     assert root_violations(paths, @root_allowlist) == []
     assert bundle_violations(paths) == []
   end
