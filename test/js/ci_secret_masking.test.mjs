@@ -599,6 +599,30 @@ test("derivedSecretViolations accepts a masked derivation", () => {
   assert.deepEqual(derivedSecretViolations(text), []);
 });
 
+test("derivedSecretViolations rejects a single-quoted add-mask", () => {
+  const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo '::add-mask::$TOKEN'`, `echo "use $TOKEN"`);
+  const v = derivedSecretViolations(text);
+  assert.equal(v.length, 1);
+  assert.equal(v[0].name, "TOKEN");
+});
+
+test("derivedSecretViolations rejects an unterminated add-mask quote", () => {
+  const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo "::add-mask::$TOKEN`, `echo "use $TOKEN"`);
+  const v = derivedSecretViolations(text);
+  assert.equal(v.length, 1);
+  assert.equal(v[0].name, "TOKEN");
+});
+
+test("derivedSecretViolations accepts an unquoted add-mask", () => {
+  const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo ::add-mask::$TOKEN`, `echo "use $TOKEN"`);
+  assert.deepEqual(derivedSecretViolations(text), []);
+});
+
+test("derivationScript skips a single-quoted add-mask line", () => {
+  const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo '::add-mask::$TOKEN'`, `echo "use $TOKEN"`);
+  assert.ok(!derivationScript(text, ["TOKEN"]).includes("::add-mask::"), "a single-quoted mask line was extracted");
+});
+
 test("derivedSecretViolations rejects a prefix-collision mask", () => {
   const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo "::add-mask::$TOKEN_ID"`, `echo "use $TOKEN"`);
   const v = derivedSecretViolations(text);
