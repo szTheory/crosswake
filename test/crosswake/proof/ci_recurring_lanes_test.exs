@@ -1,21 +1,10 @@
 defmodule Crosswake.Proof.CiRecurringLanesTest do
   @moduledoc """
   REL-04: CI runs only recurring lanes. The set of phase proof workflows that carry a
-  `schedule:` trigger must equal exactly `@pending_schedule_removal`; plan 06 empties that list.
+  `schedule:` trigger must be empty; the one advisory weekly canary owns the recurring run.
   The floor on matched files keeps an empty glob from scoring as success.
   """
   use ExUnit.Case, async: true
-
-  # Phase 195 (REL-04): lanes still scheduled; emptied by plan 06
-  @pending_schedule_removal [
-    "phase130-proof.yml",
-    "phase132-proof.yml",
-    "phase70-proof.yml",
-    "phase71-proof.yml",
-    "phase73-proof.yml",
-    "phase74-proof.yml",
-    "phase96-proof-advisory.yml"
-  ]
 
   defp on_block(text) do
     # The `on:` block runs from `on:` to the next top-level key.
@@ -51,9 +40,9 @@ defmodule Crosswake.Proof.CiRecurringLanesTest do
     assert scheduled_phase_proofs(fixture) == []
   end
 
-  test "live scheduled phase proof lanes equal the pending removal list exactly" do
+  test "no live phase proof workflow carries a schedule trigger" do
     live = live_files()
     assert map_size(live) >= 14, "matched only #{map_size(live)} phase proof workflows"
-    assert scheduled_phase_proofs(live) == Enum.sort(@pending_schedule_removal)
+    assert scheduled_phase_proofs(live) == []
   end
 end

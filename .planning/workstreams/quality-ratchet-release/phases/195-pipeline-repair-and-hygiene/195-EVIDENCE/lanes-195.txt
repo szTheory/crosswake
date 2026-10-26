@@ -8,3 +8,11 @@ lane: phase48-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
 lane: phase52-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
 lane: phase58-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
 lane: blocking_checks after_plan_05 sha256 f1dd556db36ba0e28c4ace016c957e7a457c5c5b14f1179e4d6612ca90b23e2a unchanged yes
+lane: phase70-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase71-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase73-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase74-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase96-proof-advisory.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase130-proof.yml schedule removed (was 0 8 * * 1); workflow_dispatch kept
+lane: phase132-proof.yml schedule removed (was 0 8 * * 1); workflow_dispatch kept
+guard: ci_recurring_lanes class delta_only_blocking findings_on_origin_main 14 findings_on_branch 0

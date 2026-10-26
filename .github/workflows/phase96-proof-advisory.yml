@@ -6,7 +6,7 @@ concurrency:
 
 # Advisory example-host lane for PROOF-02: Ecto-backed durable-posture proof.
 #
-# This workflow runs ONLY on schedule and workflow_dispatch — never on PR or push.
+# This workflow runs ONLY on workflow_dispatch — never on PR or push (schedule retired in phase 195).
 # It is intentionally NOT a merge gate. The example host carries pre-existing
 # test failures and ecto_sqlite3 has no async sandbox, making it unsuitable for
 # the hermetic merge-blocking lane.
@@ -25,16 +25,13 @@ permissions:
 
 on:
   workflow_dispatch:
-  schedule:
-    # Run weekly (Monday 06:00 UTC) so the lane can't rot invisibly in the CI dashboard.
-    - cron: "0 6 * * 1"
 
 jobs:
   advisory-threadline-example-host-ledger-proof:
     name: advisory example-host Ecto ledger proof (PROOF-02)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # This job runs only on schedule or workflow_dispatch.
+    # This job runs only on workflow_dispatch.
     # The workflow-level trigger scope is the primary gate (no push/pull_request triggers);
     # this if: guard is redundant insurance ensuring the job never runs even if a future
     # workflow edit inadvertently adds a push or pull_request trigger.

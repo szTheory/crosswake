@@ -20,8 +20,6 @@ on:
           - merge-blocking
           - advisory
           - all
-  schedule:
-    - cron: "0 6 * * 1"
 
 jobs:
   advisory-push-provider-device-proof:
