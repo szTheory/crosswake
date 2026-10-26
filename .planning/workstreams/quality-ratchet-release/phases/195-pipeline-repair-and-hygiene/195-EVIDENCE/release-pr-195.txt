@@ -1,0 +1,14 @@
+rel236: head_before ec85fdeff662b719567959324385e2a3710efc83
+rel236: head_after 719c6012b9edb71e27258d9a2353900dce3c4efc
+rel236: contains_pr1_merge yes
+rel236: human_commits 0
+rel236: job hex-page-proof success on head 719c601
+rel236: job phase130-core-hermetic-proof success on head 719c601
+rel236: job phase132-core-hermetic-proof success on head 719c601
+rel236: job phase34-commerce-proof success on head 719c601
+rel236: job phase41-gating-proof success on head 719c601
+rel236: job phase43-rulestead-proof success on head 719c601
+rel236: job phase45-rindle-proof success on head 719c601
+rel236: job proof-requires-example-host success on head 719c601
+rel236: job Crosswake CI success on head 719c601
+rel236: note result is for the PR head; GitHub also tests a synthetic merge commit

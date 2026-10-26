@@ -5,15 +5,15 @@ milestone_name: Truth and Release Train
 current_phase: 195
 current_phase_name: Pipeline repair and hygiene
 status: executing
-stopped_at: Completed 195-01-PLAN.md
-last_updated: "2026-10-25T20:39:10.991Z"
-state_head: 53cc15067b4796cbe2517e6a2f54ae5a332de99f
+stopped_at: Completed 195-02-PLAN.md
+last_updated: "2026-10-25T21:46:39.495Z"
+state_head: 02585ab21d01ee242c120b8ad4c36ba33a1f1325
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 22
-  completed_plans: 10
-  percent: 45
+  completed_plans: 11
+  percent: 50
 last_activity: 2026-10-25
 last_activity_desc: Phase 195 planned
 ---
@@ -25,7 +25,7 @@ See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.
 ## Current Position
 
 Phase: 195 (Pipeline repair and hygiene) — EXECUTING
-Plan: 2 of 13
+Plan: 3 of 13
 Status: Ready to execute
 
 ## Exact Next Action
@@ -50,6 +50,6 @@ See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md);
 
 ## Session
 
-**Last session:** 2026-10-25T20:39:10.960Z
-**Stopped at:** Completed 195-01-PLAN.md
+**Last session:** 2026-10-25T21:46:39.466Z
+**Stopped at:** Completed 195-02-PLAN.md
 **Resume file:** None

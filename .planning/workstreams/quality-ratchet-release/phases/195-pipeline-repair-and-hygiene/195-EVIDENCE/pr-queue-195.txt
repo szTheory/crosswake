@@ -1,0 +1,86 @@
+queue: main 02585ab at 2026-10-25T21:40:00Z
+pr241: opened 2026-10-16 author dependabot files 1
+pr240: opened 2026-10-16 author dependabot files 7
+pr239: opened 2026-10-16 author dependabot files 3
+pr238: opened 2026-10-12 author szTheory files 8
+pr211: opened 2026-09-25 author dependabot files 8
+pr210: opened 2026-09-25 author dependabot files 30
+pr236: release PR; untouched by this plan (merge is Phase 199 REL-07)
+pr241: pin_provenance ok actions/download-artifact@v8.0.2 9000827
+pr240: pin_provenance ok actions/upload-artifact@v7.0.2 cf430e0
+pr239: pin_provenance ok actions/setup-node@v7.1.0 949feb2
+pr211: pin_provenance ok erlef/setup-beam@v1.24.1 54075bc
+pr210: pin_provenance ok actions/checkout@v7.0.1 3d3c42e
+pr238: superseded_check files_changed_on_main_since_merge_base: script/collection_assertion_ledger.json 8 commits (merge-base d0dbdf7); other 7 files 0 commits; MERGEABLE
+pr238: update ok head 7784959
+pr241: refresh requested 2026-10-25T21:48:34Z (@dependabot rebase); head 0e79427 behind_main 67
+pr241: refresh_timeout head 0e79427 unchanged at 2026-10-25T22:03:49Z (15 min); no dependabot reply
+pr241: head 0e79427 crosswake_ci success behind_main 67 stale_until_refresh
+pr240: head e26fe52 crosswake_ci unknown stale_until_refresh
+pr239: head c064db7 crosswake_ci unknown stale_until_refresh
+pr241: rule_check none (stale_refresh_timeout applies only to #210/#211)
+queue: BLOCKED at pr241 (stale head never offered for merge); see 195-03-BLOCKED.md
+amendment: user decision 2026-10-25 — recreate once; on silence extend stale_refresh_timeout to #239/#240/#241
+pr241: recreate requested 2026-10-25T22:06:06Z (@dependabot recreate); head 0e79427
+pr241: recreate produced new head 208ab78 at 2026-10-25T22:08:17Z
+pr241: pin_provenance ok actions/download-artifact@v8.0.2 9000827 (new head 208ab78; comment tag v8)
+pr241: head 208ab78 crosswake_ci success behind_main 0
+pr241: rule_check none
+pr241: gate shown at 2026-10-25T22:36:32Z head 208ab7843689df74db01de5a8160f9c61c40a2d5; awaiting allow|hold
+queue: PAUSED at pr241 merge gate (recreate succeeded); #240/#239/#211/#210 not yet refreshed; #238 needs re-refresh after #241 merge
+pr241: MERGED merge_commit 7541b0be85529087bbaa0009b7b121f7ce4d6c1b at 2026-10-25T22:39:08Z head 208ab78 (one-use allow consumed; no --admin)
+pr240: refresh requested 2026-10-25T22:39:11Z (@dependabot rebase)
+pr240: refreshed head a858292 at 2026-10-25T22:40:22Z behind_main 0; pin_provenance ok actions/upload-artifact@v7.0.2 cf430e0
+pr240: head a858292 crosswake_ci success behind_main 0 (run 40241275938, pull_request event; tested synthetic merge commit)
+pr240: rule_check none
+pr240: gate shown 2026-10-25T23:17:30Z head a85829246e07468c4e55d974d22548d8fc9d1fe4; awaiting allow|hold
+queue: PAUSED at pr240 merge gate; #239/#211/#210 not yet refreshed; #238 needs re-refresh after merges
+pr240: MERGED merge_commit d9f1ba269a6d7b37ba99395d08da360c1f9b2c52 at 2026-10-25T23:27:34Z head a858292 (one-use allow consumed; no --admin)
+pr239: refresh requested 2026-10-25T23:27:39Z (@dependabot rebase)
+pr239: refreshed head 8f98ecd (rebase, ahead 1 behind_main 0); pin_provenance ok actions/setup-node@v7.1.0 949feb2
+pr239: head 8f98ecd crosswake_ci success (run 40244945625, pull_request event; tested synthetic merge commit)
+pr239: rule_check none
+pr239: gate shown 2026-10-26T00:00:36Z head 8f98ecdfa32360b68444dd8b82f2d08ccb3f9293; awaiting allow|hold
+queue: PAUSED at pr239 merge gate; #211/#210 not yet refreshed; #238 needs re-refresh
+pr239: approval allow bound head 8f98ecd
+pr239: MERGED merge_commit f6e1fa3364f08d93845889db543d124dc2dab9b5 at 2026-10-26T00:06:59Z head 8f98ecd (one-use allow consumed; no --admin)
+pr211: refresh requested 2026-10-26T00:07:02Z (@dependabot rebase); old head 
+pr211: refresh requested 2026-10-26T00:07:05Z (@dependabot rebase); old head 79c426f
+pr211: refreshed head af87aa3 (behind_main 0); pin_provenance ok erlef/setup-beam@v1.24.1 54075bc
+pr211: head af87aa3 crosswake_ci success behind_main 0 (run 40247874282, pull_request event; tested synthetic merge commit)
+pr211: rule_check none
+pr211: gate shown 2026-10-26T00:38:54Z head af87aa3188fa0a87deff1b8438f3d0ab30362b12; awaiting allow|hold
+queue: PAUSED at pr211 merge gate; #210 not yet refreshed; #238 needs re-refresh
+pr211: approval allow bound head af87aa3
+pr211: MERGED merge_commit 552d0c4b9aa91f37e540e99b57a6bbd6375f0a90 at 2026-10-26T01:48:37Z head af87aa3 (one-use allow consumed; no --admin; Crosswake CI run 40247874282 was a pull_request run: tested synthetic merge, reports head af87aa3)
+pr211: remote branch kept (Dependabot deletes its own)
+pr210: refresh requested 2026-10-26T01:48:37Z (@dependabot rebase); old head 
+pr210: (old head b2668e5, recorded after request)
+pr210: refreshed head 5ec47d6 at 2026-10-26T01:49:59Z behind_main 0; pin_provenance ok actions/checkout@v7.0.1 3d3c42e (lightweight tag, no peeled ref; note: ~17 pre-existing '# v6'/'# v6.0.2' trailing comments retained beside the new v7.0.1 pin, cosmetic)
+pr210: head 5ec47d6 crosswake_ci success behind_main 0 (run 40256101474, pull_request event; tested synthetic merge commit, reports head 5ec47d6)
+pr210: rule_check none
+pr210: gate shown 2026-10-26T02:15:30Z head 5ec47d641401c8151a11162cdddc5629161dbc6b; awaiting allow|hold
+queue: PAUSED at pr210 merge gate; #238 needs re-refresh after #210 merge
+pr210: approval allow bound head 5ec47d6
+pr210: MERGED merge_commit c17c9e09bc0c93086b0d6f6b5a450688ef790604 at 2026-10-26T02:19:19Z head 5ec47d6 (one-use allow consumed; no --admin; Crosswake CI run 40256101474 was a pull_request run: tested synthetic merge, reports head 5ec47d6)
+pr210: remote branch kept (Dependabot deletes its own)
+pr238: update ok head 4b0d11d (re-refresh after #210 merge; was behind_main 10)
+pr238: head 4b0d11d crosswake_ci success behind_main 0 (run 40258550502, pull_request event; tested synthetic merge commit, reports head 4b0d11d) mergeStateStatus CLEAN
+pr238: superseded_recheck not superseded: all 8 files still differ from origin/main (diff main...head 166 insertions, 31 deletions)
+pr238: rule_check none
+pr238: gate shown 2026-10-26T02:45:41Z head 4b0d11de41f31c5dab38cf5d02cd9bd1a24f4c33; awaiting allow|hold
+queue: PAUSED at pr238 merge gate (last queue PR)
+pr238: approval allow bound head 4b0d11d
+pr238: MERGED merge_commit 7bd8daf09fe44ae7d5804aa9a7f6f6ff1e1396a4 head 4b0d11d on_origin_main yes (one-use allow consumed; no --admin; Crosswake CI run 40258550502 was a pull_request run: tested synthetic merge, reports head 4b0d11d)
+pr238: remote branch kept (others in plan 13)
+queue: done
+pr238: final MERGED
+pr239: final MERGED
+pr240: final MERGED
+pr241: final MERGED
+pr210: final MERGED
+pr211: final MERGED
+queue: open_prs_after 236
+rel236: head 64bd89e human_commits 0
+queue: remote_tag_count 94 (read after drain; no tag created or pushed by this plan)
+queue: origin/main 7bd8daf; main fast-forwarded; push-event Crosswake CI on 7bd8daf not yet listed at read time (Release Please run in_progress)
