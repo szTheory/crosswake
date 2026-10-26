@@ -109,6 +109,8 @@ const jwA = frag("fake", "Jwt", "Head19");
 const jwB = frag("fake", "Jwt", "Body20");
 const jwC = frag("fake", "Jwt", "Sig21");
 const kidV = frag("FAKE", "KEYID", "1234567");
+const ejA = frag("fake", "Escjson", "Alpha22");
+const ejB = frag("fake", "Escjson", "Bravo23");
 
 export const GAP_SHAPES = [
   {
@@ -200,6 +202,12 @@ export const GAP_SHAPES = [
     seeds: [kidV],
     line: `key id AKIA${kidV}`,
     expected: `key id AKIA***`
+  },
+  {
+    name: "escaped_json_multiword",
+    seeds: [ejA, ejB],
+    line: `{${BS}"${PW}${BS}":${BS}"${ejA} ${ejB}${BS}"}`,
+    expected: `{${BS}"${PW}${BS}":${BS}"***${BS}"}`
   }
 ];
 
