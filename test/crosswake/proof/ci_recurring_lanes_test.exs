@@ -8,12 +8,6 @@ defmodule Crosswake.Proof.CiRecurringLanesTest do
 
   # Phase 195 (REL-04): lanes still scheduled; emptied by plan 06
   @pending_schedule_removal [
-    "phase34-proof.yml",
-    "phase43-proof.yml",
-    "phase45-proof.yml",
-    "phase48-proof.yml",
-    "phase52-proof.yml",
-    "phase58-proof.yml",
     "phase130-proof.yml",
     "phase132-proof.yml",
     "phase70-proof.yml",

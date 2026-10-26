@@ -1,3 +1,10 @@
 lane: blocking_checks_before rc 0 sha256 f1dd556db36ba0e28c4ace016c957e7a457c5c5b14f1179e4d6612ca90b23e2a
 guard: ci_recurring_lanes red_on_origin_main_tree 14
 lane: phase23-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase34-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase43-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase45-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase48-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase52-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: phase58-proof.yml schedule removed (was 0 6 * * 1); workflow_dispatch kept
+lane: blocking_checks after_plan_05 sha256 f1dd556db36ba0e28c4ace016c957e7a457c5c5b14f1179e4d6612ca90b23e2a unchanged yes
