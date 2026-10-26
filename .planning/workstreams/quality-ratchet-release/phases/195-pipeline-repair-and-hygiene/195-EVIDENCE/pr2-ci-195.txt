@@ -1,0 +1,6 @@
+pr2: number 251
+pr2: head 51af1f9e3aee31af0de6cbb566dca655f3e4ad8f
+pr2: crosswake_ci success on head 51af1f9
+pr2: run 40267146232 event pull_request (reports head sha; GitHub also tests a synthetic merge commit of the head into main)
+pr2: branch_protection_contexts_before ["Crosswake CI"]
+pr2: remote_tags_before 94

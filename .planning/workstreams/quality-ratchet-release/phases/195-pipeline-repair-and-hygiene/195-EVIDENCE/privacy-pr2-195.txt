@@ -1,0 +1,4 @@
+privacy: scanner invoked with bash, every file absolute and separate
+privacy: run 1 head 51af1f9 files 47
+privacy: clean files 47
+privacy: rc 0 (47 files; branch diff vs origin/main, phase175 waiver file not in diff)

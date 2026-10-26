@@ -1,0 +1,19 @@
+pr2: state MERGED
+pr2: merge_commit 735c3bce826f4e70a50f8636440d3d89c62c58e5
+pr2: merged_at 2026-10-26T13:05:30Z
+pr2: on_origin_main yes
+pr2: approval allow bound PR 251 head 51af1f9
+pr2: remote branch kept (plan 13)
+pr2: protection_contexts_before ["Crosswake CI"]
+pr2: remote_tags_before 94
+
+--- canary fix-forward (appended) ---
+pr2_fix: number 254 state MERGED
+pr2_fix: merge_commit 0b28e6d69767045bbd37c737068bd84c77ba86d4
+pr2_fix: merged_at 2026-10-26T15:55:26Z
+pr2_fix: on_origin_main yes
+pr2_fix: approval allow bound PR 254 head 4c07549
+pr2_fix: crosswake_ci success on head 4c07549 (run 40328871069, pull_request, tested synthetic merge commit)
+pr2_fix: branch_confirmation canary run 40333952719 success on 4c07549
+pr2_fix: main canary run 40354096432 success on 0b28e6d
+pr2_fix: remote branch ci/weekly-canary-node-pin kept (plan 13)
