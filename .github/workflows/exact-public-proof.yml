@@ -163,7 +163,7 @@ jobs:
       # The checkout precedes the record assertion only because the assertion is a
       # repository script. It performs no proof work of its own, so the record
       # decision remains the proof's first substantive act.
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: ${{ steps.applicability.outputs.applicable == 'true' }}
         with:
           # The guard proves this candidate is the actual merge's second parent
@@ -225,7 +225,7 @@ jobs:
           --approved-head "$APPROVED_HEAD"
           --record "$RUNNER_TEMP/publication-record/publication-record.json"
 
-      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
         if: ${{ steps.applicability.outputs.applicable == 'true' }}
         with:
           version-file: .tool-versions
@@ -258,7 +258,7 @@ jobs:
 
       - name: Upload exact-public proof
         if: ${{ steps.applicability.outputs.applicable == 'true' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: exact-public-proof
           path: ${{ runner.temp }}/exact-public-result.json
@@ -289,7 +289,7 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
