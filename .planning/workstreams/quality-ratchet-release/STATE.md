@@ -26,13 +26,13 @@ See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.
 
 Phase: 195 (Pipeline repair and hygiene) — EXECUTING
 Plan: 13 of 13
-Status: Phase complete — ready for verification
+Status: Verification found gaps — gap closure needed (REL-03)
 
 ## Exact Next Action
 
-What was checked: Phase 195 has 13 plans (195-01 to 195-13, waves 1 to 13 in order). They cover REL-01 to REL-06, HYG-01 and HYG-02. The plan checker ran three times, then a targeted fix closed the last 5 warnings. The probes found no verify-path or failing-direction problems in 53 commands. What happened: Phase 194's closeout PR #249 is merged. The plans are committed on local branch `fix/release-fixture-version-stamp` and are not pushed; plan 195-01 expects to start on that branch, and the plans reach `main` inside PR1. What is unknown: CI on PR1, because it is not opened yet. Nothing was released, tagged or pushed.
+What was checked: all 13 Phase 195 plans executed. PRs #250, #241, #240, #239, #211, #210, #238, #251, #254 and #255 are merged, each behind its own `allow`. The Weekly Canary is green on main (run 40354096432). The full `mix test` run (2788 tests) and `node --test` (148) pass. The code review (195-REVIEW.md) and the verifier (195-VERIFICATION.md) both ran. What happened: verification returned `gaps_found` (7 of 8). REL-03's `maskSecretShapes` leaks quoted secret values (`KEY="v"`), mid-line `Cookie:` headers and multi-word quoted passwords (review CR-01 and CR-02, reproduced on main), so "CI never echoes secrets" does not hold. What is unknown: nothing blocks planning the fix. Nothing was released or published. 10 `archive/` tags were pushed and 15 remote branches deleted under HYG-02. Open PRs: #236 (release, green on b1e8d95), #252 (grouped Dependabot) and #253 (collateral auto-refresh, held). The phase evidence is on the pushed branch `docs/195-closeout`, and its closeout PR is not opened yet.
 
-Next action: `/gsd-execute-phase 195 --ws quality-ratchet-release` (plan 195-10, branch `chore/root-hygiene-and-cleanroom` from origin/main).
+Next action: `/gsd-plan-phase 195 --gaps --ws quality-ratchet-release` (plan the masking fix: failing seeds first, then the regexes; include WR-01 to WR-03), then `/gsd-execute-phase 195 --gaps-only --ws quality-ratchet-release`.
 
 ## Carried debt
 
