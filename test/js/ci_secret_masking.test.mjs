@@ -128,6 +128,14 @@ const cqB = frag("fake", "Cli", "Quoted37");
 const cuV = frag("fake", "Curl", "Short38");
 const clV = frag("fake", "Curl", "Long39");
 const tdV = frag("fake", "Double", "Eq40");
+const SK = frag("s", "k-");
+const XOXB = frag("xo", "xb-");
+const NPM = frag("np", "m_");
+const GHP = frag("gh", "p_");
+const skpV = frag("fake", "Skp", "Proj41");
+const skvV = frag("fake", "Skv", "Ant42");
+const xbV = frag("fake", "Xox", "Bot43");
+const npmV = frag("fake", "Npm", "Tok44", "x".repeat(24));
 
 export const GAP_SHAPES = [
   {
@@ -309,6 +317,30 @@ export const GAP_SHAPES = [
     seeds: [tdV],
     line: `assert ${TK} == "${tdV}"`,
     expected: `assert ${TK} == "***"`
+  },
+  {
+    name: "sk_project_key",
+    seeds: [skpV],
+    line: `use ${SK}proj-${skpV} now`,
+    expected: `use ${SK}*** now`
+  },
+  {
+    name: "sk_versioned_key",
+    seeds: [skvV],
+    line: `use ${SK}ant-api03-${skvV} now`,
+    expected: `use ${SK}*** now`
+  },
+  {
+    name: "slack_bot_token",
+    seeds: [xbV],
+    line: `slack ${XOXB}${xbV} sent`,
+    expected: `slack ${XOXB}*** sent`
+  },
+  {
+    name: "npm_token",
+    seeds: [npmV],
+    line: `npm ${NPM}${npmV} ok`,
+    expected: `npm ${NPM}*** ok`
   }
 ];
 
@@ -370,7 +402,10 @@ const PROSE_LINES = [
   { name: "password, then username", text: "password, then username" },
   { name: "use --password-file ./pw.txt for input", text: "use --password-file ./pw.txt for input" },
   { name: "key_before_test_line", text: "last field password:\n  1) test login works (AuthTest)" },
-  { name: "key_before_finished_line", text: "token=\nFinished in 0.2 seconds" }
+  { name: "key_before_finished_line", text: "token=\nFinished in 0.2 seconds" },
+  { name: "task-runner12345 started", text: "task-runner12345 started" },
+  { name: "kiosk-mode-settings applied", text: "kiosk-mode-settings applied" },
+  { name: "npm_config_cache is set", text: "npm_config_cache is set" }
 ];
 
 // Over-masks accepted as the safe direction. Each is pinned exactly so it can never drift silently.
@@ -406,7 +441,9 @@ const LINEAR_INPUTS = [
   { name: "curl_user_repeat", input: () => "-u a:".repeat(50000) },
   { name: "nextline_keys", input: () => `${PW}:\n`.repeat(30000) },
   { name: "bearer_quote_unterminated", input: () => 'Bearer "' + "a b ".repeat(100000) },
-  { name: "double_equals_repeat", input: () => `${TK} ==`.repeat(40000) }
+  { name: "double_equals_repeat", input: () => `${TK} ==`.repeat(40000) },
+  { name: "sk_dash_run", input: () => `${SK}` + "-a".repeat(100000) },
+  { name: "xox_repeat", input: () => XOXB.repeat(40000) }
 ];
 
 for (const row of LINEAR_INPUTS) {
@@ -458,6 +495,12 @@ test("short values are masked but 2-character words are left alone", () => {
   assert.ok(masked === `${frag("tok", "en")}=***`, "short value mask output changed");
   const plain = `${frag("tok", "en")}: ok`;
   assert.equal(maskSecretShapes(plain), plain);
+});
+
+test("a short GitHub token is masked", () => {
+  const short = frag("q9", "Zx", "7k");
+  const masked = maskSecretShapes(`leaked ${GHP}${short}`);
+  assert.ok(masked === `leaked ${GHP}***`, "short GitHub token mask output changed");
 });
 
 test("maskSecretShapes edge cases are byte-stable", () => {
