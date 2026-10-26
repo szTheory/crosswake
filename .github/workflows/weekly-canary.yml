@@ -28,6 +28,9 @@ jobs:
       - uses: ./.github/actions/setup-elixir-cache
         with:
           mix-env: test
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: "22.14.0"
       - name: Run the hermetic root proof
         run: script/verify_repository.sh --stage root-proof
       - name: Canary lane summary

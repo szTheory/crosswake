@@ -54,8 +54,43 @@ defmodule Crosswake.Proof.CiRecurringLanesTest do
       text =~ ~r/^  workflow_dispatch:/m and
       text =~ ~r/^\s+ref: main\s*$/m and
       text =~ ~r/^  contents: read\s*$/m and
-      text =~ "script/verify_repository.sh --stage root-proof"
+      text =~ "script/verify_repository.sh --stage root-proof" and
+      canary_node_version(text) != nil and
+      canary_node_version(text) == root_proof_node_version(ci_text())
   end
+
+  # The root-proof preflight requires an exact node version, so the canary must pin the same
+  # one the required root-proof job in Crosswake CI pins (observed failure: Weekly Canary
+  # run 40327687439, repository-preflight, node exact-version regex).
+  defp setup_node_version(text) do
+    case Regex.run(
+           ~r/uses: actions\/setup-node@[0-9a-f]{40} # v\d+\n\s+with:\n\s+node-version: "([^"]+)"/,
+           text
+         ) do
+      [_, version] -> version
+      _ -> nil
+    end
+  end
+
+  defp canary_node_version(text) do
+    # The setup-node step must precede the root-proof step.
+    case String.split(text, "script/verify_repository.sh --stage root-proof", parts: 2) do
+      [before, _] -> setup_node_version(before)
+      _ -> nil
+    end
+  end
+
+  defp root_proof_node_version(ci) do
+    case Regex.run(~r/^  phase130-core-hermetic-proof:\n((?:    .*\n|\n)*)/m, ci) do
+      [_, block] ->
+        block |> String.split("--stage root-proof", parts: 2) |> hd() |> setup_node_version()
+
+      _ ->
+        nil
+    end
+  end
+
+  defp ci_text, do: File.read!(".github/workflows/crosswake-ci.yml")
 
   defp canary_text, do: File.read!(".github/workflows/weekly-canary.yml")
 
@@ -66,6 +101,31 @@ defmodule Crosswake.Proof.CiRecurringLanesTest do
 
   test "canary predicate rejects a canary that does not check out main (negative control)" do
     refute canary_ok?(String.replace(canary_text(), "ref: main", "ref: other"))
+  end
+
+  test "canary pins the same node version as the required root-proof job" do
+    assert root_proof_node_version(ci_text()) == "22.14.0"
+    assert canary_node_version(canary_text()) == "22.14.0"
+  end
+
+  test "canary predicate rejects a canary without the node pin (negative control)" do
+    without =
+      Regex.replace(
+        ~r/      - uses: actions\/setup-node@.*\n        with:\n          node-version: "[^"]+"\n/,
+        canary_text(),
+        ""
+      )
+
+    refute without == canary_text()
+    refute canary_ok?(without)
+
+    refute canary_ok?(
+             String.replace(
+               canary_text(),
+               ~s(node-version: "22.14.0"),
+               ~s(node-version: "22.13.0")
+             )
+           )
   end
 
   test "exactly one workflow is the weekly canary and it is not a required check" do
