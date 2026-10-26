@@ -45,16 +45,19 @@ export function spawnStage(command, args, options) {
   });
 }
 
-const ROOT_PROOF_TAIL_LINES = 150;
-const ROOT_PROOF_TAIL_BYTES = 24 * 1024;
+export const ROOT_PROOF_TAIL_LINES = 150;
+export const ROOT_PROOF_TAIL_BYTES = 24 * 1024;
 const ROOT_PROOF_DETAIL_LINES = 120;
 const ROOT_PROOF_DETAIL_BYTES = 16 * 1024;
 
 // A credential value: a backslash-escaped double-quoted span (`\\"v\\"`, JSON inside a string), a double- or
 // single-quoted span (backslash escapes honoured, masked to end of line when the quote is never closed)
-// or an unquoted run of 3+ non-space, non-quote characters. Groups are named so adding one cannot shift
+// or an unquoted run of 3+ non-space, non-quote characters. An unquoted value that is exactly `nil`, `true`,
+// `false`, `null` or `undefined` (any case, then whitespace, `,;)]}` or end of text) is a literal, not a secret,
+// and stays readable; a longer value starting with one of those words is still masked. Groups are named so adding one cannot shift
 // another. Unrolled loops with disjoint alternatives keep matching linear (no nested quantifier overlap).
-const SECRET_VALUE_SOURCE = String.raw`(?:(?<escOpen>\\+")(?<escBody>[^\\\n]*(?:\\(?!")[^\\\n]*)*)(?<escClose>(?:\\+")?)|"(?<dqBody>[^"\\\n]*(?:\\[^\n]?[^"\\\n]*)*)(?<dqClose>"?)|'(?<sqBody>[^'\\\n]*(?:\\[^\n]?[^'\\\n]*)*)(?<sqClose>'?)|(?<bare>[^\s"']{3,}))`;
+const LITERAL_VALUE = `(?:${["nil", "true", "false", "null", "undefined"].map((w) => [...w].map((c) => `[${c}${c.toUpperCase()}]`).join("")).join("|")})`;
+const SECRET_VALUE_SOURCE = String.raw`(?:(?<escOpen>\\+")(?<escBody>[^\\\n]*(?:\\(?!")[^\\\n]*)*)(?<escClose>(?:\\+")?)|"(?<dqBody>[^"\\\n]*(?:\\[^\n]?[^"\\\n]*)*)(?<dqClose>"?)|'(?<sqBody>[^'\\\n]*(?:\\[^\n]?[^'\\\n]*)*)(?<sqClose>'?)|(?<bare>(?!${LITERAL_VALUE}(?=[\s,;)\]}]|$))[^\s"']{3,}))`;
 
 // Replacer for a (prefix, value) match built from SECRET_VALUE_SOURCE: quotes survive around `***`.
 // The value groups are read by name from the trailing groups object; only the prefix is positional.
@@ -85,7 +88,7 @@ const PEM_RULE = new RegExp(`(-{5}BEGIN ${PEM_KEY})(?:${PEM_ITEM})*(?:${PEM_LB}-
 // Query-string credentials: `?key=`, `&sig=`, `&signature=` and the X-Amz signing parameters, value to `&`, `#` or space.
 const QUERY_CREDENTIAL_RULE = /([?&](?:key|sig|signature|X-Amz-Signature|X-Amz-Credential|X-Amz-Security-Token)=)[^&#\s"']{3,}/gi;
 
-const AUTHORIZATION_RULE = new RegExp(`(authorization${KEY_QUOTE}[ \\t]*[:=][ \\t]*)[^\\n]+`, "gi");
+const AUTHORIZATION_RULE = new RegExp(`((?<![A-Za-z0-9])authorization${KEY_QUOTE}[ \\t]*[:=][ \\t]*)[^\\n]+`, "gi");
 const COOKIE_RULE = new RegExp(`(\\bcookies?${KEY_QUOTE}[ \\t]*:[ \\t]*)[^\\n]+`, "gi");
 const SECRET_ACCESS_KEY_RULE = new RegExp(`((?:aws_)?secret[_-]access[_-]key${KEY_QUOTE}[ \\t]*[:=][ \\t]*)${SECRET_VALUE_SOURCE}`, "gi");
 // Bearer: a quoted value keeps its quotes around `***`; `realm="v"` style (non-space run then a quoted span)
@@ -165,8 +168,11 @@ function maskNextLineValues(text) {
 //      private key, credential[s], authorization) followed by `=>`, `:`/`=` (up to `==`) and a quoted
 //      (multi-word, escaped, unterminated, backslash-escaped JSON `\\"v\\"`) or 3+ character unquoted value; the
 //      key itself may be wrapped in plain or backslash-escaped quotes (rules a, b, d, i, l)
-// Accepted over-masks (pinned in the tests): `code: assert token == "x"`, a key line followed by plain text,
-// `--no-password prompt`, a port before a path containing `@`, `secrets: inherit`.
+// Deliberately unmasked: unquoted nil/true/false/null/undefined after a credential key (whole value only), and
+// `preauthorization` (authorization needs a non-alphanumeric character before it).
+// Accepted over-masks (pinned in the tests as ACCEPTED_OVERMASK): `code: assert token == "x"`, a key line
+// followed by plain text, `--no-password prompt`, a port before a path containing `@`, `secrets: inherit`,
+// numeric values (`max_token: 1000`), `Authorization: required for route`, `stale cookie: expired at line`.
 export function maskSecretShapes(text) {
   return maskNextLineValues(String(text ?? ""))
     .replace(PEM_RULE, "$1***")

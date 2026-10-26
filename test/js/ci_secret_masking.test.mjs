@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { maskSecretShapes, rootProofFailureTail, spawnStage } from "../../script/verify_repository.mjs";
+import { maskSecretShapes, ROOT_PROOF_TAIL_BYTES, ROOT_PROOF_TAIL_LINES, rootProofFailureTail, spawnStage } from "../../script/verify_repository.mjs";
 
 const frag = (...parts) => parts.join("");
 
@@ -634,10 +634,9 @@ for (const row of LINEAR_INPUTS) {
   test(`linear time: ${row.name}`, (t) => {
     const input = row.input();
     assert.ok(input.length >= 200000, `linear input ${row.name} is too short`);
-    const base = baselineMs();
     const ms = fastestMs(input);
     t.diagnostic(`perf ${row.name} ms ${Math.round(ms)}`);
-    assert.ok(ms <= Math.max(40, 10 * base), `linear time ${row.name}: ${Math.round(ms)} ms, bound ${Math.round(Math.max(40, 10 * base))} ms`);
+    assert.ok(ms <= Math.max(40, 10 * baselineMs()), `linear time ${row.name}: ${Math.round(ms)} ms, bound ${Math.round(Math.max(40, 10 * baselineMs()))} ms`);
   });
 }
 
@@ -656,13 +655,13 @@ test("a value cut by the tail byte window never appears", () => {
   const V = frag("fake", "CutWindow", "Q".repeat(56), "fakeEnd1");
   const vLine = `${PW}="${V}"`;
   const remaining = 40;
-  const joinedTarget = 24 * 1024 - remaining - 1;
-  const fillers = Array.from({ length: 149 }, (_, i) => `filler ${String(i).padStart(3, "0")} `.padEnd(100, "-"));
-  const fixedLen = fillers.slice(0, 148).join("\n").length + 1;
-  fillers[148] = "z".repeat(joinedTarget - fixedLen);
+  const joinedTarget = ROOT_PROOF_TAIL_BYTES - remaining - 1;
+  const fillers = Array.from({ length: ROOT_PROOF_TAIL_LINES - 1 }, (_, i) => `filler ${String(i).padStart(3, "0")} `.padEnd(100, "-"));
+  const fixedLen = fillers.slice(0, ROOT_PROOF_TAIL_LINES - 2).join("\n").length + 1;
+  fillers[ROOT_PROOF_TAIL_LINES - 2] = "z".repeat(joinedTarget - fixedLen);
   const text = [vLine, ...fillers].join("\n");
-  const unmaskedTail = text.split("\n").slice(-150).join("\n");
-  const cutInside = unmaskedTail.length - 24 * 1024 === vLine.length - remaining;
+  const unmaskedTail = text.split("\n").slice(-ROOT_PROOF_TAIL_LINES).join("\n");
+  const cutInside = unmaskedTail.length - ROOT_PROOF_TAIL_BYTES === vLine.length - remaining;
   assert.ok(cutInside, "byte window cut does not land inside the value line (test setup)");
   const out = rootProofFailureTail("failed", { stdout: text, stderr: "" });
   const hits = [V, V.slice(-8)].filter((frag8) => out.includes(frag8)).length;
