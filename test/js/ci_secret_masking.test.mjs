@@ -51,10 +51,14 @@ console.log("Finished in 0.1 seconds");
 process.exit(2);
 `;
 
-function runSeededChild(s) {
+function runChildLines(lines) {
   return spawnStage(process.execPath, ["-e", CHILD], {
-    env: { PATH: process.env.PATH, CW_SEED_LINES: JSON.stringify(seedLines(s)) }
+    env: { PATH: process.env.PATH, CW_SEED_LINES: JSON.stringify(lines) }
   });
+}
+
+function runSeededChild(s) {
+  return runChildLines(seedLines(s));
 }
 
 test("seeded secrets from a spawned child never reach the root-proof tail", () => {
@@ -66,15 +70,84 @@ test("seeded secrets from a spawned child never reach the root-proof tail", () =
   assert.equal(leakedSecrets(raw, seeds).length, seeds.length, "detector must see every seed in raw output");
   const tail = rootProofFailureTail("failed", result);
   const leaked = leakedSecrets(tail, seeds);
-  assert.deepEqual(leaked, [], `leaked: ${leaked.length} seeded value(s) reached the tail`);
+  assert.ok(leaked.length === 0, `leaked: ${leaked.length} seeded value(s) reached the tail`);
+});
+
+// ---------------------------------------------------------------------------------------------
+// Gap shapes (195-14): one row per leak shape. Every seed is fragment-built, at least 8 characters,
+// fake/FAKE-prefixed and unique, so a substring match cannot pass or fail by accident. Assertions
+// that can see a seed are assert.ok on a computed boolean with a shape-and-count message, because
+// node:test prints comparison operands and a red CI log is public.
+// ---------------------------------------------------------------------------------------------
+const AWS_KEY = frag("AWS_", "SECRET_", "ACCESS_", "KEY");
+const AWS_KEY_LOWER = frag("secret_", "access_", "key");
+const gapAwsDq = frag("fake", "Dq", "Quoted", "Val1");
+const gapAwsSq = frag("fake", "Sq", "Quoted", "Val2");
+
+export const GAP_SHAPES = [
+  {
+    name: "aws_key_double_quoted",
+    seeds: [gapAwsDq],
+    line: `${AWS_KEY}="${gapAwsDq}"`,
+    expected: `${AWS_KEY}="***"`
+  },
+  {
+    name: "aws_key_single_quoted",
+    seeds: [gapAwsSq],
+    line: `${AWS_KEY_LOWER} = '${gapAwsSq}'`,
+    expected: `${AWS_KEY_LOWER} = '***'`
+  }
+];
+
+const gapSeedCount = () => GAP_SHAPES.reduce((n, row) => n + row.seeds.length, 0);
+
+for (const row of GAP_SHAPES) {
+  test(`gap shape ${row.name} is masked`, () => {
+    const masked = maskSecretShapes(row.line);
+    const rawHasAll = leakedSecrets(row.line, row.seeds).length === row.seeds.length;
+    const maskedHits = leakedSecrets(masked, row.seeds).length;
+    assert.ok(rawHasAll, `gap shape ${row.name}: detector missed a seed in the raw line`);
+    assert.ok(maskedHits === 0, `gap shape ${row.name}: ${maskedHits} of ${row.seeds.length} seeds present after masking`);
+    assert.ok(masked === row.expected, `gap shape ${row.name}: output differs from expected, ${maskedHits} of ${row.seeds.length} seeds present`);
+  });
+}
+
+test("gap seeds are distinctive", () => {
+  const seen = new Set();
+  for (const row of GAP_SHAPES) {
+    for (const seed of row.seeds) {
+      const fail = (rule) => assert.ok(false, `indistinct seed in ${row.name}: ${rule}`);
+      if (seed.length < 8) fail("shorter than 8 characters");
+      if (!/^(fake[A-Z]|FAKE[A-Z0-9])/.test(seed)) fail("missing fake/FAKE prefix");
+      if (seen.has(seed)) fail("not unique across rows");
+      seen.add(seed);
+      if (CHILD.includes(seed)) fail("appears in the child script text");
+      for (const other of GAP_SHAPES) {
+        if (other.expected.includes(seed)) fail("appears in an expected string");
+        if (other !== row && other.line.includes(seed)) fail("appears in another row's line");
+      }
+    }
+  }
+});
+
+test("gap shapes from a spawned child never reach the root-proof tail", () => {
+  const result = runChildLines(GAP_SHAPES.map((row) => row.line));
+  const allSeeds = GAP_SHAPES.flatMap((row) => row.seeds);
+  assert.ok(result.status === 2, `gap child exited ${result.status}, expected 2`);
+  const raw = `${result.stdout}${result.stderr}`;
+  assert.ok(leakedSecrets(raw, allSeeds).length === allSeeds.length, "detector must see every gap seed in raw child output");
+  const tail = rootProofFailureTail("failed", result);
+  const leakedNames = GAP_SHAPES.filter((row) => leakedSecrets(tail, row.seeds).length > 0).map((row) => row.name);
+  const k = allSeeds.filter((seed) => tail.includes(seed)).length;
+  assert.ok(k === 0, `leaked: ${k} of ${gapSeedCount()} gap seed(s) reached the tail: ${leakedNames.join(", ")}`);
 });
 
 test("masking keeps failure diagnosis and key or header names", () => {
   const result = runSeededChild(seedValues());
   const tail = rootProofFailureTail("failed", result);
-  assert.match(tail, /1\) test something/);
-  assert.match(tail, /root-proof failure tail \(failed;/);
-  assert.match(tail, /Finished in/);
+  assert.ok(/1\) test something/.test(tail), "failing test line survives");
+  assert.ok(/root-proof failure tail \(failed;/.test(tail), "tail header survives");
+  assert.ok(/Finished in/.test(tail), "Finished-in line survives");
   for (const name of ["Authorization", "Cookie", "aws_secret_access_key"]) {
     assert.ok(tail.includes(name), `${name} name survives`);
   }
@@ -85,7 +158,7 @@ test("short values are masked but 2-character words are left alone", () => {
   const s = seedValues();
   const masked = maskSecretShapes(`${frag("tok", "en")}=${s.short}`);
   assert.equal(leakedSecrets(masked, [s.short]).length, 0);
-  assert.equal(masked, `${frag("tok", "en")}=***`);
+  assert.ok(masked === `${frag("tok", "en")}=***`, "short value mask output changed");
   const plain = `${frag("tok", "en")}: ok`;
   assert.equal(maskSecretShapes(plain), plain);
 });
@@ -271,7 +344,7 @@ function runDerivation(script, user, pass) {
     encoding: "utf8",
     env: { PATH: process.env.PATH, MAVEN_USERNAME: user, MAVEN_PASSWORD: pass }
   });
-  assert.equal(r.status, 0, `derivation child failed: ${r.stderr}`);
+  assert.ok(r.status === 0, `derivation child exited ${r.status}, stderr withheld`);
   return `${r.stdout}${r.stderr}`;
 }
 
@@ -284,7 +357,7 @@ test("live fire-drill derivation never leaks seeded or derived values into the e
 
   const protectedLog = runnerMaskedLog(runDerivation(script, user, pass), [user, pass]);
   const leaked = leakedSecrets(protectedLog, watched);
-  assert.deepEqual(leaked, [], `leaked: ${leaked.length} value(s) reached the step log`);
+  assert.ok(leaked.length === 0, `leaked: ${leaked.length} value(s) reached the step log`);
 
   const stripped = script.split("\n").filter((l) => !l.includes("::add-mask::")).join("\n");
   const control = leakedSecrets(runnerMaskedLog(runDerivation(stripped, user, pass), [user, pass]), watched);
