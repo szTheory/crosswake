@@ -111,6 +111,23 @@ const jwC = frag("fake", "Jwt", "Sig21");
 const kidV = frag("FAKE", "KEYID", "1234567");
 const ejA = frag("fake", "Escjson", "Alpha22");
 const ejB = frag("fake", "Escjson", "Bravo23");
+const eaV = frag("fake", "Escauth", "Val24");
+const tpV = frag("fake", "Tup", "Atom25");
+const tqA = frag("fake", "Tup", "Quoted26");
+const tqB = frag("fake", "Tup", "Quoted27");
+const taV = frag("fake", "Tup", "Auth28");
+const bqV = frag("fake", "Bear", "Quote29");
+const brV = frag("fake", "Bear", "Realm30");
+const nlV = frag("fake", "Next", "Line31");
+const ncV = frag("fake", "Next", "Crlf32");
+const ybA = frag("fake", "Yaml", "Block33");
+const ybB = frag("fake", "Yaml", "Block34");
+const cfV = frag("fake", "Cli", "Flag35");
+const cqA = frag("fake", "Cli", "Quoted36");
+const cqB = frag("fake", "Cli", "Quoted37");
+const cuV = frag("fake", "Curl", "Short38");
+const clV = frag("fake", "Curl", "Long39");
+const tdV = frag("fake", "Double", "Eq40");
 
 export const GAP_SHAPES = [
   {
@@ -208,6 +225,90 @@ export const GAP_SHAPES = [
     seeds: [ejA, ejB],
     line: `{${BS}"${PW}${BS}":${BS}"${ejA} ${ejB}${BS}"}`,
     expected: `{${BS}"${PW}${BS}":${BS}"***${BS}"}`
+  },
+  {
+    name: "escaped_json_authorization",
+    seeds: [eaV],
+    line: `{${BS}"authorization${BS}":${BS}"Bearer ${eaV}${BS}"}`,
+    expected: `{${BS}"authorization${BS}":***`
+  },
+  {
+    name: "elixir_tuple_atom",
+    seeds: [tpV],
+    line: `{:${TK}, "${tpV}"}`,
+    expected: `{:${TK}, "***"}`
+  },
+  {
+    name: "elixir_tuple_quoted_key",
+    seeds: [tqA, tqB],
+    line: `{"${PW}", "${tqA} ${tqB}"}`,
+    expected: `{"${PW}", "***"}`
+  },
+  {
+    name: "elixir_tuple_authorization",
+    seeds: [taV],
+    line: `{"authorization", "Basic ${taV}"}`,
+    expected: `{"authorization", "***"}`
+  },
+  {
+    name: "bearer_quoted",
+    seeds: [bqV],
+    line: `sent Bearer "${bqV}" upstream`,
+    expected: `sent Bearer "***" upstream`
+  },
+  {
+    name: "bearer_realm",
+    seeds: [brV],
+    line: `WWW-Authenticate: Bearer realm="${brV}"`,
+    expected: `WWW-Authenticate: Bearer ***`
+  },
+  {
+    name: "next_line_value",
+    seeds: [nlV],
+    line: `${PW}:\n  ${nlV}`,
+    expected: `${PW}:\n  ***`
+  },
+  {
+    name: "next_line_value_crlf",
+    seeds: [ncV],
+    line: `${PW}:\r\n  ${ncV}`,
+    expected: `${PW}:\r\n  ***`
+  },
+  {
+    name: "yaml_block_scalar",
+    seeds: [ybA, ybB],
+    line: `${PW}: |\n  ${ybA}\n  ${ybB}\nnext: ok`,
+    expected: `${PW}: |\n  ***\n  ***\nnext: ok`
+  },
+  {
+    name: "cli_flag_space",
+    seeds: [cfV],
+    line: `run --${PW} ${cfV} --verbose`,
+    expected: `run --${PW} *** --verbose`
+  },
+  {
+    name: "cli_flag_quoted",
+    seeds: [cqA, cqB],
+    line: `run --api-key "${cqA} ${cqB}" --verbose`,
+    expected: `run --api-key "***" --verbose`
+  },
+  {
+    name: "curl_user_short",
+    seeds: [cuV],
+    line: `curl -u deploy:${cuV} https://host.example/x`,
+    expected: `curl -u deploy:*** https://host.example/x`
+  },
+  {
+    name: "curl_user_long",
+    seeds: [clV],
+    line: `curl --user deploy:${clV} https://host.example/x`,
+    expected: `curl --user deploy:*** https://host.example/x`
+  },
+  {
+    name: "token_double_equals",
+    seeds: [tdV],
+    line: `assert ${TK} == "${tdV}"`,
+    expected: `assert ${TK} == "***"`
   }
 ];
 
@@ -262,11 +363,28 @@ const PROSE_LINES = [
   { name: "cookie jar is empty", text: "cookie jar is empty" },
   { name: "  1) test token refresh rejects expired password (Crosswake.AuthTest)", text: "  1) test token refresh rejects expired password (Crosswake.AuthTest)" },
   { name: "token_count: 300", text: "token_count: 300" },
-  { name: 'code: assert token == "expected-value"', text: 'code: assert token == "expected-value"' },
   { name: "the api key rotation runs nightly", text: "the api key rotation runs nightly" },
   { name: "token: ok", text: "token: ok" },
-  { name: "bearer_line_end", text: "auth scheme is Bearer\nnextline stays visible" }
+  { name: "bearer_line_end", text: "auth scheme is Bearer\nnextline stays visible" },
+  { name: "invalid token, retrying now", text: "invalid token, retrying now" },
+  { name: "password, then username", text: "password, then username" },
+  { name: "use --password-file ./pw.txt for input", text: "use --password-file ./pw.txt for input" },
+  { name: "key_before_test_line", text: "last field password:\n  1) test login works (AuthTest)" },
+  { name: "key_before_finished_line", text: "token=\nFinished in 0.2 seconds" }
 ];
+
+// Over-masks accepted as the safe direction. Each is pinned exactly so it can never drift silently.
+const ACCEPTED_OVERMASK = [
+  { name: "code_assert_token_equals", text: 'code: assert token == "expected-value"', expected: 'code: assert token == "***"' },
+  { name: "key_then_plain_line", text: "enter password:\nnext line text", expected: "enter password:\n***" },
+  { name: "cli_negated_flag", text: "run --no-password prompt", expected: "run --no-password ***" }
+];
+
+for (const row of ACCEPTED_OVERMASK) {
+  test(`accepted over-mask pinned: ${row.name}`, () => {
+    assert.ok(maskSecretShapes(row.text) === row.expected, `accepted over-mask ${row.name} drifted`);
+  });
+}
 
 for (const row of PROSE_LINES) {
   test(`prose round-trips unchanged: ${row.name}`, () => {
@@ -280,7 +398,15 @@ const LINEAR_INPUTS = [
   { name: "keyword_no_separator", input: () => "token ".repeat(100000) },
   { name: "unterminated_quote", input: () => `${PW} = "` + "a b ".repeat(100000) },
   { name: "userinfo_no_at", input: () => "https://" + "u:".repeat(100000) },
-  { name: "jwt_segments", input: () => "eyJaaaaa.".repeat(100000) }
+  { name: "jwt_segments", input: () => "eyJaaaaa.".repeat(100000) },
+  { name: "escaped_key_repeat", input: () => `${BS}"${PW}${BS}":`.repeat(30000) },
+  { name: "escaped_value_backslashes", input: () => `{${BS}"${PW}${BS}":${BS}"` + BS.repeat(200000) },
+  { name: "tuple_comma_repeat", input: () => `{:${TK}, `.repeat(30000) },
+  { name: "cli_flag_repeat", input: () => `--${PW} `.repeat(30000) },
+  { name: "curl_user_repeat", input: () => "-u a:".repeat(50000) },
+  { name: "nextline_keys", input: () => `${PW}:\n`.repeat(30000) },
+  { name: "bearer_quote_unterminated", input: () => 'Bearer "' + "a b ".repeat(100000) },
+  { name: "double_equals_repeat", input: () => `${TK} ==`.repeat(40000) }
 ];
 
 for (const row of LINEAR_INPUTS) {
