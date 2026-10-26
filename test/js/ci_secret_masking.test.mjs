@@ -51,10 +51,14 @@ console.log("Finished in 0.1 seconds");
 process.exit(2);
 `;
 
-function runSeededChild(s) {
+function runChildLines(lines) {
   return spawnStage(process.execPath, ["-e", CHILD], {
-    env: { PATH: process.env.PATH, CW_SEED_LINES: JSON.stringify(seedLines(s)) }
+    env: { PATH: process.env.PATH, CW_SEED_LINES: JSON.stringify(lines) }
   });
+}
+
+function runSeededChild(s) {
+  return runChildLines(seedLines(s));
 }
 
 test("seeded secrets from a spawned child never reach the root-proof tail", () => {
@@ -66,15 +70,247 @@ test("seeded secrets from a spawned child never reach the root-proof tail", () =
   assert.equal(leakedSecrets(raw, seeds).length, seeds.length, "detector must see every seed in raw output");
   const tail = rootProofFailureTail("failed", result);
   const leaked = leakedSecrets(tail, seeds);
-  assert.deepEqual(leaked, [], `leaked: ${leaked.length} seeded value(s) reached the tail`);
+  assert.ok(leaked.length === 0, `leaked: ${leaked.length} seeded value(s) reached the tail`);
+});
+
+// ---------------------------------------------------------------------------------------------
+// Gap shapes (195-14): one row per leak shape. Every seed is fragment-built, at least 8 characters,
+// fake/FAKE-prefixed and unique, so a substring match cannot pass or fail by accident. Assertions
+// that can see a seed are assert.ok on a computed boolean with a shape-and-count message, because
+// node:test prints comparison operands and a red CI log is public.
+// ---------------------------------------------------------------------------------------------
+const AWS_KEY = frag("AWS_", "SECRET_", "ACCESS_", "KEY");
+const AWS_KEY_LOWER = frag("secret_", "access_", "key");
+const gapAwsDq = frag("fake", "Dq", "Quoted", "Val1");
+const gapAwsSq = frag("fake", "Sq", "Quoted", "Val2");
+const PW = frag("pass", "word");
+const TK = frag("tok", "en");
+const SKB = frag("SECRET_", "KEY_", "BASE");
+const BS = String.fromCharCode(92);
+const mwA = frag("fake", "Multi", "Alpha1");
+const mwB = frag("fake", "Multi", "Bravo2");
+const mwC = frag("fake", "Multi", "Charlie3");
+const jsA = frag("fake", "Json", "Alpha4");
+const jsB = frag("fake", "Json", "Bravo5");
+const exA = frag("fake", "Arrow", "Alpha6");
+const exB = frag("fake", "Arrow", "Bravo7");
+const kwA = frag("fake", "Kwlist", "Alpha8");
+const kwB = frag("fake", "Kwlist", "Bravo9");
+const skbV = frag("fake", "Skb", "Value10");
+const escA = frag("fake", "Esc", "First11");
+const escB = frag("fake", "Esc", "Second12");
+const unA = frag("fake", "Unterm", "First13");
+const unB = frag("fake", "Unterm", "Second14");
+const ckV = frag("fake", "Cookie", "Curl15");
+const scV = frag("fake", "Setck", "Curl16");
+const dgV = frag("fake", "Digest", "Resp17");
+const uiV = frag("fake", "Userinfo", "Pw18");
+const jwA = frag("fake", "Jwt", "Head19");
+const jwB = frag("fake", "Jwt", "Body20");
+const jwC = frag("fake", "Jwt", "Sig21");
+const kidV = frag("FAKE", "KEYID", "1234567");
+
+export const GAP_SHAPES = [
+  {
+    name: "aws_key_double_quoted",
+    seeds: [gapAwsDq],
+    line: `${AWS_KEY}="${gapAwsDq}"`,
+    expected: `${AWS_KEY}="***"`
+  },
+  {
+    name: "aws_key_single_quoted",
+    seeds: [gapAwsSq],
+    line: `${AWS_KEY_LOWER} = '${gapAwsSq}'`,
+    expected: `${AWS_KEY_LOWER} = '***'`
+  },
+  {
+    name: "password_multiword_quoted",
+    seeds: [mwA, mwB, mwC],
+    line: `${PW} = "${mwA} ${mwB} ${mwC}"`,
+    expected: `${PW} = "***"`
+  },
+  {
+    name: "json_password_multiword",
+    seeds: [jsA, jsB],
+    line: `{"${PW}":"${jsA} ${jsB}"}`,
+    expected: `{"${PW}":"***"}`
+  },
+  {
+    name: "elixir_map_arrow",
+    seeds: [exA, exB],
+    line: `%{"${PW}" => "${exA} ${exB}"}`,
+    expected: `%{"${PW}" => "***"}`
+  },
+  {
+    name: "elixir_keyword_multiword",
+    seeds: [kwA, kwB],
+    line: `[${PW}: "${kwA} ${kwB}"]`,
+    expected: `[${PW}: "***"]`
+  },
+  {
+    name: "secret_key_base",
+    seeds: [skbV],
+    line: `${SKB}=${skbV}`,
+    expected: `${SKB}=***`
+  },
+  {
+    name: "escaped_quote_value",
+    seeds: [escA, escB],
+    line: `${PW} = "${escA}${BS}"${escB}"`,
+    expected: `${PW} = "***"`
+  },
+  {
+    name: "unterminated_quote_value",
+    seeds: [unA, unB],
+    line: `${TK} = "${unA} ${unB}`,
+    expected: `${TK} = "***`
+  },
+  {
+    name: "cookie_midline_curl",
+    seeds: [ckV],
+    line: `curl -H "Cookie: sid=${ckV}" https://host.example/x`,
+    expected: `curl -H "Cookie: ***`
+  },
+  {
+    name: "set_cookie_curl_verbose",
+    seeds: [scV],
+    line: `< Set-Cookie: sid=${scV}; HttpOnly`,
+    expected: `< Set-Cookie: ***`
+  },
+  {
+    name: "digest_authorization",
+    seeds: [dgV],
+    line: `Authorization: Digest username="u", response="${dgV}"`,
+    expected: `Authorization: ***`
+  },
+  {
+    name: "url_userinfo",
+    seeds: [uiV],
+    line: `fetch https://user:${uiV}@host.example/repo.git`,
+    expected: `fetch https://user:***@host.example/repo.git`
+  },
+  {
+    name: "jwt",
+    seeds: [jwA, jwB, jwC],
+    line: `got eyJ${jwA}.${jwB}.${jwC} end`,
+    expected: `got eyJ*** end`
+  },
+  {
+    name: "aws_access_key_id",
+    seeds: [kidV],
+    line: `key id AKIA${kidV}`,
+    expected: `key id AKIA***`
+  }
+];
+
+const gapSeedCount = () => GAP_SHAPES.reduce((n, row) => n + row.seeds.length, 0);
+
+for (const row of GAP_SHAPES) {
+  test(`gap shape ${row.name} is masked`, () => {
+    const masked = maskSecretShapes(row.line);
+    const rawHasAll = leakedSecrets(row.line, row.seeds).length === row.seeds.length;
+    const maskedHits = leakedSecrets(masked, row.seeds).length;
+    assert.ok(rawHasAll, `gap shape ${row.name}: detector missed a seed in the raw line`);
+    assert.ok(maskedHits === 0, `gap shape ${row.name}: ${maskedHits} of ${row.seeds.length} seeds present after masking`);
+    assert.ok(masked === row.expected, `gap shape ${row.name}: output differs from expected, ${maskedHits} of ${row.seeds.length} seeds present`);
+  });
+}
+
+test("gap seeds are distinctive", () => {
+  const seen = new Set();
+  for (const row of GAP_SHAPES) {
+    for (const seed of row.seeds) {
+      const fail = (rule) => assert.ok(false, `indistinct seed in ${row.name}: ${rule}`);
+      if (seed.length < 8) fail("shorter than 8 characters");
+      if (!/^(fake[A-Z]|FAKE[A-Z0-9])/.test(seed)) fail("missing fake/FAKE prefix");
+      if (seen.has(seed)) fail("not unique across rows");
+      seen.add(seed);
+      if (CHILD.includes(seed)) fail("appears in the child script text");
+      for (const other of GAP_SHAPES) {
+        if (other.expected.includes(seed)) fail("appears in an expected string");
+        if (other !== row && other.line.includes(seed)) fail("appears in another row's line");
+      }
+    }
+  }
+});
+
+test("gap shapes from a spawned child never reach the root-proof tail", () => {
+  const result = runChildLines(GAP_SHAPES.map((row) => row.line));
+  const allSeeds = GAP_SHAPES.flatMap((row) => row.seeds);
+  assert.ok(result.status === 2, `gap child exited ${result.status}, expected 2`);
+  const raw = `${result.stdout}${result.stderr}`;
+  assert.ok(leakedSecrets(raw, allSeeds).length === allSeeds.length, "detector must see every gap seed in raw child output");
+  const tail = rootProofFailureTail("failed", result);
+  const leakedNames = GAP_SHAPES.filter((row) => leakedSecrets(tail, row.seeds).length > 0).map((row) => row.name);
+  const k = allSeeds.filter((seed) => tail.includes(seed)).length;
+  assert.ok(k === 0, `leaked: ${k} of ${gapSeedCount()} gap seed(s) reached the tail: ${leakedNames.join(", ")}`);
+});
+
+const PROSE_LINES = [
+  { name: "token expired for user", text: "token expired for user" },
+  { name: "password mismatch for account", text: "password mismatch for account" },
+  { name: "secret not found in vault", text: "secret not found in vault" },
+  { name: "authorization failed for request", text: "authorization failed for request" },
+  { name: "cookie jar is empty", text: "cookie jar is empty" },
+  { name: "  1) test token refresh rejects expired password (Crosswake.AuthTest)", text: "  1) test token refresh rejects expired password (Crosswake.AuthTest)" },
+  { name: "token_count: 300", text: "token_count: 300" },
+  { name: 'code: assert token == "expected-value"', text: 'code: assert token == "expected-value"' },
+  { name: "the api key rotation runs nightly", text: "the api key rotation runs nightly" },
+  { name: "token: ok", text: "token: ok" },
+  { name: "bearer_line_end", text: "auth scheme is Bearer\nnextline stays visible" }
+];
+
+for (const row of PROSE_LINES) {
+  test(`prose round-trips unchanged: ${row.name}`, () => {
+    assert.ok(maskSecretShapes(row.text) === row.text, `prose row ${row.name} changed`);
+  });
+}
+
+const LINEAR_INPUTS = [
+  { name: "blank_lines", input: () => "\n".repeat(200000) },
+  { name: "whitespace_lines", input: () => " \t\n".repeat(100000) },
+  { name: "keyword_no_separator", input: () => "token ".repeat(100000) },
+  { name: "unterminated_quote", input: () => `${PW} = "` + "a b ".repeat(100000) },
+  { name: "userinfo_no_at", input: () => "https://" + "u:".repeat(100000) },
+  { name: "jwt_segments", input: () => "eyJaaaaa.".repeat(100000) }
+];
+
+for (const row of LINEAR_INPUTS) {
+  test(`linear time: ${row.name}`, (t) => {
+    const input = row.input();
+    assert.ok(input.length >= 200000, `linear input ${row.name} is too short`);
+    const started = performance.now();
+    maskSecretShapes(input);
+    const ms = Math.round(performance.now() - started);
+    t.diagnostic(`perf ${row.name} ms ${ms}`);
+    assert.ok(ms < 1500, `linear time ${row.name}: ${ms} ms, budget 1500 ms`);
+  });
+}
+
+test("a value cut by the tail byte window never appears", () => {
+  const V = frag("fake", "CutWindow", "Q".repeat(56), "fakeEnd1");
+  const vLine = `${PW}="${V}"`;
+  const remaining = 40;
+  const joinedTarget = 24 * 1024 - remaining - 1;
+  const fillers = Array.from({ length: 149 }, (_, i) => `filler ${String(i).padStart(3, "0")} `.padEnd(100, "-"));
+  const fixedLen = fillers.slice(0, 148).join("\n").length + 1;
+  fillers[148] = "z".repeat(joinedTarget - fixedLen);
+  const text = [vLine, ...fillers].join("\n");
+  const unmaskedTail = text.split("\n").slice(-150).join("\n");
+  const cutInside = unmaskedTail.length - 24 * 1024 === vLine.length - remaining;
+  assert.ok(cutInside, "byte window cut does not land inside the value line (test setup)");
+  const out = rootProofFailureTail("failed", { stdout: text, stderr: "" });
+  const hits = [V, V.slice(-8)].filter((frag8) => out.includes(frag8)).length;
+  assert.ok(hits === 0, `window case: ${hits} of 2 value fragments reached the tail`);
+  assert.ok(out.includes("***"), "window case: masked marker missing");
 });
 
 test("masking keeps failure diagnosis and key or header names", () => {
   const result = runSeededChild(seedValues());
   const tail = rootProofFailureTail("failed", result);
-  assert.match(tail, /1\) test something/);
-  assert.match(tail, /root-proof failure tail \(failed;/);
-  assert.match(tail, /Finished in/);
+  assert.ok(/1\) test something/.test(tail), "failing test line survives");
+  assert.ok(/root-proof failure tail \(failed;/.test(tail), "tail header survives");
+  assert.ok(/Finished in/.test(tail), "Finished-in line survives");
   for (const name of ["Authorization", "Cookie", "aws_secret_access_key"]) {
     assert.ok(tail.includes(name), `${name} name survives`);
   }
@@ -85,7 +321,7 @@ test("short values are masked but 2-character words are left alone", () => {
   const s = seedValues();
   const masked = maskSecretShapes(`${frag("tok", "en")}=${s.short}`);
   assert.equal(leakedSecrets(masked, [s.short]).length, 0);
-  assert.equal(masked, `${frag("tok", "en")}=***`);
+  assert.ok(masked === `${frag("tok", "en")}=***`, "short value mask output changed");
   const plain = `${frag("tok", "en")}: ok`;
   assert.equal(maskSecretShapes(plain), plain);
 });
@@ -106,7 +342,10 @@ const workflowDir = path.join(repoRoot, ".github/workflows");
 const indentOf = (line) => line.length - line.trimStart().length;
 const ASSIGN = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$/;
 const refsVar = (text, name) => new RegExp(`\\$\\{?${name}\\b`).test(text);
-const isMaskLine = (line, name) => new RegExp(`::add-mask::\\$\\{?${name}\\}?`).test(line);
+// Matches only an uncommented line: optional `echo`, optional opening quote, `::add-mask::`, then the
+// variable (optionally braced) with no further identifier character, so `$TOKEN_ID` never masks `$TOKEN`.
+const isMaskLine = (line, name) =>
+  new RegExp(`^\\s*(?:echo\\s+)?["']?::add-mask::\\$(?:${name}(?![A-Za-z0-9_])|\\{${name}\\})`).test(line);
 
 export function secretBoundKeys(workflowText) {
   const keys = new Set();
@@ -226,6 +465,25 @@ test("derivedSecretViolations accepts a masked derivation", () => {
   assert.deepEqual(derivedSecretViolations(text), []);
 });
 
+test("derivedSecretViolations rejects a prefix-collision mask", () => {
+  const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo "::add-mask::$TOKEN_ID"`, `echo "use $TOKEN"`);
+  const v = derivedSecretViolations(text);
+  assert.equal(v.length, 1);
+  assert.equal(v[0].name, "TOKEN");
+});
+
+test("derivedSecretViolations ignores a commented-out mask", () => {
+  const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `# echo "::add-mask::$TOKEN"`, `echo "use $TOKEN"`);
+  const v = derivedSecretViolations(text);
+  assert.equal(v.length, 1);
+  assert.equal(v[0].name, "TOKEN");
+});
+
+test("derivedSecretViolations accepts a braced mask", () => {
+  const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo "::add-mask::\${TOKEN}"`, `echo "use $TOKEN"`);
+  assert.deepEqual(derivedSecretViolations(text), []);
+});
+
 test("derivedSecretViolations flags a missing or late add-mask", () => {
   const missing = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo "use $TOKEN"`);
   const v1 = derivedSecretViolations(missing);
@@ -271,7 +529,7 @@ function runDerivation(script, user, pass) {
     encoding: "utf8",
     env: { PATH: process.env.PATH, MAVEN_USERNAME: user, MAVEN_PASSWORD: pass }
   });
-  assert.equal(r.status, 0, `derivation child failed: ${r.stderr}`);
+  assert.ok(r.status === 0, `derivation child exited ${r.status}, stderr withheld`);
   return `${r.stdout}${r.stderr}`;
 }
 
@@ -284,7 +542,7 @@ test("live fire-drill derivation never leaks seeded or derived values into the e
 
   const protectedLog = runnerMaskedLog(runDerivation(script, user, pass), [user, pass]);
   const leaked = leakedSecrets(protectedLog, watched);
-  assert.deepEqual(leaked, [], `leaked: ${leaked.length} value(s) reached the step log`);
+  assert.ok(leaked.length === 0, `leaked: ${leaked.length} value(s) reached the step log`);
 
   const stripped = script.split("\n").filter((l) => !l.includes("::add-mask::")).join("\n");
   const control = leakedSecrets(runnerMaskedLog(runDerivation(stripped, user, pass), [user, pass]), watched);
