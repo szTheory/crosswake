@@ -1,0 +1,7 @@
+seed003: mirror_tag v0.2.11 424ab96ede1b92f2b751b54bce04c6e607f0f3c8
+seed003: mirror_tree b80f3bf00ef61708120b062bc88738fed88294a9
+seed003: monorepo_tree b80f3bf00ef61708120b062bc88738fed88294a9
+seed003: tree_identity yes
+seed003: push_auth MIRROR_DEPLOY_KEY deploy key (release-please.yml publish-ios-core) lines 998,1000,1003,1004,1005,1011,1397; ssh-agent line 1009
+seed003: mirror_push_token_rotation not used (do-not-re-open)
+seed003: parity_gate rc 0

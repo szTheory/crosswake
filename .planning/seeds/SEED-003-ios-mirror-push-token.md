@@ -1,10 +1,12 @@
 ---
 id: SEED-003
-status: planted
+status: harvested
 planted: 2026-07-03
 planted_during: "Phase 141 core-first publish — core crosswake 0.2.0 went live on Hex + Android Maven, but the iOS mirror push failed"
 trigger_when: "Surface before the next native shell-core release, when doing a release/CI-infrastructure hardening pass, or as soon as an iOS native adopter needs to resolve crosswake-shell-core-ios >= 0.2.0."
 scope: Small
+resolved_on: 2026-10-26
+resolved_by: "quality-ratchet-release Phase 195 (REL-06): mirror tag v0.2.11 present with tree identity; deploy-key push; merge-blocking parity gate"
 ---
 
 # SEED-003: Fix the iOS mirror push token (MIRROR_PUSH_TOKEN) so shell-core-ios publishes on release
@@ -40,3 +42,13 @@ This is the long-standing **"MIRROR_PUSH_TOKEN scope unexercised"** note finally
 ## Scope Estimate
 
 **Small** — a token/secret configuration + one workflow wiring change + a one-time 0.2.0 backfill. No product code.
+
+## Resolution
+
+Closed on measured evidence, not on token rotation. The record is `.planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/seed003-mirror-tag-195.txt`.
+
+- The mirror carries `refs/tags/v0.2.11`, and its tree equals the monorepo tree of `ios-core-v0.2.11:packages/crosswake-shell-core-ios` (tree identity: yes).
+- The 403 came from pushing with the default `GITHUB_TOKEN`. The `publish-ios-core` job now pushes over SSH with the `MIRROR_DEPLOY_KEY` deploy key.
+- The merge-blocking parity lane (`script/check_ios_mirror_parity.sh`) is the loud-failure guard asked for in item 4; it passed (rc 0) in the evidence run.
+- The `MIRROR_PUSH_TOKEN` rotation route (items 1 and 2) was not executed, and stays on the do-not-re-open list.
+- `script/verify_published_cleanroom.sh 0.2.11` also builds the mirror tag with `swift build` from a clean directory (`cleanroom-0.2.11-195.txt`).
