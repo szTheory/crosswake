@@ -1,0 +1,35 @@
+name: Weekly Canary
+
+# Advisory weekly canary on main: runs the hermetic root proof once a week.
+# Report-mode only. It is NOT a required check and must not be added to
+# script/required_check_policy.json without a separate decision.
+
+permissions:
+  contents: read
+
+on:
+  schedule:
+    - cron: '23 5 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: weekly-canary
+  cancel-in-progress: false
+
+jobs:
+  weekly-canary:
+    name: weekly canary (advisory, non-required)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: main
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: test
+      - name: Run the hermetic root proof
+        run: script/verify_repository.sh --stage root-proof
+      - name: Canary lane summary
+        if: ${{ always() }}
+        run: echo "Weekly Canary lane is advisory and non-required; conclusion above is the root proof on main." >> "$GITHUB_STEP_SUMMARY"
