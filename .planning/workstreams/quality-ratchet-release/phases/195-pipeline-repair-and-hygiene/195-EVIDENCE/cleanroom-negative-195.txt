@@ -1,0 +1,11 @@
+control: missing
+cleanroom: FAIL hex not_published
+cleanroom: FAIL maven not_published
+cleanroom: FAIL ios not_published
+cleanroom: result FAIL legs hex,maven,ios version 9.9.9
+control: rc 1
+control: wrong_artifact
+cleanroom: selftest overrides active
+cleanroom: FAIL maven checksum_mismatch
+cleanroom: result FAIL legs maven version 0.2.11
+control: rc 1

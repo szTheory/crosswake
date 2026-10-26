@@ -167,8 +167,86 @@ leg_maven() {
   echo "cleanroom: leg maven PASS $VERSION aar $(printf '%s' "$aar_sha" | cut -c1-12)"
 }
 
-leg_hex() { fail hex not_implemented; }
-leg_ios() { fail ios not_implemented; }
+leg_hex() {
+  need_tools hex curl grep cut tr mktemp || return
+  local jsontool=""
+  if command -v jq >/dev/null 2>&1; then
+    jsontool="jq"
+  elif command -v python3 >/dev/null 2>&1; then
+    jsontool="python3"
+  else
+    fail hex tool_unavailable
+    return
+  fi
+  mk_work || { fail hex tool_unavailable; return; }
+  local meta="$WORK/hex-release.json" rc registry
+  fetch "$HEX_API/packages/crosswake/releases/$VERSION" "$meta"; rc=$?
+  if [ "$rc" -eq 3 ]; then fail hex not_published; return; fi
+  if [ "$rc" -ne 0 ]; then fail hex resolve_failed; return; fi
+  if [ "$jsontool" = "jq" ]; then
+    registry=$(jq -r '.checksum // empty' "$meta" 2>/dev/null)
+  else
+    registry=$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1])).get("checksum") or "")' "$meta" 2>/dev/null)
+  fi
+  registry=$(printf '%s' "$registry" | tr 'A-F' 'a-f')
+  if [ -z "$registry" ]; then fail hex not_published; return; fi
+
+  if ! command -v mix >/dev/null 2>&1; then fail hex tool_unavailable; return; fi
+  local host="$WORK/cleanroom_host"
+  mkdir -p "$host"
+  if [ -n "${CLEANROOM_ELIXIR_VERSION:-}" ] && [ -n "${CLEANROOM_ERLANG_VERSION:-}" ]; then
+    printf 'erlang %s\nelixir %s\n' "$CLEANROOM_ERLANG_VERSION" "$CLEANROOM_ELIXIR_VERSION" >"$host/.tool-versions"
+    echo "cleanroom: toolchain elixir $CLEANROOM_ELIXIR_VERSION erlang $CLEANROOM_ERLANG_VERSION"
+  else
+    echo "cleanroom: toolchain path"
+  fi
+  local log="$WORK/hex.log"
+  if ! (cd "$host" && mix new . --app cleanroom_host) >"$log" 2>&1; then
+    fail hex tool_unavailable
+    return
+  fi
+  printf 'defmodule CleanroomHost.MixProject do\n  use Mix.Project\n\n  def project do\n    [app: :cleanroom_host, version: "0.0.0", elixir: "~> 1.15", deps: deps()]\n  end\n\n  def application, do: [extra_applications: [:logger]]\n\n  defp deps, do: [{:crosswake, "== %s"}]\nend\n' "$VERSION" >"$host/mix.exs"
+  if ! (cd "$host" && mix deps.get) >>"$log" 2>&1; then
+    fail hex resolve_failed
+    return
+  fi
+  local lock locked
+  lock=$(grep -E '^[[:space:]]*"crosswake":' "$host/mix.lock" 2>/dev/null | head -n1)
+  locked=$(printf '%s' "$lock" | grep -Eo '"[0-9a-fA-F]{64}"' | tail -n1 | tr -d '"' | tr 'A-F' 'a-f')
+  if [ -z "$locked" ] || [ "$locked" != "$registry" ]; then
+    fail hex checksum_mismatch
+    return
+  fi
+  if ! (cd "$host" && mix compile) >>"$log" 2>&1; then
+    fail hex compile_failed
+    return
+  fi
+  local vsn
+  vsn=$(cd "$host" && mix run -e 'v = Application.spec(:crosswake, :vsn) |> to_string(); IO.puts("vsn=" <> v)' 2>>"$log" | grep -E '^vsn=' | tail -n1)
+  if [ "$vsn" != "vsn=$VERSION" ]; then
+    fail hex vsn_mismatch
+    return
+  fi
+  echo "cleanroom: leg hex PASS $VERSION checksum $(printf '%s' "$locked" | cut -c1-12)"
+}
+
+leg_ios() {
+  need_tools ios git swift mktemp || return
+  mk_work || { fail ios tool_unavailable; return; }
+  local refs
+  refs=$(git ls-remote "$MIRROR_URL" "refs/tags/v$VERSION" 2>/dev/null)
+  if [ -z "$refs" ]; then fail ios not_published; return; fi
+  local clone="$WORK/ios-mirror" log="$WORK/ios.log"
+  if ! git clone --quiet --depth 1 --branch "v$VERSION" "$MIRROR_URL" "$clone" >"$log" 2>&1; then
+    fail ios clone_failed
+    return
+  fi
+  if ! swift build --package-path "$clone" >>"$log" 2>&1; then
+    fail ios build_failed
+    return
+  fi
+  echo "cleanroom: leg ios PASS $VERSION tag_commit $(git -C "$clone" rev-parse HEAD | cut -c1-12)"
+}
 
 IFS=',' read -r -a LEG_LIST <<<"$LEGS"
 for leg in "${LEG_LIST[@]}"; do

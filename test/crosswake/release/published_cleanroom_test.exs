@@ -189,6 +189,25 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert out =~ "cleanroom: result SELFTEST legs maven version 0.0.1"
   end
 
+  test "hex leg: an unknown version in the registry shape is not_published, offline", %{
+    root: root
+  } do
+    empty_api = Path.join(root, "hexapi")
+    File.mkdir_p!(empty_api)
+
+    {out, rc} =
+      run(@script, ["0.0.1"], [
+        {"CLEANROOM_SELFTEST", "1"},
+        {"CLEANROOM_LEGS", "hex"},
+        {"CLEANROOM_HEX_API", "file://" <> empty_api}
+      ])
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL hex not_published"
+    refute out =~ "cleanroom: result PASS"
+    refute out =~ "cleanroom: result SELFTEST"
+  end
+
   test "the script locates nothing relative to itself or a checkout" do
     src = File.read!(@script)
     refute src =~ "BASH_SOURCE"

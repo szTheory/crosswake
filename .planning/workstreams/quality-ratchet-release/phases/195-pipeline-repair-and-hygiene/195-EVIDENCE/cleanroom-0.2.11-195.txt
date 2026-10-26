@@ -1,0 +1,6 @@
+cleanroom: toolchain elixir 1.19.5-otp-27 erlang 27.3
+cleanroom: leg hex PASS 0.2.11 checksum 2f25d0270963
+cleanroom: leg maven PASS 0.2.11 aar ce617279241c
+cleanroom: leg ios PASS 0.2.11 tag_commit 424ab96ede1b
+cleanroom: result PASS legs hex,maven,ios version 0.2.11
+cleanroom: rc 0
