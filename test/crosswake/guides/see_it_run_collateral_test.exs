@@ -16,12 +16,9 @@ defmodule Crosswake.Guides.SeeItRunCollateralTest do
   @collateral_dir "brandbook/collateral/see-it-run"
 
   @web_assets ["web-home.png", "web-offline.png", "web-bridge-proof.png"]
-  @native_assets [
-    "ios-simulator.png",
-    "android-emulator.png",
-    "three-runtime-montage.png",
-    "see-it-run.gif"
-  ]
+  # The simulator/emulator PNGs and montage come from the manual see-it-run-native.yml
+  # workflow, not the collateral run this guard checks.
+  @native_assets ["see-it-run.gif"]
 
   for asset <- @web_assets ++ @native_assets do
     test "collateral asset #{asset} exists and is non-empty" do

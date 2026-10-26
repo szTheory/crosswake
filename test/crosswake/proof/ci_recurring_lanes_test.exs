@@ -116,4 +116,64 @@ defmodule Crosswake.Proof.CiRecurringLanesTest do
     refute absent_references?(["script/x.sh"])
     assert absent_references?([])
   end
+
+  # REL-04: See It Run web-and-gif completes on its own; native capture is a manual lane.
+  defp job_block(text, job) do
+    case Regex.run(~r/^  #{job}:\n((?:    .*\n|\n)*)/m, text) do
+      [_, block] -> block
+      _ -> ""
+    end
+  end
+
+  defp collateral_ok?(text) do
+    job_block(text, "web-and-gif") != "" and
+      not (job_block(text, "web-and-gif") =~ ~r/^    needs:/m) and
+      not (text =~ ~r/^\s+needs:.*native/m) and
+      not (text =~ ~r/runs-on:\s*macos/)
+  end
+
+  defp collateral_text, do: File.read!(".github/workflows/see-it-run-collateral.yml")
+
+  test "collateral run has independent web-and-gif and no native dependency" do
+    assert collateral_ok?(collateral_text())
+  end
+
+  test "collateral predicate rejects needs on native (negative control)" do
+    refute collateral_ok?(
+             String.replace(
+               collateral_text(),
+               "needs: [web-and-gif]",
+               "needs: [web-and-gif, native]"
+             )
+           )
+  end
+
+  test "the native capture is a dispatch-only, read-only workflow" do
+    text = File.read!(".github/workflows/see-it-run-native.yml")
+    assert text =~ "name: See It Run Native"
+    assert on_block(text) =~ ~r/^  workflow_dispatch:/m
+    refute on_block(text) =~ ~r/^  (push|pull_request|schedule):/m
+    assert text =~ ~r/^  contents: read\s*$/m
+    assert text =~ ~r/^  native:\n/m
+    assert text =~ "group: see-it-run-native"
+  end
+
+  # REL-05: Dependabot groups actions monthly; the group covers version updates only.
+  defp dependabot_ok?(text) do
+    length(Regex.scan(~r/package-ecosystem:/, text)) == 1 and
+      text =~ ~r/interval: "monthly"/ and
+      text =~ ~r/applies-to: version-updates/ and
+      text =~ ~r/- "\*"/ and
+      not (text =~ "weekly")
+  end
+
+  defp dependabot_text, do: File.read!(".github/dependabot.yml")
+
+  test "dependabot groups actions monthly, version updates only" do
+    assert dependabot_ok?(dependabot_text())
+  end
+
+  test "dependabot predicate rejects a weekly interval (negative control)" do
+    refute dependabot_ok?(String.replace(dependabot_text(), "monthly", "weekly"))
+  end
 end
