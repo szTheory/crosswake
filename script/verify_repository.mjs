@@ -50,18 +50,48 @@ const ROOT_PROOF_TAIL_BYTES = 24 * 1024;
 const ROOT_PROOF_DETAIL_LINES = 120;
 const ROOT_PROOF_DETAIL_BYTES = 16 * 1024;
 
+// A credential value: a double- or single-quoted span (backslash escapes honoured, masked to end of
+// line when the quote is never closed) or an unquoted run of 3+ non-space, non-quote characters.
+// Unrolled loops with disjoint alternatives keep matching linear (no nested quantifier overlap).
+const SECRET_VALUE_SOURCE = String.raw`(?:"([^"\\\n]*(?:\\[^\n]?[^"\\\n]*)*)("?)|'([^'\\\n]*(?:\\[^\n]?[^'\\\n]*)*)('?)|([^\s"']{3,}))`;
+
+// Replacer for a (prefix, value) match built from SECRET_VALUE_SOURCE: quotes survive around `***`.
+function maskValue(match, prefix, dqBody, dqClose, sqBody, sqClose, bare) {
+  if (bare !== undefined) return `${prefix}***`;
+  if (dqBody !== undefined) return `${prefix}"***${dqClose}`;
+  return `${prefix}'***${sqClose}`;
+}
+
+const SECRET_ACCESS_KEY_RULE = new RegExp(`((?:aws_)?secret[_-]access[_-]key["']?[ \\t]*[:=][ \\t]*)${SECRET_VALUE_SOURCE}`, "gi");
+const GENERIC_CREDENTIAL_RULE = new RegExp(
+  `((?:token|secret[_-]key[_-]base|secret[_-]key|secret|password|passwd|passphrase|api[_-]?key|private[_-]key|credentials?)["']?[ \\t]*(?:=>|[:=])[ \\t]*)${SECRET_VALUE_SOURCE}`,
+  "gi"
+);
+
 // Masks credential-shaped values, keeping key and header names so failures stay diagnosable.
-// Shapes: `Authorization: <scheme> <v>`, bare `Bearer <v>`, `(aws_)secret[_-]access[_-]key = <v>`,
-// `Cookie:` / `Set-Cookie:` values to end of line, `gh*_`/`github_pat_`/`hex_`/`sk-` prefixed tokens,
-// and generic credential keys (token, secret, password, api key) with a value of 3+ characters.
+// Shapes, in rule order (every rule is same-line only and linear-time; prose without a separator is untouched):
+//   a. `Authorization:` / `Proxy-Authorization:` header (any scheme, Digest included), value to end of line
+//   b. `Cookie:` / `Set-Cookie:` header at any position, value to end of line
+//   c. bare `Bearer <v>` on one line
+//   d. `(aws_)secret[_-]access[_-]key` = quoted or unquoted value
+//   e. `gh*_` / `github_pat_` / `hex_` / `sk-` prefixed tokens
+//   f. URL userinfo password (`scheme://user:<v>@host`)
+//   g. JWTs (`eyJ` + three base64url segments)
+//   h. AWS access key IDs (`AKIA` / `ASIA` + 16 characters)
+//   i. generic credential keys (token, secret, secret_key[_base], password, passwd, passphrase, api key,
+//      private key, credential[s]) followed by `=`, `:` or `=>` and a quoted (multi-word, escaped,
+//      unterminated) or 3+ character unquoted value
 export function maskSecretShapes(text) {
   return String(text ?? "")
-    .replace(/(authorization["']?\s*[:=]\s*)(?:(?:bearer|basic|token)\s+)?[^\s"']{3,}/gi, "$1***")
-    .replace(/\b(bearer\s+)[^\s"']{3,}/gi, "$1***")
-    .replace(/((?:aws_)?secret[_-]access[_-]key["']?\s*[:=]\s*)[^\s"']{3,}/gi, "$1***")
-    .replace(/^(\s*(?:set-)?cookie\s*:\s*)\S.*$/gim, "$1***")
+    .replace(/(authorization["']?[ \t]*[:=][ \t]*)[^\n]+/gi, "$1***")
+    .replace(/(\bcookie["']?[ \t]*:[ \t]*)[^\n]+/gi, "$1***")
+    .replace(/\b(bearer[ \t]+)[^\s"']{3,}/gi, "$1***")
+    .replace(SECRET_ACCESS_KEY_RULE, maskValue)
     .replace(/(gh[pousr]_|github_pat_|hex_|sk-)[A-Za-z0-9_]{8,}/g, "$1***")
-    .replace(/(authorization|bearer|token|secret|password|api[_-]?key)(["':=\s]+)[^\s"']{3,}/gi, "$1$2***");
+    .replace(/(:\/\/[^/\s:@]+:)[^/\s@]+@/g, "$1***@")
+    .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, "eyJ***")
+    .replace(/\b(A[KS]IA)[A-Z0-9]{16}\b/g, "$1***")
+    .replace(GENERIC_CREDENTIAL_RULE, maskValue);
 }
 
 // Hosted-CI diagnosability: when the root proof fails, print the ExUnit failure details
