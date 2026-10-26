@@ -50,6 +50,18 @@ const ROOT_PROOF_TAIL_BYTES = 24 * 1024;
 const ROOT_PROOF_DETAIL_LINES = 120;
 const ROOT_PROOF_DETAIL_BYTES = 16 * 1024;
 
+// A credential value: a double- or single-quoted span (backslash escapes honoured, masked to end of
+// line when the quote is never closed) or an unquoted run of 3+ non-space, non-quote characters.
+// Alternatives are disjoint on their first character, so matching is linear.
+const SECRET_VALUE_SOURCE = String.raw`(?:"((?:[^"\\\n]|\\[^\n])*)("?)|'((?:[^'\\\n]|\\[^\n])*)('?)|([^\s"']{3,}))`;
+
+// Replacer for a (prefix, value) match built from SECRET_VALUE_SOURCE: quotes survive around `***`.
+function maskValue(match, prefix, dqBody, dqClose, sqBody, sqClose, bare) {
+  if (bare !== undefined) return `${prefix}***`;
+  if (dqBody !== undefined) return `${prefix}"***${dqClose}`;
+  return `${prefix}'***${sqClose}`;
+}
+
 // Masks credential-shaped values, keeping key and header names so failures stay diagnosable.
 // Shapes: `Authorization: <scheme> <v>`, bare `Bearer <v>`, `(aws_)secret[_-]access[_-]key = <v>`,
 // `Cookie:` / `Set-Cookie:` values to end of line, `gh*_`/`github_pat_`/`hex_`/`sk-` prefixed tokens,
@@ -58,7 +70,7 @@ export function maskSecretShapes(text) {
   return String(text ?? "")
     .replace(/(authorization["']?\s*[:=]\s*)(?:(?:bearer|basic|token)\s+)?[^\s"']{3,}/gi, "$1***")
     .replace(/\b(bearer\s+)[^\s"']{3,}/gi, "$1***")
-    .replace(/((?:aws_)?secret[_-]access[_-]key["']?\s*[:=]\s*)[^\s"']{3,}/gi, "$1***")
+    .replace(new RegExp(`((?:aws_)?secret[_-]access[_-]key["']?[ \\t]*[:=][ \\t]*)${SECRET_VALUE_SOURCE}`, "gi"), maskValue)
     .replace(/^(\s*(?:set-)?cookie\s*:\s*)\S.*$/gim, "$1***")
     .replace(/(gh[pousr]_|github_pat_|hex_|sk-)[A-Za-z0-9_]{8,}/g, "$1***")
     .replace(/(authorization|bearer|token|secret|password|api[_-]?key)(["':=\s]+)[^\s"']{3,}/gi, "$1$2***");
