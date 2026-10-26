@@ -249,7 +249,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
     advisory = File.read!(".github/workflows/phase96-proof-advisory.yml")
     assert advisory =~ ~r/^  workflow_dispatch:/m
-    assert advisory =~ ~r/^  schedule:/m
+    # Phase 195 (REL-04): schedule contract moved to ci_recurring_lanes_test.exs; retired, not executed.
     refute advisory =~ ~r/^  pull_request:/m
     refute advisory =~ ~r/^  push:/m
   end
@@ -318,7 +318,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       refute advisory =~ ~r/^  pull_request:/m
       refute advisory =~ ~r/^  push:/m
       assert advisory =~ ~r/^  workflow_dispatch:/m
-      assert advisory =~ ~r/^  schedule:/m
+      # Phase 195 (REL-04): schedule contract moved to ci_recurring_lanes_test.exs; retired, not executed.
       assert advisory =~ "continue-on-error: true"
     end
   end
@@ -477,7 +477,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       refute advisory =~ ~r/^  pull_request:/m
       refute advisory =~ ~r/^  push:/m
       assert advisory =~ ~r/^  workflow_dispatch:/m
-      assert advisory =~ ~r/^  schedule:/m
+      # Phase 195 (REL-04): schedule contract moved to ci_recurring_lanes_test.exs; retired, not executed.
       assert advisory =~ "continue-on-error: true"
     end
   end
@@ -518,7 +518,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
         ] do
       advisory = File.read!(path)
       assert advisory =~ ~r/^  workflow_dispatch:/m
-      assert advisory =~ ~r/^  schedule:/m
+      # Phase 195 (REL-04): schedule contract moved to ci_recurring_lanes_test.exs; retired, not executed.
       assert advisory =~ "continue-on-error: true"
     end
   end
@@ -552,7 +552,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
       refute advisory =~ ~r/^  pull_request:/m
       refute advisory =~ ~r/^  push:/m
       assert advisory =~ ~r/^  workflow_dispatch:/m
-      assert advisory =~ ~r/^  schedule:/m
+      # Phase 195 (REL-04): schedule contract moved to ci_recurring_lanes_test.exs; retired, not executed.
       assert advisory =~ "continue-on-error: true"
       refute advisory =~ "Determine closeout relevance"
       refute advisory =~ "git diff --name-only"
