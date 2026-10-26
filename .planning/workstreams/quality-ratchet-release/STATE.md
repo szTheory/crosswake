@@ -5,13 +5,13 @@ milestone_name: Truth and Release Train
 current_phase: 195
 current_phase_name: Pipeline repair and hygiene
 status: verifying
-stopped_at: Phase 195 verification gaps_found (GR-01, GR-02)
-last_updated: "2026-10-26T22:15:53.948Z"
-state_head: 995c7df467534b6737c00932ebf18543c521144f
+stopped_at: Phase 195 gap plans 16-18 planned and checked (REL-03 round 2)
+last_updated: "2026-10-26T22:56:40.779Z"
+state_head: 46483ea8bd6f2e74f6ab39041fcb8575077a3f20
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 24
+  total_plans: 27
   completed_plans: 23
   percent: 50
 last_activity: 2026-10-25
@@ -24,9 +24,9 @@ See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.
 
 ## Current Position
 
-Phase: 195 (Pipeline repair and hygiene) — GAP CLOSURE ROUND 2
-Plan: 15 of 15 executed
-Status: Verification found gaps — gap closure needed (REL-03, round 2)
+Phase: 195 (Pipeline repair and hygiene) — READY TO EXECUTE
+Plan: 15 of 18 executed (gap plans 16-18 planned)
+Status: Ready to execute — gap closure round 2 (REL-03: GR-01, GR-02; GR-03..GR-10 triaged)
 
 ## Exact Next Action
 

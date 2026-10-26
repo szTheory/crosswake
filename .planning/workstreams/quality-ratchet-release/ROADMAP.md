@@ -89,7 +89,7 @@ Plans:
   4. A root-allowlist test fails on any new tracked root file or `*.bundle`; the 13 root scratch files and `crosswake-checkpoint-24c8389.bundle` are gone (bundle confirmed not the only copy; the denylist string in `first_adopter_context.ex` stays); `SETUP.md` lives under `docs/` without the personal email; merged or superseded remote branches are deleted (unmerged work tagged `archive/<name>` first, each delete behind its own `allow`) and `git worktree list` shows only the main checkout.
   5. SEED-003 is closed with mirror-tag evidence, and one clean-room command has run once against the real 0.2.11 artifacts with its output retained, and fails closed on a negative control (missing or wrong artifact).
 
-**Plans**: 15 plans (PR1: 01-02; PR queue: 03; PR2: 04-09; PR3: 10-12; branches and closeout: 13; REL-03 gap closure PR4: 14-15; sequential waves 1-13 in one checkout, gap waves 1-2)
+**Plans**: 18 plans (PR1: 01-02; PR queue: 03; PR2: 04-09; PR3: 10-12; branches and closeout: 13; REL-03 gap closure PR4: 14-15; REL-03 gap closure round 2 PR5: 16-18; sequential waves 1-13 in one checkout, gap waves 1-2, round-2 gap waves 1-3)
 
 Plans:
 
@@ -135,6 +135,11 @@ Plans:
 **Gap closure (REL-03 masking, from 195-VERIFICATION.md)**
 - [ ] 195-14-PLAN.md — Seeds-first masker fix: quoted, multi-word, mid-line Cookie, Digest, userinfo and JWT shapes masked; prose no longer masked; linear-time; non-vacuous add-mask guard (CR-01, CR-02, WR-01 to WR-03)
 - [ ] 195-15-PLAN.md — Land PR4 (own allow); verifier leak cases closed on main; review dispositions recorded, WR-04 to WR-06 and IN-03 carried to Phase 197
+
+**Gap closure round 2 (REL-03 masking, from 195-VERIFICATION.md and 195-REVIEW-GAP.md)**
+- [ ] 195-16-PLAN.md — Seeds-first criticals: escaped-JSON, tuple, quoted-Bearer, next-line, CLI-flag and double-equals credential forms masked; named value groups; single-quoted add-mask rejected (GR-01, GR-02, GR-10)
+- [ ] 195-17-PLAN.md — Seeds-first warnings: provider tokens, PEM bodies, userinfo/key-ID/JWT variants, query and plural keys; literal-value exemptions; 200 ms budget; GR-06 census; final controls (GR-03 to GR-05, GR-07 to GR-09)
+- [ ] 195-18-PLAN.md — Land PR5 (own allow); GR-01 and GR-02 closed on main; GR dispositions recorded, GR-06 route asked separately (recommended: carry to Phase 196)
 **Research**: Skip; one feasibility look at clean-room command scope during planning
 
 ### Phase 196: Spec and structure ratchet
