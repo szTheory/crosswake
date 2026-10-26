@@ -5,9 +5,9 @@ milestone_name: Truth and Release Train
 current_phase: 195
 current_phase_name: Pipeline repair and hygiene
 status: executing
-stopped_at: Completed 195-14-PLAN.md
-last_updated: "2026-10-26T21:25:33.703Z"
-state_head: eb0e1529a1ce3ebcc3ab3fe62bb1967ba12c13bc
+stopped_at: Completed 195-15-PLAN.md
+last_updated: "2026-10-26T22:15:53.948Z"
+state_head: 995c7df467534b6737c00932ebf18543c521144f
 progress:
   total_phases: 2
   completed_phases: 1
@@ -53,17 +53,19 @@ See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md);
 | Phase 195 P12 | continuation | 3 tasks | 3 files |
 | Phase 195 P13 | continuation | 3 tasks | 3 files |
 | Phase 195 P14 | 40min | 3 tasks | 2 files |
+| Phase 195 P15 | 20min | 3 tasks | 8 files |
 
 ## Decisions
 
 - [Phase 195]: Shell fixture comparisons normalize only version-derived values (stamp, crosswake_version, SwiftPM minimumVersion) on both sides; fixtures keep literal 0.2.11
 - [Phase 195]: Plan 13: one-time user-approved batch for 17 branch ops (not a standing rule); #253 merge held, refused by protection
 - [Phase 195]: 195-14: maskSecretShapes rules are same-line only with a required separator for generic keys; quoted values masked through closing quote (unterminated to EOL); seeds >=8 chars fake-prefixed; seed-bearing assertions are assert.ok with value-free messages
+- [Phase 195]: PR #256 merged (5862a3d) on one-use allow; review route accepted: WR-04/05/06 and IN-03 deferred to Phase 197, IN-01/02 wontfix
 
 ## Session
 
-**Last session:** 2026-10-26T21:25:33.655Z
-**Stopped at:** Completed 195-14-PLAN.md
+**Last session:** 2026-10-26T22:15:53.897Z
+**Stopped at:** Completed 195-15-PLAN.md
 **Resume file:** None
 
 ### Blockers
