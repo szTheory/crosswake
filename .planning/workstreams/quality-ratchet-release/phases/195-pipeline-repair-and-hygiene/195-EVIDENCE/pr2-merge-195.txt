@@ -17,3 +17,5 @@ pr2_fix: crosswake_ci success on head 4c07549 (run 40328871069, pull_request, te
 pr2_fix: branch_confirmation canary run 40333952719 success on 4c07549
 pr2_fix: main canary run 40354096432 success on 0b28e6d
 pr2_fix: remote branch ci/weekly-canary-node-pin kept (plan 13)
+pr2: correction remote branch ci/recurring-lanes-and-secret-masking (#251) auto-deleted at merge (delete_branch_on_merge true); verified absent by ls-remote 2026-10-26
+pr2_fix: correction remote branch ci/weekly-canary-node-pin (#254) auto-deleted at merge (delete_branch_on_merge true); verified absent by ls-remote 2026-10-26
