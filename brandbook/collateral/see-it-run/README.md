@@ -64,32 +64,39 @@ For headless or CI use, pass `--web-only` to skip the native capture instruction
 bin/capture-collateral.sh --web-only
 ```
 
-### Native screenshots, montage, and recording (CI-automated)
+### GIF (CI-automated) and native screenshots (manual dispatch)
 
-All four remaining assets (`ios-simulator.png`, `android-emulator.png`,
-`three-runtime-montage.png`, `see-it-run.gif`) are captured automatically by
-[`.github/workflows/see-it-run-collateral.yml`](../../../.github/workflows/see-it-run-collateral.yml)
-and landed on `main` via an auto-PR (`peter-evans/create-pull-request`). No Mac,
-no manual capture.
+Two workflows split the capture:
 
-The workflow runs weekly, on manual `workflow_dispatch`, and whenever the shells,
-the launcher, or the demo routes change:
+- [`.github/workflows/see-it-run-collateral.yml`](../../../.github/workflows/see-it-run-collateral.yml)
+  captures the three web screenshots and `see-it-run.gif` on `ubuntu-latest` and
+  lands them on `main` via an auto-PR (`peter-evans/create-pull-request`, branch
+  `collateral/auto-refresh`). It runs weekly, on manual `workflow_dispatch`, and
+  whenever the shells, the launcher, the demo routes, the tape, or the workflow
+  itself change. It has no native job and does not capture `ios-simulator.png`,
+  `android-emulator.png`, or `three-runtime-montage.png`.
+- [`.github/workflows/see-it-run-native.yml`](../../../.github/workflows/see-it-run-native.yml)
+  is **manual `workflow_dispatch` only**. A `macos-latest` job boots the shared
+  backend on `:4700`, builds the Dev variants, and screenshots the loaded route via
+  `script/capture-native-collateral.mjs` (simulator/emulator evidence, advisory,
+  not physical device). It uploads `ios-simulator.png`, `android-emulator.png`, and
+  the evidence manifest as workflow artifacts (14-day retention), plus a two-runtime
+  `native-montage.png` (iOS + Android, ImageMagick `+append`). It does not open a PR
+  and does not commit anything: a maintainer downloads the artifacts if they want
+  to check them in. The job can fail by design while the known capture gaps noted
+  in the workflow remain.
 
-- **iOS / Android** — a `macos-latest` job boots the shared backend on `:4700`,
-  builds the Phase-126 Dev variants, and screenshots the loaded route via
-  `script/capture-native-collateral.mjs` (simulator/emulator evidence — advisory,
-  not physical device).
-- **Montage** — an ImageMagick `convert +append` of web + iOS + Android.
-- **GIF** — a deterministic `vhs` terminal cast of `bin/see-it-run.sh`
-  (`see-it-run.tape` in this directory), optimized with `gifsicle -O3` to stay
-  under the size budget below.
-
-Merging the auto-PR keeps the README + ExDoc guide images resolving on `main`.
+The three-runtime montage (`three-runtime-montage.png`) is no longer produced
+automatically; the native workflow emits only the two-runtime `native-montage.png`.
+The GIF is a deterministic `vhs` terminal cast of `bin/see-it-run.sh`
+(`see-it-run.tape` in this directory), optimized with `gifsicle -O3` to stay under
+the size budget below. Merging the web/GIF auto-PR keeps the README + ExDoc guide
+images resolving on `main`.
 
 #### Manual fallback (maintainer Mac)
 
-`bin/capture-collateral.sh` still prints the exact native commands for a local
-capture if you ever need to bypass CI:
+`bin/capture-collateral.sh` prints the exact native commands for a local capture
+if you do not want to dispatch the native workflow:
 
 ```bash
 xcrun simctl io booted screenshot brandbook/collateral/see-it-run/ios-simulator.png
@@ -115,5 +122,6 @@ Two guards keep the assets honest and present:
   `CROSSWAKE_INCLUDE_COLLATERAL=1 mix test test/crosswake/guides/see_it_run_collateral_test.exs`.
 - **`.github/workflows/collateral-guard.yml`** — runs that test plus
   `script/check-collateral-size.sh` (≤1 MB budget) on every PR via
-  `script/collateral-guard.sh`. Web assets are enforced now; the native assets +
-  montage + GIF auto-enforce once the first capture PR lands.
+  `script/collateral-guard.sh`. Web assets are enforced now; the native assets and
+  three-runtime montage are not produced by any automatic lane, so they are
+  enforced only once a maintainer checks them in from a native-workflow run.
