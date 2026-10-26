@@ -71,10 +71,22 @@ const KEY_QUOTE = String.raw`(?:\\*["'])?`;
 
 // Credential vocabulary shared by the generic, tuple, CLI-flag and next-line rules. `authorization` carries a
 // left boundary so `preauthorization` is not a credential key (an underscore or hyphen before it still is).
-const CREDENTIAL_WORDS = String.raw`token|secret[_-]key[_-]base|secret[_-]key|secret|password|passwd|passphrase|api[_-]?key|private[_-]key|credentials?|(?<![A-Za-z0-9])authorization`;
+const CREDENTIAL_WORDS = String.raw`tokens?|secret[_-]key[_-]base|secret[_-]key|secrets?|passwords?|passwd|passphrase|api[_-]?key|private[_-]?key|credentials?|cookies?|(?<![A-Za-z0-9])authorization`;
+
+// PEM private-key block: the BEGIN marker survives, then body items (each starts with a line break, real or a
+// literal backslash-n) until a line that is not base64, a Proc-Type/DEK-Info header or blank, then an optional END
+// marker. The dashes are a quantifier so this source never holds a literal marker.
+const PEM_LB = String.raw`(?:\r?\n|\\n)`;
+const PEM_EOL = `(?=${PEM_LB}|$)`;
+const PEM_KEY = String.raw`(?:[A-Z]{2,12} ){0,3}PRIVATE[ ]KEY-{5}`;
+const PEM_ITEM = `${PEM_LB}[ \\t]*(?:[A-Za-z0-9+/=]+${PEM_EOL}|(?:Proc-Type|DEK-Info):(?:[^\\r\\n\\\\]|\\\\(?!n))*|${PEM_EOL})`;
+const PEM_RULE = new RegExp(`(-{5}BEGIN ${PEM_KEY})(?:${PEM_ITEM})*(?:${PEM_LB}-{5}END ${PEM_KEY})?`, "g");
+
+// Query-string credentials: `?key=`, `&sig=`, `&signature=` and the X-Amz signing parameters, value to `&`, `#` or space.
+const QUERY_CREDENTIAL_RULE = /([?&](?:key|sig|signature|X-Amz-Signature|X-Amz-Credential|X-Amz-Security-Token)=)[^&#\s"']{3,}/gi;
 
 const AUTHORIZATION_RULE = new RegExp(`(authorization${KEY_QUOTE}[ \\t]*[:=][ \\t]*)[^\\n]+`, "gi");
-const COOKIE_RULE = new RegExp(`(\\bcookie${KEY_QUOTE}[ \\t]*:[ \\t]*)[^\\n]+`, "gi");
+const COOKIE_RULE = new RegExp(`(\\bcookies?${KEY_QUOTE}[ \\t]*:[ \\t]*)[^\\n]+`, "gi");
 const SECRET_ACCESS_KEY_RULE = new RegExp(`((?:aws_)?secret[_-]access[_-]key${KEY_QUOTE}[ \\t]*[:=][ \\t]*)${SECRET_VALUE_SOURCE}`, "gi");
 // Bearer: a quoted value keeps its quotes around `***`; `realm="v"` style (non-space run then a quoted span)
 // and a 3+ character bare run become `***`. The separator is `[ \t]+`, so a line-final `Bearer` never reaches the next line.
@@ -133,16 +145,19 @@ function maskNextLineValues(text) {
 // Shapes, in rule order (every rule is linear-time; prose without a separator is untouched):
 //   0. next-line pass: a line ending in a credential key plus `:`, `=`, `=>` or a YAML block indicator masks the
 //      next non-blank line and following lines indented deeper (ExUnit `N) test` and `Finished in` lines never)
+//   p. PEM private-key block: text after the BEGIN marker through the END marker (body lines and headers; with no
+//      END marker only the body lines, so the next non-body line survives), real or literal-backslash-n line breaks
 //   a. `Authorization:` / `Proxy-Authorization:` header (any scheme, Digest included), value to end of line
-//   b. `Cookie:` / `Set-Cookie:` header at any position, value to end of line
+//   b. `Cookie:` / `Cookies:` / `Set-Cookie:` header at any position, value to end of line
 //   c. `Bearer <v>`: bare run, quoted span (quotes kept) or `realm="v"` style, on one line
 //   d. `(aws_)secret[_-]access[_-]key` = quoted or unquoted value
 //   e. provider tokens, prefix kept: `gh[pousr]_` / `github_pat_` (6+ characters), `hex_` (8+), and, after a
 //      non-alphanumeric character, `sk-` (8+ of `A-Za-z0-9_-`, project and versioned forms), Slack `xox[abprs]-`
 //      (8+) and `npm_` plus exactly 36 letters or digits (`task-runner12345`, `npm_config_cache` stay readable)
-//   f. URL userinfo password (`scheme://user:<v>@host`)
-//   g. JWTs (`eyJ` + three base64url segments)
-//   h. AWS access key IDs (`AKIA` / `ASIA` + 16 characters)
+//   f. URL userinfo password (`scheme://user:<v>@host`; empty user and a `/` in the password allowed, parts bounded)
+//   g. JWTs (`eyJ` + two or three base64url segments)
+//   h. AWS access key IDs (`AKIA` / `ASIA` + 16 characters, any non-uppercase/digit character before)
+//   q. query credentials (`?key=`, `&sig=`, `&signature=`, `X-Amz-Signature|Credential|Security-Token`)
 //   i. Elixir tuples with an atom or closed-quote credential key and a comma (`{:token, "v"}`)
 //   j. CLI flags `--<name with a credential word> <v>` (not `--password-file`)
 //   k. curl basic auth `-u user:<v>` / `--user user:<v>`
@@ -151,9 +166,10 @@ function maskNextLineValues(text) {
 //      (multi-word, escaped, unterminated, backslash-escaped JSON `\\"v\\"`) or 3+ character unquoted value; the
 //      key itself may be wrapped in plain or backslash-escaped quotes (rules a, b, d, i, l)
 // Accepted over-masks (pinned in the tests): `code: assert token == "x"`, a key line followed by plain text,
-// `--no-password prompt`.
+// `--no-password prompt`, a port before a path containing `@`, `secrets: inherit`.
 export function maskSecretShapes(text) {
   return maskNextLineValues(String(text ?? ""))
+    .replace(PEM_RULE, "$1***")
     .replace(AUTHORIZATION_RULE, "$1***")
     .replace(COOKIE_RULE, "$1***")
     .replace(BEARER_RULE, maskBearer)
@@ -163,9 +179,10 @@ export function maskSecretShapes(text) {
     .replace(/(?<![A-Za-z0-9])(sk-)[A-Za-z0-9_-]{8,}/g, "$1***")
     .replace(/(?<![A-Za-z0-9])(xox[abprs]-)[A-Za-z0-9-]{8,}/g, "$1***")
     .replace(/(?<![A-Za-z0-9])(npm_)[A-Za-z0-9]{36}(?![A-Za-z0-9])/g, "$1***")
-    .replace(/(:\/\/[^/\s:@]+:)[^/\s@]+@/g, "$1***@")
-    .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, "eyJ***")
-    .replace(/\b(A[KS]IA)[A-Z0-9]{16}\b/g, "$1***")
+    .replace(/(:\/\/[^/\s:@]{0,256}:)[^\s@]{1,256}@/g, "$1***@")
+    .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)?/g, "eyJ***")
+    .replace(/(?<![A-Z0-9])(A[KS]IA)[A-Z0-9]{16}/g, "$1***")
+    .replace(QUERY_CREDENTIAL_RULE, "$1***")
     .replace(TUPLE_RULE, maskValue)
     .replace(CLI_FLAG_RULE, maskValue)
     .replace(CURL_USER_RULE, maskValue)
