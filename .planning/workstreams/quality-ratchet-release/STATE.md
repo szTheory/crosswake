@@ -5,14 +5,14 @@ milestone_name: Truth and Release Train
 current_phase: 195
 current_phase_name: Pipeline repair and hygiene
 status: executing
-stopped_at: Completed 195-13-PLAN.md
-last_updated: "2026-10-26T21:18:06.367Z"
-state_head: e4367b4ac22b4f1267306a4a439103ceb02db6b7
+stopped_at: Completed 195-14-PLAN.md
+last_updated: "2026-10-26T21:25:33.703Z"
+state_head: eb0e1529a1ce3ebcc3ab3fe62bb1967ba12c13bc
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 24
-  completed_plans: 22
+  completed_plans: 23
   percent: 50
 last_activity: 2026-10-25
 last_activity_desc: Phase 195 planned
@@ -25,8 +25,8 @@ See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.
 ## Current Position
 
 Phase: 195 (Pipeline repair and hygiene) — EXECUTING
-Plan: 14 of 15
-Status: Executing Phase 195
+Plan: 15 of 15
+Status: Ready to execute
 
 ## Exact Next Action
 
@@ -52,16 +52,18 @@ See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md);
 | Phase 195 P11 | 30m | 3 tasks | 8 files |
 | Phase 195 P12 | continuation | 3 tasks | 3 files |
 | Phase 195 P13 | continuation | 3 tasks | 3 files |
+| Phase 195 P14 | 40min | 3 tasks | 2 files |
 
 ## Decisions
 
 - [Phase 195]: Shell fixture comparisons normalize only version-derived values (stamp, crosswake_version, SwiftPM minimumVersion) on both sides; fixtures keep literal 0.2.11
 - [Phase 195]: Plan 13: one-time user-approved batch for 17 branch ops (not a standing rule); #253 merge held, refused by protection
+- [Phase 195]: 195-14: maskSecretShapes rules are same-line only with a required separator for generic keys; quoted values masked through closing quote (unterminated to EOL); seeds >=8 chars fake-prefixed; seed-bearing assertions are assert.ok with value-free messages
 
 ## Session
 
-**Last session:** 2026-10-26T20:25:08.146Z
-**Stopped at:** Completed 195-13-PLAN.md
+**Last session:** 2026-10-26T21:25:33.655Z
+**Stopped at:** Completed 195-14-PLAN.md
 **Resume file:** None
 
 ### Blockers
