@@ -1,0 +1,4 @@
+privacy: scanner invoked with bash, every file absolute and separate
+privacy: run 1 head 7db34f2 files 2
+privacy: clean files 2
+privacy: body rc 0
