@@ -97,7 +97,6 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
                  "exact" => [
                    "CONTRIBUTING.md",
                    "README.md",
-                   "SETUP.md",
                    "examples/QUICK_START.md",
                    "guides/capability_map.md",
                    "guides/support_matrix.md"

@@ -397,7 +397,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert public_docs["exact"] == [
              "CONTRIBUTING.md",
              "README.md",
-             "SETUP.md",
              "examples/QUICK_START.md",
              "guides/capability_map.md",
              "guides/support_matrix.md"

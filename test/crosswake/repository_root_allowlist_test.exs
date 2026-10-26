@@ -24,8 +24,6 @@ defmodule Crosswake.RepositoryRootAllowlistTest do
     "LICENSE",
     # project readme
     "README.md",
-    # moves to docs/ in the next commit (HYG-01)
-    "SETUP.md",
     # read by test/crosswake/proof/phase69_docs_contract_parity_test.exs
     "gen_manifest.exs",
     # mix project

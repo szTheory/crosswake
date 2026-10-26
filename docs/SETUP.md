@@ -74,7 +74,7 @@ public key Maven Central verifies.
 ### Why this specific command
 
 ```bash
-gpg --quick-generate-key "szTheory <qiksnare13@gmail.com>" rsa4096 sign 0
+gpg --quick-generate-key "Your Name <your-email>" rsa4096 sign 0
 ```
 
 This produces a **primary key with the `sign` capability and no signing subkey**. The
@@ -94,7 +94,7 @@ alternatives are dangerous:
 1. Generate the key (use the exact command above):
 
 ```bash
-gpg --quick-generate-key "szTheory <qiksnare13@gmail.com>" rsa4096 sign 0
+gpg --quick-generate-key "Your Name <your-email>" rsa4096 sign 0
 ```
 
 2. List the key to find its ID:
@@ -117,7 +117,7 @@ gpg --export-secret-keys --armor <KEYID> > crosswake-signing.asc
 ```bash
 gh secret set ORG_GRADLE_PROJECT_signingInMemoryKey --repo szTheory/crosswake
 # Paste the entire contents of crosswake-signing.asc when prompted
-# (including the -----BEGIN PGP PRIVATE KEY BLOCK----- header and footer)
+# (including the PGP private key block BEGIN and END header and footer lines)
 ```
 
 ```bash
@@ -154,7 +154,7 @@ gpg --keyserver keyserver.ubuntu.com --send-keys <KEYID>
 ```
 
 **Note on keys.openpgp.org:** This keyserver uses a Verified Key Server (VKS) protocol.
-After `--send-keys`, you will receive a confirmation email to `qiksnare13@gmail.com`. You
+After `--send-keys`, you will receive a confirmation email to the address on the key. You
 must click the link in that email to bind your identity to the key. Without email
 confirmation, the key is stored but not publicly searchable by email address. By-fingerprint
 lookup still works, which is what Central Portal uses.
@@ -372,4 +372,4 @@ after `gen.shell` templates are rewired to reference published coordinates.
 ---
 
 *Runbook version: Phase 110 (2026-06-14)*
-*Contact: szTheory (qiksnare13@gmail.com)*
+*Contact: open an issue on the repository.*
