@@ -105,7 +105,8 @@ op: delete refs/heads/v4-v9-rollup tip f2eec3e approval allow
 op: delete refs/heads/v4-v9-rollup result ok
 op: readback refs/heads/v4-v9-rollup absent
 branches: final_heads collateral/auto-refresh dependabot/github_actions/actions-4430c5f07e main release-please--branches--main
-branches: final_matches_keep_set yes (keep set = main, release-please--branches--main, open-PR heads #252 #253 #236; docs/195-closeout added when pushed; no branch held)
+branches: final_matches_keep_set yes
+branches: keep_set_note main, release-please--branches--main, open-PR heads #252 #253 #236; docs/195-closeout added when pushed; no branch held
 branches: batch_deviation the 17 operations after the first 7 gates ran under one user-approved batch (see op: batch approval line), a one-time exception to plan 13 one-operation-per-gate; user ran the script (agent run blocked by the auto-mode classifier); result 0 skipped, 0 lease_failed, 0 tag_conflict
 branches: tag_count_method earlier "94 tags" was the line count of `git ls-remote --tags origin` (annotated tags print an extra peeled ^{} line). Now 114 = 94 + 10 archive tags x 2 lines. Real new tags: 10 (grep -vc '\^{}' of refs/tags/archive/* = 10); no existing tag changed.
 branches: evidence_corrections fix/release-fixture-version-stamp, ci/recurring-lanes-and-secret-masking, ci/weekly-canary-node-pin, chore/root-hygiene-and-cleanroom were auto-deleted at merge (delete_branch_on_merge true) and are recorded already_absent, not as gated ops; the docs/sigra... tag was pushed at gate 8 and recorded already_tagged on the batch pass
