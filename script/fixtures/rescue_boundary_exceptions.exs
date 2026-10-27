@@ -22,7 +22,7 @@
        Denial.new(
          reason: :dependency_missing,
          message:
-           "[crosswake] companion #{authority.companion_id()} raised during " <>
+           "[crosswake] companion \#{authority.companion_id()} raised during " <>
              "evaluate_auth/3. The gate fails closed.",
          route_id: route.id,
          details: %{"companion_id" => Atom.to_string(authority.companion_id())}
