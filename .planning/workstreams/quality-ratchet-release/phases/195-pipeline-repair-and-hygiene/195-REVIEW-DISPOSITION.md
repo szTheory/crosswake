@@ -3,9 +3,9 @@ phase: 195-pipeline-repair-and-hygiene
 review: 195-REVIEW.md
 review_status: issues_found
 review_gap: 195-REVIEW-GAP.md
-findings_total: 21
+findings_total: 41
 open: 0
-fixed: 14
+fixed: 34
 deferred: 5
 wontfix: 2
 ---
@@ -37,3 +37,30 @@ Resolved. The two critical findings (CR-01, CR-02) and WR-01 to WR-03 were in RE
 | GR-08 | warning | test/js/ci_secret_masking.test.mjs | fixed | Linear-time and guard tests were partly vacuous or brittle; backslash and mixed-quote inputs added. The linear-time floor is 250 ms (raised from 40 ms after shared-runner noise; the old JWT rule still fails it). Fixed in PR #257 (merge 7621c0c); seeds red first (195-16/195-17). |
 | GR-09 | info | script/verify_repository.mjs | fixed | Query signature and key parameters and plural or `privatekey` keys were unmasked. Fixed in PR #257 (merge 7621c0c); seeds red first (195-16/195-17). |
 | GR-10 | info | script/verify_repository.mjs | fixed | `maskValue` assigned replacement structure by argument position; made explicit. Fixed in PR #257 (merge 7621c0c); seeds red first (195-16/195-17). |
+
+## Round-qualified GAP2 and GAP3 dispositions after PR259
+
+All following findings are fixed on actual main `b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97`; candidate CI49/49, independent repaired-head review and landed live-process proof cover their exact families. Earlier rows remain historical. GR-06 retains its accepted Phase196 receiver; original cleanroom debt remains Phase197; no new deferral was accepted.
+
+| ID | Severity | File | Disposition | Note |
+|----|----------|------|-------------|------|
+| GAP2-CR-01 | critical | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 padding credential whitespace matrix`, `round3 separator head adversaries`, `round3 timing quadratic copied control` |
+| GAP2-CR-02 | critical | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 structural repository signing assignment`, `round3 inventory all workflow secret names`, `round3 private key armor complete layouts`, `round3 review keyed armor priority` |
+| GAP2-WR-01 | warning | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 container inspect values`, `round3 tuple wrapped values`, `round3 review escaped json containers`, `round3 review identifier and cli parity` |
+| GAP2-WR-02 | warning | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 name-value record isolation`, `round3 review name value record boundaries`, `round3 review name value unrelated records` |
+| GAP2-WR-03 | warning | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 private key armor complete layouts`, `round3 private key armor malformed boundaries`, `round3 armor bounded adversaries`, `round3 review keyed armor priority` |
+| GAP2-WR-04 | warning | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 residual exact diagnostic pins`, `accepted over-mask pinned: changeset_blank`, `prose round-trips unchanged: short numeric container`, `round3 review sigil diagnostic boundaries` |
+| GAP2-WR-05 | warning | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 guard exact stdout registration`, `round3 guard rejected execution contexts`, `round3 review persistent stdout context` |
+| GAP2-WR-06 | warning | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 raw window and inventory controls`, `round3 rule family adversaries`, `round3 separator head adversaries`, `round3 review curl missing separators bounded` |
+| GAP2-IN-01 | info | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 residual named credential forms`, `round3 residual exact diagnostic pins`, `round3 residual rule adversaries`, `round3 review identifier and cli parity` |
+| GAP2-IN-02 | info | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 references bracket and github token`, `round3 review persistent stdout context` |
+| GAP2-IN-03 | info | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `linear time baseline`, `round3 padding credential whitespace matrix`, `round3 residual rule adversaries`, `round3 review curl missing separators bounded` |
+| GAP2-IN-04 | info | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 residual named credential forms`, `linear time: jwt_hyphen_run`, `linear time: jwt_segments` |
+| GAP3-CR-01 | critical | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 review curl missing separators bounded` |
+| GAP3-CR-02 | critical | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 review keyed armor priority` |
+| GAP3-CR-03 | critical | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 review name value record boundaries`, `round3 review name value unrelated records` |
+| GAP3-CR-04 | critical | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 review escaped json containers` |
+| GAP3-CR-05 | critical | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 review identifier and cli parity` |
+| GAP3-CR-06 | critical | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 review quoted value continuations` |
+| GAP3-CR-07 | critical | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 review persistent stdout context` |
+| GAP3-WR-01 | warning | script/verify_repository.mjs; test/js/ci_secret_masking.test.mjs | fixed | PR259 merge b8398c38; actual-main proof; `round3 review sigil diagnostic boundaries` |

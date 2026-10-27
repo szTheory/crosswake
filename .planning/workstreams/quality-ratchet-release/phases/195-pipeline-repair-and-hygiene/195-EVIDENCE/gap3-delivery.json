@@ -22,7 +22,7 @@
     "deleteBranchOnMerge": true
   },
   "review": {
-    "sha256": "5f352796d6e1c2660bc74a7f67aeb5db13fe054dfa2aac23541abba8bc153e2a",
+    "sha256": "e6eda7cfc4db5773e628eec23ba230d4e40298670d4532e0063f857999ce9e54",
     "head": "24baafa3d5a65df6f84366209b372b7c5448cdbe",
     "openHigh": 0,
     "openCritical": 0,

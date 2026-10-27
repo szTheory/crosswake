@@ -231,3 +231,11 @@ Last completed phase remains 194. Phase 195 and REL-03 remain pending delivery a
 ---
 _Reviewer: gsd-code-reviewer; final independent defensive source review and existing-test execution on the exact head above._
 
+
+## Actual-main delivery readback
+
+PR #259 merged as `b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97` after separate current merge and automatic-deletion allows; both permissions were consumed once and the named remote branch was deleted. Its two parents are the approved base `7621c0ce0c38edec76cc54209eccf5acf40feddf` and reviewed head `24baafa3d5a65df6f84366209b372b7c5448cdbe`. CI run40449366324 passed49/49 on that PR head; actual checkout86bc26ca is a distinct synthetic commit. No publish or tag occurred; tag inventory was unchanged.
+
+The landed helper independently detached the same checkout to actual main, checked source blobs/clean state before and after actual processes, reran quick190/190 and full327/327, required all registered test identities, measured213 numeric timing rows and derived five control verdicts. Main and review/source identities matched. Its first successful run observed45 raw-window rows,45 identity failures,43 exported-pre-fix leaks, one removed-add-mask leak and one rejected quadratic copy, with zero masked leaks and zero live guard violations. It safely restored docs. The final process-derived receipt is `195-EVIDENCE/gap3-main-proof.json`; it is refreshed after this report/receipt binding update rather than trusting copied counts.
+
+The first failed landed invocation produced no green receipt: a sanitized child lost TMPDIR, so it selected a different private scratch root. The issue was reproduced by a real-process selftest and repaired in the phase-only helper;98 selftests then passed. Actual production source, main approval scope and all authorization safeguards remained unchanged. Final phase status is owned by the independent verifier; existing GR-06/Phase197 debt and the historical HYG override remain retained. Supported-rule/inventory coverage is finite and makes no arbitrary-secret or arbitrary-Bash guarantee.

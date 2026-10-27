@@ -9,7 +9,7 @@ created: "2026-10-26"
 
 # Phase 195 — Round-3 Gap Validation Strategy
 
-Scope: new gap plans 195-19 through 195-21, reopening REL-03 only. This is a draft sampling contract, not a validation result. No RESEARCH.md exists: gap planning uses inspected existing code, prior execution evidence and actual reproduced leaks. Previous phase evidence and accepted GR-06/Phase197 deferrals remain retained; completed non-gap work is not repeated.
+Scope: new gap plans 195-19 through 195-21, reopening REL-03 only. Execution is now evidenced below; this remains a draft sampling contract until its independent continuity audit. No RESEARCH.md exists: gap planning uses inspected existing code, prior execution evidence and actual reproduced leaks. Previous phase evidence and accepted GR-06/Phase197 deferrals remain retained; completed non-gap work is not repeated.
 
 ## Test Infrastructure
 
@@ -39,15 +39,15 @@ Task identifiers use plan-task suffixes; waves continue after completed plan 18'
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 195-19-01 | 19 | 4 | REL-03 | T-195-70/71 | Inventory-derived identifiers masked through real failing child, padding bounded | integration/performance | V19-01 below: exact plan command, full-suite TAP identity gate | Existing file; all three new executed identities mandatory | pending |
-| 195-19-02 | 19 | 4 | REL-03 | T-195-70 | Complete container/name-value/wrapped-tuple values masked | integration | V19-02 below: exact plan command, full-suite TAP identity gate | Existing file; all three new executed identities mandatory | pending |
-| 195-19-03 | 19 | 4 | REL-03 | T-195-71/72 | PGP/other private-key armor bodies masked through END or fail-closed input end | integration/regression | `node --test test/js/ci_secret_masking.test.mjs && node --test test/js/*.mjs` | Existing files; new armor rows required | pending |
-| 195-20-01 | 20 | 5 | REL-03 | T-195-73/74 | Exact supported stdout registration; bracket/github.token derivations detected | guard/live emulator | V20-01 below: exact plan command, full-suite TAP identity gate | Existing file; all three new executed identities mandatory | pending |
-| 195-20-02 | 20 | 5 | REL-03 | T-195-75/76 | Raw-window seed presence, non-vacuous controls, independent timing and pinned readability | regression/performance | `node --test test/js/ci_secret_masking.test.mjs` | Existing file; new controls required | pending |
-| 195-20-03 | 20 | 5 | REL-03 | T-195-77 | Named provider/CLI/URL/encoding/JWT forms masked with bounded rules | integration/regression | `node --test test/js/ci_secret_masking.test.mjs && node --test test/js/*.mjs` | Existing files; new rows required | pending |
-| 195-21-01 | 21 | 6 | REL-03 | T-195-79/80/82 | Independent all-round review, exact-head green CI and privacy-clean PR | evidence/live readback | `node "$P/scripts/verify-gap3-evidence.mjs" --self-test --ws quality-ratchet-release && node "$P/scripts/verify-gap3-evidence.mjs" candidate --ws quality-ratchet-release` | New helper created by this task before use | pending |
-| 195-21-02 | 21 | 6 | REL-03 | T-195-78 | Current per-operation permission with separate automatic deletion scope | evidence/live readback | `node "$P/scripts/verify-gap3-evidence.mjs" gate --ws quality-ratchet-release` | Plan 21 task 1 | pending |
-| 195-21-03 | 21 | 6 | REL-03 | T-195-78/80/81/82 | Landed independently executes actual-main tests/controls and derives proof from process results | landing/reverification | `node "$P/scripts/verify-gap3-evidence.mjs" landed --ws quality-ratchet-release` | Plan 21 task 1; no caller-authored proof accepted | pending |
+| 195-19-01 | 19 | 4 | REL-03 | T-195-70/71 | Inventory-derived identifiers masked through real failing child, padding bounded | integration/performance | V19-01 below: exact plan command, full-suite TAP identity gate | Existing file; all three new executed identities mandatory | passed (execution) |
+| 195-19-02 | 19 | 4 | REL-03 | T-195-70 | Complete container/name-value/wrapped-tuple values masked | integration | V19-02 below: exact plan command, full-suite TAP identity gate | Existing file; all three new executed identities mandatory | passed (execution) |
+| 195-19-03 | 19 | 4 | REL-03 | T-195-71/72 | PGP/other private-key armor bodies masked through END or fail-closed input end | integration/regression | `node --test test/js/ci_secret_masking.test.mjs && node --test test/js/*.mjs` | Existing files; new armor rows required | passed (execution) |
+| 195-20-01 | 20 | 5 | REL-03 | T-195-73/74 | Exact supported stdout registration; bracket/github.token derivations detected | guard/live emulator | V20-01 below: exact plan command, full-suite TAP identity gate | Existing file; all three new executed identities mandatory | passed (execution) |
+| 195-20-02 | 20 | 5 | REL-03 | T-195-75/76 | Raw-window seed presence, non-vacuous controls, independent timing and pinned readability | regression/performance | `node --test test/js/ci_secret_masking.test.mjs` | Existing file; new controls required | passed (execution) |
+| 195-20-03 | 20 | 5 | REL-03 | T-195-77 | Named provider/CLI/URL/encoding/JWT forms masked with bounded rules | integration/regression | `node --test test/js/ci_secret_masking.test.mjs && node --test test/js/*.mjs` | Existing files; new rows required | passed (execution) |
+| 195-21-01 | 21 | 6 | REL-03 | T-195-79/80/82 | Independent all-round review, exact-head green CI and privacy-clean PR | evidence/live readback | `node "$P/scripts/verify-gap3-evidence.mjs" --self-test --ws quality-ratchet-release && node "$P/scripts/verify-gap3-evidence.mjs" candidate --ws quality-ratchet-release` | New helper created by this task before use | passed (execution) |
+| 195-21-02 | 21 | 6 | REL-03 | T-195-78 | Current per-operation permission with separate automatic deletion scope | evidence/live readback | `node "$P/scripts/verify-gap3-evidence.mjs" gate --ws quality-ratchet-release` | Plan 21 task 1 | passed (execution) |
+| 195-21-03 | 21 | 6 | REL-03 | T-195-78/80/81/82 | Landed independently executes actual-main tests/controls and derives proof from process results | landing/reverification | `node "$P/scripts/verify-gap3-evidence.mjs" landed --ws quality-ratchet-release` | Plan 21 task 1; no caller-authored proof accepted | passed (execution) |
 
 P is the repository-relative phase directory specified in plan 21. All checks are run from checkout root. No private machine path is evidence.
 
@@ -94,7 +94,7 @@ Prior original review and GR cases remain in the same suite and are explicitly c
 
 ## Wave 0 Requirements
 
-No separate dependency/setup wave is needed. Existing infrastructure covers execution. Tests are added red first within each production task; the phase-local delivery helper and its self-tests are created by 21-01 before later modes run. These have not been executed yet, so wave_0_complete remains false until audited.
+No separate dependency/setup wave is needed. Existing infrastructure covers execution. Tests are added red first within each production task; the phase-local delivery helper and its self-tests are created by 21-01 before later modes run. The mapped tasks have now executed with retained summaries and live main proof; wave_0_complete remains false until the sampling-continuity audit is completed.
 
 ## Required Non-Vacuity and Negative Controls
 
@@ -129,3 +129,9 @@ None. All behavioral assertions, review evidence, CI checks and main verificatio
 - [ ] Actual audit completed before setting status validated / nyquist_compliant true.
 
 Approval: pending automated audit. This draft does not claim tests, implementation, delivery or Nyquist compliance are complete. REL-03's unclassified edge probe remains flagged: supported-rule/inventory tests cannot prove all arbitrary secrets safe.
+
+## Post-execution evidence and remaining audit
+
+All9 mapped tasks have executed: plans19/20 summaries retain red-first, exact-family/zero-selection/omission controls, numeric rows and live guard census; plan21 retains the independent35-row review, CI49/49, separately scoped approvals/consumption and actual-main proof on b8398c38. The phase-only helper has98 passing selftests after the reproduced TMPDIR repair. The process-derived main receipt covers190 quick tests,327 full tests,213 timing rows, all required registered identities and five positive control families with zero masked leaks.
+
+Status stays draft, nyquist_compliant:false and wave_0_complete:false: no independent per-commit sampling-continuity/Nyquist audit has been completed. These fields are not inferred from a green suite. This validation debt does not replace the final phase-goal verifier or alter the finite coverage limitation.
