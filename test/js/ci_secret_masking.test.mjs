@@ -1243,3 +1243,56 @@ test("derivationScript refuses to extract network lines", () => {
   const text = fixture(`TOKEN=$(curl -s "$MAVEN_PASSWORD")`);
   assert.throws(() => derivationScript(text, ["TOKEN"]), /refusing/);
 });
+
+test("round3 guard exact stdout registration", () => {
+  const forms = ['echo "::add-mask::$TOKEN"', 'echo ::add-mask::$TOKEN', 'echo "::add-mask::${TOKEN}"; # supported', 'echo ::add-mask::${TOKEN} # supported'];
+  assert.ok(forms.length > 0, "registration family empty");
+  for (const [index, form] of forms.entries()) {
+    const text = fixture('TOKEN=$(printf %s "$MAVEN_PASSWORD" | base64)', form, 'echo "$TOKEN"');
+    assert.ok(derivedSecretViolations(text).length === 0, `exact stdout form ${index} rejected`);
+    const script = derivationScript(text, ["TOKEN"]);
+    const seed = round3Fake("Registration", index);
+    const result = spawnSync("bash", ["-c", `${script}\necho "$TOKEN"`], { encoding: "utf8", env: { PATH: process.env.PATH, MAVEN_PASSWORD: seed } });
+    const derived = Buffer.from(seed).toString("base64");
+    assert.ok(result.status === 0 && !runnerMaskedLog(result.stdout, [seed]).includes(derived), `stdout emulator form ${index} failed`);
+  }
+});
+
+test("round3 guard rejected execution contexts", () => {
+  const masks = [
+    'echo "::add-mask::$TOKEN" >/dev/null', 'echo "::add-mask::$TOKEN" > /tmp/x',
+    'echo "::add-mask::$TOKEN" >&2', 'echo "::add-mask::$TOKEN" 2>&1',
+    'echo "::add-mask::$TOKEN" | cat >/dev/null', 'echo "::add-mask::$TOKEN"x',
+    'echo ::add-mask::$TOKEN.suffix', 'echo "::add-mask::$TOKEN" extra',
+    '# echo "::add-mask::$TOKEN"', '  echo "::add-mask::$TOKEN"',
+    'if true; then\n  echo "::add-mask::$TOKEN"\nfi',
+    'if true; then\necho "::add-mask::$TOKEN"\nfi',
+    'if false; then echo "::add-mask::$TOKEN"; fi',
+    'f() {\necho "::add-mask::$TOKEN"\n}',
+    'function f { echo "::add-mask::$TOKEN"; }',
+    "cat <<'EOF'\necho \"::add-mask::$TOKEN\"\nEOF",
+    '(\necho "::add-mask::$TOKEN"\n)',
+    'true && echo "::add-mask::$TOKEN"',
+    'echo "::add-mask::$TOKEN"; true', '::add-mask::$TOKEN'
+  ];
+  assert.ok(masks.length > 0, "rejection family empty");
+  for (const [index, mask] of masks.entries()) {
+    const text = fixture('TOKEN=$(printf %s "$MAVEN_PASSWORD" | base64)', ...mask.split("\n"), 'echo "$TOKEN"');
+    assert.ok(derivedSecretViolations(text).length === 1, `unproved context ${index} accepted`);
+    assert.ok(!derivationScript(text, ["TOKEN"]).includes("::add-mask::"), `unproved context ${index} extracted`);
+  }
+  const control = fixture('if false; then', 'TOKEN="$MAVEN_PASSWORD"', 'fi', 'echo "::add-mask::$TOKEN"');
+  assert.ok(derivedSecretViolations(control).length === 1, "ambiguous region accepted");
+});
+
+test("round3 references bracket and github token", () => {
+  const refs = ['${{ secrets.NAME }}', "${{ secrets['NAME'] }}", '${{ secrets["NAME"] }}', '${{ github.token }}'];
+  assert.ok(refs.length > 0, "reference family empty");
+  for (const [index, ref] of refs.entries()) {
+    const direct = fixture(`AUTH="Authorization: ${ref}"`, 'echo "::add-mask::$AUTH"');
+    assert.ok(derivedSecretAssignments(direct).length === 1, `direct reference ${index} missed`);
+    assert.ok(derivedSecretViolations(direct.replace('echo "::add-mask::$AUTH"', "")).length === 1, `reference ${index} negative control missed`);
+    const alias = fixture('TOKEN="$BOUND"', 'echo "::add-mask::$TOKEN"').replace('FOO: plain', `BOUND: ${ref}`);
+    assert.ok(secretBoundKeys(alias).has("BOUND") && derivedSecretAssignments(alias).length === 1, `env reference ${index} missed`);
+  }
+});
