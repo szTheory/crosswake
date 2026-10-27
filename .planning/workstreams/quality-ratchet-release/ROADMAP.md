@@ -174,7 +174,7 @@ Plans:
 - [x] 196-01-PLAN.md — Wave 1: Preserve planning and establish actual-main measurement
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 196-02-PLAN.md — Wave 2: Strict optional proof lanes
+- [x] 196-02-PLAN.md — Wave 2: Strict optional proof lanes
 
 **Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 196-03-PLAN.md — Wave 3: Elixir and primary Swift request-vector proof
@@ -273,7 +273,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
-| 196. Spec and structure ratchet | 1/17 | In progress; plan02 next | - |
+| 196. Spec and structure ratchet | 2/17 | In progress; plan03 next | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
@@ -313,4 +313,4 @@ Plans:
 
 ## Exact Next Action
 
-Last completed phase: 195 (21/21 plans; passed 8/8, actual-main proof on b8398c38). Active phase: 196, executing, 1/17 plans complete. Plan01 preserved docs/195-closeout and both privacy receipts, branched fix/spec-structure-ratchet from fetched main, and passed source1359 plus31 source/capture controls; SUMMARY committed ff7482bb. Next: `$gsd-execute-phase 196 --ws quality-ratchet-release`, resuming at196-02-PLAN.md. Do not repeat plan01, completed Phase195 work or Phase196 planning. All eight Phase196 requirements, GR-06, actual guard measurements, full Muex pilot, repaired baselines and new CI results remain pending. Original cleanroom debt stays with Phase197; the adopter lane stays parked. No irreversible-operation approval transfers.
+Last completed phase: 195 (21/21 plans; passed 8/8, actual-main proof on b8398c38). Active phase: 196, executing, 2/17 plans complete. Plan01 preserved docs/195-closeout and both receipts, established source1359 and31 source/capture controls. Plan02 passed root and Threadline optional-off/enabled lanes, twelve invalid manifest controls, isolated missing-Plug failure and the existing real browser producer (33 routes,20 captures/artifacts); SUMMARY committed5c29ee43. Next: `$gsd-execute-phase 196 --ws quality-ratchet-release`, resuming at196-03-PLAN.md. Do not repeat plans01-02, completed Phase195 work or Phase196 planning. All eight Phase196 requirements, GR-06, actual guard measurements, full Muex pilot, repaired baselines and new CI results remain pending. Original cleanroom debt stays with Phase197; the adopter lane stays parked. No irreversible-operation approval transfers.
