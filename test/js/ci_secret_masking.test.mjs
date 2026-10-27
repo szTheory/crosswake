@@ -3,10 +3,14 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
-import { test } from "node:test";
+import { test as nodeTest } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { maskSecretShapes, ROOT_PROOF_TAIL_BYTES, ROOT_PROOF_TAIL_LINES, rootProofFailureTail, spawnStage } from "../../script/verify_repository.mjs";
+
+// The actual-main tool capsule imports this owner without registering unrelated masking tests.
+const censusOnly = process.argv[2] === "--phase196-census-root";
+const test = censusOnly ? () => {} : nodeTest;
 
 const frag = (...parts) => parts.join("");
 
@@ -1062,15 +1066,15 @@ test("maskSecretShapes edge cases are byte-stable", () => {
 // ---------------------------------------------------------------------------------------------
 // Derived-secret guard: a shell variable computed from a secret-bound env value is NOT auto-masked
 // by Actions, so it must be registered with ::add-mask:: before any other line uses it.
-// Line-based scan (no YAML dependency); one-assignment-per-line is the workflow convention.
+// Bounded convention, not arbitrary Bash analysis: scalar derivations have one assignment per
+// statement, one level of derived aliases, and exact unconditional stdout registration before use.
 // ---------------------------------------------------------------------------------------------
 const workflowDir = path.join(repoRoot, ".github/workflows");
 const indentOf = (line) => line.length - line.trimStart().length;
 const ASSIGN = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$/;
 const refsVar = (text, name) => new RegExp(`\\$\\{?${name}\\b`).test(text);
 // Supported convention: one unconditional stdout echo, at the assignment's block indentation.
-// This is deliberately not a Bash parser. Declarations, append/read/printf, GITHUB_ENV,
-// multiple assignments and inline derivations remain GR-06's Phase 196 receiver.
+// Unsupported credential-connected syntax is accounted for before filtering scalar assignments.
 const isMaskLine = (line, name) => {
   const ref = `(?:${name}|\\{${name}\\})`;
   const bare = `::add-mask::\\$${ref}`;
@@ -1079,12 +1083,13 @@ const isMaskLine = (line, name) => {
 };
 
 const CREDENTIAL_REFERENCE = /\$\{\{\s*(?:secrets(?:\.[A-Za-z_]\w*|\s*\[\s*(["'])[A-Za-z_]\w*\1\s*\])|github\.token)\s*\}\}/i;
+const RELEVANT_CREDENTIAL_REFERENCE = /\$\{\{\s*(?:secrets\b|github\.token\b)/i;
 
 export function secretBoundKeys(workflowText) {
   const keys = new Set();
   for (const line of workflowText.split("\n")) {
     const m = /^\s*([A-Za-z_][A-Za-z0-9_]*):\s*/.exec(line);
-    if (m && CREDENTIAL_REFERENCE.test(line.slice(m[0].length))) keys.add(m[1]);
+    if (m && RELEVANT_CREDENTIAL_REFERENCE.test(line.slice(m[0].length))) keys.add(m[1]);
   }
   return keys;
 }
@@ -1102,32 +1107,131 @@ function runBlockBounds(lines, i) {
   return { start, end };
 }
 
-export function derivedSecretAssignments(workflowText) {
+// Scope env aliases to their workflow/job/step owner; run-local derivations never cross a run.
+function runBodies(workflowText) {
   const lines = workflowText.split("\n");
-  const secrets = secretBoundKeys(workflowText);
-  const found = [];
-  const derived = new Map();
-  lines.forEach((line, index) => {
-    const m = ASSIGN.exec(line);
-    if (!m) return; // ASSIGN requires equals before any RHS colon; YAML declarations cannot match.
-    const [, name, rhs] = m;
-    const bounds = runBlockBounds(lines, index);
-    if (!bounds) return;
-    // One level of transitivity: depth 1 derives from a secret-bound key, depth 2 from a depth-1 value.
-    // Depth-2 values are not sources (a deployment id from an authenticated call is not itself a secret).
-    let from = null;
-    let depth = 0;
-    for (const key of secrets) if (refsVar(rhs, key)) { from = key; depth = 1; break; }
-    if (from === null && CREDENTIAL_REFERENCE.test(rhs)) { from = "credential reference"; depth = 1; }
-    if (from === null) {
-      for (const [key, d] of derived) if (d === 1 && refsVar(rhs, key)) { from = key; depth = 2; break; }
+  const bodies = [];
+  for (let i = 0; i < lines.length; i += 1) {
+    const match = /^(\s*)(-\s+)?run:\s*(.*)$/.exec(lines[i]);
+    if (!match) continue;
+    const base = match[1].length + (match[2]?.length ?? 0);
+    const scalar = match[3];
+    let end = i + 1;
+    let body = [], kind = "inline", decoded = true;
+    if (/^[|>]/.test(scalar)) {
+      while (end < lines.length && (!lines[end].trim() || indentOf(lines[end]) > base)) end += 1;
+      const raw = lines.slice(i + 1, end);
+      const indent = Math.min(...raw.filter((l) => l.trim()).map(indentOf));
+      body = raw.map((l) => l.slice(indent));
+      kind = scalar.startsWith(">") ? "folded" : "block";
+      decoded = /^[|>][+-]?\s*(?:#.*)?$/.test(scalar);
+      if (kind === "folded") {
+        // YAML folds adjacent base-indented lines, but preserves blank/more-indented boundaries.
+        let folded = "";
+        for (let k = 0; k < body.length; k += 1) {
+          folded += body[k];
+          if (k + 1 < body.length) folded += body[k] && body[k + 1] && !/^\s/.test(body[k]) && !/^\s/.test(body[k + 1]) ? " " : "\n";
+        }
+        body = folded.split("\n");
+      }
+    } else {
+      let value = scalar;
+      if (scalar.startsWith("'")) {
+        decoded = /^'(?:[^']|'')*'\s*(?:#.*)?$/.test(scalar);
+        if (decoded) value = scalar.match(/^'((?:[^']|'')*)'/)[1].replaceAll("''", "'");
+      } else if (scalar.startsWith('"')) {
+        try { value = JSON.parse(scalar); decoded = typeof value === "string"; } catch { decoded = false; }
+      }
+      body = value.split("\n");
     }
-    if (from !== null) {
-      derived.set(name, depth);
-      found.push({ name, from, index, line: index + 1, bounds });
+    bodies.push({ start: i, end, kind, decoded, body, keys: new Set() });
+    if (kind !== "inline") i = end - 1;
+  }
+  for (let i = 0; i < lines.length; i += 1) {
+    if (bodies.some((b) => i > b.start && i < b.end)) continue;
+    if (!/^\s*env:\s*(?:#.*)?$/.test(lines[i])) continue;
+    const envIndent = indentOf(lines[i]);
+    let owner = i - 1;
+    while (owner >= 0 && (!lines[owner].trim() || lines[owner].trimStart().startsWith("#") || indentOf(lines[owner]) >= envIndent)) owner -= 1;
+    const ownerIndent = owner < 0 ? -1 : indentOf(lines[owner]);
+    let scopeEnd = i + 1;
+    while (scopeEnd < lines.length && (!lines[scopeEnd].trim() || lines[scopeEnd].trimStart().startsWith("#") || indentOf(lines[scopeEnd]) > ownerIndent)) scopeEnd += 1;
+    let envEnd = i + 1;
+    while (envEnd < lines.length && (!lines[envEnd].trim() || indentOf(lines[envEnd]) > envIndent)) envEnd += 1;
+    const keys = secretBoundKeys(lines.slice(i + 1, envEnd).join("\n"));
+    for (const b of bodies) if (b.start > owner && b.start < scopeEnd) for (const key of keys) b.keys.add(key);
+  }
+  return bodies;
+}
+
+// Retain only the outer command surface. Quoted strings and $(...) are single scalar words;
+// their internal assignments/pipes do not impersonate outer multiple/inline assignments.
+function statementSurface(text) {
+  let surface = "", quote = "", depth = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    const c = text[i];
+    if (c === "\\" && quote !== "'") { if (!quote && !depth) surface += "x"; i += 1; continue; }
+    if (quote) { if (c === quote) quote = ""; continue; }
+    if (c === "'" || c === '"') { quote = c; if (!depth) surface += "x"; continue; }
+    if (c === "$" && text[i + 1] === "(") { if (!depth) surface += "x"; depth += 1; i += 1; continue; }
+    if (depth) { if (c === "(") depth += 1; if (c === ")") depth -= 1; continue; }
+    if (c === "#" && (i === 0 || /\s/.test(text[i - 1]))) break;
+    surface += c;
+  }
+  return { text: surface.trim(), complete: !quote && depth === 0 && !/\\$/.test(text) };
+}
+
+function registrationViolation(lines, assignment) {
+  for (let k = assignment.index + 1; k < assignment.bounds.end; k += 1) {
+    if (isMaskLine(lines[k], assignment.name) && supportedRegistration(lines, assignment, k)) return null;
+    if (refsVar(lines[k], assignment.name)) return "mask_order";
+  }
+  return "mask_missing";
+}
+
+export function classifyCredentialStatements(workflowText) {
+  const candidates = [];
+  for (const body of runBodies(workflowText)) {
+    const derived = new Map();
+    const lines = ["run: |", ...body.body.map((l) => l ? `  ${l}` : "")];
+    for (let index = 1; index < lines.length; index += 1) {
+      const line = lines[index];
+      if (!line.trim() || line.trimStart().startsWith("#")) continue;
+      const bound = [...body.keys].find((key) => refsVar(line, key));
+      const alias = [...derived].find(([key]) => refsVar(line, key));
+      if (!bound && !alias && !RELEVANT_CREDENTIAL_REFERENCE.test(line)) continue;
+      const outer = statementSurface(line);
+      const scalar = ASSIGN.exec(line);
+      const assignments = [...outer.text.matchAll(/(?:^|[\s;|&])([A-Za-z_]\w*)\+?=/g)];
+      const direct = Boolean(bound) || RELEVANT_CREDENTIAL_REFERENCE.test(line);
+      const depth = direct ? 1 : alias?.[1] === 1 ? 2 : 0;
+      const assignment = scalar && depth ? { name: scalar[1], from: bound ?? alias?.[0] ?? "credential reference", index, line: body.start + index + 1, bounds: { start: 0, end: lines.length }, lines } : null;
+      let form = "use", classification = "supported", reason = null;
+      if (!body.decoded || !outer.complete) { form = "unknown"; classification = "unknown"; }
+      else if (/[<>]/.test(line) && /\$\{?GITHUB_(?:ENV|OUTPUT)\b/.test(line)) form = "github_env_output";
+      else if (/\b(?:local|declare|readonly|typeset)\b/.test(outer.text)) form = "decl_keyword";
+      else if (assignments.some((m) => new RegExp(`\\b${m[1]}\\+=`).test(outer.text))) form = "append_assign";
+      else if (/(?:^|[;|&]\s*)read\s/.test(outer.text)) form = "read_into";
+      else if (/\bprintf\s+(?:-[^\s]+\s+)*-v\b/.test(outer.text)) form = "printf_v";
+      else if (assignments.length > 1) form = "multi_assign";
+      else if (scalar && /[;|&]/.test(outer.text)) form = "assign_and_use";
+      else if (scalar && !/^(?:export\s+)?[A-Za-z_]\w*=\S*$/.test(outer.text)) form = "inline_assign";
+      else if (assignment) {
+        form = "scalar";
+        reason = registrationViolation(lines, assignment);
+        if (reason) classification = "denied";
+      } else if (!(scalar || /^\s*(?:if\s+)?(?:echo|printf|curl|gh|test|\[)\s/.test(line))) { form = "unknown"; classification = "unknown"; }
+      if (!["use", "scalar", "unknown"].includes(form)) classification = "denied";
+      candidates.push({ classification, form, reason, assignment });
+      // Denied declarations still taint later statements: rejection must not hide persistence.
+      if (depth) for (const m of assignments) derived.set(m[1], depth);
     }
-  });
-  return found;
+  }
+  return candidates;
+}
+
+export function derivedSecretAssignments(workflowText) {
+  return classifyCredentialStatements(workflowText).filter((c) => c.form === "scalar").map((c) => c.assignment);
 }
 
 // Conservative lexical fences, not evaluation: no registration across control syntax, heredocs,
@@ -1161,18 +1265,32 @@ function supportedRegistration(lines, assignment, maskIndex) {
 }
 
 export function derivedSecretViolations(workflowText) {
-  const lines = workflowText.split("\n");
-  const violations = [];
-  for (const a of derivedSecretAssignments(workflowText)) {
-    let masked = false;
-    let usedFirst = false;
-    for (let k = a.index + 1; k < a.bounds.end; k += 1) {
-      if (isMaskLine(lines[k], a.name) && supportedRegistration(lines, a, k)) { masked = true; break; }
-      if (refsVar(lines[k], a.name)) { usedFirst = true; break; }
+  // Preserve the historical assignment-violation API. The conserved census also includes unknown
+  // uses/malformed masks, which may share an assignment's already-reported registration failure.
+  return classifyCredentialStatements(workflowText).filter((c) => c.classification !== "supported" && (c.assignment || c.form !== "unknown")).map((c) => ({
+    name: c.assignment?.name, line: c.assignment?.line,
+    reason: c.reason === "mask_order" ? "used before add-mask" : c.reason === "mask_missing" ? "no add-mask" : c.form
+  }));
+}
+
+export function workflowGrammarCensus(root) {
+  const scanned_files = readdirSync(path.join(root, ".github/workflows")).filter((f) => /\.ya?ml$/.test(f)).sort().map((f) => `.github/workflows/${f}`);
+  const counts = { files: scanned_files.length, workflows: scanned_files.length, references: 0, candidates: 0, supported: 0, denied: 0, unknown: 0, findings: 0 };
+  const findings = [];
+  for (const file of scanned_files) {
+    let source;
+    try { source = readFileSync(path.join(root, file), "utf8"); } catch { findings.push({ file, category: "read_error", count: 1 }); continue; }
+    counts.references += source.split("\n").filter((l) => !l.trimStart().startsWith("#") && RELEVANT_CREDENTIAL_REFERENCE.test(l)).length;
+    const candidates = classifyCredentialStatements(source);
+    counts.candidates += candidates.length;
+    for (const candidate of candidates) counts[candidate.classification] += 1;
+    for (const classification of ["denied", "unknown"]) {
+      const count = candidates.filter((c) => c.classification === classification).length;
+      if (count) findings.push({ file, category: `${classification}_statement`, count });
     }
-    if (!masked || usedFirst) violations.push({ name: a.name, line: a.line, reason: usedFirst ? "used before add-mask" : "no add-mask" });
   }
-  return violations;
+  counts.findings = findings.reduce((n, f) => n + f.count, 0);
+  return { schema_version: 1, guard: "grammar", scanned_files, counts, findings };
 }
 
 const NO_NETWORK = /\b(curl|wget)\b|\bgh /;
@@ -1594,6 +1712,13 @@ test("phase196 GR-06 declaration cannot disappear before assignment filtering", 
   assert.ok(derivedSecretViolations(text).length === 1, "credential declaration disappeared from the guard");
 });
 
+test("phase196 GR-06 relevant statements conserve and unknown syntax is visible", () => {
+  const rows = classifyCredentialStatements(fixture('local TOKEN="$MAVEN_PASSWORD"', 'eval "$MAVEN_PASSWORD"'));
+  assert.ok(rows.length === 2 && rows.filter((r) => r.classification === "denied").length === 1 && rows.filter((r) => r.classification === "unknown").length === 1, "relevant statements disappeared or changed triage");
+  const safe = classifyCredentialStatements(fixture('VERSION=ordinary', 'echo "version=$VERSION" >> "$GITHUB_OUTPUT"'));
+  assert.ok(safe.length === 0, "nonsecret metadata became a credential candidate");
+});
+
 test("round3 review curl missing separators bounded", { timeout: 55000 }, (t) => {
   const rows = [
     { label: "review/curl_short_missing_colon", input: `curl ${"-u".repeat(100000)}` },
@@ -1611,3 +1736,15 @@ test("round3 review curl missing separators bounded", { timeout: 55000 }, (t) =>
   assert.ok(rows.length > 0, "curl missing-separator inventory empty");
   for (const row of rows) reportMetric(t, measureRound3Padding(row));
 });
+
+if (censusOnly) {
+  try {
+    if (process.argv.length !== 4) throw new Error("invalid census arguments");
+    const report = workflowGrammarCensus(path.resolve(process.argv[3]));
+    console.log(`PHASE196_REPORT ${JSON.stringify(report)}`);
+    process.exitCode = report.counts.files > 0 && report.counts.references > 0 && report.counts.candidates > 0 && report.counts.findings === 0 ? 0 : 1;
+  } catch {
+    console.error("phase196 grammar census failed");
+    process.exitCode = 2;
+  }
+}
