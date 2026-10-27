@@ -19,6 +19,7 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
 
   describe "lexical collection evidence through the actual checker" do
     @tag :tmp_dir
+    @tag :main_measurement
     test "repository enforcement matches the measured reviewed multiset" do
       receipt =
         Jason.decode!(
@@ -34,7 +35,9 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
       assert receipt["counts"]["projects"] == 6
       assert receipt["privacy_before"]["exit"] == 0
       assert receipt["privacy_after"]["exit"] == 0
-      assert receipt["restoration"]["branch"] == "fix/spec-structure-ratchet"
+      assert is_binary(receipt["restoration"]["branch"])
+      assert receipt["restoration"]["branch"] != ""
+      assert receipt["restoration"]["head"] == receipt["candidate_sha"]
 
       for tool <- receipt["tools"] do
         assert :crypto.hash(:sha256, File.read!(Path.join(@repo_root, tool["path"])))
@@ -49,6 +52,15 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
     for {label, prefix, body, category} <- [
           {"wrong collection", "",
            "items = load(); other = load(); assert other != []; assert Enum.all?(items, &valid?/1)",
+           "unsafe_collection"},
+          {"shadowed function parameter", "",
+           "items = load(); assert items != []; Enum.each(load(), fn items -> assert Enum.all?(items, &valid?/1) end)",
+           "unsafe_collection"},
+          {"shadowed comprehension variable", "",
+           "items = load(); assert items != []; for items <- load(), do: assert Enum.all?(items, &valid?/1)",
+           "unsafe_collection"},
+          {"shadowed with binding", "",
+           "items = load(); assert items != []; with items <- load(), do: assert Enum.all?(items, &valid?/1)",
            "unsafe_collection"},
           {"sibling branch", "",
            "items = load(); if flag(), do: (assert items != []), else: (assert Enum.all?(items, &valid?/1))",
@@ -85,6 +97,8 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
       @tag :tmp_dir
       test "rejects #{label} with the intended finding", %{tmp_dir: tmp} do
         source = collection_source(unquote(prefix), unquote(body))
+        safe_source = collection_source(unquote(prefix), "assert load() == []")
+        assert source != safe_source
         collection_fixture!(tmp, source)
         {output, code} = collection_run(tmp)
         assert code == 1, output
@@ -241,6 +255,11 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
         {output, code} = collection_run(tmp)
         assert code == 1, output
         assert output =~ unquote(category)
+        refute output =~ "File.Error"
+        refute output =~ "permission denied"
+        {report, report_code} = run(tmp, @one ++ ["--collections-mode", "report"])
+        assert report_code == 1, report
+        assert report =~ unquote(category)
       end
     end
   end

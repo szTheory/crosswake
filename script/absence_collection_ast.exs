@@ -118,8 +118,27 @@ defmodule Crosswake.AbsenceCollectionAST do
   defp visit({:__block__, _, nodes} = ast, s),
     do: {ast, Enum.reduce(nodes, s, fn node, st -> elem(visit(node, st), 1) end)}
 
+  defp visit({:->, _, [patterns, body]} = ast, s) do
+    names = variables(patterns)
+    local = %{s | safe: invalidate(s.safe, names), glob: invalidate(s.glob, names)}
+    {_, child} = scoped(body, local)
+    {ast, %{s | findings: child.findings}}
+  end
+
+  defp visit({:with, _, args} = ast, s) do
+    names =
+      Enum.flat_map(args, fn
+        {:<-, _, [pattern, _]} -> variables(pattern)
+        _ -> []
+      end)
+
+    local = %{s | safe: invalidate(s.safe, names), glob: invalidate(s.glob, names)}
+    {_, child} = scoped(args, local)
+    {ast, %{s | findings: child.findings}}
+  end
+
   defp visit({kind, _, args} = ast, s)
-       when kind in [:if, :unless, :case, :cond, :with, :try, :receive, :fn, :->] do
+       when kind in [:if, :unless, :case, :cond, :try, :receive, :fn] do
     # Each branch starts with only facts established before the branch.
     {ast,
      Enum.reduce(args, s, fn branch, acc ->
@@ -138,7 +157,10 @@ defmodule Crosswake.AbsenceCollectionAST do
           else: st
       end)
 
-    scoped(args, s)
+    names = Enum.flat_map(generators, fn {:<-, _, [pattern, _]} -> variables(pattern) end)
+    local = %{s | safe: invalidate(s.safe, names), glob: invalidate(s.glob, names)}
+    {_, child} = scoped(args, local)
+    {ast, %{s | findings: child.findings}}
   end
 
   defp visit({kind, _, [expr | _]} = ast, s) when kind in [:assert, :refute] do
@@ -263,7 +285,7 @@ defmodule Crosswake.AbsenceCollectionAST do
         end
       end)
 
-    {files, Enum.sort(errors ++ findings)}
+    {files, Enum.sort_by(errors ++ findings, &{&1.file, &1.context, &1.expression, &1.category})}
   end
 
   defp error(file, category),
@@ -298,7 +320,11 @@ defmodule Crosswake.AbsenceCollectionAST do
       end) and map_size(expected) == length(baseline)
 
     changes =
-      for id <- Enum.sort(Enum.uniq(Map.keys(actual) ++ Map.keys(expected))),
+      for id <-
+            Enum.sort_by(
+              Enum.uniq(Map.keys(actual) ++ Map.keys(expected)),
+              &{&1.file, &1.context, &1.expression, &1.category}
+            ),
           Map.get(actual, id, 0) != Map.get(expected, id, 0) do
         {if(Map.get(actual, id, 0) > Map.get(expected, id, 0),
            do: "new_or_increased",

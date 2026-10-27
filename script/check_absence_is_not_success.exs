@@ -172,12 +172,13 @@ defmodule Crosswake.AbsenceIsNotSuccess do
       "[crosswake] collections mode=#{mode} files=#{length(files)} findings=#{length(findings)} delta=#{length(changes)}"
     )
 
-    if mode == "enforce" and
-         (not valid or changes != [] or
-            Enum.any?(
-              findings,
-              &(&1.category in ["read_error", "parse_error", "scope_empty", "scope_mismatch"])
-            )), do: 1, else: 0
+    analysis_failed =
+      Enum.any?(
+        findings,
+        &(&1.category in ["read_error", "parse_error", "scope_empty", "scope_mismatch"])
+      )
+
+    if not valid or analysis_failed or (mode == "enforce" and changes != []), do: 1, else: 0
   end
 
   defp report([], results, test_files) do
@@ -295,8 +296,15 @@ defmodule Crosswake.AbsenceIsNotSuccess do
   end
 
   defp mutation_findings(path, root) do
-    path
-    |> File.read!()
+    # Collection analysis owns the closed read_error finding. Never allow a
+    # legacy read! stacktrace to bypass that fail-closed, sanitized verdict.
+    source =
+      case File.read(path) do
+        {:ok, bytes} -> bytes
+        {:error, _} -> ""
+      end
+
+    source
     |> strip_heredocs()
     |> function_blocks()
     # Only SHARED helpers. An inline `mutated = String.replace(...)` in a test
