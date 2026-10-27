@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync, unlinkSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve, relative } from 'node:path';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
@@ -20,7 +20,8 @@ const specs = {
     resource: 'packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/bridge_contract_vectors.json',
     owner: 'packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/BridgeConformanceTests.swift',
     loaded: 15, completed: 14, excluded: 'elixir_only',
-    plan: [{ command: 'swift', args: ['test', '--filter', 'BridgeConformanceTests'], cwd: 'packages/crosswake-shell-core-ios' }],
+    plan: [{ command: 'swift', args: ['package', 'clean'], cwd: 'packages/crosswake-shell-core-ios' },
+           { command: 'swift', args: ['test', '--filter', 'BridgeConformanceTests'], cwd: 'packages/crosswake-shell-core-ios' }],
   },
 };
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -68,6 +69,10 @@ function quick(mode) {
     }
   });
   test(`quick ${mode}: exact command plan, real child failure and finally restoration`, () => {
+    assert.equal(spec.resource, mode === 'elixir' ? 'test/fixtures/bridge_contract_vectors.json'
+      : 'packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/bridge_contract_vectors.json');
+    assert.equal(spec.owner, mode === 'elixir' ? 'test/crosswake/bridge/bridge_behavioral_vector_test.exs'
+      : 'packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/BridgeConformanceTests.swift');
     const expectedPlan = mode === 'elixir'
       ? [{ command: 'mix', args: ['test', 'test/crosswake/bridge/bridge_behavioral_vector_test.exs'], cwd: '.' }]
       : [{ command: 'swift', args: ['package', 'clean'], cwd: 'packages/crosswake-shell-core-ios' },
@@ -97,16 +102,35 @@ function runConsumer(spec, expected) {
     const isTest = index === spec.plan.length - 1;
     if (!isTest || expected === 'pass') requireSuccess(result);
     else assert.notEqual(result.exit, 0, 'negative-control-passed');
+    let tests;
     if (isTest) {
-      if (expected === 'missing') {
+      if (spec.excluded === 'elixir_only') {
+        assert.match(result.output, /Build complete!/, 'fresh-build-incomplete');
+        assert.match(result.output, /Test Case '-\[CrosswakeShellCoreTests\.BridgeConformanceTests test_bridge_vectors_data_driven\]' started\./, 'request-test-not-discovered');
+        // XCTest reports setup failures as both skipped and failed. Preserve that distinction;
+        // the missing-resource control cannot receive credit for completed vector evaluations.
+        const summary = result.output.match(/Executed ([1-9]\d*) tests?, with (?:(\d+) tests? skipped and )?(\d+) failures?/);
+        assert.ok(summary, 'nonempty-test-discovery');
+        tests = { discovered: Number(summary[1]), skipped: Number(summary[2] ?? 0), failures: Number(summary[3]) };
+        assert.equal(tests.discovered, 3, 'reader-suite-count');
+        if (expected !== 'missing') assert.equal(tests.skipped, 0, 'unexpected-test-skip');
+        assert.doesNotMatch(result.output, /error: (?:emit-module|fatalError|compile command)/, 'unrelated-build-failure');
+        if (expected === 'missing') assert.match(result.output, /CW-VECTOR-MISSING bridge_contract_vectors\.json/, 'missing-diagnostic');
+        if (expected === 'loaded') assert.match(result.output, /CW-VECTOR-LOADED expected 15/, 'loaded-diagnostic');
+        if (expected === 'completed') assert.match(result.output, /CW-VECTOR-COMPLETED expected 14/, 'completed-diagnostic');
+        const failedCases = [...result.output.matchAll(/Test Case '-\[CrosswakeShellCoreTests\.BridgeConformanceTests (\w+)\]' failed/g)].map(m => m[1]);
+        if (expected === 'pass') assert.equal(tests.failures, 0, 'unexpected-test-failure');
+        else if (expected !== 'missing') assert.deepEqual(failedCases, ['test_bridge_vectors_data_driven'], 'unrelated-test-failure');
+      } else if (expected === 'missing') {
         assert.match(result.output, /could not read file .*bridge_contract_vectors\.json.*no such file or directory/s, 'missing-diagnostic');
       } else {
         assert.match(result.output, /1 test, [01] failures?/, 'nonempty-test-discovery');
+        tests = { discovered: 1, skipped: 0, failures: expected === 'pass' ? 0 : 1 };
         if (expected === 'loaded') assert.match(result.output, /CW-VECTOR-LOADED expected 15/, 'loaded-diagnostic');
         if (expected === 'completed') assert.match(result.output, /CW-VECTOR-COMPLETED expected 9/, 'completed-diagnostic');
       }
     }
-    records.push({ ...step, exit: result.exit, durationMs: result.durationMs, outputSha256: hash(result.output) });
+    records.push({ ...step, exit: result.exit, durationMs: result.durationMs, outputSha256: hash(result.output), ...(tests ? { tests } : {}) });
   }
   return records;
 }
@@ -119,24 +143,30 @@ function full(mode) {
   population(original, spec);
   const records = [];
   const before = runConsumer(spec, 'pass');
-  withBytes(path, original, () => {
-    for (const control of ['missing', 'removed', 'empty', 'all-excluded']) {
-      writeFileSync(path, original);
-      if (control === 'missing') unlinkSync(path);
-      else {
-        const vectors = control === 'removed' ? corpus.vectors.slice(1)
-          : control === 'empty' ? [] : corpus.vectors.map(v => ({ ...v, [spec.excluded]: true }));
-        writeFileSync(path, JSON.stringify({ ...corpus, vectors }));
+  let after;
+  try {
+    withBytes(path, original, () => {
+      for (const control of ['missing', 'removed', 'empty', 'all-excluded']) {
+        writeFileSync(path, original);
+        if (control === 'missing') unlinkSync(path);
+        else {
+          const vectors = control === 'removed' ? corpus.vectors.slice(1)
+            : control === 'empty' ? [] : corpus.vectors.map(v => ({ ...v, [spec.excluded]: true }));
+          writeFileSync(path, JSON.stringify({ ...corpus, vectors }));
+        }
+        const mutatedHash = existsSync(path) ? hash(readFileSync(path)) : null;
+        assert.notEqual(mutatedHash, hash(original), 'mutation-did-not-change-bytes');
+        const expected = control === 'missing' ? 'missing' : control === 'all-excluded' ? 'completed' : 'loaded';
+        const processes = runConsumer(spec, expected);
+        records.push({ control, expected, mutatedSha256: mutatedHash, processes });
+        process.stdout.write(`vector-control ${mode} ${control}: discriminating failure\n`);
       }
-      const mutatedHash = existsSync(path) ? hash(readFileSync(path)) : null;
-      assert.notEqual(mutatedHash, hash(original), 'mutation-did-not-change-bytes');
-      const expected = control === 'missing' ? 'missing' : control === 'all-excluded' ? 'completed' : 'loaded';
-      const processes = runConsumer(spec, expected);
-      records.push({ control, expected, mutatedSha256: mutatedHash, processes });
-      process.stdout.write(`vector-control ${mode} ${control}: discriminating failure\n`);
-    }
-  });
-  const after = runConsumer(spec, 'pass');
+    });
+  } finally {
+    // Even a rejected control must leave both canonical bytes and copied build resources clean.
+    assert.equal(hash(readFileSync(path)), hash(original), 'final-restoration-failed');
+    after = runConsumer(spec, 'pass');
+  }
   assert.equal(hash(readFileSync(path)), hash(original), 'final-restoration-failed');
   const receipt = {
     schema: 1, reader: mode, loaded: spec.loaded, completed: spec.completed,

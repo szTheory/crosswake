@@ -1,0 +1,217 @@
+{
+  "schema": 1,
+  "reader": "swift-request",
+  "loaded": 15,
+  "completed": 14,
+  "resource": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/bridge_contract_vectors.json",
+  "resourceSha256": "3b64c8d81e1ca086494a1910aa5fb2d05d7a2d263b3d72f229f319d22e0064c0",
+  "owner": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/BridgeConformanceTests.swift",
+  "ownerSha256": "1a354799ec43a8c2aadc142a2336fe14a192583dbb4a424666bc951dfc16d295",
+  "helperSha256": "dfd3305762544b77172f9f643050c582f8347f2d6f72f6a8e5477c2b55ac0973",
+  "before": [
+    {
+      "command": "swift",
+      "args": [
+        "package",
+        "clean"
+      ],
+      "cwd": "packages/crosswake-shell-core-ios",
+      "exit": 0,
+      "durationMs": 422,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "swift",
+      "args": [
+        "test",
+        "--filter",
+        "BridgeConformanceTests"
+      ],
+      "cwd": "packages/crosswake-shell-core-ios",
+      "exit": 0,
+      "durationMs": 17897,
+      "outputSha256": "6912a0f0c902aa222ed5d7ef37b1b1d6c06b4708030904b0ab49eb40cc47d571",
+      "tests": {
+        "discovered": 3,
+        "skipped": 0,
+        "failures": 0
+      }
+    }
+  ],
+  "controls": [
+    {
+      "control": "missing",
+      "expected": "missing",
+      "mutatedSha256": null,
+      "processes": [
+        {
+          "command": "swift",
+          "args": [
+            "package",
+            "clean"
+          ],
+          "cwd": "packages/crosswake-shell-core-ios",
+          "exit": 0,
+          "durationMs": 412,
+          "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "command": "swift",
+          "args": [
+            "test",
+            "--filter",
+            "BridgeConformanceTests"
+          ],
+          "cwd": "packages/crosswake-shell-core-ios",
+          "exit": 1,
+          "durationMs": 19087,
+          "outputSha256": "8d5faf2f520d442f45a72af94f142604f0b64e26b337ea100857021a3e445b59",
+          "tests": {
+            "discovered": 3,
+            "skipped": 3,
+            "failures": 3
+          }
+        }
+      ]
+    },
+    {
+      "control": "removed",
+      "expected": "loaded",
+      "mutatedSha256": "985257aa579cea3df06bd78288ba897a8bf8874f7387265e693ecfd1adec0267",
+      "processes": [
+        {
+          "command": "swift",
+          "args": [
+            "package",
+            "clean"
+          ],
+          "cwd": "packages/crosswake-shell-core-ios",
+          "exit": 0,
+          "durationMs": 409,
+          "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "command": "swift",
+          "args": [
+            "test",
+            "--filter",
+            "BridgeConformanceTests"
+          ],
+          "cwd": "packages/crosswake-shell-core-ios",
+          "exit": 1,
+          "durationMs": 18351,
+          "outputSha256": "9d0d3d79440e589b69ba5a4d2f5ea1630255a211034ecd4a44ffdb6a9244184a",
+          "tests": {
+            "discovered": 3,
+            "skipped": 0,
+            "failures": 2
+          }
+        }
+      ]
+    },
+    {
+      "control": "empty",
+      "expected": "loaded",
+      "mutatedSha256": "c57810a77d1d3d5c91e904f30f784c6e84481793dd551c4f177c36668cd67e78",
+      "processes": [
+        {
+          "command": "swift",
+          "args": [
+            "package",
+            "clean"
+          ],
+          "cwd": "packages/crosswake-shell-core-ios",
+          "exit": 0,
+          "durationMs": 529,
+          "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "command": "swift",
+          "args": [
+            "test",
+            "--filter",
+            "BridgeConformanceTests"
+          ],
+          "cwd": "packages/crosswake-shell-core-ios",
+          "exit": 1,
+          "durationMs": 19937,
+          "outputSha256": "3bdf9fb0390f633f610673ade6cacdcc5ae3c8087b1d72eb17b9ae9f78cf76e3",
+          "tests": {
+            "discovered": 3,
+            "skipped": 0,
+            "failures": 4
+          }
+        }
+      ]
+    },
+    {
+      "control": "all-excluded",
+      "expected": "completed",
+      "mutatedSha256": "fe0ca99e30fdf85be2a9ed1c16c816e4344c93de963b6ab6d02671c5f26586a8",
+      "processes": [
+        {
+          "command": "swift",
+          "args": [
+            "package",
+            "clean"
+          ],
+          "cwd": "packages/crosswake-shell-core-ios",
+          "exit": 0,
+          "durationMs": 458,
+          "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "command": "swift",
+          "args": [
+            "test",
+            "--filter",
+            "BridgeConformanceTests"
+          ],
+          "cwd": "packages/crosswake-shell-core-ios",
+          "exit": 1,
+          "durationMs": 20887,
+          "outputSha256": "2e194f26e813c034bb840dd9902670526bd14797efc553fcbdce7e9cd67a6c51",
+          "tests": {
+            "discovered": 3,
+            "skipped": 0,
+            "failures": 2
+          }
+        }
+      ]
+    }
+  ],
+  "restoration": {
+    "byteExact": true,
+    "after": [
+      {
+        "command": "swift",
+        "args": [
+          "package",
+          "clean"
+        ],
+        "cwd": "packages/crosswake-shell-core-ios",
+        "exit": 0,
+        "durationMs": 457,
+        "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "command": "swift",
+        "args": [
+          "test",
+          "--filter",
+          "BridgeConformanceTests"
+        ],
+        "cwd": "packages/crosswake-shell-core-ios",
+        "exit": 0,
+        "durationMs": 21239,
+        "outputSha256": "e174cbeccab30233b5a1e2e8abe1b02ddbc4369f00238a1569ae665576d3b5f5",
+        "tests": {
+          "discovered": 3,
+          "skipped": 0,
+          "failures": 0
+        }
+      }
+    ]
+  },
+  "durationMs": 120096
+}
