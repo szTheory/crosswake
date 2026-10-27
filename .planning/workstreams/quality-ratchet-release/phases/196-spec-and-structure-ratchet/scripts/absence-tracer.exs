@@ -4,10 +4,25 @@ defmodule AbsenceTracer do
   use ExUnit.Case
 
   test "known glob owners establish independent cardinality in each test" do
-    {output, code} = System.cmd("elixir", ["script/check_absence_is_not_success.exs", "--collections-mode", "report"], stderr_to_stdout: true)
+    {output, code} =
+      System.cmd(
+        "elixir",
+        ["script/check_absence_is_not_success.exs", "--collections-mode", "report"],
+        stderr_to_stdout: true
+      )
+
     assert code == 0, output
-    glob_findings = output |> String.split("\n") |> Enum.filter(&String.contains?(&1, "collection glob_without_count"))
-    refute Enum.any?(glob_findings, &String.contains?(&1, "phase132_compat_matrix_drift_test.exs"))
+
+    glob_findings =
+      output
+      |> String.split("\n")
+      |> Enum.filter(&String.contains?(&1, "collection glob_without_count"))
+
+    refute Enum.any?(
+             glob_findings,
+             &String.contains?(&1, "phase132_compat_matrix_drift_test.exs")
+           )
+
     refute Enum.any?(glob_findings, &String.contains?(&1, "phase165_ci_integrity_test.exs"))
   end
 

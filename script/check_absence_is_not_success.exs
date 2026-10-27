@@ -117,7 +117,7 @@ defmodule Crosswake.AbsenceIsNotSuccess do
 
     baseline =
       try do
-        {entries, []} = Code.eval_file(baseline_path)
+        {entries, _bindings} = Code.eval_file(baseline_path)
         if is_list(entries), do: entries, else: raise("invalid baseline")
       rescue
         _ -> :invalid

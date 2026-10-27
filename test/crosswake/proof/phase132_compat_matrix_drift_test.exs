@@ -161,8 +161,10 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
 
   test "every companion mix.exs crosswake requirement matches the doc" do
     doc = File.read!(@doc_path)
+    companion_mix_files = Path.wildcard(@package_glob)
+    assert length(companion_mix_files) == 5
 
-    for mix_exs_path <- Path.wildcard(@package_glob) do
+    for mix_exs_path <- companion_mix_files do
       pkg = package_name(mix_exs_path)
       req = extract_crosswake_requirement(mix_exs_path)
 

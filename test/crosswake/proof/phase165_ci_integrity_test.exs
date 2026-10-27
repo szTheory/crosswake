@@ -768,8 +768,10 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   @tag timeout: 60_000
   test "every workflow job is bounded and every macOS job invokes native tooling" do
     bounded = ~r/^    timeout-minutes:\s*[1-9][0-9]*\s*$/m
+    workflows = Path.wildcard(".github/workflows/*.{yml,yaml}")
+    assert length(workflows) > 0
 
-    for path <- Path.wildcard(".github/workflows/*.{yml,yaml}"),
+    for path <- workflows,
         {job, body} <- workflow_jobs(File.read!(path)) do
       case Regex.run(~r/^    uses:\s*(\S+)/m, body, capture: :all_but_first) do
         # A job that CALLS a reusable workflow cannot declare timeout-minutes -- the
@@ -811,8 +813,13 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assertion =
       ~r/(?:mix test|swift (?:test|build)|gradlew .*?(?:test|build)|xcodebuild|script\/[^\s]*(?:proof|verify))/
 
-    for path <- Path.wildcard(".github/workflows/*.{yml,yaml}"),
-        path != @release_please,
+    workflows =
+      Path.wildcard(".github/workflows/*.{yml,yaml}")
+      |> Enum.reject(&(&1 == @release_please))
+
+    assert length(workflows) > 0
+
+    for path <- workflows,
         {job, body} <- workflow_jobs(File.read!(path)),
         script <- run_scripts(body) do
       retry_loop = script =~ ~r/(?:for\s+[^\n]+;\s*do|while\s+)/
