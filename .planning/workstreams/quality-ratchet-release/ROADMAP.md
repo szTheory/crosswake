@@ -167,7 +167,7 @@ Round-3 result: REL-03 is complete from fresh actual-main proof on b8398c38; all
   3. A Muex pilot record covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract` with a non-zero mutant count, a wrapper that fails on zero mutants, baseline scores, runtime, survivors keyed by file + mutator + normalized text, and a written adopt/drop decision; `mix.exs` and `mix.lock` contain no Muex dependency.
   4. A test fails on any compile-label xref cycle (the `bridge/contract`, `bridge/denial`, `manifest/types`, `shell/denial` cycle is broken) and on an all-cycles count above the committed baseline; an AST test fails on bare `rescue _ ->` in the `bridge`, `policy`, `router`, `offline`, `manifest` and `compatibility` modules (the three in `bridge.ex` now return explicit results); a test fails when a package's runtime direct deps differ from the committed list with one-line justifications; each ratchet has a negative control.
 
-**Plans**: 17 plans, 40 tasks; sequential waves 1–17 in one main checkout. Plans01–07 complete; plans08–17 remain pending.
+**Plans**: 17 plans, 40 tasks; sequential waves 1–17 in one main checkout. Plans01–08 complete; plans09–17 remain pending.
 
 Plans:
 **Wave 1**
@@ -191,10 +191,10 @@ Plans:
 **Wave 7** *(complete)*
 - [x] 196-07-PLAN.md — Wave 7: Scope and observation privacy boundaries
 
-**Wave 8** *(ready; Wave 7 complete)*
-- [ ] 196-08-PLAN.md — Wave 8: Independent finite policy oracle and diagnostic provenance
+**Wave 8** *(complete)*
+- [x] 196-08-PLAN.md — Wave 8: Independent finite policy oracle and diagnostic provenance
 
-**Wave 9** *(blocked on Wave 8 completion)*
+**Wave 9** *(ready; Wave 8 complete)*
 - [ ] 196-09-PLAN.md — Wave 9: Protocol leaf and real Mix compile-cycle ratchet
 
 **Wave 10** *(blocked on Wave 9 completion)*
@@ -273,7 +273,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
-| 196. Spec and structure ratchet | 7/17 | In progress; plan08 next | - |
+| 196. Spec and structure ratchet | 8/17 | In progress; plan09 next | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
@@ -313,4 +313,4 @@ Plans:
 
 ## Exact Next Action
 
-Last completed phase:195 (21/21 plans; passed8/8 on actual main b8398c38). Active phase196: executing,7/17 plans complete. Plans01-06 retain optional/browser/vector proof and absence enforcement311 files/84 findings/delta0. Plan07 repaired the LF observation route defect with absolute anchors:Journal24 cases;all8 observation fields/3 measurement keys;15 focused tests and9 restored mutation controls passed. Capture helper33 controls remain recorded; default collection mode stays report-only until Plan15. Next: `$gsd-execute-phase 196 --ws quality-ratchet-release`, resuming at196-08-PLAN.md. Do not repeat plans01-07, completed Phase195 work or Phase196 planning. All eight Phase196 requirements and GR-06 remain pending independent verification; other guards,full Muex pilot and new CI remain pending. Original cleanroom debt stays with Phase197; adopter lane stays parked. No irreversible-operation approval transfers.
+Last completed phase:195 (21/21 plans; passed8/8 on actual main b8398c38). Active phase196: executing,8/17 plans complete. Plans01-07 retain optional/browser/vector,absence and privacy proof. Plan08:28 focused tests passed;semantic108 and staged108 input/unique/completed;structured atom keys and exact original source tuples;5 actual-source corruption controls failed intended assertions,restored exact bytes and recompiled green. Collection enforcement312 files/84 findings/delta0;capture helper33 controls remain recorded;default stays report-only until Plan15. Next: `$gsd-execute-phase 196 --ws quality-ratchet-release`, resuming at196-09-PLAN.md. Do not repeat plans01-08,completed Phase195 work or Phase196 planning. All eight Phase196 requirements and GR-06 remain pending independent verification;SPEC-05/unclassified remains for checker review;other guards,full Muex pilot and new CI remain pending. Original cleanroom debt stays with Phase197;adopter lane stays parked. No irreversible-operation approval transfers.
