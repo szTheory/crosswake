@@ -167,7 +167,7 @@ Round-3 result: REL-03 is complete from fresh actual-main proof on b8398c38; all
   3. A Muex pilot record covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract` with a non-zero mutant count, a wrapper that fails on zero mutants, baseline scores, runtime, survivors keyed by file + mutator + normalized text, and a written adopt/drop decision; `mix.exs` and `mix.lock` contain no Muex dependency.
   4. A test fails on any compile-label xref cycle (the `bridge/contract`, `bridge/denial`, `manifest/types`, `shell/denial` cycle is broken) and on an all-cycles count above the committed baseline; an AST test fails on bare `rescue _ ->` in the `bridge`, `policy`, `router`, `offline`, `manifest` and `compatibility` modules (the three in `bridge.ex` now return explicit results); a test fails when a package's runtime direct deps differ from the committed list with one-line justifications; each ratchet has a negative control.
 
-**Plans**: 17 plans, 40 tasks; sequential waves 1–17 in one main checkout. Plans01–10 complete; plans11–17 remain pending.
+**Plans**: 17 plans, 40 tasks; sequential waves 1–17 in one main checkout. Plans01–11 complete; plans12–17 remain pending.
 
 Plans:
 **Wave 1**
@@ -200,10 +200,10 @@ Plans:
 **Wave 10** *(complete)*
 - [x] 196-10-PLAN.md — Wave 10: Explicit diagnostic fallbacks and exact broad-containment exceptions
 
-**Wave 11** *(ready; Wave 10 complete)*
-- [ ] 196-11-PLAN.md — Wave 11: Evaluated six-project production runtime dependency ratchet
+**Wave 11** *(complete)*
+- [x] 196-11-PLAN.md — Wave 11: Evaluated six-project production runtime dependency ratchet
 
-**Wave 12** *(blocked on Wave 11 completion)*
+**Wave 12** *(ready; Wave 11 complete)*
 - [ ] 196-12-PLAN.md — Wave 12: Close GR-06 with conserved workflow statement classification
 
 **Wave 13** *(blocked on Wave 12 completion)*
@@ -273,7 +273,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
-| 196. Spec and structure ratchet | 10/17 | In progress; plan11 next | - |
+| 196. Spec and structure ratchet | 11/17 | In progress; plan12 next | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
@@ -313,4 +313,4 @@ Plans:
 
 ## Exact Next Action
 
-Last completed phase:195 (21/21 plans; passed8/8 on actual main b8398c38). Active phase196: executing,10/17 plans complete. Plans01-09 retain optional/browser/vector,absence,privacy,policy and compile proof. Plan10:62 tests passed including30 real-script guard tests;three advisory helpers return closed results and exactlytwo arbitrary-extension records preserve denials and original throw/exit behavior. Candidate42 files/9 clauses/2 records;actual-main41 files/5 broad/2 stale findings,exact restoration and final capsule identities retained. Collection default stays report-only until Plan15. Next: `$gsd-execute-phase 196 --ws quality-ratchet-release`, resuming at196-11-PLAN.md. Do not repeat plans01-10,completed Phase195 work or Phase196 planning. All eight Phase196 requirements and GR-06 remain pending independent verification;SPEC-05/unclassified,ARCH-02/unclassified and WINDOWS40/41 process deviations need independent review;dependency guard,full Muex pilot and new CI remain pending. Original cleanroom debt stays with Phase197;adopter lane stays parked. No irreversible-operation approval transfers.
+Last completed phase:195 (21/21 plans; passed8/8 on actual main b8398c38). Active phase196: executing,11/17 plans complete. Plans01-10 proof remains in their summaries. Plan11:25 tests passed;actual-main and candidate each evaluated6 projects/2 branches/12 fresh processes/48 declarations/32 retained dependencies,no findings. Final tool blobs and exact restoration verified. Collection default stays report-only until Plan15. Next: `$gsd-execute-phase 196 --ws quality-ratchet-release`, resuming at196-12-PLAN.md. Do not repeat plans01-11,completed Phase195 work or Phase196 planning. All eight Phase196 requirements and GR-06 remain pending independent verification;SPEC-05/unclassified,ARCH-02/unclassified and WINDOWS40/41/42 process deviations need independent review;full Muex pilot and required CI remain pending. Original cleanroom debt stays with Phase197;adopter lane stays parked. No irreversible-operation approval transfers.

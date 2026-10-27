@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "guard": "dependencies",
-  "candidate_sha": "fcf747a38c0e16e60f596dffcf8dd5ee841a1bec",
+  "candidate_sha": "ebb61843832fd236be5b493770135f79b0de9a11",
   "main_ref": "origin/main",
   "main_sha": "b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97",
   "guard_blob": "d02f9429dbea1db9a2e5076eef181e0217668e9a",
@@ -63,7 +63,7 @@
     "<actual-main>"
   ],
   "process_exit": 0,
-  "stdout_sha256": "55ae7434a7bab4a3579093d5b46e67d28a4c021251e75c8269b74509e6c581a9",
+  "stdout_sha256": "6a70bfd240b78562554a36568114d14a2134e1185ddb31b4a7d70c08ad2944b9",
   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "counts": {
     "branches": 2,
@@ -76,20 +76,20 @@
   "findings": [],
   "restoration": {
     "branch": "fix/spec-structure-ratchet",
-    "head": "fcf747a38c0e16e60f596dffcf8dd5ee841a1bec",
-    "index_sha256": "2a5f16c1997c0da61c6e29a9c6ec417826dc9c7fc4983ab78d505f2ce575ca1b",
-    "tracked_count": 6164,
-    "tracked_sha256": "d1cf294706bfa09aa2b962866a1226d22b62c9b9af777c12b1c699661af2760f",
+    "head": "ebb61843832fd236be5b493770135f79b0de9a11",
+    "index_sha256": "bba33222dd29807bb153ab3e0a9d7167928b3bf1e29f9f5eed8b519df54606ac",
+    "tracked_count": 6166,
+    "tracked_sha256": "e4e4b3d3a3f45d910008565cbee0c1979d18025042133655e12bfcaebc264884",
     "untracked_count": 0,
     "untracked_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
   },
   "privacy_before": {
     "exit": 0,
-    "files": 166
+    "files": 168
   },
   "privacy_after": {
     "exit": 0,
-    "files": 166
+    "files": 168
   },
-  "duration_ms": 6239
+  "duration_ms": 6254
 }

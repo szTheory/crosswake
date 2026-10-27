@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 40
+open_count: 41
 waived_count: 0
 fixed_count: 1
-total_count: 41
-last_updated: 2026-10-27T16:38:32.665Z
+total_count: 42
+last_updated: 2026-10-27T16:53:20.655Z
 ---
 
 # Broken Windows Ledger
@@ -56,6 +56,7 @@ last_updated: 2026-10-27T16:38:32.665Z
 | 39 | 175 | deviation | lib/crosswake/release_candidate/ios_mirror_tag_repair.ex | 922 | Corrected the observed child-timeout envelope classification; request count stays unknown. | open |  | 2026-10-06T22:31:27.544Z |  |
 | 40 | 196 | deviation | .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-09-SUMMARY.md |  | Tasks2 and3 acceptance controls ran after implementation; no pre-implementation RED compliance is claimed. | open |  | 2026-10-27T16:26:07.373Z |  |
 | 41 | 196 | deviation | script/check_rescue_boundaries.exs |  | Plan196-10 task3 guard implementation preceded its fixture assertions; only finite-rescue correction has pre-change RED/GREEN. Tasks1/2 preservation behavior was already green; structural contract assertions supplied RED. | open |  | 2026-10-27T16:38:32.665Z |  |
+| 42 | 196 | deviation | test/crosswake/proof/runtime_dependency_ratchet_test.exs |  | Plan196-11 Task2 characterized the already-implemented guard after required actual-main capture; no independent implementation RED is claimed. Task1 has classifier-validated RED before implementation. | open |  | 2026-10-27T16:53:20.655Z |  |
 
 ````json
 [
@@ -554,6 +555,19 @@ last_updated: 2026-10-27T16:38:32.665Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-27T16:38:32.665Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 42,
+    "kind": "deviation",
+    "phase": "196",
+    "file": "test/crosswake/proof/runtime_dependency_ratchet_test.exs",
+    "line": null,
+    "description": "Plan196-11 Task2 characterized the already-implemented guard after required actual-main capture; no independent implementation RED is claimed. Task1 has classifier-validated RED before implementation.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-27T16:53:20.655Z",
     "resolved_at": null,
     "milestone": null
   }
